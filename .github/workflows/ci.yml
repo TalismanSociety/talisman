@@ -1,0 +1,40 @@
+name: Talisman CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  build:
+    name: "Build and Test"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    # To use Remote Caching, uncomment the next lines and follow the steps below.
+    # env:
+    #  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    #  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2 #allows server to identify changes with previous commit
+      - name: Set up with Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
+          cache: yarn
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+      - name: Test
+        run: yarn run test
+      - name: Extract short SHA
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+      - name: build
+        run: COMMIT_SHA=${{ steps.vars.outputs.sha_short }} yarn run build:ci
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: ./apps/extension/dist/talisman_extension_ci_${{ steps.vars.outputs.sha_short}}.zip
+          retention-days: 5

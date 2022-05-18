@@ -11,6 +11,8 @@
     "dev": "turbo run dev --parallel --color",
     "dev:extension": "yarn workspace extension run dev",
     "build:extension:prod": "turbo run build:extension:prod",
+    "build:extension:canary": "turbo run build:extension:canary",
+    "build:ci": "turbo run build:ci",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
     "clean": "turbo run clean --parallel && rm -rf dist && rm -rf node_modules",

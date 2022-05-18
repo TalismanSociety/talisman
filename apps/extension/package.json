@@ -136,20 +136,13 @@
     "start": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch",
     "dev": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch",
     "build": "rm -rf dist && webpack --config webpack/webpack.prod.js",
-    "extension:build:ci": "rm -rf dist && BUILD=ci webpack --config webpack/webpack.prod.js",
-    "extension:build:stats": "rm -rf dist && webpack --config webpack/webpack.prod.js --json ./dist/stats.json",
-    "extension:build:canary": "rm -rf dist && BUILD=canary webpack --config webpack/webpack.prod.js",
-    "extension:build:prod": "rm -rf dist && BUILD=production webpack --config webpack/webpack.prod.js",
+    "build:ci": "BUILD=ci && webpack --config webpack/webpack.prod.js",
+    "build:extension:canary": "rm -rf dist && BUILD=canary webpack --config webpack/webpack.prod.js",
+    "build:extension:prod": "rm -rf dist && BUILD=production webpack --config webpack/webpack.prod.js",
     "test": "jest",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "clean": "rm -rf dist && rm -rf .turbo && rm -rf node_modules"
-  },
-  "eslintConfig": {
-    "root": true,
-    "extends": [
-      "eslint-config-talisman/react"
-    ]
   },
   "browserslist": {
     "production": [

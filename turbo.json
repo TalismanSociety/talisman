@@ -4,14 +4,18 @@
   "pipeline": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**"]
+      "outputs": ["dist/**"]
     },
-    "extension:build:prod": {
+    "build:ci": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "extension:build:prod": {
+      "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN"],
+      "outputs": ["dist/**"]
+    },
     "extension:build:canary": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN"],
       "outputs": ["dist/**"]
     },
     "lint": {
