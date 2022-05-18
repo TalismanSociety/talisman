@@ -1,0 +1,8 @@
+.git
+.vscode
+.husky
+.next
+dist
+build
+node_modules
+Dockerfile

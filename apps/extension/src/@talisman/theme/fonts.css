@@ -1,0 +1,26 @@
+@font-face {
+  font-family: "Surt";
+  font-style: light;
+  font-weight: 300;
+  font-display: auto;
+  src: url("./fonts/Surt-Regular.woff") format("woff");
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: "Surt";
+  font-style: bold;
+  font-weight: 800;
+  font-display: auto;
+  src: url("./fonts/Surt-SemiBold.woff2") format("woff2");
+  font-display: fallback;
+}
+
+@font-face {
+  font-family: "SurtExpanded";
+  font-style: bold;
+  font-weight: 800;
+  font-display: auto;
+  src: url("./fonts/Surt-SemiBoldExp.woff2") format("woff2");
+  font-display: fallback;
+}

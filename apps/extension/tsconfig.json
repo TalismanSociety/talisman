@@ -1,0 +1,15 @@
+{
+  "extends": "tsconfig/es6-react.json",
+  "compilerOptions": {
+    "baseUrl": "src",
+    "paths": {
+      "@talisman": ["./@talisman"],
+      "@talisman/*": ["./@talisman/*"],
+      "@core": ["./core"],
+      "@core/*": ["./core/*"],
+      "@ui": ["./ui"],
+      "@ui/*": ["./ui/*"]
+    }
+  },
+  "include": ["src", "**/*.ts", "**/*.tsx"]
+}

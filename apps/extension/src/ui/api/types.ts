@@ -1,0 +1,191 @@
+import type { KeyringPair$Json } from "@polkadot/keyring/types"
+import type { HexString } from "@polkadot/util/types"
+import {
+  AccountJson,
+  AddressesByChain,
+  AuthorizeRequest,
+  MetadataRequest,
+  LoggedinType,
+  OnboardedType,
+  AuthorizedSite,
+  AuthorizedSites,
+  AuthRequestId,
+  AuthRequestAddresses,
+  MnemonicSubscriptionResult,
+  Chain,
+  ChainId,
+  ChainList,
+  RequestAccountCreateHardware,
+  Token,
+  TokenId,
+  TokenList,
+  ResponseAssetTransfer,
+  ResponseAssetTransferFeeQuery,
+  BalanceStorage,
+  BalancesUpdate,
+  RequestBalance,
+  UnsubscribeFn,
+  TransactionDetails,
+  ModalTypes,
+  ModalOpenParams,
+  ProviderType,
+  AccountAddressType,
+  AnySigningRequest,
+  AddEthereumChainRequest,
+  EthereumNetworkList,
+  EthereumNetwork,
+  AnyEthRequestChainId,
+} from "@core/types"
+import { EthResponseType } from "@core/injectEth/types"
+
+export default interface MessageTypes {
+  unsubscribe: (id: string) => Promise<null>
+  // UNSORTED
+  onboard: (
+    name: string,
+    pass: string,
+    passConfirm: string,
+    mnemonic?: string
+  ) => Promise<OnboardedType>
+  authenticate: (pass: string) => Promise<boolean>
+  lock: () => Promise<boolean>
+  authStatus: () => Promise<LoggedinType>
+  authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
+  onboardStatus: () => Promise<OnboardedType>
+  onboardStatusSubscribe: (cb: (val: OnboardedType) => void) => UnsubscribeFn
+  setOnboarded: () => Promise<OnboardedType>
+  dashboardOpen: (route: string) => Promise<boolean>
+  onboardOpen: () => Promise<boolean>
+  popupOpen: () => Promise<boolean>
+  promptLogin: (closeOnSuccess?: boolean) => Promise<boolean>
+  approveMetaRequest: (id: string) => Promise<boolean>
+  rejectMetaRequest: (id: string) => Promise<boolean>
+  subscribeMetadataRequests: (cb: (requests: MetadataRequest[]) => void) => UnsubscribeFn
+
+  // signing messages -------------------------------------------------------
+  decodeSignRequest: (id: string) => Promise<TransactionDetails | null>
+  cancelSignRequest: (id: string) => Promise<boolean>
+  subscribeSigningRequest: (id: string, cb: (requests: AnySigningRequest) => void) => UnsubscribeFn
+  subscribeSigningRequests: (cb: (requests: AnySigningRequest[]) => void) => UnsubscribeFn
+  approveSign: (id: string) => Promise<boolean>
+  approveSignHardware: (id: string, signature: HexString) => Promise<boolean>
+
+  // app message types -------------------------------------------------------
+  modalOpen: (modalType: ModalTypes) => Promise<boolean>
+  modalOpenSubscribe: (cb: (val: ModalOpenParams) => void) => UnsubscribeFn
+
+  // mnemonic message types -------------------------------------------------------
+  mnemonicUnlock: (pass: string) => Promise<string>
+  mnemonicConfirm: (confirmed: boolean) => Promise<boolean>
+  mnemonicSubscribe: (cb: (val: MnemonicSubscriptionResult) => void) => UnsubscribeFn
+  addressFromMnemonic: (mnemonic: string, type?: AccountAddressType) => Promise<string>
+
+  // account message types ---------------------------------------------------
+  accountCreate: (name: string) => Promise<boolean>
+  accountCreateFromSeed: (name: string, seed: string, type?: AccountAddressType) => Promise<boolean>
+  accountCreateFromJson: (json: string, password: string) => Promise<boolean>
+  accountCreateHardware: (
+    request: Omit<RequestAccountCreateHardware, "hardwareType">
+  ) => Promise<boolean>
+  accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
+  accountForget: (address: string) => Promise<boolean>
+  accountExport: (address: string) => Promise<{ exportedJson: KeyringPair$Json }>
+  accountRename: (address: string, name: string) => Promise<boolean>
+  accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
+
+  // balance message types ---------------------------------------------------
+  subscribeBalances: (cb: (balances: BalancesUpdate) => void) => UnsubscribeFn
+  subscribeBalancesById: (id: string, cb: (balance: BalanceStorage) => void) => UnsubscribeFn
+  getBalance: ({ chainId, tokenId, address }: RequestBalance) => Promise<BalanceStorage>
+  subscribeBalancesByParams: (
+    addressesByChain: AddressesByChain,
+    cb: (balances: BalancesUpdate) => void
+  ) => UnsubscribeFn
+
+  // authorized sites message types ------------------------------------------
+  authorizedSites: () => Promise<AuthorizedSites>
+  authorizedSitesSubscribe: (cb: (sites: AuthorizedSites) => void) => UnsubscribeFn
+  authorizedSite: (id: string) => Promise<AuthorizedSite>
+  authorizedSiteSubscribe: (id: string, cb: (sites: AuthorizedSite) => void) => UnsubscribeFn
+  authorizedSiteForget: (id: string, type: ProviderType) => Promise<boolean>
+  authorizedSiteUpdate: (
+    id: string,
+    properties: Omit<Partial<AuthorizedSite>, "id">
+  ) => Promise<boolean>
+
+  // authorization requests message types ------------------------------------
+  authRequestsSubscribe: (cb: (requests: AuthorizeRequest[]) => void) => UnsubscribeFn
+  authrequestApprove: (
+    id: AuthRequestId,
+    addresses: AuthRequestAddresses,
+    chainId?: number
+  ) => Promise<boolean>
+  authrequestReject: (id: AuthRequestId) => Promise<boolean>
+  authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
+
+  // chain message types
+  chains: () => Promise<ChainList>
+  chain: (id: string) => Promise<Chain>
+  chainsSubscribe: (cb: (chains: ChainList) => void) => UnsubscribeFn
+  chainSubscribe: (id: string, cb: (chain: Chain) => void) => UnsubscribeFn
+
+  // token message types
+  tokens: () => Promise<TokenList>
+  token: (id: string) => Promise<Token>
+  tokensSubscribe: (cb: (tokens: TokenList) => void) => UnsubscribeFn
+  tokenSubscribe: (id: string, cb: (token: Token) => void) => UnsubscribeFn
+
+  // ethereum networks message types
+  ethereumNetworks: () => Promise<EthereumNetworkList>
+  ethereumNetwork: (id: string) => Promise<EthereumNetwork>
+  ethereumNetworksSubscribe: (cb: (ethereumNetworks: EthereumNetworkList) => void) => UnsubscribeFn
+  ethereumNetworkSubscribe: (
+    id: string,
+    cb: (ethereumNetwork: EthereumNetwork) => void
+  ) => UnsubscribeFn
+  addCustomEthereumNetwork: (ethereumNetwork: EthereumNetwork) => Promise<boolean>
+  removeCustomEthereumNetwork: (id: string) => Promise<boolean>
+  clearCustomEthereumNetworks: () => Promise<boolean>
+
+  // transaction message types
+  transactionSubscribe: (id: string, cb: (tx: any) => void) => UnsubscribeFn
+  transactionsSubscribe: (cb: (txs: any) => void) => UnsubscribeFn
+
+  // asset transfer messages
+  assetTransfer: (
+    chainId: ChainId,
+    tokenId: TokenId,
+    fromAddress: string,
+    toAddress: string,
+    amount: string,
+    reapBalance?: boolean
+  ) => Promise<ResponseAssetTransfer>
+  assetTransferCheckFees: (
+    chainId: ChainId,
+    tokenId: TokenId,
+    fromAddress: string,
+    toAddress: string,
+    amount: string,
+    reapBalance?: boolean
+  ) => Promise<ResponseAssetTransferFeeQuery>
+  assetTransferApproveSign: (
+    pendingTransferId: string,
+    signature: `0x${string}` | Uint8Array
+  ) => Promise<ResponseAssetTransfer>
+
+  // eth related messages
+  ethApproveSign: (id: string) => Promise<boolean>
+  ethApproveSignAndSend: (
+    id: string,
+    maxFeePerGas: string,
+    maxPriorityFeePerGas: string
+  ) => Promise<boolean>
+  ethCancelSign: (id: string) => Promise<boolean>
+  ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
+  ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
+  ethNetworkAddApprove: (id: string) => Promise<boolean>
+  ethNetworkAddCancel: (is: string) => Promise<boolean>
+  ethNetworkAddSubscribeRequests: (
+    cb: (requests: AddEthereumChainRequest[]) => void
+  ) => UnsubscribeFn
+}

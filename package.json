@@ -1,0 +1,37 @@
+{
+  "name": "talisman",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel --color",
+    "dev:extension": "yarn workspace extension run dev",
+    "build:extension:prod": "turbo run build:extension:prod",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
+    "clean": "turbo run clean --parallel && rm -rf dist && rm -rf node_modules",
+    "prepare": "husky install",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^17.0.0",
+    "@commitlint/config-conventional": "^17.0.0",
+    "husky": "^8.0.1",
+    "lint-staged": "^12.4.1",
+    "prettier": "latest",
+    "turbo": "latest"
+  },
+  "engines": {
+    "npm": ">=7.0.0",
+    "node": ">=14.0.0"
+  },
+  "packageManager": "yarn@1.22.18",
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,css,scss,html,md,json}": "prettier --write",
+    "*.{js,ts,jsx,tsx}": "eslint --fix --max-warnings 0"
+  }
+}
