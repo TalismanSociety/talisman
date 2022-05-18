@@ -2,7 +2,7 @@
 /** @type {import('ts-jest').InitialOptionsTsJest} */
 const { defaults } = require("jest-config")
 const { pathsToModuleNameMapper } = require("ts-jest")
-const { compilerOptions } = require("./tsconfig.paths.json")
+const { compilerOptions } = require("./tsconfig.json")
 
 module.exports = {
   preset: "ts-jest/presets/js-with-babel",
