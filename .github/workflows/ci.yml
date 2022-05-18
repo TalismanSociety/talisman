@@ -18,9 +18,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          fetch-depth: 2 #allows server to identify changes with previous commit
-      - name: Set up with Node.js
-        uses: actions/setup-node@v2
+          fetch-depth: 2 # also get the previous commit
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
         with:
           node-version: 14
           cache: yarn
