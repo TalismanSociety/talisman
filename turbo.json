@@ -10,11 +10,11 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
-    "extension:build:prod": {
+    "build:extension:prod": {
       "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN"],
       "outputs": ["dist/**"]
     },
-    "extension:build:canary": {
+    "build:extension:canary": {
       "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN"],
       "outputs": ["dist/**"]
     },
