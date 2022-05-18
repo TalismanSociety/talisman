@@ -31,7 +31,7 @@ jobs:
       - name: Extract short SHA
         id: vars
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-      - name: build
+      - name: Build
         run: COMMIT_SHA=${{ steps.vars.outputs.sha_short }} yarn run build:ci
       - uses: actions/upload-artifact@v3
         with:

@@ -11,6 +11,8 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPl
 const distDir = path.join(__dirname, "..", "dist")
 
 const getFileName = () => {
+  console.log("COMMIT_SHA=%s", process.env.COMMIT_SHA)
+  console.log("BUILD=%s", process.env.BUILD)
   switch (process.env.BUILD) {
     case "ci":
       return `talisman_extension_ci_${process.env.COMMIT_SHA ?? Date.now()}.zip`
