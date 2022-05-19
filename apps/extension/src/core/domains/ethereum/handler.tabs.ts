@@ -353,12 +353,6 @@ export class EthTabsHandler extends TabsHandler {
         const result = await provider.estimateGas(req)
         return result.toHexString()
       }
-      case "eth_call": {
-        const { params } = request as EthRequestArguments<"eth_call">
-        const req = ethers.providers.JsonRpcProvider.hexlifyTransaction(params[0])
-        const provider = await this.getProvider(url)
-        return await provider.call(req, params[1])
-      }
 
       case "personal_sign":
       case "eth_sign": {
