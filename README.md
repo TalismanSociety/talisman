@@ -48,7 +48,7 @@ All our package and apps are 100% [TypeScript](https://www.typescriptlang.org/).
 
 - `dev` : builds and watches all packages/apps with hot reloading
 - `dev:extension` : when working on extension only, for better color output (dependencies need to be built beforehand)
-- `build`: builds the wallet in `packages/apps/extension/dist` folder
+- `build`: builds the wallet in `packages/apps/extension/dist` folder, without sentry keys
 - `build:extension:prod` builds the Talisman browser extension (requires sentry settings, Talisman team only)
 - `build:extension:canary` : builds the Talisman browser extension test version, with different ID and icon than prod
 
