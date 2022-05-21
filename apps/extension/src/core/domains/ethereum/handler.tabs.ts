@@ -200,12 +200,24 @@ export class EthTabsHandler extends TabsHandler {
     } = request
 
     const chainId = parseInt(network.chainId, 16)
-    if (await this.stores.ethereumNetworks.ethereumNetwork(chainId))
-      throw new EthProviderRpcError("Network already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
+    const existing = await this.stores.ethereumNetworks.ethereumNetwork(chainId)
+    // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
+    // in case network is already registered, dapp expects that we switch to it
+    if (existing) {
+      // for custom networks, check that rpcs are the same as the registered ones
+      // TODO if mismatch, create request to user to override the network?
+      if (existing.isCustom && existing.rpcs.join() !== network.rpcUrls.join())
+        throw new EthProviderRpcError("Network already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+      return this.switchEthereumChain(url, {
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: network.chainId }],
+      })
+    }
 
     // TODO: Check rpc(s) work before sending request to user
     // TODO: Check that rpc responds with correct chainId before sending request to user
-
+    // TODO : typecheck network object
     await this.state.requestStores.networks.requestAddNetwork(url, network)
 
     // switch automatically to new chain
