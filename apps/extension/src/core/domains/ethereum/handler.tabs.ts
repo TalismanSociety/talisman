@@ -323,7 +323,10 @@ export class EthTabsHandler extends TabsHandler {
     console.debug("ethRequest handler", request)
 
     try {
-      if (request.method !== "eth_requestAccounts")
+      // some sites expect eth_accounts to return an empty array if not connected/authorized.
+      // if length === 0 they'll request authorization
+      // so it should not raise an error if not authorized yet
+      if (!["eth_requestAccounts", "eth_accounts"].includes(request.method))
         await this.stores.sites.ensureUrlAuthorized(url, true)
     } catch (err) {
       throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
