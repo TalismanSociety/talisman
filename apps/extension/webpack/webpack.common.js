@@ -5,7 +5,8 @@ const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin")
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin")
 const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-webpack-plugin")
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
-const Dotenv = require("dotenv-webpack")
+const DotEnv = require("dotenv-webpack")
+const getGitShortHash = require("./utils").getGitShortHash
 const srcDir = path.join(__dirname, "..", "src")
 const coreDir = path.join(srcDir, "core")
 const distDir = path.join(__dirname, "..", "dist")
@@ -92,14 +93,15 @@ module.exports = {
     },
   },
   plugins: [
+    new DotEnv(),
     new webpack.DefinePlugin({
+      "process.env.COMMIT_SHA_SHORT": JSON.stringify(getGitShortHash()),
       "process.env.VERSION": JSON.stringify(process.env.npm_package_version),
     }),
     new CaseSensitivePathsPlugin(),
     new ForkTsCheckerWebpackPlugin(),
     new ForkTsCheckerNotifierWebpackPlugin({ title: "TypeScript", excludeWarnings: false }),
     new EslintWebpackPlugin({ context: "../", extensions: ["ts", "tsx"] }),
-    new Dotenv(),
     new webpack.ProvidePlugin({
       Buffer: ["buffer", "Buffer"],
     }),
