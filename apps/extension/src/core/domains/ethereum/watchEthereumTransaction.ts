@@ -1,9 +1,8 @@
 import Browser from "webextension-polyfill"
 import { ethereumNetworkStore, getProviderForEthereumNetwork } from "./networksStore"
-import urlJoin from "url-join"
 import { nanoid } from "nanoid"
-import { TransactionNotOkIcon, TransactionOkIcon } from "@talisman/theme/icons"
 import * as Sentry from "@sentry/browser"
+import urlJoin from "url-join"
 
 const onNotificationClicked = (notificationId: string) => {
   // we actually use an url as identifier, redirect to it
@@ -41,7 +40,7 @@ export const watchEthereumTransaction = async (ethChainId: number, txHash: strin
       type: "basic",
       title: "👀 Transaction submitted 🧐",
       message: `Waiting on transaction confirmation on ${ethereumNetwork.name}.`,
-      iconUrl: TransactionOkIcon,
+      iconUrl: "/images/tx-ok.png",
     })
 
     const receipt = await provider.waitForTransaction(txHash, 2)
@@ -52,7 +51,7 @@ export const watchEthereumTransaction = async (ethChainId: number, txHash: strin
         type: "basic",
         title: "✅ Transaction confirmed ⭐",
         message: `Your transaction on ${ethereumNetwork.name} has been confirmed.`,
-        iconUrl: TransactionOkIcon,
+        iconUrl: "/images/tx-ok.png",
       })
     } else {
       // FAILED
@@ -65,7 +64,7 @@ export const watchEthereumTransaction = async (ethChainId: number, txHash: strin
         type: "basic",
         title: "❌ Transaction failed 😵",
         message: error?.reason || error?.message || "Unknown error",
-        iconUrl: TransactionNotOkIcon,
+        iconUrl: "/images/tx-nok.png",
       })
     } catch (err2) {
       Sentry.captureException(err2)
