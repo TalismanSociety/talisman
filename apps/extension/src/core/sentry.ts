@@ -20,7 +20,7 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
     environment: process.env.BUILD,
     dsn: process.env.SENTRY_DSN,
     integrations: [new Integrations.BrowserTracing()],
-    dist: process.env.VERSION,
+    release: process.env.SENTRY_VERSION,
     sampleRate: 1,
     // prevents sending the event if user has disabled error tracking
     beforeSend: async (event) => ((await firstValueFrom(useErrorTracking)) ? event : null),

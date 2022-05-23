@@ -1,4 +1,5 @@
 /* eslint-env es2021 */
+const webpack = require("webpack")
 const path = require("path")
 const { merge } = require("webpack-merge")
 const common = require("./webpack.common.js")
@@ -7,20 +8,33 @@ const TerserPlugin = require("terser-webpack-plugin")
 const SentryWebpackPlugin = require("@sentry/webpack-plugin")
 const ZipPlugin = require("zip-webpack-plugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
+const getGitShortHash = require("./utils").getGitShortHash
 
 const distDir = path.join(__dirname, "..", "dist")
 
 const getFileName = () => {
-  console.log("COMMIT_SHA=%s", process.env.COMMIT_SHA)
-  console.log("BUILD=%s", process.env.BUILD)
   switch (process.env.BUILD) {
     case "ci":
-      return `talisman_extension_ci_${process.env.COMMIT_SHA ?? Date.now()}.zip`
+      return `talisman_extension_ci_${getGitShortHash() ?? Date.now()}.zip`
     case "canary":
-      return `talisman_extension_v${process.env.npm_package_version}_canary.zip`
+      return `talisman_extension_v${
+        process.env.npm_package_version
+      }_${getGitShortHash()}_canary.zip`
     case "production":
-    default:
       return `talisman_extension_v${process.env.npm_package_version}.zip`
+    default:
+      return `talisman_extension_${getGitShortHash()}.zip`
+  }
+}
+
+const getSentryRelease = () => {
+  switch (process.env.BUILD) {
+    case "canary":
+      return getGitShortHash()
+    case "production":
+      return process.env.npm_package_version
+    default:
+      return undefined
   }
 }
 
@@ -82,13 +96,15 @@ if (["production", "canary"].includes(process.env.BUILD)) {
     console.warn("Missing SENTRY_AUTH_TOKEN env variable, release won't be uploaded to Sentry")
   else
     plugins = [
+      new webpack.DefinePlugin({
+        "process.env.SENTRY_RELEASE": getSentryRelease(),
+      }),
       new SentryWebpackPlugin({
         // see https://docs.sentry.io/product/cli/configuration/ for details
         authToken: process.env.SENTRY_AUTH_TOKEN,
         org: "talisman",
         project: "talisman-extension",
-        release: process.env.npm_package_version,
-        dist: process.env.npm_package_version,
+        release: getSentryRelease(),
         include: distDir,
       }),
       ...plugins,
