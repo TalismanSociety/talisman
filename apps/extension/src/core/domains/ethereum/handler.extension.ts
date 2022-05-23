@@ -117,9 +117,10 @@ export class EthHandler extends ExtensionHandler {
       const signature = await pair.sign(serialisedTx)
 
       const serialisedSignedTx = serializeTransaction(goodTx, signature)
-      const { hash } = await provider.sendTransaction(serialisedSignedTx)
+      const { chainId, hash } = await provider.sendTransaction(serialisedSignedTx)
 
-      watchEthereumTransaction(request.chainId!, hash)
+      // wait asynchronously for the transaction to be mined
+      watchEthereumTransaction(chainId, hash)
 
       resolve(hash)
     } catch (err) {

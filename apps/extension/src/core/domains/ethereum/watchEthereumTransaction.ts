@@ -9,7 +9,7 @@ const onNotificationClicked = (notificationId: string) => {
   if (notificationId.startsWith("https://")) Browser.tabs.create({ url: notificationId })
 }
 
-const init = () => {
+const ensureNotificationClickHandler = () => {
   if (!Browser.notifications.onClicked.hasListener(onNotificationClicked))
     Browser.notifications.onClicked.addListener(onNotificationClicked)
 }
@@ -27,8 +27,7 @@ export const watchEthereumTransaction = async (ethChainId: number, txHash: strin
       throw new Error(`No provider for network ${ethChainId} (${ethereumNetwork.name})`)
     }
 
-    // handle notification click
-    init()
+    ensureNotificationClickHandler()
 
     txUrl =
       ethereumNetwork.explorerUrls.length > 0
