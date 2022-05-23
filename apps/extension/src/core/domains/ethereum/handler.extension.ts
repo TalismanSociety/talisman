@@ -29,6 +29,7 @@ import type { Bytes, UnsignedTransaction } from "ethers"
 import type { TransactionRequest } from "@ethersproject/providers"
 import isString from "lodash/isString"
 import { getProviderForChainId } from "./networksStore"
+import { watchEthereumTransaction } from "./watchEthereumTransaction"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -117,6 +118,9 @@ export class EthHandler extends ExtensionHandler {
 
       const serialisedSignedTx = serializeTransaction(goodTx, signature)
       const { hash } = await provider.sendTransaction(serialisedSignedTx)
+
+      watchEthereumTransaction(request.chainId!, hash)
+
       resolve(hash)
     } catch (err) {
       // eslint-disable-next-line no-console
