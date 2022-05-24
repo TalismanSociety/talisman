@@ -1,5 +1,6 @@
 import { IndexedDBStorageProvider } from "@core/libs/IndexedDBStore"
 
-class MetadataRpcStore extends IndexedDBStorageProvider<"metadataRpc"> {}
-
-export const metadataRpcStore = new MetadataRpcStore("metadataRpc", "chainId")
+export const metadataRpcStore = new IndexedDBStorageProvider<"metadataRpc">(
+  "metadataRpc",
+  "chainId"
+)

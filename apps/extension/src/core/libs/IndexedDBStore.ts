@@ -22,10 +22,7 @@ type SchemaValue<S extends keyof TalismanSchema> = TalismanSchema[S]["value"]
  *
  * To create a new IndexedDBStorageProvider store, you'll also need to add the stores definition in `TalismanSchema` above.
  */
-export class IndexedDBStorageProvider<
-  S extends keyof TalismanSchema
-  // T extends TalismanSchema[S]["value"]
-> {
+export class IndexedDBStorageProvider<S extends keyof TalismanSchema> {
   #prefix: S
   #idKey: keyof SchemaValue<S>
 
