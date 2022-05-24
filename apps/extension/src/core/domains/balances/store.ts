@@ -29,7 +29,7 @@ type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
 
-class BalanceStore extends SubscribableByIdStorageProvider<
+export class BalanceStore extends SubscribableByIdStorageProvider<
   BalancesStorage,
   "pri(balances.subscribe)",
   "pri(balances.byid.subscribe)"

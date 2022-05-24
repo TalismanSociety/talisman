@@ -9,7 +9,7 @@ export interface SettingsStoreData {
   hideBalances: boolean
 }
 
-class SettingsStore extends StorageProvider<SettingsStoreData> {}
+export class SettingsStore extends StorageProvider<SettingsStoreData> {}
 
 export const settingsStore = new SettingsStore("settings", {
   useErrorTracking: false,

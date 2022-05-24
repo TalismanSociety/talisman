@@ -23,7 +23,7 @@ const DEFAULT_VALUE = {
   hasBraveWarningBeenShown: false,
 }
 
-class AppStore extends SubscribableStorageProvider<
+export class AppStore extends SubscribableStorageProvider<
   AppStoreData,
   "pri(app.onboardStatus.subscribe)"
 > {

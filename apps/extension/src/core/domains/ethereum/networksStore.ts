@@ -20,7 +20,7 @@ import { Observable, combineLatest } from "rxjs"
 
 const storageKey = "ethereumNetworks"
 
-class EthereumNetworkStore extends SubscribableByIdStorageProvider<
+export class EthereumNetworkStore extends SubscribableByIdStorageProvider<
   EthereumNetworkList,
   "pri(eth.networks.subscribe)",
   "pri(eth.networks.byid.subscribe)"

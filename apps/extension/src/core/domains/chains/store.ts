@@ -21,7 +21,7 @@ const storageKey = "chains"
 
 const minimumHydrationInterval = 43_200_000 // 43_200_000ms = 43_200s = 720m = 12 hours
 
-class ChainStore extends SubscribableByIdStorageProvider<
+export class ChainStore extends SubscribableByIdStorageProvider<
   ChainList,
   "pri(chains.subscribe)",
   "pri(chains.byid.subscribe)"

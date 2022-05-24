@@ -24,7 +24,7 @@ const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 type TokenStoreToken = Token & { isTestnet: boolean }
 type TokenStoreList = Record<TokenId, TokenStoreToken>
 
-class TokenStore extends SubscribableByIdStorageProvider<
+export class TokenStore extends SubscribableByIdStorageProvider<
   TokenStoreList,
   "pri(tokens.subscribe)",
   "pri(tokens.byid.subscribe)"

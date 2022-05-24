@@ -29,7 +29,7 @@ const deriveTxStatus: { [Property in ExtrinsicStatusType]: [TransactionStatus, s
 
 export type TransactionSubject = Record<TransactionId, Transaction>
 
-class TransactionStore extends StorageProvider<TransactionSubject> {
+export class TransactionStore extends StorageProvider<TransactionSubject> {
   readonly #pendingTxs = new BehaviorSubject<TransactionSubject>({})
 
   constructor(prefix: string) {
