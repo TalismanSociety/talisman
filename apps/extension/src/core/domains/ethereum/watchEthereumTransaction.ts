@@ -35,14 +35,17 @@ export const watchEthereumTransaction = async (ethChainId: number, txHash: strin
         : nanoid()
 
     // PENDING
-    await Browser.notifications.create(txUrl, {
+    const notificationId = await Browser.notifications.create(txUrl, {
       type: "basic",
       title: "👀 Transaction submitted 🧐",
       message: `Waiting on transaction confirmation on ${ethereumNetwork.name}.`,
       iconUrl: "/images/tx-ok.png",
     })
 
-    const receipt = await provider.waitForTransaction(txHash, 2)
+    const receipt = await provider.waitForTransaction(txHash)
+
+    // delete previous notification before creating a new one, to make sure user sees the toast
+    await Browser.notifications.clear(notificationId)
 
     if (receipt.blockNumber) {
       // SUCCESS
