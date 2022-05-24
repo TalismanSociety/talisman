@@ -119,8 +119,9 @@ export class EthHandler extends ExtensionHandler {
       const serialisedSignedTx = serializeTransaction(goodTx, signature)
       const { chainId, hash } = await provider.sendTransaction(serialisedSignedTx)
 
-      // wait asynchronously for the transaction to be mined
-      watchEthereumTransaction(chainId, hash)
+      // notify user about transaction progress
+      if (await this.stores.settings.get("allowNotifications"))
+        watchEthereumTransaction(chainId, hash)
 
       resolve(hash)
     } catch (err) {

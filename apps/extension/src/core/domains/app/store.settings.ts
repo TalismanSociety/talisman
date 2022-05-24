@@ -7,6 +7,7 @@ export interface SettingsStoreData {
   identiconType: IdenticonType
   useCustomEthereumNetworks: boolean
   hideBalances: boolean
+  allowNotifications: boolean
 }
 
 class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -17,4 +18,5 @@ export const settingsStore = new SettingsStore("settings", {
   identiconType: "talisman-orb",
   useCustomEthereumNetworks: false,
   hideBalances: false,
+  allowNotifications: true,
 })
