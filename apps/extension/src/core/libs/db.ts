@@ -12,6 +12,7 @@ export type ChainMetadataRpc = {
 
 export type EvmAssetInfo = {
   type: "ERC20" // May be expanded to other types of asset in future
+  chainId: string
   address: string // The address that the token is at.
   symbol: string // A ticker symbol or shorthand, up to 5 chars.
   decimals: number // The number of decimals in the token
