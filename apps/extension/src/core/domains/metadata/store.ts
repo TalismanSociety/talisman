@@ -1,7 +1,6 @@
-import type { MetadataDef } from "@polkadot/extension-inject/types"
 import { IndexedDBStorageProvider } from "@core/libs/IndexedDBStore"
 
-class MetadataStore extends IndexedDBStorageProvider<"metadata", MetadataDef> {}
+class MetadataStore extends IndexedDBStorageProvider<"metadata"> {}
 
 const metadataStore = new MetadataStore("metadata", "genesisHash")
 

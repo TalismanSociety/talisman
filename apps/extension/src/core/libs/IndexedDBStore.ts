@@ -9,6 +9,7 @@ const reduceData = <T, K extends keyof T>(data: Array<T>, idKey: K) =>
     return result
   }, {} as OutputData<T>)
 
+type SchemaValue<S extends keyof TalismanSchema> = TalismanSchema[S]["value"]
 /**
  * IndexedDBStorageProvider provides storage usinng IndexedDB
  * In order to implement an IndexedDB store, instantiate an extended IndexedDBStorageProvider as follows:
@@ -22,21 +23,21 @@ const reduceData = <T, K extends keyof T>(data: Array<T>, idKey: K) =>
  * To create a new IndexedDBStorageProvider store, you'll also need to add the stores definition in `TalismanSchema` above.
  */
 export class IndexedDBStorageProvider<
-  S extends keyof TalismanSchema,
-  T extends TalismanSchema[S]["value"]
+  S extends keyof TalismanSchema
+  // T extends TalismanSchema[S]["value"]
 > {
   #prefix: S
-  #idKey: keyof T
+  #idKey: keyof SchemaValue<S>
 
-  constructor(prefix: S, idKey: keyof T) {
+  constructor(prefix: S, idKey: keyof SchemaValue<S>) {
     this.#prefix = prefix
     this.#idKey = idKey
   }
 
   // get a stored value based on key
-  async get(): Promise<OutputData<T>>
-  async get(key: TalismanSchema[S]["key"]): Promise<T>
-  async get(key?: TalismanSchema[S]["key"]): Promise<OutputData<T> | T> {
+  async get(): Promise<OutputData<SchemaValue<S>>>
+  async get(key: TalismanSchema[S]["key"]): Promise<SchemaValue<S>>
+  async get(key?: TalismanSchema[S]["key"]): Promise<OutputData<SchemaValue<S>> | SchemaValue<S>> {
     const db = await waitDbReady()
     assert(db, "Database not initialised yet")
     if (key) return db.get(this.#prefix, key)
@@ -44,7 +45,7 @@ export class IndexedDBStorageProvider<
   }
 
   // set a key:value pair
-  async set(value: OutputData<T>): Promise<OutputData<T>> {
+  async set(value: OutputData<SchemaValue<S>>): Promise<OutputData<SchemaValue<S>>> {
     const db = await waitDbReady()
     const tx = db!.transaction(this.#prefix, "readwrite")
     const current = await tx.store.getAll()
@@ -58,7 +59,7 @@ export class IndexedDBStorageProvider<
     return newData
   }
 
-  async setItem(item: T): Promise<void> {
+  async setItem(item: SchemaValue<S>): Promise<void> {
     const db = await waitDbReady()
     const tx = db!.transaction(this.#prefix, "readwrite")
 
