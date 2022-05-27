@@ -7,7 +7,7 @@ import { createNotification, NotificationType } from "./createNotification"
 import * as Sentry from "@sentry/browser"
 import { Vec } from "@polkadot/types-codec"
 
-const TX_WATCH_TIMEOUT = 60000
+const TX_WATCH_TIMEOUT = 90000
 
 type ExtrinsicResult =
   | { result: "unknown" }
@@ -16,6 +16,7 @@ type ExtrinsicResult =
       blockNumber: string | number
       extIndex: number
     }
+
 type ExtrinsicStatusChangeHandler = (
   eventType: "included" | "error" | "success",
   blockNumber: string | number,
@@ -88,19 +89,32 @@ const watchExtrinsicStatus = async (
   const registry = await getTypeRegistry(chainId)
   let blockHash: Hash
 
-  const state = {
-    subscribedFinalizedHeads: true,
-    subscribedAllHeads: true,
+  // keep track of subscriptions state because it raises errors when calling unsubscribe multiple times
+  const subscriptions = {
+    finalizedHeads: true,
+    allHeads: true,
   }
+  const unsubscribe = async (
+    key: "finalizedHeads" | "allHeads",
+    unsubscribeHandler: () => Promise<void>
+  ) => {
+    if (!subscriptions[key]) return
+    subscriptions[key] = false
+    await unsubscribeHandler()
+  }
+
   // watch for finalized blocks, this is the source of truth for successfull transactions
-  const unsubscribeFinalizeHeadsProm = RpcFactory.subscribe(
+  const unsubscribeFinalizeHeads = await RpcFactory.subscribe(
     chainId,
     "chain_subscribeFinalizedHeads",
     "chain_subscribeFinalizedHeads",
     "chain_finalizedHead",
     [],
     async (error, data) => {
-      if (error) return
+      if (error) {
+        Sentry.captureException(error)
+        return
+      }
 
       try {
         const blockHead = registry.createType("Header", data)
@@ -110,11 +124,7 @@ const watchExtrinsicStatus = async (
         const { result, blockNumber, extIndex } = extResult
         cb(result, blockNumber, extIndex)
 
-        if (state.subscribedAllHeads) {
-          state.subscribedFinalizedHeads = false
-          const unsubscribeFinalizeHeads = await unsubscribeFinalizeHeadsProm
-          unsubscribeFinalizeHeads()
-        }
+        await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
       } catch (err) {
         Sentry.captureException(err)
       }
@@ -123,17 +133,20 @@ const watchExtrinsicStatus = async (
 
   // watch for new blocks, a successfull extrinsic here only means it's included in a block
   // => need to wait for block to be finalized before considering it a success
-  const unsubscribeAllHeadsProm = RpcFactory.subscribe(
+  const unsubscribeAllHeads = await RpcFactory.subscribe(
     chainId,
     "chain_subscribeAllHeads",
     "chain_subscribeAllHeads",
     "chain_allHead",
     [],
     async (error, data) => {
-      if (error) return
+      if (error) {
+        Sentry.captureException(error)
+        return
+      }
 
       try {
-        const blockHead = registry.createType("Header", data) // result as Header;
+        const blockHead = registry.createType("Header", data)
         const extResult = await getExtrinsincResult(blockHead.hash, chainId, hexSignature)
 
         if (extResult.result === "unknown") return
@@ -144,18 +157,10 @@ const watchExtrinsicStatus = async (
           cb("included", blockNumber, extIndex)
         } else cb(result, blockNumber, extIndex)
 
-        if (state.subscribedAllHeads) {
-          state.subscribedAllHeads = false
-          const unsubscribeAllHeads = await unsubscribeAllHeadsProm
-          unsubscribeAllHeads()
-        }
+        await unsubscribe("allHeads", unsubscribeAllHeads)
 
         // if error, no need to wait for a confirmation
-        if (result === "error" && state.subscribedFinalizedHeads) {
-          state.subscribedFinalizedHeads = false
-          const unsubscribeFinalizeHeads = await unsubscribeFinalizeHeadsProm
-          unsubscribeFinalizeHeads()
-        }
+        if (result === "error") await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
       } catch (err) {
         Sentry.captureException(err)
       }
@@ -164,15 +169,9 @@ const watchExtrinsicStatus = async (
 
   // the transaction may never be submitted by the dapp, so we stop watching after {TX_WATCH_TIMEOUT}
   setTimeout(async () => {
-    if (state.subscribedAllHeads) {
-      state.subscribedAllHeads = false
-      const unsubscribeAllHeads = await unsubscribeAllHeadsProm
-      unsubscribeAllHeads()
-    }
-    if (state.subscribedFinalizedHeads) {
-      state.subscribedFinalizedHeads = false
-      const unsubscribeFinalizeHeads = await unsubscribeFinalizeHeadsProm
-      unsubscribeFinalizeHeads()
+    await unsubscribe("allHeads", unsubscribeAllHeads)
+    if (subscriptions.finalizedHeads) {
+      await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
       // sometimes the finalized is not received, better check explicitely here
       if (blockHash) {
         const extResult = await getExtrinsincResult(blockHash, chainId, hexSignature)
