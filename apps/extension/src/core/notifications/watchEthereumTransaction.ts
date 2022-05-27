@@ -1,5 +1,8 @@
 import Browser from "webextension-polyfill"
-import { ethereumNetworkStore, getProviderForEthereumNetwork } from "./networksStore"
+import {
+  ethereumNetworkStore,
+  getProviderForEthereumNetwork,
+} from "../domains/ethereum/networksStore"
 import { nanoid } from "nanoid"
 import * as Sentry from "@sentry/browser"
 import urlJoin from "url-join"

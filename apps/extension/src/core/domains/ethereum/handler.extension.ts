@@ -29,7 +29,7 @@ import type { Bytes, UnsignedTransaction } from "ethers"
 import type { TransactionRequest } from "@ethersproject/providers"
 import isString from "lodash/isString"
 import { getProviderForChainId } from "./networksStore"
-import { watchEthereumTransaction } from "./watchEthereumTransaction"
+import { watchEthereumTransaction } from "@core/notifications"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
