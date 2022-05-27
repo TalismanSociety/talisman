@@ -1,5 +1,6 @@
 import metadataInit from "@core/domains/metadata/_metadataInit"
 import { MetadataDef } from "@core/inject/types"
+import { CustomErc20Token } from "@core/types"
 import { IDBPTransaction, openDB } from "idb"
 import range from "lodash/range"
 import Browser from "webextension-polyfill"
@@ -10,20 +11,11 @@ export type ChainMetadataRpc = {
   metadataRpc: `0x${string}`
 }
 
-export type EvmAssetInfo = {
-  type: "ERC20" // May be expanded to other types of asset in future
-  chainId: string
-  address: string // The address that the token is at.
-  symbol: string // A ticker symbol or shorthand, up to 5 chars.
-  decimals: number // The number of decimals in the token
-  image?: string
-}
-
 export interface TalismanSchema {
   // Add your store name and definition here
   metadata: { key: string; value: MetadataDef }
   metadataRpc: { key: string; value: ChainMetadataRpc }
-  evmAssets: { key: string; value: EvmAssetInfo }
+  evmAssets: { key: string; value: CustomErc20Token }
 }
 
 type MigrationFunction = (

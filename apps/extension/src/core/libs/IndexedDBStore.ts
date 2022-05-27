@@ -56,6 +56,14 @@ export class IndexedDBStorageProvider<S extends keyof TalismanSchema> {
     return newData
   }
 
+  // remove a key:valur pair
+  async remove(key?: TalismanSchema[S]["key"]) {
+    if (!key) return
+    const db = await waitDbReady()
+    const tx = db!.transaction(this.#prefix, "readwrite")
+    return await tx.store.delete(key)
+  }
+
   async setItem(item: SchemaValue<S>): Promise<void> {
     const db = await waitDbReady()
     const tx = db!.transaction(this.#prefix, "readwrite")

@@ -121,6 +121,15 @@ export const api: MessageTypes = {
   tokensSubscribe: (cb) => messageService.subscribe("pri(tokens.subscribe)", null, cb),
   tokenSubscribe: (id, cb) => messageService.subscribe("pri(tokens.byid.subscribe)", { id }, cb),
 
+  // custom erc20 token management
+  customErc20Tokens: () => messageService.sendMessage("pri(tokens.erc20.custom)"),
+  customErc20Token: (id) => messageService.sendMessage("pri(tokens.erc20.custom.byid)", { id }),
+  addCustomErc20Token: (token) => messageService.sendMessage("pri(tokens.erc20.custom.add)", token),
+  removeCustomErc20Token: (id) =>
+    messageService.sendMessage("pri(tokens.erc20.custom.remove)", { id }),
+  clearCustomErc20Tokens: (filter) =>
+    messageService.sendMessage("pri(tokens.erc20.custom.clear)", filter),
+
   // transaction message types
   transactionSubscribe: (id, cb) =>
     messageService.subscribe("pri(transactions.byid.subscribe)", { id }, cb),

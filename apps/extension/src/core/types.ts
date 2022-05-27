@@ -249,6 +249,16 @@ export interface RequestSignatures extends Omit<PolkadotRequestSignatures, Remov
   "pri(tokens.subscribe)": [null, boolean, TokenList]
   "pri(tokens.byid.subscribe)": [RequestIdOnly, boolean, Token]
 
+  // custom erc20 token management
+  "pri(tokens.erc20.custom)": [null, Record<CustomErc20Token["id"], CustomErc20Token>]
+  "pri(tokens.erc20.custom.byid)": [RequestIdOnly, CustomErc20Token]
+  "pri(tokens.erc20.custom.add)": [CustomErc20TokenCreate, boolean]
+  "pri(tokens.erc20.custom.remove)": [RequestIdOnly, boolean]
+  "pri(tokens.erc20.custom.clear)": [
+    { chainId?: ChainId; evmNetworkId?: number } | undefined,
+    boolean
+  ]
+
   // transaction message signatures
   "pri(transactions.byid.subscribe)": [RequestIdOnly, boolean, any]
   "pri(transactions.subscribe)": [null, boolean, any]
@@ -558,6 +568,24 @@ export type OrmlToken = {
   coingeckoId: string
   rates: TokenRates
 }
+export type Erc20Token = {
+  type: "erc20"
+  id: TokenId
+  chainId?: ChainId
+  evmNetworkId?: string
+  symbol: string
+  decimals: number
+  coingeckoId?: string
+  rates?: TokenRates
+  contractAddress: string
+}
+export type CustomErc20Token = Erc20Token & {
+  image?: string
+}
+export type CustomErc20TokenCreate = Pick<
+  CustomErc20Token,
+  "chainId" | "evmNetworkId" | "symbol" | "decimals" | "coingeckoId" | "contractAddress" | "image"
+>
 
 export type TokenRateCurrency = keyof TokenRates
 export type TokenRates = {

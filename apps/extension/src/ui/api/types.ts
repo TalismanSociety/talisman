@@ -35,6 +35,8 @@ import {
   EthereumNetworkList,
   EthereumNetwork,
   AnyEthRequestChainId,
+  CustomErc20Token,
+  CustomErc20TokenCreate,
 } from "@core/types"
 import { EthResponseType } from "@core/injectEth/types"
 
@@ -134,6 +136,15 @@ export default interface MessageTypes {
   token: (id: string) => Promise<Token>
   tokensSubscribe: (cb: (tokens: TokenList) => void) => UnsubscribeFn
   tokenSubscribe: (id: string, cb: (token: Token) => void) => UnsubscribeFn
+
+  // custom erc20 token management
+  customErc20Tokens: () => Promise<Record<CustomErc20Token["id"], CustomErc20Token>>
+  customErc20Token: (id: string) => Promise<CustomErc20Token>
+  addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
+  removeCustomErc20Token: (id: string) => Promise<boolean>
+  clearCustomErc20Tokens: (
+    filter: { chainId?: ChainId; evmNetworkId?: number } | undefined
+  ) => Promise<boolean>
 
   // ethereum networks message types
   ethereumNetworks: () => Promise<EthereumNetworkList>

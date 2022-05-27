@@ -1,3 +1,3 @@
 import { IndexedDBStorageProvider } from "@core/libs/IndexedDBStore"
 
-export const evmAssetStore = new IndexedDBStorageProvider<"evmAssets">("evmAssets", "address")
+export const evmAssetStore = new IndexedDBStorageProvider<"evmAssets">("evmAssets", "id")
