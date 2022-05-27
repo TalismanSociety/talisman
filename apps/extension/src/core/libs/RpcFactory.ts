@@ -50,7 +50,7 @@ class RpcFactory {
     responseMethod: string,
     params: unknown[],
     callback: ProviderInterfaceCallback
-  ): Promise<() => void> {
+  ): Promise<() => Promise<void>> {
     // TODO: Fix this function so that caller doesn't have to wait for
     //      socket to connect before they can call unsubscribe()
 
