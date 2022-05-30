@@ -54,6 +54,12 @@ const Settings = () => {
           to={`/settings/about`}
         />
         <CtaButton
+          icon={<IconList />}
+          title="Manage cutom tokens"
+          subtitle="Add or delete custom ERC20 tokens"
+          to={`/tokens`}
+        />
+        <CtaButton
           icon={<IconClock />}
           title="Auto-lock Timer"
           subtitle="Set a timer to automatically lock the Talisman extension"

@@ -18,8 +18,9 @@ const NetworkItem = styled.div`
 `
 
 type NetworkSelectProps = {
-  defaultChainId: number
-  onChange: (chainId: number) => void
+  placeholder?: string
+  defaultChainId?: number
+  onChange?: (chainId: number) => void
 }
 
 const renderNetwork = (network: EthereumNetwork) => {
@@ -36,7 +37,7 @@ const renderNetwork = (network: EthereumNetwork) => {
   )
 }
 
-export const NetworkSelect = ({ defaultChainId, onChange }: NetworkSelectProps) => {
+export const NetworkSelect = ({ placeholder, defaultChainId, onChange }: NetworkSelectProps) => {
   const networks = useEthereumNetworks()
 
   const [selected, setSelected] = useState<EthereumNetwork | undefined>(
@@ -56,7 +57,7 @@ export const NetworkSelect = ({ defaultChainId, onChange }: NetworkSelectProps) 
     (item: EthereumNetwork | null) => {
       if (!item) return
       setSelected(item)
-      onChange(item.id)
+      if (onChange) onChange(item.id)
     },
     [onChange]
   )
@@ -64,6 +65,7 @@ export const NetworkSelect = ({ defaultChainId, onChange }: NetworkSelectProps) 
   return (
     <Dropdown
       // change key to ensure re-render when loaded
+      placeholder={placeholder}
       key={selected?.id}
       items={networks}
       propertyKey="id"

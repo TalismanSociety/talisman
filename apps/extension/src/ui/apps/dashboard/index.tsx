@@ -17,6 +17,8 @@ import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { api } from "@ui/api"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import Layout from "./layout"
+import { CustomTokens } from "./routes/CustomTokens"
+import { CustomTokensAdd } from "./routes/CustomTokensAdd"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
 const AccountAddLedger = lazy(() => import("./routes/AccountAddLedger"))
@@ -68,6 +70,10 @@ const DashboardInner = () => {
           <Route path="security-privacy-settings" element={<SecurityPrivacySettings />} />
           <Route path="options" element={<Options />} />
           <Route path="about" element={<About />} />
+        </Route>
+        <Route path="tokens">
+          <Route path="" element={<CustomTokens />} />
+          <Route path="add" element={<CustomTokensAdd />} />
         </Route>
         <Route path="*" element={<Navigate to="/accounts" replace />} />
       </Routes>
