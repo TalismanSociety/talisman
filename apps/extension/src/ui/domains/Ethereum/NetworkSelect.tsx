@@ -21,6 +21,7 @@ type NetworkSelectProps = {
   placeholder?: string
   defaultChainId?: number
   onChange?: (chainId: number) => void
+  disabled?: boolean
 }
 
 const renderNetwork = (network: EthereumNetwork) => {
@@ -37,7 +38,12 @@ const renderNetwork = (network: EthereumNetwork) => {
   )
 }
 
-export const NetworkSelect = ({ placeholder, defaultChainId, onChange }: NetworkSelectProps) => {
+export const NetworkSelect = ({
+  placeholder,
+  defaultChainId,
+  onChange,
+  disabled,
+}: NetworkSelectProps) => {
   const networks = useEthereumNetworks()
 
   const [selected, setSelected] = useState<EthereumNetwork | undefined>(
@@ -72,6 +78,7 @@ export const NetworkSelect = ({ placeholder, defaultChainId, onChange }: Network
       renderItem={renderNetwork}
       defaultSelectedItem={selected}
       onChange={handleChange}
+      disabled={disabled}
     />
   )
 }

@@ -44,6 +44,11 @@ const Container = styled.div`
     :hover {
       color: var(--color-foreground);
     }
+    :disabled {
+      background-color: var(--color-background-muted);
+      color: var(--color-mid);
+      cursor: not-allowed;
+    }
 
     &[aria-expanded="true"] {
       border-bottom-left-radius: 0;
@@ -89,11 +94,6 @@ const Container = styled.div`
   }
 `
 
-// export type DropdownItemProps<T> = {
-//   key: Key
-//   item: T
-// }
-
 export type RenderItemFunc<T> = (item: T, textKey?: keyof T) => JSX.Element
 
 const defaultRenderItem: RenderItemFunc<any> = (item, textKey?) => {
@@ -110,8 +110,9 @@ export type DropdownProps<T> = {
   defaultSelectedItem?: T | null | undefined
   placeholder?: string
   onChange?: (item: T | null) => void
+  disabled?: boolean
 }
-//: FC<DropdownProps<T>>
+
 export const Dropdown = <T extends {}>({
   className,
   label,
@@ -119,6 +120,7 @@ export const Dropdown = <T extends {}>({
   propertyKey,
   defaultSelectedItem,
   placeholder,
+  disabled,
   onChange,
   renderItem = defaultRenderItem,
 }: DropdownProps<T>) => {
@@ -139,6 +141,7 @@ export const Dropdown = <T extends {}>({
         type="button"
         {...getToggleButtonProps()}
         className={classNames(!!selectedItem && "hasValue")}
+        disabled={disabled}
       >
         <span className="grow">{selectedItem ? renderItem(selectedItem) : placeholder}</span>
         <span>
