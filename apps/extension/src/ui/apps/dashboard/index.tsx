@@ -18,7 +18,7 @@ import { api } from "@ui/api"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import Layout from "./layout"
 import { CustomTokens } from "./routes/CustomTokens"
-import { CustomTokensAdd } from "./routes/CustomTokensAdd"
+import { CustomTokensAddOrEdit } from "./routes/CustomTokensAddOrEdit"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
 const AccountAddLedger = lazy(() => import("./routes/AccountAddLedger"))
@@ -73,7 +73,8 @@ const DashboardInner = () => {
         </Route>
         <Route path="tokens">
           <Route path="" element={<CustomTokens />} />
-          <Route path="add" element={<CustomTokensAdd />} />
+          <Route path="add" element={<CustomTokensAddOrEdit />} />
+          <Route path="edit/:id" element={<CustomTokensAddOrEdit />} />
         </Route>
         <Route path="*" element={<Navigate to="/accounts" replace />} />
       </Routes>
