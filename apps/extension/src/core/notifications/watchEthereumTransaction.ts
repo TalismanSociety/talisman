@@ -40,6 +40,6 @@ export const watchEthereumTransaction = async (ethChainId: number, txHash: strin
       await createNotification("error", ethereumNetwork.name, txUrl, err as Error)
     }
   } catch (err) {
-    Sentry.captureException(err, { tags: { ethChainId, txHash } })
+    Sentry.captureException(err, { tags: { ethChainId } })
   }
 }
