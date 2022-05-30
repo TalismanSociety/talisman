@@ -22,6 +22,25 @@ export default class TokensHandler extends ExtensionHandler {
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
+      // --------------------------------------------------------------------
+      // token handlers -----------------------------------------------------
+      // --------------------------------------------------------------------
+      case "pri(tokens)":
+        return this.stores.tokens.tokens()
+
+      case "pri(tokens.byid)":
+        return this.stores.tokens.token((request as RequestIdOnly).id)
+
+      case "pri(tokens.subscribe)":
+        return this.stores.tokens.subscribe(id, port)
+
+      case "pri(tokens.byid.subscribe)":
+        return this.stores.tokens.subscribeById(id, port, request as RequestIdOnly)
+
+      // --------------------------------------------------------------------
+      // ERC20 token handlers -----------------------------------------------------
+      // --------------------------------------------------------------------
+
       case "pri(tokens.erc20.custom)":
         return await this.stores.evmAssets.get()
 

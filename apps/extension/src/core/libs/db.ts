@@ -45,10 +45,17 @@ const metadataRpcStoreDef: IndexedStoreDef<"metadataRpc"> = {
   migrations: {},
 }
 
-const storeDefs = [metadataStoreDef, metadataRpcStoreDef]
+const evmAssetsStoreDef: IndexedStoreDef<"evmAssets"> = {
+  storeName: "evmAssets",
+  keyPath: "id",
+  initialData: [],
+  migrations: {},
+}
+
+const storeDefs = [metadataStoreDef, metadataRpcStoreDef, evmAssetsStoreDef]
 
 // Make sure to increment this if you add a table or it won't be created !
-const DB_VERSION = 2
+const DB_VERSION = 3
 
 const db = openDB<TalismanSchema>("talisman", DB_VERSION, {
   upgrade(db, oldVersion, newVersion, transaction) {

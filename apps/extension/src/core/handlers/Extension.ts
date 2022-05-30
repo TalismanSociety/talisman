@@ -23,6 +23,7 @@ import { createSubscription, unsubscribe } from "./subscriptions"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import BalancesRpc from "@core/libs/rpc/Balances"
 import { DEBUG } from "@core/constants"
+import TokensHandler from "@core/domains/tokens/handler"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
@@ -39,6 +40,7 @@ export default class Extension extends ExtensionHandler {
       metadata: new MetadataHandler(state, stores),
       signing: new SigningHandler(state, stores),
       sites: new SitesAuthorisationHandler(state, stores),
+      tokens: new TokensHandler(state, stores),
     }
   }
 
@@ -137,21 +139,6 @@ export default class Extension extends ExtensionHandler {
 
       case "pri(chains.byid.subscribe)":
         return this.stores.chains.subscribeById(id, port, request as RequestIdOnly)
-
-      // --------------------------------------------------------------------
-      // token handlers -----------------------------------------------------
-      // --------------------------------------------------------------------
-      case "pri(tokens)":
-        return this.stores.tokens.tokens()
-
-      case "pri(tokens.byid)":
-        return this.stores.tokens.token((request as RequestIdOnly).id)
-
-      case "pri(tokens.subscribe)":
-        return this.stores.tokens.subscribe(id, port)
-
-      case "pri(tokens.byid.subscribe)":
-        return this.stores.tokens.subscribeById(id, port, request as RequestIdOnly)
 
       // --------------------------------------------------------------------
       // transaction handlers -----------------------------------------------

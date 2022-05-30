@@ -572,7 +572,7 @@ export type Erc20Token = {
   type: "erc20"
   id: TokenId
   chainId?: ChainId
-  evmNetworkId?: string
+  evmNetworkId?: number
   symbol: string
   decimals: number
   coingeckoId?: string
