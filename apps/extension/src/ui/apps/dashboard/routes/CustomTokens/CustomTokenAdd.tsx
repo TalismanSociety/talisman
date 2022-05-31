@@ -7,58 +7,25 @@ import { PlusIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
-import { useCustomErc20Tokens } from "@ui/hooks/useCustomErc20Tokens"
 import { useEthereumNetworks } from "@ui/hooks/useEthereumNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import * as yup from "yup"
+import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
+import { assert } from "@polkadot/util"
+import {
+  commonFormStyle,
+  ErrorDiv,
+  Footer,
+  LoadingSuffix,
+  Split,
+  SymbolPrefix,
+} from "./CustomTokensComponents"
 
 const Form = styled.form`
-  margin: 4.2rem 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2.4rem;
-
-  .field-header + .children {
-    margin-top: 0.8rem;
-  }
-
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-
-  input:disabled {
-    cursor: not-allowed;
-    color: var(--color-mid);
-  }
-`
-
-const Split = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2.4rem;
-`
-
-const Footer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-
-  button {
-    .btn-content {
-      gap: 0.6rem;
-      svg {
-        font-size: 2rem;
-      }
-    }
-  }
-`
-
-const Error = styled.div`
-  color: var(--color-status-error);
+  ${commonFormStyle}
 `
 
 type FormData = Pick<
@@ -66,18 +33,12 @@ type FormData = Pick<
   "evmNetworkId" | "contractAddress" | "symbol" | "decimals"
 >
 
-export const CustomTokensAddOrEdit = () => {
-  let { id } = useParams<"id">()
+export const CustomTokenAdd = () => {
   const navigate = useNavigate()
   const networks = useEthereumNetworks()
+  const [error, setError] = useState<string>()
 
-  const { customErc20Tokens } = useCustomErc20Tokens()
-
-  const defaultValues: FormData = useMemo(
-    () => (customErc20Tokens?.find((t) => t.id === id) as FormData) ?? {},
-    [customErc20Tokens, id]
-  )
-
+  // our only user inputs are chain and contract
   const schema = useMemo(
     () =>
       yup
@@ -93,14 +54,6 @@ export const CustomTokensAddOrEdit = () => {
             .string()
             .required()
             .matches(/^0x[0-9a-fA-F]{40}$/, "Invalid address"),
-          symbol: yup.string().required(),
-          decimals: yup
-            .number()
-            .min(0, "Invalid value")
-            .max(255, "Invalid value")
-            .test("isInteger", "Invalid value", (value?: number) =>
-              /^[0-9]*$/.test(value?.toString() ?? "")
-            ),
         })
         .required(),
     [networks]
@@ -110,27 +63,19 @@ export const CustomTokensAddOrEdit = () => {
     register,
     handleSubmit,
     setValue,
-    reset,
+    watch,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
-    defaultValues,
     resolver: yupResolver(schema),
   })
 
-  const [error, setError] = useState<string>()
-  const submit = useCallback(
-    async (token: FormData) => {
-      try {
-        await api.addCustomErc20Token(token)
-        navigate("/")
-      } catch (err) {
-        console.error(err, { err })
-        setError(`Failed to add the token : ${(err as Error)?.message ?? ""}`)
-      }
-    },
-    [navigate]
-  )
+  const { contractAddress, evmNetworkId, symbol, decimals } = watch()
+  const {
+    isLoading,
+    error: tokenInfoError,
+    token: tokenInfo,
+  } = useErc20TokenInfo(evmNetworkId!, contractAddress)
 
   const handleNetworkChange = useCallback(
     (id: number) => {
@@ -139,30 +84,54 @@ export const CustomTokensAddOrEdit = () => {
     [setValue]
   )
 
+  // Keeping symbol and decimal fields bound to the form in case we want to make them editable later
   useEffect(() => {
-    reset(defaultValues)
-  }, [defaultValues, reset])
+    if (!tokenInfo) return
+    // force values fetched from blockchain
+    setValue("symbol", tokenInfo?.symbol, { shouldValidate: true })
+    setValue("decimals", tokenInfo?.decimals, { shouldValidate: true })
+  }, [decimals, setValue, symbol, tokenInfo])
 
-  // wait for tokens to be loaded to prevent flickering
-  if (!customErc20Tokens) return null
+  const submit = useCallback(
+    async (token: FormData) => {
+      try {
+        assert(tokenInfo, "Missing token info")
+        assert(tokenInfo.contractAddress === token.contractAddress, "Token mismatch")
+        assert(tokenInfo.evmNetworkId === token.evmNetworkId, "Token mismatch")
+        // save the object composed with CoinGecko and chain data
+        await api.addCustomErc20Token(tokenInfo)
+        navigate("/")
+      } catch (err) {
+        console.error(err, { err })
+        setError(`Failed to add the token : ${(err as Error)?.message ?? ""}`)
+      }
+    },
+    [navigate, tokenInfo]
+  )
+
+  console.log({ tokenInfoError })
 
   return (
     <Layout withBack centered>
       <HeaderBlock
-        title={`${id ? "Edit" : "Add"} custom token`}
+        title="Add custom token"
         text="Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
       />
       <Form onSubmit={handleSubmit(submit)}>
         <FormField label="Network" error={errors.evmNetworkId}>
-          <NetworkSelect
-            placeholder="Select a network"
-            onChange={handleNetworkChange}
-            defaultChainId={defaultValues?.evmNetworkId}
-            // disabling network edit because it would create a new token
-            disabled={Boolean(id)}
-          />
+          <NetworkSelect placeholder="Select a network" onChange={handleNetworkChange} />
         </FormField>
-        <FormField label="Contract Address" error={errors.contractAddress}>
+        <FormField
+          label="Contract Address"
+          error={
+            errors.contractAddress ??
+            (tokenInfoError && {
+              type: "validate",
+              message: "Invalid address",
+            })
+          }
+          suffix={isLoading && <LoadingSuffix />}
+        >
           <input
             {...register("contractAddress")}
             spellCheck={false}
@@ -170,13 +139,21 @@ export const CustomTokensAddOrEdit = () => {
             type="text"
             autoComplete="off"
             placeholder="Paste token address"
-            // a token cannot change address
-            disabled={Boolean(id)}
           />
         </FormField>
         <Split>
-          <FormField label="Symbol" error={errors.symbol}>
-            <input {...register("symbol")} type="text" placeholder="ABC" autoComplete="off" />
+          <FormField
+            label="Symbol"
+            error={errors.symbol}
+            prefix={tokenInfo && <SymbolPrefix token={tokenInfo} />}
+          >
+            <input
+              {...register("symbol")}
+              type="text"
+              placeholder="ABC"
+              autoComplete="off"
+              disabled
+            />
           </FormField>
           <FormField label="Decimals" error={errors.decimals}>
             <input
@@ -186,20 +163,15 @@ export const CustomTokensAddOrEdit = () => {
               type="number"
               placeholder="0"
               autoComplete="off"
+              disabled
             />
           </FormField>
         </Split>
-        <Error>{error}</Error>
+        <ErrorDiv>{error}</ErrorDiv>
         <Footer>
           <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-            {Boolean(id) ? (
-              "Edit Token"
-            ) : (
-              <>
-                <PlusIcon />
-                Add Token
-              </>
-            )}
+            <PlusIcon />
+            Add Token
           </SimpleButton>
         </Footer>
       </Form>

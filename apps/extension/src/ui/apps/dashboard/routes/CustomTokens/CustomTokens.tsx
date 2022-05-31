@@ -1,14 +1,12 @@
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { IconButton } from "@talisman/components/IconButton"
-import PopNav from "@talisman/components/PopNav"
-import { IconMore, PlusIcon } from "@talisman/theme/icons"
+import { IconChevron, PlusIcon } from "@talisman/theme/icons"
 import Layout from "@ui/apps/dashboard/layout"
-import AssetLogo from "@ui/domains/Asset/Logo"
 import { useNavigate } from "react-router-dom"
 import styled, { css } from "styled-components"
 import { CustomErc20Token } from "@core/types"
 import { useEthereumNetwork } from "@ui/hooks/useEthereumNetwork"
 import { useCustomErc20Tokens } from "@ui/hooks/useCustomErc20Tokens"
+import { Erc20Logo } from "@ui/domains/Erc20Tokens/Erc20Logo"
 
 const buttonStyle = css`
   transition: background-color var(--transition-speed-fast) ease-in-out,
@@ -82,43 +80,40 @@ const TokensList = styled.div`
   margin-top: 3.2rem;
 `
 
+const TokenLogo = styled(Erc20Logo)`
+  width: 3.2rem;
+  height: 3.2rem;
+`
+
 const TokenRow = ({ token }: { token: CustomErc20Token }) => {
   const navigate = useNavigate()
   const network = useEthereumNetwork(token.evmNetworkId)
 
   return (
-    <TokenRowContainer role="button" onClick={() => navigate(`./edit/${token.id}`)}>
-      <AssetLogo id="kusama" />
+    <TokenRowContainer role="button" onClick={() => navigate(`./${token.id}`)}>
+      <TokenLogo id={token.id} />
       <div className="tokenDetails">
         <span className="tokenName">{token.symbol}</span>
         <span className="networkName">{network?.name ?? ""}</span>
       </div>
-      <PopNav
-        trigger={
-          <IconButton>
-            <IconMore />
-          </IconButton>
-        }
-        className="icon more"
-      >
-        <PopNav.Item onClick={() => console.log("edit")}>Edit Token</PopNav.Item>
-        <PopNav.Item onClick={() => console.log("remove")}>Remove Token</PopNav.Item>
-      </PopNav>
+      <div>
+        <IconChevron />
+      </div>
     </TokenRowContainer>
   )
 }
 
 export const CustomTokens = () => {
   const navigate = useNavigate()
-  const { customErc20Tokens } = useCustomErc20Tokens()
+  const { tokens } = useCustomErc20Tokens()
 
-  if (!customErc20Tokens) return null
+  if (!tokens) return null
 
   return (
     <Layout withBack centered>
       <HeaderBlock title="Manage custom tokens" text="Add or delete custom ERC20 tokens" />
       <TokensList>
-        {customErc20Tokens.map((token) => (
+        {tokens.map((token) => (
           <TokenRow key={token.id} token={token} />
         ))}
         <AddTokenButton type="button" onClick={() => navigate("./add")}>
