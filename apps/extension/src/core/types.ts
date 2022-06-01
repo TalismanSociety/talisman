@@ -274,11 +274,16 @@ export interface RequestSignatures extends Omit<PolkadotRequestSignatures, Remov
   "pri(eth.signing.cancel)": [RequestIdOnly, boolean]
   "pri(eth.signing.approveSign)": [RequestIdOnly, boolean]
   "pri(eth.signing.approveSignAndSend)": [EthApproveSignAndSend, boolean]
-  // eth add networks management
+  // eth add networks requests management
+  // TODO change naming for network add requests, and maybe delete the first one
   "pri(eth.networks.add.requests)": [null, AddEthereumChainRequest[]]
   "pri(eth.networks.add.approve)": [RequestIdOnly, boolean]
   "pri(eth.networks.add.cancel)": [RequestIdOnly, boolean]
   "pri(eth.networks.add.subscribe)": [null, boolean, AddEthereumChainRequest[]]
+  // eth watchassets requests  management
+  "pri(eth.watchasset.requests.approve)": [RequestIdOnly, boolean]
+  "pri(eth.watchasset.requests.cancel)": [RequestIdOnly, boolean]
+  "pri(eth.watchasset.requests.subscribe)": [null, boolean, WatchAssetRequest[]]
 
   // ethereum networks message signatures
   "pri(eth.networks)": [null, EthereumNetworkList]

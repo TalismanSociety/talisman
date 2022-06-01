@@ -85,7 +85,7 @@ export interface EthRequestSignatures {
   // eth_getLogs: [any, any]
 
   // EIP 747 https://github.com/ethereum/EIPs/blob/master/EIPS/eip-747.md
-  wallet_watchAsset: [[WatchAssetBase], string]
+  wallet_watchAsset: [WatchAssetBase, string]
 
   // pending EIP https://eips.ethereum.org/EIPS/eip-3085, defined by metamask to let dapp add chains.
   // returns `null` if the request was successful, otherwise throws an error.

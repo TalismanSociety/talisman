@@ -37,6 +37,7 @@ import {
   AnyEthRequestChainId,
   CustomErc20Token,
   CustomErc20TokenCreate,
+  WatchAssetRequest,
 } from "@core/types"
 import { EthResponseType } from "@core/injectEth/types"
 
@@ -199,4 +200,8 @@ export default interface MessageTypes {
   ethNetworkAddSubscribeRequests: (
     cb: (requests: AddEthereumChainRequest[]) => void
   ) => UnsubscribeFn
+
+  ethWatchAssetRequestApprove: (id: string) => Promise<boolean>
+  ethWatchAssetRequestCancel: (is: string) => Promise<boolean>
+  ethWatchAssetRequestsSubscribe: (cb: (requests: WatchAssetRequest[]) => void) => UnsubscribeFn
 }

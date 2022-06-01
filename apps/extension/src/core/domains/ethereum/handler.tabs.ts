@@ -440,7 +440,7 @@ export class EthTabsHandler extends TabsHandler {
         console.log("got wallet_watchAsset", request)
         return this.state.requestStores.evmAssets.requestWatchAsset(
           url,
-          (request as EthRequestArguments<"wallet_watchAsset">).params[0]
+          (request as EthRequestArguments<"wallet_watchAsset">).params
         )
 
       case "wallet_addEthereumChain":

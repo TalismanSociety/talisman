@@ -210,6 +210,49 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
+  private ethWatchAssetRequestCancel({ id }: RequestIdOnly): boolean {
+    const queued = this.state.requestStores.evmAssets.getRequest(id)
+
+    assert(queued, "Unable to find request")
+
+    const { reject } = queued
+
+    reject(new EthProviderRpcError("Rejected", ETH_ERROR_EIP1993_USER_REJECTED))
+
+    return true
+  }
+
+  private async ethWatchAssetRequestApprove({ id }: RequestIdOnly): Promise<boolean> {
+    const queued = this.state.requestStores.evmAssets.getRequest(id)
+
+    assert(queued, "Unable to find request")
+
+    const { resolve } = queued
+    // TODO
+    // const { network, resolve } = queued
+    // const newNetwork: EthereumNetwork = {
+    //   id: parseInt(network.chainId, 16),
+    //   name: network.chainName,
+    //   nativeToken: network.nativeCurrency
+    //     ? {
+    //         name: network.nativeCurrency.name,
+    //         symbol: network.nativeCurrency.symbol,
+    //         decimals: network.nativeCurrency.decimals,
+    //       }
+    //     : undefined,
+    //   rpcs: (network.rpcUrls || []).map((url) => ({ url, isHealthy: true })),
+    //   explorerUrls: network.blockExplorerUrls || [],
+    //   iconUrls: network.iconUrls || [],
+    //   isCustom: true,
+    // }
+
+    // await this.stores.ethereumNetworks.set({ [newNetwork.id]: newNetwork })
+
+    resolve({})
+
+    return true
+  }
+
   private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
     id: string,
     chainId: number,
@@ -240,7 +283,22 @@ export class EthHandler extends ExtensionHandler {
         return this.signingCancel(request as RequestIdOnly)
 
       // --------------------------------------------------------------------
-      // ethereum network handlers -----------------------------------------------------
+      // ethereum watch asset requests handlers -----------------------------
+      // --------------------------------------------------------------------
+      case "pri(eth.watchasset.requests.cancel)":
+        return this.ethWatchAssetRequestCancel(request as RequestIdOnly)
+
+      case "pri(eth.watchasset.requests.approve)":
+        return this.ethWatchAssetRequestApprove(request as RequestIdOnly)
+
+      case "pri(eth.watchasset.requests.subscribe)":
+        return this.state.requestStores.evmAssets.subscribe<"pri(eth.watchasset.requests.subscribe)">(
+          id,
+          port
+        )
+
+      // --------------------------------------------------------------------
+      // ethereum network handlers ------------------------------------------
       // --------------------------------------------------------------------
       case "pri(eth.networks.add.cancel)":
         return this.ethNetworkAddCancel(request as RequestIdOnly)
