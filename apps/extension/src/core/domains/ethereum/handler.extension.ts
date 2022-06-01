@@ -29,6 +29,7 @@ import type { Bytes, UnsignedTransaction } from "ethers"
 import type { TransactionRequest } from "@ethersproject/providers"
 import isString from "lodash/isString"
 import { getProviderForChainId } from "./networksStore"
+import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -227,28 +228,34 @@ export class EthHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const { resolve } = queued
-    // TODO
-    // const { network, resolve } = queued
-    // const newNetwork: EthereumNetwork = {
-    //   id: parseInt(network.chainId, 16),
-    //   name: network.chainName,
-    //   nativeToken: network.nativeCurrency
-    //     ? {
-    //         name: network.nativeCurrency.name,
-    //         symbol: network.nativeCurrency.symbol,
-    //         decimals: network.nativeCurrency.decimals,
-    //       }
-    //     : undefined,
-    //   rpcs: (network.rpcUrls || []).map((url) => ({ url, isHealthy: true })),
-    //   explorerUrls: network.blockExplorerUrls || [],
-    //   iconUrls: network.iconUrls || [],
-    //   isCustom: true,
-    // }
+    const { resolve, request, url } = queued
+    const site = await this.stores.sites.getSiteFromUrl(url)
 
-    // await this.stores.ethereumNetworks.set({ [newNetwork.id]: newNetwork })
+    assert(site.ethChainId, "No ethereum chain ID selected for site")
 
-    resolve({})
+    const {
+      options: { symbol, decimals, address, image },
+    } = request
+
+    const provider = await getProviderForChainId(site.ethChainId)
+    assert(provider, `No provider available for eth network ${site.ethChainId}`)
+    const tokenInfo = await getErc20TokenInfo(provider, site.ethChainId, address)
+
+    const tokenId = `${tokenInfo.evmNetworkId}-${symbol ?? tokenInfo.symbol}`
+
+    await this.stores.evmAssets.setItem({
+      type: "erc20",
+      id: tokenId,
+      symbol: symbol ?? tokenInfo.symbol,
+      // chainId: site.ethChainId,
+      evmNetworkId: tokenInfo.evmNetworkId,
+      decimals: decimals ?? tokenInfo.decimals,
+      contractAddress: address,
+      image: image ?? tokenInfo.image,
+      coingeckoId: tokenInfo.coingeckoId,
+    })
+
+    resolve(true)
 
     return true
   }

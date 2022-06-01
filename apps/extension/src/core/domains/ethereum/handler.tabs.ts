@@ -27,7 +27,7 @@ import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/
 import { ethers, providers } from "ethers"
 import keyring from "@polkadot/ui-keyring"
 import { getProviderForEthereumNetwork } from "./networksStore"
-
+import { assert } from "@polkadot/util"
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
   ethAddresses: AuthorizedSiteAddresses
@@ -438,6 +438,14 @@ export class EthTabsHandler extends TabsHandler {
 
       case "wallet_watchAsset":
         console.log("got wallet_watchAsset", request)
+        // check for duplicate
+        const { symbol } = (request as EthRequestArguments<"wallet_watchAsset">).params.options
+
+        const { ethChainId } = await this.getSiteDetails(url)
+        const tokenId = `${ethChainId}-${symbol}`
+        const existing = this.stores.evmAssets.get(tokenId)
+        assert(!existing, "Token already present in Talisman")
+
         return this.state.requestStores.evmAssets.requestWatchAsset(
           url,
           (request as EthRequestArguments<"wallet_watchAsset">).params
