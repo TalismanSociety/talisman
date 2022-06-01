@@ -41,13 +41,22 @@ export default class OrmlTokenTransfersRpc {
     amount: string,
     from: KeyringPair,
     to: Address,
+    tip: string,
     callback: SubscriptionCallback<{
       nonce: string
       hash: string
       status: ExtrinsicStatus
     }>
   ): Promise<void> {
-    const { tx, registry } = await this.prepareTransaction(chainId, tokenId, amount, from, to, true)
+    const { tx, registry } = await this.prepareTransaction(
+      chainId,
+      tokenId,
+      amount,
+      from,
+      to,
+      tip,
+      true
+    )
 
     const unsubscribe = await RpcFactory.subscribe(
       chainId,
@@ -85,7 +94,8 @@ export default class OrmlTokenTransfersRpc {
     tokenId: TokenId,
     amount: string,
     from: KeyringPair,
-    to: Address
+    to: Address,
+    tip: string
   ): Promise<ResponseAssetTransferFeeQuery> {
     const { tx, pendingTransferId, unsigned } = await this.prepareTransaction(
       chainId,
@@ -93,6 +103,7 @@ export default class OrmlTokenTransfersRpc {
       amount,
       from,
       to,
+      tip,
       false
     )
 
@@ -120,6 +131,7 @@ export default class OrmlTokenTransfersRpc {
     amount: string,
     from: KeyringPair,
     to: Address,
+    tip: string,
     sign: boolean
   ): Promise<{
     tx: Extrinsic
@@ -172,7 +184,7 @@ export default class OrmlTokenTransfersRpc {
         metadataRpc,
         nonce,
         specVersion: specVersion as unknown as number,
-        tip: 0,
+        tip: tip ? Number(tip) : 0,
         transactionVersion: transactionVersion as unknown as number,
       },
       {
