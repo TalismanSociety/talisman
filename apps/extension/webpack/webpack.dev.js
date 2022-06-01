@@ -8,7 +8,7 @@ const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
 const CircularDependencyPlugin = require("circular-dependency-plugin")
 
 module.exports = merge(common, {
-  devtool: "inline-source-map",
+  devtool: "eval-cheap-module-source-map",
   mode: "development",
   plugins: [
     new CopyPlugin({
