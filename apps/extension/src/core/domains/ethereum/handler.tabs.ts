@@ -338,7 +338,7 @@ export class EthTabsHandler extends TabsHandler {
       // some sites expect eth_accounts to return an empty array if not connected/authorized.
       // if length === 0 they'll request authorization
       // so it should not raise an error if not authorized yet
-      if (!["eth_requestAccounts", "eth_accounts"].includes(request.method))
+      if (!["eth_requestAccounts", "eth_accounts", "eth_chainId"].includes(request.method))
         await this.stores.sites.ensureUrlAuthorized(url, true)
     } catch (err) {
       throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
@@ -354,6 +354,13 @@ export class EthTabsHandler extends TabsHandler {
         return await this.accountsList(url)
       case "eth_accounts":
         return await this.accountsList(url)
+
+      case "eth_chainId":
+        await this.authoriseEth(url, { origin: "", ethereum: true })
+        const chain = await this.getChainId(url)
+        console.log({ chain })
+        return chain
+
       case "estimateGas": {
         const { params } = request as EthRequestArguments<"estimateGas">
         if (params[1] && params[1] !== "latest") {
@@ -429,6 +436,13 @@ export class EthTabsHandler extends TabsHandler {
         )
       }
 
+      case "wallet_watchAsset":
+        console.log("got wallet_watchAsset", request)
+        return this.state.requestStores.evmAssets.requestWatchAsset(
+          url,
+          (request as EthRequestArguments<"wallet_watchAsset">).params[0]
+        )
+
       case "wallet_addEthereumChain":
         return this.addEthereumChain(url, request as EthRequestArguments<"wallet_addEthereumChain">)
 
@@ -437,9 +451,6 @@ export class EthTabsHandler extends TabsHandler {
           url,
           request as EthRequestArguments<"wallet_switchEthereumChain">
         )
-
-      case "eth_chainId":
-        return this.getChainId(url)
 
       default:
         return this.getFallbackRequest(url, request)

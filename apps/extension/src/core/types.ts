@@ -587,6 +587,22 @@ export type CustomErc20TokenCreate = Pick<
   "chainId" | "evmNetworkId" | "symbol" | "decimals" | "coingeckoId" | "contractAddress" | "image"
 >
 
+export type WatchAssetBase = {
+  type: "ERC20"
+  options: {
+    address: string // The hexadecimal Ethereum address of the token contract
+    symbol?: string // A ticker symbol or shorthand, up to 5 alphanumerical characters
+    decimals?: number // The number of asset decimals
+    image?: string // A string url of the token logo
+  }
+}
+
+export type WatchAssetRequest = {
+  request: WatchAssetBase
+  id: string
+  url: string
+}
+
 export type TokenRateCurrency = keyof TokenRates
 export type TokenRates = {
   /** us dollar rate */
