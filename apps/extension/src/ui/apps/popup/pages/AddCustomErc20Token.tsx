@@ -96,12 +96,12 @@ export const AddCustomErc20Token = () => {
   const network = useEthereumNetwork(ethChainId)
 
   const approve = useCallback(() => {
-    api.ethNetworkAddApprove(requestId)
+    api.ethWatchAssetRequestApprove(requestId)
     window.close()
   }, [requestId])
 
   const cancel = useCallback(() => {
-    api.ethNetworkAddCancel(requestId)
+    api.ethWatchAssetRequestCancel(requestId)
     window.close()
   }, [requestId])
 
@@ -145,7 +145,7 @@ export const AddCustomErc20Token = () => {
           </StyledGrid>
         </Footer>
       </Container>
-      {!allowAddNetwork && <NetworkAddNotSupported onClose={cancel} />}
+      {/* {!allowAddNetwork && <NetworkAddNotSupported onClose={cancel} />} */}
     </>
   )
 }
