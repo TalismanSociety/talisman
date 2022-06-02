@@ -18,7 +18,8 @@ import useAccounts from "@ui/hooks/useAccounts"
 import CtaButton from "@talisman/components/CtaButton"
 import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 import { classNames } from "@talisman/util/classNames"
-import { ethers } from "ethers"
+import { ethers, Wallet } from "ethers"
+import { Button } from "@ui/domains/Sign/ViewDetails/ViewDetailsButton"
 
 type FormData = {
   name: string
@@ -74,6 +75,32 @@ const Container = styled(Layout)`
   input[type="checkbox"]:disabled + span + span {
     opacity: 0.5;
     cursor: default;
+  }
+
+  .mnemonic-buttons {
+    display: flex;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+    button {
+      margin: 0.8em;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      color: var(--color-mid);
+      cursor: pointer;
+      font-size: var(--font-size-xsmall);
+      padding: 0.8rem;
+      border-radius: var(--border-radius-small);
+      background: var(--color-background-muted-3x);
+      opacity: 0.5;
+      //color: var(--color-foreground);
+      transition: all var(--transition-speed) ease-in-out;
+      &:hover {
+        opacity: 1;
+      }
+    }
   }
 `
 
@@ -131,7 +158,7 @@ export const AccountAddSecretMnemonic = () => {
     () =>
       yup
         .object({
-          name: yup.string().trim().required(),
+          name: yup.string().trim().required(""),
           type: yup.string().required("").oneOf(["ethereum", "sr25519"]),
           multi: yup.boolean(),
           mnemonic: yup
@@ -236,6 +263,10 @@ export const AccountAddSecretMnemonic = () => {
     [setValue]
   )
 
+  const handleGenerateNew = useCallback(() => {
+    setValue("mnemonic", Wallet.createRandom().mnemonic.phrase)
+  }, [setValue])
+
   return (
     <Container withBack centered>
       <HeaderBlock
@@ -286,6 +317,11 @@ export const AccountAddSecretMnemonic = () => {
             data-lpignore
             spellCheck={false}
           />
+          <div className="mnemonic-buttons">
+            <button type="button" onClick={handleGenerateNew}>
+              Generate New
+            </button>
+          </div>
         </FormField>
         <Spacer small />
         <Spacer small />
