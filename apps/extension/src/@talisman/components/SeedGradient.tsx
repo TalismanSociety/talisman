@@ -28,22 +28,34 @@ export const SeedGradient: FC<SeedGradientProps> = ({
   height = 128,
   className,
 }) => {
-  const { id, firstColor, secondColor, transform } = useMemo(() => {
+  const { id, firstColor, secondColor, transform, thirdColor, cx, cy, r } = useMemo(() => {
     const hash1 = md5(seed)
     const hash2 = rotateText(hash1, 1)
 
-    const h1 = valueFromHash(hash1, 360)
-    const h2 = h1 + (90 % 360)
-    const color1 = Color.hsv(h1, 100, 100)
-    const color2 = Color.hsv(h2, 100, 100)
+    const bgHue1 = valueFromHash(hash1, 360)
+    const bgColor1 = Color.hsv(bgHue1, 100, 100)
 
+    const bgHue2 = (bgHue1 + 90) % 360
+    const bgColor2 = Color.hsv(bgHue2, 100, 100)
+
+    // BETWEEN BOUNDS
+    const dotHue = (bgHue1 + valueFromHash(hash1, 90)) % 360
+    const dotColor = Color.hsv(dotHue, 100, 100)
+
+    const dotRadius = valueFromHash(hash1, 20) + 20
+    const dotX = 5 + valueFromHash(hash1, 15)
+    const dotY = 5 + valueFromHash(hash2, 15)
     const rotation = valueFromHash(hash2, 360)
 
     return {
       id: nanoid(),
-      firstColor: color1.hex(),
-      secondColor: color2.hex(),
+      firstColor: bgColor1.hex(),
+      secondColor: bgColor2.hex(),
+      thirdColor: dotColor.hex(),
       transform: `rotate(${rotation} 32 32)`,
+      cx: dotX,
+      cy: dotY,
+      r: dotRadius,
     }
   }, [seed])
 
@@ -58,12 +70,19 @@ export const SeedGradient: FC<SeedGradientProps> = ({
       style={svgStyle}
     >
       <defs>
-        <linearGradient id={id}>
-          <stop offset="0%" stopColor={firstColor} />
+        <linearGradient id={`${id}-bg`}>
+          <stop offset="20%" stopColor={firstColor} />
           <stop offset="100%" stopColor={secondColor} />
         </linearGradient>
+        <radialGradient id={`${id}-circle`}>
+          <stop offset="10%" stopColor={thirdColor} />
+          <stop offset="100%" stopColor="transparent" />
+        </radialGradient>
       </defs>
-      <rect fill={`url(#${id})`} x="0" y="0" width={64} height={64} transform={transform} />
+      <g transform={transform}>
+        <rect fill={`url(#${id}-bg)`} x="0" y="0" width={64} height={64} />
+        <circle fill={`url(#${id}-circle)`} cx={cx} cy={cy} r={40} opacity={0.7} />
+      </g>
     </svg>
   )
 }
