@@ -443,7 +443,7 @@ export class EthTabsHandler extends TabsHandler {
 
         const { ethChainId } = await this.getSiteDetails(url)
         const tokenId = `${ethChainId}-${symbol}`
-        const existing = this.stores.evmAssets.get(tokenId)
+        const existing = await this.stores.evmAssets.get(tokenId)
         assert(!existing, "Token already present in Talisman")
 
         return this.state.requestStores.evmAssets.requestWatchAsset(
