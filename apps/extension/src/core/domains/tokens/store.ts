@@ -1,20 +1,20 @@
-import { map, combineLatest } from "rxjs"
+import { DEBUG } from "@core/constants"
+import { settingsStore } from "@core/domains/app"
+import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { SubscribableByIdStorageProvider } from "@core/libs/Store"
 import {
-  TokenId,
-  Token,
-  TokenList,
   Port,
   RequestIdOnly,
   SubscriptionCallback,
+  Token,
+  TokenId,
+  TokenList,
   UnsubscribeFn,
 } from "@core/types"
-import { settingsStore } from "@core/domains/app"
-import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
-import pick from "lodash/pick"
 import { print } from "graphql"
 import gql from "graphql-tag"
-import { DEBUG } from "@core/constants"
+import pick from "lodash/pick"
+import { combineLatest, map } from "rxjs"
 
 const storageKey = "tokens"
 const graphqlUrl = "https://app.gc.subsquid.io/beta/chaindata/latest/graphql"

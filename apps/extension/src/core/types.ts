@@ -576,8 +576,8 @@ export type OrmlToken = {
 export type Erc20Token = {
   type: "erc20"
   id: TokenId
-  chainId?: ChainId
-  evmNetworkId?: number
+  chainId?: ChainId // for substrate erc20 tokens
+  evmNetworkId?: number // for evm erc20 tokens
   symbol: string
   decimals: number
   coingeckoId?: string

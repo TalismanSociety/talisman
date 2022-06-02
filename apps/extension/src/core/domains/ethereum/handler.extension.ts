@@ -247,7 +247,6 @@ export class EthHandler extends ExtensionHandler {
       type: "erc20",
       id: tokenId,
       symbol: symbol ?? tokenInfo.symbol,
-      // chainId: site.ethChainId,
       evmNetworkId: tokenInfo.evmNetworkId,
       decimals: decimals ?? tokenInfo.decimals,
       contractAddress: address,
