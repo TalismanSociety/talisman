@@ -1,14 +1,20 @@
-import type { RequestIdOnly, WatchAssetRequest, WatchAssetBase } from "@core/types"
+import type {
+  RequestIdOnly,
+  WatchAssetRequest,
+  WatchAssetBase,
+  CustomErc20Token,
+} from "@core/types"
 import { RequestStore } from "@core/libs/RequestStore"
 import { assert } from "@polkadot/util"
 
 class WatchAssetError extends Error {}
 export default class EvmWatchAssetRequestsStore extends RequestStore<WatchAssetRequest, {}> {
-  protected mapRequestToData({ id, url, request }: WatchAssetRequest): WatchAssetRequest {
+  protected mapRequestToData({ id, url, request, token }: WatchAssetRequest): WatchAssetRequest {
     return {
       id,
       url,
       request,
+      token,
     }
   }
 
@@ -20,7 +26,7 @@ export default class EvmWatchAssetRequestsStore extends RequestStore<WatchAssetR
     return true
   }
 
-  async requestWatchAsset(url: string, request: WatchAssetBase) {
+  async requestWatchAsset(url: string, request: WatchAssetBase, token: CustomErc20Token) {
     const id = request.options.address
     const isDuplicate = this.getAllRequests().some(({ request }) => request.options.address === id)
 
@@ -29,7 +35,7 @@ export default class EvmWatchAssetRequestsStore extends RequestStore<WatchAssetR
         "Pending watch asset request already exists. Please accept or reject the request."
       )
     }
-    await this.createRequest({ url, request, id })
+    await this.createRequest({ url, request, id, token })
     return true
   }
 }

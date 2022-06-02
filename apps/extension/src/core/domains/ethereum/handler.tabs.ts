@@ -6,6 +6,7 @@ import type {
   RequestAuthorizeTab,
   AuthorizedSiteAddresses,
   AuthorizedSite,
+  CustomErc20Token,
 } from "@core/types"
 
 import { TabsHandler } from "@core/libs/Handler"
@@ -26,8 +27,8 @@ import { filterAccountsByAddresses } from "../accounts/helpers"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { ethers, providers } from "ethers"
 import keyring from "@polkadot/ui-keyring"
-import { getProviderForEthereumNetwork } from "./networksStore"
-import { assert } from "@polkadot/util"
+import { getProviderForChainId, getProviderForEthereumNetwork } from "./networksStore"
+import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
   ethAddresses: AuthorizedSiteAddresses
@@ -326,6 +327,43 @@ export class EthTabsHandler extends TabsHandler {
     })
   }
 
+  private addWatchAssetRequest = async (
+    url: string,
+    request: EthRequestArguments<"wallet_watchAsset">
+  ) => {
+    const { symbol, address, decimals, image } = request.params.options
+
+    const { ethChainId } = await this.getSiteDetails(url)
+    const tokenId = `${ethChainId}-erc20-${address}`
+
+    const existing = await this.stores.evmAssets.get(tokenId)
+    if (existing)
+      throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    const provider = await getProviderForChainId(ethChainId)
+    if (!provider)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+
+    try {
+      var tokenInfo = await getErc20TokenInfo(provider, ethChainId, address)
+    } catch (err) {
+      throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
+    }
+
+    const token: CustomErc20Token = {
+      id: tokenId,
+      type: "erc20",
+      symbol: symbol ?? tokenInfo.symbol,
+      evmNetworkId: tokenInfo.evmNetworkId,
+      decimals: decimals ?? tokenInfo.decimals,
+      contractAddress: address,
+      image: image ?? tokenInfo.image,
+      coingeckoId: tokenInfo.coingeckoId,
+    }
+
+    return this.state.requestStores.evmAssets.requestWatchAsset(url, request.params, token)
+  }
+
   private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
     id: string,
     url: string,
@@ -437,19 +475,7 @@ export class EthTabsHandler extends TabsHandler {
       }
 
       case "wallet_watchAsset":
-        console.log("got wallet_watchAsset", request)
-        // check for duplicate
-        const { symbol } = (request as EthRequestArguments<"wallet_watchAsset">).params.options
-
-        const { ethChainId } = await this.getSiteDetails(url)
-        const tokenId = `${ethChainId}-${symbol}`
-        const existing = await this.stores.evmAssets.get(tokenId)
-        assert(!existing, "Token already present in Talisman")
-
-        return this.state.requestStores.evmAssets.requestWatchAsset(
-          url,
-          (request as EthRequestArguments<"wallet_watchAsset">).params
-        )
+        return this.addWatchAssetRequest(url, request as EthRequestArguments<"wallet_watchAsset">)
 
       case "wallet_addEthereumChain":
         return this.addEthereumChain(url, request as EthRequestArguments<"wallet_addEthereumChain">)

@@ -604,6 +604,7 @@ export type WatchAssetBase = {
 
 export type WatchAssetRequest = {
   request: WatchAssetBase
+  token: CustomErc20Token
   id: string
   url: string
 }

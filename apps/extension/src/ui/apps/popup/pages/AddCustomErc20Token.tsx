@@ -2,16 +2,24 @@ import { AppPill } from "@talisman/components/AppPill"
 import StyledGrid from "@talisman/components/Grid"
 import { IconButton } from "@talisman/components/IconButton"
 import { SimpleButton } from "@talisman/components/SimpleButton"
-import { GlobeIcon, XIcon } from "@talisman/theme/icons"
+import { XIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
-import { NetworkAddNotSupported } from "@ui/domains/Ethereum/NetworkAddNotSupported"
-import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import { useEthereumNetwork } from "@ui/hooks/useEthereumNetwork"
 import { useEthWatchAssetRequests } from "@ui/hooks/useEthWatchAssetRequests"
-import { useSettings } from "@ui/hooks/useSettings"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import styled from "styled-components"
 import Layout, { Content, Header, Footer } from "../Layout"
+import imgUnknownToken from "@talisman/theme/icons/unknown-token.png"
+import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
+
+const TokenLogo = styled.img`
+  width: 5.4rem;
+  height: 5.4rem;
+`
+const TokenLogoSmall = styled.img`
+  width: 1.6rem;
+  height: 1.6rem;
+`
 
 const Container = styled(Layout)`
   .layout-content .children {
@@ -20,6 +28,7 @@ const Container = styled(Layout)`
     display: flex;
     flex-direction: column;
     height: 100%;
+    padding-top: 3.2rem;
 
     .grow {
       flex-grow: 1;
@@ -43,13 +52,17 @@ const Container = styled(Layout)`
     strong {
       color: var(--color-foreground);
       background: var(--color-background-muted);
-      padding: 0.4rem 1.2rem;
+      padding: 0 1.2rem;
       border-radius: 4.8rem;
       font-weight: var(--font-weight-normal);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      line-height: 1.6em;
+      vertical-align: middle;
     }
 
     .bottom {
-      // flex-grow: 1;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -72,43 +85,47 @@ const Container = styled(Layout)`
   }
 `
 
+const ErrorMessage = styled.p`
+  color: var(--color-status-error);
+`
+
 export const AddCustomErc20Token = () => {
+  const [error, setError] = useState<string>()
   const requests = useEthWatchAssetRequests()
 
-  const {
-    requestId,
-    //network,
-    assetRequest,
-    siteUrl,
-  } = useMemo(
-    () => ({
-      requestId: requests?.[0]?.id,
-      siteUrl: requests?.[0]?.url,
-      assetRequest: requests?.[0].request,
-      //network: requests?.[0]?.network,
-    }),
-    [requests]
-  )
+  const { requestId, siteUrl, token } = useMemo(() => {
+    if (!requests.length) return {}
+    const current = requests[0]
+    return {
+      requestId: current.id,
+      siteUrl: current.url,
+      assetRequest: current.request,
+      token: current.token,
+    }
+  }, [requests])
 
-  const origin = useMemo(() => new URL(siteUrl).origin, [siteUrl])
-  const { ethChainId } = useAuthorisedSiteById(origin, "ethereum")
+  const network = useEthereumNetwork(token?.evmNetworkId)
 
-  const network = useEthereumNetwork(ethChainId)
-
-  const approve = useCallback(() => {
-    api.ethWatchAssetRequestApprove(requestId)
-    window.close()
+  const approve = useCallback(async () => {
+    try {
+      throw new Error("non")
+      await api.ethWatchAssetRequestApprove(requestId!)
+      window.close()
+    } catch (err) {
+      setError((err as Error).message)
+    }
   }, [requestId])
 
-  const cancel = useCallback(() => {
-    api.ethWatchAssetRequestCancel(requestId)
-    window.close()
+  const cancel = useCallback(async () => {
+    try {
+      await api.ethWatchAssetRequestCancel(requestId!)
+      window.close()
+    } catch (err) {
+      setError((err as Error).message)
+    }
   }, [requestId])
 
-  const { useCustomEthereumNetworks: allowAddNetwork } = useSettings()
-
-  // might want to raise an error if no network
-  if (!network) return null
+  if (!token || !network) return null
 
   return (
     <>
@@ -123,20 +140,29 @@ export const AddCustomErc20Token = () => {
         />
         <Content>
           <div>
-            <GlobeIcon className="globeIcon" />
+            <TokenLogo src={token?.image ?? imgUnknownToken} alt={token?.symbol} />
           </div>
-          <h1>Add new token</h1>
+          <h1>New Token</h1>
           <p>
-            You are adding the token <strong>{assetRequest?.options.symbol}</strong> to{" "}
-            <strong>{network.name}</strong>
+            You are adding the token
+            <br />
+            <strong>
+              <TokenLogoSmall src={token?.image ?? imgUnknownToken} alt="" />
+              {token.symbol}
+            </strong>{" "}
+            on{" "}
+            <strong>
+              {network.iconUrls.length && <TokenLogoSmall src={network.iconUrls[0]} alt="" />}
+              {network.name}
+            </strong>
           </p>
           <div className="grow"></div>
           <div>
-            {/* TODO */}
-            {/* <NetworksDetailsButton network={network} /> */}
+            <CustomErc20TokenViewDetails token={token} network={network} />
           </div>
         </Content>
         <Footer>
+          <ErrorMessage>{error}</ErrorMessage>
           <StyledGrid>
             <SimpleButton onClick={cancel}>Reject</SimpleButton>
             <SimpleButton primary onClick={approve}>
@@ -145,7 +171,6 @@ export const AddCustomErc20Token = () => {
           </StyledGrid>
         </Footer>
       </Container>
-      {/* {!allowAddNetwork && <NetworkAddNotSupported onClose={cancel} />} */}
     </>
   )
 }

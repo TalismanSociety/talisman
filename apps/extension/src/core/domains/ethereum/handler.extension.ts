@@ -228,32 +228,9 @@ export class EthHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const { resolve, request, url } = queued
-    const site = await this.stores.sites.getSiteFromUrl(url)
+    const { resolve, token } = queued
 
-    assert(site.ethChainId, "No ethereum chain ID selected for site")
-
-    const {
-      options: { symbol, decimals, address, image },
-    } = request
-
-    const provider = await getProviderForChainId(site.ethChainId)
-    assert(provider, `No provider available for eth network ${site.ethChainId}`)
-    const tokenInfo = await getErc20TokenInfo(provider, site.ethChainId, address)
-
-    const tokenId = `${tokenInfo.evmNetworkId}-${symbol ?? tokenInfo.symbol}`
-
-    await this.stores.evmAssets.setItem({
-      type: "erc20",
-      id: tokenId,
-      symbol: symbol ?? tokenInfo.symbol,
-      // chainId: site.ethChainId,
-      evmNetworkId: tokenInfo.evmNetworkId,
-      decimals: decimals ?? tokenInfo.decimals,
-      contractAddress: address,
-      image: image ?? tokenInfo.image,
-      coingeckoId: tokenInfo.coingeckoId,
-    })
+    await this.stores.evmAssets.setItem(token)
 
     resolve(true)
 
