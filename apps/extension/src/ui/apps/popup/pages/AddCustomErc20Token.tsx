@@ -107,8 +107,8 @@ export const AddCustomErc20Token = () => {
   const network = useEthereumNetwork(token?.evmNetworkId)
 
   const approve = useCallback(async () => {
+    setError(undefined)
     try {
-      throw new Error("non")
       await api.ethWatchAssetRequestApprove(requestId!)
       window.close()
     } catch (err) {
@@ -117,6 +117,7 @@ export const AddCustomErc20Token = () => {
   }, [requestId])
 
   const cancel = useCallback(async () => {
+    setError(undefined)
     try {
       await api.ethWatchAssetRequestCancel(requestId!)
       window.close()
