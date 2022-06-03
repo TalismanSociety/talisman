@@ -60,6 +60,26 @@ export default class AppHandler extends ExtensionHandler {
     } as AccountMeta)
     await this.stores.seedPhrase.add(mnemonic, pair.address, pass, confirmed)
     this.stores.password.setPassword(pass)
+
+    try {
+      // also derive a first ethereum account
+      const derivationPath = "/m/44'/60'/0'/0/0"
+      keyring.addUri(
+        `${mnemonic}${derivationPath}`,
+        pass,
+        {
+          name: `${name} Ethereum`,
+          origin: "DERIVED_ETHEREUM",
+          parent: pair.address,
+          derivationPath,
+        },
+        "ethereum"
+      )
+    } catch (err) {
+      // do not break onboarding as user couldn't recover from it
+      console.error(err)
+    }
+
     return await this.stores.app.setOnboarded()
   }
 

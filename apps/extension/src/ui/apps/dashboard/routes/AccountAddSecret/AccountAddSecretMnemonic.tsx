@@ -1,8 +1,7 @@
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
 import { useNavigate } from "react-router-dom"
 import Layout from "../../layout"
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import * as yup from "yup"
 import { api } from "@ui/api"
 import { useForm } from "react-hook-form"
@@ -15,11 +14,11 @@ import { Checkbox } from "@talisman/components/Checkbox"
 import styled from "styled-components"
 import { useNotification } from "@talisman/components/Notification"
 import useAccounts from "@ui/hooks/useAccounts"
-import CtaButton from "@talisman/components/CtaButton"
-import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 import { classNames } from "@talisman/util/classNames"
-import { ethers, Wallet } from "ethers"
-import { Button } from "@ui/domains/Sign/ViewDetails/ViewDetailsButton"
+import { Wallet } from "ethers"
+import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import AccountAvatar from "@ui/domains/Account/Avatar"
+import { setTarget } from "framer-motion/types/render/utils/setters"
 
 type FormData = {
   name: string
@@ -28,32 +27,10 @@ type FormData = {
   multi: boolean
 }
 
-const Buttons = styled.div`
-  display: flex;
-  width: 100%;
-  flex-wrap: wrap;
-  gap: 2rem;
+const Spacer = styled.div<{ small?: boolean }>`
+  height: ${({ small }) => (small ? "1.6rem" : "3.2rem")};
 `
 
-const AccountTypeButton = styled(CtaButton)`
-  width: 29.6rem;
-  > span.icon {
-    width: 3.2rem;
-    font-size: 3.2rem;
-    margin: 0 1.2rem;
-  }
-  > span.arrow {
-    display: none;
-  }
-  :hover {
-    background: var(--color-background-muted-3x);
-  }
-
-  &.selected {
-    outline: 1px solid var(--color-foreground-muted);
-    cursor: default;
-  }
-`
 const Container = styled(Layout)`
   .checkbox {
     color: var(--color-mid);
@@ -71,10 +48,8 @@ const Container = styled(Layout)`
     }
   }
 
-  input[type="checkbox"]:disabled + span,
-  input[type="checkbox"]:disabled + span + span {
-    opacity: 0.5;
-    cursor: default;
+  .invisible {
+    opacity: 0;
   }
 
   .mnemonic-buttons {
@@ -95,10 +70,31 @@ const Container = styled(Layout)`
       border-radius: var(--border-radius-small);
       background: var(--color-background-muted-3x);
       opacity: 0.5;
-      //color: var(--color-foreground);
       transition: all var(--transition-speed) ease-in-out;
       &:hover {
         opacity: 1;
+      }
+    }
+  }
+
+  .field > .children {
+    position: relative;
+
+    > .suffix {
+      opacity: 1;
+      transform: none;
+      top: 0;
+      right: 0;
+      width: 4.8rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      > * {
+        width: auto;
+        height: auto;
       }
     }
   }
@@ -112,23 +108,26 @@ const cleanupMnemonic = (input: string = "") =>
     .filter(Boolean) //remove empty strings
     .join(" ")
 
-// for polkadot, do not force //0 derivation path to preserve backwards compatibility (since beta we import mnemonics as-is)
-// but for ethereum, use metamask's derivation path
-const ETHEREUM_DERIVATION_PATH = "/m/44'/60'/0'/0/0"
-
-const mnemonicUri = (mnemonic: string, type: AccountAddressType) => {
-  return type === "ethereum" ? `${mnemonic}${ETHEREUM_DERIVATION_PATH}` : mnemonic
-}
-
 const isValidEthPrivateKey = (privateKey?: string) => {
   if (!privateKey?.startsWith("0x")) return false
   try {
-    const w = new ethers.Wallet(privateKey)
-    console.log(w)
+    new Wallet(privateKey)
     return true
   } catch (err) {
     return false
   }
+}
+
+// for polkadot, do not force //0 derivation path to preserve backwards compatibility (since beta we import mnemonics as-is)
+// but for ethereum, use metamask's derivation path
+const ETHEREUM_DERIVATION_PATH = "/m/44'/60'/0'/0/0"
+
+const getAccountUri = async (mnemonic: string, type: AccountAddressType) => {
+  if (!mnemonic || !type) throw new Error("Missing arguments")
+  if (type === "ethereum" && isValidEthPrivateKey(mnemonic)) return mnemonic
+  if (await api.accountValidateMnemonic(mnemonic))
+    return type === "ethereum" ? `${mnemonic}${ETHEREUM_DERIVATION_PATH}` : mnemonic
+  throw new Error("Invalid secret phrase")
 }
 
 const testNoDuplicate = async (
@@ -136,9 +135,8 @@ const testNoDuplicate = async (
   allAccountsAddresses: string[],
   type: AccountAddressType
 ) => {
-  //if ethereum it could also be a private key, in which case we don't append a derivation path
   try {
-    const uri = isValidEthPrivateKey(mnemonic) ? mnemonic : mnemonicUri(mnemonic, type)
+    const uri = await getAccountUri(mnemonic, type)
     const address = await api.addressFromMnemonic(uri, type)
     return !allAccountsAddresses.includes(address)
   } catch (err) {
@@ -214,6 +212,36 @@ export const AccountAddSecretMnemonic = () => {
     resolver: yupResolver(schema),
   })
 
+  const { type, mnemonic } = watch()
+
+  const isPrivateKey = useMemo(
+    () => type === "ethereum" && isValidEthPrivateKey(mnemonic),
+    [mnemonic, type]
+  )
+  useEffect(() => {
+    if (isPrivateKey) setValue("multi", false, { shouldValidate: true })
+  }, [isPrivateKey, setValue])
+
+  const words = useMemo(
+    () => cleanupMnemonic(mnemonic).split(" ").filter(Boolean).length ?? 0,
+    [mnemonic]
+  )
+
+  const [targetAddress, setTargetAddress] = useState<string>()
+
+  useEffect(() => {
+    const refreshTargetAddress = async () => {
+      try {
+        const uri = await getAccountUri(mnemonic, type)
+        setTargetAddress(await api.addressFromMnemonic(uri, type))
+      } catch (err) {
+        setTargetAddress(undefined)
+      }
+    }
+
+    refreshTargetAddress()
+  }, [isValid, mnemonic, type])
+
   const submit = useCallback(
     async ({ type, name, mnemonic, multi }: FormData) => {
       updateData({ type, name, mnemonic, multi })
@@ -225,7 +253,8 @@ export const AccountAddSecretMnemonic = () => {
           timeout: null,
         })
         try {
-          await api.accountCreateFromSeed(name, mnemonicUri(mnemonic, type), type)
+          const uri = await getAccountUri(mnemonic, type)
+          await api.accountCreateFromSeed(name, uri, type)
           notification.success({
             title: "Account imported",
             subtitle: name,
@@ -242,29 +271,15 @@ export const AccountAddSecretMnemonic = () => {
     [navigate, notification, updateData]
   )
 
-  const { type, mnemonic } = watch()
-  const isPrivateKey = useMemo(
-    () => type === "ethereum" && isValidEthPrivateKey(mnemonic),
-    [mnemonic, type]
-  )
-  useEffect(() => {
-    if (isPrivateKey) setValue("multi", false)
-  }, [isPrivateKey, setValue])
-
-  const words = useMemo(
-    () => cleanupMnemonic(mnemonic).split(" ").filter(Boolean).length ?? 0,
-    [mnemonic]
-  )
-
-  const handleTypeClick = useCallback(
-    (type: AccountAddressType) => () => {
+  const handleTypeChange = useCallback(
+    (type: AccountAddressType) => {
       setValue("type", type, { shouldValidate: true })
     },
     [setValue]
   )
 
   const handleGenerateNew = useCallback(() => {
-    setValue("mnemonic", Wallet.createRandom().mnemonic.phrase)
+    setValue("mnemonic", Wallet.createRandom().mnemonic.phrase, { shouldValidate: true })
   }, [setValue])
 
   return (
@@ -274,29 +289,23 @@ export const AccountAddSecretMnemonic = () => {
         text="What type of account would you like to import ?"
       />
       <Spacer small />
-      <Buttons>
-        <AccountTypeButton
-          title="Polkadot"
-          className={classNames(type === "sr25519" && "selected")}
-          icon={<PolkadotCircleLogo />}
-          subtitle="Polkadot, Kusama &amp; Parachains"
-          onClick={handleTypeClick("sr25519")}
-        />
-        <AccountTypeButton
-          title="Ethereum"
-          className={classNames(type === "ethereum" && "selected")}
-          icon={<EthereumCircleLogo />}
-          subtitle="Moonbeam, Moonriver, Astar etc."
-          onClick={handleTypeClick("ethereum")}
-        />
-      </Buttons>
+      <AccountTypeSelector defaultType={data.type} onChange={handleTypeChange} />
       <Spacer />
       <form
         className={classNames(type && "show")}
         data-button-pull-left
         onSubmit={handleSubmit(submit)}
       >
-        <FormField error={errors.name}>
+        <FormField
+          error={errors.name}
+          suffix={
+            targetAddress ? (
+              <div>
+                <AccountAvatar address={targetAddress} />
+              </div>
+            ) : null
+          }
+        >
           <input
             {...register("name")}
             placeholder="Choose a name"
@@ -317,18 +326,19 @@ export const AccountAddSecretMnemonic = () => {
             data-lpignore
             spellCheck={false}
           />
-          <div className="mnemonic-buttons">
+          {/* Waiting for designers validation for this feature, but it's ready ! */}
+          {/* <div className="mnemonic-buttons">
             <button type="button" onClick={handleGenerateNew}>
               Generate New
             </button>
-          </div>
+          </div> */}
         </FormField>
         <Spacer small />
         <Spacer small />
-        <Checkbox {...register("multi")} disabled={isPrivateKey}>
+        <Checkbox {...register("multi")} className={classNames(isPrivateKey && "invisible")}>
           Import multiple accounts from this secret phrase
         </Checkbox>
-        <Spacer small />
+        <Spacer />
         <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
           Import
         </SimpleButton>
