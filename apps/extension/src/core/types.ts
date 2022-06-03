@@ -335,6 +335,7 @@ export interface RequestOnboard {
 
 export interface RequestAccountCreate {
   name: string
+  type: AccountAddressType
 }
 
 export interface RequestLogin {
@@ -357,7 +358,7 @@ export interface AuthorizeRequest {
 
 export interface AccountMeta extends AccountJson {
   name: string
-  origin: "ROOT" | "DERIVED" | "SEED" | "JSON"
+  origin: "ROOT" | "DERIVED" | "DERIVED_ETHEREUM" | "SEED" | "JSON"
 }
 
 export interface SigningRequest extends PolkadotSigningRequest {

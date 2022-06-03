@@ -61,7 +61,7 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(mnemonic.address)", { mnemonic, type }),
 
   // account messages ---------------------------------------------------
-  accountCreate: (name) => messageService.sendMessage("pri(accounts.create)", { name }),
+  accountCreate: (name, type) => messageService.sendMessage("pri(accounts.create)", { name, type }),
   accountCreateFromSeed: (name, seed, type) =>
     messageService.sendMessage("pri(accounts.create.seed)", { name, seed, type }),
   accountCreateFromJson: (json, password) =>

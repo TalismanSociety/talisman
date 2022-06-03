@@ -37,7 +37,7 @@ export default class AccountsHandler extends ExtensionHandler {
   //   - derivation path
   //   - account seed (unlocked via password)
 
-  private async accountCreate({ name }: RequestAccountCreate): Promise<boolean> {
+  private async accountCreate({ name, type }: RequestAccountCreate): Promise<boolean> {
     await new Promise((resolve) => setTimeout(resolve, DEBUG ? 0 : 1000))
     assert(this.stores.password.hasPassword, "Not logged in")
 
@@ -48,22 +48,35 @@ export default class AccountsHandler extends ExtensionHandler {
     const rootAccount = this.getRootAccount()
     assert(rootAccount, "No root account")
 
+    // forbid derivation if we don't have a root account
+    assert(
+      allAccounts.some((account) => account.meta.origin === "ROOT"),
+      "Cannot calculate derivation path"
+    )
+
+    const origin = type === "ethereum" ? "DERIVED_ETHEREUM" : "DERIVED"
+    const derivedAccountIndex = allAccounts.filter(
+      (account) => account.meta.origin === origin
+    ).length
+    // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
     const derivationPath =
-      allAccounts.filter(
-        (account) => account.meta.origin === "ROOT" || account.meta.origin === "DERIVED"
-      ).length - 1
-    assert(derivationPath >= 0, "Cannot calculate derivation path")
+      type === "ethereum" ? `/m/44'/60'/0'/0/${derivedAccountIndex}` : `//${derivedAccountIndex}`
 
     const password = this.stores.password.getPassword()
     const rootSeed = await this.stores.seedPhrase.getSeed(password || "")
     assert(rootSeed, "Global seed not available")
 
-    keyring.addUri(`${rootSeed}//${derivationPath}`, password, {
-      name,
-      origin: "DERIVED",
-      parent: rootAccount.address,
-      derivationPath: derivationPath,
-    })
+    keyring.addUri(
+      `${rootSeed}${derivationPath}`,
+      password,
+      {
+        name,
+        origin,
+        parent: rootAccount.address,
+        derivationPath,
+      },
+      type
+    )
 
     return true
   }
@@ -164,7 +177,7 @@ export default class AccountsHandler extends ExtensionHandler {
     assert(account, "Unable to find account")
 
     assert(
-      !["ROOT", "DERIVED"].includes(account.meta.origin as string),
+      !["ROOT", "DERIVED", "DERIVED_ETHEREUM"].includes(account.meta.origin as string),
       "Cannot forget root or derived accounts"
     )
 
