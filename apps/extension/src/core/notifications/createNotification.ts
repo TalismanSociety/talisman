@@ -13,21 +13,21 @@ const getNotificationOptions = (
     case "submitted":
       return {
         type: "basic",
-        title: "👀 Transaction submitted 🧐",
+        title: "Transaction in progress",
         message: `Waiting on transaction confirmation on ${networkName}.`,
         iconUrl: "/images/tx-ok.png",
       }
     case "success":
       return {
         type: "basic",
-        title: "✅ Transaction confirmed ⭐",
+        title: "Transaction successful",
         message: `Your transaction on ${networkName} has been confirmed.`,
         iconUrl: "/images/tx-ok.png",
       }
     case "error":
       return {
         type: "basic",
-        title: "❌ Transaction failed 😵",
+        title: "Transaction failed",
         message: error?.reason ?? error?.message ?? `Failed transaction on ${networkName}.`,
         iconUrl: "/images/tx-nok.png",
       }
