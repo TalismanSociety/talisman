@@ -18,7 +18,6 @@ import { classNames } from "@talisman/util/classNames"
 import { Wallet } from "ethers"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import AccountAvatar from "@ui/domains/Account/Avatar"
-import { setTarget } from "framer-motion/types/render/utils/setters"
 
 type FormData = {
   name: string
