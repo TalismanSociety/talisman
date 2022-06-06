@@ -4,17 +4,11 @@ import { useEthereumNetworks } from "@ui/hooks/useEthereumNetworks"
 import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
 import globeIcon from "@talisman/theme/icons/globe.white.svg"
+import { NetworkLogo } from "./NetworkLogo"
 
 const NetworkItem = styled.div`
   display: flex;
   gap: 1.2rem;
-
-  img,
-  picture {
-    width: 1.6rem;
-    height: 1.6rem;
-    border-radius: 50%;
-  }
 `
 
 type NetworkSelectProps = {
@@ -25,12 +19,7 @@ type NetworkSelectProps = {
 const renderNetwork = (network: EthereumNetwork) => {
   return (
     <NetworkItem>
-      <picture>
-        {network.iconUrls.map((url, i) => (
-          <source key={i} srcSet={url} />
-        ))}
-        <img src={globeIcon} alt="" />
-      </picture>
+      <NetworkLogo ethChainId={network.id} />
       <span>{network.name}</span>
     </NetworkItem>
   )
