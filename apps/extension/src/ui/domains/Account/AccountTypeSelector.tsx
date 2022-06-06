@@ -12,10 +12,6 @@ const Container = styled.div`
   gap: 2rem;
 `
 
-const Spacer = styled.div<{ small?: boolean }>`
-  height: ${({ small }) => (small ? "1.6rem" : "3.2rem")};
-`
-
 const AccountTypeButton = styled(CtaButton)`
   flex-grow: 1;
   > span.icon {
