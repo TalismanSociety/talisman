@@ -41,9 +41,7 @@ export const filterPublicAccounts = (accounts: SubjectInfo): AccountJsonAny[] =>
 
   // can be multiple derived accounts
   // should order these by created date? probably
-  const derived = transformedAccounts.filter(({ origin }) =>
-    ["DERIVED", "DERIVED_ETHEREUM"].includes(origin as string)
-  )
+  const derived = transformedAccounts.filter(({ origin }) => origin === "DERIVED")
   const derivedSorted = sortAccountsByWhenCreated(derived)
   ordered = [...ordered, ...derivedSorted]
 

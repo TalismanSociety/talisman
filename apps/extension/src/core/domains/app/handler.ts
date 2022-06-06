@@ -69,7 +69,7 @@ export default class AppHandler extends ExtensionHandler {
         pass,
         {
           name: `${name} Ethereum`,
-          origin: "DERIVED_ETHEREUM",
+          origin: "DERIVED",
           parent: pair.address,
           derivationPath,
         },

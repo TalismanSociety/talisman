@@ -17,7 +17,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { genericSubscription } from "@core/handlers/subscriptions"
-import { mnemonicValidate } from "@polkadot/util-crypto"
+import { isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { encodeAnyAddress } from "@core/util"
@@ -54,13 +54,15 @@ export default class AccountsHandler extends ExtensionHandler {
       "Cannot calculate derivation path"
     )
 
-    const origin = type === "ethereum" ? "DERIVED_ETHEREUM" : "DERIVED"
+    const isEthereum = type === "ethereum"
     const derivedAccountIndex = allAccounts.filter(
-      (account) => account.meta.origin === origin
+      (account) =>
+        account.meta.origin === "DERIVED" && isEthereum === isEthereumAddress(account.address)
     ).length
     // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
-    const derivationPath =
-      type === "ethereum" ? `/m/44'/60'/0'/0/${derivedAccountIndex}` : `//${derivedAccountIndex}`
+    const derivationPath = isEthereum
+      ? `/m/44'/60'/0'/0/${derivedAccountIndex}`
+      : `//${derivedAccountIndex}`
 
     const password = this.stores.password.getPassword()
     const rootSeed = await this.stores.seedPhrase.getSeed(password || "")
@@ -71,7 +73,7 @@ export default class AccountsHandler extends ExtensionHandler {
       password,
       {
         name,
-        origin,
+        origin: "DERIVED",
         parent: rootAccount.address,
         derivationPath,
       },
@@ -177,7 +179,7 @@ export default class AccountsHandler extends ExtensionHandler {
     assert(account, "Unable to find account")
 
     assert(
-      !["ROOT", "DERIVED", "DERIVED_ETHEREUM"].includes(account.meta.origin as string),
+      !["ROOT", "DERIVED"].includes(account.meta.origin as string),
       "Cannot forget root or derived accounts"
     )
 

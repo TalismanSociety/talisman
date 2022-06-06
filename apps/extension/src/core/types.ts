@@ -358,7 +358,7 @@ export interface AuthorizeRequest {
 
 export interface AccountMeta extends AccountJson {
   name: string
-  origin: "ROOT" | "DERIVED" | "DERIVED_ETHEREUM" | "SEED" | "JSON"
+  origin: "ROOT" | "DERIVED" | "SEED" | "JSON"
 }
 
 export interface SigningRequest extends PolkadotSigningRequest {

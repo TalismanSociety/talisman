@@ -98,9 +98,7 @@ const AccountItem = ({
           <PopNav trigger={<IconMore />} className="icon more" closeOnMouseOut>
             <PopNav.Item onClick={() => openAddressFormatter(address)}>Copy address</PopNav.Item>
             <PopNav.Item onClick={() => openAccountRename(address)}>Rename</PopNav.Item>
-            {["SEED", "JSON", "DERIVED", "DERIVED_ETHEREUM"].includes(
-              account?.origin as string
-            ) && (
+            {["SEED", "JSON", "DERIVED"].includes(account?.origin as string) && (
               <PopNav.Item
                 onClick={async () => {
                   const { exportedJson } = await api.accountExport(address)
