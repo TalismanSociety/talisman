@@ -17,13 +17,14 @@ const Container = styled.button`
   outline: none;
   border: none;
   cursor: pointer;
+  gap: 0.6rem;
+  padding: 0 0.8rem;
 
   .dot {
     display: inline-block;
     height: 0.8em;
     width: 0.8em;
     border-radius: 50%;
-    margin-right: 0.6rem;
     background: var(--color-status-error);
   }
 
@@ -37,7 +38,6 @@ const Container = styled.button`
   }
 
   .network-logo {
-    margin-left: 0.6rem;
     font-size: 1.6rem;
   }
 `
@@ -72,7 +72,7 @@ export const ConnectedAccountsPill: FC = () => {
         onClick={() => setShowConnectedAccounts(true)}
       >
         <span className="dot"></span>
-        <span>{label}</span>
+        <span className="label">{label}</span>
         {ethChainId && <NetworkLogo ethChainId={ethChainId} />}
       </Container>
       <ConnectedAccountsDrawer
