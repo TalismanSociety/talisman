@@ -7,7 +7,7 @@ const { compilerOptions } = require("./tsconfig.json")
 module.exports = {
   preset: "ts-jest/presets/js-with-babel",
   transformIgnorePatterns: [
-    "/node_modules/(?!@polkadot|@substrate|@babel/runtime/helpers/esm/|@metamask)",
+    "/node_modules/(?!@polkadot|@substrate|@babel/runtime/helpers/esm/|@metamask|url-join)",
   ],
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
     prefix: "<rootDir>/src",

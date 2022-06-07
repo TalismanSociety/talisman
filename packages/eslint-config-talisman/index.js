@@ -15,6 +15,7 @@ module.exports = {
 
       rules: {
         "@typescript-eslint/explicit-function-return-type": "off",
+        "no-console": "warn",
 
         // To add ASAP
         // "simple-import-sort/imports": "error",
