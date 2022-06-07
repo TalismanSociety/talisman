@@ -5,7 +5,7 @@ import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useSelect } from "downshift"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { useDashboard } from "../context"
 
@@ -87,6 +87,7 @@ const AccountOption = ({
   noCountUp,
 }: AccountOptionProps) => {
   const { sum } = useBalancesByAddress(address)
+  const { total } = useMemo(() => sum.fiat("usd"), [sum])
 
   return (
     <AccountOptionContainer>
@@ -103,12 +104,7 @@ const AccountOption = ({
           )}
         </div>
         <div className="ao-rowFiat">
-          <Fiat
-            amount={sum.fiat("usd").transferable}
-            currency="usd"
-            isBalance
-            noCountUp={noCountUp}
-          />
+          <Fiat amount={total} currency="usd" isBalance noCountUp={noCountUp} />
         </div>
       </div>
     </AccountOptionContainer>

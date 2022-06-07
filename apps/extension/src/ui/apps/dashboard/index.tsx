@@ -18,6 +18,7 @@ import { api } from "@ui/api"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import Layout from "./layout"
 import { DashboardProvider } from "./context"
+import { Portfolio } from "./routes/Portfolio"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
 const AccountAddLedger = lazy(() => import("./routes/AccountAddLedger"))
@@ -52,6 +53,7 @@ const DashboardInner = () => {
     // use an empty layout as fallback to prevent flickering
     <Suspense fallback={<Layout />}>
       <Routes>
+        <Route path="portfolio" element={<Portfolio />} />
         <Route path="accounts">
           <Route path="" element={<AccountIndex />} />
           <Route path="add">
@@ -70,7 +72,7 @@ const DashboardInner = () => {
           <Route path="options" element={<Options />} />
           <Route path="about" element={<About />} />
         </Route>
-        <Route path="*" element={<Navigate to="/accounts" replace />} />
+        <Route path="*" element={<Navigate to="/portfolio" replace />} />
       </Routes>
     </Suspense>
   )
