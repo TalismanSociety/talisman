@@ -799,6 +799,7 @@ export interface RequestAssetTransfer {
   fromAddress: string
   toAddress: string
   amount: string
+  tip: string
   reapBalance?: boolean
 }
 

@@ -88,6 +88,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     fromAddress,
     toAddress,
     amount,
+    tip,
     reapBalance = false,
   }: RequestAssetTransfer): Promise<ResponseAssetTransfer> {
     try {
@@ -110,6 +111,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
           amount,
           pair,
           toAddress,
+          tip,
           reapBalance,
           watchExtrinsic
         )
@@ -120,6 +122,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
           amount,
           pair,
           toAddress,
+          tip,
           watchExtrinsic
         )
 
@@ -135,6 +138,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     fromAddress,
     toAddress,
     amount,
+    tip,
     reapBalance = false,
   }: RequestAssetTransfer): Promise<ResponseAssetTransferFeeQuery> {
     try {
@@ -149,9 +153,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
     const tokenType = token.type
     if (tokenType === "native")
-      return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, reapBalance)
+      return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, tip, reapBalance)
     if (tokenType === "orml")
-      return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress)
+      return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
 
     // force compilation error if any token types don't have a case
     const exhaustiveCheck: never = tokenType
