@@ -158,6 +158,7 @@ export default interface MessageTypes {
     fromAddress: string,
     toAddress: string,
     amount: string,
+    tip: string,
     reapBalance?: boolean
   ) => Promise<ResponseAssetTransfer>
   assetTransferCheckFees: (
@@ -166,6 +167,7 @@ export default interface MessageTypes {
     fromAddress: string,
     toAddress: string,
     amount: string,
+    tip: string,
     reapBalance?: boolean
   ) => Promise<ResponseAssetTransferFeeQuery>
   assetTransferApproveSign: (

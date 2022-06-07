@@ -127,22 +127,24 @@ export const api: MessageTypes = {
   transactionsSubscribe: (cb) => messageService.subscribe("pri(transactions.subscribe)", null, cb),
 
   // asset transfer messages
-  assetTransfer: (chainId, tokenId, fromAddress, toAddress, amount, reapBalance) =>
+  assetTransfer: (chainId, tokenId, fromAddress, toAddress, amount, tip, reapBalance) =>
     messageService.sendMessage("pri(assets.transfer)", {
       chainId,
       tokenId,
       fromAddress,
       toAddress,
       amount,
+      tip,
       reapBalance,
     }),
-  assetTransferCheckFees: (chainId, tokenId, fromAddress, toAddress, amount, reapBalance) =>
+  assetTransferCheckFees: (chainId, tokenId, fromAddress, toAddress, amount, tip, reapBalance) =>
     messageService.sendMessage("pri(assets.transfer.checkFees)", {
       chainId,
       tokenId,
       fromAddress,
       toAddress,
       amount,
+      tip,
       reapBalance,
     }),
   assetTransferApproveSign: (id, signature) =>

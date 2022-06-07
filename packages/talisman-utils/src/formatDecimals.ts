@@ -1,3 +1,5 @@
+import BigNumber from "bignumber.js"
+
 export const MAX_DECIMALS_FORMAT = 12
 
 /**
@@ -11,44 +13,50 @@ export const MAX_DECIMALS_FORMAT = 12
  */
 export const formatDecimals = (
   num?: string | number | null,
-  digits = 4,
+  digits: number = 4,
   options: Partial<Intl.NumberFormatOptions> = {},
-  locale = "en-US"
+  locale: string = "en-US"
 ): string => {
   if (num === null || num === undefined) return ""
 
-  const value = Number(num)
-
+  const value = new BigNumber(num)
   // very small numbers should display "< 0.0001"
   const minDisplayVal = 1 / Math.pow(10, digits)
-  if (value > 0 && value < minDisplayVal) return `< ${formatDecimals(minDisplayVal)}`
+
+  if (value.gt(0) && value.lt(minDisplayVal)) return `< ${formatDecimals(minDisplayVal)}`
 
   // count digits
-  const flooredValue = Math.floor(value)
-  const intDigits = flooredValue === 0 ? 0 : flooredValue.toString().length
+  const flooredValue = value.integerValue()
+  const intDigits = flooredValue.isEqualTo(0) ? 0 : flooredValue.toString().length
 
   // we never want to display a rounded up value
   // to prevent JS default rounding, we will remove/truncate insignificant digits ourselves before formatting
   let truncatedValue = value
-
   //remove insignificant fraction digits
-  const excessFractionDigits = digits - intDigits > 0 ? digits - intDigits : 0
-  truncatedValue =
-    Math.floor(truncatedValue * Math.pow(10, excessFractionDigits)) /
-    Math.pow(10, excessFractionDigits)
+  const excessFractionDigitsPow10 = new BigNumber(10).pow(
+    digits > intDigits ? digits - intDigits : 0
+  )
+
+  truncatedValue = truncatedValue
+    .multipliedBy(excessFractionDigitsPow10)
+    .integerValue()
+    .dividedBy(excessFractionDigitsPow10)
 
   //remove insignificant integer digits
-  const excessIntegerDigits = intDigits - digits > 0 ? intDigits - digits : 0
-  if (excessIntegerDigits > 0)
-    truncatedValue =
-      Math.floor(truncatedValue / Math.pow(10, excessIntegerDigits)) *
-      Math.pow(10, excessIntegerDigits)
+  const excessIntegerDigits = new BigNumber(intDigits > digits ? intDigits - digits : 0)
+  const excessIntegerDigitsPow10 = new BigNumber(10).pow(excessIntegerDigits)
+  if (excessIntegerDigits.gt(0))
+    truncatedValue = truncatedValue
+      .dividedBy(excessIntegerDigitsPow10)
+      .integerValue()
+      .multipliedBy(excessIntegerDigitsPow10)
 
   // format
+
   return Intl.NumberFormat(locale, {
     //compact notation (K, M, B) if above 9999
-    notation: truncatedValue > 9999 ? "compact" : "standard",
-    maximumSignificantDigits: digits + (truncatedValue < 1 ? 1 : 0),
+    notation: truncatedValue.gt(9999) ? "compact" : "standard",
+    maximumSignificantDigits: digits + (truncatedValue.lt(1) ? 1 : 0),
     ...options,
-  }).format(truncatedValue)
+  }).format(truncatedValue.toNumber())
 }
