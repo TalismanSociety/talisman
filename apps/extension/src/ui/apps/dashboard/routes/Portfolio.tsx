@@ -36,10 +36,10 @@ const PageContent = ({ balances }: { balances: Balances }) => {
   }, [balances.sum])
 
   return (
-    <Layout>
+    <Layout centered large>
       <Header>
         <Statistics title="Available">
-          <Fiat amount={available} currency="usd" />
+          <Fiat amount={available} currency="usd" isBalance />
         </Statistics>
         <Statistics
           title={
@@ -49,7 +49,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
             </Flex>
           }
         >
-          <Fiat amount={locked} currency="usd" />
+          <Fiat amount={locked} currency="usd" isBalance />
         </Statistics>
       </Header>
       <Main>

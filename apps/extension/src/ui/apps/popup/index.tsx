@@ -18,6 +18,7 @@ import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { isEthereumRequest } from "@core/util/isEthereumRequest"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { useEthNetworkAddRequests } from "@ui/hooks/useEthNetworkAddRequests"
+import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
 
 const Popup = () => {
   const isOnboarded = useIsOnboarded()
@@ -78,17 +79,19 @@ const Popup = () => {
   return (
     <CurrentSiteProvider>
       <NavigationProvider>
-        <Routes>
-          <Route path="/" element={<Account />}></Route>
-          <Route path="auth" element={<Connect />}></Route>
-          <Route path="sign/eth/:id" element={<EthSignRequest />}></Route>
-          <Route path="sign/:id" element={<SignRequest />}></Route>
-          <Route path="metadata" element={<Metadata />}></Route>
-          <Route path="eth-network-add" element={<AddEthereumNetwork />}></Route>
-          {/* Not used for now */}
-          {/* <Route path="tx/:id" element={<Transaction />}></Route> */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <AddressFormatterModalProvider>
+          <Routes>
+            <Route path="/" element={<Account />}></Route>
+            <Route path="auth" element={<Connect />}></Route>
+            <Route path="sign/eth/:id" element={<EthSignRequest />}></Route>
+            <Route path="sign/:id" element={<SignRequest />}></Route>
+            <Route path="metadata" element={<Metadata />}></Route>
+            <Route path="eth-network-add" element={<AddEthereumNetwork />}></Route>
+            {/* Not used for now */}
+            {/* <Route path="tx/:id" element={<Transaction />}></Route> */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </AddressFormatterModalProvider>
       </NavigationProvider>
     </CurrentSiteProvider>
   )

@@ -8,7 +8,7 @@ import { BigNumber } from "ethers"
 import { useCallback } from "react"
 import styled from "styled-components"
 
-export const PillButton = styled.button`
+const PillButton = styled.button`
   background: var(--color-background-muted-3x);
   padding: 0.6rem 0.8rem;
   border-radius: 4.8rem;

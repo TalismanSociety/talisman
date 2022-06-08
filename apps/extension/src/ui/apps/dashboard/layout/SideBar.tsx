@@ -9,9 +9,11 @@ import { lazy, Suspense, useCallback } from "react"
 import { BackupBanner } from "./BackupBanner"
 import { DashboardAccountSelect } from "./DashboardAccountSelect"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { PaperPlaneIcon } from "@talisman/theme/icons"
+import { CopyIcon, ImageIcon, PaperPlaneIcon, StarIcon } from "@talisman/theme/icons"
 import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import { useDashboard } from "../context"
+import { PillButton } from "@talisman/components/PillButton"
+import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 
 const PaddedItem = styled.div`
   padding: 2.4rem;
@@ -81,34 +83,55 @@ const Container = styled.aside`
   }
 `
 
+const Pills = styled.div`
+  display: flex;
+  gap: 0.8rem;
+  padding: 0.8rem;
+  padding-bottom: 0;
+`
+
 export const SideBar = () => {
   const { account } = useDashboard()
-  const { open } = useSendTokensModal()
+  const { open: openSendTokens } = useSendTokensModal()
+  const { open: openCopyAddressModal } = useAddressFormatterModal()
 
-  const handleSendFunds = useCallback(() => {
-    open({ from: account?.address })
-  }, [account?.address, open])
+  const handleSendClick = useCallback(() => {
+    openSendTokens({ from: account?.address })
+  }, [account?.address, openSendTokens])
+
+  const handleCopyClick = useCallback(() => {
+    if (!account) return
+    openCopyAddressModal(account.address)
+  }, [account, openCopyAddressModal])
 
   return (
     <Container>
       <PaddedItem>
         <DashboardAccountSelect />
+        <Pills>
+          <PillButton onClick={handleSendClick}>
+            Send <PaperPlaneIcon />
+          </PillButton>
+          {account && (
+            <PillButton onClick={handleCopyClick}>
+              Copy <CopyIcon />
+            </PillButton>
+          )}
+        </Pills>
       </PaddedItem>
       <ScrollContainer className="scrollable">
         <Nav column>
-          <NavItem to="/accounts" icon={<IconUser />} end>
+          <NavItem to="/portfolio" icon={<IconUser />} end>
             Portfolio
           </NavItem>
           <NavItem to="/accounts/add" icon={<IconPlus />}>
             Add Account
           </NavItem>
-          <NavItem icon={<PaperPlaneIcon />} onClick={handleSendFunds}>
-            Send Funds
-          </NavItem>
-          <NavItem external to="https://app.talisman.xyz/nfts" icon={<PaperPlaneIcon />}>
+
+          <NavItem external to="https://app.talisman.xyz/nfts" icon={<ImageIcon />}>
             NFTs
           </NavItem>
-          <NavItem external to="https://app.talisman.xyz/crowdloans" icon={<PaperPlaneIcon />}>
+          <NavItem external to="https://app.talisman.xyz/crowdloans" icon={<StarIcon />}>
             Crowdloans
           </NavItem>
           <NavItem to="/settings" icon={<IconSettings />}>

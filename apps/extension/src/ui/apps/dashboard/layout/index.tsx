@@ -3,9 +3,11 @@ import styled from "styled-components"
 import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
 import { SideBar } from "./SideBar"
 import { BackButton } from "@talisman/components/BackButton"
+import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 
 type LayoutProps = {
   centered?: boolean
+  large?: boolean
   withBack?: boolean
   className?: string
 }
@@ -20,6 +22,7 @@ const UnstyledLayout: FC<LayoutProps> = ({ withBack, children, className }) => (
       </div>
     </article>
     <SendTokensModal />
+    <AddressFormatterModal />
   </main>
 )
 
@@ -31,7 +34,7 @@ const Layout = styled(UnstyledLayout)`
 
   > article {
     flex-grow: 1;
-    padding: 3vw 5.6vw;
+    padding: 5.2rem;
     overflow: hidden;
     overflow-y: scroll;
     position: relative;
@@ -46,7 +49,7 @@ const Layout = styled(UnstyledLayout)`
       }
     }
 
-    ${({ centered }) =>
+    ${({ centered, large }) =>
       !!centered &&
       `
       display: flex;
@@ -54,8 +57,7 @@ const Layout = styled(UnstyledLayout)`
       justify-content: center;
 
       > .children{
-        margin-top: 4vw;
-        max-width: 66rem;
+        max-width: ${large ? "96rem" : "66rem"};
       }
     `}
   }

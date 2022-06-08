@@ -1,8 +1,10 @@
 import { AccountJsonAny } from "@core/types"
-import { ChevronDownIcon } from "@talisman/theme/icons"
+import { AllAccountsIcon, ChevronDownIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
+import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useSelect } from "downshift"
 import { useEffect, useMemo } from "react"
@@ -21,10 +23,17 @@ const Button = styled.button`
 
   :hover {
     background-color: var(--color-background-muted-3x);
+  }
 
-    .ao-rows .ao-rowName {
-      color: var(--color-foreground-muted);
-    }
+  display: flex;
+  align-items: center;
+  .chevron {
+    font-size: 2.4rem;
+    color: var(--color-mid);
+    margin-right: 1.6rem;
+  }
+  :hover .chevron {
+    color: var(--color-foreground-muted);
   }
 `
 
@@ -34,10 +43,11 @@ const AccountOptionContainer = styled.div`
   padding: 1rem;
   width: 100%;
   overflow: hidden;
+  color: var(--color-mid);
 
   .ao-avatar {
     .account-avatar {
-      font-size: 4.8rem;
+      font-size: 4rem;
     }
   }
   .ao-rows {
@@ -49,66 +59,69 @@ const AccountOptionContainer = styled.div`
     gap: 0.4rem;
 
     .ao-rowName {
-      height: 2rem; // why 2.4 without this ?
-      display: flex;
       width: 100%;
       gap: 1rem;
       justify-content: space-between;
-      color: var(--color-mid);
-      font-size: 1.6rem;
+
+      font-size: 1.4rem;
       overflow: hidden;
 
-      .ao-rowNameText {
-        flex-grow: 1;
-        white-space: nowrap;
-        overflow: hidden;
-        width: 100%;
-        text-overflow: ellipsis;
-      }
-
-      svg {
-        font-size: 2rem;
-      }
+      white-space: nowrap;
+      overflow: hidden;
+      width: 100%;
+      text-overflow: ellipsis;
     }
     .ao-rowFiat {
-      font-size: 2rem;
-      line-height: 1.6rem;
+      font-size: 1.6rem;
     }
+  }
+
+  :hover {
+    color: var(--color-foreground-muted);
   }
 `
 
-type AccountOptionProps = AccountJsonAny & { withChevron?: boolean; noCountUp?: boolean }
+type AccountOptionProps = {
+  address?: string
+  totalUsd: number
+  genesisHash?: string | null
+  name?: string
+}
 
-const AccountOption = ({
-  address,
-  genesisHash,
-  name,
-  withChevron,
-  noCountUp,
-}: AccountOptionProps) => {
-  const { sum } = useBalancesByAddress(address)
-  const { total } = useMemo(() => sum.fiat("usd"), [sum])
-
+const AccountOption = ({ address, totalUsd, genesisHash, name }: AccountOptionProps) => {
   return (
     <AccountOptionContainer>
       <div className="ao-avatar">
-        <AccountAvatar address={address} genesisHash={genesisHash} />
+        {address ? (
+          <AccountAvatar address={address} genesisHash={genesisHash} />
+        ) : (
+          <AllAccountsIcon className="account-avatar" />
+        )}
       </div>
       <div className="ao-rows">
-        <div className="ao-rowName">
-          <div className="ao-rowNameText">{name}</div>
-          {withChevron && (
-            <div>
-              <ChevronDownIcon />
-            </div>
-          )}
-        </div>
+        <div className="ao-rowName">{name ?? shortenAddress(address)}</div>
         <div className="ao-rowFiat">
-          <Fiat amount={total} currency="usd" isBalance noCountUp={noCountUp} />
+          <Fiat amount={totalUsd} currency="usd" isBalance noCountUp />
         </div>
       </div>
     </AccountOptionContainer>
   )
+}
+
+type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & { address: string }
+
+const SingleAccountOption = (props: SingleAccountOptionProps) => {
+  const { sum } = useBalancesByAddress(props.address)
+  const { total } = useMemo(() => sum.fiat("usd"), [sum])
+
+  return <AccountOption {...props} totalUsd={total} />
+}
+
+const AllAccountsOption = () => {
+  const { sum } = useBalances()
+  const { total } = useMemo(() => sum.fiat("usd"), [sum])
+
+  return <AccountOption name="All accounts" totalUsd={total} />
 }
 
 const Container = styled.div`
@@ -127,12 +140,12 @@ const Container = styled.div`
     z-index: 10;
     position: absolute;
     left: 0;
-    top: 7.2rem;
+    top: 6.4rem;
     width: 100%;
     overflow-x: hidden;
     overflow-y: auto;
     max-height: calc(100vh - 12rem);
-    background-color: var(--color-background-muted-3x);
+    background-color: var(--color-background);
     border-bottom-left-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
 
@@ -143,25 +156,25 @@ const Container = styled.div`
       cursor: pointer;
 
       :hover {
-        background-color: var(--color-background-muted-2x);
-      }
-
-      .ao-rows {
-        .ao-rowName {
-          color: var(--color-foreground);
-        }
-        .ao-rowFiat {
-          color: var(--color-mid);
-        }
+        background-color: var(--color-background-muted-3x);
       }
     }
   }
 `
 
+const OPTION_ALL_ACCOUNTS = { address: undefined } as unknown as AccountJsonAny
+
 export const DashboardAccountSelect = () => {
   const { account, accounts, setSelectedAddress } = useDashboard()
-  const { isOpen, selectedItem, getToggleButtonProps, getMenuProps, getItemProps } = useSelect({
-    items: accounts,
+
+  const items = useMemo<AccountJsonAny[]>(
+    () => [OPTION_ALL_ACCOUNTS, ...accounts].filter((a) => a.address !== account?.address),
+    [account?.address, accounts]
+  )
+  const { isOpen, selectedItem, getToggleButtonProps, getMenuProps, getItemProps } = useSelect<
+    AccountJsonAny | undefined
+  >({
+    items,
     defaultSelectedItem: account,
   })
 
@@ -175,19 +188,16 @@ export const DashboardAccountSelect = () => {
   return (
     <Container className={classNames(isOpen && "open")}>
       <Button type="button" {...getToggleButtonProps()}>
-        {account && <AccountOption withChevron {...account} />}
+        {account ? <SingleAccountOption {...account} /> : <AllAccountsOption />}
+        <ChevronDownIcon className="chevron" />
       </Button>
       <ul {...getMenuProps()}>
-        {/* TODO all accounts */}
         {isOpen &&
-          accounts
-            .filter((a) => a.address !== account.address)
-            .map((item) => (
-              // can't forward the index arg because of the hidden account
-              <li key={item.address} {...getItemProps({ item, index: accounts.indexOf(item) })}>
-                <AccountOption {...item} noCountUp />
-              </li>
-            ))}
+          items.map((item, index) => (
+            <li key={item.address ?? "all"} {...getItemProps({ item, index })}>
+              {item.address ? <SingleAccountOption {...item} /> : <AllAccountsOption />}
+            </li>
+          ))}
       </ul>
     </Container>
   )

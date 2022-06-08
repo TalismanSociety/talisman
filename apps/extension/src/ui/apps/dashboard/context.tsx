@@ -8,7 +8,7 @@ const useDashboardProvider = () => {
   const accounts = useAccounts()
 
   const account = useMemo(
-    () => accounts.find((account) => account.address === selectedAddress) ?? accounts[0],
+    () => accounts.find((account) => account.address === selectedAddress),
     [accounts, selectedAddress]
   )
 

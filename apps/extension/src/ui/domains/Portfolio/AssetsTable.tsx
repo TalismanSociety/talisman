@@ -98,7 +98,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   const { token, chainId, chainIds, lockedTokens, lockedFiat, availableTokens, availableFiat } =
     useMemo(() => {
       const { token, chainId } = balances[0]
-      const chainIds = balances.map((b) => b.chainId)
+      const chainIds = [...new Set(balances.map((b) => b.chainId))]
 
       const summary = balances.reduce<BalanceSummary>(
         ({ lockedTokens, lockedFiat, availableTokens, availableFiat }, b) => ({
@@ -107,7 +107,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
             ? lockedFiat! + (b.frozen.fiat("usd") ?? 0) + (b.reserved.fiat("usd") ?? 0)
             : null,
           availableTokens: availableTokens + b.transferable.planck,
-          availableFiat: token?.rates ? availableFiat! + (b.frozen.fiat("usd") ?? 0) : null,
+          availableFiat: token?.rates ? availableFiat! + (b.transferable.fiat("usd") ?? 0) : null,
         }),
         {
           lockedTokens: BigInt(0),
@@ -119,7 +119,6 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
 
       return { token, chainId, chainIds, ...summary }
     }, [balances])
-  //const {chainIds} = useMemo(() => , [balances])
 
   if (!token) return null
 
@@ -139,19 +138,21 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
         </div>
       </td>
       <td className="right al-locked">
-        <div className="vflex">
-          <div>
-            <Tokens
-              amount={planckToTokens(lockedTokens.toString(), token.decimals)}
-              symbol={token.symbol}
-              isBalance
-            />{" "}
-            <LockIcon className="lock" />
+        {lockedTokens > 0 && (
+          <div className="vflex">
+            <div>
+              <Tokens
+                amount={planckToTokens(lockedTokens.toString(), token.decimals)}
+                symbol={token.symbol}
+                isBalance
+              />{" "}
+              <LockIcon className="lock" />
+            </div>
+            <div>
+              <Fiat currency="usd" amount={lockedFiat} isBalance />
+            </div>
           </div>
-          <div>
-            <Fiat currency="usd" amount={lockedFiat} isBalance />
-          </div>
-        </div>
+        )}
       </td>
       <td className="right al-available">
         <div className="vflex">
@@ -177,7 +178,8 @@ type AssetsTableProps = {
 
 export const AssetsTable = ({ balances }: AssetsTableProps) => {
   //TODO : find a safer way of matching tokens
-  // group by token (match by symbol + decimals + coingeckoId)
+  // group by token (match by symbol + decimals + coingeckoId) ?
+  // ! this works only as long as we don't need deep links to token details page
   const balancesByToken = useMemo(
     () =>
       balances.sorted.reduce((acc, b) => {
@@ -189,12 +191,6 @@ export const AssetsTable = ({ balances }: AssetsTableProps) => {
       }, {} as Record<string, Balance[]>),
     [balances.sorted]
   )
-
-  //   const withBalance =
-  //   console.log(withBalance.map((b) => b.toJSON()))
-  //   console.log(withBalance.map((b) => ({ tokenId: b.tokenId, id: b.id, token: b.token })))
-  //   const byTokenSymbol = withBalance
-  //console.log("balancesBySymbol", balancesByToken)
 
   return (
     <Table>

@@ -19,6 +19,7 @@ import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalC
 import Layout from "./layout"
 import { DashboardProvider } from "./context"
 import { Portfolio } from "./routes/Portfolio"
+import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
 const AccountAddLedger = lazy(() => import("./routes/AccountAddLedger"))
@@ -80,9 +81,11 @@ const DashboardInner = () => {
 
 const Dashboard = () => (
   <DashboardProvider>
-    <SendTokensModalProvider>
-      <DashboardInner />
-    </SendTokensModalProvider>
+    <AddressFormatterModalProvider>
+      <SendTokensModalProvider>
+        <DashboardInner />
+      </SendTokensModalProvider>
+    </AddressFormatterModalProvider>
   </DashboardProvider>
 )
 

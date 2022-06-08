@@ -2,6 +2,7 @@ import React, { useState, useEffect, PropsWithChildren } from "react"
 import styled from "styled-components"
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { NavigationDrawer } from "../components/Navigation/NavigationDrawer"
+import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 
 export interface IProps extends PropsWithChildren<any> {
   isThinking?: boolean
@@ -26,6 +27,7 @@ const Layout = ({ isThinking, className, children }: IProps) => {
         {header}
         {content}
         {footer}
+        <AddressFormatterModal />
         {/* NavigationDrawer here so user can see the drawer close smoothly in case he navigates from one page to another (as long as both page use this Layout) */}
         <NavigationDrawer />
       </ErrorBoundary>

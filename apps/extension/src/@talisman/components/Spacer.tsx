@@ -4,7 +4,6 @@ interface IProps {
   large?: boolean
   small?: boolean
   line?: boolean
-  //vertical?: boolean
   className?: string
 }
 
@@ -14,7 +13,7 @@ export default styled(Spacer)`
   height: 0;
   position: relative;
 
-  padding: ${({ large, small }) => (!!large ? "2vw" : !!small ? "0.5vw" : "1.3vw")} 0;
+  padding: ${({ large, small }) => (!!large ? "3.2rem" : !!small ? "1.6rem" : "2.4rem")} 0;
 
   ${({ line, theme }) =>
     !!line &&
