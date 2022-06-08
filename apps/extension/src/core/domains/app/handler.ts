@@ -19,6 +19,7 @@ import { mnemonicGenerate, mnemonicValidate } from "@polkadot/util-crypto"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { AppStoreData } from "@core/domains/app/store.app"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { Subject } from "rxjs"
 
 export default class AppHandler extends ExtensionHandler {
@@ -63,7 +64,7 @@ export default class AppHandler extends ExtensionHandler {
 
     try {
       // also derive a first ethereum account
-      const derivationPath = "/m/44'/60'/0'/0/0"
+      const derivationPath = getEthDerivationPath()
       keyring.addUri(
         `${mnemonic}${derivationPath}`,
         pass,
@@ -77,6 +78,7 @@ export default class AppHandler extends ExtensionHandler {
       )
     } catch (err) {
       // do not break onboarding as user couldn't recover from it
+      // eslint-disable-next-line no-console
       console.error(err)
     }
 

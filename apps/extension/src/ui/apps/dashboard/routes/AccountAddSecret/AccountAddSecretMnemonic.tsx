@@ -18,6 +18,7 @@ import { classNames } from "@talisman/util/classNames"
 import { Wallet } from "ethers"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import AccountAvatar from "@ui/domains/Account/Avatar"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 
 type FormData = {
   name: string
@@ -119,12 +120,12 @@ const isValidEthPrivateKey = (privateKey?: string) => {
 
 // for polkadot, do not force //0 derivation path to preserve backwards compatibility (since beta we import mnemonics as-is)
 // but for ethereum, use metamask's derivation path
-const ETHEREUM_DERIVATION_PATH = "/m/44'/60'/0'/0/0"
+const ETHEREUM_DERIVATION_PATH = getEthDerivationPath()
 
 const getAccountUri = async (mnemonic: string, type: AccountAddressType) => {
   if (!mnemonic || !type) throw new Error("Missing arguments")
   if (type === "ethereum" && isValidEthPrivateKey(mnemonic)) return mnemonic
-  if (await api.accountValidateMnemonic(mnemonic))
+  if (await testValidMnemonic(mnemonic))
     return type === "ethereum" ? `${mnemonic}${ETHEREUM_DERIVATION_PATH}` : mnemonic
   throw new Error("Invalid secret phrase")
 }
@@ -141,6 +142,12 @@ const testNoDuplicate = async (
   } catch (err) {
     return false
   }
+}
+
+const testValidMnemonic = async (val: string) => {
+  // Don't bother calling the api if the mnemonic isn't the right length to reduce Sentry noise
+  if (!Boolean(val) || ![12, 24].includes(val.split(" ").length)) return false
+  return await api.accountValidateMnemonic(val)
 }
 
 export const AccountAddSecretMnemonic = () => {
@@ -170,7 +177,7 @@ export const AccountAddSecretMnemonic = () => {
                 .test(
                   "is-valid-mnemonic-ethereum",
                   "Invalid secret",
-                  (val) => isValidEthPrivateKey(val) || api.accountValidateMnemonic(val!)
+                  (val) => isValidEthPrivateKey(val) || testValidMnemonic(val!)
                 )
                 .when("multi", {
                   is: false,
@@ -183,7 +190,7 @@ export const AccountAddSecretMnemonic = () => {
               otherwise: yup
                 .string()
                 .test("is-valid-mnemonic-sr25519", "Invalid secret", (val) =>
-                  api.accountValidateMnemonic(val!)
+                  testValidMnemonic(val!)
                 )
                 .when("multi", {
                   is: false,

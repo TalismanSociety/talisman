@@ -22,6 +22,7 @@ import { KeyringPair$Json } from "@polkadot/keyring/types"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { encodeAnyAddress } from "@core/util"
 import { DEBUG } from "@core/constants"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 
 export default class AccountsHandler extends ExtensionHandler {
   private getRootAccount() {
@@ -61,7 +62,7 @@ export default class AccountsHandler extends ExtensionHandler {
     ).length
     // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
     const derivationPath = isEthereum
-      ? `/m/44'/60'/0'/0/${derivedAccountIndex}`
+      ? getEthDerivationPath(derivedAccountIndex)
       : `//${derivedAccountIndex}`
 
     const password = this.stores.password.getPassword()
