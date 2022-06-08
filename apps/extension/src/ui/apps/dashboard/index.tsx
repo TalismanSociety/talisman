@@ -17,9 +17,11 @@ import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { api } from "@ui/api"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import Layout from "./layout"
-import { DashboardProvider } from "./context"
+import { SelectedAccountProvider } from "./context"
 import { Portfolio } from "./routes/Portfolio"
 import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
+import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
+import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
 const AccountAddLedger = lazy(() => import("./routes/AccountAddLedger"))
@@ -80,13 +82,17 @@ const DashboardInner = () => {
 }
 
 const Dashboard = () => (
-  <DashboardProvider>
-    <AddressFormatterModalProvider>
-      <SendTokensModalProvider>
-        <DashboardInner />
-      </SendTokensModalProvider>
-    </AddressFormatterModalProvider>
-  </DashboardProvider>
+  <SelectedAccountProvider>
+    <AccountRemoveModalProvider>
+      <AccountRenameModalProvider>
+        <AddressFormatterModalProvider>
+          <SendTokensModalProvider>
+            <DashboardInner />
+          </SendTokensModalProvider>
+        </AddressFormatterModalProvider>
+      </AccountRenameModalProvider>
+    </AccountRemoveModalProvider>
+  </SelectedAccountProvider>
 )
 
 export default Dashboard

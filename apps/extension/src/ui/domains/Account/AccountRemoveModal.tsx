@@ -4,17 +4,31 @@ import { ModalDialog } from "@talisman/components/ModalDialog"
 import { IconAlert } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useSelectedAccount } from "@ui/apps/dashboard/context"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+
+const REMOVABLE_ORIGINS = ["SEED", "JSON", "HARDWARE"]
 
 const useAccountRemoveModalProvider = () => {
-  const [address, setAddress] = useState<string>()
+  const { account } = useSelectedAccount()
+  const { isOpen, open, close } = useOpenClose()
 
-  const close = useCallback(() => setAddress(undefined), [])
+  const canRemove = useMemo(
+    () => REMOVABLE_ORIGINS.includes(account?.origin as string),
+    [account?.origin]
+  )
+
+  useEffect(() => {
+    close()
+  }, [account, close])
 
   return {
-    open: setAddress,
+    account,
+    isOpen,
+    open,
     close,
-    address,
+    canRemove,
   }
 }
 
@@ -23,15 +37,16 @@ export const [AccountRemoveModalProvider, useAccountRemoveModal] = provideContex
 )
 
 export const AccountRemoveModal = () => {
-  const { address, close } = useAccountRemoveModal()
+  const { account, close, isOpen } = useAccountRemoveModal()
 
   const handleConfirm = useCallback(async () => {
-    await api.accountForget(address!)
+    if (!account) return
+    await api.accountForget(account?.address)
     close()
-  }, [address, close])
+  }, [account, close])
 
   return (
-    <Modal open={Boolean(address)} onClose={close}>
+    <Modal open={isOpen} onClose={close}>
       <ModalDialog title="Remove account" onClose={close}>
         <StyledDialog
           icon={<IconAlert />}

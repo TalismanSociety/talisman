@@ -2,10 +2,9 @@ import { provideContext } from "@talisman/util/provideContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useMemo, useState } from "react"
 
-const useDashboardProvider = () => {
-  const [selectedAddress, setSelectedAddress] = useState<string>()
-
+const useSelectedAccountProvider = () => {
   const accounts = useAccounts()
+  const [selectedAddress, setSelectedAddress] = useState<string>()
 
   const account = useMemo(
     () => accounts.find((account) => account.address === selectedAddress),
@@ -15,4 +14,6 @@ const useDashboardProvider = () => {
   return { setSelectedAddress, accounts, account }
 }
 
-export const [DashboardProvider, useDashboard] = provideContext(useDashboardProvider)
+export const [SelectedAccountProvider, useSelectedAccount] = provideContext(
+  useSelectedAccountProvider
+)

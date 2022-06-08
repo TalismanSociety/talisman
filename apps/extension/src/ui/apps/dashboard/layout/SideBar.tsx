@@ -11,7 +11,7 @@ import { DashboardAccountSelect } from "./DashboardAccountSelect"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { CopyIcon, ImageIcon, PaperPlaneIcon, StarIcon } from "@talisman/theme/icons"
 import { useSendTokensModal } from "@ui/domains/Asset/Send"
-import { useDashboard } from "../context"
+import { useSelectedAccount } from "../context"
 import { PillButton } from "@talisman/components/PillButton"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 
@@ -91,7 +91,7 @@ const Pills = styled.div`
 `
 
 export const SideBar = () => {
-  const { account } = useDashboard()
+  const { account } = useSelectedAccount()
   const { open: openSendTokens } = useSendTokensModal()
   const { open: openCopyAddressModal } = useAddressFormatterModal()
 

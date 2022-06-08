@@ -16,6 +16,7 @@ import { useAddressFormatterModal } from "./AddressFormatterModal"
 import { useAccountRenameModal } from "./AccountRenameModal"
 import { useAccountRemoveModal } from "./AccountRemoveModal"
 import { useOpenableComponent } from "@talisman/hooks/useOpenableComponent"
+import { useAccountExport } from "@ui/hooks/useAccountExport"
 
 export interface IAccountItemOptions extends IAccountNameOptions, IAssetRowOptions {
   withBalanceInline?: boolean
@@ -46,8 +47,9 @@ const AccountItem = ({
   const account = useAccountByAddress(address)
   const balances = useBalancesByAddress(address)
   const { open: openAddressFormatter } = useAddressFormatterModal()
-  const { open: openAccountRename } = useAccountRenameModal()
-  const { open: openAccountRemove } = useAccountRemoveModal()
+  const { open: openAccountRename, canRename } = useAccountRenameModal()
+  const { open: openAccountRemove, canRemove } = useAccountRemoveModal()
+  const { canExportAccount, exportAccount } = useAccountExport()
   const { open: openSendTokensModal } = useSendTokensModal()
   const notEmptyBalances = useEmptyBalancesFilter(balances, account)
 
@@ -97,20 +99,11 @@ const AccountItem = ({
           {!!withSend && <PaperPlaneIcon className="icon send" onClick={handleSendClick} />}
           <PopNav trigger={<IconMore />} className="icon more" closeOnMouseOut>
             <PopNav.Item onClick={() => openAddressFormatter(address)}>Copy address</PopNav.Item>
-            <PopNav.Item onClick={() => openAccountRename(address)}>Rename</PopNav.Item>
-            {["SEED", "JSON", "DERIVED"].includes(account?.origin as string) && (
-              <PopNav.Item
-                onClick={async () => {
-                  const { exportedJson } = await api.accountExport(address)
-                  downloadJson(exportedJson, `${exportedJson.meta?.name || "talisman"}`)
-                }}
-              >
-                Export Private Key
-              </PopNav.Item>
+            <PopNav.Item onClick={openAccountRename}>Rename</PopNav.Item>
+            {canExportAccount && (
+              <PopNav.Item onClick={exportAccount}>Export Private Key</PopNav.Item>
             )}
-            {["SEED", "JSON", "HARDWARE"].includes(account?.origin as string) && (
-              <PopNav.Item onClick={() => openAccountRemove(address)}>Remove Account</PopNav.Item>
-            )}
+            {canRemove && <PopNav.Item onClick={openAccountRemove}>Remove Account</PopNav.Item>}
           </PopNav>
           <IconChevron className="icon chevron" onClick={toggleOpen} />
         </span>

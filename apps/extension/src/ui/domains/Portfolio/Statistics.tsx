@@ -7,7 +7,7 @@ const StatisticsContainer = styled.div`
   background-color: var(--color-background-muted);
   border-radius: var(--border-radius);
   padding: 1.6rem;
-  min-width: 23.6rem;
+  width: 23.6rem;
   gap: 0.8rem;
 `
 
@@ -21,11 +21,11 @@ const Children = styled.div`
   font-size: 1.8rem;
 `
 
-type StatisticsProps = { title: ReactNode; children: ReactNode }
+type StatisticsProps = { title: ReactNode; children: ReactNode; className?: string }
 
-export const Statistics = ({ title, children }: StatisticsProps) => {
+export const Statistics = ({ title, children, className }: StatisticsProps) => {
   return (
-    <StatisticsContainer>
+    <StatisticsContainer className={className}>
       <Title>{title}</Title>
       <Children>{children}</Children>
     </StatisticsContainer>

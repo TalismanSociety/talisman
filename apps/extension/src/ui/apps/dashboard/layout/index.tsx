@@ -4,6 +4,9 @@ import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
 import { SideBar } from "./SideBar"
 import { BackButton } from "@talisman/components/BackButton"
 import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
+import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 
 type LayoutProps = {
   centered?: boolean
@@ -15,13 +18,15 @@ type LayoutProps = {
 const UnstyledLayout: FC<LayoutProps> = ({ withBack, children, className }) => (
   <main className={className}>
     <SideBar />
-    <article>
+    <ScrollContainer className="main-area">
       <div className="children">
         {!!withBack && <BackButton className="back" />}
         {children}
       </div>
-    </article>
+    </ScrollContainer>
     <SendTokensModal />
+    <AccountRenameModal />
+    <AccountRemoveModal />
     <AddressFormatterModal />
   </main>
 )
@@ -32,26 +37,27 @@ const Layout = styled(UnstyledLayout)`
   color: var(--color-forground);
   display: flex;
 
-  > article {
+  .main-area {
     flex-grow: 1;
-    padding: 5.2rem;
     overflow: hidden;
     overflow-y: scroll;
-    position: relative;
 
-    > .children {
-      display: block;
-      width: 100%;
-      position: relative;
+    .scrollable-children {
+      padding: 5.2rem;
 
-      > .back {
-        margin-bottom: 3rem;
+      > .children {
+        display: block;
+        width: 100%;
+        position: relative;
+
+        > .back {
+          margin-bottom: 3rem;
+        }
       }
-    }
 
-    ${({ centered, large }) =>
-      !!centered &&
-      `
+      ${({ centered, large }) =>
+        !!centered &&
+        `
       display: flex;
       align-items: flex-start;
       justify-content: center;
@@ -60,6 +66,7 @@ const Layout = styled(UnstyledLayout)`
         max-width: ${large ? "96rem" : "66rem"};
       }
     `}
+    }
   }
 `
 

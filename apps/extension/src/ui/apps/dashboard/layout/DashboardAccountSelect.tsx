@@ -9,7 +9,7 @@ import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useSelect } from "downshift"
 import { useEffect, useMemo } from "react"
 import styled from "styled-components"
-import { useDashboard } from "../context"
+import { useSelectedAccount } from "../context"
 
 const Button = styled.button`
   background: none;
@@ -165,7 +165,7 @@ const Container = styled.div`
 const OPTION_ALL_ACCOUNTS = { address: undefined } as unknown as AccountJsonAny
 
 export const DashboardAccountSelect = () => {
-  const { account, accounts, setSelectedAddress } = useDashboard()
+  const { account, accounts, setSelectedAddress } = useSelectedAccount()
 
   const items = useMemo<AccountJsonAny[]>(
     () => [OPTION_ALL_ACCOUNTS, ...accounts].filter((a) => a.address !== account?.address),
@@ -179,10 +179,7 @@ export const DashboardAccountSelect = () => {
   })
 
   useEffect(() => {
-    if (selectedItem) {
-      console.log({ selectedItem })
-      setSelectedAddress(selectedItem.address)
-    }
+    if (selectedItem) setSelectedAddress(selectedItem.address)
   }, [selectedItem, setSelectedAddress])
 
   return (
