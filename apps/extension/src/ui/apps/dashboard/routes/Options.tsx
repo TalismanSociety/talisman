@@ -54,6 +54,7 @@ const Options = () => {
     useTestnets = false,
     useCustomEthereumNetworks,
     hideBalances = false,
+    allowNotifications = true,
     update,
   } = useSettings()
 
@@ -105,6 +106,15 @@ const Options = () => {
             <Field.Toggle value={useTestnets} onChange={handleSettingChange("useTestnets")} />
           </Setting>
         )}
+        <Setting
+          title="Allow notifications"
+          subtitle="Allow Talisman to send you notifications about transactions in progress"
+        >
+          <Field.Toggle
+            value={allowNotifications}
+            onChange={handleSettingChange("allowNotifications")}
+          />
+        </Setting>
         <Setting title="Hide Balances" subtitle="Blurs your portfolio and account balances">
           <Field.Toggle value={hideBalances} onChange={handleSettingChange("hideBalances")} />
         </Setting>

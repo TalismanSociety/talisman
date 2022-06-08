@@ -4,8 +4,7 @@ import { classNames } from "@talisman/util/classNames"
 import ChainLogo from "../Asset/Logo"
 import useChains from "@ui/hooks/useChains"
 import { lazy, Suspense, useMemo } from "react"
-import { SeedGradient } from "@talisman/components/SeedGradient"
-import { convertAddress } from "@talisman/util/convertAddress"
+import { TalismanOrb } from "@talisman/components/TalismanOrb"
 import ethIcon from "@talisman/theme/logos/eth-diamond-glyph-white.png"
 import { Address, IdenticonType } from "@core/types"
 import { useSettings } from "@ui/hooks/useSettings"
@@ -74,6 +73,15 @@ const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
   return chain ? <ChainLogo id={chain.id} /> : null
 }
 
+const PolkadotAvatar = ({ seed }: { seed: string }) => {
+  const theme = useMemo(() => (isEthereumAddress(seed) ? "ethereum" : "polkadot"), [seed])
+  return (
+    <Suspense fallback={<div className="identicon-loader"></div>}>
+      <IdentIcon value={seed} theme={theme} />
+    </Suspense>
+  )
+}
+
 type AccountAvatarProps = {
   address: Address
   className?: string
@@ -81,32 +89,8 @@ type AccountAvatarProps = {
   type?: IdenticonType
 }
 
-type AvatarProps = {
-  seed: string
-  isEthereum: boolean
-}
-
-const TalismanOrbAvatar = ({ seed, isEthereum }: AvatarProps) => (
-  <div className="avatar-talisman-orb">
-    <SeedGradient seed={seed!} />
-    {isEthereum && <div className="ethicon"></div>}
-  </div>
-)
-
-const PolkadotAvatar = ({ seed, isEthereum }: AvatarProps) => (
-  <Suspense fallback={<div className="identicon-loader"></div>}>
-    <IdentIcon value={seed} theme={isEthereum ? "ethereum" : "polkadot"} />
-  </Suspense>
-)
-
 const AccountAvatar = ({ address, className, genesisHash, type }: AccountAvatarProps) => {
   const { identiconType } = useSettings()
-
-  const avatarProps: AvatarProps = useMemo(() => {
-    const isEthereum = isEthereumAddress(address)
-    const seed = isEthereum ? address : convertAddress(address!, null)
-    return { isEthereum, seed }
-  }, [address])
 
   // apply look & feel from props if provided (should only be the case in AvatarTypeSelector)
   // fallbacks to settings store, or default talisman-orb value
@@ -115,9 +99,9 @@ const AccountAvatar = ({ address, className, genesisHash, type }: AccountAvatarP
   return (
     <Container className={classNames("account-avatar", className)}>
       {displayType === "polkadot-identicon" ? (
-        <PolkadotAvatar {...avatarProps} />
+        <PolkadotAvatar seed={address} />
       ) : (
-        <TalismanOrbAvatar {...avatarProps} />
+        <TalismanOrb seed={address} />
       )}
       {genesisHash && <ChainBadge genesisHash={genesisHash} />}
     </Container>

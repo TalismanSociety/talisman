@@ -171,14 +171,14 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
               name={chain.name}
               address={convertedAddress}
               onCopy={() => {
-                setCopied(convertedAddress)
+                setCopied(chain.id)
                 notification.success({
                   title: `${chain.name} address copied`,
                   subtitle: `Address: ${shortenAddress(convertedAddress)}`,
                 })
                 onClose()
               }}
-              copied={convertedAddress === copied}
+              copied={chain.id === copied}
             />
           )
         })}

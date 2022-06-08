@@ -38,6 +38,7 @@ const Container = styled.div`
   }
 
   .drawer-content {
+    z-index: 1;
     position: absolute;
     max-width: 100%;
     max-height: 100%;
