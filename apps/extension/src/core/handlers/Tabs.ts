@@ -40,7 +40,7 @@ import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { EthTabsHandler } from "@core/domains/ethereum"
 import RpcState from "./RpcState"
 import * as Sentry from "@sentry/browser"
-import { getAccountAvatar } from "@core/util/getAccountAvatar"
+import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
 
 export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()
@@ -82,7 +82,10 @@ export default class Tabs extends TabsHandler {
       anyType
     )
     const iconType = await this.stores.settings.get("identiconType")
-    return accounts.map((acc) => ({ ...acc, avatar: getAccountAvatar(acc.address, iconType) }))
+    return accounts.map((acc) => ({
+      ...acc,
+      avatar: getAccountAvatarDataUri(acc.address, iconType),
+    }))
   }
 
   private accountsSubscribe(url: string, id: string, port: Port): boolean {
@@ -98,7 +101,7 @@ export default class Tabs extends TabsHandler {
         const filteredAccounts = await filterAccountsByAddresses(accounts, addresses, true)
         return filteredAccounts.map((acc) => ({
           ...acc,
-          avatar: getAccountAvatar(acc.address, iconType),
+          avatar: getAccountAvatarDataUri(acc.address, iconType),
         }))
       }
     )
