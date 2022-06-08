@@ -49,12 +49,6 @@ export default class AccountsHandler extends ExtensionHandler {
     const rootAccount = this.getRootAccount()
     assert(rootAccount, "No root account")
 
-    // forbid derivation if we don't have a root account
-    assert(
-      allAccounts.some((account) => account.meta.origin === "ROOT"),
-      "Cannot calculate derivation path"
-    )
-
     const isEthereum = type === "ethereum"
     const derivedAccountIndex = allAccounts.filter(
       (account) =>
