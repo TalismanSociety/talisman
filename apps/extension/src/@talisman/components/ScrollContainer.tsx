@@ -38,12 +38,14 @@ const Container = styled.section`
 
   &.more-top {
     &:before {
+      z-index: 1;
       opacity: 1;
     }
   }
 
   &.more-bottom {
     &:after {
+      z-index: 1;
       opacity: 1;
     }
   }
@@ -75,11 +77,13 @@ export const ScrollContainer = ({
     }
     scrollable.addEventListener("scroll", handleDetectScroll)
     scrollable.addEventListener("resize", handleDetectScroll)
+    window.addEventListener("resize", handleDetectScroll)
     handleDetectScroll()
 
     return () => {
       scrollable.removeEventListener("scroll", handleDetectScroll)
       scrollable.removeEventListener("resize", handleDetectScroll)
+      window.removeEventListener("resize", handleDetectScroll)
     }
   }, [children, refDiv])
 
