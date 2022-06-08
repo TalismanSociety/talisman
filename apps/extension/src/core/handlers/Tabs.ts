@@ -40,6 +40,7 @@ import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { EthTabsHandler } from "@core/domains/ethereum"
 import RpcState from "./RpcState"
 import * as Sentry from "@sentry/browser"
+import { getAccountAvatar } from "@core/util/getAccountAvatar"
 
 export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()
@@ -75,7 +76,13 @@ export default class Tabs extends TabsHandler {
     { anyType }: RequestAccountList
   ): Promise<InjectedAccount[]> {
     const addresses = (await this.stores.sites.getSiteFromUrl(url)).addresses
-    return filterAccountsByAddresses(accountsObservable.subject.getValue(), addresses, anyType)
+    const accounts = filterAccountsByAddresses(
+      accountsObservable.subject.getValue(),
+      addresses,
+      anyType
+    )
+    const iconType = await this.stores.settings.get("identiconType")
+    return accounts.map((acc) => ({ ...acc, avatar: getAccountAvatar(acc.address, iconType) }))
   }
 
   private accountsSubscribe(url: string, id: string, port: Port): boolean {
@@ -84,10 +91,15 @@ export default class Tabs extends TabsHandler {
       port,
       this.stores.sites.observable,
       async () => {
+        const iconType = await this.stores.settings.get("identiconType")
         const accounts = accountsObservable.subject.getValue()
         const addresses = (await this.stores.sites.getSiteFromUrl(url))?.addresses
         if (!addresses) return []
-        return filterAccountsByAddresses(accounts, addresses, true)
+        const filteredAccounts = await filterAccountsByAddresses(accounts, addresses, true)
+        return filteredAccounts.map((acc) => ({
+          ...acc,
+          avatar: getAccountAvatar(acc.address, iconType),
+        }))
       }
     )
   }
