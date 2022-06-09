@@ -165,7 +165,7 @@ const Container = styled.div`
 const OPTION_ALL_ACCOUNTS = { address: undefined } as unknown as AccountJsonAny
 
 export const DashboardAccountSelect = () => {
-  const { account, accounts, setSelectedAddress } = useSelectedAccount()
+  const { account, accounts, select } = useSelectedAccount()
 
   const items = useMemo<AccountJsonAny[]>(
     () => [OPTION_ALL_ACCOUNTS, ...accounts].filter((a) => a.address !== account?.address),
@@ -179,8 +179,8 @@ export const DashboardAccountSelect = () => {
   })
 
   useEffect(() => {
-    if (selectedItem) setSelectedAddress(selectedItem.address)
-  }, [selectedItem, setSelectedAddress])
+    if (selectedItem) select(selectedItem.address)
+  }, [selectedItem, select])
 
   return (
     <Container className={classNames(isOpen && "open")}>

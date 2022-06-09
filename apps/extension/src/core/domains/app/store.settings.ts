@@ -8,6 +8,7 @@ export interface SettingsStoreData {
   useCustomEthereumNetworks: boolean
   hideBalances: boolean
   allowNotifications: boolean
+  selectedAccount: string | undefined
 }
 
 class SettingsStore extends StorageProvider<SettingsStoreData> {}
