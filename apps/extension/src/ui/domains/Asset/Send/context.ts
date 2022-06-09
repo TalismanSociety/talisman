@@ -25,7 +25,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   const check = useCallback(
     async (newData: SendTokensInputs, allowReap: boolean = false) => {
-      const { amount, tokenId, from, to } = newData
+      const { amount, tokenId, from, to, tip } = newData
 
       const token = tokens[tokenId]
       if (!token) throw new Error("Token not found")
@@ -79,6 +79,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         from,
         to,
         transfer.amount.planck.toString(),
+        tip,
         allowReap
       )
 
@@ -90,7 +91,11 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
           nativeToken.decimals,
           nativeToken.rates
         ),
-        amount: new BalanceFormatter(partialFee, nativeToken.decimals, nativeToken.rates),
+        amount: new BalanceFormatter(
+          BigInt(partialFee) + BigInt(tip),
+          nativeToken.decimals,
+          nativeToken.rates
+        ),
       }
 
       // for each currency involved, check if sufficient balance and if it will cause account to be reaped
@@ -156,7 +161,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   // execute the TX
   const send = useCallback(async () => {
-    const { amount, tokenId, from, to } = formData as SendTokensInputs
+    const { amount, tokenId, from, to, tip } = formData as SendTokensInputs
 
     const token = tokens[tokenId]
     if (!token) throw new Error("Token not found")
@@ -170,6 +175,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       from,
       to,
       tokensToPlanck(amount, token.decimals),
+      tip,
       hasAcceptedForfeit
     )
     setTransactionId(id)

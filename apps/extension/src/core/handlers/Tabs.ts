@@ -56,7 +56,7 @@ export default class Tabs extends TabsHandler {
 
   private async authorize(url: string, request: RequestAuthorizeTab): Promise<boolean> {
     const siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
-    if (siteFromUrl) {
+    if (siteFromUrl?.addresses) {
       // this url was seen in the past
       assert(
         siteFromUrl.addresses?.length,

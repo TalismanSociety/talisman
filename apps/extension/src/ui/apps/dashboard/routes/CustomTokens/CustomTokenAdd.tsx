@@ -102,14 +102,11 @@ export const CustomTokenAdd = () => {
         await api.addCustomErc20Token(tokenInfo)
         navigate("/")
       } catch (err) {
-        console.error(err, { err })
         setError(`Failed to add the token : ${(err as Error)?.message ?? ""}`)
       }
     },
     [navigate, tokenInfo]
   )
-
-  console.log({ tokenInfoError })
 
   return (
     <Layout withBack centered>

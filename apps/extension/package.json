@@ -92,10 +92,12 @@
     "rxjs": "^7.5.5",
     "style-loader": "3.3.1",
     "styled-components": "5.3.3",
+    "talisman-utils": "*",
     "terser-webpack-plugin": "^5.3.1",
     "ts-loader": "9.3.0",
     "typescript": "4.6.4",
     "typescript-plugin-styled-components": "~2.0.0",
+    "url-join": "^5.0.0",
     "url-loader": "4.1.1",
     "uuid": "^8.3.2",
     "webextension-polyfill": "^0.8.0",
@@ -105,8 +107,7 @@
     "webpack-merge": "^5.8.0",
     "webpack-sources": "^3.2.3",
     "yup": "0.32.11",
-    "zip-webpack-plugin": "^4.0.1",
-    "talisman-utils": "*"
+    "zip-webpack-plugin": "^4.0.1"
   },
   "devDependencies": {
     "@babel/plugin-syntax-flow": "^7.14.5",

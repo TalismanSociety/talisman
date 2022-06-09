@@ -83,11 +83,6 @@ export type TransactionMethodDetails = {
 
 export type TransactionDetails = {
   method: TransactionMethodDetails
-  era: { ImmortalEra: string }
-  nonce: string
-  signer: string
-  tip: string
-  isBatch: boolean
   batch?: TransactionMethodDetails[]
   payment: { class: string; partialFee: string; weight: number }
 }
@@ -854,6 +849,7 @@ export interface RequestAssetTransfer {
   fromAddress: string
   toAddress: string
   amount: string
+  tip: string
   reapBalance?: boolean
 }
 

@@ -396,7 +396,6 @@ export class EthTabsHandler extends TabsHandler {
       case "eth_chainId":
         await this.authoriseEth(url, { origin: "", ethereum: true })
         const chain = await this.getChainId(url)
-        console.log({ chain })
         return chain
 
       case "estimateGas": {

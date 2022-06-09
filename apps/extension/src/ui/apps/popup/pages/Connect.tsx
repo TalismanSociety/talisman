@@ -124,14 +124,6 @@ const Connect = ({ className, onSuccess }: any) => {
       />
 
       <Content>
-        {ethereum && (
-          <>
-            <h3>Network</h3>
-            <NetworkSelect defaultChainId={chainId} onChange={setChainId} />
-            <Spacer large />
-          </>
-        )}
-
         <h3>
           {ethereum
             ? "Choose the account you'd like to connect"
