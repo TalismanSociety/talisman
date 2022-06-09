@@ -14,19 +14,20 @@ const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) 
         <TalismanOrb seed={address} />
       )
 
-    const str = ReactDOMServer.renderToString(component)
+    const html = ReactDOMServer.renderToString(component)
 
     // blockies are rendered as img elements with base64 data, return as is
-    const rawUri = /<img([^>]*?)src="([^"]*?)"/gi.exec(str)
-    if (rawUri) {
-      cache[address]
-      return rawUri[2]
-    }
+    const rawUri = /<img([^>]*?)src="([^"]*?)"/gi.exec(html)
+    if (rawUri) return rawUri[2]
 
-    // polkadot identicons are rendered in a div and as svg but without namespace, so decoding breaks on the dapp unless we add it
-    let [svg] = /<svg.*?<\/svg>/gi.exec(str ?? "")!
+    // lookup svg inside the html, with polkadot identicons it's nested inside divs
+    let [svg] = /<svg.*?<\/svg>/gi.exec(html ?? "")!
+
+    // polkadot identicons are rendered in a div and as svg but without xml namespace,
+    // resulting data uri will be invalid unless we add it
     if (!svg.includes("xmlns")) svg = svg.replace("<svg", "<svg xmlns='http://www.w3.org/2000/svg'")
 
+    // encode as base64 data uri
     return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`
   } catch (err) {
     Sentry.captureException(err)
