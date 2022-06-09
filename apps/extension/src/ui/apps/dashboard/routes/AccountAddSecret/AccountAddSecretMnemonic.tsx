@@ -109,7 +109,8 @@ const cleanupMnemonic = (input: string = "") =>
     .join(" ")
 
 const isValidEthPrivateKey = (privateKey?: string) => {
-  if (!privateKey?.startsWith("0x")) return false
+  if (!privateKey) return false
+
   try {
     new Wallet(privateKey)
     return true
@@ -122,11 +123,16 @@ const isValidEthPrivateKey = (privateKey?: string) => {
 // but for ethereum, use metamask's derivation path
 const ETHEREUM_DERIVATION_PATH = getEthDerivationPath()
 
-const getAccountUri = async (mnemonic: string, type: AccountAddressType) => {
-  if (!mnemonic || !type) throw new Error("Missing arguments")
-  if (type === "ethereum" && isValidEthPrivateKey(mnemonic)) return mnemonic
-  if (await testValidMnemonic(mnemonic))
-    return type === "ethereum" ? `${mnemonic}${ETHEREUM_DERIVATION_PATH}` : mnemonic
+const getAccountUri = async (secret: string, type: AccountAddressType) => {
+  if (!secret || !type) throw new Error("Missing arguments")
+
+  // metamask exports private key without the 0x in front of it
+  // pjs keyring & crypto api will throw if it's missing
+  if (type === "ethereum" && isValidEthPrivateKey(secret))
+    return secret.startsWith("0x") ? secret : `0x${secret}`
+
+  if (await testValidMnemonic(secret))
+    return type === "ethereum" ? `${secret}${ETHEREUM_DERIVATION_PATH}` : secret
   throw new Error("Invalid secret phrase")
 }
 
