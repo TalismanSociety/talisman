@@ -17,10 +17,7 @@ const AccountAddTypePicker = () => {
 
   return (
     <Layout centered>
-      <HeaderBlock
-        title="Add Account"
-        text="Create a new account or import an existing Polkadot.js wallet"
-      />
+      <HeaderBlock title="Add Account" text="Create a new account or import an existing one" />
       <Spacer />
       <Grid columns={2}>
         <CtaButton
