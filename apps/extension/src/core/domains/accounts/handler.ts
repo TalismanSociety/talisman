@@ -17,11 +17,12 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { genericSubscription } from "@core/handlers/subscriptions"
-import { mnemonicValidate } from "@polkadot/util-crypto"
+import { isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { encodeAnyAddress } from "@core/util"
 import { DEBUG } from "@core/constants"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 
 export default class AccountsHandler extends ExtensionHandler {
   private getRootAccount() {
@@ -37,7 +38,7 @@ export default class AccountsHandler extends ExtensionHandler {
   //   - derivation path
   //   - account seed (unlocked via password)
 
-  private async accountCreate({ name }: RequestAccountCreate): Promise<boolean> {
+  private async accountCreate({ name, type }: RequestAccountCreate): Promise<boolean> {
     await new Promise((resolve) => setTimeout(resolve, DEBUG ? 0 : 1000))
     assert(this.stores.password.hasPassword, "Not logged in")
 
@@ -48,22 +49,31 @@ export default class AccountsHandler extends ExtensionHandler {
     const rootAccount = this.getRootAccount()
     assert(rootAccount, "No root account")
 
-    const derivationPath =
-      allAccounts.filter(
-        (account) => account.meta.origin === "ROOT" || account.meta.origin === "DERIVED"
-      ).length - 1
-    assert(derivationPath >= 0, "Cannot calculate derivation path")
+    const isEthereum = type === "ethereum"
+    const derivedAccountIndex = allAccounts.filter(
+      (account) =>
+        account.meta.origin === "DERIVED" && isEthereum === isEthereumAddress(account.address)
+    ).length
+    // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
+    const derivationPath = isEthereum
+      ? getEthDerivationPath(derivedAccountIndex)
+      : `//${derivedAccountIndex}`
 
     const password = this.stores.password.getPassword()
     const rootSeed = await this.stores.seedPhrase.getSeed(password || "")
     assert(rootSeed, "Global seed not available")
 
-    keyring.addUri(`${rootSeed}//${derivationPath}`, password, {
-      name,
-      origin: "DERIVED",
-      parent: rootAccount.address,
-      derivationPath: derivationPath,
-    })
+    keyring.addUri(
+      `${rootSeed}${derivationPath}`,
+      password,
+      {
+        name,
+        origin: "DERIVED",
+        parent: rootAccount.address,
+        derivationPath,
+      },
+      type
+    )
 
     return true
   }

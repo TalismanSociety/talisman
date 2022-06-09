@@ -345,6 +345,7 @@ export interface RequestOnboard {
 
 export interface RequestAccountCreate {
   name: string
+  type: AccountAddressType
 }
 
 export interface RequestLogin {
