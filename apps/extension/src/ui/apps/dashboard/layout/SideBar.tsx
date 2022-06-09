@@ -1,19 +1,25 @@
 import styled from "styled-components"
 import Nav, { NavItem } from "@talisman/components/Nav"
-import { ReactComponent as Logo } from "@talisman/theme/logos/talisman-full-color.svg"
 import Build from "@ui/domains/Build"
-import { ReactComponent as IconUser } from "@talisman/theme/icons/user.svg"
-import { ReactComponent as IconPlus } from "@talisman/theme/icons/plus.svg"
-import { ReactComponent as IconSettings } from "@talisman/theme/icons/settings.svg"
 import { lazy, Suspense, useCallback } from "react"
 import { BackupBanner } from "./BackupBanner"
 import { DashboardAccountSelect } from "./DashboardAccountSelect"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { CopyIcon, ImageIcon, PaperPlaneIcon, StarIcon } from "@talisman/theme/icons"
+import {
+  CopyIcon,
+  ImageIcon,
+  PaperPlaneIcon,
+  PlusIcon,
+  SettingsIcon,
+  StarIcon,
+  UserIcon,
+} from "@talisman/theme/icons"
 import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import { useSelectedAccount } from "../context"
 import { PillButton } from "@talisman/components/PillButton"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import { FullColorLogo, FullColorVerticalLogo } from "@talisman/theme/logos"
+import { IconButton } from "@talisman/components/IconButton"
 
 const PaddedItem = styled.div`
   padding: 2.4rem;
@@ -28,7 +34,10 @@ const BraveWarningBanner = lazy(
 const BrandLogo = styled(({ className }) => {
   return (
     <div className={className}>
-      <Logo className="logo" />
+      <a href="https://talisman.xyz" target="_blank">
+        <FullColorLogo className="logo-full" />
+        <FullColorVerticalLogo className="logo-vertical" />
+      </a>
       <Build.Version />
     </div>
   )
@@ -39,15 +48,56 @@ const BrandLogo = styled(({ className }) => {
   justify-content: space-between;
   padding-left: 0.6rem;
 
-  .logo {
+  .logo-full {
     width: auto;
     height: 3.2rem;
+  }
+  .logo-vertical {
+    display: none;
+  }
+
+  @media (max-width: 960px) {
+    .logo-full {
+      display: none;
+    }
+    .logo-vertical {
+      display: inline-block;
+      width: 6.4rem;
+      height: auto;
+    }
+  }
+`
+
+const Pills = styled.div`
+  display: flex;
+  gap: 0.8rem;
+  padding: 0.8rem;
+  padding-bottom: 0;
+  @media (max-width: 960px) {
+    display: none;
+  }
+`
+
+const Buttons = styled.div`
+  display: none;
+  gap: 0.8rem;
+  padding: 0.8rem;
+  padding-top: 0;
+  justify-content: space-between;
+
+  @media (max-width: 960px) {
+    display: flex;
+  }
+
+  .icon-button,
+  .icon-button svg {
+    width: 1.6rem;
+    height: 1.6rem;
   }
 `
 
 const Container = styled.aside`
   width: 32rem;
-  min-width: 32rem;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -81,13 +131,31 @@ const Container = styled.aside`
       }
     }
   }
-`
 
-const Pills = styled.div`
-  display: flex;
-  gap: 0.8rem;
-  padding: 0.8rem;
-  padding-bottom: 0;
+  @media (max-width: 960px) {
+    width: 7.4rem;
+    min-width: 7.4rem;
+
+    ${PaddedItem}, nav {
+      padding: 0.8rem;
+    }
+    .logo-container {
+      padding: 0.8rem 0;
+    }
+
+    nav .link span:last-child {
+      display: none;
+    }
+    nav .link {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    ${Pills}, .pill {
+      display: none;
+    }
+  }
 `
 
 export const SideBar = () => {
@@ -108,6 +176,7 @@ export const SideBar = () => {
     <Container>
       <PaddedItem>
         <DashboardAccountSelect />
+        {/* Pills for large screens */}
         <Pills>
           <PillButton onClick={handleSendClick}>
             Send <PaperPlaneIcon />
@@ -118,13 +187,24 @@ export const SideBar = () => {
             </PillButton>
           )}
         </Pills>
+        {/* Buttons for small screens */}
+        <Buttons>
+          <IconButton onClick={handleSendClick}>
+            <PaperPlaneIcon />
+          </IconButton>
+          {account && (
+            <IconButton onClick={handleCopyClick}>
+              <CopyIcon />
+            </IconButton>
+          )}
+        </Buttons>
       </PaddedItem>
       <ScrollContainer className="scrollable">
         <Nav column>
-          <NavItem to="/portfolio" icon={<IconUser />} end>
+          <NavItem to="/portfolio" icon={<UserIcon />} end>
             Portfolio
           </NavItem>
-          <NavItem to="/accounts/add" icon={<IconPlus />}>
+          <NavItem to="/accounts/add" icon={<PlusIcon />}>
             Add Account
           </NavItem>
 
@@ -134,7 +214,7 @@ export const SideBar = () => {
           <NavItem external to="https://app.talisman.xyz/crowdloans" icon={<StarIcon />}>
             Crowdloans
           </NavItem>
-          <NavItem to="/settings" icon={<IconSettings />}>
+          <NavItem to="/settings" icon={<SettingsIcon />}>
             Settings
           </NavItem>
         </Nav>
@@ -145,7 +225,7 @@ export const SideBar = () => {
           <BackupBanner />
         </div>
       </ScrollContainer>
-      <PaddedItem>
+      <PaddedItem className="logo-container">
         <BrandLogo />
       </PaddedItem>
     </Container>

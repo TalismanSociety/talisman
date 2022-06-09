@@ -159,6 +159,47 @@ const Container = styled.div`
         background-color: var(--color-background-muted-3x);
       }
     }
+
+    li.current {
+      background-color: var(--color-background-muted);
+      //border: 0.05rem solid var(--color-mid);
+      ${AccountOptionContainer} {
+        color: var(--color-foreground);
+      }
+    }
+  }
+
+  .current {
+    display: none;
+  }
+
+  @media (max-width: 960px) {
+    .current {
+      display: inherit;
+    }
+    ${Button} .ao-rows, .chevron {
+      display: none;
+    }
+
+    &.open ${Button} {
+      border-bottom-left-radius: var(--border-radius);
+      border-bottom-right-radius: var(--border-radius);
+    }
+    > ul {
+      position: fixed;
+      border-top-left-radius: var(--border-radius);
+      border-top-right-radius: var(--border-radius);
+      max-width: 24rem;
+      top: 0.7rem;
+      left: 0.7rem;
+    }
+
+    &.open > ul {
+      border: 0.02rem solid var(--color-background-muted-3x);
+      .current {
+        border-bottom: 0.02rem solid var(--color-background-muted-3x);
+      }
+    }
   }
 `
 
@@ -171,12 +212,11 @@ export const DashboardAccountSelect = () => {
     () => [OPTION_ALL_ACCOUNTS, ...accounts].filter((a) => a.address !== account?.address),
     [account?.address, accounts]
   )
-  const { isOpen, selectedItem, getToggleButtonProps, getMenuProps, getItemProps } = useSelect<
-    AccountJsonAny | undefined
-  >({
-    items,
-    defaultSelectedItem: account,
-  })
+  const { isOpen, selectedItem, getToggleButtonProps, getMenuProps, getItemProps, closeMenu } =
+    useSelect<AccountJsonAny | undefined>({
+      items,
+      defaultSelectedItem: account,
+    })
 
   useEffect(() => {
     if (selectedItem) select(selectedItem.address)
@@ -189,12 +229,19 @@ export const DashboardAccountSelect = () => {
         <ChevronDownIcon className="chevron" />
       </Button>
       <ul {...getMenuProps()}>
-        {isOpen &&
-          items.map((item, index) => (
-            <li key={item.address ?? "all"} {...getItemProps({ item, index })}>
-              {item.address ? <SingleAccountOption {...item} /> : <AllAccountsOption />}
+        {isOpen && (
+          <>
+            {/* This first item is hidden by default, displayed only on small screen, when button contains only the avatar */}
+            <li className="current" onClick={closeMenu}>
+              {account ? <SingleAccountOption {...account} /> : <AllAccountsOption />}
             </li>
-          ))}
+            {items.map((item, index) => (
+              <li key={item.address ?? "all"} {...getItemProps({ item, index })}>
+                {item.address ? <SingleAccountOption {...item} /> : <AllAccountsOption />}
+              </li>
+            ))}
+          </>
+        )}
       </ul>
     </Container>
   )
