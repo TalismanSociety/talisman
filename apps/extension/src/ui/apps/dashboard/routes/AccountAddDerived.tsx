@@ -1,5 +1,4 @@
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
 import { useNavigate } from "react-router-dom"
 import { useNotification } from "@talisman/components/Notification"
 import Layout from "../layout"
@@ -12,10 +11,35 @@ import { FormField } from "@talisman/components/Field/FormField"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import useAccounts from "@ui/hooks/useAccounts"
+import styled from "styled-components"
+import { AccountAddressType } from "@core/types"
+import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import { classNames } from "@talisman/util/classNames"
+
+const Container = styled(Layout)`
+  .hide {
+    opacity: 0;
+    transition: opacity var(--transition-speed) ease-in-out;
+  }
+  .show {
+    opacity: 1;
+  }
+
+  .buttons {
+    display: flex;
+    width: 100%;
+    justify-content: flex-end;
+  }
+`
 
 type FormData = {
   name: string
+  type: AccountAddressType
 }
+
+const Spacer = styled.div<{ small?: boolean }>`
+  height: ${({ small }) => (small ? "1.6rem" : "3.2rem")};
+`
 
 const AccountNew = () => {
   const navigate = useNavigate()
@@ -28,14 +52,19 @@ const AccountNew = () => {
       yup
         .object({
           name: yup.string().required("").notOneOf(accountNames, "Name already in use"),
+          type: yup.string().required("").oneOf(["ethereum", "sr25519"]),
         })
         .required(),
+
     [accountNames]
   )
 
   const {
     register,
     handleSubmit,
+    setValue,
+    setFocus,
+    watch,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
@@ -43,7 +72,7 @@ const AccountNew = () => {
   })
 
   const submit = useCallback(
-    async ({ name }: FormData) => {
+    async ({ name, type }: FormData) => {
       notification.processing({
         title: "Creating account",
         subtitle: "Please wait",
@@ -51,7 +80,7 @@ const AccountNew = () => {
       })
 
       try {
-        await api.accountCreate(name)
+        await api.accountCreate(name, type)
         notification.success({
           title: "Account created",
           subtitle: name,
@@ -67,30 +96,46 @@ const AccountNew = () => {
     [navigate, notification]
   )
 
+  const handleTypeChange = useCallback(
+    (type: AccountAddressType) => {
+      setValue("type", type, { shouldValidate: true })
+      setFocus("name")
+    },
+    [setFocus, setValue]
+  )
+
+  const type = watch("type")
+
   return (
-    <Layout withBack centered>
+    <Container withBack centered>
       <HeaderBlock
         title="Create a new account"
-        text="Choose a name for your account. You can always change this later."
+        text="What type of account would you like to create ?"
       />
       <Spacer />
-      <form data-button-pull-left onSubmit={handleSubmit(submit)}>
-        <FormField error={errors.name}>
-          <input
-            {...register("name")}
-            placeholder="Choose a name"
-            spellCheck={false}
-            autoComplete="off"
-            autoFocus
-            data-lpignore
-          />
-        </FormField>
+      <form onSubmit={handleSubmit(submit)}>
+        <AccountTypeSelector onChange={handleTypeChange} />
         <Spacer />
-        <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-          Create <ArrowRightIcon />
-        </SimpleButton>
+        <div className={classNames("hide", type && "show")}>
+          <FormField error={errors.name}>
+            <input
+              {...register("name")}
+              placeholder="Choose a name"
+              spellCheck={false}
+              autoComplete="off"
+              autoFocus
+              data-lpignore
+            />
+          </FormField>
+          <Spacer />
+          <div className="buttons">
+            <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
+              Create <ArrowRightIcon />
+            </SimpleButton>
+          </div>
+        </div>
       </form>
-    </Layout>
+    </Container>
   )
 }
 

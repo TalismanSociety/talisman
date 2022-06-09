@@ -81,7 +81,7 @@ export default interface MessageTypes {
   addressFromMnemonic: (mnemonic: string, type?: AccountAddressType) => Promise<string>
 
   // account message types ---------------------------------------------------
-  accountCreate: (name: string) => Promise<boolean>
+  accountCreate: (name: string, type: AccountAddressType) => Promise<boolean>
   accountCreateFromSeed: (name: string, seed: string, type?: AccountAddressType) => Promise<boolean>
   accountCreateFromJson: (json: string, password: string) => Promise<boolean>
   accountCreateHardware: (
