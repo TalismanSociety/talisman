@@ -1,0 +1,49 @@
+import { IdenticonType } from "@core/types"
+import Identicon from "@polkadot/react-identicon"
+import { isEthereumAddress } from "@polkadot/util-crypto"
+import { TalismanOrb } from "@talisman/components/TalismanOrb"
+import * as ReactDOMServer from "react-dom/server"
+import * as Sentry from "@sentry/browser"
+
+const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) => {
+  try {
+    const component =
+      iconType === "polkadot-identicon" ? (
+        <Identicon value={address} theme={isEthereumAddress(address) ? "ethereum" : "polkadot"} />
+      ) : (
+        <TalismanOrb seed={address} />
+      )
+
+    const html = ReactDOMServer.renderToString(component)
+
+    // blockies are rendered as img elements with base64 data, return as is
+    const rawUri = /<img([^>]*?)src="([^"]*?)"/gi.exec(html)
+    if (rawUri) return rawUri[2]
+
+    // lookup svg inside the html, with polkadot identicons it's nested inside divs
+    let [svg] = /<svg.*?<\/svg>/gi.exec(html ?? "")!
+
+    // polkadot identicons are rendered in a div and as svg but without xml namespace,
+    // resulting data uri will be invalid unless we add it
+    if (!svg.includes("xmlns")) svg = svg.replace("<svg", "<svg xmlns='http://www.w3.org/2000/svg'")
+
+    // encode as base64 data uri
+    return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`
+  } catch (err) {
+    Sentry.captureException(err)
+    return null
+  }
+}
+
+const cache: Record<string, string | null> = {}
+
+export const getAccountAvatarDataUri = (
+  address: string,
+  iconType: IdenticonType = "talisman-orb"
+) => {
+  const cacheKey = `${address}-${iconType}`
+  if (cache[cacheKey] === undefined)
+    cache[cacheKey] = generateAccountAvatarDataUri(address, iconType)
+
+  return cache[cacheKey]
+}
