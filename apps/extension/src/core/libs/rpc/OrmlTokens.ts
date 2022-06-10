@@ -19,6 +19,7 @@ import {
 } from "@core/types"
 import * as Sentry from "@sentry/browser"
 import { DEBUG } from "@core/constants"
+import { db } from "@core/libs/dexieDb"
 
 // Tokens.Account is the state_storage key prefix for orml tokens
 const moduleHash = "99971b5749ac43e0235e41b0d3786918" // xxhashAsHex("Tokens", 128).replace("0x", "")
@@ -82,11 +83,11 @@ export default class OrmlTokensRpc {
     addresses: Address[],
     callback: SubscriptionCallback<Balances>
   ): Promise<UnsubscribeFn> {
-    const chain = await chainStore.chain(chainId)
+    const chain = await db.chains.get(chainId)
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     if (!chain.tokens) return () => {}
-    const tokens = Object.values(await tokenStore.tokens(chain.tokens.map(({ id }) => id))).filter(
-      (token): token is OrmlToken => token.type === "orml"
+    const tokens = (await db.tokens.bulkGet(chain.tokens.map(({ id }) => id))).filter(
+      (token): token is OrmlToken => token !== undefined && token.type === "orml"
     )
 
     // set up method, return message type and params
@@ -122,11 +123,11 @@ export default class OrmlTokensRpc {
    * @returns The fetched tokens as a `TokenList`.
    */
   private static async fetchTokens(chainId: ChainId, addresses: Address[]): Promise<Balances> {
-    const chain = await chainStore.chain(chainId)
+    const chain = await db.chains.get(chainId)
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     if (!chain.tokens) return new Balances([])
-    const tokens = Object.values(await tokenStore.tokens(chain.tokens.map(({ id }) => id))).filter(
-      (token): token is OrmlToken => token.type === "orml"
+    const tokens = (await db.tokens.bulkGet(chain.tokens.map(({ id }) => id))).filter(
+      (token): token is OrmlToken => token !== undefined && token.type === "orml"
     )
 
     // set up method and params

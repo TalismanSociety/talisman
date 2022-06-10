@@ -1,6 +1,6 @@
 import styled from "styled-components"
 import globeIcon from "@talisman/theme/icons/globe.white.svg"
-import { useEthereumNetwork } from "@ui/hooks/useEthereumNetwork"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { classNames } from "@talisman/util/classNames"
 
 const NetworkLogoContainer = styled.picture`
@@ -24,15 +24,13 @@ type NetworkLogoProps = {
 }
 
 export const NetworkLogo = ({ ethChainId, className }: NetworkLogoProps) => {
-  const network = useEthereumNetwork(ethChainId)
+  const network = useEvmNetwork(ethChainId)
 
   if (!network) return null
 
   return (
     <NetworkLogoContainer className={classNames("network-logo", className)}>
-      {network.iconUrls.map((url, i) => (
-        <source key={i} srcSet={url} />
-      ))}
+      {"iconUrls" in network && network.iconUrls.map((url, i) => <source key={i} srcSet={url} />)}
       <img src={globeIcon} alt="" />
     </NetworkLogoContainer>
   )

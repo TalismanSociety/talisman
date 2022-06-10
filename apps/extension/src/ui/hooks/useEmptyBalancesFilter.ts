@@ -1,5 +1,5 @@
 import { Balances, Balance } from "@core/types"
-import { useMemo } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { AccountJson } from "@core/types"
 
 export default function useEmptyBalancesFilter(
@@ -14,11 +14,17 @@ export default function useEmptyBalancesFilter(
     [account?.type, account?.genesisHash, account?.isHardware]
   )
 
-  return useMemo(() => balances.find(balanceFilter), [balances, balanceFilter])
+  const [filteredBalances, setFilteredBalances] = useState<Balances>(new Balances([]))
+
+  useEffect(() => {
+    setFilteredBalances(balances.find(balanceFilter))
+  }, [balances, balanceFilter])
+
+  return filteredBalances
 }
 
 const moonbeamFilter = (balance: Balance) =>
-  (balance.isPallet("balances") && ["moonbeam", "moonriver"].includes(balance.chainId)) ||
+  (balance.isPallet("balances") && ["moonbeam", "moonriver"].includes(balance.chainId || "")) ||
   balance.transferable.planck !== BigInt("0")
 
 const polkadotFilter = (genesisHash?: string | null) => (balance: Balance) => {
@@ -28,7 +34,7 @@ const polkadotFilter = (genesisHash?: string | null) => (balance: Balance) => {
     showBalance =
       (genesisHash
         ? balance.chain?.genesisHash === genesisHash
-        : ["polkadot", "kusama"].includes(balance.chainId)) || showBalance
+        : ["polkadot", "kusama"].includes(balance.chainId || "")) || showBalance
   }
 
   return showBalance

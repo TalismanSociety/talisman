@@ -1,6 +1,6 @@
-import { EthereumNetwork } from "@core/types"
+import { CustomEvmNetwork, EvmNetwork } from "@core/types"
 import { Dropdown } from "@talisman/components/Dropdown"
-import { useEthereumNetworks } from "@ui/hooks/useEthereumNetworks"
+import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
 import globeIcon from "@talisman/theme/icons/globe.white.svg"
@@ -18,7 +18,7 @@ type NetworkSelectProps = {
   disabled?: boolean
 }
 
-const renderNetwork = (network: EthereumNetwork) => {
+const renderNetwork = (network: EvmNetwork | CustomEvmNetwork) => {
   return (
     <NetworkItem>
       <NetworkLogo ethChainId={network.id} />
@@ -33,9 +33,9 @@ export const NetworkSelect = ({
   onChange,
   disabled,
 }: NetworkSelectProps) => {
-  const networks = useEthereumNetworks()
+  const networks = useSortedEvmNetworks()
 
-  const [selected, setSelected] = useState<EthereumNetwork | undefined>(
+  const [selected, setSelected] = useState<EvmNetwork | CustomEvmNetwork | undefined>(
     networks.find((n) => n.id === defaultChainId)
   )
 
@@ -49,7 +49,7 @@ export const NetworkSelect = ({
   }, [defaultChainId, networks, selected])
 
   const handleChange = useCallback(
-    (item: EthereumNetwork | null) => {
+    (item: EvmNetwork | CustomEvmNetwork | null) => {
       if (!item) return
       setSelected(item)
       if (onChange) onChange(item.id)

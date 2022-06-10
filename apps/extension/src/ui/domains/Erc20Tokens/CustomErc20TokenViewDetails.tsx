@@ -1,5 +1,5 @@
 import { ReactNode, useMemo } from "react"
-import { CustomErc20Token, EthereumNetwork } from "@core/types"
+import { CustomErc20Token, CustomEvmNetwork, EvmNetwork } from "@core/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -99,7 +99,7 @@ const ViewDetailsEntry = ({ title, value, href }: ViewDetailsEntryProps) => (
 
 type CustomErc20TokenViewDetailsProps = {
   token: CustomErc20Token
-  network: EthereumNetwork
+  network: EvmNetwork | CustomEvmNetwork
 }
 
 export const CustomErc20TokenViewDetails = ({
@@ -109,9 +109,9 @@ export const CustomErc20TokenViewDetails = ({
   const { isOpen, open, close } = useOpenClose()
 
   const contractUrl = useMemo(() => {
-    if (!network.explorerUrls.length) return ""
-    return `${network.explorerUrls[0]}/address/${token.contractAddress}`
-  }, [network.explorerUrls, token.contractAddress])
+    if (!network.explorerUrl) return ""
+    return `${network.explorerUrl}/address/${token.contractAddress}`
+  }, [network.explorerUrl, token.contractAddress])
 
   return (
     <>

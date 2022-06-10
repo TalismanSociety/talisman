@@ -1,18 +1,19 @@
 import styled from "styled-components"
+import CustomTokenGeneric from "@talisman/theme/icons/custom-token-generic.svg"
 
 interface IAssetLogo {
-  id: string
+  id?: string | number
   className?: string
 }
 
-const backgroundUrl = (chainId: string) =>
-  `url(https://raw.githubusercontent.com/TalismanSociety/chaindata/main/assets/${chainId}/logo.svg)`
+const background = (chainId?: string | number) =>
+  `https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/split-entities/assets/${chainId}/logo.svg`
 
 const AssetLogo = ({ id, className }: IAssetLogo) => {
   return (
     <div
       className={`${className} chain-logo`}
-      style={{ backgroundImage: backgroundUrl(id) }}
+      style={{ backgroundImage: `url(${background(id)}), url(${CustomTokenGeneric})` }}
       data-id={id}
     />
   )

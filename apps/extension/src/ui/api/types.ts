@@ -32,12 +32,13 @@ import {
   AccountAddressType,
   AnySigningRequest,
   AddEthereumChainRequest,
-  EthereumNetworkList,
-  EthereumNetwork,
+  EvmNetworkList,
+  EvmNetwork,
   AnyEthRequestChainId,
   CustomErc20Token,
   CustomErc20TokenCreate,
   WatchAssetRequest,
+  CustomEvmNetwork,
 } from "@core/types"
 import { EthResponseType } from "@core/injectEth/types"
 
@@ -97,10 +98,14 @@ export default interface MessageTypes {
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
-  subscribeBalances: (cb: (balances: BalancesUpdate) => void) => UnsubscribeFn
-  subscribeBalancesById: (id: string, cb: (balance: BalanceStorage) => void) => UnsubscribeFn
-  getBalance: ({ chainId, tokenId, address }: RequestBalance) => Promise<BalanceStorage>
-  subscribeBalancesByParams: (
+  getBalance: ({
+    chainId,
+    evmNetworkId,
+    tokenId,
+    address,
+  }: RequestBalance) => Promise<BalanceStorage>
+  balances: (cb: () => void) => UnsubscribeFn
+  balancesByParams: (
     addressesByChain: AddressesByChain,
     cb: (balances: BalancesUpdate) => void
   ) => UnsubscribeFn
@@ -127,16 +132,10 @@ export default interface MessageTypes {
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
 
   // chain message types
-  chains: () => Promise<ChainList>
-  chain: (id: string) => Promise<Chain>
-  chainsSubscribe: (cb: (chains: ChainList) => void) => UnsubscribeFn
-  chainSubscribe: (id: string, cb: (chain: Chain) => void) => UnsubscribeFn
+  chains: (cb: () => void) => UnsubscribeFn
 
   // token message types
-  tokens: () => Promise<TokenList>
-  token: (id: string) => Promise<Token>
-  tokensSubscribe: (cb: (tokens: TokenList) => void) => UnsubscribeFn
-  tokenSubscribe: (id: string, cb: (token: Token) => void) => UnsubscribeFn
+  tokens: (cb: () => void) => UnsubscribeFn
 
   // custom erc20 token management
   customErc20Tokens: () => Promise<Record<CustomErc20Token["id"], CustomErc20Token>>
@@ -148,14 +147,8 @@ export default interface MessageTypes {
   ) => Promise<boolean>
 
   // ethereum networks message types
-  ethereumNetworks: () => Promise<EthereumNetworkList>
-  ethereumNetwork: (id: string) => Promise<EthereumNetwork>
-  ethereumNetworksSubscribe: (cb: (ethereumNetworks: EthereumNetworkList) => void) => UnsubscribeFn
-  ethereumNetworkSubscribe: (
-    id: string,
-    cb: (ethereumNetwork: EthereumNetwork) => void
-  ) => UnsubscribeFn
-  addCustomEthereumNetwork: (ethereumNetwork: EthereumNetwork) => Promise<boolean>
+  ethereumNetworks: (cb: () => void) => UnsubscribeFn
+  addCustomEthereumNetwork: (ethereumNetwork: CustomEvmNetwork) => Promise<boolean>
   removeCustomEthereumNetwork: (id: string) => Promise<boolean>
   clearCustomEthereumNetworks: () => Promise<boolean>
 

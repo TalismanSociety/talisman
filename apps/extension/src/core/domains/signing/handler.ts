@@ -23,6 +23,7 @@ import {
 } from "@polkadot/extension-base/background/types"
 import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { watchSubstrateTransaction } from "@core/notifications"
+import { db } from "@core/libs/dexieDb"
 
 // a global registry to use internally
 const registry = new TypeRegistry()
@@ -61,8 +62,8 @@ export default class SigningHandler extends ExtensionHandler {
     // notify user about transaction progress
     if (isJsonPayload(payload) && (await this.stores.settings.get("allowNotifications"))) {
       const json = payload as SignerPayloadJSON
-      const chains = await this.stores.chains.get()
-      const chain = Object.values(chains).find((c) => c.genesisHash === json.genesisHash)
+      const chains = await db.chains.toArray()
+      const chain = chains.find((c) => c.genesisHash === json.genesisHash)
       if (chain) {
         // it's hard to get a reliable hash, we'll use signature to identify the on chain extrinsic
         // our signature : 0x016c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
@@ -115,8 +116,8 @@ export default class SigningHandler extends ExtensionHandler {
 
     const { address, nonce, blockHash, genesisHash, signedExtensions } = queued.request.payload
 
-    const chains = await this.stores.chains.get()
-    const chain = Object.values(chains).find((c) => c.genesisHash === genesisHash)
+    const chains = await db.chains.toArray()
+    const chain = chains.find((c) => c.genesisHash === genesisHash)
     assert(chain, "Unable to find chain")
 
     const [runtimeVersion, registry] = await Promise.all([

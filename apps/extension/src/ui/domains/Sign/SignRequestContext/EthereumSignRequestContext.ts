@@ -3,7 +3,7 @@ import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHist
 import { getTransactionFeeParams } from "@talisman/util/getTransactionFeeParams"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useEthereumNetwork } from "@ui/hooks/useEthereumNetwork"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEthereumProvider } from "@ui/hooks/useEthereumProvider"
 import useSigningRequestById from "@ui/hooks/useSigningRequestById"
 import { BigNumber, ethers } from "ethers"
@@ -12,7 +12,7 @@ import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const useEthSignRequestProvider = ({ id }: { id: string }) => {
   const signingRequest = useSigningRequestById(id) as EthSignAndSendRequest | undefined
-  const network = useEthereumNetwork(signingRequest?.ethChainId)
+  const network = useEvmNetwork(signingRequest?.ethChainId)
   const provider = useEthereumProvider(signingRequest?.ethChainId)
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>()
   const [estimatedGasError, setEstimatedGasError] = useState<string>()

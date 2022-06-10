@@ -1,3 +1,5 @@
+import { ExtensionHandler } from "@core/libs/Handler"
+import { assert } from "@polkadot/util"
 import type {
   ChainId,
   CustomErc20Token,
@@ -11,9 +13,6 @@ import type {
   ResponseType,
 } from "core/types"
 
-import { ExtensionHandler } from "@core/libs/Handler"
-import { assert } from "@polkadot/util"
-
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
@@ -25,17 +24,8 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       // token handlers -----------------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(tokens)":
-        return this.stores.tokens.tokens()
-
-      case "pri(tokens.byid)":
-        return this.stores.tokens.token((request as RequestIdOnly).id)
-
       case "pri(tokens.subscribe)":
-        return this.stores.tokens.subscribe(id, port)
-
-      case "pri(tokens.byid.subscribe)":
-        return this.stores.tokens.subscribeById(id, port, request as RequestIdOnly)
+        return this.stores.tokens.hydrateStore()
 
       // --------------------------------------------------------------------
       // ERC20 token handlers -----------------------------------------------------
@@ -61,6 +51,8 @@ export default class TokensHandler extends ExtensionHandler {
           ...token,
           id: `${token.chainId || token.evmNetworkId}-erc20-${token.contractAddress}`,
           type: "erc20",
+          isTestnet: false,
+          isCustom: true,
         }
 
         return await this.stores.evmAssets.set({ [newToken.id]: newToken })
@@ -74,17 +66,18 @@ export default class TokensHandler extends ExtensionHandler {
           filter === undefined
             ? // delete if no filter set
               true
-            : filter.chainId === token.chainId
+            : filter.chainId === token.chain?.id
             ? // delete if chainId filter set and this token is on the chain
               true
-            : filter.evmNetworkId === token.evmNetworkId
+            : filter.evmNetworkId === token.evmNetwork?.id
             ? // delete if evmNetworkId set and this token is on the evmNetwork
               true
             : // don't delete
               false
 
         const deleteTokens = Object.values(await this.stores.evmAssets.get()).filter(deleteFilterFn)
-        return await Promise.all(deleteTokens.map(({ id }) => this.stores.evmAssets.remove(id)))
+        await Promise.all(deleteTokens.map(({ id }) => this.stores.evmAssets.remove(id)))
+        return
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

@@ -9,7 +9,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import styled from "styled-components"
 
 import { useCustomErc20Token } from "@ui/hooks/useCustomErc20Token"
-import { useEthereumNetwork } from "@ui/hooks/useEthereumNetwork"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import {
   commonFormStyle,
   ErrorDiv as ErrorDiv,
@@ -86,7 +86,7 @@ export const CustomTokenDetails = () => {
   const navigate = useNavigate()
 
   const { token } = useCustomErc20Token(id)
-  const network = useEthereumNetwork(token?.evmNetworkId)
+  const network = useEvmNetwork(token?.evmNetwork?.id)
 
   useEffect(() => {
     // if token doesn't exist, redirect to tokens page
@@ -105,7 +105,7 @@ export const CustomTokenDetails = () => {
       <Form>
         <FormField label="Network">
           <NetworkSelect
-            defaultChainId={token?.evmNetworkId}
+            defaultChainId={token?.evmNetwork?.id}
             // disabling network edit because it would create a new token
             disabled={Boolean(id)}
           />

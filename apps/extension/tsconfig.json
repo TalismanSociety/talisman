@@ -1,6 +1,7 @@
 {
   "extends": "tsconfig/es6-react.json",
   "compilerOptions": {
+    "experimentalDecorators": true,
     "baseUrl": "src",
     "paths": {
       "@talisman": ["./@talisman"],

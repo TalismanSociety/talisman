@@ -1,8 +1,8 @@
+import { DEBUG } from "@core/constants"
+import { db } from "@core/libs/dexieDb"
+import { ChainId } from "@core/types"
 import { WsProvider } from "@polkadot/api"
 import { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import { ChainId } from "@core/types"
-import { chainStore } from "@core/domains/chains"
-import { DEBUG } from "@core/constants"
 import * as Sentry from "@sentry/browser"
 
 type SocketUserId = number
@@ -77,7 +77,7 @@ class RpcFactory {
    * The caller must call disconnectChainSocket with the returned SocketUserId once they are finished with it
    */
   private async connectChainSocket(chainId: ChainId): Promise<[SocketUserId, WsProvider]> {
-    const chain = await chainStore.chain(chainId)
+    const chain = await db.chains.get(chainId)
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     const socketUserId = this.addSocketUser(chainId)
 

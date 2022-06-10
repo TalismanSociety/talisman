@@ -4,12 +4,12 @@ import { IconButton } from "@talisman/components/IconButton"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { XIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
-import { useEthereumNetwork } from "@ui/hooks/useEthereumNetwork"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEthWatchAssetRequests } from "@ui/hooks/useEthWatchAssetRequests"
 import { useCallback, useMemo, useState } from "react"
 import styled from "styled-components"
 import Layout, { Content, Header, Footer } from "../Layout"
-import imgUnknownToken from "@talisman/theme/icons/unknown-token.png"
+import unknownToken from "@talisman/theme/icons/custom-token-generic.svg"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
 
 const TokenLogo = styled.img`
@@ -104,7 +104,7 @@ export const AddCustomErc20Token = () => {
     }
   }, [requests])
 
-  const network = useEthereumNetwork(token?.evmNetworkId)
+  const network = useEvmNetwork(token?.evmNetwork?.id)
 
   const approve = useCallback(async () => {
     setError(undefined)
@@ -141,19 +141,21 @@ export const AddCustomErc20Token = () => {
         />
         <Content>
           <div>
-            <TokenLogo src={token?.image ?? imgUnknownToken} alt={token?.symbol} />
+            <TokenLogo src={token?.image ?? unknownToken} alt={token?.symbol} />
           </div>
           <h1>New Token</h1>
           <p>
             You are adding the token
             <br />
             <strong>
-              <TokenLogoSmall src={token?.image ?? imgUnknownToken} alt="" />
+              <TokenLogoSmall src={token?.image ?? unknownToken} alt="" />
               {token.symbol}
             </strong>{" "}
             on{" "}
             <strong>
-              {network.iconUrls.length && <TokenLogoSmall src={network.iconUrls[0]} alt="" />}
+              {"iconUrls" in network
+                ? network.iconUrls.length && <TokenLogoSmall src={network.iconUrls[0]} alt="" />
+                : null}
               {network.name}
             </strong>
           </p>

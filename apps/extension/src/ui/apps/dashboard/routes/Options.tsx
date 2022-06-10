@@ -14,7 +14,8 @@ import { ModalDialog } from "@talisman/components/ModalDialog"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { api } from "@ui/api"
 import styled from "styled-components"
-import { EthereumNetwork } from "@core/types"
+import { EvmNetwork } from "@core/types"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 
 const Button = styled(SimpleButton)`
   width: auto;
@@ -67,16 +68,16 @@ const Options = () => {
   )
 
   const [customEthNetworksCount, setCustomEthNetworksCount] = useState<number>()
+  const evmNetworks = useEvmNetworks()
   useEffect(() => {
-    if (useCustomEthereumNetworks) {
-      api.ethereumNetworks().then((customNetworks) => {
-        const count = Object.values<EthereumNetwork>(customNetworks).filter(
-          (network) => network.isCustom
-        ).length
-        setCustomEthNetworksCount(count)
-      })
-    } else setCustomEthNetworksCount(undefined)
-  }, [useCustomEthereumNetworks])
+    if (!useCustomEthereumNetworks) return setCustomEthNetworksCount(0)
+    if (!evmNetworks) return setCustomEthNetworksCount(undefined)
+
+    const count = evmNetworks.filter(
+      (evmNetwork) => "isCustom" in evmNetwork && evmNetwork.isCustom
+    ).length
+    setCustomEthNetworksCount(count || 0)
+  }, [evmNetworks, useCustomEthereumNetworks])
 
   const { isOpen, open, close } = useOpenClose()
   const handleCustomEVMNetworksChange = useCallback(
@@ -133,7 +134,7 @@ const Options = () => {
         >
           {useCustomEthereumNetworks ? (
             <CustomNetworksCount>
-              <span>{customEthNetworksCount ?? 0}</span>
+              <span>{customEthNetworksCount ?? "?"}</span>
             </CustomNetworksCount>
           ) : null}
           <Field.Toggle

@@ -5,7 +5,7 @@ import { Header, Content, Footer } from "@ui/apps/popup/Layout"
 import { EthSignRequestProvider, useEthSignRequest } from "@ui/domains/Sign/SignRequestContext"
 import { Container } from "./common"
 import { useParams } from "react-router-dom"
-import { AccountJsonAny, EthereumNetwork } from "@core/types"
+import { AccountJsonAny, EvmNetwork } from "@core/types"
 import { BigNumberish } from "ethers"
 import styled from "styled-components"
 import { formatEther } from "ethers/lib/utils"
@@ -15,6 +15,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { EthFeeSelect } from "@ui/domains/Sign/EthFeeSelect"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
 import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
+import useToken from "@ui/hooks/useToken"
 
 const Message = styled.textarea`
   background: var(--color-background-muted-3x);
@@ -112,10 +113,11 @@ const SignTxWithValue = ({
   value,
 }: {
   account: AccountJsonAny
-  network?: EthereumNetwork
+  network?: EvmNetwork
   value: BigNumberish
 }) => {
   // TODO pull account balance from network (not chain) and check for sufficient balance ?
+  const nativeToken = useToken(network?.nativeToken?.id)
 
   return (
     <>
@@ -123,7 +125,7 @@ const SignTxWithValue = ({
       <h2>
         You are transferring{" "}
         <strong>
-          {formatDecimals(formatEther(value))} {network?.nativeToken?.symbol}
+          {formatDecimals(formatEther(value))} {nativeToken?.symbol}
         </strong>
         <br />
         from <AccountPill account={account} />
@@ -138,7 +140,7 @@ const SignTxWithoutValue = ({
   network,
 }: {
   account: AccountJsonAny
-  network: EthereumNetwork
+  network: EvmNetwork
 }) => {
   return (
     <>
@@ -185,6 +187,8 @@ const EthSignRequestPage = () => {
     }
   }, [status, message, blockInfoError, estimatedGasError])
 
+  const nativeToken = useToken(network?.nativeToken?.id)
+
   return (
     <SignContainer>
       <Header text={<AppPill url={url} />}></Header>
@@ -217,15 +221,13 @@ const EthSignRequestPage = () => {
                 <div>Priority</div>
               </div>
               <div>
-                <div>
-                  {formatEtherValue(gasInfo.maxFeeAndGasCost, network?.nativeToken?.symbol)}
-                </div>
+                <div>{formatEtherValue(gasInfo.maxFeeAndGasCost, nativeToken?.symbol)}</div>
                 <div>
                   <EthFeeSelect
                     {...gasInfo}
                     priority={priority ?? "low"}
                     onChange={setPriority}
-                    symbol={network?.nativeToken?.symbol}
+                    symbol={nativeToken?.symbol}
                   />
                 </div>
               </div>

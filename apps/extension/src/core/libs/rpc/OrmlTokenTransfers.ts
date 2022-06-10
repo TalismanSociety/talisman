@@ -18,6 +18,7 @@ import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { pendingTransfers } from "./PendingTransfers"
 import { isHardwareAccount } from "@core/handlers/helpers"
+import { db } from "@core/libs/dexieDb"
 
 type ProviderSendFunction<T = any> = (method: string, params?: unknown[]) => Promise<T>
 
@@ -143,10 +144,10 @@ export default class OrmlTokenTransfersRpc {
     // - existential deposit
     // - sufficient balance
 
-    const chain = await chainStore.chain(chainId)
+    const chain = await db.chains.get(chainId)
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
-    const token = await tokenStore.token(tokenId)
+    const token = await db.tokens.get(tokenId)
     if (!token) throw new Error(`Token ${tokenId} not found in store`)
 
     const send: ProviderSendFunction = (method, params = []) =>

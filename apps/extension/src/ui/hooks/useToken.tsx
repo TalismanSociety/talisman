@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react"
-import type { Token, TokenId } from "@core/types"
 import { api } from "@ui/api"
+import { useMessageSubscription } from "./useMessageSubscription"
+import type { TokenId } from "@core/types"
+import { useLiveQuery } from "dexie-react-hooks"
+import { db } from "@core/libs/dexieDb"
 
+const subscribe = () => api.tokens(() => {})
 const useToken = (id?: TokenId) => {
-  const [token, setToken] = useState<Token>()
+  // make sure the store is hydrated
+  useMessageSubscription("tokens", null, subscribe)
 
-  useEffect(() => {
-    if (!id) return
-    api.token(id).then(setToken)
-  }, [id])
-
-  return token
+  return useLiveQuery(async () => (id !== undefined ? await db.tokens.get(id) : undefined), [id])
 }
 
 export default useToken

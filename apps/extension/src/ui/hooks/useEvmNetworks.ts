@@ -3,21 +3,18 @@ import { useMessageSubscription } from "./useMessageSubscription"
 import { useLiveQuery } from "dexie-react-hooks"
 import { db } from "@core/libs/dexieDb"
 import { useSettings } from "@ui/hooks/useSettings"
-import { useMemo } from "react"
 
-const subscribe = () => api.tokens(() => {})
-export const useTokens = () => {
+const subscribe = () => api.ethereumNetworks(() => {})
+export const useEvmNetworks = () => {
   // make sure the store is hydrated
-  useMessageSubscription("tokens", null, subscribe)
+  useMessageSubscription("ethereumNetworks", null, subscribe)
 
   const { useTestnets = false } = useSettings()
   return useLiveQuery(
     async () =>
-      (await db.tokens.toArray()).filter((token) =>
-        useTestnets ? true : token.isTestnet === false
+      (await db.evmNetworks.toArray()).filter((evmNetwork) =>
+        useTestnets ? true : evmNetwork.isTestnet === false
       ),
     [useTestnets]
   )
 }
-
-export default useTokens

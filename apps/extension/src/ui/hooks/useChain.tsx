@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react"
-import type { Chain, ChainId } from "@core/types"
 import { api } from "@ui/api"
+import { useMessageSubscription } from "./useMessageSubscription"
+import type { ChainId } from "@core/types"
+import { useLiveQuery } from "dexie-react-hooks"
+import { db } from "@core/libs/dexieDb"
 
+const subscribe = () => api.chains(() => {})
 const useChain = (id?: ChainId) => {
-  const [chain, setChain] = useState<Chain>()
+  // make sure the store is hydrated
+  useMessageSubscription("chains", null, subscribe)
 
-  useEffect(() => {
-    if (!id) return
-    api.chain(id).then(setChain)
-  }, [id])
-
-  return chain
+  return useLiveQuery(async () => (id !== undefined ? await db.chains.get(id) : undefined), [id])
 }
 
 export default useChain

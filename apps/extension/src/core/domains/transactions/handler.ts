@@ -21,6 +21,7 @@ import AssetTransfersRpc from "@core/libs/rpc/AssetTransfers"
 import OrmlTokenTransfersRpc from "@core/libs/rpc/OrmlTokenTransfers"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { pendingTransfers } from "@core/libs/rpc/PendingTransfers"
+import { db } from "@core/libs/dexieDb"
 
 export default class AssetTransferHandler extends ExtensionHandler {
   private getExtrinsicWatch(
@@ -98,7 +99,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       throw error
     }
 
-    const token = await tokenStore.token(tokenId)
+    const token = await db.tokens.get(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
     return await new Promise((resolve, reject) => {
@@ -125,6 +126,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
           tip,
           watchExtrinsic
         )
+      if (tokenType === "erc20")
+        throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
       // force compilation error if any token types don't have a case
       const exhaustiveCheck: never = tokenType
@@ -148,7 +151,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       throw error
     }
 
-    const token = await tokenStore.token(tokenId)
+    const token = await db.tokens.get(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
     const tokenType = token.type
@@ -156,6 +159,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
       return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, tip, reapBalance)
     if (tokenType === "orml")
       return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
+    if (tokenType === "erc20")
+      throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
     // force compilation error if any token types don't have a case
     const exhaustiveCheck: never = tokenType

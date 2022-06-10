@@ -7,11 +7,14 @@ export const useLedgerChains = () => {
 
   const ledgerChains = useMemo(
     () =>
-      Object.values(chains)
+      (chains || [])
         .filter((c) =>
           ledgerNetworks.some((lc) => lc.genesisHash.includes(c.genesisHash as string))
         )
-        .sort((c1, c2) => (c1.sortIndex ?? 0) - (c2.sortIndex ?? 0)),
+        .sort(
+          (c1, c2) =>
+            (c1.sortIndex ?? Number.MAX_SAFE_INTEGER) - (c2.sortIndex ?? Number.MAX_SAFE_INTEGER)
+        ),
     [chains]
   )
   return ledgerChains

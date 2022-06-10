@@ -29,7 +29,7 @@ const useBalanceByAccountAndToken = (props: TProps): TResponse => {
 
   useEffect(() => {
     if (!!tokenId && !!address) {
-      const found = [...balances.find({ address, tokenId })]
+      const found = [...(balances?.find({ address, tokenId }) || [])]
       const balance = found.length > 0 ? found[0] : null
 
       setBalance(balance || undefined)

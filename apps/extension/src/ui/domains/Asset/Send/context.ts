@@ -22,17 +22,27 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   const chains = useChains()
   const tokens = useTokens()
+  const chainsMap = useMemo(
+    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
+    [chains]
+  )
+  const tokensMap = useMemo(
+    () => Object.fromEntries((tokens || []).map((token) => [token.id, token])),
+    [tokens]
+  )
 
   const check = useCallback(
     async (newData: SendTokensInputs, allowReap: boolean = false) => {
       const { amount, tokenId, from, to, tip } = newData
 
-      const token = tokens[tokenId]
+      const token = tokensMap[tokenId]
       if (!token) throw new Error("Token not found")
-      const { chainId } = token
-      const chain = chains[chainId]
+      // TODO: Support evm tokens who have an evmNetwork instead of a chainId
+      const chainId = token.chain?.id
+      if (!chainId) throw new Error("Chain not found")
+      const chain = chainsMap[chainId]
       if (!chain) throw new Error("Chain not found")
-      const nativeToken = chain.nativeToken ? tokens[chain.nativeToken.id] : token
+      const nativeToken = chain.nativeToken ? tokensMap[chain.nativeToken.id] : token
       const tokenIsNativeToken = tokenId === chain.nativeToken?.id
 
       // load all balances at once
@@ -54,7 +64,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         symbol: token.symbol,
         decimals: token.decimals,
         existentialDeposit: new BalanceFormatter(
-          token.existentialDeposit ?? "0",
+          ("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0",
           token.decimals,
           token.rates
         ),
@@ -87,7 +97,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         symbol: nativeToken.symbol,
         decimals: nativeToken.decimals,
         existentialDeposit: new BalanceFormatter(
-          nativeToken.existentialDeposit ?? "0",
+          ("existentialDeposit" in nativeToken ? nativeToken.existentialDeposit : "0") ?? "0",
           nativeToken.decimals,
           nativeToken.rates
         ),
@@ -107,12 +117,15 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
         // existential deposit?
         const remaining = balance.total.planck - cost.planck
-        if (remaining < BigInt(token.existentialDeposit ?? "0"))
+        if (
+          remaining <
+          BigInt(("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0")
+        )
           forfeits.push({
             symbol: token.symbol,
             decimals: token.decimals,
             existentialDeposit: new BalanceFormatter(
-              token.existentialDeposit ?? "0",
+              ("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0",
               token.decimals,
               token.rates
             ),
@@ -150,7 +163,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         unsigned,
       })
     },
-    [chains, tokens]
+    [chainsMap, tokensMap]
   )
 
   // this makes user return to the first screen of the wizard
@@ -163,10 +176,12 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   const send = useCallback(async () => {
     const { amount, tokenId, from, to, tip } = formData as SendTokensInputs
 
-    const token = tokens[tokenId]
+    const token = tokensMap[tokenId]
     if (!token) throw new Error("Token not found")
-    const { chainId } = token
-    const chain = chains[chainId]
+    // TODO: Support evm tokens who have an evmNetwork instead of a chainId
+    const chainId = token.chain?.id
+    if (!chainId) throw new Error("Chain not found")
+    const chain = chainsMap[chainId]
     if (!chain) throw new Error("Chain not found")
 
     const { id } = await api.assetTransfer(
@@ -179,7 +194,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       hasAcceptedForfeit
     )
     setTransactionId(id)
-  }, [chains, formData, hasAcceptedForfeit, tokens])
+  }, [chainsMap, formData, hasAcceptedForfeit, tokensMap])
 
   // execute the TX
   const sendWithSignature = useCallback(

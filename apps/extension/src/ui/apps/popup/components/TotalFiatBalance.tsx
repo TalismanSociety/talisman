@@ -87,7 +87,7 @@ export const TotalFiatBalance = ({ className }: { className?: string }) => {
           </ToggleHide>
         </Side>
       </TitleRow>
-      <TotalFiat amount={balances.sum.fiat("usd").transferable} currency="usd" isBalance />
+      <TotalFiat amount={balances?.sum.fiat("usd").transferable} currency="usd" isBalance />
     </Container>
   )
 }

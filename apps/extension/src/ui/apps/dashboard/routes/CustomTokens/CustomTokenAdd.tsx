@@ -7,7 +7,7 @@ import { PlusIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
-import { useEthereumNetworks } from "@ui/hooks/useEthereumNetworks"
+import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
@@ -35,7 +35,7 @@ type FormData = Pick<
 
 export const CustomTokenAdd = () => {
   const navigate = useNavigate()
-  const networks = useEthereumNetworks()
+  const networks = useSortedEvmNetworks()
   const [error, setError] = useState<string>()
 
   // our only user inputs are chain and contract
