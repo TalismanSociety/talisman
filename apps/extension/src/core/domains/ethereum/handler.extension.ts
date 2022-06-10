@@ -7,7 +7,7 @@ import {
   EthApproveSignAndSend,
   AnyEthRequestChainId,
   CustomEvmNetwork,
-  CustomNativeToken,
+  NativeToken,
 } from "@core/types"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { assert, u8aToHex } from "@polkadot/util"
@@ -196,7 +196,7 @@ export class EthHandler extends ExtensionHandler {
 
     const { network, resolve } = queued
     const networkId = parseInt(network.chainId, 16)
-    const newToken: CustomNativeToken | null = network.nativeCurrency
+    const newToken: NativeToken | null = network.nativeCurrency
       ? {
           id: `${networkId}-native-${network.nativeCurrency.symbol}`.toLowerCase(),
           type: "native",
@@ -330,7 +330,7 @@ export class EthHandler extends ExtensionHandler {
         const newNetwork = request as RequestTypes["pri(eth.networks.add.custom)"]
 
         const existing = await db.evmNetworks.get(newNetwork.id)
-        if (existing && !("isCustom" in existing && existing.isCustom === true)) {
+        if (existing?.isCustom) {
           throw new Error(`Failed to override built-in Talisman network`)
         }
 

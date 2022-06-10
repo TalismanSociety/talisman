@@ -470,6 +470,7 @@ export type ChainList = Record<ChainId, Chain>
 export type EvmNetworkId = number
 export type EvmNetwork = {
   id: EvmNetworkId
+  isCustom?: boolean
   isTestnet: boolean
   sortIndex: number | null
   name: string | null
@@ -481,6 +482,8 @@ export type EvmNetwork = {
   rpcs: Array<EthereumRpc> | null
   isHealthy: boolean
   substrateChain: { id: EvmNetworkId } | null
+  explorerUrls?: string[]
+  iconUrls?: string[]
 }
 export type CustomEvmNetwork = EvmNetwork & {
   isCustom: true
@@ -532,7 +535,7 @@ export type TokenId = string
 
 export type TokenIndex = number
 
-export type Token = NativeToken | CustomNativeToken | OrmlToken | Erc20Token | CustomErc20Token
+export type Token = NativeToken | OrmlToken | Erc20Token | CustomErc20Token
 export type IToken = {
   id: TokenId
   type: string
@@ -541,15 +544,14 @@ export type IToken = {
   decimals: number
   coingeckoId?: string
   rates?: TokenRates
+  chain?: { id: ChainId } | null
 }
 export type NativeToken = IToken & {
   type: "native"
   existentialDeposit: string
   chain?: { id: ChainId } | null
   evmNetwork?: { id: EvmNetworkId } | null
-}
-export type CustomNativeToken = NativeToken & {
-  isCustom: true
+  isCustom?: boolean
 }
 export type OrmlToken = IToken & {
   type: "orml"
@@ -562,6 +564,7 @@ export type Erc20Token = IToken & {
   contractAddress: string
   chain?: { id: ChainId } | null
   evmNetwork?: { id: EvmNetworkId } | null
+  isCustom?: boolean
 }
 export type CustomErc20Token = Erc20Token & {
   isCustom: true

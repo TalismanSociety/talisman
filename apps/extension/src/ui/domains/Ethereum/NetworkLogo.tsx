@@ -31,8 +31,10 @@ export const NetworkLogo = ({ ethChainId, className }: NetworkLogoProps) => {
 
   return (
     <NetworkLogoContainer className={classNames("network-logo", className)}>
-      {"iconUrls" in network && network.iconUrls?.map((url, i) => <source key={i} srcSet={url} />)}
-      {(!("isCustom" in network) || !network.isCustom) && (
+      {network.iconUrls?.map((url, i) => (
+        <source key={i} srcSet={url} />
+      ))}
+      {!network.isCustom && (
         <source
           srcSet={`https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/split-entities/assets/${
             network.substrateChain?.id ?? network.id

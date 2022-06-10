@@ -21,9 +21,7 @@ export const useChainsTokens = (chains: Chain[], evmNetworks?: EvmNetwork[]) => 
     return (tokens || [])
       .map((token) => {
         const chainId =
-          ("chain" in token && token.chain?.id) ||
-          ("evmNetwork" in token && token.evmNetwork?.id) ||
-          undefined
+          token.chain?.id || (token.type === "erc20" && token.evmNetwork?.id) || undefined
 
         return [chainId, token] as const
       })

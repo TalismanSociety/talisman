@@ -73,9 +73,7 @@ const Options = () => {
     if (!useCustomEthereumNetworks) return setCustomEthNetworksCount(0)
     if (!evmNetworks) return setCustomEthNetworksCount(undefined)
 
-    const count = evmNetworks.filter(
-      (evmNetwork) => "isCustom" in evmNetwork && evmNetwork.isCustom
-    ).length
+    const count = evmNetworks.filter((evmNetwork) => evmNetwork.isCustom).length
     setCustomEthNetworksCount(count || 0)
   }, [evmNetworks, useCustomEthereumNetworks])
 

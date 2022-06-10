@@ -64,7 +64,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         symbol: token.symbol,
         decimals: token.decimals,
         existentialDeposit: new BalanceFormatter(
-          ("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0",
+          (token.type !== "erc20" ? token.existentialDeposit : "0") ?? "0",
           token.decimals,
           token.rates
         ),
@@ -97,7 +97,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         symbol: nativeToken.symbol,
         decimals: nativeToken.decimals,
         existentialDeposit: new BalanceFormatter(
-          ("existentialDeposit" in nativeToken ? nativeToken.existentialDeposit : "0") ?? "0",
+          (nativeToken.type !== "erc20" ? nativeToken.existentialDeposit : "0") ?? "0",
           nativeToken.decimals,
           nativeToken.rates
         ),
@@ -117,15 +117,12 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
         // existential deposit?
         const remaining = balance.total.planck - cost.planck
-        if (
-          remaining <
-          BigInt(("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0")
-        )
+        if (remaining < BigInt((token.type !== "erc20" ? token.existentialDeposit : "0") ?? "0"))
           forfeits.push({
             symbol: token.symbol,
             decimals: token.decimals,
             existentialDeposit: new BalanceFormatter(
-              ("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0",
+              (token.type !== "erc20" ? token.existentialDeposit : "0") ?? "0",
               token.decimals,
               token.rates
             ),

@@ -209,7 +209,6 @@ export class EthTabsHandler extends TabsHandler {
       // for custom networks, check that rpcs are the same as the registered ones
       // TODO if mismatch, create request to user to override the network?
       if (
-        "isCustom" in existing &&
         existing.isCustom &&
         (existing.rpcs || []).sort().join() !== (network.rpcUrls || []).sort().join()
       )

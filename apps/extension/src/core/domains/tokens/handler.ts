@@ -35,13 +35,13 @@ export default class TokensHandler extends ExtensionHandler {
       case "pri(tokens.erc20.custom)":
         return (await db.tokens.toArray()).filter(
           // note : need to check type too because isCustom is also set to true for native tokens of custom networks
-          (token) => "isCustom" in token && token.isCustom && token.type === "erc20"
+          (token) => token.type === "erc20" && token.isCustom
         ) as any
 
       case "pri(tokens.erc20.custom.byid)": {
         const token = await db.tokens.get((request as RequestIdOnly).id)
-        if (!token || !("isCustom" in token)) return
-        return token
+        if (token?.type === "erc20" && token.isCustom) return token
+        return
       }
 
       case "pri(tokens.erc20.custom.add)":
@@ -95,11 +95,7 @@ export default class TokensHandler extends ExtensionHandler {
               false
 
         const deleteTokens = (await db.tokens.toArray())
-          .filter((token): token is CustomErc20Token => {
-            if (token.type !== "erc20") return false
-            if (!("isCustom" in token)) return false
-            return true
-          })
+          .filter((token): token is CustomErc20Token => token.type === "erc20" && !!token.isCustom)
           .filter(deleteFilterFn)
           .map((token) => token.id)
         await db.tokens.bulkDelete(deleteTokens)

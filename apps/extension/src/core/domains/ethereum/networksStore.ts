@@ -13,15 +13,13 @@ export class EvmNetworkStore {
 
   async clearCustom(): Promise<void> {
     db.transaction("rw", db.evmNetworks, () => {
-      db.evmNetworks
-        .filter((network) => "isCustom" in network && network.isCustom === true)
-        .delete()
+      db.evmNetworks.filter((network) => !!network.isCustom).delete()
     })
   }
 
   async replaceChaindata(evmNetworks: (EvmNetwork | CustomEvmNetwork)[]): Promise<void> {
     await db.transaction("rw", db.evmNetworks, () => {
-      db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
+      db.evmNetworks.filter((network) => !network.isCustom).delete()
       db.evmNetworks.bulkPut(evmNetworks)
     })
   }

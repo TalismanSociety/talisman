@@ -12,13 +12,13 @@ export class TokenStore {
 
   async clearCustom(): Promise<void> {
     await db.transaction("rw", db.tokens, () => {
-      db.tokens.filter((token) => "isCustom" in token && token.isCustom === true).delete()
+      db.tokens.filter((token) => token.type === "erc20" && !!token.isCustom).delete()
     })
   }
 
   async replaceChaindata(tokens: Token[]): Promise<void> {
     await db.transaction("rw", db.tokens, () => {
-      db.tokens.filter((token) => !("isCustom" in token)).delete()
+      db.tokens.filter((token) => !(token.type === "erc20" && token.isCustom)).delete()
       db.tokens.bulkPut(tokens)
     })
   }
