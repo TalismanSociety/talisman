@@ -1,4 +1,5 @@
 import { AccountJsonAny } from "@core/types"
+import { breakpoints } from "@talisman/theme/definitions"
 import { AllAccountsIcon, ChevronDownIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -58,11 +59,8 @@ const AccountOptionContainer = styled.div`
     overflow: hidden;
     gap: 0.4rem;
 
-    .ao-rowName {
-      width: 100%;
-      gap: 1rem;
-      justify-content: space-between;
-
+    .ao-rowName,
+    .ao-rowFiat {
       font-size: 1.4rem;
       overflow: hidden;
 
@@ -78,6 +76,113 @@ const AccountOptionContainer = styled.div`
 
   :hover {
     color: var(--color-foreground-muted);
+  }
+`
+
+const Container = styled.div`
+  width: 100%;
+  position: relative;
+
+  &.open ${Button} {
+    background-color: var(--color-background-muted-3x);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  > ul {
+    padding: 0;
+    margin: 0;
+    z-index: 10;
+    position: absolute;
+    left: 0;
+    top: 6.4rem;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: calc(100vh - 12rem);
+    background-color: var(--color-background);
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+
+    li {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      cursor: pointer;
+
+      :hover {
+        background-color: var(--color-background-muted-3x);
+      }
+    }
+
+    li.current {
+      background-color: var(--color-background-muted);
+      ${AccountOptionContainer} {
+        color: var(--color-foreground);
+      }
+    }
+  }
+
+  .current {
+    display: none;
+  }
+
+  // medium sidebar
+  @media (max-width: ${breakpoints.large}px) {
+    .chevron {
+      display: none;
+    }
+    ${Button} > div {
+      align-items: center;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+
+    &.open ${Button} {
+      border-bottom-left-radius: var(--border-radius);
+      border-bottom-right-radius: var(--border-radius);
+    }
+
+    > ul {
+      position: fixed;
+      border-top-left-radius: var(--border-radius);
+      border-top-right-radius: var(--border-radius);
+      max-width: 24rem;
+      top: 14rem;
+      left: 2.4rem;
+    }
+
+    ${Button} .ao-rows {
+      width: 100%;
+      align-items: center;
+      text-align: center;
+    }
+
+    &.open > ul {
+      border: 0.02rem solid var(--color-background-muted-3x);
+      .current {
+        border-bottom: 0.02rem solid var(--color-background-muted-3x);
+      }
+    }
+  }
+
+  // small sidebar
+  @media (max-width: ${breakpoints.medium}px) {
+    .current {
+      display: inherit;
+    }
+    ${Button} .ao-rows, .chevron {
+      display: none;
+    }
+
+    > ul {
+      position: fixed;
+      border-top-left-radius: var(--border-radius);
+      border-top-right-radius: var(--border-radius);
+      max-width: 24rem;
+      top: 0.7rem;
+      left: 0.6rem;
+    }
   }
 `
 
@@ -123,85 +228,6 @@ const AllAccountsOption = () => {
 
   return <AccountOption name="All accounts" totalUsd={total} />
 }
-
-const Container = styled.div`
-  width: 100%;
-  position: relative;
-
-  &.open ${Button} {
-    background-color: var(--color-background-muted-3x);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-  }
-
-  > ul {
-    padding: 0;
-    margin: 0;
-    z-index: 10;
-    position: absolute;
-    left: 0;
-    top: 6.4rem;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    max-height: calc(100vh - 12rem);
-    background-color: var(--color-background);
-    border-bottom-left-radius: var(--border-radius);
-    border-bottom-right-radius: var(--border-radius);
-
-    li {
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      cursor: pointer;
-
-      :hover {
-        background-color: var(--color-background-muted-3x);
-      }
-    }
-
-    li.current {
-      background-color: var(--color-background-muted);
-      //border: 0.05rem solid var(--color-mid);
-      ${AccountOptionContainer} {
-        color: var(--color-foreground);
-      }
-    }
-  }
-
-  .current {
-    display: none;
-  }
-
-  @media (max-width: 960px) {
-    .current {
-      display: inherit;
-    }
-    ${Button} .ao-rows, .chevron {
-      display: none;
-    }
-
-    &.open ${Button} {
-      border-bottom-left-radius: var(--border-radius);
-      border-bottom-right-radius: var(--border-radius);
-    }
-    > ul {
-      position: fixed;
-      border-top-left-radius: var(--border-radius);
-      border-top-right-radius: var(--border-radius);
-      max-width: 24rem;
-      top: 0.7rem;
-      left: 0.7rem;
-    }
-
-    &.open > ul {
-      border: 0.02rem solid var(--color-background-muted-3x);
-      .current {
-        border-bottom: 0.02rem solid var(--color-background-muted-3x);
-      }
-    }
-  }
-`
 
 const OPTION_ALL_ACCOUNTS = { address: undefined } as unknown as AccountJsonAny
 

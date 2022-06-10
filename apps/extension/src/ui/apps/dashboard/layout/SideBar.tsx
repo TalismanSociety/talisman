@@ -1,7 +1,7 @@
 import styled from "styled-components"
 import Nav, { NavItem } from "@talisman/components/Nav"
 import Build from "@ui/domains/Build"
-import { lazy, Suspense, useCallback } from "react"
+import { lazy, ReactNode, Suspense, useCallback } from "react"
 import { BackupBanner } from "./BackupBanner"
 import { DashboardAccountSelect } from "./DashboardAccountSelect"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
@@ -18,8 +18,11 @@ import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import { useSelectedAccount } from "../context"
 import { PillButton } from "@talisman/components/PillButton"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
-import { FullColorLogo, FullColorVerticalLogo } from "@talisman/theme/logos"
+import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
 import { IconButton } from "@talisman/components/IconButton"
+import { breakpoints } from "@talisman/theme/definitions"
+import { useWindowSize } from "react-use"
+import { WithTooltip } from "@talisman/components/Tooltip"
 
 const PaddedItem = styled.div`
   padding: 2.4rem;
@@ -36,7 +39,8 @@ const BrandLogo = styled(({ className }) => {
     <div className={className}>
       <a href="https://talisman.xyz" target="_blank">
         <FullColorLogo className="logo-full" />
-        <FullColorVerticalLogo className="logo-vertical" />
+        <FullColorVerticalLogo className="logo-medium" />
+        <HandRedLogo className="logo-small" />
       </a>
       <Build.Version />
     </div>
@@ -52,17 +56,33 @@ const BrandLogo = styled(({ className }) => {
     width: auto;
     height: 3.2rem;
   }
-  .logo-vertical {
+
+  .logo-medium,
+  .logo-small {
     display: none;
   }
 
-  @media (max-width: 960px) {
+  @media (max-width: ${breakpoints.large}px) {
+    justify-content: center;
+    padding-left: 0;
+
     .logo-full {
       display: none;
     }
-    .logo-vertical {
+    .logo-medium {
       display: inline-block;
-      width: 6.4rem;
+      height: 7rem;
+      width: auto;
+    }
+  }
+
+  @media (max-width: ${breakpoints.medium}px) {
+    .logo-medium {
+      display: none;
+    }
+    .logo-small {
+      display: inline-block;
+      width: 100%;
       height: auto;
     }
   }
@@ -73,7 +93,11 @@ const Pills = styled.div`
   gap: 0.8rem;
   padding: 0.8rem;
   padding-bottom: 0;
-  @media (max-width: 960px) {
+  @media (max-width: ${breakpoints.large}px) {
+    flex-direction: column;
+    align-items: center;
+  }
+  @media (max-width: ${breakpoints.medium}px) {
     display: none;
   }
 `
@@ -83,9 +107,9 @@ const Buttons = styled.div`
   gap: 0.8rem;
   padding: 0.8rem;
   padding-top: 0;
-  justify-content: space-between;
+  justify-content: center;
 
-  @media (max-width: 960px) {
+  @media (max-width: ${breakpoints.medium}px) {
     display: flex;
   }
 
@@ -132,15 +156,36 @@ const Container = styled.aside`
     }
   }
 
-  @media (max-width: 960px) {
+  // medium sidebar
+  @media (max-width: ${breakpoints.large}px) {
+    width: 17.2rem;
+    min-width: 17.2rem;
+
+    nav .link {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    // hide version pill in footer
+    .pill {
+      display: none;
+    }
+  }
+
+  // small sidebar
+  @media (max-width: ${breakpoints.medium}px) {
     width: 7.4rem;
     min-width: 7.4rem;
 
-    ${PaddedItem}, nav {
+    ${PaddedItem} {
       padding: 0.8rem;
     }
+    nav {
+      padding: 2.4rem 0.8rem;
+    }
+
     .logo-container {
-      padding: 0.8rem 0;
+      padding: 1.6rem;
     }
 
     nav .link span:last-child {
@@ -152,11 +197,28 @@ const Container = styled.aside`
       padding-right: 0;
     }
 
-    ${Pills}, .pill {
+    ${Pills} {
       display: none;
     }
   }
 `
+
+const ResponsiveTooltip = ({
+  tooltip,
+  children,
+}: {
+  tooltip?: ReactNode
+  children?: ReactNode
+}) => {
+  // show tooltip only on small screens
+  const { width } = useWindowSize()
+
+  return width <= breakpoints.medium ? (
+    <WithTooltip tooltip={tooltip}>{children}</WithTooltip>
+  ) : (
+    <>{children}</>
+  )
+}
 
 export const SideBar = () => {
   const { account } = useSelectedAccount()
@@ -201,29 +263,67 @@ export const SideBar = () => {
       </PaddedItem>
       <ScrollContainer className="scrollable">
         <Nav column>
-          <NavItem to="/portfolio" icon={<UserIcon />} end>
+          <NavItem
+            to="/portfolio"
+            icon={
+              <ResponsiveTooltip tooltip="Portfolio">
+                <UserIcon />
+              </ResponsiveTooltip>
+            }
+            end
+          >
             Portfolio
           </NavItem>
-          <NavItem to="/accounts/add" icon={<PlusIcon />}>
+          <NavItem
+            to="/accounts/add"
+            icon={
+              <ResponsiveTooltip tooltip="Add Account">
+                <PlusIcon />
+              </ResponsiveTooltip>
+            }
+          >
             Add Account
           </NavItem>
-
-          <NavItem external to="https://app.talisman.xyz/nfts" icon={<ImageIcon />}>
+          <NavItem
+            external
+            to="https://app.talisman.xyz/nfts"
+            icon={
+              <ResponsiveTooltip tooltip="NFTs">
+                <ImageIcon />
+              </ResponsiveTooltip>
+            }
+          >
             NFTs
           </NavItem>
-          <NavItem external to="https://app.talisman.xyz/crowdloans" icon={<StarIcon />}>
+          <NavItem
+            external
+            to="https://app.talisman.xyz/crowdloans"
+            icon={
+              <ResponsiveTooltip tooltip="Crowdloans">
+                <StarIcon />
+              </ResponsiveTooltip>
+            }
+          >
             Crowdloans
           </NavItem>
-          <NavItem to="/settings" icon={<SettingsIcon />}>
+          <NavItem
+            to="/settings"
+            icon={
+              <ResponsiveTooltip tooltip="Settings">
+                <SettingsIcon />
+              </ResponsiveTooltip>
+            }
+          >
             Settings
           </NavItem>
         </Nav>
-        <div className="bottom">
+        {/* TODO Move to main area, out of sidebar */}
+        {/* <div className="bottom">
           <Suspense fallback={null}>
             <BraveWarningBanner />
           </Suspense>
           <BackupBanner />
-        </div>
+        </div> */}
       </ScrollContainer>
       <PaddedItem className="logo-container">
         <BrandLogo />

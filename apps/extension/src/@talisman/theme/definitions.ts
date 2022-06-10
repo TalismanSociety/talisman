@@ -41,3 +41,8 @@ export const custom = {
   "transition-speed-slower": "0.3s",
   "transition-speed-xslower": "0.6s",
 }
+
+export const breakpoints = {
+  medium: 768,
+  large: 1024,
+}
