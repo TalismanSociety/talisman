@@ -34,7 +34,8 @@ export default class TokensHandler extends ExtensionHandler {
 
       case "pri(tokens.erc20.custom)":
         return (await db.tokens.toArray()).filter(
-          (token) => "isCustom" in token && token.isCustom
+          // note : need to check type too because isCustom is also set to true for native tokens of custom networks
+          (token) => "isCustom" in token && token.isCustom && token.type === "erc20"
         ) as any
 
       case "pri(tokens.erc20.custom.byid)": {
