@@ -9,6 +9,7 @@ import {
   TokenId,
 } from "@core/types"
 import { Dexie } from "dexie"
+import Browser from "webextension-polyfill"
 
 export class TalismanDatabase extends Dexie {
   chains!: Dexie.Table<Chain, ChainId>
@@ -18,12 +19,19 @@ export class TalismanDatabase extends Dexie {
 
   constructor() {
     super("Talisman")
-    this.version(1).stores({
-      chains: "id, genesisHash, name, nativeToken, tokens, evmNetworks",
-      evmNetworks: "id, name, nativeToken, tokens, substrateChain",
-      tokens: "id, type, symbol, coingeckoId, contractAddress, chain, evmNetwork",
-      balances: "id, pallet, address, chainId, evmNetworkId, tokenId",
-    })
+    this.version(1)
+      .stores({
+        chains: "id, genesisHash, name, nativeToken, tokens, evmNetworks",
+        evmNetworks: "id, name, nativeToken, tokens, substrateChain",
+        tokens: "id, type, symbol, coingeckoId, contractAddress, chain, evmNetwork",
+        balances: "id, pallet, address, chainId, evmNetworkId, tokenId",
+      })
+      .upgrade(async (tx) => {
+        await Promise.resolve(
+          Browser.storage.local.remove(["chains", "ethereumNetworks", "tokens", "balances"])
+        )
+        return tx
+      })
   }
 }
 
