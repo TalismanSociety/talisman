@@ -254,7 +254,7 @@ export class EthHandler extends ExtensionHandler {
 
     const { resolve, token } = queued
 
-    await this.stores.evmAssets.setItem(token)
+    await db.tokens.put(token)
 
     resolve(true)
 

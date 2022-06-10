@@ -1,5 +1,5 @@
 import { chainStore } from "@core/domains/chains"
-import { tokenStore, evmAssetStore } from "@core/domains/tokens"
+import { tokenStore } from "@core/domains/tokens"
 import { passwordStore, appStore, settingsStore } from "@core/domains/app"
 import { balancesStore } from "@core/domains/balances"
 import { metadataStore } from "@core/domains/metadata"
@@ -11,7 +11,6 @@ import { seedPhraseStore } from "@core/domains/accounts"
 export const tabStores = {
   chains: chainStore,
   tokens: tokenStore,
-  evmAssets: evmAssetStore,
   balances: balancesStore,
   transactions: transactionStore,
   evmNetworks: evmNetworkStore,

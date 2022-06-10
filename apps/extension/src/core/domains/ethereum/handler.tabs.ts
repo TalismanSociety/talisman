@@ -341,7 +341,7 @@ export class EthTabsHandler extends TabsHandler {
     const { ethChainId } = await this.getSiteDetails(url)
     const tokenId = `${ethChainId}-erc20-${address}`
 
-    const existing = await this.stores.evmAssets.get(tokenId)
+    const existing = await db.tokens.get(tokenId)
     if (existing)
       throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 

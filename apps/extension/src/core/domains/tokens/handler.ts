@@ -12,6 +12,7 @@ import type {
   RequestTypes,
   ResponseType,
 } from "core/types"
+import { db } from "@core/libs/dexieDb"
 
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -32,10 +33,15 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
 
       case "pri(tokens.erc20.custom)":
-        return await this.stores.evmAssets.get()
+        return (await db.tokens.toArray()).filter(
+          (token) => "isCustom" in token && token.isCustom
+        ) as any
 
-      case "pri(tokens.erc20.custom.byid)":
-        return await this.stores.evmAssets.get((request as RequestIdOnly).id)
+      case "pri(tokens.erc20.custom.byid)": {
+        const token = await db.tokens.get((request as RequestIdOnly).id)
+        if (!token || !("isCustom" in token)) return
+        return token
+      }
 
       case "pri(tokens.erc20.custom.add)":
         const token = request as CustomErc20TokenCreate
@@ -47,18 +53,26 @@ export default class TokensHandler extends ExtensionHandler {
         assert(typeof token.symbol === "string", "A token symbol is required")
         assert(typeof token.decimals === "number", "A number of token decimals is required")
 
+        const { symbol, decimals, coingeckoId, contractAddress, image } = token
+
         const newToken: CustomErc20Token = {
-          ...token,
           id: `${token.chainId || token.evmNetworkId}-erc20-${token.contractAddress}`,
           type: "erc20",
           isTestnet: false,
+          symbol,
+          decimals,
+          coingeckoId,
+          contractAddress,
+          chain: token.chainId ? { id: token.chainId } : undefined,
+          evmNetwork: token.evmNetworkId ? { id: token.evmNetworkId } : undefined,
           isCustom: true,
+          image,
         }
 
-        return await this.stores.evmAssets.set({ [newToken.id]: newToken })
+        return await db.tokens.put(newToken)
 
       case "pri(tokens.erc20.custom.remove)":
-        return await this.stores.evmAssets.remove((request as RequestIdOnly).id)
+        return await db.tokens.delete((request as RequestIdOnly).id)
 
       case "pri(tokens.erc20.custom.clear)":
         const filter = request as { chainId?: ChainId; evmNetworkId?: string } | undefined
@@ -75,8 +89,15 @@ export default class TokensHandler extends ExtensionHandler {
             : // don't delete
               false
 
-        const deleteTokens = Object.values(await this.stores.evmAssets.get()).filter(deleteFilterFn)
-        await Promise.all(deleteTokens.map(({ id }) => this.stores.evmAssets.remove(id)))
+        const deleteTokens = (await db.tokens.toArray())
+          .filter((token): token is CustomErc20Token => {
+            if (token.type !== "erc20") return false
+            if (!("isCustom" in token)) return false
+            return true
+          })
+          .filter(deleteFilterFn)
+          .map((token) => token.id)
+        await db.tokens.bulkDelete(deleteTokens)
         return
 
       default:
