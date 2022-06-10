@@ -49,6 +49,10 @@ export default class TokensHandler extends ExtensionHandler {
           typeof token.chainId === "string" || typeof token.evmNetworkId === "number",
           "Either a chainId or an evmNetworkId is required"
         )
+        const chain = token.chainId ? await db.chains.get(token.chainId) : undefined
+        const evmNetwork = token.evmNetworkId
+          ? await db.evmNetworks.get(token.evmNetworkId)
+          : undefined
         assert(typeof token.contractAddress === "string", "A contract address is required")
         assert(typeof token.symbol === "string", "A token symbol is required")
         assert(typeof token.decimals === "number", "A number of token decimals is required")
@@ -58,7 +62,7 @@ export default class TokensHandler extends ExtensionHandler {
         const newToken: CustomErc20Token = {
           id: `${token.chainId || token.evmNetworkId}-erc20-${token.contractAddress}`,
           type: "erc20",
-          isTestnet: false,
+          isTestnet: (chain || evmNetwork)?.isTestnet || false,
           symbol,
           decimals,
           coingeckoId,
