@@ -163,7 +163,8 @@ const Container = styled.aside`
 
     nav .link {
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.6rem;
+      font-size: var(--font-size-xsmall);
     }
 
     // hide version pill in footer
@@ -195,6 +196,7 @@ const Container = styled.aside`
       justify-content: center;
       padding-left: 0;
       padding-right: 0;
+      font-size: var(--font-size-normal);
     }
 
     ${Pills} {
