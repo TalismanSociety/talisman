@@ -330,7 +330,7 @@ export class EthHandler extends ExtensionHandler {
         const newNetwork = request as RequestTypes["pri(eth.networks.add.custom)"]
 
         const existing = await db.evmNetworks.get(newNetwork.id)
-        if (existing?.isCustom) {
+        if (existing && !existing?.isCustom) {
           throw new Error(`Failed to override built-in Talisman network`)
         }
 
