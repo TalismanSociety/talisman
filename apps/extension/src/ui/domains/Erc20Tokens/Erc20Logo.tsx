@@ -15,7 +15,7 @@ type Erc20LogoProps = {
 }
 
 export const Erc20Logo = ({ id, className }: Erc20LogoProps) => {
-  const { token } = useCustomErc20Token(id)
+  const token = useCustomErc20Token(id)
 
   return (
     <TokenLogoImg

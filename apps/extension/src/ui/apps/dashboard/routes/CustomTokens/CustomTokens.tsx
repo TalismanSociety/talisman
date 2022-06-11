@@ -105,7 +105,7 @@ const TokenRow = ({ token }: { token: CustomErc20Token }) => {
 
 export const CustomTokens = () => {
   const navigate = useNavigate()
-  const { tokens } = useCustomErc20Tokens()
+  const tokens = useCustomErc20Tokens()
 
   if (!tokens) return null
 

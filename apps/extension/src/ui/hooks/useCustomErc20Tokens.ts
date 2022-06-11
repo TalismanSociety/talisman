@@ -1,20 +1,14 @@
 import { CustomErc20Token } from "@core/types"
-import { api } from "@ui/api"
-import sortBy from "lodash/sortBy"
-import { useCallback, useEffect, useState } from "react"
+import { useLiveQuery } from "dexie-react-hooks"
+import { db } from "@core/libs/dexieDb"
 
 export const useCustomErc20Tokens = () => {
-  const [tokens, setTokens] = useState<CustomErc20Token[]>()
-
-  const refresh = useCallback(async () => {
-    // TODO subscription
-    const customTokens = await api.customErc20Tokens()
-    setTokens(sortBy(Object.values(customTokens), ["symbol"]))
-  }, [])
-
-  useEffect(() => {
-    refresh()
-  }, [refresh])
-
-  return { tokens, refresh }
+  return useLiveQuery<CustomErc20Token[]>(
+    async () =>
+      (await db.tokens.toArray()).filter<CustomErc20Token>(
+        (token): token is CustomErc20Token =>
+          token.type === "erc20" && "isCustom" in token && token.isCustom
+      ),
+    []
+  )
 }
