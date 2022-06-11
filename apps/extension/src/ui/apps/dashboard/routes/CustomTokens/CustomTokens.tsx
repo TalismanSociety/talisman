@@ -3,7 +3,7 @@ import { IconChevron, PlusIcon } from "@talisman/theme/icons"
 import Layout from "@ui/apps/dashboard/layout"
 import { useNavigate } from "react-router-dom"
 import styled, { css } from "styled-components"
-import { CustomErc20Token } from "@core/types"
+import { Erc20Token } from "@core/types"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useCustomErc20Tokens } from "@ui/hooks/useCustomErc20Tokens"
 import { Erc20Logo } from "@ui/domains/Erc20Tokens/Erc20Logo"
@@ -85,7 +85,7 @@ const TokenLogo = styled(Erc20Logo)`
   height: 3.2rem;
 `
 
-const TokenRow = ({ token }: { token: CustomErc20Token }) => {
+const TokenRow = ({ token }: { token: Erc20Token }) => {
   const navigate = useNavigate()
   const network = useEvmNetwork(token.evmNetwork?.id)
 

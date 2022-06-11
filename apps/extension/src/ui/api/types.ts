@@ -12,13 +12,9 @@ import {
   AuthRequestId,
   AuthRequestAddresses,
   MnemonicSubscriptionResult,
-  Chain,
   ChainId,
-  ChainList,
   RequestAccountCreateHardware,
-  Token,
   TokenId,
-  TokenList,
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
   BalanceStorage,
@@ -32,10 +28,8 @@ import {
   AccountAddressType,
   AnySigningRequest,
   AddEthereumChainRequest,
-  EvmNetworkList,
-  EvmNetwork,
   AnyEthRequestChainId,
-  CustomErc20Token,
+  Erc20Token,
   CustomErc20TokenCreate,
   WatchAssetRequest,
   CustomEvmNetwork,
@@ -138,8 +132,8 @@ export default interface MessageTypes {
   tokens: (cb: () => void) => UnsubscribeFn
 
   // custom erc20 token management
-  customErc20Tokens: () => Promise<Record<CustomErc20Token["id"], CustomErc20Token>>
-  customErc20Token: (id: string) => Promise<CustomErc20Token>
+  customErc20Tokens: () => Promise<Record<Erc20Token["id"], Erc20Token>>
+  customErc20Token: (id: string) => Promise<Erc20Token>
   addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
   removeCustomErc20Token: (id: string) => Promise<boolean>
   clearCustomErc20Tokens: (

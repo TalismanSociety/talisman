@@ -2,12 +2,10 @@ import { ExtensionHandler } from "@core/libs/Handler"
 import { assert } from "@polkadot/util"
 import type {
   ChainId,
-  CustomErc20Token,
+  Erc20Token,
   CustomErc20TokenCreate,
   MessageTypes,
   Port,
-  RequestAuthorizedSiteForget,
-  RequestAuthorizedSiteUpdate,
   RequestIdOnly,
   RequestTypes,
   ResponseType,
@@ -33,15 +31,13 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
 
       case "pri(tokens.erc20.custom)":
-        return (await db.tokens.toArray()).filter(
-          // note : need to check type too because isCustom is also set to true for native tokens of custom networks
-          (token) => token.type === "erc20" && token.isCustom
-        ) as any
+        return (await db.tokens.toArray())
+          .filter((token): token is Erc20Token => token.type === "erc20" && !!token.isCustom)
+          .reduce((prev, curr) => ({ ...prev, [curr.id]: curr }), {} as Record<string, Erc20Token>)
 
       case "pri(tokens.erc20.custom.byid)": {
         const token = await db.tokens.get((request as RequestIdOnly).id)
-        if (token?.type === "erc20" && token.isCustom) return token
-        return
+        return token?.type === "erc20" && token.isCustom ? token : undefined
       }
 
       case "pri(tokens.erc20.custom.add)":
@@ -60,7 +56,7 @@ export default class TokensHandler extends ExtensionHandler {
 
         const { symbol, decimals, coingeckoId, contractAddress, image } = token
 
-        const newToken: CustomErc20Token = {
+        const newToken: Erc20Token = {
           id: `${token.chainId || token.evmNetworkId}-erc20-${token.contractAddress}`,
           type: "erc20",
           isTestnet: (chain || evmNetwork)?.isTestnet || false,
@@ -81,7 +77,7 @@ export default class TokensHandler extends ExtensionHandler {
 
       case "pri(tokens.erc20.custom.clear)":
         const filter = request as { chainId?: ChainId; evmNetworkId?: string } | undefined
-        const deleteFilterFn = (token: CustomErc20Token) =>
+        const deleteFilterFn = (token: Erc20Token) =>
           filter === undefined
             ? // delete if no filter set
               true
@@ -95,7 +91,7 @@ export default class TokensHandler extends ExtensionHandler {
               false
 
         const deleteTokens = (await db.tokens.toArray())
-          .filter((token): token is CustomErc20Token => token.type === "erc20" && !!token.isCustom)
+          .filter((token): token is Erc20Token => token.type === "erc20" && !!token.isCustom)
           .filter(deleteFilterFn)
           .map((token) => token.id)
         await db.tokens.bulkDelete(deleteTokens)

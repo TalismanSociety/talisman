@@ -1,5 +1,5 @@
 import { ReactNode, useMemo } from "react"
-import { CustomErc20Token, CustomEvmNetwork, EvmNetwork } from "@core/types"
+import { CustomEvmNetwork, Erc20Token, EvmNetwork } from "@core/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -98,7 +98,7 @@ const ViewDetailsEntry = ({ title, value, href }: ViewDetailsEntryProps) => (
 )
 
 type CustomErc20TokenViewDetailsProps = {
-  token: CustomErc20Token
+  token: Erc20Token
   network: EvmNetwork | CustomEvmNetwork
 }
 

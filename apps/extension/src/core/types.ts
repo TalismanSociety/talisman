@@ -237,8 +237,8 @@ export interface RequestSignatures extends Omit<PolkadotRequestSignatures, Remov
   "pri(tokens.subscribe)": [null, boolean, boolean]
 
   // custom erc20 token management
-  "pri(tokens.erc20.custom)": [null, Record<CustomErc20Token["id"], CustomErc20Token>]
-  "pri(tokens.erc20.custom.byid)": [RequestIdOnly, CustomErc20Token]
+  "pri(tokens.erc20.custom)": [null, Record<Erc20Token["id"], Erc20Token>]
+  "pri(tokens.erc20.custom.byid)": [RequestIdOnly, Erc20Token]
   "pri(tokens.erc20.custom.add)": [CustomErc20TokenCreate, boolean]
   "pri(tokens.erc20.custom.remove)": [RequestIdOnly, boolean]
   "pri(tokens.erc20.custom.clear)": [
@@ -535,7 +535,7 @@ export type TokenId = string
 
 export type TokenIndex = number
 
-export type Token = NativeToken | OrmlToken | Erc20Token | CustomErc20Token
+export type Token = NativeToken | OrmlToken | Erc20Token
 export type IToken = {
   id: TokenId
   type: string
@@ -559,19 +559,18 @@ export type OrmlToken = IToken & {
   index: TokenIndex
   chain: { id: ChainId }
 }
+
 export type Erc20Token = IToken & {
   type: "erc20"
   contractAddress: string
   chain?: { id: ChainId } | null
   evmNetwork?: { id: EvmNetworkId } | null
   isCustom?: boolean
-}
-export type CustomErc20Token = Erc20Token & {
-  isCustom: true
   image?: string
 }
+
 export type CustomErc20TokenCreate = Pick<
-  CustomErc20Token,
+  Erc20Token,
   "symbol" | "decimals" | "coingeckoId" | "contractAddress" | "image"
 > & { chainId?: ChainId; evmNetworkId?: EvmNetworkId }
 
@@ -587,7 +586,7 @@ export type WatchAssetBase = {
 
 export type WatchAssetRequest = {
   request: WatchAssetBase
-  token: CustomErc20Token
+  token: Erc20Token
   id: string
   url: string
 }

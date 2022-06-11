@@ -1,9 +1,4 @@
-import type {
-  RequestIdOnly,
-  WatchAssetRequest,
-  WatchAssetBase,
-  CustomErc20Token,
-} from "@core/types"
+import type { RequestIdOnly, WatchAssetRequest, WatchAssetBase, Erc20Token } from "@core/types"
 import { RequestStore } from "@core/libs/RequestStore"
 import { assert } from "@polkadot/util"
 
@@ -26,7 +21,7 @@ export default class EvmWatchAssetRequestsStore extends RequestStore<WatchAssetR
     return true
   }
 
-  async requestWatchAsset(url: string, request: WatchAssetBase, token: CustomErc20Token) {
+  async requestWatchAsset(url: string, request: WatchAssetBase, token: Erc20Token) {
     const id = request.options.address
     const isDuplicate = this.getAllRequests().some(({ request }) => request.options.address === id)
 

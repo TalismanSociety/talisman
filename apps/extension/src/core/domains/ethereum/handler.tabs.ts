@@ -6,7 +6,7 @@ import type {
   RequestAuthorizeTab,
   AuthorizedSiteAddresses,
   AuthorizedSite,
-  CustomErc20Token,
+  Erc20Token,
 } from "@core/types"
 import { db } from "@core/libs/dexieDb"
 
@@ -354,7 +354,7 @@ export class EthTabsHandler extends TabsHandler {
       throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
     }
 
-    const token: CustomErc20Token = {
+    const token: Erc20Token = {
       id: tokenId,
       type: "erc20",
       isTestnet: false,

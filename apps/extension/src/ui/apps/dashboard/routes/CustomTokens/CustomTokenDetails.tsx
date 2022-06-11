@@ -1,4 +1,4 @@
-import { CustomErc20Token } from "@core/types"
+import { Erc20Token } from "@core/types"
 import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { SimpleButton } from "@talisman/components/SimpleButton"
@@ -35,13 +35,13 @@ const ConfirmRemove = ({
   onClose,
 }: {
   open?: boolean
-  token: CustomErc20Token
+  token: Erc20Token
   onClose: () => void
 }) => {
   const navigate = useNavigate()
 
   // keep last one to prevent symbol to disappear when deleting it
-  const [saved, setSaved] = useState<CustomErc20Token>()
+  const [saved, setSaved] = useState<Erc20Token>()
   useEffect(() => {
     if (token) setSaved(token)
   }, [token])
