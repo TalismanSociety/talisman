@@ -85,7 +85,7 @@ export const CustomTokenDetails = () => {
   const { isOpen, open, close } = useOpenClose()
   const navigate = useNavigate()
 
-  const { token } = useCustomErc20Token(id)
+  const token = useCustomErc20Token(id)
   const network = useEvmNetwork(token?.evmNetwork?.id)
 
   useEffect(() => {
