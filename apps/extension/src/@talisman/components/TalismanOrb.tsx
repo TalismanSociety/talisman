@@ -2,6 +2,7 @@ import { FC, useMemo } from "react"
 import Color from "color"
 import md5 from "blueimp-md5"
 import { nanoid } from "nanoid"
+import { encodeAnyAddress } from "@core/util"
 
 const djb2 = (str: string) => {
   let hash = 5381
@@ -29,8 +30,16 @@ export const TalismanOrb: FC<TalismanOrbProps> = ({
   className,
 }) => {
   const { id, bgColor1, bgColor2, transform, glowColor, cx, cy, isEthereum } = useMemo(() => {
+    const isEthereum = seed?.startsWith("0x")
+    try {
+      // seed may be specific to a ss58 prefix, get the base address
+      var address = isEthereum ? seed : encodeAnyAddress(seed)
+    } catch (err) {
+      address = seed
+    }
+
     // derive 3 hashs from the seed, used to generate the 3 colors
-    const hash1 = md5(seed)
+    const hash1 = md5(address)
     const hash2 = rotateText(hash1, 1)
     const hash3 = rotateText(hash1, 2)
 
@@ -55,7 +64,7 @@ export const TalismanOrb: FC<TalismanOrbProps> = ({
       transform: `rotate(${rotation} 32 32)`,
       cx: dotX,
       cy: dotY,
-      isEthereum: seed?.startsWith("0x"),
+      isEthereum,
     }
   }, [seed])
 
