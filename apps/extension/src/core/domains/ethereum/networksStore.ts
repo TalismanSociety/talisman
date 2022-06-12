@@ -63,10 +63,10 @@ export class EvmNetworkStore {
   }
 }
 
-// TODO: create ethereum rpc module to make these available to the extension separately to this store
+// TODO: Extract to a separate ethereum rpc module to make these available to the extension separately to this store
 export const ethereumNetworksToProviders = (
   ethereumNetworks: EvmNetworkList
-): Record<number, providers.FallbackProvider> =>
+): Record<number, providers.JsonRpcBatchProvider> =>
   Object.fromEntries(
     Object.values(ethereumNetworks)
       .map((ethereumNetwork) => [ethereumNetwork.id, ethereumNetworkToProvider(ethereumNetwork)])
@@ -75,25 +75,21 @@ export const ethereumNetworksToProviders = (
 
 export const ethereumNetworkToProvider = (
   ethereumNetwork: EvmNetwork | CustomEvmNetwork
-): providers.JsonRpcProvider | null =>
+): providers.JsonRpcBatchProvider | null =>
   Array.isArray(ethereumNetwork.rpcs) &&
   ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).length > 0
-    ? new ethers.providers.JsonRpcProvider(
+    ? // TODO: Support ethereum rpc failover (ethers.providers.FallbackProvider)
+      // new ethers.providers.FallbackProvider(
+      //   network.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) =>
+      //     new ethers.providers.JsonRpcBatchProvider(url, { name: network.name, chainId: network.id })
+      //   )
+      // )
+      new ethers.providers.JsonRpcBatchProvider(
         ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) => url)[0],
         { name: ethereumNetwork.name!, chainId: ethereumNetwork.id }
       )
     : null
 
-// TODO: Extract to a separate ethereum rpc module
-// TODO: Support ethereum rpc failover (ethers.providers.FallbackProvider)
-//     new ethers.providers.FallbackProvider(
-//       network.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) =>
-//         new ethers.providers.JsonRpcProvider(url, {
-//           name: network.name,
-//           chainId: network.id,
-//         })
-//       )
-//     )
 const ethereumNetworkProviders: Record<number, providers.JsonRpcProvider> = {}
 export const getProviderForEthereumNetwork = (
   ethereumNetwork: EvmNetwork | CustomEvmNetwork

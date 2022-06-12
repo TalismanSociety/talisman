@@ -1,14 +1,9 @@
+import { DEBUG } from "@core/constants"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { getProviderForEvmNetworkId } from "@core/domains/ethereum/networksStore"
-import {
-  Address,
-  AddressesByChain,
-  EvmNetwork,
-  EvmNetworkId,
-  SubscriptionCallback,
-  UnsubscribeFn,
-} from "@core/types"
-import { JsonRpcProvider } from "@ethersproject/providers"
+import { Address, EvmNetwork, EvmNetworkId, SubscriptionCallback, UnsubscribeFn } from "@core/types"
+import { JsonRpcBatchProvider } from "@ethersproject/providers"
+import * as Sentry from "@sentry/browser"
 
 export default class NativeBalancesEvmRpc {
   /**
@@ -36,44 +31,59 @@ export default class NativeBalancesEvmRpc {
     if (callback !== undefined) {
       setTimeout(async () => {
         try {
-          const providers: { [evmNetworkId: EvmNetworkId]: JsonRpcProvider } = Object.fromEntries(
-            await Promise.all(
-              evmNetworks.map((evmNetwork) =>
-                getProviderForEvmNetworkId(evmNetwork.id).then((provider) => [
-                  evmNetwork.id,
-                  provider,
-                ])
+          const providers: { [evmNetworkId: EvmNetworkId]: JsonRpcBatchProvider } =
+            Object.fromEntries(
+              await Promise.all(
+                evmNetworks.map((evmNetwork) =>
+                  getProviderForEvmNetworkId(evmNetwork.id).then((provider) => [
+                    evmNetwork.id,
+                    provider,
+                  ])
+                )
               )
             )
-          )
 
           // TODO: Fetch on a timer while subscription is active
           const balances = new Balances(
-            await Promise.all(
-              evmNetworks
-                .filter(({ nativeToken }) => typeof nativeToken?.id === "string")
-                .flatMap((evmNetwork) =>
-                  addresses.map(
-                    async (address) =>
-                      new Balance({
-                        pallet: "balances",
+            (
+              await Promise.allSettled(
+                evmNetworks
+                  .filter(({ nativeToken }) => typeof nativeToken?.id === "string")
+                  .filter(({ id }) => providers[id] !== null && providers[id] !== undefined)
+                  .flatMap((evmNetwork) =>
+                    addresses.map(
+                      async (address) =>
+                        new Balance({
+                          pallet: "balances",
 
-                        status: "live",
+                          status: "live",
 
-                        address: address,
-                        evmNetworkId: evmNetwork.id,
-                        tokenId: evmNetwork.nativeToken?.id!,
-                        free: (
-                          (await providers[evmNetwork.id].getBalance(address)).toBigInt() ||
-                          BigInt("0")
-                        ).toString(),
-                        reserved: "0",
-                        miscFrozen: "0",
-                        feeFrozen: "0",
-                      })
+                          address: address,
+                          evmNetworkId: evmNetwork.id,
+                          tokenId: evmNetwork.nativeToken?.id!,
+                          free: (
+                            (await providers[evmNetwork.id].getBalance(address)).toBigInt() ||
+                            BigInt("0")
+                          ).toString(),
+                          reserved: "0",
+                          miscFrozen: "0",
+                          feeFrozen: "0",
+                        })
+                    )
                   )
-                )
+              )
             )
+              .map((result) => {
+                if (result.status === "rejected") {
+                  // eslint-disable-next-line no-console
+                  DEBUG && console.error(result.reason)
+                  Sentry.captureException(result.reason)
+                  return null
+                }
+
+                return result.value
+              })
+              .filter((balance): balance is Balance => balance !== null)
           )
 
           callback(null, balances)
