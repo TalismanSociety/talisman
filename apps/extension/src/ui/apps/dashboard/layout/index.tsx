@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FC, lazy, Suspense } from "react"
 import styled from "styled-components"
 import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
 import { SideBar } from "./SideBar"
@@ -7,6 +7,8 @@ import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
+
+const DashboardNotifications = lazy(() => import("./DashboardNotifications"))
 
 type LayoutProps = {
   centered?: boolean
@@ -23,6 +25,9 @@ const UnstyledLayout: FC<LayoutProps> = ({ withBack, children, className }) => (
         {!!withBack && <BackButton className="back" />}
         {children}
       </div>
+      <Suspense fallback={null}>
+        <DashboardNotifications />
+      </Suspense>
     </ScrollContainer>
     <SendTokensModal />
     <AccountRenameModal />

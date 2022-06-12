@@ -3,11 +3,12 @@ import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { BraveIcon } from "@talisman/theme/icons"
+import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarningModal"
 import { useEffect, useMemo, useState } from "react"
-import { BraveWarningCard } from "./BraveWarningCard"
-import { BraveWarningModal } from "./BraveWarningModal"
+import { Notification } from "./Notification"
 
-const BraveWarningBanner = () => {
+export const BraveWarningNotification = () => {
   const isBrave = useIsBrave()
   const [hideBraveWarning, setHideBraveWarning] = useState<boolean | undefined>(true)
   const [hasBraveWarningBeenShown, setHasBraveWarningBeenShown] = useState<boolean | undefined>(
@@ -33,7 +34,14 @@ const BraveWarningBanner = () => {
 
   return (
     <>
-      <BraveWarningCard onLearnMoreClick={open} />
+      <Notification
+        icon={<BraveIcon className="icon" />}
+        title="Attention Brave users! "
+        description="Due to a recent update, users may be experiencing issues loading balances"
+        action="Learn more"
+        onActionClick={open}
+        onClose={confirm}
+      />
       <Modal open={isOpen} onClose={close}>
         <ModalDialog centerTitle title="Attention Brave Users" onClose={close}>
           <BraveWarningModal />
@@ -42,6 +50,3 @@ const BraveWarningBanner = () => {
     </>
   )
 }
-
-// default export to allow for lazy loading
-export default BraveWarningBanner

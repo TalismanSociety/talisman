@@ -1,8 +1,7 @@
 import styled from "styled-components"
 import Nav, { NavItem } from "@talisman/components/Nav"
 import Build from "@ui/domains/Build"
-import { lazy, ReactNode, Suspense, useCallback } from "react"
-import { BackupBanner } from "./BackupBanner"
+import { ReactNode, useCallback } from "react"
 import { DashboardAccountSelect } from "./DashboardAccountSelect"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
@@ -29,10 +28,6 @@ const PaddedItem = styled.div`
   position: relative;
   width: 100%;
 `
-
-const BraveWarningBanner = lazy(
-  () => import("@ui/domains/Settings/BraveWarning/BraveWarningBanner")
-)
 
 const BrandLogo = styled(({ className }) => {
   return (
@@ -319,13 +314,6 @@ export const SideBar = () => {
             Settings
           </NavItem>
         </Nav>
-        {/* TODO Move to main area, out of sidebar */}
-        {/* <div className="bottom">
-          <Suspense fallback={null}>
-            <BraveWarningBanner />
-          </Suspense>
-          <BackupBanner />
-        </div> */}
       </ScrollContainer>
       <PaddedItem className="logo-container">
         <BrandLogo />
