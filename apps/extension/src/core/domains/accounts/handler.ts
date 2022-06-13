@@ -12,7 +12,7 @@ import type {
   ResponseAccountExport,
   RequestAccountRename,
 } from "@core/types"
-import { filterPublicAccounts } from "@core/domains/accounts/helpers"
+import { filterPublicAccounts, AccountTypes } from "@core/domains/accounts/helpers"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ExtensionHandler } from "@core/libs/Handler"
@@ -23,11 +23,12 @@ import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { encodeAnyAddress } from "@core/util"
 import { DEBUG } from "@core/constants"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import { talismanAnalytics } from "@core/libs/Analytics"
 
 export default class AccountsHandler extends ExtensionHandler {
   private getRootAccount() {
     // TODO this is duplicated in handlers/app.ts
-    return keyring.getAccounts().find(({ meta }) => meta?.origin === "ROOT")
+    return keyring.getAccounts().find(({ meta }) => meta?.origin === AccountTypes.ROOT)
   }
 
   // we can only create a new account if we have an existing root account
@@ -52,7 +53,8 @@ export default class AccountsHandler extends ExtensionHandler {
     const isEthereum = type === "ethereum"
     const derivedAccountIndex = allAccounts.filter(
       (account) =>
-        account.meta.origin === "DERIVED" && isEthereum === isEthereumAddress(account.address)
+        account.meta.origin === AccountTypes.DERIVED &&
+        isEthereum === isEthereumAddress(account.address)
     ).length
     // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
     const derivationPath = isEthereum
@@ -68,12 +70,14 @@ export default class AccountsHandler extends ExtensionHandler {
       password,
       {
         name,
-        origin: "DERIVED",
+        origin: AccountTypes.DERIVED,
         parent: rootAccount.address,
         derivationPath,
       },
       type
     )
+
+    talismanAnalytics.capture("account create", { type, method: "derived" })
 
     return true
   }
@@ -100,10 +104,13 @@ export default class AccountsHandler extends ExtensionHandler {
         password,
         {
           name,
-          origin: "SEED",
+          origin: AccountTypes.SEED,
         },
         type // if undefined, defaults to keyring's default (sr25519 atm)
       )
+
+      talismanAnalytics.capture("account create", { type, method: "seed" })
+
       return true
     } catch (error) {
       throw new Error((error as Error).message)
@@ -131,7 +138,7 @@ export default class AccountsHandler extends ExtensionHandler {
       )
       const pair = keyring.createFromJson(parsedJson, {
         name: parsedJson.meta?.name || "Json Import",
-        origin: "JSON",
+        origin: AccountTypes.JSON,
       })
 
       const notExists = !keyring.getAccounts().some(({ address }) => address === pair.address)
@@ -144,6 +151,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
       keyring.encryptAccount(pair, password)
 
+      talismanAnalytics.capture("account create", { type: pair.type, method: "json" })
       return true
     } catch (error) {
       throw new Error((error as Error).message)
@@ -162,21 +170,26 @@ export default class AccountsHandler extends ExtensionHandler {
       addressOffset,
       genesisHash,
       name,
-      origin: "HARDWARE",
+      origin: AccountTypes.HARDWARE,
     })
+
+    talismanAnalytics.capture("account create", { type: "substrate", method: "hardware" })
 
     return true
   }
 
   private accountForget({ address }: RequestAccountForget): boolean {
     const account = keyring.getAccounts().find((acc) => acc.address === address)
-
     assert(account, "Unable to find account")
 
     assert(
-      !["ROOT", "DERIVED"].includes(account.meta.origin as string),
+      ![AccountTypes.ROOT, AccountTypes.DERIVED].includes(
+        account.meta.origin as keyof typeof AccountTypes
+      ),
       "Cannot forget root or derived accounts"
     )
+    const { type } = keyring.getPair(account?.address)
+    talismanAnalytics.capture("account forget", { type })
 
     keyring.forgetAccount(address)
 
@@ -189,8 +202,12 @@ export default class AccountsHandler extends ExtensionHandler {
   private accountExport({ address }: RequestAccountExport): ResponseAccountExport {
     const password = this.stores.password.getPassword()
     assert(password, "User not logged in")
+
+    const pair = keyring.getPair(address)
+    talismanAnalytics.capture("account export", { type: pair.type })
+
     return {
-      exportedJson: keyring.backupAccount(keyring.getPair(address), password),
+      exportedJson: keyring.backupAccount(pair, password),
     }
   }
 

@@ -11,6 +11,7 @@ import type {
   OnboardedType,
   ModalTypes,
   ModalOpenParams,
+  AnalyticsCaptureRequest,
 } from "@core/types"
 import Browser from "webextension-polyfill"
 import keyring from "@polkadot/ui-keyring"
@@ -21,6 +22,8 @@ import { genericSubscription } from "@core/handlers/subscriptions"
 import { AppStoreData } from "@core/domains/app/store.app"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { Subject } from "rxjs"
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { AccountTypes } from "../accounts/helpers"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalTypes>()
@@ -44,12 +47,12 @@ export default class AppHandler extends ExtensionHandler {
     assert(!account, "A root account already exists")
 
     let confirmed: boolean = false
+    const method = mnemonic ? "import" : "new"
     // no mnemonic passed in generate a mnemonic as needed
     if (!mnemonic) {
       mnemonic = mnemonicGenerate()
-    }
-    // mnemonic is passed in from user
-    else {
+    } else {
+      // mnemonic is passed in from user
       const isValidMnemonic = mnemonicValidate(mnemonic)
       assert(isValidMnemonic, "Supplied mnemonic is not valid")
       confirmed = true
@@ -57,7 +60,7 @@ export default class AppHandler extends ExtensionHandler {
 
     const { pair } = keyring.addUri(mnemonic, pass, {
       name,
-      origin: "ROOT",
+      origin: AccountTypes.ROOT,
     } as AccountMeta)
     await this.stores.seedPhrase.add(mnemonic, pair.address, pass, confirmed)
     this.stores.password.setPassword(pass)
@@ -70,7 +73,7 @@ export default class AppHandler extends ExtensionHandler {
         pass,
         {
           name: `${name} Ethereum`,
-          origin: "DERIVED",
+          origin: AccountTypes.DERIVED,
           parent: pair.address,
           derivationPath,
         },
@@ -82,7 +85,9 @@ export default class AppHandler extends ExtensionHandler {
       console.error(err)
     }
 
-    return await this.stores.app.setOnboarded()
+    const result = await this.stores.app.setOnboarded()
+    talismanAnalytics.capture("onboarded", { method })
+    return result
   }
 
   private async authenticate({ pass }: RequestLogin): Promise<boolean> {
@@ -103,6 +108,7 @@ export default class AppHandler extends ExtensionHandler {
       // a successful unlock means authenticated
       pair.unlock(pass)
       this.stores.password.setPassword(pass)
+      talismanAnalytics.capture("authenticate")
       return true
     } catch (e) {
       this.stores.password.clearPassword()
@@ -111,7 +117,7 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private getRootAccount() {
-    return keyring.getAccounts().find(({ meta }) => meta?.origin === "ROOT")
+    return keyring.getAccounts().find(({ meta }) => meta?.origin === AccountTypes.ROOT)
   }
 
   private authStatus(): LoggedinType {
@@ -213,6 +219,11 @@ export default class AppHandler extends ExtensionHandler {
           this.#modalOpenRequest,
           (modalType) => ({ modalType })
         )
+
+      case "pri(app.analyticsCapture)":
+        const { eventName, options } = request as AnalyticsCaptureRequest
+        talismanAnalytics.capture(eventName, options)
+        return true
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

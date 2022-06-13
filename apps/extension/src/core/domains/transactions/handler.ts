@@ -21,6 +21,10 @@ import AssetTransfersRpc from "@core/libs/rpc/AssetTransfers"
 import OrmlTokenTransfersRpc from "@core/libs/rpc/OrmlTokenTransfers"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { pendingTransfers } from "@core/libs/rpc/PendingTransfers"
+import { talismanAnalytics } from "@core/libs/Analytics"
+import keyring from "@polkadot/ui-keyring"
+import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
+import BigNumber from "bignumber.js"
 
 export default class AssetTransferHandler extends ExtensionHandler {
   private getExtrinsicWatch(
@@ -100,6 +104,13 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
     const token = await tokenStore.token(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+
+    talismanAnalytics.capture("asset transfer", {
+      chainId,
+      tokenId,
+      amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
+      internal: keyring.getAccount(toAddress) !== undefined,
+    })
 
     return await new Promise((resolve, reject) => {
       const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)

@@ -3,6 +3,14 @@ import type { SubjectInfo } from "@polkadot/ui-keyring/observable/types"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import { canDerive } from "@polkadot/extension-base/utils"
 
+export const AccountTypes = {
+  ROOT: "ROOT",
+  DERIVED: "DERIVED",
+  HARDWARE: "HARDWARE",
+  SEED: "SEED",
+  JSON: "JSON",
+}
+
 const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
   return accounts.sort((acc1, acc2) => {
     const acc1Created = acc1.whenCreated

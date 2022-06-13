@@ -8,6 +8,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { useForm } from "react-hook-form"
 import { FormField } from "@talisman/components/Field/FormField"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
 
 type FormData = {
   password: string
@@ -20,6 +21,8 @@ const schema = yup
   .required()
 
 const Unlock = ({ className }: any) => {
+  useAnalyticsPopupOpen("auth")
+
   const {
     register,
     handleSubmit,

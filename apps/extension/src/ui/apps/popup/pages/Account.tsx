@@ -5,12 +5,16 @@ import Site from "@ui/domains/Site"
 import { NavigationMenuButton } from "../components/Navigation/NavigationMenuButton"
 import Account from "@ui/domains/Account"
 import { TotalFiatBalance } from "../components/TotalFiatBalance"
+import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
 
 const BraveWarningPopupBanner = lazy(
   () => import("@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner")
 )
+const AnalyticsAlert = lazy(() => import("@ui/domains/Settings/Analytics/AnalyticsAlert"))
 
 const AccountAssets = ({ className }: any) => {
+  useAnalyticsPopupOpen("accounts")
+
   return (
     <Layout className={className}>
       <Header text={<Site.ConnectedAccountsPill />} nav={<NavigationMenuButton />} />
@@ -19,6 +23,9 @@ const AccountAssets = ({ className }: any) => {
         <Account.List withAvatar withCopy withBalanceRow withFiat />
         <Suspense fallback={null}>
           <BraveWarningPopupBanner />
+        </Suspense>
+        <Suspense fallback={null}>
+          <AnalyticsAlert />
         </Suspense>
       </Content>
     </Layout>

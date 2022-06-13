@@ -16,6 +16,7 @@ import { FullColorSmallLogo } from "@talisman/theme/logos"
 import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import Build from "@ui/domains/Build"
 import { api } from "@ui/api"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 
 const Container = styled.aside`
   width: 100%;
@@ -64,6 +65,7 @@ const Container = styled.aside`
 
 export const NavigationDrawer: FC = () => {
   const { isOpen, close } = useNavigationContext()
+  const { genericEvent } = useAnalytics()
 
   const handleLock = useCallback(async () => {
     await api.lock()
@@ -93,7 +95,13 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<SettingsIcon />} onClick={() => api.dashboardOpen("/settings")}>
               Settings
             </NavItem>
-            <NavItem icon={<LayoutIcon />} onClick={() => window.open("https://app.talisman.xyz")}>
+            <NavItem
+              icon={<LayoutIcon />}
+              onClick={() => {
+                genericEvent("open webapp")
+                return window.open("https://app.talisman.xyz")
+              }}
+            >
               Talisman Web App
             </NavItem>
             <NavItem icon={<LockIcon />} onClick={handleLock}>

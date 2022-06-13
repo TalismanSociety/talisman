@@ -2,8 +2,11 @@ import { useNavigate } from "react-router-dom"
 import Layout, { Header, Content, Footer } from "../Layout"
 import Button from "@talisman/components/Button"
 import Transaction from "@ui/domains/Transaction"
+import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
 
 const Detail = ({ id }: any) => {
+  useAnalyticsPopupOpen("transaction")
+
   const navigate = useNavigate()
 
   // TODO : this page doesn't seem to be displayed atm
