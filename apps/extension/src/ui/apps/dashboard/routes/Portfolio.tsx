@@ -1,4 +1,5 @@
 import { Balances } from "@core/types"
+import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -18,30 +19,6 @@ import styled from "styled-components"
 import { useSelectedAccount } from "../context"
 import Layout from "../layout"
 
-const Header = styled.header`
-  display: flex;
-  width: 100%;
-  gap: 1.6rem;
-`
-
-const Flex = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.4em;
-`
-
-const Buttons = styled.div`
-  flex-grow: 1;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 1.6rem;
-`
-
-const Main = styled.section`
-  margin-top: 3.8rem;
-`
-
 const Stats = styled(Statistics)`
   max-width: 40%;
 `
@@ -59,9 +36,10 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     [account?.address, openSendFundsModal]
   )
 
-  const { available, locked } = useMemo(() => {
-    const { frozen, reserved, transferable } = balances.sum.fiat("usd")
+  const { portfolio, available, locked } = useMemo(() => {
+    const { total, frozen, reserved, transferable } = balances.sum.fiat("usd")
     return {
+      portfolio: total,
       available: transferable,
       locked: frozen + reserved,
     }
@@ -74,21 +52,24 @@ const PageContent = ({ balances }: { balances: Balances }) => {
 
   return (
     <Layout centered large>
-      <Header>
+      <Box flex fullwidth gap={1.6}>
+        <Stats title="Total Portfolio Value">
+          <Fiat amount={portfolio} currency="usd" isBalance />
+        </Stats>
         <Stats title="Available">
           <Fiat amount={available} currency="usd" isBalance />
         </Stats>
         <Stats
           title={
-            <Flex>
+            <Box flex align="center" gap={0.4}>
               <LockIcon />
               <span>Locked</span>
-            </Flex>
+            </Box>
           }
         >
           <Fiat amount={locked} currency="usd" isBalance />
         </Stats>
-        <Buttons>
+        <Box grow flex justify="flex-end" align="center" gap={1.6}>
           <WithTooltip tooltip="Send">
             <IconButton onClick={sendFunds}>
               <PaperPlaneIcon />
@@ -115,11 +96,11 @@ const PageContent = ({ balances }: { balances: Balances }) => {
               )}
             </PopNav>
           )}
-        </Buttons>
-      </Header>
-      <Main>
+        </Box>
+      </Box>
+      <Box margin="3.8rem 0 0 0">
         <AssetsTable balances={balances} />
-      </Main>
+      </Box>
     </Layout>
   )
 }
