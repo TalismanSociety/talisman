@@ -19,7 +19,7 @@ const OnboardingRoutes = () => {
         <Route path="name" element={<EnterName />} />
         <Route path="pass" element={<EnterPass />} />
       </Route>
-      <Route path="analytics" element={<Analytics nextUrl="/complete" />} />
+      <Route path="analytics" element={<Analytics />} />
       <Route path="complete" element={<Complete />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

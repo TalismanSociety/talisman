@@ -5,6 +5,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import OnboardingImg from "@talisman/theme/images/onboard_analytics.png"
 import { AnalyticsOptInInfo } from "@ui/domains/Settings/Analytics/AnalyticsOptInInfo"
 import { motion } from "framer-motion"
+import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import { Layout } from "../layout"
@@ -29,8 +30,18 @@ const BtnProceed = styled(SimpleButton)`
   display: inline-block;
 `
 
-export const Analytics = ({ nextUrl }: { nextUrl: string }) => {
+export const Analytics = () => {
   const navigate = useNavigate()
+
+  const setUseAnalyticsTracking = useCallback(
+    async (useAnalyticsTracking) => {
+      await settingsStore.set({ useAnalyticsTracking })
+      await appStore.set({ analyticsRequestShown: true })
+      navigate("/complete")
+    },
+    [navigate]
+  )
+
   return (
     <Layout picture={<Image src={OnboardingImg} />}>
       <AnalyticsOptInInfo>
@@ -38,11 +49,7 @@ export const Analytics = ({ nextUrl }: { nextUrl: string }) => {
           <BtnProceed
             tabIndex={4}
             className="btn-reject"
-            onClick={async () => {
-              await settingsStore.set({ useAnalyticsTracking: false })
-              await appStore.set({ analyticsRequestShown: true })
-              navigate(nextUrl)
-            }}
+            onClick={() => setUseAnalyticsTracking(false)}
           >
             No thanks
           </BtnProceed>
@@ -50,11 +57,7 @@ export const Analytics = ({ nextUrl }: { nextUrl: string }) => {
             tabIndex={3}
             className="btn-agree"
             primary
-            onClick={async () => {
-              await settingsStore.set({ useAnalyticsTracking: true })
-              await appStore.set({ analyticsRequestShown: true })
-              navigate(nextUrl)
-            }}
+            onClick={() => setUseAnalyticsTracking(true)}
           >
             I agree
           </BtnProceed>
