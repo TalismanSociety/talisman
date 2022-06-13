@@ -12,6 +12,7 @@ export const useErc20TokenInfo = (evmNetworkId: number, contractAddress: string)
 
   useEffect(() => {
     setError(undefined)
+    setToken(undefined)
     if (!provider || !contractAddress) return
     setIsLoading(true)
     getErc20TokenInfo(provider, evmNetworkId, contractAddress)

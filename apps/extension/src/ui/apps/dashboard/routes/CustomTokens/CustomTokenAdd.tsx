@@ -64,6 +64,7 @@ export const CustomTokenAdd = () => {
     handleSubmit,
     setValue,
     watch,
+    resetField,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
@@ -86,11 +87,15 @@ export const CustomTokenAdd = () => {
 
   // Keeping symbol and decimal fields bound to the form in case we want to make them editable later
   useEffect(() => {
-    if (!tokenInfo) return
-    // force values fetched from blockchain
-    setValue("symbol", tokenInfo?.symbol, { shouldValidate: true })
-    setValue("decimals", tokenInfo?.decimals, { shouldValidate: true })
-  }, [decimals, setValue, symbol, tokenInfo])
+    if (!tokenInfo) {
+      resetField("decimals")
+      resetField("symbol")
+    } else {
+      // force values fetched from blockchain
+      setValue("symbol", tokenInfo?.symbol, { shouldValidate: true })
+      setValue("decimals", tokenInfo?.decimals, { shouldValidate: true })
+    }
+  }, [decimals, resetField, setValue, symbol, tokenInfo])
 
   const submit = useCallback(
     async (token: FormData) => {
