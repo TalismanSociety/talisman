@@ -4,12 +4,10 @@ import { initPosthog } from "@core/config/posthog"
 import * as Sentry from "@sentry/browser"
 import { DEBUG } from "@core/constants"
 import keyring from "@polkadot/ui-keyring"
-import balancesStore from "@core/domains/balances/store"
 import { Balances, Balance } from "@core/domains/balances/types"
-import { chainStore } from "@core/domains/chains"
-import { tokenStore } from "@core/domains/tokens"
 import { AccountTypes } from "@core/domains/accounts/helpers"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
+import { db } from "@core/libs/dexieDb"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
 
@@ -84,43 +82,44 @@ class TalismanAnalytics {
       )
       posthog.capture("accounts breakdown", { accountBreakdown })
     }
-    // balances
-    const balances = await balancesStore.get()
-    // cache chains and tokens here to prevent lots of fetch calls
-    const chains = await chainStore.chains()
-    const tokens = await tokenStore.tokens()
 
-    const hydration = {
-      chain: (chainId: string) => Promise.resolve(chains[chainId]),
-      token: (tokenId: string) => Promise.resolve(tokens[tokenId]),
-    }
+    // cache chains, evmNetworks and tokens here to prevent lots of fetch calls
+    const chains = Object.fromEntries(
+      ((await db.chains.toArray()) || []).map((chain) => [chain.id, chain])
+    )
+    const evmNetworks = Object.fromEntries(
+      ((await db.evmNetworks.toArray()) || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])
+    )
+    const tokens = Object.fromEntries(
+      ((await db.tokens.toArray()) || []).map((token) => [token.id, token])
+    )
 
-    // balances fiat sum estimate
-    const allBalances = new Balances(balances)
-    await allBalances.hydrate(hydration)
+    // balances + balances fiat sum estimate
+    const balances = new Balances(await db.balances.toArray(), { chains, evmNetworks, tokens })
 
     posthog.capture("balances fiat sum", {
-      total: roundToFirstInteger(allBalances.sum.fiat("usd").total),
+      total: roundToFirstInteger(balances.sum.fiat("usd").total),
     })
 
     // balances top 5 tokens/networks
-    // get Balance list per chain and token
-    const balancesPerChainToken = Object.values(balances).reduce((result, balance) => {
-      const key = `${balance.chainId}-${balance.tokenId}`
-      if (!result[key]) result[key] = []
-      result[key].push(new Balance(balance))
-      return result
-    }, {} as { [key: string]: Balance[] })
+    // get Balance list per chain/evmNetwork and token
+    const balancesPerChainToken: Record<string, Balances> = Object.values(balances).reduce(
+      (result, balance) => {
+        const key = `${balance.chainId || balance.evmNetworkId}-${balance.tokenId}`
+        if (!result[key]) result[key] = []
+        result[key].push(new Balance(balance))
+        return result
+      },
+      {} as { [key: string]: Balance[] }
+    )
 
     // get fiat sum object for those arrays of Balances
     const fiatSumPerChainToken = await Promise.all(
       Object.values(balancesPerChainToken).map(async (balances) => {
-        const balanceObject = new Balances(balances)
-        await balanceObject.hydrate(hydration)
         return {
-          balance: balanceObject.sum.fiat("usd").total,
-          chainId: balances[0].chainId,
-          tokenId: balances[0].tokenId,
+          balance: balances.sum.fiat("usd").total,
+          chainId: balances.sorted[0].chainId || balances.sorted[0].evmNetworkId,
+          tokenId: balances.sorted[0].tokenId,
         }
       })
     ).then((fiatBalances) => fiatBalances.sort((a, b) => b.balance - a.balance))

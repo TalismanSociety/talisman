@@ -179,7 +179,7 @@ export default class OrmlTokenTransfersRpc {
               pallet: "currencies",
               name: "transfer",
               args: {
-                currencyId: { Token: token.token },
+                currencyId: { Token: token.symbol },
                 amount,
                 dest: to,
               },
@@ -207,7 +207,7 @@ export default class OrmlTokenTransfersRpc {
               pallet: "tokens",
               name: "transfer",
               args: {
-                currencyId: { Token: token.token },
+                currencyId: { Token: token.symbol },
                 amount,
                 dest: to,
               },
@@ -241,7 +241,7 @@ export default class OrmlTokenTransfersRpc {
 
     if (unsigned === undefined) {
       errors.forEach((error) => Sentry.captureException(error))
-      const userFacingError = new Error(`${token.token} transfers are not supported at this time.`)
+      const userFacingError = new Error(`${token.symbol} transfers are not supported at this time.`)
       Sentry.captureException(userFacingError)
       throw userFacingError
     }
