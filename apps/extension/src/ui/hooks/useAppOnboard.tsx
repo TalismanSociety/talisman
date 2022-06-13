@@ -11,6 +11,8 @@ export type CreateAccountData = {
 const useAppOnboard = () => {
   // save it here in case we history.back(), so we know it has been checked
   const [agreeToS, setAgreeToS] = useState(false)
+  const [agreeAnalytics, setAgreeAnalytics] = useState(false)
+
   // data used for account creation
   const [data, setData] = useState<CreateAccountData>({})
 
@@ -36,6 +38,8 @@ const useAppOnboard = () => {
     reset,
     agreeToS,
     setAgreeToS,
+    agreeAnalytics,
+    setAgreeAnalytics,
     data,
     updateData,
   }

@@ -13,6 +13,7 @@ import type {
   RequestSigningApproveSignature,
 } from "@polkadot/extension-base/background/types"
 import { Runtime } from "webextension-polyfill"
+import posthog from "posthog-js"
 import type { ExtrinsicStatus, Hash, Phase } from "@polkadot/types/interfaces"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import type { JsonRpcProvider } from "@ethersproject/providers"
@@ -146,6 +147,11 @@ export interface ModalOpenParams {
   modalType: ModalTypes
 }
 
+export interface AnalyticsCaptureRequest {
+  eventName: string
+  options?: posthog.Properties
+}
+
 type RemovedMessages =
   | "pri(signing.approve.password)"
   | "pri(signing.approve.signature)"
@@ -181,6 +187,7 @@ export interface RequestSignatures extends Omit<PolkadotRequestSignatures, Remov
   "pri(app.modalOpen.request)": [ModalOpenParams, boolean]
   "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenParams]
   "pri(app.promptLogin)": [boolean, boolean]
+  "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
 
   // mnemonic message signatures
   "pri(mnemonic.unlock)": [string, string]

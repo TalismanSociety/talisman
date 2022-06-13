@@ -11,10 +11,10 @@ import Spacer from "@talisman/components/Spacer"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import useAuthorisedSiteProviders from "@ui/hooks/useAuthorisedSiteProviders"
 
-const AccountItem = ({ address, value = 1, onChange, className }: any) => (
-  <Panel className={className} onClick={() => onChange(!value)} small>
+const AccountItem = ({ address, value = false, onChange, className }: any) => (
+  <Panel className={className} onClick={onChange} small>
     <Account.Name address={address} withAvatar />
-    <Field.Checkbox value={value} onChange={onChange} small />
+    <Field.Checkbox value={value} small />
   </Panel>
 )
 

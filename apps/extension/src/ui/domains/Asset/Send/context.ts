@@ -1,11 +1,14 @@
-import { Balance, BalanceFormatter, BalanceStorage, Token } from "@core/types"
+import { Balance, BalanceFormatter, BalanceStorage, Balances, Token } from "@core/types"
+import { tokensToPlanck } from "@core/util/tokensToPlanck"
 import { assert } from "@polkadot/util"
 import { provideContext } from "@talisman/util/provideContext"
-import { tokensToPlanck } from "@core/util/tokensToPlanck"
 import { api } from "@ui/api"
+import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
+import { chainUsesOrmlForNativeToken } from "@ui/hooks/useChainsTokens"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback, useMemo, useState } from "react"
+
 import { SendTokensExpectedResult, SendTokensInputs, TokenAmountInfo } from "./types"
 
 type Props = {
@@ -29,6 +32,14 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   const tokensMap = useMemo(
     () => Object.fromEntries((tokens || []).map((token) => [token.id, token])),
     [tokens]
+  )
+
+  // nonEmptyBalances is needed in order to detect chains who use the orml pallet for their native token
+  const balances = useBalances()
+  const nonEmptyBalances = useMemo(
+    () =>
+      balances ? balances.find((balance) => balance.free.planck > BigInt("0")) : new Balances([]),
+    [balances]
   )
 
   const check = useCallback(
@@ -133,7 +144,14 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
           })
       }
 
-      if (token.id === nativeToken.id) {
+      const nativeTokenIsOrmlToken =
+        token.chain?.id !== undefined &&
+        chainUsesOrmlForNativeToken(nonEmptyBalances, token.chain?.id, nativeToken)
+
+      if (
+        token.id === nativeToken.id ||
+        (nativeTokenIsOrmlToken && token.symbol === nativeToken.symbol)
+      ) {
         // fees and transfer on token (which is also nativeToken)
         testToken(
           token,
@@ -163,7 +181,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         unsigned,
       })
     },
-    [chainsMap, tokensMap]
+    [chainsMap, nonEmptyBalances, tokensMap]
   )
 
   // this makes user return to the first screen of the wizard

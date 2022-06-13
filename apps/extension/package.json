@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.4.4",
+  "version": "1.4.7",
   "private": true,
   "dependencies": {
     "@alectalisman/webpack-ext-reloader": "^1.1.9-a",
@@ -80,6 +80,7 @@
     "md5": "2.3.0",
     "minimist": "^1.2.6",
     "nanoid": "3.3.2",
+    "posthog-js": "^1.21.1",
     "react": "17.0.2",
     "react-app-polyfill": "3.0.0",
     "react-contenteditable": "3.3.6",
@@ -92,6 +93,7 @@
     "react-router-dom": "6.3.0",
     "remove-files-webpack-plugin": "^1.5.0",
     "rxjs": "^7.5.5",
+    "semver": "^7.3.7",
     "style-loader": "3.3.1",
     "styled-components": "5.3.3",
     "talisman-utils": "*",
@@ -118,6 +120,7 @@
     "@babel/preset-env": "^7.16.11",
     "@babel/preset-typescript": "^7.16.7",
     "@peculiar/webcrypto": "^1.3.2",
+    "@types/semver": "^7.3.9",
     "babel-jest": "27.5.1",
     "babel-plugin-module-extension-resolver": "^1.0.0-rc.2",
     "eslint": "^8.15.0",

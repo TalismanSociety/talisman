@@ -1,25 +1,27 @@
-import { lazy, Suspense, useEffect, useRef } from "react"
-import { Route, Routes, Navigate } from "react-router-dom"
+import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
+import { api } from "@ui/api"
+import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
+import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
+import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
-import AccountIndex from "./routes/AccountIndex"
-import AccountAddTypePicker from "./routes/AccountAddTypePicker"
+import { Suspense, lazy, useEffect, useRef } from "react"
+import { Navigate, Route, Routes } from "react-router-dom"
+
+import Layout from "./layout"
+import About from "./routes/About"
 import AccountAddDerived from "./routes/AccountAddDerived"
 import AccountAddJson from "./routes/AccountAddJson"
 import { AccountAddSecret } from "./routes/AccountAddSecret"
-import SitesConnected from "./routes/SitesConnected"
-import Settings from "./routes/Settings"
-import Options from "./routes/Options"
-import SecurityPrivacySettings from "./routes/SecurityPrivacySettings"
-import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
-import About from "./routes/About"
-import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
-import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
-import { api } from "@ui/api"
-import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
-import Layout from "./layout"
-import { CustomTokens } from "./routes/CustomTokens/CustomTokens"
+import AccountAddTypePicker from "./routes/AccountAddTypePicker"
+import AccountIndex from "./routes/AccountIndex"
 import { CustomTokenAdd } from "./routes/CustomTokens/CustomTokenAdd"
 import { CustomTokenDetails } from "./routes/CustomTokens/CustomTokenDetails"
+import { CustomTokens } from "./routes/CustomTokens/CustomTokens"
+import Settings from "./routes/Settings"
+import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
+import Options from "./routes/Settings/Options"
+import SecurityPrivacySettings from "./routes/Settings/SecurityPrivacySettings"
+import SitesConnected from "./routes/Settings/SitesConnected"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
 const AccountAddLedger = lazy(() => import("./routes/AccountAddLedger"))
@@ -71,6 +73,7 @@ const DashboardInner = () => {
           <Route path="security-privacy-settings" element={<SecurityPrivacySettings />} />
           <Route path="options" element={<Options />} />
           <Route path="about" element={<About />} />
+          <Route path="analytics" element={<AnalyticsOptIn />} />
         </Route>
         <Route path="tokens">
           <Route path="" element={<CustomTokens />} />

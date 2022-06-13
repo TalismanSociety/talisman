@@ -1,46 +1,41 @@
-import type { KeyringPair$Json } from "@polkadot/keyring/types"
-import type { HexString } from "@polkadot/util/types"
+import { EthResponseType } from "@core/injectEth/types"
 import {
+  AccountAddressType,
   AccountJson,
+  AddEthereumChainRequest,
   AddressesByChain,
+  AnalyticsCaptureRequest,
+  AnyEthRequestChainId,
+  AnySigningRequest,
+  AuthRequestAddresses,
+  AuthRequestId,
   AuthorizeRequest,
-  MetadataRequest,
-  LoggedinType,
-  OnboardedType,
   AuthorizedSite,
   AuthorizedSites,
-  AuthRequestId,
-  AuthRequestAddresses,
-  MnemonicSubscriptionResult,
-  Chain,
-  ChainId,
-  ChainList,
-  RequestAccountCreateHardware,
-  Token,
-  TokenId,
-  TokenList,
-  ResponseAssetTransfer,
-  ResponseAssetTransferFeeQuery,
   BalanceStorage,
   BalancesUpdate,
-  RequestBalance,
-  UnsubscribeFn,
-  TransactionDetails,
-  ModalTypes,
-  ModalOpenParams,
-  ProviderType,
-  AccountAddressType,
-  AnySigningRequest,
-  AddEthereumChainRequest,
-  EvmNetworkList,
-  EvmNetwork,
-  AnyEthRequestChainId,
+  ChainId,
   CustomErc20Token,
   CustomErc20TokenCreate,
-  WatchAssetRequest,
   CustomEvmNetwork,
+  LoggedinType,
+  MetadataRequest,
+  MnemonicSubscriptionResult,
+  ModalOpenParams,
+  ModalTypes,
+  OnboardedType,
+  ProviderType,
+  RequestAccountCreateHardware,
+  RequestBalance,
+  ResponseAssetTransfer,
+  ResponseAssetTransferFeeQuery,
+  TokenId,
+  TransactionDetails,
+  UnsubscribeFn,
+  WatchAssetRequest,
 } from "@core/types"
-import { EthResponseType } from "@core/injectEth/types"
+import type { KeyringPair$Json } from "@polkadot/keyring/types"
+import type { HexString } from "@polkadot/util/types"
 
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
@@ -77,6 +72,7 @@ export default interface MessageTypes {
   // app message types -------------------------------------------------------
   modalOpen: (modalType: ModalTypes) => Promise<boolean>
   modalOpenSubscribe: (cb: (val: ModalOpenParams) => void) => UnsubscribeFn
+  analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>
 
   // mnemonic message types -------------------------------------------------------
   mnemonicUnlock: (pass: string) => Promise<string>

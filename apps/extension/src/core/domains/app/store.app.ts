@@ -1,6 +1,7 @@
 import { assert } from "@polkadot/util"
 import Browser from "webextension-polyfill"
 import { SubscribableStorageProvider } from "@core/libs/Store"
+import { gt } from "semver"
 import { DEBUG } from "@core/constants"
 
 type ONBOARDED_TRUE = "TRUE"
@@ -15,12 +16,16 @@ export type AppStoreData = {
   onboarded: OnboardedType
   hideBraveWarning: boolean
   hasBraveWarningBeenShown: boolean
+  analyticsRequestShown: boolean
 }
+
+const ANALYTICS_VERSION = "1.4.7"
 
 const DEFAULT_VALUE = {
   onboarded: FALSE,
   hideBraveWarning: false,
   hasBraveWarningBeenShown: false,
+  analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
 }
 
 export class AppStore extends SubscribableStorageProvider<
@@ -64,17 +69,16 @@ export class AppStore extends SubscribableStorageProvider<
   }
 }
 
-const appStore = new AppStore()
-
-export default appStore
+export const appStore = new AppStore()
 
 if (DEBUG) {
-  // helper for developers, allowing ot reset settings by calling resetBraveFlags() in dev console
+  // helper for developers, allowing ot reset settings by calling resetAppSettings() in dev console
   // @ts-ignore
-  window.resetBraveFlags = () => {
+  window.resetAppSettings = () => {
     appStore.set({
       hideBraveWarning: false,
       hasBraveWarningBeenShown: false,
+      analyticsRequestShown: false,
     })
   }
 }

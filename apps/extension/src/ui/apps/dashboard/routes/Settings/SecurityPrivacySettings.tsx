@@ -1,27 +1,24 @@
-import { useState, useEffect } from "react"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import Grid from "@talisman/components/Grid"
 import Field from "@talisman/components/Field"
 import Setting from "@talisman/components/Setting"
-import Layout from "../layout"
-import { settingsStore } from "@core/domains/app"
+import Layout from "@ui/apps/dashboard/layout"
 import styled from "styled-components"
+import { useSettings } from "@ui/hooks/useSettings"
+import { useNavigate } from "react-router-dom"
+
+const LinkText = styled.span`
+  color: var(--color-primary);
+`
 
 const TSLink = styled.a`
   color: var(--color-primary);
 `
 
 const SecurityPrivacySettings = () => {
-  const [useErrorTracking, setUseErrorTracking] = useState<boolean | undefined>()
-
-  useEffect(() => {
-    const sub = settingsStore.observable.subscribe((settings) =>
-      setUseErrorTracking(settings.useErrorTracking)
-    )
-    return () => sub.unsubscribe()
-  }, [])
-
+  const { useAnalyticsTracking, useErrorTracking, update } = useSettings()
+  const navigate = useNavigate()
   return (
     <Layout centered withBack>
       <HeaderBlock title="Security and Privacy" text="Control security and privacy preferences" />
@@ -43,7 +40,23 @@ const SecurityPrivacySettings = () => {
           >
             <Field.Toggle
               value={useErrorTracking}
-              onChange={(val: boolean) => settingsStore.set({ useErrorTracking: val })}
+              onChange={(val: boolean) => update({ useErrorTracking: val })}
+            />
+          </Setting>
+        )}
+        {useAnalyticsTracking !== undefined && (
+          <Setting
+            title="Analytics"
+            subtitle={
+              <>
+                Opt in to collection of anonymised usage data.{" "}
+                <LinkText onClick={() => navigate("/settings/analytics")}>Learn More</LinkText>
+              </>
+            }
+          >
+            <Field.Toggle
+              value={useAnalyticsTracking}
+              onChange={(val: boolean) => update({ useAnalyticsTracking: val })}
             />
           </Setting>
         )}

@@ -56,10 +56,11 @@ const BrandLogo = styled(({ className }) => {
     </div>
   )
 })`
+  width: -webkit-fill-available;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin: 4rem 3rem 4rem 3.8rem;
+  margin: 4rem 3rem 3rem 3.8rem;
 
   .logo {
     width: auto;
@@ -126,25 +127,27 @@ const BackupBanner = styled(({ className }) => {
 const Layout: FC<LayoutProps> = ({ withBack, children, className }) => (
   <main className={className}>
     <aside>
-      <div className="top">
-        <BrandLogo />
-        <Nav column>
-          <NavItem to="/accounts" icon={<IconUser />} end>
-            Accounts
-          </NavItem>
-          <NavItem to="/accounts/add" icon={<IconPlus />}>
-            Add Account
-          </NavItem>
-          <NavItem to="/settings" icon={<IconSettings />}>
-            Settings
-          </NavItem>
-        </Nav>
-      </div>
-      <div className="bottom">
-        <Suspense fallback={null}>
-          <BraveWarningBanner />
-        </Suspense>
-        <BackupBanner />
+      <BrandLogo />
+      <div className="scrollable">
+        <div className="top">
+          <Nav column>
+            <NavItem to="/accounts" icon={<IconUser />} end>
+              Accounts
+            </NavItem>
+            <NavItem to="/accounts/add" icon={<IconPlus />}>
+              Add Account
+            </NavItem>
+            <NavItem to="/settings" icon={<IconSettings />}>
+              Settings
+            </NavItem>
+          </Nav>
+        </div>
+        <div className="bottom">
+          <Suspense fallback={null}>
+            <BraveWarningBanner />
+          </Suspense>
+          <BackupBanner />
+        </div>
       </div>
     </aside>
     <article>
@@ -180,13 +183,20 @@ const StyledLayout = styled(Layout)`
     align-items: flex-start;
     background: var(--color-background-muted);
 
+    .scrollable {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-start;
+      background: var(--color-background-muted);
+      overflow-y: scroll;
+      flex-grow: 1;
+    }
+
     .top,
     .bottom {
       display: block;
       width: 100%;
-    }
-
-    .bottom {
     }
 
     nav {

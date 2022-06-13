@@ -3,8 +3,11 @@ import Layout, { Header, Content, Footer } from "../Layout"
 import Button from "@talisman/components/Button"
 import Grid from "@talisman/components/Grid"
 import useCurrentMetadataRequest from "@ui/hooks/useCurrentMetadataRequest"
+import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
 
 const Container = ({ className }: any) => {
+  useAnalyticsPopupOpen("metadata")
+
   const { request, url, approve, reject, status } = useCurrentMetadataRequest({
     onError: () => window.close(),
     onRejection: () => window.close(),

@@ -1,24 +1,24 @@
-import { construct, defineMethod } from "@substrate/txwrapper-polkadot"
+import { isHardwareAccount } from "@core/handlers/helpers"
+import { db } from "@core/libs/dexieDb"
 import RpcFactory from "@core/libs/RpcFactory"
 import {
   Address,
   ChainId,
-  TokenId,
   ResponseAssetTransferFeeQuery,
-  SubscriptionCallback,
   SignerPayloadJSON,
+  SubscriptionCallback,
+  TokenId,
 } from "@core/types"
-import { chainStore } from "@core/domains/chains"
-import { tokenStore } from "@core/domains/tokens"
-import { KeyringPair } from "@polkadot/keyring/types"
-import { TypeRegistry } from "@polkadot/types"
-import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { getMetadaRpc } from "@core/util/getMetadaRpc"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
+import { KeyringPair } from "@polkadot/keyring/types"
+import { TypeRegistry } from "@polkadot/types"
+import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
+import * as Sentry from "@sentry/browser"
+import { UnsignedTransaction, construct, defineMethod } from "@substrate/txwrapper-polkadot"
+
 import { pendingTransfers } from "./PendingTransfers"
-import { isHardwareAccount } from "@core/handlers/helpers"
-import { db } from "@core/libs/dexieDb"
 
 type ProviderSendFunction<T = any> = (method: string, params?: unknown[]) => Promise<T>
 
@@ -166,33 +166,85 @@ export default class OrmlTokenTransfersRpc {
 
     const { specVersion, transactionVersion } = runtimeVersion
 
-    const unsigned = defineMethod(
-      {
-        method: {
-          pallet: "currencies",
-          name: "transfer",
-          args: {
-            currencyId: { Token: token.symbol },
-            amount,
-            dest: to,
+    let unsigned: UnsignedTransaction | undefined = undefined
+    let errors: any[] = []
+
+    // different chains use different orml transfer methods
+    // we'll try each one in sequence until we get one that doesn't throw an error
+    let unsignedMethods = [
+      () =>
+        defineMethod(
+          {
+            method: {
+              pallet: "currencies",
+              name: "transfer",
+              args: {
+                currencyId: { Token: token.token },
+                amount,
+                dest: to,
+              },
+            },
+            address: from.address,
+            blockHash,
+            blockNumber: block.header.number,
+            eraPeriod: 64,
+            genesisHash,
+            metadataRpc,
+            nonce,
+            specVersion: specVersion as unknown as number,
+            tip: tip ? Number(tip) : 0,
+            transactionVersion: transactionVersion as unknown as number,
           },
-        },
-        address: from.address,
-        blockHash,
-        blockNumber: block.header.number,
-        eraPeriod: 64,
-        genesisHash,
-        metadataRpc,
-        nonce,
-        specVersion: specVersion as unknown as number,
-        tip: tip ? Number(tip) : 0,
-        transactionVersion: transactionVersion as unknown as number,
-      },
-      {
-        metadataRpc,
-        registry,
+          {
+            metadataRpc,
+            registry,
+          }
+        ),
+      () =>
+        defineMethod(
+          {
+            method: {
+              pallet: "tokens",
+              name: "transfer",
+              args: {
+                currencyId: { Token: token.token },
+                amount,
+                dest: to,
+              },
+            },
+            address: from.address,
+            blockHash,
+            blockNumber: block.header.number,
+            eraPeriod: 64,
+            genesisHash,
+            metadataRpc,
+            nonce,
+            specVersion: specVersion as unknown as number,
+            tip: tip ? Number(tip) : 0,
+            transactionVersion: transactionVersion as unknown as number,
+          },
+
+          {
+            metadataRpc,
+            registry,
+          }
+        ),
+    ]
+
+    for (const method of unsignedMethods) {
+      try {
+        unsigned = method()
+      } catch (error) {
+        errors.push(error)
       }
-    )
+    }
+
+    if (unsigned === undefined) {
+      errors.forEach((error) => Sentry.captureException(error))
+      const userFacingError = new Error(`${token.token} transfers are not supported at this time.`)
+      Sentry.captureException(userFacingError)
+      throw userFacingError
+    }
 
     // create the unsigned extrinsic
     const tx = registry.createType(
