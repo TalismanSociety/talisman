@@ -1,6 +1,7 @@
 import { Route, Routes, Navigate } from "react-router-dom"
 import { Welcome } from "./Welcome"
 import { Terms } from "./Terms"
+import { Analytics } from "./Analytics"
 import { Onboard } from "./Onboard"
 import { EnterSecret } from "./EnterSecret"
 import { EnterName } from "./EnterName"
@@ -18,6 +19,7 @@ const OnboardingRoutes = () => {
         <Route path="name" element={<EnterName />} />
         <Route path="pass" element={<EnterPass />} />
       </Route>
+      <Route path="analytics" element={<Analytics nextUrl="/complete" />} />
       <Route path="complete" element={<Complete />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

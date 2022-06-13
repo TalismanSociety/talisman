@@ -40,7 +40,7 @@ const Container = styled.div`
   }
 `
 
-export const ConnectedAccountsDrawer: FC<Props> = ({ open, onClose }) => {
+const ConnectedAccountsDrawer: FC<Props> = ({ open, onClose }) => {
   const { id, url } = useCurrentSite()
 
   if (!id) return null
@@ -60,3 +60,5 @@ export const ConnectedAccountsDrawer: FC<Props> = ({ open, onClose }) => {
     </Drawer>
   )
 }
+
+export default ConnectedAccountsDrawer

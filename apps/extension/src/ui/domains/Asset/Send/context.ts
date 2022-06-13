@@ -7,6 +7,8 @@ import useChains from "@ui/hooks/useChains"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback, useMemo, useState } from "react"
 import { SendTokensExpectedResult, SendTokensInputs, TokenAmountInfo } from "./types"
+import { chainUsesOrmlForNativeToken } from "@ui/hooks/useChainsTokens"
+import useBalances from "@ui/hooks/useBalances"
 
 type Props = {
   initialValues?: Partial<SendTokensInputs>
@@ -22,6 +24,13 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   const chains = useChains()
   const tokens = useTokens()
+
+  // nonEmptyBalances is needed in order to detect chains who use the orml pallet for their native token
+  const balances = useBalances()
+  const nonEmptyBalances = useMemo(
+    () => balances.find((balance) => balance.free.planck > BigInt("0")),
+    [balances]
+  )
 
   const check = useCallback(
     async (newData: SendTokensInputs, allowReap: boolean = false) => {
@@ -120,7 +129,16 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
           })
       }
 
-      if (token.id === nativeToken.id) {
+      const nativeTokenIsOrmlToken = chainUsesOrmlForNativeToken(
+        nonEmptyBalances,
+        token.chainId,
+        nativeToken
+      )
+
+      if (
+        token.id === nativeToken.id ||
+        (nativeTokenIsOrmlToken && token.token === nativeToken.token)
+      ) {
         // fees and transfer on token (which is also nativeToken)
         testToken(
           token,
@@ -150,7 +168,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         unsigned,
       })
     },
-    [chains, tokens]
+    [chains, nonEmptyBalances, tokens]
   )
 
   // this makes user return to the first screen of the wizard

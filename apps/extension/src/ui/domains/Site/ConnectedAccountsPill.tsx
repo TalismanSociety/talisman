@@ -1,10 +1,11 @@
-import { FC, useMemo, useState } from "react"
+import { FC, useMemo, useState, lazy, Suspense } from "react"
 import styled from "styled-components"
 import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import useAccounts from "@ui/hooks/useAccounts"
-import { ConnectedAccountsDrawer } from "@ui/domains/Site/ConnectedAccountsDrawer"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { NetworkLogo } from "../Ethereum/NetworkLogo"
+
+const ConnectedAccountsDrawer = lazy(() => import("@ui/domains/Site/ConnectedAccountsDrawer"))
 
 const Container = styled.button`
   display: flex;
@@ -75,10 +76,12 @@ export const ConnectedAccountsPill: FC = () => {
         <span className="label">{label}</span>
         {ethChainId && <NetworkLogo ethChainId={ethChainId} />}
       </Container>
-      <ConnectedAccountsDrawer
-        open={showConnectedAccounts}
-        onClose={() => setShowConnectedAccounts(false)}
-      />
+      <Suspense fallback={null}>
+        <ConnectedAccountsDrawer
+          open={showConnectedAccounts}
+          onClose={() => setShowConnectedAccounts(false)}
+        />
+      </Suspense>
     </>
   )
 }

@@ -28,7 +28,7 @@ export const SimpleButton = styled.button.attrs<ButtonAdditionalProps, ButtonAdd
   border: 1px solid var(--color-foreground);
   border-radius: 0.67em;
   padding: 1.2rem;
-  position:relative;
+  position: relative;
   font-size: var(--font-size-normal);
   cursor: pointer;
   transition: all var(--transition-speed) ease-in-out;
@@ -42,7 +42,7 @@ export const SimpleButton = styled.button.attrs<ButtonAdditionalProps, ButtonAdd
     align-items: center;
     gap: 1em;
 
-    ${({ processing }) => (processing ? `opacity: 0;` : "")})}
+    ${({ processing }) => (processing ? `opacity: 0;` : "")}
   }
 
   // default style
@@ -52,7 +52,7 @@ export const SimpleButton = styled.button.attrs<ButtonAdditionalProps, ButtonAdd
   border-width: 1px;
   border-style: solid;
 
-  &:hover  {
+  &:hover {
     background: var(--color-foreground);
     color: var(--color-background);
   }
@@ -99,6 +99,6 @@ export const SimpleButton = styled.button.attrs<ButtonAdditionalProps, ButtonAdd
     display: ${({ processing }) => (processing ? "flex" : "none")};
     flex-direction: column;
     justify-content: center;
-    align-items:center;
+    align-items: center;
   }
 `

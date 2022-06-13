@@ -1,28 +1,25 @@
+import { metadataStore } from "@core/domains/metadata"
+import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
+import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { ExtensionHandler } from "@core/libs/Handler"
+import { watchSubstrateTransaction } from "@core/notifications"
 import type {
+  AnySigningRequest,
   MessageTypes,
+  Port,
+  RequestIdOnly,
   RequestSigningCancel,
   RequestTypes,
   ResponseType,
-  Port,
-  RequestIdOnly,
-  AnySigningRequest,
 } from "@core/types"
-import { TypeRegistry } from "@polkadot/types"
-import { SignerPayloadJSON } from "@polkadot/types/types"
-import { assert } from "@polkadot/util"
-import { ExtensionHandler } from "@core/libs/Handler"
-import isJsonPayload from "@core/util/isJsonPayload"
-import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
-import { metadataStore } from "@core/domains/metadata"
-import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTransactionDetails } from "@core/util/getTransactionDetails"
-import {
-  RequestSign,
-  RequestSigningApproveSignature,
-} from "@polkadot/extension-base/background/types"
-import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
-import { watchSubstrateTransaction } from "@core/notifications"
+import { getTypeRegistry } from "@core/util/getTypeRegistry"
+import isJsonPayload from "@core/util/isJsonPayload"
+import { RequestSigningApproveSignature } from "@polkadot/extension-base/background/types"
+import { TypeRegistry } from "@polkadot/types"
+import { assert } from "@polkadot/util"
 
 // a global registry to use internally
 const registry = new TypeRegistry()
@@ -44,7 +41,8 @@ export default class SigningHandler extends ExtensionHandler {
       return false
     }
 
-    const { payload } = request as RequestSign
+    const { payload } = request
+    const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
     if (isJsonPayload(payload)) {
       // Get the metadata for the genesisHash
       const currentMetadata = await metadataStore.get(payload.genesisHash)
@@ -54,15 +52,16 @@ export default class SigningHandler extends ExtensionHandler {
 
       if (currentMetadata) {
         registry.register(currentMetadata?.types)
+        analyticsProperties.chain = currentMetadata.chain
       }
     }
-    const result = (request as RequestSign).sign(registry, pair)
+
+    const result = request.sign(registry, pair)
 
     // notify user about transaction progress
     if (isJsonPayload(payload) && (await this.stores.settings.get("allowNotifications"))) {
-      const json = payload as SignerPayloadJSON
       const chains = await this.stores.chains.get()
-      const chain = Object.values(chains).find((c) => c.genesisHash === json.genesisHash)
+      const chain = Object.values(chains).find((c) => c.genesisHash === payload.genesisHash)
       if (chain) {
         // it's hard to get a reliable hash, we'll use signature to identify the on chain extrinsic
         // our signature : 0x016c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
@@ -72,6 +71,11 @@ export default class SigningHandler extends ExtensionHandler {
         watchSubstrateTransaction(chain, signature)
       }
     }
+
+    talismanAnalytics.capture("sign transaction approve", {
+      ...analyticsProperties,
+      type: "signature",
+    })
 
     resolve({
       id,
@@ -89,6 +93,7 @@ export default class SigningHandler extends ExtensionHandler {
     const { resolve } = queued
 
     resolve({ id, signature })
+    talismanAnalytics.capture("sign transaction approve", { type: "hardware" })
 
     return true
   }
@@ -102,7 +107,7 @@ export default class SigningHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
 
     const { reject } = queued
-
+    talismanAnalytics.capture("sign transaction reject")
     reject(new Error("Cancelled"))
 
     return true
