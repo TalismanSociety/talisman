@@ -1,4 +1,4 @@
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 import { CustomErc20Token } from "@core/types"
 import { useLiveQuery } from "dexie-react-hooks"
 

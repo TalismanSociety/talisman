@@ -1,6 +1,6 @@
 import { getPairFromAddress, getUnlockedPairFromAddress } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import AssetTransfersRpc from "@core/libs/rpc/AssetTransfers"
 import BlocksRpc from "@core/libs/rpc/Blocks"

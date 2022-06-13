@@ -3,7 +3,7 @@ import { Erc20Token, IToken, NativeToken, OrmlToken, Token, TokenList } from "@c
 import { TokenFragment, graphqlUrl } from "@core/util/graphql"
 import { print } from "graphql"
 import gql from "graphql-tag"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 

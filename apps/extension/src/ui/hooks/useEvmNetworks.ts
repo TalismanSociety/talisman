@@ -1,7 +1,7 @@
 import { api } from "@ui/api"
 import { useMessageSubscription } from "./useMessageSubscription"
 import { useLiveQuery } from "dexie-react-hooks"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 import { useSettings } from "@ui/hooks/useSettings"
 
 const subscribe = () => api.ethereumNetworks(() => {})

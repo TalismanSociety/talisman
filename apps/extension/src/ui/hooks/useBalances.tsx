@@ -6,7 +6,7 @@ import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { useTokens } from "@ui/hooks/useTokens"
 import { useMemo } from "react"
 import { useLiveQuery } from "dexie-react-hooks"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 
 const subscribe = () => api.balances(() => {})
 export const useBalances = () => {

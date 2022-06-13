@@ -2,7 +2,6 @@ import { chainStore } from "@core/domains/chains"
 import { tokenStore } from "@core/domains/tokens"
 import { passwordStore, appStore, settingsStore } from "@core/domains/app"
 import { balancesStore } from "@core/domains/balances"
-import { metadataStore } from "@core/domains/metadata"
 import { transactionStore } from "@core/domains/transactions"
 import { evmNetworkStore } from "@core/domains/ethereum"
 import { sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
@@ -16,7 +15,6 @@ export const tabStores = {
   evmNetworks: evmNetworkStore,
   app: appStore,
   sites: sitesAuthorisationStore,
-  meta: metadataStore,
   settings: settingsStore,
 }
 

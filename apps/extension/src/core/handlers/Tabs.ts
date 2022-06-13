@@ -25,6 +25,7 @@ import type {
 } from "@core/types"
 import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
+import { db } from "@core/libs/db"
 
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { checkIfDenied } from "@polkadot/phishing"
@@ -140,7 +141,7 @@ export default class Tabs extends TabsHandler {
   }
 
   private async metadataList(): Promise<InjectedMetadataKnown[]> {
-    return Object.entries(await this.stores.meta.get()).map(([genesisHash, { specVersion }]) => ({
+    return ((await db.metadata.toArray()) || []).map(({ genesisHash, specVersion }) => ({
       genesisHash,
       specVersion,
     }))

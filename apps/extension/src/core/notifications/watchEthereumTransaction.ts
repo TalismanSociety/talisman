@@ -4,7 +4,7 @@ import { nanoid } from "nanoid"
 import * as Sentry from "@sentry/browser"
 import urlJoin from "url-join"
 import { createNotification } from "./createNotification"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 
 export const watchEthereumTransaction = async (ethChainId: number, txHash: string) => {
   try {

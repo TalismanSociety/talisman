@@ -17,7 +17,7 @@ import {
 } from "@core/types"
 import * as Sentry from "@sentry/browser"
 import { DEBUG } from "@core/constants"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 
 // System.Account is the state_storage key prefix for nativeToken balances
 const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);

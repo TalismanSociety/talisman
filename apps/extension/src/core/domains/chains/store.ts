@@ -1,5 +1,5 @@
 import { DEBUG } from "@core/constants"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 import { Chain, ChainList } from "@core/types"
 import addCustomChainRpcs from "@core/util/addCustomChainRpcs"
 

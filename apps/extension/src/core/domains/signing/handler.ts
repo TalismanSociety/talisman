@@ -1,8 +1,7 @@
-import { metadataStore } from "@core/domains/metadata"
 import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
 import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { watchSubstrateTransaction } from "@core/notifications"
 import type {
@@ -46,7 +45,7 @@ export default class SigningHandler extends ExtensionHandler {
     const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
     if (isJsonPayload(payload)) {
       // Get the metadata for the genesisHash
-      const currentMetadata = await metadataStore.get(payload.genesisHash)
+      const currentMetadata = await db.metadata.get(payload.genesisHash)
 
       // set the registry before calling the sign function
       registry.setSignedExtensions(payload.signedExtensions, currentMetadata?.userExtensions)

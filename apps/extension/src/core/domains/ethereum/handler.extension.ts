@@ -31,7 +31,7 @@ import type { TransactionRequest } from "@ethersproject/providers"
 import isString from "lodash/isString"
 import { getProviderForEvmNetworkId } from "./networksStore"
 import { watchEthereumTransaction } from "@core/notifications"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI

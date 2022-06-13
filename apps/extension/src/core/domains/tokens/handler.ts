@@ -12,7 +12,7 @@ import type {
   RequestTypes,
   ResponseType,
 } from "core/types"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(

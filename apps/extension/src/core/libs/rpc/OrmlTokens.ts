@@ -19,7 +19,7 @@ import {
 } from "@core/types"
 import * as Sentry from "@sentry/browser"
 import { DEBUG } from "@core/constants"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 
 // Tokens.Account is the state_storage key prefix for orml tokens
 const moduleHash = "99971b5749ac43e0235e41b0d3786918" // xxhashAsHex("Tokens", 128).replace("0x", "")

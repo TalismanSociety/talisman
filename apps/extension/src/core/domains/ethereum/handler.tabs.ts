@@ -8,7 +8,7 @@ import type {
   AuthorizedSite,
   CustomErc20Token,
 } from "@core/types"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 
 import { TabsHandler } from "@core/libs/Handler"
 import {

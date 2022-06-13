@@ -7,7 +7,7 @@ import keyring from "@polkadot/ui-keyring"
 import { Balances, Balance } from "@core/domains/balances/types"
 import { AccountTypes } from "@core/domains/accounts/helpers"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
 

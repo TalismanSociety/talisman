@@ -1,5 +1,5 @@
 import { DEBUG } from "@core/constants"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 import { ChainId } from "@core/types"
 import { WsProvider } from "@polkadot/api"
 import { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"

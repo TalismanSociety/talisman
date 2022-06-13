@@ -2,7 +2,7 @@ import { api } from "@ui/api"
 import { useMessageSubscription } from "./useMessageSubscription"
 import type { ChainId } from "@core/types"
 import { useLiveQuery } from "dexie-react-hooks"
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 
 const subscribe = () => api.chains(() => {})
 const useChain = (id?: ChainId) => {

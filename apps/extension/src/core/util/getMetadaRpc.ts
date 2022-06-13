@@ -1,4 +1,4 @@
-import { metadataRpcStore } from "@core/domains/metadata"
+import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import { getRuntimeVersion } from "./getRuntimeVersion"
 
@@ -13,7 +13,7 @@ export const getMetadaRpc = async (chainId: string, blockHash?: string) => {
   const cacheKey = `${chainId}-${specVersion}`
 
   // check if it's either in the store or in the cache
-  const currentMetadataRpc = await metadataRpcStore.get(chainId)
+  const currentMetadataRpc = await db.metadataRpc.get(chainId)
 
   if (currentMetadataRpc?.specVersion === specVersion) return currentMetadataRpc.metadataRpc
   if (metadataRpcCache[cacheKey]) return metadataRpcCache[cacheKey]
@@ -25,7 +25,7 @@ export const getMetadaRpc = async (chainId: string, blockHash?: string) => {
 
   // persist either in store (if latest) or in memory cache
   if (!currentMetadataRpc || specVersion > currentMetadataRpc.specVersion)
-    await metadataRpcStore.setItem({
+    await db.metadataRpc.put({
       chainId,
       specVersion,
       metadataRpc,

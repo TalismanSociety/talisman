@@ -1,4 +1,4 @@
-import { db } from "@core/libs/dexieDb"
+import { db } from "@core/libs/db"
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/types"
 import { api } from "@ui/api"
 import { useLiveQuery } from "dexie-react-hooks"
