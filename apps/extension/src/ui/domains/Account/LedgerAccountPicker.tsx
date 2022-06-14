@@ -135,7 +135,7 @@ const useLedgerChainAccounts = (chainId: string, selectedAccounts: LedgerAccount
     try {
       // required for formating balances correctly
       const chains = { [chain.id]: chain }
-      const tokens = chain.nativeToken?.id ? { [chain.nativeToken.id]: token } : {}
+      const tokens = { [token.id]: token }
 
       const accountIndex = ledgerAccounts.length
       const { address } = await ledger.getAddress(false, accountIndex, 0)
