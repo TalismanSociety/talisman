@@ -132,6 +132,10 @@ const useLedgerChainAccounts = (chainId: string, selectedAccounts: LedgerAccount
     setLoading(true)
     setError(undefined)
 
+    // required for formating balances correctly
+    const chains = { [chain.id]: chain }
+    const tokens = chain.nativeToken?.id ? { [chain?.nativeToken?.id]: token } : {}
+
     try {
       const accountIndex = ledgerAccounts.length
       const { address } = await ledger.getAddress(false, accountIndex, 0)
@@ -140,7 +144,8 @@ const useLedgerChainAccounts = (chainId: string, selectedAccounts: LedgerAccount
           address,
           chainId: chain.id,
           tokenId: token.id,
-        })
+        }),
+        { chains, tokens }
       )
 
       if (!balance) throw new Error("Failed to load account balance.")
