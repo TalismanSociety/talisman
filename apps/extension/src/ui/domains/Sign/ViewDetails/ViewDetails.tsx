@@ -9,8 +9,9 @@ import { encodeAnyAddress } from "@core/util"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
 import useToken from "@ui/hooks/useToken"
-import { FC, useMemo } from "react"
+import { FC, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAmount } from "./ViewDetailsAmount"
@@ -73,6 +74,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   txDetails,
   txDetailsError,
 }) => {
+  useAnalyticsGenericEvent("sign transaction view details", { type: "substrate" })
+
   const { request, account, chain } = usePolkadotSigningRequest(signingRequest)
   const nativeToken = useToken(chain?.nativeToken?.id)
 

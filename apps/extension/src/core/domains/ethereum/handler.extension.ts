@@ -32,6 +32,7 @@ import isString from "lodash/isString"
 import { getProviderForEvmNetworkId } from "./networksStore"
 import { watchEthereumTransaction } from "@core/notifications"
 import { db } from "@core/libs/db"
+import { talismanAnalytics } from "@core/libs/Analytics"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -126,6 +127,12 @@ export class EthHandler extends ExtensionHandler {
         watchEthereumTransaction(chainId, hash)
 
       resolve(hash)
+
+      talismanAnalytics.capture("sign transaction approve", {
+        type: "evm sign and send",
+        dapp: queued.url,
+        chain: queued.ethChainId,
+      })
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err, { err })
@@ -157,6 +164,12 @@ export class EthHandler extends ExtensionHandler {
       const signature = await pair.sign(addSafeSigningPrefix(request))
       resolve(u8aToHex(signature))
 
+      talismanAnalytics.capture("sign transaction approve", {
+        type: "evm sign",
+        dapp: queued.url,
+        chain: queued.ethChainId,
+      })
+
       return true
     } catch (err) {
       const msg = getHumanReadableErrorMessage(err)
@@ -173,6 +186,11 @@ export class EthHandler extends ExtensionHandler {
     const { reject } = queued
 
     reject(new EthProviderRpcError("Cancelled", ETH_ERROR_EIP1993_USER_REJECTED))
+    talismanAnalytics.capture("sign transaction reject", {
+      type: "evm sign",
+      dapp: queued.url,
+      chain: queued.ethChainId,
+    })
 
     return true
   }
@@ -230,6 +248,8 @@ export class EthHandler extends ExtensionHandler {
       if (newToken) await db.tokens.put(newToken)
     })
 
+    talismanAnalytics.capture("add network evm", { network: network.chainName, isCustom: false })
+
     resolve(null)
 
     return true
@@ -255,6 +275,12 @@ export class EthHandler extends ExtensionHandler {
     const { resolve, token } = queued
 
     await db.tokens.put(token)
+    talismanAnalytics.capture("add asset evm", {
+      contractAddress: token.contractAddress,
+      symbol: token.symbol,
+      network: token.evmNetwork,
+      isCustom: true,
+    })
 
     resolve(true)
 
@@ -336,7 +362,7 @@ export class EthHandler extends ExtensionHandler {
 
         newNetwork.isCustom = true
         await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.put(newNetwork))
-
+        talismanAnalytics.capture("add network evm", { network: newNetwork.name, isCustom: true })
         return true
       }
 

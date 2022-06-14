@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom"
 
 const LinkText = styled.span`
   color: var(--color-primary);
+  cursor: pointer;
 `
 
 const TSLink = styled.a`

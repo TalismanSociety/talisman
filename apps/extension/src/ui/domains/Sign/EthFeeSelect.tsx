@@ -7,6 +7,8 @@ import { formatEtherValue } from "@talisman/util/formatEthValue"
 import { BigNumber } from "ethers"
 import { useCallback } from "react"
 import styled from "styled-components"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
 
 export const PillButton = styled.button`
   background: var(--color-background-muted-3x);
@@ -145,13 +147,17 @@ type EthFeeSelectProps = {
 }
 
 export const EthFeeSelect = ({ onChange, priority, ...props }: EthFeeSelectProps) => {
+  useAnalyticsGenericEvent("open evm fee select")
+  const { genericEvent } = useAnalytics()
+
   const { isOpen, open, close } = useOpenClose()
   const handleSelect = useCallback(
     (priority: EthPriorityOptionName) => () => {
+      genericEvent("evm fee change", { priority })
       if (onChange) onChange(priority)
       close()
     },
-    [close, onChange]
+    [close, onChange, genericEvent]
   )
 
   return (

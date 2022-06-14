@@ -5,6 +5,6 @@ export const useAnalyticsPopupOpen = (pageName: string) => {
   const { popupOpenEvent } = useAnalytics()
 
   useEffect(() => {
-    popupOpenEvent("pageName")
-  }, [popupOpenEvent])
+    popupOpenEvent(pageName)
+  }, [popupOpenEvent, pageName])
 }
