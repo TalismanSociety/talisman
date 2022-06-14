@@ -8,7 +8,7 @@ import { NetworkLogo } from "./NetworkLogo"
 
 const NetworkItem = styled.div`
   display: flex;
-  gap: 1.2rem;
+  gap: 1rem;
 `
 
 type NetworkSelectProps = {
