@@ -132,11 +132,11 @@ const useLedgerChainAccounts = (chainId: string, selectedAccounts: LedgerAccount
     setLoading(true)
     setError(undefined)
 
-    // required for formating balances correctly
-    const chains = { [chain.id]: chain }
-    const tokens = chain.nativeToken?.id ? { [chain?.nativeToken?.id]: token } : {}
-
     try {
+      // required for formating balances correctly
+      const chains = { [chain.id]: chain }
+      const tokens = chain.nativeToken?.id ? { [chain.nativeToken.id]: token } : {}
+
       const accountIndex = ledgerAccounts.length
       const { address } = await ledger.getAddress(false, accountIndex, 0)
       const balance = new Balance(
