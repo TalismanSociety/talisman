@@ -79,10 +79,10 @@ export class EthTabsHandler extends TabsHandler {
       else throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED) //already rejected
     }
 
-    // 4001	User Rejected Request	The user rejected the request.
     try {
       return await this.state.requestStores.sites.requestAuthorizeUrl(url, request)
     } catch (err) {
+      // 4001	User Rejected Request	The user rejected the request.
       throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1993_USER_REJECTED)
     }
   }
@@ -104,8 +104,20 @@ export class EthTabsHandler extends TabsHandler {
     let accounts: AuthorizedSiteAddresses | undefined
     let connected: boolean
 
-    const sendToClient = (message: EthProviderMessage) =>
-      port.postMessage({ id, subscription: message })
+    const sendToClient = (message: EthProviderMessage) => {
+      try {
+        port.postMessage({ id, subscription: message })
+      } catch (e) {
+        if (e instanceof Error) {
+          if (e.message === "Attempting to use a disconnected port object") {
+            // this means that the user has done something like close the tab
+            port.disconnect()
+            return
+          }
+        }
+        throw e
+      }
+    }
 
     const init = () =>
       this.stores.sites.getSiteFromUrl(url).then(async (site) => {
@@ -185,7 +197,18 @@ export class EthTabsHandler extends TabsHandler {
 
     // unsubscribe if port disconnects (usually when tab closes)
     const handleDisconnect = () => {
-      unsubscribe()
+      try {
+        // by the time this is called, the subscription may already be closed which will raise an error
+        unsubscribe()
+      } catch (e) {
+        if (
+          !(
+            e instanceof TypeError &&
+            e.message === "Cannot read properties of undefined (reading 'closed')"
+          )
+        )
+          throw e
+      }
       port.onDisconnect.removeListener(handleDisconnect)
     }
     port.onDisconnect.addListener(handleDisconnect)
@@ -243,7 +266,6 @@ export class EthTabsHandler extends TabsHandler {
     const {
       params: [{ chainId: hexChainId }],
     } = request
-
     if (!hexChainId)
       throw new EthProviderRpcError("Missing chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
     const chainId = parseInt(hexChainId, 16)
@@ -390,14 +412,13 @@ export class EthTabsHandler extends TabsHandler {
     }
 
     switch (request.method) {
+      case "eth_accounts":
       case "eth_requestAccounts":
         // error will be thrown by authorizeEth if not authorised
         await this.authoriseEth(url, { origin: "", ethereum: true })
         // TODO understand why site store isn't up to date already
         // wait for site store to update
         await new Promise((resolve) => setTimeout(resolve, 500))
-        return await this.accountsList(url)
-      case "eth_accounts":
         return await this.accountsList(url)
 
       case "eth_chainId":
