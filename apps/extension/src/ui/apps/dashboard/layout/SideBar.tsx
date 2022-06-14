@@ -267,7 +267,6 @@ export const SideBar = () => {
                 <UserIcon />
               </ResponsiveTooltip>
             }
-            end
           >
             Portfolio
           </NavItem>

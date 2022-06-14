@@ -12,32 +12,39 @@ const BorderRadius = {
 // use only lowercase (no camel case) or react will transform and output props as attributes
 // also do not use known properties (ex color) or they will be output as attribute too
 type BoxProps = {
+  // size
+  height?: CSSProperties["height"]
+  width?: CSSProperties["width"]
+  fullwidth?: boolean
+  fullheight?: boolean
+  clip?: boolean // true = overflow hidden
+
+  // layout
   gap?: number
+  grow?: boolean
   justify?: CSSProperties["justifyContent"]
   align?: CSSProperties["alignItems"]
   textalign?: CSSProperties["textAlign"]
   flex?: boolean
   column?: boolean
   inline?: boolean
-  height?: CSSProperties["height"]
-  width?: CSSProperties["width"]
-  fullwidth?: boolean
-  fullheight?: boolean
-  grow?: boolean
   padding?: CSSProperties["padding"]
   margin?: CSSProperties["margin"]
   border?: CSSProperties["border"]
-  clip?: boolean
   borderradius?: boolean | keyof typeof BorderRadius
-  bold?: boolean
-  fontsize?: keyof typeof fontSizes
-  fontsizecustom?: number | string
+
+  // colors
   fg?: keyof DefaultTheme
   bg?: keyof DefaultTheme
+
+  // fonts
+  bold?: boolean
+  fontsize?: keyof typeof fontSizes
+  fontsizecustom?: CSSProperties["fontSize"]
 }
 
 const getDisplay = (props: BoxProps): CSSProperties["display"] => {
-  if (props.flex) return props.inline ? "flex" : "inline-flex"
+  if (props.flex) return props.inline ? "inline-flex" : "flex"
   return props.inline ? "inline" : "block"
 }
 
@@ -62,6 +69,17 @@ const getFontSize = (props: BoxProps) => {
   return undefined
 }
 
+const getFontWeight = (props: BoxProps) => {
+  if (props.bold !== undefined)
+    return props.bold ? "var(--font-weight-bold)" : "var(--font-weight-normal)"
+  return undefined
+}
+
+const getDimensionProp = (props: BoxProps, prop: "margin" | "padding") => {
+  if (typeof props[prop] === "number") return `${props[prop]}rem`
+  return props[prop]
+}
+
 // generic method in case we want to reuse it on span or other tags
 const boxPropsInjector = (props: BoxProps): CSSObject => {
   return {
@@ -79,9 +97,10 @@ const boxPropsInjector = (props: BoxProps): CSSObject => {
     gap: props.gap !== undefined ? `${props.gap}rem` : undefined,
     color: props.fg ? `var(--color-${props.fg})` : undefined,
     backgroundColor: props.bg ? `var(--color-${props.bg})` : undefined,
-    padding: props.padding,
-    margin: props.margin,
+    padding: getDimensionProp(props, "padding"),
+    margin: getDimensionProp(props, "margin"),
     border: props.border,
+    fontWeight: getFontWeight(props),
   }
 }
 

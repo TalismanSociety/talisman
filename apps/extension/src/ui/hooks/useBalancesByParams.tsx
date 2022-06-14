@@ -1,10 +1,11 @@
 import { api } from "@ui/api"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { BehaviorSubject } from "rxjs"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { Balances, AddressesByChain } from "@core/types"
 import { useSharedChainsCache, useSharedTokensCache } from "@ui/hooks/useBalances"
 import md5 from "blueimp-md5"
+import { useDebounce } from "react-use"
 
 const INITIAL_VALUE = new Balances({})
 
@@ -43,6 +44,12 @@ export const useBalancesByParams = (addressesByChain: AddressesByChain) => {
   // subscrition must be reinitialized (using the key) if parameters change
   const subscriptionKey = useMemo(() => md5(JSON.stringify(addressesByChain)), [addressesByChain])
 
-  return useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
+  const balances = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
+
+  // debounce every 100ms to prevent hammering UI with updates
+  const [debouncedBalances, setDebouncedBalances] = useState<Balances>(balances)
+  useDebounce(() => setDebouncedBalances(balances), 100, [balances])
+
+  return debouncedBalances
 }
 export default useBalancesByParams

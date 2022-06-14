@@ -3,10 +3,11 @@ import StyledAssetLogo from "../Asset/Logo"
 
 export const Container = styled.div`
   font-size: 1.8rem;
-  padding-left: 0.8rem;
+  height: 1em;
+  padding-left: 0.6rem;
   .chain-logo {
     display: inline-block;
-    margin-left: -0.8rem;
+    margin-left: -0.6rem;
   }
 `
 

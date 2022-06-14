@@ -3,9 +3,10 @@ import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { useChains } from "@ui/hooks/useChains"
 import { useTokens } from "@ui/hooks/useTokens"
 import { BehaviorSubject } from "rxjs"
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { ChainList, ChainId, Balances, TokenList, TokenId } from "@core/types"
 import { ReplaySubject, firstValueFrom } from "rxjs"
+import { useDebounce } from "react-use"
 
 const INITIAL_VALUE = new Balances({})
 const sharedChainsCache = new ReplaySubject<ChainList>(1)
@@ -108,6 +109,12 @@ export const useBalances = () => {
     [getChain, getToken]
   )
 
-  return useMessageSubscription("subscribeBalances", INITIAL_VALUE, subscribe)
+  const balances = useMessageSubscription("subscribeBalances", INITIAL_VALUE, subscribe)
+
+  // debounce every 100ms to prevent hammering UI with updates
+  const [debouncedBalances, setDebouncedBalances] = useState<Balances>(balances)
+  useDebounce(() => setDebouncedBalances(balances), 100, [balances])
+
+  return debouncedBalances
 }
 export default useBalances
