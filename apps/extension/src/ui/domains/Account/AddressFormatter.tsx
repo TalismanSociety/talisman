@@ -8,7 +8,7 @@ import { ReactComponent as IconSearch } from "@talisman/theme/icons/search.svg"
 import styled from "styled-components"
 import CopyToClipboard from "@talisman/components/CopyToClipboard"
 import Input from "@talisman/components/Field/Input"
-import useSortedChains from "@ui/hooks/useSortedChains"
+import { useSortedChains } from "@ui/hooks/useSortedChains"
 import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
 import useChainsAndSearchSymbols from "@ui/hooks/useChainsAndSearchSymbols"
 import useMoonbeamChainsFilter from "@ui/hooks/useMoonbeamChainsFilter"
@@ -171,14 +171,14 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
               name={chain.name}
               address={convertedAddress}
               onCopy={() => {
-                setCopied(convertedAddress)
+                setCopied(chain.id)
                 notification.success({
                   title: `${chain.name} address copied`,
                   subtitle: `Address: ${shortenAddress(convertedAddress)}`,
                 })
                 onClose()
               }}
-              copied={convertedAddress === copied}
+              copied={chain.id === copied}
             />
           )
         })}

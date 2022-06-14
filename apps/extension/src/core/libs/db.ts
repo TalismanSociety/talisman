@@ -1,9 +1,66 @@
 import metadataInit from "@core/domains/metadata/_metadataInit"
 import { MetadataDef } from "@core/inject/types"
-import { CustomErc20Token } from "@core/types"
-import { IDBPTransaction, openDB } from "idb"
-import range from "lodash/range"
+import {
+  BalanceStorage,
+  Chain,
+  ChainId,
+  CustomEvmNetwork,
+  EvmNetwork,
+  EvmNetworkId,
+  Token,
+  TokenId,
+} from "@core/types"
+import { Dexie } from "dexie"
 import Browser from "webextension-polyfill"
+
+export class TalismanDatabase extends Dexie {
+  chains!: Dexie.Table<Chain, ChainId>
+  evmNetworks!: Dexie.Table<EvmNetwork | CustomEvmNetwork, EvmNetworkId>
+  tokens!: Dexie.Table<Token, TokenId>
+  balances!: Dexie.Table<BalanceStorage, string>
+  metadata!: Dexie.Table<MetadataDef, string>
+  metadataRpc!: Dexie.Table<ChainMetadataRpc, string>
+
+  constructor() {
+    super("Talisman")
+
+    // https://dexie.org/docs/Tutorial/Design#database-versioning
+    this.version(2).stores({
+      // You only need to specify properties that you wish to index.
+      // The object store will allow any properties on your stored objects but you can only query them by indexed properties
+      // https://dexie.org/docs/API-Reference#declare-database
+      //
+      // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
+      // https://dexie.org/docs/Version/Version.stores()#warning
+      chains: "id, genesisHash, name, nativeToken, tokens, evmNetworks",
+      evmNetworks: "id, name, nativeToken, tokens, substrateChain",
+      tokens: "id, type, symbol, coingeckoId, contractAddress, chain, evmNetwork",
+      balances: "id, pallet, address, chainId, evmNetworkId, tokenId",
+      metadata: "genesisHash",
+      metadataRpc: "chainId",
+    })
+
+    this.on("ready", async () => {
+      // if store has no metadata yet
+      if ((await this.metadata.count()) < 1) {
+        // delete old localstorage-managed 'db'
+        Browser.storage.local.remove([
+          "chains",
+          "ethereumNetworks",
+          "tokens",
+          "balances",
+          "metadata",
+        ])
+
+        // delete old idb-managed metadata+metadataRpc db
+        indexedDB.deleteDatabase("talisman")
+
+        // add initial metadata
+        this.metadata.bulkAdd(metadataInit)
+      }
+    })
+  }
+}
 
 export type ChainMetadataRpc = {
   chainId: string
@@ -11,75 +68,4 @@ export type ChainMetadataRpc = {
   metadataRpc: `0x${string}`
 }
 
-export interface TalismanSchema {
-  // Add your store name and definition here
-  metadata: { key: string; value: MetadataDef }
-  metadataRpc: { key: string; value: ChainMetadataRpc }
-  evmAssets: { key: string; value: CustomErc20Token }
-}
-
-type MigrationFunction = (
-  tx: IDBPTransaction<TalismanSchema, keyof TalismanSchema, "versionchange">
-) => void
-
-type IndexedStoreDef<K extends keyof TalismanSchema> = {
-  storeName: K
-  keyPath: keyof TalismanSchema[K]["value"]
-  initialData: TalismanSchema[K]["value"][]
-  migrations: { [version: number]: MigrationFunction }
-}
-
-const metadataStoreDef: IndexedStoreDef<"metadata"> = {
-  storeName: "metadata",
-  keyPath: "genesisHash",
-  initialData: metadataInit,
-  migrations: {
-    1: () => Browser.storage.local.remove("metadata"),
-  },
-}
-
-const metadataRpcStoreDef: IndexedStoreDef<"metadataRpc"> = {
-  storeName: "metadataRpc",
-  keyPath: "chainId",
-  initialData: [],
-  migrations: {},
-}
-
-const evmAssetsStoreDef: IndexedStoreDef<"evmAssets"> = {
-  storeName: "evmAssets",
-  keyPath: "id",
-  initialData: [],
-  migrations: {},
-}
-
-const storeDefs = [metadataStoreDef, metadataRpcStoreDef, evmAssetsStoreDef]
-
-// Make sure to increment this if you add a table or it won't be created !
-const DB_VERSION = 3
-
-const db = openDB<TalismanSchema>("talisman", DB_VERSION, {
-  upgrade(db, oldVersion, newVersion, transaction) {
-    for (let { storeName, keyPath, initialData, migrations } of storeDefs) {
-      if (!db.objectStoreNames.contains(storeName))
-        transaction.db.createObjectStore(storeName, { keyPath })
-
-      if (newVersion !== null) {
-        const allMigrations: MigrationFunction[] = []
-
-        if (oldVersion === 0)
-          allMigrations.push((tx) =>
-            initialData.forEach((item) => tx.objectStore(storeName).add(item))
-          )
-
-        // then populate a set of other intermediate migrations
-        range(oldVersion, newVersion + 1)
-          .filter((index) => migrations[index])
-          .forEach((index) => allMigrations.push(migrations[index]))
-
-        allMigrations.forEach((migration) => migration(transaction))
-      }
-    }
-  },
-})
-
-export const waitDbReady = async () => db
+export const db = new TalismanDatabase()

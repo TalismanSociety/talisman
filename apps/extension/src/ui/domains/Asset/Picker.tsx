@@ -1,15 +1,17 @@
-import { FC, useState, useCallback, useEffect, forwardRef } from "react"
+import { FC, useState, useCallback, useEffect, forwardRef, useMemo } from "react"
 import styled from "styled-components"
 import Downshift from "downshift"
-import { Chain, Token, TokenId } from "@core/types"
+import { Chain, ChainList, Token, TokenId } from "@core/types"
 import useChains from "@ui/hooks/useChains"
-import useSortedChains from "@ui/hooks/useSortedChains"
+import { useSortedChains } from "@ui/hooks/useSortedChains"
 import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
 import { useTokens } from "@ui/hooks/useTokens"
 import { useChainsTokens } from "@ui/hooks/useChainsTokens"
 import { useChainsTokensWithBalanceFirst } from "@ui/hooks/useChainsTokensWithBalanceFirst"
 import Logo from "./Logo"
 import { classNames } from "@talisman/util/classNames"
+import useChain from "@ui/hooks/useChain"
+import useToken from "@ui/hooks/useToken"
 
 const Container = styled.div`
   position: relative;
@@ -133,22 +135,26 @@ const DivWithMount = forwardRef<HTMLDivElement, DivWithMountProps>(
   }
 )
 
-const Asset: FC<{ chain?: Chain; token?: Token; withChainName?: boolean }> = ({
-  chain,
-  token,
+const Asset: FC<{ tokenId?: TokenId; chainsMap?: ChainList; withChainName?: boolean }> = ({
+  tokenId,
+  chainsMap,
   withChainName = false,
-}) =>
-  chain ? (
+}) => {
+  const token = useToken(tokenId)
+  const chain = useChain(token?.chain?.id) || (chainsMap && chainsMap[token?.chain?.id!])
+
+  return (
     <span className={classNames("asset", withChainName && "asset-with-chain")}>
       <span className="asset-logo">
-        <Logo id={chain?.id} />
+        <Logo id={token?.chain?.id} />
       </span>
       <span className={"asset-main"}>
         <span className="token">{token?.symbol}</span>
-        {withChainName && <span className="chain">{chain?.name}</span>}
+        {withChainName && <span className="chain">{chain?.name || <span>&nbsp;</span>}</span>}
       </span>
     </span>
-  ) : null
+  )
+}
 
 // prevents searchbox to be filled with item.toString() when we select one
 // we want to keep this an empty string to allow for a quick search without clearing the field
@@ -172,31 +178,32 @@ const AssetPicker: FC<IProps> = ({
   showChainsWithBalanceFirst,
 }) => {
   const allTokens = useTokens()
-  const chainsList = useChains()
+  const chains = useChains()
+  const chainsMap = useMemo(
+    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
+    [chains]
+  )
+  // const evmNetworksList = useEvmNetworks()
   const allChains = useSortedChains()
   const chainsWithPrefix: Chain[] = useHasPrefixChainsFilter(allChains)
   const tokensWithNormalSorting = useChainsTokens(chainsWithPrefix)
   const tokensWithBalanceFirst = useChainsTokensWithBalanceFirst(tokensWithNormalSorting, address)
   const tokens = showChainsWithBalanceFirst ? tokensWithBalanceFirst : tokensWithNormalSorting
 
-  const [selectedToken, setSelectedToken] = useState<Token | undefined>(() => {
-    const startVal = value ?? defaultValue ?? tokens[0].id
-    return startVal ? allTokens[startVal] : undefined
-  })
+  const [selectedTokenId, setSelectedTokenId] = useState<TokenId | undefined>(
+    () => value ?? defaultValue ?? tokens[0].id ?? undefined
+  )
 
   // trigger parent's onChange
   useEffect(() => {
-    if (!onChange || !selectedToken) return
-    if (value && value === selectedToken.id) return
-    onChange(selectedToken.id)
-  }, [onChange, selectedToken, value])
+    if (!onChange || !selectedTokenId) return
+    if (value && value === selectedTokenId) return
+    onChange(selectedTokenId)
+  }, [onChange, selectedTokenId, value])
 
-  const handleChange = useCallback(
-    (tokenId?: TokenId | null) => {
-      if (tokenId) setSelectedToken(allTokens[tokenId])
-    },
-    [allTokens]
-  )
+  const handleChange = useCallback((tokenId?: TokenId | null) => {
+    if (tokenId) setSelectedTokenId(tokenId)
+  }, [])
 
   // returns the list of tokens to display in the combo box, filtered by user input
   const searchTokens = useCallback(
@@ -205,11 +212,11 @@ const AssetPicker: FC<IProps> = ({
       const ls = search.toLowerCase()
       return tokens.filter(
         (token) =>
-          chainsList[token.chainId]?.name?.toLowerCase().includes(ls) ||
+          (token.chain && chainsMap[token.chain.id]?.name?.toLowerCase().includes(ls)) ||
           token.symbol?.toLowerCase().includes(ls)
       )
     },
-    [tokens, chainsList]
+    [tokens, chainsMap]
   )
 
   return (
@@ -244,7 +251,7 @@ const AssetPicker: FC<IProps> = ({
                       item: token.id,
                     })}
                   >
-                    <Asset chain={chainsList[token.chainId]} token={token} withChainName />
+                    <Asset tokenId={token.id} chainsMap={chainsMap} withChainName />
                   </li>
                 ))}
               </ul>
@@ -256,11 +263,11 @@ const AssetPicker: FC<IProps> = ({
             {...getToggleButtonProps()}
           >
             {/* key is there to force rerender in case of missing logo */}
-            {selectedToken && (
+            {selectedTokenId && (
               <Asset
-                key={selectedToken?.id ?? "EMPTY"}
-                chain={selectedToken && chainsList[selectedToken.chainId]}
-                token={selectedToken}
+                key={selectedTokenId ?? "EMPTY"}
+                tokenId={selectedTokenId}
+                chainsMap={chainsMap}
               />
             )}
           </button>

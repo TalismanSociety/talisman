@@ -15,7 +15,7 @@ const Container = styled.section`
 
   &:before,
   &:after {
-    z-index: 1;
+    z-index: 0;
     content: "";
     position: absolute;
     left: 0;

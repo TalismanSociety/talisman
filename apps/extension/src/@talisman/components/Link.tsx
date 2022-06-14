@@ -90,7 +90,12 @@ const Link: FC<ILinkProps> = ({
 
   return !!to ? (
     !!onClick ? (
-      <button onClick={handleClick} className={`link ${className}`} tabIndex={tabIndex}>
+      <button
+        type="button"
+        onClick={handleClick}
+        className={`link ${className}`}
+        tabIndex={tabIndex}
+      >
         <LinkChildren icon={icon}>{children}</LinkChildren>
       </button>
     ) : (
@@ -106,7 +111,7 @@ const Link: FC<ILinkProps> = ({
       </SmartLink>
     )
   ) : (
-    <button className={`link ${className}`} onClick={handleClick} tabIndex={tabIndex}>
+    <button type="button" className={`link ${className}`} onClick={handleClick} tabIndex={tabIndex}>
       <LinkChildren icon={icon}>{children}</LinkChildren>
     </button>
   )

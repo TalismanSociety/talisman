@@ -1,6 +1,6 @@
 import { useCustomErc20Token } from "@ui/hooks/useCustomErc20Token"
 import styled from "styled-components"
-import imgUnknownToken from "@talisman/theme/icons/unknown-token.png"
+import unknownToken from "@talisman/theme/icons/custom-token-generic.svg"
 import { classNames } from "@talisman/util/classNames"
 
 const TokenLogoImg = styled.img`
@@ -15,12 +15,12 @@ type Erc20LogoProps = {
 }
 
 export const Erc20Logo = ({ id, className }: Erc20LogoProps) => {
-  const { token } = useCustomErc20Token(id)
+  const token = useCustomErc20Token(id)
 
   return (
     <TokenLogoImg
       className={classNames("erc20-token", className)}
-      src={token?.image ?? imgUnknownToken}
+      src={token?.image ?? unknownToken}
       alt={token?.symbol}
     />
   )

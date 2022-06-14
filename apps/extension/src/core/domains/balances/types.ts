@@ -4,6 +4,8 @@ import {
   BalancesStorage,
   Chain,
   ChainId,
+  EvmNetwork,
+  EvmNetworkId,
   Token,
   TokenId,
   TokenRateCurrency,
@@ -13,12 +15,19 @@ import { NonFunctionProperties } from "@core/util/FunctionPropertyNames"
 import isArrayOf from "@core/util/isArrayOf"
 import { planckToTokens } from "@core/util/planckToTokens"
 import BigMath from "@talisman/util/bigMath"
+import memoize from "lodash/memoize"
+import { Memoize } from "typescript-memoize"
 
 type NarrowStorage<S, P> = S extends { pallet: P } ? S : never
 
-export type ChaindataSource = (chainId: ChainId) => Promise<Chain | undefined>
-export type TokenSource = (tokenId: TokenId) => Promise<Token | undefined>
-export type HydrateSources = Partial<{ chain: ChaindataSource; token: TokenSource }>
+export type ChainsDb = Record<ChainId, Chain>
+export type EvmNetworksDb = Record<EvmNetworkId, EvmNetwork>
+export type TokensDb = Record<TokenId, Token>
+export type HydrateDb = Partial<{
+  chains: ChainsDb
+  evmNetworks: EvmNetworksDb
+  tokens: TokensDb
+}>
 
 export type BalanceSearchQuery =
   | Partial<NonFunctionProperties<Balance>>
@@ -40,7 +49,7 @@ export class Balances {
 
   constructor(
     balances: Balances | BalancesStorage | Balance[] | BalanceStorage[] | Balance,
-    hydrate?: HydrateSources
+    hydrate?: HydrateDb
   ) {
     // handle Balances (convert to Balance[])
     if (balances instanceof Balances) return new Balances([...balances], hydrate)
@@ -94,8 +103,8 @@ export class Balances {
    *
    * @param sources - The sources to hydrate from.
    */
-  hydrate = async (sources: HydrateSources) => {
-    await Promise.all(Object.values(this.#balances).map((balance) => balance.hydrate(sources)))
+  hydrate = (sources: HydrateDb) => {
+    Object.values(this.#balances).map((balance) => balance.hydrate(sources))
   }
 
   /**
@@ -178,8 +187,13 @@ export class Balances {
    *
    * @returns A sorted array of the balances in this collection.
    */
+  @Memoize()
   get sorted() {
-    return [...this].sort((a, b) => (a.chain?.sortIndex || 0) - (b.chain?.sortIndex || 0))
+    return [...this].sort(
+      (a, b) =>
+        ((a.chain || a.evmNetwork)?.sortIndex || Number.MAX_SAFE_INTEGER) -
+        ((b.chain || b.evmNetwork)?.sortIndex || Number.MAX_SAFE_INTEGER)
+    )
   }
 
   /**
@@ -187,6 +201,7 @@ export class Balances {
    *
    * @returns The number of balances in this collection.
    */
+  @Memoize()
   get count() {
     return [...this].length
   }
@@ -198,14 +213,9 @@ export class Balances {
    * // Get the sum of all transferable balances in usd.
    * balances.sum.fiat('usd').transferable
    */
+  @Memoize()
   get sum() {
-    const balances = this
-
-    return new (class SumBalancesFormatter {
-      fiat(currency: TokenRateCurrency) {
-        return new FiatSumBalancesFormatter(balances, currency)
-      }
-    })()
+    return new SumBalancesFormatter(this)
   }
 }
 
@@ -220,17 +230,14 @@ export class Balance {
   /** The underlying data for this balance */
   readonly #storage: BalanceStorage
 
-  /** If hydrated, stores a copy of the chain this balance is located on */
-  #chain: Chain | null = null
-
-  /** If hydrated, stores a copy of the token this balance is comprised of */
-  #token: Token | null = null
+  #db: HydrateDb | null = null
 
   //
   // Methods
   //
 
-  constructor(storage: BalanceStorage, hydrate?: HydrateSources) {
+  constructor(storage: BalanceStorage, hydrate?: HydrateDb) {
+    this.#format = memoize(this.#format)
     this.#storage = storage
     if (hydrate !== undefined) this.hydrate(hydrate)
   }
@@ -243,17 +250,8 @@ export class Balance {
     return null
   }
 
-  hydrate = async (sources: HydrateSources) => {
-    await Promise.all([
-      sources.chain !== undefined && (await this.#hydrateChain(sources.chain)),
-      sources.token !== undefined && (await this.#hydrateToken(sources.token)),
-    ])
-  }
-  #hydrateChain = async (chaindataSource: ChaindataSource) => {
-    this.#chain = (await chaindataSource(this.#storage.chainId)) || null
-  }
-  #hydrateToken = async (tokenSource: TokenSource) => {
-    this.#token = (await tokenSource(this.#storage.tokenId)) || null
+  hydrate = (hydrate?: HydrateDb) => {
+    if (hydrate !== undefined) this.#db = hydrate
   }
 
   #format = (balance: bigint | string) =>
@@ -268,8 +266,9 @@ export class Balance {
   //
 
   get id(): string {
-    const { pallet, address, chainId, tokenId } = this.#storage
-    return `${pallet}-${address}-${chainId}-${tokenId}`
+    const { pallet, address, chainId, evmNetworkId, tokenId } = this.#storage
+    const locationId = chainId !== undefined ? chainId : evmNetworkId
+    return `${pallet}-${address}-${locationId}-${tokenId}`
   }
 
   get pallet() {
@@ -287,13 +286,19 @@ export class Balance {
     return this.#storage.chainId
   }
   get chain() {
-    return this.#chain
+    return (this.#db?.chains && this.#db?.chains[this.chainId!]) || null
+  }
+  get evmNetworkId() {
+    return this.#storage.evmNetworkId
+  }
+  get evmNetwork() {
+    return (this.#db?.evmNetworks && this.#db?.evmNetworks[this.evmNetworkId!]) || null
   }
   get tokenId() {
     return this.#storage.tokenId
   }
   get token() {
-    return this.#token
+    return (this.#db?.tokens && this.#db?.tokens[this.tokenId!]) || null
   }
   get decimals() {
     return this.token?.decimals || null
@@ -304,19 +309,26 @@ export class Balance {
    * Includes the free and the reserved amount.
    * The balance will be reaped if this goes below the existential deposit.
    */
+  @Memoize()
   get total() {
     return this.#format(this.free.planck + this.reserved.planck)
   }
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
+  @Memoize()
   get free() {
     return this.#format(this.#storage.free)
   }
   /** The reserved balance of this token. Is included in the total. */
+  @Memoize()
   get reserved() {
+    if (this.#storage.pallet === "erc20") return this.#format("0")
     return this.#format(this.#storage.reserved)
   }
   /** The frozen balance of this token. Is included in the free amount. */
+  @Memoize()
   get frozen() {
+    if (this.#storage.pallet === "erc20") return this.#format("0")
+
     // if using the balances pallet, add up the feeFrozen and miscFrozen amounts
     if (this.#storage.pallet === "balances") {
       return this.#format(BigInt(this.#storage.feeFrozen) + BigInt(this.#storage.miscFrozen))
@@ -325,6 +337,7 @@ export class Balance {
     return this.#format(this.#storage.frozen)
   }
   /** The transferable balance of this token. Is generally the free amount - the miscFrozen amount. */
+  @Memoize()
   get transferable() {
     // if using the balances pallet, only subtract miscFrozen (not feeFrozen) from free
     // also, don't go below 0
@@ -338,6 +351,7 @@ export class Balance {
     return this.#format(BigMath.max(this.free.planck - this.frozen.planck, BigInt("0")))
   }
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */
+  @Memoize()
   get feePayable() {
     // fees are only paid in native tokens (i.e. balances pallet) so feeFrozen is always 0 for orml
     if (this.#storage.pallet !== "balances") return this.free
@@ -358,6 +372,8 @@ export class BalanceFormatter {
     this.#planck = typeof planck === "bigint" ? planck.toString() : planck
     this.#decimals = decimals || 0
     this.#fiatRatios = fiatRatios || null
+
+    this.fiat = memoize(this.fiat)
   }
 
   toJSON = () => this.#planck
@@ -366,6 +382,7 @@ export class BalanceFormatter {
     return BigInt(this.#planck)
   }
 
+  @Memoize()
   get tokens() {
     return planckToTokens(this.#planck, this.#decimals)
   }
@@ -387,6 +404,8 @@ export class FiatSumBalancesFormatter {
   constructor(balances: Balances, currency: TokenRateCurrency) {
     this.#balances = balances
     this.#currency = currency
+
+    this.#sum = memoize(this.#sum)
   }
 
   #sum = (
@@ -416,27 +435,47 @@ export class FiatSumBalancesFormatter {
   /**
    * The total balance of these tokens. Includes the free and the reserved amount.
    */
+  @Memoize()
   get total() {
     return this.#sum("total")
   }
   /** The non-reserved balance of these tokens. Includes the frozen amount. Is included in the total. */
+  @Memoize()
   get free() {
     return this.#sum("free")
   }
   /** The reserved balance of these tokens. Is included in the total. */
+  @Memoize()
   get reserved() {
     return this.#sum("reserved")
   }
   /** The frozen balance of these tokens. Is included in the free amount. */
+  @Memoize()
   get frozen() {
     return this.#sum("frozen")
   }
   /** The transferable balance of these tokens. Is generally the free amount - the miscFrozen amount. */
+  @Memoize()
   get transferable() {
     return this.#sum("transferable")
   }
   /** The feePayable balance of these tokens. Is generally the free amount - the feeFrozen amount. */
+  @Memoize()
   get feePayable() {
     return this.#sum("feePayable")
+  }
+}
+
+export class SumBalancesFormatter {
+  #balances: Balances
+
+  constructor(balances: Balances) {
+    this.#balances = balances
+
+    this.fiat = memoize(this.fiat)
+  }
+
+  fiat(currency: TokenRateCurrency) {
+    return new FiatSumBalancesFormatter(this.#balances, currency)
   }
 }

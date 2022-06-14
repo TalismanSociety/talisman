@@ -36,6 +36,7 @@ export default class AssetTransfersRpc {
     amount: string,
     from: KeyringPair,
     to: Address,
+    tip: string,
     reapBalance: boolean = false,
     callback: SubscriptionCallback<{
       nonce: string
@@ -48,6 +49,7 @@ export default class AssetTransfersRpc {
       amount,
       from,
       to,
+      tip,
       reapBalance,
       true
     )
@@ -87,6 +89,7 @@ export default class AssetTransfersRpc {
     amount: string,
     from: KeyringPair,
     to: Address,
+    tip: string,
     reapBalance: boolean = false
   ): Promise<ResponseAssetTransferFeeQuery> {
     const { tx, pendingTransferId, unsigned } = await this.prepareTransaction(
@@ -94,6 +97,7 @@ export default class AssetTransfersRpc {
       amount,
       from,
       to,
+      tip,
       reapBalance,
       false
     )
@@ -120,6 +124,7 @@ export default class AssetTransfersRpc {
     amount: string,
     from: KeyringPair,
     to: Address,
+    tip: string,
     reapBalance: boolean,
     sign: boolean
   ): Promise<{
@@ -164,7 +169,7 @@ export default class AssetTransfersRpc {
         metadataRpc,
         nonce,
         specVersion: specVersion as unknown as number,
-        tip: 0,
+        tip: tip ? Number(tip) : 0,
         transactionVersion: transactionVersion as unknown as number,
       },
       {

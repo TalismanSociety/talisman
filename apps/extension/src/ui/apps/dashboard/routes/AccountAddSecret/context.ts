@@ -5,6 +5,7 @@ import { useCallback, useState } from "react"
 import { DEBUG } from "@core/constants"
 
 type AccountAddSecretInputs = {
+  name: string
   type: AccountAddressType
   multi: boolean
   mnemonic: string

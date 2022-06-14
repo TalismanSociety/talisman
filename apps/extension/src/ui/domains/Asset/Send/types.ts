@@ -18,6 +18,7 @@ export type SendTokensInputs = {
   tokenId: TokenId
   from: string
   to: string
+  tip: string
 }
 
 export type SendTokensExpectedResult = {

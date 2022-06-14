@@ -1,26 +1,25 @@
+import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
+import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { db } from "@core/libs/db"
+import { ExtensionHandler } from "@core/libs/Handler"
+import { watchSubstrateTransaction } from "@core/notifications"
 import type {
+  AnySigningRequest,
   MessageTypes,
+  Port,
+  RequestIdOnly,
   RequestSigningCancel,
   RequestTypes,
   ResponseType,
-  Port,
-  RequestIdOnly,
-  AnySigningRequest,
 } from "@core/types"
-import { TypeRegistry } from "@polkadot/types"
-import { assert } from "@polkadot/util"
-import { ExtensionHandler } from "@core/libs/Handler"
-import isJsonPayload from "@core/util/isJsonPayload"
-import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
-import { metadataStore } from "@core/domains/metadata"
-import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTransactionDetails } from "@core/util/getTransactionDetails"
-import {
-  RequestSign,
-  RequestSigningApproveSignature,
-} from "@polkadot/extension-base/background/types"
-import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import { getTypeRegistry } from "@core/util/getTypeRegistry"
+import isJsonPayload from "@core/util/isJsonPayload"
+import { RequestSigningApproveSignature } from "@polkadot/extension-base/background/types"
+import { TypeRegistry } from "@polkadot/types"
+import { assert } from "@polkadot/util"
 
 // a global registry to use internally
 const registry = new TypeRegistry()
@@ -42,19 +41,41 @@ export default class SigningHandler extends ExtensionHandler {
       return false
     }
 
-    const { payload } = request as RequestSign
+    const { payload } = request
+    const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
     if (isJsonPayload(payload)) {
       // Get the metadata for the genesisHash
-      const currentMetadata = await metadataStore.get(payload.genesisHash)
+      const currentMetadata = await db.metadata.get(payload.genesisHash)
 
       // set the registry before calling the sign function
       registry.setSignedExtensions(payload.signedExtensions, currentMetadata?.userExtensions)
 
       if (currentMetadata) {
         registry.register(currentMetadata?.types)
+        analyticsProperties.chain = currentMetadata.chain
       }
     }
-    const result = (request as RequestSign).sign(registry, pair)
+
+    const result = request.sign(registry, pair)
+
+    // notify user about transaction progress
+    if (isJsonPayload(payload) && (await this.stores.settings.get("allowNotifications"))) {
+      const chains = await db.chains.toArray()
+      const chain = chains.find((c) => c.genesisHash === payload.genesisHash)
+      if (chain) {
+        // it's hard to get a reliable hash, we'll use signature to identify the on chain extrinsic
+        // our signature : 0x016c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
+        // on chain signature : 0x6c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
+        // => remove the 01 prefix
+        const signature = `0x${result.signature.slice(4)}`
+        watchSubstrateTransaction(chain, signature)
+      }
+    }
+
+    talismanAnalytics.capture("sign transaction approve", {
+      ...analyticsProperties,
+      type: "signature",
+    })
 
     resolve({
       id,
@@ -72,6 +93,7 @@ export default class SigningHandler extends ExtensionHandler {
     const { resolve } = queued
 
     resolve({ id, signature })
+    talismanAnalytics.capture("sign transaction approve", { type: "hardware" })
 
     return true
   }
@@ -85,7 +107,7 @@ export default class SigningHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
 
     const { reject } = queued
-
+    talismanAnalytics.capture("sign transaction reject")
     reject(new Error("Cancelled"))
 
     return true
@@ -98,8 +120,8 @@ export default class SigningHandler extends ExtensionHandler {
 
     const { address, nonce, blockHash, genesisHash, signedExtensions } = queued.request.payload
 
-    const chains = await this.stores.chains.get()
-    const chain = Object.values(chains).find((c) => c.genesisHash === genesisHash)
+    const chains = await db.chains.toArray()
+    const chain = chains.find((c) => c.genesisHash === genesisHash)
     assert(chain, "Unable to find chain")
 
     const [runtimeVersion, registry] = await Promise.all([

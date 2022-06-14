@@ -6,7 +6,9 @@ import type {
   RequestAuthorizeTab,
   AuthorizedSiteAddresses,
   AuthorizedSite,
+  CustomErc20Token,
 } from "@core/types"
+import { db } from "@core/libs/db"
 
 import { TabsHandler } from "@core/libs/Handler"
 import {
@@ -26,8 +28,8 @@ import { filterAccountsByAddresses } from "../accounts/helpers"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { ethers, providers } from "ethers"
 import keyring from "@polkadot/ui-keyring"
-import { getProviderForEthereumNetwork } from "./networksStore"
-import { assert } from "@polkadot/util"
+import { getProviderForEvmNetworkId, getProviderForEthereumNetwork } from "./networksStore"
+import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
   ethAddresses: AuthorizedSiteAddresses
@@ -47,7 +49,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!site?.ethChainId || !site?.ethAddresses.length)
       throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
 
-    const ethereumNetwork = await this.stores.ethereumNetworks.ethereumNetwork(site.ethChainId)
+    const ethereumNetwork = await db.evmNetworks.get(site.ethChainId)
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
@@ -200,13 +202,17 @@ export class EthTabsHandler extends TabsHandler {
     } = request
 
     const chainId = parseInt(network.chainId, 16)
-    const existing = await this.stores.ethereumNetworks.ethereumNetwork(chainId)
+    const existing = await db.evmNetworks.get(chainId)
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
     if (existing) {
       // for custom networks, check that rpcs are the same as the registered ones
       // TODO if mismatch, create request to user to override the network?
-      if (existing.isCustom && existing.rpcs.join() !== network.rpcUrls.join())
+      if (
+        "isCustom" in existing &&
+        existing.isCustom &&
+        (existing.rpcs || []).sort().join() !== (network.rpcUrls || []).sort().join()
+      )
         throw new EthProviderRpcError("Network already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
       return this.switchEthereumChain(url, {
@@ -217,11 +223,11 @@ export class EthTabsHandler extends TabsHandler {
 
     // TODO: Check rpc(s) work before sending request to user
     // TODO: Check that rpc responds with correct chainId before sending request to user
-    // TODO : typecheck network object
+    // TODO: typecheck network object
     await this.state.requestStores.networks.requestAddNetwork(url, network)
 
     // switch automatically to new chain
-    const ethereumNetwork = await this.stores.ethereumNetworks.ethereumNetwork(chainId)
+    const ethereumNetwork = await db.evmNetworks.get(chainId)
     if (ethereumNetwork) {
       const site = await this.getSiteDetails(url)
       this.stores.sites.updateSite(site.id, { ethChainId: chainId })
@@ -245,7 +251,7 @@ export class EthTabsHandler extends TabsHandler {
     if (ethers.utils.hexValue(chainId) !== hexChainId)
       throw new EthProviderRpcError("Malformed chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    const ethereumNetwork = await this.stores.ethereumNetworks.ethereumNetwork(chainId)
+    const ethereumNetwork = await db.evmNetworks.get(chainId)
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
 
@@ -326,6 +332,45 @@ export class EthTabsHandler extends TabsHandler {
     })
   }
 
+  private addWatchAssetRequest = async (
+    url: string,
+    request: EthRequestArguments<"wallet_watchAsset">
+  ) => {
+    const { symbol, address, decimals, image } = request.params.options
+
+    const { ethChainId } = await this.getSiteDetails(url)
+    const tokenId = `${ethChainId}-erc20-${address}`
+
+    const existing = await db.tokens.get(tokenId)
+    if (existing)
+      throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    const provider = await getProviderForEvmNetworkId(ethChainId)
+    if (!provider)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+
+    try {
+      var tokenInfo = await getErc20TokenInfo(provider, ethChainId, address)
+    } catch (err) {
+      throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
+    }
+
+    const token: CustomErc20Token = {
+      id: tokenId,
+      type: "erc20",
+      isTestnet: false,
+      symbol: symbol ?? tokenInfo.symbol,
+      decimals: decimals ?? tokenInfo.decimals,
+      coingeckoId: tokenInfo.coingeckoId,
+      contractAddress: address,
+      evmNetwork: tokenInfo.evmNetworkId !== undefined ? { id: tokenInfo.evmNetworkId } : null,
+      isCustom: true,
+      image: image ?? tokenInfo.image,
+    }
+
+    return this.state.requestStores.evmAssets.requestWatchAsset(url, request.params, token)
+  }
+
   private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
     id: string,
     url: string,
@@ -358,7 +403,6 @@ export class EthTabsHandler extends TabsHandler {
       case "eth_chainId":
         await this.authoriseEth(url, { origin: "", ethereum: true })
         const chain = await this.getChainId(url)
-        console.log({ chain })
         return chain
 
       case "estimateGas": {
@@ -437,19 +481,7 @@ export class EthTabsHandler extends TabsHandler {
       }
 
       case "wallet_watchAsset":
-        console.log("got wallet_watchAsset", request)
-        // check for duplicate
-        const { symbol } = (request as EthRequestArguments<"wallet_watchAsset">).params.options
-
-        const { ethChainId } = await this.getSiteDetails(url)
-        const tokenId = `${ethChainId}-${symbol}`
-        const existing = await this.stores.evmAssets.get(tokenId)
-        assert(!existing, "Token already present in Talisman")
-
-        return this.state.requestStores.evmAssets.requestWatchAsset(
-          url,
-          (request as EthRequestArguments<"wallet_watchAsset">).params
-        )
+        return this.addWatchAssetRequest(url, request as EthRequestArguments<"wallet_watchAsset">)
 
       case "wallet_addEthereumChain":
         return this.addEthereumChain(url, request as EthRequestArguments<"wallet_addEthereumChain">)
@@ -478,7 +510,7 @@ export class EthTabsHandler extends TabsHandler {
         return this.ethSubscribe(id, url, port)
 
       case "pub(eth.request)":
-        return this.ethRequest(id, url, request as AnyEthRequest)
+        return this.ethRequest(id, url, request as AnyEthRequest) as any
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

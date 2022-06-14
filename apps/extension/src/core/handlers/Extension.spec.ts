@@ -15,6 +15,7 @@ import { AccountsStore } from "@polkadot/extension-base/stores"
 
 import { RequestTypes, MessageTypes, ResponseTypes } from "@core/types"
 
+import { db } from "@core/libs/db"
 import { tabStores, extensionStores } from "./stores"
 import Extension from "./Extension"
 import State from "./State"
@@ -198,7 +199,7 @@ describe("Extension", () => {
         types,
         userExtensions,
       }
-      extensionStores.meta.set({ [meta.genesisHash]: meta })
+      db.metadata.put(meta)
 
       const payload: SignerPayloadJSON = {
         address,
@@ -285,7 +286,7 @@ describe("Extension", () => {
         userExtensions,
       }
 
-      extensionStores.meta.set({ [meta.genesisHash]: meta })
+      db.metadata.put(meta)
 
       const registry = new TypeRegistry()
 
@@ -352,7 +353,7 @@ describe("Extension", () => {
         userExtensions,
       }
 
-      await extensionStores.meta.set({ [meta.genesisHash]: meta })
+      await db.metadata.put(meta)
 
       const payload = {
         address,

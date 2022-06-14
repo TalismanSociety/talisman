@@ -17,6 +17,7 @@ import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
 import { isValidAddress } from "@talisman/util/isValidAddress"
 import { tokensToPlanck } from "@core/util"
+import { useTip } from "@ui/hooks/useTip"
 
 const SendAddressConvertInfo = lazy(() => import("./SendAddressConvertInfo"))
 
@@ -176,6 +177,7 @@ const schema = yup
       .string()
       .required("")
       .test("to-valid", "Invalid address (to)", (address) => isValidAddress(address as string)),
+    tip: yup.string().required(), // this will disable the review button until tip is fetched from tip station
   })
   .required()
 
@@ -229,7 +231,7 @@ export const SendForm = () => {
   // derived data
   const balance = useBalance(from, tokenId)
   const token = useToken(tokenId)
-  const chainId = token?.chainId
+  const chainId = token?.chain?.id
   const chain = useChain(chainId)
   const { addressType, genesisHash } = useMemo(
     () =>
@@ -237,10 +239,18 @@ export const SendForm = () => {
     [chain]
   )
 
+  // refresh tip while on edit form, but stop refreshing after review (showForm becomes false)
+  const { tip, error: tipError } = useTip(chainId, showForm)
+
+  useEffect(() => {
+    // force type with ! because undefined value is used to check for an invalid form.
+    setValue("tip", tip!)
+  }, [setValue, tip])
+
   useEffect(() => {
     // clear non-form error if any field is changed
-    setErrorMessage(undefined)
-  }, [amount, token, from, to])
+    setErrorMessage(tipError)
+  }, [amount, token, from, to, tip, tipError])
 
   // error if insufficient balance (it would be complicated do validate in schema while watching for balance & token)
   useEffect(() => {
@@ -250,10 +260,11 @@ export const SendForm = () => {
       amount &&
       balance &&
       isValid &&
-      balance.transferable.planck < BigInt(tokensToPlanck(amount, token.decimals))
+      tip &&
+      balance.transferable.planck < BigInt(tokensToPlanck(amount, token.decimals)) + BigInt(tip)
     )
       setErrorMessage("Insufficient balance")
-  }, [amount, balance, errorMessage, isValid, setError, token])
+  }, [amount, balance, errorMessage, isValid, setError, token, tip])
 
   if (!showForm) return null
 

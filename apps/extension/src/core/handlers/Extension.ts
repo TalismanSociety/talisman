@@ -15,7 +15,7 @@ import { ExtensionHandler } from "@core/libs/Handler"
 import { AccountsHandler } from "@core/domains/accounts"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
 import { MetadataHandler } from "@core/domains/metadata"
-import { AppHandler } from "@core/domains/app"
+import AppHandler from "@core/domains/app/handler"
 import { EthHandler } from "@core/domains/ethereum"
 import { AssetTransferHandler } from "@core/domains/transactions"
 import { SigningHandler } from "@core/domains/signing"
@@ -93,14 +93,11 @@ export default class Extension extends ExtensionHandler {
       // --------------------------------------------------------------------
       // balance handlers ---------------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(balances.subscribe)":
-        return this.stores.balances.subscribeUpdates(id, port)
-
-      case "pri(balances.byid.subscribe)":
-        return this.stores.balances.subscribeById(id, port, request as RequestIdOnly)
-
       case "pri(balances.get)":
         return this.stores.balances.getBalance(request as RequestBalance)
+
+      case "pri(balances.subscribe)":
+        return this.stores.balances.subscribe(id, port)
 
       case "pri(balances.byparams.subscribe)":
         // create subscription callback
@@ -128,17 +125,8 @@ export default class Extension extends ExtensionHandler {
       // --------------------------------------------------------------------
       // chain handlers -----------------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(chains)":
-        return this.stores.chains.chains()
-
-      case "pri(chains.byid)":
-        return this.stores.chains.chain((request as RequestIdOnly).id)
-
       case "pri(chains.subscribe)":
-        return this.stores.chains.subscribe(id, port)
-
-      case "pri(chains.byid.subscribe)":
-        return this.stores.chains.subscribeById(id, port, request as RequestIdOnly)
+        return this.stores.chains.hydrateStore()
 
       // --------------------------------------------------------------------
       // transaction handlers -----------------------------------------------

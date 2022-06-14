@@ -20,6 +20,7 @@ import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { formatDecimals } from "talisman-utils"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 
 const Container = styled.div`
   display: flex;
@@ -219,7 +220,7 @@ type DerivedAccountInfo = RequestAccountCreateFromSeed & {
 const getDerivationPath = (type: AccountAddressType, index: number) => {
   switch (type) {
     case "ethereum":
-      return `/m/44'/60'/0'/0/${index}`
+      return getEthDerivationPath(index)
     default:
       // preserve backwards compatibility : since beta we import mnemonics as-is, without derivationPath
       return index === 0 ? "" : `//${index - 1}`
@@ -273,7 +274,7 @@ const useDerivedAccounts = (
 
   const balanceParams = useMemo(() => {
     const chainIds = type === "ethereum" ? ["moonbeam", "moonriver"] : ["polkadot", "kusama"]
-    const testChains = Object.values(chains).filter((chain) => chainIds.includes(chain.id))
+    const testChains = (chains || []).filter((chain) => chainIds.includes(chain.id))
 
     return testChains.reduce(
       (prev, curr) => ({

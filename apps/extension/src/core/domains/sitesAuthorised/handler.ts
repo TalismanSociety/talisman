@@ -1,15 +1,16 @@
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { ExtensionHandler } from "@core/libs/Handler"
+import { assert } from "@polkadot/util"
 import type {
+  AuthRequestApprove,
   MessageTypes,
+  Port,
+  RequestAuthorizedSiteForget,
+  RequestAuthorizedSiteUpdate,
+  RequestIdOnly,
   RequestTypes,
   ResponseType,
-  Port,
-  RequestIdOnly,
-  RequestAuthorizedSiteUpdate,
-  AuthRequestApprove,
-  RequestAuthorizedSiteForget,
 } from "core/types"
-import { assert } from "@polkadot/util"
-import { ExtensionHandler } from "@core/libs/Handler"
 
 export default class SitesAuthorisationHandler extends ExtensionHandler {
   private authorizedForget({ id, type }: RequestAuthorizedSiteForget): boolean {
@@ -19,6 +20,9 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
 
   private authorizedUpdate({ id, props }: RequestAuthorizedSiteUpdate): boolean {
     this.stores.sites.updateSite(id, props)
+    talismanAnalytics.capture("authorised site update addresses", {
+      url: id,
+    })
     return true
   }
 
@@ -26,6 +30,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     const queued = this.state.requestStores.sites.getRequest(id)
     assert(queued, "Unable to find request")
 
+    talismanAnalytics.capture("authorised site approve", { url: queued.idStr })
     const { resolve } = queued
     resolve({ addresses, ethChainId })
 
@@ -37,6 +42,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
 
     const { reject } = queued
+    talismanAnalytics.capture("authorised site reject", { url: queued.idStr })
     reject(new Error("Rejected"))
 
     return true

@@ -4,7 +4,7 @@ import Layout from "@ui/apps/dashboard/layout"
 import { useNavigate } from "react-router-dom"
 import styled, { css } from "styled-components"
 import { CustomErc20Token } from "@core/types"
-import { useEthereumNetwork } from "@ui/hooks/useEthereumNetwork"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useCustomErc20Tokens } from "@ui/hooks/useCustomErc20Tokens"
 import { Erc20Logo } from "@ui/domains/Erc20Tokens/Erc20Logo"
 
@@ -87,7 +87,7 @@ const TokenLogo = styled(Erc20Logo)`
 
 const TokenRow = ({ token }: { token: CustomErc20Token }) => {
   const navigate = useNavigate()
-  const network = useEthereumNetwork(token.evmNetworkId)
+  const network = useEvmNetwork(token.evmNetwork?.id)
 
   return (
     <TokenRowContainer role="button" onClick={() => navigate(`./${token.id}`)}>
@@ -105,7 +105,7 @@ const TokenRow = ({ token }: { token: CustomErc20Token }) => {
 
 export const CustomTokens = () => {
   const navigate = useNavigate()
-  const { tokens } = useCustomErc20Tokens()
+  const tokens = useCustomErc20Tokens()
 
   if (!tokens) return null
 

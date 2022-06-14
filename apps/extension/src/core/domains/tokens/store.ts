@@ -1,145 +1,26 @@
 import { DEBUG } from "@core/constants"
-import { settingsStore } from "@core/domains/app"
-import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
-import { SubscribableByIdStorageProvider } from "@core/libs/Store"
-import {
-  Port,
-  RequestIdOnly,
-  SubscriptionCallback,
-  Token,
-  TokenId,
-  TokenList,
-  UnsubscribeFn,
-} from "@core/types"
+import { db } from "@core/libs/db"
+import { Erc20Token, IToken, NativeToken, OrmlToken, Token, TokenList } from "@core/types"
+import { graphqlUrl, TokenFragment } from "@core/util/graphql"
 import { print } from "graphql"
 import gql from "graphql-tag"
-import pick from "lodash/pick"
-import { combineLatest, map } from "rxjs"
 
-const storageKey = "tokens"
-const graphqlUrl = "https://app.gc.subsquid.io/beta/chaindata/latest/graphql"
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
-// TODO: Separate chains and tokens more nicely so that we don't need to store chain info like `isTestnet` inside the tokens store
-type TokenStoreToken = Token & { isTestnet: boolean }
-type TokenStoreList = Record<TokenId, TokenStoreToken>
-
-export class TokenStore extends SubscribableByIdStorageProvider<
-  TokenStoreList,
-  "pri(tokens.subscribe)",
-  "pri(tokens.byid.subscribe)"
-> {
+export class TokenStore {
   #lastHydratedAt: number = 0
 
-  /**
-   * Fetch or subscribe to tokens by tokenId.
-   *
-   * @param tokenIds - Optional filter for tokens by tokenId.
-   * @param callback - Optional subscription callback.
-   * @returns Either a `TokenList`, or an unsubscribe function if the `callback` parameter was given.
-   */
-  async tokens(tokenIds?: TokenId[]): Promise<TokenList>
-  async tokens(
-    tokenIds: TokenId[],
-    callback: SubscriptionCallback<TokenList>
-  ): Promise<UnsubscribeFn>
-  async tokens(
-    tokenIds?: TokenId[],
-    callback?: SubscriptionCallback<TokenList>
-  ): Promise<TokenList | UnsubscribeFn> {
-    await this.hydrateStore()
-
-    // subscription request
-    if (callback !== undefined) {
-      // create filter observable (allows subscriber to be informed when useTestnets changes)
-      const tokenFilterObservable = settingsStore.observable.pipe(
-        map(({ useTestnets }) =>
-          composeFilters(tokenIdsFilter(tokenIds), testnetFilter(useTestnets))
-        )
-      )
-
-      // subscribe to tokens
-      const subscription = combineLatest([this.observable, tokenFilterObservable]).subscribe({
-        next: ([tokens, tokenFilter]) => callback(null, tokenFilter(tokens)),
-        error: (error) => callback(error),
-      })
-
-      // return unsubscribe function
-      return subscription.unsubscribe.bind(subscription)
-    }
-
-    // once-off request
-    const tokens = await this.get()
-    const useTestnets = await settingsStore.get("useTestnets")
-    const tokenFilter = composeFilters(tokenIdsFilter(tokenIds), testnetFilter(useTestnets))
-    return tokenFilter(tokens)
-  }
-
-  /**
-   * Fetch or subscribe to a single token by tokenId.
-   *
-   * @param tokenId - The token to fetch or subscribe to.
-   * @param callback - Optional subscription callback.
-   * @returns Either a `Token`, or an unsubscribe function if the `callback` parameter was given.
-   */
-  async token(tokenId: TokenId): Promise<Token | undefined>
-  async token(
-    tokenId: TokenId,
-    callback: SubscriptionCallback<Token | undefined>
-  ): Promise<UnsubscribeFn>
-  async token(
-    tokenId: TokenId,
-    callback?: SubscriptionCallback<Token | undefined>
-  ): Promise<Token | undefined | UnsubscribeFn> {
-    // subscription request
-    if (callback !== undefined) {
-      const innerCallback: SubscriptionCallback<TokenList> = (error, tokens) => {
-        if (error !== null) return callback(error)
-        if (tokens === undefined)
-          return callback(new Error(`No tokens returned in request for token ${tokenId}`))
-        callback(null, tokens[tokenId])
-      }
-
-      return await this.tokens([tokenId], innerCallback)
-    }
-
-    // once-off request
-    return (await this.tokens([tokenId]))[tokenId]
-  }
-
-  public subscribe(id: string, port: Port, unsubscribeCallback?: () => void): boolean {
-    const cb = createSubscription<"pri(tokens.subscribe)">(id, port)
-
-    // TODO: Make this.tokens into `this.observable` so we can use subscribe method from StorageProvider
-    const subscription = this.tokens([], (error, tokens) => !error && tokens && cb(tokens))
-
-    port.onDisconnect.addListener((): void => {
-      unsubscribe(id)
-      subscription.then((unsubscribe) => unsubscribe())
-      if (unsubscribeCallback) unsubscribeCallback()
+  async clearCustom(): Promise<void> {
+    await db.transaction("rw", db.tokens, () => {
+      db.tokens.filter((token) => "isCustom" in token && token.isCustom === true).delete()
     })
-
-    return true
   }
 
-  public subscribeById(
-    id: string,
-    port: Port,
-    request: RequestIdOnly,
-    unsubscribeCallback?: () => void
-  ): boolean {
-    const cb = createSubscription<"pri(tokens.byid.subscribe)">(id, port)
-
-    // TODO: Make this.tokens into `this.observable` so we can use subscribeById method from StorageProvider
-    const subscription = this.token(request.id, (error, token) => !error && token && cb(token))
-
-    port.onDisconnect.addListener((): void => {
-      unsubscribe(id)
-      subscription.then((unsubscribe) => unsubscribe())
-      if (unsubscribeCallback) unsubscribeCallback()
+  async replaceChaindata(tokens: Token[]): Promise<void> {
+    await db.transaction("rw", db.tokens, () => {
+      db.tokens.filter((token) => !("isCustom" in token)).delete()
+      db.tokens.bulkPut(tokens)
     })
-
-    return true
   }
 
   /**
@@ -148,7 +29,7 @@ export class TokenStore extends SubscribableByIdStorageProvider<
    *
    * @returns A promise which resolves to true if the store has been hydrated, or false if the hydration was skipped.
    */
-  private async hydrateStore(): Promise<boolean> {
+  async hydrateStore(): Promise<boolean> {
     const now = Date.now()
     if (now - this.#lastHydratedAt < minimumHydrationInterval) return false
 
@@ -166,7 +47,7 @@ export class TokenStore extends SubscribableByIdStorageProvider<
       if (Object.keys(tokensList).length <= 0)
         throw new Error("Ignoring empty chaindata tokens response")
 
-      this.replace(tokensList)
+      await this.replaceChaindata(Object.values(tokensList))
       this.#lastHydratedAt = now
 
       return true
@@ -179,87 +60,87 @@ export class TokenStore extends SubscribableByIdStorageProvider<
   }
 }
 
-const composeFilters =
-  (...filters: Array<(tokens: TokenStoreList) => TokenStoreList>) =>
-  (tokens: TokenStoreList): TokenStoreList =>
-    filters.reduce((composed, filter) => filter(composed), tokens)
-
-const testnetFilter = (useTestnets: boolean) =>
-  !useTestnets
-    ? // Filter by !isTestnet
-      (tokens: TokenStoreList) =>
-        Object.fromEntries(
-          Object.values(tokens)
-            .filter(({ isTestnet }) => !isTestnet)
-            .map((token) => [token.id, token])
-        )
-    : // Don't filter
-      (tokens: TokenStoreList) => tokens
-
-const tokenIdsFilter = (tokenIds?: TokenId[]) =>
-  Array.isArray(tokenIds) && tokenIds.length > 0
-    ? // Filter by tokenId
-      (tokens: TokenStoreList) => pick(tokens, tokenIds)
-    : // Don't filter
-      (tokens: TokenStoreList) => tokens
+const tokensResponseTypeMap = {
+  NativeToken: "native",
+  OrmlToken: "orml",
+  // LiquidCrowdloanToken: "lc",
+  // LiquidityProviderToken: "lp",
+  // XcToken: "xc",
+  Erc20Token: "erc20",
+} as const
+type TokensResponseTypeMap = typeof tokensResponseTypeMap
+type TokensResponseType = keyof TokensResponseTypeMap
+const isTokenType = (type?: string): type is TokensResponseType =>
+  typeof type === "string" && Object.keys(tokensResponseTypeMap).includes(type)
 
 /**
- * Helper function to convert tokensQuery response into a `TokenStoreList`.
+ * Helper function to convert tokensQuery response into a `TokenList`.
  */
-const tokensResponseToTokenList = (tokens: Array<any>): TokenStoreList => {
-  return Object.fromEntries(
-    tokens
-      .flatMap((chainToken) => [
-        {
-          ...chainToken?.nativeToken,
-          type: "native",
-          chainId: chainToken?.id,
-          isTestnet: chainToken?.isTestnet || false,
-        },
-        ...(chainToken?.tokens || []).map((ormlToken: any) => ({
-          ...ormlToken,
-          type: "orml",
-          chainId: chainToken?.id,
-          isTestnet: chainToken?.isTestnet || false,
-        })),
-      ])
-      .map((token) => [token.id, token])
-  )
-}
+const tokensResponseToTokenList = (tokens: unknown[]): TokenList =>
+  tokens.reduce(
+    // TODO: Fix `token` type after https://github.com/subsquid/squid/issues/41 is merged
+    (allTokens: TokenList, token: any) => {
+      if (typeof token?.id !== "string") return allTokens
 
-const tokensQuery = gql`
+      const tokenType = token?.squidImplementationDetail?.__typename
+      if (!isTokenType(tokenType)) return allTokens
+
+      const commonTokenFields = <T extends TokensResponseType>(
+        token: any,
+        tokenType: T
+      ): IToken & { type: TokensResponseTypeMap[T] } => ({
+        id: token.id,
+        type: tokensResponseTypeMap[tokenType],
+        isTestnet: token.squidImplementationDetail.isTestnet,
+        symbol: token.squidImplementationDetail.symbol,
+        decimals: token.squidImplementationDetail.decimals,
+        coingeckoId: token.squidImplementationDetail.coingeckoId,
+        rates: token.squidImplementationDetail.rates,
+      })
+
+      switch (tokenType) {
+        case "NativeToken":
+          const nativeToken: NativeToken = {
+            ...commonTokenFields(token, tokenType),
+            existentialDeposit: token.squidImplementationDetail.existentialDeposit,
+            chain: token.squidImplementationDetailNativeToChains[0],
+            evmNetwork: token.squidImplementationDetailNativeToEvmNetworks[0],
+          }
+          return { ...allTokens, [nativeToken.id]: nativeToken }
+
+        case "OrmlToken":
+          const ormlToken: OrmlToken = {
+            ...commonTokenFields(token, tokenType),
+            existentialDeposit: token.squidImplementationDetail.existentialDeposit,
+            index: token.squidImplementationDetail.index,
+            chain: token.squidImplementationDetail.chain,
+          }
+          return { ...allTokens, [ormlToken.id]: ormlToken }
+
+        case "Erc20Token":
+          const erc20Token: Erc20Token = {
+            ...commonTokenFields(token, tokenType),
+            contractAddress: token.squidImplementationDetail.contractAddress,
+            chain: token.squidImplementationDetail.chain,
+            evmNetwork: token.squidImplementationDetail.evmNetwork,
+          }
+          return { ...allTokens, [erc20Token.id]: erc20Token }
+
+        default:
+          return allTokens
+      }
+    },
+    {}
+  )
+
+export const tokensQuery = gql`
   {
-    tokens: chains(orderBy: sortIndex_ASC) {
-      id
-      isTestnet
-      nativeToken {
-        id
-        token
-        symbol
-        decimals
-        existentialDeposit
-        coingeckoId
-        rates {
-          usd
-          eur
-        }
-      }
-      tokens {
-        id
-        index
-        token
-        symbol
-        decimals
-        existentialDeposit
-        coingeckoId
-        rates {
-          usd
-          eur
-        }
-      }
+    tokens(orderBy: id_ASC) {
+      ...Token
     }
   }
+  ${TokenFragment}
 `
 
-const tokenStore = new TokenStore(storageKey)
+const tokenStore = new TokenStore()
 export default tokenStore

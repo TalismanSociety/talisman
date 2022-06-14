@@ -111,6 +111,11 @@ const AccountItem = ({
             {["SEED", "JSON", "HARDWARE"].includes(account?.origin as string) && (
               <PopNav.Item onClick={() => openAccountRemove(address)}>Remove Account</PopNav.Item>
             )}
+            {account?.type === "ethereum" && (
+              <PopNav.Item onClick={() => api.dashboardOpen("/tokens")}>
+                Add custom token
+              </PopNav.Item>
+            )}
           </PopNav>
           <IconChevron className="icon chevron" onClick={toggleOpen} />
         </span>

@@ -1,22 +1,14 @@
+import { db } from "@core/libs/db"
 import { CustomErc20Token } from "@core/types"
-import { api } from "@ui/api"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useLiveQuery } from "dexie-react-hooks"
 
 export const useCustomErc20Token = (id: string | undefined) => {
-  const [token, setToken] = useState<CustomErc20Token | null>()
-
-  const refresh = useCallback(async () => {
-    if (!id) {
-      setToken(null)
-      return
+  return useLiveQuery<CustomErc20Token | undefined>(async () => {
+    const token = id !== undefined ? await db.tokens.get(id) : undefined
+    if (token?.type === "erc20" && "isCustom" in token) {
+      const customToken = token as CustomErc20Token
+      if (customToken.isCustom) return token
     }
-    // TODO subscription
-    setToken(await api.customErc20Token(id))
-  }, [id])
-
-  useEffect(() => {
-    refresh()
-  }, [refresh])
-
-  return { token, refresh }
+    return undefined
+  }, [])
 }

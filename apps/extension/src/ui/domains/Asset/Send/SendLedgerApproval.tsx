@@ -38,7 +38,7 @@ const SendLedgerApproval = () => {
 
   const account = useAccountByAddress(from) as AccountJsonHardware
   const token = useToken(tokenId)
-  const chain = useChain(token?.chainId)
+  const chain = useChain(token?.chain?.id)
   const { ledger, isReady, status, message, refresh, requiresManualRetry, network } = useLedger(
     chain?.genesisHash
   )

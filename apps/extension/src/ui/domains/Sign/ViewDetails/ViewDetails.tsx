@@ -1,17 +1,23 @@
-import { FC, useMemo } from "react"
-import styled from "styled-components"
-import { BalanceFormatter, SignerPayloadRaw, SigningRequest, TransactionDetails } from "@core/types"
+import {
+  BalanceFormatter,
+  SignerPayloadJSON,
+  SignerPayloadRaw,
+  SigningRequest,
+  TransactionDetails,
+} from "@core/types"
+import { encodeAnyAddress } from "@core/util"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import useToken from "@ui/hooks/useToken"
-import { ViewDetailsTxArgs } from "./ViewDetailsTxArgs"
-import { ViewDetailsButton } from "./ViewDetailsButton"
-import { ViewDetailsField } from "./ViewDetailsField"
-import { encodeAnyAddress } from "@core/util"
-import { ViewDetailsTxDesc } from "./ViewDetailsTxDesc"
+import { FC, useMemo } from "react"
+import styled from "styled-components"
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAmount } from "./ViewDetailsAmount"
+import { ViewDetailsButton } from "./ViewDetailsButton"
+import { ViewDetailsField } from "./ViewDetailsField"
+import { ViewDetailsTxArgs } from "./ViewDetailsTxArgs"
+import { ViewDetailsTxDesc } from "./ViewDetailsTxDesc"
 
 const ViewDetailsContainer = styled.div`
   background: var(--color-background);
@@ -71,6 +77,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   const nativeToken = useToken(chain?.nativeToken?.id)
 
   const { data, type } = (request?.payload || {}) as SignerPayloadRaw
+  const { tip: tipRaw } = (request?.payload || {}) as SignerPayloadJSON
 
   const { accountAddress, fees, feesError, tip, methodName } = useMemo(() => {
     if (!txDetails || !chain || !account) return {}
@@ -82,7 +89,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
     )
     const feesError = txDetails.payment ? "" : "Failed to compute fees."
 
-    const tip = new BalanceFormatter(txDetails.tip, nativeToken?.decimals, nativeToken?.rates)
+    const tip = new BalanceFormatter(tipRaw ?? "0", nativeToken?.decimals, nativeToken?.rates)
 
     const accountAddress = `${encodeAnyAddress(account.address, chain.prefix ?? undefined)} (${
       account.name
@@ -97,7 +104,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
       tip,
       methodName,
     }
-  }, [account, chain, nativeToken, txDetails])
+  }, [account, chain, nativeToken, tipRaw, txDetails])
 
   return (
     <ViewDetailsContainer>

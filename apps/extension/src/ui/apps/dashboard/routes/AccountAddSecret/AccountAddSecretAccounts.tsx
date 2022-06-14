@@ -47,8 +47,8 @@ export const AccountAddSecretAccounts = () => {
   const notification = useNotification()
 
   const name = useMemo(
-    () => (data.type! === "ethereum" ? "Ethereum Account" : "Polkadot Account"),
-    [data.type]
+    () => data.name ?? (data.type! === "ethereum" ? "Ethereum Account" : "Polkadot Account"),
+    [data.name, data.type]
   )
 
   const schema = useMemo(

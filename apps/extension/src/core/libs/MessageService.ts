@@ -136,7 +136,7 @@ export default class MessageService {
     if (!handler) {
       const { id, error, subscription, response } = data
       Sentry.captureException(new Error(`No handler for this response`), {
-        tags: { id, error, subscription, response },
+        tags: { id, error, subscription, response: response as any },
       })
       return
     }

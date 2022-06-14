@@ -1,5 +1,4 @@
 import {
-  EthereumNetwork,
   MessageTypes,
   RequestTypes,
   ResponseType,
@@ -7,6 +6,8 @@ import {
   RequestIdOnly,
   EthApproveSignAndSend,
   AnyEthRequestChainId,
+  CustomEvmNetwork,
+  CustomNativeToken,
 } from "@core/types"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { assert, u8aToHex } from "@polkadot/util"
@@ -28,8 +29,9 @@ import { BigNumber, ethers } from "ethers"
 import type { Bytes, UnsignedTransaction } from "ethers"
 import type { TransactionRequest } from "@ethersproject/providers"
 import isString from "lodash/isString"
-import { getProviderForChainId } from "./networksStore"
-import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
+import { getProviderForEvmNetworkId } from "./networksStore"
+import { watchEthereumTransaction } from "@core/notifications"
+import { db } from "@core/libs/db"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -117,7 +119,12 @@ export class EthHandler extends ExtensionHandler {
       const signature = await pair.sign(serialisedTx)
 
       const serialisedSignedTx = serializeTransaction(goodTx, signature)
-      const { hash } = await provider.sendTransaction(serialisedSignedTx)
+      const { chainId, hash } = await provider.sendTransaction(serialisedSignedTx)
+
+      // notify user about transaction progress
+      if (await this.stores.settings.get("allowNotifications"))
+        watchEthereumTransaction(chainId, hash)
+
       resolve(hash)
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -188,23 +195,40 @@ export class EthHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
 
     const { network, resolve } = queued
-    const newNetwork: EthereumNetwork = {
-      id: parseInt(network.chainId, 16),
+    const networkId = parseInt(network.chainId, 16)
+    const newToken: CustomNativeToken | null = network.nativeCurrency
+      ? {
+          id: `${networkId}-native-${network.nativeCurrency.symbol}`.toLowerCase(),
+          type: "native",
+          isTestnet: false,
+          symbol: network.nativeCurrency.symbol,
+          decimals: network.nativeCurrency.decimals,
+          existentialDeposit: "0",
+          evmNetwork: { id: parseInt(network.chainId, 16) },
+          isCustom: true,
+        }
+      : null
+
+    const newNetwork: CustomEvmNetwork = {
+      id: networkId,
+      isTestnet: false,
+      sortIndex: null,
       name: network.chainName,
-      nativeToken: network.nativeCurrency
-        ? {
-            name: network.nativeCurrency.name,
-            symbol: network.nativeCurrency.symbol,
-            decimals: network.nativeCurrency.decimals,
-          }
-        : undefined,
+      nativeToken: newToken ? { id: newToken.id } : null,
+      tokens: [],
+      explorerUrl: (network.blockExplorerUrls || [])[0],
       rpcs: (network.rpcUrls || []).map((url) => ({ url, isHealthy: true })),
+      isHealthy: true,
+      substrateChain: null,
+      isCustom: true,
       explorerUrls: network.blockExplorerUrls || [],
       iconUrls: network.iconUrls || [],
-      isCustom: true,
     }
 
-    await this.stores.ethereumNetworks.set({ [newNetwork.id]: newNetwork })
+    await db.transaction("rw", db.evmNetworks, db.tokens, async () => {
+      await db.evmNetworks.put(newNetwork)
+      if (newToken) await db.tokens.put(newToken)
+    })
 
     resolve(null)
 
@@ -228,31 +252,9 @@ export class EthHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const { resolve, request, url } = queued
-    const site = await this.stores.sites.getSiteFromUrl(url)
+    const { resolve, token } = queued
 
-    assert(site.ethChainId, "No ethereum chain ID selected for site")
-
-    const {
-      options: { symbol, decimals, address, image },
-    } = request
-
-    const provider = await getProviderForChainId(site.ethChainId)
-    assert(provider, `No provider available for eth network ${site.ethChainId}`)
-    const tokenInfo = await getErc20TokenInfo(provider, site.ethChainId, address)
-
-    const tokenId = `${tokenInfo.evmNetworkId}-${symbol ?? tokenInfo.symbol}`
-
-    await this.stores.evmAssets.setItem({
-      type: "erc20",
-      id: tokenId,
-      symbol: symbol ?? tokenInfo.symbol,
-      evmNetworkId: tokenInfo.evmNetworkId,
-      decimals: decimals ?? tokenInfo.decimals,
-      contractAddress: address,
-      image: image ?? tokenInfo.image,
-      coingeckoId: tokenInfo.coingeckoId,
-    })
+    await db.tokens.put(token)
 
     resolve(true)
 
@@ -264,7 +266,7 @@ export class EthHandler extends ExtensionHandler {
     chainId: number,
     request: EthRequestArguments<TEthMessageType>
   ): Promise<unknown> {
-    const provider = await getProviderForChainId(chainId)
+    const provider = await getProviderForEvmNetworkId(chainId)
     assert(provider, `No healthy RPCs available for provider for chain ${chainId}`)
     const result = await provider.send(request.method, request.params as unknown as any[])
     // eslint-disable-next-line no-console
@@ -321,25 +323,19 @@ export class EthHandler extends ExtensionHandler {
           port
         )
 
-      case "pri(eth.networks)":
-        return this.stores.ethereumNetworks.ethereumNetworks()
-
-      case "pri(eth.networks.byid)":
-        return this.stores.ethereumNetworks.ethereumNetwork(
-          parseInt((request as RequestIdOnly).id, 10)
-        )
-
       case "pri(eth.networks.subscribe)":
-        return this.stores.ethereumNetworks.subscribe(id, port)
-
-      case "pri(eth.networks.byid.subscribe)":
-        return this.stores.ethereumNetworks.subscribeById(id, port, request as RequestIdOnly)
+        return this.stores.evmNetworks.hydrateStore()
 
       case "pri(eth.networks.add.custom)": {
         const newNetwork = request as RequestTypes["pri(eth.networks.add.custom)"]
 
+        const existing = await db.evmNetworks.get(newNetwork.id)
+        if (existing && !("isCustom" in existing && existing.isCustom === true)) {
+          throw new Error(`Failed to override built-in Talisman network`)
+        }
+
         newNetwork.isCustom = true
-        await this.stores.ethereumNetworks.set({ [newNetwork.id]: newNetwork })
+        await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.put(newNetwork))
 
         return true
       }
@@ -350,20 +346,25 @@ export class EthHandler extends ExtensionHandler {
           10
         )
 
-        await this.stores.ethereumNetworks.delete(id)
+        await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.delete(id))
 
         return true
       }
 
       case "pri(eth.networks.clearCustomNetworks)": {
-        await this.stores.ethereumNetworks.clear()
+        await Promise.all([
+          // TODO: Only clear custom evm network native tokens,
+          // this call will also clear custom erc20 tokens on non-custom evm networks
+          this.stores.evmNetworks.clearCustom(),
+          this.stores.tokens.clearCustom(),
+        ])
 
         return true
       }
 
       case "pri(eth.request)":
         const { chainId: ethChainId, ...rest } = request as AnyEthRequestChainId
-        return this.ethRequest(id, ethChainId, rest)
+        return this.ethRequest(id, ethChainId, rest) as any
     }
     throw new Error(`Unable to handle message of type ${type}`)
   }

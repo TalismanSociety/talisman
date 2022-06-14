@@ -6,19 +6,23 @@ const useChainsAndSearchSymbols = <T extends Chain>(
   chains: T[]
 ): Array<T & { searchSymbols: string[] }> => {
   const tokens = useTokens()
+  const tokensMap = useMemo(
+    () => Object.fromEntries((tokens || []).map((token) => [token.id, token])),
+    [tokens]
+  )
   return useMemo(
     () =>
-      chains.map((chain) => ({
+      (chains || []).map((chain) => ({
         ...chain,
         searchSymbols: [
           // add native token symbol if it exists
-          chain.nativeToken ? tokens[chain.nativeToken.id].symbol : undefined,
+          chain.nativeToken ? tokensMap[chain.nativeToken.id]?.symbol : undefined,
 
           // add orml token symbols if they exist
-          ...(chain.tokens ? chain.tokens.map(({ id }) => tokens[id].symbol) : []),
+          ...(chain.tokens ? chain.tokens.map(({ id }) => tokensMap[id]?.symbol) : []),
         ].filter((symbol): symbol is string => typeof symbol === "string"),
       })),
-    [chains, tokens]
+    [chains, tokensMap]
   )
 }
 

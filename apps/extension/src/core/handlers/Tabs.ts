@@ -25,6 +25,7 @@ import type {
 } from "@core/types"
 import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
+import { db } from "@core/libs/db"
 
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { checkIfDenied } from "@polkadot/phishing"
@@ -40,6 +41,7 @@ import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { EthTabsHandler } from "@core/domains/ethereum"
 import RpcState from "./RpcState"
 import * as Sentry from "@sentry/browser"
+import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
 
 export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()
@@ -56,7 +58,7 @@ export default class Tabs extends TabsHandler {
 
   private async authorize(url: string, request: RequestAuthorizeTab): Promise<boolean> {
     const siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
-    if (siteFromUrl) {
+    if (siteFromUrl?.addresses) {
       // this url was seen in the past
       assert(
         siteFromUrl.addresses?.length,
@@ -75,7 +77,16 @@ export default class Tabs extends TabsHandler {
     { anyType }: RequestAccountList
   ): Promise<InjectedAccount[]> {
     const addresses = (await this.stores.sites.getSiteFromUrl(url)).addresses
-    return filterAccountsByAddresses(accountsObservable.subject.getValue(), addresses, anyType)
+    const accounts = filterAccountsByAddresses(
+      accountsObservable.subject.getValue(),
+      addresses,
+      anyType
+    )
+    const iconType = await this.stores.settings.get("identiconType")
+    return accounts.map((acc) => ({
+      ...acc,
+      avatar: getAccountAvatarDataUri(acc.address, iconType),
+    }))
   }
 
   private accountsSubscribe(url: string, id: string, port: Port): boolean {
@@ -84,10 +95,15 @@ export default class Tabs extends TabsHandler {
       port,
       this.stores.sites.observable,
       async () => {
+        const iconType = await this.stores.settings.get("identiconType")
         const accounts = accountsObservable.subject.getValue()
         const addresses = (await this.stores.sites.getSiteFromUrl(url))?.addresses
         if (!addresses) return []
-        return filterAccountsByAddresses(accounts, addresses, true)
+        const filteredAccounts = await filterAccountsByAddresses(accounts, addresses, true)
+        return filteredAccounts.map((acc) => ({
+          ...acc,
+          avatar: getAccountAvatarDataUri(acc.address, iconType),
+        }))
       }
     )
   }
@@ -125,7 +141,7 @@ export default class Tabs extends TabsHandler {
   }
 
   private async metadataList(): Promise<InjectedMetadataKnown[]> {
-    return Object.entries(await this.stores.meta.get()).map(([genesisHash, { specVersion }]) => ({
+    return ((await db.metadata.toArray()) || []).map(({ genesisHash, specVersion }) => ({
       genesisHash,
       specVersion,
     }))

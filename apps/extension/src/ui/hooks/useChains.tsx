@@ -1,13 +1,22 @@
 import { api } from "@ui/api"
 import { useMessageSubscription } from "./useMessageSubscription"
-import type { ChainList } from "@core/types"
-import { BehaviorSubject } from "rxjs"
+import { useLiveQuery } from "dexie-react-hooks"
+import { db } from "@core/libs/db"
+import { useSettings } from "@ui/hooks/useSettings"
 
-const INITIAL_VALUE: ChainList = {}
+const subscribe = () => api.chains(() => {})
+export const useChains = () => {
+  // make sure the store is hydrated
+  useMessageSubscription("chains", null, subscribe)
 
-const subscribe = (subject: BehaviorSubject<ChainList>) =>
-  api.chainsSubscribe((v) => subject.next(v))
-
-export const useChains = () => useMessageSubscription("chainsSubscribe", INITIAL_VALUE, subscribe)
+  const { useTestnets = false } = useSettings()
+  return useLiveQuery(
+    async () =>
+      (await db.chains.toArray()).filter((chain) =>
+        useTestnets ? true : chain.isTestnet === false
+      ),
+    [useTestnets]
+  )
+}
 
 export default useChains

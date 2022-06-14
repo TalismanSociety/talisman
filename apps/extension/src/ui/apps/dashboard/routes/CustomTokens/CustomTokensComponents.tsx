@@ -1,7 +1,7 @@
 import { CustomErc20TokenCreate } from "@core/types"
 import { LoaderIcon } from "@talisman/theme/icons"
 import styled, { css } from "styled-components"
-import imgUnknownToken from "@talisman/theme/icons/unknown-token.png"
+import unknownToken from "@talisman/theme/icons/custom-token-generic.svg"
 
 export const commonFormStyle = css`
   margin: 4.2rem 0;
@@ -81,7 +81,7 @@ export const SymbolPrefix = ({ token }: { token?: CustomErc20TokenCreate }) => {
   if (!token) return null
   return (
     <SymbolPrefixContainer>
-      <img src={token?.image ?? imgUnknownToken} alt={token.symbol} />
+      <img src={token?.image ?? unknownToken} alt={token.symbol} />
     </SymbolPrefixContainer>
   )
 }

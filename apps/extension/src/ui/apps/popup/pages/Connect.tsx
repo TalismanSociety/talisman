@@ -1,20 +1,19 @@
-import styled from "styled-components"
-import Layout, { Header, Content, Footer } from "../Layout"
-import Button from "@talisman/components/Button"
-import Grid from "@talisman/components/Grid"
-import Panel from "@talisman/components/Panel"
-import Field from "@talisman/components/Field"
-import Account from "@ui/domains/Account"
-import useCurrentAuthorisationRequest from "@ui/hooks/useCurrentAuthorisationRequest"
-import { IconButton } from "@talisman/components/IconButton"
-import { InfoIcon, XIcon } from "@talisman/theme/icons"
 import { AppPill } from "@talisman/components/AppPill"
-import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
-import Spacer from "@talisman/components/Spacer"
-import { useCallback } from "react"
-import { api } from "@ui/api"
+import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
+import Field from "@talisman/components/Field"
+import Grid from "@talisman/components/Grid"
+import { IconButton } from "@talisman/components/IconButton"
 import { ModalDialog } from "@talisman/components/ModalDialog"
+import Panel from "@talisman/components/Panel"
+import { InfoIcon, XIcon } from "@talisman/theme/icons"
+import { api } from "@ui/api"
+import Account from "@ui/domains/Account"
+import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
+import useCurrentAuthorisationRequest from "@ui/hooks/useCurrentAuthorisationRequest"
+import { useCallback } from "react"
+import styled from "styled-components"
+import Layout, { Content, Footer, Header } from "../Layout"
 
 const AccountItem = ({ address, value = 1, onChange, className }: any) => (
   <Panel className={className} onClick={() => onChange(!value)} small>
@@ -101,6 +100,8 @@ const Connect = ({ className, onSuccess }: any) => {
     onIgnore: () => window.close(),
   })
 
+  useAnalyticsPopupOpen("connect")
+
   const handleNoEthAccountClose = useCallback(
     (navigateToAddAccount: boolean) => () => {
       if (navigateToAddAccount) {
@@ -124,14 +125,6 @@ const Connect = ({ className, onSuccess }: any) => {
       />
 
       <Content>
-        {ethereum && (
-          <>
-            <h3>Network</h3>
-            <NetworkSelect defaultChainId={chainId} onChange={setChainId} />
-            <Spacer large />
-          </>
-        )}
-
         <h3>
           {ethereum
             ? "Choose the account you'd like to connect"
