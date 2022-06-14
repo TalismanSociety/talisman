@@ -184,6 +184,7 @@ const StyledLayout = styled(Layout)`
     background: var(--color-background-muted);
 
     .scrollable {
+      width: 100%;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
