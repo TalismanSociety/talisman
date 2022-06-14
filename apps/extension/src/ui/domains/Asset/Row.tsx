@@ -14,7 +14,7 @@ interface IAssetRowType extends IAssetRowOptions {
 
 const AssetRow = ({ className, balance, withFiat, show }: IAssetRowType) => (
   <div className={`${className} chain-balance`} data-show={show}>
-    <Logo id={balance.chainId} />
+    <Logo id={balance.chainId || balance.evmNetwork?.substrateChain?.id || balance.evmNetworkId} />
     <Name balance={balance} withChain />
     <EmptySpace />
     <Balance balance={balance} withFiat={withFiat} isBalance />

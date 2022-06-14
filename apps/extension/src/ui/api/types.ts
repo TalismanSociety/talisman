@@ -1,42 +1,41 @@
-import type { KeyringPair$Json } from "@polkadot/keyring/types"
-import type { HexString } from "@polkadot/util/types"
+import { EthResponseType } from "@core/injectEth/types"
 import {
+  AccountAddressType,
   AccountJson,
+  AddEthereumChainRequest,
   AddressesByChain,
+  AnalyticsCaptureRequest,
+  AnyEthRequestChainId,
+  AnySigningRequest,
+  AuthRequestAddresses,
+  AuthRequestId,
   AuthorizeRequest,
-  MetadataRequest,
-  LoggedinType,
-  OnboardedType,
   AuthorizedSite,
   AuthorizedSites,
-  AuthRequestId,
-  AuthRequestAddresses,
-  MnemonicSubscriptionResult,
-  Chain,
-  ChainId,
-  ChainList,
-  RequestAccountCreateHardware,
-  Token,
-  TokenId,
-  TokenList,
-  ResponseAssetTransfer,
-  ResponseAssetTransferFeeQuery,
   BalanceStorage,
   BalancesUpdate,
-  RequestBalance,
-  UnsubscribeFn,
-  TransactionDetails,
-  ModalTypes,
+  ChainId,
+  CustomErc20Token,
+  CustomErc20TokenCreate,
+  CustomEvmNetwork,
+  LoggedinType,
+  MetadataRequest,
+  MnemonicSubscriptionResult,
   ModalOpenParams,
+  ModalTypes,
+  OnboardedType,
   ProviderType,
-  AccountAddressType,
-  AnySigningRequest,
-  AddEthereumChainRequest,
-  EthereumNetworkList,
-  EthereumNetwork,
-  AnyEthRequestChainId,
+  RequestAccountCreateHardware,
+  RequestBalance,
+  ResponseAssetTransfer,
+  ResponseAssetTransferFeeQuery,
+  TokenId,
+  TransactionDetails,
+  UnsubscribeFn,
+  WatchAssetRequest,
 } from "@core/types"
-import { EthResponseType } from "@core/injectEth/types"
+import type { KeyringPair$Json } from "@polkadot/keyring/types"
+import type { HexString } from "@polkadot/util/types"
 
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
@@ -73,6 +72,7 @@ export default interface MessageTypes {
   // app message types -------------------------------------------------------
   modalOpen: (modalType: ModalTypes) => Promise<boolean>
   modalOpenSubscribe: (cb: (val: ModalOpenParams) => void) => UnsubscribeFn
+  analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>
 
   // mnemonic message types -------------------------------------------------------
   mnemonicUnlock: (pass: string) => Promise<string>
@@ -81,7 +81,7 @@ export default interface MessageTypes {
   addressFromMnemonic: (mnemonic: string, type?: AccountAddressType) => Promise<string>
 
   // account message types ---------------------------------------------------
-  accountCreate: (name: string) => Promise<boolean>
+  accountCreate: (name: string, type: AccountAddressType) => Promise<boolean>
   accountCreateFromSeed: (name: string, seed: string, type?: AccountAddressType) => Promise<boolean>
   accountCreateFromJson: (json: string, password: string) => Promise<boolean>
   accountCreateHardware: (
@@ -94,10 +94,14 @@ export default interface MessageTypes {
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
-  subscribeBalances: (cb: (balances: BalancesUpdate) => void) => UnsubscribeFn
-  subscribeBalancesById: (id: string, cb: (balance: BalanceStorage) => void) => UnsubscribeFn
-  getBalance: ({ chainId, tokenId, address }: RequestBalance) => Promise<BalanceStorage>
-  subscribeBalancesByParams: (
+  getBalance: ({
+    chainId,
+    evmNetworkId,
+    tokenId,
+    address,
+  }: RequestBalance) => Promise<BalanceStorage>
+  balances: (cb: () => void) => UnsubscribeFn
+  balancesByParams: (
     addressesByChain: AddressesByChain,
     cb: (balances: BalancesUpdate) => void
   ) => UnsubscribeFn
@@ -124,26 +128,23 @@ export default interface MessageTypes {
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
 
   // chain message types
-  chains: () => Promise<ChainList>
-  chain: (id: string) => Promise<Chain>
-  chainsSubscribe: (cb: (chains: ChainList) => void) => UnsubscribeFn
-  chainSubscribe: (id: string, cb: (chain: Chain) => void) => UnsubscribeFn
+  chains: (cb: () => void) => UnsubscribeFn
 
   // token message types
-  tokens: () => Promise<TokenList>
-  token: (id: string) => Promise<Token>
-  tokensSubscribe: (cb: (tokens: TokenList) => void) => UnsubscribeFn
-  tokenSubscribe: (id: string, cb: (token: Token) => void) => UnsubscribeFn
+  tokens: (cb: () => void) => UnsubscribeFn
+
+  // custom erc20 token management
+  customErc20Tokens: () => Promise<Record<CustomErc20Token["id"], CustomErc20Token>>
+  customErc20Token: (id: string) => Promise<CustomErc20Token>
+  addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
+  removeCustomErc20Token: (id: string) => Promise<boolean>
+  clearCustomErc20Tokens: (
+    filter: { chainId?: ChainId; evmNetworkId?: number } | undefined
+  ) => Promise<boolean>
 
   // ethereum networks message types
-  ethereumNetworks: () => Promise<EthereumNetworkList>
-  ethereumNetwork: (id: string) => Promise<EthereumNetwork>
-  ethereumNetworksSubscribe: (cb: (ethereumNetworks: EthereumNetworkList) => void) => UnsubscribeFn
-  ethereumNetworkSubscribe: (
-    id: string,
-    cb: (ethereumNetwork: EthereumNetwork) => void
-  ) => UnsubscribeFn
-  addCustomEthereumNetwork: (ethereumNetwork: EthereumNetwork) => Promise<boolean>
+  ethereumNetworks: (cb: () => void) => UnsubscribeFn
+  addCustomEthereumNetwork: (ethereumNetwork: CustomEvmNetwork) => Promise<boolean>
   removeCustomEthereumNetwork: (id: string) => Promise<boolean>
   clearCustomEthereumNetworks: () => Promise<boolean>
 
@@ -190,4 +191,8 @@ export default interface MessageTypes {
   ethNetworkAddSubscribeRequests: (
     cb: (requests: AddEthereumChainRequest[]) => void
   ) => UnsubscribeFn
+
+  ethWatchAssetRequestApprove: (id: string) => Promise<boolean>
+  ethWatchAssetRequestCancel: (is: string) => Promise<boolean>
+  ethWatchAssetRequestsSubscribe: (cb: (requests: WatchAssetRequest[]) => void) => UnsubscribeFn
 }

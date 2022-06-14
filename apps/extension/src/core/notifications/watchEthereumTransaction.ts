@@ -1,16 +1,14 @@
 import Browser from "webextension-polyfill"
-import {
-  ethereumNetworkStore,
-  getProviderForEthereumNetwork,
-} from "../domains/ethereum/networksStore"
+import { getProviderForEthereumNetwork } from "../domains/ethereum/networksStore"
 import { nanoid } from "nanoid"
 import * as Sentry from "@sentry/browser"
 import urlJoin from "url-join"
 import { createNotification } from "./createNotification"
+import { db } from "@core/libs/db"
 
 export const watchEthereumTransaction = async (ethChainId: number, txHash: string) => {
   try {
-    var ethereumNetwork = await ethereumNetworkStore.ethereumNetwork(ethChainId)
+    var ethereumNetwork = await db.evmNetworks.get(ethChainId)
     if (!ethereumNetwork) {
       throw new Error(`Could not find ethereum network ${ethChainId}`)
     }
@@ -20,12 +18,12 @@ export const watchEthereumTransaction = async (ethChainId: number, txHash: strin
       throw new Error(`No provider for network ${ethChainId} (${ethereumNetwork.name})`)
     }
 
-    const txUrl = ethereumNetwork.explorerUrls.length
-      ? urlJoin(ethereumNetwork.explorerUrls[0], "tx", txHash)
+    const txUrl = ethereumNetwork.explorerUrl
+      ? urlJoin(ethereumNetwork.explorerUrl, "tx", txHash)
       : nanoid()
 
     // PENDING
-    await createNotification("submitted", ethereumNetwork.name, txUrl)
+    await createNotification("submitted", ethereumNetwork.name!, txUrl)
 
     try {
       const receipt = await provider.waitForTransaction(txHash)
@@ -33,11 +31,11 @@ export const watchEthereumTransaction = async (ethChainId: number, txHash: strin
       // success if associated to a block number
       await createNotification(
         receipt.blockNumber ? "success" : "error",
-        ethereumNetwork.name,
+        ethereumNetwork.name!,
         txUrl
       )
     } catch (err) {
-      await createNotification("error", ethereumNetwork.name, txUrl, err as Error)
+      await createNotification("error", ethereumNetwork.name!, txUrl, err as Error)
     }
   } catch (err) {
     Sentry.captureException(err, { tags: { ethChainId } })

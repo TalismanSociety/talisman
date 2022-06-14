@@ -104,6 +104,11 @@ const AccountItem = ({
               <PopNav.Item onClick={exportAccount}>Export Private Key</PopNav.Item>
             )}
             {canRemove && <PopNav.Item onClick={openAccountRemove}>Remove Account</PopNav.Item>}
+            {account?.type === "ethereum" && (
+              <PopNav.Item onClick={() => api.dashboardOpen("/tokens")}>
+                Add custom token
+              </PopNav.Item>
+            )}
           </PopNav>
           <IconChevron className="icon chevron" onClick={toggleOpen} />
         </span>

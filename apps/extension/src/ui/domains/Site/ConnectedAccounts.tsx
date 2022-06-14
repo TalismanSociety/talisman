@@ -10,11 +10,12 @@ import { NetworkSelect } from "../Ethereum/NetworkSelect"
 import Spacer from "@talisman/components/Spacer"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import useAuthorisedSiteProviders from "@ui/hooks/useAuthorisedSiteProviders"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 
-const AccountItem = ({ address, value = 1, onChange, className }: any) => (
-  <Panel className={className} onClick={() => onChange(!value)} small>
+const AccountItem = ({ address, value = false, onChange, className }: any) => (
+  <Panel className={className} onClick={onChange} small>
     <Account.Name address={address} withAvatar />
-    <Field.Checkbox value={value} onChange={onChange} small />
+    <Field.Checkbox value={value} small />
   </Panel>
 )
 
@@ -75,10 +76,11 @@ type Props = {
 }
 
 export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
+  const { genericEvent } = useAnalytics()
   const { authorizedProviders, defaultProvider } = useAuthorisedSiteProviders(siteId)
   const [providerType, setProviderType] = useState<ProviderType>(defaultProvider)
   const accounts = useConnectedAccounts(siteId, providerType)
-  const { ethChainId, setEthChainId } = useAuthorisedSiteById(siteId, providerType)
+  const { ethChainId, setEthChainId, url } = useAuthorisedSiteById(siteId, providerType)
 
   useEffect(() => {
     // reset if this info loads after render
@@ -110,7 +112,13 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
       {providerType === "ethereum" ? (
         <>
           <h3>Network</h3>
-          <NetworkSelect defaultChainId={ethChainId} onChange={setEthChainId} />
+          <NetworkSelect
+            defaultChainId={ethChainId}
+            onChange={(chainId) => {
+              genericEvent("evm network changed", { chainId, url })
+              setEthChainId(chainId)
+            }}
+          />
           <Spacer large />
           <Spacer large />
         </>

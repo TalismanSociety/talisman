@@ -124,7 +124,7 @@ const NetworkPill = styled(Pill)`
 export const SendReviewHeader = () => {
   const { formData } = useSendTokens()
   const token = useToken(formData.tokenId)
-  const chainId = token?.chainId
+  const chainId = token?.chain?.id
   const chain = useChain(chainId)
   if (!chain) return null
 
@@ -139,7 +139,7 @@ export const SendReviewHeader = () => {
 const SendReview = () => {
   const { formData, expectedResult, send, showReview } = useSendTokens()
   const token = useToken(formData.tokenId)
-  const chainId = token?.chainId
+  const chainId = token?.chain?.id
   const chain = useChain(chainId)
 
   const [error, setError] = useState<string>()

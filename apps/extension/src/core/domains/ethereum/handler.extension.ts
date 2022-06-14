@@ -1,5 +1,4 @@
 import {
-  EthereumNetwork,
   MessageTypes,
   RequestTypes,
   ResponseType,
@@ -7,6 +6,8 @@ import {
   RequestIdOnly,
   EthApproveSignAndSend,
   AnyEthRequestChainId,
+  CustomEvmNetwork,
+  CustomNativeToken,
 } from "@core/types"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { assert, u8aToHex } from "@polkadot/util"
@@ -28,8 +29,10 @@ import { BigNumber, ethers } from "ethers"
 import type { Bytes, UnsignedTransaction } from "ethers"
 import type { TransactionRequest } from "@ethersproject/providers"
 import isString from "lodash/isString"
-import { getProviderForChainId } from "./networksStore"
+import { getProviderForEvmNetworkId } from "./networksStore"
 import { watchEthereumTransaction } from "@core/notifications"
+import { db } from "@core/libs/db"
+import { talismanAnalytics } from "@core/libs/Analytics"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -124,6 +127,12 @@ export class EthHandler extends ExtensionHandler {
         watchEthereumTransaction(chainId, hash)
 
       resolve(hash)
+
+      talismanAnalytics.capture("sign transaction approve", {
+        type: "evm sign and send",
+        dapp: queued.url,
+        chain: queued.ethChainId,
+      })
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err, { err })
@@ -155,6 +164,12 @@ export class EthHandler extends ExtensionHandler {
       const signature = await pair.sign(addSafeSigningPrefix(request))
       resolve(u8aToHex(signature))
 
+      talismanAnalytics.capture("sign transaction approve", {
+        type: "evm sign",
+        dapp: queued.url,
+        chain: queued.ethChainId,
+      })
+
       return true
     } catch (err) {
       const msg = getHumanReadableErrorMessage(err)
@@ -171,6 +186,11 @@ export class EthHandler extends ExtensionHandler {
     const { reject } = queued
 
     reject(new EthProviderRpcError("Cancelled", ETH_ERROR_EIP1993_USER_REJECTED))
+    talismanAnalytics.capture("sign transaction reject", {
+      type: "evm sign",
+      dapp: queued.url,
+      chain: queued.ethChainId,
+    })
 
     return true
   }
@@ -193,25 +213,76 @@ export class EthHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
 
     const { network, resolve } = queued
-    const newNetwork: EthereumNetwork = {
-      id: parseInt(network.chainId, 16),
+    const networkId = parseInt(network.chainId, 16)
+    const newToken: CustomNativeToken | null = network.nativeCurrency
+      ? {
+          id: `${networkId}-native-${network.nativeCurrency.symbol}`.toLowerCase(),
+          type: "native",
+          isTestnet: false,
+          symbol: network.nativeCurrency.symbol,
+          decimals: network.nativeCurrency.decimals,
+          existentialDeposit: "0",
+          evmNetwork: { id: parseInt(network.chainId, 16) },
+          isCustom: true,
+        }
+      : null
+
+    const newNetwork: CustomEvmNetwork = {
+      id: networkId,
+      isTestnet: false,
+      sortIndex: null,
       name: network.chainName,
-      nativeToken: network.nativeCurrency
-        ? {
-            name: network.nativeCurrency.name,
-            symbol: network.nativeCurrency.symbol,
-            decimals: network.nativeCurrency.decimals,
-          }
-        : undefined,
+      nativeToken: newToken ? { id: newToken.id } : null,
+      tokens: [],
+      explorerUrl: (network.blockExplorerUrls || [])[0],
       rpcs: (network.rpcUrls || []).map((url) => ({ url, isHealthy: true })),
+      isHealthy: true,
+      substrateChain: null,
+      isCustom: true,
       explorerUrls: network.blockExplorerUrls || [],
       iconUrls: network.iconUrls || [],
-      isCustom: true,
     }
 
-    await this.stores.ethereumNetworks.set({ [newNetwork.id]: newNetwork })
+    await db.transaction("rw", db.evmNetworks, db.tokens, async () => {
+      await db.evmNetworks.put(newNetwork)
+      if (newToken) await db.tokens.put(newToken)
+    })
+
+    talismanAnalytics.capture("add network evm", { network: network.chainName, isCustom: false })
 
     resolve(null)
+
+    return true
+  }
+
+  private ethWatchAssetRequestCancel({ id }: RequestIdOnly): boolean {
+    const queued = this.state.requestStores.evmAssets.getRequest(id)
+
+    assert(queued, "Unable to find request")
+
+    const { reject } = queued
+
+    reject(new EthProviderRpcError("Rejected", ETH_ERROR_EIP1993_USER_REJECTED))
+
+    return true
+  }
+
+  private async ethWatchAssetRequestApprove({ id }: RequestIdOnly): Promise<boolean> {
+    const queued = this.state.requestStores.evmAssets.getRequest(id)
+
+    assert(queued, "Unable to find request")
+
+    const { resolve, token } = queued
+
+    await db.tokens.put(token)
+    talismanAnalytics.capture("add asset evm", {
+      contractAddress: token.contractAddress,
+      symbol: token.symbol,
+      network: token.evmNetwork,
+      isCustom: true,
+    })
+
+    resolve(true)
 
     return true
   }
@@ -221,7 +292,7 @@ export class EthHandler extends ExtensionHandler {
     chainId: number,
     request: EthRequestArguments<TEthMessageType>
   ): Promise<unknown> {
-    const provider = await getProviderForChainId(chainId)
+    const provider = await getProviderForEvmNetworkId(chainId)
     assert(provider, `No healthy RPCs available for provider for chain ${chainId}`)
     const result = await provider.send(request.method, request.params as unknown as any[])
     // eslint-disable-next-line no-console
@@ -246,7 +317,22 @@ export class EthHandler extends ExtensionHandler {
         return this.signingCancel(request as RequestIdOnly)
 
       // --------------------------------------------------------------------
-      // ethereum network handlers -----------------------------------------------------
+      // ethereum watch asset requests handlers -----------------------------
+      // --------------------------------------------------------------------
+      case "pri(eth.watchasset.requests.cancel)":
+        return this.ethWatchAssetRequestCancel(request as RequestIdOnly)
+
+      case "pri(eth.watchasset.requests.approve)":
+        return this.ethWatchAssetRequestApprove(request as RequestIdOnly)
+
+      case "pri(eth.watchasset.requests.subscribe)":
+        return this.state.requestStores.evmAssets.subscribe<"pri(eth.watchasset.requests.subscribe)">(
+          id,
+          port
+        )
+
+      // --------------------------------------------------------------------
+      // ethereum network handlers ------------------------------------------
       // --------------------------------------------------------------------
       case "pri(eth.networks.add.cancel)":
         return this.ethNetworkAddCancel(request as RequestIdOnly)
@@ -263,26 +349,20 @@ export class EthHandler extends ExtensionHandler {
           port
         )
 
-      case "pri(eth.networks)":
-        return this.stores.ethereumNetworks.ethereumNetworks()
-
-      case "pri(eth.networks.byid)":
-        return this.stores.ethereumNetworks.ethereumNetwork(
-          parseInt((request as RequestIdOnly).id, 10)
-        )
-
       case "pri(eth.networks.subscribe)":
-        return this.stores.ethereumNetworks.subscribe(id, port)
-
-      case "pri(eth.networks.byid.subscribe)":
-        return this.stores.ethereumNetworks.subscribeById(id, port, request as RequestIdOnly)
+        return this.stores.evmNetworks.hydrateStore()
 
       case "pri(eth.networks.add.custom)": {
         const newNetwork = request as RequestTypes["pri(eth.networks.add.custom)"]
 
-        newNetwork.isCustom = true
-        await this.stores.ethereumNetworks.set({ [newNetwork.id]: newNetwork })
+        const existing = await db.evmNetworks.get(newNetwork.id)
+        if (existing && !("isCustom" in existing && existing.isCustom === true)) {
+          throw new Error(`Failed to override built-in Talisman network`)
+        }
 
+        newNetwork.isCustom = true
+        await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.put(newNetwork))
+        talismanAnalytics.capture("add network evm", { network: newNetwork.name, isCustom: true })
         return true
       }
 
@@ -292,20 +372,25 @@ export class EthHandler extends ExtensionHandler {
           10
         )
 
-        await this.stores.ethereumNetworks.delete(id)
+        await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.delete(id))
 
         return true
       }
 
       case "pri(eth.networks.clearCustomNetworks)": {
-        await this.stores.ethereumNetworks.clear()
+        await Promise.all([
+          // TODO: Only clear custom evm network native tokens,
+          // this call will also clear custom erc20 tokens on non-custom evm networks
+          this.stores.evmNetworks.clearCustom(),
+          this.stores.tokens.clearCustom(),
+        ])
 
         return true
       }
 
       case "pri(eth.request)":
         const { chainId: ethChainId, ...rest } = request as AnyEthRequestChainId
-        return this.ethRequest(id, ethChainId, rest)
+        return this.ethRequest(id, ethChainId, rest) as any
     }
     throw new Error(`Unable to handle message of type ${type}`)
   }

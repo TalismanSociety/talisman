@@ -6,7 +6,9 @@ import type {
   RequestAuthorizeTab,
   AuthorizedSiteAddresses,
   AuthorizedSite,
+  CustomErc20Token,
 } from "@core/types"
+import { db } from "@core/libs/db"
 
 import { TabsHandler } from "@core/libs/Handler"
 import {
@@ -26,8 +28,8 @@ import { filterAccountsByAddresses } from "../accounts/helpers"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { ethers, providers } from "ethers"
 import keyring from "@polkadot/ui-keyring"
-import { getProviderForEthereumNetwork } from "./networksStore"
-
+import { getProviderForEvmNetworkId, getProviderForEthereumNetwork } from "./networksStore"
+import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
   ethAddresses: AuthorizedSiteAddresses
@@ -47,7 +49,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!site?.ethChainId || !site?.ethAddresses.length)
       throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
 
-    const ethereumNetwork = await this.stores.ethereumNetworks.ethereumNetwork(site.ethChainId)
+    const ethereumNetwork = await db.evmNetworks.get(site.ethChainId)
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
@@ -77,10 +79,10 @@ export class EthTabsHandler extends TabsHandler {
       else throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED) //already rejected
     }
 
-    // 4001	User Rejected Request	The user rejected the request.
     try {
       return await this.state.requestStores.sites.requestAuthorizeUrl(url, request)
     } catch (err) {
+      // 4001	User Rejected Request	The user rejected the request.
       throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1993_USER_REJECTED)
     }
   }
@@ -102,8 +104,20 @@ export class EthTabsHandler extends TabsHandler {
     let accounts: AuthorizedSiteAddresses | undefined
     let connected: boolean
 
-    const sendToClient = (message: EthProviderMessage) =>
-      port.postMessage({ id, subscription: message })
+    const sendToClient = (message: EthProviderMessage) => {
+      try {
+        port.postMessage({ id, subscription: message })
+      } catch (e) {
+        if (e instanceof Error) {
+          if (e.message === "Attempting to use a disconnected port object") {
+            // this means that the user has done something like close the tab
+            port.disconnect()
+            return
+          }
+        }
+        throw e
+      }
+    }
 
     const init = () =>
       this.stores.sites.getSiteFromUrl(url).then(async (site) => {
@@ -183,7 +197,18 @@ export class EthTabsHandler extends TabsHandler {
 
     // unsubscribe if port disconnects (usually when tab closes)
     const handleDisconnect = () => {
-      unsubscribe()
+      try {
+        // by the time this is called, the subscription may already be closed which will raise an error
+        unsubscribe()
+      } catch (e) {
+        if (
+          !(
+            e instanceof TypeError &&
+            e.message === "Cannot read properties of undefined (reading 'closed')"
+          )
+        )
+          throw e
+      }
       port.onDisconnect.removeListener(handleDisconnect)
     }
     port.onDisconnect.addListener(handleDisconnect)
@@ -200,13 +225,17 @@ export class EthTabsHandler extends TabsHandler {
     } = request
 
     const chainId = parseInt(network.chainId, 16)
-    const existing = await this.stores.ethereumNetworks.ethereumNetwork(chainId)
+    const existing = await db.evmNetworks.get(chainId)
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
     if (existing) {
       // for custom networks, check that rpcs are the same as the registered ones
       // TODO if mismatch, create request to user to override the network?
-      if (existing.isCustom && existing.rpcs.join() !== network.rpcUrls.join())
+      if (
+        "isCustom" in existing &&
+        existing.isCustom &&
+        (existing.rpcs || []).sort().join() !== (network.rpcUrls || []).sort().join()
+      )
         throw new EthProviderRpcError("Network already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
       return this.switchEthereumChain(url, {
@@ -217,11 +246,11 @@ export class EthTabsHandler extends TabsHandler {
 
     // TODO: Check rpc(s) work before sending request to user
     // TODO: Check that rpc responds with correct chainId before sending request to user
-    // TODO : typecheck network object
+    // TODO: typecheck network object
     await this.state.requestStores.networks.requestAddNetwork(url, network)
 
     // switch automatically to new chain
-    const ethereumNetwork = await this.stores.ethereumNetworks.ethereumNetwork(chainId)
+    const ethereumNetwork = await db.evmNetworks.get(chainId)
     if (ethereumNetwork) {
       const site = await this.getSiteDetails(url)
       this.stores.sites.updateSite(site.id, { ethChainId: chainId })
@@ -237,7 +266,6 @@ export class EthTabsHandler extends TabsHandler {
     const {
       params: [{ chainId: hexChainId }],
     } = request
-
     if (!hexChainId)
       throw new EthProviderRpcError("Missing chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
     const chainId = parseInt(hexChainId, 16)
@@ -245,7 +273,7 @@ export class EthTabsHandler extends TabsHandler {
     if (ethers.utils.hexValue(chainId) !== hexChainId)
       throw new EthProviderRpcError("Malformed chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    const ethereumNetwork = await this.stores.ethereumNetworks.ethereumNetwork(chainId)
+    const ethereumNetwork = await db.evmNetworks.get(chainId)
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
 
@@ -326,6 +354,45 @@ export class EthTabsHandler extends TabsHandler {
     })
   }
 
+  private addWatchAssetRequest = async (
+    url: string,
+    request: EthRequestArguments<"wallet_watchAsset">
+  ) => {
+    const { symbol, address, decimals, image } = request.params.options
+
+    const { ethChainId } = await this.getSiteDetails(url)
+    const tokenId = `${ethChainId}-erc20-${address}`
+
+    const existing = await db.tokens.get(tokenId)
+    if (existing)
+      throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    const provider = await getProviderForEvmNetworkId(ethChainId)
+    if (!provider)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+
+    try {
+      var tokenInfo = await getErc20TokenInfo(provider, ethChainId, address)
+    } catch (err) {
+      throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
+    }
+
+    const token: CustomErc20Token = {
+      id: tokenId,
+      type: "erc20",
+      isTestnet: false,
+      symbol: symbol ?? tokenInfo.symbol,
+      decimals: decimals ?? tokenInfo.decimals,
+      coingeckoId: tokenInfo.coingeckoId,
+      contractAddress: address,
+      evmNetwork: tokenInfo.evmNetworkId !== undefined ? { id: tokenInfo.evmNetworkId } : null,
+      isCustom: true,
+      image: image ?? tokenInfo.image,
+    }
+
+    return this.state.requestStores.evmAssets.requestWatchAsset(url, request.params, token)
+  }
+
   private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
     id: string,
     url: string,
@@ -338,13 +405,14 @@ export class EthTabsHandler extends TabsHandler {
       // some sites expect eth_accounts to return an empty array if not connected/authorized.
       // if length === 0 they'll request authorization
       // so it should not raise an error if not authorized yet
-      if (!["eth_requestAccounts", "eth_accounts"].includes(request.method))
+      if (!["eth_requestAccounts", "eth_accounts", "eth_chainId"].includes(request.method))
         await this.stores.sites.ensureUrlAuthorized(url, true)
     } catch (err) {
       throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
     }
 
     switch (request.method) {
+      case "eth_accounts":
       case "eth_requestAccounts":
         // error will be thrown by authorizeEth if not authorised
         await this.authoriseEth(url, { origin: "", ethereum: true })
@@ -352,8 +420,12 @@ export class EthTabsHandler extends TabsHandler {
         // wait for site store to update
         await new Promise((resolve) => setTimeout(resolve, 500))
         return await this.accountsList(url)
-      case "eth_accounts":
-        return await this.accountsList(url)
+
+      case "eth_chainId":
+        await this.authoriseEth(url, { origin: "", ethereum: true })
+        const chain = await this.getChainId(url)
+        return chain
+
       case "estimateGas": {
         const { params } = request as EthRequestArguments<"estimateGas">
         if (params[1] && params[1] !== "latest") {
@@ -429,6 +501,9 @@ export class EthTabsHandler extends TabsHandler {
         )
       }
 
+      case "wallet_watchAsset":
+        return this.addWatchAssetRequest(url, request as EthRequestArguments<"wallet_watchAsset">)
+
       case "wallet_addEthereumChain":
         return this.addEthereumChain(url, request as EthRequestArguments<"wallet_addEthereumChain">)
 
@@ -437,9 +512,6 @@ export class EthTabsHandler extends TabsHandler {
           url,
           request as EthRequestArguments<"wallet_switchEthereumChain">
         )
-
-      case "eth_chainId":
-        return this.getChainId(url)
 
       default:
         return this.getFallbackRequest(url, request)
@@ -459,7 +531,7 @@ export class EthTabsHandler extends TabsHandler {
         return this.ethSubscribe(id, url, port)
 
       case "pub(eth.request)":
-        return this.ethRequest(id, url, request as AnyEthRequest)
+        return this.ethRequest(id, url, request as AnyEthRequest) as any
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

@@ -1,11 +1,16 @@
-import { useMemo } from "react"
+import { Address, Balances } from "@core/types"
 import useBalances from "@ui/hooks/useBalances"
-import { Address } from "@core/types"
+import { useEffect, useState } from "react"
 
 const useBalancesByAddress = (address: Address) => {
   const balances = useBalances()
+  const [byAddress, setByAddress] = useState<Balances>(new Balances([]))
 
-  return useMemo(() => balances.find({ address }), [balances, address])
+  useEffect(() => {
+    setByAddress(balances?.find({ address }) || new Balances([]))
+  }, [balances, address])
+
+  return byAddress
 }
 
 export default useBalancesByAddress

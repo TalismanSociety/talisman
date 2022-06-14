@@ -61,7 +61,6 @@ const StyledField = styled(Field)`
   > .children {
     border: none;
     border-radius: var(--border-radius);
-    overflow: hidden;
     display: block;
     width: 100%;
     background: var(--color-background-muted);
@@ -109,6 +108,11 @@ const StyledField = styled(Field)`
 
     select {
       cursor: pointer;
+    }
+
+    .dropdown,
+    .dropdown button {
+      width: 100%;
     }
   }
 

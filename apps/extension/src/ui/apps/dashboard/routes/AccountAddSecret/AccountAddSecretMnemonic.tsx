@@ -1,8 +1,7 @@
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
 import { useNavigate } from "react-router-dom"
 import Layout from "../../layout"
-import { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import * as yup from "yup"
 import { api } from "@ui/api"
 import { useForm } from "react-hook-form"
@@ -15,11 +14,22 @@ import { Checkbox } from "@talisman/components/Checkbox"
 import styled from "styled-components"
 import { useNotification } from "@talisman/components/Notification"
 import useAccounts from "@ui/hooks/useAccounts"
+import { classNames } from "@talisman/util/classNames"
+import { Wallet } from "ethers"
+import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
+import AccountAvatar from "@ui/domains/Account/Avatar"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 
 type FormData = {
+  name: string
+  type: AccountAddressType
   mnemonic: string
   multi: boolean
 }
+
+const Spacer = styled.div<{ small?: boolean }>`
+  height: ${({ small }) => (small ? "1.6rem" : "3.2rem")};
+`
 
 const Container = styled(Layout)`
   .checkbox {
@@ -27,6 +37,65 @@ const Container = styled(Layout)`
     font-size: 1.6rem;
     span:last-child {
       padding-top: 0.2rem;
+    }
+  }
+
+  form {
+    transition: opacity var(--transition-speed) ease-in-out;
+    opacity: 0;
+    &.show {
+      opacity: 1;
+    }
+  }
+
+  .invisible {
+    opacity: 0;
+  }
+
+  .mnemonic-buttons {
+    display: flex;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+    button {
+      margin: 0.8em;
+      background-color: transparent;
+      border: none;
+      outline: none;
+      color: var(--color-mid);
+      cursor: pointer;
+      font-size: var(--font-size-xsmall);
+      padding: 0.8rem;
+      border-radius: var(--border-radius-small);
+      background: var(--color-background-muted-3x);
+      opacity: 0.5;
+      transition: all var(--transition-speed) ease-in-out;
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .field > .children {
+    position: relative;
+
+    > .suffix {
+      opacity: 1;
+      transform: none;
+      top: 0;
+      right: 0;
+      width: 4.8rem;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      > * {
+        width: auto;
+        height: auto;
+      }
     }
   }
 `
@@ -39,12 +108,52 @@ const cleanupMnemonic = (input: string = "") =>
     .filter(Boolean) //remove empty strings
     .join(" ")
 
+const isValidEthPrivateKey = (privateKey?: string) => {
+  if (!privateKey) return false
+
+  try {
+    new Wallet(privateKey)
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
 // for polkadot, do not force //0 derivation path to preserve backwards compatibility (since beta we import mnemonics as-is)
 // but for ethereum, use metamask's derivation path
-const ETHEREUM_DERIVATION_PATH = "/m/44'/60'/0'/0/0"
+const ETHEREUM_DERIVATION_PATH = getEthDerivationPath()
 
-const mnemonicUri = (mnemonic: string, type: AccountAddressType) => {
-  return type === "ethereum" ? `${mnemonic}${ETHEREUM_DERIVATION_PATH}` : mnemonic
+const getAccountUri = async (secret: string, type: AccountAddressType) => {
+  if (!secret || !type) throw new Error("Missing arguments")
+
+  // metamask exports private key without the 0x in front of it
+  // pjs keyring & crypto api will throw if it's missing
+  if (type === "ethereum" && isValidEthPrivateKey(secret))
+    return secret.startsWith("0x") ? secret : `0x${secret}`
+
+  if (await testValidMnemonic(secret))
+    return type === "ethereum" ? `${secret}${ETHEREUM_DERIVATION_PATH}` : secret
+  throw new Error("Invalid secret phrase")
+}
+
+const testNoDuplicate = async (
+  mnemonic: string,
+  allAccountsAddresses: string[],
+  type: AccountAddressType
+) => {
+  try {
+    const uri = await getAccountUri(mnemonic, type)
+    const address = await api.addressFromMnemonic(uri, type)
+    return !allAccountsAddresses.includes(address)
+  } catch (err) {
+    return false
+  }
+}
+
+const testValidMnemonic = async (val: string) => {
+  // Don't bother calling the api if the mnemonic isn't the right length to reduce Sentry noise
+  if (!Boolean(val) || ![12, 24].includes(val.split(" ").length)) return false
+  return await api.accountValidateMnemonic(val)
 }
 
 export const AccountAddSecretMnemonic = () => {
@@ -59,61 +168,95 @@ export const AccountAddSecretMnemonic = () => {
     () =>
       yup
         .object({
+          name: yup.string().trim().required(""),
+          type: yup.string().required("").oneOf(["ethereum", "sr25519"]),
           multi: yup.boolean(),
           mnemonic: yup
             .string()
             .trim()
             .required("")
             .transform(cleanupMnemonic)
-            .test("is-valid-mnemonic2", "Invalid secret", async (val) => {
-              try {
-                const address = await api.addressFromMnemonic(
-                  mnemonicUri(val as string, data.type!),
-                  data.type
+            .when("type", {
+              is: "ethereum",
+              then: yup
+                .string()
+                .test(
+                  "is-valid-mnemonic-ethereum",
+                  "Invalid secret",
+                  (val) => isValidEthPrivateKey(val) || testValidMnemonic(val!)
                 )
-                return address.length > 0
-              } catch (err) {
-                return false
-              }
-            })
-            .when("multi", {
-              is: false,
-              then: yup.string().test("not-duplicate", "Account already exists", async (val) => {
-                try {
-                  return (
-                    "false" === yup.ref<boolean>("multi").toString() ||
-                    !accountAddresses.includes(
-                      await api.addressFromMnemonic(
-                        mnemonicUri(val as string, data.type!),
-                        data.type
-                      )
-                    )
-                  )
-                } catch (err) {
-                  return false
-                }
-              }),
+                .when("multi", {
+                  is: false,
+                  then: yup
+                    .string()
+                    .test("not-duplicate-ethereum", "Account already exists", async (val) =>
+                      testNoDuplicate(val!, accountAddresses, "ethereum")
+                    ),
+                }),
+              otherwise: yup
+                .string()
+                .test("is-valid-mnemonic-sr25519", "Invalid secret", (val) =>
+                  testValidMnemonic(val!)
+                )
+                .when("multi", {
+                  is: false,
+                  then: yup
+                    .string()
+                    .test("not-duplicate-sr25519", "Account already exists", async (val) =>
+                      testNoDuplicate(val!, accountAddresses, "sr25519")
+                    ),
+                }),
             }),
         })
         .required(),
-    [data.type, accountAddresses]
+    [accountAddresses]
   )
 
   const {
     register,
     handleSubmit,
+    setValue,
     watch,
     formState: { errors, isValid, isSubmitting },
-    trigger,
   } = useForm<FormData>({
     defaultValues: data,
     mode: "onChange",
     resolver: yupResolver(schema),
   })
 
+  const { type, mnemonic } = watch()
+
+  const isPrivateKey = useMemo(
+    () => type === "ethereum" && isValidEthPrivateKey(mnemonic),
+    [mnemonic, type]
+  )
+  useEffect(() => {
+    if (isPrivateKey) setValue("multi", false, { shouldValidate: true })
+  }, [isPrivateKey, setValue])
+
+  const words = useMemo(
+    () => cleanupMnemonic(mnemonic).split(" ").filter(Boolean).length ?? 0,
+    [mnemonic]
+  )
+
+  const [targetAddress, setTargetAddress] = useState<string>()
+
+  useEffect(() => {
+    const refreshTargetAddress = async () => {
+      try {
+        const uri = await getAccountUri(mnemonic, type)
+        setTargetAddress(await api.addressFromMnemonic(uri, type))
+      } catch (err) {
+        setTargetAddress(undefined)
+      }
+    }
+
+    refreshTargetAddress()
+  }, [isValid, mnemonic, type])
+
   const submit = useCallback(
-    async ({ mnemonic, multi }: FormData) => {
-      updateData({ mnemonic, multi })
+    async ({ type, name, mnemonic, multi }: FormData) => {
+      updateData({ type, name, mnemonic, multi })
       if (multi) navigate("../accounts")
       else {
         notification.processing({
@@ -122,8 +265,8 @@ export const AccountAddSecretMnemonic = () => {
           timeout: null,
         })
         try {
-          const name = data.type! === "ethereum" ? "Ethereum Account" : "Polkadot Account"
-          await api.accountCreateFromSeed(name, mnemonicUri(mnemonic, data.type!), data.type!)
+          const uri = await getAccountUri(mnemonic, type)
+          await api.accountCreateFromSeed(name, uri, type)
           notification.success({
             title: "Account imported",
             subtitle: name,
@@ -137,40 +280,77 @@ export const AccountAddSecretMnemonic = () => {
         }
       }
     },
-    [data.type, navigate, notification, updateData]
+    [navigate, notification, updateData]
   )
 
-  const mnemonic = watch("mnemonic")
-  const words = useMemo(
-    () => cleanupMnemonic(mnemonic).split(" ").filter(Boolean).length ?? 0,
-    [mnemonic]
+  const handleTypeChange = useCallback(
+    (type: AccountAddressType) => {
+      setValue("type", type, { shouldValidate: true })
+    },
+    [setValue]
   )
 
-  const multi = watch("multi")
-  useEffect(() => {
-    trigger("mnemonic")
-  }, [multi, trigger])
+  const handleGenerateNew = useCallback(() => {
+    setValue("mnemonic", Wallet.createRandom().mnemonic.phrase, { shouldValidate: true })
+  }, [setValue])
 
   return (
     <Container withBack centered>
       <HeaderBlock
-        title={`Import ${data?.type === "ethereum" ? "Ethereum" : "Polkadot"} accounts`}
-        text="Please enter your 12 or 24 word seed phrase seperated by a space."
+        title="Choose account type"
+        text="What type of account would you like to import ?"
       />
+      <Spacer small />
+      <AccountTypeSelector defaultType={data.type} onChange={handleTypeChange} />
       <Spacer />
-      <form data-button-pull-left onSubmit={handleSubmit(submit)}>
+      <form
+        className={classNames(type && "show")}
+        data-button-pull-left
+        onSubmit={handleSubmit(submit)}
+      >
+        <FormField
+          error={errors.name}
+          suffix={
+            targetAddress ? (
+              <div>
+                <AccountAvatar address={targetAddress} />
+              </div>
+            ) : null
+          }
+        >
+          <input
+            {...register("name")}
+            placeholder="Choose a name"
+            spellCheck={false}
+            autoComplete="off"
+            autoFocus
+            data-lpignore
+          />
+        </FormField>
+        <Spacer small />
         <FormField error={errors.mnemonic} extra={`Word count : ${words}`}>
           <textarea
             {...register("mnemonic")}
-            placeholder="Enter your 12 or 24 word Secret Phrase"
+            placeholder={`Enter your 12 or 24 word Secret Phrase${
+              type === "ethereum" ? " or private key" : ""
+            }`}
             rows={5}
             data-lpignore
             spellCheck={false}
           />
+          {/* Waiting for designers validation for this feature, but it's ready ! */}
+          {/* <div className="mnemonic-buttons">
+            <button type="button" onClick={handleGenerateNew}>
+              Generate New
+            </button>
+          </div> */}
         </FormField>
-        <Spacer />
-        <Checkbox {...register("multi")}>Import multiple accounts from this secret phrase</Checkbox>
         <Spacer small />
+        <Spacer small />
+        <Checkbox {...register("multi")} className={classNames(isPrivateKey && "invisible")}>
+          Import multiple accounts from this secret phrase
+        </Checkbox>
+        <Spacer />
         <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
           Import
         </SimpleButton>

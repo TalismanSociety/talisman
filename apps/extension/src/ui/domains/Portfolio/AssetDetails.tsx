@@ -1,8 +1,8 @@
 import { Balances } from "@core/types"
 import { Box } from "@talisman/components/Box"
 import { classNames } from "@talisman/util/classNames"
-import { useSharedChainsCache, useSharedTokensCache } from "@ui/hooks/useBalances"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
+import { useHydrateBalances } from "@ui/hooks/useHydrateBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import { Fragment, useMemo } from "react"
 import styled from "styled-components"
@@ -177,24 +177,24 @@ type AssetsTableProps = {
 
 export const AssetDetails = ({ balances }: AssetsTableProps) => {
   const balancesToDisplay = useDisplayBalances(balances)
-
-  const getChain = useSharedChainsCache()
-  const getToken = useSharedTokensCache()
+  const hydrate = useHydrateBalances()
 
   const balancesByChain = useMemo(() => {
-    const chainIds = [...new Set(balancesToDisplay.sorted.map((b) => b.chainId))]
-    const hydrate = { chain: getChain, token: getToken }
+    const chainIds = [...new Set(balancesToDisplay.sorted.map((b) => b.chainId))].filter(
+      (cid) => cid !== undefined
+    )
+    //const hydrate = { chain: getChain, token: getToken }
     return chainIds.reduce(
       (acc, chainId) => ({
         ...acc,
-        [chainId]: new Balances(
+        [chainId!]: new Balances(
           balancesToDisplay.sorted.filter((b) => b.chainId === chainId),
           hydrate
         ),
       }),
       {} as Record<number, Balances>
     )
-  }, [balancesToDisplay.sorted, getChain, getToken])
+  }, [balancesToDisplay.sorted, hydrate])
 
   return (
     <Table>

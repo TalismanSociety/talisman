@@ -1,6 +1,6 @@
 // Compliant with https://eips.ethereum.org/EIPS/eip-1193
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import type { AddEthereumChainParameter } from "@core/types"
+import type { AddEthereumChainParameter, WatchAssetBase } from "@core/types"
 import EventEmitter from "events"
 import { BigNumberish } from "@ethersproject/bignumber"
 import { BlockWithTransactions } from "@ethersproject/abstract-provider"
@@ -83,6 +83,9 @@ export interface EthRequestSignatures {
   // eth_getFilterChanges: [any, any]
   // eth_getFilterLogs: [any, any]
   // eth_getLogs: [any, any]
+
+  // EIP 747 https://github.com/ethereum/EIPs/blob/master/EIPS/eip-747.md
+  wallet_watchAsset: [WatchAssetBase, string]
 
   // pending EIP https://eips.ethereum.org/EIPS/eip-3085, defined by metamask to let dapp add chains.
   // returns `null` if the request was successful, otherwise throws an error.

@@ -87,7 +87,7 @@ export const EnterPass = () => {
       try {
         const { password, passwordConfirm } = fields
         await createAccount(password as string, passwordConfirm as string)
-        navigate("/complete")
+        navigate("/analytics")
       } catch (err) {
         setError(`Failed to create the account : ${(err as Error)?.message ?? ""}`)
       }

@@ -1,5 +1,5 @@
 import Settings from "@ui/domains/Settings"
-import Layout from "../layout"
+import Layout from "@ui/apps/dashboard/layout"
 
 const AccountIndex = () => (
   <Layout centered withBack>

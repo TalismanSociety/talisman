@@ -53,7 +53,9 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
   const { chainId, chainIds } = useMemo(() => {
     const { sorted } = balances
     const { chainId } = sorted[0]
-    const chainIds = [...new Set(sorted.filter((b) => b.total.planck > 0).map((b) => b.chainId))]
+    const chainIds = [
+      ...new Set(sorted.filter((b) => b.total.planck > 0).map((b) => b.chainId)),
+    ] as string[]
     return { chainId, chainIds }
   }, [balances])
 

@@ -12,7 +12,7 @@ const TRUE: LOGGEDIN_TRUE = "TRUE"
 const FALSE: LOGGEDIN_FALSE = "FALSE"
 
 export type LoggedInType = LOGGEDIN_TRUE | LOGGEDIN_FALSE | LOGGEDIN_UNKNOWN
-class PasswordStore {
+export class PasswordStore {
   #password?: string = undefined
   isLoggedIn = new BehaviorSubject<LoggedInType>(this.hasPassword ? TRUE : FALSE)
 

@@ -10,7 +10,7 @@ import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
 import { ReactComponent as IconGlobe } from "@talisman/theme/icons/globe.svg"
 import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
 import { ReactComponent as IconList } from "@talisman/theme/icons/list.svg"
-import Layout from "../layout"
+import Layout from "@ui/apps/dashboard/layout"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -34,6 +34,12 @@ const Settings = () => {
           title="Trusted Sites"
           subtitle="Manage the sites that have access to your accounts"
           to={`/settings/connected-sites`}
+        />
+        <CtaButton
+          icon={<IconList />}
+          title="Manage cutom tokens"
+          subtitle="Add or delete custom ERC20 tokens"
+          to={`/tokens`}
         />
         <CtaButton
           icon={<IconList />}

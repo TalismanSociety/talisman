@@ -19,6 +19,8 @@ import { isEthereumRequest } from "@core/util/isEthereumRequest"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { useEthNetworkAddRequests } from "@ui/hooks/useEthNetworkAddRequests"
 import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
+import { useEthWatchAssetRequests } from "@ui/hooks/useEthWatchAssetRequests"
+import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 
 const Popup = () => {
   const isOnboarded = useIsOnboarded()
@@ -27,6 +29,7 @@ const Popup = () => {
   const signingRequests = useSigningRequests()
   const authRequests = useAuthRequests()
   const ethNetworkAddRequests = useEthNetworkAddRequests()
+  const ethWatchAssetRequests = useEthWatchAssetRequests()
   const navigate = useNavigate()
 
   // determine route based on the incoming message
@@ -34,6 +37,7 @@ const Popup = () => {
   useEffect(() => {
     if (authRequests.length > 0) navigate("/auth")
     else if (ethNetworkAddRequests.length > 0) navigate("/eth-network-add")
+    else if (ethWatchAssetRequests.length > 0) navigate("/eth-watchasset")
     else if (metaDataRequests.length > 0) navigate("/metadata")
     else if (signingRequests.length > 0) {
       const params = new URL(window.location.href).searchParams
@@ -53,6 +57,7 @@ const Popup = () => {
     navigate,
     ethNetworkAddRequests,
     signingRequests.length,
+    ethWatchAssetRequests,
   ])
 
   // force onboarding if not onboarded
@@ -87,6 +92,7 @@ const Popup = () => {
             <Route path="sign/:id" element={<SignRequest />}></Route>
             <Route path="metadata" element={<Metadata />}></Route>
             <Route path="eth-network-add" element={<AddEthereumNetwork />}></Route>
+            <Route path="eth-watchasset" element={<AddCustomErc20Token />}></Route>
             {/* Not used for now */}
             {/* <Route path="tx/:id" element={<Transaction />}></Route> */}
             <Route path="*" element={<Navigate to="/" replace />} />

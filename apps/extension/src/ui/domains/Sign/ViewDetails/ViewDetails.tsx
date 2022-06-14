@@ -1,23 +1,24 @@
-import { FC, useMemo } from "react"
-import styled from "styled-components"
 import {
   BalanceFormatter,
-  SignerPayloadRaw,
   SignerPayloadJSON,
+  SignerPayloadRaw,
   SigningRequest,
   TransactionDetails,
 } from "@core/types"
+import { encodeAnyAddress } from "@core/util"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
 import useToken from "@ui/hooks/useToken"
-import { ViewDetailsTxArgs } from "./ViewDetailsTxArgs"
-import { ViewDetailsButton } from "./ViewDetailsButton"
-import { ViewDetailsField } from "./ViewDetailsField"
-import { encodeAnyAddress } from "@core/util"
-import { ViewDetailsTxDesc } from "./ViewDetailsTxDesc"
+import { FC, useEffect, useMemo } from "react"
+import styled from "styled-components"
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAmount } from "./ViewDetailsAmount"
+import { ViewDetailsButton } from "./ViewDetailsButton"
+import { ViewDetailsField } from "./ViewDetailsField"
+import { ViewDetailsTxArgs } from "./ViewDetailsTxArgs"
+import { ViewDetailsTxDesc } from "./ViewDetailsTxDesc"
 
 const ViewDetailsContainer = styled.div`
   background: var(--color-background);
@@ -73,6 +74,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   txDetails,
   txDetailsError,
 }) => {
+  useAnalyticsGenericEvent("open sign transaction view details", { type: "substrate" })
+
   const { request, account, chain } = usePolkadotSigningRequest(signingRequest)
   const nativeToken = useToken(chain?.nativeToken?.id)
 

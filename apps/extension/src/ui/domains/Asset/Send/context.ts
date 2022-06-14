@@ -1,11 +1,14 @@
-import { Balance, BalanceFormatter, BalanceStorage, Token } from "@core/types"
+import { Balance, BalanceFormatter, BalanceStorage, Balances, Token } from "@core/types"
+import { tokensToPlanck } from "@core/util/tokensToPlanck"
 import { assert } from "@polkadot/util"
 import { provideContext } from "@talisman/util/provideContext"
-import { tokensToPlanck } from "@core/util/tokensToPlanck"
 import { api } from "@ui/api"
+import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
+import { chainUsesOrmlForNativeToken } from "@ui/hooks/useChainsTokens"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback, useMemo, useState } from "react"
+
 import { SendTokensExpectedResult, SendTokensInputs, TokenAmountInfo } from "./types"
 
 type Props = {
@@ -22,17 +25,35 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   const chains = useChains()
   const tokens = useTokens()
+  const chainsMap = useMemo(
+    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
+    [chains]
+  )
+  const tokensMap = useMemo(
+    () => Object.fromEntries((tokens || []).map((token) => [token.id, token])),
+    [tokens]
+  )
+
+  // nonEmptyBalances is needed in order to detect chains who use the orml pallet for their native token
+  const balances = useBalances()
+  const nonEmptyBalances = useMemo(
+    () =>
+      balances ? balances.find((balance) => balance.free.planck > BigInt("0")) : new Balances([]),
+    [balances]
+  )
 
   const check = useCallback(
     async (newData: SendTokensInputs, allowReap: boolean = false) => {
       const { amount, tokenId, from, to, tip } = newData
 
-      const token = tokens[tokenId]
+      const token = tokensMap[tokenId]
       if (!token) throw new Error("Token not found")
-      const { chainId } = token
-      const chain = chains[chainId]
+      // TODO: Support evm tokens who have an evmNetwork instead of a chainId
+      const chainId = token.chain?.id
+      if (!chainId) throw new Error("Chain not found")
+      const chain = chainsMap[chainId]
       if (!chain) throw new Error("Chain not found")
-      const nativeToken = chain.nativeToken ? tokens[chain.nativeToken.id] : token
+      const nativeToken = chain.nativeToken ? tokensMap[chain.nativeToken.id] : token
       const tokenIsNativeToken = tokenId === chain.nativeToken?.id
 
       // load all balances at once
@@ -54,7 +75,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         symbol: token.symbol,
         decimals: token.decimals,
         existentialDeposit: new BalanceFormatter(
-          token.existentialDeposit ?? "0",
+          ("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0",
           token.decimals,
           token.rates
         ),
@@ -87,7 +108,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         symbol: nativeToken.symbol,
         decimals: nativeToken.decimals,
         existentialDeposit: new BalanceFormatter(
-          nativeToken.existentialDeposit ?? "0",
+          ("existentialDeposit" in nativeToken ? nativeToken.existentialDeposit : "0") ?? "0",
           nativeToken.decimals,
           nativeToken.rates
         ),
@@ -107,12 +128,15 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
         // existential deposit?
         const remaining = balance.total.planck - cost.planck
-        if (remaining < BigInt(token.existentialDeposit ?? "0"))
+        if (
+          remaining <
+          BigInt(("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0")
+        )
           forfeits.push({
             symbol: token.symbol,
             decimals: token.decimals,
             existentialDeposit: new BalanceFormatter(
-              token.existentialDeposit ?? "0",
+              ("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0",
               token.decimals,
               token.rates
             ),
@@ -120,7 +144,14 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
           })
       }
 
-      if (token.id === nativeToken.id) {
+      const nativeTokenIsOrmlToken =
+        token.chain?.id !== undefined &&
+        chainUsesOrmlForNativeToken(nonEmptyBalances, token.chain?.id, nativeToken)
+
+      if (
+        token.id === nativeToken.id ||
+        (nativeTokenIsOrmlToken && token.symbol === nativeToken.symbol)
+      ) {
         // fees and transfer on token (which is also nativeToken)
         testToken(
           token,
@@ -150,7 +181,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         unsigned,
       })
     },
-    [chains, tokens]
+    [chainsMap, nonEmptyBalances, tokensMap]
   )
 
   // this makes user return to the first screen of the wizard
@@ -163,10 +194,12 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   const send = useCallback(async () => {
     const { amount, tokenId, from, to, tip } = formData as SendTokensInputs
 
-    const token = tokens[tokenId]
+    const token = tokensMap[tokenId]
     if (!token) throw new Error("Token not found")
-    const { chainId } = token
-    const chain = chains[chainId]
+    // TODO: Support evm tokens who have an evmNetwork instead of a chainId
+    const chainId = token.chain?.id
+    if (!chainId) throw new Error("Chain not found")
+    const chain = chainsMap[chainId]
     if (!chain) throw new Error("Chain not found")
 
     const { id } = await api.assetTransfer(
@@ -179,7 +212,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       hasAcceptedForfeit
     )
     setTransactionId(id)
-  }, [chains, formData, hasAcceptedForfeit, tokens])
+  }, [chainsMap, formData, hasAcceptedForfeit, tokensMap])
 
   // execute the TX
   const sendWithSignature = useCallback(

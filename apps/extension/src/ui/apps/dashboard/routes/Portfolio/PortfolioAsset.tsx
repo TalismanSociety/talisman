@@ -60,7 +60,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
               </BackButton>
               <Box flex align="center" gap={0.8}>
                 <Box fontsize="large">
-                  <StyledAssetLogo id={token?.chainId} />
+                  <StyledAssetLogo id={token.id} />
                 </Box>
                 <Box fontsize="medium">{token.symbol}</Box>
               </Box>

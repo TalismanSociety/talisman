@@ -1,15 +1,16 @@
-import { lazy, Suspense, useEffect, useRef } from "react"
-import { Route, Routes, Navigate } from "react-router-dom"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
-import AccountIndex from "./routes/AccountIndex"
-import AccountAddTypePicker from "./routes/AccountAddTypePicker"
+import { Suspense, lazy, useEffect, useRef } from "react"
+import { Navigate, Route, Routes } from "react-router-dom"
+
 import AccountAddDerived from "./routes/AccountAddDerived"
 import AccountAddJson from "./routes/AccountAddJson"
 import { AccountAddSecret } from "./routes/AccountAddSecret"
-import SitesConnected from "./routes/SitesConnected"
+import AccountAddTypePicker from "./routes/AccountAddTypePicker"
+import AccountIndex from "./routes/AccountIndex"
+import { CustomTokenAdd } from "./routes/CustomTokens/CustomTokenAdd"
+import { CustomTokenDetails } from "./routes/CustomTokens/CustomTokenDetails"
+import { CustomTokens } from "./routes/CustomTokens/CustomTokens"
 import Settings from "./routes/Settings"
-import Options from "./routes/Options"
-import SecurityPrivacySettings from "./routes/SecurityPrivacySettings"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import About from "./routes/About"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -23,6 +24,10 @@ import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormat
 import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { PortfolioAsset } from "./routes/Portfolio/PortfolioAsset"
+import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
+import Options from "./routes/Settings/Options"
+import SecurityPrivacySettings from "./routes/Settings/SecurityPrivacySettings"
+import SitesConnected from "./routes/Settings/SitesConnected"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
 const AccountAddLedger = lazy(() => import("./routes/AccountAddLedger"))
@@ -78,6 +83,12 @@ const DashboardInner = () => {
           <Route path="security-privacy-settings" element={<SecurityPrivacySettings />} />
           <Route path="options" element={<Options />} />
           <Route path="about" element={<About />} />
+          <Route path="analytics" element={<AnalyticsOptIn />} />
+        </Route>
+        <Route path="tokens">
+          <Route path="" element={<CustomTokens />} />
+          <Route path="add" element={<CustomTokenAdd />} />
+          <Route path=":id" element={<CustomTokenDetails />} />
         </Route>
         <Route path="*" element={<Navigate to="/portfolio" replace />} />
       </Routes>

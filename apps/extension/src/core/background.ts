@@ -11,7 +11,7 @@ import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import Browser, { Runtime } from "webextension-polyfill"
 import * as Sentry from "@sentry/browser"
-import { initSentry } from "@core/sentry"
+import { initSentry } from "@core/config/sentry"
 import { consoleOverride } from "@core/util/logging"
 import talismanHandler from "./handlers"
 
