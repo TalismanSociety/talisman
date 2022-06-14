@@ -8,6 +8,7 @@ import type {
 } from "@core/types"
 import { assert } from "@polkadot/util"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { db } from "@core/libs/db"
 
 export default class MetadataHandler extends ExtensionHandler {
   private async metadataApprove({ id }: RequestMetadataApprove): Promise<boolean> {
@@ -17,7 +18,7 @@ export default class MetadataHandler extends ExtensionHandler {
 
     const { request, resolve } = queued
 
-    await this.stores.meta.setItem(request)
+    await db.metadata.put(request)
 
     resolve(true)
 

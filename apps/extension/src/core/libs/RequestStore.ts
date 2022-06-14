@@ -47,12 +47,12 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
     this.observable.next(this.getAllRequests())
   }
 
-  protected createRequest(requestOptions: Omit<TRequest, "id">): Promise<TResponse> {
-    const id = v4()
+  protected createRequest(requestOptions: Omit<TRequest, "id"> | TRequest): Promise<TResponse> {
+    const id = requestOptions.id ?? v4()
     return new Promise((resolve, reject): void => {
       const newRequest = {
-        id,
         ...requestOptions,
+        id,
       } as TRequest
       this.requests[id] = {
         ...newRequest,

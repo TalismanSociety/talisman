@@ -274,7 +274,7 @@ const useDerivedAccounts = (
 
   const balanceParams = useMemo(() => {
     const chainIds = type === "ethereum" ? ["moonbeam", "moonriver"] : ["polkadot", "kusama"]
-    const testChains = Object.values(chains).filter((chain) => chainIds.includes(chain.id))
+    const testChains = (chains || []).filter((chain) => chainIds.includes(chain.id))
 
     return testChains.reduce(
       (prev, curr) => ({

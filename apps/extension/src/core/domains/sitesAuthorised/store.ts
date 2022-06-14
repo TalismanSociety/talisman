@@ -7,7 +7,7 @@ import { assert } from "@polkadot/util"
 
 const OLD_AUTH_URLS_KEY = "authUrls"
 
-class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
+export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
   AuthorizedSites,
   "pri(sites.subscribe)",
   "pri(sites.byid.subscribe)"

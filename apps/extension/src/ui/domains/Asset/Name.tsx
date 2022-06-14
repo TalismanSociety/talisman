@@ -13,7 +13,7 @@ interface IAssetName extends IAssetNameOptions {
 const AssetName = ({ balance, withChain, className }: IAssetName) => (
   <div className={`${className} chain-name`}>
     <div className="asset-name">{balance.token?.symbol}</div>
-    {!!withChain && <div className="chain-name">{balance.chain?.name}</div>}
+    {!!withChain && <div className="chain-name">{(balance.chain || balance.evmNetwork)?.name}</div>}
   </div>
 )
 

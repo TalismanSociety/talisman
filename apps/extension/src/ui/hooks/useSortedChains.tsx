@@ -1,13 +1,11 @@
+import { Chain } from "@core/types"
 import { useMemo } from "react"
-import useChains from "./useChains"
+import useChains from "@ui/hooks/useChains"
 
-const useSortedChains = () => {
+const sortChains = (a: Chain, b: Chain) =>
+  (a.sortIndex || Number.MAX_SAFE_INTEGER) - (b.sortIndex || Number.MAX_SAFE_INTEGER)
+
+export const useSortedChains = () => {
   const chains = useChains()
-
-  return useMemo(
-    () => Object.values(chains).sort((a, b) => (a.sortIndex || 0) - (b.sortIndex || 0)),
-    [chains]
-  )
+  return useMemo(() => (chains || []).sort(sortChains), [chains])
 }
-
-export default useSortedChains

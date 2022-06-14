@@ -28,7 +28,7 @@ const DEFAULT_VALUE = {
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
 }
 
-class AppStore extends SubscribableStorageProvider<
+export class AppStore extends SubscribableStorageProvider<
   AppStoreData,
   "pri(app.onboardStatus.subscribe)"
 > {

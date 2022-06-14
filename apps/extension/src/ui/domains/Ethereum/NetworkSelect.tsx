@@ -1,6 +1,6 @@
-import { EthereumNetwork } from "@core/types"
+import { CustomEvmNetwork, EvmNetwork } from "@core/types"
 import { Dropdown } from "@talisman/components/Dropdown"
-import { useEthereumNetworks } from "@ui/hooks/useEthereumNetworks"
+import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
 import globeIcon from "@talisman/theme/icons/globe.white.svg"
@@ -12,11 +12,13 @@ const NetworkItem = styled.div`
 `
 
 type NetworkSelectProps = {
-  defaultChainId: number
-  onChange: (chainId: number) => void
+  placeholder?: string
+  defaultChainId?: number
+  onChange?: (chainId: number) => void
+  disabled?: boolean
 }
 
-const renderNetwork = (network: EthereumNetwork) => {
+const renderNetwork = (network: EvmNetwork | CustomEvmNetwork) => {
   return (
     <NetworkItem>
       <NetworkLogo ethChainId={network.id} />
@@ -25,10 +27,15 @@ const renderNetwork = (network: EthereumNetwork) => {
   )
 }
 
-export const NetworkSelect = ({ defaultChainId, onChange }: NetworkSelectProps) => {
-  const networks = useEthereumNetworks()
+export const NetworkSelect = ({
+  placeholder,
+  defaultChainId,
+  onChange,
+  disabled,
+}: NetworkSelectProps) => {
+  const networks = useSortedEvmNetworks()
 
-  const [selected, setSelected] = useState<EthereumNetwork | undefined>(
+  const [selected, setSelected] = useState<EvmNetwork | CustomEvmNetwork | undefined>(
     networks.find((n) => n.id === defaultChainId)
   )
 
@@ -42,10 +49,10 @@ export const NetworkSelect = ({ defaultChainId, onChange }: NetworkSelectProps) 
   }, [defaultChainId, networks, selected])
 
   const handleChange = useCallback(
-    (item: EthereumNetwork | null) => {
+    (item: EvmNetwork | CustomEvmNetwork | null) => {
       if (!item) return
       setSelected(item)
-      onChange(item.id)
+      if (onChange) onChange(item.id)
     },
     [onChange]
   )
@@ -53,12 +60,14 @@ export const NetworkSelect = ({ defaultChainId, onChange }: NetworkSelectProps) 
   return (
     <Dropdown
       // change key to ensure re-render when loaded
+      placeholder={placeholder}
       key={selected?.id}
       items={networks}
       propertyKey="id"
       renderItem={renderNetwork}
       defaultSelectedItem={selected}
       onChange={handleChange}
+      disabled={disabled}
     />
   )
 }

@@ -8,6 +8,7 @@ import { ViewDetailsField } from "./ViewDetailsField"
 import { useEthSignRequest } from "../SignRequestContext"
 import { formatEther } from "ethers/lib/utils"
 import { BigNumberish } from "ethers"
+import useToken from "@ui/hooks/useToken"
 
 const ViewDetailsContainer = styled.div`
   background: var(--color-background);
@@ -60,7 +61,7 @@ type AddressProps = {
 }
 const Address = ({ address }: AddressProps) => {
   const { network } = useEthSignRequest()
-  const blockExplorerUrl = useMemo(() => network?.explorerUrls?.[0], [network?.explorerUrls])
+  const blockExplorerUrl = useMemo(() => network?.explorerUrl, [network?.explorerUrl])
 
   if (!address) return null
 
@@ -76,11 +77,12 @@ const Address = ({ address }: AddressProps) => {
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
   const { request, network, gasInfo, priority } = useEthSignRequest()
 
+  const nativeToken = useToken(network?.nativeToken?.id)
   const formatEthValue = useCallback(
     (value?: BigNumberish) => {
-      return value ? `${formatEther(value)} ${network?.nativeToken?.symbol ?? ""}` : null
+      return value ? `${formatEther(value)} ${nativeToken?.symbol ?? ""}` : null
     },
-    [network?.nativeToken?.symbol]
+    [nativeToken?.symbol]
   )
 
   return (

@@ -1,4 +1,4 @@
-import { BalanceFormatter, Token } from "@core/types"
+import { Balance, BalanceFormatter, Token } from "@core/types"
 import { Checkbox } from "@talisman/components/Checkbox"
 import { classNames } from "@talisman/util/classNames"
 import useChain from "@ui/hooks/useChain"
@@ -135,11 +135,13 @@ const useLedgerChainAccounts = (chainId: string, selectedAccounts: LedgerAccount
     try {
       const accountIndex = ledgerAccounts.length
       const { address } = await ledger.getAddress(false, accountIndex, 0)
-      const balance = await api.getBalance({
-        address,
-        chainId: chain.id,
-        tokenId: token.id,
-      })
+      const balance = new Balance(
+        await api.getBalance({
+          address,
+          chainId: chain.id,
+          tokenId: token.id,
+        })
+      )
 
       if (!balance) throw new Error("Failed to load account balance.")
 
@@ -149,12 +151,8 @@ const useLedgerChainAccounts = (chainId: string, selectedAccounts: LedgerAccount
         addressOffset: 0,
         address,
         name: `Ledger ${chain.chainName} ${accountIndex + 1}`,
-        balance: new BalanceFormatter(
-          BigInt(balance.free) + BigInt(balance.reserved),
-          token.decimals,
-          token.rates
-        ),
-        empty: BigInt(balance.free) + BigInt(balance.reserved) === BigInt(0),
+        balance: balance.total,
+        empty: balance.total.planck === BigInt(0),
       }
       setLedgerAccounts((prev) => [...prev, newAccount])
     } catch (err) {

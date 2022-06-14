@@ -37,6 +37,12 @@ const Settings = () => {
         />
         <CtaButton
           icon={<IconList />}
+          title="Manage cutom tokens"
+          subtitle="Add or delete custom ERC20 tokens"
+          to={`/tokens`}
+        />
+        <CtaButton
+          icon={<IconList />}
           title="Extension Options"
           subtitle="Customise your extension experience"
           to={`/settings/options`}

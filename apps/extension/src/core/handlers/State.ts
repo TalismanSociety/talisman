@@ -9,6 +9,7 @@ import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sites
 import { RequestRoute } from "@core/types"
 import { appStore } from "@core/domains/app"
 import EthereumNetworksRequestsStore from "@core/domains/ethereum/requestsStore.networks"
+import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
 
 const WINDOW_OPTS: Browser.Windows.CreateCreateDataType = {
   // This is not allowed on FF, only on Chrome - disable completely
@@ -56,6 +57,7 @@ export default class State {
       }
     ),
     networks: new EthereumNetworksRequestsStore((req) => this.popupOpen()),
+    evmAssets: new EvmWatchAssetRequestsStore(() => this.popupOpen()),
   }
 
   #windows: number[] = []

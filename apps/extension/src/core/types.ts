@@ -207,10 +207,8 @@ export interface RequestSignatures extends Omit<PolkadotRequestSignatures, Remov
   "pri(accounts.validateMnemonic)": [string, boolean]
 
   // balance message signatures
-  "pri(balances)": [null, any]
-  "pri(balances.subscribe)": [null, boolean, BalancesUpdate]
-  "pri(balances.byid.subscribe)": [RequestIdOnly, boolean, BalanceStorage]
   "pri(balances.get)": [RequestBalance, BalanceStorage]
+  "pri(balances.subscribe)": [null, boolean, boolean]
   "pri(balances.byparams.subscribe)": [RequestBalancesByParamsSubscribe, boolean, BalancesUpdate]
 
   // authorized sites message signatures
@@ -240,16 +238,20 @@ export interface RequestSignatures extends Omit<PolkadotRequestSignatures, Remov
   "pri(assets.transfer.approveSign)": [RequestAssetTransferApproveSign, ResponseAssetTransfer]
 
   // chain message signatures
-  "pri(chains)": [null, ChainList]
-  "pri(chains.byid)": [RequestIdOnly, Chain]
-  "pri(chains.subscribe)": [null, boolean, ChainList]
-  "pri(chains.byid.subscribe)": [RequestIdOnly, boolean, Chain]
+  "pri(chains.subscribe)": [null, boolean, boolean]
 
   // token message signatures
-  "pri(tokens)": [null, TokenList]
-  "pri(tokens.byid)": [RequestIdOnly, Token]
-  "pri(tokens.subscribe)": [null, boolean, TokenList]
-  "pri(tokens.byid.subscribe)": [RequestIdOnly, boolean, Token]
+  "pri(tokens.subscribe)": [null, boolean, boolean]
+
+  // custom erc20 token management
+  "pri(tokens.erc20.custom)": [null, Record<CustomErc20Token["id"], CustomErc20Token>]
+  "pri(tokens.erc20.custom.byid)": [RequestIdOnly, CustomErc20Token]
+  "pri(tokens.erc20.custom.add)": [CustomErc20TokenCreate, boolean]
+  "pri(tokens.erc20.custom.remove)": [RequestIdOnly, boolean]
+  "pri(tokens.erc20.custom.clear)": [
+    { chainId?: ChainId; evmNetworkId?: number } | undefined,
+    boolean
+  ]
 
   // transaction message signatures
   "pri(transactions.byid.subscribe)": [RequestIdOnly, boolean, any]
@@ -266,18 +268,20 @@ export interface RequestSignatures extends Omit<PolkadotRequestSignatures, Remov
   "pri(eth.signing.cancel)": [RequestIdOnly, boolean]
   "pri(eth.signing.approveSign)": [RequestIdOnly, boolean]
   "pri(eth.signing.approveSignAndSend)": [EthApproveSignAndSend, boolean]
-  // eth add networks management
+  // eth add networks requests management
+  // TODO change naming for network add requests, and maybe delete the first one
   "pri(eth.networks.add.requests)": [null, AddEthereumChainRequest[]]
   "pri(eth.networks.add.approve)": [RequestIdOnly, boolean]
   "pri(eth.networks.add.cancel)": [RequestIdOnly, boolean]
   "pri(eth.networks.add.subscribe)": [null, boolean, AddEthereumChainRequest[]]
+  // eth watchassets requests  management
+  "pri(eth.watchasset.requests.approve)": [RequestIdOnly, boolean]
+  "pri(eth.watchasset.requests.cancel)": [RequestIdOnly, boolean]
+  "pri(eth.watchasset.requests.subscribe)": [null, boolean, WatchAssetRequest[]]
 
   // ethereum networks message signatures
-  "pri(eth.networks)": [null, EthereumNetworkList]
-  "pri(eth.networks.byid)": [RequestIdOnly, EthereumNetwork]
-  "pri(eth.networks.subscribe)": [null, boolean, EthereumNetworkList]
-  "pri(eth.networks.byid.subscribe)": [RequestIdOnly, boolean, EthereumNetwork]
-  "pri(eth.networks.add.custom)": [EthereumNetwork, boolean]
+  "pri(eth.networks.subscribe)": [null, boolean, boolean]
+  "pri(eth.networks.add.custom)": [CustomEvmNetwork, boolean]
   "pri(eth.networks.removeCustomNetwork)": [RequestIdOnly, boolean]
   "pri(eth.networks.clearCustomNetworks)": [null, boolean]
 }
@@ -434,8 +438,8 @@ export type ChainId = string
 
 export type Chain = {
   id: ChainId // The ID of this chain
-  sortIndex: number | null // The sortIndex of this chain
   isTestnet: boolean // Is this chain a testnet?
+  sortIndex: number | null // The sortIndex of this chain
   genesisHash: string | null // The genesisHash of this chain
   prefix: number | null // The substrate prefix of this chain
   name: string | null // The name of this chain
@@ -448,11 +452,9 @@ export type Chain = {
   tokens: Array<{ id: TokenId }> | null // The ORML tokens for this chain
   account: string | null // The account address format of this chain
   subscanUrl: string | null // The subscan endpoint of this chain
-  rpcs: Array<Rpc> | null // Some public RPCs for connecting to this chain's network
-  ethereumExplorerUrl: string | null
-  ethereumRpcs: Array<EthereumRpc> | null
-  ethereumId: number | null
+  rpcs: Array<SubstrateRpc> | null // Some public RPCs for connecting to this chain's network
   isHealthy: boolean // The health status of this chain's RPCs
+  evmNetworks: Array<{ id: EvmNetworkId }>
 
   parathreads?: Chain[] // The parathreads of this relayChain, if some exist
 
@@ -460,7 +462,7 @@ export type Chain = {
   relay?: Chain // The parent relayChain of this parachain, if this chain is a parachain
 }
 
-export type Rpc = {
+export type SubstrateRpc = {
   url: string // The url of this RPC
   isHealthy: boolean // The health status of this RPC
 }
@@ -472,24 +474,28 @@ export type EthereumRpc = {
 
 export type ChainList = Record<ChainId, Chain>
 
-export type EthereumNetwork = {
-  id: number
-  name: string
+export type EvmNetworkId = number
+export type EvmNetwork = {
+  id: EvmNetworkId
+  isTestnet: boolean
+  sortIndex: number | null
+  name: string | null
   // TODO: Create ethereum tokens store (and reference here by id).
   //       Or extend substrate tokens store to support both substrate and ethereum tokens.
-  nativeToken?: {
-    name: string
-    symbol: string
-    decimals: number
-  }
-  rpcs: EthereumRpc[]
+  nativeToken: { id: TokenId } | null
+  tokens: Array<{ id: TokenId }> | null
+  explorerUrl: string | null
+  rpcs: Array<EthereumRpc> | null
+  isHealthy: boolean
+  substrateChain: { id: EvmNetworkId } | null
+}
+export type CustomEvmNetwork = EvmNetwork & {
+  isCustom: true
   explorerUrls: string[]
   iconUrls: string[]
-  /** Was this network added by a dapp or does it come from chaindata? */
-  isCustom: boolean
 }
 
-export type EthereumNetworkList = Record<number, EthereumNetwork>
+export type EvmNetworkList = Record<EvmNetworkId, EvmNetwork | CustomEvmNetwork>
 
 // transaction types ----------------------------
 export type TransactionId = string
@@ -533,33 +539,61 @@ export type TokenId = string
 
 export type TokenIndex = number
 
-export type Token = NativeToken | OrmlToken
-export type NativeToken = {
-  type: "native"
+export type Token = NativeToken | CustomNativeToken | OrmlToken | Erc20Token | CustomErc20Token
+export type IToken = {
   id: TokenId
-  name: string
-  chainId: ChainId
-  /** @deprecated - use token.symbol */
-  token: string
+  type: string
+  isTestnet: boolean
   symbol: string
   decimals: number
-  existentialDeposit: string
-  coingeckoId: string
-  rates: TokenRates
+  coingeckoId?: string
+  rates?: TokenRates
 }
-export type OrmlToken = {
-  type: "orml"
-  id: TokenId
-  name: string
-  chainId: ChainId
-  index: TokenIndex
-  /** @deprecated - use token.symbol */
-  token: string
-  symbol: string
-  decimals: number
+export type NativeToken = IToken & {
+  type: "native"
   existentialDeposit: string
-  coingeckoId: string
-  rates: TokenRates
+  chain?: { id: ChainId } | null
+  evmNetwork?: { id: EvmNetworkId } | null
+}
+export type CustomNativeToken = NativeToken & {
+  isCustom: true
+}
+export type OrmlToken = IToken & {
+  type: "orml"
+  existentialDeposit: string
+  index: TokenIndex
+  chain: { id: ChainId }
+}
+export type Erc20Token = IToken & {
+  type: "erc20"
+  contractAddress: string
+  chain?: { id: ChainId } | null
+  evmNetwork?: { id: EvmNetworkId } | null
+}
+export type CustomErc20Token = Erc20Token & {
+  isCustom: true
+  image?: string
+}
+export type CustomErc20TokenCreate = Pick<
+  CustomErc20Token,
+  "symbol" | "decimals" | "coingeckoId" | "contractAddress" | "image"
+> & { chainId?: ChainId; evmNetworkId?: EvmNetworkId }
+
+export type WatchAssetBase = {
+  type: "ERC20"
+  options: {
+    address: string // The hexadecimal Ethereum address of the token contract
+    symbol?: string // A ticker symbol or shorthand, up to 5 alphanumerical characters
+    decimals?: number // The number of asset decimals
+    image?: string // A string url of the token logo
+  }
+}
+
+export type WatchAssetRequest = {
+  request: WatchAssetBase
+  token: CustomErc20Token
+  id: string
+  url: string
 }
 
 export type TokenRateCurrency = keyof TokenRates
@@ -610,18 +644,23 @@ export { Balances, Balance, BalanceFormatter } from "@core/domains/balances/type
 
 export type BalancesStorage = Record<string, BalanceStorage>
 
-export type BalanceStorage = BalanceStorageBalances | BalanceStorageOrmlTokens
+export type BalanceStorage = BalanceStorageBalances | BalanceStorageOrmlTokens | BalanceStorageErc20
 
 export type BalancePallet = BalanceStorage["pallet"]
 export type BalanceStatus = "live" | "cache"
 
 export type BalanceStorageBalances = {
+  // TODO: Rename `pallet` to `source`? Also, rename `balances` to `native`.
+  // Since we now have evm networks, some balances with the `balances` pallet are actually
+  // native balances on evm. So there's no pallet involved.
+  // Also, erc20 balances might be from an evm network, in which case there's also no pallet involved.
   pallet: "balances"
 
   status: BalanceStatus
 
   address: Address
-  chainId: ChainId
+  chainId?: ChainId
+  evmNetworkId?: EvmNetworkId
   tokenId: TokenId
 
   free: string
@@ -637,11 +676,25 @@ export type BalanceStorageOrmlTokens = {
 
   address: Address
   chainId: ChainId
+  evmNetworkId?: EvmNetworkId
   tokenId: TokenId
 
   free: string
   reserved: string
   frozen: string
+}
+
+export type BalanceStorageErc20 = {
+  pallet: "erc20"
+
+  status: BalanceStatus
+
+  address: Address
+  chainId?: ChainId
+  evmNetworkId?: EvmNetworkId
+  tokenId: TokenId
+
+  free: string
 }
 
 export type BalancesUpdate = BalancesUpdateReset | BalancesUpdateUpsert | BalancesUpdateDelete
@@ -650,7 +703,8 @@ export type BalancesUpdateUpsert = { type: "upsert"; balances: BalancesStorage }
 export type BalancesUpdateDelete = { type: "delete"; balances: string[] }
 
 export interface RequestBalance {
-  chainId: ChainId
+  chainId?: ChainId
+  evmNetworkId?: EvmNetworkId
   tokenId: TokenId
   address: Address
 }

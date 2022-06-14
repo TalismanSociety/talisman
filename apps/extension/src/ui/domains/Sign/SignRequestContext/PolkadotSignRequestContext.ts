@@ -45,7 +45,7 @@ export const usePolkadotSigningRequest = (signingRequest?: SigningRequest) => {
   const chain = useMemo(() => {
     if (!signingRequest) return
     const { genesisHash } = (signingRequest?.request?.payload ?? {}) as SignerPayloadJSON
-    return (genesisHash && Object.values(chains).find((c) => c.genesisHash === genesisHash)) || null
+    return (genesisHash && (chains || []).find((c) => c.genesisHash === genesisHash)) || null
   }, [signingRequest, chains])
 
   const approveHardware = useCallback(

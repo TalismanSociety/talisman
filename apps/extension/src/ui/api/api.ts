@@ -1,7 +1,7 @@
 import MessageTypes from "./types"
 import MessageService from "@core/libs/MessageService"
 import { PORT_EXTENSION } from "@core/constants"
-import { EthereumNetwork } from "@core/types"
+import { EvmNetwork } from "@core/types"
 
 const port = chrome.runtime.connect({ name: PORT_EXTENSION })
 const messageService = new MessageService({
@@ -84,12 +84,10 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.validateMnemonic)", mnemonic),
 
   // balance messages ---------------------------------------------------
-  subscribeBalances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
-  subscribeBalancesById: (id, cb) =>
-    messageService.subscribe("pri(balances.byid.subscribe)", { id }, cb),
-  getBalance: ({ chainId, tokenId, address }) =>
-    messageService.sendMessage("pri(balances.get)", { chainId, tokenId, address }),
-  subscribeBalancesByParams: (addressesByChain, cb) =>
+  getBalance: ({ chainId, evmNetworkId, tokenId, address }) =>
+    messageService.sendMessage("pri(balances.get)", { chainId, evmNetworkId, tokenId, address }),
+  balances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
+  balancesByParams: (addressesByChain, cb) =>
     messageService.subscribe("pri(balances.byparams.subscribe)", { addressesByChain }, cb),
 
   // authorized sites messages ------------------------------------------
@@ -111,16 +109,19 @@ export const api: MessageTypes = {
   authrequestIgnore: (id) => messageService.sendMessage("pri(sites.requests.ignore)", { id }),
 
   // chain message types
-  chains: () => messageService.sendMessage("pri(chains)"),
-  chain: (id) => messageService.sendMessage("pri(chains.byid)", { id }),
-  chainsSubscribe: (cb) => messageService.subscribe("pri(chains.subscribe)", null, cb),
-  chainSubscribe: (id, cb) => messageService.subscribe("pri(chains.byid.subscribe)", { id }, cb),
+  chains: (cb) => messageService.subscribe("pri(chains.subscribe)", null, cb),
 
   // token message types
-  tokens: () => messageService.sendMessage("pri(tokens)"),
-  token: (id) => messageService.sendMessage("pri(tokens.byid)", { id }),
-  tokensSubscribe: (cb) => messageService.subscribe("pri(tokens.subscribe)", null, cb),
-  tokenSubscribe: (id, cb) => messageService.subscribe("pri(tokens.byid.subscribe)", { id }, cb),
+  tokens: (cb) => messageService.subscribe("pri(tokens.subscribe)", null, cb),
+
+  // custom erc20 token management
+  customErc20Tokens: () => messageService.sendMessage("pri(tokens.erc20.custom)"),
+  customErc20Token: (id) => messageService.sendMessage("pri(tokens.erc20.custom.byid)", { id }),
+  addCustomErc20Token: (token) => messageService.sendMessage("pri(tokens.erc20.custom.add)", token),
+  removeCustomErc20Token: (id) =>
+    messageService.sendMessage("pri(tokens.erc20.custom.remove)", { id }),
+  clearCustomErc20Tokens: (filter) =>
+    messageService.sendMessage("pri(tokens.erc20.custom.clear)", filter),
 
   // transaction message types
   transactionSubscribe: (id, cb) =>
@@ -177,16 +178,18 @@ export const api: MessageTypes = {
   ethNetworkAddSubscribeRequests: (cb) =>
     messageService.subscribe("pri(eth.networks.add.subscribe)", null, cb),
   // ethereum network message types
-  ethereumNetworks: () => messageService.sendMessage("pri(eth.networks)"),
-  ethereumNetwork: (id) => messageService.sendMessage("pri(eth.networks.byid)", { id }),
-  ethereumNetworksSubscribe: (cb) =>
-    messageService.subscribe("pri(eth.networks.subscribe)", null, cb),
-  ethereumNetworkSubscribe: (id, cb) =>
-    messageService.subscribe("pri(eth.networks.byid.subscribe)", { id }, cb),
-  addCustomEthereumNetwork: (ethereumNetwork: EthereumNetwork) =>
+  ethereumNetworks: (cb) => messageService.subscribe("pri(eth.networks.subscribe)", null, cb),
+  addCustomEthereumNetwork: (ethereumNetwork) =>
     messageService.sendMessage("pri(eth.networks.add.custom)", ethereumNetwork),
   removeCustomEthereumNetwork: (id: string) =>
     messageService.sendMessage("pri(eth.networks.removeCustomNetwork)", { id }),
   clearCustomEthereumNetworks: () =>
     messageService.sendMessage("pri(eth.networks.clearCustomNetworks)"),
+  // ethereum watch assets
+  ethWatchAssetRequestApprove: (id) =>
+    messageService.sendMessage("pri(eth.watchasset.requests.approve)", { id }),
+  ethWatchAssetRequestCancel: (id) =>
+    messageService.sendMessage("pri(eth.watchasset.requests.cancel)", { id }),
+  ethWatchAssetRequestsSubscribe: (cb) =>
+    messageService.subscribe("pri(eth.watchasset.requests.subscribe)", null, cb),
 }

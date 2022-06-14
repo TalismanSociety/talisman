@@ -17,6 +17,7 @@ import {
 } from "@core/types"
 import * as Sentry from "@sentry/browser"
 import { DEBUG } from "@core/constants"
+import { db } from "@core/libs/db"
 
 // System.Account is the state_storage key prefix for nativeToken balances
 const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);
@@ -129,7 +130,7 @@ export default class BalancesRpc {
     addresses: Address[],
     callback: SubscriptionCallback<Balances>
   ): Promise<UnsubscribeFn> {
-    const chain = await chainStore.chain(chainId)
+    const chain = await db.chains.get(chainId)
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
     // set up method, return message type and params
@@ -165,7 +166,7 @@ export default class BalancesRpc {
    * @returns The fetched balances.
    */
   private static async fetchBalances(chainId: ChainId, addresses: Address[]): Promise<Balances> {
-    const chain = await chainStore.chain(chainId)
+    const chain = await db.chains.get(chainId)
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
     // set up method and params

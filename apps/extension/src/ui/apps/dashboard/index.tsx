@@ -4,8 +4,9 @@ import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalC
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
-import { lazy, Suspense, useEffect, useRef } from "react"
+import { Suspense, lazy, useEffect, useRef } from "react"
 import { Navigate, Route, Routes } from "react-router-dom"
+
 import Layout from "./layout"
 import About from "./routes/About"
 import AccountAddDerived from "./routes/AccountAddDerived"
@@ -13,6 +14,9 @@ import AccountAddJson from "./routes/AccountAddJson"
 import { AccountAddSecret } from "./routes/AccountAddSecret"
 import AccountAddTypePicker from "./routes/AccountAddTypePicker"
 import AccountIndex from "./routes/AccountIndex"
+import { CustomTokenAdd } from "./routes/CustomTokens/CustomTokenAdd"
+import { CustomTokenDetails } from "./routes/CustomTokens/CustomTokenDetails"
+import { CustomTokens } from "./routes/CustomTokens/CustomTokens"
 import Settings from "./routes/Settings"
 import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
 import Options from "./routes/Settings/Options"
@@ -70,6 +74,11 @@ const DashboardInner = () => {
           <Route path="options" element={<Options />} />
           <Route path="about" element={<About />} />
           <Route path="analytics" element={<AnalyticsOptIn />} />
+        </Route>
+        <Route path="tokens">
+          <Route path="" element={<CustomTokens />} />
+          <Route path="add" element={<CustomTokenAdd />} />
+          <Route path=":id" element={<CustomTokenDetails />} />
         </Route>
         <Route path="*" element={<Navigate to="/accounts" replace />} />
       </Routes>

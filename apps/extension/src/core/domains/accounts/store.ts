@@ -14,7 +14,7 @@ interface SeedPhraseData {
   confirmed: boolean
 }
 
-class SeedPhraseStore extends SubscribableStorageProvider<
+export class SeedPhraseStore extends SubscribableStorageProvider<
   SeedPhraseData,
   "pri(mnemonic.subscribe)"
 > {

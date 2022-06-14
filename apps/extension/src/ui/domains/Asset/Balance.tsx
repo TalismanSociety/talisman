@@ -32,7 +32,7 @@ const AssetBalance = ({ className, balance, withFiat, noCountUp, isBalance }: IA
       />
       {!!withFiat && (
         <div className="fiat">
-          {balance.chain?.isTestnet ? (
+          {balance.token?.isTestnet ? (
             "Testnet"
           ) : balance.transferable.fiat("usd") === null ? (
             "-"

@@ -18,25 +18,16 @@ export const useChainsTokensWithBalanceFirst = (tokens: Token[], address?: strin
     [address]
   )
   const nonEmptyBalances = useMemo(
-    () => balances.find(nonEmptyBalancesFilter),
+    () => balances?.find(nonEmptyBalancesFilter) || [],
     [balances, nonEmptyBalancesFilter]
   )
   const nonEmptyTokensMap = useMemo(
-    () =>
-      Object.fromEntries(
-        [...nonEmptyBalances].map((balance) => {
-          const key = `${balance.chainId}-${balance.tokenId}`
-          return [key, true]
-        })
-      ),
+    () => Object.fromEntries([...nonEmptyBalances].map((balance) => [balance.tokenId, true])),
     [nonEmptyBalances]
   )
 
   const hasBalance = useCallback(
-    (token: Token) => {
-      const key = `${token.chainId}-${token.id}`
-      return !!nonEmptyTokensMap[key]
-    },
+    (token: Token) => !!nonEmptyTokensMap[token.id],
     [nonEmptyTokensMap]
   )
 

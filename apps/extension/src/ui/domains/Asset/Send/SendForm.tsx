@@ -231,7 +231,7 @@ export const SendForm = () => {
   // derived data
   const balance = useBalance(from, tokenId)
   const token = useToken(tokenId)
-  const chainId = token?.chainId
+  const chainId = token?.chain?.id
   const chain = useChain(chainId)
   const { addressType, genesisHash } = useMemo(
     () =>
