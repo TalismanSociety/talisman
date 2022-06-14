@@ -2,7 +2,6 @@ import styled from "styled-components"
 import globeIcon from "@talisman/theme/icons/globe.white.svg"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { classNames } from "@talisman/util/classNames"
-import { useEffect, useRef } from "react"
 
 const NetworkLogoContainer = styled.picture`
   & {
@@ -16,6 +15,7 @@ const NetworkLogoContainer = styled.picture`
     left: 0;
     width: 100%;
     height: 100%;
+    border-radius: 50%;
   }
 `
 
