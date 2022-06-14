@@ -74,7 +74,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   txDetails,
   txDetailsError,
 }) => {
-  useAnalyticsGenericEvent("sign transaction view details", { type: "substrate" })
+  useAnalyticsGenericEvent("open sign transaction view details", { type: "substrate" })
 
   const { request, account, chain } = usePolkadotSigningRequest(signingRequest)
   const nativeToken = useToken(chain?.nativeToken?.id)
