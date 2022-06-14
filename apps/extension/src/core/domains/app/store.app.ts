@@ -19,7 +19,7 @@ export type AppStoreData = {
   analyticsRequestShown: boolean
 }
 
-const ANALYTICS_VERSION = "1.4.7"
+const ANALYTICS_VERSION = "1.5.0"
 
 const DEFAULT_VALUE = {
   onboarded: FALSE,
