@@ -76,7 +76,7 @@ const Address = ({ address }: AddressProps) => {
 }
 
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
-  useAnalyticsGenericEvent("sign transaction view details", { type: "ethereum" })
+  useAnalyticsGenericEvent("open sign transaction view details", { type: "ethereum" })
 
   const { request, network, gasInfo, priority } = useEthSignRequest()
 
