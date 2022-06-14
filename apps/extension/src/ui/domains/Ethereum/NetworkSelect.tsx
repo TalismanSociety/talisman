@@ -3,7 +3,6 @@ import { Dropdown } from "@talisman/components/Dropdown"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
-import globeIcon from "@talisman/theme/icons/globe.white.svg"
 import { NetworkLogo } from "./NetworkLogo"
 
 const NetworkItem = styled.div`
@@ -34,7 +33,6 @@ export const NetworkSelect = ({
   disabled,
 }: NetworkSelectProps) => {
   const networks = useSortedEvmNetworks()
-
   const [selected, setSelected] = useState<EvmNetwork | CustomEvmNetwork | undefined>(
     networks.find((n) => n.id === defaultChainId)
   )

@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo } from "react"
+import { FC, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
@@ -9,6 +9,7 @@ import { useEthSignRequest } from "../SignRequestContext"
 import { formatEther } from "ethers/lib/utils"
 import { BigNumberish } from "ethers"
 import useToken from "@ui/hooks/useToken"
+import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
 
 const ViewDetailsContainer = styled.div`
   background: var(--color-background);
@@ -75,6 +76,8 @@ const Address = ({ address }: AddressProps) => {
 }
 
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
+  useAnalyticsGenericEvent("open sign transaction view details", { type: "ethereum" })
+
   const { request, network, gasInfo, priority } = useEthSignRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)

@@ -36,6 +36,14 @@ const TickList = styled.ul<{ tick?: boolean }>`
   }
 `
 
+const MoreInfoText = styled.div`
+  font-size: var(--font-size-small);
+  color: var(--color-mid);
+  > a {
+    text-decoration: underline;
+  }
+`
+
 const AnalyticsContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -81,6 +89,16 @@ export const AnalyticsOptInInfo: FC<{
         </li>
       </TickList>
       {children}
+      <MoreInfoText>
+        For more information please read our{" "}
+        <a
+          href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Privacy Policy
+        </a>
+      </MoreInfoText>
     </AnalyticsContainer>
   )
 }

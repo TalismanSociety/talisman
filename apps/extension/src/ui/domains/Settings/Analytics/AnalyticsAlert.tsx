@@ -34,16 +34,23 @@ export const AlertCard = styled(({ className, onLearnMoreClick, onAccept, onReje
       description={
         <>
           <p>
-            We'd like to gather anonymous usage data to help improve the experience of using
-            Talisman.
-          </p>
-          <p>
-            If you opt-in, we will track minimal data and treat it with the respect it deserves.
-          </p>
-          <p>
+            We'd like to gather
             <span className="learn-more" onClick={onLearnMoreClick}>
-              Learn more
-            </span>
+              {" "}
+              anonymous usage data
+            </span>{" "}
+            to help improve the experience of using Talisman.
+          </p>
+          <p>
+            If you opt-in, we will track minimal data and treat it with the respect it deserves. By
+            accepting, you acknowledge you have read and agree to our updated{" "}
+            <a
+              href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Privacy Policy
+            </a>
           </p>
         </>
       }
@@ -76,14 +83,15 @@ export const AlertCard = styled(({ className, onLearnMoreClick, onAccept, onReje
     font-size: small;
 
     > p {
-      font-size: small;
+      font-size: var(--font-size-small);
+      > a {
+        text-decoration: underline;
+        color: var(--color-foreground-muted);
+        opacity: 1;
+      }
 
       & .learn-more {
-        margin-top: 0.5em;
-        font-size: var(--font-size-small);
         color: var(--color-foreground-muted);
-        display: block;
-        text-align: center;
         text-decoration: underline;
         cursor: pointer;
       }
