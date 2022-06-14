@@ -12,12 +12,12 @@ import { Layout } from "../layout"
 
 const Image = styled(motion.img)`
   // force size to avoid page layout shift on load
-  height: 45rem;
-  width: 38.82225rem;
+  height: 55rem;
+  width: 55.28rem;
 
   @media (max-width: 1146px) {
-    height: calc(0.75 * 60rem);
-    width: calc(0.75 * 51.763rem);
+    height: calc(0.75 * 55rem);
+    width: calc(0.75 * 55.28rem);
   }
 `
 
