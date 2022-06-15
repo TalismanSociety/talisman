@@ -194,5 +194,9 @@ export default interface MessageTypes {
 
   ethWatchAssetRequestApprove: (id: string) => Promise<boolean>
   ethWatchAssetRequestCancel: (is: string) => Promise<boolean>
+  ethWatchAssetRequestSubscribe: (
+    id: string,
+    cb: (requests: WatchAssetRequest) => void
+  ) => UnsubscribeFn
   ethWatchAssetRequestsSubscribe: (cb: (requests: WatchAssetRequest[]) => void) => UnsubscribeFn
 }

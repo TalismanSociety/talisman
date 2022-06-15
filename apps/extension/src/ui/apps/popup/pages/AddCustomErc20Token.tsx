@@ -6,11 +6,13 @@ import { XIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEthWatchAssetRequests } from "@ui/hooks/useEthWatchAssetRequests"
+import { useParams } from "react-router-dom"
 import { useCallback, useMemo, useState } from "react"
 import styled from "styled-components"
 import Layout, { Content, Header, Footer } from "../Layout"
 import unknownToken from "@talisman/theme/icons/custom-token-generic.svg"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
+import { useEthWatchAssetRequestById } from "@ui/hooks/useEthWatchAssetRequestById"
 
 const TokenLogo = styled.img`
   width: 5.4rem;
@@ -91,89 +93,77 @@ const ErrorMessage = styled.p`
 
 export const AddCustomErc20Token = () => {
   const [error, setError] = useState<string>()
-  const requests = useEthWatchAssetRequests()
+  const { id } = useParams() as { id: string }
+  const request = useEthWatchAssetRequestById(id)
 
-  const { requestId, siteUrl, token } = useMemo(() => {
-    if (!requests.length) return {}
-    const current = requests[0]
-    return {
-      requestId: current.id,
-      siteUrl: current.url,
-      assetRequest: current.request,
-      token: current.token,
-    }
-  }, [requests])
-
-  const network = useEvmNetwork(token?.evmNetwork?.id)
+  const network = useEvmNetwork(request?.token?.evmNetwork?.id)
 
   const approve = useCallback(async () => {
     setError(undefined)
     try {
-      await api.ethWatchAssetRequestApprove(requestId!)
+      await api.ethWatchAssetRequestApprove(id)
       window.close()
     } catch (err) {
       setError((err as Error).message)
     }
-  }, [requestId])
+  }, [id])
 
   const cancel = useCallback(async () => {
     setError(undefined)
     try {
-      await api.ethWatchAssetRequestCancel(requestId!)
+      await api.ethWatchAssetRequestCancel(id)
       window.close()
     } catch (err) {
       setError((err as Error).message)
     }
-  }, [requestId])
+  }, [id])
 
-  if (!token || !network) return null
+  if (!request || !request.token || !network) return null
 
   return (
-    <>
-      <Container>
-        <Header
-          text={<AppPill url={siteUrl} />}
-          nav={
-            <IconButton onClick={cancel}>
-              <XIcon />
-            </IconButton>
-          }
-        />
-        <Content>
-          <div>
-            <TokenLogo src={token?.image ?? unknownToken} alt={token?.symbol} />
-          </div>
-          <h1>New Token</h1>
-          <p>
-            You are adding the token
-            <br />
-            <strong>
-              <TokenLogoSmall src={token?.image ?? unknownToken} alt="" />
-              {token.symbol}
-            </strong>{" "}
-            on{" "}
-            <strong>
-              {"iconUrls" in network
-                ? network.iconUrls.length && <TokenLogoSmall src={network.iconUrls[0]} alt="" />
-                : null}
-              {network.name}
-            </strong>
-          </p>
-          <div className="grow"></div>
-          <div>
-            <CustomErc20TokenViewDetails token={token} network={network} />
-          </div>
-        </Content>
-        <Footer>
-          <ErrorMessage>{error}</ErrorMessage>
-          <StyledGrid>
-            <SimpleButton onClick={cancel}>Reject</SimpleButton>
-            <SimpleButton primary onClick={approve}>
-              Approve
-            </SimpleButton>
-          </StyledGrid>
-        </Footer>
-      </Container>
-    </>
+    <Container>
+      <Header
+        text={<AppPill url={request.url} />}
+        nav={
+          <IconButton onClick={cancel}>
+            <XIcon />
+          </IconButton>
+        }
+      />
+      <Content>
+        <div>
+          <TokenLogo src={request.token.image ?? unknownToken} alt={request.token.symbol} />
+        </div>
+        <h1>New Token</h1>
+        <p>
+          You are adding the token
+          <br />
+          <strong>
+            <TokenLogoSmall src={request.token.image ?? unknownToken} alt="" />
+            {request.token.symbol}
+          </strong>{" "}
+          on{" "}
+          <strong>
+            {"iconUrls" in network
+              ? network.iconUrls.length && <TokenLogoSmall src={network.iconUrls[0]} alt="" />
+              : null}
+            {network.name}
+          </strong>
+        </p>
+        <div className="grow"></div>
+        <div>
+          <CustomErc20TokenViewDetails token={request.token} network={network} />
+        </div>
+      </Content>
+      <Footer>
+        <ErrorMessage>{error}</ErrorMessage>
+        <StyledGrid>
+          <SimpleButton onClick={cancel}>Reject</SimpleButton>
+          <SimpleButton primary onClick={approve}>
+            Approve
+          </SimpleButton>
+        </StyledGrid>
+      </Footer>
+    </Container>
   )
 }
