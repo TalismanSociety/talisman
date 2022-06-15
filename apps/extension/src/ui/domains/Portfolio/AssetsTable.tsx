@@ -5,7 +5,7 @@ import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import { useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
-import StyledAssetLogo from "../Asset/Logo"
+import { TokenLogo } from "../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "./AssetBalanceCellValue"
 import { ChainLogoStack } from "./LogoStack"
 
@@ -73,7 +73,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
       <td valign="top">
         <Box flex>
           <Box padding="1.6rem" fontsize="xlarge">
-            <StyledAssetLogo id={chainId} />
+            <TokenLogo tokenId={token.id} />
           </Box>
           <Box grow flex column justify="center" gap={0.4}>
             <Box fontsize="normal" bold fg="foreground">
