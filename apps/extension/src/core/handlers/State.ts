@@ -57,7 +57,9 @@ export default class State {
       }
     ),
     networks: new EthereumNetworksRequestsStore((req) => this.popupOpen()),
-    evmAssets: new EvmWatchAssetRequestsStore(() => this.popupOpen()),
+    evmAssets: new EvmWatchAssetRequestsStore((req) =>
+      this.popupOpen(req && `?customAsset=${req.id}`)
+    ),
   }
 
   #windows: number[] = []
@@ -116,6 +118,7 @@ export default class State {
     const metaCount = this.requestStores.metadata.getRequestCount()
     const signCount = this.requestStores.signing.getRequestCount()
     const networkAddCount = this.requestStores.networks.getRequestCount()
+    const evmAssets = this.requestStores.evmAssets.getRequestCount()
     const text = sitesAuthCount
       ? "Sites"
       : metaCount
@@ -124,6 +127,8 @@ export default class State {
       ? `${signCount}`
       : networkAddCount
       ? "Network"
+      : evmAssets
+      ? "Assets"
       : ""
 
     Browser.browserAction.setBadgeText({ text })
