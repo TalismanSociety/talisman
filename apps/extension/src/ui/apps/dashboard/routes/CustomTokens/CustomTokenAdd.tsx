@@ -105,7 +105,7 @@ export const CustomTokenAdd = () => {
         assert(tokenInfo.evmNetworkId === token.evmNetworkId, "Token mismatch")
         // save the object composed with CoinGecko and chain data
         await api.addCustomErc20Token(tokenInfo)
-        navigate("/")
+        navigate("/tokens")
       } catch (err) {
         setError(`Failed to add the token : ${(err as Error)?.message ?? ""}`)
       }
@@ -171,7 +171,12 @@ export const CustomTokenAdd = () => {
         </Split>
         <ErrorDiv>{error}</ErrorDiv>
         <Footer>
-          <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
+          <SimpleButton
+            type="submit"
+            primary
+            disabled={!isValid || isLoading}
+            processing={isSubmitting}
+          >
             <PlusIcon />
             Add Token
           </SimpleButton>
