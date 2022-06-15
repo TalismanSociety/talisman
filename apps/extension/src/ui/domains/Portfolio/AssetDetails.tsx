@@ -106,11 +106,24 @@ export const ChainTokenBalances = ({ balances }: AssetRowProps) => {
     [summary]
   )
 
-  if (!summary || !token || balances.count === 0) return null
+  const { chain, evmNetwork } = balances.sorted[0]
+  const networkType = useMemo(() => {
+    if (evmNetwork) return evmNetwork.isTestnet ? "Testnet" : "EVM blockchain"
 
-  const { chain } = balances.sorted[0]
+    if (chain) {
+      if (chain.isTestnet) return "Testnet"
+      return chain.paraId ? "Parachain" : "Relay chain"
+    }
 
-  if (!chain) return null
+    return null
+  }, [chain, evmNetwork])
+
+  const chainOrNetwork = chain || evmNetwork
+
+  // wait for data to load
+  if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
+
+  // TODO : detect if user has no token AND that data is loaded, if so display a message + redirect button
 
   return (
     <>
@@ -118,15 +131,13 @@ export const ChainTokenBalances = ({ balances }: AssetRowProps) => {
         <td className="topLeftCell" valign="top">
           <Box fullheight flex>
             <Box padding="1.6rem" fontsize="xlarge">
-              <StyledAssetLogo id={chain.id} />
+              <StyledAssetLogo id={evmNetwork?.substrateChain?.id ?? chainOrNetwork.id} />
             </Box>
             <Box grow flex column justify="center" gap={0.4}>
               <Box fontsize="normal" bold fg="foreground">
-                {chain.name}
+                {chainOrNetwork.name}
               </Box>
-              <div>
-                {chain.isTestnet ? "Testnet" : chain.paraId === null ? "Relay Chain" : "Parachain"}
-              </div>
+              <div>{networkType}</div>
             </Box>
           </Box>
         </td>
@@ -180,19 +191,21 @@ export const AssetDetails = ({ balances }: AssetsTableProps) => {
   const hydrate = useHydrateBalances()
 
   const balancesByChain = useMemo(() => {
-    const chainIds = [...new Set(balancesToDisplay.sorted.map((b) => b.chainId))].filter(
-      (cid) => cid !== undefined
-    )
-    //const hydrate = { chain: getChain, token: getToken }
+    const chainIds = [
+      ...new Set(balancesToDisplay.sorted.map((b) => b.chainId ?? b.evmNetworkId)),
+    ].filter((cid) => cid !== undefined)
+
     return chainIds.reduce(
       (acc, chainId) => ({
         ...acc,
         [chainId!]: new Balances(
-          balancesToDisplay.sorted.filter((b) => b.chainId === chainId),
+          balancesToDisplay.sorted.filter(
+            (b) => b.chainId === chainId || b.evmNetworkId === chainId
+          ),
           hydrate
         ),
       }),
-      {} as Record<number, Balances>
+      {} as Record<string | number, Balances>
     )
   }, [balancesToDisplay.sorted, hydrate])
 

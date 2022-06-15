@@ -1,7 +1,7 @@
 import { Balances } from "@core/types"
 import { Box } from "@talisman/components/Box"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
-import StyledAssetLogo from "@ui/domains/Asset/Logo"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { AssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import useBalances from "@ui/hooks/useBalances"
@@ -60,7 +60,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
               </BackButton>
               <Box flex align="center" gap={0.8}>
                 <Box fontsize="large">
-                  <StyledAssetLogo id={token.id} />
+                  <TokenLogo tokenId={token.id} />
                 </Box>
                 <Box fontsize="medium">{token.symbol}</Box>
               </Box>

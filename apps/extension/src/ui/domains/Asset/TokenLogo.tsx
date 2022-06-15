@@ -30,11 +30,14 @@ const getChainLogoUrl = (chainId?: string | number) => {
 }
 
 const getTokenLogoUrl = (token?: Token) => {
+  // TODO better typing
   if (token?.type === "erc20") {
     const { isCustom, image } = token as { isCustom?: boolean; image?: string }
     return image ?? (isCustom ? null : getChainLogoUrl(token?.evmNetwork?.id))
-  } else if (token && ["native", "orml"].includes(token.type))
-    return getChainLogoUrl(token.chain?.id)
+  } else if (token && ["native", "orml"].includes(token.type)) {
+    const { chain, evmNetwork } = token as { chain?: { id: string }; evmNetwork?: { id: number } }
+    return getChainLogoUrl(chain?.id ?? evmNetwork?.id)
+  }
   return null
 }
 
