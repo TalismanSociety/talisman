@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react"
+import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import styled from "styled-components"
 import Dialog from "@talisman/components/Dialog"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
@@ -81,6 +81,28 @@ const AccountRename = ({ address, onConfirm, onCancel, className }: IAccountRena
     [address, onConfirm, setError]
   )
 
+  // "manual" field registration so we can hook our own ref to it
+  const { ref: refName, ...registerName } = register("name")
+
+  // on mount, auto select the input's text
+  const refNameRef = useRef<HTMLInputElement | null>(null)
+  useEffect(() => {
+    const input = refNameRef.current as HTMLInputElement
+    if (input) {
+      input.select()
+      input.focus()
+    }
+  }, [])
+
+  // plug both refs to the input component
+  const handleNameRef: RefCallback<HTMLInputElement> = useCallback(
+    (e: HTMLInputElement | null) => {
+      refName(e)
+      refNameRef.current = e
+    },
+    [refName]
+  )
+
   return (
     <StyledDialog
       className={className}
@@ -90,7 +112,8 @@ const AccountRename = ({ address, onConfirm, onCancel, className }: IAccountRena
         <form onSubmit={handleSubmit(submit)}>
           <FormField error={errors.name}>
             <input
-              {...register("name")}
+              {...registerName}
+              ref={handleNameRef}
               placeholder="Choose a name"
               spellCheck={false}
               autoComplete="off"
