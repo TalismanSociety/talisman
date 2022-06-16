@@ -85,9 +85,6 @@ const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symb
           showTokens
         />
       </Box>
-      <Box margin="3.8rem 0 0 0">
-        <NetworkPicker />
-      </Box>
       <Box margin="4.8rem 0 0 0">
         <AssetDetails balances={balancesToDisplay} symbol={symbol} />
       </Box>
@@ -97,7 +94,7 @@ const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symb
 
 export const PortfolioAsset = () => {
   const { symbol } = useParams()
-  const { balances: allBalances } = usePortfolio()
+  const { allBalances } = usePortfolio()
 
   const balances = useMemo(
     () => new Balances(allBalances.sorted.filter((b) => b.token?.symbol === symbol)),

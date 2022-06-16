@@ -2,17 +2,8 @@ import { Box } from "@talisman/components/Box"
 import { CopyIcon, CreditCardIcon } from "@talisman/theme/icons"
 import { useSelectedAccount } from "@ui/apps/dashboard/context"
 import { useCallback } from "react"
-import { useCopyToClipboard } from "react-use"
 import styled from "styled-components"
 import { useAddressFormatterModal } from "../Account/AddressFormatterModal"
-
-const Link = styled.a`
-  cursor: pointer;
-  color: var(--color-foreground-muted);
-  :hover {
-    color: var(--color-foreground);
-  }
-`
 
 const PillButton = styled.button`
   background: rgba(var(--color-mid-raw), 0.15);
@@ -65,7 +56,7 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
     >
       <Box>
         <Box>
-          You don't have any {symbol} {account ? "in this account." : "in Talisman."}
+          You don't have any {symbol} {account ? "in this account" : "in Talisman"}
         </Box>
         <Box height={2.4} />
         <Box flex justify="center" gap={0.8}>
