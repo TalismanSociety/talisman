@@ -143,7 +143,7 @@ export const NetworkPicker = () => {
         <Box height={4.8} flex fullwidth align="center" padding="0 0 0 1.2rem">
           {networkFilter ? (
             <Box margin="0 1.2rem 0 0">
-              <StyledAssetLogo id={networkFilter?.id} />
+              <StyledAssetLogo id={networkFilter?.logoId} />
             </Box>
           ) : null}
           <input
@@ -178,7 +178,7 @@ export const NetworkPicker = () => {
                 padding="0 1.2rem"
               >
                 <Box>
-                  <StyledAssetLogo id={item?.id} />
+                  <StyledAssetLogo id={item?.logoId} />
                 </Box>
                 <Box>{item.name}</Box>
               </Box>

@@ -89,7 +89,7 @@ export const NavigationDrawer: FC = () => {
             <NavItem icon={<PaperPlaneIcon />} onClick={() => api.modalOpen("send")}>
               Send Funds
             </NavItem>
-            <NavItem icon={<MaximizeIcon />} onClick={() => api.dashboardOpen("/accounts")}>
+            <NavItem icon={<MaximizeIcon />} onClick={() => api.dashboardOpen("/portfolio")}>
               Expand View
             </NavItem>
             <NavItem icon={<SettingsIcon />} onClick={() => api.dashboardOpen("/settings")}>

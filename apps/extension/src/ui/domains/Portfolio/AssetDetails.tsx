@@ -191,7 +191,7 @@ type AssetsTableProps = {
 
 export const AssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   const balancesToDisplay = useDisplayBalances(balances)
-  const { hydrate } = usePortfolio()
+  const { hydrate, isLoading } = usePortfolio()
 
   const balancesByChain = useMemo(() => {
     const chainIds = [
@@ -213,7 +213,7 @@ export const AssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   }, [balancesToDisplay.sorted, hydrate])
 
   const rows = Object.entries(balancesByChain)
-  if (rows.length === 0) return <NoTokensMessage symbol={symbol} />
+  if (rows.length === 0 && !isLoading) return <NoTokensMessage symbol={symbol} />
 
   return (
     <Table>

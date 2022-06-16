@@ -50,6 +50,7 @@ export type NetworkOption = {
   name: string
   chainId?: string
   evmNetworkId?: number
+  logoId: string
 }
 
 const useAllNetworks = (type?: AccountAddressType) => {
@@ -60,7 +61,7 @@ const useAllNetworks = (type?: AccountAddressType) => {
 
     if (chains && (!type || type === "sr25519"))
       chains.forEach(({ id, name }) =>
-        result.push({ id, chainId: id, name: name ?? "Unknown chain" })
+        result.push({ id, chainId: id, name: name ?? "Unknown chain", logoId: id })
       )
 
     if (evmNetworks && (!type || type === "ethereum"))
@@ -72,6 +73,7 @@ const useAllNetworks = (type?: AccountAddressType) => {
             id: String(id),
             name: name ?? "Unknown chain",
             evmNetworkId: id,
+            logoId: substrateChain?.id ?? String(id),
           })
       })
 
@@ -104,6 +106,10 @@ const usePortfolioProvider = ({ balances: allBalances }: { balances: Balances })
     return new Balances(filtered, hydrate)
   }, [allBalances, hydrate, networkFilter])
 
+  const isLoading = useMemo(() => {
+    return !chains?.length || !tokens?.length || !evmNetworks?.length || !allBalances?.count
+  }, [allBalances?.count, chains?.length, evmNetworks?.length, tokens?.length])
+
   return {
     networks,
     networkFilter,
@@ -113,6 +119,8 @@ const usePortfolioProvider = ({ balances: allBalances }: { balances: Balances })
     tokens,
     evmNetworks,
     hydrate,
+    allBalances,
+    isLoading,
   }
 }
 

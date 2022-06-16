@@ -85,7 +85,7 @@ const AccountNew = () => {
           title: "Account created",
           subtitle: name,
         })
-        navigate("/accounts")
+        navigate("/portfolio")
       } catch (err) {
         notification.error({
           title: "Error creating account",

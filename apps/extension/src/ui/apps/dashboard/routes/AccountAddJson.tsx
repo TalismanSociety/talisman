@@ -52,7 +52,7 @@ const AccountJson = () => {
           title: "Account created",
           subtitle: "",
         })
-        navigate("/accounts")
+        navigate("/portfolio")
       } catch (err) {
         notification.error({
           title: "Error creating account",

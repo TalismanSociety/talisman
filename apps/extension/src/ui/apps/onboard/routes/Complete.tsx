@@ -71,7 +71,7 @@ export const Complete = () => (
           autoFocus
           primary
           onClick={() => {
-            api.dashboardOpen("/accounts")
+            api.dashboardOpen("/portfolio")
             window.close()
           }}
         >

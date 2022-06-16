@@ -271,7 +271,7 @@ export const AccountAddSecretMnemonic = () => {
             title: "Account imported",
             subtitle: name,
           })
-          navigate("/accounts")
+          navigate("/portfolio")
         } catch (err) {
           notification.error({
             title: "Error importing account",
