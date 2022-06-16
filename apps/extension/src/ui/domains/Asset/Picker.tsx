@@ -177,22 +177,29 @@ const AssetPicker: FC<IProps> = ({
   className,
   showChainsWithBalanceFirst,
 }) => {
-  const allTokens = useTokens()
   const chains = useChains()
   const chainsMap = useMemo(
     () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
     [chains]
   )
-  // const evmNetworksList = useEvmNetworks()
+
   const allChains = useSortedChains()
   const chainsWithPrefix: Chain[] = useHasPrefixChainsFilter(allChains)
   const tokensWithNormalSorting = useChainsTokens(chainsWithPrefix)
   const tokensWithBalanceFirst = useChainsTokensWithBalanceFirst(tokensWithNormalSorting, address)
-  const tokens = showChainsWithBalanceFirst ? tokensWithBalanceFirst : tokensWithNormalSorting
+  const tokens = useMemo(
+    () => (showChainsWithBalanceFirst ? tokensWithBalanceFirst : tokensWithNormalSorting),
+    [showChainsWithBalanceFirst, tokensWithBalanceFirst, tokensWithNormalSorting]
+  )
 
   const [selectedTokenId, setSelectedTokenId] = useState<TokenId | undefined>(
-    () => value ?? defaultValue ?? tokens[0].id ?? undefined
+    () => value ?? defaultValue ?? tokens[0]?.id ?? undefined
   )
+
+  // if not set yet, set a token as soon as tokens are loaded
+  useEffect(() => {
+    if (selectedTokenId === undefined && tokens.length > 0) setSelectedTokenId(tokens[0].id)
+  }, [selectedTokenId, tokens])
 
   // trigger parent's onChange
   useEffect(() => {

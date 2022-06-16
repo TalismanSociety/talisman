@@ -7,6 +7,7 @@ const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-web
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
 const DotEnv = require("dotenv-webpack")
 const getGitShortHash = require("./utils").getGitShortHash
+require("dotenv").config()
 const srcDir = path.join(__dirname, "..", "src")
 const coreDir = path.join(srcDir, "core")
 const distDir = path.join(__dirname, "..", "dist")

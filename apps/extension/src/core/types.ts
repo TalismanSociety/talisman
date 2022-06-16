@@ -278,6 +278,7 @@ export interface RequestSignatures extends Omit<PolkadotRequestSignatures, Remov
   "pri(eth.watchasset.requests.approve)": [RequestIdOnly, boolean]
   "pri(eth.watchasset.requests.cancel)": [RequestIdOnly, boolean]
   "pri(eth.watchasset.requests.subscribe)": [null, boolean, WatchAssetRequest[]]
+  "pri(eth.watchasset.requests.subscribe.byid)": [RequestIdOnly, boolean, WatchAssetRequest]
 
   // ethereum networks message signatures
   "pri(eth.networks.subscribe)": [null, boolean, boolean]

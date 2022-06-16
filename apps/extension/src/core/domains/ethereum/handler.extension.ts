@@ -8,6 +8,7 @@ import {
   AnyEthRequestChainId,
   CustomEvmNetwork,
   CustomNativeToken,
+  WatchAssetRequest,
 } from "@core/types"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { assert, u8aToHex } from "@polkadot/util"
@@ -33,6 +34,7 @@ import { getProviderForEvmNetworkId } from "./networksStore"
 import { watchEthereumTransaction } from "@core/notifications"
 import { db } from "@core/libs/db"
 import { talismanAnalytics } from "@core/libs/Analytics"
+import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -271,7 +273,6 @@ export class EthHandler extends ExtensionHandler {
     const queued = this.state.requestStores.evmAssets.getRequest(id)
 
     assert(queued, "Unable to find request")
-
     const { resolve, token } = queued
 
     await db.tokens.put(token)
@@ -330,6 +331,21 @@ export class EthHandler extends ExtensionHandler {
           id,
           port
         )
+
+      case "pri(eth.watchasset.requests.subscribe.byid)":
+        const cb = createSubscription<"pri(eth.watchasset.requests.subscribe.byid)">(id, port)
+        const subscription = this.state.requestStores.evmAssets.observable.subscribe(
+          (reqs: WatchAssetRequest[]) => {
+            const watchAssetRequest = reqs.find((req) => req.id === (request as RequestIdOnly).id)
+            if (watchAssetRequest) cb(watchAssetRequest)
+          }
+        )
+
+        port.onDisconnect.addListener((): void => {
+          unsubscribe(id)
+          subscription.unsubscribe()
+        })
+        return true
 
       // --------------------------------------------------------------------
       // ethereum network handlers ------------------------------------------

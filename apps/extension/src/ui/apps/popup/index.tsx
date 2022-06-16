@@ -37,8 +37,12 @@ const Popup = () => {
   useEffect(() => {
     if (authRequests.length > 0) navigate("/auth")
     else if (ethNetworkAddRequests.length > 0) navigate("/eth-network-add")
-    else if (ethWatchAssetRequests.length > 0) navigate("/eth-watchasset")
-    else if (metaDataRequests.length > 0) navigate("/metadata")
+    else if (ethWatchAssetRequests.length > 0) {
+      const params = new URL(window.location.href).searchParams
+      const reqId = params.get("customAsset")
+      const request = ethWatchAssetRequests.find((r) => r.id === reqId) ?? ethWatchAssetRequests[0]
+      if (request) navigate(`/eth-watchasset/${request.id}`)
+    } else if (metaDataRequests.length > 0) navigate("/metadata")
     else if (signingRequests.length > 0) {
       const params = new URL(window.location.href).searchParams
       const signingId = params.get("signing")
@@ -92,7 +96,7 @@ const Popup = () => {
             <Route path="sign/:id" element={<SignRequest />}></Route>
             <Route path="metadata" element={<Metadata />}></Route>
             <Route path="eth-network-add" element={<AddEthereumNetwork />}></Route>
-            <Route path="eth-watchasset" element={<AddCustomErc20Token />}></Route>
+            <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
             {/* Not used for now */}
             {/* <Route path="tx/:id" element={<Transaction />}></Route> */}
             <Route path="*" element={<Navigate to="/" replace />} />
