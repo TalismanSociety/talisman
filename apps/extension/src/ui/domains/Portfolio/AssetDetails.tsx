@@ -8,6 +8,7 @@ import { Fragment, useMemo } from "react"
 import styled from "styled-components"
 import StyledAssetLogo from "../Asset/Logo"
 import { AssetBalanceCellValue } from "./AssetBalanceCellValue"
+import { NoTokensMessage } from "./NoTokensMessage"
 
 const Table = styled.table`
   border-spacing: 0;
@@ -72,10 +73,11 @@ const AssetState = ({ title, render }: { title: string; render: boolean }) => {
 
 type AssetRowProps = {
   balances: Balances
+  symbol: string
 }
 
-export const ChainTokenBalances = ({ balances }: AssetRowProps) => {
-  const { token, summary } = useTokenBalancesSummary(balances)
+export const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
+  const { token, summary } = useTokenBalancesSummary(balances, symbol)
 
   const detailRows = useMemo(
     () =>
@@ -184,9 +186,10 @@ export const ChainTokenBalances = ({ balances }: AssetRowProps) => {
 
 type AssetsTableProps = {
   balances: Balances
+  symbol: string
 }
 
-export const AssetDetails = ({ balances }: AssetsTableProps) => {
+export const AssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   const balancesToDisplay = useDisplayBalances(balances)
   const { hydrate } = usePortfolio()
 
@@ -209,12 +212,15 @@ export const AssetDetails = ({ balances }: AssetsTableProps) => {
     )
   }, [balancesToDisplay.sorted, hydrate])
 
+  const rows = Object.entries(balancesByChain)
+  if (rows.length === 0) return <NoTokensMessage symbol={symbol} />
+
   return (
     <Table>
       <tbody>
-        {Object.entries(balancesByChain).map(([key, bal], i, rows) => (
+        {rows.map(([key, bal], i, rows) => (
           <Fragment key={key}>
-            <ChainTokenBalances balances={bal} />
+            <ChainTokenBalances symbol={symbol} balances={bal} />
             {i < rows.length - 1 && <SpacerRow />}
           </Fragment>
         ))}

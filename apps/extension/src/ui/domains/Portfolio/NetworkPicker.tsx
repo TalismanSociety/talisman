@@ -152,14 +152,15 @@ export const NetworkPicker = () => {
             placeholder="All networks"
             {...getInputProps()}
           />
-          {inputValue && (
+          {inputValue ? (
             <button aria-label="clear" type="button" onClick={handleClear}>
               <XIcon />
             </button>
+          ) : (
+            <button aria-label="toggle menu" type="button" {...getToggleButtonProps()}>
+              <ChevronDownIcon />
+            </button>
           )}
-          <button aria-label="toggle menu" type="button" {...getToggleButtonProps()}>
-            <ChevronDownIcon />
-          </button>
         </Box>
       </Box>
       <ul {...getMenuProps()}>

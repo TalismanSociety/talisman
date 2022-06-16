@@ -1,5 +1,6 @@
 import { Balance, Balances } from "@core/types"
 import { Box } from "@talisman/components/Box"
+import { FadeIn } from "@talisman/components/FadeIn"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import { useCallback, useMemo } from "react"
@@ -9,6 +10,7 @@ import { TokenLogo } from "../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "./AssetBalanceCellValue"
 import { usePortfolio } from "./context"
 import { ChainLogoStack } from "./LogoStack"
+import { NoTokensMessage } from "./NoTokensMessage"
 
 const Table = styled.table`
   border-spacing: 0 0.8rem;
@@ -48,9 +50,10 @@ const Table = styled.table`
 
 type AssetRowProps = {
   balances: Balances
+  symbol: string
 }
 
-export const AssetRow = ({ balances }: AssetRowProps) => {
+export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
   const { chains, evmNetworks } = usePortfolio()
   const { logoIds } = useMemo(() => {
     const { sorted } = balances
@@ -71,7 +74,7 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
     return { chainIds, logoIds }
   }, [balances, chains, evmNetworks])
 
-  const { token, summary } = useTokenBalancesSummary(balances)
+  const { token, summary } = useTokenBalancesSummary(balances, symbol)
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
@@ -128,13 +131,11 @@ type AssetsTableProps = {
 export const AssetsTable = ({ balances }: AssetsTableProps) => {
   const balancesToDisplay = useDisplayBalances(balances)
 
-  // group by token (match by symbol + decimals + coingeckoId)
-  // note : if 2 different tokens of this object have same symbol, there will be issues
-  // but if we don't split them, it would break the token details page which only expects a symbol as prop
+  // group by token (symbol)
   const balancesByToken = useMemo(() => {
     const groupedByToken = balancesToDisplay.sorted.reduce((acc, b) => {
       if (!b.token) return acc
-      const key = `${b.token.symbol}-${b.token.decimals}-${b.token.coingeckoId}`
+      const key = b.token.symbol
       if (acc[key]) acc[key].push(b)
       else acc[key] = [b]
       return acc
@@ -148,6 +149,11 @@ export const AssetsTable = ({ balances }: AssetsTableProps) => {
     )
   }, [balancesToDisplay.sorted])
 
+  // wait for dictionnary to be populated to avoir column header flickering
+  // (it will always contain ksm/dot or glmr/movr, but is empty on very first render)
+  const rows = Object.entries(balancesByToken)
+  if (rows.length === 0) return null
+
   return (
     <Table>
       <thead>
@@ -159,9 +165,7 @@ export const AssetsTable = ({ balances }: AssetsTableProps) => {
       </thead>
       <tbody>
         {balancesByToken &&
-          Object.entries(balancesByToken).map(([symbol, b]) => (
-            <AssetRow key={symbol} balances={b} />
-          ))}
+          rows.map(([symbol, b]) => <AssetRow key={symbol} balances={b} symbol={symbol} />)}
       </tbody>
     </Table>
   )

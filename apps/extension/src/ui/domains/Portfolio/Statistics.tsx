@@ -13,16 +13,52 @@ type StatisticsProps = {
   className?: string
   token?: Token
   locked?: boolean
+  showTokens?: boolean
 }
 
-export const Statistics = ({ title, tokens, fiat, className, token, locked }: StatisticsProps) => {
+const TokensAndFiat = ({
+  tokenAmount,
+  fiat,
+  token,
+}: {
+  tokenAmount?: string
+  fiat: number | null
+  token?: Token
+}) => (
+  <Box flex column gap={0.4}>
+    <Box fg="foreground" fontsize="normal">
+      <Tokens
+        amount={tokenAmount ?? "0"}
+        isBalance
+        decimals={token?.decimals}
+        symbol={token?.symbol}
+      />
+    </Box>
+    <Box fg="mid" fontsize="small">
+      {fiat === null ? "-" : <Fiat amount={fiat} currency="usd" isBalance />}
+    </Box>
+  </Box>
+)
+const FiatOnly = ({ fiat }: { fiat: number | null }) => (
+  <Box fg="foreground" fontsize="normal">
+    {fiat === null ? "-" : <Fiat amount={fiat} currency="usd" isBalance />}
+  </Box>
+)
+
+export const Statistics = ({
+  title,
+  tokens,
+  fiat,
+  className,
+  token,
+  locked,
+  showTokens,
+}: StatisticsProps) => {
   const tokenAmount = useMemo(() => {
     return token && tokens !== undefined
       ? planckToTokens(tokens?.toString(), token.decimals)
       : undefined
   }, [token, tokens])
-
-  const showBoth = useMemo(() => fiat !== null && tokenAmount !== undefined, [fiat, tokenAmount])
 
   return (
     <Box
@@ -39,6 +75,25 @@ export const Statistics = ({ title, tokens, fiat, className, token, locked }: St
         {locked && <LockIcon />}
         {title}
       </Box>
+      {showTokens ? (
+        <TokensAndFiat tokenAmount={tokenAmount} fiat={fiat} token={token} />
+      ) : (
+        <FiatOnly fiat={fiat} />
+      )}
+      {/* {tokenAmount ? (
+        <>
+          <Box>
+            <Tokens
+              amount={tokenAmount}
+              isBalance
+              decimals={token?.decimals}
+              symbol={token?.symbol}
+            />
+          </Box>
+        </>
+      ) : (
+        <></>
+      )}
       <Box fontsize="medium">
         {tokenAmount ? (
           <Tokens
@@ -52,7 +107,7 @@ export const Statistics = ({ title, tokens, fiat, className, token, locked }: St
           {showBoth ? " / " : null}
           {fiat === null ? null : <Fiat amount={fiat} currency="usd" isBalance />}
         </Box>
-      </Box>
+      </Box> */}
     </Box>
   )
 }

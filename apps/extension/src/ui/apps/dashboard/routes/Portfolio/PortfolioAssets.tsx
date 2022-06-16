@@ -31,7 +31,6 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openAddressFormatterModal } = useAddressFormatterModal()
   const { open: openSendFundsModal } = useSendTokensModal()
-  const { networkFilter } = usePortfolio()
 
   const sendFunds = useCallback(
     () => openSendFundsModal({ from: account?.address }),
@@ -52,10 +51,8 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
     openAddressFormatterModal(account.address)
   }, [account, openAddressFormatterModal])
 
-  if (!balancesToDisplay.sorted.length) return null
-
   return (
-    <FadeIn>
+    <div>
       <Box flex fullwidth gap={1.6}>
         <Stats title="Total Portfolio Value" fiat={portfolio} />
         <Stats title="Locked" fiat={locked} locked />
@@ -94,7 +91,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
       <Box margin="1.2rem 0 0 0">
         <AssetsTable balances={balancesToDisplay} />
       </Box>
-    </FadeIn>
+    </div>
   )
 })
 

@@ -29,6 +29,8 @@ const useHydrateBalances = (chains?: Chain[], evmNetworks?: EvmNetwork[], tokens
 }
 
 const usePortfolioCommonDataProvider = () => {
+  // Keeping these available from a context prevents maintaining separate subscriptions to Dexie.
+  // Dexie's fast but still uses x more resources if x components call these hooks directly
   const chains = useChains()
   const evmNetworks = useEvmNetworks()
   const tokens = useTokens()

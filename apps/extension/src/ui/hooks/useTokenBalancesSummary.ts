@@ -1,4 +1,5 @@
-import { Balances } from "@core/types"
+import { Balances, Chain, EvmNetwork, Token } from "@core/types"
+import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useMemo } from "react"
 
 type BalanceSummary = {
@@ -14,25 +15,51 @@ type BalanceSummary = {
   availableFiat: number | null
 }
 
-export const useTokenBalancesSummary = (balances: Balances) => {
-  const { token, summary } = useMemo(() => {
-    if (!balances.sorted.length) return {}
+const DEFAULT_SUMMARY: BalanceSummary = {
+  totalTokens: BigInt(0),
+  totalFiat: null,
+  lockedTokens: BigInt(0),
+  lockedFiat: null,
+  frozenTokens: BigInt(0),
+  frozenFiat: null,
+  reservedTokens: BigInt(0),
+  reservedFiat: null,
+  availableTokens: BigInt(0),
+  availableFiat: null,
+}
 
-    const token = balances.sorted[0]?.token
-    if (!token) return {}
+const getBestTokenForSymbol = (symbol: string, tokens?: Token[], chains?: Chain[]) => {
+  const matches = tokens?.filter((t) => t.symbol === symbol)
 
-    // summary makes sense only if the token is shared by all balances
-    const isSharedSymbol = balances.sorted.every((b) => b.token?.symbol === token.symbol)
-    if (!isSharedSymbol) {
-      // eslint-disable-next-line no-console
-      console.warn("useTokenBalancesSummary: balances are not shared by the same token", [
-        ...new Set(balances.sorted.map((b) => b.token?.symbol)),
-      ])
-      return {}
-    }
+  return (
+    // priority to token from a relay chain
+    matches?.find(
+      (t) =>
+        !t.isTestnet && t.type === "native" && chains?.find((c) => !c.relay && c.id === t.chain?.id)
+    ) ??
+    matches?.find((t) => !t.isTestnet && t.type === "native") ??
+    matches?.find((t) => t.type === "native") ??
+    matches?.find((t) => (t as any).image) ??
+    matches?.[0]
+  )
+}
+
+export const useTokenBalancesSummary = (balances: Balances, symbol: string) => {
+  const { tokens, chains } = usePortfolio()
+  // find the most appropriate token for this symbol (for the icon)
+  const token = useMemo(
+    () => getBestTokenForSymbol(symbol, tokens, chains),
+    [chains, symbol, tokens]
+  )
+
+  const summary = useMemo(() => {
+    if (!balances.sorted.length) return DEFAULT_SUMMARY
+
+    const tokenBalances = balances.sorted.filter((b) => b.token?.symbol === symbol)
+    const fiatDefaultValue = tokenBalances.some((b) => b.token?.rates) ? 0 : null
 
     // sum is only available for fiat, so we sum ourselves both tokens & fiat
-    const summary = balances.sorted.reduce<BalanceSummary>(
+    const summary = tokenBalances.reduce<BalanceSummary>(
       (
         {
           totalTokens,
@@ -49,34 +76,36 @@ export const useTokenBalancesSummary = (balances: Balances) => {
         b
       ) => ({
         totalTokens: totalTokens + b.total.planck,
-        totalFiat: token?.rates ? totalFiat! + (b.total.fiat("usd") ?? 0) : null,
+        totalFiat: b.token?.rates ? totalFiat! + (b.total.fiat("usd") ?? 0) : totalFiat,
         lockedTokens: lockedTokens + b.frozen.planck + b.reserved.planck,
-        lockedFiat: token?.rates
+        lockedFiat: b.token?.rates
           ? lockedFiat! + (b.frozen.fiat("usd") ?? 0) + (b.reserved.fiat("usd") ?? 0)
-          : null,
+          : lockedFiat,
         reservedTokens: reservedTokens + b.reserved.planck,
-        reservedFiat: token?.rates ? reservedFiat! + (b.reserved.fiat("usd") ?? 0) : null,
+        reservedFiat: b.token?.rates ? reservedFiat! + (b.reserved.fiat("usd") ?? 0) : reservedFiat,
         frozenTokens: frozenTokens + b.frozen.planck,
-        frozenFiat: token?.rates ? frozenFiat! + (b.frozen.fiat("usd") ?? 0) : null,
+        frozenFiat: b.token?.rates ? frozenFiat! + (b.frozen.fiat("usd") ?? 0) : frozenFiat,
         availableTokens: availableTokens + b.transferable.planck,
-        availableFiat: token?.rates ? availableFiat! + (b.transferable.fiat("usd") ?? 0) : null,
+        availableFiat: b.token?.rates
+          ? availableFiat! + (b.transferable.fiat("usd") ?? 0)
+          : availableFiat,
       }),
       {
         totalTokens: BigInt(0),
-        totalFiat: token?.rates ? 0 : null,
+        totalFiat: fiatDefaultValue,
         lockedTokens: BigInt(0),
-        lockedFiat: token?.rates ? 0 : null,
+        lockedFiat: fiatDefaultValue,
         reservedTokens: BigInt(0),
-        reservedFiat: token?.rates ? 0 : null,
+        reservedFiat: fiatDefaultValue,
         frozenTokens: BigInt(0),
-        frozenFiat: token?.rates ? 0 : null,
+        frozenFiat: fiatDefaultValue,
         availableTokens: BigInt(0),
-        availableFiat: token?.rates ? 0 : null,
+        availableFiat: fiatDefaultValue,
       }
     )
 
-    return { token, summary }
-  }, [balances])
+    return summary
+  }, [balances, symbol])
 
   return { token, summary }
 }

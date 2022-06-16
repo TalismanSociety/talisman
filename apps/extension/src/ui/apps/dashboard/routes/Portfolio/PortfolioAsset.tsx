@@ -40,18 +40,16 @@ const BackButton = styled.button`
 `
 
 // memoise to re-render only if balances object changes
-const PageContent = React.memo(({ balances }: { balances: Balances }) => {
+const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
-  const { token, summary } = useTokenBalancesSummary(balancesToDisplay)
+  const { token, summary } = useTokenBalancesSummary(balancesToDisplay, symbol)
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
 
-  if (!summary || !token) return null
-
   return (
-    <FadeIn>
-      <Box flex fullwidth gap={1.6}>
+    <div>
+      <Box flex fullwidth gap={1.6} height={9.6}>
         <Box grow flex column gap={1.6} justify="center">
           <BackButton type="button" onClick={handleBackBtnClick}>
             <ChevronLeftIcon />
@@ -59,9 +57,9 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
           </BackButton>
           <Box flex align="center" gap={0.8}>
             <Box fontsize="large">
-              <TokenLogo tokenId={token.id} />
+              <TokenLogo tokenId={token?.id} />
             </Box>
-            <Box fontsize="medium">{token.symbol}</Box>
+            <Box fontsize="medium">{token?.symbol}</Box>
           </Box>
         </Box>
         <Stats
@@ -69,6 +67,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
           tokens={summary.totalTokens}
           fiat={summary.totalFiat}
           token={token}
+          showTokens
         />
         <Stats
           title="Locked"
@@ -76,21 +75,23 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
           fiat={summary.lockedFiat}
           token={token}
           locked
+          showTokens
         />
         <Stats
           title="Available"
           tokens={summary.availableTokens}
           fiat={summary.availableFiat}
           token={token}
+          showTokens
         />
       </Box>
       <Box margin="3.8rem 0 0 0">
         <NetworkPicker />
       </Box>
       <Box margin="4.8rem 0 0 0">
-        <AssetDetails balances={balancesToDisplay} />
+        <AssetDetails balances={balancesToDisplay} symbol={symbol} />
       </Box>
-    </FadeIn>
+    </div>
   )
 })
 
@@ -103,5 +104,5 @@ export const PortfolioAsset = () => {
     [allBalances.sorted, symbol]
   )
 
-  return <PageContent balances={balances} />
+  return <PageContent balances={balances} symbol={symbol!} />
 }
