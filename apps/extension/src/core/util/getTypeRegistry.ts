@@ -1,6 +1,6 @@
 import RpcFactory from "@core/libs/RpcFactory"
 import { getRegistry } from "@substrate/txwrapper-polkadot"
-import { getMetadaRpc } from "./getMetadaRpc"
+import { getMetadataRpc } from "./getMetadataRpc"
 import { getRuntimeVersion } from "./getRuntimeVersion"
 
 export const getTypeRegistry = async (chainId: string, blockHash?: string) => {
@@ -8,7 +8,7 @@ export const getTypeRegistry = async (chainId: string, blockHash?: string) => {
     RpcFactory.send(chainId, "system_chain", []),
     RpcFactory.send(chainId, "system_properties", []),
     getRuntimeVersion(chainId, blockHash),
-    getMetadaRpc(chainId, blockHash),
+    getMetadataRpc(chainId, blockHash),
   ])
 
   // type mismatch but compatible
