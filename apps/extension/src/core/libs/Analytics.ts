@@ -103,28 +103,31 @@ class TalismanAnalytics {
 
     // balances top 5 tokens/networks
     // get Balance list per chain/evmNetwork and token
-    const balancesPerChainToken: Record<string, Balances> = Object.values(balances).reduce(
-      (result, balance) => {
+    const balancesPerChainToken: Record<string, Balance[]> = Object.values(
+      balances.toJSON()
+    ).reduce((result, balance) => {
+      if (balance) {
         const key = `${balance.chainId || balance.evmNetworkId}-${balance.tokenId}`
         if (!result[key]) result[key] = []
         result[key].push(new Balance(balance))
-        return result
-      },
-      {} as { [key: string]: Balance[] }
-    )
+      }
+      return result
+    }, {} as { [key: string]: Balance[] })
 
     // get fiat sum object for those arrays of Balances
     const fiatSumPerChainToken = await Promise.all(
       Object.values(balancesPerChainToken).map(async (balances) => {
+        const balancesInstance = new Balances(balances, { chains, evmNetworks, tokens })
         return {
-          balance: balances.sum.fiat("usd").total,
-          chainId: balances.sorted[0].chainId || balances.sorted[0].evmNetworkId,
-          tokenId: balances.sorted[0].tokenId,
+          balance: balancesInstance.sum.fiat("usd").total,
+          chainId: balancesInstance.sorted[0].chainId || balancesInstance.sorted[0].evmNetworkId,
+          tokenId: balancesInstance.sorted[0].tokenId,
         }
       })
     ).then((fiatBalances) => fiatBalances.sort((a, b) => b.balance - a.balance))
 
     const topChainTokens = fiatSumPerChainToken
+      .filter(({ balance }) => balance > 0)
       .map(({ chainId, tokenId }) => ({ chainId, tokenId }))
       .slice(0, 5)
 
