@@ -52,6 +52,16 @@ class TalismanAnalytics {
     }
   }
 
+  async captureDelayed(
+    eventName: string,
+    properties?: posthog.Properties,
+    delaySeconds: number = 900
+  ) {
+    setTimeout(() => {
+      this.capture(eventName, properties)
+    }, delaySeconds * 1000 * Math.random())
+  }
+
   async sendGeneralReport() {
     /*
     // This should get sent at most once per 24 hours, whenever any other events get sent
