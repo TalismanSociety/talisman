@@ -1,8 +1,8 @@
 import { Balances } from "@core/types"
 import { Box } from "@talisman/components/Box"
 import { classNames } from "@talisman/util/classNames"
+import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
-import { useHydrateBalances } from "@ui/hooks/useHydrateBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import { Fragment, useMemo } from "react"
 import styled from "styled-components"
@@ -188,7 +188,7 @@ type AssetsTableProps = {
 
 export const AssetDetails = ({ balances }: AssetsTableProps) => {
   const balancesToDisplay = useDisplayBalances(balances)
-  const hydrate = useHydrateBalances()
+  const { hydrate } = usePortfolio()
 
   const balancesByChain = useMemo(() => {
     const chainIds = [

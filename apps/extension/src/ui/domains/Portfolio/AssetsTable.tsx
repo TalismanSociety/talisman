@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "./AssetBalanceCellValue"
+import { usePortfolio } from "./context"
 import { ChainLogoStack } from "./LogoStack"
 
 const Table = styled.table`
@@ -50,14 +51,25 @@ type AssetRowProps = {
 }
 
 export const AssetRow = ({ balances }: AssetRowProps) => {
-  const { chainId, chainIds } = useMemo(() => {
+  const { chains, evmNetworks } = usePortfolio()
+  const { logoIds } = useMemo(() => {
     const { sorted } = balances
-    const { chainId } = sorted[0]
     const chainIds = [
-      ...new Set(sorted.filter((b) => b.total.planck > 0).map((b) => b.chainId)),
-    ] as string[]
-    return { chainId, chainIds }
-  }, [balances])
+      ...new Set(
+        sorted.filter((b) => b.total.planck > 0).map((b) => b.chain?.id ?? b.evmNetwork?.id)
+      ),
+    ]
+    const logoIds = chainIds
+      .map((id) => {
+        const chain = chains?.find((c) => c.id === id)
+        if (chain) return chain.id
+        const evmNetwork = evmNetworks?.find((n) => n.id === id)
+        if (evmNetwork) return evmNetwork.substrateChain?.id ?? evmNetwork.id
+        return undefined
+      })
+      .filter((id) => id !== undefined) as string[]
+    return { chainIds, logoIds }
+  }, [balances, chains, evmNetworks])
 
   const { token, summary } = useTokenBalancesSummary(balances)
 
@@ -79,9 +91,9 @@ export const AssetRow = ({ balances }: AssetRowProps) => {
             <Box fontsize="normal" bold fg="foreground">
               {token.symbol}
             </Box>
-            {chainIds?.length > 1 && (
+            {logoIds?.length > 1 && (
               <div>
-                <ChainLogoStack chainIds={chainIds} />
+                <ChainLogoStack chainIds={logoIds} />
               </div>
             )}
           </Box>

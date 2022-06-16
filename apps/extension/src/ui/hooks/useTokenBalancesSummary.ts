@@ -18,11 +18,11 @@ export const useTokenBalancesSummary = (balances: Balances) => {
   const { token, summary } = useMemo(() => {
     if (!balances.sorted.length) return {}
 
-    const firstSymbol = balances.sorted[0]?.token?.symbol
-    const isSharedSymbol =
-      !!firstSymbol && balances.sorted.every((b) => b.token?.symbol === firstSymbol)
+    const token = balances.sorted[0]?.token
+    if (!token) return {}
 
     // summary makes sense only if the token is shared by all balances
+    const isSharedSymbol = balances.sorted.every((b) => b.token?.symbol === token.symbol)
     if (!isSharedSymbol) {
       // eslint-disable-next-line no-console
       console.warn("useTokenBalancesSummary: balances are not shared by the same token", [
@@ -30,9 +30,6 @@ export const useTokenBalancesSummary = (balances: Balances) => {
       ])
       return {}
     }
-
-    const token = (isSharedSymbol && balances.sorted[0].token) ?? undefined
-    if (!token) return {}
 
     // sum is only available for fiat, so we sum ourselves both tokens & fiat
     const summary = balances.sorted.reduce<BalanceSummary>(

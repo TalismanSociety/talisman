@@ -17,7 +17,7 @@ type BoxProps = {
   width?: CSSProperties["width"]
   fullwidth?: boolean
   fullheight?: boolean
-  clip?: boolean // true = overflow hidden
+  hidden?: boolean // true = overflow hidden
 
   // layout
   gap?: number
@@ -33,9 +33,15 @@ type BoxProps = {
   border?: CSSProperties["border"]
   borderradius?: boolean | keyof typeof BorderRadius
 
+  // transitions
+  transition?: boolean
+  speed?: "fast" | "slow" | "slower" | "xslower"
+  easing?: "linear" | "ease-in" | "ease-out" | "ease-in-out"
+
   // colors
   fg?: keyof DefaultTheme
   bg?: keyof DefaultTheme
+  opacity?: number
 
   // fonts
   bold?: boolean
@@ -80,6 +86,13 @@ const getDimensionProp = (props: BoxProps, prop: "margin" | "padding") => {
   return props[prop]
 }
 
+const getTransition = (props: BoxProps) => {
+  if (!props.transition) return undefined
+  const speed =
+    props.speed !== undefined ? `var(--transition-speed-${props.speed})` : "var(--transition-speed)"
+  return `all ${speed} ${props.easing ?? "ease-in-out"}`
+}
+
 // generic method in case we want to reuse it on span or other tags
 const boxPropsInjector = (props: BoxProps): CSSObject => {
   return {
@@ -88,7 +101,7 @@ const boxPropsInjector = (props: BoxProps): CSSObject => {
     width: props.fullwidth ? "100%" : getSize(props.width),
     height: props.fullheight ? "100%" : getSize(props.height),
     flexGrow: !!props.grow ? "1" : undefined,
-    overflow: props.clip ? "hidden" : undefined,
+    overflow: props.hidden ? "hidden" : undefined,
     borderRadius: getBorderRadius(props),
     textAlign: props.textalign,
     justifyContent: props.justify,
@@ -101,6 +114,8 @@ const boxPropsInjector = (props: BoxProps): CSSObject => {
     margin: getDimensionProp(props, "margin"),
     border: props.border,
     fontWeight: getFontWeight(props),
+    transition: getTransition(props),
+    opacity: props.opacity !== undefined ? props.opacity : undefined,
   }
 }
 

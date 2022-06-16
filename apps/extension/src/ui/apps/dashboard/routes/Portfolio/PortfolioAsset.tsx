@@ -1,18 +1,17 @@
 import { Balances } from "@core/types"
 import { Box } from "@talisman/components/Box"
+import { FadeIn } from "@talisman/components/FadeIn"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { AssetDetails } from "@ui/domains/Portfolio/AssetDetails"
+import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
-import useBalances from "@ui/hooks/useBalances"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import React, { useCallback, useMemo } from "react"
-import { Navigate, useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import styled from "styled-components"
-import { useSelectedAccount } from "../../context"
-import Layout from "../../layout"
+import { usePortfolio } from "@ui/domains/Portfolio/context"
 
 const Stats = styled(Statistics)`
   max-width: 40%;
@@ -48,85 +47,61 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
 
+  if (!summary || !token) return null
+
   return (
-    <Layout centered large>
-      {summary && !!token && (
-        <>
-          <Box flex fullwidth gap={1.6}>
-            <Box grow flex column gap={1.6} justify="center">
-              <BackButton type="button" onClick={handleBackBtnClick}>
-                <ChevronLeftIcon />
-                Asset
-              </BackButton>
-              <Box flex align="center" gap={0.8}>
-                <Box fontsize="large">
-                  <TokenLogo tokenId={token.id} />
-                </Box>
-                <Box fontsize="medium">{token.symbol}</Box>
-              </Box>
+    <FadeIn>
+      <Box flex fullwidth gap={1.6}>
+        <Box grow flex column gap={1.6} justify="center">
+          <BackButton type="button" onClick={handleBackBtnClick}>
+            <ChevronLeftIcon />
+            Asset
+          </BackButton>
+          <Box flex align="center" gap={0.8}>
+            <Box fontsize="large">
+              <TokenLogo tokenId={token.id} />
             </Box>
-            <Stats
-              title="Total Asset Value"
-              tokens={summary.totalTokens}
-              fiat={summary.totalFiat}
-              token={token}
-            />
-            <Stats
-              title="Locked"
-              tokens={summary.lockedTokens}
-              fiat={summary.lockedFiat}
-              token={token}
-              locked
-            />
-            <Stats
-              title="Available"
-              tokens={summary.availableTokens}
-              fiat={summary.availableFiat}
-              token={token}
-            />
+            <Box fontsize="medium">{token.symbol}</Box>
           </Box>
-          <Box margin="4.8rem 0 0 0">
-            <AssetDetails balances={balancesToDisplay} />
-          </Box>
-        </>
-      )}
-    </Layout>
+        </Box>
+        <Stats
+          title="Total Asset Value"
+          tokens={summary.totalTokens}
+          fiat={summary.totalFiat}
+          token={token}
+        />
+        <Stats
+          title="Locked"
+          tokens={summary.lockedTokens}
+          fiat={summary.lockedFiat}
+          token={token}
+          locked
+        />
+        <Stats
+          title="Available"
+          tokens={summary.availableTokens}
+          fiat={summary.availableFiat}
+          token={token}
+        />
+      </Box>
+      <Box margin="3.8rem 0 0 0">
+        <NetworkPicker />
+      </Box>
+      <Box margin="4.8rem 0 0 0">
+        <AssetDetails balances={balancesToDisplay} />
+      </Box>
+    </FadeIn>
   )
 })
 
-const SingleAccountAssetsTable = ({ address, symbol }: { address: string; symbol: string }) => {
-  const allBalances = useBalancesByAddress(address)
-
-  const balances = useMemo(
-    () => new Balances(allBalances.sorted.filter((b) => b.token?.symbol === symbol)),
-    [allBalances.sorted, symbol]
-  )
-
-  return <PageContent balances={balances} />
-}
-
-const AllAccountsAssetsTable = ({ symbol }: { symbol: string }) => {
-  const allBalances = useBalances()
-
-  const balances = useMemo(
-    () => new Balances(allBalances.sorted.filter((b) => b.token?.symbol === symbol)),
-    [allBalances.sorted, symbol]
-  )
-
-  return <PageContent balances={balances} />
-}
-
 export const PortfolioAsset = () => {
-  const routerParams = useParams()
-  const { account } = useSelectedAccount()
+  const { symbol } = useParams()
+  const { balances: allBalances } = usePortfolio()
 
-  const { symbol } = routerParams
-
-  if (!symbol) return <Navigate to="/portfolio" />
-
-  return account ? (
-    <SingleAccountAssetsTable address={account.address} symbol={symbol} />
-  ) : (
-    <AllAccountsAssetsTable symbol={symbol} />
+  const balances = useMemo(
+    () => new Balances(allBalances.sorted.filter((b) => b.token?.symbol === symbol)),
+    [allBalances.sorted, symbol]
   )
+
+  return <PageContent balances={balances} />
 }
