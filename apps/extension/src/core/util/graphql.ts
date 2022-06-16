@@ -17,7 +17,6 @@ export const ChainFragment = gql`
     nativeToken {
       id
     }
-    tokensCurrencyIdIndex
     tokens(orderBy: id_ASC) {
       id
     }
@@ -96,14 +95,14 @@ export const TokenFragment = gql`
   fragment OrmlToken on OrmlToken {
     ...IToken
     existentialDeposit
-    index
+    stateKey
     chain {
       id
     }
   }
   fragment LiquidCrowdloanToken on LiquidCrowdloanToken {
     ...IToken
-    index
+    stateKey
     chain {
       id
     }
