@@ -7,10 +7,10 @@ const H1 = styled.h1`
 `
 
 const H3 = styled.h3`
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.8rem;
 `
 
-const CircleTickIcon = styled(CheckCircleIcon)`
+const StyledCheckCircleIcon = styled(CheckCircleIcon)`
   color: var(--color-primary);
   width: 1.8rem;
   height: 1.8rem;
@@ -62,32 +62,36 @@ export const AnalyticsOptInInfo: FC<{
         applications with ease. To help improve our product and features we'd like to collect
         anonymous usage information. This is optional, and you can opt-out at any time.
       </p>
-      <H3>What we track</H3>
-      <TickList tick>
-        <li>
-          <CircleTickIcon />
-          Anonymous user data
-        </li>
-        <li>
-          <CircleTickIcon />
-          Basic UI metrics
-        </li>
-      </TickList>
-      <H3>What we don't track</H3>
-      <TickList>
-        <li>
-          <StyledXIcon />
-          Identifying personal data such as IP addresses
-        </li>
-        <li>
-          <StyledXIcon />
-          Secret phrases or private keys
-        </li>
-        <li>
-          <StyledXIcon />
-          Public addresses
-        </li>
-      </TickList>
+      <div>
+        <H3>What we track</H3>
+        <TickList tick>
+          <li>
+            <StyledCheckCircleIcon />
+            Anonymous user data
+          </li>
+          <li>
+            <StyledCheckCircleIcon />
+            Basic UI metrics
+          </li>
+        </TickList>
+      </div>
+      <div>
+        <H3>What we don't track</H3>
+        <TickList>
+          <li>
+            <StyledXIcon />
+            Identifying personal data such as IP addresses
+          </li>
+          <li>
+            <StyledXIcon />
+            Secret phrases or private keys
+          </li>
+          <li>
+            <StyledXIcon />
+            Public addresses
+          </li>
+        </TickList>
+      </div>
       {children}
       <MoreInfoText>
         For more information please read our{" "}

@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import posthog from "posthog-js"
 
 const unsafeProperties = [
@@ -29,6 +30,7 @@ const unsafeProperties = [
 const talismanProperties = {
   appVersion: process.env.VERSION,
   appBuild: process.env.BUILD,
+  testBuild: DEBUG || process.env.BUILD === "qa",
 }
 
 export const initPosthog = (allowTracking: boolean = false) => {
