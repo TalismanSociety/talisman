@@ -20,6 +20,13 @@ const Container = styled.div<{ isOpen?: boolean }>`
     padding: 0;
   }
 
+  input::placeholder {
+    color: var(--color-mid);
+  }
+  input:focus::placeholder {
+    color: rgba(var(--color-mid-raw), 0.5);
+  }
+
   button {
     background: transparent;
     color: var(--color-mid);
