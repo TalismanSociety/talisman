@@ -1,10 +1,11 @@
 import { Balance, Balances } from "@core/types"
+import { rectToClientRect } from "@floating-ui/core"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames } from "@talisman/util/classNames"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Skeleton from "react-loading-skeleton"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -142,10 +143,11 @@ type AssetRowProps = {
 export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
   const { chains, evmNetworks } = usePortfolio()
   const { logoIds } = useMemo(() => {
-    const { sorted } = balances
     const chainIds = [
       ...new Set(
-        sorted.filter((b) => b.total.planck > 0).map((b) => b.chain?.id ?? b.evmNetwork?.id)
+        balances.sorted
+          .filter((b) => b.total.planck > 0)
+          .map((b) => b.chain?.id ?? b.evmNetwork?.id)
       ),
     ]
     const logoIds = chainIds
@@ -158,12 +160,23 @@ export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
       })
       .filter((id) => id !== undefined) as string[]
     return { chainIds, logoIds }
-  }, [balances, chains, evmNetworks])
+  }, [balances.sorted, chains, evmNetworks])
 
-  const isFetching = useMemo(
-    () => balances.sorted.some((b) => b.status === "cache"),
-    [balances.sorted]
-  )
+  const [isFetching, setIsFetching] = useState(false)
+  useEffect(() => {
+    // if fetching, set it after a random delay between 0 and 500, otherwise all row skeletion effet would be synchronized which looks bad
+    if (balances.sorted.some((b) => b.status === "cache")) {
+      const timeout = setTimeout(() => {
+        setIsFetching(true)
+      }, Math.floor(Math.random() * 2000)) // between 0 and 500ms
+      return () => {
+        clearTimeout(timeout)
+      }
+    } else {
+      setIsFetching(false)
+      return () => {}
+    }
+  }, [balances.count, balances.sorted, symbol])
 
   const { token, summary } = useTokenBalancesSummary(balances, symbol)
 
