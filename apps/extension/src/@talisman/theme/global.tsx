@@ -261,6 +261,16 @@ const Global = createGlobalStyle`
     }
   }
 
+  @keyframes bg-slide-x {
+    0% {background-opacity: 0;}
+    50% {background-opacity: 1;}
+    100% {background-opacity: 0;}
+    to {
+      background-position: 130% 0, 0 0;
+    }
+  }
+  
+
 `
 
 export default Global

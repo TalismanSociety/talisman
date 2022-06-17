@@ -1,16 +1,17 @@
 import { Balance, Balances } from "@core/types"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
+import { classNames } from "@talisman/util/classNames"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import { useCallback, useMemo } from "react"
+import Skeleton from "react-loading-skeleton"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import { TokenLogo } from "../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "./AssetBalanceCellValue"
 import { usePortfolio } from "./context"
 import { ChainLogoStack } from "./LogoStack"
-import { NoTokensMessage } from "./NoTokensMessage"
 
 const Table = styled.table`
   border-spacing: 0 0.8rem;
@@ -27,9 +28,11 @@ const Table = styled.table`
   }
 
   tbody tr.asset {
-    cursor: pointer;
+    :not(.skeleton) {
+      cursor: pointer;
+    }
     background: var(--color-background-muted);
-    :hover {
+    :not(.skeleton):hover {
       background: var(--color-background-muted-3x);
     }
 
@@ -41,12 +44,95 @@ const Table = styled.table`
       border-top-right-radius: var(--border-radius);
       border-bottom-right-radius: var(--border-radius);
     }
+
+    &.fetching {
+      background: linear-gradient(
+          to right,
+          rgba(var(--color-mid-raw), 0),
+          rgba(var(--color-mid-raw), 0.1) 70%,
+          rgba(var(--color-mid-raw), 0) 100%
+        ),
+        var(--color-background-muted);
+      background-repeat: repeat-y;
+      background-size: 20% 500px;
+      background-position: 0 0;
+      animation: bg-slide-x 2.5s infinite;
+    }
   }
 
   .noPadRight {
     padding-right: 0;
   }
+  .opacity-1 {
+    opacity: 0.8;
+  }
+  .opacity-2 {
+    opacity: 0.6;
+  }
+  .opacity-3 {
+    opacity: 0.4;
+  }
 `
+
+const AssetRowSkeleton = ({ className }: { className?: string }) => {
+  return (
+    <tr className={classNames("asset skeleton", className)}>
+      <td valign="top">
+        <Box flex opacity={0.3}>
+          <Box padding="1.6rem" fontsize="xlarge">
+            <Skeleton
+              baseColor="#5A5A5A"
+              highlightColor="#A5A5A5"
+              width={"3.2rem"}
+              height={"3.2rem"}
+              circle
+            />
+          </Box>
+          <Box grow flex column justify="center" gap={0.4}>
+            <Box fontsize="normal" bold fg="foreground">
+              <Skeleton
+                baseColor="#5A5A5A"
+                highlightColor="#A5A5A5"
+                width={"4rem"}
+                height={"1.6rem"}
+              />
+            </Box>
+          </Box>
+        </Box>
+      </td>
+      <td valign="top"></td>
+      <td valign="top">
+        <Box
+          flex
+          opacity={0.3}
+          height={6.6}
+          column
+          justify="center"
+          gap={0.4}
+          textalign="right"
+          padding="1.6rem"
+        >
+          <Box fg="foreground">
+            <Skeleton
+              baseColor="#5A5A5A"
+              highlightColor="#A5A5A5"
+              width={"10rem"}
+              height={"1.6rem"}
+            />
+          </Box>
+          <div>
+            <Skeleton
+              baseColor="#5A5A5A"
+              highlightColor="#A5A5A5"
+              width={"6rem"}
+              height={"1.6rem"}
+            />
+          </div>
+        </Box>
+      </td>
+    </tr>
+  )
+}
 
 type AssetRowProps = {
   balances: Balances
@@ -74,6 +160,11 @@ export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
     return { chainIds, logoIds }
   }, [balances, chains, evmNetworks])
 
+  const isFetching = useMemo(
+    () => balances.sorted.some((b) => b.status === "cache"),
+    [balances.sorted]
+  )
+
   const { token, summary } = useTokenBalancesSummary(balances, symbol)
 
   const navigate = useNavigate()
@@ -84,7 +175,7 @@ export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
   if (!token || !summary) return null
 
   return (
-    <tr className="asset" onClick={handleClick}>
+    <tr className={classNames("asset", isFetching && "fetching")} onClick={handleClick}>
       <td valign="top">
         <Box flex>
           <Box padding="1.6rem" fontsize="xlarge">
@@ -152,7 +243,7 @@ export const AssetsTable = ({ balances }: AssetsTableProps) => {
   // wait for dictionnary to be populated to avoir column header flickering
   // (it will always contain ksm/dot or glmr/movr, but is empty on very first render)
   const rows = Object.entries(balancesByToken)
-  if (rows.length === 0) return null
+  // if (rows.length === 0) return null
 
   return (
     <Table>
@@ -164,8 +255,16 @@ export const AssetsTable = ({ balances }: AssetsTableProps) => {
         </tr>
       </thead>
       <tbody>
-        {balancesByToken &&
-          rows.map(([symbol, b]) => <AssetRow key={symbol} balances={b} symbol={symbol} />)}
+        {rows?.length ? (
+          rows.map(([symbol, b]) => <AssetRow key={symbol} balances={b} symbol={symbol} />)
+        ) : (
+          <>
+            <AssetRowSkeleton />
+            <AssetRowSkeleton className="opacity-1" />
+            <AssetRowSkeleton className="opacity-2" />
+            <AssetRowSkeleton className="opacity-3" />
+          </>
+        )}
       </tbody>
     </Table>
   )
