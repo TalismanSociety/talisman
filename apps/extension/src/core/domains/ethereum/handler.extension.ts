@@ -130,7 +130,7 @@ export class EthHandler extends ExtensionHandler {
 
       resolve(hash)
 
-      talismanAnalytics.capture("sign transaction approve", {
+      talismanAnalytics.captureDelayed("sign transaction approve", {
         type: "evm sign and send",
         dapp: queued.url,
         chain: queued.ethChainId,
@@ -166,7 +166,7 @@ export class EthHandler extends ExtensionHandler {
       const signature = await pair.sign(addSafeSigningPrefix(request))
       resolve(u8aToHex(signature))
 
-      talismanAnalytics.capture("sign transaction approve", {
+      talismanAnalytics.captureDelayed("sign transaction approve", {
         type: "evm sign",
         dapp: queued.url,
         chain: queued.ethChainId,

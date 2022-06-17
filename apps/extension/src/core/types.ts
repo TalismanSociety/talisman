@@ -449,7 +449,6 @@ export type Chain = {
   specName: string | null // The spec name of this chain
   specVersion: string | null // The spec version of this chain
   nativeToken: { id: TokenId } | null // The nativeToken of this chain
-  tokensCurrencyIdIndex: number | null // The CurrencyId::Token index of this chain. Used to id orml tokens when communicating with the chain.
   tokens: Array<{ id: TokenId }> | null // The ORML tokens for this chain
   account: string | null // The account address format of this chain
   subscanUrl: string | null // The subscan endpoint of this chain
@@ -538,8 +537,6 @@ export type TokenList = Record<TokenId, Token>
 
 export type TokenId = string
 
-export type TokenIndex = number
-
 export type Token = NativeToken | CustomNativeToken | OrmlToken | Erc20Token | CustomErc20Token
 export type IToken = {
   id: TokenId
@@ -562,7 +559,7 @@ export type CustomNativeToken = NativeToken & {
 export type OrmlToken = IToken & {
   type: "orml"
   existentialDeposit: string
-  index: TokenIndex
+  stateKey: `0x${string}`
   chain: { id: ChainId }
 }
 export type Erc20Token = IToken & {

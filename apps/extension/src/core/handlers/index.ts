@@ -45,7 +45,16 @@ const talismanHandler = <TMessageType extends MessageTypes>(
       // the tab, in which case port will be undefined
       assert(port, "Port has been disconnected")
 
-      port.postMessage({ id, response })
+      try {
+        port.postMessage({ id, response })
+      } catch (e) {
+        if (e instanceof Error && e.message === "Attempting to use a disconnected port object") {
+          // this means that the user has done something like close the tab
+          port.disconnect()
+          return
+        }
+        throw e
+      }
     })
     .catch((error: Error): void => {
       // eslint-disable-next-line no-console
