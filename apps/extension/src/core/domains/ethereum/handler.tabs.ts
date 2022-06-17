@@ -30,6 +30,7 @@ import { ethers, providers } from "ethers"
 import keyring from "@polkadot/ui-keyring"
 import { getProviderForEvmNetworkId, getProviderForEthereumNetwork } from "./networksStore"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
+import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
   ethAddresses: AuthorizedSiteAddresses
@@ -295,10 +296,11 @@ export class EthTabsHandler extends TabsHandler {
       // if 4901 most likely the chain has been unregistered from our ethereum network store
       // returning undefined here should indicate client that network has to be added again
       if ((err as EthProviderRpcError)?.code === ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
-        return undefined
+        return ethers.utils.hexValue(DEFAULT_ETH_CHAIN_ID)
 
       // if 4100 the dapp has not been authorized yet
-      if ((err as EthProviderRpcError)?.code === ETH_ERROR_EIP1993_UNAUTHORIZED) return undefined
+      if ((err as EthProviderRpcError)?.code === ETH_ERROR_EIP1993_UNAUTHORIZED)
+        return ethers.utils.hexValue(DEFAULT_ETH_CHAIN_ID)
 
       // otherwise throw
       throw err
