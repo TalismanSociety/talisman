@@ -1,23 +1,22 @@
-import blake2Concat from "@talisman/util/blake2Concat"
-import hasOwnProperty from "@talisman/util/hasOwnProperty"
+import { DEBUG } from "@core/constants"
+import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
-import { chainStore } from "@core/domains/chains"
-import { decodeAnyAddress } from "@core/util"
-import { u8aToHex } from "@polkadot/util"
-import { TypeRegistry, createType } from "@polkadot/types"
 import {
   Address,
   AddressesByChain,
   Balance,
   Balances,
-  ChainId,
   Chain,
+  ChainId,
   SubscriptionCallback,
   UnsubscribeFn,
 } from "@core/types"
+import { decodeAnyAddress } from "@core/util"
+import { TypeRegistry, createType } from "@polkadot/types"
+import { u8aToHex } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
-import { DEBUG } from "@core/constants"
-import { db } from "@core/libs/db"
+import blake2Concat from "@talisman/util/blake2Concat"
+import hasOwnProperty from "@talisman/util/hasOwnProperty"
 
 // System.Account is the state_storage key prefix for nativeToken balances
 const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);

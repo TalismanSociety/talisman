@@ -448,18 +448,6 @@ export class EthTabsHandler extends TabsHandler {
         return this.signMessage(url, request as EthRequestArguments<"eth_sign">)
       }
 
-      case "eth_getBlockByHash":
-      case "eth_getBlockByNumber": {
-        const {
-          params: [blockTag, withTransactions],
-        } = request as EthRequestArguments<"eth_getBlockByHash">
-        const provider = await this.getProvider(url)
-        if (withTransactions) {
-          return await provider.getBlockWithTransactions(blockTag)
-        }
-        return await provider.getBlock(blockTag)
-      }
-
       case "eth_sendTransaction": {
         const {
           params: [txRequest],

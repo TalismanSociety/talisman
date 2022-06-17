@@ -1,7 +1,7 @@
 import { DEBUG } from "@core/constants"
 import { db } from "@core/libs/db"
 import { Erc20Token, IToken, NativeToken, OrmlToken, Token, TokenList } from "@core/types"
-import { graphqlUrl, TokenFragment } from "@core/util/graphql"
+import { TokenFragment, graphqlUrl } from "@core/util/graphql"
 import { print } from "graphql"
 import gql from "graphql-tag"
 
@@ -112,7 +112,7 @@ const tokensResponseToTokenList = (tokens: unknown[]): TokenList =>
           const ormlToken: OrmlToken = {
             ...commonTokenFields(token, tokenType),
             existentialDeposit: token.squidImplementationDetail.existentialDeposit,
-            index: token.squidImplementationDetail.index,
+            stateKey: token.squidImplementationDetail.stateKey,
             chain: token.squidImplementationDetail.chain,
           }
           return { ...allTokens, [ormlToken.id]: ormlToken }

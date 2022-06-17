@@ -1,11 +1,6 @@
-import blake2Concat from "@talisman/util/blake2Concat"
-import hasOwnProperty from "@talisman/util/hasOwnProperty"
+import { DEBUG } from "@core/constants"
+import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
-import { chainStore } from "@core/domains/chains"
-import { tokenStore } from "@core/domains/tokens"
-import { decodeAnyAddress } from "@core/util"
-import twox64Concat from "@talisman/util/twox64Concat"
-import { TypeRegistry, createType } from "@polkadot/types"
 import {
   Address,
   AddressesByChain,
@@ -13,13 +8,15 @@ import {
   Balances,
   Chain,
   ChainId,
-  SubscriptionCallback,
   OrmlToken,
+  SubscriptionCallback,
   UnsubscribeFn,
 } from "@core/types"
+import { decodeAnyAddress } from "@core/util"
+import { TypeRegistry, createType } from "@polkadot/types"
 import * as Sentry from "@sentry/browser"
-import { DEBUG } from "@core/constants"
-import { db } from "@core/libs/db"
+import blake2Concat from "@talisman/util/blake2Concat"
+import hasOwnProperty from "@talisman/util/hasOwnProperty"
 
 // Tokens.Account is the state_storage key prefix for orml tokens
 const moduleHash = "99971b5749ac43e0235e41b0d3786918" // xxhashAsHex("Tokens", 128).replace("0x", "")
@@ -94,10 +91,10 @@ export default class OrmlTokensRpc {
     const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
     const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
     const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
-    const params = this.buildParams(addresses, chain.tokensCurrencyIdIndex, tokens)
+    const params = this.buildParams(addresses, tokens)
 
     // build lookup table of `rpc hex output` -> `input address`
-    const references = this.buildReferences(addresses, chain.tokensCurrencyIdIndex, tokens)
+    const references = this.buildReferences(addresses, tokens)
 
     // set up subscription
     const unsubscribe = await RpcFactory.subscribe(
@@ -132,10 +129,10 @@ export default class OrmlTokensRpc {
 
     // set up method and params
     const method = "state_queryStorageAt" // method we call to fetch
-    const params = this.buildParams(addresses, chain.tokensCurrencyIdIndex, tokens)
+    const params = this.buildParams(addresses, tokens)
 
     // build lookup table of `rpc hex output` -> `input address`
-    const references = this.buildReferences(addresses, chain.tokensCurrencyIdIndex, tokens)
+    const references = this.buildReferences(addresses, tokens)
 
     // query rpc
     const response = await RpcFactory.send(chainId, method, params)
@@ -150,16 +147,11 @@ export default class OrmlTokensRpc {
    * @param addresses - The addresses to query.
    * @returns The params to be sent to the RPC.
    */
-  private static buildParams(
-    addresses: Address[],
-    tokensCurrencyIdIndex: number | null,
-    tokens: OrmlToken[]
-  ): string[][] {
+  private static buildParams(addresses: Address[], tokens: OrmlToken[]): string[][] {
     return [
       tokens
-        .map(({ index: tokenIndex }) =>
-          twox64Concat(new Uint8Array([tokensCurrencyIdIndex || 0, tokenIndex])).replace("0x", "")
-        )
+        .filter(({ stateKey }) => stateKey !== undefined)
+        .map(({ stateKey }) => stateKey.replace("0x", ""))
         .flatMap((tokenHash) =>
           addresses
             .map((address) => decodeAnyAddress(address))
@@ -192,24 +184,21 @@ export default class OrmlTokensRpc {
    */
   private static buildReferences(
     addresses: Address[],
-    tokensCurrencyIdIndex: number | null,
     tokens: OrmlToken[]
-  ): Array<[string, number, string]> {
+  ): Array<[string, string, string]> {
     return tokens
-      .map(({ index: tokenIndex }): [number, string] => [
-        tokenIndex,
-        twox64Concat(new Uint8Array([tokensCurrencyIdIndex || 0, tokenIndex])).replace("0x", ""),
-      ])
-      .flatMap(([index, tokenHash]) =>
+      .filter(({ stateKey }) => stateKey !== undefined)
+      .map(({ stateKey }): [string, string] => [stateKey, stateKey.replace("0x", "")])
+      .flatMap(([stateKey, tokenHash]) =>
         addresses
           .map((address): [string, Uint8Array] => [address, decodeAnyAddress(address)])
           .map(([address, addressBytes]): [string, string] => [
             address,
             blake2Concat(addressBytes).replace("0x", ""),
           ])
-          .map(([address, addressHash]): [string, number, string] => [
+          .map(([address, addressHash]): [string, string, string] => [
             address,
-            index,
+            stateKey,
             `0x${moduleStorageHash}${addressHash}${tokenHash}`,
           ])
       )
@@ -227,7 +216,7 @@ export default class OrmlTokensRpc {
   private static formatRpcResult(
     chain: Chain,
     tokens: OrmlToken[],
-    references: Array<[string, number, string]>,
+    references: Array<[string, string, string]>,
     result: unknown
   ): Balances {
     if (typeof result !== "object" || result === null) return new Balances([])
@@ -249,21 +238,21 @@ export default class OrmlTokensRpc {
           return false
         }
 
-        const [address, tokenIndex] = references.find(([, , hex]) => reference === hex) || []
-        if (address === undefined || tokenIndex === undefined) {
+        const [address, tokenStateKey] = references.find(([, , hex]) => reference === hex) || []
+        if (address === undefined || tokenStateKey === undefined) {
           const search = reference
           const set = references.map(([, , reference]) => reference).join(",\n")
-          // eslint-disable-next-line no-console
-          DEBUG && console.error(`Failed to find address + tokenIndex:\n${search} in \n${set}`)
-          Sentry.captureMessage(`Failed to find address + tokenIndex \n${search} in \n${set}`)
+          const error = `Failed to find address + stateKey:\n${search} in \n${set}`
+          DEBUG && console.error(error) // eslint-disable-line no-console
+          Sentry.captureMessage(error)
           return false
         }
 
-        const token = tokens.find(({ index }) => index === tokenIndex)
+        const token = tokens.find(({ stateKey }) => stateKey === tokenStateKey)
         if (!token) {
-          Sentry.captureMessage(
-            `Failed to find token for chain ${chain.id} tokenIndex ${tokenIndex}`
-          )
+          const error = `Failed to find token for chain ${chain.id} stateKey ${tokenStateKey}`
+          DEBUG && console.error(error) // eslint-disable-line no-console
+          Sentry.captureMessage(error)
           return false
         }
 

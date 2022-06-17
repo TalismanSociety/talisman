@@ -12,7 +12,7 @@ import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
-import { getMetadaRpc } from "@core/util/getMetadaRpc"
+import { getMetadataRpc } from "@core/util/getMetadataRpc"
 import { pendingTransfers } from "./PendingTransfers"
 import { isHardwareAccount } from "@core/handlers/helpers"
 
@@ -145,7 +145,7 @@ export default class AssetTransfersRpc {
         send("chain_getBlock"),
         send("chain_getBlockHash"),
         send("chain_getBlockHash", [0]),
-        getMetadaRpc(chainId),
+        getMetadataRpc(chainId),
         getRuntimeVersion(chainId),
         send("system_accountNextIndex", [from.address]),
         getTypeRegistry(chainId),
