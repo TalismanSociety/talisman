@@ -2,7 +2,9 @@ import { Balance, Balances } from "@core/types"
 import { rectToClientRect } from "@floating-ui/core"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
+import { LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
+import { useSelectedAccount } from "@ui/apps/dashboard/context"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -26,6 +28,9 @@ const Table = styled.table`
     font-size: 1.4rem;
     font-weight: 400;
     padding-bottom: 1rem;
+  }
+  td {
+    padding: 0;
   }
 
   tbody tr.asset {
@@ -79,7 +84,7 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
   return (
     <tr className={classNames("asset skeleton", className)}>
       <td valign="top">
-        <Box flex opacity={0.3}>
+        <Box height={6.6} flex opacity={0.3}>
           <Box padding="1.6rem" fontsize="xlarge">
             <Skeleton
               baseColor="#5A5A5A"
@@ -140,6 +145,11 @@ type AssetRowProps = {
   symbol: string
 }
 
+const FetchingIcon = styled(LoaderIcon)`
+  line-height: 1;
+  font-size: 2rem;
+`
+
 export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
   const { chains, evmNetworks } = usePortfolio()
   const { logoIds } = useMemo(() => {
@@ -162,21 +172,25 @@ export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
     return { chainIds, logoIds }
   }, [balances.sorted, chains, evmNetworks])
 
-  const [isFetching, setIsFetching] = useState(false)
-  useEffect(() => {
-    // if fetching, set it after a random delay between 0 and 500, otherwise all row skeletion effet would be synchronized which looks bad
-    if (balances.sorted.some((b) => b.status === "cache")) {
-      const timeout = setTimeout(() => {
-        setIsFetching(true)
-      }, Math.floor(Math.random() * 2000)) // between 0 and 500ms
-      return () => {
-        clearTimeout(timeout)
-      }
-    } else {
-      setIsFetching(false)
-      return () => {}
-    }
-  }, [balances.count, balances.sorted, symbol])
+  const isFetching = useMemo(
+    () => balances.sorted.some((b) => b.status === "cache"),
+    [balances.sorted]
+  )
+  // const [isFetching, setIsFetching] = useState(false)
+  // useEffect(() => {
+  //   // if fetching, set it after a random delay between 0 and 500, otherwise all row skeletion effet would be synchronized which looks bad
+  //   if () {
+  //     const timeout = setTimeout(() => {
+  //       setIsFetching(true)
+  //     }, Math.floor(Math.random() * 2000)) // between 0 and 500ms
+  //     return () => {
+  //       clearTimeout(timeout)
+  //     }
+  //   } else {
+  //     setIsFetching(false)
+  //     return () => {}
+  //   }
+  // }, [balances.count, balances.sorted, symbol])
 
   const { token, summary } = useTokenBalancesSummary(balances, symbol)
 
@@ -188,15 +202,15 @@ export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
   if (!token || !summary) return null
 
   return (
-    <tr className={classNames("asset", isFetching && "fetching")} onClick={handleClick}>
+    <tr className={classNames("asset")} onClick={handleClick}>
       <td valign="top">
         <Box flex>
           <Box padding="1.6rem" fontsize="xlarge">
             <TokenLogo tokenId={token.id} />
           </Box>
           <Box grow flex column justify="center" gap={0.4}>
-            <Box fontsize="normal" bold fg="foreground">
-              {token.symbol}
+            <Box fontsize="normal" bold fg="foreground" flex inline align="center" gap={0.6}>
+              {token.symbol} {isFetching && <FetchingIcon data-spin />}
             </Box>
             {logoIds?.length > 1 && (
               <div>
@@ -234,9 +248,10 @@ type AssetsTableProps = {
 
 export const AssetsTable = ({ balances }: AssetsTableProps) => {
   const balancesToDisplay = useDisplayBalances(balances)
+  const { account } = useSelectedAccount()
 
   // group by token (symbol)
-  const balancesByToken = useMemo(() => {
+  const rows = useMemo(() => {
     const groupedByToken = balancesToDisplay.sorted.reduce((acc, b) => {
       if (!b.token) return acc
       const key = b.token.symbol
@@ -244,19 +259,21 @@ export const AssetsTable = ({ balances }: AssetsTableProps) => {
       else acc[key] = [b]
       return acc
     }, {} as Record<string, Balance[]>)
-    return Object.entries(groupedByToken).reduce(
+    const balancesByToken = Object.entries(groupedByToken).reduce(
       (acc, [key, balances]) => ({
         ...acc,
         [key]: new Balances(balances),
       }),
       {} as Record<string, Balances>
     )
+    return Object.entries(balancesByToken)
   }, [balancesToDisplay.sorted])
 
-  // wait for dictionnary to be populated to avoir column header flickering
-  // (it will always contain ksm/dot or glmr/movr, but is empty on very first render)
-  const rows = Object.entries(balancesByToken)
-  // if (rows.length === 0) return null
+  // if specific account we have 2 rows minimum, if all accounts we have 4
+  const skeletons = useMemo(() => {
+    const expectedRows = account ? 2 : 4
+    return rows.length < expectedRows ? expectedRows - rows.length : 0
+  }, [account, rows.length])
 
   return (
     <Table>
@@ -268,16 +285,18 @@ export const AssetsTable = ({ balances }: AssetsTableProps) => {
         </tr>
       </thead>
       <tbody>
-        {rows?.length ? (
-          rows.map(([symbol, b]) => <AssetRow key={symbol} balances={b} symbol={symbol} />)
-        ) : (
-          <>
-            <AssetRowSkeleton />
-            <AssetRowSkeleton className="opacity-1" />
-            <AssetRowSkeleton className="opacity-2" />
-            <AssetRowSkeleton className="opacity-3" />
-          </>
-        )}
+        {rows.map(([symbol, b]) => (
+          <AssetRow key={symbol} balances={b} symbol={symbol} />
+        ))}
+        {[...Array(skeletons).keys()].map((i) => (
+          <AssetRowSkeleton key={i} className={`opacity-${i}`} />
+        ))}
+        {/** this row locks column sizes to prevent flickering */}
+        <tr>
+          <td></td>
+          <td width="30%"></td>
+          <td width="30%"></td>
+        </tr>
       </tbody>
     </Table>
   )
