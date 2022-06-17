@@ -289,18 +289,16 @@ export class EthTabsHandler extends TabsHandler {
 
   private getChainId = async (url: string) => {
     try {
-      await this.getProvider(url)
-
-      // TODO return value directly from the store to save an RPC call, would need to check with a real call the first time though
-      // const site = await this.getSiteDetails(url)
-      // return ethers.utils.hexValue(site.ethChainId)
-
-      return this.getFallbackRequest(url, { method: "eth_chainId", params: null })
+      const site = await this.getSiteDetails(url)
+      return ethers.utils.hexValue(site.ethChainId)
     } catch (err) {
       // if 4901 most likely the chain has been unregistered from our ethereum network store
       // returning undefined here should indicate client that network has to be added again
       if ((err as EthProviderRpcError)?.code === ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
         return undefined
+
+      // if 4100 the dapp has not been authorized yet
+      if ((err as EthProviderRpcError)?.code === ETH_ERROR_EIP1993_UNAUTHORIZED) return undefined
 
       // otherwise throw
       throw err
@@ -412,19 +410,21 @@ export class EthTabsHandler extends TabsHandler {
     }
 
     switch (request.method) {
-      case "eth_accounts":
       case "eth_requestAccounts":
-        // error will be thrown by authorizeEth if not authorised
+        // error will be thrown by authorizeEth if user rejects
         await this.authoriseEth(url, { origin: "", ethereum: true })
         // TODO understand why site store isn't up to date already
         // wait for site store to update
         await new Promise((resolve) => setTimeout(resolve, 500))
         return await this.accountsList(url)
 
+      case "eth_accounts":
+        // public method, no need to auth (returns empty array if not authorized yet)
+        return this.accountsList(url)
+
       case "eth_chainId":
-        await this.authoriseEth(url, { origin: "", ethereum: true })
-        const chain = await this.getChainId(url)
-        return chain
+        // public method, no need to auth (returns undefined if not authorized yet)
+        return this.getChainId(url)
 
       case "estimateGas": {
         const { params } = request as EthRequestArguments<"estimateGas">
