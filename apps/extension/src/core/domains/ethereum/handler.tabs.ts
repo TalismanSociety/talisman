@@ -31,6 +31,8 @@ import keyring from "@polkadot/ui-keyring"
 import { getProviderForEvmNetworkId, getProviderForEthereumNetwork } from "./networksStore"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
+import { stripUrl } from "@core/handlers/helpers"
+
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
   ethAddresses: AuthorizedSiteAddresses
@@ -229,21 +231,11 @@ export class EthTabsHandler extends TabsHandler {
     const existing = await db.evmNetworks.get(chainId)
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
-    if (existing) {
-      // for custom networks, check that rpcs are the same as the registered ones
-      // TODO if mismatch, create request to user to override the network?
-      if (
-        "isCustom" in existing &&
-        existing.isCustom &&
-        (existing.rpcs || []).sort().join() !== (network.rpcUrls || []).sort().join()
-      )
-        throw new EthProviderRpcError("Network already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
-
+    if (existing)
       return this.switchEthereumChain(url, {
         method: "wallet_switchEthereumChain",
         params: [{ chainId: network.chainId }],
       })
-    }
 
     // TODO: Check rpc(s) work before sending request to user
     // TODO: Check that rpc responds with correct chainId before sending request to user
@@ -253,8 +245,7 @@ export class EthTabsHandler extends TabsHandler {
     // switch automatically to new chain
     const ethereumNetwork = await db.evmNetworks.get(chainId)
     if (ethereumNetwork) {
-      const site = await this.getSiteDetails(url)
-      this.stores.sites.updateSite(site.id, { ethChainId: chainId })
+      this.stores.sites.updateSite(stripUrl(url), { ethChainId: chainId })
     }
 
     return null
@@ -282,29 +273,14 @@ export class EthTabsHandler extends TabsHandler {
     if (!provider)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-    const site = await this.getSiteDetails(url)
-    this.stores.sites.updateSite(site.id, { ethChainId: chainId })
+    this.stores.sites.updateSite(stripUrl(url), { ethChainId: chainId })
 
     return null
   }
 
   private getChainId = async (url: string) => {
-    try {
-      const site = await this.getSiteDetails(url)
-      return ethers.utils.hexValue(site.ethChainId)
-    } catch (err) {
-      // if 4901 most likely the chain has been unregistered from our ethereum network store
-      // returning undefined here should indicate client that network has to be added again
-      if ((err as EthProviderRpcError)?.code === ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
-        return ethers.utils.hexValue(DEFAULT_ETH_CHAIN_ID)
-
-      // if 4100 the dapp has not been authorized yet
-      if ((err as EthProviderRpcError)?.code === ETH_ERROR_EIP1993_UNAUTHORIZED)
-        return ethers.utils.hexValue(DEFAULT_ETH_CHAIN_ID)
-
-      // otherwise throw
-      throw err
-    }
+    const site = await this.stores.sites.get(stripUrl(url))
+    return site?.ethChainId ?? DEFAULT_ETH_CHAIN_ID
   }
 
   private async getFallbackRequest<K extends keyof EthRequestSignatures>(
@@ -360,7 +336,7 @@ export class EthTabsHandler extends TabsHandler {
   ) => {
     const { symbol, address, decimals, image } = request.params.options
 
-    const { ethChainId } = await this.getSiteDetails(url)
+    const ethChainId = await this.getChainId(url)
     const tokenId = `${ethChainId}-erc20-${address}`
 
     const existing = await db.tokens.get(tokenId)
@@ -405,7 +381,17 @@ export class EthTabsHandler extends TabsHandler {
       // some sites expect eth_accounts to return an empty array if not connected/authorized.
       // if length === 0 they'll request authorization
       // so it should not raise an error if not authorized yet
-      if (!["eth_requestAccounts", "eth_accounts", "eth_chainId"].includes(request.method))
+      if (
+        ![
+          "eth_requestAccounts",
+          "eth_accounts",
+          "eth_chainId",
+          "net_version",
+          "wallet_switchEthereumChain",
+          "wallet_addEthereumChain",
+          "wallet_watchAsset",
+        ].includes(request.method)
+      )
         await this.stores.sites.ensureUrlAuthorized(url, true)
     } catch (err) {
       throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
@@ -426,7 +412,12 @@ export class EthTabsHandler extends TabsHandler {
 
       case "eth_chainId":
         // public method, no need to auth (returns undefined if not authorized yet)
-        return this.getChainId(url)
+        return ethers.utils.hexValue(await this.getChainId(url))
+
+      case "net_version":
+        // public method, no need to auth (returns undefined if not authorized yet)
+        // legacy, but still used by etherscan prior calling eth_watchAsset
+        return (await this.getChainId(url)).toString()
 
       case "estimateGas": {
         const { params } = request as EthRequestArguments<"estimateGas">
@@ -492,12 +483,15 @@ export class EthTabsHandler extends TabsHandler {
       }
 
       case "wallet_watchAsset":
+        //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
         return this.addWatchAssetRequest(url, request as EthRequestArguments<"wallet_watchAsset">)
 
       case "wallet_addEthereumChain":
+        //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
         return this.addEthereumChain(url, request as EthRequestArguments<"wallet_addEthereumChain">)
 
       case "wallet_switchEthereumChain":
+        //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
         return this.switchEthereumChain(
           url,
           request as EthRequestArguments<"wallet_switchEthereumChain">
