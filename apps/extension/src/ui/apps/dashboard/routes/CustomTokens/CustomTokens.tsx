@@ -7,6 +7,8 @@ import { CustomErc20Token } from "@core/types"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useCustomErc20Tokens } from "@ui/hooks/useCustomErc20Tokens"
 import { Erc20Logo } from "@ui/domains/Erc20Tokens/Erc20Logo"
+import { sortBy } from "lodash"
+import { useMemo } from "react"
 
 const buttonStyle = css`
   transition: background-color var(--transition-speed-fast) ease-in-out,
@@ -93,8 +95,12 @@ const TokenRow = ({ token }: { token: CustomErc20Token }) => {
     <TokenRowContainer role="button" onClick={() => navigate(`./${token.id}`)}>
       <TokenLogo id={token.id} />
       <div className="tokenDetails">
-        <span className="tokenName">{token.symbol}</span>
-        <span className="networkName">{network?.name ?? ""}</span>
+        {network && (
+          <>
+            <span className="tokenName">{token.symbol}</span>
+            <span className="networkName">{network?.name ?? ""}</span>
+          </>
+        )}
       </div>
       <div>
         <IconChevron />
@@ -106,14 +112,15 @@ const TokenRow = ({ token }: { token: CustomErc20Token }) => {
 export const CustomTokens = () => {
   const navigate = useNavigate()
   const tokens = useCustomErc20Tokens()
+  const sortedTokens = useMemo(() => sortBy(tokens, "symbol"), [tokens])
 
-  if (!tokens) return null
+  if (!sortedTokens) return null
 
   return (
     <Layout withBack centered>
       <HeaderBlock title="Manage custom tokens" text="Add or delete custom ERC20 tokens" />
       <TokensList>
-        {tokens.map((token) => (
+        {sortedTokens.map((token) => (
           <TokenRow key={token.id} token={token} />
         ))}
         <AddTokenButton type="button" onClick={() => navigate("./add")}>
