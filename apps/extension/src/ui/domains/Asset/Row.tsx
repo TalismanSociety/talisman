@@ -3,6 +3,7 @@ import Logo from "./Logo"
 import Name from "./Name"
 import Balance, { IAssetBalanceOptions } from "./Balance"
 import { Balance as BalanceType } from "@core/types"
+import { Erc20Logo } from "../Erc20Tokens/Erc20Logo"
 
 export interface IAssetRowOptions extends IAssetBalanceOptions {}
 
@@ -12,9 +13,20 @@ interface IAssetRowType extends IAssetRowOptions {
   show: boolean
 }
 
+const Erc20tokenLogo = styled(Erc20Logo)`
+  font-size: 3rem;
+  margin-right: 1.2rem;
+`
+
 const AssetRow = ({ className, balance, withFiat, show }: IAssetRowType) => (
   <div className={`${className} chain-balance`} data-show={show}>
-    <Logo id={balance.chainId || balance.evmNetwork?.substrateChain?.id || balance.evmNetworkId} />
+    {balance.token?.type === "erc20" ? (
+      <Erc20tokenLogo id={balance.tokenId} />
+    ) : (
+      <Logo
+        id={balance.chainId || balance.evmNetwork?.substrateChain?.id || balance.evmNetworkId}
+      />
+    )}
     <Name balance={balance} withChain />
     <EmptySpace />
     <Balance balance={balance} withFiat={withFiat} isBalance />
