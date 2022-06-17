@@ -8,5 +8,11 @@ const INITIAL_VALUE: AuthorizedSites = {}
 const subscribe = (subject: BehaviorSubject<AuthorizedSites>) =>
   api.authorizedSitesSubscribe((v) => subject.next(v))
 
+const authorisedSitesOnly = (value: AuthorizedSites): AuthorizedSites => {
+  const result = { ...value }
+  for (let id in result) if (!result[id].addresses && !result[id].ethAddresses) delete result[id]
+  return result
+}
+
 export const useAuthorisedSites = () =>
-  useMessageSubscription("authorizedSitesSubscribe", INITIAL_VALUE, subscribe)
+  useMessageSubscription("authorizedSitesSubscribe", INITIAL_VALUE, subscribe, authorisedSitesOnly)
