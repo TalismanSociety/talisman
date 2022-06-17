@@ -9,7 +9,7 @@ import {
   SubscriptionCallback,
   TokenId,
 } from "@core/types"
-import { getMetadaRpc } from "@core/util/getMetadaRpc"
+import { getMetadataRpc } from "@core/util/getMetadataRpc"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { KeyringPair } from "@polkadot/keyring/types"
@@ -158,7 +158,7 @@ export default class OrmlTokenTransfersRpc {
         send("chain_getBlock"),
         send("chain_getBlockHash"),
         send("chain_getBlockHash", [0]),
-        getMetadaRpc(chainId),
+        getMetadataRpc(chainId),
         getRuntimeVersion(chainId),
         send("system_accountNextIndex", [from.address]),
         getTypeRegistry(chainId),

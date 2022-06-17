@@ -6,7 +6,7 @@ import { getRuntimeVersion } from "./getRuntimeVersion"
 // used to cache non-latest metadataRpc in memory (when user is browsing transaction history)
 const metadataRpcCache: Record<string, `0x${string}`> = {}
 
-export const getMetadaRpc = async (chainId: string, blockHash?: string) => {
+export const getMetadataRpc = async (chainId: string, blockHash?: string) => {
   // identify associated specVersion
   const runtimeVersion = await getRuntimeVersion(chainId, blockHash)
   const specVersion = Number(runtimeVersion.specVersion)
