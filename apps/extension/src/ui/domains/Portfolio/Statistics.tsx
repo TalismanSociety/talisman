@@ -68,6 +68,7 @@ export const Statistics = ({
       borderradius
       padding={1.6}
       width={23.6}
+      height={10}
       gap={0.8}
       className={className}
     >
@@ -80,34 +81,6 @@ export const Statistics = ({
       ) : (
         <FiatOnly fiat={fiat} />
       )}
-      {/* {tokenAmount ? (
-        <>
-          <Box>
-            <Tokens
-              amount={tokenAmount}
-              isBalance
-              decimals={token?.decimals}
-              symbol={token?.symbol}
-            />
-          </Box>
-        </>
-      ) : (
-        <></>
-      )}
-      <Box fontsize="medium">
-        {tokenAmount ? (
-          <Tokens
-            amount={tokenAmount}
-            isBalance
-            decimals={token?.decimals}
-            symbol={token?.symbol}
-          />
-        ) : null}
-        <Box inline fg={showBoth ? "mid" : "foreground"}>
-          {showBoth ? " / " : null}
-          {fiat === null ? null : <Fiat amount={fiat} currency="usd" isBalance />}
-        </Box>
-      </Box> */}
     </Box>
   )
 }
