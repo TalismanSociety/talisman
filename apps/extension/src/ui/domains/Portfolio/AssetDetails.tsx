@@ -1,10 +1,17 @@
 import { Balances } from "@core/types"
+import { encodeAnyAddress } from "@core/util"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
+import { IconButton } from "@talisman/components/IconButton"
+import { useNotification } from "@talisman/components/Notification"
+import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { useSelectedAccount } from "@ui/apps/dashboard/context"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
-import { Fragment, useMemo } from "react"
+import { Fragment, useCallback, useMemo } from "react"
 import styled from "styled-components"
 import StyledAssetLogo from "../Asset/Logo"
 import { AssetBalanceCellValue } from "./AssetBalanceCellValue"
@@ -71,6 +78,45 @@ const AssetState = ({ title, render }: { title: string; render: boolean }) => {
   )
 }
 
+const SmallIconButton = styled(IconButton)`
+  height: 1.2rem;
+  width: 1.2rem;
+  font-size: var(--font-size-xsmall);
+`
+
+const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) => {
+  const { account } = useSelectedAccount()
+  const notification = useNotification()
+
+  const address = useMemo(() => {
+    if (!account) return null
+    if (isEthereumAddress(account.address)) return account.address
+    return encodeAnyAddress(account.address, prefix ?? undefined)
+  }, [account, prefix])
+
+  const handleClick = useCallback(() => {
+    if (!address) return
+    navigator.clipboard.writeText(address)
+    notification.success({
+      title: `Address copied`,
+      subtitle: shortenAddress(address),
+    })
+  }, [address, notification])
+
+  if (!address) return null
+
+  return (
+    <SmallIconButton onClick={handleClick}>
+      <CopyIcon />
+    </SmallIconButton>
+  )
+}
+
+const FetchingIndicator = styled(LoaderIcon)`
+  line-height: 1;
+  font-size: var(--font-size-normal);
+`
+
 type AssetRowProps = {
   balances: Balances
   symbol: string
@@ -120,6 +166,11 @@ export const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
     return null
   }, [chain, evmNetwork])
 
+  const isFetching = useMemo(
+    () => balances.sorted.some((b) => b.status === "cache"),
+    [balances.sorted]
+  )
+
   const chainOrNetwork = chain || evmNetwork
 
   // wait for data to load
@@ -136,8 +187,9 @@ export const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
               <StyledAssetLogo id={evmNetwork?.substrateChain?.id ?? chainOrNetwork.id} />
             </Box>
             <Box grow flex column justify="center" gap={0.4}>
-              <Box fontsize="normal" bold fg="foreground">
-                {chainOrNetwork.name}
+              <Box fontsize="normal" bold fg="foreground" flex align="center" gap={0.8}>
+                {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />{" "}
+                {isFetching && <FetchingIndicator data-spin />}
               </Box>
               <div>{networkType}</div>
             </Box>
