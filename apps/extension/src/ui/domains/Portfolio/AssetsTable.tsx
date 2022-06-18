@@ -50,20 +50,6 @@ const Table = styled.table`
       border-top-right-radius: var(--border-radius);
       border-bottom-right-radius: var(--border-radius);
     }
-
-    &.fetching {
-      background: linear-gradient(
-          to right,
-          rgba(var(--color-mid-raw), 0),
-          rgba(var(--color-mid-raw), 0.1) 70%,
-          rgba(var(--color-mid-raw), 0) 100%
-        ),
-        var(--color-background-muted);
-      background-repeat: repeat-y;
-      background-size: 20% 500px;
-      background-position: 0 0;
-      animation: bg-slide-x 2.5s infinite;
-    }
   }
 
   .noPadRight {
@@ -176,21 +162,6 @@ export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
     () => balances.sorted.some((b) => b.status === "cache"),
     [balances.sorted]
   )
-  // const [isFetching, setIsFetching] = useState(false)
-  // useEffect(() => {
-  //   // if fetching, set it after a random delay between 0 and 500, otherwise all row skeletion effet would be synchronized which looks bad
-  //   if () {
-  //     const timeout = setTimeout(() => {
-  //       setIsFetching(true)
-  //     }, Math.floor(Math.random() * 2000)) // between 0 and 500ms
-  //     return () => {
-  //       clearTimeout(timeout)
-  //     }
-  //   } else {
-  //     setIsFetching(false)
-  //     return () => {}
-  //   }
-  // }, [balances.count, balances.sorted, symbol])
 
   const { token, summary } = useTokenBalancesSummary(balances, symbol)
 
