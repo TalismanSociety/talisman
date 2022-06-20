@@ -220,6 +220,7 @@ type AssetsTableProps = {
 export const AssetsTable = ({ balances }: AssetsTableProps) => {
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
+  const { networkFilter } = usePortfolio()
 
   // group by token (symbol)
   const rows = useMemo(() => {
@@ -242,9 +243,13 @@ export const AssetsTable = ({ balances }: AssetsTableProps) => {
 
   // if specific account we have 2 rows minimum, if all accounts we have 4
   const skeletons = useMemo(() => {
+    // in this case we don't know the number of min rows
+    if (networkFilter) return 0
+
+    // Expect at least dot/ksm or movr/glmr
     const expectedRows = account ? 2 : 4
     return rows.length < expectedRows ? expectedRows - rows.length : 0
-  }, [account, rows.length])
+  }, [account, networkFilter, rows.length])
 
   return (
     <Table>

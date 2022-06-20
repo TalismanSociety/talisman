@@ -74,6 +74,7 @@ const useAllNetworks = (type?: AccountAddressType) => {
             name: name ?? "Unknown chain",
             evmNetworkId: id,
             logoId: substrateChain?.id ?? String(id),
+            chainId: substrateChain?.id,
           })
       })
 
