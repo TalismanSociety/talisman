@@ -1,5 +1,5 @@
 import { AccountJsonAny, Balance, Balances } from "@core/types"
-import { useSelectedAccount } from "@ui/apps/dashboard/context"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useMemo } from "react"
 
 const shouldDisplayBalance = (balance: Balance, account?: AccountJsonAny) => {

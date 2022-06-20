@@ -10,7 +10,7 @@ import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useSelect } from "downshift"
 import { useEffect, useMemo } from "react"
 import styled from "styled-components"
-import { useSelectedAccount } from "../context"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 
 const Button = styled.button`
   background: none;

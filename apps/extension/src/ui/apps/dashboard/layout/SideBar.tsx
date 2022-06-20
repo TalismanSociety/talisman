@@ -14,7 +14,7 @@ import {
   UserIcon,
 } from "@talisman/theme/icons"
 import { useSendTokensModal } from "@ui/domains/Asset/Send"
-import { useSelectedAccount } from "../context"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { PillButton } from "@talisman/components/PillButton"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"

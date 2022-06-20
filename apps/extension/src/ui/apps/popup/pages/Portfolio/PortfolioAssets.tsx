@@ -37,14 +37,14 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
     [account?.address, openSendFundsModal]
   )
 
-  const { portfolio, available, locked } = useMemo(() => {
-    const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat("usd")
-    return {
-      portfolio: total,
-      available: transferable,
-      locked: frozen + reserved,
-    }
-  }, [balancesToDisplay.sum])
+  // const { portfolio, available, locked } = useMemo(() => {
+  //   const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat("usd")
+  //   return {
+  //     portfolio: total,
+  //     available: transferable,
+  //     locked: frozen + reserved,
+  //   }
+  // }, [balancesToDisplay.sum])
 
   const copyAddress = useCallback(() => {
     if (!account) return
@@ -54,9 +54,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   return (
     <div>
       <Box flex fullwidth gap={1.6}>
-        <Stats title="Total Portfolio Value" fiat={portfolio} />
-        <Stats title="Locked" fiat={locked} locked />
-        <Stats title="Available" fiat={available} />
+        <Box>PICKER HERE</Box>
         <Box grow flex justify="flex-end" align="center" gap={1.6}>
           <WithTooltip tooltip="Send">
             <IconButton onClick={sendFunds}>
@@ -85,10 +83,8 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
           )}
         </Box>
       </Box>
-      <Box margin="3.8rem 0 0 0">
-        <NetworkPicker />
-      </Box>
       <Box margin="1.2rem 0 0 0">
+        AsseTS HERE
         <AssetsTable balances={balancesToDisplay} />
       </Box>
     </div>

@@ -1,6 +1,6 @@
 import { Box } from "@talisman/components/Box"
 import { CopyIcon, CreditCardIcon } from "@talisman/theme/icons"
-import { useSelectedAccount } from "@ui/apps/dashboard/context"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useCallback } from "react"
 import styled from "styled-components"
 import { useAddressFormatterModal } from "../Account/AddressFormatterModal"

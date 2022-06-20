@@ -6,7 +6,7 @@
   "version": "latest",
   "browser_action": {
     "default_title": "Talisman",
-    "default_popup": "popup.html#embedded"
+    "default_popup": "popup.html?embedded"
   },
   "content_scripts": [
     {

@@ -2,7 +2,7 @@ import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
-import { useSelectedAccount } from "@ui/apps/dashboard/context"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useEffect } from "react"
 import AccountRename from "./Rename"
 

@@ -21,6 +21,8 @@ import { useEthNetworkAddRequests } from "@ui/hooks/useEthNetworkAddRequests"
 import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
 import { useEthWatchAssetRequests } from "@ui/hooks/useEthWatchAssetRequests"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
+import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { Portfolio } from "./pages/Portfolio"
 
 const Popup = () => {
   const isOnboarded = useIsOnboarded()
@@ -51,7 +53,7 @@ const Popup = () => {
         if (isEthereumRequest(request)) navigate(`/sign/eth/${request.id}`)
         else navigate(`/sign/${request.id}`)
       }
-    } else navigate("/")
+    } //else navigate("/")
     // dependency on signingRequests because it's mutable
     // otherwise it wouldn't switch to a pending request after approving another
   }, [
@@ -86,24 +88,27 @@ const Popup = () => {
   if (isLoggedIn === "FALSE") return <Login />
 
   return (
-    <CurrentSiteProvider>
-      <NavigationProvider>
-        <AddressFormatterModalProvider>
-          <Routes>
-            <Route path="/" element={<Account />}></Route>
-            <Route path="auth" element={<Connect />}></Route>
-            <Route path="sign/eth/:id" element={<EthSignRequest />}></Route>
-            <Route path="sign/:id" element={<SignRequest />}></Route>
-            <Route path="metadata" element={<Metadata />}></Route>
-            <Route path="eth-network-add" element={<AddEthereumNetwork />}></Route>
-            <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
-            {/* Not used for now */}
-            {/* <Route path="tx/:id" element={<Transaction />}></Route> */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </AddressFormatterModalProvider>
-      </NavigationProvider>
-    </CurrentSiteProvider>
+    <SelectedAccountProvider>
+      <CurrentSiteProvider>
+        <NavigationProvider>
+          <AddressFormatterModalProvider>
+            <Routes>
+              <Route path="/" element={<Account />}></Route>
+              <Route path="portfolio/*" element={<Portfolio />}></Route>
+              <Route path="auth" element={<Connect />}></Route>
+              <Route path="sign/eth/:id" element={<EthSignRequest />}></Route>
+              <Route path="sign/:id" element={<SignRequest />}></Route>
+              <Route path="metadata" element={<Metadata />}></Route>
+              <Route path="eth-network-add" element={<AddEthereumNetwork />}></Route>
+              <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
+              {/* Not used for now */}
+              {/* <Route path="tx/:id" element={<Transaction />}></Route> */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </AddressFormatterModalProvider>
+        </NavigationProvider>
+      </CurrentSiteProvider>
+    </SelectedAccountProvider>
   )
 }
 

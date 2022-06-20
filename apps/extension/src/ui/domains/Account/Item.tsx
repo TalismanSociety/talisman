@@ -189,6 +189,7 @@ const StyledAccountItem = styled(AccountItem)`
       &.more {
         width: 0;
         margin-right: 0;
+        overflow: hidden;
       }
     }
 

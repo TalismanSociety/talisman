@@ -5,7 +5,7 @@ import { IconAlert } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { useSelectedAccount } from "@ui/apps/dashboard/context"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 
 const REMOVABLE_ORIGINS = ["SEED", "JSON", "HARDWARE"]

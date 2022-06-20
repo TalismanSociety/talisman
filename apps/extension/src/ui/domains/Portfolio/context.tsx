@@ -1,7 +1,7 @@
 import { ChainsDb, EvmNetworksDb, TokensDb } from "@core/domains/balances/types"
 import { AccountAddressType, Balances, Chain, EvmNetwork, Token } from "@core/types"
 import { provideContext } from "@talisman/util/provideContext"
-import { useSelectedAccount } from "@ui/apps/dashboard/context"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import useChains from "@ui/hooks/useChains"
