@@ -9,7 +9,7 @@ import { ethers } from "ethers"
 
 export default class Erc20BalancesEvmRpc {
   /**
-   * Fetch or subscribe to balances by account addresses, evmNetworkIds and contract addresses.
+   * Fetch or subscribe to erc20 token balances by account addresses, evmNetworkIds and contract addresses.
    *
    * @param addresses - Accounts to fetch balances for.
    * @param tokensByEvmNetwork - Tokens by evm network to fetch balances for.
@@ -18,97 +18,131 @@ export default class Erc20BalancesEvmRpc {
    */
   static async balances(
     addresses: Address[],
-    tokensByEvmNetwork: {
-      [evmNetworkId: EvmNetworkId]: Array<Pick<Erc20Token, "id" | "contractAddress">>
-    }
+    tokensByEvmNetwork: Record<EvmNetworkId, Array<Pick<Erc20Token, "id" | "contractAddress">>>
   ): Promise<Balances>
   static async balances(
     addresses: Address[],
-    tokensByEvmNetwork: {
-      [evmNetworkId: EvmNetworkId]: Array<Pick<Erc20Token, "id" | "contractAddress">>
-    },
+    tokensByEvmNetwork: Record<EvmNetworkId, Array<Pick<Erc20Token, "id" | "contractAddress">>>,
     callback: SubscriptionCallback<Balances>
   ): Promise<UnsubscribeFn>
   static async balances(
     addresses: Address[],
-    tokensByEvmNetwork: {
-      [evmNetworkId: EvmNetworkId]: Array<Pick<Erc20Token, "id" | "contractAddress">>
-    },
+    tokensByEvmNetwork: Record<EvmNetworkId, Array<Pick<Erc20Token, "id" | "contractAddress">>>,
     callback?: SubscriptionCallback<Balances>
   ): Promise<Balances | UnsubscribeFn> {
     // subscription request
     if (callback !== undefined) {
-      setTimeout(async () => {
+      let subscriptionActive = true
+      const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
+
+      const poll = async () => {
+        if (!subscriptionActive) return
+
         try {
-          const providers: { [evmNetworkId: EvmNetworkId]: JsonRpcBatchProvider } =
-            Object.fromEntries(
-              await Promise.all(
-                Object.keys(tokensByEvmNetwork).map((evmNetworkId) =>
-                  getProviderForEvmNetworkId(Number(evmNetworkId)).then((provider) => [
-                    evmNetworkId,
-                    provider,
-                  ])
-                )
-              )
-            )
+          const evmNetworkIds = Object.keys(tokensByEvmNetwork).map(Number)
+          const providers = await this.getEvmNetworkProviders(evmNetworkIds)
+          const balances = await this.fetchErc20Balances(addresses, tokensByEvmNetwork, providers)
 
-          // TODO: Fetch on a timer while subscription is active
-          const balances = new Balances(
-            (
-              await Promise.allSettled(
-                Object.entries(tokensByEvmNetwork)
-                  .filter(
-                    ([evmNetworkId]) =>
-                      providers[Number(evmNetworkId)] !== null &&
-                      providers[Number(evmNetworkId)] !== undefined
-                  )
-                  .flatMap(([evmNetworkId, tokens]) =>
-                    (tokens || []).flatMap((token) => {
-                      const contract = new ethers.Contract(
-                        token.contractAddress,
-                        erc20Abi,
-                        providers[Number(evmNetworkId)]
-                      )
-                      return addresses.map(
-                        async (address) =>
-                          new Balance({
-                            pallet: "erc20",
-                            status: "live",
-                            address,
-                            evmNetworkId: Number(evmNetworkId),
-                            tokenId: token.id,
-                            free: (
-                              (await contract.balanceOf(address)).toBigInt() || BigInt("0")
-                            ).toString(),
-                          })
-                      )
-                    })
-                  )
-              )
-            )
-              .map((result) => {
-                if (result.status === "rejected") {
-                  // eslint-disable-next-line no-console
-                  DEBUG && console.error(result.reason)
-                  Sentry.captureException(result.reason)
-                  return null
-                }
-
-                return result.value
-              })
-              .filter((balance): balance is Balance => balance !== null)
-          )
-
+          // TODO: Don't call callback with balances which have not changed since the last poll.
           callback(null, balances)
         } catch (error) {
           callback(error)
+        } finally {
+          setTimeout(poll, subscriptionInterval)
         }
-      }, 0)
+      }
+      setTimeout(poll, subscriptionInterval)
 
-      return () => {}
+      return () => {
+        subscriptionActive = false
+      }
     }
 
-    throw new Error("Not implemented")
-    return new Balances([])
+    // once-off request
+    const evmNetworkIds = Object.keys(tokensByEvmNetwork).map(Number)
+    const providers = await this.getEvmNetworkProviders(evmNetworkIds)
+    return await this.fetchErc20Balances(addresses, tokensByEvmNetwork, providers)
+  }
+
+  private static async getEvmNetworkProviders(
+    evmNetworkIds: EvmNetworkId[]
+  ): Promise<Record<EvmNetworkId, JsonRpcBatchProvider>> {
+    return Object.fromEntries(
+      await Promise.all(
+        evmNetworkIds.map((evmNetworkId) =>
+          getProviderForEvmNetworkId(evmNetworkId).then((provider) => [evmNetworkId, provider])
+        )
+      )
+    )
+  }
+
+  private static async fetchErc20Balances(
+    addresses: Address[],
+    tokensByEvmNetwork: Record<EvmNetworkId, Array<Pick<Erc20Token, "id" | "contractAddress">>>,
+    providers: Record<EvmNetworkId, JsonRpcBatchProvider>
+  ): Promise<Balances> {
+    // filter evmNetworks
+    const fetchNetworks = Object.entries(tokensByEvmNetwork)
+      // evmNetworkId string to number
+      .map(
+        ([evmNetworkId, tokens]): [
+          EvmNetworkId,
+          Array<Pick<Erc20Token, "id" | "contractAddress">>
+        ] => [Number(evmNetworkId), tokens]
+      )
+      // network has rpc provider
+      .filter(
+        ([evmNetworkId]) =>
+          providers[evmNetworkId] !== null && providers[evmNetworkId] !== undefined
+      )
+
+    // fetch all balances
+    const balanceRequests = fetchNetworks.flatMap(([evmNetworkId, tokens]) =>
+      (tokens || []).flatMap((token) => {
+        const contract = new ethers.Contract(
+          token.contractAddress,
+          erc20Abi,
+          providers[evmNetworkId]
+        )
+        return addresses.map(
+          async (address) =>
+            new Balance({
+              pallet: "erc20",
+              status: "live",
+              address,
+              evmNetworkId: evmNetworkId,
+              tokenId: token.id,
+              free: await this.getFreeBalance(contract, address),
+            })
+        )
+      })
+    )
+
+    // wait for balance fetches to complete
+    const balanceResults = await Promise.allSettled(balanceRequests)
+
+    // filter out errors
+    const balances = balanceResults
+      .map((result) => {
+        if (result.status === "rejected") {
+          // eslint-disable-next-line no-console
+          DEBUG && console.error(result.reason)
+          Sentry.captureException(result.reason)
+          return null
+        }
+
+        return result.value
+      })
+      .filter((balance): balance is Balance => balance !== null)
+
+    // return to caller
+    return new Balances(balances)
+  }
+
+  private static async getFreeBalance(
+    contract: ethers.Contract,
+    address: Address
+  ): Promise<string> {
+    return ((await contract.balanceOf(address)).toBigInt() || BigInt("0")).toString()
   }
 }
