@@ -3,9 +3,11 @@ import { db } from "@core/libs/db"
 import { ChainId } from "@core/types"
 import { WsProvider } from "@polkadot/api"
 import { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
+import { ScProvider, WellKnownChain } from "@polkadot/rpc-provider/substrate-connect"
 import * as Sentry from "@sentry/browser"
 
 type SocketUserId = number
+type Provider = WsProvider | ScProvider
 
 /**
  * RpcFactory provides an interface similar to WsProvider, but with three points of difference:
@@ -14,9 +16,8 @@ type SocketUserId = number
  * 2. RpcFactory creates only one `WsProvider` per chain and ensures that all downstream requests to a chain share the one socket connection.
  * 3. Subscriptions return a callable `unsubscribe` method instead of an id.
  */
-//
 class RpcFactory {
-  #socketConnections: Record<ChainId, WsProvider> = {}
+  #socketConnections: Record<ChainId, { provider: Provider; isReady: Promise<void> }> = {}
   #socketKeepAliveIntervals: Record<ChainId, ReturnType<typeof setInterval>> = {}
   #socketUsers: Record<ChainId, SocketUserId[]> = {}
 
@@ -76,59 +77,90 @@ class RpcFactory {
    *
    * The caller must call disconnectChainSocket with the returned SocketUserId once they are finished with it
    */
-  private async connectChainSocket(chainId: ChainId): Promise<[SocketUserId, WsProvider]> {
+  private async connectChainSocket(chainId: ChainId): Promise<[SocketUserId, Provider]> {
     const chain = await db.chains.get(chainId)
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     const socketUserId = this.addSocketUser(chainId)
 
     if (this.#socketConnections[chainId]) {
       await this.#socketConnections[chainId].isReady
-      return [socketUserId, this.#socketConnections[chainId]]
+      return [socketUserId, this.#socketConnections[chainId].provider]
     }
 
-    const autoConnectMs = 1000
-    try {
-      const healthyRpcs = (chain.rpcs || [])
-        .filter(({ isHealthy }) => isHealthy)
-        .map(({ url }) => url)
-      if (healthyRpcs.length)
-        this.#socketConnections[chainId] = new WsProvider(healthyRpcs, autoConnectMs)
-      else throw new Error(`No healthy RPCs available for chain ${chainId}`)
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      DEBUG && console.error(error)
-      throw error
+    const substrateConnectWellKnownChains: Record<ChainId, WellKnownChain> = {
+      polkadot: WellKnownChain.polkadot,
+      kusama: WellKnownChain.ksmcc3,
+      westend: WellKnownChain.westend2,
+      // rococo: WellKnownChain.rococo_v2_2,
     }
 
-    // set up healthcheck (keeps ws open when idle), don't wait for setup to complete
-    ;(async () => {
-      if (!this.#socketConnections[chainId])
-        // eslint-disable-next-line no-console
-        return console.warn("ignoring rpc ws healthcheck initialization: ws is not defined")
-      await this.#socketConnections[chainId].isReady
+    const connectRpc = async (): Promise<[number, Provider]> => {
+      const autoConnectMs = 1000
+      try {
+        const healthyRpcs = (chain.rpcs || [])
+          .filter(({ isHealthy }) => isHealthy)
+          .map(({ url }) => url)
+        if (healthyRpcs.length > 0) {
+          const provider = new WsProvider(healthyRpcs, autoConnectMs)
+          this.#socketConnections[chainId] = { provider, isReady: provider.isReady.then(() => {}) }
+        } else throw new Error(`No healthy RPCs available for chain ${chainId}`)
+      } catch (error) {
+        DEBUG && console.error(error) // eslint-disable-line no-console
+        throw error
+      }
 
-      if (this.#socketKeepAliveIntervals[chainId])
-        clearInterval(this.#socketKeepAliveIntervals[chainId])
-
-      const intervalMs = 10_000 // 10,000ms = 10s
-      this.#socketKeepAliveIntervals[chainId] = setInterval(() => {
+      // set up healthcheck (keeps ws open when idle), don't wait for setup to complete
+      ;(async () => {
         if (!this.#socketConnections[chainId])
           // eslint-disable-next-line no-console
-          return console.warn("skipping rpc ws healthcheck: ws is not defined")
+          return console.warn("ignoring rpc ws healthcheck initialization: ws is not defined")
+        await this.#socketConnections[chainId].isReady
 
-        if (!this.#socketConnections[chainId].isConnected)
-          // eslint-disable-next-line no-console
-          return console.warn("skipping rpc ws healthcheck: ws is not connected")
+        if (this.#socketKeepAliveIntervals[chainId])
+          clearInterval(this.#socketKeepAliveIntervals[chainId])
 
-        this.#socketConnections[chainId]
-          .send("system_health", [])
-          // eslint-disable-next-line no-console
-          .catch((error) => console.warn(`Failed keep-alive for socket ${chainId}`, error))
-      }, intervalMs)
-    })()
+        const intervalMs = 10_000 // 10,000ms = 10s
+        this.#socketKeepAliveIntervals[chainId] = setInterval(() => {
+          if (!this.#socketConnections[chainId])
+            // eslint-disable-next-line no-console
+            return console.warn("skipping rpc ws healthcheck: ws is not defined")
 
-    await this.#socketConnections[chainId].isReady
-    return [socketUserId, this.#socketConnections[chainId]]
+          if (!this.#socketConnections[chainId].provider.isConnected)
+            // eslint-disable-next-line no-console
+            return console.warn("skipping rpc ws healthcheck: ws is not connected")
+
+          this.#socketConnections[chainId].provider
+            .send("system_health", [])
+            // eslint-disable-next-line no-console
+            .catch((error) => console.warn(`Failed keep-alive for socket ${chainId}`, error))
+        }, intervalMs)
+      })()
+
+      await this.#socketConnections[chainId].isReady
+      return [socketUserId, this.#socketConnections[chainId].provider]
+    }
+
+    const connectSc = async (wellKnownChain: WellKnownChain): Promise<[number, Provider]> => {
+      const provider = new ScProvider(wellKnownChain)
+      const isReady = new Promise<void>((resolve) => provider.on("connected", resolve))
+      this.#socketConnections[chainId] = { provider, isReady }
+
+      try {
+        await this.#socketConnections[chainId].provider.connect()
+      } catch (error) {
+        DEBUG && console.error(error) // eslint-disable-line no-console
+        throw error
+      }
+
+      await this.#socketConnections[chainId].isReady
+      return [socketUserId, this.#socketConnections[chainId].provider]
+    }
+
+    if (substrateConnectWellKnownChains[chain.id] !== undefined) {
+      return await connectSc(substrateConnectWellKnownChains[chain.id])
+    }
+
+    return await connectRpc()
   }
 
   private async disconnectChainSocket(chainId: ChainId, socketUserId: SocketUserId): Promise<void> {
@@ -136,15 +168,15 @@ class RpcFactory {
 
     if (this.#socketUsers[chainId].length > 0) return
 
-    if (!this.#socketConnections[chainId])
-      // eslint-disable-next-line no-console
-      return console.warn(`Failed to disconnect socket: socket ${chainId} not found`)
+    if (!this.#socketConnections[chainId]) {
+      DEBUG && console.warn(`Failed to disconnect socket: socket ${chainId} not found`) // eslint-disable-line no-console
+      return
+    }
 
     try {
-      this.#socketConnections[chainId].disconnect()
+      this.#socketConnections[chainId].provider.disconnect()
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.warn(`Error occurred disconnecting socket ${chainId}`, error)
+      DEBUG && console.warn(`Error occurred disconnecting socket ${chainId}`, error) // eslint-disable-line no-console
     }
     delete this.#socketConnections[chainId]
     clearInterval(this.#socketKeepAliveIntervals[chainId])
