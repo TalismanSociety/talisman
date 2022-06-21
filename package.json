@@ -23,8 +23,10 @@
     "@commitlint/config-conventional": "^17.0.0",
     "husky": "^8.0.1",
     "lint-staged": "^12.4.1",
-    "prettier": "latest",
-    "turbo": "latest"
+    "prettier": "^2.7.1",
+    "prettier-plugin-organize-imports": "^3.0.0",
+    "turbo": "latest",
+    "typescript": "^4.7.4"
   },
   "engines": {
     "npm": ">=7.0.0",
