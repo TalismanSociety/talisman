@@ -10,8 +10,6 @@ import {
 } from "./types"
 
 export class TalismanEthProvider extends EventEmitter implements EthProvider {
-  // TODO : turn this off after alpha testing phase
-  isMetaMask: boolean = true
   // some libraries (@web3-onboard & wagmi at least) will look for this if we attempt to override window.ethereum
   isTalisman: boolean = true
   // cannot use private syntax here (ex: #sendRequest) or wallet won't init on some dapps
