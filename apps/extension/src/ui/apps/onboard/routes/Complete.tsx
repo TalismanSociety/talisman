@@ -70,8 +70,8 @@ export const Complete = () => (
         <BtnComplete
           autoFocus
           primary
-          onClick={() => {
-            api.dashboardOpen("/accounts")
+          onClick={async () => {
+            await api.dashboardOpen("/accounts")
             window.close()
           }}
         >
