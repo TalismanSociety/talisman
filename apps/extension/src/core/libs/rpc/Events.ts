@@ -1,8 +1,6 @@
 import RpcFactory from "@core/libs/RpcFactory"
 import BlocksRpc from "@core/libs/rpc/Blocks"
 import { getRegistry } from "@substrate/txwrapper-polkadot"
-import { EventRecord } from "@polkadot/types/interfaces"
-import { Vec } from "@polkadot/types"
 import { EventList, ChainId, SubscriptionCallback, UnsubscribeFn } from "@core/types"
 
 // System.Events is the state_storage key prefix for events
@@ -54,7 +52,8 @@ export default class EventsRpc {
    * @param block - The block number or hash to query events for.
    * @returns The fetched events as an `EventList`.
    */
-  private static async fetchEvents(chainId: ChainId, block?: string | number): Promise<EventList> {
+  private static async fetchEvents(chainId: ChainId, block?: string | number) {
+    //}: Promise<EventList> {
     const blockHash = await BlocksRpc.blockHash(chainId, block)
 
     // set up method and params
@@ -82,7 +81,7 @@ export default class EventsRpc {
       specVersion,
       properties,
       chainName,
-    }).createType<Vec<EventRecord>>("Vec<FrameSystemEventRecord>", eventsFrame)
+    }).createType("Vec<FrameSystemEventRecord>", eventsFrame)
 
     return events.map((record) => {
       const { event, phase } = record
