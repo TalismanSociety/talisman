@@ -53,7 +53,6 @@ export default class EventsRpc {
    * @returns The fetched events as an `EventList`.
    */
   private static async fetchEvents(chainId: ChainId, block?: string | number) {
-    //}: Promise<EventList> {
     const blockHash = await BlocksRpc.blockHash(chainId, block)
 
     // set up method and params
