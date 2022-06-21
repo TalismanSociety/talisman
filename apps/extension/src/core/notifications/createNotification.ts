@@ -41,14 +41,20 @@ export const createNotification = async (
   error?: Error
 ) => {
   try {
+    // currently a noop to enable submission to the store without notifications
+    /*
     ensureNotificationClickHandler()
 
     // we use url as notification id
     // delete previous notification before creating a new one, to make sure user sees the toast
+    
+    
+    
     if (url) await Browser.notifications.clear(url)
 
     const options = getNotificationOptions(type, networkName, error)
     await Browser.notifications.create(url, options)
+    */
   } catch (err) {
     Sentry.captureException(err)
   }
