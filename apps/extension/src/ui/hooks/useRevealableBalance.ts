@@ -9,7 +9,8 @@ export const useRevealableBalance = (isBalance?: boolean, noCountUp?: boolean) =
   const refReveal = useRef<HTMLDivElement>(null)
   const [isRevealed, setIsRevealed] = useState(false)
 
-  const isRevealable = useMemo(() => isBalance && hideBalances, [hideBalances, isBalance])
+  const isRevealable = useMemo(() => Boolean(isBalance && hideBalances), [hideBalances, isBalance])
+  const isHidden = useMemo(() => isRevealable && !isRevealed, [isRevealable, isRevealed])
 
   // locks noCountUp once it set
   useEffect(() => {
@@ -40,6 +41,7 @@ export const useRevealableBalance = (isBalance?: boolean, noCountUp?: boolean) =
     refReveal,
     isRevealable,
     isRevealed: !isRevealable || isRevealed, //if not revealable, it's revealed
+    isHidden,
     effectiveNoCountUp,
   }
 }

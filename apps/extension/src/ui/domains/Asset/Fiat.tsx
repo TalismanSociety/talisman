@@ -52,12 +52,10 @@ export const Fiat = ({
   noCountUp = false,
   isBalance = false,
 }: FiatProps) => {
-  const { refReveal, isRevealable, isRevealed, effectiveNoCountUp } = useRevealableBalance(
-    isBalance,
-    noCountUp
-  )
+  const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
+    useRevealableBalance(isBalance, noCountUp)
 
-  if (amount === null || amount === undefined) return null
+  const render = amount !== null && amount !== undefined
 
   return (
     <span
@@ -69,11 +67,13 @@ export const Fiat = ({
         className
       )}
     >
-      <DisplayValue
-        amount={amount}
-        currency={currency || undefined}
-        noCountUp={effectiveNoCountUp}
-      />
+      {render && (
+        <DisplayValue
+          amount={isHidden ? 0 : amount}
+          currency={currency || undefined}
+          noCountUp={effectiveNoCountUp}
+        />
+      )}
     </span>
   )
 }
