@@ -17,10 +17,12 @@ import posthog from "posthog-js"
 import type { ExtrinsicStatus, Hash, Phase } from "@polkadot/types/interfaces"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import type { JsonRpcProvider } from "@ethersproject/providers"
-import type { GenericEventData } from "@polkadot/types"
+import type { IEventData } from "@polkadot/types/types"
+import type { Codec } from "@polkadot/types-codec/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "./injectEth/types"
 import type { SignerPayloadJSON, SignerPayloadRaw, TypeDef } from "@polkadot/types/types"
 import { BigNumber } from "ethers"
+
 export type {
   ExtrinsicStatus,
   Hash,
@@ -525,7 +527,7 @@ export type Event = {
   method: string
   docs: string
   phase: Phase
-  data: GenericEventData
+  data: Codec[] & IEventData
   types: TypeDef[]
 }
 
