@@ -1,5 +1,5 @@
 import { CheckCircleIcon, XIcon } from "@talisman/theme/icons/"
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 import styled from "styled-components"
 
 const H1 = styled.h1`
@@ -53,6 +53,7 @@ const AnalyticsContainer = styled.div`
 
 export const AnalyticsOptInInfo: FC<{
   className?: string
+  children?: ReactNode
 }> = ({ className, children }) => {
   return (
     <AnalyticsContainer className={className}>

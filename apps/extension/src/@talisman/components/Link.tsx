@@ -17,6 +17,7 @@ export interface ILinkProps {
   allowReferrer?: boolean
   tabIndex?: number
   end?: boolean
+  children?: ReactNode
 }
 
 const LinkChildren = ({ icon, children }: { icon?: any; children: any }) => (
@@ -35,6 +36,7 @@ type SmartLinkProps = NavLinkProps & {
   allowReferrer?: boolean
   tabIndex?: number
   end?: boolean
+  children?: ReactNode
 }
 
 const SmartLink: FC<SmartLinkProps> = ({

@@ -2,7 +2,15 @@ import Balance from "../Balance"
 import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
 import { getChainAddressType } from "@talisman/util/getChainAddressType"
 import Account from "@ui/domains/Account"
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import {
+  ChangeEventHandler,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
 import AssetPicker from "../Picker"
 import styled from "styled-components"
 import { SendDialogContainer } from "./SendDialogContainer"
@@ -216,15 +224,18 @@ export const SendForm = () => {
   // because these input components are all custom, we need to programmatically update form state
   // (can't use RHF register here without major changes)
   const onAssetChange = useCallback(
-    (tokenId) => setValue("tokenId", tokenId, REVALIDATE),
+    (tokenId: string) => setValue("tokenId", tokenId, REVALIDATE),
     [setValue]
   )
-  const onAmountChange = useCallback(
+  const onAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => setValue("amount", cleanupAmountInput(e.target.value), REVALIDATE),
     [setValue]
   )
-  const onFromChange = useCallback((value) => setValue("from", value, REVALIDATE), [setValue])
-  const onToChange = useCallback((value) => setValue("to", value, REVALIDATE), [setValue])
+  const onFromChange = useCallback(
+    (value: string) => setValue("from", value, REVALIDATE),
+    [setValue]
+  )
+  const onToChange = useCallback((value: string) => setValue("to", value, REVALIDATE), [setValue])
 
   // current form values
   const { amount, tokenId, from, to } = watch()

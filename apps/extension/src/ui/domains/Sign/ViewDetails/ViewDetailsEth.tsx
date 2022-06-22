@@ -129,9 +129,12 @@ export const ViewDetailsEth = () => {
 
   return (
     <>
-      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={isAnalysing} hasError={hasError}>
-        View Details
-      </ViewDetailsButton>
+      <ViewDetailsButton
+        onClick={open}
+        hide={isOpen}
+        isAnalysing={isAnalysing}
+        hasError={hasError}
+      />
       <Drawer anchor="bottom" open={isOpen && !isAnalysing} onClose={close}>
         <ViewDetailsContent onClose={close} />
       </Drawer>

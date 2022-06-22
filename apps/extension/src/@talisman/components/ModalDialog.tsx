@@ -63,6 +63,7 @@ type ModalDialogProps = {
   title?: ReactNode
   centerTitle?: boolean
   onClose?: () => void
+  children?: ReactNode
 }
 
 export const ModalDialog: FC<ModalDialogProps> = ({

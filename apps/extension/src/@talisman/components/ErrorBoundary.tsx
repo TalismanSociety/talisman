@@ -1,4 +1,4 @@
-import React, { FC } from "react"
+import { FC, ReactNode } from "react"
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
 import styled from "styled-components"
@@ -66,6 +66,10 @@ const ErrorMessage: FC = () => (
   </ErrorContainer>
 )
 
-export const ErrorBoundary: React.FC = ({ children }) => {
+export const ErrorBoundary = ({ children }: { children?: ReactNode }) => {
+  // This is supposed to work since https://github.com/getsentry/sentry-javascript/releases/tag/6.19.7
+  // We run v7.20 so there must be another issue
+  // TODO fix this typing issue
+  /* @ts-expect-error - Temporary Fix until React 18 support */
   return <SentryErrorBoundary fallback={<ErrorMessage />}>{children}</SentryErrorBoundary>
 }

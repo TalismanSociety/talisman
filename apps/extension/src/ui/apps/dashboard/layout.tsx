@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren, lazy, Suspense, useCallback } from "react"
+import { FC, PropsWithChildren, lazy, Suspense, useCallback, ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import { ReactComponent as Logo } from "@talisman/theme/logos/talisman-full-color.svg"
@@ -27,6 +27,7 @@ type LayoutProps = {
   centered?: boolean
   withBack?: boolean
   className?: string
+  children?: ReactNode
 }
 
 const BackButton = ({ className }: PropsWithChildren<any>) => {

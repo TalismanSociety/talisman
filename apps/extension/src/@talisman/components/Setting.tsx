@@ -1,9 +1,11 @@
 import styled from "styled-components"
 import Panel from "@talisman/components/Panel"
+import { ReactNode } from "react"
 
 interface SettingsProps {
   title: string
-  subtitle: React.ReactNode
+  subtitle: ReactNode
+  children?: ReactNode
 }
 
 const StyledSettings = styled(Panel)`

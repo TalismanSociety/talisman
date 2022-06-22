@@ -34,7 +34,7 @@ export const Analytics = () => {
   const navigate = useNavigate()
 
   const setUseAnalyticsTracking = useCallback(
-    async (useAnalyticsTracking) => {
+    async (useAnalyticsTracking: boolean) => {
       await settingsStore.set({ useAnalyticsTracking })
       await appStore.set({ analyticsRequestShown: true })
       navigate("/complete")

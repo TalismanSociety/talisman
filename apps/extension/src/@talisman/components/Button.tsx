@@ -1,13 +1,14 @@
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 import styled from "styled-components"
 import Link, { ILinkProps } from "./Link"
 
 interface IButtonGroupProps {
   column?: Boolean
   className?: string
+  children?: ReactNode
 }
 
-const ButtonGroupComponent: FC<IButtonGroupProps> = ({ children, className }) => (
+const ButtonGroupComponent = ({ children, className }: IButtonGroupProps) => (
   <div className={`button-group ${className}`}>{children}</div>
 )
 
