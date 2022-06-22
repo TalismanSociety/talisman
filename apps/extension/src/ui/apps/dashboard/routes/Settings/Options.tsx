@@ -42,7 +42,6 @@ const CustomNetworksCount = styled.span`
     color: var(--color-primary);
     background: rgba(213, 255, 92, 0.12);
     text-align: center;
-    //padding: 1.2rem;
     border-radius: 50%;
     line-height: 2.4rem;
     padding-top: 0.1rem;
@@ -56,6 +55,7 @@ const Options = () => {
     useCustomEthereumNetworks,
     hideBalances = false,
     allowNotifications = true,
+    shouldMimicMetaMask = false,
     update,
   } = useSettings()
 
@@ -156,6 +156,15 @@ const Options = () => {
             </Grid>
           </ModalDialog>
         </Modal>
+        <Setting
+          title="MetaMask Dapp compatibility"
+          subtitle="Allows using Talisman on applications that support MetaMask only. Leave this turned off if you use MetaMask in the same browser as Talisman."
+        >
+          <Field.Toggle
+            value={shouldMimicMetaMask}
+            onChange={handleSettingChange("shouldMimicMetaMask")}
+          />
+        </Setting>
       </Grid>
     </Layout>
   )

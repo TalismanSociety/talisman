@@ -265,6 +265,7 @@ export interface RequestSignatures extends Omit<PolkadotRequestSignatures, Remov
   // all ethereum calls
   "pub(eth.request)": [AnyEthRequest, EthResponseTypes]
   "pub(eth.subscribe)": [null, boolean, EthProviderMessage]
+  "pub(eth.mimicMetaMask)": [null, boolean]
   // eth signing message signatures
   "pri(eth.request)": [AnyEthRequestChainId, EthResponseTypes]
   "pri(eth.signing.cancel)": [RequestIdOnly, boolean]
