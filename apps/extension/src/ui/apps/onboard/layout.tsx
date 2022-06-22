@@ -89,6 +89,7 @@ type LayoutProps = {
   withBack?: boolean
   className?: string
   picture?: ReactNode
+  children?: ReactNode
 }
 
 const FADE_IN: Variants = {

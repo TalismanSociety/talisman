@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, XIcon } from "@talisman/theme/icons"
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 import styled from "styled-components"
 import { useSendTokens } from "./context"
 import { SendReviewHeader } from "./SendReview"
@@ -81,7 +81,7 @@ const ShowTokensModalDialogHeader = () => {
   )
 }
 
-export const SendTokensModalDialog: FC = ({ children }) => {
+export const SendTokensModalDialog = ({ children }: { children?: ReactNode }) => {
   const { showTransaction } = useSendTokens()
   return (
     <Container>

@@ -1,4 +1,4 @@
-import { FC } from "react"
+import { FC, ReactNode } from "react"
 import { createPortal } from "react-dom"
 import styled from "styled-components"
 import { classNames } from "@talisman/util/classNames"
@@ -14,6 +14,7 @@ export type DrawerProps = {
   fullScreen?: boolean
   asChild?: boolean
   className?: string
+  children?: ReactNode
 }
 
 const Container = styled.div`

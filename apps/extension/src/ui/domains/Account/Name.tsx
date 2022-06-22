@@ -159,6 +159,7 @@ const StyledAccountName = styled(AccountName)`
       font-size: var(--font-size-xsmall);
       color: var(--color-mid);
       line-height: 1.4;
+      height: 1.5rem; // force to prevent flickering
 
       span {
         font-size: var(--font-size-xsmall);

@@ -1,4 +1,4 @@
-import React, { FC } from "react"
+import { FC, ReactNode } from "react"
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
 import styled from "styled-components"
@@ -66,6 +66,6 @@ const ErrorMessage: FC = () => (
   </ErrorContainer>
 )
 
-export const ErrorBoundary: React.FC = ({ children }) => {
+export const ErrorBoundary = ({ children }: { children?: ReactNode }) => {
   return <SentryErrorBoundary fallback={<ErrorMessage />}>{children}</SentryErrorBoundary>
 }

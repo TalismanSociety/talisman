@@ -36,6 +36,7 @@ export type ViewDetailsFieldProps = {
   prewrap?: boolean
   breakAll?: boolean
   error?: string
+  children?: ReactNode
 }
 
 export const ViewDetailsField: FC<ViewDetailsFieldProps> = ({

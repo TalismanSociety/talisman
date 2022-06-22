@@ -2,7 +2,7 @@ import { IdenticonType } from "@core/types"
 import Identicon from "@polkadot/react-identicon"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { TalismanOrb } from "@talisman/components/TalismanOrb"
-import * as ReactDOMServer from "react-dom/server"
+import { renderToString } from "react-dom/server"
 import * as Sentry from "@sentry/browser"
 
 const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) => {
@@ -14,7 +14,7 @@ const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) 
         <TalismanOrb seed={address} />
       )
 
-    const html = ReactDOMServer.renderToString(component)
+    const html = renderToString(component)
 
     // blockies are rendered as img elements with base64 data, return as is
     const rawUri = /<img([^>]*?)src="([^"]*?)"/gi.exec(html)

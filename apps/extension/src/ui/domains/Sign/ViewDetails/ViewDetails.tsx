@@ -143,9 +143,7 @@ export const ViewDetails: FC<BaseViewDetailsProps & { analysing: boolean }> = ({
 
   return (
     <>
-      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={analysing}>
-        View Details
-      </ViewDetailsButton>
+      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={analysing} />
       <Drawer anchor="bottom" open={isOpen && !analysing} onClose={close}>
         <ViewDetailsContent onClose={close} {...{ signingRequest, txDetails, txDetailsError }} />
       </Drawer>

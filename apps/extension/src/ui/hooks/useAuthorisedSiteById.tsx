@@ -77,7 +77,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   }, [id, sites])
 
   const handleSetEthChainId = useCallback(
-    (chainId) => {
+    (chainId: number) => {
       setEthChainId(chainId)
       api.authorizedSiteUpdate(id, { ethChainId: chainId })
     },
