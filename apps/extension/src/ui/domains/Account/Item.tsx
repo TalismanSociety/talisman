@@ -176,10 +176,6 @@ const StyledAccountItem = styled(AccountItem)`
       display: flex;
       align-items: start;
       margin-right: 2rem;
-
-      > svg {
-        margin-left: 0.2em;
-      }
     }
 
     .icon {
