@@ -37,8 +37,7 @@ export default class NativeBalancesEvmRpc {
         if (!subscriptionActive) return
 
         try {
-          const providers = await this.getEvmNetworkProviders(evmNetworks)
-          const balances = await this.fetchNativeBalances(addresses, evmNetworks, providers)
+          const balances = await this.fetchNativeBalances(addresses, evmNetworks)
 
           // TODO: Don't call callback with balances which have not changed since the last poll.
           callback(null, balances)
@@ -56,8 +55,7 @@ export default class NativeBalancesEvmRpc {
     }
 
     // once-off request
-    const providers = await this.getEvmNetworkProviders(evmNetworks)
-    return await this.fetchNativeBalances(addresses, evmNetworks, providers)
+    return await this.fetchNativeBalances(addresses, evmNetworks)
   }
 
   private static async getEvmNetworkProviders(
@@ -74,9 +72,10 @@ export default class NativeBalancesEvmRpc {
 
   private static async fetchNativeBalances(
     addresses: Address[],
-    evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>,
-    providers: Record<EvmNetworkId, JsonRpcBatchProvider>
+    evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
   ): Promise<Balances> {
+    const providers = await this.getEvmNetworkProviders(evmNetworks)
+
     // filter evmNetworks
     const fetchNetworks = evmNetworks
       // network has native token
