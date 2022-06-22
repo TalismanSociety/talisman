@@ -39,9 +39,7 @@ export default class Erc20BalancesEvmRpc {
         if (!subscriptionActive) return
 
         try {
-          const evmNetworkIds = Object.keys(tokensByEvmNetwork).map(Number)
-          const providers = await this.getEvmNetworkProviders(evmNetworkIds)
-          const balances = await this.fetchErc20Balances(addresses, tokensByEvmNetwork, providers)
+          const balances = await this.fetchErc20Balances(addresses, tokensByEvmNetwork)
 
           // TODO: Don't call callback with balances which have not changed since the last poll.
           callback(null, balances)
@@ -59,28 +57,16 @@ export default class Erc20BalancesEvmRpc {
     }
 
     // once-off request
-    const evmNetworkIds = Object.keys(tokensByEvmNetwork).map(Number)
-    const providers = await this.getEvmNetworkProviders(evmNetworkIds)
-    return await this.fetchErc20Balances(addresses, tokensByEvmNetwork, providers)
-  }
-
-  private static async getEvmNetworkProviders(
-    evmNetworkIds: EvmNetworkId[]
-  ): Promise<Record<EvmNetworkId, JsonRpcBatchProvider>> {
-    return Object.fromEntries(
-      await Promise.all(
-        evmNetworkIds.map((evmNetworkId) =>
-          getProviderForEvmNetworkId(evmNetworkId).then((provider) => [evmNetworkId, provider])
-        )
-      )
-    )
+    return await this.fetchErc20Balances(addresses, tokensByEvmNetwork)
   }
 
   private static async fetchErc20Balances(
     addresses: Address[],
-    tokensByEvmNetwork: Record<EvmNetworkId, Array<Pick<Erc20Token, "id" | "contractAddress">>>,
-    providers: Record<EvmNetworkId, JsonRpcBatchProvider>
+    tokensByEvmNetwork: Record<EvmNetworkId, Array<Pick<Erc20Token, "id" | "contractAddress">>>
   ): Promise<Balances> {
+    const evmNetworkIds = Object.keys(tokensByEvmNetwork).map(Number)
+    const providers = await this.getEvmNetworkProviders(evmNetworkIds)
+
     // filter evmNetworks
     const fetchNetworks = Object.entries(tokensByEvmNetwork)
       // evmNetworkId string to number
@@ -137,6 +123,18 @@ export default class Erc20BalancesEvmRpc {
 
     // return to caller
     return new Balances(balances)
+  }
+
+  private static async getEvmNetworkProviders(
+    evmNetworkIds: EvmNetworkId[]
+  ): Promise<Record<EvmNetworkId, JsonRpcBatchProvider>> {
+    return Object.fromEntries(
+      await Promise.all(
+        evmNetworkIds.map((evmNetworkId) =>
+          getProviderForEvmNetworkId(evmNetworkId).then((provider) => [evmNetworkId, provider])
+        )
+      )
+    )
   }
 
   private static async getFreeBalance(

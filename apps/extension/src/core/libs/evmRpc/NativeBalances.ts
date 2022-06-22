@@ -58,18 +58,6 @@ export default class NativeBalancesEvmRpc {
     return await this.fetchNativeBalances(addresses, evmNetworks)
   }
 
-  private static async getEvmNetworkProviders(
-    evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
-  ): Promise<Record<EvmNetworkId, JsonRpcBatchProvider>> {
-    return Object.fromEntries(
-      await Promise.all(
-        evmNetworks.map((evmNetwork) =>
-          getProviderForEvmNetworkId(evmNetwork.id).then((provider) => [evmNetwork.id, provider])
-        )
-      )
-    )
-  }
-
   private static async fetchNativeBalances(
     addresses: Address[],
     evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
@@ -122,6 +110,18 @@ export default class NativeBalancesEvmRpc {
 
     // return to caller
     return new Balances(balances)
+  }
+
+  private static async getEvmNetworkProviders(
+    evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
+  ): Promise<Record<EvmNetworkId, JsonRpcBatchProvider>> {
+    return Object.fromEntries(
+      await Promise.all(
+        evmNetworks.map((evmNetwork) =>
+          getProviderForEvmNetworkId(evmNetwork.id).then((provider) => [evmNetwork.id, provider])
+        )
+      )
+    )
   }
 
   private static async getFreeBalance(
