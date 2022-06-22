@@ -113,7 +113,9 @@ const AnalyticsAlertPopupDrawer = () => {
     const sub = appStore.observable.subscribe(({ analyticsRequestShown }) => {
       setHasAnalyticsRequestShown(analyticsRequestShown)
     })
-    return sub.unsubscribe
+    return () => {
+      sub.unsubscribe()
+    }
   }, [])
 
   const handleOpenLearnMore = useCallback(() => {
