@@ -1,18 +1,19 @@
-// Compliant with https://eips.ethereum.org/EIPS/eip-1193
-import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import type { AddEthereumChainParameter, WatchAssetBase } from "@core/types"
 import EventEmitter from "events"
-import { BigNumberish } from "@ethersproject/bignumber"
+
+import type { AddEthereumChainParameter, WatchAssetBase } from "@core/types"
 import { BlockWithTransactions } from "@ethersproject/abstract-provider"
+import { BigNumberish } from "@ethersproject/bignumber"
 import type {
+  Block,
+  BlockTag,
+  TransactionReceipt,
   TransactionRequest,
   TransactionResponse,
-  BlockTag,
-  Block,
-  TransactionReceipt,
 } from "@ethersproject/providers"
+// Compliant with https://eips.ethereum.org/EIPS/eip-1193
+import type { InjectedAccount } from "@polkadot/extension-inject/types"
 
-type Promisify<T extends any> = T | Promise<T>
+type Promisify<T> = T | Promise<T>
 
 type PromisifyArray<T extends Array<any>> = {
   /* The inbuilt ethers provider methods take arguments which can

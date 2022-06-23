@@ -28,7 +28,6 @@ module.exports = {
         "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/no-inferrable-types": "off",
         "@typescript-eslint/no-empty-interface": "off",
-        "@typescript-eslint/no-unnecessary-type-constraint": "off",
       },
     },
   ],
