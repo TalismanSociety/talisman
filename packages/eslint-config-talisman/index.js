@@ -31,7 +31,6 @@ module.exports = {
         "@typescript-eslint/no-empty-interface": "off",
         "@typescript-eslint/no-unnecessary-type-constraint": "off",
         "no-useless-catch": "off",
-        "no-empty": "off",
         "no-prototype-builtins": "off",
         "no-case-declarations": "off",
       },
