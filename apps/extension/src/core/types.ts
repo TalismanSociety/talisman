@@ -1,26 +1,29 @@
-import type {
-  RequestAuthorizeTab as PolkadotRequestAuthorizeTab,
-  RequestSignatures as PolkadotRequestSignatures,
-  AccountJson,
-  ResponseAccountExport,
-  RequestAuthorizeSubscribe,
-  RequestAccountSubscribe,
-  RequestSigningSubscribe,
-  SigningRequest as PolkadotSigningRequest,
-  RequestMetadataSubscribe,
-  MetadataRequest,
-  RequestAccountCreateHardware,
-  RequestSigningApproveSignature,
-} from "@polkadot/extension-base/background/types"
-import { Runtime } from "webextension-polyfill"
-import posthog from "posthog-js"
-import type { ExtrinsicStatus, Hash, Phase } from "@polkadot/types/interfaces"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import type { JsonRpcProvider } from "@ethersproject/providers"
-import type { GenericEventData } from "@polkadot/types"
-import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "./injectEth/types"
+import type {
+  AccountJson,
+  MetadataRequest,
+  RequestAuthorizeTab as PolkadotRequestAuthorizeTab,
+  RequestSignatures as PolkadotRequestSignatures,
+  SigningRequest as PolkadotSigningRequest,
+  RequestAccountCreateHardware,
+  RequestAccountSubscribe,
+  RequestAuthorizeSubscribe,
+  RequestMetadataSubscribe,
+  RequestSigningApproveSignature,
+  RequestSigningSubscribe,
+  ResponseAccountExport,
+} from "@polkadot/extension-base/background/types"
+import type { Codec } from "@polkadot/types-codec/types"
+import type { ExtrinsicStatus, Hash, Phase } from "@polkadot/types/interfaces"
+import type { IEventData } from "@polkadot/types/types"
 import type { SignerPayloadJSON, SignerPayloadRaw, TypeDef } from "@polkadot/types/types"
 import { BigNumber } from "ethers"
+import posthog from "posthog-js"
+import { Runtime } from "webextension-polyfill"
+
+import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "./injectEth/types"
+
 export type {
   ExtrinsicStatus,
   Hash,
@@ -263,6 +266,7 @@ export interface RequestSignatures extends Omit<PolkadotRequestSignatures, Remov
   // all ethereum calls
   "pub(eth.request)": [AnyEthRequest, EthResponseTypes]
   "pub(eth.subscribe)": [null, boolean, EthProviderMessage]
+  "pub(eth.mimicMetaMask)": [null, boolean]
   // eth signing message signatures
   "pri(eth.request)": [AnyEthRequestChainId, EthResponseTypes]
   "pri(eth.signing.cancel)": [RequestIdOnly, boolean]
@@ -525,7 +529,7 @@ export type Event = {
   method: string
   docs: string
   phase: Phase
-  data: GenericEventData
+  data: Codec[] & IEventData
   types: TypeDef[]
 }
 

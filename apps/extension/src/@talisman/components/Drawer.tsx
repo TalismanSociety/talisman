@@ -1,8 +1,8 @@
-import { FC } from "react"
+import { useOpenableComponent } from "@talisman/hooks/useOpenableComponent"
+import { classNames } from "@talisman/util/classNames"
+import { FC, ReactNode } from "react"
 import { createPortal } from "react-dom"
 import styled from "styled-components"
-import { classNames } from "@talisman/util/classNames"
-import { useOpenableComponent } from "@talisman/hooks/useOpenableComponent"
 
 export type DrawerAnchor = "left" | "right" | "top" | "bottom"
 
@@ -14,6 +14,7 @@ export type DrawerProps = {
   fullScreen?: boolean
   asChild?: boolean
   className?: string
+  children?: ReactNode
 }
 
 const Container = styled.div`

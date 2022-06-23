@@ -13,6 +13,7 @@ import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
 import useToken from "@ui/hooks/useToken"
 import { FC, useEffect, useMemo } from "react"
 import styled from "styled-components"
+
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAmount } from "./ViewDetailsAmount"
 import { ViewDetailsButton } from "./ViewDetailsButton"
@@ -143,9 +144,7 @@ export const ViewDetails: FC<BaseViewDetailsProps & { analysing: boolean }> = ({
 
   return (
     <>
-      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={analysing}>
-        View Details
-      </ViewDetailsButton>
+      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={analysing} />
       <Drawer anchor="bottom" open={isOpen && !analysing} onClose={close}>
         <ViewDetailsContent onClose={close} {...{ signingRequest, txDetails, txDetailsError }} />
       </Drawer>

@@ -1,17 +1,21 @@
-import { SendRequest } from "@core/types"
 import EventEmitter from "events"
+
+import { SendRequest } from "@core/types"
+
 import {
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
   EthProvider,
-  EthRequestArguments,
   EthProviderRpcError,
+  EthRequestArguments,
   EthRequestSignatures,
   EthResponseType,
-  ETH_ERROR_EIP1474_INTERNAL_ERROR,
 } from "./types"
 
 export class TalismanEthProvider extends EventEmitter implements EthProvider {
   // some libraries (@web3-onboard & wagmi at least) will look for this if we attempt to override window.ethereum
   isTalisman: boolean = true
+  // can be turned on from settings, provides compatibility with dapps that only support MetaMask
+  isMetaMask: boolean = false
   // cannot use private syntax here (ex: #sendRequest) or wallet won't init on some dapps
   private _sendRequest: SendRequest
   private _initialized: boolean = false
@@ -22,6 +26,9 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
     })
 
     this._sendRequest = sendRequest
+    this._sendRequest("pub(eth.mimicMetaMask)").then((shouldMimicMetaMask) => {
+      this.isMetaMask = shouldMimicMetaMask
+    })
   }
 
   isConnected(): boolean {

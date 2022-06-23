@@ -1,9 +1,9 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { formatDecimals, MAX_DECIMALS_FORMAT } from "talisman-utils"
-import CountUp from "react-countup"
-import { FC, useMemo } from "react"
 import { classNames } from "@talisman/util/classNames"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
+import { FC, useMemo } from "react"
+import CountUp from "react-countup"
+import { MAX_DECIMALS_FORMAT, formatDecimals } from "talisman-utils"
 
 type TokensProps = {
   amount?: string | number | null
@@ -58,10 +58,8 @@ export const Tokens: FC<TokensProps> = ({
   noCountUp,
   isBalance = false,
 }) => {
-  const { refReveal, isRevealable, isRevealed, effectiveNoCountUp } = useRevealableBalance(
-    isBalance,
-    noCountUp
-  )
+  const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
+    useRevealableBalance(isBalance, noCountUp)
 
   const tooltip = useMemo(
     () =>
@@ -73,7 +71,7 @@ export const Tokens: FC<TokensProps> = ({
     [amount, decimals, noTooltip, symbol]
   )
 
-  if (amount === null || amount === undefined) return null
+  const render = amount !== null && amount !== undefined
 
   return (
     <Component
@@ -85,9 +83,15 @@ export const Tokens: FC<TokensProps> = ({
         className
       )}
     >
-      <WithTooltip as="span" tooltip={tooltip} noWrap>
-        <DisplayValue amount={amount} symbol={symbol} noCountUp={effectiveNoCountUp} />
-      </WithTooltip>
+      {render && (
+        <WithTooltip as="span" tooltip={tooltip} noWrap>
+          <DisplayValue
+            amount={isHidden ? 0 : amount}
+            symbol={symbol}
+            noCountUp={effectiveNoCountUp}
+          />
+        </WithTooltip>
+      )}
     </Component>
   )
 }

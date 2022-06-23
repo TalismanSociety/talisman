@@ -1,23 +1,23 @@
-import { FC, PropsWithChildren, lazy, Suspense, useCallback } from "react"
-import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
-import { ReactComponent as Logo } from "@talisman/theme/logos/talisman-full-color.svg"
-import Nav, { NavItem } from "@talisman/components/Nav"
 import Button from "@talisman/components/Button"
-import { ReactComponent as IconUser } from "@talisman/theme/icons/user.svg"
-import { ReactComponent as IconPlus } from "@talisman/theme/icons/plus.svg"
-import { ReactComponent as IconSettings } from "@talisman/theme/icons/settings.svg"
-import { ReactComponent as IconChevron } from "@talisman/theme/icons/chevron-left.svg"
-import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
-import Build from "@ui/domains/Build"
-import useAccounts from "@ui/hooks/useAccounts"
-import Mnemonic from "@ui/domains/Account/Mnemonic"
 import { Card } from "@talisman/components/Card"
-import { useMnemonicBackupConfirmed } from "@ui/hooks/useMnemonicBackupConfirmed"
-import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
+import Nav, { NavItem } from "@talisman/components/Nav"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
+import { ReactComponent as IconChevron } from "@talisman/theme/icons/chevron-left.svg"
+import { ReactComponent as IconPlus } from "@talisman/theme/icons/plus.svg"
+import { ReactComponent as IconSettings } from "@talisman/theme/icons/settings.svg"
+import { ReactComponent as IconUser } from "@talisman/theme/icons/user.svg"
+import { ReactComponent as Logo } from "@talisman/theme/logos/talisman-full-color.svg"
+import Mnemonic from "@ui/domains/Account/Mnemonic"
+import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
+import Build from "@ui/domains/Build"
+import useAccounts from "@ui/hooks/useAccounts"
+import { useMnemonicBackupConfirmed } from "@ui/hooks/useMnemonicBackupConfirmed"
+import { FC, PropsWithChildren, ReactNode, Suspense, lazy, useCallback } from "react"
+import { useNavigate } from "react-router-dom"
+import styled from "styled-components"
 
 const BraveWarningBanner = lazy(
   () => import("@ui/domains/Settings/BraveWarning/BraveWarningBanner")
@@ -27,6 +27,7 @@ type LayoutProps = {
   centered?: boolean
   withBack?: boolean
   className?: string
+  children?: ReactNode
 }
 
 const BackButton = ({ className }: PropsWithChildren<any>) => {

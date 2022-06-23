@@ -3,7 +3,7 @@ import { useCallback, useMemo, useState } from "react"
 const useSet = <T>(initialValues: T[] = []) => {
   const [_set, setSet] = useState(new Set(initialValues))
 
-  const contains = useCallback((item) => _set.has(item), [_set])
+  const contains = useCallback((item: T) => _set.has(item), [_set])
 
   const set = useCallback((items: T[]) => {
     setSet(new Set(items))

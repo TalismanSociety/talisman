@@ -1,7 +1,7 @@
-import styled from "styled-components"
 import { ReactComponent as IconClose } from "@talisman/theme/icons/x.svg"
 import { classNames } from "@talisman/util/classNames"
 import { FC, MouseEvent, ReactNode } from "react"
+import styled from "styled-components"
 
 const Container = styled.div`
   overflow: hidden;
@@ -63,6 +63,7 @@ type ModalDialogProps = {
   title?: ReactNode
   centerTitle?: boolean
   onClose?: () => void
+  children?: ReactNode
 }
 
 export const ModalDialog: FC<ModalDialogProps> = ({

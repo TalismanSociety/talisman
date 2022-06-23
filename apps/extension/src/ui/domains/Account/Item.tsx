@@ -1,21 +1,22 @@
-import styled from "styled-components"
-import Name, { IAccountNameOptions } from "./Name"
-import useBoolean from "@talisman/hooks/useBoolean"
 import PopNav from "@talisman/components/PopNav"
-import { ReactComponent as IconLoader } from "@talisman/theme/icons/loader.svg"
-import { PaperPlaneIcon, IconMore, IconChevron } from "@talisman/theme/icons"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
-import useAccountByAddress from "@ui/hooks/useAccountByAddress"
-import useEmptyBalancesFilter from "@ui/hooks/useEmptyBalancesFilter"
-import Asset, { IAssetRowOptions } from "@ui/domains/Asset"
-import downloadJson from "@talisman/util/downloadJson"
-import { MouseEventHandler, useCallback } from "react"
-import { api } from "@ui/api"
-import { useSendTokensModal } from "../Asset/Send"
-import { useAddressFormatterModal } from "./AddressFormatterModal"
-import { useAccountRenameModal } from "./AccountRenameModal"
-import { useAccountRemoveModal } from "./AccountRemoveModal"
+import useBoolean from "@talisman/hooks/useBoolean"
 import { useOpenableComponent } from "@talisman/hooks/useOpenableComponent"
+import { IconChevron, IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
+import { ReactComponent as IconLoader } from "@talisman/theme/icons/loader.svg"
+import downloadJson from "@talisman/util/downloadJson"
+import { api } from "@ui/api"
+import Asset, { IAssetRowOptions } from "@ui/domains/Asset"
+import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
+import useEmptyBalancesFilter from "@ui/hooks/useEmptyBalancesFilter"
+import { MouseEventHandler, useCallback } from "react"
+import styled from "styled-components"
+
+import { useSendTokensModal } from "../Asset/Send"
+import { useAccountRemoveModal } from "./AccountRemoveModal"
+import { useAccountRenameModal } from "./AccountRenameModal"
+import { useAddressFormatterModal } from "./AddressFormatterModal"
+import Name, { IAccountNameOptions } from "./Name"
 
 export interface IAccountItemOptions extends IAccountNameOptions, IAssetRowOptions {
   withBalanceInline?: boolean
@@ -176,10 +177,6 @@ const StyledAccountItem = styled(AccountItem)`
       display: flex;
       align-items: start;
       margin-right: 2rem;
-
-      > svg {
-        margin-left: 0.2em;
-      }
     }
 
     .icon {
