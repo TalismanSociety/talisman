@@ -69,6 +69,7 @@ type UnsignedTxWithGas = Omit<TransactionRequest, "gasLimit"> & { gas: string }
 
 const txRequestToUnsignedTx = (tx: TransactionRequest | UnsignedTxWithGas): UnsignedTransaction => {
   // we're using EIP1559 so gasPrice must be removed
+  // eslint-disable-next-line prefer-const
   let { from, gasPrice, ...unsignedTx } = tx
   if ("gas" in unsignedTx) {
     const { gas, ...rest1 } = unsignedTx as UnsignedTxWithGas

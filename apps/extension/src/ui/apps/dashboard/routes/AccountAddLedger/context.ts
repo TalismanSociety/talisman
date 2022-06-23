@@ -37,7 +37,7 @@ const useAddLedgerAccountProvider = () => {
 
       setData((prev) => ({ ...prev, accounts }))
 
-      for (let account of accounts) await api.accountCreateHardware(account)
+      for (const account of accounts) await api.accountCreateHardware(account)
     },
     [chain]
   )

@@ -12,8 +12,8 @@ export const useIsOutdatedBrave = () => {
     assert(v1 !== null, "Invalid Version number")
     assert(v2 !== null, "Invalid Version number")
 
-    let v1split: string[] = v1.split(".")
-    let v2split: string[] = v2.split(".")
+    const v1split: string[] = v1.split(".")
+    const v2split: string[] = v2.split(".")
     const k = Math.min(v1split.length, v2split.length)
     for (let i = 0; i < k; ++i) {
       const v1num = parseInt(v1split[i], 10)
