@@ -58,10 +58,8 @@ export const Tokens: FC<TokensProps> = ({
   noCountUp,
   isBalance = false,
 }) => {
-  const { refReveal, isRevealable, isRevealed, effectiveNoCountUp } = useRevealableBalance(
-    isBalance,
-    noCountUp
-  )
+  const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
+    useRevealableBalance(isBalance, noCountUp)
 
   const tooltip = useMemo(
     () =>
@@ -73,7 +71,7 @@ export const Tokens: FC<TokensProps> = ({
     [amount, decimals, noTooltip, symbol]
   )
 
-  if (amount === null || amount === undefined) return null
+  const render = amount !== null && amount !== undefined
 
   return (
     <Component
@@ -85,9 +83,15 @@ export const Tokens: FC<TokensProps> = ({
         className
       )}
     >
-      <WithTooltip as="span" tooltip={tooltip} noWrap>
-        <DisplayValue amount={amount} symbol={symbol} noCountUp={effectiveNoCountUp} />
-      </WithTooltip>
+      {render && (
+        <WithTooltip as="span" tooltip={tooltip} noWrap>
+          <DisplayValue
+            amount={isHidden ? 0 : amount}
+            symbol={symbol}
+            noCountUp={effectiveNoCountUp}
+          />
+        </WithTooltip>
+      )}
     </Component>
   )
 }

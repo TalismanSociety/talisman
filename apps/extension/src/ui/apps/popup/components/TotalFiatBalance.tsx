@@ -69,6 +69,11 @@ const Side = styled.div`
 // force height to prevent flickering
 const TotalFiat = styled.div`
   height: 2.9rem;
+
+  span {
+    display: inline-block;
+    min-width: 15rem;
+  }
 `
 
 export const TotalFiatBalance = ({ className }: { className?: string }) => {

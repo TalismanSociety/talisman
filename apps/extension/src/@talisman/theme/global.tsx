@@ -242,7 +242,6 @@ const Global = createGlobalStyle`
     }
 
     ::after {
-      transition: all var(--transition-speed) ease-in;
       backdrop-filter: blur(10px);
       content:"";
       background: radial-gradient(rgba(90, 90, 90, 0.2) 0%, rgba(90, 90, 90, 0) 100%);
