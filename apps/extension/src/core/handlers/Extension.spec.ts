@@ -1,24 +1,22 @@
+import { db } from "@core/libs/db"
+import { MessageTypes, RequestTypes, ResponseTypes } from "@core/types"
+import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 /* eslint-disable no-console */
 import type { ResponseSigning } from "@polkadot/extension-base/background/types"
+import { AccountsStore } from "@polkadot/extension-base/stores"
 import type { MetadataDef } from "@polkadot/extension-inject/types"
 import type { KeyringPair } from "@polkadot/keyring/types"
+import { TypeRegistry } from "@polkadot/types"
 import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
-import type { KeypairType } from "@polkadot/util-crypto/types"
-import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
-import { v4 } from "uuid"
-
-import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-import { AccountsStore } from "@polkadot/extension-base/stores"
+import type { KeypairType } from "@polkadot/util-crypto/types"
+import { v4 } from "uuid"
 
-import { RequestTypes, MessageTypes, ResponseTypes } from "@core/types"
-
-import { db } from "@core/libs/db"
-import { tabStores, extensionStores } from "./stores"
 import Extension from "./Extension"
 import State from "./State"
+import { extensionStores, tabStores } from "./stores"
 import Tabs from "./Tabs"
 
 jest.mock("@core/domains/chains/api")
@@ -66,7 +64,8 @@ describe("Extension", () => {
     const account = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
     expect(account).toBeDefined()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return account!.address
+    if (!account) throw new Error("Account not found")
+    return account.address
   }
 
   beforeAll(async () => {

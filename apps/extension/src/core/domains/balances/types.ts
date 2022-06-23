@@ -286,8 +286,7 @@ export class Balance {
     return this.#storage.chainId
   }
   get chain() {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return (this.#db?.chains && this.#db?.chains[this.chainId!]) || null
+    return (this.#db?.chains && this.chainId && this.#db?.chains[this.chainId]) || null
   }
   get evmNetworkId() {
     return this.#storage.evmNetworkId

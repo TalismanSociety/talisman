@@ -142,6 +142,8 @@ export class BalanceStore {
       return
     }
 
+    // TODO handle the case where chainId is null or undefined before entering the if logic below
+
     const tokenType = token.type
     if (tokenType === "native")
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

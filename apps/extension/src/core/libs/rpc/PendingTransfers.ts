@@ -1,6 +1,7 @@
 import { ChainId, ExtrinsicStatus, SubscriptionCallback } from "@core/types"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { UnsignedTransaction } from "@substrate/txwrapper-polkadot"
+
 import RpcFactory from "../RpcFactory"
 
 type PendingTransferInfo = {
@@ -29,6 +30,8 @@ const transfer = async (
     status: ExtrinsicStatus
   }>
 ) => {
+  // TODO handle case where there is no value in store for this id
+
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { chainId, unsigned } = store.get(id)!
 

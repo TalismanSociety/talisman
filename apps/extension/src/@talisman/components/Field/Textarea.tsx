@@ -3,10 +3,6 @@ import styled from "styled-components"
 
 import Field, { IFieldProps, fieldDefaultProps } from "./Field"
 
-const defaultProps: IFieldProps = {
-  ...fieldDefaultProps,
-}
-
 const Textarea = ({ value, onChange, fieldProps, ...rest }: IFieldProps) => (
   <Field {...rest}>
     <textarea
@@ -27,6 +23,6 @@ const StyledTextarea = styled(Textarea)`
   }
 `
 
-StyledTextarea.defaultProps = defaultProps
+StyledTextarea.defaultProps = fieldDefaultProps
 
 export default StyledTextarea
