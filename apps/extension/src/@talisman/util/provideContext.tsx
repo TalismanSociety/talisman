@@ -1,4 +1,4 @@
-import { createContext, FC, ReactNode, useContext } from "react"
+import { FC, ReactNode, createContext, useContext } from "react"
 
 // This utility generates a context provider from a react hook passed as argument
 // Returns an array containing the provider and the consumer hook

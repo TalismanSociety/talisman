@@ -1,7 +1,7 @@
-import { FC, ReactNode } from "react"
+import { provideContext } from "@talisman/util/provideContext"
 import useAppOnboard from "@ui/hooks/useAppOnboard"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
-import { provideContext } from "@talisman/util/provideContext"
+import { FC, ReactNode } from "react"
 
 const [AppOnboardProvider, useAppOnboardContext] = provideContext(useAppOnboard)
 

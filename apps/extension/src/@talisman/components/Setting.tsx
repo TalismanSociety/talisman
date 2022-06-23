@@ -1,6 +1,6 @@
-import styled from "styled-components"
 import Panel from "@talisman/components/Panel"
 import { ReactNode } from "react"
+import styled from "styled-components"
 
 interface SettingsProps {
   title: string

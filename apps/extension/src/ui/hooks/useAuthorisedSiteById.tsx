@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
-import useAccountAddresses from "./useAccountAddresses"
-import { AuthorizedSite, AuthorizedSiteId, ProviderType } from "@core/types"
-import { useAuthorisedSites } from "./useAuthorisedSites"
-import { api } from "@ui/api"
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
+import { AuthorizedSite, AuthorizedSiteId, ProviderType } from "@core/types"
+import { api } from "@ui/api"
+import { useCallback, useEffect, useMemo, useState } from "react"
+
+import useAccountAddresses from "./useAccountAddresses"
+import { useAuthorisedSites } from "./useAuthorisedSites"
 
 const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   const sites = useAuthorisedSites()

@@ -1,7 +1,8 @@
-import { FC, ReactNode } from "react"
 import { ErrorBoundary as SentryErrorBoundary } from "@sentry/react"
 import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
+import { FC, ReactNode } from "react"
 import styled from "styled-components"
+
 import Button from "./Button"
 
 const ErrorContainer = styled.section`

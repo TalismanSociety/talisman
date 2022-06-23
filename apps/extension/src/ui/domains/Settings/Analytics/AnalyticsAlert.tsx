@@ -104,19 +104,17 @@ export const AlertCard = styled(({ className, onLearnMoreClick, onAccept, onReje
 `
 
 const AnalyticsAlertPopupDrawer = () => {
-  // we should display the alert only once in the popup
-  const [hasAnalyticsRequestShown, setHasAnalyticsRequestShown] = useState<boolean>(false)
-  const { close, isOpen } = useOpenClose(!hasAnalyticsRequestShown)
+  const { close, isOpen, setIsOpen } = useOpenClose()
   const { update } = useSettings()
 
   useEffect(() => {
     const sub = appStore.observable.subscribe(({ analyticsRequestShown }) => {
-      setHasAnalyticsRequestShown(analyticsRequestShown)
+      setIsOpen(!analyticsRequestShown)
     })
     return () => {
       sub.unsubscribe()
     }
-  }, [])
+  }, [setIsOpen])
 
   const handleOpenLearnMore = useCallback(() => {
     api.dashboardOpen("/settings/analytics")
@@ -133,7 +131,7 @@ const AnalyticsAlertPopupDrawer = () => {
   )
 
   return (
-    <Drawer open={!hasAnalyticsRequestShown && isOpen} anchor="bottom">
+    <Drawer open={isOpen} anchor="bottom">
       <AlertCard
         onLearnMoreClick={handleOpenLearnMore}
         onAccept={() => handleAcceptReject(true)}

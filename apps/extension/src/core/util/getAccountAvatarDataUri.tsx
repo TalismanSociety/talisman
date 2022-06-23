@@ -1,9 +1,9 @@
 import { IdenticonType } from "@core/types"
 import Identicon from "@polkadot/react-identicon"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import * as Sentry from "@sentry/browser"
 import { TalismanOrb } from "@talisman/components/TalismanOrb"
 import { renderToString } from "react-dom/server"
-import * as Sentry from "@sentry/browser"
 
 const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) => {
   try {

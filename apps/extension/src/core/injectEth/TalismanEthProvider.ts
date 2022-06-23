@@ -1,12 +1,14 @@
-import { SendRequest } from "@core/types"
 import EventEmitter from "events"
+
+import { SendRequest } from "@core/types"
+
 import {
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
   EthProvider,
-  EthRequestArguments,
   EthProviderRpcError,
+  EthRequestArguments,
   EthRequestSignatures,
   EthResponseType,
-  ETH_ERROR_EIP1474_INTERNAL_ERROR,
 } from "./types"
 
 export class TalismanEthProvider extends EventEmitter implements EthProvider {

@@ -1,31 +1,32 @@
-import Balance from "../Balance"
+import { tokensToPlanck } from "@core/util"
+import { yupResolver } from "@hookform/resolvers/yup"
 import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
+import { SimpleButton } from "@talisman/components/SimpleButton"
 import { getChainAddressType } from "@talisman/util/getChainAddressType"
+import { isValidAddress } from "@talisman/util/isValidAddress"
 import Account from "@ui/domains/Account"
+import { useBalance } from "@ui/hooks/useBalance"
+import useChain from "@ui/hooks/useChain"
+import { useTip } from "@ui/hooks/useTip"
+import useToken from "@ui/hooks/useToken"
 import {
   ChangeEventHandler,
-  lazy,
   Suspense,
+  lazy,
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from "react"
-import AssetPicker from "../Picker"
-import styled from "styled-components"
-import { SendDialogContainer } from "./SendDialogContainer"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import * as yup from "yup"
 import { useForm } from "react-hook-form"
-import { yupResolver } from "@hookform/resolvers/yup"
-import { SendTokensInputs } from "./types"
+import styled from "styled-components"
+import * as yup from "yup"
+
+import Balance from "../Balance"
+import AssetPicker from "../Picker"
 import { useSendTokens } from "./context"
-import { useBalance } from "@ui/hooks/useBalance"
-import useChain from "@ui/hooks/useChain"
-import useToken from "@ui/hooks/useToken"
-import { isValidAddress } from "@talisman/util/isValidAddress"
-import { tokensToPlanck } from "@core/util"
-import { useTip } from "@ui/hooks/useTip"
+import { SendDialogContainer } from "./SendDialogContainer"
+import { SendTokensInputs } from "./types"
 
 const SendAddressConvertInfo = lazy(() => import("./SendAddressConvertInfo"))
 

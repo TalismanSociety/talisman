@@ -1,37 +1,37 @@
-import type {
-  RequestTypes,
-  ResponseType,
-  RequestSignatures,
-  Port,
-  RequestAuthorizeTab,
-  AuthorizedSiteAddresses,
-  AuthorizedSite,
-  CustomErc20Token,
-} from "@core/types"
-import { db } from "@core/libs/db"
-
-import { TabsHandler } from "@core/libs/Handler"
-import {
-  EthProviderRpcError,
-  EthRequestArguments,
-  AnyEthRequest,
-  EthRequestSignatures,
-  EthProviderMessage,
-  ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
-  ETH_ERROR_EIP1993_UNAUTHORIZED,
-  ETH_ERROR_EIP1993_USER_REJECTED,
-  ETH_ERROR_EIP1993_DISCONNECTED,
-  ETH_ERROR_EIP1474_INVALID_PARAMS,
-  ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
-} from "@core/injectEth/types"
-import { filterAccountsByAddresses } from "../accounts/helpers"
-import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
-import { ethers, providers } from "ethers"
-import keyring from "@polkadot/ui-keyring"
-import { getProviderForEvmNetworkId, getProviderForEthereumNetwork } from "./networksStore"
-import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 import { stripUrl } from "@core/handlers/helpers"
+import {
+  AnyEthRequest,
+  ETH_ERROR_EIP1474_INVALID_PARAMS,
+  ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
+  ETH_ERROR_EIP1993_DISCONNECTED,
+  ETH_ERROR_EIP1993_UNAUTHORIZED,
+  ETH_ERROR_EIP1993_USER_REJECTED,
+  ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
+  EthProviderMessage,
+  EthProviderRpcError,
+  EthRequestArguments,
+  EthRequestSignatures,
+} from "@core/injectEth/types"
+import { db } from "@core/libs/db"
+import { TabsHandler } from "@core/libs/Handler"
+import type {
+  AuthorizedSite,
+  AuthorizedSiteAddresses,
+  CustomErc20Token,
+  Port,
+  RequestAuthorizeTab,
+  RequestSignatures,
+  RequestTypes,
+  ResponseType,
+} from "@core/types"
+import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
+import keyring from "@polkadot/ui-keyring"
+import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
+import { ethers, providers } from "ethers"
+
+import { filterAccountsByAddresses } from "../accounts/helpers"
+import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./networksStore"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
