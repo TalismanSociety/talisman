@@ -1,5 +1,7 @@
 import { ChainId, ExtrinsicStatus, SubscriptionCallback } from "@core/types"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
+import { assert } from "@polkadot/util"
+import * as Sentry from "@sentry/browser"
 import { UnsignedTransaction } from "@substrate/txwrapper-polkadot"
 
 import RpcFactory from "../RpcFactory"
@@ -30,10 +32,15 @@ const transfer = async (
     status: ExtrinsicStatus
   }>
 ) => {
-  // TODO handle case where there is no value in store for this id
+  const pendingTransfer = store.get(id)
+  if (!pendingTransfer) {
+    Sentry.captureException("Pending transfer not available", {
+      tags: { module: "PendingTransfersRpc" },
+    })
+    return
+  }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { chainId, unsigned } = store.get(id)!
+  const { chainId, unsigned } = pendingTransfer
 
   // prevent this to be call twice
   store.delete(id)

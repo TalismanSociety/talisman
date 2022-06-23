@@ -24,6 +24,7 @@ import type {
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import keyring from "@polkadot/ui-keyring"
+import { assert } from "@polkadot/util"
 import BigNumber from "bignumber.js"
 
 export default class AssetTransferHandler extends ExtensionHandler {
@@ -177,8 +178,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
     id,
     signature,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const { chainId, unsigned } = pendingTransfers.get(id)!
+    const pendingTx = pendingTransfers.get(id)
+    assert(pendingTx, `No pending transfer with id ${id}`)
+    const { chainId, unsigned } = pendingTx
 
     return await new Promise((resolve, reject) => {
       const watchExtrinsic = this.getExtrinsicWatch(chainId, unsigned.address, resolve, reject)
