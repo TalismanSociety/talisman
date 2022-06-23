@@ -3,6 +3,7 @@ import { classNames } from "@talisman/util/classNames"
 import { FC, MouseEventHandler, ReactNode, useRef } from "react"
 import { createPortal } from "react-dom"
 import styled from "styled-components"
+
 import { TooltipBoundaryProvider } from "./Tooltip"
 
 const Container = styled.div`

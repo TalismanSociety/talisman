@@ -1,7 +1,7 @@
+import { BackButton } from "@talisman/components/BackButton"
+import { Transition, Variants, motion } from "framer-motion"
 import { FC, ReactNode } from "react"
 import styled from "styled-components"
-import { BackButton } from "@talisman/components/BackButton"
-import { motion, Transition, Variants } from "framer-motion"
 
 const Main = styled.main`
   //force dimensions and overflow to allow scrolling if very small screen

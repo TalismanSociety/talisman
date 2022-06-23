@@ -1,9 +1,9 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { formatDecimals, MAX_DECIMALS_FORMAT } from "talisman-utils"
-import CountUp from "react-countup"
-import { FC, useMemo } from "react"
 import { classNames } from "@talisman/util/classNames"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
+import { FC, useMemo } from "react"
+import CountUp from "react-countup"
+import { MAX_DECIMALS_FORMAT, formatDecimals } from "talisman-utils"
 
 type TokensProps = {
   amount?: string | number | null

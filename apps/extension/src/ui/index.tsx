@@ -1,11 +1,11 @@
+import { initSentry } from "@core/config/sentry"
+import * as Sentry from "@sentry/react"
+import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
+import NotificationProvider from "@talisman/components/Notification"
+import ThemeProvider from "@talisman/theme"
 import React from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
-import * as Sentry from "@sentry/react"
-import { initSentry } from "@core/config/sentry"
-import NotificationProvider from "@talisman/components/Notification"
-import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
-import ThemeProvider from "@talisman/theme"
 
 initSentry(Sentry)
 

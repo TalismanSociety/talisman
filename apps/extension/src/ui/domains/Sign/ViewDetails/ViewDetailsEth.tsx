@@ -1,15 +1,16 @@
-import { FC, useCallback, useEffect, useMemo } from "react"
-import styled from "styled-components"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
+import useToken from "@ui/hooks/useToken"
+import { BigNumberish } from "ethers"
+import { formatEther } from "ethers/lib/utils"
+import { FC, useCallback, useEffect, useMemo } from "react"
+import styled from "styled-components"
+
+import { useEthSignRequest } from "../SignRequestContext"
 import { ViewDetailsButton } from "./ViewDetailsButton"
 import { ViewDetailsField } from "./ViewDetailsField"
-import { useEthSignRequest } from "../SignRequestContext"
-import { formatEther } from "ethers/lib/utils"
-import { BigNumberish } from "ethers"
-import useToken from "@ui/hooks/useToken"
-import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
 
 const ViewDetailsContainer = styled.div`
   background: var(--color-background);

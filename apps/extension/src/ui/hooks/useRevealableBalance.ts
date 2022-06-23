@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react"
+
 import { useSettings } from "./useSettings"
 
 export const useRevealableBalance = (isBalance?: boolean, noCountUp?: boolean) => {

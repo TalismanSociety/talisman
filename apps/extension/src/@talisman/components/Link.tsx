@@ -1,5 +1,5 @@
 import React, { FC, MouseEvent, ReactNode, useCallback } from "react"
-import { NavLink as RouterLink, NavLinkProps, useNavigate } from "react-router-dom"
+import { NavLinkProps, NavLink as RouterLink, useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 export interface ILinkProps {
