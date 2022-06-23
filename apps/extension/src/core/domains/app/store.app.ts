@@ -41,9 +41,7 @@ export class AppStore extends SubscribableStorageProvider<
     // One time migration to using this store instead of storing directly in local storage from State
     Browser.storage.local.get("talismanOnboarded").then((result) => {
       const legacyOnboarded =
-        result &&
-        (result as Object).hasOwnProperty("talismanOnboarded") &&
-        result.talismanOnboarded === TRUE
+        result && "talismanOnboarded" in result && result.talismanOnboarded === TRUE
 
       if (legacyOnboarded) {
         this.set({ onboarded: TRUE })
