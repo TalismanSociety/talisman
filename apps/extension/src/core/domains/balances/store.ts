@@ -21,6 +21,7 @@ import {
 import { encodeAnyAddress } from "@core/util"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
+import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { liveQuery } from "dexie"
@@ -142,9 +143,10 @@ export class BalanceStore {
       return
     }
 
-    // TODO handle the case where chainId is null or undefined before entering the if logic below
-
     const tokenType = token.type
+    if (["native", "orml"].includes(tokenType))
+      assert(chainId, "chainId is required for substrate token balances")
+
     if (tokenType === "native")
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return (await BalancesRpc.balances({ [chainId!]: [address] }))

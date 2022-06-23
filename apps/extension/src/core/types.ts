@@ -705,7 +705,7 @@ export type BalancesUpdateUpsert = { type: "upsert"; balances: BalancesStorage }
 export type BalancesUpdateDelete = { type: "delete"; balances: string[] }
 
 export interface RequestBalance {
-  chainId: ChainId
+  chainId?: ChainId
   evmNetworkId?: EvmNetworkId
   tokenId: TokenId
   address: Address

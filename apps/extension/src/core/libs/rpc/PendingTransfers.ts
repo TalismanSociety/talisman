@@ -1,6 +1,5 @@
 import { ChainId, ExtrinsicStatus, SubscriptionCallback } from "@core/types"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
-import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import { UnsignedTransaction } from "@substrate/txwrapper-polkadot"
 
