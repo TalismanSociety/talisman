@@ -155,13 +155,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tip,
     reapBalance = false,
   }: RequestAssetTransfer): Promise<ResponseAssetTransferFeeQuery> {
-    try {
-      // no need for this pair to be unlocked, as we will use a fake signature
-      // eslint-disable-next-line no-var
-      var pair = getPairFromAddress(fromAddress)
-    } catch (error) {
-      throw error
-    }
+    const pair = getPairFromAddress(fromAddress)
 
     const token = await db.tokens.get(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)

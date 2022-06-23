@@ -30,7 +30,6 @@ module.exports = {
         "@typescript-eslint/no-inferrable-types": "off",
         "@typescript-eslint/no-empty-interface": "off",
         "@typescript-eslint/no-unnecessary-type-constraint": "off",
-        "no-useless-catch": "off",
       },
     },
   ],
