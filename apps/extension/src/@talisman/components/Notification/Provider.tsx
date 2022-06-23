@@ -1,8 +1,9 @@
-// @ts-nocheck
-import { createContext, useContext, useState, useEffect, useReducer } from "react"
-import md5 from "md5"
 import find from "lodash/find"
 import sortBy from "lodash/sortBy"
+import md5 from "md5"
+// @ts-nocheck
+import { createContext, useContext, useEffect, useReducer, useState } from "react"
+
 import Container from "./Container"
 
 // notification defaults
@@ -26,7 +27,7 @@ const buildTypes = (id: string, dispatch: any) => {
     id: string,
     fields: object,
     dispatch: any,
-    type: string = "add",
+    type = "add",
     createdAt: any,
     notificationType: string
   ) => {

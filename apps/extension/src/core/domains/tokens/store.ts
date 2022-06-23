@@ -8,7 +8,7 @@ import gql from "graphql-tag"
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
 export class TokenStore {
-  #lastHydratedAt: number = 0
+  #lastHydratedAt = 0
 
   async clearCustom(): Promise<void> {
     await db.transaction("rw", db.tokens, () => {

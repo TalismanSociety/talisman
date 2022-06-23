@@ -43,7 +43,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   )
 
   const check = useCallback(
-    async (newData: SendTokensInputs, allowReap: boolean = false) => {
+    async (newData: SendTokensInputs, allowReap = false) => {
       const { amount, tokenId, from, to, tip } = newData
 
       const token = tokensMap[tokenId]

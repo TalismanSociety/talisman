@@ -26,7 +26,6 @@ module.exports = {
         "@typescript-eslint/triple-slash-reference": "off",
         "@typescript-eslint/ban-types": "off",
         "@typescript-eslint/ban-ts-comment": "off",
-        "@typescript-eslint/no-inferrable-types": "off",
       },
     },
   ],

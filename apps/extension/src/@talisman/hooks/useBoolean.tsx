@@ -1,9 +1,9 @@
-import { useState, useCallback } from "react"
+import { useCallback, useState } from "react"
 
-const useBoolean = (init: boolean = false) => {
+const useBoolean = (init = false) => {
   const [value, setValue] = useState<boolean>(init)
   const toggle = useCallback(() => setValue(!value), [value])
-  const set = useCallback((val: boolean = false) => setValue(val), [])
+  const set = useCallback((val = false) => setValue(val), [])
   return [value, toggle, set] as const
 }
 

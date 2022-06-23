@@ -1,13 +1,13 @@
-import posthog from "posthog-js"
-import { settingsStore } from "@core/domains/app/store.settings"
 import { initPosthog } from "@core/config/posthog"
-import * as Sentry from "@sentry/browser"
 import { DEBUG } from "@core/constants"
-import keyring from "@polkadot/ui-keyring"
-import { Balances, Balance } from "@core/domains/balances/types"
 import { AccountTypes } from "@core/domains/accounts/helpers"
-import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
+import { settingsStore } from "@core/domains/app/store.settings"
+import { Balance, Balances } from "@core/domains/balances/types"
 import { db } from "@core/libs/db"
+import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
+import keyring from "@polkadot/ui-keyring"
+import * as Sentry from "@sentry/browser"
+import posthog from "posthog-js"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
 
@@ -52,11 +52,7 @@ class TalismanAnalytics {
     }
   }
 
-  async captureDelayed(
-    eventName: string,
-    properties?: posthog.Properties,
-    delaySeconds: number = 900
-  ) {
+  async captureDelayed(eventName: string, properties?: posthog.Properties, delaySeconds = 900) {
     setTimeout(() => {
       this.capture(eventName, properties)
     }, delaySeconds * 1000 * Math.random())

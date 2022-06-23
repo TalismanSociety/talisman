@@ -1,24 +1,25 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import { useNavigate } from "react-router-dom"
-import Layout from "../../layout"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import * as yup from "yup"
-import { api } from "@ui/api"
-import { useForm } from "react-hook-form"
-import { yupResolver } from "@hookform/resolvers/yup"
-import { FormField } from "@talisman/components/Field/FormField"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import { useAccountAddSecret } from "./context"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { AccountAddressType } from "@core/types"
+import { yupResolver } from "@hookform/resolvers/yup"
 import { Checkbox } from "@talisman/components/Checkbox"
-import styled from "styled-components"
+import { FormField } from "@talisman/components/Field/FormField"
+import HeaderBlock from "@talisman/components/HeaderBlock"
 import { useNotification } from "@talisman/components/Notification"
-import useAccounts from "@ui/hooks/useAccounts"
+import { SimpleButton } from "@talisman/components/SimpleButton"
 import { classNames } from "@talisman/util/classNames"
-import { Wallet } from "ethers"
+import { api } from "@ui/api"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import AccountAvatar from "@ui/domains/Account/Avatar"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import useAccounts from "@ui/hooks/useAccounts"
+import { Wallet } from "ethers"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
+import styled from "styled-components"
+import * as yup from "yup"
+
+import Layout from "../../layout"
+import { useAccountAddSecret } from "./context"
 
 type FormData = {
   name: string
@@ -100,7 +101,7 @@ const Container = styled(Layout)`
   }
 `
 
-const cleanupMnemonic = (input: string = "") =>
+const cleanupMnemonic = (input = "") =>
   input
     .trim()
     .toLowerCase()

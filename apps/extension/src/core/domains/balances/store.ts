@@ -41,7 +41,7 @@ type SubscriptionsState = "Closed" | "Closing" | "Open"
 
 export class BalanceStore {
   #subscriptionsState: SubscriptionsState = "Closed"
-  #subscriptionsGeneration: number = 0
+  #subscriptionsGeneration = 0
   #closeSubscriptionCallbacks: Array<Promise<() => void>> = []
 
   #chains: ChainIdAndHealth[] = []

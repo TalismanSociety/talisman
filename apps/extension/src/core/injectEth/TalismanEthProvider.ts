@@ -13,12 +13,12 @@ import {
 
 export class TalismanEthProvider extends EventEmitter implements EthProvider {
   // some libraries (@web3-onboard & wagmi at least) will look for this if we attempt to override window.ethereum
-  isTalisman: boolean = true
+  isTalisman = true
   // can be turned on from settings, provides compatibility with dapps that only support MetaMask
-  isMetaMask: boolean = false
+  isMetaMask = false
   // cannot use private syntax here (ex: #sendRequest) or wallet won't init on some dapps
   private _sendRequest: SendRequest
-  private _initialized: boolean = false
+  private _initialized = false
 
   constructor(sendRequest: SendRequest) {
     super({
