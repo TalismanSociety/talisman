@@ -26,14 +26,13 @@ const TransactionLink = ({ id, prefix, className }: IProps) => {
       {!!blockHash && (
         <>
           {!!prefix && <span className="prefix">{prefix} </span>}
-          {!!href ? (
-            /* eslint-disable-next-line react/jsx-no-target-blank */
+          {href ? (
             <a className={hashClassName} href={href} target="_blank" rel="noopener noreferrer">
-              {!!blockNumber ? blockNumber : truncateString(blockHash, 4, 4)}
+              {blockNumber ? blockNumber : truncateString(blockHash, 4, 4)}
             </a>
           ) : (
             <span className={hashClassName}>
-              {!!blockNumber ? blockNumber : truncateString(blockHash, 4, 4)}
+              {blockNumber ? blockNumber : truncateString(blockHash, 4, 4)}
             </span>
           )}
         </>

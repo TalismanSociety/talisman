@@ -152,7 +152,7 @@ const testNoDuplicate = async (
 
 const testValidMnemonic = async (val: string) => {
   // Don't bother calling the api if the mnemonic isn't the right length to reduce Sentry noise
-  if (!Boolean(val) || ![12, 24].includes(val.split(" ").length)) return false
+  if (!val || ![12, 24].includes(val.split(" ").length)) return false
   return await api.accountValidateMnemonic(val)
 }
 

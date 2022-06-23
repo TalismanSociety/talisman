@@ -34,7 +34,6 @@ module.exports = {
         "no-empty": "off",
         "no-prototype-builtins": "off",
         "no-case-declarations": "off",
-        "no-extra-boolean-cast": "off",
       },
     },
   ],

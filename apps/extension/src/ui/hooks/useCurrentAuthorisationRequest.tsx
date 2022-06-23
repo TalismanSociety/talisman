@@ -29,7 +29,7 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
   const canIgnore = useMemo(() => !currentRequest?.request.ethereum, [currentRequest])
 
   useEffect(() => {
-    if (!!authRequests[0]) {
+    if (authRequests[0]) {
       setCurrentRequest(authRequests[0])
     }
   }, [authRequests, setCurrentRequest, onError])

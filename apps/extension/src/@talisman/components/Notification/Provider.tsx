@@ -47,7 +47,7 @@ const buildTypes = (id: string, dispatch: any) => {
 
   const _createdAt = Date.now()
   const _id = id || md5(_createdAt + Math.floor(Math.random() * (100000 - 1 + 1) + 1))
-  const _type = !!id ? "update" : "add"
+  const _type = id ? "update" : "add"
 
   return {
     singleton: (props: any) => update(_id, props, dispatch, _type, _createdAt, "SINGLETON"),
@@ -106,10 +106,10 @@ const createNotification = (props: any) => {
     ...updaters,
   }
 
-  if (!!props?.fields?.title) notification.title = props?.fields?.title
-  if (!!props?.fields?.subtitle) notification.subtitle = props?.fields?.subtitle
-  if (!!props?.fields?.nav) notification.nav = props?.fields?.nav
-  if (!!props?.notificationType) notification.type = props?.notificationType
+  if (props?.fields?.title) notification.title = props?.fields?.title
+  if (props?.fields?.subtitle) notification.subtitle = props?.fields?.subtitle
+  if (props?.fields?.nav) notification.nav = props?.fields?.nav
+  if (props?.notificationType) notification.type = props?.notificationType
 
   return notification
 }
@@ -131,10 +131,10 @@ const updateNotification = (current, props) => {
           ),
   }
 
-  if (!!props?.fields?.title) notification.title = props?.fields?.title
-  if (!!props?.fields?.subtitle) notification.subtitle = props?.fields?.subtitle
-  if (!!props?.fields?.nav) notification.nav = props?.fields?.nav
-  if (!!props?.notificationType) notification.type = props?.notificationType
+  if (props?.fields?.title) notification.title = props?.fields?.title
+  if (props?.fields?.subtitle) notification.subtitle = props?.fields?.subtitle
+  if (props?.fields?.nav) notification.nav = props?.fields?.nav
+  if (props?.notificationType) notification.type = props?.notificationType
 
   return notification
 }
