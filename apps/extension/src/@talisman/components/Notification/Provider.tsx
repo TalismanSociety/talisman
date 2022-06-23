@@ -1,7 +1,7 @@
 // @ts-nocheck
 import find from "lodash/find"
 import sortBy from "lodash/sortBy"
-import md5 from "md5"
+import { nanoid } from "nanoid"
 import { createContext, useContext, useEffect, useReducer, useState } from "react"
 
 import Container from "./Container"
@@ -47,7 +47,7 @@ const buildTypes = (id: string, dispatch: any) => {
   }
 
   const _createdAt = Date.now()
-  const _id = id || md5(_createdAt + Math.floor(Math.random() * (100000 - 1 + 1) + 1))
+  const _id = id || nanoid()
   const _type = id ? "update" : "add"
 
   return {
