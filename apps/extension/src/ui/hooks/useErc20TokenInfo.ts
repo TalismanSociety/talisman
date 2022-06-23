@@ -3,7 +3,7 @@ import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { useEffect, useState } from "react"
 import { useEthereumProvider } from "./useEthereumProvider"
 
-export const useErc20TokenInfo = (evmNetworkId: number, contractAddress: string) => {
+export const useErc20TokenInfo = (evmNetworkId?: number, contractAddress?: string) => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error>()
   const [token, setToken] = useState<CustomErc20TokenCreate>()
@@ -13,7 +13,7 @@ export const useErc20TokenInfo = (evmNetworkId: number, contractAddress: string)
   useEffect(() => {
     setError(undefined)
     setToken(undefined)
-    if (!provider || !contractAddress) return
+    if (!evmNetworkId || !provider || !contractAddress) return
     setIsLoading(true)
     getErc20TokenInfo(provider, evmNetworkId, contractAddress)
       .then(setToken)

@@ -59,12 +59,12 @@ export const AppPill: FC<Props> = ({ url }) => {
     }
   }, [url])
 
-  if (!host) return null
+  if (!url || !host) return null
 
   return (
     <WithTooltip tooltip={url}>
       <Container>
-        <AppIcon small url={url!} />
+        <AppIcon small url={url} />
         <span>{host} </span>
       </Container>
     </WithTooltip>

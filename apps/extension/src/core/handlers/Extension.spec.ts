@@ -65,6 +65,7 @@ describe("Extension", () => {
   const getAccount = async (type?: KeypairType): Promise<string> => {
     const account = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
     expect(account).toBeDefined()
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return account!.address
   }
 
@@ -78,6 +79,7 @@ describe("Extension", () => {
       passConfirm: password,
     })
     const account = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [account!.address] })
   })
 

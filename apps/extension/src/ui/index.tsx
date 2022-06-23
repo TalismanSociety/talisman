@@ -16,7 +16,7 @@ const container = document.getElementById("root")
 export const renderTalisman = (app: any) => {
   if (!container) throw new Error("#root element not found.")
   const root = createRoot(container)
-  root!.render(
+  root.render(
     <React.StrictMode>
       <ThemeProvider>
         <ErrorBoundary>

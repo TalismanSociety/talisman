@@ -200,6 +200,7 @@ const EthSignRequestPage = () => {
                 <SignMessage account={account} request={request as string} />
               )}
               {requestType === "txWithValue" && (
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 <SignTxWithValue network={network} account={account} value={request.value!} />
               )}
               {requestType === "txWithoutValue" && (

@@ -21,7 +21,10 @@ const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) 
     if (rawUri) return rawUri[2]
 
     // lookup svg inside the html, with polkadot identicons it's nested inside divs
-    let [svg] = /<svg.*?<\/svg>/gi.exec(html ?? "")!
+    const match = /<svg.*?<\/svg>/gi.exec(html ?? "")
+    if (!match) throw new Error("Could not parse SVG")
+
+    let [svg] = match
 
     // polkadot identicons are rendered in a div and as svg but without xml namespace,
     // resulting data uri will be invalid unless we add it

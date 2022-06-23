@@ -137,10 +137,11 @@ const getAccountUri = async (secret: string, type: AccountAddressType) => {
 }
 
 const testNoDuplicate = async (
-  mnemonic: string,
   allAccountsAddresses: string[],
-  type: AccountAddressType
+  type: AccountAddressType,
+  mnemonic?: string
 ) => {
+  if (!mnemonic) return false
   try {
     const uri = await getAccountUri(mnemonic, type)
     const address = await api.addressFromMnemonic(uri, type)
@@ -150,7 +151,7 @@ const testNoDuplicate = async (
   }
 }
 
-const testValidMnemonic = async (val: string) => {
+const testValidMnemonic = async (val?: string) => {
   // Don't bother calling the api if the mnemonic isn't the right length to reduce Sentry noise
   if (!val || ![12, 24].includes(val.split(" ").length)) return false
   return await api.accountValidateMnemonic(val)
@@ -183,27 +184,27 @@ export const AccountAddSecretMnemonic = () => {
                 .test(
                   "is-valid-mnemonic-ethereum",
                   "Invalid secret",
-                  (val) => isValidEthPrivateKey(val) || testValidMnemonic(val!)
+                  (val) => isValidEthPrivateKey(val) || testValidMnemonic(val)
                 )
                 .when("multi", {
                   is: false,
                   then: yup
                     .string()
                     .test("not-duplicate-ethereum", "Account already exists", async (val) =>
-                      testNoDuplicate(val!, accountAddresses, "ethereum")
+                      testNoDuplicate(accountAddresses, "ethereum", val)
                     ),
                 }),
               otherwise: yup
                 .string()
                 .test("is-valid-mnemonic-sr25519", "Invalid secret", (val) =>
-                  testValidMnemonic(val!)
+                  testValidMnemonic(val)
                 )
                 .when("multi", {
                   is: false,
                   then: yup
                     .string()
                     .test("not-duplicate-sr25519", "Account already exists", async (val) =>
-                      testNoDuplicate(val!, accountAddresses, "sr25519")
+                      testNoDuplicate(accountAddresses, "sr25519", val)
                     ),
                 }),
             }),

@@ -29,6 +29,7 @@ const transfer = async (
     status: ExtrinsicStatus
   }>
 ) => {
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { chainId, unsigned } = store.get(id)!
 
   // prevent this to be call twice

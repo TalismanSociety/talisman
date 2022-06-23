@@ -48,7 +48,7 @@ const ConnectedAccountsDrawer: FC<Props> = ({ open, onClose }) => {
     <Drawer fullScreen anchor="right" open={open} onClose={onClose}>
       <Container>
         <header>
-          <AppPill url={url!} />
+          <AppPill url={url} />
           <IconButton className="close" onClick={onClose}>
             <XIcon />
           </IconButton>

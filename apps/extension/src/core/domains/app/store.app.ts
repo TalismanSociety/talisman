@@ -25,6 +25,7 @@ const DEFAULT_VALUE = {
   onboarded: FALSE,
   hideBraveWarning: false,
   hasBraveWarningBeenShown: false,
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
 }
 

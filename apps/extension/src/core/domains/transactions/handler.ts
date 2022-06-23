@@ -177,6 +177,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     id,
     signature,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const { chainId, unsigned } = pendingTransfers.get(id)!
 
     return await new Promise((resolve, reject) => {

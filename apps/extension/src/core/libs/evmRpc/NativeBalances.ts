@@ -60,6 +60,7 @@ export default class NativeBalancesEvmRpc {
 
                           address: address,
                           evmNetworkId: evmNetwork.id,
+                          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                           tokenId: evmNetwork.nativeToken?.id!,
                           free: (
                             (await providers[evmNetwork.id].getBalance(address)).toBigInt() ||

@@ -86,7 +86,7 @@ export const ethereumNetworkToProvider = (
       // )
       new ethers.providers.JsonRpcBatchProvider(
         ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) => url)[0],
-        { name: ethereumNetwork.name!, chainId: ethereumNetwork.id }
+        { name: ethereumNetwork.name ?? "unknown network", chainId: ethereumNetwork.id }
       )
     : null
 

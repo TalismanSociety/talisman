@@ -50,7 +50,7 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
   }, [currentRequest?.id, onIgnore])
 
   return {
-    request: currentRequest!,
+    request: currentRequest,
     accounts: accounts.map((account) => ({
       ...account,
       toggle: () => (ethereum ? set([account?.address]) : toggle(account?.address)),

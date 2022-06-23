@@ -144,10 +144,12 @@ export class BalanceStore {
 
     const tokenType = token.type
     if (tokenType === "native")
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return (await BalancesRpc.balances({ [chainId!]: [address] }))
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()
     if (tokenType === "orml")
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return (await OrmlTokensRpc.tokens({ [chainId!]: [address] }))
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()
