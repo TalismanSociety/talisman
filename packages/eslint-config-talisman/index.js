@@ -10,16 +10,12 @@ module.exports = {
     {
       files: ["**/*.ts", "**/*.tsx"],
       parser: "@typescript-eslint/parser",
-      plugins: ["@typescript-eslint", "simple-import-sort", "import"],
+      plugins: ["@typescript-eslint", "import"],
       extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
 
       rules: {
         "@typescript-eslint/explicit-function-return-type": "off",
         "no-console": "warn",
-
-        // To add ASAP
-        // "simple-import-sort/imports": "error",
-        // "simple-import-sort/exports": "error",
 
         // To remove ASAP
         "@typescript-eslint/no-explicit-any": "off",
