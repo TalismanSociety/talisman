@@ -220,10 +220,11 @@ export default class AppHandler extends ExtensionHandler {
           (modalType) => ({ modalType })
         )
 
-      case "pri(app.analyticsCapture)":
+      case "pri(app.analyticsCapture)": {
         const { eventName, options } = request as AnalyticsCaptureRequest
         talismanAnalytics.capture(eventName, options)
         return true
+      }
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

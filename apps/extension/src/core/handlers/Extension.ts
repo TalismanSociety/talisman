@@ -86,9 +86,10 @@ export default class Extension extends ExtensionHandler {
       case "pri(mnemonic.subscribe)":
         return this.stores.seedPhrase.subscribe(id, port)
 
-      case "pri(mnemonic.address)":
+      case "pri(mnemonic.address)": {
         const { mnemonic, type } = request as RequestAddressFromMnemonic
         return addressFromMnemonic(mnemonic, type)
+      }
 
       // --------------------------------------------------------------------
       // balance handlers ---------------------------------------------------
@@ -99,7 +100,7 @@ export default class Extension extends ExtensionHandler {
       case "pri(balances.subscribe)":
         return this.stores.balances.subscribe(id, port)
 
-      case "pri(balances.byparams.subscribe)":
+      case "pri(balances.byparams.subscribe)": {
         // create subscription callback
         const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
 
@@ -121,6 +122,7 @@ export default class Extension extends ExtensionHandler {
 
         // subscription created
         return true
+      }
 
       // --------------------------------------------------------------------
       // chain handlers -----------------------------------------------------

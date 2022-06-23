@@ -32,7 +32,6 @@ module.exports = {
         "@typescript-eslint/no-unnecessary-type-constraint": "off",
         "no-useless-catch": "off",
         "no-prototype-builtins": "off",
-        "no-case-declarations": "off",
       },
     },
   ],

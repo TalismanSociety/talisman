@@ -335,7 +335,7 @@ export class EthHandler extends ExtensionHandler {
           port
         )
 
-      case "pri(eth.watchasset.requests.subscribe.byid)":
+      case "pri(eth.watchasset.requests.subscribe.byid)": {
         const cb = createSubscription<"pri(eth.watchasset.requests.subscribe.byid)">(id, port)
         const subscription = this.state.requestStores.evmAssets.observable.subscribe(
           (reqs: WatchAssetRequest[]) => {
@@ -349,6 +349,7 @@ export class EthHandler extends ExtensionHandler {
           subscription.unsubscribe()
         })
         return true
+      }
 
       // --------------------------------------------------------------------
       // ethereum network handlers ------------------------------------------
@@ -407,9 +408,10 @@ export class EthHandler extends ExtensionHandler {
         return true
       }
 
-      case "pri(eth.request)":
+      case "pri(eth.request)": {
         const { chainId: ethChainId, ...rest } = request as AnyEthRequestChainId
         return this.ethRequest(id, ethChainId, rest) as any
+      }
     }
     throw new Error(`Unable to handle message of type ${type}`)
   }
