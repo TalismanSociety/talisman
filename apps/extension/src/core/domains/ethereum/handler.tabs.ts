@@ -348,6 +348,7 @@ export class EthTabsHandler extends TabsHandler {
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
     try {
+      // eslint-disable-next-line no-var
       var tokenInfo = await getErc20TokenInfo(provider, ethChainId, address)
     } catch (err) {
       throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)

@@ -8,6 +8,7 @@ import { db } from "@core/libs/db"
 
 export const watchEthereumTransaction = async (ethChainId: number, txHash: string) => {
   try {
+    // eslint-disable-next-line no-var
     var ethereumNetwork = await db.evmNetworks.get(ethChainId)
     if (!ethereumNetwork) {
       throw new Error(`Could not find ethereum network ${ethChainId}`)

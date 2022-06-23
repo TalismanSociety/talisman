@@ -112,6 +112,7 @@ export class EthHandler extends ExtensionHandler {
 
       const serialisedTx = serializeTransaction(goodTx)
       try {
+        // eslint-disable-next-line no-var
         var pair = getUnlockedPairFromAddress(queued.account.address)
       } catch (error) {
         this.stores.password.clearPassword()
@@ -155,6 +156,7 @@ export class EthHandler extends ExtensionHandler {
       const { request, reject, resolve } = queued
 
       try {
+        // eslint-disable-next-line no-var
         var pair = getUnlockedPairFromAddress(queued.account.address)
       } catch (error) {
         this.stores.password.clearPassword()

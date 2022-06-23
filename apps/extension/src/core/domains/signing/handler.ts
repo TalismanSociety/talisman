@@ -32,6 +32,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     const { reject, request, resolve } = queued
     try {
+      // eslint-disable-next-line no-var
       var pair = getUnlockedPairFromAddress(queued.account.address)
     } catch (error) {
       this.stores.password.clearPassword()

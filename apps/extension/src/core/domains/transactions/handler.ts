@@ -96,6 +96,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     reapBalance = false,
   }: RequestAssetTransfer): Promise<ResponseAssetTransfer> {
     try {
+      // eslint-disable-next-line no-var
       var pair = getUnlockedPairFromAddress(fromAddress)
     } catch (error) {
       this.stores.password.clearPassword()
@@ -156,6 +157,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
   }: RequestAssetTransfer): Promise<ResponseAssetTransferFeeQuery> {
     try {
       // no need for this pair to be unlocked, as we will use a fake signature
+      // eslint-disable-next-line no-var
       var pair = getPairFromAddress(fromAddress)
     } catch (error) {
       throw error
