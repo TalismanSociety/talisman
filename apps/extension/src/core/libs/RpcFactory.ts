@@ -1,13 +1,13 @@
 import { DEBUG } from "@core/constants"
 import { db } from "@core/libs/db"
+import { SmoldotProvider } from "@core/libs/SmoldotProvider"
 import { ChainId } from "@core/types"
 import { WsProvider } from "@polkadot/api"
 import { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import { ScProvider, WellKnownChain } from "@polkadot/rpc-provider/substrate-connect"
 import * as Sentry from "@sentry/browser"
 
 type SocketUserId = number
-type Provider = WsProvider | ScProvider
+type Provider = WsProvider | SmoldotProvider
 
 /**
  * RpcFactory provides an interface similar to WsProvider, but with three points of difference:
@@ -17,7 +17,7 @@ type Provider = WsProvider | ScProvider
  * 3. Subscriptions return a callable `unsubscribe` method instead of an id.
  */
 class RpcFactory {
-  #socketConnections: Record<ChainId, { provider: Provider; isReady: Promise<void> }> = {}
+  #socketConnections: Record<ChainId, { provider?: Provider; isReady: Promise<void> }> = {}
   #socketKeepAliveIntervals: Record<ChainId, ReturnType<typeof setInterval>> = {}
   #socketUsers: Record<ChainId, SocketUserId[]> = {}
 
@@ -84,14 +84,14 @@ class RpcFactory {
 
     if (this.#socketConnections[chainId]) {
       await this.#socketConnections[chainId].isReady
-      return [socketUserId, this.#socketConnections[chainId].provider]
+      return [socketUserId, this.#socketConnections[chainId].provider!]
     }
 
-    const substrateConnectWellKnownChains: Record<ChainId, WellKnownChain> = {
-      polkadot: WellKnownChain.polkadot,
-      kusama: WellKnownChain.ksmcc3,
-      westend: WellKnownChain.westend2,
-      // rococo: WellKnownChain.rococo_v2_2,
+    const chainspecUrls: Record<ChainId, string> = {
+      polkadot: "/chainspecs/polkadot.json",
+      // kusama: "/chainspecs/ksmcc3.json",
+      // westend: "/chainspecs/westend2.json",
+      // rococo: "/chainspecs/rococo_v2_2.json",
     }
 
     const connectRpc = async (): Promise<[number, Provider]> => {
@@ -125,39 +125,76 @@ class RpcFactory {
             // eslint-disable-next-line no-console
             return console.warn("skipping rpc ws healthcheck: ws is not defined")
 
-          if (!this.#socketConnections[chainId].provider.isConnected)
+          if (!this.#socketConnections[chainId].provider!.isConnected)
             // eslint-disable-next-line no-console
             return console.warn("skipping rpc ws healthcheck: ws is not connected")
 
-          this.#socketConnections[chainId].provider
-            .send("system_health", [])
+          this.#socketConnections[chainId]
+            .provider!.send("system_health", [])
             // eslint-disable-next-line no-console
             .catch((error) => console.warn(`Failed keep-alive for socket ${chainId}`, error))
         }, intervalMs)
       })()
 
       await this.#socketConnections[chainId].isReady
-      return [socketUserId, this.#socketConnections[chainId].provider]
+      return [socketUserId, this.#socketConnections[chainId].provider!]
     }
 
-    const connectSc = async (wellKnownChain: WellKnownChain): Promise<[number, Provider]> => {
-      const provider = new ScProvider(wellKnownChain)
-      const isReady = new Promise<void>((resolve) => provider.on("connected", resolve))
+    const connectSmoldot = async (chainId: ChainId): Promise<[number, Provider]> => {
+      const chainspecUrl = chainspecUrls[chainId]
+      if (!chainspecUrl) throw new Error(`No chainspec found for chain ${chainId}`)
+
+      let ready: () => void
+      let isReady = new Promise<void>((resolve) => (ready = resolve))
+      this.#socketConnections[chainId] = { isReady }
+
+      const chainspec = await (await fetch(chainspecUrl)).text()
+      const databaseContent = (await db.smoldotDbContent.get(chainId))?.databaseContent
+
+      const provider = new SmoldotProvider(chainspec, databaseContent)
+
+      provider.on("connected", ready!)
+      provider.on("error", (error) =>
+        Sentry.captureException(error, { tags: { module: "lightclients" } })
+      )
       this.#socketConnections[chainId] = { provider, isReady }
 
+      let startTime = Date.now()
       try {
-        await this.#socketConnections[chainId].provider.connect()
+        await this.#socketConnections[chainId].provider!.connect()
       } catch (error) {
         DEBUG && console.error(error) // eslint-disable-line no-console
+        Sentry.captureException(error, { tags: { module: "lightclients" } })
         throw error
       }
 
       await this.#socketConnections[chainId].isReady
-      return [socketUserId, this.#socketConnections[chainId].provider]
+
+      let startupDuration = (Date.now() - startTime) / 1000
+      // eslint-disable-next-line no-console
+      console.log(
+        `Lightclient startup for chain ${chainId} took ${Math.floor(
+          startupDuration / 60
+        )} minutes and ${(startupDuration % 60).toFixed(2)} seconds`
+      )
+
+      const intervalId = setInterval(() => {
+        provider.databaseContent().then((databaseContent) => {
+          // eslint-disable-next-line no-console
+          console.log("Storing smoldotDbContent", chainId)
+          db.smoldotDbContent.put({ chainId, databaseContent })
+        })
+      }, 10_000)
+
+      provider.on("disconnected", () => {
+        clearInterval(intervalId)
+      })
+
+      return [socketUserId, this.#socketConnections[chainId].provider!]
     }
 
-    if (substrateConnectWellKnownChains[chain.id] !== undefined) {
-      return await connectSc(substrateConnectWellKnownChains[chain.id])
+    if (chainspecUrls[chain.id] !== undefined) {
+      return await connectSmoldot(chain.id)
     }
 
     return await connectRpc()
@@ -174,7 +211,7 @@ class RpcFactory {
     }
 
     try {
-      this.#socketConnections[chainId].provider.disconnect()
+      this.#socketConnections[chainId].provider!.disconnect()
     } catch (error) {
       DEBUG && console.warn(`Error occurred disconnecting socket ${chainId}`, error) // eslint-disable-line no-console
     }
