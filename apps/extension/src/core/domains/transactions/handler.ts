@@ -180,11 +180,16 @@ export default class AssetTransferHandler extends ExtensionHandler {
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
     const pendingTx = pendingTransfers.get(id)
     assert(pendingTx, `No pending transfer with id ${id}`)
-    const { chainId, unsigned } = pendingTx
+    const { data, transfer } = pendingTx
 
     return await new Promise((resolve, reject) => {
-      const watchExtrinsic = this.getExtrinsicWatch(chainId, unsigned.address, resolve, reject)
-      pendingTransfers.transfer(id, signature, watchExtrinsic)
+      const watchExtrinsic = this.getExtrinsicWatch(
+        data.chainId,
+        data.unsigned.address,
+        resolve,
+        reject
+      )
+      transfer(signature, watchExtrinsic)
     })
   }
 
