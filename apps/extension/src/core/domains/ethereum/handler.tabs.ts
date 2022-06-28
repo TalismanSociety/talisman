@@ -2,6 +2,7 @@ import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 import { stripUrl } from "@core/handlers/helpers"
 import {
   AnyEthRequest,
+  ETH_ERROR_EIP1474_INVALID_INPUT,
   ETH_ERROR_EIP1474_INVALID_PARAMS,
   ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
   ETH_ERROR_EIP1993_DISCONNECTED,
@@ -457,6 +458,11 @@ export class EthTabsHandler extends TabsHandler {
         }
 
         const address = site.ethAddresses[0]
+
+        // allow only the currently selected account in "from" field
+        if (txRequest.from?.toLowerCase() !== address.toLowerCase())
+          throw new EthProviderRpcError("Unknown from account", ETH_ERROR_EIP1474_INVALID_INPUT)
+
         const pair = keyring.getPair(address)
 
         if (!address || !pair) {
@@ -473,7 +479,6 @@ export class EthTabsHandler extends TabsHandler {
             chainId: site.ethChainId,
             ...txRequest,
           },
-          provider,
           site.ethChainId,
           {
             address,
