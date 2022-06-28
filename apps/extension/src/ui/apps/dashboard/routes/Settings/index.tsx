@@ -1,19 +1,19 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
-import Grid from "@talisman/components/Grid"
 import CtaButton from "@talisman/components/CtaButton"
-import Mnemonic from "@ui/domains/Account/Mnemonic"
-import { ReactComponent as IconKey } from "@talisman/theme/icons/key.svg"
-import { ReactComponent as IconLink } from "@talisman/theme/icons/link.svg"
-import { ReactComponent as IconInfo } from "@talisman/theme/icons/info.svg"
-import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
-import { ReactComponent as IconGlobe } from "@talisman/theme/icons/globe.svg"
-import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
-import { ReactComponent as IconList } from "@talisman/theme/icons/list.svg"
-import Layout from "@ui/apps/dashboard/layout"
+import Grid from "@talisman/components/Grid"
+import HeaderBlock from "@talisman/components/HeaderBlock"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
+import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
+import { ReactComponent as IconGlobe } from "@talisman/theme/icons/globe.svg"
+import { ReactComponent as IconInfo } from "@talisman/theme/icons/info.svg"
+import { ReactComponent as IconKey } from "@talisman/theme/icons/key.svg"
+import { ReactComponent as IconLink } from "@talisman/theme/icons/link.svg"
+import { ReactComponent as IconList } from "@talisman/theme/icons/list.svg"
+import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
+import Layout from "@ui/apps/dashboard/layout"
+import Mnemonic from "@ui/domains/Account/Mnemonic"
 
 const Settings = () => {
   const { isOpen, open, close } = useOpenClose()
@@ -37,7 +37,7 @@ const Settings = () => {
         />
         <CtaButton
           icon={<IconList />}
-          title="Manage cutom tokens"
+          title="Manage custom tokens"
           subtitle="Add or delete custom ERC20 tokens"
           to={`/tokens`}
         />
