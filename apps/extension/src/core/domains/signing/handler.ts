@@ -7,12 +7,11 @@ import { watchSubstrateTransaction } from "@core/notifications"
 import type {
   AnySigningRequest,
   MessageTypes,
-  Port,
-  RequestIdOnly,
   RequestSigningCancel,
   RequestTypes,
   ResponseType,
 } from "@core/types"
+import { Port, RequestIdOnly } from "@core/types/base"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTransactionDetails } from "@core/util/getTransactionDetails"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"

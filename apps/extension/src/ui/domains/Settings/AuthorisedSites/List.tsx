@@ -1,13 +1,14 @@
-import styled from "styled-components"
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
-import Panel from "@talisman/components/Panel"
+import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import Grid from "@talisman/components/Grid"
-import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
-import Site from "./Site"
+import HeaderBlock from "@talisman/components/HeaderBlock"
+import Panel from "@talisman/components/Panel"
+import Spacer from "@talisman/components/Spacer"
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
+import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
 import { useEffect, useMemo, useState } from "react"
-import { ProviderType } from "@core/types"
+import styled from "styled-components"
+
+import Site from "./Site"
 
 const AuthorisedSitesList = ({ className }: any) => {
   const sites = useAuthorisedSites()

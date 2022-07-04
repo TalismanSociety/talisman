@@ -1,14 +1,14 @@
+import { db } from "@core/libs/db"
+import { ExtensionHandler } from "@core/libs/Handler"
 import type {
   MessageTypes,
   RequestMetadataApprove,
   RequestMetadataReject,
   RequestTypes,
   ResponseType,
-  Port,
 } from "@core/types"
+import { Port } from "@core/types/base"
 import { assert } from "@polkadot/util"
-import { ExtensionHandler } from "@core/libs/Handler"
-import { db } from "@core/libs/db"
 
 export default class MetadataHandler extends ExtensionHandler {
   private async metadataApprove({ id }: RequestMetadataApprove): Promise<boolean> {

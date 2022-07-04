@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from "react"
-import useAccounts from "./useAccounts"
-import useSet from "@talisman/hooks/useSet"
-import type { AuthorizeRequest } from "@core/types"
-import { useAuthRequests } from "./useAuthRequests"
-import { api } from "@ui/api"
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
+import type { AuthorizeRequest } from "@core/domains/sitesAuthorised/types"
+import useSet from "@talisman/hooks/useSet"
+import { api } from "@ui/api"
+import { useCallback, useEffect, useMemo, useState } from "react"
+
+import useAccounts from "./useAccounts"
+import { useAuthRequests } from "./useAuthRequests"
 
 interface IProps {
   onError: (msg: string) => void

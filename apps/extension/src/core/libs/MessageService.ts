@@ -3,22 +3,22 @@
 
 // Adapted from https://github.com/polkadot-js/extension/
 
+import { ETH_ERROR_EIP1474_INTERNAL_ERROR, EthProviderRpcError } from "@core/injectEth/types"
 import type {
   MessageTypes,
   MessageTypesWithNoSubscriptions,
   MessageTypesWithNullRequest,
   MessageTypesWithSubscriptions,
+  OriginTypes,
   RequestTypes,
   ResponseTypes,
   SubscriptionMessageTypes,
   TransportRequestMessage,
   TransportResponseMessage,
-  OriginTypes,
   UnsubscribeFn,
-  Port,
-} from "core/types"
+} from "@core/types"
+import { Port } from "@core/types/base"
 import * as Sentry from "@sentry/browser"
-import { EthProviderRpcError, ETH_ERROR_EIP1474_INTERNAL_ERROR } from "@core/injectEth/types"
 
 export interface Handler {
   resolve: (data?: any) => void

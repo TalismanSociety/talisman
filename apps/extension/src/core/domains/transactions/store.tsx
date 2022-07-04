@@ -1,17 +1,10 @@
-import { v4 as uuidv4, validate as isUuid, version as uuidVersion } from "uuid"
-import { BehaviorSubject, combineLatest, map } from "rxjs"
-import { StorageProvider } from "@core/libs/Store"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
-import {
-  Address,
-  ChainId,
-  Port,
-  RequestIdOnly,
-  Transaction,
-  TransactionId,
-  TransactionStatus,
-} from "@core/types"
+import { StorageProvider } from "@core/libs/Store"
+import { Address, ChainId, Transaction, TransactionId, TransactionStatus } from "@core/types"
+import { Port, RequestIdOnly } from "@core/types/base"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
+import { BehaviorSubject, combineLatest, map } from "rxjs"
+import { validate as isUuid, version as uuidVersion, v4 as uuidv4 } from "uuid"
 
 type ExtrinsicStatusType = ExtrinsicStatus["type"]
 const deriveTxStatus: { [Property in ExtrinsicStatusType]: [TransactionStatus, string] } = {

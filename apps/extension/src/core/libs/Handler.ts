@@ -1,6 +1,7 @@
-import type { MessageTypes, RequestTypes, ResponseType, Port, RequestSignatures } from "@core/types"
 import State from "@core/handlers/State"
-import { ExtensionStore, TabStore, Store } from "@core/handlers/stores"
+import { ExtensionStore, Store, TabStore } from "@core/handlers/stores"
+import type { MessageTypes, RequestSignatures, RequestTypes, ResponseType } from "@core/types"
+import type { Port } from "@core/types/base"
 
 interface THandler {
   handle<TMessageType extends MessageTypes>(

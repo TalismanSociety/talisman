@@ -16,12 +16,11 @@ import {
   CustomNativeToken,
   EthApproveSignAndSend,
   MessageTypes,
-  Port,
-  RequestIdOnly,
   RequestTypes,
   ResponseType,
   WatchAssetRequest,
 } from "@core/types"
+import { Port, RequestIdOnly } from "@core/types/base"
 import type { TransactionRequest } from "@ethersproject/providers"
 import { assert, u8aToHex } from "@polkadot/util"
 import { BigNumber, ethers } from "ethers"

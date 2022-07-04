@@ -1,11 +1,11 @@
-import { stripUrl } from "@core/handlers/helpers"
-import { RequestStore } from "@core/libs/RequestStore"
-import type {
+import {
   AuthRequestBase,
   AuthRequestResponse,
   RequestAuthorizeTab,
-  RequestIdOnly,
-} from "@core/types"
+} from "@core/domains/sitesAuthorised/types"
+import { stripUrl } from "@core/handlers/helpers"
+import { RequestStore } from "@core/libs/RequestStore"
+import type { RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 
 class AuthError extends Error {}

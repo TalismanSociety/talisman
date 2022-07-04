@@ -1,5 +1,6 @@
-import { ProviderType } from "@core/types"
+import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { useMemo } from "react"
+
 import useAccounts from "./useAccounts"
 import useAuthorisedSiteById from "./useAuthorisedSiteById"
 

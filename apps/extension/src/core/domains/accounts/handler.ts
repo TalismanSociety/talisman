@@ -1,29 +1,29 @@
+import { DEBUG } from "@core/constants"
+import { AccountTypes, filterPublicAccounts } from "@core/domains/accounts/helpers"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import { genericSubscription } from "@core/handlers/subscriptions"
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { ExtensionHandler } from "@core/libs/Handler"
 import type {
   MessageTypes,
-  RequestTypes,
-  ResponseType,
-  Port,
   RequestAccountCreate,
-  RequestAccountCreateFromSeed,
   RequestAccountCreateFromJson,
+  RequestAccountCreateFromSeed,
   RequestAccountCreateHardware,
-  RequestAccountForget,
   RequestAccountExport,
-  ResponseAccountExport,
+  RequestAccountForget,
   RequestAccountRename,
+  RequestTypes,
+  ResponseAccountExport,
+  ResponseType,
 } from "@core/types"
-import { filterPublicAccounts, AccountTypes } from "@core/domains/accounts/helpers"
+import { Port } from "@core/types/base"
+import { encodeAnyAddress } from "@core/util"
+import { KeyringPair$Json } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { ExtensionHandler } from "@core/libs/Handler"
-import { genericSubscription } from "@core/handlers/subscriptions"
 import { isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
-import { KeyringPair$Json } from "@polkadot/keyring/types"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
-import { encodeAnyAddress } from "@core/util"
-import { DEBUG } from "@core/constants"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
-import { talismanAnalytics } from "@core/libs/Analytics"
 
 export default class AccountsHandler extends ExtensionHandler {
   private getRootAccount() {

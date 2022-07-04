@@ -1,14 +1,13 @@
+import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
+import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
-import type { JsonRpcProvider } from "@ethersproject/providers"
 import type {
   AccountJson,
   MetadataRequest,
-  RequestAuthorizeTab as PolkadotRequestAuthorizeTab,
   RequestSignatures as PolkadotRequestSignatures,
   SigningRequest as PolkadotSigningRequest,
   RequestAccountCreateHardware,
   RequestAccountSubscribe,
-  RequestAuthorizeSubscribe,
   RequestMetadataSubscribe,
   RequestSigningApproveSignature,
   RequestSigningSubscribe,
@@ -20,9 +19,8 @@ import type { IEventData } from "@polkadot/types/types"
 import type { SignerPayloadJSON, SignerPayloadRaw, TypeDef } from "@polkadot/types/types"
 import { BigNumber } from "ethers"
 import posthog from "posthog-js"
-import { Runtime } from "webextension-polyfill"
 
-import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "./injectEth/types"
+import { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
 
 export type {
   ExtrinsicStatus,
@@ -91,32 +89,6 @@ export type TransactionDetails = {
   payment: { class: string; partialFee: string; weight: number }
 }
 
-export declare type Port = chrome.runtime.Port | Runtime.Port
-
-// Have to replicate these utils here because polkadot does not export them
-declare type IsNull<T, K extends keyof T> = {
-  [K1 in Exclude<keyof T, K>]: T[K1]
-} & T[K] extends null
-  ? K
-  : never
-declare type NullKeys<T> = {
-  [K in keyof T]: IsNull<T, K>
-}[keyof T]
-declare type KeysWithDefinedValues<T> = {
-  [K in keyof T]: T[K] extends undefined ? never : K
-}[keyof T]
-declare type NoUndefinedValues<T> = {
-  [K in KeysWithDefinedValues<T>]: T[K]
-}
-
-declare type KeysWithIdOnlyValues<T> = {
-  [K in keyof T]: T[K] extends RequestIdOnly ? K : never
-}[keyof T]
-
-declare type IdOnlyValues<T> = {
-  [K in KeysWithIdOnlyValues<T>]: T[K]
-}
-
 export declare type RequestTypes = {
   [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
 }
@@ -132,10 +104,6 @@ export declare type SubscriptionMessageTypes = NoUndefinedValues<{
 export declare type RequestIdOnlyMessageTypes = IdOnlyValues<{
   [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
 }>
-
-export declare type RequestIdOnly = {
-  id: string
-}
 
 export declare type EthApproveSignAndSend = RequestIdOnly & {
   maxPriorityFeePerGas: string
@@ -171,7 +139,10 @@ type RemovedMessages =
   | "pri(accounts.changePassword)"
   | "pri(seed.validate)"
 
-export interface RequestSignatures extends Omit<PolkadotRequestSignatures, RemovedMessages> {
+type RequestSignaturesBase = AuthorisedSiteMessages &
+  Omit<PolkadotRequestSignatures, RemovedMessages>
+
+export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
 
   "pri(unsubscribe)": [RequestIdOnly, null]
@@ -213,20 +184,6 @@ export interface RequestSignatures extends Omit<PolkadotRequestSignatures, Remov
   "pri(balances.get)": [RequestBalance, BalanceStorage]
   "pri(balances.subscribe)": [null, boolean, boolean]
   "pri(balances.byparams.subscribe)": [RequestBalancesByParamsSubscribe, boolean, BalancesUpdate]
-
-  // authorized sites message signatures
-  "pri(sites.list)": [null, AuthUrls]
-  "pri(sites.subscribe)": [null, boolean, AuthUrls]
-  "pri(sites.byid)": [RequestIdOnly, AuthorizedSite]
-  "pri(sites.byid.subscribe)": [RequestIdOnly, boolean, AuthorizedSite]
-  "pri(sites.forget)": [RequestAuthorizedSiteForget, boolean]
-  "pri(sites.update)": [RequestAuthorizedSiteUpdate, boolean]
-
-  // authorization requests message signatures
-  "pri(sites.requests.subscribe)": [RequestAuthorizeSubscribe, boolean, AuthorizeRequest[]]
-  "pri(sites.requests.approve)": [AuthRequestApprove, boolean]
-  "pri(sites.requests.reject)": [RequestIdOnly, boolean]
-  "pri(sites.requests.ignore)": [RequestIdOnly, boolean]
 
   // signing message signatures
   "pri(signing.approveSign)": [RequestIdOnly, boolean]
@@ -353,18 +310,8 @@ export interface RequestLogin {
   pass: string
 }
 
-export interface RequestAuthorizeTab extends PolkadotRequestAuthorizeTab {
-  name?: string
-  ethereum?: boolean
-}
 export interface RequestRoute {
   route: string
-}
-
-export interface AuthorizeRequest {
-  id: string
-  request: RequestAuthorizeTab
-  url: string
 }
 
 export interface AccountMeta extends AccountJson {
@@ -742,11 +689,6 @@ export declare type RequestAddressFromMnemonic = {
   type?: AccountAddressType
 }
 
-export interface Resolver<T> {
-  reject: (error: Error) => void
-  resolve: (result: T) => void
-}
-
 // account types ----------------------------------
 export type AccountsList = Account[]
 
@@ -778,27 +720,6 @@ export interface RequestAccountRename {
   name: string
 }
 
-// authorize request types ----------------------------------
-export type AuthRequestId = string
-export type AuthRequestAddress = string
-export type AuthRequestAddresses = AuthRequestAddress[]
-
-export type AuthRequestApprove = {
-  id: string
-  addresses: AuthRequestAddresses
-  ethChainId?: number
-}
-
-export interface AuthRequestBase {
-  id: string
-  idStr: string
-  request: RequestAuthorizeTab
-  url: string
-}
-
-export type AuthRequestResponse = { addresses: AuthRequestAddresses; ethChainId?: number }
-export type AuthRequest = Resolver<AuthRequestResponse> & AuthRequestBase
-
 // ethereum networks
 
 export type AddEthereumChainParameter = {
@@ -828,32 +749,6 @@ export type AddEthereumChainRequest = {
 
 export type EthPriorityOptionName = "low" | "medium" | "high"
 export type EthPriorityOptions = Record<EthPriorityOptionName, BigNumber>
-
-// authorized site types ----------------------------------
-
-export declare type AuthorizedSiteId = string
-export declare type AuthorizedSiteAddress = string
-export declare type AuthorizedSiteAddresses = AuthorizedSiteAddress[]
-
-export declare type AuthorizedSites = Record<string, AuthorizedSite>
-export declare type AuthUrls = AuthorizedSites
-
-export type AuthorizedSite = {
-  id: string
-  addresses?: AuthorizedSiteAddresses
-  ethAddresses?: AuthorizedSiteAddresses
-  origin: string
-  url: string
-  ethChainId?: number
-}
-
-export type ProviderType = "polkadot" | "ethereum"
-
-export declare type RequestAuthorizedSiteUpdate = {
-  id: string
-  props: Omit<Partial<AuthorizedSite>, "id">
-}
-export declare type RequestAuthorizedSiteForget = { id: string; type: ProviderType }
 
 // Asset Transfer Messages
 export interface RequestAssetTransfer {

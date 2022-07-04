@@ -1,3 +1,27 @@
+import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
+import { EthTabsHandler } from "@core/domains/ethereum"
+import type { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
+import State from "@core/handlers/State"
+import { TabStore } from "@core/handlers/stores"
+import { db } from "@core/libs/db"
+import { TabsHandler } from "@core/libs/Handler"
+import type {
+  MessageTypes,
+  RequestAccountList,
+  RequestRpcSend,
+  RequestRpcSubscribe,
+  RequestRpcUnsubscribe,
+  RequestTypes,
+  ResponseRpcListProviders,
+  ResponseSigning,
+  ResponseTypes,
+  SubscriptionMessageTypes,
+} from "@core/types"
+import type { Port } from "@core/types/base"
+import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
+import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
+import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
+import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 // Copyright 2019-2021 @polkadot/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 import type {
@@ -7,41 +31,17 @@ import type {
   ProviderMeta,
 } from "@polkadot/extension-inject/types"
 import type { KeyringPair } from "@polkadot/keyring/types"
+import { checkIfDenied } from "@polkadot/phishing"
 import type { JsonRpcResponse } from "@polkadot/rpc-provider/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import type {
-  MessageTypes,
-  RequestAccountList,
-  RequestAuthorizeTab,
-  RequestRpcSend,
-  RequestRpcSubscribe,
-  RequestRpcUnsubscribe,
-  RequestTypes,
-  ResponseRpcListProviders,
-  ResponseSigning,
-  ResponseTypes,
-  SubscriptionMessageTypes,
-  Port,
-} from "@core/types"
-import State from "@core/handlers/State"
-import { TabStore } from "@core/handlers/stores"
-import { db } from "@core/libs/db"
-
-import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
-import { checkIfDenied } from "@polkadot/phishing"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { assert, isNumber } from "@polkadot/util"
-import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
-import { TabsHandler } from "@core/libs/Handler"
-import { genericAsyncSubscription, createSubscription, unsubscribe } from "./subscriptions"
-import Browser from "webextension-polyfill"
-import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
-import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
-import { EthTabsHandler } from "@core/domains/ethereum"
-import RpcState from "./RpcState"
 import * as Sentry from "@sentry/browser"
-import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
+import Browser from "webextension-polyfill"
+
+import RpcState from "./RpcState"
+import { createSubscription, genericAsyncSubscription, unsubscribe } from "./subscriptions"
 
 export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()

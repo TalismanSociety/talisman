@@ -15,9 +15,9 @@ import {
   Erc20Token,
   EvmNetwork,
   EvmNetworkId,
-  Port,
   RequestBalance,
 } from "@core/types"
+import { Port } from "@core/types/base"
 import { encodeAnyAddress } from "@core/util"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"

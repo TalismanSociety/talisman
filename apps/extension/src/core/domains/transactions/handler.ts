@@ -10,7 +10,6 @@ import { pendingTransfers } from "@core/libs/rpc/PendingTransfers"
 import type {
   Address,
   ChainId,
-  Port,
   RequestAssetTransfer,
   RequestAssetTransferApproveSign,
   RequestSignatures,
@@ -21,6 +20,7 @@ import type {
   SubscriptionCallback,
   TransactionStatus,
 } from "@core/types"
+import { Port } from "@core/types/base"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import keyring from "@polkadot/ui-keyring"

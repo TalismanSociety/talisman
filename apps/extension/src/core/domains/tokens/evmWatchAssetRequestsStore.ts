@@ -1,10 +1,6 @@
 import { RequestStore } from "@core/libs/RequestStore"
-import type {
-  CustomErc20Token,
-  RequestIdOnly,
-  WatchAssetBase,
-  WatchAssetRequest,
-} from "@core/types"
+import type { CustomErc20Token, WatchAssetBase, WatchAssetRequest } from "@core/types"
+import { RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 
 class WatchAssetError extends Error {}

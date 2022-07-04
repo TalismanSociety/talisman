@@ -1,3 +1,11 @@
+import {
+  AuthRequestAddresses,
+  AuthRequestId,
+  AuthorizeRequest,
+  AuthorizedSite,
+  AuthorizedSites,
+  ProviderType,
+} from "@core/domains/sitesAuthorised/types"
 import { EthResponseType } from "@core/injectEth/types"
 import {
   AccountAddressType,
@@ -7,11 +15,6 @@ import {
   AnalyticsCaptureRequest,
   AnyEthRequestChainId,
   AnySigningRequest,
-  AuthRequestAddresses,
-  AuthRequestId,
-  AuthorizeRequest,
-  AuthorizedSite,
-  AuthorizedSites,
   BalanceStorage,
   BalancesUpdate,
   ChainId,
@@ -24,7 +27,6 @@ import {
   ModalOpenParams,
   ModalTypes,
   OnboardedType,
-  ProviderType,
   RequestAccountCreateHardware,
   RequestBalance,
   ResponseAssetTransfer,

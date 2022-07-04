@@ -1,4 +1,9 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
+import {
+  AuthorizedSite,
+  AuthorizedSiteAddresses,
+  RequestAuthorizeTab,
+} from "@core/domains/sitesAuthorised/types"
 import { stripUrl } from "@core/handlers/helpers"
 import {
   AnyEthRequest,
@@ -16,16 +21,8 @@ import {
 } from "@core/injectEth/types"
 import { db } from "@core/libs/db"
 import { TabsHandler } from "@core/libs/Handler"
-import type {
-  AuthorizedSite,
-  AuthorizedSiteAddresses,
-  CustomErc20Token,
-  Port,
-  RequestAuthorizeTab,
-  RequestSignatures,
-  RequestTypes,
-  ResponseType,
-} from "@core/types"
+import type { CustomErc20Token, RequestSignatures, RequestTypes, ResponseType } from "@core/types"
+import { Port } from "@core/types/base"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
