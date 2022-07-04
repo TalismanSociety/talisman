@@ -2,13 +2,13 @@ import { isHardwareAccount } from "@core/handlers/helpers"
 import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import {
-  Address,
   ChainId,
   ResponseAssetTransferFeeQuery,
   SignerPayloadJSON,
   SubscriptionCallback,
   TokenId,
 } from "@core/types"
+import { Address } from "@core/types/base"
 import { getMetadataRpc } from "@core/util/getMetadataRpc"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"

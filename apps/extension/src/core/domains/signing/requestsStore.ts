@@ -1,6 +1,6 @@
+import type { AccountJson } from "@core/domains/accounts/types"
 import { RequestStore, TRespondableRequest } from "@core/libs/RequestStore"
 import type {
-  AccountJson,
   EthResponseSign,
   EthSignAndSendRequest,
   EthSignRequest,

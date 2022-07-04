@@ -8,7 +8,6 @@ import EventsRpc from "@core/libs/rpc/Events"
 import OrmlTokenTransfersRpc from "@core/libs/rpc/OrmlTokenTransfers"
 import { pendingTransfers } from "@core/libs/rpc/PendingTransfers"
 import type {
-  Address,
   ChainId,
   RequestAssetTransfer,
   RequestAssetTransferApproveSign,
@@ -20,7 +19,7 @@ import type {
   SubscriptionCallback,
   TransactionStatus,
 } from "@core/types"
-import { Port } from "@core/types/base"
+import { Address, Port } from "@core/types/base"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import keyring from "@polkadot/ui-keyring"

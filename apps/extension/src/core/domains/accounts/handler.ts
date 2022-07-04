@@ -1,11 +1,6 @@
 import { DEBUG } from "@core/constants"
 import { AccountTypes, filterPublicAccounts } from "@core/domains/accounts/helpers"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
-import { genericSubscription } from "@core/handlers/subscriptions"
-import { talismanAnalytics } from "@core/libs/Analytics"
-import { ExtensionHandler } from "@core/libs/Handler"
 import type {
-  MessageTypes,
   RequestAccountCreate,
   RequestAccountCreateFromJson,
   RequestAccountCreateFromSeed,
@@ -13,10 +8,13 @@ import type {
   RequestAccountExport,
   RequestAccountForget,
   RequestAccountRename,
-  RequestTypes,
   ResponseAccountExport,
-  ResponseType,
-} from "@core/types"
+} from "@core/domains/accounts/types"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import { genericSubscription } from "@core/handlers/subscriptions"
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { ExtensionHandler } from "@core/libs/Handler"
+import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { encodeAnyAddress } from "@core/util"
 import { KeyringPair$Json } from "@polkadot/keyring/types"

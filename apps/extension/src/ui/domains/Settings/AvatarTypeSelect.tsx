@@ -1,8 +1,10 @@
-import { Address, IdenticonType } from "@core/types"
+import { IdenticonType } from "@core/types"
+import { Address } from "@core/types/base"
 import { classNames } from "@talisman/util/classNames"
 import useAccounts from "@ui/hooks/useAccounts"
 import { FC, useCallback, useMemo } from "react"
 import styled from "styled-components"
+
 import AccountAvatar from "../Account/Avatar"
 
 const Container = styled.div`

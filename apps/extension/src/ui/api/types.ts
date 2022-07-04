@@ -1,3 +1,5 @@
+import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
+import type { AccountJson } from "@core/domains/accounts/types"
 import {
   AuthRequestAddresses,
   AuthRequestId,
@@ -8,10 +10,7 @@ import {
 } from "@core/domains/sitesAuthorised/types"
 import { EthResponseType } from "@core/injectEth/types"
 import {
-  AccountAddressType,
-  AccountJson,
   AddEthereumChainRequest,
-  AddressesByChain,
   AnalyticsCaptureRequest,
   AnyEthRequestChainId,
   AnySigningRequest,
@@ -27,7 +26,6 @@ import {
   ModalOpenParams,
   ModalTypes,
   OnboardedType,
-  RequestAccountCreateHardware,
   RequestBalance,
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
@@ -36,6 +34,7 @@ import {
   UnsubscribeFn,
   WatchAssetRequest,
 } from "@core/types"
+import { AddressesByChain } from "@core/types/base"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
 

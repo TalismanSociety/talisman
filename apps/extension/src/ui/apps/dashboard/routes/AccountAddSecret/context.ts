@@ -1,8 +1,8 @@
-import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/types"
+import { DEBUG } from "@core/constants"
+import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useCallback, useState } from "react"
-import { DEBUG } from "@core/constants"
 
 type AccountAddSecretInputs = {
   name: string

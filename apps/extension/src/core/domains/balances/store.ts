@@ -7,8 +7,6 @@ import NativeBalancesEvmRpc from "@core/libs/evmRpc/NativeBalances"
 import BalancesRpc from "@core/libs/rpc/Balances"
 import OrmlTokensRpc from "@core/libs/rpc/OrmlTokens"
 import {
-  Addresses,
-  AddressesByChain,
   BalanceStorage,
   Balances,
   Chain,
@@ -17,7 +15,7 @@ import {
   EvmNetworkId,
   RequestBalance,
 } from "@core/types"
-import { Port } from "@core/types/base"
+import { Addresses, AddressesByChain, Port } from "@core/types/base"
 import { encodeAnyAddress } from "@core/util"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"

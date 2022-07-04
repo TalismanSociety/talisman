@@ -1,10 +1,10 @@
+import { AccountMeta } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type {
-  AccountMeta,
   AnalyticsCaptureRequest,
   LoggedinType,
   MessageTypes,

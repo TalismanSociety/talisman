@@ -1,7 +1,7 @@
-import MessageTypes from "./types"
-import MessageService from "@core/libs/MessageService"
 import { PORT_EXTENSION } from "@core/constants"
-import { EvmNetwork } from "@core/types"
+import MessageService from "@core/libs/MessageService"
+
+import MessageTypes from "./types"
 
 const port = chrome.runtime.connect({ name: PORT_EXTENSION })
 const messageService = new MessageService({

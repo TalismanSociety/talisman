@@ -1,17 +1,14 @@
+import { AccountAddressType, AccountJson, AccountsMessages } from "@core/domains/accounts/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import type {
-  AccountJson,
   MetadataRequest,
   RequestSignatures as PolkadotRequestSignatures,
   SigningRequest as PolkadotSigningRequest,
-  RequestAccountCreateHardware,
-  RequestAccountSubscribe,
   RequestMetadataSubscribe,
   RequestSigningApproveSignature,
   RequestSigningSubscribe,
-  ResponseAccountExport,
 } from "@polkadot/extension-base/background/types"
 import type { Codec } from "@polkadot/types-codec/types"
 import type { ExtrinsicStatus, Hash, Phase } from "@polkadot/types/interfaces"
@@ -20,35 +17,31 @@ import type { SignerPayloadJSON, SignerPayloadRaw, TypeDef } from "@polkadot/typ
 import { BigNumber } from "ethers"
 import posthog from "posthog-js"
 
-import { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
+import type {
+  Address,
+  AddressesByChain,
+  IdOnlyValues,
+  NoUndefinedValues,
+  NullKeys,
+  RequestIdOnly,
+} from "./base"
 
 export type {
   ExtrinsicStatus,
   Hash,
   MetadataRequest,
-  RequestAccountCreateHardware,
   RequestSigningApproveSignature,
-  AccountJson,
   SignerPayloadJSON,
   SignerPayloadRaw,
 } // Make this available elsewhere also
 
 export type {
   AllowedPath,
-  RequestAccountList,
   RequestRpcSend,
   RequestRpcSubscribe,
   RequestRpcUnsubscribe,
   ResponseRpcListProviders,
   ResponseSigning,
-  RequestAccountBatchExport,
-  RequestAccountChangePassword,
-  RequestAccountCreateExternal,
-  RequestAccountCreateSuri,
-  RequestAccountEdit,
-  RequestAccountShow,
-  RequestAccountTie,
-  RequestAccountValidate,
   RequestBatchRestore,
   RequestDeriveCreate,
   RequestDeriveValidate,
@@ -61,9 +54,7 @@ export type {
   RequestSigningApprovePassword,
   RequestSigningCancel,
   RequestSigningIsLocked,
-  ResponseAccountExport,
   ResponseDeriveValidate,
-  ResponseJsonGetAccountInfo,
   ResponseSeedCreate,
   ResponseSeedValidate,
   ResponseSigningIsLocked,
@@ -131,6 +122,7 @@ type RemovedMessages =
   | "pri(accounts.create.suri)"
   | "pri(accounts.create.hardware)"
   | "pri(accounts.export)"
+  | "pri(accounts.forget)"
   | "pri(accounts.subscribe)"
   | "pri(signing.requests)"
   | "pri(metadata.requests)"
@@ -139,8 +131,9 @@ type RemovedMessages =
   | "pri(accounts.changePassword)"
   | "pri(seed.validate)"
 
-type RequestSignaturesBase = AuthorisedSiteMessages &
-  Omit<PolkadotRequestSignatures, RemovedMessages>
+type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
+  AuthorisedSiteMessages &
+  AccountsMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
@@ -168,17 +161,6 @@ export interface RequestSignatures extends RequestSignaturesBase {
   "pri(mnemonic.confirm)": [boolean, boolean]
   "pri(mnemonic.subscribe)": [null, boolean, MnemonicSubscriptionResult]
   "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
-
-  // account message signatures
-  "pri(accounts.create)": [RequestAccountCreate, boolean]
-  "pri(accounts.create.seed)": [RequestAccountCreateFromSeed, boolean]
-  "pri(accounts.create.json)": [RequestAccountCreateFromJson, boolean]
-  "pri(accounts.create.hardware)": [Omit<RequestAccountCreateHardware, "hardwareType">, boolean]
-  "pri(accounts.forget)": [RequestAccountForget, boolean]
-  "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
-  "pri(accounts.rename)": [RequestAccountRename, boolean]
-  "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
-  "pri(accounts.validateMnemonic)": [string, boolean]
 
   // balance message signatures
   "pri(balances.get)": [RequestBalance, BalanceStorage]
@@ -301,22 +283,12 @@ export interface RequestOnboard {
   mnemonic?: string
 }
 
-export interface RequestAccountCreate {
-  name: string
-  type: AccountAddressType
-}
-
 export interface RequestLogin {
   pass: string
 }
 
 export interface RequestRoute {
   route: string
-}
-
-export interface AccountMeta extends AccountJson {
-  name: string
-  origin: "ROOT" | "DERIVED" | "SEED" | "JSON"
 }
 
 export interface SigningRequest extends PolkadotSigningRequest {
@@ -357,8 +329,6 @@ export type AccountJsonAny = AccountJsonHardware | AccountJson
 
 export type IdenticonType = "talisman-orb" | "polkadot-identicon"
 
-export type AccountAddressType = "sr25519" | "ethereum"
-
 /**
  * A callback with either an error or a result.
  */
@@ -371,19 +341,6 @@ export interface SubscriptionCallback<Result> {
  * A function which cancels a subscription when called.
  */
 export type UnsubscribeFn = () => void
-
-export type Address = string
-
-// Addresses is a record where the keys are the address itself, and the values are an array of chain genesis hashes, or null if the address may have
-// balances on any chain
-export type Addresses = Record<Address, Array<string> | null>
-export type AddressesByChain = { [chainId: string]: Address[] }
-export type AddressList = Address[]
-
-export interface Account {
-  address: Address
-  meta: AccountMeta
-}
 
 export type ChainId = string
 
@@ -675,11 +632,6 @@ export type AssetType = {
   decimals: string
 }
 
-// do we need this?
-export declare type AssetTypeWithParent = AssetType & {
-  relay?: AssetType
-}
-
 export declare type MnemonicSubscriptionResult = {
   confirmed?: boolean
 }
@@ -687,37 +639,6 @@ export declare type MnemonicSubscriptionResult = {
 export declare type RequestAddressFromMnemonic = {
   mnemonic: string
   type?: AccountAddressType
-}
-
-// account types ----------------------------------
-export type AccountsList = Account[]
-
-export interface RequestAccountCreate {
-  name: string
-}
-
-export interface RequestAccountCreateFromSeed {
-  name: string
-  seed: string
-  type?: AccountAddressType
-}
-
-export interface RequestAccountCreateFromJson {
-  json: string
-  password: string
-}
-
-export interface RequestAccountForget {
-  address: string
-}
-
-export interface RequestAccountExport {
-  address: string
-}
-
-export interface RequestAccountRename {
-  address: string
-  name: string
 }
 
 // ethereum networks
