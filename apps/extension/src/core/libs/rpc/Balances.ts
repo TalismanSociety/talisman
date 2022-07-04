@@ -26,52 +26,32 @@ const moduleStorageHash = `${moduleHash}${storageHash}`
 // AccountInfo is the state_storage data format for nativeToken balances
 const AccountInfo = JSON.stringify({
   nonce: "u32",
-  consumer: "u32",
+  consumers: "u32",
   providers: "u32",
   sufficients: "u32",
-  data: {
-    free: "u128",
-    reserved: "u128",
-    miscFrozen: "u128",
-    feeFrozen: "u128",
-  },
+  data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
 })
-// TODO: Get this from the metadata store if metadata is >= v14
-const AccountInfoOverrides: { [key: ChainId]: string } = {
-  "crust": JSON.stringify({
+const AccountInfoCommonOverides = {
+  noSufficients: JSON.stringify({
     nonce: "u32",
-    consumer: "u32",
+    consumers: "u32",
     providers: "u32",
-    data: {
-      free: "u128",
-      reserved: "u128",
-      miscFrozen: "u128",
-      feeFrozen: "u128",
-    },
+    data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
   }),
-  "kilt-spiritnet": JSON.stringify({
+  u64Nonce: JSON.stringify({
     nonce: "u64",
-    consumer: "u32",
+    consumers: "u32",
     providers: "u32",
     sufficients: "u32",
-    data: {
-      free: "u128",
-      reserved: "u128",
-      miscFrozen: "u128",
-      feeFrozen: "u128",
-    },
+    data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
   }),
-  "zero-io": JSON.stringify({
-    nonce: "u32",
-    consumer: "u32",
-    providers: "u32",
-    data: {
-      free: "u128",
-      reserved: "u128",
-      miscFrozen: "u128",
-      feeFrozen: "u128",
-    },
-  }),
+}
+// TODO: Get this from the metadata store if metadata is >= v14
+const AccountInfoOverrides: { [key: ChainId]: string } = {
+  "crust": AccountInfoCommonOverides.noSufficients,
+  "kilt-spiritnet": AccountInfoCommonOverides.u64Nonce,
+  "zeitgeist": AccountInfoCommonOverides.u64Nonce,
+  "zero-io": AccountInfoCommonOverides.noSufficients,
 }
 
 const registry = new TypeRegistry()
