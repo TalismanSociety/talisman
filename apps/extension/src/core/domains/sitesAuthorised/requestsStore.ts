@@ -1,25 +1,15 @@
-import type {
-  RequestAuthorizeTab,
-  AuthRequestBase,
-  AuthRequest,
-  RequestIdOnly,
-  AuthRequestResponse,
-} from "@core/types"
 import { stripUrl } from "@core/handlers/helpers"
 import { RequestStore } from "@core/libs/RequestStore"
+import type {
+  AuthRequestBase,
+  AuthRequestResponse,
+  RequestAuthorizeTab,
+  RequestIdOnly,
+} from "@core/types"
 import { assert } from "@polkadot/util"
 
 class AuthError extends Error {}
 export default class SitesRequestsStore extends RequestStore<AuthRequestBase, AuthRequestResponse> {
-  protected mapRequestToData({ id, idStr, request, url }: AuthRequest): AuthRequestBase {
-    return {
-      id,
-      idStr,
-      request,
-      url,
-    }
-  }
-
   ignoreRequest({ id }: RequestIdOnly) {
     const request = this.requests[id]
     assert(request, `Sites Auth Request with id ${id} doesn't exist`)

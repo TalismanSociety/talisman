@@ -1,16 +1,13 @@
-import type { Port, Resolver } from "@core/types"
-import { ReplaySubject } from "rxjs"
 import { genericSubscription } from "@core/handlers/subscriptions"
+import type { Port, Resolver } from "@core/types"
 import { MessageTypesWithSubscriptions } from "@core/types"
+import { ReplaySubject } from "rxjs"
 import { v4 } from "uuid"
 
-interface BaseRequest<T> {
-  reject: (error: Error) => void
-  resolve: (result: T) => void
-  id: string
-}
-
-export type TRespondableRequest<TRequest, TResponse> = BaseRequest<TResponse> & TRequest
+export type TRespondableRequest<TRequest, TResponse> = Resolver<TResponse> &
+  TRequest & {
+    id: string
+  }
 
 type NewRequestCallbackFn<TRequest> = (request?: TRequest) => void
 type CompletedRequestCallbackFn<TRequest, TResponse> = (
@@ -54,10 +51,12 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
         ...requestOptions,
         id,
       } as TRequest
+
       this.requests[id] = {
         ...newRequest,
-        ...this.completeRequest(id, resolve, reject),
+        ...this.onCompleteRequest(id, resolve, reject),
       } as TRespondableRequest<TRequest, TResponse>
+
       this.observable.next(this.getAllRequests())
       this.#onNewRequestCallback && this.#onNewRequestCallback(newRequest)
     })
@@ -67,7 +66,7 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
     return genericSubscription<TMessageType>(id, port, this.observable)
   }
 
-  private completeRequest = (
+  private onCompleteRequest = (
     id: string,
     resolve: (result: TResponse) => void,
     reject: (error: Error) => void
@@ -103,5 +102,8 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
     return this.allRequests.map(this.mapRequestToData)
   }
 
-  protected abstract mapRequestToData(request: TRespondableRequest<TRequest, TResponse>): TRequest
+  protected mapRequestToData(request: TRespondableRequest<TRequest, TResponse>): TRequest {
+    const { reject, resolve, ...data } = request
+    return data as TRequest
+  }
 }
