@@ -22,7 +22,6 @@ export const api: MessageTypes = {
   onboardStatus: () => messageService.sendMessage("pri(app.onboardStatus)"),
   onboardStatusSubscribe: (cb) =>
     messageService.subscribe("pri(app.onboardStatus.subscribe)", null, cb),
-  setOnboarded: () => messageService.sendMessage("pri(meta.onboard)"),
   dashboardOpen: (route) => messageService.sendMessage("pri(app.dashboardOpen)", { route }),
   onboardOpen: () => messageService.sendMessage("pri(app.onboardOpen)"),
   popupOpen: () => messageService.sendMessage("pri(app.popupOpen)"),

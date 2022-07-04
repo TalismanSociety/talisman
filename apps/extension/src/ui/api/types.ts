@@ -53,7 +53,6 @@ export default interface MessageTypes {
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
   onboardStatus: () => Promise<OnboardedType>
   onboardStatusSubscribe: (cb: (val: OnboardedType) => void) => UnsubscribeFn
-  setOnboarded: () => Promise<OnboardedType>
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
   popupOpen: () => Promise<boolean>

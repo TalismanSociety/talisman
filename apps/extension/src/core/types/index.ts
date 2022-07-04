@@ -147,7 +147,6 @@ export interface RequestSignatures extends RequestSignaturesBase {
   "pri(app.authStatus)": [null, LoggedinType]
   "pri(app.authStatus.subscribe)": [null, boolean, LoggedinType]
   "pri(app.lock)": [null, boolean]
-  "pri(meta.onboard)": [null, OnboardedType]
   "pri(app.dashboardOpen)": [RequestRoute, boolean]
   "pri(app.onboardOpen)": [null, boolean]
   "pri(app.popupOpen)": [null, boolean]
