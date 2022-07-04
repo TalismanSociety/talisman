@@ -51,7 +51,6 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
   "crust": AccountInfoCommonOverides.noSufficients,
   "kilt-spiritnet": AccountInfoCommonOverides.u64Nonce,
   "zeitgeist": AccountInfoCommonOverides.u64Nonce,
-  "zero-io": AccountInfoCommonOverides.noSufficients,
 }
 
 const registry = new TypeRegistry()
