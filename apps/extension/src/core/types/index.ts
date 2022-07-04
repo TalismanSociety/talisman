@@ -1,4 +1,5 @@
 import { AccountAddressType, AccountJson, AccountsMessages } from "@core/domains/accounts/types"
+import { AppMessages } from "@core/domains/app/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
@@ -15,7 +16,6 @@ import type { ExtrinsicStatus, Hash, Phase } from "@polkadot/types/interfaces"
 import type { IEventData } from "@polkadot/types/types"
 import type { SignerPayloadJSON, SignerPayloadRaw, TypeDef } from "@polkadot/types/types"
 import { BigNumber } from "ethers"
-import posthog from "posthog-js"
 
 import type {
   Address,
@@ -104,16 +104,6 @@ export interface AnyEthRequestChainId extends AnyEthRequest {
   chainId: number
 }
 
-export declare type ModalTypes = "send"
-export interface ModalOpenParams {
-  modalType: ModalTypes
-}
-
-export interface AnalyticsCaptureRequest {
-  eventName: string
-  options?: posthog.Properties
-}
-
 type RemovedMessages =
   | "pri(signing.approve.password)"
   | "pri(signing.approve.signature)"
@@ -133,27 +123,13 @@ type RemovedMessages =
 
 type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AuthorisedSiteMessages &
-  AccountsMessages
+  AccountsMessages &
+  AppMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
 
   "pri(unsubscribe)": [RequestIdOnly, null]
-  // app message signatures ///// REQUIRES SORTING
-  "pri(app.onboard)": [RequestOnboard, OnboardedType]
-  "pri(app.onboardStatus)": [null, OnboardedType]
-  "pri(app.onboardStatus.subscribe)": [null, boolean, OnboardedType]
-  "pri(app.authenticate)": [RequestLogin, boolean]
-  "pri(app.authStatus)": [null, LoggedinType]
-  "pri(app.authStatus.subscribe)": [null, boolean, LoggedinType]
-  "pri(app.lock)": [null, boolean]
-  "pri(app.dashboardOpen)": [RequestRoute, boolean]
-  "pri(app.onboardOpen)": [null, boolean]
-  "pri(app.popupOpen)": [null, boolean]
-  "pri(app.modalOpen.request)": [ModalOpenParams, boolean]
-  "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenParams]
-  "pri(app.promptLogin)": [boolean, boolean]
-  "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
 
   // mnemonic message signatures
   "pri(mnemonic.unlock)": [string, string]
@@ -273,22 +249,6 @@ export declare type TransportResponseMessage<TMessageType extends MessageTypes> 
 
 export declare type ResponseType<TMessageType extends keyof RequestSignatures> =
   RequestSignatures[TMessageType][1]
-
-// talisman types --------------
-export interface RequestOnboard {
-  name: string
-  pass: string
-  passConfirm: string
-  mnemonic?: string
-}
-
-export interface RequestLogin {
-  pass: string
-}
-
-export interface RequestRoute {
-  route: string
-}
 
 export interface SigningRequest extends PolkadotSigningRequest {
   request: PolkadotSigningRequest["request"]
@@ -619,9 +579,6 @@ export interface RequestBalancesByParamsSubscribe {
 
 // like a boolean, but can have an unknown value (pending/not-yet-found state)
 export type trilean = true | false | null
-
-export type OnboardedType = "FALSE" | "TRUE" | "UNKNOWN"
-export type LoggedinType = "FALSE" | "TRUE" | "UNKNOWN"
 
 // defines a asset type
 export type AssetType = {

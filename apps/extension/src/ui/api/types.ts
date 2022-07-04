@@ -1,6 +1,13 @@
 import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
 import type { AccountJson } from "@core/domains/accounts/types"
 import {
+  AnalyticsCaptureRequest,
+  LoggedinType,
+  ModalOpenParams,
+  ModalTypes,
+  OnboardedType,
+} from "@core/domains/app/types"
+import {
   AuthRequestAddresses,
   AuthRequestId,
   AuthorizeRequest,
@@ -11,7 +18,6 @@ import {
 import { EthResponseType } from "@core/injectEth/types"
 import {
   AddEthereumChainRequest,
-  AnalyticsCaptureRequest,
   AnyEthRequestChainId,
   AnySigningRequest,
   BalanceStorage,
@@ -20,12 +26,8 @@ import {
   CustomErc20Token,
   CustomErc20TokenCreate,
   CustomEvmNetwork,
-  LoggedinType,
   MetadataRequest,
   MnemonicSubscriptionResult,
-  ModalOpenParams,
-  ModalTypes,
-  OnboardedType,
   RequestBalance,
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
