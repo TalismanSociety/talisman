@@ -100,9 +100,9 @@ export class EthTabsHandler extends TabsHandler {
     const site = await this.stores.sites.getSiteFromUrl(url)
     if (!site) return []
 
-    //! returning lowercase addresses otherwise address checks for eth_sign or eth_signTypeData will fail in metamask E2E test dapp
-    //! I'm afraid this may lead to errors in checksum if this output is validated by dapp : https://eips.ethereum.org/EIPS/eip-55
-    //! If so, remove lowercase (and also remove at line 201)
+    // returning lowercase addresses otherwise address check for personal_sign will fail in metamask E2E test dapp
+    // I'm afraid this may lead to errors in checksum if this output is validated by dapp : https://eips.ethereum.org/EIPS/eip-55
+    // If this happens, we'll have to remove lowercase (and also remove at line 201) and ignore error on test dapp.
     return filterAccountsByAddresses(accountsObservable.subject.getValue(), site.ethAddresses)
       .filter(({ type }) => type === "ethereum")
       .map(({ address }) => ethers.utils.getAddress(address).toLowerCase())
