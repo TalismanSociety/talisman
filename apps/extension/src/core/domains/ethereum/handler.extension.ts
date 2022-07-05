@@ -160,17 +160,12 @@ export class EthHandler extends ExtensionHandler {
       let messageToSign: Uint8Array
       if (method === "personal_sign") {
         messageToSign = encodeTextData(legacyToBuffer(request as string), true)
-      } else if (method === "eth_sign") {
-        messageToSign = encodeTextData(legacyToBuffer(request as string), false)
       } else if (method === "eth_signTypedData_v3") {
         messageToSign = encodeTypedData(JSON.parse(request as string), SignTypedDataVersion.V3)
       } else if (method === "eth_signTypedData_v4") {
         messageToSign = encodeTypedData(JSON.parse(request as string), SignTypedDataVersion.V4)
-      } else if (["eth_signTypedData", "eth_signTypedData_v1"].includes(method)) {
-        // TODO
-        throw new Error(`Unimplemented method : ${method}`)
       } else {
-        throw new Error(`Unexpected method : ${method}`)
+        throw new Error(`Unsupported method : ${method}`)
       }
 
       const signature = await pair.sign(messageToSign)

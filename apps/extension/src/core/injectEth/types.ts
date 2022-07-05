@@ -41,7 +41,6 @@ export type EthRequestGetBlock = PromisifyArray<[BlockTag, boolean]>
 
 export type EthRequestTxHashOnly = PromisifyArray<[string]>
 
-export type EthRequestSignTypedDataLegacy = [[], string]
 export type EthRequestSign = [string, string]
 export type EthRequestRecoverAddress = [string, string]
 
@@ -71,9 +70,6 @@ export interface EthRequestSignatures {
   eth_getTransactionByHash: [EthRequestTxHashOnly, TransactionResponse]
   eth_getTransactionReceipt: [EthRequestTxHashOnly, TransactionReceipt]
   personal_sign: [EthRequestSign, string]
-  eth_sign: [EthRequestSign, string]
-  eth_signTypedData: [EthRequestSignTypedDataLegacy, string]
-  eth_signTypedData_v1: [EthRequestSignTypedDataLegacy, string]
   eth_signTypedData_v3: [EthRequestSign, string]
   eth_signTypedData_v4: [EthRequestSign, string]
   eth_sendTransaction: [EthRequestSendTx, string]
@@ -109,12 +105,7 @@ export interface EthRequestArguments<T extends EthRequestTypes> {
 }
 
 export type EthRequestSignArguments = EthRequestArguments<
-  | "personal_sign"
-  | "eth_sign"
-  | "eth_signTypedData"
-  | "eth_signTypedData_v1"
-  | "eth_signTypedData_v3"
-  | "eth_signTypedData_v4"
+  "personal_sign" | "eth_signTypedData_v3" | "eth_signTypedData_v4"
 >
 
 export interface AnyEthRequest {

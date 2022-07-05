@@ -46,7 +46,7 @@ export const encodeTextData = (message: Buffer, withSafePrefix: boolean) => {
 
 export function legacyToBuffer(value: unknown) {
   return typeof value === "string" && !isHexString(value)
-    ? Buffer.from(value, "utf-8")
+    ? Buffer.from(value)
     : toBuffer(value as ToBufferInputTypes)
 }
 

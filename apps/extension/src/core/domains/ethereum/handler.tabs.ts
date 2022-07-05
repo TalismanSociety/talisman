@@ -449,10 +449,10 @@ export class EthTabsHandler extends TabsHandler {
         return result.toHexString()
       }
 
+      // case "eth_sign": // dangerous, obsolete, main use case is phishing => don't support
+      // case "eth_signTypedData": // obsolete and cannot support because polkadot ethereum keypairs force a keccak hash before signing, this prevents us to get the expected signature
+      // case "eth_signTypedData_v1": // same as above
       case "personal_sign":
-      case "eth_sign":
-      case "eth_signTypedData":
-      case "eth_signTypedData_v1":
       case "eth_signTypedData_v3":
       case "eth_signTypedData_v4": {
         return this.signMessage(url, request as EthRequestSignArguments)
