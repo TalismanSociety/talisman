@@ -381,13 +381,26 @@ export interface EthBaseSignRequest extends Omit<SigningRequest, "request" | "ac
   ethChainId: number
   account: AccountJson
   type: "ethereum"
-  method: "eth_sendTransaction" | "eth_sign"
+  method:
+    | "personal_sign"
+    | "eth_sendTransaction"
+    | "eth_sign"
+    | "eth_signTypedData"
+    | "eth_signTypedData_v1"
+    | "eth_signTypedData_v3"
+    | "eth_signTypedData_v4"
   request: any
 }
 
 export interface EthSignRequest extends EthBaseSignRequest {
-  request: string
-  method: "eth_sign"
+  request: string | []
+  method:
+    | "personal_sign"
+    | "eth_sign"
+    | "eth_signTypedData"
+    | "eth_signTypedData_v1"
+    | "eth_signTypedData_v3"
+    | "eth_signTypedData_v4"
 }
 
 export interface EthSignAndSendRequest extends EthBaseSignRequest {
@@ -395,7 +408,8 @@ export interface EthSignAndSendRequest extends EthBaseSignRequest {
   method: "eth_sendTransaction"
 }
 
-export type AnySigningRequest = SigningRequest | EthSignAndSendRequest | EthSignRequest
+export type AnyEthSigningRequest = EthSignAndSendRequest | EthSignRequest
+export type AnySigningRequest = SigningRequest | AnyEthSigningRequest
 
 export type EthResponseSign = string
 

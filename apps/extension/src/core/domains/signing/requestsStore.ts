@@ -92,14 +92,21 @@ export class SigningRequestsStore extends RequestStore<
 
   public signEth(
     url: string,
+    method:
+      | "personal_sign"
+      | "eth_sign"
+      | "eth_signTypedData"
+      | "eth_signTypedData_v1"
+      | "eth_signTypedData_v3"
+      | "eth_signTypedData_v4",
     request: EthSignRequest["request"],
     ethChainId: number,
     account: AccountJson
   ) {
     return this.createRequest({
       ...this.getBaseEthRequest(url, ethChainId, account),
+      method,
       request,
-      method: "eth_sign",
     } as EthSignRequest)
   }
 

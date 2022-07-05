@@ -1,16 +1,17 @@
-// Compliant with https://eips.ethereum.org/EIPS/eip-1193
-import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import type { AddEthereumChainParameter, WatchAssetBase } from "@core/types"
 import EventEmitter from "events"
-import { BigNumberish } from "@ethersproject/bignumber"
+
+import type { AddEthereumChainParameter, WatchAssetBase } from "@core/types"
 import { BlockWithTransactions } from "@ethersproject/abstract-provider"
+import { BigNumberish } from "@ethersproject/bignumber"
 import type {
+  Block,
+  BlockTag,
+  TransactionReceipt,
   TransactionRequest,
   TransactionResponse,
-  BlockTag,
-  Block,
-  TransactionReceipt,
 } from "@ethersproject/providers"
+// Compliant with https://eips.ethereum.org/EIPS/eip-1193
+import type { InjectedAccount } from "@polkadot/extension-inject/types"
 
 type Promisify<T extends any> = T | Promise<T>
 
@@ -40,7 +41,9 @@ export type EthRequestGetBlock = PromisifyArray<[BlockTag, boolean]>
 
 export type EthRequestTxHashOnly = PromisifyArray<[string]>
 
+export type EthRequestSignTypedDataLegacy = [[], string]
 export type EthRequestSign = [string, string]
+export type EthRequestRecoverAddress = [string, string]
 
 export type EthRequestSendTx = [TransactionRequest]
 
@@ -67,22 +70,14 @@ export interface EthRequestSignatures {
   eth_getBlockByNumber: [EthRequestGetBlock, Block | BlockWithTransactions]
   eth_getTransactionByHash: [EthRequestTxHashOnly, TransactionResponse]
   eth_getTransactionReceipt: [EthRequestTxHashOnly, TransactionReceipt]
+  personal_sign: [EthRequestSign, string]
   eth_sign: [EthRequestSign, string]
+  eth_signTypedData: [EthRequestSignTypedDataLegacy, string]
+  eth_signTypedData_v1: [EthRequestSignTypedDataLegacy, string]
+  eth_signTypedData_v3: [EthRequestSign, string]
+  eth_signTypedData_v4: [EthRequestSign, string]
   eth_sendTransaction: [EthRequestSendTx, string]
-  // TODO suspect the following are mostly/only for internal use
-  // eth_getUncleCountByBlockHash: [any, any] // TODO unknown if these are real messages
-  // eth_getUncleCountByBlockNumber: [any, any] // TODO unknown if these are real messages
-  // eth_getTransactionByBlockHashAndIndex: [any, any] // TODO unknown if these are real messages
-  // eth_getTransactionByBlockNumberAndIndex: [any, any] // TODO unknown if these are real messages
-  // eth_getUncleByBlockHashAndIndex: [any, any] // TODO unknown if these are real messages
-  // eth_getUncleByBlockNumberAndIndex: [any, any] // TODO unknown if these are real messages
-  // eth_newFilter: [any, any] // TODO unknown if these are real messages
-  // eth_newBlockFilter: [any, any] // TODO unknown if these are real messages
-  // eth_newPendingTransactionFilter: [[], any]
-  // eth_uninstallFilter: [{ filterId: string }, any]
-  // eth_getFilterChanges: [any, any]
-  // eth_getFilterLogs: [any, any]
-  // eth_getLogs: [any, any]
+  personal_ecRecover: [EthRequestRecoverAddress, string]
 
   // EIP 747 https://github.com/ethereum/EIPs/blob/master/EIPS/eip-747.md
   wallet_watchAsset: [WatchAssetBase, string]
@@ -112,6 +107,15 @@ export interface EthRequestArguments<T extends EthRequestTypes> {
   readonly method: T
   readonly params: EthRequestSignatures[T][0]
 }
+
+export type EthRequestSignArguments = EthRequestArguments<
+  | "personal_sign"
+  | "eth_sign"
+  | "eth_signTypedData"
+  | "eth_signTypedData_v1"
+  | "eth_signTypedData_v3"
+  | "eth_signTypedData_v4"
+>
 
 export interface AnyEthRequest {
   readonly method: EthRequestTypes
