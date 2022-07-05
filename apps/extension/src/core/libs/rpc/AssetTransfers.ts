@@ -1,20 +1,21 @@
-import { construct, methods } from "@substrate/txwrapper-polkadot"
+import { isHardwareAccount } from "@core/handlers/helpers"
 import RpcFactory from "@core/libs/RpcFactory"
 import {
   Address,
   ChainId,
   ResponseAssetTransferFeeQuery,
-  SubscriptionCallback,
   SignerPayloadJSON,
+  SubscriptionCallback,
 } from "@core/types"
+import { getMetadataRpc } from "@core/util/getMetadataRpc"
+import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
+import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
-import { getTypeRegistry } from "@core/util/getTypeRegistry"
-import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
-import { getMetadataRpc } from "@core/util/getMetadataRpc"
+import { construct, methods } from "@substrate/txwrapper-polkadot"
+
 import { pendingTransfers } from "./PendingTransfers"
-import { isHardwareAccount } from "@core/handlers/helpers"
 
 type ProviderSendFunction<T = any> = (method: string, params?: unknown[]) => Promise<T>
 
@@ -54,6 +55,12 @@ export default class AssetTransfersRpc {
       true
     )
 
+    callback(null, {
+      nonce: tx.nonce.toString(),
+      hash: tx.hash.toString(),
+      status: registry.createType<ExtrinsicStatus>("ExtrinsicStatus", { future: true }),
+    })
+
     const unsubscribe = await RpcFactory.subscribe(
       chainId,
       "author_submitAndWatchExtrinsic",
@@ -69,7 +76,6 @@ export default class AssetTransfersRpc {
 
         const status = registry.createType<ExtrinsicStatus>("ExtrinsicStatus", result)
         callback(null, { nonce: tx.nonce.toString(), hash: tx.hash.toString(), status })
-
         if (status.isFinalized) unsubscribe()
       }
     )
