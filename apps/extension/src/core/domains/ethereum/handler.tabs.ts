@@ -314,7 +314,7 @@ export class EthTabsHandler extends TabsHandler {
     const from = (isAddressFirst ? params[0] : params[1]) as string
     const uncheckedMessage = isAddressFirst ? params[1] : params[0]
 
-    // message is either a raw string, a hex string or an array of typed objects
+    // message is either a raw string or a hex string
     // normalize the message, it must be stored unencoded in the request to be displayed to the user
     const message =
       typeof uncheckedMessage === "string"
