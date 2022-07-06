@@ -391,7 +391,6 @@ export interface EthSignRequest extends EthBaseSignRequest {
 }
 
 export interface EthSignAndSendRequest extends EthBaseSignRequest {
-  provider: JsonRpcProvider
   request: EthTransactionRequest
   method: "eth_sendTransaction"
 }

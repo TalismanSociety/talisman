@@ -1,14 +1,14 @@
-import type {
-  EthResponseSign,
-  EthSignRequest,
-  EthSignAndSendRequest,
-  SigningRequest,
-  ResponseSigning,
-  AccountJson,
-} from "@core/types"
-import type { JsonRpcProvider, TransactionRequest } from "@ethersproject/providers"
 import { RequestStore, TRespondableRequest } from "@core/libs/RequestStore"
+import type {
+  AccountJson,
+  EthResponseSign,
+  EthSignAndSendRequest,
+  EthSignRequest,
+  ResponseSigning,
+  SigningRequest,
+} from "@core/types"
 import { isEthereumRequest } from "@core/util/isEthereumRequest"
+import type { TransactionRequest } from "@ethersproject/providers"
 import { assert } from "@polkadot/util"
 
 type EthSignAndSendRequestRespondable = TRespondableRequest<EthSignAndSendRequest, EthResponseSign>
@@ -25,11 +25,9 @@ export class SigningRequestsStore extends RequestStore<
   ) {
     if (isEthereumRequest(request)) {
       const { id, request: ethRequest, url, type, ethChainId, account, method } = request
-      const provider = "provider" in request ? request.provider : undefined
       return {
         type,
         ethChainId,
-        provider,
         id,
         request: ethRequest,
         url,
@@ -82,14 +80,12 @@ export class SigningRequestsStore extends RequestStore<
   public signAndSendEth(
     url: string,
     request: TransactionRequest,
-    provider: JsonRpcProvider,
     ethChainId: number,
     account: AccountJson
   ) {
     return this.createRequest({
       ...this.getBaseEthRequest(url, ethChainId, account),
       request,
-      provider,
       method: "eth_sendTransaction",
     } as EthSignAndSendRequest)
   }

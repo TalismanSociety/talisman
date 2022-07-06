@@ -1,40 +1,41 @@
+import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
+import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import {
-  MessageTypes,
-  RequestTypes,
-  ResponseType,
-  Port,
-  RequestIdOnly,
-  EthApproveSignAndSend,
+  ETH_ERROR_EIP1993_USER_REJECTED,
+  EthProviderRpcError,
+  EthRequestArguments,
+  EthRequestSignatures,
+} from "@core/injectEth/types"
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { db } from "@core/libs/db"
+import { ExtensionHandler } from "@core/libs/Handler"
+import { watchEthereumTransaction } from "@core/notifications"
+import {
   AnyEthRequestChainId,
   CustomEvmNetwork,
   CustomNativeToken,
+  EthApproveSignAndSend,
+  MessageTypes,
+  Port,
+  RequestIdOnly,
+  RequestTypes,
+  ResponseType,
   WatchAssetRequest,
 } from "@core/types"
-import { ExtensionHandler } from "@core/libs/Handler"
+import type { TransactionRequest } from "@ethersproject/providers"
 import { assert, u8aToHex } from "@polkadot/util"
-import {
-  EthProviderRpcError,
-  EthRequestSignatures,
-  EthRequestArguments,
-  ETH_ERROR_EIP1993_USER_REJECTED,
-} from "@core/injectEth/types"
-import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
-import {
-  concat,
-  toUtf8Bytes,
-  serializeTransaction,
-  parseUnits,
-  formatUnits,
-} from "ethers/lib/utils"
 import { BigNumber, ethers } from "ethers"
 import type { Bytes, UnsignedTransaction } from "ethers"
-import type { TransactionRequest } from "@ethersproject/providers"
+import {
+  concat,
+  formatUnits,
+  parseUnits,
+  serializeTransaction,
+  toUtf8Bytes,
+} from "ethers/lib/utils"
 import isString from "lodash/isString"
+
 import { getProviderForEvmNetworkId } from "./networksStore"
-import { watchEthereumTransaction } from "@core/notifications"
-import { db } from "@core/libs/db"
-import { talismanAnalytics } from "@core/libs/Analytics"
-import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -96,7 +97,10 @@ export class EthHandler extends ExtensionHandler {
     try {
       const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
       assert(queued, "Unable to find request")
-      const { request, provider, resolve, reject } = queued
+      const { request, resolve, reject, ethChainId } = queued
+
+      const provider = await getProviderForEvmNetworkId(ethChainId)
+      assert(provider, "Unable to find provider for chain " + ethChainId)
 
       const nonce = await provider.getTransactionCount(queued.account.address)
       const maxFeePerGas = parseUnits(strMaxFeePerGas, "wei")
