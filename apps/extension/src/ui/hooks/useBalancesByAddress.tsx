@@ -1,4 +1,4 @@
-import { Balances } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
 import useBalances from "@ui/hooks/useBalances"
 import { useEffect, useState } from "react"

@@ -1,7 +1,4 @@
 import {
-  BalancePallet,
-  BalanceStorage,
-  BalancesStorage,
   Chain,
   ChainId,
   EvmNetwork,
@@ -18,7 +15,9 @@ import BigMath from "@talisman/util/bigMath"
 import memoize from "lodash/memoize"
 import { Memoize } from "typescript-memoize"
 
-type NarrowStorage<S, P> = S extends { pallet: P } ? S : never
+import { BalanceStorage, BalancesStorage, NarrowStorage } from "./storages"
+
+export type BalancePallet = BalanceStorage["pallet"]
 
 export type ChainsDb = Record<ChainId, Chain>
 export type EvmNetworksDb = Record<EvmNetworkId, EvmNetwork>

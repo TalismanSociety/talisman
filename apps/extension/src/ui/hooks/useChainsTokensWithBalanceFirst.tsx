@@ -1,6 +1,7 @@
-import { useCallback, useMemo } from "react"
-import { Balance, Token } from "@core/types"
+import { Balance } from "@core/domains/balances/types"
+import { Token } from "@core/types"
 import useBalances from "@ui/hooks/useBalances"
+import { useCallback, useMemo } from "react"
 
 /**
  * Will return the array sorted like [...tokensWithBalance, ...tokensWithoutBalance]

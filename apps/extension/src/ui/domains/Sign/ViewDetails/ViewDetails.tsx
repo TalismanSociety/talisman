@@ -1,5 +1,5 @@
+import { BalanceFormatter } from "@core/domains/balances/types"
 import {
-  BalanceFormatter,
   SignerPayloadJSON,
   SignerPayloadRaw,
   SigningRequest,

@@ -1,7 +1,9 @@
-import { BalanceFormatter, Token } from "@core/types"
-import { formatDecimals } from "talisman-utils"
+import { BalanceFormatter } from "@core/domains/balances/types"
+import { Token } from "@core/types"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { FC } from "react"
+import { formatDecimals } from "talisman-utils"
+
 import { ViewDetailsField, ViewDetailsFieldProps } from "./ViewDetailsField"
 
 type ViewDetailsAmountProps = ViewDetailsFieldProps & {

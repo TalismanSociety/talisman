@@ -1,5 +1,5 @@
+import { Balance } from "@core/domains/balances/types"
 import styled from "styled-components"
-import { Balance } from "@core/types"
 
 export interface IAssetNameOptions {
   withChain?: boolean

@@ -1,7 +1,7 @@
+import { BalanceStorage } from "@core/domains/balances/types"
 import metadataInit from "@core/domains/metadata/_metadataInit"
 import { MetadataDef } from "@core/inject/types"
 import {
-  BalanceStorage,
   Chain,
   ChainId,
   CustomEvmNetwork,

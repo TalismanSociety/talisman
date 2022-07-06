@@ -1,9 +1,10 @@
-import styled from "styled-components"
+import { Balance } from "@core/domains/balances/types"
 import { ReactComponent as IconLoader } from "@talisman/theme/icons/loader.svg"
-import { Tokens } from "./Tokens"
-import { Fiat } from "./Fiat"
+import styled from "styled-components"
 import { MAX_DECIMALS_FORMAT } from "talisman-utils"
-import { Balance } from "@core/types"
+
+import { Fiat } from "./Fiat"
+import { Tokens } from "./Tokens"
 
 export interface IAssetBalanceOptions {
   withFiat?: boolean

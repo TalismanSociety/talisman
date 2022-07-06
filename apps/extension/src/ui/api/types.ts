@@ -7,6 +7,8 @@ import {
   ModalTypes,
   OnboardedType,
 } from "@core/domains/app/types"
+import { BalancesUpdate, RequestBalance } from "@core/domains/balances/types"
+import { BalanceStorage } from "@core/domains/balances/types"
 import {
   AuthRequestAddresses,
   AuthRequestId,
@@ -20,15 +22,12 @@ import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
   AnySigningRequest,
-  BalanceStorage,
-  BalancesUpdate,
   ChainId,
   CustomErc20Token,
   CustomErc20TokenCreate,
   CustomEvmNetwork,
   MetadataRequest,
   MnemonicSubscriptionResult,
-  RequestBalance,
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
   TokenId,

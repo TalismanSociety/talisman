@@ -1,5 +1,6 @@
 import { AccountAddressType, AccountJson, AccountsMessages } from "@core/domains/accounts/types"
 import { AppMessages } from "@core/domains/app/types"
+import { BalancesMessages } from "@core/domains/balances/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
@@ -17,14 +18,7 @@ import type { IEventData } from "@polkadot/types/types"
 import type { SignerPayloadJSON, SignerPayloadRaw, TypeDef } from "@polkadot/types/types"
 import { BigNumber } from "ethers"
 
-import type {
-  Address,
-  AddressesByChain,
-  IdOnlyValues,
-  NoUndefinedValues,
-  NullKeys,
-  RequestIdOnly,
-} from "./base"
+import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
 
 export type {
   ExtrinsicStatus,
@@ -124,7 +118,8 @@ type RemovedMessages =
 type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AuthorisedSiteMessages &
   AccountsMessages &
-  AppMessages
+  AppMessages &
+  BalancesMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
@@ -136,11 +131,6 @@ export interface RequestSignatures extends RequestSignaturesBase {
   "pri(mnemonic.confirm)": [boolean, boolean]
   "pri(mnemonic.subscribe)": [null, boolean, MnemonicSubscriptionResult]
   "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
-
-  // balance message signatures
-  "pri(balances.get)": [RequestBalance, BalanceStorage]
-  "pri(balances.subscribe)": [null, boolean, boolean]
-  "pri(balances.byparams.subscribe)": [RequestBalancesByParamsSubscribe, boolean, BalancesUpdate]
 
   // signing message signatures
   "pri(signing.approveSign)": [RequestIdOnly, boolean]
@@ -501,81 +491,6 @@ export type TokenRates = {
 
   /** dot rate */
   dot: number | null
-}
-
-// balance types ----------------------------
-
-export { Balances, Balance, BalanceFormatter } from "@core/domains/balances/types"
-
-export type BalancesStorage = Record<string, BalanceStorage>
-
-export type BalanceStorage = BalanceStorageBalances | BalanceStorageOrmlTokens | BalanceStorageErc20
-
-export type BalancePallet = BalanceStorage["pallet"]
-export type BalanceStatus = "live" | "cache"
-
-export type BalanceStorageBalances = {
-  // TODO: Rename `pallet` to `source`? Also, rename `balances` to `native`.
-  // Since we now have evm networks, some balances with the `balances` pallet are actually
-  // native balances on evm. So there's no pallet involved.
-  // Also, erc20 balances might be from an evm network, in which case there's also no pallet involved.
-  pallet: "balances"
-
-  status: BalanceStatus
-
-  address: Address
-  chainId?: ChainId
-  evmNetworkId?: EvmNetworkId
-  tokenId: TokenId
-
-  free: string
-  reserved: string
-  miscFrozen: string
-  feeFrozen: string
-}
-
-export type BalanceStorageOrmlTokens = {
-  pallet: "orml-tokens"
-
-  status: BalanceStatus
-
-  address: Address
-  chainId: ChainId
-  evmNetworkId?: EvmNetworkId
-  tokenId: TokenId
-
-  free: string
-  reserved: string
-  frozen: string
-}
-
-export type BalanceStorageErc20 = {
-  pallet: "erc20"
-
-  status: BalanceStatus
-
-  address: Address
-  chainId?: ChainId
-  evmNetworkId?: EvmNetworkId
-  tokenId: TokenId
-
-  free: string
-}
-
-export type BalancesUpdate = BalancesUpdateReset | BalancesUpdateUpsert | BalancesUpdateDelete
-export type BalancesUpdateReset = { type: "reset"; balances: BalancesStorage }
-export type BalancesUpdateUpsert = { type: "upsert"; balances: BalancesStorage }
-export type BalancesUpdateDelete = { type: "delete"; balances: string[] }
-
-export interface RequestBalance {
-  chainId?: ChainId
-  evmNetworkId?: EvmNetworkId
-  tokenId: TokenId
-  address: Address
-}
-
-export interface RequestBalancesByParamsSubscribe {
-  addressesByChain: AddressesByChain
 }
 
 // like a boolean, but can have an unknown value (pending/not-yet-found state)

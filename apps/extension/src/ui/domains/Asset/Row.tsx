@@ -1,4 +1,4 @@
-import { Balance as BalanceType } from "@core/types"
+import { Balance as BalanceType } from "@core/domains/balances/types"
 import styled from "styled-components"
 
 import { Erc20Logo } from "../Erc20Tokens/Erc20Logo"

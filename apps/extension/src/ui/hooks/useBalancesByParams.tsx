@@ -1,4 +1,4 @@
-import { Balances } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
 import { AddressesByChain } from "@core/types/base"
 import { api } from "@ui/api"
 import { useChains } from "@ui/hooks/useChains"
@@ -55,8 +55,7 @@ export const useBalancesByParams = (addressesByChain: AddressesByChain) => {
           }
 
           default: {
-            const exhaustiveCheck: never = update
-            throw new Error(`Unhandled BalancesUpdate type: ${exhaustiveCheck}`)
+            throw new Error(`Unhandled BalancesUpdate type: ${update}`)
           }
         }
       }),

@@ -1,20 +1,13 @@
 import { DEBUG } from "@core/constants"
 import { settingsStore } from "@core/domains/app/store.settings"
+import { BalanceStorage, Balances, RequestBalance } from "@core/domains/balances/types"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { db } from "@core/libs/db"
 import Erc20BalancesEvmRpc from "@core/libs/evmRpc/Erc20Balances"
 import NativeBalancesEvmRpc from "@core/libs/evmRpc/NativeBalances"
 import BalancesRpc from "@core/libs/rpc/Balances"
 import OrmlTokensRpc from "@core/libs/rpc/OrmlTokens"
-import {
-  BalanceStorage,
-  Balances,
-  Chain,
-  Erc20Token,
-  EvmNetwork,
-  EvmNetworkId,
-  RequestBalance,
-} from "@core/types"
+import { Chain, Erc20Token, EvmNetwork, EvmNetworkId } from "@core/types"
 import { Addresses, AddressesByChain, Port } from "@core/types/base"
 import { encodeAnyAddress } from "@core/util"
 import keyring from "@polkadot/ui-keyring"
