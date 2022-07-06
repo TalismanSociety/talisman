@@ -17,6 +17,7 @@ const store = new Map<string, PendingTransfer>()
 class PendingTransfer {
   data: PendingTransferInfo
   isTransferring = false
+  isTransferred = false
 
   constructor(data: PendingTransferInfo) {
     this.data = data
@@ -30,7 +31,7 @@ class PendingTransfer {
       status: ExtrinsicStatus
     }>
   ) {
-    if (this.isTransferring) return
+    if (this.isTransferring || this.isTransferred) return
 
     this.isTransferring = true
     const { chainId, unsigned, id } = this.data
@@ -68,6 +69,7 @@ class PendingTransfer {
           // prevent this to be called twice
           store.delete(id)
           this.isTransferring = false
+          this.isTransferred = true
           unsubscribe()
         }
       }
