@@ -1,23 +1,24 @@
-import { lazy, Suspense, useMemo } from "react"
+import { AccountJsonHardware, SigningRequest } from "@core/types"
 import Button from "@talisman/components/Button"
 import Grid from "@talisman/components/Grid"
+import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
-import { Header, Content, Footer } from "@ui/apps/popup/Layout"
-import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
-import { SiteInfo } from "@ui/domains/Sign/SiteInfo"
 import { PendingRequests } from "@ui/domains/Sign/PendingRequests"
-import { useSigningRequestById } from "@ui/hooks/useSigningRequestById"
 import {
   usePolkadotSigningRequest,
   usePolkadotTransactionDetails,
 } from "@ui/domains/Sign/SignRequestContext"
-import { AccountJsonHardware, SigningRequest } from "@core/types"
-import { Container } from "./common"
+import { SiteInfo } from "@ui/domains/Sign/SiteInfo"
+import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
+import { useSigningRequestById } from "@ui/hooks/useSigningRequestById"
+import { Suspense, lazy, useMemo } from "react"
 import { useParams } from "react-router-dom"
+
+import { Container } from "./common"
 
 const Ledger = lazy(() => import("@ui/domains/Sign/Ledger"))
 
-export const SignRequest = () => {
+export const SubstrateSignRequest = () => {
   const { id } = useParams() as { id: string }
   const signingRequest = useSigningRequestById(id) as SigningRequest | undefined
   const { url, request, approve, reject, status, message, account, chain, approveHardware } =

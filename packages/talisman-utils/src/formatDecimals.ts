@@ -13,9 +13,9 @@ export const MAX_DECIMALS_FORMAT = 12
  */
 export const formatDecimals = (
   num?: string | number | null,
-  digits: number = 4,
+  digits = 4,
   options: Partial<Intl.NumberFormatOptions> = {},
-  locale: string = "en-US"
+  locale = "en-US"
 ): string => {
   if (num === null || num === undefined) return ""
 

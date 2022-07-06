@@ -43,7 +43,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   )
 
   const check = useCallback(
-    async (newData: SendTokensInputs, allowReap: boolean = false) => {
+    async (newData: SendTokensInputs, allowReap = false) => {
       const { amount, tokenId, from, to, tip } = newData
 
       const token = tokensMap[tokenId]
@@ -66,7 +66,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
         // get nativeToken balance for fee calculation if token transfer is not native
         !tokenIsNativeToken &&
-          newBalance(api.getBalance({ chainId, tokenId: chain.nativeToken?.id!, address: from })),
+          chain.nativeToken?.id &&
+          newBalance(api.getBalance({ chainId, tokenId: chain.nativeToken?.id, address: from })),
       ])
       const [fromBalance, toBalance, _nativeFromBalance] = balances
       const nativeFromBalance = _nativeFromBalance || fromBalance

@@ -1,10 +1,10 @@
+import { DEBUG } from "@core/constants"
+import { settingsStore } from "@core/domains/app/store.settings"
 import * as SentryBrowser from "@sentry/browser"
 import * as SentryReact from "@sentry/react"
-import { Event } from "@sentry/types"
 import { Integrations } from "@sentry/tracing"
-import { settingsStore } from "@core/domains/app/store.settings"
+import { Event } from "@sentry/types"
 import { ReplaySubject, firstValueFrom } from "rxjs"
-import { DEBUG } from "@core/constants"
 
 const normalizeUrl = (url: string) => {
   return url.replace(/(webpack_require__@)?(moz|chrome)-extension:\/\/[^/]+\//, "~/")
@@ -40,12 +40,10 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
       if (event.exception?.values && event.exception.values.length > 0) {
         const firstValue = event.exception.values[0]
         if (!firstValue.stacktrace?.frames) return event
-        event.exception.values[0].stacktrace!.frames = firstValue.stacktrace.frames.map(
-          (frame: any) => {
-            frame.filename = normalizeUrl(frame.filename)
-            return frame
-          }
-        )
+        firstValue.stacktrace.frames = firstValue.stacktrace.frames.map((frame: any) => {
+          frame.filename = normalizeUrl(frame.filename)
+          return frame
+        })
       }
 
       return event

@@ -1,8 +1,9 @@
-import { FC, useMemo, useState, lazy, Suspense } from "react"
-import styled from "styled-components"
 import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAuthorisedSites } from "@ui/hooks/useAuthorisedSites"
+import { FC, Suspense, lazy, useMemo, useState } from "react"
+import styled from "styled-components"
+
 import { NetworkLogo } from "../Ethereum/NetworkLogo"
 
 const ConnectedAccountsDrawer = lazy(() => import("@ui/domains/Site/ConnectedAccountsDrawer"))
@@ -47,7 +48,10 @@ export const ConnectedAccountsPill: FC = () => {
   const currentSite = useCurrentSite()
   const accounts = useAccounts()
   const authorisedSites = useAuthorisedSites()
-  const site = authorisedSites[currentSite?.id!]
+  const site = useMemo(
+    () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
+    [authorisedSites, currentSite?.id]
+  )
 
   const [showConnectedAccounts, setShowConnectedAccounts] = useState(false)
 

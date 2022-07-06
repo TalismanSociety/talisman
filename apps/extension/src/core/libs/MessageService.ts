@@ -145,7 +145,7 @@ export default class MessageService {
       delete this.handlers[data.id]
     }
 
-    if (data.subscription && handler.subscriber) (handler.subscriber as Function)(data.subscription)
+    if (data.subscription && handler.subscriber) handler.subscriber(data.subscription)
     else if (data.error) {
       if (data.isEthProviderRpcError)
         handler.reject(

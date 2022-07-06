@@ -2,6 +2,7 @@ import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useState } from "react"
+
 import AccountRename from "./Rename"
 
 const useAccountRenameModalProvider = () => {
@@ -26,7 +27,7 @@ export const AccountRenameModal = () => {
   return (
     <Modal open={Boolean(address)}>
       <ModalDialog title="Rename account" onClose={close}>
-        <AccountRename address={address!} onConfirm={close} onCancel={close} />
+        {address ? <AccountRename address={address} onConfirm={close} onCancel={close} /> : null}
       </ModalDialog>
     </Modal>
   )

@@ -4,7 +4,7 @@ import { RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 
 class WatchAssetError extends Error {}
-export default class EvmWatchAssetRequestsStore extends RequestStore<WatchAssetRequest, {}> {
+export default class EvmWatchAssetRequestsStore extends RequestStore<WatchAssetRequest, unknown> {
   ignoreRequest({ id }: RequestIdOnly) {
     const request = this.requests[id]
     assert(request, `Watch Asset request with id ${id} doesn't exist`)

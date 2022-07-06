@@ -286,18 +286,20 @@ export class Balance {
     return this.#storage.chainId
   }
   get chain() {
-    return (this.#db?.chains && this.#db?.chains[this.chainId!]) || null
+    return (this.#db?.chains && this.chainId && this.#db?.chains[this.chainId]) || null
   }
   get evmNetworkId() {
     return this.#storage.evmNetworkId
   }
   get evmNetwork() {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return (this.#db?.evmNetworks && this.#db?.evmNetworks[this.evmNetworkId!]) || null
   }
   get tokenId() {
     return this.#storage.tokenId
   }
   get token() {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     return (this.#db?.tokens && this.#db?.tokens[this.tokenId!]) || null
   }
   get decimals() {

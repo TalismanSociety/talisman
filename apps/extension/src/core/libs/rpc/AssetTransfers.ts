@@ -38,7 +38,7 @@ export default class AssetTransfersRpc {
     from: KeyringPair,
     to: Address,
     tip: string,
-    reapBalance: boolean = false,
+    reapBalance = false,
     callback: SubscriptionCallback<{
       nonce: string
       hash: string
@@ -55,6 +55,12 @@ export default class AssetTransfersRpc {
       true
     )
 
+    callback(null, {
+      nonce: tx.nonce.toString(),
+      hash: tx.hash.toString(),
+      status: registry.createType<ExtrinsicStatus>("ExtrinsicStatus", { future: true }),
+    })
+
     const unsubscribe = await RpcFactory.subscribe(
       chainId,
       "author_submitAndWatchExtrinsic",
@@ -70,7 +76,6 @@ export default class AssetTransfersRpc {
 
         const status = registry.createType<ExtrinsicStatus>("ExtrinsicStatus", result)
         callback(null, { nonce: tx.nonce.toString(), hash: tx.hash.toString(), status })
-
         if (status.isFinalized) unsubscribe()
       }
     )
@@ -91,7 +96,7 @@ export default class AssetTransfersRpc {
     from: KeyringPair,
     to: Address,
     tip: string,
-    reapBalance: boolean = false
+    reapBalance = false
   ): Promise<ResponseAssetTransferFeeQuery> {
     const { tx, pendingTransferId, unsigned } = await this.prepareTransaction(
       chainId,

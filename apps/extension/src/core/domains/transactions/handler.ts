@@ -23,6 +23,7 @@ import { Address, Port } from "@core/types/base"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import keyring from "@polkadot/ui-keyring"
+import { assert } from "@polkadot/util"
 import BigNumber from "bignumber.js"
 
 export default class AssetTransferHandler extends ExtensionHandler {
@@ -45,9 +46,15 @@ export default class AssetTransferHandler extends ExtensionHandler {
       let blockNumber: string | undefined = undefined
       let extrinsicIndex: number | undefined = undefined
       let extrinsicResult: TransactionStatus | undefined = undefined
-      if (status.isFinalized) {
+      if (status && (status.isInBlock || status.isFinalized)) {
         // get tx block and events
-        const blockHash = status.asFinalized.toString()
+        const blockHash = status.isFinalized
+          ? status.asFinalized.toString()
+          : status.isInBlock
+          ? status.asInBlock.toString()
+          : false
+        if (blockHash === false) return
+
         const [block, events] = await Promise.all([
           BlocksRpc.block(chainId, blockHash),
           EventsRpc.events(chainId, blockHash),
@@ -95,6 +102,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     reapBalance = false,
   }: RequestAssetTransfer): Promise<ResponseAssetTransfer> {
     try {
+      // eslint-disable-next-line no-var
       var pair = getUnlockedPairFromAddress(fromAddress)
     } catch (error) {
       this.stores.password.clearPassword()
@@ -153,12 +161,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tip,
     reapBalance = false,
   }: RequestAssetTransfer): Promise<ResponseAssetTransferFeeQuery> {
-    try {
-      // no need for this pair to be unlocked, as we will use a fake signature
-      var pair = getPairFromAddress(fromAddress)
-    } catch (error) {
-      throw error
-    }
+    const pair = getPairFromAddress(fromAddress)
 
     const token = await db.tokens.get(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
@@ -180,11 +183,18 @@ export default class AssetTransferHandler extends ExtensionHandler {
     id,
     signature,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
-    const { chainId, unsigned } = pendingTransfers.get(id)!
+    const pendingTx = pendingTransfers.get(id)
+    assert(pendingTx, `No pending transfer with id ${id}`)
+    const { data, transfer } = pendingTx
 
     return await new Promise((resolve, reject) => {
-      const watchExtrinsic = this.getExtrinsicWatch(chainId, unsigned.address, resolve, reject)
-      pendingTransfers.transfer(id, signature, watchExtrinsic)
+      const watchExtrinsic = this.getExtrinsicWatch(
+        data.chainId,
+        data.unsigned.address,
+        resolve,
+        reject
+      )
+      transfer(signature, watchExtrinsic)
     })
   }
 

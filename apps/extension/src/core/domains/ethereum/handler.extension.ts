@@ -22,18 +22,14 @@ import {
 } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import type { TransactionRequest } from "@ethersproject/providers"
+import { SignTypedDataVersion } from "@metamask/eth-sig-util"
 import { assert, u8aToHex } from "@polkadot/util"
 import { BigNumber, ethers } from "ethers"
-import type { Bytes, UnsignedTransaction } from "ethers"
-import {
-  concat,
-  formatUnits,
-  parseUnits,
-  serializeTransaction,
-  toUtf8Bytes,
-} from "ethers/lib/utils"
+import type { UnsignedTransaction } from "ethers"
+import { formatUnits, parseUnits, serializeTransaction } from "ethers/lib/utils"
 import isString from "lodash/isString"
 
+import { encodeTextData, encodeTypedData, legacyToBuffer } from "./helpers"
 import { getProviderForEvmNetworkId } from "./networksStore"
 
 // turns errors into short and human readable message.
@@ -59,16 +55,11 @@ const getHumanReadableErrorMessage = (error: unknown) => {
   return undefined
 }
 
-const messagePrefix = "\x19Ethereum Signed Message:\n"
-const addSafeSigningPrefix = (message: string | Bytes) => {
-  if (typeof message === "string") message = toUtf8Bytes(message)
-  return concat([toUtf8Bytes(messagePrefix), toUtf8Bytes(String(message.length)), message])
-}
-
 type UnsignedTxWithGas = Omit<TransactionRequest, "gasLimit"> & { gas: string }
 
 const txRequestToUnsignedTx = (tx: TransactionRequest | UnsignedTxWithGas): UnsignedTransaction => {
   // we're using EIP1559 so gasPrice must be removed
+  // eslint-disable-next-line prefer-const
   let { from, gasPrice, ...unsignedTx } = tx
   if ("gas" in unsignedTx) {
     const { gas, ...rest1 } = unsignedTx as UnsignedTxWithGas
@@ -114,6 +105,7 @@ export class EthHandler extends ExtensionHandler {
 
       const serialisedTx = serializeTransaction(goodTx)
       try {
+        // eslint-disable-next-line no-var
         var pair = getUnlockedPairFromAddress(queued.account.address)
       } catch (error) {
         this.stores.password.clearPassword()
@@ -154,9 +146,10 @@ export class EthHandler extends ExtensionHandler {
 
       assert(queued, "Unable to find request")
 
-      const { request, reject, resolve } = queued
+      const { method, request, reject, resolve } = queued
 
       try {
+        // eslint-disable-next-line no-var
         var pair = getUnlockedPairFromAddress(queued.account.address)
       } catch (error) {
         this.stores.password.clearPassword()
@@ -166,11 +159,23 @@ export class EthHandler extends ExtensionHandler {
         return false
       }
 
-      const signature = await pair.sign(addSafeSigningPrefix(request))
+      let messageToSign: Uint8Array
+      if (method === "personal_sign") {
+        messageToSign = encodeTextData(legacyToBuffer(request as string), true)
+      } else if (method === "eth_signTypedData_v3") {
+        messageToSign = encodeTypedData(JSON.parse(request as string), SignTypedDataVersion.V3)
+      } else if (method === "eth_signTypedData_v4") {
+        messageToSign = encodeTypedData(JSON.parse(request as string), SignTypedDataVersion.V4)
+      } else {
+        throw new Error(`Unsupported method : ${method}`)
+      }
+
+      const signature = await pair.sign(messageToSign)
       resolve(u8aToHex(signature))
 
       talismanAnalytics.captureDelayed("sign transaction approve", {
         type: "evm sign",
+        method,
         dapp: queued.url,
         chain: queued.ethChainId,
       })
@@ -335,7 +340,7 @@ export class EthHandler extends ExtensionHandler {
           port
         )
 
-      case "pri(eth.watchasset.requests.subscribe.byid)":
+      case "pri(eth.watchasset.requests.subscribe.byid)": {
         const cb = createSubscription<"pri(eth.watchasset.requests.subscribe.byid)">(id, port)
         const subscription = this.state.requestStores.evmAssets.observable.subscribe(
           (reqs: WatchAssetRequest[]) => {
@@ -349,6 +354,7 @@ export class EthHandler extends ExtensionHandler {
           subscription.unsubscribe()
         })
         return true
+      }
 
       // --------------------------------------------------------------------
       // ethereum network handlers ------------------------------------------
@@ -407,9 +413,10 @@ export class EthHandler extends ExtensionHandler {
         return true
       }
 
-      case "pri(eth.request)":
+      case "pri(eth.request)": {
         const { chainId: ethChainId, ...rest } = request as AnyEthRequestChainId
         return this.ethRequest(id, ethChainId, rest) as any
+      }
     }
     throw new Error(`Unable to handle message of type ${type}`)
   }

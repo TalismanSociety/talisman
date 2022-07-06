@@ -45,7 +45,7 @@ export default class AppHandler extends ExtensionHandler {
     const account = this.getRootAccount()
     assert(!account, "A root account already exists")
 
-    let confirmed: boolean = false
+    let confirmed = false
     const method = mnemonic ? "import" : "new"
     // no mnemonic passed in generate a mnemonic as needed
     if (!mnemonic) {
@@ -219,10 +219,11 @@ export default class AppHandler extends ExtensionHandler {
           (modalType) => ({ modalType })
         )
 
-      case "pri(app.analyticsCapture)":
+      case "pri(app.analyticsCapture)": {
         const { eventName, options } = request as AnalyticsCaptureRequest
         talismanAnalytics.capture(eventName, options)
         return true
+      }
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

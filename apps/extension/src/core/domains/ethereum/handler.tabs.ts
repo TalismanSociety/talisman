@@ -17,6 +17,7 @@ import {
   EthProviderMessage,
   EthProviderRpcError,
   EthRequestArguments,
+  EthRequestSignArguments,
   EthRequestSignatures,
 } from "@core/injectEth/types"
 import { db } from "@core/libs/db"
@@ -24,11 +25,14 @@ import { TabsHandler } from "@core/libs/Handler"
 import type { CustomErc20Token, RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
+import { toBuffer } from "@ethereumjs/util"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { ethers, providers } from "ethers"
+import { isHexString } from "ethers/lib/utils"
 
 import { filterAccountsByAddresses } from "../accounts/helpers"
+import { recoverPersonalSignAddress } from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./networksStore"
 
 interface EthAuthorizedSite extends AuthorizedSite {
@@ -93,9 +97,12 @@ export class EthTabsHandler extends TabsHandler {
     const site = await this.stores.sites.getSiteFromUrl(url)
     if (!site) return []
 
+    // returning lowercase addresses otherwise address check for personal_sign will fail in metamask E2E test dapp
+    // I'm afraid this may lead to errors in checksum if this output is validated by dapp : https://eips.ethereum.org/EIPS/eip-55
+    // If this happens, we'll have to remove lowercase (and also remove at line 201) and ignore error on test dapp.
     return filterAccountsByAddresses(accountsObservable.subject.getValue(), site.ethAddresses)
       .filter(({ type }) => type === "ethereum")
-      .map(({ address }) => address)
+      .map(({ address }) => ethers.utils.getAddress(address).toLowerCase())
   }
 
   private async ethSubscribe(id: string, url: string, port: Port): Promise<boolean> {
@@ -163,6 +170,7 @@ export class EthTabsHandler extends TabsHandler {
           typeof site?.ethChainId !== "undefined"
             ? ethers.utils.hexValue(site.ethChainId)
             : undefined
+        //TODO check eth addresses still exist
         accounts = site?.ethAddresses ?? []
         // checking the existence of an associated provider also checks that network is still authorized
         connected = !!(await this.getProvider(url))
@@ -188,7 +196,10 @@ export class EthTabsHandler extends TabsHandler {
         }
 
         if (connected && chainId && prevAccounts?.join() !== accounts.join()) {
-          sendToClient({ type: "accountsChanged", data: accounts })
+          sendToClient({
+            type: "accountsChanged",
+            data: accounts.map((ac) => ethers.utils.getAddress(ac).toLowerCase()),
+          })
         }
       } catch (err) {
         // eslint-disable-next-line no-console
@@ -292,19 +303,22 @@ export class EthTabsHandler extends TabsHandler {
     return result
   }
 
-  private signMessage = async (url: string, request: EthRequestArguments<"eth_sign">) => {
-    const { params } = request as EthRequestArguments<"eth_sign">
+  private signMessage = async (url: string, request: EthRequestSignArguments) => {
+    const { params, method } = request as EthRequestSignArguments
 
     // expect [message, address] or [address, message]
-    const isAddressFirst = ethers.utils.isAddress(params[0])
-    const from = isAddressFirst ? params[0] : params[1]
+    const isAddressFirst = typeof params[0] === "string" && ethers.utils.isAddress(params[0])
+    const from = (isAddressFirst ? params[0] : params[1]) as string
     const uncheckedMessage = isAddressFirst ? params[1] : params[0]
 
     // message is either a raw string or a hex string
     // normalize the message, it must be stored unencoded in the request to be displayed to the user
-    const message = ethers.utils.isHexString(uncheckedMessage)
-      ? ethers.utils.toUtf8String(uncheckedMessage)
-      : uncheckedMessage
+    const message =
+      typeof uncheckedMessage === "string"
+        ? isHexString(uncheckedMessage)
+          ? toBuffer(uncheckedMessage).toString("utf-8")
+          : uncheckedMessage
+        : JSON.stringify(uncheckedMessage)
 
     const site = await this.getSiteDetails(url)
     try {
@@ -322,7 +336,7 @@ export class EthTabsHandler extends TabsHandler {
       )
     }
 
-    return this.state.requestStores.signing.signEth(url, message, site.ethChainId, {
+    return this.state.requestStores.signing.signEth(url, method, message, site.ethChainId, {
       address: ethers.utils.getAddress(address),
       ...pair.meta,
     })
@@ -346,6 +360,7 @@ export class EthTabsHandler extends TabsHandler {
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
     try {
+      // eslint-disable-next-line no-var
       var tokenInfo = await getErc20TokenInfo(provider, ethChainId, address)
     } catch (err) {
       throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
@@ -432,9 +447,20 @@ export class EthTabsHandler extends TabsHandler {
         return result.toHexString()
       }
 
+      // case "eth_sign": // dangerous, obsolete, main use case is phishing => don't support
+      // case "eth_signTypedData": // obsolete and cannot support because polkadot ethereum keypairs force a keccak hash before signing, this prevents us to get the expected signature
+      // case "eth_signTypedData_v1": // same as above
       case "personal_sign":
-      case "eth_sign": {
-        return this.signMessage(url, request as EthRequestArguments<"eth_sign">)
+      case "eth_signTypedData_v3":
+      case "eth_signTypedData_v4": {
+        return this.signMessage(url, request as EthRequestSignArguments)
+      }
+
+      case "personal_ecRecover": {
+        const {
+          params: [data, signature],
+        } = request as EthRequestArguments<"personal_ecRecover">
+        return recoverPersonalSignAddress(data, signature)
       }
 
       case "eth_sendTransaction": {

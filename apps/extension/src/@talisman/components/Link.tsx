@@ -90,8 +90,8 @@ const Link: FC<ILinkProps> = ({
     [disabled, navigate, onClick, processing, to]
   )
 
-  return !!to ? (
-    !!onClick ? (
+  return to ? (
+    onClick ? (
       <button
         type="button"
         onClick={handleClick}
@@ -125,7 +125,7 @@ const StyledLink = styled(Link)`
   justify-content: flex-start;
   border: none;
   font-size: var(
-    --font-size-${({ large, small }) => (!!large ? "large" : !!small ? "small" : "normal")}
+    --font-size-${({ large, small }) => (large ? "large" : small ? "small" : "normal")}
   );
   color: var(--color-foreground);
   background: transparent;

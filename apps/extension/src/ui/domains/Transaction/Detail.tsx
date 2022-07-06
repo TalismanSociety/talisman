@@ -1,8 +1,8 @@
-import styled from "styled-components"
 import Button from "@talisman/components/Button"
-import useTransactionById from "@ui/hooks/useTransactionById"
 import Link from "@ui/domains/Transaction/Link"
 import Status from "@ui/domains/Transaction/Status"
+import useTransactionById from "@ui/hooks/useTransactionById"
+import styled from "styled-components"
 
 const Detail = ({ id, handleClose, className }: any) => {
   const { blockHash } = useTransactionById(id)
@@ -13,7 +13,7 @@ const Detail = ({ id, handleClose, className }: any) => {
         <Status id={id} />
       </article>
       <footer>
-        {!!blockHash ? (
+        {blockHash ? (
           <Link prefix={"Included in block"} id={id} />
         ) : (
           <span className="wait">"Awaiting confirmation..."</span>

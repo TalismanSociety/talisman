@@ -1,5 +1,5 @@
-import { Modal } from "@talisman/components/Modal"
 import StyledDialog from "@talisman/components/Dialog"
+import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { IconAlert } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
@@ -26,7 +26,8 @@ export const AccountRemoveModal = () => {
   const { address, close } = useAccountRemoveModal()
 
   const handleConfirm = useCallback(async () => {
-    await api.accountForget(address!)
+    if (!address) return
+    await api.accountForget(address)
     close()
   }, [address, close])
 

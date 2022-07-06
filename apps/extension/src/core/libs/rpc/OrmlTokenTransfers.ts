@@ -167,11 +167,11 @@ export default class OrmlTokenTransfersRpc {
     const { specVersion, transactionVersion } = runtimeVersion
 
     let unsigned: UnsignedTransaction | undefined = undefined
-    let errors: any[] = []
+    const errors: any[] = []
 
     // different chains use different orml transfer methods
     // we'll try each one in sequence until we get one that doesn't throw an error
-    let unsignedMethods = [
+    const unsignedMethods = [
       () =>
         defineMethod(
           {

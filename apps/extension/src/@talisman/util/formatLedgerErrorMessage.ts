@@ -25,7 +25,7 @@ interface LedgerError {
 }
 export const formatLedgerErrorMessage = (
   ledgerError: string,
-  network: string = "the network"
+  network = "the network"
 ): LedgerError => {
   if (ledgerError?.includes("Code: 26628") || ledgerError?.includes("Transaction rejected"))
     return {
@@ -60,10 +60,7 @@ export const formatLedgerErrorMessage = (
   return { status: "error", message: ledgerError, requiresManualRetry: false }
 }
 
-export const formatLedgerSigningError = (
-  err: string,
-  network: string = "the network"
-): LedgerError => {
+export const formatLedgerSigningError = (err: string, network = "the network"): LedgerError => {
   switch (err) {
     case "Transaction rejected":
       return {

@@ -7,7 +7,7 @@ interface MetaRequest {
   url: string
 }
 
-interface MetaRequestRespondable extends TRespondableRequest<MetaRequest, boolean> {}
+type MetaRequestRespondable = TRespondableRequest<MetaRequest, boolean>
 
 export default class MetadataRequestsStore extends RequestStore<MetaRequest, boolean> {
   public injectMetadata(url: string, request: MetadataDef): Promise<boolean> {

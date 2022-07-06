@@ -41,7 +41,7 @@ export default class TokensHandler extends ExtensionHandler {
         return token
       }
 
-      case "pri(tokens.erc20.custom.add)":
+      case "pri(tokens.erc20.custom.add)": {
         const token = request as CustomErc20TokenCreate
         assert(
           typeof token.chainId === "string" || typeof token.evmNetworkId === "number",
@@ -72,11 +72,12 @@ export default class TokensHandler extends ExtensionHandler {
         }
 
         return await db.tokens.put(newToken)
+      }
 
       case "pri(tokens.erc20.custom.remove)":
         return await db.tokens.delete((request as RequestIdOnly).id)
 
-      case "pri(tokens.erc20.custom.clear)":
+      case "pri(tokens.erc20.custom.clear)": {
         const filter = request as { chainId?: ChainId; evmNetworkId?: string } | undefined
         const deleteFilterFn = (token: CustomErc20Token) =>
           filter === undefined
@@ -101,6 +102,7 @@ export default class TokensHandler extends ExtensionHandler {
           .map((token) => token.id)
         await db.tokens.bulkDelete(deleteTokens)
         return
+      }
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

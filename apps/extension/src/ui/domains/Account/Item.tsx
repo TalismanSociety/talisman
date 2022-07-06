@@ -99,7 +99,7 @@ const AccountItem = ({
           <PopNav trigger={<IconMore />} className="icon more" closeOnMouseOut>
             <PopNav.Item onClick={() => openAddressFormatter(address)}>Copy address</PopNav.Item>
             <PopNav.Item onClick={() => openAccountRename(address)}>Rename</PopNav.Item>
-            {["SEED", "JSON", "DERIVED"].includes(account?.origin as string) && (
+            {["DERIVED", "SEED", "JSON"].includes(account?.origin as string) && (
               <PopNav.Item
                 onClick={async () => {
                   const { exportedJson } = await api.accountExport(address)
@@ -109,7 +109,7 @@ const AccountItem = ({
                 Export Private Key
               </PopNav.Item>
             )}
-            {["SEED", "JSON", "HARDWARE"].includes(account?.origin as string) && (
+            {["DERIVED", "SEED", "JSON", "HARDWARE"].includes(account?.origin as string) && (
               <PopNav.Item onClick={() => openAccountRemove(address)}>Remove Account</PopNav.Item>
             )}
             {account?.type === "ethereum" && (

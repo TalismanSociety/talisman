@@ -115,7 +115,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
       .pipe(
         // run each mutation against the output of the previous mutation
         map(([currentValue, mutations]): [T, Array<() => void>] => {
-          let callbacks = []
+          const callbacks = []
           let newValue = currentValue
 
           for (const { mutation, callback } of mutations) {

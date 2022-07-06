@@ -20,7 +20,7 @@ import { encodeAnyAddress } from "@core/util"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
+import { mnemonicValidate } from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 
 export default class AccountsHandler extends ExtensionHandler {
@@ -49,28 +49,35 @@ export default class AccountsHandler extends ExtensionHandler {
     assert(rootAccount, "No root account")
 
     const isEthereum = type === "ethereum"
-    const derivedAccountIndex = allAccounts.filter(
-      (account) =>
-        account.meta.origin === AccountTypes.DERIVED &&
-        isEthereum === isEthereumAddress(account.address)
-    ).length
-    // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
-    const derivationPath = isEthereum
-      ? getEthDerivationPath(derivedAccountIndex)
-      : `//${derivedAccountIndex}`
+    const getDerivationPath = (accountIndex: number) =>
+      // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
+      isEthereum ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
 
     const password = this.stores.password.getPassword()
     const rootSeed = await this.stores.seedPhrase.getSeed(password || "")
     assert(rootSeed, "Global seed not available")
 
+    let accountIndex
+    let derivedAddress: string | null = null
+    for (accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
+      derivedAddress = addressFromMnemonic(`${rootSeed}${getDerivationPath(accountIndex)}`, type)
+
+      const exists = keyring.getAccounts().some(({ address }) => address === derivedAddress)
+      if (exists) continue
+
+      break
+    }
+
+    assert(derivedAddress, "Reached maximum number of derived accounts")
+
     keyring.addUri(
-      `${rootSeed}${derivationPath}`,
+      `${rootSeed}${getDerivationPath(accountIndex)}`,
       password,
       {
         name,
         origin: AccountTypes.DERIVED,
         parent: rootAccount.address,
-        derivationPath,
+        derivationPath: getDerivationPath(accountIndex),
       },
       type
     )
@@ -181,10 +188,8 @@ export default class AccountsHandler extends ExtensionHandler {
     assert(account, "Unable to find account")
 
     assert(
-      ![AccountTypes.ROOT, AccountTypes.DERIVED].includes(
-        account.meta.origin as keyof typeof AccountTypes
-      ),
-      "Cannot forget root or derived accounts"
+      AccountTypes.ROOT !== (account.meta.origin as keyof typeof AccountTypes),
+      "Cannot forget root account"
     )
     const { type } = keyring.getPair(account?.address)
     talismanAnalytics.capture("account forget", { type })

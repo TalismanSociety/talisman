@@ -1,8 +1,7 @@
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { StorageProvider } from "@core/libs/Store"
 import { ChainId, Transaction, TransactionId, TransactionStatus } from "@core/types"
-import { Address } from "@core/types/base"
-import { Port, RequestIdOnly } from "@core/types/base"
+import { Address, Port, RequestIdOnly } from "@core/types/base"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { BehaviorSubject, combineLatest, map } from "rxjs"
 import { validate as isUuid, version as uuidVersion, v4 as uuidv4 } from "uuid"
@@ -49,7 +48,7 @@ export class TransactionStore extends StorageProvider<TransactionSubject> {
     extrinsicResult?: TransactionStatus
   ) {
     const existingTx = Object.values(this.#pendingTxs.value).find(
-      (tx) => tx.from === from && tx.nonce === nonce && tx.hash === hash
+      (tx) => tx.from === from && tx.nonce === nonce
     )
 
     const tx: Transaction = existingTx || {
@@ -73,14 +72,17 @@ export class TransactionStore extends StorageProvider<TransactionSubject> {
       : tx.blockHash
 
     // get tx result (Success/Failed)
-    if (extrinsicStatus.isFinalized && extrinsicResult !== undefined) {
+    if (
+      (extrinsicStatus.isFinalized || extrinsicStatus.isInBlock) &&
+      extrinsicResult !== undefined
+    ) {
       tx.blockNumber = blockNumber
       tx.extrinsicIndex = extrinsicIndex
       tx.status = extrinsicResult
       tx.message = extrinsicResult === "SUCCESS" ? "Transaction successful" : "Transaction failed"
     }
 
-    if (tx.status === "PENDING") {
+    if (!extrinsicStatus.isFinalized) {
       this.#pendingTxs.next({ ...this.#pendingTxs.value, [tx.id]: tx })
     } else {
       const pendingTxs = { ...this.#pendingTxs.value }

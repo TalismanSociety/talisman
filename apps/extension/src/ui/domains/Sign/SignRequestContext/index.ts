@@ -1,2 +1,3 @@
 export * from "./PolkadotSignRequestContext"
-export * from "./EthereumSignRequestContext"
+export * from "./EthereumSignMessageRequestContext"
+export * from "./EthereumSignTransactionRequestContext"

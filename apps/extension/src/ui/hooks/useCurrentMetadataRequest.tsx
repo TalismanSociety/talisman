@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react"
 import type { MetadataRequest } from "@core/types"
 import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
-import { useMetadataRequests } from "./useMetadataRequests"
 import { api } from "@ui/api"
+import { useCallback, useEffect, useState } from "react"
+
+import { useMetadataRequests } from "./useMetadataRequests"
 
 interface IProps {
   onError: (msg: string) => void
@@ -29,7 +30,7 @@ const useCurrentMetadataRequest = ({
   })
 
   useEffect(() => {
-    if (!!metaDataRequests[0]) {
+    if (metaDataRequests[0]) {
       setCurrentRequest(metaDataRequests[0])
       setStatus.initialized()
     } else {

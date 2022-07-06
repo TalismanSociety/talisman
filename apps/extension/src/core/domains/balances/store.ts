@@ -19,6 +19,7 @@ import { Addresses, AddressesByChain, Port } from "@core/types/base"
 import { encodeAnyAddress } from "@core/util"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
+import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { liveQuery } from "dexie"
@@ -39,7 +40,7 @@ type SubscriptionsState = "Closed" | "Closing" | "Open"
 
 export class BalanceStore {
   #subscriptionsState: SubscriptionsState = "Closed"
-  #subscriptionsGeneration: number = 0
+  #subscriptionsGeneration = 0
   #closeSubscriptionCallbacks: Array<Promise<() => void>> = []
 
   #chains: ChainIdAndHealth[] = []
@@ -141,11 +142,16 @@ export class BalanceStore {
     }
 
     const tokenType = token.type
+    if (["native", "orml"].includes(tokenType))
+      assert(chainId, "chainId is required for substrate token balances")
+
     if (tokenType === "native")
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return (await BalancesRpc.balances({ [chainId!]: [address] }))
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()
     if (tokenType === "orml")
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return (await OrmlTokensRpc.tokens({ [chainId!]: [address] }))
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()

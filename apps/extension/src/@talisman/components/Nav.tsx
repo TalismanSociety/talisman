@@ -1,8 +1,9 @@
 import styled from "styled-components"
+
 import Link from "./Link"
 
 interface IProps {
-  column?: Boolean
+  column?: boolean
   children?: any
   className?: string
 }

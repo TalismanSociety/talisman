@@ -31,6 +31,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     const { reject, request, resolve } = queued
     try {
+      // eslint-disable-next-line no-var
       var pair = getUnlockedPairFromAddress(queued.account.address)
     } catch (error) {
       this.stores.password.clearPassword()
@@ -156,7 +157,7 @@ export default class SigningHandler extends ExtensionHandler {
           this.stores.password.isLoggedIn
         )
 
-      case "pri(signing.byid.subscribe)":
+      case "pri(signing.byid.subscribe)": {
         const cb = createSubscription<"pri(signing.byid.subscribe)">(id, port)
         const subscription = this.state.requestStores.signing.observable.subscribe(
           (reqs: AnySigningRequest[]) => {
@@ -170,6 +171,7 @@ export default class SigningHandler extends ExtensionHandler {
           subscription.unsubscribe()
         })
         return true
+      }
 
       case "pri(signing.approveSign)":
         return await this.signingApprove(request as RequestIdOnly)
