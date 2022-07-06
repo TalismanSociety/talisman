@@ -1,3 +1,4 @@
+import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { assert } from "@polkadot/util"
 import type {
@@ -12,7 +13,6 @@ import type {
   RequestTypes,
   ResponseType,
 } from "core/types"
-import { db } from "@core/libs/db"
 
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
@@ -65,7 +65,7 @@ export default class TokensHandler extends ExtensionHandler {
           type: "erc20",
           isTestnet: (chain || evmNetwork)?.isTestnet || false,
           symbol,
-          decimals,
+          decimals: Number(decimals), // some dapps (ie moonriver.moonscan.io) may send a string here, which breaks balances
           coingeckoId,
           contractAddress,
           chain: token.chainId ? { id: token.chainId } : undefined,
