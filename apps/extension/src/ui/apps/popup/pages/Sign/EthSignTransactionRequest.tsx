@@ -144,13 +144,6 @@ export const EthSignTransactionRequest = () => {
     isAnalysing,
   } = useEthSignTransactionRequest()
 
-  const ethRequest = request as unknown as EthSignRequest
-
-  const requestType: EthRequestType = useMemo(
-    () => (request?.value ? "txWithValue" : "txWithoutValue"),
-    [request]
-  )
-
   const { processing, errorMessage } = useMemo(() => {
     return {
       processing: status === "PROCESSING",
@@ -164,13 +157,12 @@ export const EthSignTransactionRequest = () => {
     <SignContainer>
       <Header text={<AppPill url={url} />}></Header>
       <Content>
-        {account && request && request.value && network && (
+        {account && request && network && (
           <>
             <div className="sign-summary">
-              {requestType === "txWithValue" && (
+              {request.value ? (
                 <SignTxWithValue network={network} account={account} value={request.value} />
-              )}
-              {requestType === "txWithoutValue" && (
+              ) : (
                 <SignTxWithoutValue network={network} account={account} />
               )}
             </div>
