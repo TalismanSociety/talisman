@@ -144,13 +144,6 @@ export const EthSignTransactionRequest = () => {
     isAnalysing,
   } = useEthSignTransactionRequest()
 
-  const ethRequest = request as unknown as EthSignRequest
-
-  const requestType: EthRequestType = useMemo(
-    () => (request?.value ? "txWithValue" : "txWithoutValue"),
-    [request]
-  )
-
   const { processing, errorMessage } = useMemo(() => {
     return {
       processing: status === "PROCESSING",
@@ -167,10 +160,9 @@ export const EthSignTransactionRequest = () => {
         {account && request && network && (
           <>
             <div className="sign-summary">
-              {requestType === "txWithValue" && (
-                <SignTxWithValue network={network} account={account} value={request.value!} />
-              )}
-              {requestType === "txWithoutValue" && (
+              {request.value ? (
+                <SignTxWithValue network={network} account={account} value={request.value} />
+              ) : (
                 <SignTxWithoutValue network={network} account={account} />
               )}
             </div>

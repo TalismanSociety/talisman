@@ -7,7 +7,9 @@ const CopyToClipboard = ({ value, onCopy, className, children }: any) =>
       try {
         navigator.clipboard.writeText(value)
         onCopy(value)
-      } catch {}
+      } catch {
+        // ignore
+      }
     },
   })
 

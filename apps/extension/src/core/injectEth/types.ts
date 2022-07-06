@@ -13,7 +13,7 @@ import type {
 // Compliant with https://eips.ethereum.org/EIPS/eip-1193
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 
-type Promisify<T extends any> = T | Promise<T>
+type Promisify<T> = T | Promise<T>
 
 type PromisifyArray<T extends Array<any>> = {
   /* The inbuilt ethers provider methods take arguments which can

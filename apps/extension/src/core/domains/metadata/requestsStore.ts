@@ -1,5 +1,5 @@
-import type { MetadataDef } from "@polkadot/extension-inject/types"
 import { RequestStore, TRespondableRequest } from "@core/libs/RequestStore"
+import type { MetadataDef } from "@polkadot/extension-inject/types"
 
 interface MetaRequest {
   id: string
@@ -7,7 +7,7 @@ interface MetaRequest {
   url: string
 }
 
-interface MetaRequestRespondable extends TRespondableRequest<MetaRequest, boolean> {}
+type MetaRequestRespondable = TRespondableRequest<MetaRequest, boolean>
 
 export default class MetadataRequestsStore extends RequestStore<MetaRequest, boolean> {
   mapRequestToData({ id, request, url }: MetaRequestRespondable) {

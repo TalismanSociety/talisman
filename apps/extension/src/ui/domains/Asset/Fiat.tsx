@@ -21,7 +21,7 @@ type DisplayValueProps = {
 }
 
 const DisplayValue: FC<DisplayValueProps> = ({ amount, currency, noCountUp }) => {
-  const format = useCallback((amount: number = 0) => formatFiat(amount, currency), [currency])
+  const format = useCallback((amount = 0) => formatFiat(amount, currency), [currency])
   const formatted = useMemo(() => format(amount), [format, amount])
 
   const countUpDecimals = useMemo(

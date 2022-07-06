@@ -51,7 +51,7 @@ const Mnemonic = ({ className }: any) => {
 
   return (
     <div className={className}>
-      {!!mnemonic ? (
+      {mnemonic ? (
         <>
           <HeaderBlock text="Your secret phrase protects your account. If you share it you may lose your funds." />
           <Spacer />

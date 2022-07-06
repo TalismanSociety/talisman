@@ -29,7 +29,7 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
   const canIgnore = useMemo(() => !currentRequest?.request.ethereum, [currentRequest])
 
   useEffect(() => {
-    if (!!authRequests[0]) {
+    if (authRequests[0]) {
       setCurrentRequest(authRequests[0])
     }
   }, [authRequests, setCurrentRequest, onError])
@@ -50,7 +50,7 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
   }, [currentRequest?.id, onIgnore])
 
   return {
-    request: currentRequest!,
+    request: currentRequest,
     accounts: accounts.map((account) => ({
       ...account,
       toggle: () => (ethereum ? set([account?.address]) : toggle(account?.address)),

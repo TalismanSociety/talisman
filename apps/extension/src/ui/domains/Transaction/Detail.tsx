@@ -13,7 +13,7 @@ const Detail = ({ id, handleClose, className }: any) => {
         <Status id={id} />
       </article>
       <footer>
-        {!!blockHash ? (
+        {blockHash ? (
           <Link prefix={"Included in block"} id={id} />
         ) : (
           <span className="wait">"Awaiting confirmation..."</span>

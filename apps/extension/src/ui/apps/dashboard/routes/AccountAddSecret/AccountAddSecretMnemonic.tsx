@@ -1,24 +1,25 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import { useNavigate } from "react-router-dom"
-import Layout from "../../layout"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import * as yup from "yup"
-import { api } from "@ui/api"
-import { useForm } from "react-hook-form"
-import { yupResolver } from "@hookform/resolvers/yup"
-import { FormField } from "@talisman/components/Field/FormField"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import { useAccountAddSecret } from "./context"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { AccountAddressType } from "@core/types"
+import { yupResolver } from "@hookform/resolvers/yup"
 import { Checkbox } from "@talisman/components/Checkbox"
-import styled from "styled-components"
+import { FormField } from "@talisman/components/Field/FormField"
+import HeaderBlock from "@talisman/components/HeaderBlock"
 import { useNotification } from "@talisman/components/Notification"
-import useAccounts from "@ui/hooks/useAccounts"
+import { SimpleButton } from "@talisman/components/SimpleButton"
 import { classNames } from "@talisman/util/classNames"
-import { Wallet } from "ethers"
+import { api } from "@ui/api"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import AccountAvatar from "@ui/domains/Account/Avatar"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import useAccounts from "@ui/hooks/useAccounts"
+import { Wallet } from "ethers"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
+import styled from "styled-components"
+import * as yup from "yup"
+
+import Layout from "../../layout"
+import { useAccountAddSecret } from "./context"
 
 type FormData = {
   name: string
@@ -100,7 +101,7 @@ const Container = styled(Layout)`
   }
 `
 
-const cleanupMnemonic = (input: string = "") =>
+const cleanupMnemonic = (input = "") =>
   input
     .trim()
     .toLowerCase()
@@ -137,10 +138,11 @@ const getAccountUri = async (secret: string, type: AccountAddressType) => {
 }
 
 const testNoDuplicate = async (
-  mnemonic: string,
   allAccountsAddresses: string[],
-  type: AccountAddressType
+  type: AccountAddressType,
+  mnemonic?: string
 ) => {
+  if (!mnemonic) return false
   try {
     const uri = await getAccountUri(mnemonic, type)
     const address = await api.addressFromMnemonic(uri, type)
@@ -150,9 +152,9 @@ const testNoDuplicate = async (
   }
 }
 
-const testValidMnemonic = async (val: string) => {
+const testValidMnemonic = async (val?: string) => {
   // Don't bother calling the api if the mnemonic isn't the right length to reduce Sentry noise
-  if (!Boolean(val) || ![12, 24].includes(val.split(" ").length)) return false
+  if (!val || ![12, 24].includes(val.split(" ").length)) return false
   return await api.accountValidateMnemonic(val)
 }
 
@@ -183,27 +185,27 @@ export const AccountAddSecretMnemonic = () => {
                 .test(
                   "is-valid-mnemonic-ethereum",
                   "Invalid secret",
-                  (val) => isValidEthPrivateKey(val) || testValidMnemonic(val!)
+                  (val) => isValidEthPrivateKey(val) || testValidMnemonic(val)
                 )
                 .when("multi", {
                   is: false,
                   then: yup
                     .string()
                     .test("not-duplicate-ethereum", "Account already exists", async (val) =>
-                      testNoDuplicate(val!, accountAddresses, "ethereum")
+                      testNoDuplicate(accountAddresses, "ethereum", val)
                     ),
                 }),
               otherwise: yup
                 .string()
                 .test("is-valid-mnemonic-sr25519", "Invalid secret", (val) =>
-                  testValidMnemonic(val!)
+                  testValidMnemonic(val)
                 )
                 .when("multi", {
                   is: false,
                   then: yup
                     .string()
                     .test("not-duplicate-sr25519", "Account already exists", async (val) =>
-                      testNoDuplicate(val!, accountAddresses, "sr25519")
+                      testNoDuplicate(accountAddresses, "sr25519", val)
                     ),
                 }),
             }),

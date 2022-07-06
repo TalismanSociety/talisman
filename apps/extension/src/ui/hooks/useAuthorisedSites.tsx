@@ -10,7 +10,7 @@ const subscribe = (subject: BehaviorSubject<AuthorizedSites>) =>
 
 const authorisedSitesOnly = (value: AuthorizedSites): AuthorizedSites => {
   const result = { ...value }
-  for (let id in result) if (!result[id].addresses && !result[id].ethAddresses) delete result[id]
+  for (const id in result) if (!result[id].addresses && !result[id].ethAddresses) delete result[id]
   return result
 }
 

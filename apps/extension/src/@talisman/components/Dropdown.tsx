@@ -113,7 +113,10 @@ export type DropdownProps<T> = {
   disabled?: boolean
 }
 
-export const Dropdown = <T extends {}>({
+// typing T is unnecessary here but if we remove it it makes compiler unable to parse the component
+// this is an issue when using generics inside a tsx file, see https://github.com/microsoft/TypeScript/issues/15713
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
+export const Dropdown = <T extends any>({
   className,
   label,
   items,

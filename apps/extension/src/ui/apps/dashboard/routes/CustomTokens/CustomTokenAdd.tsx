@@ -76,7 +76,7 @@ export const CustomTokenAdd = () => {
     isLoading,
     error: tokenInfoError,
     token: tokenInfo,
-  } = useErc20TokenInfo(evmNetworkId!, contractAddress)
+  } = useErc20TokenInfo(evmNetworkId, contractAddress)
 
   const handleNetworkChange = useCallback(
     (id: number) => {

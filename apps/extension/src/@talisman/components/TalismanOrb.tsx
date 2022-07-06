@@ -33,6 +33,7 @@ export const TalismanOrb: FC<TalismanOrbProps> = ({
     const isEthereum = seed?.startsWith("0x")
     try {
       // seed may be specific to a ss58 prefix, get the base address
+      // eslint-disable-next-line no-var
       var address = isEthereum ? seed : encodeAnyAddress(seed)
     } catch (err) {
       address = seed

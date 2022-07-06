@@ -33,7 +33,7 @@ const talismanProperties = {
   testBuild: DEBUG || process.env.BUILD === "qa",
 }
 
-export const initPosthog = (allowTracking: boolean = false) => {
+export const initPosthog = (allowTracking = false) => {
   if (process.env.POSTHOG_AUTH_TOKEN) {
     posthog.init(process.env.POSTHOG_AUTH_TOKEN, {
       api_host: "https://app.posthog.com",

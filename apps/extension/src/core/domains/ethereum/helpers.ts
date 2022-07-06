@@ -9,7 +9,7 @@ import {
 import { bufferToU8a } from "@polkadot/util"
 import { isHexString } from "ethers/lib/utils"
 
-export const getEthDerivationPath = (index: number = 0) => `/m/44'/60'/0'/0/${index}`
+export const getEthDerivationPath = (index = 0) => `/m/44'/60'/0'/0/${index}`
 
 export const encodeTypedData = <T extends MessageTypes>(
   typedData: TypedMessage<T>,

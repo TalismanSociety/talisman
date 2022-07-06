@@ -60,6 +60,7 @@ type UnsignedTxWithGas = Omit<TransactionRequest, "gasLimit"> & { gas: string }
 
 const txRequestToUnsignedTx = (tx: TransactionRequest | UnsignedTxWithGas): UnsignedTransaction => {
   // we're using EIP1559 so gasPrice must be removed
+  // eslint-disable-next-line prefer-const
   let { from, gasPrice, ...unsignedTx } = tx
   if ("gas" in unsignedTx) {
     const { gas, ...rest1 } = unsignedTx as UnsignedTxWithGas
@@ -105,6 +106,7 @@ export class EthHandler extends ExtensionHandler {
 
       const serialisedTx = serializeTransaction(goodTx)
       try {
+        // eslint-disable-next-line no-var
         var pair = getUnlockedPairFromAddress(queued.account.address)
       } catch (error) {
         this.stores.password.clearPassword()
@@ -148,6 +150,7 @@ export class EthHandler extends ExtensionHandler {
       const { method, request, reject, resolve } = queued
 
       try {
+        // eslint-disable-next-line no-var
         var pair = getUnlockedPairFromAddress(queued.account.address)
       } catch (error) {
         this.stores.password.clearPassword()
@@ -344,7 +347,7 @@ export class EthHandler extends ExtensionHandler {
           port
         )
 
-      case "pri(eth.watchasset.requests.subscribe.byid)":
+      case "pri(eth.watchasset.requests.subscribe.byid)": {
         const cb = createSubscription<"pri(eth.watchasset.requests.subscribe.byid)">(id, port)
         const subscription = this.state.requestStores.evmAssets.observable.subscribe(
           (reqs: WatchAssetRequest[]) => {
@@ -358,6 +361,7 @@ export class EthHandler extends ExtensionHandler {
           subscription.unsubscribe()
         })
         return true
+      }
 
       // --------------------------------------------------------------------
       // ethereum network handlers ------------------------------------------
@@ -416,9 +420,10 @@ export class EthHandler extends ExtensionHandler {
         return true
       }
 
-      case "pri(eth.request)":
+      case "pri(eth.request)": {
         const { chainId: ethChainId, ...rest } = request as AnyEthRequestChainId
         return this.ethRequest(id, ethChainId, rest) as any
+      }
     }
     throw new Error(`Unable to handle message of type ${type}`)
   }

@@ -81,7 +81,7 @@ const ConfirmRemove = ({
 }
 
 export const CustomTokenDetails = () => {
-  let { id } = useParams<"id">()
+  const { id } = useParams<"id">()
   const { isOpen, open, close } = useOpenClose()
   const navigate = useNavigate()
 

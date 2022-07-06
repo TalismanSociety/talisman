@@ -1,8 +1,9 @@
 // @ts-nocheck
-import { createContext, useContext, useState, useEffect, useReducer } from "react"
-import md5 from "md5"
 import find from "lodash/find"
 import sortBy from "lodash/sortBy"
+import { nanoid } from "nanoid"
+import { createContext, useContext, useEffect, useReducer, useState } from "react"
+
 import Container from "./Container"
 
 // notification defaults
@@ -26,7 +27,7 @@ const buildTypes = (id: string, dispatch: any) => {
     id: string,
     fields: object,
     dispatch: any,
-    type: string = "add",
+    type = "add",
     createdAt: any,
     notificationType: string
   ) => {
@@ -46,8 +47,8 @@ const buildTypes = (id: string, dispatch: any) => {
   }
 
   const _createdAt = Date.now()
-  const _id = id || md5(_createdAt + Math.floor(Math.random() * (100000 - 1 + 1) + 1))
-  const _type = !!id ? "update" : "add"
+  const _id = id || nanoid()
+  const _type = id ? "update" : "add"
 
   return {
     singleton: (props: any) => update(_id, props, dispatch, _type, _createdAt, "SINGLETON"),
@@ -106,10 +107,10 @@ const createNotification = (props: any) => {
     ...updaters,
   }
 
-  if (!!props?.fields?.title) notification.title = props?.fields?.title
-  if (!!props?.fields?.subtitle) notification.subtitle = props?.fields?.subtitle
-  if (!!props?.fields?.nav) notification.nav = props?.fields?.nav
-  if (!!props?.notificationType) notification.type = props?.notificationType
+  if (props?.fields?.title) notification.title = props?.fields?.title
+  if (props?.fields?.subtitle) notification.subtitle = props?.fields?.subtitle
+  if (props?.fields?.nav) notification.nav = props?.fields?.nav
+  if (props?.notificationType) notification.type = props?.notificationType
 
   return notification
 }
@@ -131,10 +132,10 @@ const updateNotification = (current, props) => {
           ),
   }
 
-  if (!!props?.fields?.title) notification.title = props?.fields?.title
-  if (!!props?.fields?.subtitle) notification.subtitle = props?.fields?.subtitle
-  if (!!props?.fields?.nav) notification.nav = props?.fields?.nav
-  if (!!props?.notificationType) notification.type = props?.notificationType
+  if (props?.fields?.title) notification.title = props?.fields?.title
+  if (props?.fields?.subtitle) notification.subtitle = props?.fields?.subtitle
+  if (props?.fields?.nav) notification.nav = props?.fields?.nav
+  if (props?.notificationType) notification.type = props?.notificationType
 
   return notification
 }

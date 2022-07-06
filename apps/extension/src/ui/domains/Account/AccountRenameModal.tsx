@@ -26,7 +26,7 @@ export const AccountRenameModal = () => {
   return (
     <Modal open={Boolean(address)}>
       <ModalDialog title="Rename account" onClose={close}>
-        <AccountRename address={address!} onConfirm={close} onCancel={close} />
+        {address ? <AccountRename address={address} onConfirm={close} onCancel={close} /> : null}
       </ModalDialog>
     </Modal>
   )

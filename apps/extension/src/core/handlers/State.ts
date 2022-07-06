@@ -56,7 +56,7 @@ export default class State {
         })
       }
     ),
-    networks: new EthereumNetworksRequestsStore((req) => this.popupOpen()),
+    networks: new EthereumNetworksRequestsStore(() => this.popupOpen()),
     evmAssets: new EvmWatchAssetRequestsStore((req) =>
       this.popupOpen(req && `?customAsset=${req.id}`)
     ),
@@ -90,7 +90,7 @@ export default class State {
   private async popupOpen(argument?: string) {
     const currWindow = await Browser.windows.getLastFocused()
 
-    let { left, top } = {
+    const { left, top } = {
       top: 100 + (currWindow?.top ?? 0),
       left:
         (currWindow?.width ? (currWindow.left ?? 0) + currWindow.width : window.screen.availWidth) -

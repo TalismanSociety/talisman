@@ -26,7 +26,8 @@ export const AccountRemoveModal = () => {
   const { address, close } = useAccountRemoveModal()
 
   const handleConfirm = useCallback(async () => {
-    await api.accountForget(address!)
+    if (!address) return
+    await api.accountForget(address)
     close()
   }, [address, close])
 

@@ -4,7 +4,7 @@ import styled from "styled-components"
 import Link, { ILinkProps } from "./Link"
 
 interface IButtonGroupProps {
-  column?: Boolean
+  column?: boolean
   className?: string
   children?: ReactNode
 }
