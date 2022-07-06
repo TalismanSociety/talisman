@@ -53,9 +53,10 @@ export const useBalancesByParams = (addressesByChain: AddressesByChain) => {
             return subject.next(subject.value.remove(update.balances))
           }
 
-          default:
+          default: {
             const exhaustiveCheck: never = update
             throw new Error(`Unhandled BalancesUpdate type: ${exhaustiveCheck}`)
+          }
         }
       }),
     [addressesByChain]

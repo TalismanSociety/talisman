@@ -21,7 +21,7 @@ const FileDrop = ({ value, accept, hint, onChange, fieldProps, ...rest }: IProps
   }
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop, accept, maxFiles: 1 })
 
-  const inactiveDragLabel = !!value ? "Replace file" : "Choose file"
+  const inactiveDragLabel = value ? "Replace file" : "Choose file"
 
   return (
     <div {...getRootProps()}>

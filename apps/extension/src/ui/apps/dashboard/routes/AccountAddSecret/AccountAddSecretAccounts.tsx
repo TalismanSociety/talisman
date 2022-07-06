@@ -47,7 +47,7 @@ export const AccountAddSecretAccounts = () => {
   const notification = useNotification()
 
   const name = useMemo(
-    () => data.name ?? (data.type! === "ethereum" ? "Ethereum Account" : "Polkadot Account"),
+    () => data.name ?? (data.type === "ethereum" ? "Ethereum Account" : "Polkadot Account"),
     [data.name, data.type]
   )
 
@@ -106,11 +106,13 @@ export const AccountAddSecretAccounts = () => {
   )
 
   useEffect(() => {
-    if (!data.type) return navigate("")
-    if (!data.mnemonic) return navigate("mnemonic")
+    if (!data.mnemonic || !data.type) return navigate("")
   }, [data.mnemonic, data.type, navigate])
 
   const accounts = watch("accounts")
+
+  // invalid state, useEffect above will redirect to previous form
+  if (!data.mnemonic || !data.type) return null
 
   return (
     <Container withBack centered>
@@ -123,8 +125,8 @@ export const AccountAddSecretAccounts = () => {
           <Spacer />
           <DerivedAccountPicker
             name={name}
-            mnemonic={data.mnemonic!}
-            type={data.type!}
+            mnemonic={data.mnemonic}
+            type={data.type}
             onChange={handleAccountsChange}
           />
         </div>

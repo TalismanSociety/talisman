@@ -47,7 +47,10 @@ export const ConnectedAccountsPill: FC = () => {
   const currentSite = useCurrentSite()
   const accounts = useAccounts()
   const authorisedSites = useAuthorisedSites()
-  const site = authorisedSites[currentSite?.id!]
+  const site = useMemo(
+    () => (currentSite?.id ? authorisedSites[currentSite?.id] : null),
+    [authorisedSites, currentSite?.id]
+  )
 
   const [showConnectedAccounts, setShowConnectedAccounts] = useState(false)
 

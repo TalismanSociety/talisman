@@ -1,6 +1,6 @@
 import type { MetadataDef } from "@polkadot/extension-inject/types"
 
-let metadataInit: MetadataDef[] = [
+const metadataInit: MetadataDef[] = [
   {
     chain: "Polkadot",
     chainType: "substrate",

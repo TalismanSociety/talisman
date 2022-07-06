@@ -9,7 +9,7 @@ import gql from "graphql-tag"
 const minimumHydrationInterval = 43_200_000 // 43_200_000ms = 43_200s = 720m = 12 hours
 
 export class EvmNetworkStore {
-  #lastHydratedAt: number = 0
+  #lastHydratedAt = 0
 
   async clearCustom(): Promise<void> {
     db.transaction("rw", db.evmNetworks, () => {
@@ -86,7 +86,7 @@ export const ethereumNetworkToProvider = (
       // )
       new ethers.providers.JsonRpcBatchProvider(
         ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) => url)[0],
-        { name: ethereumNetwork.name!, chainId: ethereumNetwork.id }
+        { name: ethereumNetwork.name ?? "unknown network", chainId: ethereumNetwork.id }
       )
     : null
 

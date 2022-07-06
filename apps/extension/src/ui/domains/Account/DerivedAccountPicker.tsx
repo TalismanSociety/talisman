@@ -279,7 +279,7 @@ const useDerivedAccounts = (
     return testChains.reduce(
       (prev, curr) => ({
         ...prev,
-        [curr.id]: derivedAccounts.map((account) => convertAddress(account.address, curr.prefix))!,
+        [curr.id]: derivedAccounts.map((account) => convertAddress(account.address, curr.prefix)),
       }),
       {} as AddressesByChain
     )

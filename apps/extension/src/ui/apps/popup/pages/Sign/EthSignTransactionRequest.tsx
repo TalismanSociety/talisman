@@ -164,11 +164,11 @@ export const EthSignTransactionRequest = () => {
     <SignContainer>
       <Header text={<AppPill url={url} />}></Header>
       <Content>
-        {account && request && network && (
+        {account && request && request.value && network && (
           <>
             <div className="sign-summary">
               {requestType === "txWithValue" && (
-                <SignTxWithValue network={network} account={account} value={request.value!} />
+                <SignTxWithValue network={network} account={account} value={request.value} />
               )}
               {requestType === "txWithoutValue" && (
                 <SignTxWithoutValue network={network} account={account} />

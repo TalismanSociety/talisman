@@ -25,6 +25,7 @@ const DEFAULT_VALUE = {
   onboarded: FALSE,
   hideBraveWarning: false,
   hasBraveWarningBeenShown: false,
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
 }
 
@@ -41,9 +42,7 @@ export class AppStore extends SubscribableStorageProvider<
     // One time migration to using this store instead of storing directly in local storage from State
     Browser.storage.local.get("talismanOnboarded").then((result) => {
       const legacyOnboarded =
-        result &&
-        (result as Object).hasOwnProperty("talismanOnboarded") &&
-        result.talismanOnboarded === TRUE
+        result && "talismanOnboarded" in result && result.talismanOnboarded === TRUE
 
       if (legacyOnboarded) {
         this.set({ onboarded: TRUE })

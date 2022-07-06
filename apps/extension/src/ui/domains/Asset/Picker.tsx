@@ -141,7 +141,12 @@ const Asset: FC<{ tokenId?: TokenId; chainsMap?: ChainList; withChainName?: bool
   withChainName = false,
 }) => {
   const token = useToken(tokenId)
-  const chain = useChain(token?.chain?.id) || (chainsMap && chainsMap[token?.chain?.id!])
+  const chain = useChain(token?.chain?.id)
+
+  const effectiveChain = useMemo(() => {
+    if (!chain && chainsMap && token?.chain?.id) return chainsMap[token?.chain?.id]
+    return chain
+  }, [chain, chainsMap, token?.chain?.id])
 
   return (
     <span className={classNames("asset", withChainName && "asset-with-chain")}>
@@ -150,7 +155,9 @@ const Asset: FC<{ tokenId?: TokenId; chainsMap?: ChainList; withChainName?: bool
       </span>
       <span className={"asset-main"}>
         <span className="token">{token?.symbol}</span>
-        {withChainName && <span className="chain">{chain?.name || <span>&nbsp;</span>}</span>}
+        {withChainName && (
+          <span className="chain">{effectiveChain?.name || <span>&nbsp;</span>}</span>
+        )}
       </span>
     </span>
   )

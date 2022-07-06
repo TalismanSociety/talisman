@@ -81,7 +81,7 @@ const SendLedgerApproval = () => {
     if (error)
       return {
         refresh,
-        ...formatLedgerSigningError(error, network!),
+        ...formatLedgerSigningError(error, network ?? undefined),
       }
 
     if (signed)

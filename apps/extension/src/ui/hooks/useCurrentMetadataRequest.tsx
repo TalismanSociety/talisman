@@ -29,7 +29,7 @@ const useCurrentMetadataRequest = ({
   })
 
   useEffect(() => {
-    if (!!metaDataRequests[0]) {
+    if (metaDataRequests[0]) {
       setCurrentRequest(metaDataRequests[0])
       setStatus.initialized()
     } else {

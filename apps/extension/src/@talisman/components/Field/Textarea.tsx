@@ -1,14 +1,9 @@
 // @ts-nocheck
 import styled from "styled-components"
+
 import Field, { IFieldProps, fieldDefaultProps } from "./Field"
 
-interface IProps extends IFieldProps {}
-
-const defaultProps: IProps = {
-  ...fieldDefaultProps,
-}
-
-const Textarea = ({ value, onChange, fieldProps, ...rest }: IProps) => (
+const Textarea = ({ value, onChange, fieldProps, ...rest }: IFieldProps) => (
   <Field {...rest}>
     <textarea
       type="textarea"
@@ -28,6 +23,6 @@ const StyledTextarea = styled(Textarea)`
   }
 `
 
-StyledTextarea.defaultProps = defaultProps
+StyledTextarea.defaultProps = fieldDefaultProps
 
 export default StyledTextarea

@@ -14,7 +14,7 @@ export default styled(Spacer)`
   height: 0;
   position: relative;
 
-  padding: ${({ large, small }) => (!!large ? "2vw" : !!small ? "0.5vw" : "1.3vw")} 0;
+  padding: ${({ large, small }) => (large ? "2vw" : small ? "0.5vw" : "1.3vw")} 0;
 
   ${({ line, theme }) =>
     !!line &&

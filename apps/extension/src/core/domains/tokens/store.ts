@@ -8,7 +8,7 @@ import gql from "graphql-tag"
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
 export class TokenStore {
-  #lastHydratedAt: number = 0
+  #lastHydratedAt = 0
 
   async clearCustom(): Promise<void> {
     await db.transaction("rw", db.tokens, () => {
@@ -99,7 +99,7 @@ const tokensResponseToTokenList = (tokens: unknown[]): TokenList =>
       })
 
       switch (tokenType) {
-        case "NativeToken":
+        case "NativeToken": {
           const nativeToken: NativeToken = {
             ...commonTokenFields(token, tokenType),
             existentialDeposit: token.squidImplementationDetail.existentialDeposit,
@@ -107,8 +107,9 @@ const tokensResponseToTokenList = (tokens: unknown[]): TokenList =>
             evmNetwork: token.squidImplementationDetailNativeToEvmNetworks[0],
           }
           return { ...allTokens, [nativeToken.id]: nativeToken }
+        }
 
-        case "OrmlToken":
+        case "OrmlToken": {
           const ormlToken: OrmlToken = {
             ...commonTokenFields(token, tokenType),
             existentialDeposit: token.squidImplementationDetail.existentialDeposit,
@@ -116,8 +117,9 @@ const tokensResponseToTokenList = (tokens: unknown[]): TokenList =>
             chain: token.squidImplementationDetail.chain,
           }
           return { ...allTokens, [ormlToken.id]: ormlToken }
+        }
 
-        case "Erc20Token":
+        case "Erc20Token": {
           const erc20Token: Erc20Token = {
             ...commonTokenFields(token, tokenType),
             contractAddress: token.squidImplementationDetail.contractAddress,
@@ -125,6 +127,7 @@ const tokensResponseToTokenList = (tokens: unknown[]): TokenList =>
             evmNetwork: token.squidImplementationDetail.evmNetwork,
           }
           return { ...allTokens, [erc20Token.id]: erc20Token }
+        }
 
         default:
           return allTokens
