@@ -3,14 +3,15 @@ import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHist
 import { getTransactionFeeParams } from "@talisman/util/getTransactionFeeParams"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEthereumProvider } from "@ui/hooks/useEthereumProvider"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useSigningRequestById from "@ui/hooks/useSigningRequestById"
 import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
+
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
-const useEthSignRequestProvider = ({ id }: { id: string }) => {
+const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
   const signingRequest = useSigningRequestById(id) as EthSignAndSendRequest | undefined
   const network = useEvmNetwork(signingRequest?.ethChainId)
   const provider = useEthereumProvider(signingRequest?.ethChainId)
@@ -147,4 +148,6 @@ const useEthSignRequestProvider = ({ id }: { id: string }) => {
   }
 }
 
-export const [EthSignRequestProvider, useEthSignRequest] = provideContext(useEthSignRequestProvider)
+export const [EthSignTransactionRequestProvider, useEthSignTransactionRequest] = provideContext(
+  useEthSignTransactionRequestProvider
+)

@@ -23,18 +23,14 @@ import {
   WatchAssetRequest,
 } from "@core/types"
 import type { TransactionRequest } from "@ethersproject/providers"
+import { SignTypedDataVersion } from "@metamask/eth-sig-util"
 import { assert, u8aToHex } from "@polkadot/util"
 import { BigNumber, ethers } from "ethers"
-import type { Bytes, UnsignedTransaction } from "ethers"
-import {
-  concat,
-  formatUnits,
-  parseUnits,
-  serializeTransaction,
-  toUtf8Bytes,
-} from "ethers/lib/utils"
+import type { UnsignedTransaction } from "ethers"
+import { formatUnits, parseUnits, serializeTransaction } from "ethers/lib/utils"
 import isString from "lodash/isString"
 
+import { encodeTextData, encodeTypedData, legacyToBuffer } from "./helpers"
 import { getProviderForEvmNetworkId } from "./networksStore"
 
 // turns errors into short and human readable message.
@@ -58,12 +54,6 @@ const getHumanReadableErrorMessage = (error: unknown) => {
 
   // let the catch block decide what to display
   return undefined
-}
-
-const messagePrefix = "\x19Ethereum Signed Message:\n"
-const addSafeSigningPrefix = (message: string | Bytes) => {
-  if (typeof message === "string") message = toUtf8Bytes(message)
-  return concat([toUtf8Bytes(messagePrefix), toUtf8Bytes(String(message.length)), message])
 }
 
 type UnsignedTxWithGas = Omit<TransactionRequest, "gasLimit"> & { gas: string }
@@ -155,7 +145,7 @@ export class EthHandler extends ExtensionHandler {
 
       assert(queued, "Unable to find request")
 
-      const { request, reject, resolve } = queued
+      const { method, request, reject, resolve } = queued
 
       try {
         var pair = getUnlockedPairFromAddress(queued.account.address)
@@ -167,11 +157,23 @@ export class EthHandler extends ExtensionHandler {
         return false
       }
 
-      const signature = await pair.sign(addSafeSigningPrefix(request))
+      let messageToSign: Uint8Array
+      if (method === "personal_sign") {
+        messageToSign = encodeTextData(legacyToBuffer(request as string), true)
+      } else if (method === "eth_signTypedData_v3") {
+        messageToSign = encodeTypedData(JSON.parse(request as string), SignTypedDataVersion.V3)
+      } else if (method === "eth_signTypedData_v4") {
+        messageToSign = encodeTypedData(JSON.parse(request as string), SignTypedDataVersion.V4)
+      } else {
+        throw new Error(`Unsupported method : ${method}`)
+      }
+
+      const signature = await pair.sign(messageToSign)
       resolve(u8aToHex(signature))
 
       talismanAnalytics.captureDelayed("sign transaction approve", {
         type: "evm sign",
+        method,
         dapp: queued.url,
         chain: queued.ethChainId,
       })
