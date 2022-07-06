@@ -1,5 +1,6 @@
 import EventEmitter from "events"
 
+import { DEBUG } from "@core/constants"
 import { SendRequest } from "@core/types"
 
 import {
@@ -29,11 +30,11 @@ interface JsonRpcResponse {
 
 type JsonRpcCallback = (error: Error | null, response: JsonRpcResponse | null) => unknown
 
-// save access to console methods in case dapps replaces them
+// save access to console methods in case dapps replaces them (ex : opensea)
 // eslint-disable-next-line no-console
-const safeDebug = console.debug
+const safeConsoleDebug = DEBUG ? console.debug : () => {}
 // eslint-disable-next-line no-console
-const safeError = console.error
+const safeConsoleError = DEBUG ? console.error : () => {}
 
 export class TalismanEthProvider extends EventEmitter implements EthProvider {
   // some libraries (@web3-onboard & wagmi at least) will look for this if we attempt to override window.ethereum
@@ -69,13 +70,13 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
 
   isConnected(): boolean {
     // eslint-disable-next-line no-console
-    safeDebug("TalismanEthProvider : isConnected")
+    safeConsoleDebug("TalismanEthProvider : isConnected()", this._initialized)
     return this._initialized
   }
 
   public enable() {
     // eslint-disable-next-line no-console
-    safeDebug("[talismanEth.enable] : initialized = %s", this._initialized)
+    safeConsoleDebug("[talismanEth.enable] : (initialized = %s)", this._initialized)
     // some frameworks such as web3modal requires this method to exist
     return this.request({ method: "eth_requestAccounts", params: null })
   }
@@ -84,14 +85,14 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
   // maybe initialize only on first request() call ? on first eth_requestAccounts ?
   private async initialize(): Promise<void> {
     // eslint-disable-next-line no-console
-    safeDebug("TalismanEthProvider : pub(eth.subscribe)")
+    safeConsoleDebug("TalismanEthProvider : pub(eth.subscribe)")
 
     // this subscribes to backend's provider events :
     // - all client subscriptions (https://eips.ethereum.org/EIPS/eip-758)
     // - all provider status notifications  (https://eips.ethereum.org/EIPS/eip-1193)
     await this._sendRequest("pub(eth.subscribe)", null, (result) => {
       // eslint-disable-next-line no-console
-      safeDebug("pub(eth.subscribe) callback : %s", result.type, result)
+      safeConsoleDebug("pub(eth.subscribe) callback : %s", result.type, result)
 
       switch (result.type) {
         // EIP1193
@@ -111,7 +112,7 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
 
   async sendAsync(payload: JsonRpcRequest, callback: JsonRpcCallback) {
     // eslint-disable-next-line no-console
-    safeDebug("[talismanEth.sendAsync]", payload)
+    safeConsoleDebug("[talismanEth.sendAsync]", payload)
 
     const { method, params, ...rest } = payload
     try {
@@ -122,7 +123,7 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
       callback(null, { ...rest, method, result })
     } catch (err) {
       const error = err as Error
-      safeError("ERROR sendAsync", error)
+      safeConsoleError("ERROR sendAsync", error)
       callback(error, { ...rest, method, error })
     }
   }
@@ -130,7 +131,7 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
   // deprecated, support attempt
   async send(methodOrPayload: any, paramsOrCallback: any) {
     // eslint-disable-next-line no-console
-    safeDebug("[talismanEth.send]", { methodOrPayload, paramsOrCallback })
+    safeConsoleDebug("[talismanEth.send]", { methodOrPayload, paramsOrCallback })
     if (typeof methodOrPayload === "string")
       return this.request({
         method: methodOrPayload as keyof EthRequestSignatures,
@@ -146,26 +147,30 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
   ): Promise<EthResponseType<TEthMessageType>> {
     try {
       // eslint-disable-next-line no-console
-      safeDebug("[talismanEth.request] request %s", args.method, args.params)
+      safeConsoleDebug("[talismanEth.request] request %s", args.method, args.params)
       if (!this._initialized) {
         this._initialized = true
         await this.initialize()
       }
       const result = await this._sendRequest("pub(eth.request)", args)
       // eslint-disable-next-line no-console
-      safeDebug("[talismanEth.request] result for %s", args.method, result)
+      safeConsoleDebug("[talismanEth.request] result for %s", args.method, result)
       return result
     } catch (err) {
       // eslint-disable-next-line no-console
-      safeError(err)
+      safeConsoleError(err)
       if (err instanceof EthProviderRpcError) {
         const { code, message, name } = err
         // eslint-disable-next-line no-console
-        safeDebug("[talismanEth.request] RPC error on %s", args.method, { code, message, name })
+        safeConsoleDebug("[talismanEth.request] RPC error on %s", args.method, {
+          code,
+          message,
+          name,
+        })
         throw err
       }
       // eslint-disable-next-line no-console
-      safeDebug("[talismanEth.request] error on %s", args.method, err)
+      safeConsoleDebug("[talismanEth.request] error on %s", args.method, err)
 
       throw new EthProviderRpcError((err as Error).message, ETH_ERROR_EIP1474_INTERNAL_ERROR)
     }

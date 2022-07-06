@@ -45,25 +45,25 @@ const enable = async (origin: string): Promise<Injected> => {
 }
 
 function inject() {
+  // inject substrate wallet provider
   injectExtension(enable, {
     name: "talisman",
     version: process.env.VERSION || "",
   })
 
-  const provider =
-    DEBUG && process.env.EVM_LOGPROXY === "true"
-      ? logProxy(new TalismanEthProvider(messageService.sendMessage))
-      : new TalismanEthProvider(messageService.sendMessage)
+  // inject ethereum wallet provider
+  const provider = new TalismanEthProvider(messageService.sendMessage)
+  const evmInjected = DEBUG && process.env.EVM_LOGPROXY === "true" ? logProxy(provider) : provider
 
   const talismanWindow = window as TalismanWindow
-  talismanWindow.talismanEth = provider
+  talismanWindow.talismanEth = evmInjected
 
   // inject on window.ethereum if it is not defined
-  // this allows users to disable metamask and test talisman easily without doing any changes on dapps
+  // this allows users to just disable metamask to use Talisman instead
   if (typeof talismanWindow.ethereum === "undefined") {
     // eslint-disable-next-line no-console
     console.debug("Injecting talismanEth in window.ethereum")
-    talismanWindow.ethereum = provider
+    talismanWindow.ethereum = evmInjected
   }
 }
 
