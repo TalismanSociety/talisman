@@ -3,14 +3,16 @@
 
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
-
-import MessageService from "./libs/MessageService"
-import { injectExtension } from "./inject/injectExtension"
-import TalismanInjected from "./inject/Injected"
-import { Injected } from "./inject/types"
 import * as Sentry from "@sentry/browser"
+
+import { DEBUG } from "./constants"
+import TalismanInjected from "./inject/Injected"
+import { injectExtension } from "./inject/injectExtension"
+import { Injected } from "./inject/types"
 import { TalismanEthProvider } from "./injectEth/TalismanEthProvider"
 import { TalismanWindow } from "./injectEth/types"
+import MessageService from "./libs/MessageService"
+import { logProxy } from "./log/logProxy"
 
 const messageService = new MessageService({
   origin: "talisman-page",
@@ -48,7 +50,10 @@ function inject() {
     version: process.env.VERSION || "",
   })
 
-  const provider = new TalismanEthProvider(messageService.sendMessage)
+  const provider =
+    DEBUG && process.env.EVM_LOGPROXY === "true"
+      ? logProxy(new TalismanEthProvider(messageService.sendMessage))
+      : new TalismanEthProvider(messageService.sendMessage)
 
   const talismanWindow = window as TalismanWindow
   talismanWindow.talismanEth = provider
