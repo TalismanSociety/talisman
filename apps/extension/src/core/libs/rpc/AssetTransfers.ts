@@ -55,6 +55,12 @@ export default class AssetTransfersRpc {
       true
     )
 
+    callback(null, {
+      nonce: tx.nonce.toString(),
+      hash: tx.hash.toString(),
+      status: registry.createType<ExtrinsicStatus>("ExtrinsicStatus", { future: true }),
+    })
+
     const unsubscribe = await RpcFactory.subscribe(
       chainId,
       "author_submitAndWatchExtrinsic",
@@ -70,7 +76,6 @@ export default class AssetTransfersRpc {
 
         const status = registry.createType<ExtrinsicStatus>("ExtrinsicStatus", result)
         callback(null, { nonce: tx.nonce.toString(), hash: tx.hash.toString(), status })
-
         if (status.isFinalized) unsubscribe()
       }
     )

@@ -47,9 +47,15 @@ export default class AssetTransferHandler extends ExtensionHandler {
       let blockNumber: string | undefined = undefined
       let extrinsicIndex: number | undefined = undefined
       let extrinsicResult: TransactionStatus | undefined = undefined
-      if (status.isFinalized) {
+      if (status && (status.isInBlock || status.isFinalized)) {
         // get tx block and events
-        const blockHash = status.asFinalized.toString()
+        const blockHash = status.isFinalized
+          ? status.asFinalized.toString()
+          : status.isInBlock
+          ? status.asInBlock.toString()
+          : false
+        if (blockHash === false) return
+
         const [block, events] = await Promise.all([
           BlocksRpc.block(chainId, blockHash),
           EventsRpc.events(chainId, blockHash),
