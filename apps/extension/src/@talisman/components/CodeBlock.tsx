@@ -1,10 +1,11 @@
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
+import hljs from "highlight.js/lib/core"
+import json from "highlight.js/lib/languages/json"
+import yaml from "highlight.js/lib/languages/yaml"
+import htmlParser from "html-react-parser"
 import { useMemo } from "react"
 import styled from "styled-components"
-import htmlParser from "html-react-parser"
-import hljs from "highlight.js/lib/core"
-import yaml from "highlight.js/lib/languages/yaml"
-import json from "highlight.js/lib/languages/json"
 
 // only support yaml and json, prevents importing all languages which makes the bundle size huge
 hljs.registerLanguage("yaml", yaml)
@@ -26,6 +27,7 @@ const Container = styled.div`
     background: var(--color-background-muted-3x);
     padding: 1.6rem;
     color: var(--color-mid);
+    margin-bottom: 0.3rem;
 
     .hljs-string,
     .hljs-number {
@@ -36,6 +38,8 @@ const Container = styled.div`
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
         "Courier New", monospace;
     }
+
+    ${scrollbarsStyle("var(--color-background-muted)")}
   }
 `
 

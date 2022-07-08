@@ -1,6 +1,7 @@
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
 import useToken from "@ui/hooks/useToken"
 import { BigNumberish } from "ethers"
@@ -25,6 +26,7 @@ const ViewDetailsContainer = styled.div`
   .grow {
     flex-grow: 1;
     overflow-y: auto;
+    ${scrollbarsStyle()}
   }
 
   color: var(--color-foreground-muted-2x);
@@ -49,7 +51,12 @@ const ViewDetailsContainer = styled.div`
     color: var(--color-status-warning);
   }
 
-  a:hover {
+  a:link,
+  a:visited {
+    color: var(--color-foreground-muted-2x);
+  }
+  a:hover,
+  a:active {
     color: var(--color-foreground);
   }
 `

@@ -1,6 +1,7 @@
-import React, { useState, useEffect, PropsWithChildren } from "react"
-import styled from "styled-components"
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
+import React, { PropsWithChildren, useEffect, useState } from "react"
+import styled from "styled-components"
+
 import { NavigationDrawer } from "../components/Navigation/NavigationDrawer"
 
 export interface IProps extends PropsWithChildren<any> {

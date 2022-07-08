@@ -101,6 +101,15 @@ export const AlertCard = styled(({ className, onLearnMoreClick, onAccept, onReje
   .card-cta > * {
     width: 100%;
   }
+
+  a:link,
+  a:visited {
+    color: var(--color-mid);
+  }
+  a:hover,
+  a:active {
+    color: var(--color-foreground);
+  }
 `
 
 const AnalyticsAlertPopupDrawer = () => {

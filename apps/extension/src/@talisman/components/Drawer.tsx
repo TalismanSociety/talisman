@@ -43,8 +43,7 @@ const Container = styled.div`
     position: absolute;
     max-width: 100%;
     max-height: 100%;
-    overflow: scroll;
-    scrollbar-width: none;
+    overflow: hidden;
     transition: transform var(--transition-speed-slow) ease-in-out;
   }
 

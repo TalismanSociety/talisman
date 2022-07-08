@@ -1,3 +1,4 @@
+import { noScrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
 import { useEffect, useRef, useState } from "react"
 import styled from "styled-components"
@@ -5,12 +6,15 @@ import styled from "styled-components"
 const Container = styled.section`
   position: relative;
   overflow: auto;
+
   > div {
     overflow: hidden;
     overflow-y: auto;
     height: 100%;
     display: block;
     width: 100%;
+
+    ${noScrollbarsStyle}
   }
 
   &:before,

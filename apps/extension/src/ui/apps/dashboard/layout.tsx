@@ -129,7 +129,7 @@ const Layout: FC<LayoutProps> = ({ withBack, children, className }) => (
   <main className={className}>
     <aside>
       <BrandLogo />
-      <div className="scrollable">
+      <div className="scrollable hide-scrollbars">
         <div className="top">
           <Nav column>
             <NavItem to="/accounts" icon={<IconUser />} end>
@@ -151,7 +151,7 @@ const Layout: FC<LayoutProps> = ({ withBack, children, className }) => (
         </div>
       </div>
     </aside>
-    <article>
+    <article className="scrollbars">
       <div className="children">
         {!!withBack && <StyledBackButton />}
         {children}
