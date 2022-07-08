@@ -6,6 +6,10 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "build:extension:ci": {
+      "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN"],
+      "outputs": ["dist/**"]
+    },
     "build:extension:prod": {
       "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN"],
       "outputs": ["dist/**"]

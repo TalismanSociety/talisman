@@ -137,6 +137,7 @@
     "start": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch",
     "dev": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch",
     "build": "rm -rf dist && BUILD=qa && webpack --config webpack/webpack.prod.js",
+    "build:extension:ci": "rm -rf dist && BUILD=ci webpack --config webpack/webpack.prod.js",
     "build:extension:canary": "rm -rf dist && BUILD=canary webpack --config webpack/webpack.prod.js",
     "build:extension:prod": "rm -rf dist && BUILD=production webpack --config webpack/webpack.prod.js",
     "test": "jest",
