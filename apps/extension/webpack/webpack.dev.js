@@ -7,6 +7,8 @@ const CopyPlugin = require("copy-webpack-plugin")
 const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
 const CircularDependencyPlugin = require("circular-dependency-plugin")
 
+const manifestPath = path.join(__dirname, "..", "public", "manifest.json")
+
 module.exports = merge(common, {
   devtool: "eval-cheap-module-source-map",
   mode: "development",
@@ -18,9 +20,9 @@ module.exports = merge(common, {
           to: distDir,
           context: "public",
           // overwrite non-transformed manifest.json
-          force: true,
+          // force: true,
           // copied last to overwrite the `dist/manifest.json` copied by the `from "."` pattern
-          priority: 10,
+          // priority: 10,
           transform(content) {
             // Parse the manifest
             const manifest = JSON.parse(content.toString())
@@ -32,7 +34,12 @@ module.exports = merge(common, {
             return JSON.stringify(manifest, null, 2)
           },
         },
-        { from: ".", to: distDir, context: "public" },
+        {
+          from: ".",
+          to: distDir,
+          context: "public",
+          filter: (filepath) => filepath !== manifestPath,
+        },
       ],
     }),
     new ExtensionReloader({
