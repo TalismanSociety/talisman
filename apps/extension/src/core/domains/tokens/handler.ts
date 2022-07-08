@@ -62,7 +62,7 @@ export default class TokensHandler extends ExtensionHandler {
           type: "erc20",
           isTestnet: (chain || evmNetwork)?.isTestnet || false,
           symbol,
-          decimals,
+          decimals: Number(decimals), // some dapps (ie moonriver.moonscan.io) may send a string here, which breaks balances
           coingeckoId,
           contractAddress,
           chain: token.chainId ? { id: token.chainId } : undefined,

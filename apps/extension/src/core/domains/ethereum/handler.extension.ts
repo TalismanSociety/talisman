@@ -31,6 +31,7 @@ import isString from "lodash/isString"
 
 import { encodeTextData, encodeTypedData, legacyToBuffer } from "./helpers"
 import { getProviderForEvmNetworkId } from "./networksStore"
+import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -91,7 +92,9 @@ export class EthHandler extends ExtensionHandler {
       const provider = await getProviderForEvmNetworkId(ethChainId)
       assert(provider, "Unable to find provider for chain " + ethChainId)
 
-      const nonce = await provider.getTransactionCount(queued.account.address)
+      // get up to date nonce (accounts for pending transactions)
+      const nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
+
       const maxFeePerGas = parseUnits(strMaxFeePerGas, "wei")
       const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, "wei")
 
@@ -118,6 +121,8 @@ export class EthHandler extends ExtensionHandler {
 
       const serialisedSignedTx = serializeTransaction(goodTx, signature)
       const { chainId, hash } = await provider.sendTransaction(serialisedSignedTx)
+
+      incrementTransactionCount(queued.account.address, queued.ethChainId)
 
       // notify user about transaction progress
       if (await this.stores.settings.get("allowNotifications"))
@@ -283,7 +288,13 @@ export class EthHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
     const { resolve, token } = queued
 
-    await db.tokens.put(token)
+    // some dapps set decimals as a string, which breaks balances
+    const safeToken = {
+      ...token,
+      decimals: Number(token.decimals),
+    }
+
+    await db.tokens.put(safeToken)
     talismanAnalytics.capture("add asset evm", {
       contractAddress: token.contractAddress,
       symbol: token.symbol,
