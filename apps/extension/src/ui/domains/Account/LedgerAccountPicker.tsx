@@ -1,23 +1,25 @@
+import "react-loading-skeleton/dist/skeleton.css"
+
 import { Balance, BalanceFormatter, Token } from "@core/types"
 import { Checkbox } from "@talisman/components/Checkbox"
+import { CheckCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
+import { convertAddress } from "@talisman/util/convertAddress"
+import { api } from "@ui/api"
+import { LedgerAccountDef } from "@ui/apps/dashboard/routes/AccountAddLedger/context"
+import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
+import { LedgerStatus, useLedger } from "@ui/hooks/useLedger"
+import useToken from "@ui/hooks/useToken"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import Skeleton from "react-loading-skeleton"
 import styled from "styled-components"
+
+import Fiat from "../Asset/Fiat"
 import { Tokens } from "../Asset/Tokens"
 import { Address } from "./Address"
 import Avatar from "./Avatar"
-import Skeleton from "react-loading-skeleton"
-import "react-loading-skeleton/dist/skeleton.css"
-import { api } from "@ui/api"
-import useAccounts from "@ui/hooks/useAccounts"
-import { LedgerAccountDef } from "@ui/apps/dashboard/routes/AccountAddLedger/context"
-import { LedgerStatus, useLedger } from "@ui/hooks/useLedger"
 import { LedgerConnectionStatus } from "./LedgerConnectionStatus"
-import { convertAddress } from "@talisman/util/convertAddress"
-import { CheckCircleIcon } from "@talisman/theme/icons"
-import useToken from "@ui/hooks/useToken"
-import Fiat from "../Asset/Fiat"
 
 const Container = styled.div`
   display: flex;
@@ -37,7 +39,7 @@ const Container = styled.div`
     align-items: center;
     text-align: left;
     gap: 1.6rem;
-
+    color: var(--color-foreground-muted);
     :not(:disabled) {
       cursor: pointer;
 

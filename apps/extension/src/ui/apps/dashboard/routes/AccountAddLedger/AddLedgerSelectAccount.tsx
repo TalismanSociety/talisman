@@ -1,15 +1,16 @@
-import { Navigate, useNavigate } from "react-router-dom"
+import { yupResolver } from "@hookform/resolvers/yup"
 import { useNotification } from "@talisman/components/Notification"
-import Layout from "../../layout"
-import * as yup from "yup"
+import { SimpleButton } from "@talisman/components/SimpleButton"
+import Spacer from "@talisman/components/Spacer"
+import { LedgerAccountPicker } from "@ui/domains/Account/LedgerAccountPicker"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { yupResolver } from "@hookform/resolvers/yup"
-import { SimpleButton } from "@talisman/components/SimpleButton"
+import { Navigate, useNavigate } from "react-router-dom"
 import styled from "styled-components"
+import * as yup from "yup"
+
+import Layout from "../../layout"
 import { LedgerAccountDef, useAddLedgerAccount } from "./context"
-import { LedgerAccountPicker } from "@ui/domains/Account/LedgerAccountPicker"
-import Spacer from "@talisman/components/Spacer"
 
 const Container = styled(Layout)`
   ${SimpleButton} {
@@ -106,7 +107,7 @@ export const AddLedgerSelectAccount = () => {
     [setValue]
   )
 
-  if (!data.chainId) return <Navigate to="" replace />
+  if (!data.chainId) return <Navigate to="./" replace />
 
   return (
     <Container withBack centered>
