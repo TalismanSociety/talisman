@@ -1,4 +1,4 @@
-import { noScrollbarsStyle } from "@talisman/theme/styles"
+import { hideScrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
 import { useEffect, useRef, useState } from "react"
 import styled from "styled-components"
@@ -14,7 +14,7 @@ const Container = styled.section`
     display: block;
     width: 100%;
 
-    ${noScrollbarsStyle}
+    ${hideScrollbarsStyle}
   }
 
   &:before,

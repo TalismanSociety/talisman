@@ -12,7 +12,7 @@ export const scrollbarsStyle = (color = "var(--color-background-muted-3x)") => c
 
   scrollbar-color: ${color} transparent;
 `
-export const noScrollbarsStyle = css`
+export const hideScrollbarsStyle = css`
   ::-webkit-scrollbar {
     background-color: transparent;
     width: 0;

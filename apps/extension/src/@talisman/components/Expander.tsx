@@ -1,6 +1,6 @@
 // @ts-nocheck
 import useBoolean from "@talisman/hooks/useBoolean"
-import { noScrollbarsStyle } from "@talisman/theme/styles"
+import { hideScrollbarsStyle } from "@talisman/theme/styles"
 import { ReactNode, useEffect, useState } from "react"
 import styled from "styled-components"
 
@@ -43,7 +43,7 @@ const StyledExpandaContent = styled(ExpandaContent)`
     opacity: 0;
   }
 
-  ${noScrollbarsStyle}
+  ${hideScrollbarsStyle}
 `
 
 const Expanda = ({ title, subtitle, info, className, children }: IProps) => {

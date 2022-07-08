@@ -1,28 +1,30 @@
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  forwardRef,
-  ChangeEventHandler,
-  KeyboardEventHandler,
-  FC,
-  DetailedHTMLProps,
-} from "react"
-import styled from "styled-components"
-import useAccounts from "@ui/hooks/useAccounts"
-import Name from "@ui/domains/Account/Name"
-import Avatar from "@ui/domains/Account/Avatar"
+import { AccountJsonHardware } from "@core/types"
+import { AccountJson } from "@polkadot/extension-base/background/types"
 import Field from "@talisman/components/Field/Field"
 import { ReactComponent as EnterIcon } from "@talisman/theme/icons/corner-down-left.svg"
-import { isValidAddress } from "@talisman/util/isValidAddress"
-import { convertAddress } from "@talisman/util/convertAddress"
-import { Address } from "./Address"
-import { AccountAddressType, getAddressType } from "@talisman/util/getAddressType"
-import Downshift from "downshift"
-import { AccountJson } from "@polkadot/extension-base/background/types"
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
-import { AccountJsonHardware } from "@core/types"
+import { convertAddress } from "@talisman/util/convertAddress"
+import { AccountAddressType, getAddressType } from "@talisman/util/getAddressType"
+import { isValidAddress } from "@talisman/util/isValidAddress"
+import Avatar from "@ui/domains/Account/Avatar"
+import Name from "@ui/domains/Account/Name"
+import useAccounts from "@ui/hooks/useAccounts"
+import Downshift from "downshift"
+import {
+  ChangeEventHandler,
+  DetailedHTMLProps,
+  FC,
+  KeyboardEventHandler,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
+import styled from "styled-components"
+
+import { Address } from "./Address"
 
 const Container = styled.div<{ withAddressInput?: boolean }>`
   // position: relative;
@@ -51,6 +53,8 @@ const Container = styled.div<{ withAddressInput?: boolean }>`
       flex-grow: 1;
       overflow: hidden;
       overflow-y: auto;
+
+      ${scrollbarsStyle()}
 
       ul {
         margin: 0;

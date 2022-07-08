@@ -1,6 +1,6 @@
 import { createGlobalStyle, css } from "styled-components"
 
-import { noScrollbarsStyle, scrollbarsStyle } from "./styles"
+import { hideScrollbarsStyle, scrollbarsStyle } from "./styles"
 
 const Global = createGlobalStyle`
 
@@ -189,7 +189,7 @@ const Global = createGlobalStyle`
   }
 
   .hide-scrollbars {
-    ${noScrollbarsStyle}
+    ${hideScrollbarsStyle}
   }
   
   .flex {

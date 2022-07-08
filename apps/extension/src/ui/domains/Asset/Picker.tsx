@@ -1,17 +1,18 @@
-import { FC, useState, useCallback, useEffect, forwardRef, useMemo } from "react"
-import styled from "styled-components"
-import Downshift from "downshift"
 import { Chain, ChainList, Token, TokenId } from "@core/types"
-import useChains from "@ui/hooks/useChains"
-import { useSortedChains } from "@ui/hooks/useSortedChains"
-import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
-import { useTokens } from "@ui/hooks/useTokens"
-import { useChainsTokens } from "@ui/hooks/useChainsTokens"
-import { useChainsTokensWithBalanceFirst } from "@ui/hooks/useChainsTokensWithBalanceFirst"
-import Logo from "./Logo"
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
 import useChain from "@ui/hooks/useChain"
+import useChains from "@ui/hooks/useChains"
+import { useChainsTokens } from "@ui/hooks/useChainsTokens"
+import { useChainsTokensWithBalanceFirst } from "@ui/hooks/useChainsTokensWithBalanceFirst"
+import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
+import { useSortedChains } from "@ui/hooks/useSortedChains"
 import useToken from "@ui/hooks/useToken"
+import Downshift from "downshift"
+import { FC, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
+import styled from "styled-components"
+
+import Logo from "./Logo"
 
 const Container = styled.div`
   position: relative;
@@ -71,6 +72,8 @@ const Container = styled.div`
     border-radius: 0 0 var(--border-radius) var(--border-radius);
 
     min-width: 100%;
+
+    ${scrollbarsStyle()}
 
     li {
       padding: 0.6rem 1.2rem;
