@@ -1,17 +1,18 @@
-import { useNavigate } from "react-router-dom"
+import { RequestAccountCreateFromSeed } from "@core/types"
+import { yupResolver } from "@hookform/resolvers/yup"
+import HeaderBlock from "@talisman/components/HeaderBlock"
 import { useNotification } from "@talisman/components/Notification"
-import Layout from "../../layout"
-import * as yup from "yup"
+import { SimpleButton } from "@talisman/components/SimpleButton"
+import Spacer from "@talisman/components/Spacer"
+import { DerivedAccountPicker } from "@ui/domains/Account/DerivedAccountPicker"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { yupResolver } from "@hookform/resolvers/yup"
-import { SimpleButton } from "@talisman/components/SimpleButton"
+import { Navigate, useNavigate } from "react-router-dom"
 import styled from "styled-components"
+import * as yup from "yup"
+
+import Layout from "../../layout"
 import { useAccountAddSecret } from "./context"
-import Spacer from "@talisman/components/Spacer"
-import { RequestAccountCreateFromSeed } from "@core/types"
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import { DerivedAccountPicker } from "@ui/domains/Account/DerivedAccountPicker"
 
 const Container = styled(Layout)`
   ${SimpleButton} {
@@ -112,7 +113,7 @@ export const AccountAddSecretAccounts = () => {
   const accounts = watch("accounts")
 
   // invalid state, useEffect above will redirect to previous form
-  if (!data.mnemonic || !data.type) return null
+  if (!data.mnemonic || !data.type) return <Navigate to="/accounts/add/secret" />
 
   return (
     <Container withBack centered>
