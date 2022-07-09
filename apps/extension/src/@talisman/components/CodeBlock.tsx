@@ -39,7 +39,7 @@ const Container = styled.div`
         "Courier New", monospace;
     }
 
-    ${scrollbarsStyle("var(--color-background-muted)")}
+    ${scrollbarsStyle("var(--color-background-muted-2x)")}
   }
 `
 

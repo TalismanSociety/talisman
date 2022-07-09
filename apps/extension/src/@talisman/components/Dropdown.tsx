@@ -76,7 +76,7 @@ const Container = styled.div`
     max-height: 35vh;
     overflow-y: auto;
 
-    ${scrollbarsStyle("var(--color-background-muted)")}
+    ${scrollbarsStyle("var(--color-background-muted-2x)")}
 
     li {
       margin: 0;
