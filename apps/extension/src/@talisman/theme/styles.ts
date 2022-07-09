@@ -8,8 +8,15 @@ export const scrollbarsStyle = (color = "var(--color-background-muted-3x)") => c
     box-shadow: inset 0 0 10px 10px ${color};
     border: solid 3px transparent;
     border-radius: 25px;
+    cursor: pointer;
   }
-
+  ::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+  ::-webkit-resizer {
+    display: none;
+  }
+  resize: none;
   scrollbar-color: ${color} transparent;
 `
 export const hideScrollbarsStyle = css`
