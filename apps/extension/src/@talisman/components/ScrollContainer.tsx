@@ -43,12 +43,14 @@ const Container = styled.section`
   &.more-top {
     &:before {
       opacity: 1;
+      z-index: 1;
     }
   }
 
   &.more-bottom {
     &:after {
       opacity: 1;
+      z-index: 1;
     }
   }
 `
@@ -77,15 +79,20 @@ export const ScrollContainer = ({
         bottom: scrollable.scrollHeight - scrollable.scrollTop > scrollable.clientHeight,
       })
     }
+
     scrollable.addEventListener("scroll", handleDetectScroll)
     scrollable.addEventListener("resize", handleDetectScroll)
+
+    // init
     handleDetectScroll()
+    // sometimes on init scrollHeight === clientHeight, setTimeout fixes the problem
+    setTimeout(() => handleDetectScroll(), 50)
 
     return () => {
       scrollable.removeEventListener("scroll", handleDetectScroll)
       scrollable.removeEventListener("resize", handleDetectScroll)
     }
-  }, [children, refDiv])
+  }, [])
 
   return (
     <Container
