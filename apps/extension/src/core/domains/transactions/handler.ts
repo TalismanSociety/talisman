@@ -4,20 +4,22 @@ import EventsRpc from "@core/domains/events/rpc"
 import AssetTransfersRpc from "@core/domains/transactions/rpc/AssetTransfers"
 import OrmlTokenTransfersRpc from "@core/domains/transactions/rpc/OrmlTokenTransfers"
 import { pendingTransfers } from "@core/domains/transactions/rpc/PendingTransfers"
+import {
+  RequestAssetTransfer,
+  RequestAssetTransferApproveSign,
+  ResponseAssetTransfer,
+  ResponseAssetTransferFeeQuery,
+  TransactionStatus,
+} from "@core/domains/transactions/types"
 import { getPairFromAddress, getUnlockedPairFromAddress } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type {
-  RequestAssetTransfer,
-  RequestAssetTransferApproveSign,
   RequestSignatures,
   RequestTypes,
-  ResponseAssetTransfer,
-  ResponseAssetTransferFeeQuery,
   ResponseType,
   SubscriptionCallback,
-  TransactionStatus,
 } from "@core/types"
 import { Address, Port } from "@core/types/base"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"

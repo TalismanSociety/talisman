@@ -20,6 +20,10 @@ import {
   ProviderType,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
+import {
+  ResponseAssetTransfer,
+  ResponseAssetTransferFeeQuery,
+} from "@core/domains/transactions/types"
 import { EthResponseType } from "@core/injectEth/types"
 import {
   AddEthereumChainRequest,
@@ -27,8 +31,6 @@ import {
   CustomEvmNetwork,
   MetadataRequest,
   MnemonicSubscriptionResult,
-  ResponseAssetTransfer,
-  ResponseAssetTransferFeeQuery,
   UnsubscribeFn,
   WatchAssetRequest,
 } from "@core/types"

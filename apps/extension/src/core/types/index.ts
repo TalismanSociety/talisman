@@ -2,9 +2,10 @@ import { AccountAddressType, AccountsMessages } from "@core/domains/accounts/typ
 import { AppMessages } from "@core/domains/app/types"
 import { BalancesMessages } from "@core/domains/balances/types"
 import { ChainId, ChainsMessages } from "@core/domains/chains/types"
-import { SignerPayloadJSON, SigningMessages } from "@core/domains/signing/types"
+import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token, TokenId, TokenMessages } from "@core/domains/tokens/types"
+import { AssetTransferMessages } from "@core/domains/transactions/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import type {
   MetadataRequest,
@@ -82,6 +83,7 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AuthorisedSiteMessages &
   AccountsMessages &
   AppMessages &
+  AssetTransferMessages &
   BalancesMessages &
   ChainsMessages &
   SigningMessages &
@@ -97,15 +99,6 @@ export interface RequestSignatures extends RequestSignaturesBase {
   "pri(mnemonic.confirm)": [boolean, boolean]
   "pri(mnemonic.subscribe)": [null, boolean, MnemonicSubscriptionResult]
   "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
-
-  // asset transfer signatures
-  "pri(assets.transfer)": [RequestAssetTransfer, ResponseAssetTransfer]
-  "pri(assets.transfer.checkFees)": [RequestAssetTransfer, ResponseAssetTransferFeeQuery]
-  "pri(assets.transfer.approveSign)": [RequestAssetTransferApproveSign, ResponseAssetTransfer]
-
-  // transaction message signatures
-  "pri(transactions.byid.subscribe)": [RequestIdOnly, boolean, any]
-  "pri(transactions.subscribe)": [null, boolean, any]
 
   // metadata message signatures
   "pri(metadata.requests)": [RequestMetadataSubscribe, boolean, MetadataRequest[]]
@@ -242,25 +235,6 @@ export type CustomEvmNetwork = EvmNetwork & {
 export type EvmNetworkList = Record<EvmNetworkId, EvmNetwork | CustomEvmNetwork>
 
 // transaction types ----------------------------
-export type TransactionId = string
-
-export type TransactionStatus = "PENDING" | "SUCCESS" | "ERROR"
-
-export type Transaction = {
-  id: string
-  from: string
-  nonce: string
-  hash: string
-  chainId: ChainId
-  blockHash?: string
-  blockNumber?: string
-  extrinsicIndex?: number
-  status: TransactionStatus
-  message?: string
-  createdAt: number
-}
-
-export type TransactionList = Record<TransactionId, Transaction>
 
 export declare type MnemonicSubscriptionResult = {
   confirmed?: boolean
@@ -294,32 +268,6 @@ export type AddEthereumChainRequest = {
   idStr: string
   url: string
   network: AddEthereumChainParameter
-}
-
-// Asset Transfer Messages
-export interface RequestAssetTransfer {
-  chainId: ChainId
-  tokenId: TokenId
-  fromAddress: string
-  toAddress: string
-  amount: string
-  tip: string
-  reapBalance?: boolean
-}
-
-export interface RequestAssetTransferApproveSign {
-  id: string
-  signature: `0x${string}` | Uint8Array
-}
-
-export interface ResponseAssetTransfer {
-  id: string
-}
-
-export interface ResponseAssetTransferFeeQuery {
-  partialFee: string
-  pendingTransferId?: string
-  unsigned: SignerPayloadJSON
 }
 
 export interface SendRequest {
