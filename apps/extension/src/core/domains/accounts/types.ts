@@ -92,3 +92,21 @@ export interface AccountsMessages {
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
   "pri(accounts.validateMnemonic)": [string, boolean]
 }
+
+// Mnemonic types
+export declare type MnemonicSubscriptionResult = {
+  confirmed?: boolean
+}
+
+export declare type RequestAddressFromMnemonic = {
+  mnemonic: string
+  type?: AccountAddressType
+}
+
+export interface MnemonicMessages {
+  // mnemonic message signatures
+  "pri(mnemonic.unlock)": [string, string]
+  "pri(mnemonic.confirm)": [boolean, boolean]
+  "pri(mnemonic.subscribe)": [null, boolean, MnemonicSubscriptionResult]
+  "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
+}

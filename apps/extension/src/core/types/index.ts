@@ -1,4 +1,4 @@
-import { AccountAddressType, AccountsMessages } from "@core/domains/accounts/types"
+import { AccountsMessages, MnemonicMessages } from "@core/domains/accounts/types"
 import { AppMessages } from "@core/domains/app/types"
 import { BalancesMessages } from "@core/domains/balances/types"
 import { ChainsMessages } from "@core/domains/chains/types"
@@ -8,11 +8,8 @@ import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { TokenMessages } from "@core/domains/tokens/types"
 import { AssetTransferMessages } from "@core/domains/transactions/types"
 import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
-import type { ExtrinsicStatus, Hash } from "@polkadot/types/interfaces"
 
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
-
-export type { ExtrinsicStatus, Hash } // Make this available elsewhere also
 
 export type {
   AllowedPath,
@@ -74,6 +71,7 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   BalancesMessages &
   ChainsMessages &
   EthMessages &
+  MnemonicMessages &
   SigningMessages &
   TokenMessages
 
@@ -81,12 +79,6 @@ export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
 
   "pri(unsubscribe)": [RequestIdOnly, null]
-
-  // mnemonic message signatures
-  "pri(mnemonic.unlock)": [string, string]
-  "pri(mnemonic.confirm)": [boolean, boolean]
-  "pri(mnemonic.subscribe)": [null, boolean, MnemonicSubscriptionResult]
-  "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
 }
 
 export declare type MessageTypes = keyof RequestSignatures
@@ -146,15 +138,6 @@ export interface SubscriptionCallback<Result> {
  * A function which cancels a subscription when called.
  */
 export type UnsubscribeFn = () => void
-
-export declare type MnemonicSubscriptionResult = {
-  confirmed?: boolean
-}
-
-export declare type RequestAddressFromMnemonic = {
-  mnemonic: string
-  type?: AccountAddressType
-}
 
 export interface SendRequest {
   <TMessageType extends MessageTypesWithNullRequest>(message: TMessageType): Promise<

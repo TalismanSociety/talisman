@@ -1,5 +1,6 @@
 import { DEBUG } from "@core/constants"
 import { AccountsHandler } from "@core/domains/accounts"
+import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
 import {
@@ -16,7 +17,7 @@ import { AssetTransferHandler } from "@core/domains/transactions"
 import State from "@core/handlers/State"
 import { ExtensionStore } from "@core/handlers/stores"
 import { ExtensionHandler } from "@core/libs/Handler"
-import { MessageTypes, RequestAddressFromMnemonic, RequestTypes, ResponseType } from "@core/types"
+import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 

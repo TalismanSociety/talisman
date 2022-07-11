@@ -1,5 +1,6 @@
 import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
 import type { AccountJson } from "@core/domains/accounts/types"
+import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
 import {
   AnalyticsCaptureRequest,
   LoggedinType,
@@ -31,7 +32,7 @@ import {
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
 import { EthResponseType } from "@core/injectEth/types"
-import { MnemonicSubscriptionResult, UnsubscribeFn } from "@core/types"
+import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
 import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
