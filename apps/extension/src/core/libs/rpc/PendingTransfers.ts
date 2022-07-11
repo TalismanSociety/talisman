@@ -21,6 +21,7 @@ class PendingTransfer {
 
   constructor(data: PendingTransferInfo) {
     this.data = data
+    this.transfer = this.transfer.bind(this)
   }
 
   async transfer(
