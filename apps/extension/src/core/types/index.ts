@@ -11,10 +11,8 @@ import type {
   RequestSignatures as PolkadotRequestSignatures,
   RequestMetadataSubscribe,
 } from "@polkadot/extension-base/background/types"
-import type { Codec } from "@polkadot/types-codec/types"
-import type { ExtrinsicStatus, Hash, Phase } from "@polkadot/types/interfaces"
-import type { IEventData } from "@polkadot/types/types"
-import type { SignerPayloadJSON, SignerPayloadRaw, TypeDef } from "@polkadot/types/types"
+import type { ExtrinsicStatus, Hash } from "@polkadot/types/interfaces"
+import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
 
@@ -264,19 +262,6 @@ export type Transaction = {
 }
 
 export type TransactionList = Record<TransactionId, Transaction>
-
-// event types ------------------------------
-
-export type Event = {
-  section: string
-  method: string
-  docs: string
-  phase: Phase
-  data: Codec[] & IEventData
-  types: TypeDef[]
-}
-
-export type EventList = Event[]
 
 export declare type MnemonicSubscriptionResult = {
   confirmed?: boolean
