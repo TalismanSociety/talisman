@@ -11,26 +11,6 @@ import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/e
 
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
 
-export type {
-  AllowedPath,
-  RequestRpcSend,
-  RequestRpcSubscribe,
-  RequestRpcUnsubscribe,
-  ResponseRpcListProviders,
-  RequestBatchRestore,
-  RequestDeriveCreate,
-  RequestDeriveValidate,
-  RequestJsonRestore,
-  RequestMetadataApprove,
-  RequestMetadataReject,
-  RequestSeedCreate,
-  RequestSeedValidate,
-  ResponseDeriveValidate,
-  ResponseSeedCreate,
-  ResponseSeedValidate,
-  SeedLengths,
-} from "@polkadot/extension-base/background/types"
-
 export declare type RequestTypes = {
   [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
 }

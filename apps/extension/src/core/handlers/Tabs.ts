@@ -9,11 +9,7 @@ import { db } from "@core/libs/db"
 import { TabsHandler } from "@core/libs/Handler"
 import type {
   MessageTypes,
-  RequestRpcSend,
-  RequestRpcSubscribe,
-  RequestRpcUnsubscribe,
   RequestTypes,
-  ResponseRpcListProviders,
   ResponseTypes,
   SubscriptionMessageTypes,
 } from "@core/types"
@@ -21,6 +17,12 @@ import type { Port } from "@core/types/base"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
 import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
+import {
+  RequestRpcSend,
+  RequestRpcSubscribe,
+  RequestRpcUnsubscribe,
+  ResponseRpcListProviders,
+} from "@polkadot/extension-base/background/types"
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 // Copyright 2019-2021 @polkadot/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0
