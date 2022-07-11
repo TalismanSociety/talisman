@@ -1,9 +1,10 @@
 import { Box } from "@talisman/components/Box"
 import { ChevronDownIcon, XIcon } from "@talisman/theme/icons"
 import { NetworkOption, usePortfolio } from "@ui/domains/Portfolio/context"
-import { useCombobox, UseComboboxState, UseComboboxStateChangeOptions } from "downshift"
+import { UseComboboxState, UseComboboxStateChangeOptions, useCombobox } from "downshift"
 import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
+
 import StyledAssetLogo from "../Asset/Logo"
 
 const Container = styled.div<{ isOpen?: boolean }>`
@@ -80,7 +81,7 @@ const Container = styled.div<{ isOpen?: boolean }>`
 const itemToString = (blockchain: NetworkOption | null | undefined) => blockchain?.name ?? ""
 
 const filterItems = (inputValue?: string) => (bc: NetworkOption | undefined) =>
-  !inputValue || bc?.name.toLowerCase().includes(inputValue.toLowerCase())
+  !inputValue || !!bc?.name.toLowerCase().includes(inputValue.toLowerCase())
 
 export const NetworkPicker = () => {
   const { networks, networkFilter, setNetworkFilter } = usePortfolio()
@@ -100,7 +101,7 @@ export const NetworkPicker = () => {
       const { type, changes } = actionAndChanges
       switch (type) {
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
-        case useCombobox.stateChangeTypes.InputBlur:
+        case useCombobox.stateChangeTypes.InputBlur: {
           const visibleItems = items.filter(filterItems(state.inputValue))
           const itemToSelect = state.isOpen && state.inputValue ? visibleItems[0] : undefined
           return {
@@ -108,6 +109,7 @@ export const NetworkPicker = () => {
             inputValue: itemToSelect ? itemToString(itemToSelect) : "",
             selectedItem: itemToSelect,
           }
+        }
         default:
           return changes // otherwise business as usual.
       }

@@ -1,9 +1,9 @@
+import { Token } from "@core/types"
+import genericTokenSvgIcon from "@talisman/theme/icons/custom-token-generic.svg"
 import useToken from "@ui/hooks/useToken"
 import { CSSProperties, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
-import genericTokenSvgIcon from "@talisman/theme/icons/custom-token-generic.svg"
 import { getBase64ImageUrl } from "talisman-utils"
-import { Token } from "@core/types"
 
 const genericTokenIconUrl = getBase64ImageUrl(genericTokenSvgIcon)
 
@@ -58,6 +58,7 @@ export const TokenLogo = ({ tokenId, className }: TokenLogoProps) => {
       tokenLogoUrlCache.set(token.id, url)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     setImageUrl(tokenLogoUrlCache.get(token.id)!)
   }, [token])
 

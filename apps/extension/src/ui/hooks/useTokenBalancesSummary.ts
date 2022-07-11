@@ -76,18 +76,20 @@ export const useTokenBalancesSummary = (balances: Balances, symbol: string) => {
         b
       ) => ({
         totalTokens: totalTokens + b.total.planck,
-        totalFiat: b.token?.rates ? totalFiat! + (b.total.fiat("usd") ?? 0) : totalFiat,
+        totalFiat: b.token?.rates ? (totalFiat ?? 0) + (b.total.fiat("usd") ?? 0) : totalFiat,
         lockedTokens: lockedTokens + b.frozen.planck + b.reserved.planck,
         lockedFiat: b.token?.rates
-          ? lockedFiat! + (b.frozen.fiat("usd") ?? 0) + (b.reserved.fiat("usd") ?? 0)
+          ? (lockedFiat ?? 0) + (b.frozen.fiat("usd") ?? 0) + (b.reserved.fiat("usd") ?? 0)
           : lockedFiat,
         reservedTokens: reservedTokens + b.reserved.planck,
-        reservedFiat: b.token?.rates ? reservedFiat! + (b.reserved.fiat("usd") ?? 0) : reservedFiat,
+        reservedFiat: b.token?.rates
+          ? (reservedFiat ?? 0) + (b.reserved.fiat("usd") ?? 0)
+          : reservedFiat,
         frozenTokens: frozenTokens + b.frozen.planck,
-        frozenFiat: b.token?.rates ? frozenFiat! + (b.frozen.fiat("usd") ?? 0) : frozenFiat,
+        frozenFiat: b.token?.rates ? (frozenFiat ?? 0) + (b.frozen.fiat("usd") ?? 0) : frozenFiat,
         availableTokens: availableTokens + b.transferable.planck,
         availableFiat: b.token?.rates
-          ? availableFiat! + (b.transferable.fiat("usd") ?? 0)
+          ? (availableFiat ?? 0) + (b.transferable.fiat("usd") ?? 0)
           : availableFiat,
       }),
       {

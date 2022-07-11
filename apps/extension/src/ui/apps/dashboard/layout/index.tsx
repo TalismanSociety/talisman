@@ -1,16 +1,18 @@
-import { FC, lazy, Suspense } from "react"
-import styled from "styled-components"
-import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
-import { SideBar } from "./SideBar"
 import { BackButton } from "@talisman/components/BackButton"
-import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
+import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
+import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
+import { FC, Suspense, lazy } from "react"
+import styled from "styled-components"
+
+import { SideBar } from "./SideBar"
 
 const DashboardNotifications = lazy(() => import("./DashboardNotifications"))
 
 type LayoutProps = {
+  children?: React.ReactNode
   centered?: boolean
   large?: boolean
   withBack?: boolean

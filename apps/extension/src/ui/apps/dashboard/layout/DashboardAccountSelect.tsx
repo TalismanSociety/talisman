@@ -5,12 +5,12 @@ import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useSelect } from "downshift"
 import { useEffect, useMemo } from "react"
 import styled from "styled-components"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 
 const Button = styled.button`
   background: none;
@@ -204,7 +204,7 @@ const AccountOption = ({ address, totalUsd, genesisHash, name }: AccountOptionPr
         )}
       </div>
       <div className="ao-rows">
-        <div className="ao-rowName">{name ?? shortenAddress(address)}</div>
+        <div className="ao-rowName">{name ?? (address ? shortenAddress(address) : "unknown")}</div>
         <div className="ao-rowFiat">
           <Fiat amount={totalUsd} currency="usd" isBalance noCountUp />
         </div>

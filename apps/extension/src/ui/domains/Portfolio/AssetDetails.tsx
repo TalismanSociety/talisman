@@ -7,12 +7,13 @@ import { useNotification } from "@talisman/components/Notification"
 import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import { Fragment, useCallback, useMemo } from "react"
 import styled from "styled-components"
+
 import StyledAssetLogo from "../Asset/Logo"
 import { AssetBalanceCellValue } from "./AssetBalanceCellValue"
 import { NoTokensMessage } from "./NoTokensMessage"
@@ -253,6 +254,7 @@ export const AssetDetails = ({ balances, symbol }: AssetsTableProps) => {
     return chainIds.reduce(
       (acc, chainId) => ({
         ...acc,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         [chainId!]: new Balances(
           balancesToDisplay.sorted.filter(
             (b) => b.chainId === chainId || b.evmNetworkId === chainId

@@ -259,7 +259,7 @@ export const AccountAddSecretMnemonic = () => {
   const submit = useCallback(
     async ({ type, name, mnemonic, multi }: FormData) => {
       updateData({ type, name, mnemonic, multi })
-      if (multi) navigate("../accounts")
+      if (multi) navigate("/portfolio")
       else {
         notification.processing({
           title: `Importing account`,

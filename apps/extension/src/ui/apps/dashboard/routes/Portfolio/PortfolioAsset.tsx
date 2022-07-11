@@ -4,14 +4,14 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { AssetDetails } from "@ui/domains/Portfolio/AssetDetails"
+import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import React, { useCallback, useMemo } from "react"
-import { useNavigate, useParams } from "react-router-dom"
+import { Navigate, useNavigate, useParams } from "react-router-dom"
 import styled from "styled-components"
-import { usePortfolio } from "@ui/domains/Portfolio/context"
 
 const Stats = styled(Statistics)`
   max-width: 40%;
@@ -101,5 +101,7 @@ export const PortfolioAsset = () => {
     [allBalances.sorted, symbol]
   )
 
-  return <PageContent balances={balances} symbol={symbol!} />
+  if (!symbol) return <Navigate to="/portfolio" />
+
+  return <PageContent balances={balances} symbol={symbol} />
 }

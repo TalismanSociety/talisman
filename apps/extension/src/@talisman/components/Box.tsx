@@ -1,6 +1,6 @@
+import { custom, fontSizes } from "@talisman/theme/definitions"
 import { CSSProperties } from "react"
 import styled, { CSSObject, DefaultTheme } from "styled-components"
-import { custom, fontSizes } from "@talisman/theme/definitions"
 
 const BorderRadius = {
   normal: custom["border-radius"],
@@ -100,7 +100,7 @@ const boxPropsInjector = (props: BoxProps): CSSObject => {
     flexDirection: props.flex ? (props.column ? "column" : "row") : undefined,
     width: props.fullwidth ? "100%" : getSize(props.width),
     height: props.fullheight ? "100%" : getSize(props.height),
-    flexGrow: !!props.grow ? "1" : undefined,
+    flexGrow: props.grow ? "1" : undefined,
     overflow: props.hidden ? "hidden" : undefined,
     borderRadius: getBorderRadius(props),
     textAlign: props.textalign,

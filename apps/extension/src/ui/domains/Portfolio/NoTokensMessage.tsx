@@ -3,6 +3,7 @@ import { CopyIcon, CreditCardIcon } from "@talisman/theme/icons"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useCallback } from "react"
 import styled from "styled-components"
+
 import { useAddressFormatterModal } from "../Account/AddressFormatterModal"
 
 const PillButton = styled.button`
@@ -34,8 +35,8 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   const { open } = useAddressFormatterModal()
 
   const handleCopy = useCallback(() => {
-    if (!account) return
-    open(account?.address!)
+    if (!account?.address) return
+    open(account.address)
   }, [account, open])
 
   const handleBuyClick = useCallback(() => {
