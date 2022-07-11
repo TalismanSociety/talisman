@@ -19,10 +19,6 @@ module.exports = merge(common, {
           from: "manifest.json",
           to: distDir,
           context: "public",
-          // overwrite non-transformed manifest.json
-          // force: true,
-          // copied last to overwrite the `dist/manifest.json` copied by the `from "."` pattern
-          // priority: 10,
           transform(content) {
             // Parse the manifest
             const manifest = JSON.parse(content.toString())
@@ -38,6 +34,7 @@ module.exports = merge(common, {
           from: ".",
           to: distDir,
           context: "public",
+          // do not copy the manifest, that's handled separately
           filter: (filepath) => filepath !== manifestPath,
         },
       ],
