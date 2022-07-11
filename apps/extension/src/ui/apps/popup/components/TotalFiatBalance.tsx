@@ -24,7 +24,6 @@ const Container = styled.div`
 
   span {
     font-size: var(--font-size-large);
-    color: var(--color-foreground);
     font-weight: var(--font-weight-bold);
   }
 
