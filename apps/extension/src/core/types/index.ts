@@ -7,16 +7,12 @@ import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { TokenMessages } from "@core/domains/tokens/types"
 import { AssetTransferMessages } from "@core/domains/transactions/types"
-import type {
-  MetadataRequest,
-  RequestSignatures as PolkadotRequestSignatures,
-  RequestMetadataSubscribe,
-} from "@polkadot/extension-base/background/types"
+import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
 import type { ExtrinsicStatus, Hash } from "@polkadot/types/interfaces"
 
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
 
-export type { ExtrinsicStatus, Hash, MetadataRequest } // Make this available elsewhere also
+export type { ExtrinsicStatus, Hash } // Make this available elsewhere also
 
 export type {
   AllowedPath,
@@ -65,7 +61,6 @@ type RemovedMessages =
   | "pri(accounts.forget)"
   | "pri(accounts.subscribe)"
   | "pri(signing.requests)"
-  | "pri(metadata.requests)"
   | "pri(derivation.create)"
   | "pri(derivation.validate)"
   | "pri(accounts.changePassword)"
@@ -92,9 +87,6 @@ export interface RequestSignatures extends RequestSignaturesBase {
   "pri(mnemonic.confirm)": [boolean, boolean]
   "pri(mnemonic.subscribe)": [null, boolean, MnemonicSubscriptionResult]
   "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
-
-  // metadata message signatures
-  "pri(metadata.requests)": [RequestMetadataSubscribe, boolean, MetadataRequest[]]
 }
 
 export declare type MessageTypes = keyof RequestSignatures

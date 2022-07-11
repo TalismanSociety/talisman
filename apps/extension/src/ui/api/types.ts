@@ -31,8 +31,9 @@ import {
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
 import { EthResponseType } from "@core/injectEth/types"
-import { MetadataRequest, MnemonicSubscriptionResult, UnsubscribeFn } from "@core/types"
+import { MnemonicSubscriptionResult, UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
+import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
 

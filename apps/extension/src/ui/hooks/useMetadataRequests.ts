@@ -1,7 +1,8 @@
-import type { MetadataRequest } from "@core/types"
+import type { MetadataRequest } from "@core/domains/metadata/types"
 import { api } from "@ui/api"
-import { useMessageSubscription } from "./useMessageSubscription"
 import { BehaviorSubject } from "rxjs"
+
+import { useMessageSubscription } from "./useMessageSubscription"
 
 const INITIAL_VALUE: MetadataRequest[] = []
 

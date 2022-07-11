@@ -1,4 +1,4 @@
-import type { MetadataRequest } from "@core/types"
+import type { MetadataRequest } from "@core/domains/metadata/types"
 import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useState } from "react"
