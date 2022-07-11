@@ -1,5 +1,5 @@
+import BlocksRpc from "@core/domains/blocks/rpc"
 import { ChainId } from "@core/domains/chains/types"
-import BlocksRpc from "@core/libs/rpc/Blocks"
 import RpcFactory from "@core/libs/RpcFactory"
 import { EventList, SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { getRegistry } from "@substrate/txwrapper-polkadot"

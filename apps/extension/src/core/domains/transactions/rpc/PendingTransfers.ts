@@ -1,9 +1,8 @@
 import { ChainId } from "@core/domains/chains/types"
+import RpcFactory from "@core/libs/RpcFactory"
 import { ExtrinsicStatus, SubscriptionCallback } from "@core/types"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { UnsignedTransaction } from "@substrate/txwrapper-polkadot"
-
-import RpcFactory from "../RpcFactory"
 
 type PendingTransferInfo = {
   chainId: ChainId
