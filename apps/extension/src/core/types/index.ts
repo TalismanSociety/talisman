@@ -2,7 +2,7 @@ import { AccountAddressType, AccountsMessages } from "@core/domains/accounts/typ
 import { AppMessages } from "@core/domains/app/types"
 import { BalancesMessages } from "@core/domains/balances/types"
 import { ChainId, ChainsMessages } from "@core/domains/chains/types"
-import { SigningMessages } from "@core/domains/signing/types"
+import { SignerPayloadJSON, SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token, TokenId, TokenMessages } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
@@ -12,11 +12,10 @@ import type {
   RequestMetadataSubscribe,
 } from "@polkadot/extension-base/background/types"
 import type { ExtrinsicStatus, Hash } from "@polkadot/types/interfaces"
-import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
 
-export type { ExtrinsicStatus, Hash, MetadataRequest, SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
+export type { ExtrinsicStatus, Hash, MetadataRequest } // Make this available elsewhere also
 
 export type {
   AllowedPath,
