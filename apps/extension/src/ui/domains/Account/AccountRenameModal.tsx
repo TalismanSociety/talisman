@@ -4,6 +4,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { provideContext } from "@talisman/util/provideContext"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useEffect } from "react"
+
 import AccountRename from "./Rename"
 
 const useAccountRenameModalProvider = () => {
@@ -33,7 +34,9 @@ export const AccountRenameModal = () => {
   return (
     <Modal open={isOpen}>
       <ModalDialog title="Rename account" onClose={close}>
-        <AccountRename address={account?.address!} onConfirm={close} onCancel={close} />
+        {account?.address ? (
+          <AccountRename address={account?.address} onConfirm={close} onCancel={close} />
+        ) : null}
       </ModalDialog>
     </Modal>
   )

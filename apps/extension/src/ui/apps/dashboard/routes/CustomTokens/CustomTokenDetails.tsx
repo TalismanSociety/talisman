@@ -1,29 +1,23 @@
 import { CustomErc20Token } from "@core/types"
+import * as Sentry from "@sentry/browser"
+import Dialog from "@talisman/components/Dialog"
 import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
+import { Modal } from "@talisman/components/Modal"
+import { ModalDialog } from "@talisman/components/ModalDialog"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { IconAlert } from "@talisman/theme/icons"
+import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
+import { useCustomErc20Token } from "@ui/hooks/useCustomErc20Token"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useCallback, useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import styled from "styled-components"
 
-import { useCustomErc20Token } from "@ui/hooks/useCustomErc20Token"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import {
-  commonFormStyle,
-  ErrorDiv as ErrorDiv,
-  Footer,
-  Split,
-  SymbolPrefix,
-} from "./CustomTokensComponents"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
-import Dialog from "@talisman/components/Dialog"
-import { useCallback, useEffect, useState } from "react"
-import { api } from "@ui/api"
-import * as Sentry from "@sentry/browser"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { ErrorDiv, Footer, Split, SymbolPrefix, commonFormStyle } from "./CustomTokensComponents"
 
 const Form = styled.div`
   ${commonFormStyle}
@@ -81,7 +75,7 @@ const ConfirmRemove = ({
 }
 
 export const CustomTokenDetails = () => {
-  let { id } = useParams<"id">()
+  const { id } = useParams<"id">()
   const { isOpen, open, close } = useOpenClose()
   const navigate = useNavigate()
 

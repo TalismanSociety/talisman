@@ -30,10 +30,10 @@ const unsafeProperties = [
 const talismanProperties = {
   appVersion: process.env.VERSION,
   appBuild: process.env.BUILD,
-  testBuild: DEBUG || process.env.BUILD === "qa",
+  testBuild: DEBUG || ["qa", "ci"].includes(process.env.BUILD as string),
 }
 
-export const initPosthog = (allowTracking: boolean = false) => {
+export const initPosthog = (allowTracking = false) => {
   if (process.env.POSTHOG_AUTH_TOKEN) {
     posthog.init(process.env.POSTHOG_AUTH_TOKEN, {
       api_host: "https://app.posthog.com",

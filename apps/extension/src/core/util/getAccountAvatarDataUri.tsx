@@ -1,9 +1,9 @@
 import { IdenticonType } from "@core/types"
 import Identicon from "@polkadot/react-identicon"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { TalismanOrb } from "@talisman/components/TalismanOrb"
-import * as ReactDOMServer from "react-dom/server"
 import * as Sentry from "@sentry/browser"
+import { TalismanOrb } from "@talisman/components/TalismanOrb"
+import { renderToString } from "react-dom/server"
 
 const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) => {
   try {
@@ -14,14 +14,17 @@ const generateAccountAvatarDataUri = (address: string, iconType: IdenticonType) 
         <TalismanOrb seed={address} />
       )
 
-    const html = ReactDOMServer.renderToString(component)
+    const html = renderToString(component)
 
     // blockies are rendered as img elements with base64 data, return as is
     const rawUri = /<img([^>]*?)src="([^"]*?)"/gi.exec(html)
     if (rawUri) return rawUri[2]
 
     // lookup svg inside the html, with polkadot identicons it's nested inside divs
-    let [svg] = /<svg.*?<\/svg>/gi.exec(html ?? "")!
+    const match = /<svg.*?<\/svg>/gi.exec(html ?? "")
+    if (!match) throw new Error("Could not parse SVG")
+
+    let [svg] = match
 
     // polkadot identicons are rendered in a div and as svg but without xml namespace,
     // resulting data uri will be invalid unless we add it

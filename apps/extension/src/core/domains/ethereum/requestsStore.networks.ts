@@ -1,6 +1,6 @@
-import type { AddEthereumChainRequest, AddEthereumChainParameter } from "@core/types"
 import { stripUrl } from "@core/handlers/helpers"
-import { RequestStore } from "@core/libs/RequestStore"
+import { RequestStore, TRespondableRequest } from "@core/libs/RequestStore"
+import type { AddEthereumChainParameter, AddEthereumChainRequest } from "@core/types"
 
 class AddNetworkError extends Error {}
 
@@ -8,8 +8,11 @@ export default class EthereumNetworksRequestsStore extends RequestStore<
   AddEthereumChainRequest,
   null
 > {
-  protected mapRequestToData(req: AddEthereumChainRequest) {
-    return req
+  protected mapRequestToData(
+    req: TRespondableRequest<AddEthereumChainRequest, null>
+  ): AddEthereumChainRequest {
+    const { resolve, reject, ...data } = req
+    return data
   }
 
   async requestAddNetwork(url: string, network: AddEthereumChainParameter) {

@@ -10,6 +10,7 @@ export interface SettingsStoreData {
   hideBalances: boolean
   allowNotifications: boolean
   selectedAccount: string | undefined
+  shouldMimicMetaMask: boolean
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -22,4 +23,5 @@ export const settingsStore = new SettingsStore("settings", {
   useCustomEthereumNetworks: false,
   hideBalances: false,
   allowNotifications: true,
+  shouldMimicMetaMask: false,
 })

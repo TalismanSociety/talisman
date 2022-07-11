@@ -1,5 +1,6 @@
 import { CustomErc20TokenCreate } from "@core/types"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { assert } from "@polkadot/util"
 import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { SimpleButton } from "@talisman/components/SimpleButton"
@@ -7,21 +8,21 @@ import { PlusIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
+import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import * as yup from "yup"
-import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
-import { assert } from "@polkadot/util"
+
 import {
-  commonFormStyle,
   ErrorDiv,
   Footer,
   LoadingSuffix,
   Split,
   SymbolPrefix,
+  commonFormStyle,
 } from "./CustomTokensComponents"
 
 const Form = styled.form`
@@ -76,7 +77,7 @@ export const CustomTokenAdd = () => {
     isLoading,
     error: tokenInfoError,
     token: tokenInfo,
-  } = useErc20TokenInfo(evmNetworkId!, contractAddress)
+  } = useErc20TokenInfo(evmNetworkId, contractAddress)
 
   const handleNetworkChange = useCallback(
     (id: number) => {

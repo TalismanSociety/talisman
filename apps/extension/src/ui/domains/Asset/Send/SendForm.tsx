@@ -1,23 +1,32 @@
-import Balance from "../Balance"
-import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
-import { getChainAddressType } from "@talisman/util/getChainAddressType"
-import Account from "@ui/domains/Account"
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react"
-import AssetPicker from "../Picker"
-import styled from "styled-components"
-import { SendDialogContainer } from "./SendDialogContainer"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import * as yup from "yup"
-import { useForm } from "react-hook-form"
+import { tokensToPlanck } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { SendTokensInputs } from "./types"
-import { useSendTokens } from "./context"
+import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
+import { SimpleButton } from "@talisman/components/SimpleButton"
+import { getChainAddressType } from "@talisman/util/getChainAddressType"
+import { isValidAddress } from "@talisman/util/isValidAddress"
+import Account from "@ui/domains/Account"
 import { useBalance } from "@ui/hooks/useBalance"
 import useChain from "@ui/hooks/useChain"
-import useToken from "@ui/hooks/useToken"
-import { isValidAddress } from "@talisman/util/isValidAddress"
-import { tokensToPlanck } from "@core/util"
 import { useTip } from "@ui/hooks/useTip"
+import useToken from "@ui/hooks/useToken"
+import {
+  ChangeEventHandler,
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
+import { useForm } from "react-hook-form"
+import styled from "styled-components"
+import * as yup from "yup"
+
+import Balance from "../Balance"
+import AssetPicker from "../Picker"
+import { useSendTokens } from "./context"
+import { SendDialogContainer } from "./SendDialogContainer"
+import { SendTokensInputs } from "./types"
 
 const SendAddressConvertInfo = lazy(() => import("./SendAddressConvertInfo"))
 
@@ -216,15 +225,18 @@ export const SendForm = () => {
   // because these input components are all custom, we need to programmatically update form state
   // (can't use RHF register here without major changes)
   const onAssetChange = useCallback(
-    (tokenId) => setValue("tokenId", tokenId, REVALIDATE),
+    (tokenId: string) => setValue("tokenId", tokenId, REVALIDATE),
     [setValue]
   )
-  const onAmountChange = useCallback(
+  const onAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => setValue("amount", cleanupAmountInput(e.target.value), REVALIDATE),
     [setValue]
   )
-  const onFromChange = useCallback((value) => setValue("from", value, REVALIDATE), [setValue])
-  const onToChange = useCallback((value) => setValue("to", value, REVALIDATE), [setValue])
+  const onFromChange = useCallback(
+    (value: string) => setValue("from", value, REVALIDATE),
+    [setValue]
+  )
+  const onToChange = useCallback((value: string) => setValue("to", value, REVALIDATE), [setValue])
 
   // current form values
   const { amount, tokenId, from, to } = watch()
@@ -244,6 +256,7 @@ export const SendForm = () => {
 
   useEffect(() => {
     // force type with ! because undefined value is used to check for an invalid form.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     setValue("tip", tip!)
   }, [setValue, tip])
 

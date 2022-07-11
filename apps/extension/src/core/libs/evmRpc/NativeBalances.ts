@@ -7,9 +7,10 @@ import * as Sentry from "@sentry/browser"
 
 export default class NativeBalancesEvmRpc {
   /**
-   * Fetch or subscribe to balances by chainIds, contract addresses and account addresses.
+   * Fetch or subscribe to native token balances by account addresses and evmNetworkIds.
    *
-   * @param addressesByChain - Object with chainIds as keys, and arrays of addresses as values
+   * @param addresses - Accounts to fetch balances for.
+   * @param evmNetworks - Evm networks to fetch balances for.
    * @param callback - Optional subscription callback.
    * @returns Either `Balances`, or an unsubscribe function if the `callback` parameter was given.
    */
@@ -29,73 +30,105 @@ export default class NativeBalancesEvmRpc {
   ): Promise<Balances | UnsubscribeFn> {
     // subscription request
     if (callback !== undefined) {
-      setTimeout(async () => {
+      let subscriptionActive = true
+      const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
+
+      const poll = async () => {
+        if (!subscriptionActive) return
+
         try {
-          const providers: { [evmNetworkId: EvmNetworkId]: JsonRpcBatchProvider } =
-            Object.fromEntries(
-              await Promise.all(
-                evmNetworks.map((evmNetwork) =>
-                  getProviderForEvmNetworkId(evmNetwork.id).then((provider) => [
-                    evmNetwork.id,
-                    provider,
-                  ])
-                )
-              )
-            )
+          const balances = await this.fetchNativeBalances(addresses, evmNetworks)
 
-          // TODO: Fetch on a timer while subscription is active
-          const balances = new Balances(
-            (
-              await Promise.allSettled(
-                evmNetworks
-                  .filter(({ nativeToken }) => typeof nativeToken?.id === "string")
-                  .filter(({ id }) => providers[id] !== null && providers[id] !== undefined)
-                  .flatMap((evmNetwork) =>
-                    addresses.map(
-                      async (address) =>
-                        new Balance({
-                          pallet: "balances",
-
-                          status: "live",
-
-                          address: address,
-                          evmNetworkId: evmNetwork.id,
-                          tokenId: evmNetwork.nativeToken?.id!,
-                          free: (
-                            (await providers[evmNetwork.id].getBalance(address)).toBigInt() ||
-                            BigInt("0")
-                          ).toString(),
-                          reserved: "0",
-                          miscFrozen: "0",
-                          feeFrozen: "0",
-                        })
-                    )
-                  )
-              )
-            )
-              .map((result) => {
-                if (result.status === "rejected") {
-                  // eslint-disable-next-line no-console
-                  DEBUG && console.error(result.reason)
-                  Sentry.captureException(result.reason)
-                  return null
-                }
-
-                return result.value
-              })
-              .filter((balance): balance is Balance => balance !== null)
-          )
-
+          // TODO: Don't call callback with balances which have not changed since the last poll.
           callback(null, balances)
         } catch (error) {
           callback(error)
+        } finally {
+          setTimeout(poll, subscriptionInterval)
         }
-      }, 0)
+      }
+      setTimeout(poll, subscriptionInterval)
 
-      return () => {}
+      return () => {
+        subscriptionActive = false
+      }
     }
 
-    throw new Error("Not implemented")
-    return new Balances([])
+    // once-off request
+    return await this.fetchNativeBalances(addresses, evmNetworks)
+  }
+
+  private static async fetchNativeBalances(
+    addresses: Address[],
+    evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
+  ): Promise<Balances> {
+    const providers = await this.getEvmNetworkProviders(evmNetworks)
+
+    // filter evmNetworks
+    const fetchNetworks = evmNetworks
+      // network has native token
+      .filter(({ nativeToken }) => typeof nativeToken?.id === "string")
+      // network has rpc provider
+      .filter(({ id }) => providers[id] !== null && providers[id] !== undefined)
+
+    // fetch all balances
+    const balanceRequests = fetchNetworks.flatMap((evmNetwork) =>
+      addresses.map(
+        async (address) =>
+          new Balance({
+            pallet: "balances",
+
+            status: "live",
+
+            address: address,
+            evmNetworkId: evmNetwork.id,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            tokenId: evmNetwork.nativeToken?.id!,
+            free: await this.getFreeBalance(providers[evmNetwork.id], address),
+            reserved: "0",
+            miscFrozen: "0",
+            feeFrozen: "0",
+          })
+      )
+    )
+
+    // wait for balance fetches to complete
+    const balanceResults = await Promise.allSettled(balanceRequests)
+
+    // filter out errors
+    const balances = balanceResults
+      .map((result) => {
+        if (result.status === "rejected") {
+          // eslint-disable-next-line no-console
+          DEBUG && console.error(result.reason)
+          Sentry.captureException(result.reason)
+          return null
+        }
+
+        return result.value
+      })
+      .filter((balance): balance is Balance => balance !== null)
+
+    // return to caller
+    return new Balances(balances)
+  }
+
+  private static async getEvmNetworkProviders(
+    evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
+  ): Promise<Record<EvmNetworkId, JsonRpcBatchProvider>> {
+    return Object.fromEntries(
+      await Promise.all(
+        evmNetworks.map((evmNetwork) =>
+          getProviderForEvmNetworkId(evmNetwork.id).then((provider) => [evmNetwork.id, provider])
+        )
+      )
+    )
+  }
+
+  private static async getFreeBalance(
+    provider: JsonRpcBatchProvider,
+    address: Address
+  ): Promise<string> {
+    return ((await provider.getBalance(address)).toBigInt() || BigInt("0")).toString()
   }
 }

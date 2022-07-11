@@ -1,29 +1,30 @@
+import { DEBUG } from "@core/constants"
+import { AccountsHandler } from "@core/domains/accounts"
+import AppHandler from "@core/domains/app/handler"
+import { EthHandler } from "@core/domains/ethereum"
+import { MetadataHandler } from "@core/domains/metadata"
+import { SigningHandler } from "@core/domains/signing"
+import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
+import TokensHandler from "@core/domains/tokens/handler"
+import { AssetTransferHandler } from "@core/domains/transactions"
+import State from "@core/handlers/State"
+import { ExtensionStore } from "@core/handlers/stores"
+import { ExtensionHandler } from "@core/libs/Handler"
+import BalancesRpc from "@core/libs/rpc/Balances"
 import {
   Balances,
   MessageTypes,
-  RequestTypes,
-  ResponseType,
   Port,
   RequestAddressFromMnemonic,
   RequestBalance,
   RequestBalancesByParamsSubscribe,
   RequestIdOnly,
+  RequestTypes,
+  ResponseType,
 } from "@core/types"
-import State from "@core/handlers/State"
-import { ExtensionStore } from "@core/handlers/stores"
-import { ExtensionHandler } from "@core/libs/Handler"
-import { AccountsHandler } from "@core/domains/accounts"
-import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
-import { MetadataHandler } from "@core/domains/metadata"
-import AppHandler from "@core/domains/app/handler"
-import { EthHandler } from "@core/domains/ethereum"
-import { AssetTransferHandler } from "@core/domains/transactions"
-import { SigningHandler } from "@core/domains/signing"
-import { createSubscription, unsubscribe } from "./subscriptions"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
-import BalancesRpc from "@core/libs/rpc/Balances"
-import { DEBUG } from "@core/constants"
-import TokensHandler from "@core/domains/tokens/handler"
+
+import { createSubscription, unsubscribe } from "./subscriptions"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
@@ -86,9 +87,10 @@ export default class Extension extends ExtensionHandler {
       case "pri(mnemonic.subscribe)":
         return this.stores.seedPhrase.subscribe(id, port)
 
-      case "pri(mnemonic.address)":
+      case "pri(mnemonic.address)": {
         const { mnemonic, type } = request as RequestAddressFromMnemonic
         return addressFromMnemonic(mnemonic, type)
+      }
 
       // --------------------------------------------------------------------
       // balance handlers ---------------------------------------------------
@@ -99,7 +101,7 @@ export default class Extension extends ExtensionHandler {
       case "pri(balances.subscribe)":
         return this.stores.balances.subscribe(id, port)
 
-      case "pri(balances.byparams.subscribe)":
+      case "pri(balances.byparams.subscribe)": {
         // create subscription callback
         const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
 
@@ -121,6 +123,7 @@ export default class Extension extends ExtensionHandler {
 
         // subscription created
         return true
+      }
 
       // --------------------------------------------------------------------
       // chain handlers -----------------------------------------------------

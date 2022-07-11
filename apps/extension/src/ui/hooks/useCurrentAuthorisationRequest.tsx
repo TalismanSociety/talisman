@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback, useMemo } from "react"
-import useAccounts from "./useAccounts"
-import useSet from "@talisman/hooks/useSet"
-import type { AuthorizeRequest } from "@core/types"
-import { useAuthRequests } from "./useAuthRequests"
-import { api } from "@ui/api"
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
+import type { AuthorizeRequest } from "@core/types"
+import useSet from "@talisman/hooks/useSet"
+import { api } from "@ui/api"
+import { useCallback, useEffect, useMemo, useState } from "react"
+
+import useAccounts from "./useAccounts"
+import { useAuthRequests } from "./useAuthRequests"
 
 interface IProps {
   onError: (msg: string) => void
@@ -29,7 +30,7 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
   const canIgnore = useMemo(() => !currentRequest?.request.ethereum, [currentRequest])
 
   useEffect(() => {
-    if (!!authRequests[0]) {
+    if (authRequests[0]) {
       setCurrentRequest(authRequests[0])
     }
   }, [authRequests, setCurrentRequest, onError])
@@ -50,7 +51,7 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
   }, [currentRequest?.id, onIgnore])
 
   return {
-    request: currentRequest!,
+    request: currentRequest,
     accounts: accounts.map((account) => ({
       ...account,
       toggle: () => (ethereum ? set([account?.address]) : toggle(account?.address)),

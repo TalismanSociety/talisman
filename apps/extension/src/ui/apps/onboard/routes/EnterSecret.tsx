@@ -1,15 +1,16 @@
-import styled from "styled-components"
-import { Layout } from "../layout"
-import imgHood from "@talisman/theme/images/onboard_hood.png"
-import { useOnboard } from "../context"
-import { useCallback, useMemo } from "react"
-import { api } from "@ui/api"
-import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
-import * as yup from "yup"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import { useNavigate } from "react-router-dom"
 import { FormField } from "@talisman/components/Field/FormField"
+import { SimpleButton } from "@talisman/components/SimpleButton"
+import imgHood from "@talisman/theme/images/onboard_hood.png"
+import { api } from "@ui/api"
+import { useCallback, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
+import styled from "styled-components"
+import * as yup from "yup"
+
+import { useOnboard } from "../context"
+import { Layout } from "../layout"
 
 const Description = styled.p`
   margin-bottom: 1.6rem;
@@ -34,7 +35,7 @@ type FormData = {
   mnemonic?: string
 }
 
-const cleanupMnemonic = (input: string = "") =>
+const cleanupMnemonic = (input = "") =>
   input
     .trim()
     .toLowerCase()

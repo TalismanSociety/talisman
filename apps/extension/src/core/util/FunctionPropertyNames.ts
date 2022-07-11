@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-types */
 // Some handy types from https://www.typescriptlang.org/docs/handbook/advanced-types.html#distributive-conditional-types
 
 export type FunctionPropertyNames<T> = {

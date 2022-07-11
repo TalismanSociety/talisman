@@ -1,4 +1,10 @@
-import Browser, { Storage } from "webextension-polyfill"
+import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import {
+  MessageTypesWithSubscriptions,
+  MessageTypesWithSubscriptionsById,
+  Port,
+  RequestIdOnly,
+} from "@core/types"
 import {
   BehaviorSubject,
   ReplaySubject,
@@ -12,13 +18,7 @@ import {
   tap,
   zip,
 } from "rxjs"
-import {
-  MessageTypesWithSubscriptions,
-  MessageTypesWithSubscriptionsById,
-  Port,
-  RequestIdOnly,
-} from "@core/types"
-import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import Browser, { Storage } from "webextension-polyfill"
 
 export interface Store<T extends { [index: string]: any }> {
   get(): Promise<T>
@@ -119,7 +119,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
       .pipe(
         // run each mutation against the output of the previous mutation
         map(([currentValue, mutations]): [T, Array<() => void>] => {
-          let callbacks = []
+          const callbacks = []
           let newValue = currentValue
 
           for (const { mutation, callback } of mutations) {

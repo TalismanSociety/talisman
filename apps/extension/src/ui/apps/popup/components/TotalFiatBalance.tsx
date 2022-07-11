@@ -24,7 +24,6 @@ const Container = styled.div`
 
   span {
     font-size: var(--font-size-large);
-    color: var(--color-foreground);
     font-weight: var(--font-weight-bold);
   }
 
@@ -66,7 +65,15 @@ const Side = styled.div`
   flex-grow: 0.5;
 `
 
-const TotalFiat = styled(Asset.Fiat)``
+// force height to prevent flickering
+const TotalFiat = styled.div`
+  height: 2.9rem;
+
+  span {
+    display: inline-block;
+    min-width: 15rem;
+  }
+`
 
 export const TotalFiatBalance = ({ className }: { className?: string }) => {
   const balances = useBalances()
@@ -87,7 +94,9 @@ export const TotalFiatBalance = ({ className }: { className?: string }) => {
           </ToggleHide>
         </Side>
       </TitleRow>
-      <TotalFiat amount={balances?.sum.fiat("usd").transferable} currency="usd" isBalance />
+      <TotalFiat>
+        <Asset.Fiat amount={balances?.sum.fiat("usd").transferable} currency="usd" isBalance />
+      </TotalFiat>
     </Container>
   )
 }

@@ -1,10 +1,12 @@
+import { Balance as BalanceType } from "@core/types"
 import styled from "styled-components"
+
+import { Erc20Logo } from "../Erc20Tokens/Erc20Logo"
+import Balance, { IAssetBalanceOptions } from "./Balance"
 import Logo from "./Logo"
 import Name from "./Name"
-import Balance, { IAssetBalanceOptions } from "./Balance"
-import { Balance as BalanceType } from "@core/types"
-import { Erc20Logo } from "../Erc20Tokens/Erc20Logo"
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IAssetRowOptions extends IAssetBalanceOptions {}
 
 interface IAssetRowType extends IAssetRowOptions {

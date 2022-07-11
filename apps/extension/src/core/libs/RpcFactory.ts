@@ -29,6 +29,7 @@ class RpcFactory {
     const [socketUserId, ws] = await this.connectChainSocket(chainId)
 
     try {
+      // eslint-disable-next-line no-var
       var response = await ws.send(method, params, isCacheable)
     } catch (error) {
       Sentry.captureException(new Error("Failed to send"), {
@@ -57,6 +58,7 @@ class RpcFactory {
     const [socketUserId, ws] = await this.connectChainSocket(chainId)
 
     try {
+      // eslint-disable-next-line no-var
       var subscriptionId = await ws.subscribe(responseMethod, subscribeMethod, params, callback)
     } catch (error) {
       await this.disconnectChainSocket(chainId, socketUserId)

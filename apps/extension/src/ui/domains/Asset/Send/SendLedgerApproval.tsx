@@ -1,18 +1,19 @@
-import { TypeRegistry } from "@polkadot/types"
 import { AccountJsonHardware } from "@core/types"
+import { TypeRegistry } from "@polkadot/types"
+import { formatLedgerSigningError } from "@talisman/util/formatLedgerErrorMessage"
 import {
   LedgerConnectionStatus,
   LedgerConnectionStatusProps,
 } from "@ui/domains/Account/LedgerConnectionStatus"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
-import useToken from "@ui/hooks/useToken"
 import { useLedger } from "@ui/hooks/useLedger"
+import useToken from "@ui/hooks/useToken"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import styled from "styled-components"
+
 import { useSendTokens } from "./context"
 import { SendTokensExpectedResult, SendTokensInputs } from "./types"
-import { formatLedgerSigningError } from "@talisman/util/formatLedgerErrorMessage"
-import styled from "styled-components"
 
 const SendLedgerApprovalContainer = styled.div`
   .cancel-link {
@@ -81,7 +82,7 @@ const SendLedgerApproval = () => {
     if (error)
       return {
         refresh,
-        ...formatLedgerSigningError(error, network!),
+        ...formatLedgerSigningError(error, network ?? undefined),
       }
 
     if (signed)

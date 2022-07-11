@@ -1,15 +1,16 @@
-import { FC, useCallback, useEffect, useMemo } from "react"
-import styled from "styled-components"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
+import useToken from "@ui/hooks/useToken"
+import { BigNumberish } from "ethers"
+import { formatEther } from "ethers/lib/utils"
+import { FC, useCallback, useMemo } from "react"
+import styled from "styled-components"
+
+import { useEthSignTransactionRequest } from "../SignRequestContext"
 import { ViewDetailsButton } from "./ViewDetailsButton"
 import { ViewDetailsField } from "./ViewDetailsField"
-import { useEthSignRequest } from "../SignRequestContext"
-import { formatEther } from "ethers/lib/utils"
-import { BigNumberish } from "ethers"
-import useToken from "@ui/hooks/useToken"
-import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
 
 const ViewDetailsContainer = styled.div`
   background: var(--color-background);
@@ -61,7 +62,7 @@ type AddressProps = {
   address?: string
 }
 const Address = ({ address }: AddressProps) => {
-  const { network } = useEthSignRequest()
+  const { network } = useEthSignTransactionRequest()
   const blockExplorerUrl = useMemo(() => network?.explorerUrl, [network?.explorerUrl])
 
   if (!address) return null
@@ -78,7 +79,7 @@ const Address = ({ address }: AddressProps) => {
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
   useAnalyticsGenericEvent("open sign transaction view details", { type: "ethereum" })
 
-  const { request, network, gasInfo, priority } = useEthSignRequest()
+  const { request, network, gasInfo, priority } = useEthSignTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
   const formatEthValue = useCallback(
@@ -125,13 +126,16 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
 
 export const ViewDetailsEth = () => {
   const { isOpen, open, close } = useOpenClose()
-  const { hasError, isAnalysing } = useEthSignRequest()
+  const { hasError, isAnalysing } = useEthSignTransactionRequest()
 
   return (
     <>
-      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={isAnalysing} hasError={hasError}>
-        View Details
-      </ViewDetailsButton>
+      <ViewDetailsButton
+        onClick={open}
+        hide={isOpen}
+        isAnalysing={isAnalysing}
+        hasError={hasError}
+      />
       <Drawer anchor="bottom" open={isOpen && !isAnalysing} onClose={close}>
         <ViewDetailsContent onClose={close} />
       </Drawer>

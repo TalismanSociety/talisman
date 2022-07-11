@@ -1,16 +1,17 @@
-import styled from "styled-components"
-import Avatar from "./Avatar"
-import CopyToClipboard from "@talisman/components/CopyToClipboard"
-import { AccountJson } from "@polkadot/extension-base/background/types"
-import { FC, useCallback } from "react"
-import { LinkIcon, UsbIcon } from "@talisman/theme/icons"
-import { ReactComponent as IconLoader } from "@talisman/theme/icons/loader.svg"
-import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
 import { Balances } from "@core/types"
-import useAccountByAddress from "@ui/hooks/useAccountByAddress"
-import Asset from "@ui/domains/Asset"
-import { useAddressFormatterModal } from "./AddressFormatterModal"
+import { AccountJson } from "@polkadot/extension-base/background/types"
+import CopyToClipboard from "@talisman/components/CopyToClipboard"
 import { WithTooltip } from "@talisman/components/Tooltip"
+import { LinkIcon, UsbIcon } from "@talisman/theme/icons"
+import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
+import { ReactComponent as IconLoader } from "@talisman/theme/icons/loader.svg"
+import Asset from "@ui/domains/Asset"
+import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { FC, useCallback } from "react"
+import styled from "styled-components"
+
+import { useAddressFormatterModal } from "./AddressFormatterModal"
+import Avatar from "./Avatar"
 
 export interface IAccountNameOptions {
   withAvatar?: boolean
@@ -159,6 +160,7 @@ const StyledAccountName = styled(AccountName)`
       font-size: var(--font-size-xsmall);
       color: var(--color-mid);
       line-height: 1.4;
+      height: 1.5rem; // force to prevent flickering
 
       span {
         font-size: var(--font-size-xsmall);

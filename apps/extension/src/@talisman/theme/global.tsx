@@ -233,22 +233,22 @@ const Global = createGlobalStyle`
     overflow:hidden;
     border-radius:6px;
     cursor:pointer;
-    color:var(--color-foreground);
+    color:transparent; // transparent so text doesn't appear through transparent bg
 
     &.balance-reveal {
       overflow:visible;
       border-radius:0;
-      color:inherit;
+      color:inherit; // original text color
     }
 
     ::after {
-      transition: all var(--transition-speed) ease-in;
-      backdrop-filter: blur(10px);
       content:"";
-      background: radial-gradient(rgba(90, 90, 90, 0.2) 0%, rgba(90, 90, 90, 0) 100%);
+      background-image:url(/images/blur.svg);
+      opacity: 0.15;
+      background-size:100% 100%;
       border-radius:6px;
       position:absolute;
-      overflow:0;
+      overflow:hidden;
       top:0;
       left:0;
       width:100%;
@@ -256,8 +256,7 @@ const Global = createGlobalStyle`
     }
 
     &.balance-reveal::after {
-      backdrop-filter: blur(0);
-      opacity:0;
+      display:none;
     }
   }
 

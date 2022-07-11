@@ -3,7 +3,7 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import { FC, useMemo } from "react"
 
 type AddressProps = {
-  address?: string
+  address: string
   startCharCount?: number
   endCharCount?: number
   as?: "span" | "div"

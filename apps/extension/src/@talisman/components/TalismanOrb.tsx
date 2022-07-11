@@ -1,8 +1,8 @@
-import { FC, useMemo } from "react"
-import Color from "color"
-import md5 from "blueimp-md5"
-import { nanoid } from "nanoid"
 import { encodeAnyAddress } from "@core/util"
+import md5 from "blueimp-md5"
+import Color from "color"
+import { nanoid } from "nanoid"
+import { FC, useMemo } from "react"
 
 const djb2 = (str: string) => {
   let hash = 5381
@@ -33,6 +33,7 @@ export const TalismanOrb: FC<TalismanOrbProps> = ({
     const isEthereum = seed?.startsWith("0x")
     try {
       // seed may be specific to a ss58 prefix, get the base address
+      // eslint-disable-next-line no-var
       var address = isEthereum ? seed : encodeAnyAddress(seed)
     } catch (err) {
       address = seed

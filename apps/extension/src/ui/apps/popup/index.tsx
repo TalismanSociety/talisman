@@ -1,28 +1,29 @@
+import { isEthereumRequest } from "@core/util/isEthereumRequest"
+import { api } from "@ui/api"
+import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
+import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useAuthRequests } from "@ui/hooks/useAuthRequests"
+import { useEthNetworkAddRequests } from "@ui/hooks/useEthNetworkAddRequests"
+import { useEthWatchAssetRequests } from "@ui/hooks/useEthWatchAssetRequests"
+import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
+import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
+import { useMetadataRequests } from "@ui/hooks/useMetadataRequests"
+import { useSigningRequests } from "@ui/hooks/useSigningRequests"
 import { useEffect, useMemo } from "react"
-import { Route, Routes, Navigate, useNavigate } from "react-router-dom"
-import Loading from "./pages/Loading"
-import Login from "./pages/Login"
-import Account from "./pages/Account"
-import Connect from "./pages/Connect"
-import { SignRequest } from "./pages/Sign"
-import { EthSignRequest } from "./pages/Sign/ethereum"
-import Metadata from "./pages/Metadata"
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom"
+
 import { CurrentSiteProvider } from "./context/CurrentSiteContext"
 import { NavigationProvider } from "./context/NavigationContext"
-import { useMetadataRequests } from "@ui/hooks/useMetadataRequests"
-import { useAuthRequests } from "@ui/hooks/useAuthRequests"
-import { useSigningRequests } from "@ui/hooks/useSigningRequests"
-import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
-import { api } from "@ui/api"
-import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
-import { isEthereumRequest } from "@core/util/isEthereumRequest"
-import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
-import { useEthNetworkAddRequests } from "@ui/hooks/useEthNetworkAddRequests"
-import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
-import { useEthWatchAssetRequests } from "@ui/hooks/useEthWatchAssetRequests"
+import Account from "./pages/Account"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
-import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
+import Connect from "./pages/Connect"
+import Loading from "./pages/Loading"
+import Login from "./pages/Login"
+import Metadata from "./pages/Metadata"
 import { Portfolio } from "./pages/Portfolio"
+import { EthereumSignRequest } from "./pages/Sign/ethereum"
+import { SubstrateSignRequest } from "./pages/Sign/substrate"
 
 const Popup = () => {
   const isOnboarded = useIsOnboarded()
@@ -96,8 +97,8 @@ const Popup = () => {
               <Route path="/" element={<Account />}></Route>
               <Route path="portfolio/*" element={<Portfolio />}></Route>
               <Route path="auth" element={<Connect />}></Route>
-              <Route path="sign/eth/:id" element={<EthSignRequest />}></Route>
-              <Route path="sign/:id" element={<SignRequest />}></Route>
+              <Route path="sign/eth/:id" element={<EthereumSignRequest />}></Route>
+              <Route path="sign/:id" element={<SubstrateSignRequest />}></Route>
               <Route path="metadata" element={<Metadata />}></Route>
               <Route path="eth-network-add" element={<AddEthereumNetwork />}></Route>
               <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>

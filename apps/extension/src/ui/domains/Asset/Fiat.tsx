@@ -1,9 +1,9 @@
-import CountUp from "react-countup"
-import { FC, useCallback, useMemo } from "react"
 import { TokenRateCurrency } from "@core/types"
-import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
 import { classNames } from "@talisman/util/classNames"
+import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
+import { FC, useCallback, useMemo } from "react"
+import CountUp from "react-countup"
 
 type FiatProps = {
   amount?: number | null
@@ -21,7 +21,7 @@ type DisplayValueProps = {
 }
 
 const DisplayValue: FC<DisplayValueProps> = ({ amount, currency, noCountUp }) => {
-  const format = useCallback((amount: number = 0) => formatFiat(amount, currency), [currency])
+  const format = useCallback((amount = 0) => formatFiat(amount, currency), [currency])
   const formatted = useMemo(() => format(amount), [format, amount])
 
   if (noCountUp) return <>{formatted}</>
@@ -47,12 +47,10 @@ export const Fiat = ({
   noCountUp = false,
   isBalance = false,
 }: FiatProps) => {
-  const { refReveal, isRevealable, isRevealed, effectiveNoCountUp } = useRevealableBalance(
-    isBalance,
-    noCountUp
-  )
+  const { refReveal, isRevealable, isRevealed, isHidden, effectiveNoCountUp } =
+    useRevealableBalance(isBalance, noCountUp)
 
-  if (amount === null || amount === undefined) return null
+  const render = amount !== null && amount !== undefined
 
   return (
     <span
@@ -64,11 +62,13 @@ export const Fiat = ({
         className
       )}
     >
-      <DisplayValue
-        amount={amount}
-        currency={currency || undefined}
-        noCountUp={effectiveNoCountUp}
-      />
+      {render && (
+        <DisplayValue
+          amount={isHidden ? 0 : amount}
+          currency={currency || undefined}
+          noCountUp={effectiveNoCountUp}
+        />
+      )}
     </span>
   )
 }

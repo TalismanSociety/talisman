@@ -1,11 +1,12 @@
+import { SimpleButton } from "@talisman/components/SimpleButton"
 import imgHand from "@talisman/theme/images/hand_open_static_dark.gif"
 import imgHandOk from "@talisman/theme/images/onboard_complete.gif"
 import { api } from "@ui/api"
-import { Layout } from "../layout"
-import styled from "styled-components"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import { motion, Variants } from "framer-motion"
+import { Variants, motion } from "framer-motion"
 import { useEffect, useState } from "react"
+import styled from "styled-components"
+
+import { Layout } from "../layout"
 
 const Image = styled(motion.img)`
   height: 23.8rem;
@@ -70,8 +71,8 @@ export const Complete = () => (
         <BtnComplete
           autoFocus
           primary
-          onClick={() => {
-            api.dashboardOpen("/portfolio")
+          onClick={async () => {
+            await api.dashboardOpen("/portfolio")
             window.close()
           }}
         >

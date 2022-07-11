@@ -1,14 +1,14 @@
-import { Modal } from "@talisman/components/Modal"
 import StyledDialog from "@talisman/components/Dialog"
+import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { IconAlert } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useCallback, useEffect, useMemo, useState } from "react"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
-const REMOVABLE_ORIGINS = ["SEED", "JSON", "HARDWARE"]
+const REMOVABLE_ORIGINS = ["DERIVED", "SEED", "JSON", "HARDWARE"]
 
 const useAccountRemoveModalProvider = () => {
   const { account } = useSelectedAccount()

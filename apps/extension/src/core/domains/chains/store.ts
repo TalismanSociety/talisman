@@ -8,7 +8,7 @@ import { getChains } from "./api"
 const minimumHydrationInterval = 43_200_000 // 43_200_000ms = 43_200s = 720m = 12 hours
 
 export class ChainStore {
-  #lastHydratedAt: number = 0
+  #lastHydratedAt = 0
 
   /**
    * Hydrate the store with the latest chains from subsquid.

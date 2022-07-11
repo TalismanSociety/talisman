@@ -1,12 +1,12 @@
+import { AddressesByChain, Balances } from "@core/types"
 import { api } from "@ui/api"
 import { useChains } from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
-import { Balances, AddressesByChain } from "@core/types"
-import { useDebounce } from "react-use"
 import { useTokens } from "@ui/hooks/useTokens"
 import md5 from "blueimp-md5"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useDebounce } from "react-use"
 import { BehaviorSubject } from "rxjs"
 
 const INITIAL_VALUE = new Balances({})
@@ -54,9 +54,10 @@ export const useBalancesByParams = (addressesByChain: AddressesByChain) => {
             return subject.next(subject.value.remove(update.balances))
           }
 
-          default:
+          default: {
             const exhaustiveCheck: never = update
             throw new Error(`Unhandled BalancesUpdate type: ${exhaustiveCheck}`)
+          }
         }
       }),
     [addressesByChain]

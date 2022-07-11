@@ -10,6 +10,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev --parallel --color",
     "dev:extension": "yarn workspace extension run dev",
+    "build:extension:ci": "turbo run build:extension:ci",
     "build:extension:prod": "turbo run build:extension:prod",
     "build:extension:canary": "turbo run build:extension:canary",
     "lint": "turbo run lint",
@@ -22,8 +23,10 @@
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
     "husky": "^8.0.1",
+    "import-sort-style-module": "^6.0.0",
     "lint-staged": "^12.4.1",
-    "prettier": "latest",
+    "prettier": "^2.7.1",
+    "prettier-plugin-import-sort": "^0.0.7",
     "turbo": "latest"
   },
   "engines": {

@@ -1,21 +1,21 @@
-import { useCallback, useEffect, useState } from "react"
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
-import Grid from "@talisman/components/Grid"
-import Field from "@talisman/components/Field"
-import Setting from "@talisman/components/Setting"
-import Layout from "@ui/apps/dashboard/layout"
 import { SettingsStoreData } from "@core/domains/app"
-import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
-import { useSettings } from "@ui/hooks/useSettings"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { EvmNetwork } from "@core/types"
+import Field from "@talisman/components/Field"
+import Grid from "@talisman/components/Grid"
+import HeaderBlock from "@talisman/components/HeaderBlock"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
+import Setting from "@talisman/components/Setting"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import Spacer from "@talisman/components/Spacer"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
-import styled from "styled-components"
-import { EvmNetwork } from "@core/types"
+import Layout from "@ui/apps/dashboard/layout"
+import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSettings } from "@ui/hooks/useSettings"
+import { useCallback, useEffect, useState } from "react"
+import styled from "styled-components"
 
 const Button = styled(SimpleButton)`
   width: auto;
@@ -42,7 +42,6 @@ const CustomNetworksCount = styled.span`
     color: var(--color-primary);
     background: rgba(213, 255, 92, 0.12);
     text-align: center;
-    //padding: 1.2rem;
     border-radius: 50%;
     line-height: 2.4rem;
     padding-top: 0.1rem;
@@ -56,6 +55,7 @@ const Options = () => {
     useCustomEthereumNetworks,
     hideBalances = false,
     allowNotifications = true,
+    shouldMimicMetaMask = false,
     update,
   } = useSettings()
 
@@ -156,6 +156,15 @@ const Options = () => {
             </Grid>
           </ModalDialog>
         </Modal>
+        <Setting
+          title="MetaMask Dapp compatibility"
+          subtitle="Allows using Talisman on applications that support MetaMask only. Leave this turned off if you use MetaMask in the same browser as Talisman."
+        >
+          <Field.Toggle
+            value={shouldMimicMetaMask}
+            onChange={handleSettingChange("shouldMimicMetaMask")}
+          />
+        </Setting>
       </Grid>
     </Layout>
   )

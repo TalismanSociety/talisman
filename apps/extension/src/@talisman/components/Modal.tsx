@@ -1,8 +1,9 @@
 import { useOpenableComponent } from "@talisman/hooks/useOpenableComponent"
 import { classNames } from "@talisman/util/classNames"
-import { FC, MouseEventHandler, useRef } from "react"
+import { FC, MouseEventHandler, ReactNode, useRef } from "react"
 import { createPortal } from "react-dom"
 import styled from "styled-components"
+
 import { TooltipBoundaryProvider } from "./Tooltip"
 
 const Container = styled.div`
@@ -56,6 +57,7 @@ export type ModalProps = {
   open: boolean
   className?: string
   onClose?: () => void
+  children?: ReactNode
 }
 
 const stopPropagation: MouseEventHandler<HTMLDivElement> = (e) => {

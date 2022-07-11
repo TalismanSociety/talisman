@@ -1,40 +1,38 @@
+import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
+import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import {
-  MessageTypes,
-  RequestTypes,
-  ResponseType,
-  Port,
-  RequestIdOnly,
-  EthApproveSignAndSend,
+  ETH_ERROR_EIP1993_USER_REJECTED,
+  EthProviderRpcError,
+  EthRequestArguments,
+  EthRequestSignatures,
+} from "@core/injectEth/types"
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { db } from "@core/libs/db"
+import { ExtensionHandler } from "@core/libs/Handler"
+import { watchEthereumTransaction } from "@core/notifications"
+import {
   AnyEthRequestChainId,
   CustomEvmNetwork,
   CustomNativeToken,
+  EthApproveSignAndSend,
+  MessageTypes,
+  Port,
+  RequestIdOnly,
+  RequestTypes,
+  ResponseType,
   WatchAssetRequest,
 } from "@core/types"
-import { ExtensionHandler } from "@core/libs/Handler"
-import { assert, u8aToHex } from "@polkadot/util"
-import {
-  EthProviderRpcError,
-  EthRequestSignatures,
-  EthRequestArguments,
-  ETH_ERROR_EIP1993_USER_REJECTED,
-} from "@core/injectEth/types"
-import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
-import {
-  concat,
-  toUtf8Bytes,
-  serializeTransaction,
-  parseUnits,
-  formatUnits,
-} from "ethers/lib/utils"
-import { BigNumber, ethers } from "ethers"
-import type { Bytes, UnsignedTransaction } from "ethers"
 import type { TransactionRequest } from "@ethersproject/providers"
+import { SignTypedDataVersion } from "@metamask/eth-sig-util"
+import { assert, u8aToHex } from "@polkadot/util"
+import { BigNumber, ethers } from "ethers"
+import type { UnsignedTransaction } from "ethers"
+import { formatUnits, parseUnits, serializeTransaction } from "ethers/lib/utils"
 import isString from "lodash/isString"
+
+import { encodeTextData, encodeTypedData, legacyToBuffer } from "./helpers"
 import { getProviderForEvmNetworkId } from "./networksStore"
-import { watchEthereumTransaction } from "@core/notifications"
-import { db } from "@core/libs/db"
-import { talismanAnalytics } from "@core/libs/Analytics"
-import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -59,16 +57,11 @@ const getHumanReadableErrorMessage = (error: unknown) => {
   return undefined
 }
 
-const messagePrefix = "\x19Ethereum Signed Message:\n"
-const addSafeSigningPrefix = (message: string | Bytes) => {
-  if (typeof message === "string") message = toUtf8Bytes(message)
-  return concat([toUtf8Bytes(messagePrefix), toUtf8Bytes(String(message.length)), message])
-}
-
 type UnsignedTxWithGas = Omit<TransactionRequest, "gasLimit"> & { gas: string }
 
 const txRequestToUnsignedTx = (tx: TransactionRequest | UnsignedTxWithGas): UnsignedTransaction => {
   // we're using EIP1559 so gasPrice must be removed
+  // eslint-disable-next-line prefer-const
   let { from, gasPrice, ...unsignedTx } = tx
   if ("gas" in unsignedTx) {
     const { gas, ...rest1 } = unsignedTx as UnsignedTxWithGas
@@ -95,9 +88,14 @@ export class EthHandler extends ExtensionHandler {
     try {
       const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
       assert(queued, "Unable to find request")
-      const { request, provider, resolve, reject } = queued
+      const { request, resolve, reject, ethChainId } = queued
 
-      const nonce = await provider.getTransactionCount(queued.account.address)
+      const provider = await getProviderForEvmNetworkId(ethChainId)
+      assert(provider, "Unable to find provider for chain " + ethChainId)
+
+      // get up to date nonce (accounts for pending transactions)
+      const nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
+
       const maxFeePerGas = parseUnits(strMaxFeePerGas, "wei")
       const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, "wei")
 
@@ -111,6 +109,7 @@ export class EthHandler extends ExtensionHandler {
 
       const serialisedTx = serializeTransaction(goodTx)
       try {
+        // eslint-disable-next-line no-var
         var pair = getUnlockedPairFromAddress(queued.account.address)
       } catch (error) {
         this.stores.password.clearPassword()
@@ -123,6 +122,8 @@ export class EthHandler extends ExtensionHandler {
 
       const serialisedSignedTx = serializeTransaction(goodTx, signature)
       const { chainId, hash } = await provider.sendTransaction(serialisedSignedTx)
+
+      incrementTransactionCount(queued.account.address, queued.ethChainId)
 
       // notify user about transaction progress
       if (await this.stores.settings.get("allowNotifications"))
@@ -151,9 +152,10 @@ export class EthHandler extends ExtensionHandler {
 
       assert(queued, "Unable to find request")
 
-      const { request, reject, resolve } = queued
+      const { method, request, reject, resolve } = queued
 
       try {
+        // eslint-disable-next-line no-var
         var pair = getUnlockedPairFromAddress(queued.account.address)
       } catch (error) {
         this.stores.password.clearPassword()
@@ -163,11 +165,23 @@ export class EthHandler extends ExtensionHandler {
         return false
       }
 
-      const signature = await pair.sign(addSafeSigningPrefix(request))
+      let messageToSign: Uint8Array
+      if (method === "personal_sign") {
+        messageToSign = encodeTextData(legacyToBuffer(request as string), true)
+      } else if (method === "eth_signTypedData_v3") {
+        messageToSign = encodeTypedData(JSON.parse(request as string), SignTypedDataVersion.V3)
+      } else if (method === "eth_signTypedData_v4") {
+        messageToSign = encodeTypedData(JSON.parse(request as string), SignTypedDataVersion.V4)
+      } else {
+        throw new Error(`Unsupported method : ${method}`)
+      }
+
+      const signature = await pair.sign(messageToSign)
       resolve(u8aToHex(signature))
 
       talismanAnalytics.captureDelayed("sign transaction approve", {
         type: "evm sign",
+        method,
         dapp: queued.url,
         chain: queued.ethChainId,
       })
@@ -275,7 +289,13 @@ export class EthHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
     const { resolve, token } = queued
 
-    await db.tokens.put(token)
+    // some dapps set decimals as a string, which breaks balances
+    const safeToken = {
+      ...token,
+      decimals: Number(token.decimals),
+    }
+
+    await db.tokens.put(safeToken)
     talismanAnalytics.capture("add asset evm", {
       contractAddress: token.contractAddress,
       symbol: token.symbol,
@@ -332,7 +352,7 @@ export class EthHandler extends ExtensionHandler {
           port
         )
 
-      case "pri(eth.watchasset.requests.subscribe.byid)":
+      case "pri(eth.watchasset.requests.subscribe.byid)": {
         const cb = createSubscription<"pri(eth.watchasset.requests.subscribe.byid)">(id, port)
         const subscription = this.state.requestStores.evmAssets.observable.subscribe(
           (reqs: WatchAssetRequest[]) => {
@@ -346,6 +366,7 @@ export class EthHandler extends ExtensionHandler {
           subscription.unsubscribe()
         })
         return true
+      }
 
       // --------------------------------------------------------------------
       // ethereum network handlers ------------------------------------------
@@ -404,9 +425,10 @@ export class EthHandler extends ExtensionHandler {
         return true
       }
 
-      case "pri(eth.request)":
+      case "pri(eth.request)": {
         const { chainId: ethChainId, ...rest } = request as AnyEthRequestChainId
         return this.ethRequest(id, ethChainId, rest) as any
+      }
     }
     throw new Error(`Unable to handle message of type ${type}`)
   }

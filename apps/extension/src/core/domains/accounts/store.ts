@@ -1,6 +1,6 @@
 import { SubscribableStorageProvider } from "@core/libs/Store"
-import { assert } from "@polkadot/util"
 import passworder from "@metamask/browser-passworder"
+import { assert } from "@polkadot/util"
 
 const storageKey = "nursery"
 
@@ -22,7 +22,7 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
     seed: string,
     address: string,
     password: string,
-    confirmed: boolean = false
+    confirmed = false
   ): Promise<boolean> {
     const storedCipher = await this.get("cipher")
 
@@ -42,7 +42,7 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
     return true
   }
 
-  public async setConfirmed(confirmed: boolean = false) {
+  public async setConfirmed(confirmed = false) {
     await this.set({ confirmed })
     return true
   }

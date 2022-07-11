@@ -6,6 +6,7 @@ import { XIcon } from "@talisman/theme/icons"
 import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import { FC } from "react"
 import styled from "styled-components"
+
 import { ConnectedAccounts } from "./ConnectedAccounts"
 
 type Props = {
@@ -48,7 +49,7 @@ const ConnectedAccountsDrawer: FC<Props> = ({ open, onClose }) => {
     <Drawer fullScreen anchor="right" open={open} onClose={onClose}>
       <Container>
         <header>
-          <AppPill url={url!} />
+          <AppPill url={url} />
           <IconButton className="close" onClick={onClose}>
             <XIcon />
           </IconButton>

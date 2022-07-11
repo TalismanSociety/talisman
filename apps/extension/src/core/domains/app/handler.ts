@@ -1,28 +1,29 @@
+import { AppStoreData } from "@core/domains/app/store.app"
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import { genericSubscription } from "@core/handlers/subscriptions"
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { ExtensionHandler } from "@core/libs/Handler"
 import type {
+  AccountMeta,
+  AnalyticsCaptureRequest,
+  LoggedinType,
   MessageTypes,
+  ModalOpenParams,
+  ModalTypes,
+  OnboardedType,
+  Port,
   RequestLogin,
   RequestOnboard,
   RequestRoute,
   RequestTypes,
   ResponseType,
-  AccountMeta,
-  Port,
-  LoggedinType,
-  OnboardedType,
-  ModalTypes,
-  ModalOpenParams,
-  AnalyticsCaptureRequest,
 } from "@core/types"
-import Browser from "webextension-polyfill"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { mnemonicGenerate, mnemonicValidate } from "@polkadot/util-crypto"
-import { ExtensionHandler } from "@core/libs/Handler"
-import { genericSubscription } from "@core/handlers/subscriptions"
-import { AppStoreData } from "@core/domains/app/store.app"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { Subject } from "rxjs"
-import { talismanAnalytics } from "@core/libs/Analytics"
+import Browser from "webextension-polyfill"
+
 import { AccountTypes } from "../accounts/helpers"
 
 export default class AppHandler extends ExtensionHandler {
@@ -46,7 +47,7 @@ export default class AppHandler extends ExtensionHandler {
     const account = this.getRootAccount()
     assert(!account, "A root account already exists")
 
-    let confirmed: boolean = false
+    let confirmed = false
     const method = mnemonic ? "import" : "new"
     // no mnemonic passed in generate a mnemonic as needed
     if (!mnemonic) {
@@ -220,10 +221,11 @@ export default class AppHandler extends ExtensionHandler {
           (modalType) => ({ modalType })
         )
 
-      case "pri(app.analyticsCapture)":
+      case "pri(app.analyticsCapture)": {
         const { eventName, options } = request as AnalyticsCaptureRequest
         talismanAnalytics.capture(eventName, options)
         return true
+      }
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

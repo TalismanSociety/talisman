@@ -1,3 +1,6 @@
+import "react-loading-skeleton/dist/skeleton.css"
+
+import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import {
   AccountAddressType,
   AddressesByChain,
@@ -5,22 +8,21 @@ import {
   RequestAccountCreateFromSeed,
 } from "@core/types"
 import { Checkbox } from "@talisman/components/Checkbox"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { CheckCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import styled from "styled-components"
-import { Address } from "./Address"
-import Avatar from "./Avatar"
-import "react-loading-skeleton/dist/skeleton.css"
+import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
-import { convertAddress } from "@talisman/util/convertAddress"
-import { CheckCircleIcon } from "@talisman/theme/icons"
-import Fiat from "../Asset/Fiat"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
-import { WithTooltip } from "@talisman/components/Tooltip"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import styled from "styled-components"
 import { formatDecimals } from "talisman-utils"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+
+import Fiat from "../Asset/Fiat"
+import { Address } from "./Address"
+import Avatar from "./Avatar"
 
 const Container = styled.div`
   display: flex;
@@ -279,7 +281,7 @@ const useDerivedAccounts = (
     return testChains.reduce(
       (prev, curr) => ({
         ...prev,
-        [curr.id]: derivedAccounts.map((account) => convertAddress(account.address, curr.prefix))!,
+        [curr.id]: derivedAccounts.map((account) => convertAddress(account.address, curr.prefix)),
       }),
       {} as AddressesByChain
     )

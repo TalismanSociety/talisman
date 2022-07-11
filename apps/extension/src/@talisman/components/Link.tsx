@@ -1,5 +1,5 @@
 import React, { FC, MouseEvent, ReactNode, useCallback } from "react"
-import { NavLink as RouterLink, NavLinkProps, useNavigate } from "react-router-dom"
+import { NavLinkProps, NavLink as RouterLink, useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 export interface ILinkProps {
@@ -17,6 +17,7 @@ export interface ILinkProps {
   allowReferrer?: boolean
   tabIndex?: number
   end?: boolean
+  children?: ReactNode
 }
 
 const LinkChildren = ({ icon, children }: { icon?: any; children: any }) => (
@@ -35,6 +36,7 @@ type SmartLinkProps = NavLinkProps & {
   allowReferrer?: boolean
   tabIndex?: number
   end?: boolean
+  children?: ReactNode
 }
 
 const SmartLink: FC<SmartLinkProps> = ({
@@ -88,8 +90,8 @@ const Link: FC<ILinkProps> = ({
     [disabled, navigate, onClick, processing, to]
   )
 
-  return !!to ? (
-    !!onClick ? (
+  return to ? (
+    onClick ? (
       <button
         type="button"
         onClick={handleClick}
@@ -123,7 +125,7 @@ const StyledLink = styled(Link)`
   justify-content: flex-start;
   border: none;
   font-size: var(
-    --font-size-${({ large, small }) => (!!large ? "large" : !!small ? "small" : "normal")}
+    --font-size-${({ large, small }) => (large ? "large" : small ? "small" : "normal")}
   );
   color: var(--color-foreground);
   background: transparent;
