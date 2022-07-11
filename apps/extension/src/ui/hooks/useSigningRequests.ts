@@ -1,7 +1,8 @@
-import type { AnySigningRequest } from "@core/types"
+import type { AnySigningRequest } from "@core/domains/signing/types"
 import { api } from "@ui/api"
-import { useMessageSubscription } from "./useMessageSubscription"
 import { BehaviorSubject } from "rxjs"
+
+import { useMessageSubscription } from "./useMessageSubscription"
 
 const INITIAL_VALUE: Array<AnySigningRequest> = []
 

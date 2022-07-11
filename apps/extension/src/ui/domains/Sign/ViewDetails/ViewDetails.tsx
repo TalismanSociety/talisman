@@ -4,7 +4,7 @@ import {
   SignerPayloadRaw,
   SigningRequest,
   TransactionDetails,
-} from "@core/types"
+} from "@core/domains/signing/types"
 import { encodeAnyAddress } from "@core/util"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"

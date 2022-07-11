@@ -1,12 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { AccountJsonHardware } from "@core/domains/accounts/types"
+import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
+import { TypeRegistry } from "@polkadot/types"
 import type { ExtrinsicPayload } from "@polkadot/types/interfaces"
 import type { HexString } from "@polkadot/util/types"
-import { TypeRegistry } from "@polkadot/types"
 import { Drawer } from "@talisman/components/Drawer"
+import { useLedger } from "@ui/hooks/useLedger"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
 
-import { useLedger } from "@ui/hooks/useLedger"
-import { AccountJsonHardware, SignerPayloadJSON, SignerPayloadRaw } from "@core/types"
 import {
   LedgerConnectionStatus,
   LedgerConnectionStatusProps,

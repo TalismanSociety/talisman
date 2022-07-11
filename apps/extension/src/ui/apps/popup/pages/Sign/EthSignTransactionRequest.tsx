@@ -1,4 +1,5 @@
-import { AccountJsonAny, EthSignRequest, EvmNetwork } from "@core/types"
+import { AccountJsonAny } from "@core/domains/accounts/types"
+import { EvmNetwork } from "@core/types"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"

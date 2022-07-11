@@ -1,6 +1,7 @@
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
+import type { ResponseSigning } from "@core/domains/signing/types"
 import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
@@ -13,7 +14,6 @@ import type {
   RequestRpcUnsubscribe,
   RequestTypes,
   ResponseRpcListProviders,
-  ResponseSigning,
   ResponseTypes,
   SubscriptionMessageTypes,
 } from "@core/types"

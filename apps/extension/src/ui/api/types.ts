@@ -9,6 +9,7 @@ import {
 } from "@core/domains/app/types"
 import { BalancesUpdate, RequestBalance } from "@core/domains/balances/types"
 import { BalanceStorage } from "@core/domains/balances/types"
+import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/types"
 import {
   AuthRequestAddresses,
   AuthRequestId,
@@ -21,7 +22,6 @@ import { EthResponseType } from "@core/injectEth/types"
 import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
-  AnySigningRequest,
   ChainId,
   CustomErc20Token,
   CustomErc20TokenCreate,
@@ -31,7 +31,6 @@ import {
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
   TokenId,
-  TransactionDetails,
   UnsubscribeFn,
   WatchAssetRequest,
 } from "@core/types"

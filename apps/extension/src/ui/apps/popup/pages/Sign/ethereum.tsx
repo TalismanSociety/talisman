@@ -1,4 +1,4 @@
-import { AnyEthSigningRequest } from "@core/types"
+import { AnyEthSigningRequest } from "@core/domains/signing/types"
 import {
   EthSignMessageRequestProvider,
   EthSignTransactionRequestProvider,

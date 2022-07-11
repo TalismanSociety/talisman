@@ -1,4 +1,4 @@
-import { IdenticonType } from "@core/types"
+import { IdenticonType } from "@core/domains/accounts/types"
 import { Address } from "@core/types/base"
 import { classNames } from "@talisman/util/classNames"
 import useAccounts from "@ui/hooks/useAccounts"

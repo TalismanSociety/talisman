@@ -1,33 +1,22 @@
-import { AccountAddressType, AccountJson, AccountsMessages } from "@core/domains/accounts/types"
+import { AccountAddressType, AccountsMessages } from "@core/domains/accounts/types"
 import { AppMessages } from "@core/domains/app/types"
 import { BalancesMessages } from "@core/domains/balances/types"
+import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
-import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import type {
   MetadataRequest,
   RequestSignatures as PolkadotRequestSignatures,
-  SigningRequest as PolkadotSigningRequest,
   RequestMetadataSubscribe,
-  RequestSigningApproveSignature,
-  RequestSigningSubscribe,
 } from "@polkadot/extension-base/background/types"
 import type { Codec } from "@polkadot/types-codec/types"
 import type { ExtrinsicStatus, Hash, Phase } from "@polkadot/types/interfaces"
 import type { IEventData } from "@polkadot/types/types"
 import type { SignerPayloadJSON, SignerPayloadRaw, TypeDef } from "@polkadot/types/types"
-import { BigNumber } from "ethers"
 
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
 
-export type {
-  ExtrinsicStatus,
-  Hash,
-  MetadataRequest,
-  RequestSigningApproveSignature,
-  SignerPayloadJSON,
-  SignerPayloadRaw,
-} // Make this available elsewhere also
+export type { ExtrinsicStatus, Hash, MetadataRequest, SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
 export type {
   AllowedPath,
@@ -35,7 +24,6 @@ export type {
   RequestRpcSubscribe,
   RequestRpcUnsubscribe,
   ResponseRpcListProviders,
-  ResponseSigning,
   RequestBatchRestore,
   RequestDeriveCreate,
   RequestDeriveValidate,
@@ -44,35 +32,11 @@ export type {
   RequestMetadataReject,
   RequestSeedCreate,
   RequestSeedValidate,
-  RequestSign,
-  RequestSigningApprovePassword,
-  RequestSigningCancel,
-  RequestSigningIsLocked,
   ResponseDeriveValidate,
   ResponseSeedCreate,
   ResponseSeedValidate,
-  ResponseSigningIsLocked,
   SeedLengths,
 } from "@polkadot/extension-base/background/types"
-
-export type TransactionMethodDetails = {
-  section: string
-  method: string
-  args: Record<string, any>
-  meta: {
-    name: string
-    fields: any[]
-    index: string
-    docs: string[]
-    args: any[]
-  }
-}
-
-export type TransactionDetails = {
-  method: TransactionMethodDetails
-  batch?: TransactionMethodDetails[]
-  payment: { class: string; partialFee: string; weight: number }
-}
 
 export declare type RequestTypes = {
   [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
@@ -119,7 +83,8 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AuthorisedSiteMessages &
   AccountsMessages &
   AppMessages &
-  BalancesMessages
+  BalancesMessages &
+  SigningMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
@@ -131,13 +96,6 @@ export interface RequestSignatures extends RequestSignaturesBase {
   "pri(mnemonic.confirm)": [boolean, boolean]
   "pri(mnemonic.subscribe)": [null, boolean, MnemonicSubscriptionResult]
   "pri(mnemonic.address)": [RequestAddressFromMnemonic, string]
-
-  // signing message signatures
-  "pri(signing.approveSign)": [RequestIdOnly, boolean]
-  "pri(signing.approveSign.hardware)": [RequestSigningApproveSignature, boolean]
-  "pri(signing.decode)": [RequestIdOnly, TransactionDetails | null]
-  "pri(signing.requests)": [RequestSigningSubscribe, boolean, AnySigningRequest[]]
-  "pri(signing.byid.subscribe)": [RequestIdOnly, boolean, AnySigningRequest]
 
   // asset transfer signatures
   "pri(assets.transfer)": [RequestAssetTransfer, ResponseAssetTransfer]
@@ -239,45 +197,6 @@ export declare type TransportResponseMessage<TMessageType extends MessageTypes> 
 
 export declare type ResponseType<TMessageType extends keyof RequestSignatures> =
   RequestSignatures[TMessageType][1]
-
-export interface SigningRequest extends PolkadotSigningRequest {
-  request: PolkadotSigningRequest["request"]
-  account: AccountJson | AccountJsonHardware
-}
-
-export interface EthBaseSignRequest extends Omit<SigningRequest, "request" | "account"> {
-  ethChainId: number
-  account: AccountJson
-  type: "ethereum"
-  method: "personal_sign" | "eth_sendTransaction" | "eth_signTypedData_v3" | "eth_signTypedData_v4"
-  request: any
-}
-
-export interface EthSignRequest extends EthBaseSignRequest {
-  request: string
-  method: "personal_sign" | "eth_signTypedData_v3" | "eth_signTypedData_v4"
-}
-
-export interface EthSignAndSendRequest extends EthBaseSignRequest {
-  request: EthTransactionRequest
-  method: "eth_sendTransaction"
-}
-
-export type AnyEthSigningRequest = EthSignAndSendRequest | EthSignRequest
-export type AnySigningRequest = SigningRequest | AnyEthSigningRequest
-
-export type EthResponseSign = string
-
-export interface AccountJsonHardware extends AccountJson {
-  isHardware: true
-  accountIndex: number
-  addressOffset: number
-  genesisHash: string
-}
-
-export type AccountJsonAny = AccountJsonHardware | AccountJson
-
-export type IdenticonType = "talisman-orb" | "polkadot-identicon"
 
 /**
  * A callback with either an error or a result.
@@ -537,11 +456,6 @@ export type AddEthereumChainRequest = {
   url: string
   network: AddEthereumChainParameter
 }
-
-// eth fees types ----------------------------------
-
-export type EthPriorityOptionName = "low" | "medium" | "high"
-export type EthPriorityOptions = Record<EthPriorityOptionName, BigNumber>
 
 // Asset Transfer Messages
 export interface RequestAssetTransfer {

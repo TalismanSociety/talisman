@@ -23,6 +23,17 @@ export type {
 
 // account types ----------------------------------
 
+export interface AccountJsonHardware extends AccountJson {
+  isHardware: true
+  accountIndex: number
+  addressOffset: number
+  genesisHash: string
+}
+
+export type AccountJsonAny = AccountJsonHardware | AccountJson
+
+export type IdenticonType = "talisman-orb" | "polkadot-identicon"
+
 export interface AccountMeta extends AccountJson {
   name: string
   origin: "ROOT" | "DERIVED" | "SEED" | "JSON"

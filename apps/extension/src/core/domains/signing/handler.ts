@@ -1,16 +1,11 @@
+import type { AnySigningRequest, RequestSigningCancel } from "@core/domains/signing/types"
 import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
 import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { watchSubstrateTransaction } from "@core/notifications"
-import type {
-  AnySigningRequest,
-  MessageTypes,
-  RequestSigningCancel,
-  RequestTypes,
-  ResponseType,
-} from "@core/types"
+import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTransactionDetails } from "@core/util/getTransactionDetails"

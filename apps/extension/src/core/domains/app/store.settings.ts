@@ -1,5 +1,5 @@
+import { IdenticonType } from "@core/domains/accounts/types"
 import { StorageProvider } from "@core/libs/Store"
-import { IdenticonType } from "@core/types"
 
 export interface SettingsStoreData {
   useErrorTracking: boolean

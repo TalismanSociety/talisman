@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/types"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import * as Sentry from "@sentry/browser"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"

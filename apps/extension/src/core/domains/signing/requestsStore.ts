@@ -1,12 +1,12 @@
 import type { AccountJson } from "@core/domains/accounts/types"
-import { RequestStore, TRespondableRequest } from "@core/libs/RequestStore"
 import type {
   EthResponseSign,
   EthSignAndSendRequest,
   EthSignRequest,
   ResponseSigning,
   SigningRequest,
-} from "@core/types"
+} from "@core/domains/signing/types"
+import { RequestStore, TRespondableRequest } from "@core/libs/RequestStore"
 import { isEthereumRequest } from "@core/util/isEthereumRequest"
 import type { TransactionRequest } from "@ethersproject/providers"
 import { assert } from "@polkadot/util"
