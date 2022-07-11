@@ -30,7 +30,7 @@ const unsafeProperties = [
 const talismanProperties = {
   appVersion: process.env.VERSION,
   appBuild: process.env.BUILD,
-  testBuild: DEBUG || process.env.BUILD === "qa",
+  testBuild: DEBUG || ["qa", "ci"].includes(process.env.BUILD as string),
 }
 
 export const initPosthog = (allowTracking = false) => {
