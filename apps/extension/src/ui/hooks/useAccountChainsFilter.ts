@@ -1,4 +1,4 @@
-import { Chain } from "@core/types"
+import { Chain } from "@core/domains/chains/types"
 import { Address } from "@core/types/base"
 import { useMemo } from "react"
 

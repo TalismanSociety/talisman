@@ -1,6 +1,6 @@
-import { useMemo } from "react"
-import { Chain } from "@core/types"
+import { Chain } from "@core/domains/chains/types"
 import useTokens from "@ui/hooks/useTokens"
+import { useMemo } from "react"
 
 const useChainsAndSearchSymbols = <T extends Chain>(
   chains: T[]

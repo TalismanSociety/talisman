@@ -1,6 +1,6 @@
-import { useMemo } from "react"
+import type { Chain } from "@core/domains/chains/types"
 import { isEthereumAddress } from "@polkadot/util-crypto/ethereum"
-import type { Chain } from "@core/types"
+import { useMemo } from "react"
 
 const moonbeamFilter = (chain: Chain) =>
   chain.account === "secp256k1" || chain.evmNetworks.length > 0

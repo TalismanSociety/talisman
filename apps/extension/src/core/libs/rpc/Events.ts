@@ -1,6 +1,7 @@
+import { ChainId } from "@core/domains/chains/types"
 import BlocksRpc from "@core/libs/rpc/Blocks"
 import RpcFactory from "@core/libs/RpcFactory"
-import { ChainId, EventList, SubscriptionCallback, UnsubscribeFn } from "@core/types"
+import { EventList, SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { getRegistry } from "@substrate/txwrapper-polkadot"
 
 // System.Events is the state_storage key prefix for events

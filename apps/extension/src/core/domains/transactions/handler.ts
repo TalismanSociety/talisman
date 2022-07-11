@@ -1,3 +1,4 @@
+import { ChainId } from "@core/domains/chains/types"
 import { getPairFromAddress, getUnlockedPairFromAddress } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
@@ -8,7 +9,6 @@ import EventsRpc from "@core/libs/rpc/Events"
 import OrmlTokenTransfersRpc from "@core/libs/rpc/OrmlTokenTransfers"
 import { pendingTransfers } from "@core/libs/rpc/PendingTransfers"
 import type {
-  ChainId,
   RequestAssetTransfer,
   RequestAssetTransferApproveSign,
   RequestSignatures,

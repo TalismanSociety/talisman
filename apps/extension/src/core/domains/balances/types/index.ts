@@ -1,4 +1,5 @@
-import { ChainId, EvmNetworkId, TokenId } from "@core/types"
+import { ChainId } from "@core/domains/chains/types"
+import { EvmNetworkId, TokenId } from "@core/types"
 import { Address, AddressesByChain } from "@core/types/base"
 
 import { BalanceStorage, BalancesStorage } from "./storages"

@@ -1,6 +1,7 @@
+import { ChainId } from "@core/domains/chains/types"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { StorageProvider } from "@core/libs/Store"
-import { ChainId, Transaction, TransactionId, TransactionStatus } from "@core/types"
+import { Transaction, TransactionId, TransactionStatus } from "@core/types"
 import { Address, Port, RequestIdOnly } from "@core/types/base"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { BehaviorSubject, combineLatest, map } from "rxjs"

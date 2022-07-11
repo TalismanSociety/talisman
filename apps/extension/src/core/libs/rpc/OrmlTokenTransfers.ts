@@ -1,8 +1,8 @@
+import { ChainId } from "@core/domains/chains/types"
 import { isHardwareAccount } from "@core/handlers/helpers"
 import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import {
-  ChainId,
   ResponseAssetTransferFeeQuery,
   SignerPayloadJSON,
   SubscriptionCallback,

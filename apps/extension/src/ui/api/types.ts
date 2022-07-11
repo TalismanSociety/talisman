@@ -9,6 +9,7 @@ import {
 } from "@core/domains/app/types"
 import { BalancesUpdate, RequestBalance } from "@core/domains/balances/types"
 import { BalanceStorage } from "@core/domains/balances/types"
+import { ChainId } from "@core/domains/chains/types"
 import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/types"
 import {
   AuthRequestAddresses,
@@ -22,7 +23,6 @@ import { EthResponseType } from "@core/injectEth/types"
 import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
-  ChainId,
   CustomErc20Token,
   CustomErc20TokenCreate,
   CustomEvmNetwork,

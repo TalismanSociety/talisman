@@ -1,6 +1,5 @@
+import { Chain, ChainId } from "@core/domains/chains/types"
 import {
-  Chain,
-  ChainId,
   EvmNetwork,
   EvmNetworkId,
   Token,

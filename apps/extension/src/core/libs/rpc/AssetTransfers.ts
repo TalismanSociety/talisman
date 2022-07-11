@@ -1,11 +1,7 @@
+import { ChainId } from "@core/domains/chains/types"
 import { isHardwareAccount } from "@core/handlers/helpers"
 import RpcFactory from "@core/libs/RpcFactory"
-import {
-  ChainId,
-  ResponseAssetTransferFeeQuery,
-  SignerPayloadJSON,
-  SubscriptionCallback,
-} from "@core/types"
+import { ResponseAssetTransferFeeQuery, SignerPayloadJSON, SubscriptionCallback } from "@core/types"
 import { Address } from "@core/types/base"
 import { getMetadataRpc } from "@core/util/getMetadataRpc"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"

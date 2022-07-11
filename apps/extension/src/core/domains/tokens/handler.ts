@@ -1,9 +1,9 @@
+import { ChainId } from "@core/domains/chains/types"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 import type {
-  ChainId,
   CustomErc20Token,
   CustomErc20TokenCreate,
   MessageTypes,

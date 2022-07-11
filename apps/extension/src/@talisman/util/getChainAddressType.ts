@@ -1,6 +1,7 @@
 // address types from https://wiki.polkadot.network/docs/learn-accounts
 
-import { Chain } from "@core/types"
+import { Chain } from "@core/domains/chains/types"
+
 import { AccountAddressType } from "./getAddressType"
 
 export const getChainAddressType = (chain: Chain): AccountAddressType => {

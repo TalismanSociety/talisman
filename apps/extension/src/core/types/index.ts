@@ -1,6 +1,7 @@
 import { AccountAddressType, AccountsMessages } from "@core/domains/accounts/types"
 import { AppMessages } from "@core/domains/app/types"
 import { BalancesMessages } from "@core/domains/balances/types"
+import { ChainId, ChainsMessages } from "@core/domains/chains/types"
 import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
@@ -84,6 +85,7 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AccountsMessages &
   AppMessages &
   BalancesMessages &
+  ChainsMessages &
   SigningMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
@@ -101,9 +103,6 @@ export interface RequestSignatures extends RequestSignaturesBase {
   "pri(assets.transfer)": [RequestAssetTransfer, ResponseAssetTransfer]
   "pri(assets.transfer.checkFees)": [RequestAssetTransfer, ResponseAssetTransferFeeQuery]
   "pri(assets.transfer.approveSign)": [RequestAssetTransferApproveSign, ResponseAssetTransfer]
-
-  // chain message signatures
-  "pri(chains.subscribe)": [null, boolean, boolean]
 
   // token message signatures
   "pri(tokens.subscribe)": [null, boolean, boolean]
@@ -211,44 +210,10 @@ export interface SubscriptionCallback<Result> {
  */
 export type UnsubscribeFn = () => void
 
-export type ChainId = string
-
-export type Chain = {
-  id: ChainId // The ID of this chain
-  isTestnet: boolean // Is this chain a testnet?
-  sortIndex: number | null // The sortIndex of this chain
-  genesisHash: string | null // The genesisHash of this chain
-  prefix: number | null // The substrate prefix of this chain
-  name: string | null // The name of this chain
-  chainName: string // The on-chain name of this chain
-  implName: string | null // The implementation name of this chain
-  specName: string | null // The spec name of this chain
-  specVersion: string | null // The spec version of this chain
-  nativeToken: { id: TokenId } | null // The nativeToken of this chain
-  tokens: Array<{ id: TokenId }> | null // The ORML tokens for this chain
-  account: string | null // The account address format of this chain
-  subscanUrl: string | null // The subscan endpoint of this chain
-  rpcs: Array<SubstrateRpc> | null // Some public RPCs for connecting to this chain's network
-  isHealthy: boolean // The health status of this chain's RPCs
-  evmNetworks: Array<{ id: EvmNetworkId }>
-
-  parathreads?: Chain[] // The parathreads of this relayChain, if some exist
-
-  paraId: number | null // The paraId of this chain, if it is a parachain
-  relay?: Chain // The parent relayChain of this parachain, if this chain is a parachain
-}
-
-export type SubstrateRpc = {
-  url: string // The url of this RPC
-  isHealthy: boolean // The health status of this RPC
-}
-
 export type EthereumRpc = {
   url: string // The url of this ethereum RPC
   isHealthy: boolean // The health status of this ethereum RPC
 }
-
-export type ChainList = Record<ChainId, Chain>
 
 export type EvmNetworkId = number
 export type EvmNetwork = {

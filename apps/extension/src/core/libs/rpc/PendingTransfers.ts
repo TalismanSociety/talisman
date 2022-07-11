@@ -1,4 +1,5 @@
-import { ChainId, ExtrinsicStatus, SubscriptionCallback } from "@core/types"
+import { ChainId } from "@core/domains/chains/types"
+import { ExtrinsicStatus, SubscriptionCallback } from "@core/types"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { UnsignedTransaction } from "@substrate/txwrapper-polkadot"
 

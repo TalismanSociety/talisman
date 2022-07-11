@@ -1,4 +1,4 @@
-import type { ChainId, Chain } from "@core/types"
+import type { Chain, ChainId } from "@core/domains/chains/types"
 
 const customRpcs: Record<ChainId, string[]> = {
   "acala": [
