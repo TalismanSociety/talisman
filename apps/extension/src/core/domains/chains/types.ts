@@ -1,5 +1,5 @@
+import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { TokenId } from "@core/domains/tokens/types"
-import { EvmNetworkId } from "@core/types"
 
 export interface ChainsMessages {
   // chain message signatures

@@ -1,9 +1,9 @@
 import { BalanceStorage } from "@core/domains/balances/types"
 import { Chain, ChainId } from "@core/domains/chains/types"
+import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import metadataInit from "@core/domains/metadata/_metadataInit"
 import { Token, TokenId } from "@core/domains/tokens/types"
 import { MetadataDef } from "@core/inject/types"
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/types"
 import { Dexie } from "dexie"
 import Browser from "webextension-polyfill"
 

@@ -1,6 +1,9 @@
+import type {
+  AddEthereumChainParameter,
+  AddEthereumChainRequest,
+} from "@core/domains/ethereum/types"
 import { stripUrl } from "@core/handlers/helpers"
 import { RequestStore } from "@core/libs/RequestStore"
-import type { AddEthereumChainParameter, AddEthereumChainRequest } from "@core/types"
 
 class AddNetworkError extends Error {}
 

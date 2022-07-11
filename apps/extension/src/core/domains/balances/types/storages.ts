@@ -1,6 +1,6 @@
 import { ChainId } from "@core/domains/chains/types"
+import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { TokenId } from "@core/domains/tokens/types"
-import { EvmNetworkId } from "@core/types"
 import { Address } from "@core/types/base"
 
 export type NarrowStorage<S, P> = S extends { pallet: P } ? S : never

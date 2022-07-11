@@ -1,3 +1,9 @@
+import {
+  AnyEthRequestChainId,
+  CustomEvmNetwork,
+  EthApproveSignAndSend,
+  WatchAssetRequest,
+} from "@core/domains/ethereum/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
 import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
@@ -11,15 +17,7 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { watchEthereumTransaction } from "@core/notifications"
-import {
-  AnyEthRequestChainId,
-  CustomEvmNetwork,
-  EthApproveSignAndSend,
-  MessageTypes,
-  RequestTypes,
-  ResponseType,
-  WatchAssetRequest,
-} from "@core/types"
+import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import type { TransactionRequest } from "@ethersproject/providers"
 import { SignTypedDataVersion } from "@metamask/eth-sig-util"

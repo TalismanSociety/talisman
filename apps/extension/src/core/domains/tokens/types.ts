@@ -1,5 +1,5 @@
 import { ChainId } from "@core/domains/chains/types"
-import { EvmNetworkId } from "@core/types"
+import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { RequestIdOnly } from "@core/types/base"
 
 // orml tokens types -----------------------

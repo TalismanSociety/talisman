@@ -1,6 +1,6 @@
+import type { WatchAssetBase, WatchAssetRequest } from "@core/domains/ethereum/types"
 import type { CustomErc20Token } from "@core/domains/tokens/types"
 import { RequestStore } from "@core/libs/RequestStore"
-import type { WatchAssetBase, WatchAssetRequest } from "@core/types"
 import { RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 
