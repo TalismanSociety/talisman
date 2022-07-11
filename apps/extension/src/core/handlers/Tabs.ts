@@ -1,7 +1,7 @@
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
-import type { RequestAccountList } from "@core/domains/accounts/types"
+import { RequestAccountList } from "@core/domains/accounts/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
-import type { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
+import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
 import { db } from "@core/libs/db"
@@ -233,11 +233,14 @@ export default class Tabs extends TabsHandler {
       return this.redirectIfPhishing(url)
     }
     // Always check for onboarding before doing anything else
-    try {
-      await this.stores.app.ensureOnboarded()
-    } catch (error) {
-      this.state.openOnboarding(url)
-      throw error
+    // unless the message is pub(eth.mimicMetaMask), which we send on injection into every page
+    if (type !== "pub(eth.mimicMetaMask)") {
+      try {
+        await this.stores.app.ensureOnboarded()
+      } catch (error) {
+        this.state.openOnboarding(url)
+        throw error
+      }
     }
 
     // check for phishing on all requests
