@@ -1,5 +1,5 @@
+import { CustomErc20Token } from "@core/domains/tokens/types"
 import { db } from "@core/libs/db"
-import { CustomErc20Token } from "@core/types"
 import { useLiveQuery } from "dexie-react-hooks"
 
 export const useCustomErc20Token = (id: string | undefined) => {

@@ -1,5 +1,5 @@
 import { BalanceFormatter } from "@core/domains/balances/types"
-import { Token } from "@core/types"
+import { Token } from "@core/domains/tokens/types"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { FC } from "react"
 import { formatDecimals } from "talisman-utils"

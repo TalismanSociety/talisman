@@ -1,12 +1,12 @@
+import { CustomErc20Token } from "@core/domains/tokens/types"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { IconChevron, PlusIcon } from "@talisman/theme/icons"
 import Layout from "@ui/apps/dashboard/layout"
+import { Erc20Logo } from "@ui/domains/Erc20Tokens/Erc20Logo"
+import { useCustomErc20Tokens } from "@ui/hooks/useCustomErc20Tokens"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useNavigate } from "react-router-dom"
 import styled, { css } from "styled-components"
-import { CustomErc20Token } from "@core/types"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useCustomErc20Tokens } from "@ui/hooks/useCustomErc20Tokens"
-import { Erc20Logo } from "@ui/domains/Erc20Tokens/Erc20Logo"
 
 const buttonStyle = css`
   transition: background-color var(--transition-speed-fast) ease-in-out,

@@ -1,4 +1,4 @@
-import { CustomErc20TokenCreate } from "@core/types"
+import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { useEffect, useState } from "react"
 

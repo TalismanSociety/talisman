@@ -1,5 +1,5 @@
 import { Chain, ChainList } from "@core/domains/chains/types"
-import { TokenId } from "@core/types"
+import { TokenId } from "@core/domains/tokens/types"
 import { classNames } from "@talisman/util/classNames"
 import useChain from "@ui/hooks/useChain"
 import useChains from "@ui/hooks/useChains"

@@ -1,5 +1,5 @@
 import { Balance, BalanceFormatter, BalanceStorage, Balances } from "@core/domains/balances/types"
-import { Token } from "@core/types"
+import { Token } from "@core/domains/tokens/types"
 import { tokensToPlanck } from "@core/util/tokensToPlanck"
 import { assert } from "@polkadot/util"
 import { provideContext } from "@talisman/util/provideContext"

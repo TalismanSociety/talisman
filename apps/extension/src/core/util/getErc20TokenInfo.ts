@@ -1,5 +1,6 @@
-import { CustomErc20TokenCreate } from "@core/types"
+import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { ethers } from "ethers"
+
 import { getBase64ImageFromUrl } from "./getBase64ImageFromUrl"
 import { getCoinGeckoErc20Coin } from "./getCoinGeckoErc20Coin"
 import { getErc20ContractData } from "./getErc20ContractData"

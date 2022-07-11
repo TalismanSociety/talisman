@@ -1,15 +1,10 @@
 import { ChainId } from "@core/domains/chains/types"
+import { CustomErc20Token, CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
-import type {
-  CustomErc20Token,
-  CustomErc20TokenCreate,
-  MessageTypes,
-  RequestTypes,
-  ResponseType,
-} from "core/types"
+import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(

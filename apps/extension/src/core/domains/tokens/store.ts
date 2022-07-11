@@ -1,6 +1,13 @@
 import { DEBUG } from "@core/constants"
+import {
+  Erc20Token,
+  IToken,
+  NativeToken,
+  OrmlToken,
+  Token,
+  TokenList,
+} from "@core/domains/tokens/types"
 import { db } from "@core/libs/db"
-import { Erc20Token, IToken, NativeToken, OrmlToken, Token, TokenList } from "@core/types"
 import { TokenFragment, graphqlUrl } from "@core/util/graphql"
 import { print } from "graphql"
 import gql from "graphql-tag"

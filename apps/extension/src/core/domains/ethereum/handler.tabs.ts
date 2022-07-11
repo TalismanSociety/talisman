@@ -4,6 +4,7 @@ import {
   AuthorizedSiteAddresses,
   RequestAuthorizeTab,
 } from "@core/domains/sitesAuthorised/types"
+import { CustomErc20Token } from "@core/domains/tokens/types"
 import { stripUrl } from "@core/handlers/helpers"
 import {
   AnyEthRequest,
@@ -22,7 +23,7 @@ import {
 } from "@core/injectEth/types"
 import { db } from "@core/libs/db"
 import { TabsHandler } from "@core/libs/Handler"
-import type { CustomErc20Token, RequestSignatures, RequestTypes, ResponseType } from "@core/types"
+import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { toBuffer } from "@ethereumjs/util"

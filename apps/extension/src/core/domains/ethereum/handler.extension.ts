@@ -1,3 +1,4 @@
+import { CustomNativeToken } from "@core/domains/tokens/types"
 import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import {
@@ -13,7 +14,6 @@ import { watchEthereumTransaction } from "@core/notifications"
 import {
   AnyEthRequestChainId,
   CustomEvmNetwork,
-  CustomNativeToken,
   EthApproveSignAndSend,
   MessageTypes,
   RequestTypes,

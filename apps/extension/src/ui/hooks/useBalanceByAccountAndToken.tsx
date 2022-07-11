@@ -1,5 +1,5 @@
 import { Balance } from "@core/domains/balances/types"
-import { TokenId } from "@core/types"
+import { TokenId } from "@core/domains/tokens/types"
 import useBalances from "@ui/hooks/useBalances"
 import { useCallback, useEffect, useState } from "react"
 

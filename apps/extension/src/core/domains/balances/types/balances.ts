@@ -1,12 +1,6 @@
 import { Chain, ChainId } from "@core/domains/chains/types"
-import {
-  EvmNetwork,
-  EvmNetworkId,
-  Token,
-  TokenId,
-  TokenRateCurrency,
-  TokenRates,
-} from "@core/types"
+import { Token, TokenId, TokenRateCurrency, TokenRates } from "@core/domains/tokens/types"
+import { EvmNetwork, EvmNetworkId } from "@core/types"
 import { NonFunctionProperties } from "@core/util/FunctionPropertyNames"
 import isArrayOf from "@core/util/isArrayOf"
 import { planckToTokens } from "@core/util/planckToTokens"

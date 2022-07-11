@@ -1,5 +1,5 @@
 import { Balance } from "@core/domains/balances/types"
-import { Token } from "@core/types"
+import { Token } from "@core/domains/tokens/types"
 import useBalances from "@ui/hooks/useBalances"
 import { useCallback, useMemo } from "react"
 

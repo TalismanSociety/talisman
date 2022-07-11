@@ -1,4 +1,4 @@
-import { CustomErc20TokenCreate } from "@core/types"
+import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { assert } from "@polkadot/util"
 import { FormField } from "@talisman/components/Field/FormField"
