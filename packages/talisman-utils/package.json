@@ -16,7 +16,6 @@
     "lint": "eslint . --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
-  "peerDependencies": {},
   "devDependencies": {
     "@types/jest": "^27.5.1",
     "eslint": "^8.4.0",
