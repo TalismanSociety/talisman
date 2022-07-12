@@ -1,4 +1,4 @@
-import { Balances } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
@@ -10,14 +10,14 @@ import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import { AssetsTable } from "@ui/domains/Portfolio/AssetsTable"
+import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useAccountExport } from "@ui/hooks/useAccountExport"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import React, { useCallback, useMemo } from "react"
 import styled from "styled-components"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { usePortfolio } from "@ui/domains/Portfolio/context"
 
 const Stats = styled(Statistics)`
   max-width: 40%;

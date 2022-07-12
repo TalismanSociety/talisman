@@ -1,4 +1,6 @@
-import { Balances, Chain, EvmNetwork, Token } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
+import { Chain } from "@core/domains/chains/types"
+import { Token } from "@core/domains/tokens/types"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useMemo } from "react"
 

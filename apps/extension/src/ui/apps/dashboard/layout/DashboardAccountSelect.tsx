@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/types"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { breakpoints } from "@talisman/theme/definitions"
 import { AllAccountsIcon, ChevronDownIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"

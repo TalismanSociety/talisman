@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/types"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import downloadJson from "@talisman/util/downloadJson"
 import { api } from "@ui/api"
 import { useCallback, useMemo } from "react"

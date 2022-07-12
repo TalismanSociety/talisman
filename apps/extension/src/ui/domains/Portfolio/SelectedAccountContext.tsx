@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/types"
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { provideContext } from "@talisman/util/provideContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useSettings } from "@ui/hooks/useSettings"

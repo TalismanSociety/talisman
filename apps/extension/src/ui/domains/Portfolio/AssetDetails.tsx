@@ -1,4 +1,4 @@
-import { Balances } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
 import { encodeAnyAddress } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"

@@ -1,4 +1,4 @@
-import { Balance, Balances } from "@core/types"
+import { Balance, Balances } from "@core/domains/balances/types"
 import { rectToClientRect } from "@floating-ui/core"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
@@ -11,6 +11,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import Skeleton from "react-loading-skeleton"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
+
 import { TokenLogo } from "../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "./AssetBalanceCellValue"
 import { usePortfolio } from "./context"

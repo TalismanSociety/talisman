@@ -1,4 +1,4 @@
-import { Balances } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"

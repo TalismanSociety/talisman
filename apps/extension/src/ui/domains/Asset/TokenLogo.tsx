@@ -1,4 +1,4 @@
-import { Token } from "@core/types"
+import { Token } from "@core/domains/tokens/types"
 import genericTokenSvgIcon from "@talisman/theme/icons/custom-token-generic.svg"
 import useToken from "@ui/hooks/useToken"
 import { CSSProperties, useEffect, useMemo, useState } from "react"

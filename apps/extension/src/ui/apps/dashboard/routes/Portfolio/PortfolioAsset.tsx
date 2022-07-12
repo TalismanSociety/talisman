@@ -1,4 +1,4 @@
-import { Balances } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { ChevronLeftIcon } from "@talisman/theme/icons"

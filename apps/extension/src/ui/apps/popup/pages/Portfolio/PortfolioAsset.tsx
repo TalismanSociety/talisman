@@ -1,4 +1,4 @@
-import { Balances } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
 import { Box } from "@talisman/components/Box"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"

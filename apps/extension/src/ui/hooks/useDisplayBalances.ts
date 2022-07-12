@@ -1,4 +1,5 @@
-import { AccountJsonAny, Balance, Balances } from "@core/types"
+import { AccountJsonAny } from "@core/domains/accounts/types"
+import { Balance, Balances } from "@core/domains/balances/types"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useMemo } from "react"
 

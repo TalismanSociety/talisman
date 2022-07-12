@@ -1,8 +1,9 @@
-import { Token } from "@core/types"
+import { Token } from "@core/domains/tokens/types"
 import { planckToTokens } from "@core/util"
 import { Box } from "@talisman/components/Box"
 import { LockIcon } from "@talisman/theme/icons"
 import { ReactNode, useMemo } from "react"
+
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
 
