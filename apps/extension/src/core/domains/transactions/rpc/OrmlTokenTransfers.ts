@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import { ChainId } from "@core/domains/chains/types"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { TokenId } from "@core/domains/tokens/types"
@@ -165,10 +166,11 @@ export default class OrmlTokenTransfersRpc {
     const { specVersion, transactionVersion } = runtimeVersion
 
     let unsigned: UnsignedTransaction | undefined = undefined
-    const errors: any[] = []
+    const errors: Error[] = []
 
     // different chains use different orml transfer methods
     // we'll try each one in sequence until we get one that doesn't throw an error
+    const currencyId = token.id === "mangata-orml-mgx" ? 0 : { Token: token.symbol.toUpperCase() }
     const unsignedMethods = [
       () =>
         defineMethod(
@@ -177,7 +179,7 @@ export default class OrmlTokenTransfersRpc {
               pallet: "currencies",
               name: "transfer",
               args: {
-                currencyId: { Token: token.symbol },
+                currencyId,
                 amount,
                 dest: to,
               },
@@ -205,7 +207,7 @@ export default class OrmlTokenTransfersRpc {
               pallet: "tokens",
               name: "transfer",
               args: {
-                currencyId: { Token: token.symbol },
+                currencyId,
                 amount,
                 dest: to,
               },
@@ -232,15 +234,18 @@ export default class OrmlTokenTransfersRpc {
     for (const method of unsignedMethods) {
       try {
         unsigned = method()
-      } catch (error) {
-        errors.push(error)
+      } catch (error: unknown) {
+        errors.push(error as Error)
       }
     }
 
     if (unsigned === undefined) {
-      errors.forEach((error) => Sentry.captureException(error))
+      const sentryExtra = errors.map((error) => {
+        DEBUG && console.error(error) // eslint-disable-line no-console
+        return error.message
+      })
       const userFacingError = new Error(`${token.symbol} transfers are not supported at this time.`)
-      Sentry.captureException(userFacingError)
+      Sentry.captureException(userFacingError, { extra: { errors: sentryExtra } })
       throw userFacingError
     }
 

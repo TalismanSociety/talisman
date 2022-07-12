@@ -6,12 +6,16 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
+    "build:extension:ci": {
+      "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN", "$POSTHOG_AUTH_TOKEN"],
+      "outputs": ["dist/**"]
+    },
     "build:extension:prod": {
-      "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN"],
+      "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN", "$POSTHOG_AUTH_TOKEN"],
       "outputs": ["dist/**"]
     },
     "build:extension:canary": {
-      "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN"],
+      "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN", "$POSTHOG_AUTH_TOKEN"],
       "outputs": ["dist/**"]
     },
     "lint": {
