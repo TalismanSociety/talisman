@@ -1,30 +1,33 @@
+import { DEBUG } from "@core/constants"
+import { ChainId } from "@core/domains/chains/types"
+import { SignerPayloadJSON } from "@core/domains/signing/types"
+import { TokenId } from "@core/domains/tokens/types"
+import { ResponseAssetTransferFeeQuery } from "@core/domains/transactions/types"
 import { isHardwareAccount } from "@core/handlers/helpers"
+import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
-import {
-  Address,
-  ChainId,
-  ResponseAssetTransferFeeQuery,
-  SignerPayloadJSON,
-  SubscriptionCallback,
-} from "@core/types"
+import { SubscriptionCallback } from "@core/types"
+import { Address } from "@core/types/base"
 import { getMetadataRpc } from "@core/util/getMetadataRpc"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
-import { construct, methods } from "@substrate/txwrapper-polkadot"
+import * as Sentry from "@sentry/browser"
+import { UnsignedTransaction, construct, defineMethod } from "@substrate/txwrapper-polkadot"
 
 import { pendingTransfers } from "./PendingTransfers"
 
 type ProviderSendFunction<T = any> = (method: string, params?: unknown[]) => Promise<T>
 
-export default class AssetTransfersRpc {
+export default class OrmlTokenTransfersRpc {
   /**
-   * Transfers an amount of nativeToken from one account to another.
+   * Transfers an amount of an orml token from one account to another.
    *
    * @param chainId - The chain to make the transfer on.
-   * @param amount - The amount of `nativeToken` to transfer.
+   * @param tokenId - The token id to transfer.
+   * @param amount - The amount of tokens to transfer.
    * @param from - An unlocked keypair of the sending account.
    * @param to - An address of the receiving account.
    * @param callback - A callback which will receive tx status updates.
@@ -34,11 +37,11 @@ export default class AssetTransfersRpc {
    */
   static async transfer(
     chainId: ChainId,
+    tokenId: TokenId,
     amount: string,
     from: KeyringPair,
     to: Address,
     tip: string,
-    reapBalance = false,
     callback: SubscriptionCallback<{
       nonce: string
       hash: string
@@ -47,19 +50,13 @@ export default class AssetTransfersRpc {
   ): Promise<void> {
     const { tx, registry } = await this.prepareTransaction(
       chainId,
+      tokenId,
       amount,
       from,
       to,
       tip,
-      reapBalance,
       true
     )
-
-    callback(null, {
-      nonce: tx.nonce.toString(),
-      hash: tx.hash.toString(),
-      status: registry.createType<ExtrinsicStatus>("ExtrinsicStatus", { future: true }),
-    })
 
     const unsubscribe = await RpcFactory.subscribe(
       chainId,
@@ -76,35 +73,37 @@ export default class AssetTransfersRpc {
 
         const status = registry.createType<ExtrinsicStatus>("ExtrinsicStatus", result)
         callback(null, { nonce: tx.nonce.toString(), hash: tx.hash.toString(), status })
+
         if (status.isFinalized) unsubscribe()
       }
     )
   }
 
   /**
-   * Calculates an estimated fee for transfering an amount of nativeToken from one account to another.
+   * Calculates an estimated fee for transfering an amount of an orml token from one account to another.
    *
    * @param chainId - The chain to make the transfer on.
-   * @param amount - The amount of `nativeToken` to transfer.
+   * @param tokenId - The token id to transfer.
+   * @param amount - The amount of tokens to transfer.
    * @param from - An unlocked keypair of the sending account.
    * @param to - An address of the receiving account.
    * @returns An object containing the calculated `partialFee` as returned from the `payment_queryInfo` rpc endpoint.
    */
   static async checkFee(
     chainId: ChainId,
+    tokenId: TokenId,
     amount: string,
     from: KeyringPair,
     to: Address,
-    tip: string,
-    reapBalance = false
+    tip: string
   ): Promise<ResponseAssetTransferFeeQuery> {
     const { tx, pendingTransferId, unsigned } = await this.prepareTransaction(
       chainId,
+      tokenId,
       amount,
       from,
       to,
       tip,
-      reapBalance,
       false
     )
 
@@ -114,10 +113,11 @@ export default class AssetTransfersRpc {
   }
 
   /**
-   * Builds a signed asset transfer transaction, ready for submission to the chain.
+   * Builds a signed orml token transfer transaction, ready for submission to the chain.
    *
    * @param chainId - The chain to make the transfer on.
-   * @param amount - The amount of `nativeToken` to transfer.
+   * @param tokenId - The token id to transfer.
+   * @param amount - The amount of tokens to transfer.
    * @param from - An unlocked keypair of the sending account.
    * @param to - An address of the receiving account.
    * @returns An object containing:
@@ -127,11 +127,11 @@ export default class AssetTransfersRpc {
    */
   private static async prepareTransaction(
     chainId: ChainId,
+    tokenId: TokenId,
     amount: string,
     from: KeyringPair,
     to: Address,
     tip: string,
-    reapBalance: boolean,
     sign: boolean
   ): Promise<{
     tx: Extrinsic
@@ -142,6 +142,12 @@ export default class AssetTransfersRpc {
     // TODO: validate
     // - existential deposit
     // - sufficient balance
+
+    const chain = await db.chains.get(chainId)
+    if (!chain) throw new Error(`Chain ${chainId} not found in store`)
+
+    const token = await db.tokens.get(tokenId)
+    if (!token) throw new Error(`Token ${tokenId} not found in store`)
 
     const send: ProviderSendFunction = (method, params = []) =>
       RpcFactory.send(chainId, method, params)
@@ -159,30 +165,89 @@ export default class AssetTransfersRpc {
 
     const { specVersion, transactionVersion } = runtimeVersion
 
-    const transferMethod = reapBalance ? "transfer" : "transferKeepAlive"
+    let unsigned: UnsignedTransaction | undefined = undefined
+    const errors: Error[] = []
 
-    const unsigned = methods.balances[transferMethod](
-      {
-        value: amount,
-        dest: to,
-      },
-      {
-        address: from.address,
-        blockHash,
-        blockNumber: block.header.number,
-        eraPeriod: 64,
-        genesisHash,
-        metadataRpc,
-        nonce,
-        specVersion: specVersion as unknown as number,
-        tip: tip ? Number(tip) : 0,
-        transactionVersion: transactionVersion as unknown as number,
-      },
-      {
-        metadataRpc,
-        registry,
+    // different chains use different orml transfer methods
+    // we'll try each one in sequence until we get one that doesn't throw an error
+    const currencyId = token.id === "mangata-orml-mgx" ? 0 : { Token: token.symbol.toUpperCase() }
+    const unsignedMethods = [
+      () =>
+        defineMethod(
+          {
+            method: {
+              pallet: "currencies",
+              name: "transfer",
+              args: {
+                currencyId,
+                amount,
+                dest: to,
+              },
+            },
+            address: from.address,
+            blockHash,
+            blockNumber: block.header.number,
+            eraPeriod: 64,
+            genesisHash,
+            metadataRpc,
+            nonce,
+            specVersion: specVersion as unknown as number,
+            tip: tip ? Number(tip) : 0,
+            transactionVersion: transactionVersion as unknown as number,
+          },
+          {
+            metadataRpc,
+            registry,
+          }
+        ),
+      () =>
+        defineMethod(
+          {
+            method: {
+              pallet: "tokens",
+              name: "transfer",
+              args: {
+                currencyId,
+                amount,
+                dest: to,
+              },
+            },
+            address: from.address,
+            blockHash,
+            blockNumber: block.header.number,
+            eraPeriod: 64,
+            genesisHash,
+            metadataRpc,
+            nonce,
+            specVersion: specVersion as unknown as number,
+            tip: tip ? Number(tip) : 0,
+            transactionVersion: transactionVersion as unknown as number,
+          },
+
+          {
+            metadataRpc,
+            registry,
+          }
+        ),
+    ]
+
+    for (const method of unsignedMethods) {
+      try {
+        unsigned = method()
+      } catch (error: unknown) {
+        errors.push(error as Error)
       }
-    )
+    }
+
+    if (unsigned === undefined) {
+      const sentryExtra = errors.map((error) => {
+        DEBUG && console.error(error) // eslint-disable-line no-console
+        return error.message
+      })
+      const userFacingError = new Error(`${token.symbol} transfers are not supported at this time.`)
+      Sentry.captureException(userFacingError, { extra: { errors: sentryExtra } })
+      throw userFacingError
+    }
 
     // create the unsigned extrinsic
     const tx = registry.createType(
@@ -195,13 +260,13 @@ export default class AssetTransfersRpc {
     const payload = construct.signingPayload(unsigned, { registry })
 
     // if hardware account, signing has to be done on the device
-    let pendingTransferId
     if (isHardwareAccount(unsigned.address)) {
       // store in pending transactions map
-      pendingTransferId = pendingTransfers.add({
+      const pendingTransferId = pendingTransfers.add({
         chainId,
         unsigned,
       })
+      return { tx, registry, pendingTransferId, unsigned }
     }
 
     if (sign) {
@@ -218,6 +283,6 @@ export default class AssetTransfersRpc {
       tx.signFake(unsigned.address, { blockHash, genesisHash, nonce, runtimeVersion })
     }
 
-    return { tx, registry, unsigned, pendingTransferId }
+    return { tx, registry, unsigned }
   }
 }

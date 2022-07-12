@@ -1,23 +1,16 @@
 import { DEBUG } from "@core/constants"
 import { settingsStore } from "@core/domains/app/store.settings"
+import Erc20BalancesEvmRpc from "@core/domains/balances/rpc/Erc20Balances"
+import NativeBalancesEvmRpc from "@core/domains/balances/rpc/EvmBalances"
+import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
+import { BalanceStorage, Balances, RequestBalance } from "@core/domains/balances/types"
+import { Chain } from "@core/domains/chains/types"
+import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
+import OrmlTokensRpc from "@core/domains/tokens/rpc/OrmlTokens"
+import { Erc20Token } from "@core/domains/tokens/types"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { db } from "@core/libs/db"
-import Erc20BalancesEvmRpc from "@core/libs/evmRpc/Erc20Balances"
-import NativeBalancesEvmRpc from "@core/libs/evmRpc/NativeBalances"
-import BalancesRpc from "@core/libs/rpc/Balances"
-import OrmlTokensRpc from "@core/libs/rpc/OrmlTokens"
-import {
-  Addresses,
-  AddressesByChain,
-  BalanceStorage,
-  Balances,
-  Chain,
-  Erc20Token,
-  EvmNetwork,
-  EvmNetworkId,
-  Port,
-  RequestBalance,
-} from "@core/types"
+import { Addresses, AddressesByChain, Port } from "@core/types/base"
 import { encodeAnyAddress } from "@core/util"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"

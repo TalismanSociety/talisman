@@ -1,4 +1,5 @@
-import { AccountJsonHardware, SigningRequest } from "@core/types"
+import { AccountJsonHardware } from "@core/domains/accounts/types"
+import { SigningRequest } from "@core/domains/signing/types"
 import Button from "@talisman/components/Button"
 import Grid from "@talisman/components/Grid"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"

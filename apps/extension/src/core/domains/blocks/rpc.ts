@@ -1,7 +1,7 @@
+import { ChainId } from "@core/domains/chains/types"
 import RpcFactory from "@core/libs/RpcFactory"
-import { getRegistry } from "@substrate/txwrapper-polkadot"
 import { Block } from "@polkadot/types/interfaces"
-import { ChainId } from "@core/types"
+import { getRegistry } from "@substrate/txwrapper-polkadot"
 
 export default class BlocksRpc {
   /**

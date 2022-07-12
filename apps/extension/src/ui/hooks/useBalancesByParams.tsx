@@ -1,4 +1,5 @@
-import { AddressesByChain, Balances } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
+import { AddressesByChain } from "@core/types/base"
 import { api } from "@ui/api"
 import { useChains } from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"

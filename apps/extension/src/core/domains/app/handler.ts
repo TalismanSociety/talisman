@@ -1,23 +1,21 @@
+import { AccountMeta } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
+import type {
+  AnalyticsCaptureRequest,
+  LoggedinType,
+  ModalOpenParams,
+  ModalTypes,
+  OnboardedType,
+  RequestLogin,
+  RequestOnboard,
+  RequestRoute,
+} from "@core/domains/app/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
-import type {
-  AccountMeta,
-  AnalyticsCaptureRequest,
-  LoggedinType,
-  MessageTypes,
-  ModalOpenParams,
-  ModalTypes,
-  OnboardedType,
-  Port,
-  RequestLogin,
-  RequestOnboard,
-  RequestRoute,
-  RequestTypes,
-  ResponseType,
-} from "@core/types"
+import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
+import { Port } from "@core/types/base"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { mnemonicGenerate, mnemonicValidate } from "@polkadot/util-crypto"

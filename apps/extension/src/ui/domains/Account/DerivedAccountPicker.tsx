@@ -1,12 +1,9 @@
 import "react-loading-skeleton/dist/skeleton.css"
 
+import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
+import { Balance } from "@core/domains/balances/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
-import {
-  AccountAddressType,
-  AddressesByChain,
-  Balance,
-  RequestAccountCreateFromSeed,
-} from "@core/types"
+import { AddressesByChain } from "@core/types/base"
 import { Checkbox } from "@talisman/components/Checkbox"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { CheckCircleIcon } from "@talisman/theme/icons"

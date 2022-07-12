@@ -1,6 +1,6 @@
 import { DEBUG } from "@core/constants"
+import { CustomEvmNetwork, EvmNetwork, EvmNetworkList } from "@core/domains/ethereum/types"
 import { db } from "@core/libs/db"
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkList } from "@core/types"
 import { EvmNetworkFragment, graphqlUrl } from "@core/util/graphql"
 import { ethers, providers } from "ethers"
 import { print } from "graphql"

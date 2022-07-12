@@ -1,5 +1,5 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
-import { AuthorizedSite, AuthorizedSiteId, ProviderType } from "@core/types"
+import { AuthorizedSite, AuthorizedSiteId, ProviderType } from "@core/domains/sitesAuthorised/types"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 

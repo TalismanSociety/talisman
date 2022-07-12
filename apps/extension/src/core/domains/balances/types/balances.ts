@@ -1,16 +1,6 @@
-import {
-  BalancePallet,
-  BalanceStorage,
-  BalancesStorage,
-  Chain,
-  ChainId,
-  EvmNetwork,
-  EvmNetworkId,
-  Token,
-  TokenId,
-  TokenRateCurrency,
-  TokenRates,
-} from "@core/types"
+import { Chain, ChainId } from "@core/domains/chains/types"
+import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
+import { Token, TokenId, TokenRateCurrency, TokenRates } from "@core/domains/tokens/types"
 import { NonFunctionProperties } from "@core/util/FunctionPropertyNames"
 import isArrayOf from "@core/util/isArrayOf"
 import { planckToTokens } from "@core/util/planckToTokens"
@@ -18,7 +8,11 @@ import BigMath from "@talisman/util/bigMath"
 import memoize from "lodash/memoize"
 import { Memoize } from "typescript-memoize"
 
-type NarrowStorage<S, P> = S extends { pallet: P } ? S : never
+import { BalanceStorage, BalancesStorage } from "./storages"
+
+/** A utility type used to extract the underlying storage type of a specific pallet from a generalised BalanceStorage */
+export type NarrowStorage<S, P> = S extends { pallet: P } ? S : never
+export type BalancePallet = BalanceStorage["pallet"]
 
 export type ChainsDb = Record<ChainId, Chain>
 export type EvmNetworksDb = Record<EvmNetworkId, EvmNetwork>

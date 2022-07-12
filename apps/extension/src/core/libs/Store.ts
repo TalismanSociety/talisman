@@ -1,10 +1,6 @@
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
-import {
-  MessageTypesWithSubscriptions,
-  MessageTypesWithSubscriptionsById,
-  Port,
-  RequestIdOnly,
-} from "@core/types"
+import { MessageTypesWithSubscriptions, MessageTypesWithSubscriptionsById } from "@core/types"
+import { Port, RequestIdOnly } from "@core/types/base"
 import {
   BehaviorSubject,
   ReplaySubject,

@@ -1,4 +1,4 @@
-import { AnySigningRequest, EthBaseSignRequest } from "@core/types"
+import { AnySigningRequest, EthBaseSignRequest } from "@core/domains/signing/types"
 
 export const isEthereumRequest = (
   signingRequest: AnySigningRequest

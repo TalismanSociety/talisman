@@ -1,5 +1,5 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
-import type { AuthorizeRequest } from "@core/types"
+import type { AuthorizeRequest } from "@core/domains/sitesAuthorised/types"
 import useSet from "@talisman/hooks/useSet"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useState } from "react"

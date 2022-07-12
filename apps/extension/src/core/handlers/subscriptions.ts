@@ -3,7 +3,8 @@
 // Adapted from polkadot.js
 
 import { DEBUG } from "@core/constants"
-import type { MessageTypesWithSubscriptions, Port, SubscriptionMessageTypes } from "@core/types"
+import type { MessageTypesWithSubscriptions, SubscriptionMessageTypes } from "@core/types"
+import type { Port } from "@core/types/base"
 import { Observable } from "rxjs"
 type Subscriptions = Record<string, Port>
 

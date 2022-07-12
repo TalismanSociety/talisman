@@ -1,4 +1,4 @@
-import { AccountJsonHardware } from "@core/types"
+import { AccountJsonHardware } from "@core/domains/accounts/types"
 import { TypeRegistry } from "@polkadot/types"
 import { formatLedgerSigningError } from "@talisman/util/formatLedgerErrorMessage"
 import {

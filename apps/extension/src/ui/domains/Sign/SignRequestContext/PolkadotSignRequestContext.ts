@@ -1,8 +1,9 @@
-import { SigningRequest, TransactionDetails, SignerPayloadJSON } from "@core/types"
+import { SignerPayloadJSON, SigningRequest, TransactionDetails } from "@core/domains/signing/types"
 import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
 import useChains from "@ui/hooks/useChains"
 import { useCallback, useEffect, useMemo, useState } from "react"
+
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 export const usePolkadotTransactionDetails = (requestId?: string) => {

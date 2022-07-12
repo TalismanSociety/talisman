@@ -1,17 +1,11 @@
 import { DEBUG } from "@core/constants"
+import { Balance, Balances } from "@core/domains/balances/types"
+import { Chain, ChainId } from "@core/domains/chains/types"
+import { OrmlToken } from "@core/domains/tokens/types"
 import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
-import {
-  Address,
-  AddressesByChain,
-  Balance,
-  Balances,
-  Chain,
-  ChainId,
-  OrmlToken,
-  SubscriptionCallback,
-  UnsubscribeFn,
-} from "@core/types"
+import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
+import { Address, AddressesByChain } from "@core/types/base"
 import { decodeAnyAddress } from "@core/util"
 import { TypeRegistry, createType } from "@polkadot/types"
 import * as Sentry from "@sentry/browser"

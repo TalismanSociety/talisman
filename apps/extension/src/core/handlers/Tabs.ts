@@ -1,26 +1,28 @@
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
+import { RequestAccountList } from "@core/domains/accounts/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
+import type { ResponseSigning } from "@core/domains/signing/types"
+import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
 import { db } from "@core/libs/db"
 import { TabsHandler } from "@core/libs/Handler"
 import type {
   MessageTypes,
-  Port,
-  RequestAccountList,
-  RequestAuthorizeTab,
-  RequestRpcSend,
-  RequestRpcSubscribe,
-  RequestRpcUnsubscribe,
   RequestTypes,
-  ResponseRpcListProviders,
-  ResponseSigning,
   ResponseTypes,
   SubscriptionMessageTypes,
 } from "@core/types"
+import type { Port } from "@core/types/base"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
 import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
+import {
+  RequestRpcSend,
+  RequestRpcSubscribe,
+  RequestRpcUnsubscribe,
+  ResponseRpcListProviders,
+} from "@polkadot/extension-base/background/types"
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 // Copyright 2019-2021 @polkadot/extension authors & contributors
 // SPDX-License-Identifier: Apache-2.0

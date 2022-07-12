@@ -1,6 +1,13 @@
 import { DEBUG } from "@core/constants"
 import { AccountsHandler } from "@core/domains/accounts"
+import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
+import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
+import {
+  Balances,
+  RequestBalance,
+  RequestBalancesByParamsSubscribe,
+} from "@core/domains/balances/types"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
 import { SigningHandler } from "@core/domains/signing"
@@ -10,18 +17,8 @@ import { AssetTransferHandler } from "@core/domains/transactions"
 import State from "@core/handlers/State"
 import { ExtensionStore } from "@core/handlers/stores"
 import { ExtensionHandler } from "@core/libs/Handler"
-import BalancesRpc from "@core/libs/rpc/Balances"
-import {
-  Balances,
-  MessageTypes,
-  Port,
-  RequestAddressFromMnemonic,
-  RequestBalance,
-  RequestBalancesByParamsSubscribe,
-  RequestIdOnly,
-  RequestTypes,
-  ResponseType,
-} from "@core/types"
+import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
+import { Port, RequestIdOnly } from "@core/types/base"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 
 import { createSubscription, unsubscribe } from "./subscriptions"

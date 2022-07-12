@@ -1,4 +1,4 @@
-import { AnySigningRequest } from "@core/types"
+import { AnySigningRequest } from "@core/domains/signing/types"
 import { isEthereumRequest } from "@core/util/isEthereumRequest"
 import useStatus from "@talisman/hooks/useStatus"
 import { useCallback } from "react"

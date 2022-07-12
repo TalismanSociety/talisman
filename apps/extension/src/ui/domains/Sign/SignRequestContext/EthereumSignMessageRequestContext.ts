@@ -1,4 +1,4 @@
-import { EthSignRequest } from "@core/types"
+import { EthSignRequest } from "@core/domains/signing/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"

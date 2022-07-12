@@ -1,5 +1,5 @@
+import { AccountAddressType } from "@core/domains/accounts/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
-import { AccountAddressType } from "@core/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Checkbox } from "@talisman/components/Checkbox"
 import { FormField } from "@talisman/components/Field/FormField"

@@ -1,5 +1,5 @@
+import { TransactionDetails } from "@core/domains/signing/types"
 import RpcFactory from "@core/libs/RpcFactory"
-import { TransactionDetails } from "@core/types"
 import { InterfaceTypes } from "@polkadot/types/types/registry"
 import * as Sentry from "@sentry/browser"
 

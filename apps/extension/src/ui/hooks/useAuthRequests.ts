@@ -1,7 +1,8 @@
+import type { AuthorizeRequest } from "@core/domains/sitesAuthorised/types"
 import { api } from "@ui/api"
-import { useMessageSubscription } from "./useMessageSubscription"
-import type { AuthorizeRequest } from "@core/types"
 import { BehaviorSubject } from "rxjs"
+
+import { useMessageSubscription } from "./useMessageSubscription"
 
 const INITIAL_VALUE: AuthorizeRequest[] = []
 

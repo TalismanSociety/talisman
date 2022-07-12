@@ -1,4 +1,4 @@
-import { IdenticonType } from "@core/types"
+import { IdenticonType } from "@core/domains/accounts/types"
 import Identicon from "@polkadot/react-identicon"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"

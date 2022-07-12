@@ -1,5 +1,6 @@
+import { AuthorizedSiteId, ProviderType } from "@core/domains/sitesAuthorised/types"
 import { useMemo } from "react"
-import { AuthorizedSiteId, ProviderType } from "@core/types"
+
 import { useAuthorisedSites } from "./useAuthorisedSites"
 
 const useAuthorisedSiteProviders = (id: AuthorizedSiteId) => {

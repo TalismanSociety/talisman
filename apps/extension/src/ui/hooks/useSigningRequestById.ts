@@ -1,9 +1,9 @@
-import type { AnySigningRequest } from "@core/types"
+import type { AnySigningRequest } from "@core/domains/signing/types"
 import { api } from "@ui/api"
+import { useCallback } from "react"
+import { BehaviorSubject } from "rxjs"
 
 import { useMessageSubscription } from "./useMessageSubscription"
-import { BehaviorSubject } from "rxjs"
-import { useCallback } from "react"
 
 const INITIAL_SUBJECT_VALUE: Record<string, AnySigningRequest> = {}
 

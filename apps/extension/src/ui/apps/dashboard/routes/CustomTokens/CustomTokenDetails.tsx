@@ -1,4 +1,4 @@
-import { CustomErc20Token } from "@core/types"
+import { CustomErc20Token } from "@core/domains/tokens/types"
 import * as Sentry from "@sentry/browser"
 import Dialog from "@talisman/components/Dialog"
 import { FormField } from "@talisman/components/Field/FormField"

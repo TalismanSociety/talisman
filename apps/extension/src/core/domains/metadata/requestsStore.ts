@@ -10,14 +10,6 @@ interface MetaRequest {
 type MetaRequestRespondable = TRespondableRequest<MetaRequest, boolean>
 
 export default class MetadataRequestsStore extends RequestStore<MetaRequest, boolean> {
-  mapRequestToData({ id, request, url }: MetaRequestRespondable) {
-    return {
-      id,
-      request,
-      url,
-    }
-  }
-
   public injectMetadata(url: string, request: MetadataDef): Promise<boolean> {
     return this.createRequest({ url, request })
   }

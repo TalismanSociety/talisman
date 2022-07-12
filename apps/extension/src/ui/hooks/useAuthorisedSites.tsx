@@ -1,4 +1,4 @@
-import type { AuthorizedSites } from "@core/types"
+import type { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
 import { api } from "@ui/api"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { BehaviorSubject } from "rxjs"
