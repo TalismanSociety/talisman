@@ -1,4 +1,6 @@
-import { ChainsDb, EvmNetworksDb, TokensDb } from "@core/domains/balances/types"
+import { ChainList } from "@core/domains/chains/types"
+import { EvmNetworkList } from "@core/domains/ethereum/types"
+import { TokenList } from "@core/domains/tokens/types"
 import { AccountAddressType, Balances, Chain, EvmNetwork, Token } from "@core/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -11,18 +13,18 @@ import { ReactNode, useMemo, useState } from "react"
 
 const useHydrateBalances = (chains?: Chain[], evmNetworks?: EvmNetwork[], tokens?: Token[]) => {
   const chainsDb = useMemo(
-    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])) as ChainsDb,
+    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])) as ChainList,
     [chains]
   )
   const evmNetworksDb = useMemo(
     () =>
       Object.fromEntries(
         (evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])
-      ) as EvmNetworksDb,
+      ) as EvmNetworkList,
     [evmNetworks]
   )
   const tokensDb = useMemo(
-    () => Object.fromEntries((tokens || []).map((token) => [token.id, token])) as TokensDb,
+    () => Object.fromEntries((tokens || []).map((token) => [token.id, token])) as TokenList,
     [tokens]
   )
   return { chains: chainsDb, evmNetworks: evmNetworksDb, tokens: tokensDb }

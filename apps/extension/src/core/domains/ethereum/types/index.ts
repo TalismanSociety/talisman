@@ -39,7 +39,7 @@ export type EvmNetwork = {
   explorerUrl: string | null
   rpcs: Array<EthereumRpc> | null
   isHealthy: boolean
-  substrateChain: { id: EvmNetworkId } | null
+  substrateChain: { id: string } | null
 }
 export type CustomEvmNetwork = EvmNetwork & {
   isCustom: true
@@ -48,7 +48,6 @@ export type CustomEvmNetwork = EvmNetwork & {
 }
 
 export type EvmNetworkList = Record<EvmNetworkId, EvmNetwork | CustomEvmNetwork>
-
 // ethereum networks
 
 export type AddEthereumChainRequest = {

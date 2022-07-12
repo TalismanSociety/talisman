@@ -1,5 +1,8 @@
-import { ChainsDb, EvmNetworksDb, TokensDb } from "@core/domains/balances/types"
+import { ChainList } from "@core/domains/chains/types"
+import { EvmNetworkList } from "@core/domains/ethereum/types"
+import { TokenList } from "@core/domains/tokens/types"
 import { useMemo } from "react"
+
 import useChains from "./useChains"
 import { useEvmNetworks } from "./useEvmNetworks"
 import useTokens from "./useTokens"
@@ -10,18 +13,18 @@ export const useHydrateBalances = () => {
   const _tokens = useTokens()
 
   const chains = useMemo(
-    () => Object.fromEntries((_chains || []).map((chain) => [chain.id, chain])) as ChainsDb,
+    () => Object.fromEntries((_chains || []).map((chain) => [chain.id, chain])) as ChainList,
     [_chains]
   )
   const evmNetworks = useMemo(
     () =>
       Object.fromEntries(
         (_evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])
-      ) as EvmNetworksDb,
+      ) as EvmNetworkList,
     [_evmNetworks]
   )
   const tokens = useMemo(
-    () => Object.fromEntries((_tokens || []).map((token) => [token.id, token])) as TokensDb,
+    () => Object.fromEntries((_tokens || []).map((token) => [token.id, token])) as TokenList,
     [_tokens]
   )
 
