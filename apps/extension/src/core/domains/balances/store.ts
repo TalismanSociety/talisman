@@ -27,7 +27,7 @@ import * as Sentry from "@sentry/browser"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
-import { Subject, combineLatest } from "rxjs"
+import { Subject, combineLatest, firstValueFrom } from "rxjs"
 
 type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account">
 type EvmNetworkIdAndHealth = Pick<
@@ -42,6 +42,7 @@ type SubscriptionsState = "Closed" | "Closing" | "Open"
 
 export class BalanceStore {
   #subscriptionsState: SubscriptionsState = "Closed"
+  #subscriptionsStateUpdated: Subject<void> = new Subject()
   #subscriptionsGeneration = 0
   #closeSubscriptionCallbacks: Array<Promise<() => void>> = []
 
@@ -228,7 +229,7 @@ export class BalanceStore {
     // Update chains on existing subscriptions
     if (this.#subscribers.observed) {
       await this.closeSubscriptions()
-      this.openSubscriptions()
+      await this.openSubscriptions()
     }
   }
 
@@ -268,7 +269,7 @@ export class BalanceStore {
     // Update addresses on existing subscriptions
     if (this.#subscribers.observed) {
       await this.closeSubscriptions()
-      this.openSubscriptions()
+      await this.openSubscriptions()
     }
   }
 
@@ -299,9 +300,12 @@ export class BalanceStore {
   /**
    * Opens balance subscriptions to all watched chains and addresses.
    */
-  private openSubscriptions() {
+  private async openSubscriptions() {
+    if (this.#subscriptionsState === "Closing")
+      await firstValueFrom(this.#subscriptionsStateUpdated)
+
     if (this.#subscriptionsState !== "Closed") return
-    this.#subscriptionsState = "Open"
+    this.setSubscriptionsState("Open")
 
     const generation = this.#subscriptionsGeneration
 
@@ -393,8 +397,11 @@ export class BalanceStore {
    * Closes all balance subscriptions.
    */
   private async closeSubscriptions() {
+    if (this.#subscriptionsState === "Closing")
+      await firstValueFrom(this.#subscriptionsStateUpdated)
+
     if (this.#subscriptionsState !== "Open") return
-    this.#subscriptionsState = "Closing"
+    this.setSubscriptionsState("Closing")
 
     // ignore old subscriptions if they're still closing when we next call `openSubscriptions()`
     this.#subscriptionsGeneration = (this.#subscriptionsGeneration + 1) % Number.MAX_SAFE_INTEGER
@@ -411,7 +418,12 @@ export class BalanceStore {
       await db.balances.toCollection().modify({ status: "cache" })
     })
 
-    this.#subscriptionsState = "Closed"
+    this.setSubscriptionsState("Closed")
+  }
+
+  private setSubscriptionsState(newState: SubscriptionsState) {
+    this.#subscriptionsState = newState
+    this.#subscriptionsStateUpdated.next()
   }
 }
 
