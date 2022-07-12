@@ -1,9 +1,9 @@
-import styled from "styled-components"
+import { IconButton } from "@talisman/components/IconButton"
 import Nav, { NavItem } from "@talisman/components/Nav"
-import Build from "@ui/domains/Build"
-import { ReactNode, useCallback } from "react"
-import { DashboardAccountSelect } from "./DashboardAccountSelect"
+import { PillButton } from "@talisman/components/PillButton"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { breakpoints } from "@talisman/theme/definitions"
 import {
   CopyIcon,
   ImageIcon,
@@ -13,15 +13,15 @@ import {
   StarIcon,
   UserIcon,
 } from "@talisman/theme/icons"
-import { useSendTokensModal } from "@ui/domains/Asset/Send"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { PillButton } from "@talisman/components/PillButton"
-import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
-import { IconButton } from "@talisman/components/IconButton"
-import { breakpoints } from "@talisman/theme/definitions"
+import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import { useSendTokensModal } from "@ui/domains/Asset/Send"
+import Build from "@ui/domains/Build"
+import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { ReactNode, useCallback } from "react"
 import { useWindowSize } from "react-use"
-import { WithTooltip } from "@talisman/components/Tooltip"
+import styled from "styled-components"
 
 const PaddedItem = styled.div`
   padding: 2.4rem;
@@ -234,7 +234,7 @@ export const SideBar = () => {
   return (
     <Container>
       <PaddedItem>
-        <DashboardAccountSelect />
+        <AccountSelect responsive />
         {/* Pills for large screens */}
         <Pills>
           <PillButton onClick={handleSendClick}>

@@ -19,6 +19,11 @@ type BoxProps = {
   fullheight?: boolean
   hidden?: boolean // true = overflow hidden
 
+  // position
+  relative?: boolean
+  absolute?: boolean
+  fixed?: boolean
+
   // layout
   gap?: number
   grow?: boolean
@@ -93,10 +98,18 @@ const getTransition = (props: BoxProps) => {
   return `all ${speed} ${props.easing ?? "ease-in-out"}`
 }
 
+const getPosition = (props: BoxProps) => {
+  if (props.relative) return "relative"
+  if (props.absolute) return "absolute"
+  if (props.fixed) return "fixed"
+  return undefined
+}
+
 // generic method in case we want to reuse it on span or other tags
 const boxPropsInjector = (props: BoxProps): CSSObject => {
   return {
     display: getDisplay(props),
+    position: getPosition(props),
     flexDirection: props.flex ? (props.column ? "column" : "row") : undefined,
     width: props.fullwidth ? "100%" : getSize(props.width),
     height: props.fullheight ? "100%" : getSize(props.height),

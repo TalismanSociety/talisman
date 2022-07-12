@@ -3,23 +3,26 @@ import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
+import { CopyIcon, IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { useSendTokensModal } from "@ui/domains/Asset/Send"
-import { AssetsTable } from "@ui/domains/Portfolio/AssetsTable"
+import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
+import { GroupedAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useAccountExport } from "@ui/hooks/useAccountExport"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import React, { useCallback } from "react"
 import styled from "styled-components"
 
-const Stats = styled(Statistics)`
-  max-width: 40%;
+const PopupAccountSelect = styled(AccountSelect)`
+  > ul {
+    max-height: 30rem;
+  }
 `
+
 // memoise to re-render only if balances object changes
 const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const balancesToDisplay = useDisplayBalances(balances)
@@ -35,15 +38,6 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
     [account?.address, openSendFundsModal]
   )
 
-  // const { portfolio, available, locked } = useMemo(() => {
-  //   const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat("usd")
-  //   return {
-  //     portfolio: total,
-  //     available: transferable,
-  //     locked: frozen + reserved,
-  //   }
-  // }, [balancesToDisplay.sum])
-
   const copyAddress = useCallback(() => {
     if (!account) return
     openAddressFormatterModal(account.address)
@@ -52,7 +46,9 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   return (
     <div>
       <Box flex fullwidth gap={1.6}>
-        <Box>PICKER HERE</Box>
+        <Box>
+          <PopupAccountSelect />
+        </Box>
         <Box grow flex justify="flex-end" align="center" gap={1.6}>
           <WithTooltip tooltip="Send">
             <IconButton onClick={sendFunds}>
@@ -60,30 +56,34 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
             </IconButton>
           </WithTooltip>
           {account && (
-            <PopNav
-              trigger={
-                <IconButton>
-                  <IconMore />
-                </IconButton>
-              }
-              className="icon more"
-              closeOnMouseOut
-            >
-              <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
-              {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
-              {canExportAccount && (
-                <PopNav.Item onClick={exportAccount}>Export Private Key</PopNav.Item>
-              )}
-              {canRemove && (
-                <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
-              )}
-            </PopNav>
+            <>
+              <IconButton onClick={copyAddress}>
+                <CopyIcon />
+              </IconButton>
+              <PopNav
+                trigger={
+                  <IconButton>
+                    <IconMore />
+                  </IconButton>
+                }
+                className="icon more"
+                closeOnMouseOut
+              >
+                <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
+                {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
+                {canExportAccount && (
+                  <PopNav.Item onClick={exportAccount}>Export Private Key</PopNav.Item>
+                )}
+                {canRemove && (
+                  <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
+                )}
+              </PopNav>
+            </>
           )}
         </Box>
       </Box>
       <Box margin="1.2rem 0 0 0">
-        AsseTS HERE
-        <AssetsTable balances={balancesToDisplay} />
+        <GroupedAssetsTable balances={balancesToDisplay} />
       </Box>
     </div>
   )

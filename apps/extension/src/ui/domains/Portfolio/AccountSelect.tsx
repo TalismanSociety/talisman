@@ -10,7 +10,7 @@ import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useSelect } from "downshift"
 import { useEffect, useMemo } from "react"
-import styled from "styled-components"
+import styled, { css } from "styled-components"
 
 const Button = styled.button`
   background: none;
@@ -79,54 +79,7 @@ const AccountOptionContainer = styled.div`
   }
 `
 
-const Container = styled.div`
-  width: 100%;
-  position: relative;
-
-  &.open ${Button} {
-    background-color: var(--color-background-muted-3x);
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-  }
-
-  > ul {
-    padding: 0;
-    margin: 0;
-    z-index: 10;
-    position: absolute;
-    left: 0;
-    top: 6.4rem;
-    width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
-    max-height: calc(100vh - 12rem);
-    background-color: var(--color-background);
-    border-bottom-left-radius: var(--border-radius);
-    border-bottom-right-radius: var(--border-radius);
-
-    li {
-      padding: 0;
-      margin: 0;
-      list-style: none;
-      cursor: pointer;
-
-      :hover {
-        background-color: var(--color-background-muted-3x);
-      }
-    }
-
-    li.current {
-      background-color: var(--color-background-muted);
-      ${AccountOptionContainer} {
-        color: var(--color-foreground);
-      }
-    }
-  }
-
-  .current {
-    display: none;
-  }
-
+const RESPONSIVE_CONTAINER_STYLE = css`
   // medium sidebar
   @media (max-width: ${breakpoints.large}px) {
     .chevron {
@@ -186,6 +139,57 @@ const Container = styled.div`
   }
 `
 
+const Container = styled.div<{ responsive?: boolean }>`
+  width: 100%;
+  position: relative;
+
+  &.open ${Button} {
+    background-color: var(--color-background-muted-3x);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  > ul {
+    padding: 0;
+    margin: 0;
+    z-index: 10;
+    position: absolute;
+    left: 0;
+    top: 6.4rem;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: calc(100vh - 12rem);
+    background-color: var(--color-background);
+    border-bottom-left-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+
+    li {
+      padding: 0;
+      margin: 0;
+      list-style: none;
+      cursor: pointer;
+
+      :hover {
+        background-color: var(--color-background-muted-3x);
+      }
+    }
+
+    li.current {
+      background-color: var(--color-background-muted);
+      ${AccountOptionContainer} {
+        color: var(--color-foreground);
+      }
+    }
+  }
+
+  .current {
+    display: none;
+  }
+
+  ${({ responsive }) => (responsive ? RESPONSIVE_CONTAINER_STYLE : "")}
+`
+
 type AccountOptionProps = {
   address?: string
   totalUsd: number
@@ -231,7 +235,12 @@ const AllAccountsOption = () => {
 
 const OPTION_ALL_ACCOUNTS = { address: undefined } as unknown as AccountJsonAny
 
-export const DashboardAccountSelect = () => {
+type AccountSelectProps = {
+  responsive?: boolean
+  className?: string
+}
+
+export const AccountSelect = ({ responsive, className }: AccountSelectProps) => {
   const { account, accounts, select } = useSelectedAccount()
 
   const items = useMemo<AccountJsonAny[]>(
@@ -249,7 +258,10 @@ export const DashboardAccountSelect = () => {
   }, [selectedItem, select])
 
   return (
-    <Container className={classNames(isOpen && "open")}>
+    <Container
+      className={(classNames(isOpen && "open", responsive && "responsive"), className)}
+      responsive={responsive}
+    >
       <Button type="button" {...getToggleButtonProps()}>
         {account ? <SingleAccountOption {...account} /> : <AllAccountsOption />}
         <ChevronDownIcon className="chevron" />

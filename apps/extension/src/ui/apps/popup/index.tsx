@@ -10,7 +10,7 @@ import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useMetadataRequests } from "@ui/hooks/useMetadataRequests"
 import { useSigningRequests } from "@ui/hooks/useSigningRequests"
 import { useEffect, useMemo } from "react"
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom"
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom"
 
 import { CurrentSiteProvider } from "./context/CurrentSiteContext"
 import { NavigationProvider } from "./context/NavigationContext"
@@ -34,6 +34,7 @@ const Popup = () => {
   const ethNetworkAddRequests = useEthNetworkAddRequests()
   const ethWatchAssetRequests = useEthWatchAssetRequests()
   const navigate = useNavigate()
+  const location = useLocation()
 
   // determine route based on the incoming message
   // push to correct route
@@ -54,9 +55,7 @@ const Popup = () => {
         if (isEthereumRequest(request)) navigate(`/sign/eth/${request.id}`)
         else navigate(`/sign/${request.id}`)
       }
-    } //else navigate("/")
-    // dependency on signingRequests because it's mutable
-    // otherwise it wouldn't switch to a pending request after approving another
+    } else if (!location.pathname || location.pathname === "/") navigate("/portfolio")
   }, [
     metaDataRequests,
     signingRequests,
@@ -65,6 +64,7 @@ const Popup = () => {
     ethNetworkAddRequests,
     signingRequests.length,
     ethWatchAssetRequests,
+    location.pathname,
   ])
 
   // force onboarding if not onboarded

@@ -1,21 +1,20 @@
 import { Balance, Balances } from "@core/domains/balances/types"
-import { rectToClientRect } from "@floating-ui/core"
 import { Box } from "@talisman/components/Box"
-import { FadeIn } from "@talisman/components/FadeIn"
 import { LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 import Skeleton from "react-loading-skeleton"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
-import { TokenLogo } from "../Asset/TokenLogo"
-import { AssetBalanceCellValue } from "./AssetBalanceCellValue"
-import { usePortfolio } from "./context"
-import { ChainLogoStack } from "./LogoStack"
+import { TokenLogo } from "../../Asset/TokenLogo"
+import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
+import { usePortfolio } from "../context"
+import { ChainLogoStack } from "../LogoStack"
+import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
 
 const Table = styled.table`
   border-spacing: 0 0.8rem;
@@ -127,9 +126,12 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
   )
 }
 
+type RowType = "available" | "locked"
+
 type AssetRowProps = {
   balances: Balances
   symbol: string
+  locked?: boolean
 }
 
 const FetchingIcon = styled(LoaderIcon)`
@@ -137,7 +139,7 @@ const FetchingIcon = styled(LoaderIcon)`
   font-size: 2rem;
 `
 
-export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
+const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
   const { chains, evmNetworks } = usePortfolio()
   const { logoIds } = useMemo(() => {
     const chainIds = [
@@ -192,7 +194,7 @@ export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
           </Box>
         </Box>
       </td>
-      <td align="right" valign="top">
+      {/* <td align="right" valign="top">
         <AssetBalanceCellValue
           locked
           render={summary.lockedTokens > 0}
@@ -201,12 +203,13 @@ export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
           token={token}
           className="noPadRight"
         />
-      </td>
+      </td> */}
       <td align="right" valign="top">
         <AssetBalanceCellValue
           render
-          planck={summary.availableTokens}
-          fiat={summary.availableFiat}
+          locked={locked}
+          planck={locked ? summary.lockedTokens : summary.availableTokens}
+          fiat={locked ? summary.lockedFiat : summary.availableFiat}
           token={token}
         />
       </td>
@@ -214,65 +217,61 @@ export const AssetRow = ({ balances, symbol }: AssetRowProps) => {
   )
 }
 
-type AssetsTableProps = {
+type GroupedAssetsTableProps = {
   balances: Balances
 }
 
-export const AssetsTable = ({ balances }: AssetsTableProps) => {
-  const balancesToDisplay = useDisplayBalances(balances)
-  const { account } = useSelectedAccount()
-  const { networkFilter } = usePortfolio()
-
+// TODO also have acounts and network filter as props ?
+export const GroupedAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   // group by token (symbol)
-  const rows = useMemo(() => {
-    const groupedByToken = balancesToDisplay.sorted.reduce((acc, b) => {
-      if (!b.token) return acc
-      const key = b.token.symbol
-      if (acc[key]) acc[key].push(b)
-      else acc[key] = [b]
-      return acc
-    }, {} as Record<string, Balance[]>)
-    const balancesByToken = Object.entries(groupedByToken).reduce(
-      (acc, [key, balances]) => ({
-        ...acc,
-        [key]: new Balances(balances),
-      }),
-      {} as Record<string, Balances>
-    )
-    return Object.entries(balancesByToken)
-  }, [balancesToDisplay.sorted])
 
-  // if specific account we have 2 rows minimum, if all accounts we have 4
-  const skeletons = useMemo(() => {
-    // in this case we don't know the number of min rows
-    if (networkFilter) return 0
+  const { symbolBalances, skeletons } = usePortfolioSymbolBalances(balances)
 
-    // Expect at least dot/ksm or movr/glmr
-    const expectedRows = account ? 2 : 4
-    return rows.length < expectedRows ? expectedRows - rows.length : 0
-  }, [account, networkFilter, rows.length])
+  const available = symbolBalances
+    .map<[string, Balances]>(([symbol, balance]) => [
+      symbol,
+      new Balances(balance.sorted.filter((b) => b.free.planck > BigInt(0))),
+    ])
+    .filter(([, b]) => b.sorted.length > 0)
+  const locked = symbolBalances
+    .map<[string, Balances]>(([symbol, balance]) => [
+      symbol,
+      new Balances(
+        balance.sorted.filter((b) => b.frozen.planck > BigInt(0) || b.reserved.planck > BigInt(0))
+      ),
+    ])
+    .filter(([, b]) => b.sorted.length > 0)
 
   return (
     <Table>
-      <thead>
-        <tr>
-          <th>Asset</th>
-          <th align="right">Locked</th>
-          <th align="right">Available</th>
-        </tr>
-      </thead>
       <tbody>
-        {rows.map(([symbol, b]) => (
-          <AssetRow key={symbol} balances={b} symbol={symbol} />
-        ))}
-        {[...Array(skeletons).keys()].map((i) => (
-          <AssetRowSkeleton key={i} className={`opacity-${i}`} />
-        ))}
+        {available.length > 0 && (
+          <>
+            <tr>
+              <td colSpan={2}>Available</td>
+            </tr>
+            {available.map(([symbol, b]) => (
+              <AssetRow key={symbol} balances={b} symbol={symbol} />
+            ))}
+            {[...Array(skeletons).keys()].map((i) => (
+              <AssetRowSkeleton key={i} className={`opacity-${i}`} />
+            ))}
+          </>
+        )}
+        {locked.length > 0 && (
+          <>
+            <tr>
+              <td colSpan={2}>Locked</td>
+            </tr>
+            {locked.map(([symbol, b]) => (
+              <AssetRow key={symbol} balances={b} symbol={symbol} locked />
+            ))}
+          </>
+        )}
         {/** this row locks column sizes to prevent flickering */}
         <tr>
           <td></td>
-          <td width="30%"></td>
-          <td width="30%"></td>
+          <td width="40%"></td>
         </tr>
       </tbody>
     </Table>
