@@ -55,7 +55,8 @@ export const useBalancesByParams = (addressesByChain: AddressesByChain) => {
           }
 
           default: {
-            throw new Error(`Unhandled BalancesUpdate type: ${update}`)
+            const exhaustiveCheck: never = update
+            throw new Error(`Unhandled BalancesUpdate type: ${exhaustiveCheck}`)
           }
         }
       }),
