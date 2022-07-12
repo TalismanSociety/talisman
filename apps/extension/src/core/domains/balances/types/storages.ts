@@ -3,8 +3,6 @@ import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { Address } from "@core/types/base"
 
-export type NarrowStorage<S, P> = S extends { pallet: P } ? S : never
-
 export type BalancesStorage = Record<string, BalanceStorage>
 
 export type BalanceStorage = BalanceStorageBalances | BalanceStorageOrmlTokens | BalanceStorageErc20

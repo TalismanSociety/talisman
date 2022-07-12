@@ -8,8 +8,10 @@ import BigMath from "@talisman/util/bigMath"
 import memoize from "lodash/memoize"
 import { Memoize } from "typescript-memoize"
 
-import { BalanceStorage, BalancesStorage, NarrowStorage } from "./storages"
+import { BalanceStorage, BalancesStorage } from "./storages"
 
+/** A utility type used to extract the underlying storage type of a specific pallet from a generalised BalanceStorage */
+export type NarrowStorage<S, P> = S extends { pallet: P } ? S : never
 export type BalancePallet = BalanceStorage["pallet"]
 
 export type ChainsDb = Record<ChainId, Chain>
