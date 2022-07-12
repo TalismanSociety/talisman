@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react"
-import type { MetadataRequest } from "@core/types"
+import type { MetadataRequest } from "@core/domains/metadata/types"
 import useStatus, { statusOptions } from "@talisman/hooks/useStatus"
-import { useMetadataRequests } from "./useMetadataRequests"
 import { api } from "@ui/api"
+import { useCallback, useEffect, useState } from "react"
+
+import { useMetadataRequests } from "./useMetadataRequests"
 
 interface IProps {
   onError: (msg: string) => void

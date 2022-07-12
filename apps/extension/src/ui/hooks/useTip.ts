@@ -1,4 +1,4 @@
-import { ChainId } from "@core/types"
+import { ChainId } from "@core/domains/chains/types"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 export type TipOptionName = "low" | "medium" | "high"

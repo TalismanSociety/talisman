@@ -1,7 +1,7 @@
-import MessageTypes from "./types"
-import MessageService from "@core/libs/MessageService"
 import { PORT_EXTENSION } from "@core/constants"
-import { EvmNetwork } from "@core/types"
+import MessageService from "@core/libs/MessageService"
+
+import MessageTypes from "./types"
 
 const port = chrome.runtime.connect({ name: PORT_EXTENSION })
 const messageService = new MessageService({
@@ -22,7 +22,6 @@ export const api: MessageTypes = {
   onboardStatus: () => messageService.sendMessage("pri(app.onboardStatus)"),
   onboardStatusSubscribe: (cb) =>
     messageService.subscribe("pri(app.onboardStatus.subscribe)", null, cb),
-  setOnboarded: () => messageService.sendMessage("pri(meta.onboard)"),
   dashboardOpen: (route) => messageService.sendMessage("pri(app.dashboardOpen)", { route }),
   onboardOpen: () => messageService.sendMessage("pri(app.onboardOpen)"),
   popupOpen: () => messageService.sendMessage("pri(app.popupOpen)"),

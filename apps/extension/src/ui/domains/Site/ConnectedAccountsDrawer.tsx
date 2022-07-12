@@ -6,6 +6,7 @@ import { XIcon } from "@talisman/theme/icons"
 import { useCurrentSite } from "@ui/apps/popup/context/CurrentSiteContext"
 import { FC } from "react"
 import styled from "styled-components"
+
 import { ConnectedAccounts } from "./ConnectedAccounts"
 
 type Props = {

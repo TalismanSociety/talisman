@@ -1,11 +1,15 @@
 import { DEBUG } from "@core/constants"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { getProviderForEvmNetworkId } from "@core/domains/ethereum/networksStore"
-import erc20Abi from "@core/libs/evmRpc/abis/erc20.json"
-import { Address, Erc20Token, EvmNetworkId, SubscriptionCallback, UnsubscribeFn } from "@core/types"
+import { EvmNetworkId } from "@core/domains/ethereum/types"
+import { Erc20Token } from "@core/domains/tokens/types"
+import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
+import { Address } from "@core/types/base"
 import { JsonRpcBatchProvider } from "@ethersproject/providers"
 import * as Sentry from "@sentry/browser"
 import { ethers } from "ethers"
+
+import erc20Abi from "./abis/erc20.json"
 
 export default class Erc20BalancesEvmRpc {
   /**

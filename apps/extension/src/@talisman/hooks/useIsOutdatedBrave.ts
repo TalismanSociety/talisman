@@ -1,6 +1,7 @@
 import { assert } from "@polkadot/util"
-import { useIsBrave } from "./useIsBrave"
 import { useEffect, useState } from "react"
+
+import { useIsBrave } from "./useIsBrave"
 
 export const useIsOutdatedBrave = () => {
   const isBrave = useIsBrave()

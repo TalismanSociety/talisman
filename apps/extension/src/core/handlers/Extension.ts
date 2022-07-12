@@ -1,29 +1,27 @@
+import { DEBUG } from "@core/constants"
+import { AccountsHandler } from "@core/domains/accounts"
+import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
+import AppHandler from "@core/domains/app/handler"
+import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
 import {
   Balances,
-  MessageTypes,
-  RequestTypes,
-  ResponseType,
-  Port,
-  RequestAddressFromMnemonic,
   RequestBalance,
   RequestBalancesByParamsSubscribe,
-  RequestIdOnly,
-} from "@core/types"
+} from "@core/domains/balances/types"
+import { EthHandler } from "@core/domains/ethereum"
+import { MetadataHandler } from "@core/domains/metadata"
+import { SigningHandler } from "@core/domains/signing"
+import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
+import TokensHandler from "@core/domains/tokens/handler"
+import { AssetTransferHandler } from "@core/domains/transactions"
 import State from "@core/handlers/State"
 import { ExtensionStore } from "@core/handlers/stores"
 import { ExtensionHandler } from "@core/libs/Handler"
-import { AccountsHandler } from "@core/domains/accounts"
-import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
-import { MetadataHandler } from "@core/domains/metadata"
-import AppHandler from "@core/domains/app/handler"
-import { EthHandler } from "@core/domains/ethereum"
-import { AssetTransferHandler } from "@core/domains/transactions"
-import { SigningHandler } from "@core/domains/signing"
-import { createSubscription, unsubscribe } from "./subscriptions"
+import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
+import { Port, RequestIdOnly } from "@core/types/base"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
-import BalancesRpc from "@core/libs/rpc/Balances"
-import { DEBUG } from "@core/constants"
-import TokensHandler from "@core/domains/tokens/handler"
+
+import { createSubscription, unsubscribe } from "./subscriptions"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}

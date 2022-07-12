@@ -1,14 +1,8 @@
+import { ChainId } from "@core/domains/chains/types"
+import { Transaction, TransactionId, TransactionStatus } from "@core/domains/transactions/types"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { StorageProvider } from "@core/libs/Store"
-import {
-  Address,
-  ChainId,
-  Port,
-  RequestIdOnly,
-  Transaction,
-  TransactionId,
-  TransactionStatus,
-} from "@core/types"
+import { Address, Port, RequestIdOnly } from "@core/types/base"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { BehaviorSubject, combineLatest, map } from "rxjs"
 import { validate as isUuid, version as uuidVersion, v4 as uuidv4 } from "uuid"

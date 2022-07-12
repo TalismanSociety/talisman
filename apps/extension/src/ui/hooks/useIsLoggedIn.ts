@@ -1,7 +1,8 @@
-import type { LoggedinType } from "@core/types"
+import type { LoggedinType } from "@core/domains/app/types"
 import { api } from "@ui/api"
-import { useMessageSubscription } from "./useMessageSubscription"
 import { BehaviorSubject } from "rxjs"
+
+import { useMessageSubscription } from "./useMessageSubscription"
 
 const INITIAL_VALUE: LoggedinType = "UNKNOWN"
 

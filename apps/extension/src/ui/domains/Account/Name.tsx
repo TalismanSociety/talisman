@@ -1,4 +1,4 @@
-import { Balances } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import CopyToClipboard from "@talisman/components/CopyToClipboard"
 import { WithTooltip } from "@talisman/components/Tooltip"

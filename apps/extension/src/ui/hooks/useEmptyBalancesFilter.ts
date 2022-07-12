@@ -1,6 +1,6 @@
-import { Balances, Balance } from "@core/types"
-import { useMemo, useState, useEffect } from "react"
-import { AccountJson } from "@core/types"
+import { AccountJson } from "@core/domains/accounts/types"
+import { Balance, Balances } from "@core/domains/balances/types"
+import { useEffect, useMemo, useState } from "react"
 
 export default function useEmptyBalancesFilter(
   balances: Balances,

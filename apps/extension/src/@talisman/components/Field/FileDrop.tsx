@@ -1,10 +1,11 @@
+import { ReactComponent as IconClear } from "@talisman/theme/icons/x-circle.svg"
+import { DropzoneOptions, useDropzone } from "react-dropzone"
 // @ts-nocheck
 import styled from "styled-components"
-import Field, { IFieldProps, fieldDefaultProps } from "./Field"
-import { ReactComponent as IconClear } from "@talisman/theme/icons/x-circle.svg"
-import { useDropzone } from "react-dropzone"
 
-interface IProps extends IFieldProps {
+import Field, { IFieldProps, fieldDefaultProps } from "./Field"
+
+interface IProps extends IFieldProps<File> {
   accept?: string
   hint?: string
 }
@@ -15,7 +16,7 @@ const defaultProps: IProps = {
 }
 
 const FileDrop = ({ value, accept, hint, onChange, fieldProps, ...rest }: IProps) => {
-  const onDrop = (acceptedFiles) => {
+  const onDrop: DropzoneOptions["onDrop"] = (acceptedFiles) => {
     const [file] = acceptedFiles
     onChange(file)
   }

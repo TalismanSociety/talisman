@@ -1,7 +1,8 @@
-import type { MnemonicSubscriptionResult } from "@core/types"
+import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
 import { api } from "@ui/api"
-import { useMessageSubscription } from "./useMessageSubscription"
 import { BehaviorSubject } from "rxjs"
+
+import { useMessageSubscription } from "./useMessageSubscription"
 
 type MnemonicBackupConfirmed = "UNKNOWN" | "TRUE" | "FALSE"
 

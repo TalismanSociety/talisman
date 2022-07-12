@@ -1,4 +1,4 @@
-import { CustomEvmNetwork, EvmNetwork } from "@core/types"
+import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useMemo } from "react"
 

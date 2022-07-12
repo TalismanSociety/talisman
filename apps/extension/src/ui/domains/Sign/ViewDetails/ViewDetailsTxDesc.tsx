@@ -1,5 +1,6 @@
-import { TransactionDetails } from "@core/types"
+import { TransactionDetails } from "@core/domains/signing/types"
 import { FC, useMemo } from "react"
+
 import { ViewDetailsField } from "./ViewDetailsField"
 
 type ViewDetailsTxDescProps = {

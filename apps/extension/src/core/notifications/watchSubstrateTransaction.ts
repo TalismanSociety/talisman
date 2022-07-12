@@ -1,11 +1,12 @@
+import { Chain, ChainId } from "@core/domains/chains/types"
 import RpcFactory from "@core/libs/RpcFactory"
-import { Chain, ChainId } from "@core/types"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
+import { Vec } from "@polkadot/types-codec"
 import { EventRecord, Hash } from "@polkadot/types/interfaces"
 import { xxhashAsHex } from "@polkadot/util-crypto"
-import { createNotification, NotificationType } from "./createNotification"
 import * as Sentry from "@sentry/browser"
-import { Vec } from "@polkadot/types-codec"
+
+import { NotificationType, createNotification } from "./createNotification"
 
 const TX_WATCH_TIMEOUT = 90000
 

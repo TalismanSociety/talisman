@@ -1,7 +1,7 @@
-import type { AccountJsonAny } from "core/types"
-import type { SubjectInfo } from "@polkadot/ui-keyring/observable/types"
-import type { InjectedAccount } from "@polkadot/extension-inject/types"
+import type { AccountJsonAny } from "@core/domains/accounts/types"
 import { canDerive } from "@polkadot/extension-base/utils"
+import type { InjectedAccount } from "@polkadot/extension-inject/types"
+import type { SubjectInfo } from "@polkadot/ui-keyring/observable/types"
 
 export const AccountTypes = {
   ROOT: "ROOT",

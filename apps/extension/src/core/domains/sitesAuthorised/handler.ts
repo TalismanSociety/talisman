@@ -1,16 +1,13 @@
-import { talismanAnalytics } from "@core/libs/Analytics"
-import { ExtensionHandler } from "@core/libs/Handler"
-import { assert } from "@polkadot/util"
-import type {
+import {
   AuthRequestApprove,
-  MessageTypes,
-  Port,
   RequestAuthorizedSiteForget,
   RequestAuthorizedSiteUpdate,
-  RequestIdOnly,
-  RequestTypes,
-  ResponseType,
-} from "core/types"
+} from "@core/domains/sitesAuthorised/types"
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { ExtensionHandler } from "@core/libs/Handler"
+import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
+import type { Port, RequestIdOnly } from "@core/types/base"
+import { assert } from "@polkadot/util"
 
 export default class SitesAuthorisationHandler extends ExtensionHandler {
   private authorizedForget({ id, type }: RequestAuthorizedSiteForget): boolean {

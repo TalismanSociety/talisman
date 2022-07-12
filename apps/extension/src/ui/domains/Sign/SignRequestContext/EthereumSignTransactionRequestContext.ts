@@ -1,4 +1,4 @@
-import { EthPriorityOptionName, EthSignAndSendRequest } from "@core/types"
+import { EthPriorityOptionName, EthSignAndSendRequest } from "@core/domains/signing/types"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { getTransactionFeeParams } from "@talisman/util/getTransactionFeeParams"
 import { provideContext } from "@talisman/util/provideContext"

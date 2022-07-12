@@ -1,14 +1,14 @@
-import { EthPriorityOptionName, EthPriorityOptions } from "@core/types"
+import { EthPriorityOptionName, EthPriorityOptions } from "@core/domains/signing/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { classNames } from "@talisman/util/classNames"
-import { getTransactionFeeParams } from "@talisman/util/getTransactionFeeParams"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
+import { getTransactionFeeParams } from "@talisman/util/getTransactionFeeParams"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
 import { BigNumber } from "ethers"
 import { useCallback } from "react"
 import styled from "styled-components"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
 
 export const PillButton = styled.button`
   background: var(--color-background-muted-3x);

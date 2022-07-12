@@ -1,5 +1,5 @@
+import { Chain } from "@core/domains/chains/types"
 import { useMemo } from "react"
-import { Chain } from "@core/types"
 
 const filter = (chain: Chain): chain is Chain & { prefix: NonNullable<Chain["prefix"]> } =>
   chain.prefix !== null

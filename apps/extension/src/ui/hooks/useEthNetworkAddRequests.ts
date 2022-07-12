@@ -1,7 +1,8 @@
-import type { AddEthereumChainRequest } from "@core/types"
+import type { AddEthereumChainRequest } from "@core/domains/ethereum/types"
 import { api } from "@ui/api"
-import { useMessageSubscription } from "./useMessageSubscription"
 import { BehaviorSubject } from "rxjs"
+
+import { useMessageSubscription } from "./useMessageSubscription"
 
 const INITIAL_VALUE: AddEthereumChainRequest[] = []
 

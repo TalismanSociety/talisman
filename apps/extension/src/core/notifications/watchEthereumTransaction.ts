@@ -1,10 +1,11 @@
-import Browser from "webextension-polyfill"
-import { getProviderForEthereumNetwork } from "../domains/ethereum/networksStore"
-import { nanoid } from "nanoid"
-import * as Sentry from "@sentry/browser"
-import urlJoin from "url-join"
-import { createNotification } from "./createNotification"
 import { db } from "@core/libs/db"
+import * as Sentry from "@sentry/browser"
+import { nanoid } from "nanoid"
+import urlJoin from "url-join"
+import Browser from "webextension-polyfill"
+
+import { getProviderForEthereumNetwork } from "../domains/ethereum/networksStore"
+import { createNotification } from "./createNotification"
 
 export const watchEthereumTransaction = async (ethChainId: number, txHash: string) => {
   try {

@@ -1,5 +1,5 @@
 import { SettingsStoreData } from "@core/domains/app"
-import { EvmNetwork } from "@core/types"
+import { EvmNetwork } from "@core/domains/ethereum/types"
 import Field from "@talisman/components/Field"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
