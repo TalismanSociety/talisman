@@ -1,4 +1,4 @@
-import { RequestAccountCreateFromSeed } from "@core/types"
+import { RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { useNotification } from "@talisman/components/Notification"

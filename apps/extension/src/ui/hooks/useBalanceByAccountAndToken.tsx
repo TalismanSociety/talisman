@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback } from "react"
-import { Balance, TokenId } from "@core/types"
+import { Balance } from "@core/domains/balances/types"
+import { TokenId } from "@core/domains/tokens/types"
 import useBalances from "@ui/hooks/useBalances"
+import { useCallback, useEffect, useState } from "react"
 
 export type TProps = {
   tokenId?: TokenId

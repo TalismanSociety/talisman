@@ -1,7 +1,7 @@
+import { EthPriorityOptionName, EthPriorityOptions } from "@core/domains/signing/types"
+import * as Sentry from "@sentry/browser"
 import { BigNumber, ethers } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
-import * as Sentry from "@sentry/browser"
-import { EthPriorityOptionName, EthPriorityOptions } from "@core/types"
 
 const BLOCKS_HISTORY_LENGTH = 4
 const REWARD_PERCENTILES = [10, 30, 60]

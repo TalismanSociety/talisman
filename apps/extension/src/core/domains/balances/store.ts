@@ -1,23 +1,16 @@
 import { DEBUG } from "@core/constants"
 import { settingsStore } from "@core/domains/app/store.settings"
+import Erc20BalancesEvmRpc from "@core/domains/balances/rpc/Erc20Balances"
+import NativeBalancesEvmRpc from "@core/domains/balances/rpc/EvmBalances"
+import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
+import { BalanceStorage, Balances, RequestBalance } from "@core/domains/balances/types"
+import { Chain } from "@core/domains/chains/types"
+import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
+import OrmlTokensRpc from "@core/domains/tokens/rpc/OrmlTokens"
+import { Erc20Token } from "@core/domains/tokens/types"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { db } from "@core/libs/db"
-import Erc20BalancesEvmRpc from "@core/libs/evmRpc/Erc20Balances"
-import NativeBalancesEvmRpc from "@core/libs/evmRpc/NativeBalances"
-import BalancesRpc from "@core/libs/rpc/Balances"
-import OrmlTokensRpc from "@core/libs/rpc/OrmlTokens"
-import {
-  Addresses,
-  AddressesByChain,
-  BalanceStorage,
-  Balances,
-  Chain,
-  Erc20Token,
-  EvmNetwork,
-  EvmNetworkId,
-  Port,
-  RequestBalance,
-} from "@core/types"
+import { Addresses, AddressesByChain, Port } from "@core/types/base"
 import { encodeAnyAddress } from "@core/util"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
@@ -27,7 +20,7 @@ import * as Sentry from "@sentry/browser"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
-import { Subject, combineLatest } from "rxjs"
+import { Subject, combineLatest, firstValueFrom } from "rxjs"
 
 type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account">
 type EvmNetworkIdAndHealth = Pick<
@@ -42,6 +35,7 @@ type SubscriptionsState = "Closed" | "Closing" | "Open"
 
 export class BalanceStore {
   #subscriptionsState: SubscriptionsState = "Closed"
+  #subscriptionsStateUpdated: Subject<void> = new Subject()
   #subscriptionsGeneration = 0
   #closeSubscriptionCallbacks: Array<Promise<() => void>> = []
 
@@ -228,7 +222,7 @@ export class BalanceStore {
     // Update chains on existing subscriptions
     if (this.#subscribers.observed) {
       await this.closeSubscriptions()
-      this.openSubscriptions()
+      await this.openSubscriptions()
     }
   }
 
@@ -268,7 +262,7 @@ export class BalanceStore {
     // Update addresses on existing subscriptions
     if (this.#subscribers.observed) {
       await this.closeSubscriptions()
-      this.openSubscriptions()
+      await this.openSubscriptions()
     }
   }
 
@@ -299,9 +293,12 @@ export class BalanceStore {
   /**
    * Opens balance subscriptions to all watched chains and addresses.
    */
-  private openSubscriptions() {
+  private async openSubscriptions() {
+    if (this.#subscriptionsState === "Closing")
+      await firstValueFrom(this.#subscriptionsStateUpdated)
+
     if (this.#subscriptionsState !== "Closed") return
-    this.#subscriptionsState = "Open"
+    this.setSubscriptionsState("Open")
 
     const generation = this.#subscriptionsGeneration
 
@@ -393,8 +390,11 @@ export class BalanceStore {
    * Closes all balance subscriptions.
    */
   private async closeSubscriptions() {
+    if (this.#subscriptionsState === "Closing")
+      await firstValueFrom(this.#subscriptionsStateUpdated)
+
     if (this.#subscriptionsState !== "Open") return
-    this.#subscriptionsState = "Closing"
+    this.setSubscriptionsState("Closing")
 
     // ignore old subscriptions if they're still closing when we next call `openSubscriptions()`
     this.#subscriptionsGeneration = (this.#subscriptionsGeneration + 1) % Number.MAX_SAFE_INTEGER
@@ -411,7 +411,12 @@ export class BalanceStore {
       await db.balances.toCollection().modify({ status: "cache" })
     })
 
-    this.#subscriptionsState = "Closed"
+    this.setSubscriptionsState("Closed")
+  }
+
+  private setSubscriptionsState(newState: SubscriptionsState) {
+    this.#subscriptionsState = newState
+    this.#subscriptionsStateUpdated.next()
   }
 }
 

@@ -1,6 +1,7 @@
 import "react-loading-skeleton/dist/skeleton.css"
 
-import { Balance, BalanceFormatter, Token } from "@core/types"
+import { Balance, BalanceFormatter } from "@core/domains/balances/types"
+import { Token } from "@core/domains/tokens/types"
 import { Checkbox } from "@talisman/components/Checkbox"
 import { CheckCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"

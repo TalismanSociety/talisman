@@ -19,8 +19,10 @@ export interface IFieldWrapperProps extends PropsWithChildren<any> {
   onClick?: (e: any) => any
 }
 
-export interface IFieldProps extends IFieldWrapperProps, PropsWithChildren<any> {
-  value?: string | number
+export interface IFieldProps<T = string | number>
+  extends IFieldWrapperProps,
+    PropsWithChildren<any> {
+  value?: T
   fieldProps?: any
   onChange: (val?: any) => void
   id?: string

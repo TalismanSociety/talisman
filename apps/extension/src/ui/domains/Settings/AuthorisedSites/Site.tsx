@@ -1,16 +1,17 @@
-import styled from "styled-components"
-import Link from "@talisman/components/Link"
-import Expander from "@talisman/components/Expander"
-import Rule from "@talisman/components/Rule"
-import Favicon from "@talisman/components/Favicon"
+import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import Dialog from "@talisman/components/Dialog"
-import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
-import Account from "./Account"
-import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
-import { useCallback, useState } from "react"
+import Expander from "@talisman/components/Expander"
+import Favicon from "@talisman/components/Favicon"
+import Link from "@talisman/components/Link"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { ProviderType } from "@core/types"
+import Rule from "@talisman/components/Rule"
+import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
+import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
+import { useCallback, useState } from "react"
+import styled from "styled-components"
+
+import Account from "./Account"
 
 const Title = ({ name, domain, className }: any) => (
   <span className={className}>

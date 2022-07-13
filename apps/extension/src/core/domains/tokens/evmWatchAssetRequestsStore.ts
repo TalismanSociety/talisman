@@ -1,23 +1,11 @@
+import type { WatchAssetBase, WatchAssetRequest } from "@core/domains/ethereum/types"
+import type { CustomErc20Token } from "@core/domains/tokens/types"
 import { RequestStore } from "@core/libs/RequestStore"
-import type {
-  CustomErc20Token,
-  RequestIdOnly,
-  WatchAssetBase,
-  WatchAssetRequest,
-} from "@core/types"
+import { RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 
 class WatchAssetError extends Error {}
 export default class EvmWatchAssetRequestsStore extends RequestStore<WatchAssetRequest, unknown> {
-  protected mapRequestToData({ id, url, request, token }: WatchAssetRequest): WatchAssetRequest {
-    return {
-      id,
-      url,
-      request,
-      token,
-    }
-  }
-
   ignoreRequest({ id }: RequestIdOnly) {
     const request = this.requests[id]
     assert(request, `Watch Asset request with id ${id} doesn't exist`)

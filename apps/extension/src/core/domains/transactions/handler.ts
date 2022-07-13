@@ -1,26 +1,27 @@
+import BlocksRpc from "@core/domains/blocks/rpc"
+import { ChainId } from "@core/domains/chains/types"
+import EventsRpc from "@core/domains/events/rpc"
+import AssetTransfersRpc from "@core/domains/transactions/rpc/AssetTransfers"
+import OrmlTokenTransfersRpc from "@core/domains/transactions/rpc/OrmlTokenTransfers"
+import { pendingTransfers } from "@core/domains/transactions/rpc/PendingTransfers"
+import {
+  RequestAssetTransfer,
+  RequestAssetTransferApproveSign,
+  ResponseAssetTransfer,
+  ResponseAssetTransferFeeQuery,
+  TransactionStatus,
+} from "@core/domains/transactions/types"
 import { getPairFromAddress, getUnlockedPairFromAddress } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
-import AssetTransfersRpc from "@core/libs/rpc/AssetTransfers"
-import BlocksRpc from "@core/libs/rpc/Blocks"
-import EventsRpc from "@core/libs/rpc/Events"
-import OrmlTokenTransfersRpc from "@core/libs/rpc/OrmlTokenTransfers"
-import { pendingTransfers } from "@core/libs/rpc/PendingTransfers"
 import type {
-  Address,
-  ChainId,
-  Port,
-  RequestAssetTransfer,
-  RequestAssetTransferApproveSign,
   RequestSignatures,
   RequestTypes,
-  ResponseAssetTransfer,
-  ResponseAssetTransferFeeQuery,
   ResponseType,
   SubscriptionCallback,
-  TransactionStatus,
 } from "@core/types"
+import { Address, Port } from "@core/types/base"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import keyring from "@polkadot/ui-keyring"

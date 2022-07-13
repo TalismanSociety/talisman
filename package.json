@@ -10,6 +10,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev --parallel --color",
     "dev:extension": "yarn workspace extension run dev",
+    "build:extension:ci": "turbo run build:extension:ci",
     "build:extension:prod": "turbo run build:extension:prod",
     "build:extension:canary": "turbo run build:extension:canary",
     "lint": "turbo run lint",
@@ -28,11 +29,16 @@
     "prettier-plugin-import-sort": "^0.0.7",
     "turbo": "latest"
   },
+  "resolutions": {
+    "@polkadot/api": "8.9.1",
+    "@polkadot/types": "8.9.1",
+    "@substrate/txwrapper-*": "3.1.3"
+  },
   "engines": {
     "npm": ">=7.0.0",
     "node": ">=14.0.0"
   },
-  "packageManager": "yarn@1.22.18",
+  "packageManager": "yarn@3.2.1",
   "lint-staged": {
     "*.{ts,tsx,js,jsx,css,scss,html,md,json}": "prettier --write",
     "*.{js,ts,jsx,tsx}": "eslint --fix --max-warnings 0"

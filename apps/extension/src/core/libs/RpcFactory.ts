@@ -1,6 +1,6 @@
 import { DEBUG } from "@core/constants"
+import { ChainId } from "@core/domains/chains/types"
 import { db } from "@core/libs/db"
-import { ChainId } from "@core/types"
 import { WsProvider } from "@polkadot/api"
 import { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import * as Sentry from "@sentry/browser"

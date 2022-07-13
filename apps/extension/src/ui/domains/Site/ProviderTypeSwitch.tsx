@@ -1,4 +1,4 @@
-import { ProviderType } from "@core/types"
+import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 

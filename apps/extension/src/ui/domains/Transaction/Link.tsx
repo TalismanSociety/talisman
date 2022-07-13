@@ -1,8 +1,8 @@
+import truncateString from "@talisman/util/truncateString"
+import useChain from "@ui/hooks/useChain"
+import useTransactionById from "@ui/hooks/useTransactionById"
 import { useMemo } from "react"
 import styled from "styled-components"
-import useTransactionById from "@ui/hooks/useTransactionById"
-import useChain from "@ui/hooks/useChain"
-import truncateString from "@talisman/util/truncateString"
 
 interface IProps {
   id: string

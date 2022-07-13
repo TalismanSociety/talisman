@@ -1,7 +1,7 @@
-import { assert } from "@polkadot/util"
-import type { Address } from "@core/types"
-import keyring from "@polkadot/ui-keyring"
 import { passwordStore } from "@core/domains/app"
+import type { Address } from "@core/types/base"
+import keyring from "@polkadot/ui-keyring"
+import { assert } from "@polkadot/util"
 
 let idCounter = 0
 

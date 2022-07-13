@@ -1,7 +1,9 @@
 import { DEBUG } from "@core/constants"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { getProviderForEvmNetworkId } from "@core/domains/ethereum/networksStore"
-import { Address, EvmNetwork, EvmNetworkId, SubscriptionCallback, UnsubscribeFn } from "@core/types"
+import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
+import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
+import { Address } from "@core/types/base"
 import { JsonRpcBatchProvider } from "@ethersproject/providers"
 import * as Sentry from "@sentry/browser"
 

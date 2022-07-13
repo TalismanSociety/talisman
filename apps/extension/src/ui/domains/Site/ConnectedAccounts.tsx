@@ -1,16 +1,17 @@
-import Panel from "@talisman/components/Panel"
+import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import Field from "@talisman/components/Field"
-import Account from "@ui/domains/Account"
-import styled from "styled-components"
-import { useConnectedAccounts } from "@ui/hooks/useConnectedAccounts"
-import { FC, useEffect, useMemo, useState } from "react"
-import { ProviderTypeSwitch } from "./ProviderTypeSwitch"
-import { ProviderType } from "@core/types"
-import { NetworkSelect } from "../Ethereum/NetworkSelect"
+import Panel from "@talisman/components/Panel"
 import Spacer from "@talisman/components/Spacer"
+import Account from "@ui/domains/Account"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import useAuthorisedSiteProviders from "@ui/hooks/useAuthorisedSiteProviders"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useConnectedAccounts } from "@ui/hooks/useConnectedAccounts"
+import { FC, useEffect, useMemo, useState } from "react"
+import styled from "styled-components"
+
+import { NetworkSelect } from "../Ethereum/NetworkSelect"
+import { ProviderTypeSwitch } from "./ProviderTypeSwitch"
 
 const AccountItem = ({ address, value = false, onChange, className }: any) => (
   <Panel className={className} onClick={onChange} small>

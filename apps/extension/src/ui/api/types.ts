@@ -1,39 +1,40 @@
-import { EthResponseType } from "@core/injectEth/types"
+import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
+import type { AccountJson } from "@core/domains/accounts/types"
+import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
 import {
-  AccountAddressType,
-  AccountJson,
-  AddEthereumChainRequest,
-  AddressesByChain,
   AnalyticsCaptureRequest,
+  LoggedinType,
+  ModalOpenParams,
+  ModalTypes,
+  OnboardedType,
+} from "@core/domains/app/types"
+import { BalancesUpdate, RequestBalance } from "@core/domains/balances/types"
+import { BalanceStorage } from "@core/domains/balances/types"
+import { ChainId } from "@core/domains/chains/types"
+import {
+  AddEthereumChainRequest,
   AnyEthRequestChainId,
-  AnySigningRequest,
+  CustomEvmNetwork,
+  WatchAssetRequest,
+} from "@core/domains/ethereum/types"
+import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/types"
+import {
   AuthRequestAddresses,
   AuthRequestId,
   AuthorizeRequest,
   AuthorizedSite,
   AuthorizedSites,
-  BalanceStorage,
-  BalancesUpdate,
-  ChainId,
-  CustomErc20Token,
-  CustomErc20TokenCreate,
-  CustomEvmNetwork,
-  LoggedinType,
-  MetadataRequest,
-  MnemonicSubscriptionResult,
-  ModalOpenParams,
-  ModalTypes,
-  OnboardedType,
   ProviderType,
-  RequestAccountCreateHardware,
-  RequestBalance,
+} from "@core/domains/sitesAuthorised/types"
+import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
+import {
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
-  TokenId,
-  TransactionDetails,
-  UnsubscribeFn,
-  WatchAssetRequest,
-} from "@core/types"
+} from "@core/domains/transactions/types"
+import { EthResponseType } from "@core/injectEth/types"
+import { UnsubscribeFn } from "@core/types"
+import { AddressesByChain } from "@core/types/base"
+import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
 
@@ -52,7 +53,6 @@ export default interface MessageTypes {
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
   onboardStatus: () => Promise<OnboardedType>
   onboardStatusSubscribe: (cb: (val: OnboardedType) => void) => UnsubscribeFn
-  setOnboarded: () => Promise<OnboardedType>
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
   popupOpen: () => Promise<boolean>

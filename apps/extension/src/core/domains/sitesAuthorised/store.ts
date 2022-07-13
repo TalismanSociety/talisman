@@ -1,9 +1,8 @@
-import Browser from "webextension-polyfill"
-
-import { SubscribableByIdStorageProvider } from "@core/libs/Store"
-import { AuthorizedSite, AuthorizedSites, ProviderType } from "@core/types"
+import { AuthorizedSite, AuthorizedSites, ProviderType } from "@core/domains/sitesAuthorised/types"
 import { stripUrl } from "@core/handlers/helpers"
+import { SubscribableByIdStorageProvider } from "@core/libs/Store"
 import { assert } from "@polkadot/util"
+import Browser from "webextension-polyfill"
 
 const OLD_AUTH_URLS_KEY = "authUrls"
 

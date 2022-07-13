@@ -1,10 +1,10 @@
+import { DEBUG } from "@core/constants"
+import { settingsStore } from "@core/domains/app/store.settings"
 import * as SentryBrowser from "@sentry/browser"
 import * as SentryReact from "@sentry/react"
-import { Event } from "@sentry/types"
 import { Integrations } from "@sentry/tracing"
-import { settingsStore } from "@core/domains/app/store.settings"
+import { Event } from "@sentry/types"
 import { ReplaySubject, firstValueFrom } from "rxjs"
-import { DEBUG } from "@core/constants"
 
 const normalizeUrl = (url: string) => {
   return url.replace(/(webpack_require__@)?(moz|chrome)-extension:\/\/[^/]+\//, "~/")

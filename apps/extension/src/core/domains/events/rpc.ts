@@ -1,7 +1,10 @@
-import BlocksRpc from "@core/libs/rpc/Blocks"
+import BlocksRpc from "@core/domains/blocks/rpc"
+import { ChainId } from "@core/domains/chains/types"
 import RpcFactory from "@core/libs/RpcFactory"
-import { ChainId, EventList, SubscriptionCallback, UnsubscribeFn } from "@core/types"
+import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { getRegistry } from "@substrate/txwrapper-polkadot"
+
+import { EventList } from "./types"
 
 // System.Events is the state_storage key prefix for events
 const systemHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);

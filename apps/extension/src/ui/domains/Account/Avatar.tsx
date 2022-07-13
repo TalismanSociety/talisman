@@ -1,13 +1,15 @@
-import styled from "styled-components"
+import { IdenticonType } from "@core/domains/accounts/types"
+import { Address } from "@core/types/base"
 import { isEthereumAddress } from "@polkadot/util-crypto/ethereum"
-import { classNames } from "@talisman/util/classNames"
-import ChainLogo from "../Asset/Logo"
-import useChains from "@ui/hooks/useChains"
-import { lazy, Suspense, useMemo } from "react"
 import { TalismanOrb } from "@talisman/components/TalismanOrb"
 import ethIcon from "@talisman/theme/logos/eth-diamond-glyph-white.png"
-import { Address, IdenticonType } from "@core/types"
+import { classNames } from "@talisman/util/classNames"
+import useChains from "@ui/hooks/useChains"
 import { useSettings } from "@ui/hooks/useSettings"
+import { Suspense, lazy, useMemo } from "react"
+import styled from "styled-components"
+
+import ChainLogo from "../Asset/Logo"
 
 const IdentIcon = lazy(() => import("@polkadot/react-identicon"))
 

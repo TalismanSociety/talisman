@@ -1,8 +1,8 @@
-import { assert } from "@polkadot/util"
-import Browser from "webextension-polyfill"
-import { SubscribableStorageProvider } from "@core/libs/Store"
-import { gt } from "semver"
 import { DEBUG } from "@core/constants"
+import { SubscribableStorageProvider } from "@core/libs/Store"
+import { assert } from "@polkadot/util"
+import { gt } from "semver"
+import Browser from "webextension-polyfill"
 
 type ONBOARDED_TRUE = "TRUE"
 type ONBOARDED_FALSE = "FALSE"

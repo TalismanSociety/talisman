@@ -1,12 +1,12 @@
-import { Balances } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
+import { db } from "@core/libs/db"
 import { api } from "@ui/api"
 import { useChains } from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { useTokens } from "@ui/hooks/useTokens"
-import { useMemo } from "react"
 import { useLiveQuery } from "dexie-react-hooks"
-import { db } from "@core/libs/db"
+import { useMemo } from "react"
 
 const subscribe = () => api.balances(() => {})
 export const useBalances = () => {

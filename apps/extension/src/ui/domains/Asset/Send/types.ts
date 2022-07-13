@@ -1,4 +1,6 @@
-import { Balance, BalanceFormatter, SignerPayloadJSON, TokenId } from "@core/types"
+import { Balance, BalanceFormatter } from "@core/domains/balances/types"
+import { SignerPayloadJSON } from "@core/domains/signing/types"
+import { TokenId } from "@core/domains/tokens/types"
 
 export type TokenBalanceInfo = {
   symbol: string

@@ -1,8 +1,9 @@
-import type { WatchAssetRequest } from "@core/types"
+import type { WatchAssetRequest } from "@core/domains/ethereum/types"
 import { api } from "@ui/api"
-import { useMessageSubscription } from "./useMessageSubscription"
-import { BehaviorSubject } from "rxjs"
 import { useCallback } from "react"
+import { BehaviorSubject } from "rxjs"
+
+import { useMessageSubscription } from "./useMessageSubscription"
 
 const INITIAL_SUBJECT_VALUE: Record<string, WatchAssetRequest> = {}
 

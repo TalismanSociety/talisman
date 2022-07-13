@@ -2,20 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/background/handlers/State.ts
 
-import type { ProviderMeta } from "@polkadot/extension-inject/types"
-import type {
-  JsonRpcResponse,
-  ProviderInterface,
-  ProviderInterfaceCallback,
-} from "@polkadot/rpc-provider/types"
+import { Port } from "@core/types/base"
 import type {
   RequestRpcSend,
   RequestRpcSubscribe,
   RequestRpcUnsubscribe,
   ResponseRpcListProviders,
 } from "@polkadot/extension-base/background/types"
+import type { ProviderMeta } from "@polkadot/extension-inject/types"
+import type {
+  JsonRpcResponse,
+  ProviderInterface,
+  ProviderInterfaceCallback,
+} from "@polkadot/rpc-provider/types"
 import { assert } from "@polkadot/util"
-import { Port } from "@core/types"
 import * as Sentry from "@sentry/browser"
 
 // List of providers passed into constructor. This is the list of providers

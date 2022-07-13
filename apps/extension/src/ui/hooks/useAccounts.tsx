@@ -1,7 +1,8 @@
-import type { AccountJson } from "@core/types"
+import type { AccountJson } from "@core/domains/accounts/types"
 import { api } from "@ui/api"
-import { useMessageSubscription } from "./useMessageSubscription"
 import { BehaviorSubject } from "rxjs"
+
+import { useMessageSubscription } from "./useMessageSubscription"
 
 const INITIAL_VALUE: AccountJson[] = []
 

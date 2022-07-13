@@ -1,4 +1,6 @@
-import Browser, { Storage } from "webextension-polyfill"
+import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import { MessageTypesWithSubscriptions, MessageTypesWithSubscriptionsById } from "@core/types"
+import { Port, RequestIdOnly } from "@core/types/base"
 import {
   BehaviorSubject,
   ReplaySubject,
@@ -12,13 +14,7 @@ import {
   tap,
   zip,
 } from "rxjs"
-import {
-  MessageTypesWithSubscriptions,
-  MessageTypesWithSubscriptionsById,
-  Port,
-  RequestIdOnly,
-} from "@core/types"
-import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import Browser, { Storage } from "webextension-polyfill"
 
 export interface Store<T extends { [index: string]: any }> {
   get(): Promise<T>

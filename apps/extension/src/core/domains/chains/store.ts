@@ -1,6 +1,6 @@
 import { DEBUG } from "@core/constants"
+import { Chain, ChainList } from "@core/domains/chains/types"
 import { db } from "@core/libs/db"
-import { Chain, ChainList } from "@core/types"
 import addCustomChainRpcs from "@core/util/addCustomChainRpcs"
 
 import { getChains } from "./api"

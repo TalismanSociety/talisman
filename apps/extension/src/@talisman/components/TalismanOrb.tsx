@@ -1,8 +1,8 @@
-import { FC, useMemo } from "react"
-import Color from "color"
-import md5 from "blueimp-md5"
-import { nanoid } from "nanoid"
 import { encodeAnyAddress } from "@core/util"
+import md5 from "blueimp-md5"
+import Color from "color"
+import { nanoid } from "nanoid"
+import { FC, useMemo } from "react"
 
 const djb2 = (str: string) => {
   let hash = 5381

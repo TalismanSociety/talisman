@@ -1,4 +1,5 @@
-import { CustomErc20Token, CustomEvmNetwork, EvmNetwork } from "@core/types"
+import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
+import { CustomErc20Token } from "@core/domains/tokens/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"

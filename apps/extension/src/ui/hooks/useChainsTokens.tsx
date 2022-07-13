@@ -1,4 +1,7 @@
-import { Balances, Chain, ChainId, EvmNetwork, Token } from "@core/types"
+import { Balances } from "@core/domains/balances/types"
+import { Chain, ChainId } from "@core/domains/chains/types"
+import { EvmNetwork } from "@core/domains/ethereum/types"
+import { Token } from "@core/domains/tokens/types"
 import useBalances from "@ui/hooks/useBalances"
 import useTokens from "@ui/hooks/useTokens"
 import { useMemo } from "react"

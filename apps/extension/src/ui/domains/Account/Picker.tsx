@@ -1,4 +1,4 @@
-import { AccountJsonHardware } from "@core/types"
+import { AccountJsonHardware } from "@core/domains/accounts/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import Field from "@talisman/components/Field/Field"
 import { ReactComponent as EnterIcon } from "@talisman/theme/icons/corner-down-left.svg"

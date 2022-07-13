@@ -1,4 +1,4 @@
-import { TokenRateCurrency } from "@core/types"
+import { TokenRateCurrency } from "@core/domains/tokens/types"
 import { classNames } from "@talisman/util/classNames"
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"

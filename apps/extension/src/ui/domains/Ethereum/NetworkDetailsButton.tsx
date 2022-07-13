@@ -1,8 +1,8 @@
-import { ReactNode, useMemo } from "react"
-import { AddEthereumChainParameter } from "@core/types"
+import { AddEthereumChainParameter } from "@core/domains/ethereum/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { ReactNode, useMemo } from "react"
 import styled from "styled-components"
 
 const ViewDetailsContainer = styled.div`

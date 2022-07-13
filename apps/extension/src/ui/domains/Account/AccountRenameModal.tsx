@@ -2,6 +2,7 @@ import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useState } from "react"
+
 import AccountRename from "./Rename"
 
 const useAccountRenameModalProvider = () => {

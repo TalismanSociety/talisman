@@ -1,8 +1,9 @@
+import * as Sentry from "@sentry/browser"
+import Favicon from "@talisman/components/Favicon"
+import Pill from "@talisman/components/Pill"
 import { FC, useMemo } from "react"
 import styled from "styled-components"
-import Pill from "@talisman/components/Pill"
-import Favicon from "@talisman/components/Favicon"
-import * as Sentry from "@sentry/browser"
+
 import { WithTooltip } from "./Tooltip"
 
 const Container = styled(Pill)`
