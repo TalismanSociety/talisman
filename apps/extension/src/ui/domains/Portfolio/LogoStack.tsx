@@ -1,8 +1,8 @@
 import styled from "styled-components"
+
 import StyledAssetLogo from "../Asset/Logo"
 
 export const Container = styled.div`
-  font-size: 1.8rem;
   height: 1em;
   padding-left: 0.6rem;
   .chain-logo {

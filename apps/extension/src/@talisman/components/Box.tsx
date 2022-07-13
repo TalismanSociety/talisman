@@ -52,6 +52,8 @@ type BoxProps = {
   bold?: boolean
   fontsize?: keyof typeof fontSizes
   fontsizecustom?: CSSProperties["fontSize"]
+  lineheight?: keyof typeof fontSizes
+  lineheightcustom?: CSSProperties["fontSize"]
 }
 
 const getDisplay = (props: BoxProps): CSSProperties["display"] => {
@@ -77,6 +79,13 @@ const getFontSize = (props: BoxProps) => {
   if (typeof props.fontsizecustom === "number") return `${props.fontsizecustom}rem`
   if (typeof props.fontsizecustom === "string") return props.fontsizecustom
   if (props.fontsize !== undefined) return `var(--font-size-${props.fontsize})`
+  return undefined
+}
+
+const getLineHeight = (props: BoxProps) => {
+  if (typeof props.lineheightcustom === "number") return `${props.lineheightcustom}rem`
+  if (typeof props.lineheightcustom === "string") return props.lineheightcustom
+  if (props.lineheight !== undefined) return `var(--font-size-${props.lineheight})`
   return undefined
 }
 
@@ -120,6 +129,7 @@ const boxPropsInjector = (props: BoxProps): CSSObject => {
     justifyContent: props.justify,
     alignItems: props.align,
     fontSize: getFontSize(props),
+    lineHeight: getLineHeight(props),
     gap: props.gap !== undefined ? `${props.gap}rem` : undefined,
     color: props.fg ? `var(--color-${props.fg})` : undefined,
     backgroundColor: props.bg ? `var(--color-${props.bg})` : undefined,

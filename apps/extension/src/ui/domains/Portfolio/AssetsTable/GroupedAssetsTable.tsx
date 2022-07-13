@@ -1,9 +1,10 @@
 import { Balance, Balances } from "@core/domains/balances/types"
+import { planckToTokens } from "@core/util"
 import { Box } from "@talisman/components/Box"
-import { LoaderIcon } from "@talisman/theme/icons"
+import { LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
+import Fiat from "@ui/domains/Asset/Fiat"
+import Tokens from "@ui/domains/Asset/Tokens"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import { useCallback, useMemo } from "react"
 import Skeleton from "react-loading-skeleton"
@@ -136,7 +137,7 @@ type AssetRowProps = {
 
 const FetchingIcon = styled(LoaderIcon)`
   line-height: 1;
-  font-size: 2rem;
+  font-size: 1.4rem;
 `
 
 const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
@@ -179,31 +180,50 @@ const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
     <tr className={classNames("asset")} onClick={handleClick}>
       <td valign="top">
         <Box flex>
-          <Box padding="1.6rem" fontsize="xlarge">
+          <Box padding="1.2rem" fontsize="xlarge">
             <TokenLogo tokenId={token.id} />
           </Box>
-          <Box grow flex column justify="center" gap={0.4}>
-            <Box fontsize="normal" bold fg="foreground" flex inline align="center" gap={0.6}>
-              {token.symbol} {isFetching && <FetchingIcon data-spin />}
+          <Box grow flex column justify="center" gap={0.4} lineheight="small" fontsize="small">
+            <Box bold fg="foreground" flex justify="space-between">
+              <Box>
+                {token.symbol} {isFetching && <FetchingIcon data-spin />}
+              </Box>
+              <Box fg={locked ? "mid" : "foreground"}>
+                <Tokens
+                  amount={planckToTokens(
+                    (locked ? summary.lockedTokens : summary.availableTokens).toString(),
+                    token.decimals
+                  )}
+                  symbol={token?.symbol}
+                  isBalance
+                />
+                {locked ? (
+                  <>
+                    {" "}
+                    <LockIcon className="lock" />
+                  </>
+                ) : null}
+              </Box>
             </Box>
-            {logoIds?.length > 1 && (
-              <div>
+            <Box fontsize="xsmall" flex justify="space-between">
+              <Box>
                 <ChainLogoStack chainIds={logoIds} />
-              </div>
-            )}
+              </Box>
+              <Box>
+                {(locked ? summary.lockedFiat : summary.availableFiat) === null ? (
+                  "-"
+                ) : (
+                  <Fiat
+                    currency="usd"
+                    amount={locked ? summary.lockedFiat : summary.availableFiat}
+                    isBalance
+                  />
+                )}
+              </Box>
+            </Box>
           </Box>
         </Box>
       </td>
-      {/* <td align="right" valign="top">
-        <AssetBalanceCellValue
-          locked
-          render={summary.lockedTokens > 0}
-          planck={summary.lockedTokens}
-          fiat={summary.lockedFiat}
-          token={token}
-          className="noPadRight"
-        />
-      </td> */}
       <td align="right" valign="top">
         <AssetBalanceCellValue
           render
@@ -221,35 +241,66 @@ type GroupedAssetsTableProps = {
   balances: Balances
 }
 
+type GroupRowProps = {
+  label: string
+  fiatAmount: number
+  className?: string
+}
+
+const GroupRow = styled(({ label, fiatAmount, className }: GroupRowProps) => {
+  return (
+    <tr className={className}>
+      <td>{label}</td>
+      <td align="right">
+        <Fiat amount={fiatAmount} currency="usd" isBalance />
+      </td>
+    </tr>
+  )
+})`
+  td {
+    font-size: var(--font-size-medium);
+  }
+  td:first-child {
+    color: var(--color-foreground);
+  }
+  td:last-child {
+    color: var(--color-mid);
+  }
+`
+
 // TODO also have acounts and network filter as props ?
 export const GroupedAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   // group by token (symbol)
-
   const { symbolBalances, skeletons } = usePortfolioSymbolBalances(balances)
 
-  const available = symbolBalances
-    .map<[string, Balances]>(([symbol, balance]) => [
-      symbol,
-      new Balances(balance.sorted.filter((b) => b.free.planck > BigInt(0))),
-    ])
-    .filter(([, b]) => b.sorted.length > 0)
-  const locked = symbolBalances
-    .map<[string, Balances]>(([symbol, balance]) => [
-      symbol,
-      new Balances(
-        balance.sorted.filter((b) => b.frozen.planck > BigInt(0) || b.reserved.planck > BigInt(0))
-      ),
-    ])
-    .filter(([, b]) => b.sorted.length > 0)
+  // split by status
+  const { available, locked, totalAvailable, totalLocked } = useMemo(() => {
+    const available = symbolBalances
+      .map<[string, Balances]>(([symbol, balance]) => [
+        symbol,
+        new Balances(balance.sorted.filter((b) => b.free.planck > BigInt(0))),
+      ])
+      .filter(([, b]) => b.sorted.length > 0)
+    const locked = symbolBalances
+      .map<[string, Balances]>(([symbol, balance]) => [
+        symbol,
+        new Balances(
+          balance.sorted.filter((b) => b.frozen.planck > BigInt(0) || b.reserved.planck > BigInt(0))
+        ),
+      ])
+      .filter(([, b]) => b.sorted.length > 0)
+
+    const { reserved, frozen, transferable } = balances.sum.fiat("usd")
+
+    return { available, locked, totalAvailable: transferable, totalLocked: frozen + reserved }
+  }, [balances, symbolBalances])
 
   return (
     <Table>
       <tbody>
         {available.length > 0 && (
           <>
-            <tr>
-              <td colSpan={2}>Available</td>
-            </tr>
+            <GroupRow label="Available" fiatAmount={totalAvailable} />
             {available.map(([symbol, b]) => (
               <AssetRow key={symbol} balances={b} symbol={symbol} />
             ))}
@@ -260,9 +311,7 @@ export const GroupedAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
         )}
         {locked.length > 0 && (
           <>
-            <tr>
-              <td colSpan={2}>Locked</td>
-            </tr>
+            <GroupRow label="Locked" fiatAmount={totalLocked} />
             {locked.map(([symbol, b]) => (
               <AssetRow key={symbol} balances={b} symbol={symbol} locked />
             ))}
