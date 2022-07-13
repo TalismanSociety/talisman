@@ -2,6 +2,7 @@ import { AccountJsonHardware } from "@core/domains/accounts/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import Field from "@talisman/components/Field/Field"
 import { ReactComponent as EnterIcon } from "@talisman/theme/icons/corner-down-left.svg"
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType, getAddressType } from "@talisman/util/getAddressType"
@@ -52,6 +53,8 @@ const Container = styled.div<{ withAddressInput?: boolean }>`
       flex-grow: 1;
       overflow: hidden;
       overflow-y: auto;
+
+      ${scrollbarsStyle()}
 
       ul {
         margin: 0;

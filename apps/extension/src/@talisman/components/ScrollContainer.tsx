@@ -1,3 +1,4 @@
+import { hideScrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
 import { useEffect, useRef, useState } from "react"
 import styled from "styled-components"
@@ -5,12 +6,15 @@ import styled from "styled-components"
 const Container = styled.section`
   position: relative;
   overflow: auto;
+
   > div {
     overflow: hidden;
     overflow-y: auto;
     height: 100%;
     display: block;
     width: 100%;
+
+    ${hideScrollbarsStyle}
   }
 
   &:before,
@@ -39,12 +43,14 @@ const Container = styled.section`
   &.more-top {
     &:before {
       opacity: 1;
+      z-index: 1;
     }
   }
 
   &.more-bottom {
     &:after {
       opacity: 1;
+      z-index: 1;
     }
   }
 `
@@ -73,15 +79,20 @@ export const ScrollContainer = ({
         bottom: scrollable.scrollHeight - scrollable.scrollTop > scrollable.clientHeight,
       })
     }
+
     scrollable.addEventListener("scroll", handleDetectScroll)
     scrollable.addEventListener("resize", handleDetectScroll)
+
+    // init
     handleDetectScroll()
+    // sometimes on init scrollHeight === clientHeight, setTimeout fixes the problem
+    setTimeout(() => handleDetectScroll(), 50)
 
     return () => {
       scrollable.removeEventListener("scroll", handleDetectScroll)
       scrollable.removeEventListener("resize", handleDetectScroll)
     }
-  }, [children, refDiv])
+  }, [])
 
   return (
     <Container

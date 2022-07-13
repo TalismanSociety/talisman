@@ -40,7 +40,7 @@ const Container = styled.div`
     align-items: center;
     text-align: left;
     gap: 1.6rem;
-
+    color: var(--color-foreground-muted);
     :not(:disabled) {
       cursor: pointer;
 

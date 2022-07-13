@@ -41,6 +41,7 @@ const Container = styled.div`
     gap: 1.6rem;
     opacity: 0.2;
     transition: opacity var(--transition-speed-slow) ease-in-out;
+    color: var(--color-foreground-muted);
 
     :not(:disabled) {
       cursor: pointer;

@@ -7,7 +7,7 @@ import Spacer from "@talisman/components/Spacer"
 import { DerivedAccountPicker } from "@ui/domains/Account/DerivedAccountPicker"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
+import { Navigate, useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import * as yup from "yup"
 
@@ -113,7 +113,7 @@ export const AccountAddSecretAccounts = () => {
   const accounts = watch("accounts")
 
   // invalid state, useEffect above will redirect to previous form
-  if (!data.mnemonic || !data.type) return null
+  if (!data.mnemonic || !data.type) return <Navigate to="/accounts/add/secret" />
 
   return (
     <Container withBack centered>

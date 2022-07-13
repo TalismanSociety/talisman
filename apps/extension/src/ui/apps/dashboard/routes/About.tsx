@@ -1,10 +1,11 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import Grid from "@talisman/components/Grid"
 import CtaButton from "@talisman/components/CtaButton"
-import Layout from "../layout"
+import Grid from "@talisman/components/Grid"
+import HeaderBlock from "@talisman/components/HeaderBlock"
 import styled from "styled-components"
 
-const Description = styled.p`
+import Layout from "../layout"
+
+const Description = styled.div`
   text-align: justify;
   font-size: var(--font-size-medium);
   color: var(--color-mid);

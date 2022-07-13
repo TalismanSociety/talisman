@@ -1,16 +1,20 @@
-import { createGlobalStyle } from "styled-components"
+import { createGlobalStyle, css } from "styled-components"
+
+import { hideScrollbarsStyle, scrollbarsStyle } from "./styles"
 
 const Global = createGlobalStyle`
-  *{
-      box-sizing: border-box;
-      -webkit-font-smoothing: antialiased;
-      color: inherit;
-      backface-visibility: hidden;
-      -ms-overflow-style: none; /* IE and Edge */
-      scrollbar-width: none; /* Firefox */
-      &::-webkit-scrollbar {
-        display: none;
-      }
+
+  * {
+    // TODO Check to see if this can be moved to html element
+    -webkit-font-smoothing: antialiased; // applies on macOS only
+  }
+
+  // default box-sizing to border-box, recommended approach
+  html {
+    box-sizing: border-box;
+  }
+  *, *:before, *:after {
+    box-sizing: inherit;
   }
 
   body,
@@ -93,18 +97,6 @@ const Global = createGlobalStyle`
   p{
       font-size: var(--font-size-normal);
       line-height: 1.6em;
-
-      /*em{
-        position: relative;
-        &:after{
-          content: '';
-          position: absolute;
-          top: 100%;
-          left: 0;
-          width: 100%;
-          border-top: 1px dashed currentColor;
-        }
-      }*/
   }
 
   a{
@@ -191,27 +183,15 @@ const Global = createGlobalStyle`
       align-self: flex-end;
     }
   }
+
+  .scrollbars {
+    ${scrollbarsStyle()}
+  }
+
+  .hide-scrollbars {
+    ${hideScrollbarsStyle}
+  }
   
-  *::-webkit-scrollbar {
-    width: 0.2em;
-  }
-
-  *::-webkit-scrollbar-track {
-    box-shadow: inset 0 0 3px transparent;
-  }
-
-  *::-webkit-scrollbar-thumb {
-    border-radius: 1em;
-    background-color: var(--color-background-muted);
-    outline: 1px solid transparent;
-  }
-
-  /* Works on Firefox */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-background-muted) transparent;
-  }
-
   .flex {
     display: flex;
     align-items: center;

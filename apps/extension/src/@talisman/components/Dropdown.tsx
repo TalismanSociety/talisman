@@ -1,4 +1,5 @@
 import { ChevronDownIcon } from "@talisman/theme/icons"
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
 import { useSelect } from "downshift"
 import { useEffect } from "react"
@@ -68,13 +69,14 @@ const Container = styled.div`
     overflow: hidden;
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
-
     margin: 0;
     padding: 0;
     background-color: var(--color-background-muted-3x);
     list-style: none;
     max-height: 35vh;
     overflow-y: auto;
+
+    ${scrollbarsStyle("var(--color-background-muted-2x)")}
 
     li {
       margin: 0;

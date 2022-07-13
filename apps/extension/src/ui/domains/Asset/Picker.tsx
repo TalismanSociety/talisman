@@ -1,5 +1,6 @@
 import { Chain, ChainList } from "@core/domains/chains/types"
 import { TokenId } from "@core/domains/tokens/types"
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
 import useChain from "@ui/hooks/useChain"
 import useChains from "@ui/hooks/useChains"
@@ -72,6 +73,8 @@ const Container = styled.div`
     border-radius: 0 0 var(--border-radius) var(--border-radius);
 
     min-width: 100%;
+
+    ${scrollbarsStyle()}
 
     li {
       padding: 0.6rem 1.2rem;

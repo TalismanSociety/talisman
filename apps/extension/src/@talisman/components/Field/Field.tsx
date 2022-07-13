@@ -1,3 +1,4 @@
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { PropsWithChildren } from "react"
 import styled from "styled-components"
 
@@ -102,6 +103,8 @@ const StyledField = styled(Field)`
       display: block;
       ${({ prefix }) => !!prefix && `padding-left: 5rem;`}
       ${({ suffix }) => !!suffix && `padding-right: 5rem;`}
+
+      ${scrollbarsStyle("var(--color-background-muted-3x)")}
     }
 
     textarea {
