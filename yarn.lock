@@ -4275,6 +4275,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@talismn/balances@*, @talismn/balances@workspace:packages/balances":
+  version: 0.0.0-use.local
+  resolution: "@talismn/balances@workspace:packages/balances"
+  dependencies:
+    "@types/jest": ^27.5.1
+    eslint: ^8.4.0
+    eslint-config-talisman: "*"
+    jest: ^28.1.0
+    ts-jest: ^28.0.2
+    tsconfig: "*"
+    typescript: ^4.6.4
+  languageName: unknown
+  linkType: soft
+
 "@talismn/chaindata-js@npm:^0.0.7":
   version: 0.0.7
   resolution: "@talismn/chaindata-js@npm:0.0.7"
@@ -8543,6 +8557,7 @@ __metadata:
     "@sentry/webpack-plugin": ^1.18.8
     "@substrate/txwrapper-polkadot": "*"
     "@svgr/webpack": ^6.2.1
+    "@talismn/balances": "*"
     "@talismn/chaindata-js": ^0.0.7
     "@testing-library/dom": ^8.14.0
     "@testing-library/jest-dom": ^5.11.4

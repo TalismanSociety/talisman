@@ -14,7 +14,6 @@ type SocketUserId = number
  * 2. RpcFactory creates only one `WsProvider` per chain and ensures that all downstream requests to a chain share the one socket connection.
  * 3. Subscriptions return a callable `unsubscribe` method instead of an id.
  */
-//
 class RpcFactory {
   #socketConnections: Record<ChainId, WsProvider> = {}
   #socketKeepAliveIntervals: Record<ChainId, ReturnType<typeof setInterval>> = {}
