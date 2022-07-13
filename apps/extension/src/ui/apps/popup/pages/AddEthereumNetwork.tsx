@@ -4,13 +4,12 @@ import { IconButton } from "@talisman/components/IconButton"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { GlobeIcon, XIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
-import { NetworkAddNotSupported } from "@ui/domains/Ethereum/NetworkAddNotSupported"
 import { NetworksDetailsButton } from "@ui/domains/Ethereum/NetworkDetailsButton"
 import { useEthNetworkAddRequests } from "@ui/hooks/useEthNetworkAddRequests"
-import { useSettings } from "@ui/hooks/useSettings"
 import { useCallback, useMemo } from "react"
 import styled from "styled-components"
-import Layout, { Content, Header, Footer } from "../Layout"
+
+import Layout, { Content, Footer, Header } from "../Layout"
 
 const Container = styled(Layout)`
   .layout-content .children {
@@ -48,7 +47,6 @@ const Container = styled(Layout)`
     }
 
     .bottom {
-      // flex-grow: 1;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -92,42 +90,37 @@ export const AddEthereumNetwork = () => {
     window.close()
   }, [requestId])
 
-  const { useCustomEthereumNetworks: allowAddNetwork } = useSettings()
-
   return (
-    <>
-      <Container>
-        <Header
-          text={<AppPill url={siteUrl} />}
-          nav={
-            <IconButton onClick={cancel}>
-              <XIcon />
-            </IconButton>
-          }
-        />
-        <Content>
-          <div>
-            <GlobeIcon className="globeIcon" />
-          </div>
-          <h1>Add Network</h1>
-          <p>
-            This app wants to connect to the <strong>{network.chainName}</strong> network.
-          </p>
-          <div className="grow"></div>
-          <div>
-            <NetworksDetailsButton network={network} />
-          </div>
-        </Content>
-        <Footer>
-          <StyledGrid>
-            <SimpleButton onClick={cancel}>Reject</SimpleButton>
-            <SimpleButton primary onClick={approve}>
-              Approve
-            </SimpleButton>
-          </StyledGrid>
-        </Footer>
-      </Container>
-      {!allowAddNetwork && <NetworkAddNotSupported onClose={cancel} />}
-    </>
+    <Container>
+      <Header
+        text={<AppPill url={siteUrl} />}
+        nav={
+          <IconButton onClick={cancel}>
+            <XIcon />
+          </IconButton>
+        }
+      />
+      <Content>
+        <div>
+          <GlobeIcon className="globeIcon" />
+        </div>
+        <h1>Add Network</h1>
+        <p>
+          This app wants to connect Talisman to the <strong>{network.chainName}</strong> network.
+        </p>
+        <div className="grow"></div>
+        <div>
+          <NetworksDetailsButton network={network} />
+        </div>
+      </Content>
+      <Footer>
+        <StyledGrid>
+          <SimpleButton onClick={cancel}>Reject</SimpleButton>
+          <SimpleButton primary onClick={approve}>
+            Approve
+          </SimpleButton>
+        </StyledGrid>
+      </Footer>
+    </Container>
   )
 }
