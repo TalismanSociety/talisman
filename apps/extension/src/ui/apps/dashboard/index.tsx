@@ -98,7 +98,7 @@ export default Dashboard
 // in case a user contacts support and asks for a way to remove a network, we can tell him to open devtools and run the function
 // TODO remove this as soon as we have a management screen for EVM networks
 // @ts-ignore
-window.resetEvmCustomNetworks = () => {
+window.clearCustomEthereumNetworks = () => {
   api
     .clearCustomEthereumNetworks()
     .then(() => {
