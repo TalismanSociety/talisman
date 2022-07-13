@@ -14,9 +14,9 @@ import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import { Fragment, useCallback, useMemo } from "react"
 import styled from "styled-components"
 
-import StyledAssetLogo from "../Asset/Logo"
-import { AssetBalanceCellValue } from "./AssetBalanceCellValue"
-import { NoTokensMessage } from "./NoTokensMessage"
+import StyledAssetLogo from "../../Asset/Logo"
+import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
+import { NoTokensMessage } from "../NoTokensMessage"
 
 const Table = styled.table`
   border-spacing: 0;
@@ -123,7 +123,7 @@ type AssetRowProps = {
   symbol: string
 }
 
-export const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
+const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
   const { token, summary } = useTokenBalancesSummary(balances, symbol)
 
   const detailRows = useMemo(
@@ -242,7 +242,7 @@ type AssetsTableProps = {
   symbol: string
 }
 
-export const AssetDetails = ({ balances, symbol }: AssetsTableProps) => {
+export const DashboardAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   const balancesToDisplay = useDisplayBalances(balances)
   const { hydrate, isLoading } = usePortfolio()
 

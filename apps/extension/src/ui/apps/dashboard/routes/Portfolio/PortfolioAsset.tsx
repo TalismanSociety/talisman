@@ -3,7 +3,7 @@ import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { AssetDetails } from "@ui/domains/Portfolio/AssetDetails"
+import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
@@ -86,7 +86,7 @@ const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symb
         />
       </Box>
       <Box margin="4.8rem 0 0 0">
-        <AssetDetails balances={balancesToDisplay} symbol={symbol} />
+        <DashboardAssetDetails balances={balancesToDisplay} symbol={symbol} />
       </Box>
     </div>
   )

@@ -1,8 +1,9 @@
 import { Balances } from "@core/domains/balances/types"
 import { Box } from "@talisman/components/Box"
+import { IconButton } from "@talisman/components/IconButton"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { AssetDetails } from "@ui/domains/Portfolio/AssetDetails"
+import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
@@ -46,47 +47,27 @@ const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symb
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
 
   return (
-    <div>
-      <Box flex fullwidth gap={1.6} height={9.6}>
-        <Box grow flex column gap={1.6} justify="center">
-          <BackButton type="button" onClick={handleBackBtnClick}>
-            <ChevronLeftIcon />
-            Asset
-          </BackButton>
-          <Box flex align="center" gap={0.8}>
-            <Box fontsize="large">
-              <TokenLogo tokenId={token?.id} />
-            </Box>
-            <Box fontsize="medium">{token?.symbol}</Box>
+    <Box margin="0 0 1.6rem 0" flex column gap={1.6}>
+      <Box flex fullwidth gap={0.8} align="center">
+        <IconButton>
+          <ChevronLeftIcon />
+        </IconButton>
+        <Box fontsizecustom="3.6rem">
+          <TokenLogo tokenId={token?.id} />
+        </Box>
+        <Box grow flex column gap={0.4} padding="0 0 0 0.4rem" fontsize="small">
+          <Box flex justify="space-between" fg="mid">
+            <Box>Asset</Box>
+            <Box>Total</Box>
+          </Box>
+          <Box flex justify="space-between" bold>
+            <Box>DOT</Box>
+            <Box>15 $</Box>
           </Box>
         </Box>
-        <Stats
-          title="Total Asset Value"
-          tokens={summary.totalTokens}
-          fiat={summary.totalFiat}
-          token={token}
-          showTokens
-        />
-        <Stats
-          title="Locked"
-          tokens={summary.lockedTokens}
-          fiat={summary.lockedFiat}
-          token={token}
-          locked
-          showTokens
-        />
-        <Stats
-          title="Available"
-          tokens={summary.availableTokens}
-          fiat={summary.availableFiat}
-          token={token}
-          showTokens
-        />
       </Box>
-      <Box margin="4.8rem 0 0 0">
-        <AssetDetails balances={balancesToDisplay} symbol={symbol} />
-      </Box>
-    </div>
+      <PopupAssetDetails balances={balancesToDisplay} symbol={symbol} />
+    </Box>
   )
 })
 
