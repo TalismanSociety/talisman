@@ -1,20 +1,14 @@
 import { SettingsStoreData } from "@core/domains/app"
-import { EvmNetwork } from "@core/domains/ethereum/types"
 import Field from "@talisman/components/Field"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import Setting from "@talisman/components/Setting"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSettings } from "@ui/hooks/useSettings"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback } from "react"
 import styled from "styled-components"
 
 const Button = styled(SimpleButton)`
@@ -52,7 +46,6 @@ const Options = () => {
   const {
     identiconType = "talisman-orb",
     useTestnets = false,
-    useCustomEthereumNetworks,
     hideBalances = false,
     allowNotifications = true,
     shouldMimicMetaMask = false,
@@ -66,36 +59,6 @@ const Options = () => {
       },
     [update]
   )
-
-  const [customEthNetworksCount, setCustomEthNetworksCount] = useState<number>()
-  const evmNetworks = useEvmNetworks()
-  useEffect(() => {
-    if (!useCustomEthereumNetworks) return setCustomEthNetworksCount(0)
-    if (!evmNetworks) return setCustomEthNetworksCount(undefined)
-
-    const count = evmNetworks.filter(
-      (evmNetwork) => "isCustom" in evmNetwork && evmNetwork.isCustom
-    ).length
-    setCustomEthNetworksCount(count || 0)
-  }, [evmNetworks, useCustomEthereumNetworks])
-
-  const { isOpen, open, close } = useOpenClose()
-  const handleCustomEVMNetworksChange = useCallback(
-    async (newValue: boolean) => {
-      if (newValue) {
-        open()
-      } else {
-        api.clearCustomEthereumNetworks()
-        update({ useCustomEthereumNetworks: false })
-      }
-    },
-    [open, update]
-  )
-
-  const handleConfirmEVMNetworks = useCallback(() => {
-    update({ useCustomEthereumNetworks: true })
-    close()
-  }, [close, update])
 
   return (
     <Layout centered withBack>
@@ -128,34 +91,6 @@ const Options = () => {
             onChange={handleSettingChange("identiconType")}
           />
         </Setting>
-        <Setting
-          title="Enable custom EVM networks (for developers)"
-          subtitle="Manually add custom EVM networks"
-        >
-          {useCustomEthereumNetworks ? (
-            <CustomNetworksCount>
-              <span>{customEthNetworksCount ?? "?"}</span>
-            </CustomNetworksCount>
-          ) : null}
-          <Field.Toggle
-            value={useCustomEthereumNetworks}
-            onChange={handleCustomEVMNetworksChange}
-          />
-        </Setting>
-        <Modal open={isOpen} onClose={close}>
-          <ModalDialog centerTitle title="Warning" onClose={close}>
-            <ModalDescription>
-              Talisman does not verify custom networks. For this reason this feature is only
-              recommended for advanced users and software developers.
-            </ModalDescription>
-            <Grid>
-              <Button onClick={close}>Cancel</Button>
-              <Button primary onClick={handleConfirmEVMNetworks}>
-                Continue
-              </Button>
-            </Grid>
-          </ModalDialog>
-        </Modal>
         <Setting
           title="MetaMask Dapp compatibility"
           subtitle="Allows using Talisman on applications that support MetaMask only. Leave this turned off if you use MetaMask in the same browser as Talisman."

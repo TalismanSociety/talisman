@@ -93,3 +93,20 @@ const Dashboard = () => (
 )
 
 export default Dashboard
+
+// utility function to reset all the custom EVM networks.
+// in case a user contacts support and asks for a way to remove a network, we can tell him to open devtools and run the function
+// TODO remove this as soon as we have a management screen for EVM networks
+// @ts-ignore
+window.clearCustomEthereumNetworks = () => {
+  api
+    .clearCustomEthereumNetworks()
+    .then(() => {
+      // eslint-disable-next-line no-console
+      console.log("successfully removed all custom EVM networks")
+    })
+    .catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error("Failed to remove all custom EVM networks", err)
+    })
+}
