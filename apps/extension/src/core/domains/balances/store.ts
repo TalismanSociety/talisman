@@ -2,11 +2,11 @@ import { DEBUG } from "@core/constants"
 import { settingsStore } from "@core/domains/app/store.settings"
 import Erc20BalancesEvmRpc from "@core/domains/balances/rpc/Erc20Balances"
 import NativeBalancesEvmRpc from "@core/domains/balances/rpc/EvmBalances"
+import OrmlTokenBalancesRpc from "@core/domains/balances/rpc/OrmlTokenBalances"
 import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
 import { BalanceStorage, Balances, RequestBalance } from "@core/domains/balances/types"
 import { Chain } from "@core/domains/chains/types"
 import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import OrmlTokensRpc from "@core/domains/tokens/rpc/OrmlTokens"
 import { Erc20Token } from "@core/domains/tokens/types"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { db } from "@core/libs/db"
@@ -148,7 +148,7 @@ export class BalanceStore {
         .sorted[0]?.toJSON()
     if (tokenType === "orml")
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return (await OrmlTokensRpc.tokens({ [chainId!]: [address] }))
+      return (await OrmlTokenBalancesRpc.tokens({ [chainId!]: [address] }))
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()
     if (tokenType === "erc20") throw new Error("Not implemented")
@@ -327,7 +327,7 @@ export class BalanceStore {
         })
       )
       .concat(
-        OrmlTokensRpc.tokens(chainAddresses, (error, result) => {
+        OrmlTokenBalancesRpc.tokens(chainAddresses, (error, result) => {
           // ignore old subscriptions which have been told to close but aren't closed yet
           if (this.#subscriptionsGeneration !== generation) return
 

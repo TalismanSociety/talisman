@@ -22,7 +22,7 @@ const AccountData = JSON.stringify({ free: "u128", reserved: "u128", frozen: "u1
 const registry = new TypeRegistry()
 
 // TODO: Check if we really need to fetch chain from chaindata in here or not!
-export default class OrmlTokensRpc {
+export default class OrmlTokenBalancesRpc {
   /**
    * Fetch or subscribe to tokens by chainIds and addresses.
    *
