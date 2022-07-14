@@ -310,12 +310,15 @@ export class EthTabsHandler extends TabsHandler {
   private signMessage = async (url: string, request: EthRequestSignArguments) => {
     const { params, method } = request as EthRequestSignArguments
 
-    const [uncheckedMessage, from] =
-      method === "personal_sign"
-        ? [params[0], ethers.utils.getAddress(params[1])]
-        : [params[1], ethers.utils.getAddress(params[0])]
+    const [uncheckedMessage, from] = [
+      "personal_sign",
+      "eth_signTypedData",
+      "eth_signTypedData_v1",
+    ].includes(method)
+      ? [params[0], ethers.utils.getAddress(params[1])]
+      : [params[1], ethers.utils.getAddress(params[0])]
 
-    // message is either a raw string or a hex string
+    // message is either a raw string or a hex string or an object (signTypedData_v1)
     // normalize the message, it must be stored unencoded in the request to be displayed to the user
     const message =
       typeof uncheckedMessage === "string"
@@ -454,8 +457,9 @@ export class EthTabsHandler extends TabsHandler {
         return result.toHexString()
       }
 
-      // TODO : implement the 3 other signatures types eth_sign, eth_signTypedData, eth_signTypedData_v1
       case "personal_sign":
+      case "eth_signTypedData":
+      case "eth_signTypedData_v1":
       case "eth_signTypedData_v3":
       case "eth_signTypedData_v4": {
         return this.signMessage(url, request as EthRequestSignArguments)

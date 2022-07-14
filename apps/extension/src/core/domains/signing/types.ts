@@ -31,13 +31,24 @@ export interface EthBaseSignRequest extends Omit<SigningRequest, "request" | "ac
   ethChainId: number
   account: AccountJson
   type: "ethereum"
-  method: "personal_sign" | "eth_sendTransaction" | "eth_signTypedData_v3" | "eth_signTypedData_v4"
+  method:
+    | "personal_sign"
+    | "eth_sendTransaction"
+    | "eth_signTypedData"
+    | "eth_signTypedData_v1"
+    | "eth_signTypedData_v3"
+    | "eth_signTypedData_v4"
   request: any
 }
 
 export interface EthSignRequest extends EthBaseSignRequest {
   request: string
-  method: "personal_sign" | "eth_signTypedData_v3" | "eth_signTypedData_v4"
+  method:
+    | "personal_sign"
+    | "eth_signTypedData"
+    | "eth_signTypedData_v1"
+    | "eth_signTypedData_v3"
+    | "eth_signTypedData_v4"
 }
 
 export interface EthSignAndSendRequest extends EthBaseSignRequest {

@@ -167,6 +167,12 @@ export class EthHandler extends ExtensionHandler {
 
       if (method === "personal_sign") {
         signature = personalSign({ privateKey, data: request })
+      } else if (["eth_signTypedData", "eth_signTypedData_v1"].includes(method)) {
+        signature = signTypedData({
+          privateKey,
+          data: JSON.parse(request as string),
+          version: SignTypedDataVersion.V1,
+        })
       } else if (method === "eth_signTypedData_v3") {
         signature = signTypedData({
           privateKey,
