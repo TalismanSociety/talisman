@@ -1,11 +1,13 @@
 // @ts-nocheck
-import { useState, useEffect } from "react"
 import useBoolean from "@talisman/hooks/useBoolean"
+import { hideScrollbarsStyle } from "@talisman/theme/styles"
+import { ReactNode, useEffect, useState } from "react"
 import styled from "styled-components"
+
 import { ReactComponent as ChevronIcon } from "../theme/icons/chevron-down.svg"
 
 interface IProps {
-  title: string | FC
+  title: string | ReactNode
   subtitle?: string
   info?: string | number
   className?: string
@@ -40,6 +42,8 @@ const StyledExpandaContent = styled(ExpandaContent)`
     padding-bottom: 0;
     opacity: 0;
   }
+
+  ${hideScrollbarsStyle}
 `
 
 const Expanda = ({ title, subtitle, info, className, children }: IProps) => {

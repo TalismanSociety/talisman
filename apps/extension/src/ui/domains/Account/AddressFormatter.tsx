@@ -1,22 +1,23 @@
-import { PropsWithChildren, useState } from "react"
 import { encodeAnyAddress } from "@core/util"
-import Logo from "../Asset/Logo"
-import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
-import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
-import { ReactComponent as IconCheck } from "@talisman/theme/icons/check.svg"
-import { ReactComponent as IconSearch } from "@talisman/theme/icons/search.svg"
-import styled from "styled-components"
 import CopyToClipboard from "@talisman/components/CopyToClipboard"
 import Input from "@talisman/components/Field/Input"
-import { useSortedChains } from "@ui/hooks/useSortedChains"
-import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
-import useChainsAndSearchSymbols from "@ui/hooks/useChainsAndSearchSymbols"
-import useMoonbeamChainsFilter from "@ui/hooks/useMoonbeamChainsFilter"
-import { useSearchFilter } from "@talisman/hooks/useSearchFilter"
 import { useNotification } from "@talisman/components/Notification"
-import { Address } from "./Address"
+import { useSearchFilter } from "@talisman/hooks/useSearchFilter"
+import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
+import { ReactComponent as IconCheck } from "@talisman/theme/icons/check.svg"
+import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
+import { ReactComponent as IconSearch } from "@talisman/theme/icons/search.svg"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useAccountChainsFilter } from "@ui/hooks/useAccountChainsFilter"
+import useChainsAndSearchSymbols from "@ui/hooks/useChainsAndSearchSymbols"
+import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
+import useMoonbeamChainsFilter from "@ui/hooks/useMoonbeamChainsFilter"
+import { useSortedChains } from "@ui/hooks/useSortedChains"
+import { PropsWithChildren, useState } from "react"
+import styled from "styled-components"
+
+import Logo from "../Asset/Logo"
+import { Address } from "./Address"
 
 interface IPropsAddressFormat extends PropsWithChildren<any> {
   name: string
@@ -54,6 +55,7 @@ const AddressFormat = styled(
   justify-content: space-between;
   gap: 1.4rem;
   padding: 1.2rem;
+  padding-left: 0;
 
   :hover {
     cursor: pointer;
@@ -91,6 +93,11 @@ const AddressFormat = styled(
     gap: 0.5rem;
     color: var(--color-primary);
     font-size: small;
+  }
+
+  .chain-logo {
+    width: 2.4rem;
+    height: 2.4rem;
   }
 `
 
@@ -161,7 +168,7 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
       <InfoMessage>
         If sending funds from an exchange make sure you choose the correct address format.
       </InfoMessage>
-      <div className="addresses-list">
+      <div className="addresses-list scrollbars">
         {filteredChains.map((chain) => {
           const convertedAddress = encodeAnyAddress(address, chain.prefix)
           return (

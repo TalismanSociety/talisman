@@ -42,6 +42,15 @@ const MoreInfoText = styled.div`
   > a {
     text-decoration: underline;
   }
+
+  a:link,
+  a:visited {
+    color: var(--color-mid);
+  }
+  a:hover,
+  a:active {
+    color: var(--color-foreground);
+  }
 `
 
 const AnalyticsContainer = styled.div`

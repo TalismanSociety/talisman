@@ -1,8 +1,7 @@
-import { FC, useCallback } from "react"
-import styled from "styled-components"
 import { Drawer } from "@talisman/components/Drawer"
 import { IconButton } from "@talisman/components/IconButton"
 import Nav, { NavItem } from "@talisman/components/Nav"
+import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
   LayoutIcon,
   LockIcon,
@@ -13,10 +12,12 @@ import {
   XIcon,
 } from "@talisman/theme/icons"
 import { FullColorSmallLogo } from "@talisman/theme/logos"
+import { api } from "@ui/api"
 import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import Build from "@ui/domains/Build"
-import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { FC, useCallback } from "react"
+import styled from "styled-components"
 
 const Container = styled.aside`
   width: 100%;
@@ -39,7 +40,6 @@ const Container = styled.aside`
   main {
     padding: 0.8rem 1rem;
     flex-grow: 1;
-    overflow: auto;
 
     .nav {
       display: flex;
@@ -82,32 +82,34 @@ export const NavigationDrawer: FC = () => {
           </IconButton>
         </header>
         <main>
-          <Nav column>
-            <NavItem icon={<PlusIcon />} onClick={() => api.dashboardOpen("/accounts/add")}>
-              Add Account
-            </NavItem>
-            <NavItem icon={<PaperPlaneIcon />} onClick={() => api.modalOpen("send")}>
-              Send Funds
-            </NavItem>
-            <NavItem icon={<MaximizeIcon />} onClick={() => api.dashboardOpen("/portfolio")}>
-              Expand View
-            </NavItem>
-            <NavItem icon={<SettingsIcon />} onClick={() => api.dashboardOpen("/settings")}>
-              Settings
-            </NavItem>
-            <NavItem
-              icon={<LayoutIcon />}
-              onClick={() => {
-                genericEvent("open webapp")
-                return window.open("https://app.talisman.xyz")
-              }}
-            >
-              Talisman Web App
-            </NavItem>
-            <NavItem icon={<LockIcon />} onClick={handleLock}>
-              Lock
-            </NavItem>
-          </Nav>
+          <ScrollContainer>
+            <Nav column>
+              <NavItem icon={<PlusIcon />} onClick={() => api.dashboardOpen("/accounts/add")}>
+                Add Account
+              </NavItem>
+              <NavItem icon={<PaperPlaneIcon />} onClick={() => api.modalOpen("send")}>
+                Send Funds
+              </NavItem>
+              <NavItem icon={<MaximizeIcon />} onClick={() => api.dashboardOpen("/accounts")}>
+                Expand View
+              </NavItem>
+              <NavItem icon={<SettingsIcon />} onClick={() => api.dashboardOpen("/settings")}>
+                Settings
+              </NavItem>
+              <NavItem
+                icon={<LayoutIcon />}
+                onClick={() => {
+                  genericEvent("open webapp")
+                  return window.open("https://app.talisman.xyz")
+                }}
+              >
+                Talisman Web App
+              </NavItem>
+              <NavItem icon={<LockIcon />} onClick={handleLock}>
+                Lock
+              </NavItem>
+            </Nav>
+          </ScrollContainer>
         </main>
         <footer>
           <Build.Version />

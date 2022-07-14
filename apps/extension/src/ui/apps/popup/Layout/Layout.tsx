@@ -1,8 +1,9 @@
-import React, { useState, useEffect, PropsWithChildren } from "react"
-import styled from "styled-components"
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
-import { NavigationDrawer } from "../components/Navigation/NavigationDrawer"
 import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import React, { PropsWithChildren, useEffect, useState } from "react"
+import styled from "styled-components"
+
+import { NavigationDrawer } from "../components/Navigation/NavigationDrawer"
 
 export interface IProps extends PropsWithChildren<any> {
   isThinking?: boolean

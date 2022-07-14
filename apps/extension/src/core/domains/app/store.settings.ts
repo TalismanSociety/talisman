@@ -6,7 +6,6 @@ export interface SettingsStoreData {
   useTestnets: boolean
   identiconType: IdenticonType
   useAnalyticsTracking: boolean
-  useCustomEthereumNetworks: boolean
   hideBalances: boolean
   allowNotifications: boolean
   selectedAccount: string | undefined
@@ -20,7 +19,6 @@ export const settingsStore = new SettingsStore("settings", {
   useTestnets: false,
   identiconType: "talisman-orb",
   useAnalyticsTracking: false,
-  useCustomEthereumNetworks: false,
   hideBalances: false,
   allowNotifications: true,
   shouldMimicMetaMask: false,

@@ -1,8 +1,8 @@
-import { useState, useEffect, PropsWithChildren, useRef } from "react"
-import useBoolean from "@talisman/hooks/useBoolean"
-import styled from "styled-components"
 import Link from "@talisman/components/Link"
+import useBoolean from "@talisman/hooks/useBoolean"
 import useOnClickOutside from "@talisman/hooks/useOnClickOutside"
+import { PropsWithChildren, useEffect, useRef, useState } from "react"
+import styled from "styled-components"
 
 type TPosition = "TOP_LEFT" | "TOP_CENTER" | "TOP_RIGHT" | "BOTTOM_LEFT"
 
@@ -57,7 +57,6 @@ const StyledPopNavContent = styled(PopNavContent)`
   overflow: hidden;
   opacity: 1;
   transition: all var(--transition-speed-slow) ease-in-out;
-  overflow-y: scroll;
   background: var(--color-background);
   border: 1px solid var(--color-background-muted);
   border-radius: var(--border-radius);

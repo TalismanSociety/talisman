@@ -3,6 +3,7 @@ import { CustomErc20Token } from "@core/domains/tokens/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { ReactNode, useMemo } from "react"
 import styled from "styled-components"
 
@@ -20,6 +21,7 @@ const ViewDetailsContainer = styled.div`
   .grow {
     flex-grow: 1;
     overflow-y: auto;
+    ${scrollbarsStyle()}
   }
 
   button {
