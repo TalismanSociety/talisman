@@ -1,6 +1,7 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { breakpoints } from "@talisman/theme/definitions"
 import { AllAccountsIcon, ChevronDownIcon } from "@talisman/theme/icons"
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import AccountAvatar from "@ui/domains/Account/Avatar"
@@ -163,6 +164,8 @@ const Container = styled.div<{ responsive?: boolean }>`
     background-color: var(--color-background);
     border-bottom-left-radius: var(--border-radius);
     border-bottom-right-radius: var(--border-radius);
+
+    ${scrollbarsStyle()}
 
     li {
       padding: 0;

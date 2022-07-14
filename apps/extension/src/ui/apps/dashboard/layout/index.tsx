@@ -1,5 +1,6 @@
 import { BackButton } from "@talisman/components/BackButton"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
@@ -22,7 +23,7 @@ type LayoutProps = {
 const UnstyledLayout: FC<LayoutProps> = ({ withBack, children, className }) => (
   <main className={className}>
     <SideBar />
-    <ScrollContainer className="main-area">
+    <section className="main-area">
       <div className="children">
         {!!withBack && <BackButton className="back" />}
         {children}
@@ -30,7 +31,7 @@ const UnstyledLayout: FC<LayoutProps> = ({ withBack, children, className }) => (
       <Suspense fallback={null}>
         <DashboardNotifications />
       </Suspense>
-    </ScrollContainer>
+    </section>
     <SendTokensModal />
     <AccountRenameModal />
     <AccountRemoveModal />
@@ -48,23 +49,23 @@ const Layout = styled(UnstyledLayout)`
     flex-grow: 1;
     overflow: hidden;
     overflow-y: scroll;
+    padding: 5.2rem;
 
-    .scrollable-children {
-      padding: 5.2rem;
+    ${scrollbarsStyle()}
 
-      > .children {
-        display: block;
-        width: 100%;
-        position: relative;
+    > .children {
+      display: block;
+      width: 100%;
+      position: relative;
 
-        > .back {
-          margin-bottom: 3rem;
-        }
+      > .back {
+        margin-bottom: 3rem;
       }
+    }
 
-      ${({ centered, large }) =>
-        !!centered &&
-        `
+    ${({ centered, large }) =>
+      !!centered &&
+      `
       display: flex;
       align-items: flex-start;
       justify-content: center;
@@ -73,7 +74,6 @@ const Layout = styled(UnstyledLayout)`
         max-width: ${large ? "96rem" : "66rem"};
       }
     `}
-    }
   }
 `
 

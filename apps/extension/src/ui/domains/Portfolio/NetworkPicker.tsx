@@ -1,5 +1,6 @@
 import { Box } from "@talisman/components/Box"
 import { ChevronDownIcon, XIcon } from "@talisman/theme/icons"
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import { NetworkOption, usePortfolio } from "@ui/domains/Portfolio/context"
 import { UseComboboxState, UseComboboxStateChangeOptions, useCombobox } from "downshift"
 import { useCallback, useEffect, useState } from "react"
@@ -56,6 +57,9 @@ const Container = styled.div<{ isOpen?: boolean }>`
     overflow-y: auto;
     border-bottom-right-radius: var(--border-radius);
     border-bottom-left-radius: var(--border-radius);
+    background-color: var(--color-background-muted);
+
+    ${scrollbarsStyle("var(--color-background-muted-2x)")}
   }
   li {
     margin: 0;
