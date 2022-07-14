@@ -66,8 +66,9 @@ const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) =>
 }
 
 const FetchingIndicator = styled(LoaderIcon)`
+  font-size: 1em;
   line-height: 1;
-  font-size: var(--font-size-normal);
+  margin-left: 0.4rem;
 `
 
 type AssetRowProps = {

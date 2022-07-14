@@ -18,7 +18,7 @@ const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symb
   const balancesToDisplay = useDisplayBalances(balances)
   const { token } = useTokenBalancesSummary(balancesToDisplay, symbol)
 
-  const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
+  const handleBackBtnClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
 
   return (
     <Box margin="0 0 1.6rem 0" flex column gap={1.6}>

@@ -1,10 +1,12 @@
-import { Route, Routes } from "react-router-dom"
-import Layout, { Content, Header } from "../../Layout"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
+import Site from "@ui/domains/Site"
+import { Route, Routes } from "react-router-dom"
+
+import { NavigationMenuButton } from "../../components/Navigation/NavigationMenuButton"
+import Layout, { Content, Header } from "../../Layout"
+import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
-import Site from "@ui/domains/Site"
-import { NavigationMenuButton } from "../../components/Navigation/NavigationMenuButton"
 
 export const Portfolio = () => {
   return (
@@ -14,8 +16,9 @@ export const Portfolio = () => {
         <Header text={<Site.ConnectedAccountsPill />} nav={<NavigationMenuButton />} />
         <Content>
           <Routes>
+            <Route path="assets" element={<PortfolioAssets />} />
             <Route path=":symbol" element={<PortfolioAsset />} />
-            <Route path="" element={<PortfolioAssets />} />
+            <Route path="" element={<PortfolioAccounts />} />
           </Routes>
         </Content>
       </Layout>

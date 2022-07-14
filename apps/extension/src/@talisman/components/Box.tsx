@@ -1,3 +1,4 @@
+import { getOverflowAncestors } from "@floating-ui/react-dom"
 import { custom, fontSizes } from "@talisman/theme/definitions"
 import { CSSProperties } from "react"
 import styled, { CSSObject, DefaultTheme } from "styled-components"
@@ -17,7 +18,11 @@ type BoxProps = {
   width?: CSSProperties["width"]
   fullwidth?: boolean
   fullheight?: boolean
-  hidden?: boolean // true = overflow hidden
+
+  // overflow
+  overflow?: CSSProperties["overflow"]
+  textOverflow?: CSSProperties["textOverflow"]
+  noWrap?: boolean
 
   // position
   relative?: boolean
@@ -123,7 +128,6 @@ const boxPropsInjector = (props: BoxProps): CSSObject => {
     width: props.fullwidth ? "100%" : getSize(props.width),
     height: props.fullheight ? "100%" : getSize(props.height),
     flexGrow: props.grow ? "1" : undefined,
-    overflow: props.hidden ? "hidden" : undefined,
     borderRadius: getBorderRadius(props),
     textAlign: props.textalign,
     justifyContent: props.justify,
@@ -139,6 +143,9 @@ const boxPropsInjector = (props: BoxProps): CSSObject => {
     fontWeight: getFontWeight(props),
     transition: getTransition(props),
     opacity: props.opacity !== undefined ? props.opacity : undefined,
+    overflow: props.overflow,
+    textOverflow: props.textOverflow,
+    whiteSpace: props.noWrap ? "nowrap" : undefined,
   }
 }
 
