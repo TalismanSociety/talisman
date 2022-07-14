@@ -17,7 +17,7 @@ import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
-import { GroupedAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
+import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAccountExport } from "@ui/hooks/useAccountExport"
@@ -26,9 +26,9 @@ import React, { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
-const PopupAccountSelect = styled(AccountSelect)`
-  > ul {
-    max-height: 30rem;
+const IconBox = styled(Box)`
+  .account-avatar {
+    font-size: 3.6rem;
   }
 `
 
@@ -64,9 +64,9 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
           <IconButton onClick={handleBackBtnClick}>
             <ChevronLeftIcon />
           </IconButton>
-          <Box fontsizecustom="3.6rem" flex column justify="center">
+          <IconBox fontsizecustom="3.6rem" flex column justify="center">
             {account?.address ? <AccountAvatar address={account.address} /> : <AllAccountsIcon />}
-          </Box>
+          </IconBox>
           <Box grow flex column gap={0.4} padding="0 0 0 0.4rem" fontsize="small" overflow="hidden">
             <Box fg="mid" overflow="hidden" textOverflow="ellipsis" noWrap>
               {account ? account.name ?? "Unnamed Account" : "All Accounts"}
@@ -114,7 +114,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
         </Box>
       </Box>
       <Box padding="2.4rem 0">
-        <GroupedAssetsTable balances={balancesToDisplay} />
+        <PopupAssetsTable balances={balancesToDisplay} />
       </Box>
     </>
   )

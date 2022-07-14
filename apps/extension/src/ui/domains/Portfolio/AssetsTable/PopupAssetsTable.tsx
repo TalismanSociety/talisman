@@ -1,7 +1,9 @@
 import { Balance, Balances } from "@core/domains/balances/types"
 import { planckToTokens } from "@core/util"
 import { Box } from "@talisman/components/Box"
-import { LoaderIcon, LockIcon } from "@talisman/theme/icons"
+import { IconButton } from "@talisman/components/IconButton"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { ChevronDownIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
@@ -265,25 +267,48 @@ type GroupedAssetsTableProps = {
   balances: Balances
 }
 
-type GroupRowProps = {
+type GroupProps = {
   label: ReactNode
   fiatAmount: number
   className?: string
+  children?: ReactNode
 }
 
-const GroupRow = ({ label, fiatAmount, className }: GroupRowProps) => {
+const CollapseIconButton = styled(IconButton)<{ isOpen?: boolean }>`
+  ${({ isOpen }) => (isOpen ? "transform:rotate(180deg)" : "")}
+`
+
+const CollapsibleBox = styled(Box)<{ isOpen?: boolean }>`
+  display: ${({ isOpen }) => (isOpen ? "flex" : "none")};
+`
+
+const Group = ({ label, fiatAmount, className, children }: GroupProps) => {
+  const { isOpen, toggle } = useOpenClose(true)
+
   return (
-    <Box className={className} flex justify="space-between" fontsize="medium">
-      <Box fg="foreground">{label}</Box>
-      <Box fg="mid">
-        <Fiat amount={fiatAmount} currency="usd" isBalance />
+    <>
+      <Box flex column gap={1.2}>
+        <Box className={className} flex fontsize="medium" gap={0.4} align="center">
+          <Box fg="foreground" grow>
+            {label}
+          </Box>
+          <Box fg="mid" overflow="hidden" textOverflow="ellipsis" noWrap>
+            <Fiat amount={fiatAmount} currency="usd" isBalance />
+          </Box>
+          <CollapseIconButton onClick={toggle} isOpen={isOpen}>
+            <ChevronDownIcon />
+          </CollapseIconButton>
+        </Box>
+        <CollapsibleBox flex column gap={1.2} isOpen={isOpen}>
+          {children}
+        </CollapsibleBox>
       </Box>
-    </Box>
+    </>
   )
 }
 
 // TODO also have acounts and network filter as props ?
-export const GroupedAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
+export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   // group by token (symbol)
   const { symbolBalances, skeletons } = usePortfolioSymbolBalances(balances)
 
@@ -310,33 +335,30 @@ export const GroupedAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   }, [balances, symbolBalances])
 
   return (
-    <Box flex column gap={1.2}>
+    <Box flex column gap={2.4}>
       {available.length > 0 && (
-        <>
-          <GroupRow label="Available" fiatAmount={totalAvailable} />
+        <Group label="Available" fiatAmount={totalAvailable}>
           {available.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} symbol={symbol} />
           ))}
-          {[...Array(skeletons).keys()].map((i) => (
+          {/* {[...Array(skeletons).keys()].map((i) => (
             <AssetRowSkeleton key={i} className={`opacity-${i}`} />
-          ))}
-        </>
+          ))} */}
+        </Group>
       )}
       {locked.length > 0 && (
-        <>
-          <Box height={1.2}></Box>
-          <GroupRow
-            label={
-              <span>
-                Locked <SectionLockIcon />
-              </span>
-            }
-            fiatAmount={totalLocked}
-          />
+        <Group
+          label={
+            <span>
+              Locked <SectionLockIcon />
+            </span>
+          }
+          fiatAmount={totalLocked}
+        >
           {locked.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} symbol={symbol} locked />
           ))}
-        </>
+        </Group>
       )}
     </Box>
   )

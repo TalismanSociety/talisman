@@ -2,6 +2,7 @@ import { Balances } from "@core/domains/balances/types"
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
+import Fiat from "@ui/domains/Asset/Fiat"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
@@ -20,8 +21,10 @@ const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symb
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
 
+  const total = useMemo(() => balancesToDisplay.sum.fiat("usd").total, [balancesToDisplay])
+
   return (
-    <Box margin="0 0 1.6rem 0" flex column gap={1.6}>
+    <>
       <Box flex fullwidth gap={0.8} align="center">
         <IconButton onClick={handleBackBtnClick}>
           <ChevronLeftIcon />
@@ -34,14 +37,18 @@ const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symb
             <Box>Asset</Box>
             <Box>Total</Box>
           </Box>
-          <Box flex justify="space-between" bold>
-            <Box>DOT</Box>
-            <Box>15 $</Box>
+          <Box flex justify="space-between" fontsize="medium" bold>
+            <Box>{symbol}</Box>
+            <Box>
+              <Fiat amount={total} isBalance />
+            </Box>
           </Box>
         </Box>
       </Box>
-      <PopupAssetDetails balances={balancesToDisplay} symbol={symbol} />
-    </Box>
+      <Box padding="2.4rem 0">
+        <PopupAssetDetails balances={balancesToDisplay} symbol={symbol} />
+      </Box>
+    </>
   )
 })
 

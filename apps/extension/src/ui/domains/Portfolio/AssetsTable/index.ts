@@ -1,2 +1,2 @@
 export * from "./AssetsTable"
-export * from "./GroupedAssetsTable"
+export * from "./PopupAssetsTable"
