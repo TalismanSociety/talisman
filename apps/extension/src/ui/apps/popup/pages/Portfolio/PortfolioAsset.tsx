@@ -12,44 +12,18 @@ import React, { useCallback, useMemo } from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 import styled from "styled-components"
 
-const Stats = styled(Statistics)`
-  max-width: 40%;
-`
-
-const BackButton = styled.button`
-  color: var(--color-mid);
-  outline: none;
-  border: none;
-  background: none;
-  text-align: left;
-  padding: 0;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  font-size: var(--font-size-small);
-  cursor: pointer;
-
-  svg {
-    font-size: var(--font-size-normal);
-  }
-
-  :hover {
-    color: var(--color-foreground-muted);
-  }
-`
-
 // memoise to re-render only if balances object changes
 const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
-  const { token, summary } = useTokenBalancesSummary(balancesToDisplay, symbol)
+  const { token } = useTokenBalancesSummary(balancesToDisplay, symbol)
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
 
   return (
     <Box margin="0 0 1.6rem 0" flex column gap={1.6}>
       <Box flex fullwidth gap={0.8} align="center">
-        <IconButton>
+        <IconButton onClick={handleBackBtnClick}>
           <ChevronLeftIcon />
         </IconButton>
         <Box fontsizecustom="3.6rem">

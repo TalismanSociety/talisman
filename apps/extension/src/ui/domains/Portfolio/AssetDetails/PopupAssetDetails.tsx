@@ -1,12 +1,14 @@
 import { Balances } from "@core/domains/balances/types"
-import { encodeAnyAddress } from "@core/util"
+import { encodeAnyAddress, planckToTokens } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import { useNotification } from "@talisman/components/Notification"
-import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
+import { CopyIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import Fiat from "@ui/domains/Asset/Fiat"
+import Tokens from "@ui/domains/Asset/Tokens"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
@@ -140,27 +142,50 @@ const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
 
   return (
     <ChainTokenBlock borderradius fontsize="small" fg="mid">
-      <Box flex fullwidth bg="background-muted-3x" border="transparent">
-        <Box grow fullheight flex>
-          <Box padding="1.6rem" fontsize="xlarge">
-            <StyledAssetLogo id={evmNetwork?.substrateChain?.id ?? chainOrNetwork.id} />
-          </Box>
-          <Box grow flex column justify="center" gap={0.4}>
-            <Box fontsize="normal" bold fg="foreground" flex align="center" gap={0.8}>
+      <Box
+        flex
+        fullwidth
+        bg="background-muted-3x"
+        border="transparent"
+        gap={1.2}
+        padding="1.2rem 1.4rem"
+      >
+        <Box fontsize="xlarge">
+          <StyledAssetLogo id={evmNetwork?.substrateChain?.id ?? chainOrNetwork.id} />
+        </Box>
+        <Box grow flex column justify="center" gap={0.4} padding="0 1.6rem 0 0">
+          <Box flex justify="space-between" bold fg="foreground">
+            <Box flex align="center" gap={0.8}>
               {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />{" "}
               {isFetching && <FetchingIndicator data-spin />}
             </Box>
-            <Box fg="mid">{networkType}</Box>
+            {/* <Box>
+                <Tokens
+                  amount={planckToTokens(summary.totalTokens.toString(), token.decimals)}
+                  symbol={token?.symbol}
+                  isBalance
+                />
+              </Box> */}
+          </Box>
+          <Box flex justify="space-between" fontsize="xsmall" fg="mid">
+            <Box>{networkType}</Box>
+            {/* <Box>
+                {summary.totalFiat === null ? (
+                  "-"
+                ) : (
+                  <Fiat currency="usd" amount={summary.totalFiat} isBalance />
+                )}
+              </Box> */}
           </Box>
         </Box>
-        <Box>
+        {/* <Box>
           <AssetBalanceCellValue
             render
             planck={summary.availableTokens}
             fiat={summary.availableFiat}
             token={token}
           />
-        </Box>
+        </Box> */}
       </Box>
       {detailRows
         .filter((row) => row.tokens > 0)
@@ -172,19 +197,36 @@ const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
             bg="background-muted"
             key={row.key}
             className={classNames(rows.length === i + 1 && "stop-row")}
+            padding="1.2rem 1.4rem"
           >
-            <Box grow padding="0 1.6rem" fg="foreground" bold>
+            <Box grow fg="foreground" bold>
               {row.title}
             </Box>
-            <Box>
-              <AssetBalanceCellValue
+            <Box flex column justify="center" gap={0.4} textalign="right">
+              <Box bold fg={row.locked ? "mid" : "foreground"}>
+                <Tokens
+                  amount={planckToTokens(row.tokens.toString(), token.decimals)}
+                  symbol={token?.symbol}
+                  isBalance
+                />
+                {row.locked ? (
+                  <>
+                    {" "}
+                    <LockIcon className="lock" />
+                  </>
+                ) : null}
+              </Box>
+              <Box fontsize="xsmall">
+                {row.fiat === null ? "-" : <Fiat currency="usd" amount={row.fiat} isBalance />}
+              </Box>
+            </Box>
+            {/* <AssetBalanceCellValue
                 render={row.tokens > 0}
                 planck={row.tokens}
                 fiat={row.fiat}
                 token={token}
                 locked={row.locked}
-              />
-            </Box>
+              /> */}
           </Box>
         ))}
     </ChainTokenBlock>
