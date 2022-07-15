@@ -8,7 +8,7 @@ import { PortfolioAssets } from "./PortfolioAssets"
 export const Portfolio = () => {
   return (
     // share layout to prevent sidebar flickering when navigating between the 2 pages
-    <Layout centered>
+    <Layout centered large>
       <PortfolioProvider>
         <Routes>
           <Route path=":symbol" element={<PortfolioAsset />} />

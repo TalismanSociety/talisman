@@ -71,7 +71,7 @@ const Layout = styled(UnstyledLayout)`
       justify-content: center;
 
       > .children{
-        max-width: ${large ? "96rem" : "66rem"};
+        max-width: ${large ? "120rem" : "66rem"};
       }
     `}
   }
