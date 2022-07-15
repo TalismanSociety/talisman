@@ -27,13 +27,13 @@ import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { toBuffer } from "@ethereumjs/util"
+import { recoverPersonalSignature } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { ethers, providers } from "ethers"
 import { isHexString } from "ethers/lib/utils"
 
 import { filterAccountsByAddresses } from "../accounts/helpers"
-import { recoverPersonalSignAddress } from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./networksStore"
 
 interface EthAuthorizedSite extends AuthorizedSite {
@@ -98,12 +98,15 @@ export class EthTabsHandler extends TabsHandler {
     const site = await this.stores.sites.getSiteFromUrl(url)
     if (!site) return []
 
-    // returning lowercase addresses otherwise address check for personal_sign will fail in metamask E2E test dapp
-    // I'm afraid this may lead to errors in checksum if this output is validated by dapp : https://eips.ethereum.org/EIPS/eip-55
-    // If this happens, we'll have to remove lowercase (and also remove at line 201) and ignore error on test dapp.
-    return filterAccountsByAddresses(accountsObservable.subject.getValue(), site.ethAddresses)
-      .filter(({ type }) => type === "ethereum")
-      .map(({ address }) => ethers.utils.getAddress(address).toLowerCase())
+    // case is used for checksum when validating user input addresses : https://eips.ethereum.org/EIPS/eip-55
+    // signature checks methods return lowercase addresses too and are compared to addresses returned by provider
+    // => we have to return addresses as lowercase too
+    return (
+      filterAccountsByAddresses(accountsObservable.subject.getValue(), site.ethAddresses)
+        .filter(({ type }) => type === "ethereum")
+        // send as
+        .map(({ address }) => ethers.utils.getAddress(address).toLowerCase())
+    )
   }
 
   private async ethSubscribe(id: string, url: string, port: Port): Promise<boolean> {
@@ -307,12 +310,15 @@ export class EthTabsHandler extends TabsHandler {
   private signMessage = async (url: string, request: EthRequestSignArguments) => {
     const { params, method } = request as EthRequestSignArguments
 
-    // expect [message, address] or [address, message]
-    const isAddressFirst = typeof params[0] === "string" && ethers.utils.isAddress(params[0])
-    const from = (isAddressFirst ? params[0] : params[1]) as string
-    const uncheckedMessage = isAddressFirst ? params[1] : params[0]
+    const [uncheckedMessage, from] = [
+      "personal_sign",
+      "eth_signTypedData",
+      "eth_signTypedData_v1",
+    ].includes(method)
+      ? [params[0], ethers.utils.getAddress(params[1])]
+      : [params[1], ethers.utils.getAddress(params[0])]
 
-    // message is either a raw string or a hex string
+    // message is either a raw string or a hex string or an object (signTypedData_v1)
     // normalize the message, it must be stored unencoded in the request to be displayed to the user
     const message =
       typeof uncheckedMessage === "string"
@@ -320,6 +326,9 @@ export class EthTabsHandler extends TabsHandler {
           ? toBuffer(uncheckedMessage).toString("utf-8")
           : uncheckedMessage
         : JSON.stringify(uncheckedMessage)
+
+    // eslint-disable-next-line no-console
+    console.debug("ethereum signMessage", { method, params, from, uncheckedMessage, message })
 
     const site = await this.getSiteDetails(url)
     try {
@@ -448,10 +457,9 @@ export class EthTabsHandler extends TabsHandler {
         return result.toHexString()
       }
 
-      // case "eth_sign": // dangerous, obsolete, main use case is phishing => don't support
-      // case "eth_signTypedData": // obsolete and cannot support because polkadot ethereum keypairs force a keccak hash before signing, this prevents us to get the expected signature
-      // case "eth_signTypedData_v1": // same as above
       case "personal_sign":
+      case "eth_signTypedData":
+      case "eth_signTypedData_v1":
       case "eth_signTypedData_v3":
       case "eth_signTypedData_v4": {
         return this.signMessage(url, request as EthRequestSignArguments)
@@ -461,7 +469,7 @@ export class EthTabsHandler extends TabsHandler {
         const {
           params: [data, signature],
         } = request as EthRequestArguments<"personal_ecRecover">
-        return recoverPersonalSignAddress(data, signature)
+        return recoverPersonalSignature({ data, signature })
       }
 
       case "eth_sendTransaction": {

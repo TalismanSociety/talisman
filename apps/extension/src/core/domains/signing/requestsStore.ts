@@ -92,7 +92,12 @@ export class SigningRequestsStore extends RequestStore<
 
   public signEth(
     url: string,
-    method: "personal_sign" | "eth_signTypedData_v3" | "eth_signTypedData_v4",
+    method:
+      | "personal_sign"
+      | "eth_signTypedData"
+      | "eth_signTypedData_v1"
+      | "eth_signTypedData_v3"
+      | "eth_signTypedData_v4",
     request: EthSignRequest["request"],
     ethChainId: number,
     account: AccountJson
