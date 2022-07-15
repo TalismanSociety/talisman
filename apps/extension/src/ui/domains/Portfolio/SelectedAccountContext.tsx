@@ -4,13 +4,18 @@ import useAccounts from "@ui/hooks/useAccounts"
 import { useSettings } from "@ui/hooks/useSettings"
 import { useCallback, useMemo, useState } from "react"
 
-const useSelectedAccountProvider = () => {
-  const accounts = useAccounts()
+const useSelectedAccountProvider = ({ isPopup }: { isPopup?: boolean }) => {
+  //if isPopup = true, then use in memory address.
+  const [popupAccount, setPopupAccount] = useState<string>()
+  //if isPopup = false, then use address persisted in settings
   const { selectedAccount, update } = useSettings()
 
+  const accounts = useAccounts()
+
   const account = useMemo(
-    () => accounts.find((account) => account.address === selectedAccount),
-    [accounts, selectedAccount]
+    () =>
+      accounts.find((account) => account.address === (isPopup ? popupAccount : selectedAccount)),
+    [accounts, isPopup, popupAccount, selectedAccount]
   )
 
   const select = useCallback(
@@ -18,9 +23,10 @@ const useSelectedAccountProvider = () => {
       const address =
         typeof accountOrAddress === "string" ? accountOrAddress : accountOrAddress?.address
       if (address === undefined || accounts.some((acc) => acc.address === address))
-        update({ selectedAccount: address })
+        if (isPopup) setPopupAccount(address)
+        else update({ selectedAccount: address })
     },
-    [accounts, update]
+    [accounts, isPopup, update]
   )
 
   return { select, accounts, account }

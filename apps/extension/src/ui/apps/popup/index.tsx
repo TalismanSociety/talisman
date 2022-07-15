@@ -89,7 +89,7 @@ const Popup = () => {
   if (isLoggedIn === "FALSE") return <Login />
 
   return (
-    <SelectedAccountProvider>
+    <SelectedAccountProvider isPopup>
       <CurrentSiteProvider>
         <NavigationProvider>
           <AddressFormatterModalProvider>
