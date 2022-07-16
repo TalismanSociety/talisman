@@ -59,6 +59,9 @@ type BoxProps = {
   fontsizecustom?: CSSProperties["fontSize"]
   lineheight?: keyof typeof fontSizes
   lineheightcustom?: CSSProperties["fontSize"]
+
+  // cursor
+  pointer?: boolean
 }
 
 const getDisplay = (props: BoxProps): CSSProperties["display"] => {
@@ -119,6 +122,11 @@ const getPosition = (props: BoxProps) => {
   return undefined
 }
 
+const getCursor = (props: BoxProps) => {
+  if (props.pointer) return "pointer"
+  return undefined
+}
+
 // generic method in case we want to reuse it on span or other tags
 const boxPropsInjector = (props: BoxProps): CSSObject => {
   return {
@@ -146,6 +154,7 @@ const boxPropsInjector = (props: BoxProps): CSSObject => {
     overflow: props.overflow,
     textOverflow: props.textOverflow,
     whiteSpace: props.noWrap ? "nowrap" : undefined,
+    cursor: getCursor(props),
   }
 }
 

@@ -2,6 +2,7 @@ import { Balances } from "@core/domains/balances/types"
 import { encodeAnyAddress, planckToTokens } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
+import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
 import { useNotification } from "@talisman/components/Notification"
 import { CopyIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
@@ -17,19 +18,7 @@ import { Fragment, useCallback, useMemo } from "react"
 import styled from "styled-components"
 
 import StyledAssetLogo from "../../Asset/Logo"
-import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { NoTokensMessage } from "../NoTokensMessage"
-
-const AssetState = ({ title, render }: { title: string; render: boolean }) => {
-  if (!render) return null
-  return (
-    <Box height={6.6} padding="1.6rem" flex column justify="center">
-      <Box bold fg="foreground">
-        {title}
-      </Box>
-    </Box>
-  )
-}
 
 const SmallIconButton = styled(IconButton)`
   height: 1.2rem;
@@ -160,33 +149,11 @@ const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
               {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />{" "}
               {isFetching && <FetchingIndicator data-spin />}
             </Box>
-            {/* <Box>
-                <Tokens
-                  amount={planckToTokens(summary.totalTokens.toString(), token.decimals)}
-                  symbol={token?.symbol}
-                  isBalance
-                />
-              </Box> */}
           </Box>
           <Box flex justify="space-between" fontsize="xsmall" fg="mid">
             <Box>{networkType}</Box>
-            {/* <Box>
-                {summary.totalFiat === null ? (
-                  "-"
-                ) : (
-                  <Fiat currency="usd" amount={summary.totalFiat} isBalance />
-                )}
-              </Box> */}
           </Box>
         </Box>
-        {/* <Box>
-          <AssetBalanceCellValue
-            render
-            planck={summary.availableTokens}
-            fiat={summary.availableFiat}
-            token={token}
-          />
-        </Box> */}
       </Box>
       {detailRows
         .filter((row) => row.tokens > 0)
@@ -221,13 +188,6 @@ const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
                 {row.fiat === null ? "-" : <Fiat currency="usd" amount={row.fiat} isBalance />}
               </Box>
             </Box>
-            {/* <AssetBalanceCellValue
-                render={row.tokens > 0}
-                planck={row.tokens}
-                fiat={row.fiat}
-                token={token}
-                locked={row.locked}
-              /> */}
           </Box>
         ))}
     </ChainTokenBlock>
@@ -243,34 +203,37 @@ export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   const balancesToDisplay = useDisplayBalances(balances)
   const { hydrate, isLoading } = usePortfolio()
 
-  const balancesByChain = useMemo(() => {
+  const rows = useMemo(() => {
     const chainIds = [
       ...new Set(balancesToDisplay.sorted.map((b) => b.chainId ?? b.evmNetworkId)),
     ].filter((cid) => cid !== undefined)
 
-    return chainIds.reduce(
-      (acc, chainId) => ({
-        ...acc,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        [chainId!]: new Balances(
-          balancesToDisplay.sorted.filter(
-            (b) => b.chainId === chainId || b.evmNetworkId === chainId
+    return Object.entries(
+      chainIds.reduce(
+        (acc, chainId) => ({
+          ...acc,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          [chainId!]: new Balances(
+            balancesToDisplay.sorted.filter(
+              (b) => b.chainId === chainId || b.evmNetworkId === chainId
+            ),
+            hydrate
           ),
-          hydrate
-        ),
-      }),
-      {} as Record<string | number, Balances>
+        }),
+        {} as Record<string | number, Balances>
+      )
     )
   }, [balancesToDisplay.sorted, hydrate])
 
-  const rows = Object.entries(balancesByChain)
-  if (rows.length === 0 && !isLoading) return <NoTokensMessage symbol={symbol} />
+  if (!rows.length) return isLoading ? null : <NoTokensMessage symbol={symbol} />
 
   return (
-    <Box flex column gap={1.6}>
-      {rows.map(([key, bal], i, rows) => (
-        <ChainTokenBalances key={key} symbol={symbol} balances={bal} />
-      ))}
-    </Box>
+    <FadeIn>
+      <Box flex column gap={1.6}>
+        {rows.map(([key, bal], i, rows) => (
+          <ChainTokenBalances key={key} symbol={symbol} balances={bal} />
+        ))}
+      </Box>
+    </FadeIn>
   )
 }

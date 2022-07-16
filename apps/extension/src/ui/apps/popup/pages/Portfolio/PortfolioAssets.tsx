@@ -10,6 +10,7 @@ import {
   IconMore,
   PaperPlaneIcon,
 } from "@talisman/theme/icons"
+import { api } from "@ui/api"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
@@ -42,10 +43,9 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const { open: openAddressFormatterModal } = useAddressFormatterModal()
   const { open: openSendFundsModal } = useSendTokensModal()
 
-  const sendFunds = useCallback(
-    () => openSendFundsModal({ from: account?.address }),
-    [account?.address, openSendFundsModal]
-  )
+  const sendFunds = useCallback(() => {
+    api.modalOpen("send")
+  }, [])
 
   const copyAddress = useCallback(() => {
     if (!account) return
@@ -72,7 +72,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
               {account ? account.name ?? "Unnamed Account" : "All Accounts"}
             </Box>
             <Box fontsize="medium" overflow="hidden" textOverflow="ellipsis" noWrap>
-              <Fiat amount={balances.sum.fiat("usd").total} />
+              <Fiat amount={balances.sum.fiat("usd").total} isBalance />
             </Box>
           </Box>
         </Box>

@@ -7,6 +7,8 @@ import React from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 
+import { SettingsProvider } from "./hooks/useSettings"
+
 initSentry(Sentry)
 
 const container = document.getElementById("root")
@@ -20,9 +22,11 @@ export const renderTalisman = (app: any) => {
     <React.StrictMode>
       <ThemeProvider>
         <ErrorBoundary>
-          <HashRouter>
-            <NotificationProvider>{app}</NotificationProvider>
-          </HashRouter>
+          <SettingsProvider>
+            <HashRouter>
+              <NotificationProvider>{app}</NotificationProvider>
+            </HashRouter>
+          </SettingsProvider>
         </ErrorBoundary>
       </ThemeProvider>
     </React.StrictMode>

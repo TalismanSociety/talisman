@@ -1,4 +1,5 @@
 import { Box } from "@talisman/components/Box"
+import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
 import { AllAccountsIcon, ChevronRightIcon, CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
@@ -141,5 +142,9 @@ export const PortfolioAccounts = () => {
   // if only 1 entry (all accounts) it means that accounts aren't loaded
   if (options.length <= 1) return null
 
-  return <Accounts options={options} />
+  return (
+    <FadeIn>
+      <Accounts options={options} />
+    </FadeIn>
+  )
 }
