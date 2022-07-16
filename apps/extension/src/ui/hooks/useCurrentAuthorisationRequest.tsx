@@ -27,6 +27,10 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
       allAccounts.filter(({ type }) => !currentRequest?.request.ethereum || type === "ethereum"),
     [allAccounts, currentRequest?.request.ethereum]
   )
+  const isMissingEthAccount = useMemo(
+    () => ethereum && !!allAccounts.length && !accounts.length,
+    [accounts.length, allAccounts.length, ethereum]
+  )
   const canIgnore = useMemo(() => !currentRequest?.request.ethereum, [currentRequest])
 
   useEffect(() => {
@@ -65,6 +69,7 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
     chainId,
     setChainId,
     ethereum,
+    isMissingEthAccount,
   }
 }
 
