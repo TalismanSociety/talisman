@@ -33,9 +33,17 @@ export const Accordion = ({ isOpen, children }: { isOpen: boolean; children?: Re
 
   useEffect(() => {
     const container = refContainer.current
-    if (!container) return
+    if (!container) return () => {}
 
-    setContentHeight(container.scrollHeight)
+    const updateContentHeight = () => {
+      setContentHeight(container.scrollHeight)
+    }
+
+    container.addEventListener("resize", updateContentHeight)
+
+    return () => {
+      container.removeEventListener("resize", updateContentHeight)
+    }
   }, [])
 
   const style: CSSProperties = useMemo(
