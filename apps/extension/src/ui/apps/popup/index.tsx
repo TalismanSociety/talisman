@@ -78,6 +78,11 @@ const Popup = () => {
     }
   }, [isOnboarded])
 
+  // scroll to top on each route change
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.pathname])
+
   // display loading screen until we have onboarding and authentication statuses
   const isLoading = useMemo(
     () => [isLoggedIn, isOnboarded].includes("UNKNOWN"),
