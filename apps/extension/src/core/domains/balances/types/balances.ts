@@ -322,9 +322,11 @@ export class Balance {
   get frozen() {
     if (this.#storage.pallet === "erc20") return this.#format("0")
 
-    // if using the balances pallet, add up the feeFrozen and miscFrozen amounts
+    // if using the balances pallet, take the max of the feeFrozen and miscFrozen amounts
     if (this.#storage.pallet === "balances") {
-      return this.#format(BigInt(this.#storage.feeFrozen) + BigInt(this.#storage.miscFrozen))
+      return this.#format(
+        BigMath.max(BigInt(this.#storage.feeFrozen), BigInt(this.#storage.miscFrozen))
+      )
     }
 
     return this.#format(this.#storage.frozen)
