@@ -111,9 +111,9 @@ const AccountButton = ({ address, name, total }: AccountOption) => {
 }
 
 const Accounts = memo(({ options }: { options: AccountOption[] }) => (
-  <Box flex column fullwidth gap={1.2} padding="0.8rem 0">
+  <Box flex column fullwidth>
     <TotalFiatBalance />
-    <Box flex column fullwidth gap={0.8}>
+    <Box flex column fullwidth gap={0.8} padding="2.4rem 0">
       {options.map((option) => (
         <AccountButton key={option.address ?? "all"} {...option} />
       ))}

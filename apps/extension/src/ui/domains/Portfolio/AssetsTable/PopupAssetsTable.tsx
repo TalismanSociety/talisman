@@ -13,8 +13,8 @@ import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
-import { usePortfolio } from "../context"
-import { ChainLogoStack } from "../LogoStack"
+import { NetworksLogoStack } from "./NetworksLogoStack"
+import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
 
 type AssetRowProps = {
@@ -36,12 +36,20 @@ const AssetButton = styled.button`
   align-items: center;
   border-radius: var(--border-radius);
 
+  background: var(--color-background-muted);
+  .logo-stack .chain-logo {
+    border: 1px solid var(--color-background-muted);
+  }
+
   :not(.skeleton) {
     cursor: pointer;
   }
-  background: var(--color-background-muted);
+
   :not(.skeleton):hover {
     background: var(--color-background-muted-3x);
+    .logo-stack .chain-logo {
+      border: 1px solid var(--color-background-muted-3x);
+    }
   }
 `
 
@@ -54,26 +62,7 @@ const SectionLockIcon = styled(LockIcon)`
 `
 
 const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
-  const { chains, evmNetworks } = usePortfolio()
-  const { logoIds } = useMemo(() => {
-    const chainIds = [
-      ...new Set(
-        balances.sorted
-          .filter((b) => b.total.planck > 0)
-          .map((b) => b.chain?.id ?? b.evmNetwork?.id)
-      ),
-    ]
-    const logoIds = chainIds
-      .map((id) => {
-        const chain = chains?.find((c) => c.id === id)
-        if (chain) return chain.id
-        const evmNetwork = evmNetworks?.find((n) => n.id === id)
-        if (evmNetwork) return evmNetwork.substrateChain?.id ?? evmNetwork.id
-        return undefined
-      })
-      .filter((id) => id !== undefined) as string[]
-    return { chainIds, logoIds }
-  }, [balances.sorted, chains, evmNetworks])
+  const networkIds = usePortfolioNetworkIds(balances)
 
   const isFetching = useMemo(
     () => balances.sorted.some((b) => b.status === "cache"),
@@ -112,7 +101,7 @@ const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
         flex
         column
         justify="center"
-        gap={0.6}
+        gap={0.4}
         lineheight="small"
         fontsize="small"
         padding="0 1.2rem 0 0"
@@ -136,11 +125,11 @@ const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
             {locked ? <RowLockIcon className="lock" /> : null}
           </Box>
         </Box>
-        <Box fontsize="xsmall" flex justify="space-between">
-          <Box>
-            <ChainLogoStack chainIds={logoIds} />
+        <Box flex justify="space-between" lineheight="small">
+          <Box fontsize="normal">
+            <NetworksLogoStack networkIds={networkIds} />
           </Box>
-          <Box fg="mid">
+          <Box fg="mid" fontsize="xsmall">
             {fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}
           </Box>
         </Box>

@@ -2,8 +2,6 @@ import { Balance, Balances } from "@core/domains/balances/types"
 import { Box } from "@talisman/components/Box"
 import { LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import { useCallback, useMemo } from "react"
 import Skeleton from "react-loading-skeleton"
@@ -13,7 +11,8 @@ import styled from "styled-components"
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { usePortfolio } from "../context"
-import { ChainLogoStack } from "../LogoStack"
+import { NetworksLogoStack } from "./NetworksLogoStack"
+import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
 
 const Table = styled.table`
@@ -37,9 +36,17 @@ const Table = styled.table`
     :not(.skeleton) {
       cursor: pointer;
     }
+
     background: var(--color-background-muted);
+    .logo-stack .chain-logo {
+      border: 1px solid var(--color-background-muted);
+    }
+
     :not(.skeleton):hover {
       background: var(--color-background-muted-3x);
+      .logo-stack .chain-logo {
+        border: 1px solid var(--color-background-muted-3x);
+      }
     }
 
     > td:first-child {
@@ -137,26 +144,7 @@ const FetchingIcon = styled(LoaderIcon)`
 `
 
 const AssetRow = ({ balances, symbol }: AssetRowProps) => {
-  const { chains, evmNetworks } = usePortfolio()
-  const { logoIds } = useMemo(() => {
-    const chainIds = [
-      ...new Set(
-        balances.sorted
-          .filter((b) => b.total.planck > 0)
-          .map((b) => b.chain?.id ?? b.evmNetwork?.id)
-      ),
-    ]
-    const logoIds = chainIds
-      .map((id) => {
-        const chain = chains?.find((c) => c.id === id)
-        if (chain) return chain.id
-        const evmNetwork = evmNetworks?.find((n) => n.id === id)
-        if (evmNetwork) return evmNetwork.substrateChain?.id ?? evmNetwork.id
-        return undefined
-      })
-      .filter((id) => id !== undefined) as string[]
-    return { chainIds, logoIds }
-  }, [balances.sorted, chains, evmNetworks])
+  const networkIds = usePortfolioNetworkIds(balances)
 
   const isFetching = useMemo(
     () => balances.sorted.some((b) => b.status === "cache"),
@@ -183,11 +171,9 @@ const AssetRow = ({ balances, symbol }: AssetRowProps) => {
             <Box fontsize="normal" bold fg="foreground" flex inline align="center" gap={0.6}>
               {token.symbol} {isFetching && <FetchingIcon data-spin />}
             </Box>
-            {logoIds?.length > 1 && (
-              <div>
-                <ChainLogoStack chainIds={logoIds} />
-              </div>
-            )}
+            <div>
+              <NetworksLogoStack networkIds={networkIds} />
+            </div>
           </Box>
         </Box>
       </td>
@@ -218,9 +204,8 @@ type AssetsTableProps = {
 }
 
 // TODO also have acounts and network filter as props ?
-export const AssetsTable = ({ balances }: AssetsTableProps) => {
+export const DashboardAssetsTable = ({ balances }: AssetsTableProps) => {
   // group by token (symbol)
-
   const { symbolBalances, skeletons } = usePortfolioSymbolBalances(balances)
 
   return (

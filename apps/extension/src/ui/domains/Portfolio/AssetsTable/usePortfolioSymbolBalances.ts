@@ -27,18 +27,22 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
     return Object.entries(balancesByToken)
   }, [balancesToDisplay.sorted])
 
-  const { account } = useSelectedAccount()
+  const { account, accounts } = useSelectedAccount()
   const { networkFilter } = usePortfolio()
+
+  const hasEthereumAccount = useMemo(() => accounts.some((a) => a.type === "ethereum"), [accounts])
 
   // if specific account we have 2 rows minimum, if all accounts we have 4
   const skeletons = useMemo(() => {
     // in this case we don't know the number of min rows
     if (networkFilter) return 0
 
-    // Expect at least dot/ksm or movr/glmr
-    const expectedRows = account ? 2 : 4
+    // If no accounts then it means "all accounts", expect KSM/DOT/MOVR/GLMR (or only KSM/DOT if no eth account)
+    // If account has a genesis hash then we expect only 1 chain
+    // Otherwise we expect 2 chains (KSM+DOT or MOVR+GLMR)
+    const expectedRows = account ? (account.genesisHash ? 1 : 2) : hasEthereumAccount ? 4 : 2
     return symbolBalances.length < expectedRows ? expectedRows - symbolBalances.length : 0
-  }, [account, networkFilter, symbolBalances.length])
+  }, [account, hasEthereumAccount, networkFilter, symbolBalances.length])
 
   return { symbolBalances, skeletons }
 }
