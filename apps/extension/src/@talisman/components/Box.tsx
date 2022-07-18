@@ -14,8 +14,8 @@ const BorderRadius = {
 // also do not use known properties (ex color) or they will be output as attribute too
 type BoxProps = {
   // size
-  height?: CSSProperties["height"]
-  width?: CSSProperties["width"]
+  h?: CSSProperties["height"]
+  w?: CSSProperties["width"]
   fullwidth?: boolean
   fullheight?: boolean
 
@@ -133,8 +133,8 @@ const boxPropsInjector = (props: BoxProps): CSSObject => {
     display: getDisplay(props),
     position: getPosition(props),
     flexDirection: props.flex ? (props.column ? "column" : "row") : undefined,
-    width: props.fullwidth ? "100%" : getSize(props.width),
-    height: props.fullheight ? "100%" : getSize(props.height),
+    width: props.fullwidth ? "100%" : getSize(props.w),
+    height: props.fullheight ? "100%" : getSize(props.h),
     flexGrow: props.grow ? "1" : undefined,
     borderRadius: getBorderRadius(props),
     textAlign: props.textalign,

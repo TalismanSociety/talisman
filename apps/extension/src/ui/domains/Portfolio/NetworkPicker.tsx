@@ -152,8 +152,8 @@ export const NetworkPicker = () => {
 
   return (
     <Container isOpen={isOpen}>
-      <Box flex gap={1} width={30} bg="background-muted" align="center" {...getComboboxProps()}>
-        <Box height={4.8} flex fullwidth align="center" padding="0 0 0 1.2rem">
+      <Box flex gap={1} w={30} bg="background-muted" align="center" {...getComboboxProps()}>
+        <Box h={4.8} flex fullwidth align="center" padding="0 0 0 1.2rem">
           {networkFilter ? (
             <Box margin="0 1.2rem 0 0">
               <StyledAssetLogo id={networkFilter?.logoId} />
@@ -182,7 +182,7 @@ export const NetworkPicker = () => {
             <li key={`${item.id}${index}`} {...getItemProps({ item, index })}>
               <Box
                 flex
-                height={4.2}
+                h={4.2}
                 fullwidth
                 bg={highlightedIndex === index ? "background-muted-3x" : "background-muted"}
                 fg="mid"

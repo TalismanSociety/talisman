@@ -68,8 +68,8 @@ export const Statistics = ({
       bg="background-muted"
       borderradius
       padding={1.6}
-      width={23.6}
-      height={10}
+      w={23.6}
+      h={10}
       gap={0.8}
       className={className}
     >

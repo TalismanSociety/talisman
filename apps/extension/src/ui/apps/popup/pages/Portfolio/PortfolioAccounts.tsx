@@ -82,7 +82,7 @@ const AccountButton = ({ address, name, total }: AccountOption) => {
             {name}
           </Box>
           {address ? (
-            <Box overflow="hidden" height="1.4rem">
+            <Box overflow="hidden" h="1.4rem">
               <CopyButton onClick={handleCopyClick}>
                 <CopyIcon />
               </CopyButton>

@@ -3,8 +3,11 @@ import { planckToTokens } from "@core/util"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
+import { Skeleton } from "@talisman/components/Skeleton"
+import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LoaderIcon, LockIcon } from "@talisman/theme/icons"
+import { classNames } from "@talisman/util/classNames"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
@@ -29,6 +32,18 @@ const FetchingIcon = styled(LoaderIcon)`
   font-size: 1.2rem;
 `
 
+const Container = styled(Box)`
+  .opacity-1 {
+    opacity: 0.8;
+  }
+  .opacity-2 {
+    opacity: 0.6;
+  }
+  .opacity-3 {
+    opacity: 0.4;
+  }
+`
+
 const AssetButton = styled.button`
   width: 100%;
   outline: none;
@@ -36,6 +51,8 @@ const AssetButton = styled.button`
   display: flex;
   align-items: center;
   border-radius: var(--border-radius-tiny);
+  height: 5.6rem;
+  padding: 0 0.2rem;
 
   background: var(--color-background-muted);
   .logo-stack .chain-logo {
@@ -61,6 +78,78 @@ const RowLockIcon = styled(LockIcon)`
 const SectionLockIcon = styled(LockIcon)`
   font-size: 1.4rem;
 `
+
+const AssetRowSkeleton = ({ className }: { className?: string }) => {
+  return (
+    <Box
+      fullwidth
+      flex
+      align="center"
+      bg="background-muted"
+      borderradius="tiny"
+      className={className}
+      padding={"0 0.2rem"}
+      h={5.6}
+    >
+      <Box padding="1.2rem" fontsize="xlarge" w={5.6}>
+        <Skeleton
+          baseColor="#5A5A5A"
+          highlightColor="#A5A5A5"
+          width={"3.2rem"}
+          height={"3.2rem"}
+          circle
+        />
+      </Box>
+      <Box
+        grow
+        flex
+        column
+        justify="center"
+        gap={0.4}
+        lineheight="small"
+        fontsize="small"
+        padding="0 1.2rem 0 0"
+      >
+        <Box bold fg="foreground" flex justify="space-between">
+          <Box fontsize="small">
+            <Skeleton
+              baseColor="#5A5A5A"
+              highlightColor="#A5A5A5"
+              width={"4rem"}
+              height={"1.4rem"}
+            />
+          </Box>
+          <Box fontsize="normal">
+            <Skeleton
+              baseColor="#5A5A5A"
+              highlightColor="#A5A5A5"
+              width={"10rem"}
+              height={"1.4rem"}
+            />
+          </Box>
+        </Box>
+        <Box flex justify="space-between" lineheight="small">
+          <Box fontsize="normal">
+            <Skeleton
+              baseColor="#5A5A5A"
+              highlightColor="#A5A5A5"
+              width={"2rem"}
+              height={"1.4rem"}
+            />
+          </Box>
+          <Box fg="mid" fontsize="xsmall">
+            <Skeleton
+              baseColor="#5A5A5A"
+              highlightColor="#A5A5A5"
+              width={"6rem"}
+              height={"1.4rem"}
+            />
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  )
+}
 
 const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
@@ -154,8 +243,16 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
   const { isOpen, toggle } = useOpenClose(true)
 
   return (
-    <Box flex column gap={1.2} onClick={toggle}>
-      <Box className={className} flex fontsize="medium" gap={0.4} align="center" pointer>
+    <Box flex column gap={1.2}>
+      <Box
+        className={className}
+        onClick={toggle}
+        flex
+        fontsize="medium"
+        gap={0.4}
+        align="center"
+        pointer
+      >
         <Box fg="foreground" grow>
           {label}
         </Box>
@@ -186,7 +283,9 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
     const available = symbolBalances
       .map<[string, Balances]>(([symbol, balance]) => [
         symbol,
-        new Balances(balance.sorted.filter((b) => b.free.planck > BigInt(0))),
+        new Balances(
+          balance.sorted.filter((b) => b.total.planck === BigInt(0) || b.free.planck > BigInt(0))
+        ),
       ])
       .filter(([, b]) => b.sorted.length > 0)
     const locked = symbolBalances
@@ -207,12 +306,15 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
 
   return (
     <FadeIn>
-      <Box flex column gap={0.8}>
+      <Container>
         <BalancesGroup label="Available" fiatAmount={totalAvailable}>
           {available.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} symbol={symbol} />
           ))}
-          {!available.length && (
+          {[...Array(skeletons).keys()].map((i) => (
+            <AssetRowSkeleton key={i} className={`opacity-${i}`} />
+          ))}
+          {!skeletons && !available.length && (
             <Box
               bg="background-muted"
               fg="mid"
@@ -224,6 +326,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
               There are no available balances{account ? " for this account" : ""}.
             </Box>
           )}
+          <Box h={1.6} />
         </BalancesGroup>
         <BalancesGroup
           label={
@@ -249,7 +352,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
             </Box>
           )}
         </BalancesGroup>
-      </Box>
+      </Container>
     </FadeIn>
   )
 }

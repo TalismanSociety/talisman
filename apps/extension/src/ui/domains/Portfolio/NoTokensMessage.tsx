@@ -48,7 +48,7 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   return (
     <Box
       fg="mid"
-      height={19.2}
+      h={19.2}
       bg="background-muted-3x"
       borderradius
       flex
@@ -61,7 +61,7 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
         <Box>
           You don't have any {symbol} {account ? "in this account" : "in Talisman"}
         </Box>
-        <Box height={2.4} />
+        <Box h={2.4} />
         <Box flex justify="center" gap={0.8}>
           {account && (
             <PillButton onClick={handleCopy}>

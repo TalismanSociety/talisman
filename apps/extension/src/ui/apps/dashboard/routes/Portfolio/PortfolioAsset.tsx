@@ -49,7 +49,7 @@ const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symb
 
   return (
     <div>
-      <Box flex fullwidth gap={1.6} height={9.6}>
+      <Box flex fullwidth gap={1.6} h={9.6}>
         <Box grow flex column gap={1.6} justify="center">
           <BackButton type="button" onClick={handleBackBtnClick}>
             <ChevronLeftIcon />

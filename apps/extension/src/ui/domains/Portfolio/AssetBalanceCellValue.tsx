@@ -26,7 +26,7 @@ export const AssetBalanceCellValue = ({
   if (!render) return null
   return (
     <Box
-      height={6.6}
+      h={6.6}
       flex
       column
       justify="center"

@@ -1,16 +1,15 @@
-import { Balance, Balances } from "@core/domains/balances/types"
+import { Balances } from "@core/domains/balances/types"
 import { Box } from "@talisman/components/Box"
+import { Skeleton } from "@talisman/components/Skeleton"
 import { LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
 import { useCallback, useMemo } from "react"
-import Skeleton from "react-loading-skeleton"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
-import { usePortfolio } from "../context"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
@@ -77,7 +76,7 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
   return (
     <tr className={classNames("asset skeleton", className)}>
       <td valign="top">
-        <Box height={6.6} flex opacity={0.3}>
+        <Box h={6.6} flex opacity={0.3}>
           <Box padding="1.6rem" fontsize="xlarge">
             <Skeleton
               baseColor="#5A5A5A"
@@ -104,7 +103,7 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
         <Box
           flex
           opacity={0.3}
-          height={6.6}
+          h={6.6}
           column
           justify="center"
           gap={0.4}

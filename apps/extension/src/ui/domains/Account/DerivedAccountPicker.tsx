@@ -1,5 +1,3 @@
-import "react-loading-skeleton/dist/skeleton.css"
-
 import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
 import { Balance } from "@core/domains/balances/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"

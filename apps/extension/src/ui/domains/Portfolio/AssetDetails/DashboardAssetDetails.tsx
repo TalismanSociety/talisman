@@ -71,7 +71,7 @@ const SpacerRow = styled(({ className }) => {
 const AssetState = ({ title, render }: { title: string; render: boolean }) => {
   if (!render) return null
   return (
-    <Box height={6.6} padding="1.6rem" flex column justify="center">
+    <Box h={6.6} padding="1.6rem" flex column justify="center">
       <Box bold fg="foreground">
         {title}
       </Box>
