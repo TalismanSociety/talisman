@@ -91,7 +91,7 @@ module.exports = {
     extensions: [".ts", ".tsx", ".js", ".css"],
     fallback: {
       stream: false,
-      assert: false,
+      assert: require.resolve("assert"),
     },
   },
   plugins: [

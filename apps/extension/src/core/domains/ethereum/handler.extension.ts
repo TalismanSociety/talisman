@@ -19,15 +19,15 @@ import { ExtensionHandler } from "@core/libs/Handler"
 import { watchEthereumTransaction } from "@core/notifications"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
+import { getPrivateKey } from "@core/util/getPrivateKey"
 import type { TransactionRequest } from "@ethersproject/providers"
-import { SignTypedDataVersion } from "@metamask/eth-sig-util"
-import { assert, u8aToHex } from "@polkadot/util"
+import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
+import { assert } from "@polkadot/util"
 import { BigNumber, ethers } from "ethers"
 import type { UnsignedTransaction } from "ethers"
 import { formatUnits, parseUnits, serializeTransaction } from "ethers/lib/utils"
 import isString from "lodash/isString"
 
-import { encodeTextData, encodeTypedData, legacyToBuffer } from "./helpers"
 import { getProviderForEvmNetworkId } from "./networksStore"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 
@@ -162,19 +162,34 @@ export class EthHandler extends ExtensionHandler {
         return false
       }
 
-      let messageToSign: Uint8Array
+      const privateKey = getPrivateKey(pair)
+      let signature: string
+
       if (method === "personal_sign") {
-        messageToSign = encodeTextData(legacyToBuffer(request as string), true)
+        signature = personalSign({ privateKey, data: request })
+      } else if (["eth_signTypedData", "eth_signTypedData_v1"].includes(method)) {
+        signature = signTypedData({
+          privateKey,
+          data: JSON.parse(request as string),
+          version: SignTypedDataVersion.V1,
+        })
       } else if (method === "eth_signTypedData_v3") {
-        messageToSign = encodeTypedData(JSON.parse(request as string), SignTypedDataVersion.V3)
+        signature = signTypedData({
+          privateKey,
+          data: JSON.parse(request as string),
+          version: SignTypedDataVersion.V3,
+        })
       } else if (method === "eth_signTypedData_v4") {
-        messageToSign = encodeTypedData(JSON.parse(request as string), SignTypedDataVersion.V4)
+        signature = signTypedData({
+          privateKey,
+          data: JSON.parse(request as string),
+          version: SignTypedDataVersion.V4,
+        })
       } else {
         throw new Error(`Unsupported method : ${method}`)
       }
 
-      const signature = await pair.sign(messageToSign)
-      resolve(u8aToHex(signature))
+      resolve(signature)
 
       talismanAnalytics.captureDelayed("sign transaction approve", {
         type: "evm sign",

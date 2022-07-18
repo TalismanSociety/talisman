@@ -1,4 +1,5 @@
 import { BackButton } from "@talisman/components/BackButton"
+import { hideScrollbarsStyle } from "@talisman/theme/styles"
 import { Transition, Variants, motion } from "framer-motion"
 import { FC, ReactNode } from "react"
 import styled from "styled-components"
@@ -8,6 +9,8 @@ const Main = styled.main`
   overflow: auto;
   max-width: 100vw;
   max-height: 100vh;
+
+  ${hideScrollbarsStyle}
 
   > section {
     margin: 0 auto;

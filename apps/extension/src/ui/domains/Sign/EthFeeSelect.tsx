@@ -87,6 +87,7 @@ const OptionButton = styled.button`
   text-align: left;
   gap: 0.8rem;
   cursor: pointer;
+  color: var(--color-mid);
 
   .icon {
     background: rgba(255, 255, 255, 0.1);
