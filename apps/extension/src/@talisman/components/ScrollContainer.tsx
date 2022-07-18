@@ -1,6 +1,6 @@
 import { hideScrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
-import { useEffect, useRef, useState } from "react"
+import { RefObject, forwardRef, useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 
 const Container = styled.section`
@@ -63,49 +63,58 @@ type ScrollContainerProps = {
   innerClassName?: string
 }
 
-export const ScrollContainer = ({
-  className,
-  children,
-  innerClassName = "scrollable-children",
-}: ScrollContainerProps) => {
-  const refDiv = useRef<HTMLDivElement>(null)
-  const [more, setMore] = useState<{ top: boolean; bottom: boolean }>({ top: false, bottom: false })
+// optional forwardRef to handle scroll to top controlled by parent
+export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
+  ({ className, children, innerClassName = "scrollable-children" }, forwardedRef) => {
+    const localRef = useRef<HTMLDivElement>(null)
+    const refDiv = useMemo(
+      () => (forwardedRef || localRef) as RefObject<HTMLDivElement>,
+      [forwardedRef, localRef]
+    )
+    const [more, setMore] = useState<{ top: boolean; bottom: boolean }>({
+      top: false,
+      bottom: false,
+    })
 
-  useEffect(() => {
-    const scrollable = refDiv.current
-    if (!scrollable) return
+    useEffect(() => {
+      const scrollable = refDiv.current
+      if (!scrollable) return
 
-    const handleDetectScroll = () => {
-      setMore({
-        top: scrollable.scrollTop > 0,
-        bottom: scrollable.scrollHeight - scrollable.scrollTop > scrollable.clientHeight,
-      })
-    }
+      const handleDetectScroll = () => {
+        setMore({
+          top: scrollable.scrollTop > 0,
+          bottom: scrollable.scrollHeight - scrollable.scrollTop > scrollable.clientHeight,
+        })
+      }
 
-    scrollable.addEventListener("scroll", handleDetectScroll)
-    scrollable.addEventListener("resize", handleDetectScroll)
-    window.addEventListener("resize", handleDetectScroll)
+      scrollable.addEventListener("scroll", handleDetectScroll)
+      scrollable.addEventListener("resize", handleDetectScroll)
+      window.addEventListener("resize", handleDetectScroll)
 
-    // init
-    handleDetectScroll()
+      // init
+      handleDetectScroll()
 
-    // sometimes on init scrollHeight === clientHeight, setTimeout fixes the problem
-    setTimeout(() => handleDetectScroll(), 50)
+      // sometimes on init scrollHeight === clientHeight, setTimeout fixes the problem
+      setTimeout(() => handleDetectScroll(), 50)
 
-    return () => {
-      scrollable.removeEventListener("scroll", handleDetectScroll)
-      scrollable.removeEventListener("resize", handleDetectScroll)
-      window.removeEventListener("resize", handleDetectScroll)
-    }
-  }, [])
+      return () => {
+        scrollable.removeEventListener("scroll", handleDetectScroll)
+        scrollable.removeEventListener("resize", handleDetectScroll)
+        window.removeEventListener("resize", handleDetectScroll)
+      }
+    }, [refDiv])
 
-  return (
-    <Container
-      className={classNames(className, more.top && "more-top", more.bottom && "more-bottom")}
-    >
-      <div ref={refDiv} className={innerClassName}>
-        {children}
-      </div>
-    </Container>
-  )
-}
+    if (typeof forwardedRef === "function")
+      throw new Error("forwardRef as function is not supported")
+
+    return (
+      <Container
+        className={classNames(className, more.top && "more-top", more.bottom && "more-bottom")}
+      >
+        <div ref={refDiv} className={innerClassName}>
+          {children}
+        </div>
+      </Container>
+    )
+  }
+)
