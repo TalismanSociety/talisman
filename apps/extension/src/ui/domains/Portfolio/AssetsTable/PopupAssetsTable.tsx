@@ -217,27 +217,23 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   return (
     <FadeIn>
       <Box flex column gap={0.8}>
-        {available.length > 0 && (
-          <BalancesGroup label="Available" fiatAmount={totalAvailable}>
-            {available.map(([symbol, b]) => (
-              <AssetRow key={symbol} balances={b} symbol={symbol} />
-            ))}
-          </BalancesGroup>
-        )}
-        {locked.length > 0 && (
-          <BalancesGroup
-            label={
-              <span>
-                Locked <SectionLockIcon />
-              </span>
-            }
-            fiatAmount={totalLocked}
-          >
-            {locked.map(([symbol, b]) => (
-              <AssetRow key={symbol} balances={b} symbol={symbol} locked />
-            ))}
-          </BalancesGroup>
-        )}
+        <BalancesGroup label="Available" fiatAmount={totalAvailable}>
+          {available.map(([symbol, b]) => (
+            <AssetRow key={symbol} balances={b} symbol={symbol} />
+          ))}
+        </BalancesGroup>
+        <BalancesGroup
+          label={
+            <span>
+              Locked <SectionLockIcon />
+            </span>
+          }
+          fiatAmount={totalLocked}
+        >
+          {locked.map(([symbol, b]) => (
+            <AssetRow key={symbol} balances={b} symbol={symbol} locked />
+          ))}
+        </BalancesGroup>
       </Box>
     </FadeIn>
   )
