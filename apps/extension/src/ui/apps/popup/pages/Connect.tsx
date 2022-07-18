@@ -13,6 +13,7 @@ import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
 import useCurrentAuthorisationRequest from "@ui/hooks/useCurrentAuthorisationRequest"
 import { useCallback } from "react"
 import styled from "styled-components"
+
 import Layout, { Content, Footer, Header } from "../Layout"
 
 const AccountItem = ({ address, value = 1, onChange, className }: any) => (
@@ -91,8 +92,7 @@ const Connect = ({ className, onSuccess }: any) => {
     reject,
     ignore,
     ethereum,
-    chainId,
-    setChainId,
+    isMissingEthAccount,
   } = useCurrentAuthorisationRequest({
     onError: (msg) => window.close(),
     onRejection: (msg) => window.close(),
@@ -141,7 +141,7 @@ const Connect = ({ className, onSuccess }: any) => {
             />
           ))}
 
-          {accounts.length === 0 && (
+          {isMissingEthAccount && (
             <NoEthAccountWarning
               onIgnoreClick={handleNoEthAccountClose(false)}
               onAddAccountClick={handleNoEthAccountClose(true)}
