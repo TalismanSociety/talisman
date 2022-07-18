@@ -77,7 +77,7 @@ const getSize = (size?: string | number): string | undefined => {
 
 const getBorderRadius = (props: BoxProps): string => {
   if (props.borderradius === undefined) return ""
-  if (typeof props.borderradius === "string") return props.borderradius
+  if (typeof props.borderradius === "string") return BorderRadius[props.borderradius]
   if (typeof props.borderradius === "boolean")
     return props.borderradius ? BorderRadius.normal : "none"
   return BorderRadius[props.borderradius]

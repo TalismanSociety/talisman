@@ -171,9 +171,11 @@ const AssetRow = ({ balances, symbol }: AssetRowProps) => {
             <Box fontsize="normal" bold fg="foreground" flex inline align="center" gap={0.6}>
               {token.symbol} {isFetching && <FetchingIcon data-spin />}
             </Box>
-            <div>
-              <NetworksLogoStack networkIds={networkIds} />
-            </div>
+            {!!networkIds.length && (
+              <div>
+                <NetworksLogoStack networkIds={networkIds} />
+              </div>
+            )}
           </Box>
         </Box>
       </td>

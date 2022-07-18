@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
+import { useSelectedAccount } from "../SelectedAccountContext"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
@@ -34,7 +35,7 @@ const AssetButton = styled.button`
   border: none;
   display: flex;
   align-items: center;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-tiny);
 
   background: var(--color-background-muted);
   .logo-stack .chain-logo {
@@ -176,6 +177,7 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
 
 // TODO also have acounts and network filter as props ?
 export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
+  const { account } = useSelectedAccount()
   // group by token (symbol)
   const { symbolBalances, skeletons } = usePortfolioSymbolBalances(balances)
 
@@ -210,6 +212,18 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
           {available.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} symbol={symbol} />
           ))}
+          {!available.length && (
+            <Box
+              bg="background-muted"
+              fg="mid"
+              padding={2}
+              borderradius="tiny"
+              fontsize="xsmall"
+              textalign="center"
+            >
+              There are no available balances{account ? " for this account" : ""}.
+            </Box>
+          )}
         </BalancesGroup>
         <BalancesGroup
           label={
@@ -222,6 +236,18 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
           {locked.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} symbol={symbol} locked />
           ))}
+          {!locked.length && (
+            <Box
+              bg="background-muted"
+              fg="mid"
+              padding={2}
+              borderradius="tiny"
+              fontsize="xsmall"
+              textalign="center"
+            >
+              There are no locked balances{account ? " for this account" : ""}.
+            </Box>
+          )}
         </BalancesGroup>
       </Box>
     </FadeIn>

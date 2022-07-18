@@ -9,6 +9,7 @@ import { useAddressFormatterModal } from "../Account/AddressFormatterModal"
 const PillButton = styled.button`
   background: rgba(var(--color-mid-raw), 0.15);
   border-radius: var(--border-radius);
+  color: var(--color-mid);
   :hover {
     color: var(--color-foreground);
     background: var(--color-background-muted-2x);
@@ -23,6 +24,7 @@ const PillButton = styled.button`
   svg {
     width: 1.4rem;
     height: 1.4rem;
+    transition: none;
   }
 `
 
@@ -66,9 +68,6 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
               Copy address <CopyIcon />
             </PillButton>
           )}
-          <PillButton onClick={handleBuyClick}>
-            Buy {symbol} <CreditCardIcon />
-          </PillButton>
         </Box>
       </Box>
     </Box>
