@@ -37,14 +37,14 @@ const Table = styled.table`
     }
 
     background: var(--color-background-muted);
-    .logo-stack .chain-logo {
-      border: 1px solid var(--color-background-muted);
+    .logo-stack .logo-circle {
+      border-color: var(--color-background-muted);
     }
 
     :not(.skeleton):hover {
       background: var(--color-background-muted-3x);
-      .logo-stack .chain-logo {
-        border: 1px solid var(--color-background-muted-3x);
+      .logo-stack .logo-circle {
+        border-color: var(--color-background-muted-3x);
       }
     }
 

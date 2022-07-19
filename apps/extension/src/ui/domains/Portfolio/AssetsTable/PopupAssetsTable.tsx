@@ -55,8 +55,8 @@ const AssetButton = styled.button`
   padding: 0 0.2rem;
 
   background: var(--color-background-muted);
-  .logo-stack .chain-logo {
-    border: 1px solid var(--color-background-muted);
+  .logo-stack .logo-circle {
+    border-color: var(--color-background-muted);
   }
 
   :not(.skeleton) {
@@ -65,8 +65,8 @@ const AssetButton = styled.button`
 
   :not(.skeleton):hover {
     background: var(--color-background-muted-3x);
-    .logo-stack .chain-logo {
-      border: 1px solid var(--color-background-muted-3x);
+    .logo-stack .logo-circle {
+      border-color: var(--color-background-muted-3x);
     }
   }
 `

@@ -38,10 +38,12 @@ type BoxProps = {
   flex?: boolean
   column?: boolean
   inline?: boolean
+  inlineBlock?: boolean
   padding?: CSSProperties["padding"]
   margin?: CSSProperties["margin"]
   border?: CSSProperties["border"]
   borderradius?: boolean | keyof typeof BorderRadius
+  circle?: boolean
 
   // transitions
   transition?: boolean
@@ -65,6 +67,7 @@ type BoxProps = {
 }
 
 const getDisplay = (props: BoxProps): CSSProperties["display"] => {
+  if (props.inlineBlock) return "inline-block"
   if (props.flex) return props.inline ? "inline-flex" : "flex"
   return props.inline ? "inline" : "block"
 }
@@ -76,6 +79,7 @@ const getSize = (size?: string | number): string | undefined => {
 }
 
 const getBorderRadius = (props: BoxProps): string => {
+  if (props.circle) return "50%"
   if (props.borderradius === undefined) return ""
   if (typeof props.borderradius === "string") return BorderRadius[props.borderradius]
   if (typeof props.borderradius === "boolean")
