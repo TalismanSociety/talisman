@@ -106,8 +106,9 @@ export const NetworkPicker = () => {
       switch (type) {
         case useCombobox.stateChangeTypes.InputKeyDownEnter:
         case useCombobox.stateChangeTypes.InputBlur: {
-          const visibleItems = items.filter(filterItems(state.inputValue))
-          const itemToSelect = state.isOpen && state.inputValue ? visibleItems[0] : undefined
+          const itemToSelect =
+            state.isOpen && state.inputValue ? items[state.highlightedIndex] : undefined
+
           return {
             ...changes,
             inputValue: itemToSelect ? itemToString(itemToSelect) : "",
