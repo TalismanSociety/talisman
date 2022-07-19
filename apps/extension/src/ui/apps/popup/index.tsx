@@ -1,5 +1,13 @@
 import { isEthereumRequest } from "@core/util/isEthereumRequest"
 import { api } from "@ui/api"
+import {
+  AccountRemoveModal,
+  AccountRemoveModalProvider,
+} from "@ui/domains/Account/AccountRemoveModal"
+import {
+  AccountRenameModal,
+  AccountRenameModalProvider,
+} from "@ui/domains/Account/AccountRenameModal"
 import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAuthRequests } from "@ui/hooks/useAuthRequests"
@@ -90,25 +98,31 @@ const Popup = () => {
 
   return (
     <SelectedAccountProvider isPopup>
-      <CurrentSiteProvider>
-        <NavigationProvider>
-          <AddressFormatterModalProvider>
-            <Routes>
-              <Route path="/" element={<Account />}></Route>
-              <Route path="portfolio/*" element={<Portfolio />}></Route>
-              <Route path="auth" element={<Connect />}></Route>
-              <Route path="sign/eth/:id" element={<EthereumSignRequest />}></Route>
-              <Route path="sign/:id" element={<SubstrateSignRequest />}></Route>
-              <Route path="metadata" element={<Metadata />}></Route>
-              <Route path="eth-network-add" element={<AddEthereumNetwork />}></Route>
-              <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
-              {/* Not used for now */}
-              {/* <Route path="tx/:id" element={<Transaction />}></Route> */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </AddressFormatterModalProvider>
-        </NavigationProvider>
-      </CurrentSiteProvider>
+      <AccountRemoveModalProvider>
+        <AccountRenameModalProvider>
+          <CurrentSiteProvider>
+            <NavigationProvider>
+              <AddressFormatterModalProvider>
+                <Routes>
+                  <Route path="/" element={<Account />}></Route>
+                  <Route path="portfolio/*" element={<Portfolio />}></Route>
+                  <Route path="auth" element={<Connect />}></Route>
+                  <Route path="sign/eth/:id" element={<EthereumSignRequest />}></Route>
+                  <Route path="sign/:id" element={<SubstrateSignRequest />}></Route>
+                  <Route path="metadata" element={<Metadata />}></Route>
+                  <Route path="eth-network-add" element={<AddEthereumNetwork />}></Route>
+                  <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
+                  {/* Not used for now */}
+                  {/* <Route path="tx/:id" element={<Transaction />}></Route> */}
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+                <AccountRenameModal />
+                <AccountRemoveModal />
+              </AddressFormatterModalProvider>
+            </NavigationProvider>
+          </CurrentSiteProvider>
+        </AccountRenameModalProvider>
+      </AccountRemoveModalProvider>
     </SelectedAccountProvider>
   )
 }

@@ -39,6 +39,12 @@ export const [AccountRemoveModalProvider, useAccountRemoveModal] = provideContex
 export const AccountRemoveModal = () => {
   const { account, close, isOpen } = useAccountRemoveModal()
 
+  // persist in state so text doesn't disappear upon deletion
+  const [accountName, setAccountName] = useState<string>()
+  useEffect(() => {
+    if (account) setAccountName(account.name)
+  }, [account])
+
   const handleConfirm = useCallback(async () => {
     if (!account) return
     await api.accountForget(account?.address)
@@ -47,7 +53,7 @@ export const AccountRemoveModal = () => {
 
   return (
     <Modal open={isOpen} onClose={close}>
-      <ModalDialog title="Remove account" onClose={close}>
+      <ModalDialog title={`Remove account ${accountName ?? ""}`} onClose={close}>
         <StyledDialog
           icon={<IconAlert />}
           title="Are you sure?"

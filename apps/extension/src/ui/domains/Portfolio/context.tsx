@@ -87,7 +87,7 @@ const useAllNetworks = (type?: AccountAddressType) => {
   return networks
 }
 
-// allows sharing the network filter between the 2 pages
+// allows sharing the network filter between pages
 const usePortfolioProvider = ({ balances: allBalances }: { balances: Balances }) => {
   const { account } = useSelectedAccount()
   const { chains, tokens, evmNetworks, hydrate } = usePortfolioCommonData()
