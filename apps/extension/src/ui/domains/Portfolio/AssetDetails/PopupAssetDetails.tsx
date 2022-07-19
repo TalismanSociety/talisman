@@ -1,4 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
+import { BalanceFormatter, Balances, LockedBalance } from "@core/domains/balances/types"
 import { encodeAnyAddress, planckToTokens } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
@@ -19,6 +19,8 @@ import styled from "styled-components"
 
 import StyledAssetLogo from "../../Asset/Logo"
 import { NoTokensMessage } from "../NoTokensMessage"
+import { getBalanceLockTypeTitle } from "./getBalanceLockTypeTitle"
+import { useAssetDetails } from "./useAssetDetails"
 
 const SmallIconButton = styled(IconButton)`
   height: 1.2rem;
@@ -63,6 +65,7 @@ const FetchingIndicator = styled(LoaderIcon)`
 type AssetRowProps = {
   balances: Balances
   symbol: string
+  locks?: LockedBalance[]
 }
 
 const ChainTokenBlock = styled(Box)`
@@ -76,7 +79,7 @@ const ChainTokenBlock = styled(Box)`
   }
 `
 
-const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
+const ChainTokenBalances = ({ balances, symbol, locks = [] }: AssetRowProps) => {
   const { token, summary } = useTokenBalancesSummary(balances, symbol)
 
   const detailRows = useMemo(
@@ -89,13 +92,15 @@ const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
               tokens: summary.availableTokens,
               fiat: summary.availableFiat,
             },
-            {
-              key: "frozen",
-              title: "Frozen",
-              tokens: summary.frozenTokens,
-              fiat: summary.frozenFiat,
+            ...locks.map(({ type, amount }) => ({
+              key: type,
+              title: getBalanceLockTypeTitle(type, locks),
+              tokens: BigInt(amount),
+              fiat: token?.rates
+                ? new BalanceFormatter(amount, token?.decimals, token.rates).fiat("usd")
+                : null,
               locked: true,
-            },
+            })),
             {
               key: "reserved",
               title: "Reserved",
@@ -105,7 +110,7 @@ const ChainTokenBalances = ({ balances, symbol }: AssetRowProps) => {
             },
           ].filter((row) => row.tokens > 0)
         : [],
-    [summary]
+    [locks, summary, token?.decimals, token?.rates]
   )
 
   const { chain, evmNetwork } = balances.sorted[0]
@@ -200,38 +205,16 @@ type AssetsTableProps = {
 }
 
 export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
-  const balancesToDisplay = useDisplayBalances(balances)
-  const { hydrate, isLoading } = usePortfolio()
+  const { balancesByChain, lockedByChain, isLoading } = useAssetDetails(balances)
 
-  const rows = useMemo(() => {
-    const chainIds = [
-      ...new Set(balancesToDisplay.sorted.map((b) => b.chainId ?? b.evmNetworkId)),
-    ].filter((cid) => cid !== undefined)
-
-    return Object.entries(
-      chainIds.reduce(
-        (acc, chainId) => ({
-          ...acc,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          [chainId!]: new Balances(
-            balancesToDisplay.sorted.filter(
-              (b) => b.chainId === chainId || b.evmNetworkId === chainId
-            ),
-            hydrate
-          ),
-        }),
-        {} as Record<string | number, Balances>
-      )
-    )
-  }, [balancesToDisplay.sorted, hydrate])
-
+  const rows = Object.entries(balancesByChain)
   if (!rows.length) return isLoading ? null : <NoTokensMessage symbol={symbol} />
 
   return (
     <FadeIn>
       <Box flex column gap={1.6}>
         {rows.map(([key, bal], i, rows) => (
-          <ChainTokenBalances key={key} symbol={symbol} balances={bal} />
+          <ChainTokenBalances key={key} symbol={symbol} balances={bal} locks={lockedByChain[key]} />
         ))}
       </Box>
     </FadeIn>

@@ -8,7 +8,12 @@ import {
   ModalTypes,
   OnboardedType,
 } from "@core/domains/app/types"
-import { BalancesUpdate, RequestBalance } from "@core/domains/balances/types"
+import {
+  BalancesUpdate,
+  RequestBalance,
+  RequestBalanceLocks,
+  ResponseBalanceLocks,
+} from "@core/domains/balances/types"
 import { BalanceStorage } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
 import {
@@ -100,6 +105,7 @@ export default interface MessageTypes {
     tokenId,
     address,
   }: RequestBalance) => Promise<BalanceStorage>
+  getBalanceLocks: ({ chainId, addresses }: RequestBalanceLocks) => Promise<ResponseBalanceLocks>
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,

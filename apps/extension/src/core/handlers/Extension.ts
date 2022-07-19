@@ -6,6 +6,7 @@ import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
 import {
   Balances,
   RequestBalance,
+  RequestBalanceLocks,
   RequestBalancesByParamsSubscribe,
 } from "@core/domains/balances/types"
 import { EthHandler } from "@core/domains/ethereum"
@@ -21,6 +22,7 @@ import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 
+import { getBalanceLocks } from "./helpers"
 import { createSubscription, unsubscribe } from "./subscriptions"
 
 export default class Extension extends ExtensionHandler {
@@ -94,6 +96,10 @@ export default class Extension extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(balances.get)":
         return this.stores.balances.getBalance(request as RequestBalance)
+
+      case "pri(balances.locks.get)": {
+        return getBalanceLocks(request as RequestBalanceLocks)
+      }
 
       case "pri(balances.subscribe)":
         return this.stores.balances.subscribe(id, port)

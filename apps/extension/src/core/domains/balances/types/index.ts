@@ -24,9 +24,23 @@ export interface RequestBalancesByParamsSubscribe {
   addressesByChain: AddressesByChain
 }
 
+export type BalanceLockType = "democracy" | "staking" | "vesting" | "other"
+export type LockedBalance = {
+  type: BalanceLockType
+  amount: string //planck
+}
+
+export type RequestBalanceLocks = {
+  chainId: ChainId
+  addresses: Address[]
+}
+
+export type ResponseBalanceLocks = Record<Address, LockedBalance[]>
+
 export interface BalancesMessages {
   // balance message signatures
   "pri(balances.get)": [RequestBalance, BalanceStorage]
+  "pri(balances.locks.get)": [RequestBalanceLocks, ResponseBalanceLocks]
   "pri(balances.subscribe)": [null, boolean, boolean]
   "pri(balances.byparams.subscribe)": [RequestBalancesByParamsSubscribe, boolean, BalancesUpdate]
 }
