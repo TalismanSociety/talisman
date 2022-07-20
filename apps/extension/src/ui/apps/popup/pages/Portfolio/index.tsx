@@ -1,8 +1,6 @@
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
-import AnalyticsAlertPopupDrawer from "@ui/domains/Settings/Analytics/AnalyticsAlert"
-import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import Site from "@ui/domains/Site"
-import { Suspense } from "react"
+import { Suspense, lazy } from "react"
 import { Route, Routes } from "react-router-dom"
 
 import { NavigationMenuButton } from "../../components/Navigation/NavigationMenuButton"
@@ -10,6 +8,11 @@ import Layout, { Content, Header } from "../../Layout"
 import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
 import { PortfolioAssets } from "./PortfolioAssets"
+
+const BraveWarningPopupBanner = lazy(
+  () => import("@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner")
+)
+const AnalyticsAlert = lazy(() => import("@ui/domains/Settings/Analytics/AnalyticsAlert"))
 
 export const Portfolio = () => {
   return (
@@ -27,7 +30,7 @@ export const Portfolio = () => {
             <BraveWarningPopupBanner />
           </Suspense>
           <Suspense fallback={null}>
-            <AnalyticsAlertPopupDrawer />
+            <AnalyticsAlert />
           </Suspense>
         </Content>
       </Layout>
