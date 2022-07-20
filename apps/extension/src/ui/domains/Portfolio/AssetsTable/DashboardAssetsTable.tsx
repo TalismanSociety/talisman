@@ -204,7 +204,6 @@ type AssetsTableProps = {
   balances: Balances
 }
 
-// TODO also have acounts and network filter as props ?
 export const DashboardAssetsTable = ({ balances }: AssetsTableProps) => {
   // group by token (symbol)
   const { symbolBalances, skeletons } = usePortfolioSymbolBalances(balances)

@@ -270,7 +270,6 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
   )
 }
 
-// TODO also have acounts and network filter as props ?
 export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   const { account } = useSelectedAccount()
   // group by token (symbol)
@@ -286,6 +285,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
         ),
       ])
       .filter(([, b]) => b.sorted.length > 0)
+
     const locked = symbolBalances
       .map<[string, Balances]>(([symbol, balance]) => [
         symbol,
