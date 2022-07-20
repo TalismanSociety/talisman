@@ -21,6 +21,7 @@ import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { getBalanceLockTypeTitle } from "./getBalanceLockTypeTitle"
 import { useAssetDetails } from "./useAssetDetails"
 import { useBalanceLocks } from "./useBalanceLocks"
+import { useChainTokenBalances } from "./useChainTokenBalances"
 
 const SmallIconButton = styled(IconButton)`
   height: 1.2rem;
@@ -88,86 +89,8 @@ const ChainTokenBlock = styled(Box)`
 `
 
 const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
-  const { token, summary, tokenBalances } = useTokenBalancesSummary(balances, symbol)
-
-  const addressesWithLocks = useMemo(
-    () => [
-      ...new Set(
-        tokenBalances
-          .filter((b) => b.frozen.planck > BigInt(0))
-          .map((b) => b.address)
-          .filter(Boolean) as Address[]
-      ),
-    ],
-    [tokenBalances]
-  )
-
-  // query only locks for addresses that have frozen balance
-  const {
-    consolidatedLocks: locks,
-    isLoading,
-    error,
-  } = useBalanceLocks({
-    chainId: chainId as string,
-    addresses: addressesWithLocks,
-  })
-
-  const detailRows: DetailRow[] = useMemo(
-    () =>
-      summary
-        ? ([
-            {
-              key: "available",
-              title: "Available",
-              tokens: summary.availableTokens,
-              fiat: summary.availableFiat,
-            },
-            ...locks.map(({ type, amount }) => ({
-              key: type,
-              title: getBalanceLockTypeTitle(type, locks),
-              tokens: BigInt(amount),
-              fiat: token?.rates
-                ? new BalanceFormatter(amount, token?.decimals, token.rates).fiat("usd")
-                : null,
-              locked: true,
-            })),
-            error && {
-              key: "frozen",
-              title: "Frozen",
-              tokens: summary.frozenTokens,
-              fiat: summary.frozenFiat,
-              locked: true,
-            },
-            {
-              key: "reserved",
-              title: "Reserved",
-              tokens: summary.reservedTokens,
-              fiat: summary.reservedFiat,
-              locked: true,
-            },
-          ].filter((row) => row && row.tokens > 0) as DetailRow[])
-        : [],
-    [error, locks, summary, token?.decimals, token?.rates]
-  )
-
-  const { chain, evmNetwork } = balances.sorted[0]
-  const networkType = useMemo(() => {
-    if (evmNetwork) return evmNetwork.isTestnet ? "Testnet" : "EVM blockchain"
-
-    if (chain) {
-      if (chain.isTestnet) return "Testnet"
-      return chain.paraId ? "Parachain" : "Relay chain"
-    }
-
-    return null
-  }, [chain, evmNetwork])
-
-  const isFetching = useMemo(
-    () => isLoading || balances.sorted.some((b) => b.status === "cache"),
-    [balances, isLoading]
-  )
-
-  const chainOrNetwork = chain || evmNetwork
+  const { chainOrNetwork, summary, token, detailRows, evmNetwork, chain, isFetching, networkType } =
+    useChainTokenBalances({ chainId, balances, symbol })
 
   // wait for data to load
   if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
