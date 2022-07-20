@@ -79,8 +79,8 @@ export const NetworksLogoStackMore = ({ networks }: { networks: PortfolioNetwork
 
 type Props = { networkIds?: (string | number)[]; className?: string; max?: number }
 
-export const NetworksLogoStack = ({ networkIds, className, max = 1 }: Props) => {
-  const networks = usePortfolioNetworks(networkIds)
+export const NetworksLogoStack = ({ networkIds, className, max = 4 }: Props) => {
+  const { networks } = usePortfolioNetworks(networkIds)
 
   const { visibleNetworks, moreNetworks } = useMemo(() => {
     return {

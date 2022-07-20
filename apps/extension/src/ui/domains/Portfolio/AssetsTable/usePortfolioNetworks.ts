@@ -29,6 +29,13 @@ const getNetworkLogoId = (
   return undefined
 }
 
+export type PortfolioNetwork = {
+  id: string | number
+  logoId?: string | number | undefined
+  label: string | null
+  type: string
+}
+
 const getPortfolioNetwork = (
   id: string | number,
   chains: Chain[] | undefined,
@@ -37,31 +44,23 @@ const getPortfolioNetwork = (
   const chain = chains?.find((c) => c.id === id)
   const evmNetwork = evmNetworks?.find((n) => n.id === id)
 
-  return {
+  const network: PortfolioNetwork = {
     id,
     ...getNetworkInfo({ chain, evmNetwork }),
     logoId: getNetworkLogoId(id, chains, evmNetworks),
   }
+  return network
 }
 
-export type PortfolioNetwork = {
-  id: string | number
-  logoId?: string | number | undefined
-  label: string | null
-  type: string
-}
-
-export const usePortfolioNetworks = (ids: (string | number)[] | undefined): PortfolioNetwork[] => {
+export const usePortfolioNetworks = (ids: (string | number)[] | undefined) => {
   const { chains, evmNetworks } = usePortfolio()
 
   const networks = useMemo(
-    () =>
-      sortBy(ids?.map((id) => getPortfolioNetwork(id, chains, evmNetworks)) ?? [], [
-        "label",
-        "type",
-      ]),
+    () => ids?.map((id) => getPortfolioNetwork(id, chains, evmNetworks)) ?? [],
     [chains, evmNetworks, ids]
   )
 
-  return networks
+  const sorted = useMemo(() => sortBy(networks, ["label", "type"]), [networks])
+
+  return { networks, sorted }
 }
