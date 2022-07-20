@@ -1,6 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
 import { Box } from "@talisman/components/Box"
-import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -96,7 +95,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
 })
 
 export const PortfolioAssets = () => {
-  const { balances } = usePortfolio()
+  const { networkBalances } = usePortfolio()
 
-  return <PageContent balances={balances} />
+  return <PageContent balances={networkBalances} />
 }

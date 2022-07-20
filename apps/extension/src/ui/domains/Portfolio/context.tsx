@@ -101,7 +101,7 @@ const usePortfolioProvider = ({ balances: allBalances }: { balances: Balances })
   const networks = useAllNetworks(accountType)
   const [networkFilter, setNetworkFilter] = useState<NetworkOption>()
 
-  const balances = useMemo(() => {
+  const networkBalances = useMemo(() => {
     if (!networkFilter) return allBalances
     const { chainId, evmNetworkId } = networkFilter
     const filtered = allBalances.sorted.filter(
@@ -118,7 +118,7 @@ const usePortfolioProvider = ({ balances: allBalances }: { balances: Balances })
     networks,
     networkFilter,
     setNetworkFilter,
-    balances,
+    networkBalances,
     chains,
     tokens,
     evmNetworks,

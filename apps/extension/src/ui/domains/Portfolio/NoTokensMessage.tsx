@@ -41,10 +41,6 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
     open(account.address)
   }, [account, open])
 
-  const handleBuyClick = useCallback(() => {
-    window.open("https://app.talisman.xyz", "_blank")
-  }, [])
-
   return (
     <Box
       fg="mid"

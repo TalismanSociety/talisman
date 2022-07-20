@@ -120,7 +120,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
 })
 
 export const PortfolioAssets = () => {
-  const { balances } = usePortfolio()
+  const { networkBalances } = usePortfolio()
 
-  return <PageContent balances={balances} />
+  return <PageContent balances={networkBalances} />
 }

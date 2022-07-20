@@ -3,6 +3,7 @@ import { Balance, Balances } from "@core/domains/balances/types"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useMemo } from "react"
 
+// TODO default tokens should be controlled from chaindata
 const shouldDisplayBalance = (balance: Balance, account?: AccountJsonAny) => {
   return (
     balance.total.planck > 0 ||

@@ -1,4 +1,5 @@
-import { BalanceFormatter, Balances, LockedBalance } from "@core/domains/balances/types"
+import { BalanceFormatter, BalanceLockType, Balances } from "@core/domains/balances/types"
+import { Address } from "@core/types/base"
 import { encodeAnyAddress, planckToTokens } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
@@ -19,6 +20,7 @@ import { NoTokensMessage } from "../NoTokensMessage"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { getBalanceLockTypeTitle } from "./getBalanceLockTypeTitle"
 import { useAssetDetails } from "./useAssetDetails"
+import { useBalanceLocks } from "./useBalanceLocks"
 
 const SmallIconButton = styled(IconButton)`
   height: 1.2rem;
@@ -61,9 +63,17 @@ const FetchingIndicator = styled(LoaderIcon)`
 `
 
 type AssetRowProps = {
+  chainId: string | number
   balances: Balances
   symbol: string
-  locks?: LockedBalance[]
+}
+
+type DetailRow = {
+  key: BalanceLockType
+  title: string
+  tokens: bigint
+  fiat: number | null
+  locked: boolean
 }
 
 const ChainTokenBlock = styled(Box)`
@@ -77,13 +87,35 @@ const ChainTokenBlock = styled(Box)`
   }
 `
 
-const ChainTokenBalances = ({ balances, symbol, locks = [] }: AssetRowProps) => {
-  const { token, summary } = useTokenBalancesSummary(balances, symbol)
+const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
+  const { token, summary, tokenBalances } = useTokenBalancesSummary(balances, symbol)
 
-  const detailRows = useMemo(
+  const addressesWithLocks = useMemo(
+    () => [
+      ...new Set(
+        tokenBalances
+          .filter((b) => b.frozen.planck > BigInt(0))
+          .map((b) => b.address)
+          .filter(Boolean) as Address[]
+      ),
+    ],
+    [tokenBalances]
+  )
+
+  // query only locks for addresses that have frozen balance
+  const {
+    consolidatedLocks: locks,
+    isLoading,
+    error,
+  } = useBalanceLocks({
+    chainId: chainId as string,
+    addresses: addressesWithLocks,
+  })
+
+  const detailRows: DetailRow[] = useMemo(
     () =>
       summary
-        ? [
+        ? ([
             {
               key: "available",
               title: "Available",
@@ -99,6 +131,13 @@ const ChainTokenBalances = ({ balances, symbol, locks = [] }: AssetRowProps) => 
                 : null,
               locked: true,
             })),
+            error && {
+              key: "frozen",
+              title: "Frozen",
+              tokens: summary.frozenTokens,
+              fiat: summary.frozenFiat,
+              locked: true,
+            },
             {
               key: "reserved",
               title: "Reserved",
@@ -106,9 +145,9 @@ const ChainTokenBalances = ({ balances, symbol, locks = [] }: AssetRowProps) => 
               fiat: summary.reservedFiat,
               locked: true,
             },
-          ].filter((row) => row.tokens > 0)
+          ].filter((row) => row && row.tokens > 0) as DetailRow[])
         : [],
-    [locks, summary, token?.decimals, token?.rates]
+    [error, locks, summary, token?.decimals, token?.rates]
   )
 
   const { chain, evmNetwork } = balances.sorted[0]
@@ -124,8 +163,8 @@ const ChainTokenBalances = ({ balances, symbol, locks = [] }: AssetRowProps) => 
   }, [chain, evmNetwork])
 
   const isFetching = useMemo(
-    () => balances.sorted.some((b) => b.status === "cache"),
-    [balances.sorted]
+    () => isLoading || balances.sorted.some((b) => b.status === "cache"),
+    [balances, isLoading]
   )
 
   const chainOrNetwork = chain || evmNetwork
@@ -203,7 +242,7 @@ type AssetsTableProps = {
 }
 
 export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
-  const { balancesByChain, lockedByChain, isLoading } = useAssetDetails(balances)
+  const { balancesByChain, isLoading } = useAssetDetails(balances)
 
   const rows = Object.entries(balancesByChain)
   if (!rows.length) return isLoading ? null : <NoTokensMessage symbol={symbol} />
@@ -211,8 +250,8 @@ export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   return (
     <FadeIn>
       <Box flex column gap={1.6}>
-        {rows.map(([key, bal], i, rows) => (
-          <ChainTokenBalances key={key} symbol={symbol} balances={bal} locks={lockedByChain[key]} />
+        {rows.map(([chainId, bal]) => (
+          <ChainTokenBalances key={chainId} chainId={chainId} symbol={symbol} balances={bal} />
         ))}
       </Box>
     </FadeIn>

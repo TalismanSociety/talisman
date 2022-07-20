@@ -54,10 +54,14 @@ export const useTokenBalancesSummary = (balances: Balances, symbol: string) => {
     [chains, symbol, tokens]
   )
 
-  const summary = useMemo(() => {
-    if (!balances.sorted.length) return DEFAULT_SUMMARY
+  const tokenBalances = useMemo(
+    () => balances.sorted.filter((b) => b.token?.symbol === symbol),
+    [balances, symbol]
+  )
 
-    const tokenBalances = balances.sorted.filter((b) => b.token?.symbol === symbol)
+  const summary = useMemo(() => {
+    if (!tokenBalances.length) return DEFAULT_SUMMARY
+
     const fiatDefaultValue = tokenBalances.some((b) => b.token?.rates) ? 0 : null
 
     // sum is only available for fiat, so we sum ourselves both tokens & fiat
@@ -109,7 +113,7 @@ export const useTokenBalancesSummary = (balances: Balances, symbol: string) => {
     )
 
     return summary
-  }, [balances, symbol])
+  }, [tokenBalances])
 
-  return { token, summary }
+  return { token, summary, tokenBalances }
 }

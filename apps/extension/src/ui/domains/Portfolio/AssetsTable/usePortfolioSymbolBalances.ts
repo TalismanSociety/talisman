@@ -3,14 +3,11 @@ import { useMemo } from "react"
 
 import { usePortfolio } from "../context"
 import { useSelectedAccount } from "../SelectedAccountContext"
-import { useDisplayBalances } from "../useDisplayBalances"
 
 export const usePortfolioSymbolBalances = (balances: Balances) => {
-  const balancesToDisplay = useDisplayBalances(balances)
-
   // group by token (symbol)
   const symbolBalances = useMemo(() => {
-    const groupedByToken = balancesToDisplay.sorted.reduce((acc, b) => {
+    const groupedByToken = balances.sorted.reduce((acc, b) => {
       if (!b.token) return acc
       const key = b.token.symbol
       if (acc[key]) acc[key].push(b)
@@ -18,14 +15,14 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
       return acc
     }, {} as Record<string, Balance[]>)
     const balancesByToken = Object.entries(groupedByToken).reduce(
-      (acc, [key, balances]) => ({
+      (acc, [key, tokenBalances]) => ({
         ...acc,
-        [key]: new Balances(balances),
+        [key]: new Balances(tokenBalances),
       }),
       {} as Record<string, Balances>
     )
     return Object.entries(balancesByToken)
-  }, [balancesToDisplay.sorted])
+  }, [balances.sorted])
 
   const { account, accounts } = useSelectedAccount()
   const { networkFilter } = usePortfolio()

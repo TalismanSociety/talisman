@@ -1,4 +1,10 @@
-import { BalanceFormatter, Balances, LockedBalance } from "@core/domains/balances/types"
+import {
+  BalanceFormatter,
+  BalanceLockType,
+  Balances,
+  LockedBalance,
+} from "@core/domains/balances/types"
+import { Address } from "@core/types/base"
 import { encodeAnyAddress } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
@@ -17,6 +23,7 @@ import { NoTokensMessage } from "../NoTokensMessage"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { getBalanceLockTypeTitle } from "./getBalanceLockTypeTitle"
 import { useAssetDetails } from "./useAssetDetails"
+import { useBalanceLocks } from "./useBalanceLocks"
 
 const Table = styled.table`
   border-spacing: 0;
@@ -119,32 +126,66 @@ const FetchingIndicator = styled(LoaderIcon)`
 `
 
 type AssetRowProps = {
+  chainId: string | number
   balances: Balances
   symbol: string
-  locks?: LockedBalance[]
 }
 
-const ChainTokenBalances = ({ balances, symbol, locks = [] }: AssetRowProps) => {
-  const { token, summary } = useTokenBalancesSummary(balances, symbol)
+type DetailRow = {
+  key: BalanceLockType
+  title: string
+  tokens: bigint
+  fiat: number | null
+  locked: boolean
+}
 
-  const detailRows = useMemo(() => {
+const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
+  const { token, summary, tokenBalances } = useTokenBalancesSummary(balances, symbol)
+
+  const addressesWithLocks = useMemo(
+    () => [
+      ...new Set(
+        tokenBalances
+          .filter((b) => b.frozen.planck > BigInt(0))
+          .map((b) => b.address)
+          .filter(Boolean) as Address[]
+      ),
+    ],
+    [tokenBalances]
+  )
+
+  // query only locks for addresses that have frozen balance
+  const { consolidatedLocks, isLoading, error } = useBalanceLocks({
+    chainId: chainId as string,
+    addresses: addressesWithLocks,
+  })
+
+  const detailRows: DetailRow[] = useMemo(() => {
     return summary
-      ? [
+      ? ([
           {
             key: "available",
             title: "Available",
             tokens: summary.availableTokens,
             fiat: summary.availableFiat,
+            locked: false,
           },
-          ...locks.map(({ type, amount }) => ({
+          ...consolidatedLocks.map(({ type, amount }) => ({
             key: type,
-            title: getBalanceLockTypeTitle(type, locks),
+            title: getBalanceLockTypeTitle(type, consolidatedLocks),
             tokens: BigInt(amount),
             fiat: token?.rates
               ? new BalanceFormatter(amount, token?.decimals, token.rates).fiat("usd")
               : null,
             locked: true,
           })),
+          error && {
+            key: "frozen",
+            title: "Frozen",
+            tokens: summary.frozenTokens,
+            fiat: summary.frozenFiat,
+            locked: true,
+          },
           {
             key: "reserved",
             title: "Reserved",
@@ -152,9 +193,9 @@ const ChainTokenBalances = ({ balances, symbol, locks = [] }: AssetRowProps) => 
             fiat: summary.reservedFiat,
             locked: true,
           },
-        ].filter((row) => row.tokens > 0)
+        ].filter((row) => row && row.tokens > 0) as DetailRow[])
       : []
-  }, [locks, summary, token?.decimals, token?.rates])
+  }, [consolidatedLocks, error, summary, token?.decimals, token?.rates])
 
   const { chain, evmNetwork } = balances.sorted[0]
   const networkType = useMemo(() => {
@@ -169,8 +210,8 @@ const ChainTokenBalances = ({ balances, symbol, locks = [] }: AssetRowProps) => 
   }, [chain, evmNetwork])
 
   const isFetching = useMemo(
-    () => balances.sorted.some((b) => b.status === "cache"),
-    [balances.sorted]
+    () => balances.sorted.some((b) => b.status === "cache") || isLoading,
+    [balances, isLoading]
   )
 
   const chainOrNetwork = chain || evmNetwork
@@ -246,76 +287,7 @@ type AssetsTableProps = {
 }
 
 export const DashboardAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
-  const { balancesByChain, lockedByChain, isLoading } = useAssetDetails(balances)
-
-  // const balancesToDisplay = useDisplayBalances(balances)
-  // const { account, accounts } = useSelectedAccount()
-  // const { hydrate, isLoading } = usePortfolio()
-
-  // const chainIds = useMemo(
-  //   () =>
-  //     [...new Set(balancesToDisplay.sorted.map((b) => b.chainId ?? b.evmNetworkId))].filter(
-  //       (cid) => cid !== undefined
-  //     ),
-  //   [balancesToDisplay.sorted]
-  // )
-
-  // const addresses = useMemo(() => {
-  //   return account ? [account.address] : accounts.map((a) => a.address)
-  // }, [account, accounts])
-
-  // const balancesByChain = useMemo(() => {
-  //   return chainIds.reduce(
-  //     (acc, chainId) => ({
-  //       ...acc,
-  //       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  //       [chainId!]: new Balances(
-  //         balancesToDisplay.sorted.filter(
-  //           (b) => b.chainId === chainId || b.evmNetworkId === chainId
-  //         ),
-  //         hydrate
-  //       ),
-  //     }),
-  //     {} as Record<string | number, Balances>
-  //   )
-  // }, [balancesToDisplay.sorted, chainIds, hydrate])
-
-  // const [lockedByChain, setLockedByChain] = useState<Record<string, LockedBalance[]>>({})
-  // const [updateKey, setUpdateKey] = useState<string>()
-
-  // // query locks
-  // useEffect(() => {
-  //   if (!chainIds.length || !addresses.length) {
-  //     setLockedByChain({})
-  //     return
-  //   }
-
-  //   const substrateChainIds = chainIds.filter((cid) => typeof cid === "string") as string[]
-
-  //   // only update if there is no pending update
-  //   // note : balances update so frequently that sometimes it isn't sufficient to prevent identic calls
-  //   const callKey = `${addresses.join("-")}|${substrateChainIds.join}`
-  //   if (callKey === updateKey) return
-  //   setUpdateKey(callKey)
-
-  //   Promise.all(
-  //     substrateChainIds.map((chainId) => api.getBalanceLocks({ chainId, addresses }))
-  //   ).then((chainLocks) => {
-  //     const locks: Record<string, LockedBalance[]> = {}
-  //     substrateChainIds.forEach((chainId, index) => {
-  //       const allChainLocks = flatMap(Object.values(chainLocks[index]))
-  //       // regroup by type
-  //       const consolidated = allChainLocks.reduce<LockedBalance[]>((acc, lock) => {
-  //         const existing = acc.find((l) => l.type === lock.type)
-  //         if (existing) existing.amount = (BigInt(existing.amount) + BigInt(lock.amount)).toString()
-  //         else acc.push(lock)
-  //         return acc
-  //       }, [])
-  //       locks[chainId] = consolidated
-  //     })
-  //     setLockedByChain(locks)
-  //   })
-  // }, [addresses, chainIds, updateKey])
+  const { balancesByChain, isLoading } = useAssetDetails(balances)
 
   const rows = Object.entries(balancesByChain)
   if (rows.length === 0 && !isLoading) return <NoTokensMessage symbol={symbol} />
@@ -323,12 +295,17 @@ export const DashboardAssetDetails = ({ balances, symbol }: AssetsTableProps) =>
   return (
     <Table>
       <tbody>
-        {rows.map(([key, bal], i, rows) => (
-          <Fragment key={key}>
-            <ChainTokenBalances symbol={symbol} balances={bal} locks={lockedByChain[key]} />
+        {rows.map(([chainId, bal], i, rows) => (
+          <Fragment key={chainId}>
+            <ChainTokenBalances chainId={chainId} symbol={symbol} balances={bal} />
             {i < rows.length - 1 && <SpacerRow />}
           </Fragment>
         ))}
+        <tr>
+          <td></td>
+          <td width="30%"></td>
+          <td width="30%"></td>
+        </tr>
       </tbody>
     </Table>
   )
