@@ -41,13 +41,17 @@ const Button = styled.button`
 
 const AccountOptionContainer = styled.div`
   display: flex;
-  gap: 1.6rem;
+  align-items: center;
+  gap: 0.8rem;
   padding: 1rem;
   width: 100%;
   overflow: hidden;
   color: var(--color-mid);
 
   .ao-avatar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     .account-avatar {
       font-size: 4rem;
     }
@@ -156,7 +160,7 @@ const Container = styled.div<{ responsive?: boolean }>`
     z-index: 10;
     position: absolute;
     left: 0;
-    top: 6.4rem;
+    top: 6rem;
     width: 100%;
     overflow-x: hidden;
     overflow-y: auto;
@@ -262,7 +266,7 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
 
   return (
     <Container
-      className={(classNames(isOpen && "open", responsive && "responsive"), className)}
+      className={classNames(isOpen && "open", responsive && "responsive", className)}
       responsive={responsive}
     >
       <Button type="button" {...getToggleButtonProps()}>
