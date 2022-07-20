@@ -36,12 +36,14 @@ const Table = styled.table`
       cursor: pointer;
     }
 
-    background: var(--color-background-muted);
-    .logo-stack .logo-circle {
-      border-color: var(--color-background-muted);
+    td {
+      background: var(--color-background-muted);
+      .logo-stack .logo-circle {
+        border-color: var(--color-background-muted);
+      }
     }
 
-    :not(.skeleton):hover {
+    :not(.skeleton):hover td {
       background: var(--color-background-muted-3x);
       .logo-stack .logo-circle {
         border-color: var(--color-background-muted-3x);

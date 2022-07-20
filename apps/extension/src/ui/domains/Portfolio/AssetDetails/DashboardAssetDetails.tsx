@@ -26,11 +26,11 @@ const Table = styled.table`
   font-size: 1.6rem;
 
   > tbody {
-    > tr {
+    > tr.details td {
       background: var(--color-background-muted);
-      &.summary {
-        background: var(--color-background-muted-3x);
-      }
+    }
+    > tr.summary td {
+      background: var(--color-background-muted-3x);
     }
 
     > tr.start-row {
@@ -170,7 +170,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
       {detailRows
         .filter((row) => row.tokens > 0)
         .map((row, i, rows) => (
-          <tr key={row.key} className={classNames(rows.length === i + 1 && "stop-row")}>
+          <tr key={row.key} className={classNames("details", rows.length === i + 1 && "stop-row")}>
             <td className="al-main" valign="top">
               <AssetState title={row.title} render />
             </td>
