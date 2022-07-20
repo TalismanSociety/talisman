@@ -1,10 +1,9 @@
 import { Balances } from "@core/domains/balances"
-import { BalanceFormatter, BalanceLockType } from "@core/domains/balances/types"
+import { BalanceFormatter, BalanceLockType, LockedBalance } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
 import { useMemo } from "react"
 
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
-import { getBalanceLockTypeTitle } from "./getBalanceLockTypeTitle"
 import { useBalanceLocks } from "./useBalanceLocks"
 
 type DetailRow = {
@@ -19,6 +18,16 @@ type ChainTokenBalancesParams = {
   chainId: string | number
   balances: Balances
   symbol: string
+}
+
+const getBalanceLockTypeTitle = (input: BalanceLockType, allLocks: LockedBalance[]) => {
+  if (!input) return input
+  if (input === "democracy") return "Governance"
+  if (input === "other")
+    return allLocks.some(({ type }) => type !== "other") ? "Locked (other)" : "Locked"
+
+  //capitalize
+  return input.charAt(0).toUpperCase() + input.slice(1)
 }
 
 export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenBalancesParams) => {
