@@ -31,16 +31,12 @@ const getNetworkLogoId = (
 
 export type PortfolioNetwork = {
   id: string | number
-  logoId?: string | number | undefined
+  logoId?: string | number
   label: string | null
   type: string
 }
 
-const getPortfolioNetwork = (
-  id: string | number,
-  chains: Chain[] | undefined,
-  evmNetworks: EvmNetwork[] | undefined
-) => {
+const getPortfolioNetwork = (id: string | number, chains?: Chain[], evmNetworks?: EvmNetwork[]) => {
   const chain = chains?.find((c) => c.id === id)
   const evmNetwork = evmNetworks?.find((n) => n.id === id)
 
