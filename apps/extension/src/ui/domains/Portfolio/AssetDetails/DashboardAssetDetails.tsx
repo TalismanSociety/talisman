@@ -1,10 +1,4 @@
-import {
-  BalanceFormatter,
-  BalanceLockType,
-  Balances,
-  LockedBalance,
-} from "@core/domains/balances/types"
-import { Address } from "@core/types/base"
+import { Balances } from "@core/domains/balances/types"
 import { encodeAnyAddress } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
@@ -20,10 +14,7 @@ import styled from "styled-components"
 import StyledAssetLogo from "../../Asset/Logo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { NoTokensMessage } from "../NoTokensMessage"
-import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
-import { getBalanceLockTypeTitle } from "./getBalanceLockTypeTitle"
 import { useAssetDetails } from "./useAssetDetails"
-import { useBalanceLocks } from "./useBalanceLocks"
 import { useChainTokenBalances } from "./useChainTokenBalances"
 
 const Table = styled.table`

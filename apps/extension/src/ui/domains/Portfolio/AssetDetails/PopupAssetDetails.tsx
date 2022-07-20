@@ -1,5 +1,4 @@
-import { BalanceFormatter, BalanceLockType, Balances } from "@core/domains/balances/types"
-import { Address } from "@core/types/base"
+import { BalanceLockType, Balances } from "@core/domains/balances/types"
 import { encodeAnyAddress, planckToTokens } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
@@ -17,10 +16,7 @@ import styled from "styled-components"
 
 import StyledAssetLogo from "../../Asset/Logo"
 import { NoTokensMessage } from "../NoTokensMessage"
-import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
-import { getBalanceLockTypeTitle } from "./getBalanceLockTypeTitle"
 import { useAssetDetails } from "./useAssetDetails"
-import { useBalanceLocks } from "./useBalanceLocks"
 import { useChainTokenBalances } from "./useChainTokenBalances"
 
 const SmallIconButton = styled(IconButton)`
