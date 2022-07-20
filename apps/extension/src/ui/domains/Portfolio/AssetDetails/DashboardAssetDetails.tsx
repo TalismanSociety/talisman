@@ -214,6 +214,7 @@ const ChainTokenBalances = ({ balances, symbol, locks = [] }: AssetRowProps) => 
             planck={summary.lockedTokens}
             fiat={summary.lockedFiat}
             token={token}
+            tooltip="Total Locked Balance"
           />
         </td>
         <td align="right" valign="top">
@@ -222,6 +223,7 @@ const ChainTokenBalances = ({ balances, symbol, locks = [] }: AssetRowProps) => 
             planck={summary.availableTokens}
             fiat={summary.availableFiat}
             token={token}
+            tooltip="Total Available Balance"
           />
         </td>
       </tr>
