@@ -17,7 +17,6 @@ import AccountAddDerived from "./routes/AccountAddDerived"
 import AccountAddJson from "./routes/AccountAddJson"
 import { AccountAddSecret } from "./routes/AccountAddSecret"
 import AccountAddTypePicker from "./routes/AccountAddTypePicker"
-import AccountIndex from "./routes/AccountIndex"
 import { CustomTokenAdd } from "./routes/CustomTokens/CustomTokenAdd"
 import { CustomTokenDetails } from "./routes/CustomTokens/CustomTokenDetails"
 import { CustomTokens } from "./routes/CustomTokens/CustomTokens"
@@ -63,7 +62,6 @@ const DashboardInner = () => {
       <Routes>
         <Route path="portfolio/*" element={<Portfolio />} />
         <Route path="accounts">
-          <Route path="" element={<AccountIndex />} />
           <Route path="add">
             <Route path="" element={<AccountAddTypePicker />} />
             <Route path="derived" element={<AccountAddDerived />} />
@@ -72,6 +70,7 @@ const DashboardInner = () => {
             <Route path="ledger/*" element={<AccountAddLedger />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
+          <Route path="" element={<Navigate to="/portfolio" />} />
         </Route>
         <Route path="settings">
           <Route path="" element={<Settings />} />

@@ -1,5 +1,8 @@
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
+import AnalyticsAlertPopupDrawer from "@ui/domains/Settings/Analytics/AnalyticsAlert"
+import BraveWarningPopupBanner from "@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner"
 import Site from "@ui/domains/Site"
+import { Suspense } from "react"
 import { Route, Routes } from "react-router-dom"
 
 import { NavigationMenuButton } from "../../components/Navigation/NavigationMenuButton"
@@ -20,6 +23,12 @@ export const Portfolio = () => {
             <Route path=":symbol" element={<PortfolioAsset />} />
             <Route path="" element={<PortfolioAccounts />} />
           </Routes>
+          <Suspense fallback={null}>
+            <BraveWarningPopupBanner />
+          </Suspense>
+          <Suspense fallback={null}>
+            <AnalyticsAlertPopupDrawer />
+          </Suspense>
         </Content>
       </Layout>
     </PortfolioProvider>

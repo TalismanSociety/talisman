@@ -97,9 +97,8 @@ export default class Extension extends ExtensionHandler {
       case "pri(balances.get)":
         return this.stores.balances.getBalance(request as RequestBalance)
 
-      case "pri(balances.locks.get)": {
+      case "pri(balances.locks.get)":
         return getBalanceLocks(request as RequestBalanceLocks)
-      }
 
       case "pri(balances.subscribe)":
         return this.stores.balances.subscribe(id, port)
