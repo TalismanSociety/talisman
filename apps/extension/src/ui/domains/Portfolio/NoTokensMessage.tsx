@@ -1,5 +1,5 @@
 import { Box } from "@talisman/components/Box"
-import { CopyIcon, CreditCardIcon } from "@talisman/theme/icons"
+import { CopyIcon } from "@talisman/theme/icons"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useCallback } from "react"
 import styled from "styled-components"

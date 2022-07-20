@@ -1,11 +1,11 @@
 import { Balances, LockedBalance } from "@core/domains/balances/types"
 import { api } from "@ui/api"
-import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
 import { flatMap } from "lodash"
 import { useEffect, useMemo, useState } from "react"
 
 import { usePortfolio } from "../context"
 import { useSelectedAccount } from "../SelectedAccountContext"
+import { useDisplayBalances } from "../useDisplayBalances"
 
 export const useAssetDetails = (balances: Balances) => {
   const balancesToDisplay = useDisplayBalances(balances)

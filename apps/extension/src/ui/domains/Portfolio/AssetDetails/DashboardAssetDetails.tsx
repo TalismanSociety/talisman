@@ -1,9 +1,4 @@
-import {
-  BalanceFormatter,
-  BalanceLockType,
-  Balances,
-  LockedBalance,
-} from "@core/domains/balances/types"
+import { BalanceFormatter, Balances, LockedBalance } from "@core/domains/balances/types"
 import { encodeAnyAddress } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
@@ -12,19 +7,14 @@ import { useNotification } from "@talisman/components/Notification"
 import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { api } from "@ui/api"
-import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
-import { useTokenBalancesSummary } from "@ui/hooks/useTokenBalancesSummary"
-import useTokens from "@ui/hooks/useTokens"
-import { flatMap } from "lodash"
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react"
+import { Fragment, useCallback, useMemo } from "react"
 import styled from "styled-components"
 
 import StyledAssetLogo from "../../Asset/Logo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { NoTokensMessage } from "../NoTokensMessage"
+import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { getBalanceLockTypeTitle } from "./getBalanceLockTypeTitle"
 import { useAssetDetails } from "./useAssetDetails"
 

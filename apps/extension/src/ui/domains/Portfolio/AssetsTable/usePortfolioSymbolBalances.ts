@@ -1,10 +1,9 @@
 import { Balance, Balances } from "@core/domains/balances"
-import { LockedBalance } from "@core/domains/balances/types"
-import { useDisplayBalances } from "@ui/hooks/useDisplayBalances"
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 
 import { usePortfolio } from "../context"
 import { useSelectedAccount } from "../SelectedAccountContext"
+import { useDisplayBalances } from "../useDisplayBalances"
 
 export const usePortfolioSymbolBalances = (balances: Balances) => {
   const balancesToDisplay = useDisplayBalances(balances)
