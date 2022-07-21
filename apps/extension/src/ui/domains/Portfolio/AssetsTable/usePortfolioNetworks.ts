@@ -7,7 +7,7 @@ import { usePortfolio } from "../context"
 
 const getNetworkInfo = ({ chain, evmNetwork }: { chain?: Chain; evmNetwork?: EvmNetwork }) => {
   if (evmNetwork)
-    return { label: evmNetwork.name, type: evmNetwork.isTestnet ? "Testnet" : "EVM blockchain" }
+    return { label: evmNetwork.name, type: evmNetwork.isTestnet ? "EVM Testnet" : "EVM blockchain" }
 
   if (chain) {
     if (chain.isTestnet) return { label: chain.name, type: "Testnet" }

@@ -151,7 +151,7 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
 
   const { chain, evmNetwork } = balances.sorted[0]
   const networkType = useMemo(() => {
-    if (evmNetwork) return evmNetwork.isTestnet ? "Testnet" : "EVM blockchain"
+    if (evmNetwork) return evmNetwork.isTestnet ? "EVM Testnet" : "EVM blockchain"
 
     if (chain) {
       if (chain.isTestnet) return "Testnet"
