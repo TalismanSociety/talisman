@@ -6,7 +6,8 @@ import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { useTokens } from "@ui/hooks/useTokens"
 import { useLiveQuery } from "dexie-react-hooks"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
+import { useDebounce } from "react-use"
 
 const subscribe = () => api.balances(() => {})
 export const useBalances = () => {
@@ -30,9 +31,21 @@ export const useBalances = () => {
     [_tokens]
   )
 
-  return useLiveQuery(
+  const balances = useLiveQuery(
     async () => new Balances(await db.balances.toArray(), { chains, evmNetworks, tokens }),
     [chains, evmNetworks, tokens]
   )
+
+  // debounce every 100ms to prevent hammering UI with updates
+  const [debouncedBalances, setDebouncedBalances] = useState<Balances>(balances ?? new Balances([]))
+  useDebounce(
+    () => {
+      if (balances) setDebouncedBalances(balances)
+    },
+    100,
+    [balances]
+  )
+
+  return debouncedBalances
 }
 export default useBalances

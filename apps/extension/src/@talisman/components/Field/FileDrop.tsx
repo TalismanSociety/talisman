@@ -33,7 +33,7 @@ const FileDrop = ({ value, accept, hint, onChange, fieldProps, ...rest }: IProps
         {!!value && (
           <div className="files">
             <div>
-              <span>{value.name}</span>
+              <span>{String(value)}</span>
               <IconClear
                 onClick={(e) => {
                   e.stopPropagation()

@@ -1,6 +1,10 @@
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { api } from "@ui/api"
+import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
+import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
+import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
+import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
@@ -13,10 +17,10 @@ import AccountAddDerived from "./routes/AccountAddDerived"
 import AccountAddJson from "./routes/AccountAddJson"
 import { AccountAddSecret } from "./routes/AccountAddSecret"
 import AccountAddTypePicker from "./routes/AccountAddTypePicker"
-import AccountIndex from "./routes/AccountIndex"
 import { CustomTokenAdd } from "./routes/CustomTokens/CustomTokenAdd"
 import { CustomTokenDetails } from "./routes/CustomTokens/CustomTokenDetails"
 import { CustomTokens } from "./routes/CustomTokens/CustomTokens"
+import { Portfolio } from "./routes/Portfolio"
 import Settings from "./routes/Settings"
 import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
 import Options from "./routes/Settings/Options"
@@ -56,8 +60,8 @@ const DashboardInner = () => {
     // use an empty layout as fallback to prevent flickering
     <Suspense fallback={<Layout />}>
       <Routes>
+        <Route path="portfolio/*" element={<Portfolio />} />
         <Route path="accounts">
-          <Route path="" element={<AccountIndex />} />
           <Route path="add">
             <Route path="" element={<AccountAddTypePicker />} />
             <Route path="derived" element={<AccountAddDerived />} />
@@ -66,6 +70,7 @@ const DashboardInner = () => {
             <Route path="ledger/*" element={<AccountAddLedger />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
+          <Route path="" element={<Navigate to="/portfolio" />} />
         </Route>
         <Route path="settings">
           <Route path="" element={<Settings />} />
@@ -80,16 +85,24 @@ const DashboardInner = () => {
           <Route path="add" element={<CustomTokenAdd />} />
           <Route path=":id" element={<CustomTokenDetails />} />
         </Route>
-        <Route path="*" element={<Navigate to="/accounts" replace />} />
+        <Route path="*" element={<Navigate to="/portfolio" replace />} />
       </Routes>
     </Suspense>
   )
 }
 
 const Dashboard = () => (
-  <SendTokensModalProvider>
-    <DashboardInner />
-  </SendTokensModalProvider>
+  <SelectedAccountProvider>
+    <AccountRemoveModalProvider>
+      <AccountRenameModalProvider>
+        <AddressFormatterModalProvider>
+          <SendTokensModalProvider>
+            <DashboardInner />
+          </SendTokensModalProvider>
+        </AddressFormatterModalProvider>
+      </AccountRenameModalProvider>
+    </AccountRemoveModalProvider>
+  </SelectedAccountProvider>
 )
 
 export default Dashboard

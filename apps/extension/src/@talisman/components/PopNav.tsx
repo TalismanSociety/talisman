@@ -102,7 +102,7 @@ const PopNav = ({
     setCloseTimeout(
       setTimeout(() => {
         setOpen(false)
-      }, 150)
+      }, 250)
     )
   }
 
@@ -119,8 +119,7 @@ const PopNav = ({
       onMouseLeave={handleMouseLeave}
       tabIndex={tabIndex}
     >
-      <span className="trigger">{trigger}</span>
-      <span className="trigger-hit" />
+      {trigger}
       {!!open && <StyledPopNavContent>{children}</StyledPopNavContent>}
     </span>
   )
@@ -129,16 +128,7 @@ const PopNav = ({
 PopNav.Item = StyledPopNavItem
 
 const StyledPopNav = styled(PopNav)`
-  font: inherit;
   position: relative;
-  overflow: hidden;
-  text-overflow: ellipsis;
-
-  > .trigger > * {
-    display: flex;
-    font: inherit;
-    color: inherit;
-  }
 
   > nav {
     position: absolute;
@@ -156,24 +146,6 @@ const StyledPopNav = styled(PopNav)`
           return `top: 100%; right: 0;`
       }
     }}
-  }
-
-  .trigger-hit {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  &[data-open="true"] {
-    overflow: visible;
-    .trigger-hit {
-      width: calc(100% + 4rem);
-      height: calc(100% + 4rem);
-      left: -2rem;
-      top: -2rem;
-    }
   }
 `
 

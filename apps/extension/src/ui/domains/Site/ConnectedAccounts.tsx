@@ -120,8 +120,7 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
               setEthChainId(chainId)
             }}
           />
-          <Spacer large />
-          <Spacer large />
+          <Spacer small />
         </>
       ) : null}
       <div>

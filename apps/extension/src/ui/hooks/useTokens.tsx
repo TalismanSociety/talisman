@@ -3,7 +3,6 @@ import { useMessageSubscription } from "./useMessageSubscription"
 import { useLiveQuery } from "dexie-react-hooks"
 import { db } from "@core/libs/db"
 import { useSettings } from "@ui/hooks/useSettings"
-import { useMemo } from "react"
 
 const subscribe = () => api.tokens(() => {})
 export const useTokens = () => {

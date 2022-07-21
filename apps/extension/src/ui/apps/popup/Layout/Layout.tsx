@@ -1,4 +1,5 @@
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
+import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import React, { PropsWithChildren, useEffect, useState } from "react"
 import styled from "styled-components"
 
@@ -27,6 +28,7 @@ const Layout = ({ isThinking, className, children }: IProps) => {
         {header}
         {content}
         {footer}
+        <AddressFormatterModal />
         {/* NavigationDrawer here so user can see the drawer close smoothly in case he navigates from one page to another (as long as both page use this Layout) */}
         <NavigationDrawer />
       </ErrorBoundary>

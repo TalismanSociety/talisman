@@ -1,7 +1,8 @@
-import { settingsStore, SettingsStoreData } from "@core/domains/app"
+import { SettingsStoreData, settingsStore } from "@core/domains/app"
+import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useEffect, useState } from "react"
 
-export const useSettings = () => {
+const useSettingsProvider = () => {
   const [settings, setSettings] = useState<SettingsStoreData>()
 
   useEffect(() => {
@@ -15,3 +16,7 @@ export const useSettings = () => {
 
   return { ...settings, update }
 }
+
+// use with a provider in index.ts so settings don't have to be reloaded on each page
+// for example this prevents flickering on hidden balances
+export const [SettingsProvider, useSettings] = provideContext(useSettingsProvider)

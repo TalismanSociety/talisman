@@ -8,14 +8,16 @@ import { DefaultTheme } from "styled-components"
 
 declare module "styled-components" {
   export interface DefaultTheme {
-    primary: string
-    secondary: string
-    background: string
-    backgroundOff: string
-    foreground: string
-    mid: string
-    light: string
-    dark: string
+    "primary": string
+    "secondary": string
+    "background": string
+    "background-muted": string
+    "background-muted-2x": string
+    "background-muted-3x": string
+    "foreground": string
+    "foreground-muted": string
+    "foreground-muted-2x": string
+    "mid": string
   }
 }
 

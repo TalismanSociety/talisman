@@ -1,3 +1,6 @@
+// Copyright 2019-2021 @polkadot/extension-bg authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+// Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/background/handlers/State.ts
 import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
 import EthereumNetworksRequestsStore from "@core/domains/ethereum/requestsStore.networks"
@@ -5,9 +8,6 @@ import { MetadataRequestsStore } from "@core/domains/metadata"
 import { SigningRequestsStore } from "@core/domains/signing"
 import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
-// Copyright 2019-2021 @polkadot/extension-bg authors & contributors
-// SPDX-License-Identifier: Apache-2.0
-// Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/background/handlers/State.ts
 import Browser from "webextension-polyfill"
 
 import { stripUrl } from "./helpers"

@@ -1,6 +1,7 @@
-import Browser from "webextension-polyfill"
-import { ensureNotificationClickHandler } from "./ensureNotificationClickHandler"
 import * as Sentry from "@sentry/browser"
+import Browser from "webextension-polyfill"
+
+import { ensureNotificationClickHandler } from "./ensureNotificationClickHandler"
 
 export type NotificationType = "submitted" | "success" | "error"
 

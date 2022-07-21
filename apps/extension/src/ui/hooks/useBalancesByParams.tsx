@@ -6,8 +6,9 @@ import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
 import { useTokens } from "@ui/hooks/useTokens"
 import md5 from "blueimp-md5"
-import { useCallback, useEffect, useMemo, useRef } from "react"
-import { BehaviorSubject, firstValueFrom } from "rxjs"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useDebounce } from "react-use"
+import { BehaviorSubject } from "rxjs"
 
 const INITIAL_VALUE = new Balances({})
 
@@ -66,6 +67,12 @@ export const useBalancesByParams = (addressesByChain: AddressesByChain) => {
   // subscrition must be reinitialized (using the key) if parameters change
   const subscriptionKey = useMemo(() => md5(JSON.stringify(addressesByChain)), [addressesByChain])
 
-  return useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
+  const balances = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
+
+  // debounce every 100ms to prevent hammering UI with updates
+  const [debouncedBalances, setDebouncedBalances] = useState<Balances>(balances)
+  useDebounce(() => setDebouncedBalances(balances), 100, [balances])
+
+  return debouncedBalances
 }
 export default useBalancesByParams

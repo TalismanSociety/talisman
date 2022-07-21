@@ -1,6 +1,6 @@
-import { Chain, ChainId } from "@core/domains/chains/types"
-import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import { Token, TokenId, TokenRateCurrency, TokenRates } from "@core/domains/tokens/types"
+import { ChainList } from "@core/domains/chains/types"
+import { EvmNetworkList } from "@core/domains/ethereum/types"
+import { TokenList, TokenRateCurrency, TokenRates } from "@core/domains/tokens/types"
 import { NonFunctionProperties } from "@core/util/FunctionPropertyNames"
 import isArrayOf from "@core/util/isArrayOf"
 import { planckToTokens } from "@core/util/planckToTokens"
@@ -14,13 +14,10 @@ import { BalanceStorage, BalancesStorage } from "./storages"
 export type NarrowStorage<S, P> = S extends { pallet: P } ? S : never
 export type BalancePallet = BalanceStorage["pallet"]
 
-export type ChainsDb = Record<ChainId, Chain>
-export type EvmNetworksDb = Record<EvmNetworkId, EvmNetwork>
-export type TokensDb = Record<TokenId, Token>
 export type HydrateDb = Partial<{
-  chains: ChainsDb
-  evmNetworks: EvmNetworksDb
-  tokens: TokensDb
+  chains: ChainList
+  evmNetworks: EvmNetworkList
+  tokens: TokenList
 }>
 
 export type BalanceSearchQuery =
@@ -325,9 +322,11 @@ export class Balance {
   get frozen() {
     if (this.#storage.pallet === "erc20") return this.#format("0")
 
-    // if using the balances pallet, add up the feeFrozen and miscFrozen amounts
+    // if using the balances pallet, take the max of the feeFrozen and miscFrozen amounts
     if (this.#storage.pallet === "balances") {
-      return this.#format(BigInt(this.#storage.feeFrozen) + BigInt(this.#storage.miscFrozen))
+      return this.#format(
+        BigMath.max(BigInt(this.#storage.feeFrozen), BigInt(this.#storage.miscFrozen))
+      )
     }
 
     return this.#format(this.#storage.frozen)

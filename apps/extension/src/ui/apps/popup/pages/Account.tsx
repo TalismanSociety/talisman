@@ -1,16 +1,12 @@
-import { lazy, Suspense } from "react"
-import styled from "styled-components"
-import Layout, { Header, Content } from "../Layout"
-import Site from "@ui/domains/Site"
-import { NavigationMenuButton } from "../components/Navigation/NavigationMenuButton"
 import Account from "@ui/domains/Account"
-import { TotalFiatBalance } from "../components/TotalFiatBalance"
+import Site from "@ui/domains/Site"
 import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
+import { lazy } from "react"
+import styled from "styled-components"
 
-const BraveWarningPopupBanner = lazy(
-  () => import("@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner")
-)
-const AnalyticsAlert = lazy(() => import("@ui/domains/Settings/Analytics/AnalyticsAlert"))
+import { NavigationMenuButton } from "../components/Navigation/NavigationMenuButton"
+import { TotalFiatBalance } from "../components/TotalFiatBalance"
+import Layout, { Content, Header } from "../Layout"
 
 const AccountAssets = ({ className }: any) => {
   useAnalyticsPopupOpen("accounts")
@@ -21,12 +17,6 @@ const AccountAssets = ({ className }: any) => {
       <Content>
         <TotalFiatBalance />
         <Account.List withAvatar withCopy withBalanceRow withFiat />
-        <Suspense fallback={null}>
-          <BraveWarningPopupBanner />
-        </Suspense>
-        <Suspense fallback={null}>
-          <AnalyticsAlert />
-        </Suspense>
       </Content>
     </Layout>
   )

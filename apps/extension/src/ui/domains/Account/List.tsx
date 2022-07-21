@@ -1,6 +1,5 @@
 import useAccounts from "@ui/hooks/useAccounts"
 import Item, { IAccountItemOptions } from "./Item"
-import { AddressFormatterModal, AddressFormatterModalProvider } from "./AddressFormatterModal"
 import { AccountRenameModal, AccountRenameModalProvider } from "./AccountRenameModal"
 import { AccountRemoveModal, AccountRemoveModalProvider } from "./AccountRemoveModal"
 
@@ -14,16 +13,14 @@ const AccountList = ({ className, ...options }: IAccountList) => {
   return (
     <AccountRemoveModalProvider>
       <AccountRenameModalProvider>
-        <AddressFormatterModalProvider>
-          <div className={className}>
-            {accounts.map(({ address }) => (
-              <Item key={address} address={address} {...options} />
-            ))}
-          </div>
-          <AddressFormatterModal />
-          <AccountRenameModal />
-          <AccountRemoveModal />
-        </AddressFormatterModalProvider>
+        <div className={className}>
+          {accounts.map(({ address }) => (
+            <Item key={address} address={address} {...options} />
+          ))}
+        </div>
+
+        <AccountRenameModal />
+        <AccountRemoveModal />
       </AccountRenameModalProvider>
     </AccountRemoveModalProvider>
   )

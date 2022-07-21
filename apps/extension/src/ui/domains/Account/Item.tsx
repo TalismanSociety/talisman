@@ -7,6 +7,7 @@ import downloadJson from "@talisman/util/downloadJson"
 import { api } from "@ui/api"
 import Asset, { IAssetRowOptions } from "@ui/domains/Asset"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useAccountExport } from "@ui/hooks/useAccountExport"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import useEmptyBalancesFilter from "@ui/hooks/useEmptyBalancesFilter"
 import { MouseEventHandler, useCallback } from "react"
@@ -47,8 +48,9 @@ const AccountItem = ({
   const account = useAccountByAddress(address)
   const balances = useBalancesByAddress(address)
   const { open: openAddressFormatter } = useAddressFormatterModal()
-  const { open: openAccountRename } = useAccountRenameModal()
-  const { open: openAccountRemove } = useAccountRemoveModal()
+  const { open: openAccountRename, canRename } = useAccountRenameModal()
+  const { open: openAccountRemove, canRemove } = useAccountRemoveModal()
+  const { canExportAccount, exportAccount } = useAccountExport()
   const { open: openSendTokensModal } = useSendTokensModal()
   const notEmptyBalances = useEmptyBalancesFilter(balances, account)
 
@@ -98,20 +100,12 @@ const AccountItem = ({
           {!!withSend && <PaperPlaneIcon className="icon send" onClick={handleSendClick} />}
           <PopNav trigger={<IconMore />} className="icon more" closeOnMouseOut>
             <PopNav.Item onClick={() => openAddressFormatter(address)}>Copy address</PopNav.Item>
-            <PopNav.Item onClick={() => openAccountRename(address)}>Rename</PopNav.Item>
-            {["DERIVED", "SEED", "JSON"].includes(account?.origin as string) && (
-              <PopNav.Item
-                onClick={async () => {
-                  const { exportedJson } = await api.accountExport(address)
-                  downloadJson(exportedJson, `${exportedJson.meta?.name || "talisman"}`)
-                }}
-              >
-                Export Private Key
-              </PopNav.Item>
+
+            <PopNav.Item onClick={openAccountRename}>Rename</PopNav.Item>
+            {canExportAccount && (
+              <PopNav.Item onClick={exportAccount}>Export Private Key</PopNav.Item>
             )}
-            {["DERIVED", "SEED", "JSON", "HARDWARE"].includes(account?.origin as string) && (
-              <PopNav.Item onClick={() => openAccountRemove(address)}>Remove Account</PopNav.Item>
-            )}
+            {canRemove && <PopNav.Item onClick={openAccountRemove}>Remove Account</PopNav.Item>}
             {account?.type === "ethereum" && (
               <PopNav.Item onClick={() => api.dashboardOpen("/tokens")}>
                 Add custom token
@@ -193,6 +187,7 @@ const StyledAccountItem = styled(AccountItem)`
       &.more {
         width: 0;
         margin-right: 0;
+        overflow: hidden;
       }
     }
 

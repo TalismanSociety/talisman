@@ -24,17 +24,12 @@ const DisplayValue: FC<DisplayValueProps> = ({ amount, currency, noCountUp }) =>
   const format = useCallback((amount = 0) => formatFiat(amount, currency), [currency])
   const formatted = useMemo(() => format(amount), [format, amount])
 
-  const countUpDecimals = useMemo(
-    () => (amount >= 1000 ? 0 : formatted.toString().split(fiatDecimalSeparator)[1]?.length ?? 0),
-    [amount, formatted]
-  )
-
   if (noCountUp) return <>{formatted}</>
 
   return (
     <CountUp
       end={amount}
-      decimals={countUpDecimals}
+      decimals={2}
       decimal={fiatDecimalSeparator}
       separator={fiatGroupSeparator}
       duration={0.4}

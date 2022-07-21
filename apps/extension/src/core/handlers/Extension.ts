@@ -2,10 +2,12 @@ import { DEBUG } from "@core/constants"
 import { AccountsHandler } from "@core/domains/accounts"
 import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
+import { getBalanceLocks } from "@core/domains/balances/helpers"
 import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
 import {
   Balances,
   RequestBalance,
+  RequestBalanceLocks,
   RequestBalancesByParamsSubscribe,
 } from "@core/domains/balances/types"
 import { EthHandler } from "@core/domains/ethereum"
@@ -94,6 +96,9 @@ export default class Extension extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(balances.get)":
         return this.stores.balances.getBalance(request as RequestBalance)
+
+      case "pri(balances.locks.get)":
+        return getBalanceLocks(request as RequestBalanceLocks)
 
       case "pri(balances.subscribe)":
         return this.stores.balances.subscribe(id, port)

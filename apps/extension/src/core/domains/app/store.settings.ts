@@ -8,6 +8,7 @@ export interface SettingsStoreData {
   useAnalyticsTracking: boolean
   hideBalances: boolean
   allowNotifications: boolean
+  selectedAccount: string | undefined
   shouldMimicMetaMask: boolean
 }
 

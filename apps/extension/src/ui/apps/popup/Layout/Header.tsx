@@ -1,7 +1,7 @@
-import styled from "styled-components"
 import { ReactComponent as Logo } from "@talisman/theme/logos/logo-hand-mono.svg"
-import { ReactNode } from "react"
 import { api } from "@ui/api"
+import { ReactNode } from "react"
+import styled from "styled-components"
 
 type HeaderProps = {
   text?: ReactNode
@@ -23,7 +23,7 @@ const StyledHeader = styled(Header)`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 7.2rem;
+  height: 6.4rem;
 
   > svg {
     width: 3.2rem;
