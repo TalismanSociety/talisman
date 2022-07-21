@@ -3,11 +3,10 @@ export const sortBig = (desc?: boolean) => (a: bigint, b: bigint) => {
   return desc ? sortAscending(b, a) : sortAscending(a, b)
 }
 
-// TODO how to enforce condition on T so that T[property] is a bigint ?
 export const sortBigBy =
-  <T>(property: keyof T, desc?: boolean) =>
-  (a: T, b: T) => {
-    const v1 = a[property] as unknown as bigint
-    const v2 = b[property] as unknown as bigint
+  <K extends string>(property: K, desc?: boolean) =>
+  <T extends Record<K, bigint>, U extends Record<K, bigint>>(a: T, b: U) => {
+    const v1 = a[property]
+    const v2 = b[property]
     return sortBig(desc)(v1, v2)
   }
