@@ -55,6 +55,9 @@ export const PortfolioAsset = () => {
   const { allBalances } = usePortfolio()
 
   const balances = useMemo(
+    // TODO: Move the association between a token on multiple chains into the backend / subsquid.
+    // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
+    // Also, we might want to separate testnet tokens from non-testnet tokens.
     () => new Balances(allBalances.sorted.filter((b) => b.token?.symbol === symbol)),
     [allBalances.sorted, symbol]
   )
