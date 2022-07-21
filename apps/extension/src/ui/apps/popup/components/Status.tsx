@@ -1,5 +1,5 @@
-import styled from "styled-components"
 import { ReactComponent as Logo } from "@talisman/theme/logos/logo-hand-color.svg"
+import styled from "styled-components"
 
 interface IProps {
   text?: string
@@ -30,4 +30,5 @@ const StyledStatus = styled(Status)`
   }
 `
 
+// default exports are BAD !! I MEAN REALLY BAD !
 export default StyledStatus
