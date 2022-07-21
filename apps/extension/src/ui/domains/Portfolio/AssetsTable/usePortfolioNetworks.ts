@@ -11,7 +11,14 @@ const getNetworkInfo = ({ chain, evmNetwork }: { chain?: Chain; evmNetwork?: Evm
 
   if (chain) {
     if (chain.isTestnet) return { label: chain.name, type: "Testnet" }
-    return { label: chain.name, type: chain.paraId ? "Parachain" : "Relay chain" }
+    return {
+      label: chain.name,
+      type: chain.paraId
+        ? "Parachain"
+        : (chain.parathreads || []).length > 0
+        ? "Relay chain"
+        : "Blockchain",
+    }
   }
 
   return { label: "", type: "" }

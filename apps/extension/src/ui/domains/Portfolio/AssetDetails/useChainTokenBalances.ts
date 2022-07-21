@@ -155,7 +155,11 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
 
     if (chain) {
       if (chain.isTestnet) return "Testnet"
-      return chain.paraId ? "Parachain" : "Relay chain"
+      return chain.paraId
+        ? "Parachain"
+        : (chain.parathreads || []).length > 0
+        ? "Relay chain"
+        : "Blockchain"
     }
 
     return null
