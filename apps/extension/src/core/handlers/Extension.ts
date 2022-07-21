@@ -2,6 +2,7 @@ import { DEBUG } from "@core/constants"
 import { AccountsHandler } from "@core/domains/accounts"
 import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
+import { getBalanceLocks } from "@core/domains/balances/helpers"
 import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
 import {
   Balances,
@@ -22,7 +23,6 @@ import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 
-import { getBalanceLocks } from "./helpers"
 import { createSubscription, unsubscribe } from "./subscriptions"
 
 export default class Extension extends ExtensionHandler {
