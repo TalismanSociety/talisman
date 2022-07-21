@@ -9,10 +9,11 @@ import { CopyIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import Account from "@ui/domains/Account"
+import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useCallback, useMemo } from "react"
+import { ReactNode, useCallback, useMemo } from "react"
 import styled from "styled-components"
 
 import StyledAssetLogo from "../../Asset/Logo"
@@ -173,11 +174,56 @@ type AssetsTableProps = {
   symbol: string
 }
 
+const LinkButton = styled.button`
+  background: none;
+  color: currentColor;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  color: var(--color-foreground-muted);
+  padding: 0;
+  margin: 0;
+  :hover {
+    color: var(--color-foreground);
+  }
+`
+const NoTokens = ({ symbol }: { symbol: string }) => {
+  const { account } = useSelectedAccount()
+  const { open } = useAddressFormatterModal()
+  return (
+    <FadeIn>
+      <Box
+        bg="background-muted"
+        fg="mid"
+        padding={2}
+        borderradius="tiny"
+        fontsize="small"
+        textalign="center"
+        lineheightcustom={"1.2em"}
+      >
+        <div>
+          You don't have any {symbol} {account ? " in this account" : ""}.
+        </div>
+        {!!account && (
+          <div>
+            <LinkButton onClick={() => open(account.address)}>Copy address</LinkButton> to receive
+            funds.
+          </div>
+        )}
+      </Box>
+    </FadeIn>
+  )
+}
+
 export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   const { balancesByChain, isLoading } = useAssetDetails(balances)
+  const rows = useMemo(() => Object.entries(balancesByChain), [balancesByChain])
+  const hasBalance = useMemo(
+    () => rows.some(([, balances]) => balances.sorted.some((b) => b.total.planck > BigInt(0))),
+    [rows]
+  )
 
-  const rows = Object.entries(balancesByChain)
-  if (!rows.length) return isLoading ? null : <NoTokensMessage symbol={symbol} />
+  if (!hasBalance) return isLoading ? null : <NoTokens symbol={symbol} />
 
   return (
     <FadeIn>
