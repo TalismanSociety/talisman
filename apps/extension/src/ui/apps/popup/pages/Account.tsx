@@ -1,17 +1,12 @@
 import Account from "@ui/domains/Account"
 import Site from "@ui/domains/Site"
 import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
-import { Suspense, lazy } from "react"
+import { lazy } from "react"
 import styled from "styled-components"
 
 import { NavigationMenuButton } from "../components/Navigation/NavigationMenuButton"
 import { TotalFiatBalance } from "../components/TotalFiatBalance"
 import Layout, { Content, Header } from "../Layout"
-
-const BraveWarningPopupBanner = lazy(
-  () => import("@ui/domains/Settings/BraveWarning/BraveWarningPopupBanner")
-)
-const AnalyticsAlert = lazy(() => import("@ui/domains/Settings/Analytics/AnalyticsAlert"))
 
 const AccountAssets = ({ className }: any) => {
   useAnalyticsPopupOpen("accounts")
