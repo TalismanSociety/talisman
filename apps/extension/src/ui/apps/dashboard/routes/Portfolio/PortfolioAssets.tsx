@@ -57,11 +57,6 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
         <Stats title="Locked" fiat={locked} locked />
         <Stats title="Available" fiat={available} />
         <Box grow flex justify="flex-end" align="center" gap={1.6}>
-          <WithTooltip tooltip="Send">
-            <IconButton onClick={sendFunds}>
-              <PaperPlaneIcon />
-            </IconButton>
-          </WithTooltip>
           {account && (
             <PopNav
               trigger={
@@ -72,6 +67,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
               className="icon more"
               closeOnMouseOut
             >
+              <PopNav.Item onClick={sendFunds}>Send funds</PopNav.Item>
               <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
               {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
               {canExportAccount && (
