@@ -1,4 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
+import { Address } from "@core/types/base"
 import { encodeAnyAddress } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
@@ -7,6 +8,7 @@ import { useNotification } from "@talisman/components/Notification"
 import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import Account from "@ui/domains/Account"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { Fragment, useCallback, useMemo } from "react"
 import styled from "styled-components"
@@ -50,6 +52,19 @@ const Table = styled.table`
       }
     }
   }
+
+  .account-name {
+    .account-avatar,
+    .text,
+    .account-name-row {
+      font-size: 1.4rem;
+      line-height: 1.4rem;
+    }
+
+    .account-avatar {
+      margin-right: 0.4rem;
+    }
+  }
 `
 
 const SpacerRow = styled(({ className }) => {
@@ -67,13 +82,26 @@ const SpacerRow = styled(({ className }) => {
   }
 `
 
-const AssetState = ({ title, render }: { title: string; render: boolean }) => {
+const AssetState = ({
+  title,
+  render,
+  address,
+}: {
+  title: string
+  render: boolean
+  address?: Address
+}) => {
   if (!render) return null
   return (
-    <Box h={6.6} padding="1.6rem" flex column justify="center">
+    <Box h={6.6} padding="1.6rem" flex column justify="center" gap={0.4}>
       <Box bold fg="foreground">
         {title}
       </Box>
+      {address && (
+        <Box>
+          <Account.Name address={address} withAvatar />
+        </Box>
+      )}
     </Box>
   )
 }
@@ -138,7 +166,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
             <Box padding="1.6rem" fontsize="xlarge">
               <StyledAssetLogo id={evmNetwork?.substrateChain?.id ?? chainOrNetwork.id} />
             </Box>
-            <Box grow flex column justify="center" gap={0.4}>
+            <Box grow flex column justify="center" gap={0.4} noWrap>
               <Box fontsize="normal" bold fg="foreground" flex align="center" gap={0.8}>
                 {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />{" "}
                 {isFetching && <FetchingIndicator data-spin />}
@@ -172,7 +200,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
         .map((row, i, rows) => (
           <tr key={row.key} className={classNames("details", rows.length === i + 1 && "stop-row")}>
             <td className="al-main" valign="top">
-              <AssetState title={row.title} render />
+              <AssetState title={row.title} render address={row.address} />
             </td>
             <td align="right" valign="top"></td>
             <td align="right" valign="top">

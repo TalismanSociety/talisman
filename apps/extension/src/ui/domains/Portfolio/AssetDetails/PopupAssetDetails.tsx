@@ -1,4 +1,4 @@
-import { BalanceLockType, Balances } from "@core/domains/balances/types"
+import { Balances } from "@core/domains/balances/types"
 import { encodeAnyAddress, planckToTokens } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
@@ -8,6 +8,7 @@ import { useNotification } from "@talisman/components/Notification"
 import { CopyIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import Account from "@ui/domains/Account"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -65,14 +66,6 @@ type AssetRowProps = {
   symbol: string
 }
 
-type DetailRow = {
-  key: BalanceLockType
-  title: string
-  tokens: bigint
-  fiat: number | null
-  locked: boolean
-}
-
 const ChainTokenBlock = styled(Box)`
   > div:first-child {
     border-top-left-radius: var(--border-radius-tiny);
@@ -81,6 +74,19 @@ const ChainTokenBlock = styled(Box)`
   > div:last-child {
     border-bottom-left-radius: var(--border-radius-tiny);
     border-bottom-right-radius: var(--border-radius-tiny);
+  }
+
+  .account-name {
+    .account-avatar,
+    .text,
+    .account-name-row {
+      font-size: 1.4rem;
+      line-height: 1.4rem;
+    }
+
+    .account-avatar {
+      margin-right: 0.4rem;
+    }
   }
 `
 
@@ -128,10 +134,17 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
             className={classNames(rows.length === i + 1 && "stop-row")}
             padding="1.2rem 1.4rem"
           >
-            <Box grow fg="foreground" bold>
-              {row.title}
+            <Box grow flex column justify="center" gap={0.4} overflow="hidden">
+              <Box fg="foreground" bold>
+                {row.title}
+              </Box>
+              {!!row.address && (
+                <Box>
+                  <Account.Name address={row.address} withAvatar />
+                </Box>
+              )}
             </Box>
-            <Box flex column justify="center" gap={0.4} textalign="right">
+            <Box flex column justify="center" gap={0.4} textalign="right" noWrap>
               <Box bold fg={row.locked ? "mid" : "foreground"}>
                 <Tokens
                   amount={planckToTokens(row.tokens.toString(), token.decimals)}

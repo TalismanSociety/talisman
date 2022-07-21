@@ -26,7 +26,7 @@ const TokensAndFiat = ({
   fiat: number | null
   token?: Token
 }) => (
-  <Box flex column gap={0.4}>
+  <Box flex column gap={0.4} noWrap>
     <Box fg="foreground" fontsize="normal">
       <Tokens
         amount={tokenAmount ?? "0"}

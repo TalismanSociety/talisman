@@ -39,6 +39,7 @@ export const AssetBalanceCellValue = ({
         textalign="right"
         padding="1.6rem"
         className={className}
+        noWrap
       >
         <Box fg={locked ? "mid" : "foreground"}>
           <Tokens
