@@ -1,3 +1,4 @@
+import { ChainId } from "@core/domains/chains/types"
 import { CustomErc20Token, TokenId } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { RequestIdOnly } from "@core/types/base"
@@ -39,7 +40,7 @@ export type EvmNetwork = {
   explorerUrl: string | null
   rpcs: Array<EthereumRpc> | null
   isHealthy: boolean
-  substrateChain: { id: string } | null
+  substrateChain: { id: ChainId } | null
 }
 export type CustomEvmNetwork = EvmNetwork & {
   isCustom: true
