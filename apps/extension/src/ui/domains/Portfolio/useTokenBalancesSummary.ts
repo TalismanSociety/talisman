@@ -35,13 +35,25 @@ const getBestTokenForSymbol = (symbol: string, tokens?: Token[], chains?: Chain[
 
   return (
     // priority to token from a relay chain
+    // mainnet relay native
     matches?.find(
       (t) =>
         !t.isTestnet && t.type === "native" && chains?.find((c) => !c.relay && c.id === t.chain?.id)
     ) ??
+    // mainnet solo/para native
     matches?.find((t) => !t.isTestnet && t.type === "native") ??
-    matches?.find((t) => t.type === "native") ??
-    matches?.find((t) => (t as any).image) ??
+    // mainnet which has an image
+    matches?.find((t) => !t.isTestnet && (t as any).image) ??
+    // testnet relay
+    matches?.find(
+      (t) =>
+        t.isTestnet && t.type === "native" && chains?.find((c) => !c.relay && c.id === t.chain?.id)
+    ) ??
+    // testnet solo/para native
+    matches?.find((t) => t.isTestnet && t.type === "native") ??
+    // testnet which has an image
+    matches?.find((t) => t.isTestnet && (t as any).image) ??
+    // fallback
     matches?.[0]
   )
 }
