@@ -75,7 +75,7 @@ const getNetworkTokenSymbols = ({
   return networkTokens.map(({ symbol }) => symbol).filter(Boolean)
 }
 
-const useAllNetworks = (type?: AccountAddressType) => {
+const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balances?: Balances }) => {
   const { chains, evmNetworks, tokens } = usePortfolioCommonData()
 
   const networks = useMemo(() => {
@@ -111,8 +111,17 @@ const useAllNetworks = (type?: AccountAddressType) => {
       network.symbols = getNetworkTokenSymbols({ tokens, chainId, evmNetworkId })
     })
 
-    return result.sort((a, b) => a.name.localeCompare(b.name))
-  }, [chains, evmNetworks, tokens, type])
+    return result
+      .filter(({ chainId, evmNetworkId }) =>
+        balances?.sorted.some(
+          (b) =>
+            b.total.planck > BigInt(0) &&
+            ((!!chainId && b.chainId === chainId) ||
+              (!!evmNetworkId && b.evmNetworkId === evmNetworkId))
+        )
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [balances?.sorted, chains, evmNetworks, tokens, type])
 
   return networks
 }
@@ -128,7 +137,7 @@ const usePortfolioProvider = ({ balances: allBalances }: { balances: Balances })
     return undefined
   }, [account])
 
-  const networks = useAllNetworks(accountType)
+  const networks = useAllNetworks({ balances: allBalances, type: accountType })
   const [networkFilter, setNetworkFilter] = useState<NetworkOption>()
 
   const networkBalances = useMemo(() => {
