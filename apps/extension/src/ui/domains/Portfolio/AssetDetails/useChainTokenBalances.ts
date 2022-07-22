@@ -72,7 +72,7 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
             : tokenBalances
                 .filter((b) => b.transferable.planck > BigInt(0))
                 .map((b) => ({
-                  key: b.id,
+                  key: `${b.id}-available`,
                   title: "Available",
                   tokens: BigInt(b.transferable.planck),
                   fiat: b.transferable.fiat("usd"),
@@ -128,7 +128,7 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
             : tokenBalances
                 .filter((b) => b.reserved.planck > BigInt(0))
                 .map((b) => ({
-                  key: b.id,
+                  key: `${b.id}-reserved`,
                   title: "Reserved",
                   tokens: BigInt(b.reserved.planck),
                   fiat: b.reserved.fiat("usd"),
