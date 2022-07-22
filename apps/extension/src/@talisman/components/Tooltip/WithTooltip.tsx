@@ -1,6 +1,7 @@
+import { flip, offset, shift, useFloating } from "@floating-ui/react-dom"
 import { CSSProperties, ReactNode, useEffect, useMemo } from "react"
-import { useFloating, shift, flip, offset } from "@floating-ui/react-dom"
 import styled from "styled-components"
+
 import { useTooltipBoundary } from "./TooltipBoundaryContext"
 
 type TooltipContainerProps = {
@@ -13,17 +14,17 @@ type TooltipContainerProps = {
 
 const Tooltip = styled.div`
   z-index: 1;
-  background: var(--color-background-muted);
-  border-radius: 0.5rem;
-  border: 1px solid var(--color-background-muted-3x);
+  background: #000;
+  border-radius: 0.4rem;
+  border: 1px solid var(--color-mid);
   color: var(--color-foreground-muted-2x);
-  padding: 0.6rem 1.2rem;
+  padding: 0.6rem;
   transition: opacity var(--transition-speed) ease-in-out;
   opacity: 0;
   visibility: hidden;
-  font-size: var(--font-size-small);
-  line-height: var(--font-size-medium);
-  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xsmall);
+  line-height: var(--font-size-xsmall);
+  font-weight: var(--font-weight-regular);
   word-break: break-word;
 
   &.show {

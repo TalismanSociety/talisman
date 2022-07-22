@@ -3,12 +3,12 @@ import { ChevronDownIcon, XIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { NetworkOption, usePortfolio } from "@ui/domains/Portfolio/context"
 import { UseComboboxState, UseComboboxStateChangeOptions, useCombobox } from "downshift"
-import { useCallback, useEffect, useState } from "react"
-import styled from "styled-components"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import styled, { css } from "styled-components"
 
 import StyledAssetLogo from "../Asset/Logo"
 
-const Container = styled.div<{ isOpen?: boolean }>`
+const Container = styled.div<{ isOpen?: boolean; disabled?: boolean }>`
   display: inline-block;
   position: relative;
 
@@ -22,6 +22,8 @@ const Container = styled.div<{ isOpen?: boolean }>`
     padding: 0;
   }
 
+  opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
+
   input::placeholder {
     color: var(--color-mid);
   }
@@ -33,17 +35,24 @@ const Container = styled.div<{ isOpen?: boolean }>`
     background: transparent;
     color: var(--color-mid);
     border: none;
-    cursor: pointer;
+
     padding: 0 0.4rem;
     height: 100%;
     font-size: 2.4rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    :hover {
-      color: var(--color-foreground-muted);
-    }
     padding: 0 0.8rem;
+
+    ${({ disabled }) =>
+      disabled
+        ? ""
+        : css`
+            cursor: pointer;
+            :hover {
+              color: var(--color-foreground-muted);
+            }
+          `}
   }
 
   ul {
@@ -84,8 +93,19 @@ const Container = styled.div<{ isOpen?: boolean }>`
 
 const itemToString = (blockchain: NetworkOption | null | undefined) => blockchain?.name ?? ""
 
-const filterItems = (inputValue?: string) => (bc: NetworkOption | undefined) =>
-  !inputValue || !!bc?.name.toLowerCase().includes(inputValue.toLowerCase())
+const filterItems = (inputValue?: string) => (bc: NetworkOption | undefined) => {
+  try {
+    const test = inputValue?.toLowerCase() ?? ""
+    return (
+      !inputValue ||
+      !!bc?.name.toLowerCase().includes(test) ||
+      !!bc?.symbols?.some((s) => s.toLowerCase().includes(test))
+    )
+  } catch (err) {
+    // ignore
+    return false
+  }
+}
 
 export const NetworkPicker = () => {
   const { networks, networkFilter, setNetworkFilter } = usePortfolio()
@@ -151,8 +171,14 @@ export const NetworkPicker = () => {
     selectItem(undefined)
   }, [selectItem])
 
+  const disabled = useMemo(() => !items?.length, [items?.length])
+
+  useEffect(() => {
+    if (selectedItem && !networks?.includes(selectedItem)) selectItem(undefined)
+  }, [networks, selectItem, selectedItem])
+
   return (
-    <Container isOpen={isOpen}>
+    <Container isOpen={isOpen} disabled={disabled}>
       <Box flex gap={1} w={30} bg="background-muted" align="center" {...getComboboxProps()}>
         <Box h={4.8} flex fullwidth align="center" padding="0 0 0 1.2rem">
           {networkFilter ? (
@@ -164,14 +190,20 @@ export const NetworkPicker = () => {
             spellCheck="false"
             lp-ignore="true"
             placeholder="All networks"
+            disabled={disabled}
             {...getInputProps()}
           />
           {inputValue ? (
-            <button aria-label="clear" type="button" onClick={handleClear}>
+            <button disabled={disabled} aria-label="clear" type="button" onClick={handleClear}>
               <XIcon />
             </button>
           ) : (
-            <button aria-label="toggle menu" type="button" {...getToggleButtonProps()}>
+            <button
+              disabled={disabled}
+              aria-label="toggle menu"
+              type="button"
+              {...getToggleButtonProps()}
+            >
               <ChevronDownIcon />
             </button>
           )}

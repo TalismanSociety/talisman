@@ -30,5 +30,4 @@ const StyledStatus = styled(Status)`
   }
 `
 
-// default exports are BAD !! I MEAN REALLY BAD !
 export default StyledStatus

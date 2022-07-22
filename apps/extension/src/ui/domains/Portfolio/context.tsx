@@ -54,17 +54,41 @@ export type NetworkOption = {
   chainId?: string
   evmNetworkId?: number
   logoId: string
+  symbols?: string[] // use when searching network by token symbol
 }
 
-const useAllNetworks = (type?: AccountAddressType) => {
-  const { chains, evmNetworks } = usePortfolioCommonData()
+const getNetworkTokenSymbols = ({
+  tokens,
+  chainId,
+  evmNetworkId,
+}: {
+  tokens?: Token[]
+  chainId?: string
+  evmNetworkId?: number
+}) => {
+  if (!tokens) return []
+  const networkTokens = tokens.filter((token) => {
+    if (chainId) return "chain" in token && token.chain?.id === chainId
+    if (evmNetworkId) return "evmNetwork" in token && token.evmNetwork?.id === evmNetworkId
+    return true
+  })
+  return networkTokens.map(({ symbol }) => symbol).filter(Boolean)
+}
+
+const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balances?: Balances }) => {
+  const { chains, evmNetworks, tokens } = usePortfolioCommonData()
 
   const networks = useMemo(() => {
     const result: NetworkOption[] = []
 
     if (chains && (!type || type === "sr25519"))
       chains.forEach(({ id, name }) =>
-        result.push({ id, chainId: id, name: name ?? "Unknown chain", logoId: id })
+        result.push({
+          id,
+          chainId: id,
+          name: name ?? "Unknown chain",
+          logoId: id,
+        })
       )
 
     if (evmNetworks && (!type || type === "ethereum"))
@@ -81,8 +105,23 @@ const useAllNetworks = (type?: AccountAddressType) => {
           })
       })
 
-    return result.sort((a, b) => a.name.localeCompare(b.name))
-  }, [chains, evmNetworks, type])
+    // fill symbols
+    result.forEach((network) => {
+      const { chainId, evmNetworkId } = network
+      network.symbols = getNetworkTokenSymbols({ tokens, chainId, evmNetworkId })
+    })
+
+    return result
+      .filter(({ chainId, evmNetworkId }) =>
+        balances?.sorted.some(
+          (b) =>
+            b.total.planck > BigInt(0) &&
+            ((!!chainId && b.chainId === chainId) ||
+              (!!evmNetworkId && b.evmNetworkId === evmNetworkId))
+        )
+      )
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [balances?.sorted, chains, evmNetworks, tokens, type])
 
   return networks
 }
@@ -98,7 +137,7 @@ const usePortfolioProvider = ({ balances: allBalances }: { balances: Balances })
     return undefined
   }, [account])
 
-  const networks = useAllNetworks(accountType)
+  const networks = useAllNetworks({ balances: allBalances, type: accountType })
   const [networkFilter, setNetworkFilter] = useState<NetworkOption>()
 
   const networkBalances = useMemo(() => {
