@@ -1,13 +1,14 @@
+import Button from "@talisman/components/Button"
+import { Drawer } from "@talisman/components/Drawer"
 import { IconButton } from "@talisman/components/IconButton"
+import { SimpleButton } from "@talisman/components/SimpleButton"
 import { XIcon } from "@talisman/theme/icons"
-import { formatDecimals } from "talisman-utils"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
-import Button from "@talisman/components/Button"
-import { SendTokensExpectedResult } from "./types"
+import { formatDecimals } from "talisman-utils"
+
 import { useSendTokens } from "./context"
-import { Drawer } from "@talisman/components/Drawer"
-import { SimpleButton } from "@talisman/components/SimpleButton"
+import { SendTokensExpectedResult } from "./types"
 
 const Container = styled.div`
   width: 100%;
@@ -55,6 +56,10 @@ const Container = styled.div`
     display: flex;
     flex-direction: column;
     gap: 1.6rem;
+
+    button {
+      width: 100%;
+    }
   }
 `
 
