@@ -15,10 +15,10 @@ import { stripUrl } from "./helpers"
 const WINDOW_OPTS: Browser.Windows.CreateCreateDataType = {
   // This is not allowed on FF, only on Chrome - disable completely
   // focused: true,
-  height: 510,
+  height: 630,
   type: "popup",
   url: Browser.runtime.getURL("popup.html"),
-  width: 360,
+  width: 400,
 }
 
 export default class State {

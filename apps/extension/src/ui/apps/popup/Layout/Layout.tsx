@@ -38,8 +38,8 @@ const Layout = ({ isThinking, className, children }: IProps) => {
 
 const StyledLayout = styled(Layout)`
   margin: 0 auto;
-  width: 36rem;
-  height: 48rem;
+  width: 40rem;
+  height: 60rem;
   background: var(--color-background);
   display: flex;
   flex-direction: column;

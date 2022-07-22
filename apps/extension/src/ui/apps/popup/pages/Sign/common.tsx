@@ -1,5 +1,5 @@
-import styled from "styled-components"
 import Layout from "@ui/apps/popup/Layout"
+import styled from "styled-components"
 
 export const Container = styled(Layout)`
   .layout-content .children {
@@ -8,6 +8,7 @@ export const Container = styled(Layout)`
     display: flex;
     flex-direction: column;
     height: 100%;
+    padding-top: 1.6rem;
 
     .grow {
       flex-grow: 1;
@@ -26,6 +27,9 @@ export const Container = styled(Layout)`
       line-height: var(--font-size-xlarge);
       padding: 0 2rem;
       text-align: left;
+    }
+    h2.center {
+      text-align: center;
     }
 
     .bottom {

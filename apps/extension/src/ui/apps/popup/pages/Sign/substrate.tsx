@@ -42,7 +42,7 @@ export const SubstrateSignRequest = () => {
             <SiteInfo siteUrl={url} />
             <div className="grow">
               <h1>Approve Request</h1>
-              <h2>
+              <h2 className="center">
                 You are approving a request with account{" "}
                 <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
                 {chain ? ` on ${chain.name}` : null}
