@@ -84,8 +84,19 @@ const Container = styled.div<{ isOpen?: boolean }>`
 
 const itemToString = (blockchain: NetworkOption | null | undefined) => blockchain?.name ?? ""
 
-const filterItems = (inputValue?: string) => (bc: NetworkOption | undefined) =>
-  !inputValue || !!bc?.name.toLowerCase().includes(inputValue.toLowerCase())
+const filterItems = (inputValue?: string) => (bc: NetworkOption | undefined) => {
+  try {
+    const test = inputValue?.toLowerCase() ?? ""
+    return (
+      !inputValue ||
+      !!bc?.name.toLowerCase().includes(test) ||
+      !!bc?.symbols?.some((s) => s.toLowerCase().includes(test))
+    )
+  } catch (err) {
+    // ignore
+    return false
+  }
+}
 
 export const NetworkPicker = () => {
   const { networks, networkFilter, setNetworkFilter } = usePortfolio()
