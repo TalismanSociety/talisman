@@ -174,7 +174,7 @@ export const NetworkPicker = () => {
   const disabled = useMemo(() => !items?.length, [items?.length])
 
   useEffect(() => {
-    if (selectedItem && !networks?.includes(selectedItem)) selectItem(undefined)
+    if (selectedItem && !networks?.some(({ id }) => id === selectedItem.id)) selectItem(undefined)
   }, [networks, selectItem, selectedItem])
 
   return (
