@@ -55,6 +55,7 @@ export type NetworkOption = {
   evmNetworkId?: number
   logoId: string
   symbols?: string[] // use when searching network by token symbol
+  sortIndex: number | null
 }
 
 const getNetworkTokenSymbols = ({
@@ -82,17 +83,18 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
     const result: NetworkOption[] = []
 
     if (chains && (!type || type === "sr25519"))
-      chains.forEach(({ id, name }) =>
+      chains.forEach(({ id, name, sortIndex }) =>
         result.push({
           id,
           chainId: id,
           name: name ?? "Unknown chain",
           logoId: id,
+          sortIndex,
         })
       )
 
     if (evmNetworks && (!type || type === "ethereum"))
-      evmNetworks.forEach(({ id, name, substrateChain }) => {
+      evmNetworks.forEach(({ id, name, substrateChain, sortIndex }) => {
         const existing = result.find(({ id }) => id === substrateChain?.id)
         if (existing) existing.evmNetworkId = id
         else
@@ -102,6 +104,7 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
             evmNetworkId: id,
             logoId: substrateChain?.id ?? String(id),
             chainId: substrateChain?.id,
+            sortIndex,
           })
       })
 
@@ -120,7 +123,10 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
               (!!evmNetworkId && b.evmNetworkId === evmNetworkId))
         )
       )
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .sort(
+        (a, b) =>
+          (a.sortIndex ?? Number.MAX_SAFE_INTEGER) - (b.sortIndex ?? Number.MAX_SAFE_INTEGER)
+      )
   }, [balances?.sorted, chains, evmNetworks, tokens, type])
 
   return networks
