@@ -1,6 +1,7 @@
 import { IconButton } from "@talisman/components/IconButton"
 import { EyeIcon, EyeOffIcon } from "@talisman/theme/icons"
 import Asset from "@ui/domains/Asset"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useSettings } from "@ui/hooks/useSettings"
 import { useCallback } from "react"
@@ -77,10 +78,12 @@ const TotalFiat = styled.div`
 export const TotalFiatBalance = ({ className }: { className?: string }) => {
   const balances = useBalances()
   const { hideBalances, update } = useSettings()
+  const { genericEvent } = useAnalytics()
 
   const toggleHideBalance = useCallback(() => {
+    genericEvent("toggle hide balance")
     update({ hideBalances: !hideBalances })
-  }, [hideBalances, update])
+  }, [genericEvent, hideBalances, update])
 
   return (
     <Container className={className}>

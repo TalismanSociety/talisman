@@ -8,6 +8,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { ReactNode, useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -151,6 +152,7 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
 
 const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
+  const { genericEvent } = useAnalytics()
 
   const isFetching = useMemo(
     () => balances.sorted.some((b) => b.status === "cache"),
@@ -162,7 +164,8 @@ const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
     navigate(`/portfolio/${token?.symbol}`)
-  }, [navigate, token?.symbol])
+    genericEvent("goto portfolio asset", { from: "popup", symbol: token?.symbol })
+  }, [genericEvent, navigate, token?.symbol])
 
   const { tokens, fiat } = useMemo(() => {
     return {

@@ -2,8 +2,7 @@ import { Balances } from "@core/domains/balances/types"
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
-import { WithTooltip } from "@talisman/components/Tooltip"
-import { IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
+import { IconMore } from "@talisman/theme/icons"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
@@ -15,6 +14,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAccountExport } from "@ui/hooks/useAccountExport"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import React, { useCallback, useMemo } from "react"
 import styled from "styled-components"
 
@@ -30,11 +30,12 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openAddressFormatterModal } = useAddressFormatterModal()
   const { open: openSendFundsModal } = useSendTokensModal()
+  const { genericEvent } = useAnalytics()
 
-  const sendFunds = useCallback(
-    () => openSendFundsModal({ from: account?.address }),
-    [account?.address, openSendFundsModal]
-  )
+  const sendFunds = useCallback(() => {
+    openSendFundsModal({ from: account?.address })
+    genericEvent("open send funds", { from: "dashboard portfolio" })
+  }, [account?.address, genericEvent, openSendFundsModal])
 
   const { portfolio, available, locked } = useMemo(() => {
     const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat("usd")
@@ -48,7 +49,8 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const copyAddress = useCallback(() => {
     if (!account) return
     openAddressFormatterModal(account.address)
-  }, [account, openAddressFormatterModal])
+    genericEvent("open copy address", { from: "dashboard portfolio" })
+  }, [account, genericEvent, openAddressFormatterModal])
 
   return (
     <div>

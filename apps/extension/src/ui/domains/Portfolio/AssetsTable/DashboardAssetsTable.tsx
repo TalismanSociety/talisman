@@ -3,6 +3,7 @@ import { Box } from "@talisman/components/Box"
 import { Skeleton } from "@talisman/components/Skeleton"
 import { LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -146,6 +147,7 @@ const FetchingIcon = styled(LoaderIcon)`
 
 const AssetRow = ({ balances, symbol }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
+  const { genericEvent } = useAnalytics()
 
   const isFetching = useMemo(
     () => balances.sorted.some((b) => b.status === "cache"),
@@ -157,7 +159,8 @@ const AssetRow = ({ balances, symbol }: AssetRowProps) => {
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
     navigate(`/portfolio/${token?.symbol}`)
-  }, [navigate, token?.symbol])
+    genericEvent("goto portfolio asset", { from: "dashboard", symbol: token?.symbol })
+  }, [genericEvent, navigate, token?.symbol])
 
   if (!token || !summary) return null
 

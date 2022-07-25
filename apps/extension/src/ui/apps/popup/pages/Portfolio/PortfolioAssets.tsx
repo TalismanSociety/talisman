@@ -16,12 +16,12 @@ import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
-import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAccountExport } from "@ui/hooks/useAccountExport"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import React, { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -40,16 +40,18 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const { canRemove, open: openAccountRemoveModal } = useAccountRemoveModal()
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openAddressFormatterModal } = useAddressFormatterModal()
-  const { open: openSendFundsModal } = useSendTokensModal()
+  const { genericEvent } = useAnalytics()
 
   const sendFunds = useCallback(() => {
     api.modalOpen("send")
-  }, [])
+    genericEvent("open send funds", { from: "popup portfolio" })
+  }, [genericEvent])
 
   const copyAddress = useCallback(() => {
     if (!account) return
     openAddressFormatterModal(account.address)
-  }, [account, openAddressFormatterModal])
+    genericEvent("open copy address", { from: "popup portfolio" })
+  }, [account, genericEvent, openAddressFormatterModal])
 
   const navigate = useNavigate()
   const handleBackBtnClick = useCallback(() => {

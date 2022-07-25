@@ -1,4 +1,5 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { breakpoints } from "@talisman/theme/definitions"
 import { AllAccountsIcon, ChevronDownIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
@@ -7,10 +8,11 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useSelect } from "downshift"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import styled, { css } from "styled-components"
 
 const Button = styled.button`
@@ -197,16 +199,27 @@ const Container = styled.div<{ responsive?: boolean }>`
   ${({ responsive }) => (responsive ? RESPONSIVE_CONTAINER_STYLE : "")}
 `
 
-type AccountOptionProps = {
+type AnyAccountOptionProps = { withTrack?: boolean }
+
+type AccountOptionProps = AnyAccountOptionProps & {
   address?: string
   totalUsd: number
   genesisHash?: string | null
   name?: string
 }
 
-const AccountOption = ({ address, totalUsd, genesisHash, name }: AccountOptionProps) => {
+const AccountOption = ({ address, totalUsd, genesisHash, name, withTrack }: AccountOptionProps) => {
+  const { genericEvent } = useAnalytics()
+  const handleClick = useCallback(() => {
+    if (!withTrack) return
+    genericEvent("select account(s)", {
+      type: address ? (isEthereumAddress(address) ? "ethereum" : "substrate") : "all",
+      from: "sidebar",
+    })
+  }, [address, genericEvent, withTrack])
+
   return (
-    <AccountOptionContainer>
+    <AccountOptionContainer onClick={handleClick}>
       <div className="ao-avatar">
         {address ? (
           <AccountAvatar address={address} genesisHash={genesisHash} />
@@ -224,7 +237,9 @@ const AccountOption = ({ address, totalUsd, genesisHash, name }: AccountOptionPr
   )
 }
 
-type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & { address: string }
+type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & {
+  address: string
+}
 
 const SingleAccountOption = (props: SingleAccountOptionProps) => {
   const { sum } = useBalancesByAddress(props.address)
@@ -233,11 +248,11 @@ const SingleAccountOption = (props: SingleAccountOptionProps) => {
   return <AccountOption {...props} totalUsd={total} />
 }
 
-const AllAccountsOption = () => {
+const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
   const { sum } = useBalances()
   const { total } = useMemo(() => sum.fiat("usd"), [sum])
 
-  return <AccountOption name="All accounts" totalUsd={total} />
+  return <AccountOption name="All accounts" totalUsd={total} withTrack={withTrack} />
 }
 
 const OPTION_ALL_ACCOUNTS = { address: undefined } as unknown as AccountJsonAny
@@ -282,7 +297,11 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
             </li>
             {items.map((item, index) => (
               <li key={item.address ?? "all"} {...getItemProps({ item, index })}>
-                {item.address ? <SingleAccountOption {...item} /> : <AllAccountsOption />}
+                {item.address ? (
+                  <SingleAccountOption {...item} withTrack />
+                ) : (
+                  <AllAccountsOption withTrack />
+                )}
               </li>
             ))}
           </>
