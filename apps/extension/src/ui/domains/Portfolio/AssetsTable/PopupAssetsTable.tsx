@@ -184,27 +184,39 @@ const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
       <Box padding="1.2rem" fontsize="xlarge">
         <TokenLogo tokenId={token.id} />
       </Box>
-      <Box
-        grow
-        flex
-        column
-        justify="center"
-        gap={0.4}
-        lineheight="small"
-        fontsize="small"
-        padding="0 1.2rem 0 0"
-      >
-        <Box bold fg="foreground" flex justify="space-between">
-          <Box fontsize="small">
-            {token.symbol}
-            {isFetching && (
-              <span>
-                {" "}
-                <FetchingIcon data-spin />
-              </span>
+      <Box grow relative flex padding="0 1.2rem 0 0" gap={0.8}>
+        <Box relative grow>
+          {/* we want content from this cell to be hidden if there are too many tokens to display on right cell */}
+          <Box
+            flex
+            column
+            textalign="left"
+            gap={0.4}
+            absolute
+            top={0}
+            left={0}
+            overflow="hidden"
+            w="100%"
+            h="100%"
+          >
+            <Box fontsize="small" fg="foreground" bold noWrap>
+              {token.symbol}
+              {isFetching && (
+                <span>
+                  {" "}
+                  <FetchingIcon data-spin />
+                </span>
+              )}
+            </Box>
+            {!!networkIds.length && (
+              <Box fontsize="normal">
+                <NetworksLogoStack networkIds={networkIds} />
+              </Box>
             )}
           </Box>
-          <Box fontsize="small" fg={locked ? "mid" : "foreground"}>
+        </Box>
+        <Box flex column textalign="right" gap={0.4}>
+          <Box fontsize="small" fg={locked ? "mid" : "foreground"} bold noWrap>
             <Tokens
               amount={planckToTokens(tokens.toString(), token.decimals)}
               symbol={token?.symbol}
@@ -212,12 +224,7 @@ const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
             />
             {locked ? <RowLockIcon className="lock" /> : null}
           </Box>
-        </Box>
-        <Box flex justify="space-between" lineheight="small">
-          <Box fontsize="normal">
-            <NetworksLogoStack networkIds={networkIds} />
-          </Box>
-          <Box fg="mid" fontsize="xsmall">
+          <Box fg="mid" fontsize="xsmall" lineheight="normal">
             {fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}
           </Box>
         </Box>
