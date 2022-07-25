@@ -7,12 +7,12 @@ export const useAnalytics = () => {
     api.analyticsCapture({ eventName, options })
   }, [])
 
-  const pageOpenEvent = useCallback((pageName: string) => {
-    api.analyticsCapture({ eventName: `open ${pageName}` })
+  const pageOpenEvent = useCallback((pageName: string, options: posthog.Properties = {}) => {
+    api.analyticsCapture({ eventName: `open ${pageName}`, options })
   }, [])
 
-  const popupOpenEvent = useCallback((page: string) => {
-    api.analyticsCapture({ eventName: "open popup", options: { page } })
+  const popupOpenEvent = useCallback((page: string, options: posthog.Properties = {}) => {
+    api.analyticsCapture({ eventName: "open popup", options: { ...options, page } })
   }, [])
 
   return {

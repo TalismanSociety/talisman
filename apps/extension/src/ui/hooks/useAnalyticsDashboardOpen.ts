@@ -10,13 +10,13 @@ const DEFAULT_VALUE = {}
  *
  * @param pageName
  * @param options Make sure value is immutable or it may trigger event on each rerender
- */ export const useAnalyticsPopupOpen = (
+ */ export const useAnalyticsDashboardOpen = (
   pageName: string,
   options: posthog.Properties = DEFAULT_VALUE
 ) => {
-  const { popupOpenEvent } = useAnalytics()
+  const { pageOpenEvent } = useAnalytics()
 
   useEffect(() => {
-    popupOpenEvent(pageName, options)
-  }, [popupOpenEvent, pageName, options])
+    pageOpenEvent(pageName, options)
+  }, [pageOpenEvent, pageName, options])
 }

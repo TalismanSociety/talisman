@@ -22,6 +22,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAccountExport } from "@ui/hooks/useAccountExport"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
 import React, { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -123,6 +124,8 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
 
 export const PortfolioAssets = () => {
   const { networkBalances } = usePortfolio()
+
+  useAnalyticsPopupOpen("portfolio assets")
 
   return <PageContent balances={networkBalances} />
 }

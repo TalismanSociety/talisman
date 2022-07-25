@@ -8,6 +8,7 @@ import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
+import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
 import React, { useCallback, useMemo } from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 
@@ -61,6 +62,9 @@ export const PortfolioAsset = () => {
     () => new Balances(allBalances.sorted.filter((b) => b.token?.symbol === symbol)),
     [allBalances.sorted, symbol]
   )
+
+  const pageViewParams = useMemo(() => ({ symbol }), [symbol])
+  useAnalyticsPopupOpen("portfolio asset", pageViewParams)
 
   if (!symbol) return <Navigate to="/portfolio" />
 

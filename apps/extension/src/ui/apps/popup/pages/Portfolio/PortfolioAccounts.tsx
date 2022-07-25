@@ -9,6 +9,7 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
 import useBalances from "@ui/hooks/useBalances"
 import { MouseEventHandler, memo, useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
@@ -145,6 +146,8 @@ export const PortfolioAccounts = () => {
       })),
     ]
   }, [accounts, balances])
+
+  useAnalyticsPopupOpen("portfolio accounts")
 
   // if only 1 entry (all accounts) it means that accounts aren't loaded
   if (options.length <= 1) return null

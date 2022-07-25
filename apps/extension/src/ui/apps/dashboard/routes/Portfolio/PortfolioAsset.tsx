@@ -7,6 +7,7 @@ import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
+import { useAnalyticsDashboardOpen } from "@ui/hooks/useAnalyticsDashboardOpen"
 import React, { useCallback, useMemo } from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 import styled from "styled-components"
@@ -101,6 +102,9 @@ export const PortfolioAsset = () => {
     () => new Balances(allBalances.sorted.filter((b) => b.token?.symbol === symbol)),
     [allBalances.sorted, symbol]
   )
+
+  const pageViewParams = useMemo(() => ({ symbol }), [symbol])
+  useAnalyticsDashboardOpen("portfolio asset", pageViewParams)
 
   if (!symbol) return <Navigate to="/portfolio" />
 
