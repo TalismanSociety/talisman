@@ -23,7 +23,7 @@ import { getPrivateKey } from "@core/util/getPrivateKey"
 import type { TransactionRequest } from "@ethersproject/providers"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import { assert } from "@polkadot/util"
-import { BigNumber, ethers } from "ethers"
+import { BigNumber, BigNumberish, ethers } from "ethers"
 import type { UnsignedTransaction } from "ethers"
 import { formatUnits, parseUnits, serializeTransaction } from "ethers/lib/utils"
 import isString from "lodash/isString"
@@ -56,13 +56,26 @@ const getHumanReadableErrorMessage = (error: unknown) => {
 
 type UnsignedTxWithGas = Omit<TransactionRequest, "gasLimit"> & { gas: string }
 
-const txRequestToUnsignedTx = (tx: TransactionRequest | UnsignedTxWithGas): UnsignedTransaction => {
+const txRequestToUnsignedTx = (
+  tx: TransactionRequest | UnsignedTxWithGas,
+  blockGasLimit: BigNumberish
+): UnsignedTransaction => {
   // we're using EIP1559 so gasPrice must be removed
   // eslint-disable-next-line prefer-const
   let { from, gasPrice, ...unsignedTx } = tx
   if ("gas" in unsignedTx) {
     const { gas, ...rest1 } = unsignedTx as UnsignedTxWithGas
-    unsignedTx = { ...rest1, gasLimit: BigNumber.from(gas ?? "250000") }
+    let gasLimit = BigNumber.from(gas ?? "250000") // arbitrary default value
+    if (gasLimit.gt(blockGasLimit)) {
+      // probably bad formatting or error from the dapp, assign default value
+      gasLimit = BigNumber.from("250000")
+    } else if (gasLimit.lt(BigNumber.from("21000"))) {
+      // invalid, all chains use 21000 as minimum, use default value
+      gasLimit = BigNumber.from("250000")
+    }
+
+    // TODO : move gasLimit check to client side so we can show more accurate max fee before approval
+    unsignedTx = { ...rest1, gasLimit }
   }
 
   if (unsignedTx.nonce) {
@@ -91,18 +104,24 @@ export class EthHandler extends ExtensionHandler {
       assert(provider, "Unable to find provider for chain " + ethChainId)
 
       // get up to date nonce (accounts for pending transactions)
-      const nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
+      const [nonce, block] = await Promise.all([
+        getTransactionCount(queued.account.address, queued.ethChainId),
+        provider.getBlock("latest"),
+      ])
 
       const maxFeePerGas = parseUnits(strMaxFeePerGas, "wei")
       const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, "wei")
 
-      const goodTx = txRequestToUnsignedTx({
-        maxFeePerGas,
-        maxPriorityFeePerGas,
-        nonce,
-        type: 2,
-        ...request,
-      })
+      const goodTx = txRequestToUnsignedTx(
+        {
+          maxFeePerGas,
+          maxPriorityFeePerGas,
+          nonce,
+          type: 2,
+          ...request,
+        },
+        block.gasLimit
+      )
 
       const serialisedTx = serializeTransaction(goodTx)
       try {
