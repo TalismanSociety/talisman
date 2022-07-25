@@ -83,8 +83,11 @@ const Address = ({ address }: AddressProps) => {
   )
 }
 
+// must be immutable
+const pageViewParam = { type: "ethereum" }
+
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
-  useAnalyticsGenericEvent("open sign transaction view details", { type: "ethereum" })
+  useAnalyticsGenericEvent("open sign transaction view details", pageViewParam)
 
   const { request, network, gasInfo, priority } = useEthSignTransactionRequest()
 

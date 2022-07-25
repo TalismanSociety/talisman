@@ -71,13 +71,16 @@ type ViewDetailsContentProps = BaseViewDetailsProps & {
   onClose: () => void
 }
 
+// Must be immutable
+const pageViewParam = { type: "substrate" }
+
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   onClose,
   signingRequest,
   txDetails,
   txDetailsError,
 }) => {
-  useAnalyticsGenericEvent("open sign transaction view details", { type: "substrate" })
+  useAnalyticsGenericEvent("open sign transaction view details", pageViewParam)
 
   const { request, account, chain } = usePolkadotSigningRequest(signingRequest)
   const nativeToken = useToken(chain?.nativeToken?.id)
