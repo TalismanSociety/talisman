@@ -28,6 +28,8 @@ type BoxProps = {
   relative?: boolean
   absolute?: boolean
   fixed?: boolean
+  top?: CSSProperties["top"]
+  left?: CSSProperties["left"]
 
   // layout
   gap?: number
@@ -159,6 +161,8 @@ const boxPropsInjector = (props: BoxProps): CSSObject => {
     textOverflow: props.textOverflow,
     whiteSpace: props.noWrap ? "nowrap" : undefined,
     cursor: getCursor(props),
+    top: props.top,
+    left: props.left,
   }
 }
 

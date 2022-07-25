@@ -22,8 +22,6 @@ const Container = styled.div<{ isOpen?: boolean; disabled?: boolean }>`
     padding: 0;
   }
 
-  opacity: ${({ disabled }) => (disabled ? 0.7 : 1)};
-
   input::placeholder {
     color: var(--color-mid);
   }
@@ -90,6 +88,22 @@ const Container = styled.div<{ isOpen?: boolean; disabled?: boolean }>`
   .chain-logo {
     font-size: 2.4rem;
   }
+
+  ${({ disabled }) =>
+    disabled
+      ? css`
+          opacity: 0.5;
+          cursor: not-allowed;
+          button,
+          input::placeholder {
+            opacity: 0.5;
+          }
+          button,
+          input {
+            cursor: not-allowed;
+          }
+        `
+      : ""}
 `
 
 const itemToString = (blockchain: NetworkOption | null | undefined) => blockchain?.name ?? ""
