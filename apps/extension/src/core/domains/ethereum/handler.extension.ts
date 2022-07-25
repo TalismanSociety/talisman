@@ -56,6 +56,9 @@ const getHumanReadableErrorMessage = (error: unknown) => {
 
 type UnsignedTxWithGas = Omit<TransactionRequest, "gasLimit"> & { gas: string }
 
+const TX_GAS_LIMIT_DEFAULT = BigNumber.from("250000")
+const TX_GAS_LIMIT_MIN = BigNumber.from("21000")
+
 const txRequestToUnsignedTx = (
   tx: TransactionRequest | UnsignedTxWithGas,
   blockGasLimit: BigNumberish
@@ -65,13 +68,13 @@ const txRequestToUnsignedTx = (
   let { from, gasPrice, ...unsignedTx } = tx
   if ("gas" in unsignedTx) {
     const { gas, ...rest1 } = unsignedTx as UnsignedTxWithGas
-    let gasLimit = BigNumber.from(gas ?? "250000") // arbitrary default value
+    let gasLimit = BigNumber.from(gas ?? TX_GAS_LIMIT_DEFAULT) // arbitrary default value
     if (gasLimit.gt(blockGasLimit)) {
-      // probably bad formatting or error from the dapp, assign default value
-      gasLimit = BigNumber.from("250000")
-    } else if (gasLimit.lt(BigNumber.from("21000"))) {
-      // invalid, all chains use 21000 as minimum, use default value
-      gasLimit = BigNumber.from("250000")
+      // probably bad formatting or error from the dapp, fallback to default value
+      gasLimit = TX_GAS_LIMIT_DEFAULT
+    } else if (gasLimit.lt(TX_GAS_LIMIT_MIN)) {
+      // invalid, all chains use 21000 as minimum, fallback to default value
+      gasLimit = TX_GAS_LIMIT_DEFAULT
     }
 
     // TODO : move gasLimit check to client side so we can show more accurate max fee before approval
