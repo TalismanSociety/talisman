@@ -2,9 +2,12 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useNotification } from "@talisman/components/Notification"
+import { classNames } from "@talisman/util/classNames"
 import { provideContext } from "@talisman/util/provideContext"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useCallback, useEffect, useState } from "react"
+import styled from "styled-components"
+
 import AddressFormatter from "./AddressFormatter"
 
 const useAddressFormatterModalProvider = () => {
@@ -48,6 +51,22 @@ export const [AddressFormatterModalProvider, useAddressFormatterModal] = provide
   useAddressFormatterModalProvider
 )
 
+const ModalContainer = styled(Modal)`
+  // change so it's the inner address list that must be scrollable, not the body
+  .modal-content {
+    height: 600px;
+
+    .modal-dialog {
+      height: 100%;
+    }
+
+    .content {
+      overflow: hidden;
+      position: relative;
+    }
+  }
+`
+
 export const AddressFormatterModal = () => {
   const { address, close } = useAddressFormatterModal()
 
@@ -58,10 +77,10 @@ export const AddressFormatterModal = () => {
   }, [address])
 
   return (
-    <Modal open={Boolean(address)} onClose={close}>
+    <ModalContainer open={Boolean(address)} onClose={close}>
       <ModalDialog title="Copy address" onClose={close}>
         <AddressFormatter address={displayAddress} onClose={close} />
       </ModalDialog>
-    </Modal>
+    </ModalContainer>
   )
 }
