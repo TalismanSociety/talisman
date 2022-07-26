@@ -216,12 +216,12 @@ const AccountOption = ({ address, totalUsd, genesisHash, name }: AccountOptionPr
         )}
       </div>
       <div className="ao-rows">
-        <Box align="center" flex fullwidth className="ao-rowName">
-          <Box overflow="hidden" textOverflow="ellipsis" noWrap>
+        <Box align="center" flex fullwidth className="ao-rowName" gap={0.4}>
+          <Box overflow="hidden" textOverflow="ellipsis" noWrap flex column justify="center">
             {name ?? (address ? shortenAddress(address) : "unknown")}
           </Box>
           {genesisHash && (
-            <Box fg="primary">
+            <Box fg="primary" flex column justify="center">
               <UsbIcon />
             </Box>
           )}
