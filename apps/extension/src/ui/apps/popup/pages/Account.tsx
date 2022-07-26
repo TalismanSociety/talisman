@@ -1,7 +1,7 @@
 import Account from "@ui/domains/Account"
 import Site from "@ui/domains/Site"
-import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
-import { lazy } from "react"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useEffect } from "react"
 import styled from "styled-components"
 
 import { NavigationMenuButton } from "../components/Navigation/NavigationMenuButton"
@@ -9,7 +9,11 @@ import { TotalFiatBalance } from "../components/TotalFiatBalance"
 import Layout, { Content, Header } from "../Layout"
 
 const AccountAssets = ({ className }: any) => {
-  useAnalyticsPopupOpen("accounts")
+  const { popupOpenEvent } = useAnalytics()
+
+  useEffect(() => {
+    popupOpenEvent("accounts")
+  }, [popupOpenEvent])
 
   return (
     <Layout className={className}>

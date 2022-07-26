@@ -10,9 +10,9 @@ import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { scrollbarsStyle } from "@talisman/theme/styles"
-import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
-import { FC, useMemo } from "react"
+import { FC, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
@@ -71,17 +71,13 @@ type ViewDetailsContentProps = BaseViewDetailsProps & {
   onClose: () => void
 }
 
-// Must be immutable
-const pageViewParam = { type: "substrate" }
-
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   onClose,
   signingRequest,
   txDetails,
   txDetailsError,
 }) => {
-  useAnalyticsGenericEvent("open sign transaction view details", pageViewParam)
-
+  const { genericEvent } = useAnalytics()
   const { request, account, chain } = usePolkadotSigningRequest(signingRequest)
   const nativeToken = useToken(chain?.nativeToken?.id)
 
@@ -114,6 +110,10 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
       methodName,
     }
   }, [account, chain, nativeToken, tipRaw, txDetails])
+
+  useEffect(() => {
+    genericEvent("open sign transaction view details", { type: "substrate" })
+  }, [genericEvent])
 
   return (
     <ViewDetailsContainer>

@@ -1,14 +1,15 @@
-import styled from "styled-components"
-import Layout, { Header, Content, Footer } from "../Layout"
-import StatusIcon from "@talisman/components/StatusIcon"
-import * as yup from "yup"
-import { useCallback, useEffect } from "react"
-import { api } from "@ui/api"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { useForm } from "react-hook-form"
 import { FormField } from "@talisman/components/Field/FormField"
 import { SimpleButton } from "@talisman/components/SimpleButton"
-import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
+import StatusIcon from "@talisman/components/StatusIcon"
+import { api } from "@ui/api"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useCallback, useEffect } from "react"
+import { useForm } from "react-hook-form"
+import styled from "styled-components"
+import * as yup from "yup"
+
+import Layout, { Content, Footer, Header } from "../Layout"
 
 type FormData = {
   password: string
@@ -21,7 +22,11 @@ const schema = yup
   .required()
 
 const Unlock = ({ className }: any) => {
-  useAnalyticsPopupOpen("auth")
+  const { popupOpenEvent } = useAnalytics()
+
+  useEffect(() => {
+    popupOpenEvent("auth")
+  }, [popupOpenEvent])
 
   const {
     register,

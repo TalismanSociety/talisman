@@ -15,8 +15,7 @@ import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAccountExport } from "@ui/hooks/useAccountExport"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAnalyticsDashboardOpen } from "@ui/hooks/useAnalyticsDashboardOpen"
-import React, { useCallback, useMemo } from "react"
+import React, { useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
 const Stats = styled(Statistics)`
@@ -95,8 +94,11 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
 
 export const PortfolioAssets = () => {
   const { networkBalances } = usePortfolio()
+  const { pageOpenEvent } = useAnalytics()
 
-  useAnalyticsDashboardOpen("portfolio assets")
+  useEffect(() => {
+    pageOpenEvent("portfolio assets")
+  }, [pageOpenEvent])
 
   return <PageContent balances={networkBalances} />
 }

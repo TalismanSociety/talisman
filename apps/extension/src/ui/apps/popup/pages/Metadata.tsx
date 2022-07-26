@@ -1,12 +1,18 @@
-import styled from "styled-components"
-import Layout, { Header, Content, Footer } from "../Layout"
 import Button from "@talisman/components/Button"
 import Grid from "@talisman/components/Grid"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useCurrentMetadataRequest from "@ui/hooks/useCurrentMetadataRequest"
-import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
+import { useEffect } from "react"
+import styled from "styled-components"
+
+import Layout, { Content, Footer, Header } from "../Layout"
 
 const Container = ({ className }: any) => {
-  useAnalyticsPopupOpen("metadata")
+  const { popupOpenEvent } = useAnalytics()
+
+  useEffect(() => {
+    popupOpenEvent("metadata")
+  }, [popupOpenEvent])
 
   const { request, url, approve, reject, status } = useCurrentMetadataRequest({
     onError: () => window.close(),

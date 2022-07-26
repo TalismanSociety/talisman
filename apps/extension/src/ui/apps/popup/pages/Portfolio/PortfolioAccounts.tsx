@@ -9,9 +9,8 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
 import useBalances from "@ui/hooks/useBalances"
-import { MouseEventHandler, memo, useCallback, useMemo } from "react"
+import { MouseEventHandler, memo, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -132,6 +131,7 @@ const Accounts = memo(({ options }: { options: AccountOption[] }) => (
 export const PortfolioAccounts = () => {
   const balances = useBalances()
   const accounts = useAccounts()
+  const { popupOpenEvent } = useAnalytics()
 
   const options: AccountOption[] = useMemo(() => {
     return [
@@ -147,7 +147,9 @@ export const PortfolioAccounts = () => {
     ]
   }, [accounts, balances])
 
-  useAnalyticsPopupOpen("portfolio accounts")
+  useEffect(() => {
+    popupOpenEvent("portfolio accounts")
+  }, [popupOpenEvent])
 
   // if only 1 entry (all accounts) it means that accounts aren't loaded
   if (options.length <= 1) return null

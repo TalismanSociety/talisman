@@ -8,8 +8,8 @@ import { PopupAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
-import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
-import React, { useCallback, useMemo } from "react"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import React, { useCallback, useEffect, useMemo } from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 
 // memoise to re-render only if balances object changes
@@ -54,6 +54,7 @@ const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symb
 export const PortfolioAsset = () => {
   const { symbol } = useParams()
   const { allBalances } = usePortfolio()
+  const { popupOpenEvent } = useAnalytics()
 
   const balances = useMemo(
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
@@ -63,8 +64,9 @@ export const PortfolioAsset = () => {
     [allBalances.sorted, symbol]
   )
 
-  const pageViewParams = useMemo(() => ({ symbol }), [symbol])
-  useAnalyticsPopupOpen("portfolio asset", pageViewParams)
+  useEffect(() => {
+    popupOpenEvent("portfolio asset", { symbol })
+  }, [popupOpenEvent, symbol])
 
   if (!symbol) return <Navigate to="/portfolio" />
 

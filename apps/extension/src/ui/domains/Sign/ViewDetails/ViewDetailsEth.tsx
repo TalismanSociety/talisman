@@ -2,11 +2,11 @@ import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { scrollbarsStyle } from "@talisman/theme/styles"
-import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
 import { BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
-import { FC, useCallback, useMemo } from "react"
+import { FC, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
 import { useEthSignTransactionRequest } from "../SignRequestContext"
@@ -83,13 +83,9 @@ const Address = ({ address }: AddressProps) => {
   )
 }
 
-// must be immutable
-const pageViewParam = { type: "ethereum" }
-
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
-  useAnalyticsGenericEvent("open sign transaction view details", pageViewParam)
-
   const { request, network, gasInfo, priority } = useEthSignTransactionRequest()
+  const { genericEvent } = useAnalytics()
 
   const nativeToken = useToken(network?.nativeToken?.id)
   const formatEthValue = useCallback(
@@ -98,6 +94,10 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     },
     [nativeToken?.symbol]
   )
+
+  useEffect(() => {
+    genericEvent("open sign transaction view details", { type: "ethereum" })
+  }, [genericEvent])
 
   return (
     <ViewDetailsContainer>
