@@ -8,16 +8,15 @@ import { useNotification } from "@talisman/components/Notification"
 import { CopyIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import Account from "@ui/domains/Account"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { ReactNode, useCallback, useMemo } from "react"
+import { useCallback, useMemo } from "react"
 import styled from "styled-components"
 
 import StyledAssetLogo from "../../Asset/Logo"
-import { NoTokensMessage } from "../NoTokensMessage"
+import { PortfolioAccount } from "./PortfolioAccount"
 import { useAssetDetails } from "./useAssetDetails"
 import { useChainTokenBalances } from "./useChainTokenBalances"
 
@@ -76,19 +75,6 @@ const ChainTokenBlock = styled(Box)`
     border-bottom-left-radius: var(--border-radius-tiny);
     border-bottom-right-radius: var(--border-radius-tiny);
   }
-
-  .account-name {
-    .account-avatar,
-    .text,
-    .account-name-row {
-      font-size: 1.4rem;
-      line-height: 1.4rem;
-    }
-
-    .account-avatar {
-      margin-right: 0.4rem;
-    }
-  }
 `
 
 const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
@@ -140,8 +126,8 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
                 {row.title}
               </Box>
               {!!row.address && (
-                <Box>
-                  <Account.Name address={row.address} withAvatar />
+                <Box fontsize="xsmall">
+                  <PortfolioAccount address={row.address} />
                 </Box>
               )}
             </Box>

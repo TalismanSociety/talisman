@@ -1,7 +1,7 @@
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
-import { AllAccountsIcon, ChevronRightIcon, CopyIcon, LoaderIcon } from "@talisman/theme/icons"
+import { AllAccountsIcon, ChevronRightIcon, CopyIcon, UsbIcon } from "@talisman/theme/icons"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
@@ -18,6 +18,7 @@ type AccountOption = {
   address?: string
   name: string
   total?: number
+  genesisHash?: string | null
 }
 
 const Button = styled.article`
@@ -45,7 +46,7 @@ const CopyButton = styled(IconButton)`
   width: 1.4rem;
 `
 
-const AccountButton = ({ address, name, total }: AccountOption) => {
+const AccountButton = ({ address, name, total, genesisHash }: AccountOption) => {
   const { open } = useAddressFormatterModal()
   const { select } = useSelectedAccount()
   const navigate = useNavigate()
@@ -66,7 +67,11 @@ const AccountButton = ({ address, name, total }: AccountOption) => {
   return (
     <Button onClick={handleAccountClick}>
       <Box flex column justify="center" fontsize="xlarge">
-        {address ? <AccountAvatar address={address} /> : <AllAccountsIcon />}
+        {address ? (
+          <AccountAvatar address={address} genesisHash={genesisHash} />
+        ) : (
+          <AllAccountsIcon />
+        )}
       </Box>
       <Box flex column justify="center" align="flex-start" grow gap={0.4} overflow="hidden">
         <Box
@@ -81,6 +86,11 @@ const AccountButton = ({ address, name, total }: AccountOption) => {
           <Box overflow="hidden" textOverflow="ellipsis" noWrap>
             {name}
           </Box>
+          {genesisHash && (
+            <Box fg="primary">
+              <UsbIcon />
+            </Box>
+          )}
           {address ? (
             <Box overflow="hidden" h="1.4rem">
               <CopyButton onClick={handleCopyClick}>
@@ -131,8 +141,9 @@ export const PortfolioAccounts = () => {
         name: "All Accounts",
         total: balances.sum.fiat("usd").total,
       },
-      ...accounts.map(({ address, name }) => ({
+      ...accounts.map(({ address, name, genesisHash }) => ({
         address,
+        genesisHash,
         name: name ?? "Unknown Account",
         total: balances.find({ address }).sum.fiat("usd").total,
       })),

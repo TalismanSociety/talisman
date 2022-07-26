@@ -8,7 +8,6 @@ import { useNotification } from "@talisman/components/Notification"
 import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import Account from "@ui/domains/Account"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { Fragment, useCallback, useMemo } from "react"
 import styled from "styled-components"
@@ -16,6 +15,7 @@ import styled from "styled-components"
 import StyledAssetLogo from "../../Asset/Logo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { NoTokensMessage } from "../NoTokensMessage"
+import { PortfolioAccount } from "./PortfolioAccount"
 import { useAssetDetails } from "./useAssetDetails"
 import { useChainTokenBalances } from "./useChainTokenBalances"
 
@@ -52,19 +52,6 @@ const Table = styled.table`
       }
     }
   }
-
-  .account-name {
-    .account-avatar,
-    .text,
-    .account-name-row {
-      font-size: 1.4rem;
-      line-height: 1.4rem;
-    }
-
-    .account-avatar {
-      margin-right: 0.4rem;
-    }
-  }
 `
 
 const SpacerRow = styled(({ className }) => {
@@ -98,8 +85,8 @@ const AssetState = ({
         {title}
       </Box>
       {address && (
-        <Box>
-          <Account.Name address={address} withAvatar />
+        <Box fontsize="small">
+          <PortfolioAccount address={address} />
         </Box>
       )}
     </Box>
