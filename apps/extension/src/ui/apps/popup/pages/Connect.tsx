@@ -9,9 +9,9 @@ import Panel from "@talisman/components/Panel"
 import { InfoIcon, XIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import Account from "@ui/domains/Account"
-import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useCurrentAuthorisationRequest from "@ui/hooks/useCurrentAuthorisationRequest"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import styled from "styled-components"
 
 import Layout, { Content, Footer, Header } from "../Layout"
@@ -99,8 +99,11 @@ const Connect = ({ className, onSuccess }: any) => {
     onSuccess: () => window.close(),
     onIgnore: () => window.close(),
   })
+  const { popupOpenEvent } = useAnalytics()
 
-  useAnalyticsPopupOpen("connect")
+  useEffect(() => {
+    popupOpenEvent("connect")
+  }, [popupOpenEvent])
 
   const handleNoEthAccountClose = useCallback(
     (navigateToAddAccount: boolean) => () => {

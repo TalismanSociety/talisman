@@ -21,7 +21,9 @@ import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import Build from "@ui/domains/Build"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { ReactNode, useCallback } from "react"
+import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
 import styled from "styled-components"
 
@@ -228,15 +230,44 @@ export const SideBar = () => {
   const { account } = useSelectedAccount()
   const { open: openSendTokens } = useSendTokensModal()
   const { open: openCopyAddressModal } = useAddressFormatterModal()
+  const navigate = useNavigate()
+  const { genericEvent } = useAnalytics()
 
   const handleSendClick = useCallback(() => {
     openSendTokens({ from: account?.address })
-  }, [account?.address, openSendTokens])
+    genericEvent("open send funds", { from: "sidebar" })
+  }, [account?.address, genericEvent, openSendTokens])
 
   const handleCopyClick = useCallback(() => {
     if (!account) return
     openCopyAddressModal(account.address)
-  }, [account, openCopyAddressModal])
+    genericEvent("open copy address", { from: "sidebar" })
+  }, [account, genericEvent, openCopyAddressModal])
+
+  const handlePortfolioClick = useCallback(() => {
+    genericEvent("goto portfolio", { from: "sidebar" })
+    navigate("/portfolio")
+  }, [genericEvent, navigate])
+
+  const handleAddAccountClick = useCallback(() => {
+    genericEvent("goto add account", { from: "sidebar" })
+    navigate("/accounts/add")
+  }, [genericEvent, navigate])
+
+  const handleNftsClick = useCallback(() => {
+    genericEvent("open web app nfts", { from: "sidebar", target: "nfts" })
+    window.open("https://app.talisman.xyz/nfts", "_blank")
+  }, [genericEvent])
+
+  const handleCrowdloansClick = useCallback(() => {
+    genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
+    window.open("https://app.talisman.xyz/crowdloans", "_blank")
+  }, [genericEvent])
+
+  const handleSettingsClick = useCallback(() => {
+    genericEvent("goto settings", { from: "sidebar" })
+    navigate("/settings")
+  }, [genericEvent, navigate])
 
   return (
     <Container>
@@ -269,6 +300,7 @@ export const SideBar = () => {
         <Nav column>
           <NavItem
             to="/portfolio"
+            onClick={handlePortfolioClick}
             icon={
               <ResponsiveTooltip tooltip="Portfolio">
                 <UserIcon />
@@ -279,6 +311,7 @@ export const SideBar = () => {
           </NavItem>
           <NavItem
             to="/accounts/add"
+            onClick={handleAddAccountClick}
             icon={
               <ResponsiveTooltip tooltip="Add Account">
                 <PlusIcon />
@@ -290,6 +323,7 @@ export const SideBar = () => {
           <NavItem
             external
             to="https://app.talisman.xyz/nfts"
+            onClick={handleNftsClick}
             icon={
               <ResponsiveTooltip tooltip="NFTs">
                 <ImageIcon />
@@ -303,6 +337,7 @@ export const SideBar = () => {
           <NavItem
             external
             to="https://app.talisman.xyz/crowdloans"
+            onClick={handleCrowdloansClick}
             icon={
               <ResponsiveTooltip tooltip="Crowdloans">
                 <StarIcon />
@@ -318,6 +353,7 @@ export const SideBar = () => {
           </NavItem>
           <NavItem
             to="/settings"
+            onClick={handleSettingsClick}
             icon={
               <ResponsiveTooltip tooltip="Settings">
                 <SettingsIcon />

@@ -1,3 +1,4 @@
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
@@ -7,8 +8,9 @@ import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
-import { MouseEventHandler, memo, useCallback, useMemo } from "react"
+import { MouseEventHandler, memo, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -50,11 +52,16 @@ const AccountButton = ({ address, name, total, genesisHash }: AccountOption) => 
   const { open } = useAddressFormatterModal()
   const { select } = useSelectedAccount()
   const navigate = useNavigate()
+  const { genericEvent } = useAnalytics()
 
   const handleAccountClick = useCallback(() => {
     select(address)
     navigate("/portfolio/assets")
-  }, [address, navigate, select])
+    genericEvent("select account(s)", {
+      type: address ? (isEthereumAddress(address) ? "ethereum" : "substrate") : "all",
+      from: "popup",
+    })
+  }, [address, genericEvent, navigate, select])
 
   const handleCopyClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
@@ -134,6 +141,7 @@ const Accounts = memo(({ options }: { options: AccountOption[] }) => (
 export const PortfolioAccounts = () => {
   const balances = useBalances()
   const accounts = useAccounts()
+  const { popupOpenEvent } = useAnalytics()
 
   const options: AccountOption[] = useMemo(() => {
     return [
@@ -149,6 +157,10 @@ export const PortfolioAccounts = () => {
       })),
     ]
   }, [accounts, balances])
+
+  useEffect(() => {
+    popupOpenEvent("portfolio accounts")
+  }, [popupOpenEvent])
 
   // if only 1 entry (all accounts) it means that accounts aren't loaded
   if (options.length <= 1) return null

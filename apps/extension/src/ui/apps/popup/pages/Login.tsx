@@ -3,7 +3,7 @@ import { FormField } from "@talisman/components/Field/FormField"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import StatusIcon from "@talisman/components/StatusIcon"
 import { api } from "@ui/api"
-import { useAnalyticsPopupOpen } from "@ui/hooks/useAnalyticsPopupOpen"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import styled from "styled-components"
@@ -22,7 +22,11 @@ const schema = yup
   .required()
 
 const Unlock = ({ className }: any) => {
-  useAnalyticsPopupOpen("auth")
+  const { popupOpenEvent } = useAnalytics()
+
+  useEffect(() => {
+    popupOpenEvent("auth")
+  }, [popupOpenEvent])
 
   const {
     register,
