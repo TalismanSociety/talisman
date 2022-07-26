@@ -107,10 +107,8 @@ export class EthHandler extends ExtensionHandler {
       assert(provider, "Unable to find provider for chain " + ethChainId)
 
       // get up to date nonce (accounts for pending transactions)
-      const [nonce, block] = await Promise.all([
-        getTransactionCount(queued.account.address, queued.ethChainId),
-        provider.getBlock("latest"),
-      ])
+      const nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
+      const block = await provider.getBlock("latest")
 
       const maxFeePerGas = parseUnits(strMaxFeePerGas, "wei")
       const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, "wei")
