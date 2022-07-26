@@ -1,6 +1,7 @@
 import { Box } from "@talisman/components/Box"
 import { ChevronDownIcon, XIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
+import { classNames } from "@talisman/util/classNames"
 import { NetworkOption, usePortfolio } from "@ui/domains/Portfolio/context"
 import { UseComboboxState, UseComboboxStateChangeOptions, useCombobox } from "downshift"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -9,6 +10,27 @@ import styled, { css } from "styled-components"
 import StyledAssetLogo from "../Asset/Logo"
 
 const Container = styled.div<{ isOpen?: boolean; disabled?: boolean }>`
+  .network-main,
+  ul {
+    border: 1px solid transparent;
+  }
+  ul {
+    display: none;
+  }
+
+  .network-main {
+    box-sizing: content-box;
+  }
+  :not(.select-disabled):active,
+  :not(.select-disabled):focus-within {
+    .network-main {
+      background-color: var(--color-background-muted-3x);
+    }
+    .network-main {
+      border: 1px solid var(--color-background-muted-2x);
+    }
+  }
+
   display: inline-block;
   position: relative;
 
@@ -67,7 +89,7 @@ const Container = styled.div<{ isOpen?: boolean; disabled?: boolean }>`
     border-bottom-left-radius: var(--border-radius);
     background-color: var(--color-background-muted);
 
-    ${scrollbarsStyle("var(--color-background-muted-2x)")}
+    ${scrollbarsStyle("var(--color-background-muted-2x)")};
   }
   li {
     margin: 0;
@@ -77,33 +99,42 @@ const Container = styled.div<{ isOpen?: boolean; disabled?: boolean }>`
 
   > div {
     border-radius: var(--border-radius);
-    ${({ isOpen }) =>
-      isOpen &&
-      `
-          border-bottom-right-radius: 0;
-          border-bottom-left-radius: 0;
-      `}
   }
 
   .chain-logo {
     font-size: 2.4rem;
   }
 
-  ${({ disabled }) =>
-    disabled
-      ? css`
-          opacity: 0.5;
-          cursor: not-allowed;
-          button,
-          input::placeholder {
-            opacity: 0.5;
-          }
-          button,
-          input {
-            cursor: not-allowed;
-          }
-        `
-      : ""}
+  &.select-open {
+    ul {
+      border: 1px solid var(--color-background-muted-2x);
+    }
+    /* .network-main {
+      border-bottom: none;
+    } */
+    ul {
+      border-top: none;
+      display: block;
+    }
+
+    > div {
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+  &.select-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    button,
+    input::placeholder {
+      opacity: 0.5;
+    }
+    button,
+    input {
+      cursor: not-allowed;
+    }
+  }
 `
 
 const itemToString = (blockchain: NetworkOption | null | undefined) => blockchain?.name ?? ""
@@ -193,9 +224,21 @@ export const NetworkPicker = () => {
   }, [networks, selectItem, selectedItem])
 
   return (
-    <Container isOpen={isOpen} disabled={disabled}>
-      <Box flex gap={1} w={30} bg="background-muted" align="center" {...getComboboxProps()}>
-        <Box h={4.8} flex fullwidth align="center" padding="0 0 0 1.2rem">
+    <Container
+      className={classNames(isOpen && "select-open", disabled && "select-disabled")}
+      isOpen={isOpen}
+      disabled={disabled}
+    >
+      <Box
+        className="network-main"
+        flex
+        gap={1}
+        w={30}
+        bg="background-muted"
+        align="center"
+        {...getComboboxProps()}
+      >
+        <Box h={4.8} flex fullwidth align="center" padding="0 0 0 1.2rem" overflow="hidden">
           {networkFilter ? (
             <Box margin="0 1.2rem 0 0">
               <StyledAssetLogo id={networkFilter?.logoId} />
