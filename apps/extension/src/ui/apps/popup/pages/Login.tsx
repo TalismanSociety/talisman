@@ -109,6 +109,10 @@ const StyledUnlock = styled(Unlock)`
     visibility: hidden;
   }
 
+  .layout-content .children > section {
+    margin-top: 50px;
+  }
+
   .layout-footer {
     .field {
       text-align: center;

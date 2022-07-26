@@ -20,7 +20,7 @@ const Container = styled.div`
   justify-content: center;
   cursor: not-allowed;
   background: rgba(0, 0, 0, 0);
-  transition: background var(--transition-speed-slower) ease-in-out;
+  transition: background-color var(--transition-speed-slower) ease-in-out;
   color: inherit;
 
   > .modal-content {

@@ -1,3 +1,4 @@
+import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import Nav, { NavItem } from "@talisman/components/Nav"
 import { PillButton } from "@talisman/components/PillButton"
@@ -6,6 +7,7 @@ import { WithTooltip } from "@talisman/components/Tooltip"
 import { breakpoints } from "@talisman/theme/definitions"
 import {
   CopyIcon,
+  ExternalLinkIcon,
   ImageIcon,
   PaperPlaneIcon,
   PlusIcon,
@@ -186,7 +188,8 @@ const Container = styled.aside`
       padding: 1.6rem;
     }
 
-    nav .link span:last-child {
+    nav .link span:last-child,
+    nav .link ${Box} {
       display: none;
     }
     nav .link {
@@ -218,6 +221,10 @@ const ResponsiveTooltip = ({
     <>{children}</>
   )
 }
+
+const LinkIcon = styled(ExternalLinkIcon)`
+  margin-left: -0.4rem !important;
+`
 
 export const SideBar = () => {
   const { account } = useSelectedAccount()
@@ -323,7 +330,9 @@ export const SideBar = () => {
               </ResponsiveTooltip>
             }
           >
-            NFTs
+            <Box>
+              NFTs <ExternalLinkIcon />
+            </Box>
           </NavItem>
           <NavItem
             external
@@ -335,7 +344,12 @@ export const SideBar = () => {
               </ResponsiveTooltip>
             }
           >
-            Crowdloans
+            <Box flex justify={"center"} gap={0.6}>
+              <Box>Crowdloans</Box>
+              <Box>
+                <ExternalLinkIcon />
+              </Box>
+            </Box>
           </NavItem>
           <NavItem
             to="/settings"

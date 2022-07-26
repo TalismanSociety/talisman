@@ -16,8 +16,8 @@ const ErrorContainer = styled.section`
 
   section {
     padding: 2rem;
-    width: 36rem;
-    height: 48rem;
+    width: 40rem;
+    height: 60rem;
     display: flex;
     flex-direction: column;
 

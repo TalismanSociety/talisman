@@ -1,7 +1,8 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { Box } from "@talisman/components/Box"
 import { breakpoints } from "@talisman/theme/definitions"
-import { AllAccountsIcon, ChevronDownIcon } from "@talisman/theme/icons"
+import { AllAccountsIcon, ChevronDownIcon, UsbIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -228,7 +229,16 @@ const AccountOption = ({ address, totalUsd, genesisHash, name, withTrack }: Acco
         )}
       </div>
       <div className="ao-rows">
-        <div className="ao-rowName">{name ?? (address ? shortenAddress(address) : "unknown")}</div>
+        <Box align="center" flex fullwidth className="ao-rowName" gap={0.4}>
+          <Box overflow="hidden" textOverflow="ellipsis" noWrap flex column justify="center">
+            {name ?? (address ? shortenAddress(address) : "unknown")}
+          </Box>
+          {genesisHash && (
+            <Box fg="primary" flex column justify="center">
+              <UsbIcon />
+            </Box>
+          )}
+        </Box>
         <div className="ao-rowFiat">
           <Fiat amount={totalUsd} currency="usd" isBalance noCountUp />
         </div>

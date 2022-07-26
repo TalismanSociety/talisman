@@ -12,11 +12,6 @@ export const Container = styled.div`
   width: 42.2rem;
   height: 52rem;
 
-  // &.popup {
-  // width: 36rem;
-  // height: 48rem;
-  // }
-
   display: flex;
   flex-direction: column;
   position: relative;

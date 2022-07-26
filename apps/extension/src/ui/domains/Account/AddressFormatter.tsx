@@ -194,6 +194,11 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
   )
 })`
   color: var(--color-mid);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
 
   .flex {
     display: flex;
@@ -209,7 +214,7 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
 
   .addresses-list {
     margin-top: 1.2rem;
-    max-height: 24rem;
+    flex-grow: 1;
     overflow: auto;
   }
 `

@@ -30,7 +30,7 @@ const ViewDetailsContainer = styled.div`
   line-height: 2rem;
   display: flex;
   flex-direction: column;
-  max-height: 48rem;
+  max-height: 60rem;
 
   .grow {
     flex-grow: 1;

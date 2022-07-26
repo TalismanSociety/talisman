@@ -10,7 +10,7 @@ import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
-import { ReactNode, useMemo, useState } from "react"
+import { ReactNode, useEffect, useMemo, useState } from "react"
 
 const useHydrateBalances = (chains?: Chain[], evmNetworks?: EvmNetwork[], tokens?: Token[]) => {
   const chainsDb = useMemo(
@@ -78,6 +78,7 @@ const getNetworkTokenSymbols = ({
 
 const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balances?: Balances }) => {
   const { chains, evmNetworks, tokens } = usePortfolioCommonData()
+  const [safeNetworks, setSafeNetworks] = useState<NetworkOption[]>([])
 
   const networks = useMemo(() => {
     const result: NetworkOption[] = []
@@ -129,7 +130,13 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
       )
   }, [balances?.sorted, chains, evmNetworks, tokens, type])
 
-  return networks
+  useEffect(() => {
+    if (networks.map(({ id }) => id).join(",") !== safeNetworks.map(({ id }) => id).join(",")) {
+      setSafeNetworks(networks)
+    }
+  }, [networks, safeNetworks])
+
+  return safeNetworks
 }
 
 // allows sharing the network filter between pages
