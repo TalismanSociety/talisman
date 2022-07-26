@@ -217,10 +217,12 @@ export const NetworkPicker = () => {
     selectItem(undefined)
   }, [selectItem])
 
-  const disabled = useMemo(() => !items?.length, [items?.length])
+  const disabled = useMemo(() => !networks?.length, [networks?.length])
 
   useEffect(() => {
-    if (selectedItem && !networks?.some(({ id }) => id === selectedItem.id)) selectItem(undefined)
+    // when user changes account, if selected network isn't in the list anymore, clear
+    if (selectedItem?.id && !networks?.some(({ id }) => id === selectedItem.id))
+      selectItem(undefined)
   }, [networks, selectItem, selectedItem])
 
   return (
@@ -269,22 +271,30 @@ export const NetworkPicker = () => {
       </Box>
       <ul {...getMenuProps()}>
         {isOpen &&
-          items.map((item, index) => (
-            <li key={`${item.id}${index}`} {...getItemProps({ item, index })}>
-              <Box
-                flex
-                h={4.2}
-                fullwidth
-                bg={highlightedIndex === index ? "background-muted-3x" : "background-muted"}
-                fg="mid"
-                align="center"
-                gap={1.2}
-                padding="0 1.2rem"
-              >
-                <Box>
-                  <StyledAssetLogo id={item?.logoId} />
+          (items.length ? (
+            items.map((item, index) => (
+              <li key={`${item.id}${index}`} {...getItemProps({ item, index })}>
+                <Box
+                  flex
+                  h={4.2}
+                  fullwidth
+                  bg={highlightedIndex === index ? "background-muted-3x" : "background-muted"}
+                  fg="mid"
+                  align="center"
+                  gap={1.2}
+                  padding="0 1.2rem"
+                >
+                  <Box>
+                    <StyledAssetLogo id={item?.logoId} />
+                  </Box>
+                  <Box>{item.name}</Box>
                 </Box>
-                <Box>{item.name}</Box>
+              </li>
+            ))
+          ) : (
+            <li>
+              <Box padding={1.6} fontsize="small" fg="mid">
+                No network found
               </Box>
             </li>
           ))}
