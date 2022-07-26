@@ -5,9 +5,8 @@ import { classNames } from "@talisman/util/classNames"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
 import { getTransactionFeeParams } from "@talisman/util/getTransactionFeeParams"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAnalyticsGenericEvent } from "@ui/hooks/useAnalyticsGenericEvent"
 import { BigNumber } from "ethers"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import styled from "styled-components"
 
 const PillButton = styled.button`
@@ -148,7 +147,6 @@ type EthFeeSelectProps = {
 }
 
 export const EthFeeSelect = ({ onChange, priority, ...props }: EthFeeSelectProps) => {
-  useAnalyticsGenericEvent("open evm fee select")
   const { genericEvent } = useAnalytics()
 
   const { isOpen, open, close } = useOpenClose()
@@ -160,6 +158,10 @@ export const EthFeeSelect = ({ onChange, priority, ...props }: EthFeeSelectProps
     },
     [close, onChange, genericEvent]
   )
+
+  useEffect(() => {
+    genericEvent("open evm fee select")
+  }, [genericEvent])
 
   return (
     <>

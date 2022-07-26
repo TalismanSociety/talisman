@@ -68,9 +68,35 @@ export const NavigationDrawer: FC = () => {
   const { genericEvent } = useAnalytics()
 
   const handleLock = useCallback(async () => {
+    genericEvent("lock", { from: "popup nav" })
     await api.lock()
     close()
-  }, [close])
+  }, [close, genericEvent])
+
+  const handleAddAccountClick = useCallback(() => {
+    genericEvent("goto add account", { from: "popup nav" })
+    api.dashboardOpen("/accounts/add")
+  }, [genericEvent])
+
+  const handleSendFundsClick = useCallback(() => {
+    genericEvent("open send funds", { from: "popup nav" })
+    api.modalOpen("send")
+  }, [genericEvent])
+
+  const handlePortfolioClick = useCallback(() => {
+    genericEvent("goto portfolio", { from: "popup nav" })
+    api.dashboardOpen("/accounts")
+  }, [genericEvent])
+
+  const handleSettingsClick = useCallback(() => {
+    genericEvent("goto settings", { from: "popup nav" })
+    api.dashboardOpen("/settings")
+  }, [genericEvent])
+
+  const handleWebAppClick = useCallback(() => {
+    genericEvent("open webapp", { from: "popup nav" })
+    window.open("https://app.talisman.xyz")
+  }, [genericEvent])
 
   return (
     <Drawer anchor="right" open={isOpen} onClose={close} fullScreen>
@@ -84,25 +110,19 @@ export const NavigationDrawer: FC = () => {
         <main>
           <ScrollContainer>
             <Nav column>
-              <NavItem icon={<PlusIcon />} onClick={() => api.dashboardOpen("/accounts/add")}>
+              <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
                 Add Account
               </NavItem>
-              <NavItem icon={<PaperPlaneIcon />} onClick={() => api.modalOpen("send")}>
+              <NavItem icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
                 Send Funds
               </NavItem>
-              <NavItem icon={<MaximizeIcon />} onClick={() => api.dashboardOpen("/accounts")}>
+              <NavItem icon={<MaximizeIcon />} onClick={handlePortfolioClick}>
                 Expand View
               </NavItem>
-              <NavItem icon={<SettingsIcon />} onClick={() => api.dashboardOpen("/settings")}>
+              <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
                 Settings
               </NavItem>
-              <NavItem
-                icon={<LayoutIcon />}
-                onClick={() => {
-                  genericEvent("open webapp")
-                  return window.open("https://app.talisman.xyz")
-                }}
-              >
+              <NavItem icon={<LayoutIcon />} onClick={handleWebAppClick}>
                 Talisman Web App
               </NavItem>
               <NavItem icon={<LockIcon />} onClick={handleLock}>
