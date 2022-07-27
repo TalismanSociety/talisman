@@ -129,7 +129,7 @@ const watchExtrinsicStatus = async (
         cb(result, blockNumber, extIndex)
 
         await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
-      } catch (err) {
+      } catch (error) {
         Sentry.captureException(error, { extra: { chainId } })
       }
     }
@@ -165,7 +165,7 @@ const watchExtrinsicStatus = async (
 
         // if error, no need to wait for a confirmation
         if (result === "error") await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
-      } catch (err) {
+      } catch (error) {
         Sentry.captureException(error, { extra: { chainId } })
       }
     }
