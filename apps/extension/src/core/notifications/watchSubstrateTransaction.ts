@@ -79,7 +79,7 @@ const getExtrinsincResult = async (
       }
     }
   } catch (error) {
-    Sentry.captureException(error)
+    Sentry.captureException(error, { extra: { chainId } })
   }
   return { result: "unknown" }
 }
@@ -116,7 +116,7 @@ const watchExtrinsicStatus = async (
     [],
     async (error, data) => {
       if (error) {
-        Sentry.captureException(error)
+        Sentry.captureException(error, { extra: { chainId } })
         return
       }
 
@@ -130,7 +130,7 @@ const watchExtrinsicStatus = async (
 
         await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
       } catch (err) {
-        Sentry.captureException(err)
+        Sentry.captureException(error, { extra: { chainId } })
       }
     }
   )
@@ -145,7 +145,7 @@ const watchExtrinsicStatus = async (
     [],
     async (error, data) => {
       if (error) {
-        Sentry.captureException(error)
+        Sentry.captureException(error, { extra: { chainId } })
         return
       }
 
@@ -166,7 +166,7 @@ const watchExtrinsicStatus = async (
         // if error, no need to wait for a confirmation
         if (result === "error") await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
       } catch (err) {
-        Sentry.captureException(err)
+        Sentry.captureException(error, { extra: { chainId } })
       }
     }
   )
@@ -188,14 +188,12 @@ const watchExtrinsicStatus = async (
 }
 
 export const watchSubstrateTransaction = (chain: Chain, hexSignature: string) => {
-  Sentry.setExtra("chainId", chain.id)
-  Sentry.setExtra("chainName)", chain.name)
   watchExtrinsicStatus(chain.id, hexSignature, async (result, blockNumber, extIndex) => {
     const type: NotificationType = result === "included" ? "submitted" : result
     const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
 
     createNotification(type, chain.name ?? "chain", url)
-  }).catch((reason) => {
-    Sentry.captureException(reason)
+  }).catch((error) => {
+    Sentry.captureException(error, { extra: { chainId: chain.id, chainName: chain.name } })
   })
 }
