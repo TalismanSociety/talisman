@@ -185,10 +185,14 @@ const watchExtrinsicStatus = async (
 }
 
 export const watchSubstrateTransaction = (chain: Chain, hexSignature: string) => {
-  watchExtrinsicStatus(chain.id, hexSignature, async (result, blockNumber, extIndex) => {
-    const type: NotificationType = result === "included" ? "submitted" : result
-    const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
+  try {
+    watchExtrinsicStatus(chain.id, hexSignature, async (result, blockNumber, extIndex) => {
+      const type: NotificationType = result === "included" ? "submitted" : result
+      const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
 
-    createNotification(type, chain.name ?? "chain", url)
-  })
+      createNotification(type, chain.name ?? "chain", url)
+    })
+  } catch (error) {
+    Sentry.captureException(error, { extra: { chainId: chain.id, chainName: chain.name } })
+  }
 }
