@@ -33,51 +33,54 @@ const getExtrinsincResult = async (
   chainId: ChainId,
   hexSignature: string
 ): Promise<ExtrinsicResult> => {
-  const registry = await getTypeRegistry(chainId, blockHash.toHex())
-  const blockData = await RpcFactory.send(chainId, "chain_getBlock", [blockHash])
-  const block = registry.createType("SignedBlock", blockData)
+  try {
+    const registry = await getTypeRegistry(chainId, blockHash.toHex())
+    const blockData = await RpcFactory.send(chainId, "chain_getBlock", [blockHash])
+    const block = registry.createType("SignedBlock", blockData)
 
-  const eventsStorageKey = getStorageKeyHash("System", "Events")
-  const eventsFrame = await RpcFactory.send(chainId, "state_queryStorageAt", [
-    [eventsStorageKey],
-    blockHash,
-  ])
+    const eventsStorageKey = getStorageKeyHash("System", "Events")
+    const eventsFrame = await RpcFactory.send(chainId, "state_queryStorageAt", [
+      [eventsStorageKey],
+      blockHash,
+    ])
 
-  const events = registry.createType<Vec<EventRecord>>(
-    "Vec<FrameSystemEventRecord>",
-    eventsFrame[0].changes[0][1]
-  )
+    const events = registry.createType<Vec<EventRecord>>(
+      "Vec<FrameSystemEventRecord>",
+      eventsFrame[0].changes[0][1]
+    )
 
-  for (const [txIndex, x] of block.block.extrinsics.entries()) {
-    if (x.signature.eq(hexSignature)) {
-      const relevantEvent = events.find(
-        ({ phase, event }) =>
-          phase.isApplyExtrinsic &&
-          phase.asApplyExtrinsic.eqn(txIndex) &&
-          ["ExtrinsicSuccess", "ExtrinsicFailed"].includes(event.method)
-      )
-      if (relevantEvent)
-        if (relevantEvent?.event.method === "ExtrinsicSuccess") {
-          // we don't need associated data (whether if a fee has been paid or not, and extrinsic weight)
-          // const info = relevantEvent?.event.data[0] as DispatchInfo
-          return {
-            result: "success",
-            blockNumber: block.block.header.number.toNumber(),
-            extIndex: txIndex,
+    for (const [txIndex, x] of block.block.extrinsics.entries()) {
+      if (x.signature.eq(hexSignature)) {
+        const relevantEvent = events.find(
+          ({ phase, event }) =>
+            phase.isApplyExtrinsic &&
+            phase.asApplyExtrinsic.eqn(txIndex) &&
+            ["ExtrinsicSuccess", "ExtrinsicFailed"].includes(event.method)
+        )
+        if (relevantEvent)
+          if (relevantEvent?.event.method === "ExtrinsicSuccess") {
+            // we don't need associated data (whether if a fee has been paid or not, and extrinsic weight)
+            // const info = relevantEvent?.event.data[0] as DispatchInfo
+            return {
+              result: "success",
+              blockNumber: block.block.header.number.toNumber(),
+              extIndex: txIndex,
+            }
+          } else if (relevantEvent?.event.method === "ExtrinsicFailed") {
+            // from our tests this DispatchError object doesn't provide any relevant information for a user
+            // const error = relevantEvent?.event.data[0] as DispatchError
+            // const info = relevantEvent?.event.data[1] as DispatchInfo
+            return {
+              result: "error",
+              blockNumber: block.block.header.number.toNumber(),
+              extIndex: txIndex,
+            }
           }
-        } else if (relevantEvent?.event.method === "ExtrinsicFailed") {
-          // from our tests this DispatchError object doesn't provide any relevant information for a user
-          // const error = relevantEvent?.event.data[0] as DispatchError
-          // const info = relevantEvent?.event.data[1] as DispatchInfo
-          return {
-            result: "error",
-            blockNumber: block.block.header.number.toNumber(),
-            extIndex: txIndex,
-          }
-        }
+      }
     }
+  } catch (error) {
+    Sentry.captureException(error, { extra: { chainId } })
   }
-
   return { result: "unknown" }
 }
 
@@ -113,7 +116,7 @@ const watchExtrinsicStatus = async (
     [],
     async (error, data) => {
       if (error) {
-        Sentry.captureException(error)
+        Sentry.captureException(error, { extra: { chainId } })
         return
       }
 
@@ -126,8 +129,8 @@ const watchExtrinsicStatus = async (
         cb(result, blockNumber, extIndex)
 
         await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
-      } catch (err) {
-        Sentry.captureException(err)
+      } catch (error) {
+        Sentry.captureException(error, { extra: { chainId } })
       }
     }
   )
@@ -142,7 +145,7 @@ const watchExtrinsicStatus = async (
     [],
     async (error, data) => {
       if (error) {
-        Sentry.captureException(error)
+        Sentry.captureException(error, { extra: { chainId } })
         return
       }
 
@@ -162,8 +165,8 @@ const watchExtrinsicStatus = async (
 
         // if error, no need to wait for a confirmation
         if (result === "error") await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
-      } catch (err) {
-        Sentry.captureException(err)
+      } catch (error) {
+        Sentry.captureException(error, { extra: { chainId } })
       }
     }
   )
@@ -190,5 +193,7 @@ export const watchSubstrateTransaction = (chain: Chain, hexSignature: string) =>
     const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
 
     createNotification(type, chain.name ?? "chain", url)
+  }).catch((error) => {
+    Sentry.captureException(error, { extra: { chainId: chain.id, chainName: chain.name } })
   })
 }
