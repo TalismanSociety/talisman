@@ -6,6 +6,7 @@ import useBalances from "@ui/hooks/useBalances"
 import useTokens from "@ui/hooks/useTokens"
 import { useMemo } from "react"
 
+// TODO delete this file
 export const useChainsTokens = (chains: Chain[], evmNetworks?: EvmNetwork[]) => {
   const chainList = useMemo(
     () =>

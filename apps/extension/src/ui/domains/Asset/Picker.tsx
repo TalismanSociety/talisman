@@ -1,14 +1,12 @@
-import { Chain, ChainList } from "@core/domains/chains/types"
-import { TokenId } from "@core/domains/tokens/types"
+import { ChainList } from "@core/domains/chains/types"
+import { Erc20Token, NativeToken, Token, TokenId } from "@core/domains/tokens/types"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
 import useChain from "@ui/hooks/useChain"
 import useChains from "@ui/hooks/useChains"
-import { useChainsTokens } from "@ui/hooks/useChainsTokens"
 import { useChainsTokensWithBalanceFirst } from "@ui/hooks/useChainsTokensWithBalanceFirst"
-import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
-import { useSortedChains } from "@ui/hooks/useSortedChains"
-import useToken from "@ui/hooks/useToken"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import useTokens from "@ui/hooks/useTokens"
 import Downshift from "downshift"
 import { FC, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
@@ -139,18 +137,11 @@ const DivWithMount = forwardRef<HTMLDivElement, DivWithMountProps>(
   }
 )
 
-const Asset: FC<{ tokenId?: TokenId; chainsMap?: ChainList; withChainName?: boolean }> = ({
-  tokenId,
-  chainsMap,
-  withChainName = false,
-}) => {
-  const token = useToken(tokenId)
+const SubstrateAsset: FC<{
+  token?: Token
+  withChainName?: boolean
+}> = ({ token, withChainName = false }) => {
   const chain = useChain(token?.chain?.id)
-
-  const effectiveChain = useMemo(() => {
-    if (!chain && chainsMap && token?.chain?.id) return chainsMap[token?.chain?.id]
-    return chain
-  }, [chain, chainsMap, token?.chain?.id])
 
   return (
     <span className={classNames("asset", withChainName && "asset-with-chain")}>
@@ -159,12 +150,49 @@ const Asset: FC<{ tokenId?: TokenId; chainsMap?: ChainList; withChainName?: bool
       </span>
       <span className={"asset-main"}>
         <span className="token">{token?.symbol}</span>
-        {withChainName && (
-          <span className="chain">{effectiveChain?.name || <span>&nbsp;</span>}</span>
-        )}
+        {withChainName && <span className="chain">{chain?.name || <span>&nbsp;</span>}</span>}
       </span>
     </span>
   )
+}
+
+const EvmAsset: FC<{ token?: Erc20Token | NativeToken; withChainName?: boolean }> = ({
+  token,
+  withChainName = false,
+}) => {
+  const evmNetwork = useEvmNetwork(Number(token?.evmNetwork?.id ?? 0))
+
+  // const effectiveChain = useMemo(() => {
+  //   if (!chain && chainsMap && token?.chain?.id) return chainsMap[token?.chain?.id]
+  //   return chain
+  // }, [chain, chainsMap, token?.chain?.id])
+
+  return (
+    <span className={classNames("asset", withChainName && "asset-with-chain")}>
+      <span className="asset-logo">
+        <Logo id={token?.chain?.id} />
+      </span>
+      <span className={"asset-main"}>
+        <span className="token">{token?.symbol}</span>
+        {withChainName && <span className="chain">{evmNetwork?.name || <span>&nbsp;</span>}</span>}
+      </span>
+    </span>
+  )
+}
+
+const Asset: FC<{ token: Token; chainsMap?: ChainList; withChainName?: boolean }> = ({
+  token,
+  chainsMap,
+  withChainName = false,
+}) => {
+  if (token.chain) return <SubstrateAsset token={token} withChainName={withChainName} />
+  if ("evmNetwork" in token && token.evmNetwork)
+    return <EvmAsset token={token} withChainName={withChainName} />
+  else {
+    // eslint-disable-next-line no-console
+    console.debug("unknown token", token)
+    return null
+  }
 }
 
 // prevents searchbox to be filled with item.toString() when we select one
@@ -188,15 +216,16 @@ const AssetPicker: FC<IProps> = ({
   className,
   showChainsWithBalanceFirst,
 }) => {
+  const allTokens = useTokens()
   const chains = useChains()
   const chainsMap = useMemo(
     () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
     [chains]
   )
 
-  const allChains = useSortedChains()
-  const chainsWithPrefix: Chain[] = useHasPrefixChainsFilter(allChains)
-  const tokensWithNormalSorting = useChainsTokens(chainsWithPrefix)
+  //const allChains = useSortedChains()
+  //const chainsWithPrefix: Chain[] = useHasPrefixChainsFilter(allChains)
+  const tokensWithNormalSorting = useMemo(() => allTokens ?? [], [allTokens])
   const tokensWithBalanceFirst = useChainsTokensWithBalanceFirst(tokensWithNormalSorting, address)
   const tokens = useMemo(
     () => (showChainsWithBalanceFirst ? tokensWithBalanceFirst : tokensWithNormalSorting),
@@ -205,6 +234,10 @@ const AssetPicker: FC<IProps> = ({
 
   const [selectedTokenId, setSelectedTokenId] = useState<TokenId | undefined>(
     () => value ?? defaultValue ?? tokens[0]?.id ?? undefined
+  )
+  const selectedToken = useMemo(
+    () => allTokens?.find((token) => token.id === selectedTokenId),
+    [selectedTokenId, allTokens]
   )
 
   // if not set yet, set a token as soon as tokens are loaded
@@ -269,7 +302,7 @@ const AssetPicker: FC<IProps> = ({
                       item: token.id,
                     })}
                   >
-                    <Asset tokenId={token.id} chainsMap={chainsMap} withChainName />
+                    <Asset token={token} chainsMap={chainsMap} withChainName />
                   </li>
                 ))}
               </ul>
@@ -281,10 +314,10 @@ const AssetPicker: FC<IProps> = ({
             {...getToggleButtonProps()}
           >
             {/* key is there to force rerender in case of missing logo */}
-            {selectedTokenId && (
+            {selectedToken && (
               <Asset
-                key={selectedTokenId ?? "EMPTY"}
-                tokenId={selectedTokenId}
+                key={selectedToken?.id ?? "EMPTY"}
+                token={selectedToken}
                 chainsMap={chainsMap}
               />
             )}
