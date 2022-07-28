@@ -1,7 +1,7 @@
 import { ChainId } from "@core/domains/chains/types"
 import RpcFactory from "@core/libs/RpcFactory"
+import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { Block } from "@polkadot/types/interfaces"
-import { getRegistry } from "@substrate/txwrapper-polkadot"
 
 export default class BlocksRpc {
   /**
@@ -19,27 +19,13 @@ export default class BlocksRpc {
     const params = [blockHash].filter(Boolean)
 
     // query rpc
-    const send = (method: string, params: any[] = []) => RpcFactory.send(chainId, method, params)
-    const [response, metadataRpc, { specName, specVersion }, properties, chainName] =
-      await Promise.all([
-        send(method, params),
-        send("state_getMetadata"),
-        send("state_getRuntimeVersion"),
-        send("system_properties"),
-        send("system_chain"),
-      ])
+    const response = await RpcFactory.send(chainId, method, params)
 
     // get block from response
     const blockFrame = response.block
 
     // decode block
-    const blockDecoded = getRegistry({
-      metadataRpc,
-      specName,
-      specVersion,
-      properties,
-      chainName,
-    }).createType<Block>("Block", blockFrame)
+    const blockDecoded = (await getTypeRegistry(chainId)).createType<Block>("Block", blockFrame)
 
     return blockDecoded
   }
