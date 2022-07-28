@@ -2,7 +2,7 @@ import BlocksRpc from "@core/domains/blocks/rpc"
 import { ChainId } from "@core/domains/chains/types"
 import RpcFactory from "@core/libs/RpcFactory"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
-import { getRegistry } from "@substrate/txwrapper-polkadot"
+import { getTypeRegistry } from "@core/util/getTypeRegistry"
 
 import { EventList } from "./types"
 
@@ -63,27 +63,16 @@ export default class EventsRpc {
     const params = [[`0x${systemEventsHash}`], blockHash].filter(Boolean)
 
     // query rpc
-    const send = (method: string, params: any[] = []) => RpcFactory.send(chainId, method, params)
-    const [response, metadataRpc, { specName, specVersion }, properties, chainName] =
-      await Promise.all([
-        send(method, params),
-        send("state_getMetadata"),
-        send("state_getRuntimeVersion"),
-        send("system_properties"),
-        send("system_chain"),
-      ])
+    const response = await RpcFactory.send(chainId, method, params)
 
     // get events from response
     const eventsFrame = response[0]?.changes[0][1] || []
 
     // decode events
-    const events = getRegistry({
-      metadataRpc,
-      specName,
-      specVersion,
-      properties,
-      chainName,
-    }).createType("Vec<FrameSystemEventRecord>", eventsFrame)
+    const events = (await getTypeRegistry(chainId)).createType(
+      "Vec<FrameSystemEventRecord>",
+      eventsFrame
+    )
 
     return events.map((record) => {
       const { event, phase } = record
