@@ -98,7 +98,7 @@ module.exports = (env) => {
     plugins: [
       new DotEnv(),
       new webpack.DefinePlugin({
-        "process.env.BUILD": env.build,
+        "process.env.BUILD": JSON.stringify(env.build),
         "process.env.COMMIT_SHA_SHORT": JSON.stringify(getGitShortHash()),
         "process.env.VERSION": JSON.stringify(process.env.npm_package_version),
       }),
