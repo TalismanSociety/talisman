@@ -97,7 +97,7 @@ if (["production", "canary"].includes(process.env.BUILD)) {
   else
     plugins = [
       new webpack.DefinePlugin({
-        "process.env.SENTRY_RELEASE": getSentryRelease(),
+        "process.env.SENTRY_RELEASE": `"${getSentryRelease()}"`,
       }),
       new SentryWebpackPlugin({
         // see https://docs.sentry.io/product/cli/configuration/ for details
