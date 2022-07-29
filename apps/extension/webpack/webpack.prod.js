@@ -98,8 +98,8 @@ let getPlugins = (env) => {
     else {
       plugins = [
         new webpack.DefinePlugin({
-          "process.env.SENTRY_RELEASE": JSON.stringify(getSentryRelease(env)),
           "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN),
+          "process.env.SENTRY_RELEASE": JSON.stringify(getSentryRelease(env)),
         }),
         new SentryWebpackPlugin({
           // see https://docs.sentry.io/product/cli/configuration/ for details
