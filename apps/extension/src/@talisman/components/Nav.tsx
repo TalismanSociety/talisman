@@ -94,11 +94,9 @@ interface NavProps {
   className?: string
 }
 
-const Nav = ({ children, className }: NavProps) => (
+const Nav = styled(({ children, className }: NavProps) => (
   <nav className={`nav ${className}`}>{children}</nav>
-)
-
-const StyledNav = styled(Nav)`
+))`
   display: flex;
   align-items: flex-start;
 
@@ -112,4 +110,4 @@ const StyledNav = styled(Nav)`
   `};
 `
 
-export default StyledNav
+export default Nav
