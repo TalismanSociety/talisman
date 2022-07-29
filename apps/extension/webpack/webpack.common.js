@@ -99,6 +99,8 @@ module.exports = (env) => {
       new webpack.DefinePlugin({
         "process.env.BUILD": JSON.stringify(env.build),
         "process.env.COMMIT_SHA_SHORT": JSON.stringify(getGitShortHash()),
+        "process.env.EXTENSION_PREFIX": JSON.stringify("TalismanButLetsChangeThisToSomethingElse"),
+        "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
         "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD),
         "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN),
         "process.env.SENTRY_AUTH_TOKEN": JSON.stringify(process.env.SENTRY_AUTH_TOKEN),
