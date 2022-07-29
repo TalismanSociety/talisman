@@ -99,11 +99,11 @@ module.exports = (env) => {
       new webpack.DefinePlugin({
         "process.env.BUILD": JSON.stringify(env.build),
         "process.env.COMMIT_SHA_SHORT": JSON.stringify(getGitShortHash()),
-        "process.env.VERSION": JSON.stringify(process.env.npm_package_version),
         "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD),
         "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN),
         "process.env.SENTRY_AUTH_TOKEN": JSON.stringify(process.env.SENTRY_AUTH_TOKEN),
         "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN),
+        "process.env.VERSION": JSON.stringify(process.env.npm_package_version),
       }),
       new CaseSensitivePathsPlugin(),
       new ForkTsCheckerWebpackPlugin(),
