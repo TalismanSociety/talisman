@@ -1,7 +1,5 @@
-import RpcFactory from "@core/libs/RpcFactory"
+import { getMetadataRpc } from "@core/util/getMetadataRpc"
 import { Metadata, TypeRegistry } from "@polkadot/types"
-
-import { getMetadataRpc } from "./getMetadataRpc"
 
 export const getTypeRegistry = async (chainId: string, blockHash?: string) => {
   const metadataRpc = await getMetadataRpc(chainId, blockHash)
