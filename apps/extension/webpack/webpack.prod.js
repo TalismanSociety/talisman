@@ -12,8 +12,8 @@ const getGitShortHash = require("./utils").getGitShortHash
 
 const distDir = path.join(__dirname, "..", "dist")
 
-const getFileName = () => {
-  switch (process.env.BUILD) {
+const getFileName = (env) => {
+  switch (env.build) {
     case "ci":
       return `talisman_extension_ci_${getGitShortHash() ?? Date.now()}.zip`
     case "canary":
@@ -27,8 +27,8 @@ const getFileName = () => {
   }
 }
 
-const getSentryRelease = () => {
-  switch (process.env.BUILD) {
+const getSentryRelease = (env) => {
+  switch (env.build) {
     case "canary":
       return getGitShortHash()
     case "production":
@@ -39,83 +39,88 @@ const getSentryRelease = () => {
 }
 
 // Ensure plugins in this array will not change source in any way that will affect source maps
-let plugins = [
-  new CopyPlugin({
-    patterns: [
-      {
-        from: "manifest.json",
-        to: distDir,
-        context: "public",
-        // overwrite non-transformed manifest.json
-        force: true,
-        // copied last to overwrite the `dist/manifest.json` copied by the `from "."` pattern
-        priority: 10,
-        transform(content) {
-          // Parse the manifest
-          const manifest = JSON.parse(content.toString())
+let getPlugins = (env) => {
+  let plugins = [
+    new CopyPlugin({
+      patterns: [
+        {
+          from: "manifest.json",
+          to: distDir,
+          context: "public",
+          // overwrite non-transformed manifest.json
+          force: true,
+          // copied last to overwrite the `dist/manifest.json` copied by the `from "."` pattern
+          priority: 10,
+          transform(content) {
+            // Parse the manifest
+            const manifest = JSON.parse(content.toString())
 
-          // Update the version in the manifest file to match the version in package.json
-          manifest.version = process.env.npm_package_version
+            // Update the version in the manifest file to match the version in package.json
+            manifest.version = process.env.npm_package_version
 
-          // Set the canary title and icon if we're doing a canary build
-          if (process.env.BUILD === "canary") {
-            manifest.name = `${manifest.name} - Canary`
-            manifest.browser_action.default_title = `${manifest.browser_action.default_title} - Canary`
+            // Set the canary title and icon if we're doing a canary build
+            if (env.build === "canary") {
+              manifest.name = `${manifest.name} - Canary`
+              manifest.browser_action.default_title = `${manifest.browser_action.default_title} - Canary`
 
-            for (const key in manifest.icons) {
-              const filename = manifest.icons[key]
-              const name = filename.split(".").slice(0, -1).join()
-              const extension = filename.split(".").slice(-1).join()
+              for (const key in manifest.icons) {
+                const filename = manifest.icons[key]
+                const name = filename.split(".").slice(0, -1).join()
+                const extension = filename.split(".").slice(-1).join()
 
-              manifest.icons[key] = `${name}-canary.${extension}`
+                manifest.icons[key] = `${name}-canary.${extension}`
+              }
             }
-          }
 
-          // Return the modified manifest
-          return JSON.stringify(manifest, null, 2)
+            // Return the modified manifest
+            return JSON.stringify(manifest, null, 2)
+          },
         },
-      },
-      { from: ".", to: distDir, context: "public" },
-    ],
-  }),
-  // Do not include source maps in the zip file
-  new ZipPlugin({
-    filename: getFileName(),
-    exclude: new RegExp(/\.js\.map$/, "m"),
-  }),
-  new BundleAnalyzerPlugin({
-    // analyzerMode defaults to server, spawning a http server which can hang the process
-    // static will instead output a static html file to the dist folder, and not hang the terminal
-    analyzerMode: process.env.BUILD === "ci" ? "disabled" : "static",
-  }),
-]
+        { from: ".", to: distDir, context: "public" },
+      ],
+    }),
+    // Do not include source maps in the zip file
+    new ZipPlugin({
+      filename: getFileName(env),
+      exclude: new RegExp(/\.js\.map$/, "m"),
+    }),
+    new BundleAnalyzerPlugin({
+      // analyzerMode defaults to server, spawning a http server which can hang the process
+      // static will instead output a static html file to the dist folder, and not hang the terminal
+      analyzerMode: env.build === "ci" ? "disabled" : "static",
+    }),
+  ]
 
-if (["production", "canary"].includes(process.env.BUILD)) {
-  // only the person or bot that builds for store release should have an auth token
-  if (!process.env.SENTRY_AUTH_TOKEN)
-    console.warn("Missing SENTRY_AUTH_TOKEN env variable, release won't be uploaded to Sentry")
-  else
-    plugins = [
-      new webpack.DefinePlugin({
-        "process.env.SENTRY_RELEASE": `"${getSentryRelease()}"`,
-      }),
-      new SentryWebpackPlugin({
-        // see https://docs.sentry.io/product/cli/configuration/ for details
-        authToken: process.env.SENTRY_AUTH_TOKEN,
-        org: "talisman",
-        project: "talisman-extension",
-        release: getSentryRelease(),
-        include: distDir,
-      }),
-      ...plugins,
-    ]
+  if (["production", "canary"].includes(env.build)) {
+    // only the person or bot that builds for store release should have an auth token
+    if (!process.env.SENTRY_AUTH_TOKEN)
+      console.warn("Missing SENTRY_AUTH_TOKEN env variable, release won't be uploaded to Sentry")
+    else {
+      plugins = [
+        new webpack.DefinePlugin({
+          "process.env.SENTRY_RELEASE": JSON.stringify(getSentryRelease(env)),
+          "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN),
+        }),
+        new SentryWebpackPlugin({
+          // see https://docs.sentry.io/product/cli/configuration/ for details
+          authToken: process.env.SENTRY_AUTH_TOKEN,
+          org: "talisman",
+          project: "talisman-extension",
+          release: getSentryRelease(env),
+          include: distDir,
+        }),
+        ...plugins,
+      ]
+    }
+  }
+  return plugins
 }
 
 const fullConfig = (env) =>
   merge(common(env), {
     devtool: "source-map",
     mode: "production",
-    plugins,
+    plugins: getPlugins(env),
     optimization: {
       minimize: true,
       // ensure we're using the correct version of terser-webpack-plugin
