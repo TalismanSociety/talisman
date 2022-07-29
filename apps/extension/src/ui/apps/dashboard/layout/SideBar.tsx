@@ -1,6 +1,6 @@
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
-import Nav, { NavItem } from "@talisman/components/Nav"
+import Nav, { NavItemLink } from "@talisman/components/Nav"
 import { PillButton } from "@talisman/components/PillButton"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -23,7 +23,7 @@ import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { ReactNode, useCallback } from "react"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
 import styled from "styled-components"
 
@@ -222,15 +222,12 @@ const ResponsiveTooltip = ({
   )
 }
 
-const LinkIcon = styled(ExternalLinkIcon)`
-  margin-left: -0.4rem !important;
-`
-
 export const SideBar = () => {
   const { account } = useSelectedAccount()
   const { open: openSendTokens } = useSendTokensModal()
   const { open: openCopyAddressModal } = useAddressFormatterModal()
   const navigate = useNavigate()
+  const location = useLocation()
   const { genericEvent } = useAnalytics()
 
   const handleSendClick = useCallback(() => {
@@ -298,7 +295,7 @@ export const SideBar = () => {
       </PaddedItem>
       <ScrollContainer className="scrollable">
         <Nav column>
-          <NavItem
+          <NavItemLink
             to="/portfolio"
             onClick={handlePortfolioClick}
             icon={
@@ -308,8 +305,8 @@ export const SideBar = () => {
             }
           >
             Portfolio
-          </NavItem>
-          <NavItem
+          </NavItemLink>
+          <NavItemLink
             to="/accounts/add"
             onClick={handleAddAccountClick}
             icon={
@@ -319,9 +316,8 @@ export const SideBar = () => {
             }
           >
             Add Account
-          </NavItem>
-          <NavItem
-            external
+          </NavItemLink>
+          <NavItemLink
             to="https://app.talisman.xyz/nfts"
             onClick={handleNftsClick}
             icon={
@@ -330,12 +326,14 @@ export const SideBar = () => {
               </ResponsiveTooltip>
             }
           >
-            <Box>
-              NFTs <ExternalLinkIcon />
+            <Box flex justify={"center"} gap={0.6}>
+              <Box>
+                NFTs <ExternalLinkIcon />
+              </Box>
+              <Box></Box>
             </Box>
-          </NavItem>
-          <NavItem
-            external
+          </NavItemLink>
+          <NavItemLink
             to="https://app.talisman.xyz/crowdloans"
             onClick={handleCrowdloansClick}
             icon={
@@ -345,13 +343,13 @@ export const SideBar = () => {
             }
           >
             <Box flex justify={"center"} gap={0.6}>
-              <Box>Crowdloans</Box>
               <Box>
-                <ExternalLinkIcon />
+                Crowdloans <ExternalLinkIcon />
               </Box>
+              <Box></Box>
             </Box>
-          </NavItem>
-          <NavItem
+          </NavItemLink>
+          <NavItemLink
             to="/settings"
             onClick={handleSettingsClick}
             icon={
@@ -361,7 +359,7 @@ export const SideBar = () => {
             }
           >
             Settings
-          </NavItem>
+          </NavItemLink>
         </Nav>
       </ScrollContainer>
       <PaddedItem className="logo-container">
