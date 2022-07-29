@@ -53,6 +53,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     const result = request.sign(registry, pair)
 
+    /* temporarily disabled 
     // notify user about transaction progress
     if (isJsonPayload(payload) && (await this.stores.settings.get("allowNotifications"))) {
       const chains = await db.chains.toArray()
@@ -66,6 +67,7 @@ export default class SigningHandler extends ExtensionHandler {
         watchSubstrateTransaction(chain, signature)
       }
     }
+    */
 
     talismanAnalytics.capture("sign transaction approve", {
       ...analyticsProperties,

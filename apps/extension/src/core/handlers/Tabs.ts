@@ -237,12 +237,10 @@ export default class Tabs extends TabsHandler {
     // Always check for onboarding before doing anything else
     // unless the message is pub(eth.mimicMetaMask), which we send on injection into every page
     if (type !== "pub(eth.mimicMetaMask)") {
-      try {
-        await this.stores.app.ensureOnboarded()
-      } catch (error) {
-        this.state.openOnboarding(url)
-        throw error
-      }
+      // Because of chrome extensions can be synchronised on multiple computers,
+      // Talisman may be installed on computers where user do not want to onboard
+      // => Do not trigger onboarding, just throw an error
+      await this.stores.app.ensureOnboarded()
     }
 
     // check for phishing on all requests
