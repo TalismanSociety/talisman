@@ -111,16 +111,17 @@ if (["production", "canary"].includes(process.env.BUILD)) {
     ]
 }
 
-const fullConfig = merge(common, {
-  devtool: "source-map",
-  mode: "production",
-  plugins,
-  optimization: {
-    minimize: true,
-    // ensure we're using the correct version of terser-webpack-plugin
-    // can be removed when we switch to webpack 5
-    minimizer: [new TerserPlugin({ terserOptions: { compress: true } })],
-  },
-})
+const fullConfig = (env) =>
+  merge(common(env), {
+    devtool: "source-map",
+    mode: "production",
+    plugins,
+    optimization: {
+      minimize: true,
+      // ensure we're using the correct version of terser-webpack-plugin
+      // can be removed when we switch to webpack 5
+      minimizer: [new TerserPlugin({ terserOptions: { compress: true } })],
+    },
+  })
 
 module.exports = fullConfig
