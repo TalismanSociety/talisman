@@ -2,11 +2,14 @@ import { tokensToPlanck } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
 import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { AccountAddressType } from "@talisman/util/getAddressType"
 import { getChainAddressType } from "@talisman/util/getChainAddressType"
 import { isValidAddress } from "@talisman/util/isValidAddress"
 import Account from "@ui/domains/Account"
 import { useBalance } from "@ui/hooks/useBalance"
 import useChain from "@ui/hooks/useChain"
+import useChains from "@ui/hooks/useChains"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
 import {
@@ -243,16 +246,33 @@ export const SendForm = () => {
   // derived data
   const balance = useBalance(from, tokenId)
   const token = useToken(tokenId)
-  const chainId = token?.chain?.id
-  const chain = useChain(chainId)
-  const { addressType, genesisHash } = useMemo(
-    () =>
-      chain ? { addressType: getChainAddressType(chain), genesisHash: chain.genesisHash } : {},
-    [chain]
-  )
+
+  const chains = useChains()
+  const evmNetworks = useEvmNetworks()
+
+  // TODO dedicated hook ? handle account filter inside ?
+  const {
+    addressType,
+    genesisHash,
+  }: { addressType: AccountAddressType; genesisHash?: string | null } = useMemo(() => {
+    const chain = token?.chain && chains?.find((c) => c.id === token?.chain?.id)
+    const evmNetwork =
+      token &&
+      "evmNetwork" in token &&
+      evmNetworks?.find((c) => Number(c.id) === Number(token?.evmNetwork?.id))
+
+    return chain
+      ? {
+          addressType: getChainAddressType(chain),
+          genesisHash: chain.genesisHash,
+        }
+      : {
+          addressType: evmNetwork ? "ethereum" : "UNKNOWN",
+        }
+  }, [chains, evmNetworks, token])
 
   // refresh tip while on edit form, but stop refreshing after review (showForm becomes false)
-  const { tip, error: tipError } = useTip(chainId, showForm)
+  const { tip, error: tipError } = useTip(token?.chain?.id, showForm)
 
   useEffect(() => {
     // force type with ! because undefined value is used to check for an invalid form.
@@ -280,6 +300,8 @@ export const SendForm = () => {
   }, [amount, balance, errorMessage, isValid, setError, token, tip])
 
   if (!showForm) return null
+
+  //  console.log({ token, tokenId, addressType, genesisHash })
 
   return (
     <Container>
@@ -331,9 +353,9 @@ export const SendForm = () => {
               genesisHash={genesisHash}
             />
           </div>
-          {to && chain && (
+          {to && token?.chain && (
             <Suspense fallback={null}>
-              <SendAddressConvertInfo address={to} chainId={chainId} />
+              <SendAddressConvertInfo address={to} chainId={token?.chain?.id} />
             </Suspense>
           )}
         </article>
