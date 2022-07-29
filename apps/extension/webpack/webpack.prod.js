@@ -34,13 +34,16 @@ const getSentryRelease = (env) => {
     case "production":
       return process.env.npm_package_version
     default:
-      return undefined
+      return ""
   }
 }
 
 // Ensure plugins in this array will not change source in any way that will affect source maps
 let getPlugins = (env) => {
   let plugins = [
+    new webpack.DefinePlugin({
+      "process.env.SENTRY_RELEASE": JSON.stringify(getSentryRelease(env)),
+    }),
     new CopyPlugin({
       patterns: [
         {
@@ -98,7 +101,6 @@ let getPlugins = (env) => {
     else {
       plugins = [
         new webpack.DefinePlugin({
-          "process.env.SENTRY_RELEASE": JSON.stringify(getSentryRelease(env)),
           "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN),
         }),
         new SentryWebpackPlugin({
