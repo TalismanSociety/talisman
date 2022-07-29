@@ -1,6 +1,6 @@
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
-import Nav, { NavItemLink } from "@talisman/components/Nav"
+import Nav, { NavItemButton, NavItemLink } from "@talisman/components/Nav"
 import { PillButton } from "@talisman/components/PillButton"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -22,7 +22,7 @@ import Build from "@ui/domains/Build"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { ReactNode, useCallback } from "react"
+import { MouseEventHandler, ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
 import styled from "styled-components"
@@ -264,6 +264,7 @@ export const SideBar = () => {
   const handleNftsClick = useCallback(() => {
     genericEvent("open web app nfts", { from: "sidebar", target: "nfts" })
     window.open("https://app.talisman.xyz/nfts", "_blank")
+    return false
   }, [genericEvent])
 
   const handleCrowdloansClick = useCallback(() => {
@@ -327,8 +328,7 @@ export const SideBar = () => {
           >
             Add Account
           </NavItemLink>
-          <NavItemLink
-            to="https://app.talisman.xyz/nfts"
+          <NavItemButton
             onClick={handleNftsClick}
             icon={
               <ResponsiveTooltip tooltip="NFTs">
@@ -337,9 +337,8 @@ export const SideBar = () => {
             }
           >
             NFTs <ExtLinkIcon />
-          </NavItemLink>
-          <NavItemLink
-            to="https://app.talisman.xyz/crowdloans"
+          </NavItemButton>
+          <NavItemButton
             onClick={handleCrowdloansClick}
             icon={
               <ResponsiveTooltip tooltip="Crowdloans">
@@ -348,7 +347,7 @@ export const SideBar = () => {
             }
           >
             Crowdloans <ExtLinkIcon />
-          </NavItemLink>
+          </NavItemButton>
           <NavItemLink
             to="/settings"
             onClick={handleSettingsClick}
