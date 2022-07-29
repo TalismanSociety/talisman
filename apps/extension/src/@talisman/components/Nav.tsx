@@ -1,5 +1,5 @@
 import { classNames } from "@talisman/util/classNames"
-import { HTMLAttributes, ReactNode, useCallback } from "react"
+import { HTMLAttributes, ReactNode } from "react"
 import { NavLink, NavLinkProps } from "react-router-dom"
 import styled, { css } from "styled-components"
 

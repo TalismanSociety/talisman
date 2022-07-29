@@ -23,7 +23,7 @@ import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { ReactNode, useCallback } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
 import styled from "styled-components"
 
@@ -222,12 +222,22 @@ const ResponsiveTooltip = ({
   )
 }
 
+const ExtLinkIcon = styled(({ className }: { className?: string }) => (
+  <span className={className}>
+    <ExternalLinkIcon />
+  </span>
+))`
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: center;
+  vertical-align: text-top;
+`
+
 export const SideBar = () => {
   const { account } = useSelectedAccount()
   const { open: openSendTokens } = useSendTokensModal()
   const { open: openCopyAddressModal } = useAddressFormatterModal()
   const navigate = useNavigate()
-  const location = useLocation()
   const { genericEvent } = useAnalytics()
 
   const handleSendClick = useCallback(() => {
@@ -326,12 +336,7 @@ export const SideBar = () => {
               </ResponsiveTooltip>
             }
           >
-            <Box flex justify={"center"} gap={0.6}>
-              <Box>
-                NFTs <ExternalLinkIcon />
-              </Box>
-              <Box></Box>
-            </Box>
+            NFTs <ExtLinkIcon />
           </NavItemLink>
           <NavItemLink
             to="https://app.talisman.xyz/crowdloans"
@@ -342,12 +347,7 @@ export const SideBar = () => {
               </ResponsiveTooltip>
             }
           >
-            <Box flex justify={"center"} gap={0.6}>
-              <Box>
-                Crowdloans <ExternalLinkIcon />
-              </Box>
-              <Box></Box>
-            </Box>
+            Crowdloans <ExtLinkIcon />
           </NavItemLink>
           <NavItemLink
             to="/settings"
