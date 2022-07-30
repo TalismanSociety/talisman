@@ -5,7 +5,6 @@ import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { Erc20Token } from "@core/domains/tokens/types"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address } from "@core/types/base"
-import { JsonRpcBatchProvider } from "@ethersproject/providers"
 import * as Sentry from "@sentry/browser"
 import { ethers } from "ethers"
 
@@ -131,7 +130,7 @@ export default class Erc20BalancesEvmRpc {
 
   private static async getEvmNetworkProviders(
     evmNetworkIds: EvmNetworkId[]
-  ): Promise<Record<EvmNetworkId, JsonRpcBatchProvider>> {
+  ): Promise<Record<EvmNetworkId, ethers.providers.JsonRpcProvider>> {
     return Object.fromEntries(
       await Promise.all(
         evmNetworkIds.map((evmNetworkId) =>

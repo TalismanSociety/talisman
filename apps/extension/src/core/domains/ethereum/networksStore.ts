@@ -64,16 +64,7 @@ export class EvmNetworkStore {
 }
 
 // TODO: Extract to a separate ethereum rpc module to make these available to the extension separately to this store
-export const ethereumNetworksToProviders = (
-  ethereumNetworks: EvmNetworkList
-): Record<number, providers.JsonRpcBatchProvider> =>
-  Object.fromEntries(
-    Object.values(ethereumNetworks)
-      .map((ethereumNetwork) => [ethereumNetwork.id, ethereumNetworkToProvider(ethereumNetwork)])
-      .filter(([, network]) => network !== null)
-  )
-
-export const ethereumNetworkToProvider = (
+const ethereumNetworkToProvider = (
   ethereumNetwork: EvmNetwork | CustomEvmNetwork,
   batch = false
 ): providers.JsonRpcProvider | null => {
@@ -93,6 +84,7 @@ export const ethereumNetworkToProvider = (
 
 const ethereumNetworkProviders: Record<number, providers.JsonRpcProvider> = {}
 const ethereumNetworkBatchProviders: Record<number, providers.JsonRpcBatchProvider> = {}
+
 export const getProviderForEthereumNetwork = (
   ethereumNetwork: EvmNetwork | CustomEvmNetwork,
   batch = false

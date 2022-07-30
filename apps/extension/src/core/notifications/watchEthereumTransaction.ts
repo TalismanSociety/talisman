@@ -16,7 +16,7 @@ export const watchEthereumTransaction = async (ethChainId: number, txHash: strin
     }
     const networkName = ethereumNetwork.name ?? "unknown network"
 
-    const provider = getProviderForEthereumNetwork(ethereumNetwork)
+    const provider = getProviderForEthereumNetwork(ethereumNetwork, true)
     if (!provider) {
       throw new Error(`No provider for network ${ethChainId} (${ethereumNetwork.name})`)
     }
