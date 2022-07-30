@@ -34,7 +34,7 @@ import { ethers, providers } from "ethers"
 import { isHexString } from "ethers/lib/utils"
 
 import { filterAccountsByAddresses } from "../accounts/helpers"
-import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./networksStore"
+import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number

@@ -28,7 +28,7 @@ import type { UnsignedTransaction } from "ethers"
 import { formatUnits, parseUnits, serializeTransaction } from "ethers/lib/utils"
 import isString from "lodash/isString"
 
-import { getProviderForEvmNetworkId } from "./networksStore"
+import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 
 // turns errors into short and human readable message.

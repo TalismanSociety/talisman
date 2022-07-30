@@ -4,7 +4,7 @@ import { nanoid } from "nanoid"
 import urlJoin from "url-join"
 import Browser from "webextension-polyfill"
 
-import { getProviderForEthereumNetwork } from "../domains/ethereum/networksStore"
+import { getProviderForEthereumNetwork } from "../domains/ethereum/rpcProviders"
 import { createNotification } from "./createNotification"
 
 export const watchEthereumTransaction = async (ethChainId: number, txHash: string) => {
