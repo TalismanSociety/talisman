@@ -3,15 +3,16 @@ import StyledGrid from "@talisman/components/Grid"
 import { IconButton } from "@talisman/components/IconButton"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { XIcon } from "@talisman/theme/icons"
-import { api } from "@ui/api"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useParams } from "react-router-dom"
-import { useCallback, useState } from "react"
-import styled from "styled-components"
-import Layout, { Content, Header, Footer } from "../Layout"
 import unknownToken from "@talisman/theme/icons/custom-token-generic.svg"
+import { api } from "@ui/api"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
 import { useEthWatchAssetRequestById } from "@ui/hooks/useEthWatchAssetRequestById"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useCallback, useState } from "react"
+import { useParams } from "react-router-dom"
+import styled from "styled-components"
+
+import Layout, { Content, Footer, Header } from "../Layout"
 
 const TokenLogo = styled.img`
   width: 5.4rem;
@@ -111,10 +112,10 @@ export const AddCustomErc20Token = () => {
     setError(undefined)
     try {
       await api.ethWatchAssetRequestCancel(id)
-      window.close()
     } catch (err) {
-      setError((err as Error).message)
+      // ignore
     }
+    window.close()
   }, [id])
 
   if (!request || !request.token || !network) return null

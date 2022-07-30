@@ -38,15 +38,14 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
 
   // handle request rejection
   const reject = useCallback(async () => {
-    setStatus.processing("Rejecting request")
-    if (!currentRequest) return
     try {
-      await cancelSignFn(currentRequest.id)
-      setStatus.success("Rejected")
+      if (currentRequest) await cancelSignFn(currentRequest.id)
     } catch (err) {
-      setStatus.error("Failed to reject sign request")
+      // ignore, request doesn't exist
+      // we just want popup to close
     }
-  }, [cancelSignFn, currentRequest, setStatus])
+    window.close()
+  }, [cancelSignFn, currentRequest])
 
   return {
     id: currentRequest?.id,
