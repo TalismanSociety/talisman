@@ -74,44 +74,46 @@ export const ethereumNetworksToProviders = (
   )
 
 export const ethereumNetworkToProvider = (
-  ethereumNetwork: EvmNetwork | CustomEvmNetwork
-): providers.JsonRpcProvider | null =>
-  Array.isArray(ethereumNetwork.rpcs) &&
-  ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).length > 0
-    ? // TODO: Support ethereum rpc failover (ethers.providers.FallbackProvider)
-      // new ethers.providers.FallbackProvider(
-      //   network.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) =>
-      //     new ethers.providers.JsonRpcBatchProvider(url, { name: network.name, chainId: network.id })
-      //   )
-      // )
+  ethereumNetwork: EvmNetwork | CustomEvmNetwork,
+  batch = false
+): providers.JsonRpcProvider | null => {
+  if (
+    !Array.isArray(ethereumNetwork.rpcs) ||
+    ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).length === 0
+  )
+    return null
 
-      // Note : JsonRpcBatchProviders sometimes fails to return responses in the correct order
-      // => JsonRpcProvider should be prefered for processing dapp's requests
-      new ethers.providers.JsonRpcProvider(
-        ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) => url)[0],
-        { name: ethereumNetwork.name ?? "unknown network", chainId: ethereumNetwork.id }
-      )
-    : null
+  const url = ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) => url)[0]
+  const network = { name: ethereumNetwork.name ?? "unknown network", chainId: ethereumNetwork.id }
+
+  return batch
+    ? new ethers.providers.JsonRpcBatchProvider(url, network)
+    : new ethers.providers.JsonRpcProvider(url, network)
+}
 
 const ethereumNetworkProviders: Record<number, providers.JsonRpcProvider> = {}
+const ethereumNetworkBatchProviders: Record<number, providers.JsonRpcBatchProvider> = {}
 export const getProviderForEthereumNetwork = (
-  ethereumNetwork: EvmNetwork | CustomEvmNetwork
+  ethereumNetwork: EvmNetwork | CustomEvmNetwork,
+  batch = false
 ): providers.JsonRpcProvider | null => {
-  if (ethereumNetworkProviders[ethereumNetwork.id])
-    return ethereumNetworkProviders[ethereumNetwork.id]
+  const providersStore = batch ? ethereumNetworkBatchProviders : ethereumNetworkProviders
 
-  const provider = ethereumNetworkToProvider(ethereumNetwork)
+  if (providersStore[ethereumNetwork.id]) return providersStore[ethereumNetwork.id]
+
+  const provider = ethereumNetworkToProvider(ethereumNetwork, batch)
   if (provider === null) return null
 
-  ethereumNetworkProviders[ethereumNetwork.id] = provider
-  return ethereumNetworkProviders[ethereumNetwork.id]
+  providersStore[ethereumNetwork.id] = provider
+  return providersStore[ethereumNetwork.id]
 }
 
 export const getProviderForEvmNetworkId = async (
-  chainId: number
+  chainId: number,
+  batch = false
 ): Promise<providers.JsonRpcProvider | null> => {
   const network = await db.evmNetworks.get(chainId)
-  if (network) return getProviderForEthereumNetwork(network)
+  if (network) return getProviderForEthereumNetwork(network, batch)
   return null
 }
 

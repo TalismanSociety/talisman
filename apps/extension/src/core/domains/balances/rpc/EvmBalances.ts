@@ -121,7 +121,10 @@ export default class NativeBalancesEvmRpc {
     return Object.fromEntries(
       await Promise.all(
         evmNetworks.map((evmNetwork) =>
-          getProviderForEvmNetworkId(evmNetwork.id).then((provider) => [evmNetwork.id, provider])
+          getProviderForEvmNetworkId(evmNetwork.id, true).then((provider) => [
+            evmNetwork.id,
+            provider,
+          ])
         )
       )
     )
