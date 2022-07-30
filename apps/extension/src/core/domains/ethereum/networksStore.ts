@@ -75,7 +75,7 @@ export const ethereumNetworksToProviders = (
 
 export const ethereumNetworkToProvider = (
   ethereumNetwork: EvmNetwork | CustomEvmNetwork
-): providers.JsonRpcBatchProvider | null =>
+): providers.JsonRpcProvider | null =>
   Array.isArray(ethereumNetwork.rpcs) &&
   ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).length > 0
     ? // TODO: Support ethereum rpc failover (ethers.providers.FallbackProvider)
@@ -84,7 +84,10 @@ export const ethereumNetworkToProvider = (
       //     new ethers.providers.JsonRpcBatchProvider(url, { name: network.name, chainId: network.id })
       //   )
       // )
-      new ethers.providers.JsonRpcBatchProvider(
+
+      // Note : JsonRpcBatchProviders sometimes fails to return responses in the correct order
+      // => JsonRpcProvider should be prefered for processing dapp's requests
+      new ethers.providers.JsonRpcProvider(
         ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) => url)[0],
         { name: ethereumNetwork.name ?? "unknown network", chainId: ethereumNetwork.id }
       )
