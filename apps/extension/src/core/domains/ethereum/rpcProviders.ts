@@ -3,9 +3,14 @@ import { providers } from "ethers"
 
 import { CustomEvmNetwork, EvmNetwork } from "./types"
 
+export type GetProviderOptions = {
+  /** If true, returns a provider which will batch requests */
+  batch?: boolean
+}
+
 const ethereumNetworkToProvider = (
   ethereumNetwork: EvmNetwork | CustomEvmNetwork,
-  batch = false
+  { batch }: GetProviderOptions = {}
 ): providers.JsonRpcProvider | null => {
   if (
     !Array.isArray(ethereumNetwork.rpcs) ||
@@ -16,7 +21,7 @@ const ethereumNetworkToProvider = (
   const url = ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) => url)[0]
   const network = { name: ethereumNetwork.name ?? "unknown network", chainId: ethereumNetwork.id }
 
-  return batch
+  return batch === true
     ? new providers.JsonRpcBatchProvider(url, network)
     : new providers.JsonRpcProvider(url, network)
 }
@@ -26,13 +31,13 @@ const ethereumNetworkBatchProviders: Record<number, providers.JsonRpcBatchProvid
 
 export const getProviderForEthereumNetwork = (
   ethereumNetwork: EvmNetwork | CustomEvmNetwork,
-  batch = false
+  { batch }: GetProviderOptions = {}
 ): providers.JsonRpcProvider | null => {
-  const providersStore = batch ? ethereumNetworkBatchProviders : ethereumNetworkProviders
+  const providersStore = batch === true ? ethereumNetworkBatchProviders : ethereumNetworkProviders
 
   if (providersStore[ethereumNetwork.id]) return providersStore[ethereumNetwork.id]
 
-  const provider = ethereumNetworkToProvider(ethereumNetwork, batch)
+  const provider = ethereumNetworkToProvider(ethereumNetwork, { batch })
   if (provider === null) return null
 
   providersStore[ethereumNetwork.id] = provider
@@ -41,9 +46,9 @@ export const getProviderForEthereumNetwork = (
 
 export const getProviderForEvmNetworkId = async (
   chainId: number,
-  batch = false
+  { batch }: GetProviderOptions = {}
 ): Promise<providers.JsonRpcProvider | null> => {
   const network = await db.evmNetworks.get(chainId)
-  if (network) return getProviderForEthereumNetwork(network, batch)
+  if (network) return getProviderForEthereumNetwork(network, { batch })
   return null
 }

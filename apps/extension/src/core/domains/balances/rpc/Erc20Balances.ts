@@ -134,7 +134,7 @@ export default class Erc20BalancesEvmRpc {
     return Object.fromEntries(
       await Promise.all(
         evmNetworkIds.map((evmNetworkId) =>
-          getProviderForEvmNetworkId(evmNetworkId, true).then((provider) => [
+          getProviderForEvmNetworkId(evmNetworkId, { batch: true }).then((provider) => [
             evmNetworkId,
             provider,
           ])
