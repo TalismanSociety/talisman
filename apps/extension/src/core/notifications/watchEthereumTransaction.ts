@@ -2,9 +2,8 @@ import { db } from "@core/libs/db"
 import * as Sentry from "@sentry/browser"
 import { nanoid } from "nanoid"
 import urlJoin from "url-join"
-import Browser from "webextension-polyfill"
 
-import { getProviderForEthereumNetwork } from "../domains/ethereum/networksStore"
+import { getProviderForEthereumNetwork } from "../domains/ethereum/rpcProviders"
 import { createNotification } from "./createNotification"
 
 export const watchEthereumTransaction = async (ethChainId: number, txHash: string) => {
@@ -16,7 +15,7 @@ export const watchEthereumTransaction = async (ethChainId: number, txHash: strin
     }
     const networkName = ethereumNetwork.name ?? "unknown network"
 
-    const provider = getProviderForEthereumNetwork(ethereumNetwork)
+    const provider = getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
     if (!provider) {
       throw new Error(`No provider for network ${ethChainId} (${ethereumNetwork.name})`)
     }

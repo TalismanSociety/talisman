@@ -154,7 +154,7 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
       }
       const result = await this._sendRequest("pub(eth.request)", args)
       // eslint-disable-next-line no-console
-      safeConsoleDebug("[talismanEth.request] result for %s", args.method, result)
+      safeConsoleDebug("[talismanEth.request] response for %s", args.method, { args, result })
       return result
     } catch (err) {
       // eslint-disable-next-line no-console

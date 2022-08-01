@@ -1,4 +1,4 @@
-import { getProviderForEvmNetworkId } from "./networksStore"
+import { getProviderForEvmNetworkId } from "./rpcProviders"
 
 const dicTransactionCount = new Map<string, number>()
 

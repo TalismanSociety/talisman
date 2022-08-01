@@ -1,18 +1,29 @@
-import { PORT_EXTENSION, DEBUG } from "@core/constants"
-import type { MessageTypes, TransportRequestMessage } from "core/types"
+import { DEBUG, PORT_EXTENSION } from "@core/constants"
+import { AnyEthRequest, EthProviderRpcError } from "@core/injectEth/types"
 import { assert } from "@polkadot/util"
-import { Runtime } from "webextension-polyfill"
 import * as Sentry from "@sentry/browser"
+import type { MessageTypes, TransportRequestMessage } from "core/types"
+import { Runtime } from "webextension-polyfill"
 
-import TalismanState from "./State"
 import Extension from "./Extension"
+import TalismanState from "./State"
+import { extensionStores, tabStores } from "./stores"
 import Tabs from "./Tabs"
-import { tabStores, extensionStores } from "./stores"
-import { EthProviderRpcError } from "@core/injectEth/types"
 
 const state = new TalismanState()
 const extension = new Extension(state, extensionStores)
 const tabs = new Tabs(state, tabStores)
+
+const formatFrom = (source: string) => {
+  if (["extension", "<unknown>"].includes(source)) return source
+  if (!source) return source
+  try {
+    const urlObj = new URL(source)
+    return urlObj?.host
+  } catch (err) {
+    return source
+  }
+}
 
 const talismanHandler = <TMessageType extends MessageTypes>(
   data: TransportRequestMessage<TMessageType>,
@@ -22,13 +33,13 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   const { id, message, request } = data
   const isExtension = port.name === extensionPortName
   const sender = port.sender as chrome.runtime.MessageSender
-  const from = isExtension
-    ? "extension"
-    : (sender.tab && sender.tab.url) || sender.url || "<unknown>"
-  const source = `${from}: ${id}: ${message}`
+  const from = isExtension ? "extension" : sender?.tab?.url || "<unknown>"
+  const source = `${formatFrom(from)}: ${id}: ${
+    message === "pub(eth.request)" ? `${message} ${(request as AnyEthRequest).method}` : message
+  }`
 
   // eslint-disable-next-line no-console
-  DEBUG && console.debug(`[${port.name} got message from] ${source}`) // :: ${JSON.stringify(request)}`);
+  DEBUG && console.debug(`[${port.name} REQ] ${source}`, { request })
 
   // handle the request and get a promise as a response
   const promise = isExtension
@@ -39,7 +50,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   promise
     .then((response): void => {
       // eslint-disable-next-line no-console
-      DEBUG && console.debug(`[sending message back to] ${source} :: ${JSON.stringify(response)}`)
+      DEBUG && console.debug(`[${port.name} RES] ${source}`, { request, response })
 
       // between the start and the end of the promise, the user may have closed
       // the tab, in which case port will be undefined

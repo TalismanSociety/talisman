@@ -34,7 +34,7 @@ import { ethers, providers } from "ethers"
 import { isHexString } from "ethers/lib/utils"
 
 import { filterAccountsByAddresses } from "../accounts/helpers"
-import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./networksStore"
+import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
@@ -301,10 +301,7 @@ export class EthTabsHandler extends TabsHandler {
     request: EthRequestArguments<K>
   ): Promise<unknown> {
     const provider = await this.getProvider(url)
-    const result = await provider.send(request.method, request.params as unknown as any[])
-    // eslint-disable-next-line no-console
-    console.debug(request.method, request.params, result)
-    return result
+    return provider.send(request.method, request.params as unknown as any[])
   }
 
   private signMessage = async (url: string, request: EthRequestSignArguments) => {
@@ -326,9 +323,6 @@ export class EthTabsHandler extends TabsHandler {
           ? toBuffer(uncheckedMessage).toString("utf-8")
           : uncheckedMessage
         : JSON.stringify(uncheckedMessage)
-
-    // eslint-disable-next-line no-console
-    console.debug("ethereum signMessage", { method, params, from, uncheckedMessage, message })
 
     const site = await this.getSiteDetails(url)
     try {
@@ -397,9 +391,6 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     request: EthRequestArguments<TEthMessageType>
   ): Promise<unknown> {
-    // eslint-disable-next-line no-console
-    console.debug("ethRequest handler", request)
-
     try {
       // some sites expect eth_accounts to return an empty array if not connected/authorized.
       // if length === 0 they'll request authorization
