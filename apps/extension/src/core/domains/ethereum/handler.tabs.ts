@@ -30,6 +30,7 @@ import { toBuffer } from "@ethereumjs/util"
 import { recoverPersonalSignature } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ethers, providers } from "ethers"
 import { isHexString } from "ethers/lib/utils"
 
@@ -307,11 +308,14 @@ export class EthTabsHandler extends TabsHandler {
   private signMessage = async (url: string, request: EthRequestSignArguments) => {
     const { params, method } = request as EthRequestSignArguments
 
-    const [uncheckedMessage, from] = [
-      "personal_sign",
-      "eth_signTypedData",
-      "eth_signTypedData_v1",
-    ].includes(method)
+    let isMessageFirst = ["personal_sign", "eth_signTypedData", "eth_signTypedData_v1"].includes(
+      method
+    )
+    // on https://astar.network, params are in reverse order
+    if (isMessageFirst && isEthereumAddress(params[0]) && !isEthereumAddress(params[1]))
+      isMessageFirst = false
+
+    const [uncheckedMessage, from] = isMessageFirst
       ? [params[0], ethers.utils.getAddress(params[1])]
       : [params[1], ethers.utils.getAddress(params[0])]
 
