@@ -1,4 +1,5 @@
-/* eslint-env es6 */
+/* eslint-env es2021 */
+
 const { merge } = require("webpack-merge")
 const common = require("./webpack.common.js")
 const path = require("path")
@@ -9,7 +10,7 @@ const CircularDependencyPlugin = require("circular-dependency-plugin")
 
 const manifestPath = path.join(__dirname, "..", "public", "manifest.json")
 
-module.exports = (env) =>
+const config = (env) =>
   merge(common(env), {
     devtool: "eval-cheap-module-source-map",
     mode: "development",
@@ -64,3 +65,5 @@ module.exports = (env) =>
       }),
     ],
   })
+
+module.exports = config
