@@ -301,8 +301,6 @@ export const SendForm = () => {
 
   if (!showForm) return null
 
-  //  console.log({ token, tokenId, addressType, genesisHash })
-
   return (
     <Container>
       <form onSubmit={handleSubmit(submit)}>

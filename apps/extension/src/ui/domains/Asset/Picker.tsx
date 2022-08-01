@@ -1,17 +1,23 @@
 import { ChainList } from "@core/domains/chains/types"
+import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Erc20Token, NativeToken, Token, TokenId } from "@core/domains/tokens/types"
+import { getNetworkCategory } from "@core/util/getNetworkCategory"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
 import useChain from "@ui/hooks/useChain"
 import useChains from "@ui/hooks/useChains"
 import { useChainsTokensWithBalanceFirst } from "@ui/hooks/useChainsTokensWithBalanceFirst"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
 import Downshift from "downshift"
 import { FC, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
 
+import GenericPicker, { PickerItemProps } from "./GenericPicker"
 import Logo from "./Logo"
+import { useTransferableTokens } from "./Send/useTransferableTokens"
+import { TokenLogo } from "./TokenLogo"
 
 const Container = styled.div`
   position: relative;
@@ -180,11 +186,7 @@ const EvmAsset: FC<{ token?: Erc20Token | NativeToken; withChainName?: boolean }
   )
 }
 
-const Asset: FC<{ token: Token; chainsMap?: ChainList; withChainName?: boolean }> = ({
-  token,
-  chainsMap,
-  withChainName = false,
-}) => {
+const Asset: FC<{ token: Token; withChainName?: boolean }> = ({ token, withChainName = false }) => {
   if (token.chain) return <SubstrateAsset token={token} withChainName={withChainName} />
   if ("evmNetwork" in token && token.evmNetwork)
     return <EvmAsset token={token} withChainName={withChainName} />
@@ -208,6 +210,8 @@ interface IProps {
   showChainsWithBalanceFirst?: boolean
 }
 
+type SendableToken = Token & { id: string; tokenId: TokenId }
+
 const AssetPicker: FC<IProps> = ({
   defaultValue,
   value,
@@ -216,116 +220,117 @@ const AssetPicker: FC<IProps> = ({
   className,
   showChainsWithBalanceFirst,
 }) => {
-  const allTokens = useTokens()
   const chains = useChains()
-  const chainsMap = useMemo(
-    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
-    [chains]
-  )
+  const evmNetworks = useEvmNetworks()
+  const transferableTokens = useTransferableTokens(address, showChainsWithBalanceFirst)
 
-  //const allChains = useSortedChains()
-  //const chainsWithPrefix: Chain[] = useHasPrefixChainsFilter(allChains)
-  const tokensWithNormalSorting = useMemo(() => allTokens ?? [], [allTokens])
-  const tokensWithBalanceFirst = useChainsTokensWithBalanceFirst(tokensWithNormalSorting, address)
-  const tokens = useMemo(
-    () => (showChainsWithBalanceFirst ? tokensWithBalanceFirst : tokensWithNormalSorting),
-    [showChainsWithBalanceFirst, tokensWithBalanceFirst, tokensWithNormalSorting]
-  )
+  const items: PickerItemProps[] = transferableTokens.map((transferable) => {
+    const { id, chainId, evmNetworkId, token } = transferable
+    const chain = chains?.find((c) => c.id === chainId)
+    const evmNetwork = evmNetworks?.find((n) => Number(n.id) === Number(evmNetworkId))
+    const networkName = chain?.name || evmNetwork?.name
+    // display type only if chain has an evm network, or vice versa
+    const networkType =
+      evmNetwork && (chain?.evmNetworks?.length || !!evmNetwork?.substrateChain) ? " (EVM)" : ""
+    const subtitle = networkName + networkType
+    return {
+      id,
+      logo: <TokenLogo tokenId={token.id} />,
+      title: token.symbol,
+      subtitle: subtitle,
+    }
+  })
 
-  const [selectedTokenId, setSelectedTokenId] = useState<TokenId | undefined>(
-    () => value ?? defaultValue ?? tokens[0]?.id ?? undefined
-  )
-  const selectedToken = useMemo(
-    () => allTokens?.find((token) => token.id === selectedTokenId),
-    [selectedTokenId, allTokens]
-  )
+  return <GenericPicker items={items} />
 
-  // if not set yet, set a token as soon as tokens are loaded
-  useEffect(() => {
-    if (selectedTokenId === undefined && tokens.length > 0) setSelectedTokenId(tokens[0].id)
-  }, [selectedTokenId, tokens])
+  // const [selectedTokenId, setSelectedTokenId] = useState<TokenId | undefined>(
+  //   () => value ?? defaultValue ?? tokens[0]?.uid ?? undefined
+  // )
+  // const selectedToken = useMemo(
+  //   () => tokensWithNormalSorting?.find((token) => token.uid === selectedTokenId),
+  //   [tokensWithNormalSorting, selectedTokenId]
+  // )
 
-  // trigger parent's onChange
-  useEffect(() => {
-    if (!onChange || !selectedTokenId) return
-    if (value && value === selectedTokenId) return
-    onChange(selectedTokenId)
-  }, [onChange, selectedTokenId, value])
+  // // if not set yet, set a token as soon as tokens are loaded
+  // useEffect(() => {
+  //   if (selectedTokenId === undefined && tokens.length > 0) setSelectedTokenId(tokens[0].uid)
+  // }, [selectedTokenId, tokens])
 
-  const handleChange = useCallback((tokenId?: TokenId | null) => {
-    if (tokenId) setSelectedTokenId(tokenId)
-  }, [])
+  // // trigger parent's onChange
+  // useEffect(() => {
+  //   if (!onChange || !selectedTokenId) return
+  //   if (value && value === selectedTokenId) return
+  //   onChange(selectedTokenId)
+  // }, [onChange, selectedTokenId, value])
 
-  // returns the list of tokens to display in the combo box, filtered by user input
-  const searchTokens = useCallback(
-    (search: string | null) => {
-      if (!search) return tokens
-      const ls = search.toLowerCase()
-      return tokens.filter(
-        (token) =>
-          (token.chain && chainsMap[token.chain.id]?.name?.toLowerCase().includes(ls)) ||
-          token.symbol?.toLowerCase().includes(ls)
-      )
-    },
-    [tokens, chainsMap]
-  )
+  // const handleChange = useCallback((tokenId?: TokenId | null) => {
+  //   if (tokenId) setSelectedTokenId(tokenId)
+  // }, [])
 
-  return (
-    <Downshift onChange={handleChange} itemToString={handleItemToString}>
-      {({
-        getInputProps,
-        getItemProps,
-        isOpen,
-        inputValue,
-        getToggleButtonProps,
-        getMenuProps,
-        getRootProps,
-      }) => (
-        <Container className={className} {...getRootProps()}>
-          {isOpen && (
-            <DivWithMount className="asset-dropdown" {...getMenuProps()}>
-              <div className="asset-search-container">
-                <input
-                  className="asset-search"
-                  placeholder="Search tokens"
-                  autoFocus
-                  {...getInputProps()}
-                />
-              </div>
-              <ul className="asset-list">
-                {searchTokens(inputValue).map((token, index) => (
-                  <li
-                    className="asset-item"
-                    {...getItemProps({
-                      key: token.id,
-                      index,
-                      item: token.id,
-                    })}
-                  >
-                    <Asset token={token} chainsMap={chainsMap} withChainName />
-                  </li>
-                ))}
-              </ul>
-            </DivWithMount>
-          )}
-          <button
-            className="btn-select-asset"
-            aria-label={"select asset"}
-            {...getToggleButtonProps()}
-          >
-            {/* key is there to force rerender in case of missing logo */}
-            {selectedToken && (
-              <Asset
-                key={selectedToken?.id ?? "EMPTY"}
-                token={selectedToken}
-                chainsMap={chainsMap}
-              />
-            )}
-          </button>
-        </Container>
-      )}
-    </Downshift>
-  )
+  // // returns the list of tokens to display in the combo box, filtered by user input
+  // const searchTokens = useCallback(
+  //   (search: string | null) => {
+  //     if (!search) return tokens
+  //     const ls = search.toLowerCase()
+  //     return tokens.filter(
+  //       (token) => token.symbol?.toLowerCase().includes(ls)
+  //       //   token.chain && chainsMap[token.chain.id]?.name?.toLowerCase().includes(ls)
+  //       // ) || token.symbol?.toLowerCase().includes(ls)
+  //     )
+  //   },
+  //   [tokens]
+  // )
+
+  // return (
+  //   <Downshift onChange={handleChange} itemToString={handleItemToString}>
+  //     {({
+  //       getInputProps,
+  //       getItemProps,
+  //       isOpen,
+  //       inputValue,
+  //       getToggleButtonProps,
+  //       getMenuProps,
+  //       getRootProps,
+  //     }) => (
+  //       <Container className={className} {...getRootProps()}>
+  //         {isOpen && (
+  //           <DivWithMount className="asset-dropdown" {...getMenuProps()}>
+  //             <div className="asset-search-container">
+  //               <input
+  //                 className="asset-search"
+  //                 placeholder="Search tokens"
+  //                 autoFocus
+  //                 {...getInputProps()}
+  //               />
+  //             </div>
+  //             <ul className="asset-list">
+  //               {searchTokens(inputValue).map((token, index) => (
+  //                 <li
+  //                   className="asset-item"
+  //                   {...getItemProps({
+  //                     key: token.uid,
+  //                     index,
+  //                     item: token.uid,
+  //                   })}
+  //                 >
+  //                   <Asset token={token} withChainName />
+  //                 </li>
+  //               ))}
+  //             </ul>
+  //           </DivWithMount>
+  //         )}
+  //         <button
+  //           className="btn-select-asset"
+  //           aria-label={"select asset"}
+  //           {...getToggleButtonProps()}
+  //         >
+  //           {/* key is there to force rerender in case of missing logo */}
+  //           {selectedToken && <Asset key={selectedToken?.uid ?? "EMPTY"} token={selectedToken} />}
+  //         </button>
+  //       </Container>
+  //     )}
+  //   </Downshift>
+  // )
 }
 
 export default AssetPicker

@@ -9,7 +9,7 @@ import { useCallback, useMemo } from "react"
  * @param tokens to sort
  * @returns A sorted array of tokens
  */
-export const useChainsTokensWithBalanceFirst = (tokens: Token[], address?: string) => {
+export const useChainsTokensWithBalanceFirst = <T extends Token>(tokens: T[], address?: string) => {
   const balances = useBalances()
   const nonEmptyBalancesFilter = useMemo(
     () =>
