@@ -40,10 +40,10 @@ export const getProviderForEthereumNetwork = (
 }
 
 export const getProviderForEvmNetworkId = async (
-  chainId: number,
+  evmNetworkId: number,
   batch = false
 ): Promise<providers.JsonRpcProvider | null> => {
-  const network = await db.evmNetworks.get(chainId)
+  const network = await db.evmNetworks.get(evmNetworkId)
   if (network) return getProviderForEthereumNetwork(network, batch)
   return null
 }
