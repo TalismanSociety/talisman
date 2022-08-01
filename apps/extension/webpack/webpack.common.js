@@ -97,11 +97,19 @@ const config = (env) => ({
       // passthroughs from the environment
       "process.env.EXTENSION_PREFIX": JSON.stringify(process.env.EXTENSION_PREFIX || ""),
       "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
-      "process.env.PASSWORD": JSON.stringify(process.env.PASSWORD || ""),
       "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN || ""),
       "process.env.SENTRY_AUTH_TOKEN": JSON.stringify(process.env.SENTRY_AUTH_TOKEN || ""),
       "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
-      "process.env.TEST_MNEMONIC": JSON.stringify(process.env.TEST_MNEMONIC || ""),
+
+      // dev-only passthroughs from the environment
+      "process.env.PASSWORD": JSON.stringify(
+        // only pass through when env.build is undefined (running a development build)
+        env.build === undefined ? process.env.PASSWORD || "" : ""
+      ),
+      "process.env.TEST_MNEMONIC": JSON.stringify(
+        // only pass through when env.build is undefined (running a development build)
+        env.build === undefined ? process.env.TEST_MNEMONIC || "" : ""
+      ),
 
       // computed values
       "process.env.BUILD": JSON.stringify(env.build),
