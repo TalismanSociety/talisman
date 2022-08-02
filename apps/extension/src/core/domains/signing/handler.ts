@@ -15,9 +15,6 @@ import { RequestSigningApproveSignature } from "@polkadot/extension-base/backgro
 import { TypeRegistry } from "@polkadot/types"
 import { assert } from "@polkadot/util"
 
-// a global registry to use internally
-const registry = new TypeRegistry()
-
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({ id }: RequestIdOnly): Promise<boolean> {
     const queued = this.state.requestStores.signing.getPolkadotRequest(id)
@@ -38,14 +35,23 @@ export default class SigningHandler extends ExtensionHandler {
 
     const { payload } = request
     const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
-    if (isJsonPayload(payload)) {
-      // Get the metadata for the genesisHash
-      const currentMetadata = await db.metadata.get(payload.genesisHash)
 
-      // set the registry before calling the sign function
-      registry.setSignedExtensions(payload.signedExtensions, currentMetadata?.userExtensions)
+    let registry = new TypeRegistry()
+    if (isJsonPayload(payload)) {
+      const { blockHash, genesisHash, signedExtensions } = payload
+
+      const chains = await db.chains.toArray()
+      const chain = chains.find((c) => c.genesisHash === genesisHash)
+      assert(chain, "Unable to find chain")
+
+      registry = await getTypeRegistry(chain.id, blockHash)
+
+      // Get the metadata for the genesisHash
+      const currentMetadata = await db.metadata.get(genesisHash)
 
       if (currentMetadata) {
+        // set the registry before calling the sign function
+        registry.setSignedExtensions(signedExtensions, currentMetadata?.userExtensions)
         registry.register(currentMetadata?.types)
         analyticsProperties.chain = currentMetadata.chain
       }
