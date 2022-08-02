@@ -100,5 +100,8 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx,css,scss,html,md,json}": "prettier --write",
     "*.{js,ts,jsx,tsx}": "eslint --fix --max-warnings 0"
+  },
+  "dependencies": {
+    "bcrypt": "^5.0.1"
   }
 }
