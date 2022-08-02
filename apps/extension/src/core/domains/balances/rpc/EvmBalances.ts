@@ -60,7 +60,7 @@ export default class NativeBalancesEvmRpc {
     return await this.fetchNativeBalances(addresses, evmNetworks)
   }
 
-  private static async fetchNativeBalances(
+  public static async fetchNativeBalances(
     addresses: Address[],
     evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
   ): Promise<Balances> {
