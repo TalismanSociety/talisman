@@ -49,12 +49,9 @@ export default class SigningHandler extends ExtensionHandler {
       const currentMetadata = await db.metadata.get(genesisHash)
       registry.setSignedExtensions(signedExtensions, currentMetadata?.userExtensions)
 
-      analyticsProperties.chain = currentMetadata?.chain || chain?.chainName
+      if (currentMetadata) registry.register(currentMetadata.types)
 
-      if (currentMetadata) {
-        // set the registry before calling the sign function
-        registry.register(currentMetadata?.types)
-      }
+      analyticsProperties.chain = currentMetadata?.chain || chain?.chainName
     }
 
     const result = request.sign(registry, pair)
