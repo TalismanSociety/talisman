@@ -42,18 +42,18 @@ export default class SigningHandler extends ExtensionHandler {
 
       const chains = await db.chains.toArray()
       const chain = chains.find((c) => c.genesisHash === genesisHash)
-      assert(chain, "Unable to find chain")
 
-      registry = await getTypeRegistry(chain.id, blockHash)
+      if (chain) registry = await getTypeRegistry(chain.id, blockHash)
 
       // Get the metadata for the genesisHash
       const currentMetadata = await db.metadata.get(genesisHash)
       registry.setSignedExtensions(signedExtensions, currentMetadata?.userExtensions)
 
+      analyticsProperties.chain = currentMetadata?.chain || chain?.chainName
+
       if (currentMetadata) {
         // set the registry before calling the sign function
         registry.register(currentMetadata?.types)
-        analyticsProperties.chain = currentMetadata.chain
       }
     }
 
