@@ -122,6 +122,10 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
       // checks stop here for EVM
       if (!chainId) {
+        setFormData((prev) => ({
+          ...prev,
+          ...newData,
+        }))
         // TODO ....
         setExpectedResult({
           type: "evm",
@@ -330,7 +334,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     transferableToken,
   }
 
-  // console.log("SendForm.context", context)
+  //console.log("SendForm.context", context)
 
   return context
 }
