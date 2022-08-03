@@ -204,7 +204,6 @@ const handleItemToString = (tokenId?: TokenId | null) => ""
 interface IProps {
   defaultValue?: TokenId
   value?: TokenId
-  address?: string
   onChange?: (tokenId: TokenId) => void
   className?: string
   showChainsWithBalanceFirst?: boolean
@@ -215,14 +214,13 @@ type SendableToken = Token & { id: string; tokenId: TokenId }
 const AssetPicker: FC<IProps> = ({
   defaultValue,
   value,
-  address,
   onChange,
   className,
   showChainsWithBalanceFirst,
 }) => {
   const chains = useChains()
   const evmNetworks = useEvmNetworks()
-  const transferableTokens = useTransferableTokens(address, showChainsWithBalanceFirst)
+  const transferableTokens = useTransferableTokens(undefined, showChainsWithBalanceFirst)
 
   const items: PickerItemProps[] = transferableTokens.map((transferable) => {
     const { id, chainId, evmNetworkId, token } = transferable
@@ -241,7 +239,15 @@ const AssetPicker: FC<IProps> = ({
     }
   })
 
-  return <GenericPicker items={items} />
+  return (
+    <GenericPicker
+      className={className}
+      items={items}
+      onChange={onChange}
+      value={value}
+      defaultValue={defaultValue}
+    />
+  )
 
   // const [selectedTokenId, setSelectedTokenId] = useState<TokenId | undefined>(
   //   () => value ?? defaultValue ?? tokens[0]?.uid ?? undefined

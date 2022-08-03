@@ -2,6 +2,7 @@ import { tokensToPlanck } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
 import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { CopyIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { getChainAddressType } from "@talisman/util/getChainAddressType"
 import { isValidAddress } from "@talisman/util/isValidAddress"
@@ -30,6 +31,7 @@ import AssetPicker from "../Picker"
 import { useSendTokens } from "./context"
 import { SendDialogContainer } from "./SendDialogContainer"
 import { SendTokensInputs } from "./types"
+import { useTransferableTokenById, useTransferableTokens } from "./useTransferableTokens"
 
 const SendAddressConvertInfo = lazy(() => import("./SendAddressConvertInfo"))
 
@@ -180,7 +182,7 @@ const schema = yup
       .required("")
       .transform(cleanupAmount)
       .test("amount-gt0", "", (value) => Number(value) > 0),
-    tokenId: yup.string().required(""),
+    transferableTokenId: yup.string().required(""),
     from: yup
       .string()
       .required("")
@@ -197,7 +199,7 @@ export const SendForm = () => {
   const { formData, check, showForm } = useSendTokens()
 
   // default values used to reinitialiSe the form
-  const defaultAsset = useMemo(() => formData.tokenId, [formData.tokenId])
+  const defaultAsset = useMemo(() => formData.transferableTokenId, [formData.transferableTokenId])
 
   // react-hook-form
   const {
@@ -228,7 +230,9 @@ export const SendForm = () => {
   // because these input components are all custom, we need to programmatically update form state
   // (can't use RHF register here without major changes)
   const onAssetChange = useCallback(
-    (tokenId: string) => setValue("tokenId", tokenId, REVALIDATE),
+    (transferableTokenId: string) => {
+      setValue("transferableTokenId", transferableTokenId, REVALIDATE)
+    },
     [setValue]
   )
   const onAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
@@ -242,10 +246,11 @@ export const SendForm = () => {
   const onToChange = useCallback((value: string) => setValue("to", value, REVALIDATE), [setValue])
 
   // current form values
-  const { amount, tokenId, from, to } = watch()
+  const { amount, transferableTokenId, from, to } = watch()
   // derived data
-  const balance = useBalance(from, tokenId)
-  const token = useToken(tokenId)
+  const transferableToken = useTransferableTokenById(transferableTokenId, from)
+  const { token } = transferableToken ?? {}
+  const balance = useBalance(from, token?.id as string)
 
   const chains = useChains()
   const evmNetworks = useEvmNetworks()
@@ -255,11 +260,8 @@ export const SendForm = () => {
     addressType,
     genesisHash,
   }: { addressType: AccountAddressType; genesisHash?: string | null } = useMemo(() => {
-    const chain = token?.chain && chains?.find((c) => c.id === token?.chain?.id)
-    const evmNetwork =
-      token &&
-      "evmNetwork" in token &&
-      evmNetworks?.find((c) => Number(c.id) === Number(token?.evmNetwork?.id))
+    const chain = chains?.find((c) => c.id === transferableToken?.chainId)
+    const evmNetwork = evmNetworks?.find((c) => c.id === Number(transferableToken?.evmNetworkId))
 
     return chain
       ? {
@@ -269,7 +271,7 @@ export const SendForm = () => {
       : {
           addressType: evmNetwork ? "ethereum" : "UNKNOWN",
         }
-  }, [chains, evmNetworks, token])
+  }, [chains, evmNetworks, transferableToken?.chainId, transferableToken?.evmNetworkId])
 
   // refresh tip while on edit form, but stop refreshing after review (showForm becomes false)
   const { tip, error: tipError } = useTip(token?.chain?.id, showForm)
@@ -323,7 +325,6 @@ export const SendForm = () => {
               defaultValue={defaultAsset}
               onChange={onAssetChange}
               showChainsWithBalanceFirst
-              address={from}
             />
           </div>
           <div>

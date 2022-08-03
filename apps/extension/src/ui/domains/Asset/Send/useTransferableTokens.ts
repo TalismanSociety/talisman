@@ -7,14 +7,7 @@ import useBalances from "@ui/hooks/useBalances"
 import useTokens from "@ui/hooks/useTokens"
 import { useMemo } from "react"
 
-// we want a different shape here to ensure Token and TransferableTokens can't be used in same context, as ids don't match
-export type TransferableToken = {
-  id: string
-  chainId?: string
-  evmNetworkId?: number
-  token: Token
-  balances: Balances
-}
+import { TransferableToken, TransferableTokenId } from "./types"
 
 const nonEmptyBalancesFilter = (balance: Balance) => balance.free.planck > BigInt("0")
 
@@ -27,7 +20,7 @@ export const useTransferableTokens = (address?: Address, sortWithBalanceFirst = 
     return balances.find({ address })
   }, [address, balances])
 
-  const transferableTokens = useMemo(
+  const transferableTokens: TransferableToken[] = useMemo(
     () =>
       tokens?.flatMap<TransferableToken>((token) => {
         const {
@@ -47,7 +40,7 @@ export const useTransferableTokens = (address?: Address, sortWithBalanceFirst = 
           evmNetwork &&
             ({
               id: `${tokenId}-${evmNetwork.id}`,
-              evmNetworkId: evmNetwork.id,
+              evmNetworkId: Number(evmNetwork.id),
               token,
               balances:
                 addressBalances?.find({ tokenId, evmNetworkId: evmNetwork.id }) ?? new Balances([]),
@@ -69,4 +62,17 @@ export const useTransferableTokens = (address?: Address, sortWithBalanceFirst = 
   }, [sortWithBalanceFirst, transferableTokens])
 
   return result
+}
+
+export const useTransferableTokenById = (
+  id?: TransferableTokenId,
+  address?: Address,
+  sortWithBalanceFirst = false
+) => {
+  const transferableTokens = useTransferableTokens(address, sortWithBalanceFirst)
+
+  return useMemo(
+    () => transferableTokens.find((tt) => tt.id === id) ?? null,
+    [id, transferableTokens]
+  )
 }

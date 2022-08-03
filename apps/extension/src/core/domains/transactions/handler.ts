@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import BlocksRpc from "@core/domains/blocks/rpc"
 import { ChainId } from "@core/domains/chains/types"
 import EventsRpc from "@core/domains/events/rpc"
@@ -7,6 +8,7 @@ import { pendingTransfers } from "@core/domains/transactions/rpc/PendingTransfer
 import {
   RequestAssetTransfer,
   RequestAssetTransferApproveSign,
+  RequestAssetTransferEth,
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
   TransactionStatus,
@@ -22,11 +24,18 @@ import type {
   SubscriptionCallback,
 } from "@core/types"
 import { Address, Port } from "@core/types/base"
+import { getPrivateKey } from "@core/util/getPrivateKey"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
+import { TransactionRequest } from "@ethersproject/abstract-provider"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import BigNumber from "bignumber.js"
+import { Wallet, ethers } from "ethers"
+import { parseEther, parseUnits } from "ethers/lib/utils"
+
+import { getProviderForEvmNetworkId } from "../ethereum"
+import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
 
 export default class AssetTransferHandler extends ExtensionHandler {
   private getExtrinsicWatch(
@@ -154,6 +163,64 @@ export default class AssetTransferHandler extends ExtensionHandler {
     })
   }
 
+  private async assetTransferEth({
+    evmNetworkId,
+    tokenId,
+    fromAddress,
+    toAddress,
+    amount,
+  }: RequestAssetTransferEth): Promise<ResponseAssetTransfer> {
+    try {
+      // eslint-disable-next-line no-var
+      var pair = getUnlockedPairFromAddress(fromAddress)
+    } catch (error) {
+      this.stores.password.clearPassword()
+      throw error
+    }
+
+    try {
+      const token = await db.tokens.get(tokenId)
+      if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+
+      const provider = await getProviderForEvmNetworkId(evmNetworkId)
+      if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
+
+      talismanAnalytics.capture("asset transfer", {
+        evmNetworkId,
+        tokenId,
+        amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
+        internal: keyring.getAccount(toAddress) !== undefined,
+      })
+
+      const tx: TransactionRequest = {
+        chainId: evmNetworkId,
+        value: parseUnits(amount, "wei"), // amount is planck
+        from: ethers.utils.getAddress(fromAddress),
+        to: ethers.utils.getAddress(toAddress),
+        nonce: await getTransactionCount(fromAddress, evmNetworkId),
+        // TODO
+        type: 2,
+        maxFeePerGas: parseUnits("1", "gwei"),
+        maxPriorityFeePerGas: parseUnits("1", "gwei"),
+      }
+
+      const privateKey = getPrivateKey(pair)
+      const wallet = new Wallet(privateKey, provider)
+
+      const response = await wallet.sendTransaction(tx)
+
+      const { hash, ...otherDetails } = response
+      // eslint-disable-next-line no-console
+      DEBUG && console.debug("assetTransferEth - sent", { hash, ...otherDetails })
+
+      incrementTransactionCount(fromAddress, evmNetworkId)
+
+      return { id: hash }
+    } finally {
+      if (!pair.isLocked) pair.lock()
+    }
+  }
+
   private async assetTransferCheckFees({
     chainId,
     tokenId,
@@ -209,6 +276,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
     switch (type) {
       case "pri(assets.transfer)":
         return this.assetTransfer(request as RequestAssetTransfer)
+
+      case "pri(assets.transferEth)":
+        return this.assetTransferEth(request as RequestAssetTransferEth)
 
       case "pri(assets.transfer.checkFees)":
         return this.assetTransferCheckFees(request as RequestAssetTransfer)

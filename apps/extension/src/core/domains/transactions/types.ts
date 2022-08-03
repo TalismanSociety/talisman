@@ -3,6 +3,8 @@ import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { RequestIdOnly } from "@core/types/base"
 
+import { EvmNetworkId } from "../ethereum/types"
+
 // Asset Transfer Messages
 export interface RequestAssetTransfer {
   chainId: ChainId
@@ -12,6 +14,14 @@ export interface RequestAssetTransfer {
   amount: string
   tip: string
   reapBalance?: boolean
+}
+export interface RequestAssetTransferEth {
+  evmNetworkId: EvmNetworkId
+  tokenId: TokenId
+  fromAddress: string
+  toAddress: string
+  amount: string
+  // TODO EIP 1559
 }
 
 export interface RequestAssetTransferApproveSign {
@@ -52,6 +62,7 @@ export type TransactionList = Record<TransactionId, Transaction>
 export interface AssetTransferMessages {
   // asset transfer signatures
   "pri(assets.transfer)": [RequestAssetTransfer, ResponseAssetTransfer]
+  "pri(assets.transferEth)": [RequestAssetTransferEth, ResponseAssetTransfer]
   "pri(assets.transfer.checkFees)": [RequestAssetTransfer, ResponseAssetTransferFeeQuery]
   "pri(assets.transfer.approveSign)": [RequestAssetTransferApproveSign, ResponseAssetTransfer]
 

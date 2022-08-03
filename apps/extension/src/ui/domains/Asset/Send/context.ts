@@ -1,4 +1,6 @@
 import { Balance, BalanceFormatter, BalanceStorage, Balances } from "@core/domains/balances/types"
+import { Chain } from "@core/domains/chains/types"
+import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { tokensToPlanck } from "@core/util/tokensToPlanck"
 import { assert } from "@polkadot/util"
@@ -7,10 +9,12 @@ import { api } from "@ui/api"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { chainUsesOrmlForNativeToken } from "@ui/hooks/useChainsTokens"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { SendTokensExpectedResult, SendTokensInputs, TokenAmountInfo } from "./types"
+import { useTransferableTokens } from "./useTransferableTokens"
 
 type Props = {
   initialValues?: Partial<SendTokensInputs>
@@ -24,12 +28,25 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   const [hasAcceptedForfeit, setHasAcceptedForfeit] = useState(false)
   const [transactionId, setTransactionId] = useState<string>()
 
+  const transferableTokens = useTransferableTokens()
+  const transferableToken = useMemo(
+    () => transferableTokens?.find((tt) => tt.id === formData.transferableTokenId),
+    [formData.transferableTokenId, transferableTokens]
+  )
+
+  // there must always be a token
+  useEffect(() => {
+    if (formData.transferableTokenId === undefined && transferableTokens.length > 0)
+      setFormData({ transferableTokenId: transferableTokens[0].id })
+  }, [formData.transferableTokenId, transferableTokens])
+
+  const evmNetworks = useEvmNetworks()
   const chains = useChains()
   const tokens = useTokens()
-  const chainsMap = useMemo(
-    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
-    [chains]
-  )
+  // const chainsMap = useMemo(
+  //   () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
+  //   [chains]
+  // )
   const tokensMap = useMemo(
     () => Object.fromEntries((tokens || []).map((token) => [token.id, token])),
     [tokens]
@@ -45,30 +62,37 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   const check = useCallback(
     async (newData: SendTokensInputs, allowReap = false) => {
-      const { amount, tokenId, from, to, tip } = newData
+      const { amount, transferableTokenId, from, to, tip } = newData
 
-      const token = tokensMap[tokenId]
+      const transferableToken = transferableTokens.find((tt) => tt.id === transferableTokenId)
+      if (!transferableToken) throw new Error("Transferable token not found")
+      const { token, chainId, evmNetworkId } = transferableToken
       if (!token) throw new Error("Token not found")
-      // TODO: Support evm tokens who have an evmNetwork instead of a chainId
-      const chainId = token.chain?.id
-      if (!chainId) throw new Error("Chain not found")
-      const chain = chainsMap[chainId]
-      if (!chain) throw new Error("Chain not found")
-      const nativeToken = chain.nativeToken ? tokensMap[chain.nativeToken.id] : token
-      const tokenIsNativeToken = tokenId === chain.nativeToken?.id
+
+      const chain: Chain | null = (!!chainId && chains?.find((c) => c.id === chainId)) || null
+      const evmNetwork =
+        (!!evmNetworkId && evmNetworks?.find((n) => Number(n.id) === Number(evmNetworkId))) || null
+      if (!chain && !evmNetwork) throw new Error("Network not found")
+
+      const network = (chain || evmNetwork) as Chain | EvmNetwork
+      const isEvm = !!evmNetwork
+      const nativeToken = network.nativeToken ? tokensMap[network.nativeToken.id] : token
+      const tokenIsNativeToken = token.id === network.nativeToken?.id
 
       // load all balances at once
       const newBalance = (promise: Promise<BalanceStorage>) =>
         promise.then((storage) => new Balance(storage))
 
+      const networkFilter = chain ? { chainId } : { evmNetworkId }
+
       const balances = await Promise.all([
-        newBalance(api.getBalance({ chainId, tokenId, address: from })),
-        newBalance(api.getBalance({ chainId, tokenId, address: to })),
+        newBalance(api.getBalance({ ...networkFilter, tokenId: token.id, address: from })),
+        newBalance(api.getBalance({ ...networkFilter, tokenId: token.id, address: to })),
 
         // get nativeToken balance for fee calculation if token transfer is not native
         !tokenIsNativeToken &&
-          chain.nativeToken?.id &&
-          newBalance(api.getBalance({ chainId, tokenId: chain.nativeToken?.id, address: from })),
+          network.nativeToken?.id &&
+          newBalance(api.getBalance({ chainId, tokenId: network.nativeToken?.id, address: from })),
       ])
       const [fromBalance, toBalance, _nativeFromBalance] = balances
       const nativeFromBalance = _nativeFromBalance || fromBalance
@@ -96,9 +120,19 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         )
       }
 
+      // checks stop here for EVM
+      if (!chainId) {
+        // TODO ....
+        setExpectedResult({
+          type: "evm",
+          transfer,
+        })
+        return
+      }
+
       const { partialFee, unsigned, pendingTransferId } = await api.assetTransferCheckFees(
         chainId,
-        tokenId,
+        token.id,
         from,
         to,
         transfer.amount.planck.toString(),
@@ -176,6 +210,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         ...newData,
       }))
       setExpectedResult({
+        type: "substrate",
         transfer,
         fees,
         forfeits,
@@ -183,7 +218,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         unsigned,
       })
     },
-    [chainsMap, nonEmptyBalances, tokensMap]
+    [chains, evmNetworks, nonEmptyBalances, tokensMap, transferableTokens]
   )
 
   // this makes user return to the first screen of the wizard
@@ -194,32 +229,48 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   // execute the TX
   const send = useCallback(async () => {
-    const { amount, tokenId, from, to, tip } = formData as SendTokensInputs
+    const { amount, transferableTokenId, from, to, tip } = formData as SendTokensInputs
 
-    const token = tokensMap[tokenId]
+    const transferableToken = transferableTokens.find((tt) => tt.id === transferableTokenId)
+    if (!transferableToken) throw new Error("Transferable token not found")
+    const { token, chainId, evmNetworkId } = transferableToken
     if (!token) throw new Error("Token not found")
     // TODO: Support evm tokens who have an evmNetwork instead of a chainId
-    const chainId = token.chain?.id
-    if (!chainId) throw new Error("Chain not found")
-    const chain = chainsMap[chainId]
-    if (!chain) throw new Error("Chain not found")
+    // const chainId = token.chain?.id
+    // if (!chainId) throw new Error("Chain not found")
+    // const chain = chainsMap[chainId]
+    // if (!chain) throw new Error("Chain not found")
+    if (!chainId && !evmNetworkId) throw new Error("chain not found")
 
-    const { id } = await api.assetTransfer(
-      chainId,
-      tokenId,
-      from,
-      to,
-      tokensToPlanck(amount, token.decimals),
-      tip,
-      hasAcceptedForfeit
-    )
-    setTransactionId(id)
-  }, [chainsMap, formData, hasAcceptedForfeit, tokensMap])
+    if (chainId) {
+      const { id } = await api.assetTransfer(
+        chainId,
+        token.id,
+        from,
+        to,
+        tokensToPlanck(amount, token.decimals),
+        tip,
+        hasAcceptedForfeit
+      )
+      setTransactionId(id)
+    } else if (evmNetworkId) {
+      const { id } = await api.assetTransferEth(
+        evmNetworkId,
+        token.id,
+        from,
+        to,
+        tokensToPlanck(amount, token.decimals),
+        tip,
+        hasAcceptedForfeit
+      )
+      setTransactionId(id)
+    } else throw new Error("Network not found")
+  }, [formData, hasAcceptedForfeit, transferableTokens])
 
   // execute the TX
   const sendWithSignature = useCallback(
     async (signature: `0x${string}` | Uint8Array) => {
-      if (!expectedResult) throw new Error("Review data not found")
+      if (expectedResult?.type !== "substrate") throw new Error("Review data not found")
       const { pendingTransferId } = expectedResult
       if (!pendingTransferId) throw new Error("Pending transaction not found")
       const { id } = await api.assetTransferApproveSign(pendingTransferId, signature)
@@ -238,12 +289,23 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   // components visibility
   const { showForm, showConfirmReap, showReview, showTransaction } = useMemo(
     () => ({
-      showForm: Boolean(!expectedResult || (expectedResult.forfeits.length && !hasAcceptedForfeit)),
+      showForm: Boolean(
+        !expectedResult ||
+          (expectedResult.type === "substrate" &&
+            expectedResult.forfeits.length &&
+            !hasAcceptedForfeit)
+      ),
       showConfirmReap: Boolean(
-        expectedResult && expectedResult.forfeits.length && !hasAcceptedForfeit
+        expectedResult?.type === "substrate" &&
+          expectedResult.forfeits.length &&
+          !hasAcceptedForfeit
       ),
       showReview: Boolean(
-        expectedResult && (!expectedResult.forfeits.length || hasAcceptedForfeit) && !transactionId
+        expectedResult &&
+          (expectedResult.type !== "substrate" ||
+            !expectedResult.forfeits.length ||
+            hasAcceptedForfeit) &&
+          !transactionId
       ),
       showTransaction: Boolean(transactionId),
     }),
@@ -264,7 +326,11 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     showReview,
     showTransaction,
     sendWithSignature,
+    transferableTokens,
+    transferableToken,
   }
+
+  // console.log("SendForm.context", context)
 
   return context
 }

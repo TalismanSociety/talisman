@@ -20,6 +20,7 @@ import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
   CustomEvmNetwork,
+  EvmNetworkId,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
 import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/types"
@@ -161,6 +162,15 @@ export default interface MessageTypes {
   // asset transfer messages
   assetTransfer: (
     chainId: ChainId,
+    tokenId: TokenId,
+    fromAddress: string,
+    toAddress: string,
+    amount: string,
+    tip: string,
+    reapBalance?: boolean
+  ) => Promise<ResponseAssetTransfer>
+  assetTransferEth: (
+    evmNetworkId: EvmNetworkId,
     tokenId: TokenId,
     fromAddress: string,
     toAddress: string,

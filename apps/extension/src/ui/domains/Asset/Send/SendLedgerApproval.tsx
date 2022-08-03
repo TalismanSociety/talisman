@@ -14,6 +14,7 @@ import styled from "styled-components"
 
 import { useSendTokens } from "./context"
 import { SendTokensExpectedResult, SendTokensInputs } from "./types"
+import { useTransferableTokenById } from "./useTransferableTokens"
 
 const SendLedgerApprovalContainer = styled.div`
   .cancel-link {
@@ -32,27 +33,38 @@ const registry = new TypeRegistry()
 
 const SendLedgerApproval = () => {
   const { formData, expectedResult, sendWithSignature, cancel } = useSendTokens()
-  const { from, tokenId } = formData as SendTokensInputs
+  const { from, transferableTokenId } = formData as SendTokensInputs
   const [isSigning, setIsSigning] = useState(false)
   const [signed, setSigned] = useState(false)
   const [error, setError] = useState<string>()
 
   const account = useAccountByAddress(from) as AccountJsonHardware
-  const token = useToken(tokenId)
+  const transferableToken = useTransferableTokenById(transferableTokenId)
+  const { token } = transferableToken ?? {}
   const chain = useChain(token?.chain?.id)
   const { ledger, isReady, status, message, refresh, requiresManualRetry, network } = useLedger(
     chain?.genesisHash
   )
 
   const payload = useMemo(() => {
-    const { unsigned } = expectedResult as SendTokensExpectedResult
+    if (expectedResult?.type !== "substrate") return null
+    const { unsigned } = expectedResult
     registry.setSignedExtensions(unsigned.signedExtensions)
     return registry.createType("ExtrinsicPayload", unsigned, { version: unsigned.version })
   }, [expectedResult])
 
   const approveIfReady = useCallback(async () => {
     try {
-      if (!account || !ledger || !isReady || isSigning || signed || error || status !== "ready")
+      if (
+        !payload ||
+        !account ||
+        !ledger ||
+        !isReady ||
+        isSigning ||
+        signed ||
+        error ||
+        status !== "ready"
+      )
         return
       const { accountIndex, addressOffset } = account
 
