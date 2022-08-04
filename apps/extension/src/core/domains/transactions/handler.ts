@@ -35,7 +35,7 @@ import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
 import { parseUnits } from "ethers/lib/utils"
 
-import { getProviderForEvmNetworkId } from "../ethereum"
+import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
 
 export default class AssetTransferHandler extends ExtensionHandler {
