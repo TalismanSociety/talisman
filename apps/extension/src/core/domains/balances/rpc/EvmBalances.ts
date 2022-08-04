@@ -1,11 +1,11 @@
 import { DEBUG } from "@core/constants"
 import { Balance, Balances } from "@core/domains/balances/types"
-import { getProviderForEvmNetworkId } from "@core/domains/ethereum/networksStore"
+import { getProviderForEvmNetworkId } from "@core/domains/ethereum/rpcProviders"
 import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address } from "@core/types/base"
-import { JsonRpcBatchProvider } from "@ethersproject/providers"
 import * as Sentry from "@sentry/browser"
+import { ethers } from "ethers"
 
 export default class NativeBalancesEvmRpc {
   /**
@@ -117,18 +117,21 @@ export default class NativeBalancesEvmRpc {
 
   private static async getEvmNetworkProviders(
     evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
-  ): Promise<Record<EvmNetworkId, JsonRpcBatchProvider>> {
+  ): Promise<Record<EvmNetworkId, ethers.providers.JsonRpcProvider>> {
     return Object.fromEntries(
       await Promise.all(
         evmNetworks.map((evmNetwork) =>
-          getProviderForEvmNetworkId(evmNetwork.id).then((provider) => [evmNetwork.id, provider])
+          getProviderForEvmNetworkId(evmNetwork.id, { batch: true }).then((provider) => [
+            evmNetwork.id,
+            provider,
+          ])
         )
       )
     )
   }
 
   private static async getFreeBalance(
-    provider: JsonRpcBatchProvider,
+    provider: ethers.providers.JsonRpcProvider,
     address: Address
   ): Promise<string> {
     return ((await provider.getBalance(address)).toBigInt() || BigInt("0")).toString()

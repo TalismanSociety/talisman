@@ -1,21 +1,19 @@
-/* eslint-env es6 */
+/* eslint-env es2021 */
+
+require("dotenv").config()
+
 const webpack = require("webpack")
 const path = require("path")
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin")
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin")
 const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-webpack-plugin")
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
-const DotEnv = require("dotenv-webpack")
-const getGitShortHash = require("./utils").getGitShortHash
-require("dotenv").config()
-const srcDir = path.join(__dirname, "..", "src")
-const coreDir = path.join(srcDir, "core")
-const distDir = path.join(__dirname, "..", "dist")
-
 const createStyledComponentsTransformer = require("typescript-plugin-styled-components").default
 const styledComponentsTransformer = createStyledComponentsTransformer()
 
-module.exports = {
+const { srcDir, coreDir, distDir, getRelease, getGitShortHash } = require("./utils")
+
+const config = (env) => ({
   entry: {
     substrate: ["@substrate/txwrapper-polkadot"],
     popup: { import: path.join(srcDir, "index.popup.tsx") },
@@ -95,9 +93,28 @@ module.exports = {
     },
   },
   plugins: [
-    new DotEnv(),
     new webpack.DefinePlugin({
+      // passthroughs from the environment
+      "process.env.EXTENSION_PREFIX": JSON.stringify(process.env.EXTENSION_PREFIX || ""),
+      "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
+      "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN || ""),
+      "process.env.SENTRY_AUTH_TOKEN": JSON.stringify(process.env.SENTRY_AUTH_TOKEN || ""),
+      "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
+
+      // dev-only passthroughs from the environment
+      "process.env.PASSWORD": JSON.stringify(
+        // only pass through when env.build is undefined (running a development build)
+        env.build === undefined ? process.env.PASSWORD || "" : ""
+      ),
+      "process.env.TEST_MNEMONIC": JSON.stringify(
+        // only pass through when env.build is undefined (running a development build)
+        env.build === undefined ? process.env.TEST_MNEMONIC || "" : ""
+      ),
+
+      // computed values
+      "process.env.BUILD": JSON.stringify(env.build),
       "process.env.COMMIT_SHA_SHORT": JSON.stringify(getGitShortHash()),
+      "process.env.RELEASE": JSON.stringify(getRelease(env)),
       "process.env.VERSION": JSON.stringify(process.env.npm_package_version),
     }),
     new CaseSensitivePathsPlugin(),
@@ -108,4 +125,6 @@ module.exports = {
       Buffer: ["buffer", "Buffer"],
     }),
   ],
-}
+})
+
+module.exports = config

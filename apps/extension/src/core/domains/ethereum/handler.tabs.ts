@@ -30,11 +30,12 @@ import { toBuffer } from "@ethereumjs/util"
 import { recoverPersonalSignature } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ethers, providers } from "ethers"
 import { isHexString } from "ethers/lib/utils"
 
 import { filterAccountsByAddresses } from "../accounts/helpers"
-import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./networksStore"
+import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
@@ -294,20 +295,20 @@ export class EthTabsHandler extends TabsHandler {
     request: EthRequestArguments<K>
   ): Promise<unknown> {
     const provider = await this.getProvider(url)
-    const result = await provider.send(request.method, request.params as unknown as any[])
-    // eslint-disable-next-line no-console
-    console.debug(request.method, request.params, result)
-    return result
+    return provider.send(request.method, request.params as unknown as any[])
   }
 
   private signMessage = async (url: string, request: EthRequestSignArguments) => {
     const { params, method } = request as EthRequestSignArguments
 
-    const [uncheckedMessage, from] = [
-      "personal_sign",
-      "eth_signTypedData",
-      "eth_signTypedData_v1",
-    ].includes(method)
+    let isMessageFirst = ["personal_sign", "eth_signTypedData", "eth_signTypedData_v1"].includes(
+      method
+    )
+    // on https://astar.network, params are in reverse order
+    if (isMessageFirst && isEthereumAddress(params[0]) && !isEthereumAddress(params[1]))
+      isMessageFirst = false
+
+    const [uncheckedMessage, from] = isMessageFirst
       ? [params[0], ethers.utils.getAddress(params[1])]
       : [params[1], ethers.utils.getAddress(params[0])]
 
@@ -319,9 +320,6 @@ export class EthTabsHandler extends TabsHandler {
           ? toBuffer(uncheckedMessage).toString("utf-8")
           : uncheckedMessage
         : JSON.stringify(uncheckedMessage)
-
-    // eslint-disable-next-line no-console
-    console.debug("ethereum signMessage", { method, params, from, uncheckedMessage, message })
 
     const site = await this.getSiteDetails(url)
     try {
@@ -390,9 +388,6 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     request: EthRequestArguments<TEthMessageType>
   ): Promise<unknown> {
-    // eslint-disable-next-line no-console
-    console.debug("ethRequest handler", request)
-
     try {
       // some sites expect eth_accounts to return an empty array if not connected/authorized.
       // if length === 0 they'll request authorization

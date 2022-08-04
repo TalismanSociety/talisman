@@ -1,6 +1,6 @@
 import { Drawer } from "@talisman/components/Drawer"
 import { IconButton } from "@talisman/components/IconButton"
-import Nav, { NavItem } from "@talisman/components/Nav"
+import Nav, { NavItemButton } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
   LayoutIcon,
@@ -110,24 +110,24 @@ export const NavigationDrawer: FC = () => {
         <main>
           <ScrollContainer>
             <Nav column>
-              <NavItem icon={<PlusIcon />} onClick={handleAddAccountClick}>
+              <NavItemButton icon={<PlusIcon />} onClick={handleAddAccountClick}>
                 Add Account
-              </NavItem>
-              <NavItem icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
+              </NavItemButton>
+              <NavItemButton icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
                 Send Funds
-              </NavItem>
-              <NavItem icon={<MaximizeIcon />} onClick={handlePortfolioClick}>
+              </NavItemButton>
+              <NavItemButton icon={<MaximizeIcon />} onClick={handlePortfolioClick}>
                 Expand View
-              </NavItem>
-              <NavItem icon={<SettingsIcon />} onClick={handleSettingsClick}>
+              </NavItemButton>
+              <NavItemButton icon={<SettingsIcon />} onClick={handleSettingsClick}>
                 Settings
-              </NavItem>
-              <NavItem icon={<LayoutIcon />} onClick={handleWebAppClick}>
+              </NavItemButton>
+              <NavItemButton icon={<LayoutIcon />} onClick={handleWebAppClick}>
                 Talisman Web App
-              </NavItem>
-              <NavItem icon={<LockIcon />} onClick={handleLock}>
+              </NavItemButton>
+              <NavItemButton icon={<LockIcon />} onClick={handleLock}>
                 Lock
-              </NavItem>
+              </NavItemButton>
             </Nav>
           </ScrollContainer>
         </main>
