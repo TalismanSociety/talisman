@@ -10,6 +10,7 @@ import {
   RequestAssetTransferApproveSign,
   RequestAssetTransferEth,
   ResponseAssetTransfer,
+  ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
   TransactionStatus,
 } from "@core/domains/transactions/types"
@@ -32,7 +33,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
-import { parseEther, parseUnits } from "ethers/lib/utils"
+import { parseUnits } from "ethers/lib/utils"
 
 import { getProviderForEvmNetworkId } from "../ethereum"
 import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
@@ -169,7 +170,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     fromAddress,
     toAddress,
     amount,
-  }: RequestAssetTransferEth): Promise<ResponseAssetTransfer> {
+  }: RequestAssetTransferEth): Promise<ResponseAssetTransferEth> {
     try {
       // eslint-disable-next-line no-var
       var pair = getUnlockedPairFromAddress(fromAddress)
@@ -178,47 +179,43 @@ export default class AssetTransferHandler extends ExtensionHandler {
       throw error
     }
 
-    try {
-      const token = await db.tokens.get(tokenId)
-      if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+    const token = await db.tokens.get(tokenId)
+    if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
-      const provider = await getProviderForEvmNetworkId(evmNetworkId)
-      if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
+    const provider = await getProviderForEvmNetworkId(evmNetworkId)
+    if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
 
-      talismanAnalytics.capture("asset transfer", {
-        evmNetworkId,
-        tokenId,
-        amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
-        internal: keyring.getAccount(toAddress) !== undefined,
-      })
+    talismanAnalytics.capture("asset transfer", {
+      evmNetworkId,
+      tokenId,
+      amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
+      internal: keyring.getAccount(toAddress) !== undefined,
+    })
 
-      const tx: TransactionRequest = {
-        chainId: evmNetworkId,
-        value: parseUnits(amount, "wei"), // amount is planck
-        from: ethers.utils.getAddress(fromAddress),
-        to: ethers.utils.getAddress(toAddress),
-        nonce: await getTransactionCount(fromAddress, evmNetworkId),
-        // TODO
-        type: 2,
-        maxFeePerGas: parseUnits("1", "gwei"),
-        maxPriorityFeePerGas: parseUnits("1", "gwei"),
-      }
-
-      const privateKey = getPrivateKey(pair)
-      const wallet = new Wallet(privateKey, provider)
-
-      const response = await wallet.sendTransaction(tx)
-
-      const { hash, ...otherDetails } = response
-      // eslint-disable-next-line no-console
-      DEBUG && console.debug("assetTransferEth - sent", { hash, ...otherDetails })
-
-      incrementTransactionCount(fromAddress, evmNetworkId)
-
-      return { id: hash }
-    } finally {
-      if (!pair.isLocked) pair.lock()
+    const tx: TransactionRequest = {
+      chainId: evmNetworkId,
+      value: parseUnits(amount, "wei"), // amount is planck
+      from: ethers.utils.getAddress(fromAddress),
+      to: ethers.utils.getAddress(toAddress),
+      nonce: await getTransactionCount(fromAddress, evmNetworkId),
+      // TODO
+      type: 2,
+      maxFeePerGas: parseUnits("1", "gwei"),
+      maxPriorityFeePerGas: parseUnits("1", "gwei"),
     }
+
+    const privateKey = getPrivateKey(pair)
+    const wallet = new Wallet(privateKey, provider)
+
+    const response = await wallet.sendTransaction(tx)
+
+    const { hash, ...otherDetails } = response
+    // eslint-disable-next-line no-console
+    DEBUG && console.debug("assetTransferEth - sent", { hash, ...otherDetails })
+
+    incrementTransactionCount(fromAddress, evmNetworkId)
+
+    return { hash }
   }
 
   private async assetTransferCheckFees({

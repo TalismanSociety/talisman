@@ -35,6 +35,7 @@ import {
 import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
 import {
   ResponseAssetTransfer,
+  ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
 import { EthResponseType } from "@core/injectEth/types"
@@ -174,10 +175,8 @@ export default interface MessageTypes {
     tokenId: TokenId,
     fromAddress: string,
     toAddress: string,
-    amount: string,
-    tip: string,
-    reapBalance?: boolean
-  ) => Promise<ResponseAssetTransfer>
+    amount: string
+  ) => Promise<ResponseAssetTransferEth>
   assetTransferCheckFees: (
     chainId: ChainId,
     tokenId: TokenId,

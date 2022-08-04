@@ -26,7 +26,10 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   const [formData, setFormData] = useState<Partial<SendTokensInputs>>(initialValues ?? {})
   const [expectedResult, setExpectedResult] = useState<SendTokensExpectedResult>()
   const [hasAcceptedForfeit, setHasAcceptedForfeit] = useState(false)
+  // for substrate extrinsics
   const [transactionId, setTransactionId] = useState<string>()
+  // for evm transactions
+  const [transactionHash, setTransactionHash] = useState<string>()
 
   const transferableTokens = useTransferableTokens()
   const transferableToken = useMemo(
@@ -75,7 +78,6 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       if (!chain && !evmNetwork) throw new Error("Network not found")
 
       const network = (chain || evmNetwork) as Chain | EvmNetwork
-      const isEvm = !!evmNetwork
       const nativeToken = network.nativeToken ? tokensMap[network.nativeToken.id] : token
       const tokenIsNativeToken = token.id === network.nativeToken?.id
 
@@ -237,13 +239,9 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
     const transferableToken = transferableTokens.find((tt) => tt.id === transferableTokenId)
     if (!transferableToken) throw new Error("Transferable token not found")
+
     const { token, chainId, evmNetworkId } = transferableToken
     if (!token) throw new Error("Token not found")
-    // TODO: Support evm tokens who have an evmNetwork instead of a chainId
-    // const chainId = token.chain?.id
-    // if (!chainId) throw new Error("Chain not found")
-    // const chain = chainsMap[chainId]
-    // if (!chain) throw new Error("Chain not found")
     if (!chainId && !evmNetworkId) throw new Error("chain not found")
 
     if (chainId) {
@@ -258,16 +256,14 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       )
       setTransactionId(id)
     } else if (evmNetworkId) {
-      const { id } = await api.assetTransferEth(
+      const { hash } = await api.assetTransferEth(
         evmNetworkId,
         token.id,
         from,
         to,
-        tokensToPlanck(amount, token.decimals),
-        tip,
-        hasAcceptedForfeit
+        tokensToPlanck(amount, token.decimals)
       )
-      setTransactionId(id)
+      setTransactionHash(hash)
     } else throw new Error("Network not found")
   }, [formData, hasAcceptedForfeit, transferableTokens])
 
@@ -291,30 +287,21 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   }, [check, formData])
 
   // components visibility
-  const { showForm, showConfirmReap, showReview, showTransaction } = useMemo(
-    () => ({
-      showForm: Boolean(
-        !expectedResult ||
-          (expectedResult.type === "substrate" &&
-            expectedResult.forfeits.length &&
-            !hasAcceptedForfeit)
-      ),
-      showConfirmReap: Boolean(
-        expectedResult?.type === "substrate" &&
-          expectedResult.forfeits.length &&
-          !hasAcceptedForfeit
-      ),
+  const { showForm, showConfirmReap, showReview, showTransaction } = useMemo(() => {
+    const showTransaction = Boolean(transactionId ?? transactionHash)
+    const requiresForfeit = Boolean(
+      expectedResult?.type === "substrate" && expectedResult.forfeits.length
+    )
+
+    return {
+      showForm: !showTransaction && (!expectedResult || (requiresForfeit && !hasAcceptedForfeit)),
+      showConfirmReap: requiresForfeit && !hasAcceptedForfeit,
       showReview: Boolean(
-        expectedResult &&
-          (expectedResult.type !== "substrate" ||
-            !expectedResult.forfeits.length ||
-            hasAcceptedForfeit) &&
-          !transactionId
+        !showTransaction && expectedResult && (!requiresForfeit || hasAcceptedForfeit)
       ),
-      showTransaction: Boolean(transactionId),
-    }),
-    [expectedResult, hasAcceptedForfeit, transactionId]
-  )
+      showTransaction,
+    }
+  }, [expectedResult, hasAcceptedForfeit, transactionHash, transactionId])
 
   const context = {
     formData,
@@ -324,6 +311,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     send,
     acceptForfeit,
     transactionId,
+    transactionHash,
     hasAcceptedForfeit,
     showForm,
     showConfirmReap,
@@ -334,7 +322,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     transferableToken,
   }
 
-  //console.log("SendForm.context", context)
+  // console.log("SendForm.context", context)
 
   return context
 }

@@ -33,6 +33,10 @@ export interface ResponseAssetTransfer {
   id: string
 }
 
+export interface ResponseAssetTransferEth {
+  hash: string
+}
+
 export interface ResponseAssetTransferFeeQuery {
   partialFee: string
   pendingTransferId?: string
@@ -62,7 +66,7 @@ export type TransactionList = Record<TransactionId, Transaction>
 export interface AssetTransferMessages {
   // asset transfer signatures
   "pri(assets.transfer)": [RequestAssetTransfer, ResponseAssetTransfer]
-  "pri(assets.transferEth)": [RequestAssetTransferEth, ResponseAssetTransfer]
+  "pri(assets.transferEth)": [RequestAssetTransferEth, ResponseAssetTransferEth]
   "pri(assets.transfer.checkFees)": [RequestAssetTransfer, ResponseAssetTransferFeeQuery]
   "pri(assets.transfer.approveSign)": [RequestAssetTransferApproveSign, ResponseAssetTransfer]
 

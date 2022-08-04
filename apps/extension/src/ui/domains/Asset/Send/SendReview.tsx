@@ -156,7 +156,7 @@ const SendReview = () => {
     try {
       await send()
     } catch (err) {
-      setError(err instanceof Error ? err.message : (err as string))
+      setError(err instanceof Error ? err.message : "Unknown error")
     }
     setSending(false)
   }, [send])
