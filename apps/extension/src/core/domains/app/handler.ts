@@ -125,6 +125,8 @@ export default class AppHandler extends ExtensionHandler {
 
   private lock(): LoggedinType {
     this.stores.password.clearPassword()
+    const pairs = keyring.getPairs()
+    pairs.forEach((pair) => pair.lock())
     return this.authStatus()
   }
 
