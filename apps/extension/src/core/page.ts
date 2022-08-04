@@ -25,7 +25,6 @@ window.addEventListener("message", ({ data, source }: Message): void => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (data.id) messageService.handleResponse(data as any)
-  else Sentry.captureException(new Error("Missing id for response."), { tags: { ...data } })
 })
 
 // redirect users if this page is considered as phishing, otherwise return false
