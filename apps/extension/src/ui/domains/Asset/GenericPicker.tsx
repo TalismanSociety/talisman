@@ -198,7 +198,8 @@ const GenericPicker = ({
   search = DEFAULT_SEARCH,
 }: GenericPickerProps) => {
   const [selectedItemId, setSelectedItemId] = useState<PickerItemId>(
-    () => value ?? defaultValue ?? items[0]?.id ?? undefined
+    // this is bad to hardcode but balances may not be loaded yet
+    () => value ?? defaultValue ?? items[0]?.id ?? "polkadot-native-dot-polkadot"
   )
   const selectedItem = useMemo(
     () => items?.find((item) => item.id === selectedItemId),
@@ -207,7 +208,9 @@ const GenericPicker = ({
 
   // if not set yet, set a token as soon as tokens are loaded
   useEffect(() => {
-    if (selectedItemId === undefined && items.length > 0) setSelectedItemId(items[0].id)
+    if (selectedItemId === undefined && items.length > 0) {
+      setSelectedItemId(items[0].id)
+    }
   }, [items, selectedItemId])
 
   // trigger parent's onChange
