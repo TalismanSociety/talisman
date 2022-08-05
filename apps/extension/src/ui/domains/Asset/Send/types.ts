@@ -10,6 +10,7 @@ export type TransferableToken = {
   evmNetworkId?: number
   token: Token
   balances: Balances
+  sortIndex: number
 }
 
 export type TokenBalanceInfo = {

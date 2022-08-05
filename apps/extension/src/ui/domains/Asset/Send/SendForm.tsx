@@ -2,17 +2,14 @@ import { tokensToPlanck } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
 import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
 import { SimpleButton } from "@talisman/components/SimpleButton"
-import { CopyIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { getChainAddressType } from "@talisman/util/getChainAddressType"
 import { isValidAddress } from "@talisman/util/isValidAddress"
 import Account from "@ui/domains/Account"
 import { useBalance } from "@ui/hooks/useBalance"
-import useChain from "@ui/hooks/useChain"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useTip } from "@ui/hooks/useTip"
-import useToken from "@ui/hooks/useToken"
 import {
   ChangeEventHandler,
   Suspense,
@@ -31,7 +28,7 @@ import AssetPicker from "../Picker"
 import { useSendTokens } from "./context"
 import { SendDialogContainer } from "./SendDialogContainer"
 import { SendTokensInputs } from "./types"
-import { useTransferableTokenById, useTransferableTokens } from "./useTransferableTokens"
+import { useTransferableTokenById } from "./useTransferableTokens"
 
 const SendAddressConvertInfo = lazy(() => import("./SendAddressConvertInfo"))
 
