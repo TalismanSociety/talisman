@@ -3,7 +3,6 @@
 
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
-import * as Sentry from "@sentry/browser"
 
 import { DEBUG } from "./constants"
 import TalismanInjected from "./inject/Injected"
@@ -47,7 +46,7 @@ function inject() {
   // inject substrate wallet provider
   injectExtension(enable, {
     name: "talisman",
-    version: process.env.VERSION || "",
+    version: process.env.VERSION ? process.env.VERSION : "",
   })
 
   // inject ethereum wallet provider
