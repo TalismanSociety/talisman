@@ -82,19 +82,19 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       const tokenIsNativeToken = token.id === network.nativeToken?.id
 
       // load all balances at once
-      const newBalance = (promise: Promise<BalanceStorage>) =>
+      const loadBalance = (promise: Promise<BalanceStorage>) =>
         promise.then((storage) => new Balance(storage))
 
       const networkFilter = chain ? { chainId } : { evmNetworkId }
 
       const balances = await Promise.all([
-        newBalance(api.getBalance({ ...networkFilter, tokenId: token.id, address: from })),
-        newBalance(api.getBalance({ ...networkFilter, tokenId: token.id, address: to })),
+        loadBalance(api.getBalance({ ...networkFilter, tokenId: token.id, address: from })),
+        loadBalance(api.getBalance({ ...networkFilter, tokenId: token.id, address: to })),
 
         // get nativeToken balance for fee calculation if token transfer is not native
         !tokenIsNativeToken &&
           network.nativeToken?.id &&
-          newBalance(
+          loadBalance(
             api.getBalance({ ...networkFilter, tokenId: network.nativeToken?.id, address: from })
           ),
       ])

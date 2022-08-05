@@ -103,6 +103,7 @@ const Container = styled.div`
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: flex-start;
     }
     .token {
       font-size: var(--font-size-medium);
