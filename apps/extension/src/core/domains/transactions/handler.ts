@@ -35,6 +35,7 @@ import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
 import { parseUnits } from "ethers/lib/utils"
 
+import { erc20Abi } from "../balances/rpc/abis"
 import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
 
@@ -192,22 +193,38 @@ export default class AssetTransferHandler extends ExtensionHandler {
       internal: keyring.getAccount(toAddress) !== undefined,
     })
 
-    const tx: TransactionRequest = {
+    let transfer: Partial<TransactionRequest>
+
+    if (token.type === "native") {
+      transfer = {
+        value: parseUnits(amount, "wei"), // amount is planck
+        to: ethers.utils.getAddress(toAddress),
+      }
+    } else if (token.type === "erc20") {
+      const contract = new ethers.Contract(token.contractAddress, erc20Abi)
+      transfer = await contract.populateTransaction["transfer"](
+        toAddress,
+        parseUnits(amount, "wei")
+      )
+    } else {
+      throw new Error(`Unhandled token type ${token.type}`)
+    }
+
+    const transaction: TransactionRequest = {
       chainId: evmNetworkId,
-      value: parseUnits(amount, "wei"), // amount is planck
       from: ethers.utils.getAddress(fromAddress),
-      to: ethers.utils.getAddress(toAddress),
       nonce: await getTransactionCount(fromAddress, evmNetworkId),
       // TODO
       type: 2,
       maxFeePerGas: parseUnits("1", "gwei"),
       maxPriorityFeePerGas: parseUnits("1", "gwei"),
+      ...transfer,
     }
 
     const privateKey = getPrivateKey(pair)
     const wallet = new Wallet(privateKey, provider)
 
-    const response = await wallet.sendTransaction(tx)
+    const response = await wallet.sendTransaction(transaction)
 
     const { hash, ...otherDetails } = response
     // eslint-disable-next-line no-console

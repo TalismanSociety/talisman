@@ -94,7 +94,9 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         // get nativeToken balance for fee calculation if token transfer is not native
         !tokenIsNativeToken &&
           network.nativeToken?.id &&
-          newBalance(api.getBalance({ chainId, tokenId: network.nativeToken?.id, address: from })),
+          newBalance(
+            api.getBalance({ ...networkFilter, tokenId: network.nativeToken?.id, address: from })
+          ),
       ])
       const [fromBalance, toBalance, _nativeFromBalance] = balances
       const nativeFromBalance = _nativeFromBalance || fromBalance
