@@ -3,10 +3,12 @@ import { erc20Abi } from "@core/domains/balances/rpc/abis"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { Token } from "@core/domains/tokens/types"
 import { Box } from "@talisman/components/Box"
+import { LoaderIcon } from "@talisman/theme/icons"
 import { EthFeeSelect } from "@ui/domains/Sign/EthFeeSelect"
 import useToken from "@ui/hooks/useToken"
 import { ethers } from "ethers"
 import { useEffect, useState } from "react"
+import styled from "styled-components"
 
 import Fiat from "../Fiat"
 import Tokens from "../Tokens"
@@ -32,6 +34,10 @@ const getTransactionRequest = async (
     )
   } else throw new Error(`Invalid token type ${token.type} - token ${token.id}`)
 }
+
+export const Loader = styled(LoaderIcon)`
+  font-size: 1.8rem;
+`
 
 export type FeeSettings = {
   priority?: EthPriorityOptionName
@@ -78,7 +84,7 @@ export const EthTransactionFees = ({
         .catch(console.error)
   }, [amount, from, to, token, transferableToken?.evmNetworkId])
 
-  const { priority, setPriority, gasInfo } = useEvmTransactionFees(tx)
+  const { priority, setPriority, gasInfo, isLoading } = useEvmTransactionFees(tx)
 
   const sendFundsContainer = document.getElementById("send-funds-container")
 
@@ -94,6 +100,8 @@ export const EthTransactionFees = ({
       onChange({})
     }
   }, [gasInfo, onChange, priority])
+
+  if (isLoading) return <Loader data-spin />
 
   if (!gasInfo) return null
 
