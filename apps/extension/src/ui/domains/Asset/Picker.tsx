@@ -24,7 +24,7 @@ const AssetPicker: FC<IProps> = ({
 }) => {
   const chains = useChains()
   const evmNetworks = useEvmNetworks()
-  const transferableTokens = useTransferableTokens(undefined, showChainsWithBalanceFirst)
+  const transferableTokens = useTransferableTokens(showChainsWithBalanceFirst)
 
   const items: PickerItemProps[] = transferableTokens.map((transferable) => {
     const { id, chainId, evmNetworkId, token } = transferable

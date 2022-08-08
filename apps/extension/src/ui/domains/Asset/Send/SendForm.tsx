@@ -265,7 +265,7 @@ export const SendForm = () => {
   // current form values
   const { amount, transferableTokenId, from, to } = watch()
   // derived data
-  const transferableToken = useTransferableTokenById(transferableTokenId, from)
+  const transferableToken = useTransferableTokenById(transferableTokenId)
 
   useEffect(() => {
     setIsEvm(!!transferableToken?.evmNetworkId)

@@ -59,7 +59,6 @@ export const EthTransactionFees = ({
   onChange,
 }: EthTransactionFeesProps) => {
   const transferableToken = useTransferableTokenById(transferableTokenId)
-  // TODO : the token from transferableToken mutates, find another way
   const token = useToken(transferableToken?.token?.id)
 
   const [tx, setTx] = useState<ethers.providers.TransactionRequest>()
