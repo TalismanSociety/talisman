@@ -10,7 +10,7 @@ import { useEffect, useState } from "react"
 
 import Fiat from "../Fiat"
 import Tokens from "../Tokens"
-import { useEvmTransaction } from "./useEvmTransactionFees"
+import { useEvmTransactionFees } from "./useEvmTransactionFees"
 import { useTransferableTokenById } from "./useTransferableTokens"
 
 // TODO utils
@@ -34,9 +34,9 @@ const getTransactionRequest = async (
 }
 
 export type FeeSettings = {
-  priority: EthPriorityOptionName
-  maxPriorityFeePerGas: string
-  maxFeePerGas: string
+  priority?: EthPriorityOptionName
+  maxPriorityFeePerGas?: string
+  maxFeePerGas?: string
 }
 
 type EthTransactionFeesProps = {
@@ -78,7 +78,7 @@ export const EthTransactionFees = ({
         .catch(console.error)
   }, [amount, from, to, token, transferableToken?.evmNetworkId])
 
-  const { priority, setPriority, gasInfo } = useEvmTransaction(tx)
+  const { priority, setPriority, gasInfo } = useEvmTransactionFees(tx)
 
   const sendFundsContainer = document.getElementById("send-funds-container")
 
@@ -90,6 +90,8 @@ export const EthTransactionFees = ({
         maxPriorityFeePerGas: gasInfo.maxPriorityFeePerGas.toHexString(),
         maxFeePerGas: gasInfo.maxFeePerGas.toHexString(),
       })
+    } else {
+      onChange({})
     }
   }, [gasInfo, onChange, priority])
 

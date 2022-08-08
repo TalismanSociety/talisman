@@ -5,7 +5,7 @@ import { useEthereumProvider } from "@ui/hooks/useEthereumProvider"
 import { BigNumber, ethers } from "ethers"
 import { useEffect, useMemo, useState } from "react"
 
-export const useEvmTransaction = (tx?: ethers.providers.TransactionRequest) => {
+export const useEvmTransactionFees = (tx?: ethers.providers.TransactionRequest) => {
   const [estimatedGas, setEstimatedGas] = useState<BigNumber>()
   const [estimatedGasError, setEstimatedGasError] = useState<string>()
   const [isLoadingEstimatedGas, setIsLoadingEstimatedGas] = useState(false)
@@ -13,6 +13,7 @@ export const useEvmTransaction = (tx?: ethers.providers.TransactionRequest) => {
   const [gasPrice, setGasPrice] = useState<BigNumber | null>()
   const [feeHistoryAnalysis, setFeeHistoryAnalysis] = useState<FeeHistoryAnalysis>()
   const [blockInfoError, setBlockInfoError] = useState<string>()
+  const [isLoadingBlockInfo, setIsLoadingBlockInfo] = useState(false)
 
   const provider = useEthereumProvider(tx?.chainId)
 
@@ -23,7 +24,7 @@ export const useEvmTransaction = (tx?: ethers.providers.TransactionRequest) => {
     setEstimatedGas(undefined)
 
     if (!provider || !tx) return
-    // console.log("ESTIMATING GAS", tx)
+
     setIsLoadingEstimatedGas(true)
     provider
       .estimateGas(tx)
@@ -43,8 +44,8 @@ export const useEvmTransaction = (tx?: ethers.providers.TransactionRequest) => {
     if (!provider || !estimatedGas) return
 
     const handleBlock = async () => {
+      setIsLoadingBlockInfo(true)
       try {
-        // console.log("POLLING FEE HISTORY")
         const [feeData, feeOptions] = await Promise.all([
           provider.getFeeData(), // only for gas price
           getFeeHistoryAnalysis(provider),
@@ -56,6 +57,7 @@ export const useEvmTransaction = (tx?: ethers.providers.TransactionRequest) => {
       } catch (err) {
         setBlockInfoError((err as Error).message)
       }
+      setIsLoadingBlockInfo(false)
     }
 
     provider.on("block", handleBlock)
@@ -95,25 +97,14 @@ export const useEvmTransaction = (tx?: ethers.providers.TransactionRequest) => {
     }
   }, [estimatedGas, gasPrice, feeHistoryAnalysis, priority])
 
-  //   console.log("feectx", {
-  //     tx,
-  //     gasInfo,
-  //     priority,
-  //     setPriority,
-  //     priorityOptions: feeHistoryAnalysis?.options,
-  //     estimatedGas,
-  //     gasPrice,
-  //     baseFeePerGas: gasInfo?.baseFeePerGas,
-  //     feeHistoryAnalysis,
-  //   })
-
-  return {
+  const evmTransactionFees = {
     gasInfo,
     priority,
     setPriority,
     priorityOptions: feeHistoryAnalysis?.options,
-    estimatedGas,
-    gasPrice,
-    baseFeePerGas: gasInfo?.baseFeePerGas,
+    isLoading: isLoadingEstimatedGas || isLoadingBlockInfo,
+    error: estimatedGasError ?? blockInfoError,
   }
+
+  return evmTransactionFees
 }

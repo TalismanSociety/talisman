@@ -325,9 +325,9 @@ export const SendForm = () => {
 
   const handleEvmFeeChange = useCallback(
     (fees: FeeSettings) => {
+      if (fees.priority) setValue("priority", fees.priority)
       setValue("maxFeePerGas", fees.maxFeePerGas)
-      setValue("maxPriorityFeePerGas", fees.maxPriorityFeePerGas)
-      setValue("priority", fees.priority, REVALIDATE)
+      setValue("maxPriorityFeePerGas", fees.maxPriorityFeePerGas, REVALIDATE)
     },
     [setValue]
   )

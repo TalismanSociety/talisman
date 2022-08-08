@@ -9,8 +9,6 @@ export type TransferableToken = {
   chainId?: string
   evmNetworkId?: number
   token: Token
-  balances: Balances
-  sortIndex: number
 }
 
 export type TokenBalanceInfo = {

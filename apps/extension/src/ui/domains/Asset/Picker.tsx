@@ -4,7 +4,7 @@ import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { FC } from "react"
 
 import GenericPicker, { PickerItemProps } from "./GenericPicker"
-import { useTransferableTokens } from "./Send/useTransferableTokens"
+import { useSortedTransferableTokens, useTransferableTokens } from "./Send/useTransferableTokens"
 import { TokenLogo } from "./TokenLogo"
 
 interface IProps {
@@ -24,7 +24,7 @@ const AssetPicker: FC<IProps> = ({
 }) => {
   const chains = useChains()
   const evmNetworks = useEvmNetworks()
-  const transferableTokens = useTransferableTokens(showChainsWithBalanceFirst)
+  const transferableTokens = useSortedTransferableTokens(showChainsWithBalanceFirst)
 
   const items: PickerItemProps[] = transferableTokens.map((transferable) => {
     const { id, chainId, evmNetworkId, token } = transferable
