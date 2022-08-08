@@ -1,5 +1,5 @@
 import { Balance, BalanceFormatter, Balances } from "@core/domains/balances/types"
-import { SignerPayloadJSON } from "@core/domains/signing/types"
+import { EthPriorityOptionName, SignerPayloadJSON } from "@core/domains/signing/types"
 import { Token, TokenId } from "@core/domains/tokens/types"
 
 export type TransferableTokenId = string
@@ -31,7 +31,10 @@ export type SendTokensInputs = {
   transferableTokenId: TransferableTokenId
   from: string
   to: string
-  tip: string
+  tip?: string
+  priority?: EthPriorityOptionName
+  maxPriorityFeePerGas?: string
+  maxFeePerGas?: string
 }
 
 export type SendTokensExpectedResult =

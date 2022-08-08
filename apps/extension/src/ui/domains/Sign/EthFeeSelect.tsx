@@ -144,9 +144,15 @@ type EthFeeSelectProps = {
   priority: EthPriorityOptionName
   symbol?: string
   onChange?: (priority: EthPriorityOptionName) => void
+  drawerContainer?: HTMLElement | null
 }
 
-export const EthFeeSelect = ({ onChange, priority, ...props }: EthFeeSelectProps) => {
+export const EthFeeSelect = ({
+  onChange,
+  priority,
+  drawerContainer,
+  ...props
+}: EthFeeSelectProps) => {
   const { genericEvent } = useAnalytics()
 
   const { isOpen, open, close } = useOpenClose()
@@ -168,7 +174,7 @@ export const EthFeeSelect = ({ onChange, priority, ...props }: EthFeeSelectProps
       <PillButton type="button" onClick={open}>
         {OPTIONS[priority].icon} {OPTIONS[priority].label}
       </PillButton>
-      <Drawer open={isOpen} anchor="bottom" onClose={close}>
+      <Drawer parent={drawerContainer} open={isOpen} anchor="bottom" onClose={close}>
         <Container>
           <h3>Fee Options</h3>
           <div className="subtitles">

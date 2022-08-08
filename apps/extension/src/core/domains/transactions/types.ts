@@ -21,7 +21,8 @@ export interface RequestAssetTransferEth {
   fromAddress: string
   toAddress: string
   amount: string
-  // TODO EIP 1559
+  maxPriorityFeePerGas: string
+  maxFeePerGas: string
 }
 
 export interface RequestAssetTransferApproveSign {

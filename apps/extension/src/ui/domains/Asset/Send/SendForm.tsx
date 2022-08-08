@@ -1,7 +1,9 @@
 import { tokensToPlanck } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { Box } from "@talisman/components/Box"
 import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { LoaderIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { getChainAddressType } from "@talisman/util/getChainAddressType"
 import { isValidAddress } from "@talisman/util/isValidAddress"
@@ -26,6 +28,7 @@ import * as yup from "yup"
 import Balance from "../Balance"
 import AssetPicker from "../Picker"
 import { useSendTokens } from "./context"
+import { EthTransactionFees, FeeSettings } from "./EthTransactionFees"
 import { SendDialogContainer } from "./SendDialogContainer"
 import { SendTokensInputs } from "./types"
 import { useTransferableTokenById } from "./useTransferableTokens"
@@ -141,6 +144,7 @@ const Container = styled(SendDialogContainer)`
 
     ${SimpleButton} {
       height: 5.6rem;
+      min-height: 5.6rem;
       font-size: 1.8rem;
       line-height: 1.8rem;
       width: 100%;
@@ -170,33 +174,49 @@ const cleanupAmountInput = (amount: string) => {
 
 const REVALIDATE = { shouldValidate: true, shouldDirty: true, shouldTouch: true }
 
+const evmSchema = {
+  priority: yup.string().required(),
+  maxPriorityFeePerGas: yup.string().required(),
+  maxFeePerGas: yup.string().required(),
+}
+
+const substrateSchema = {
+  tip: yup.string().required(), // this will disable the review button until tip is fetched from tip station
+}
+
 // validation checks, used only to toggle submit button's disabled prop
 // (validation errors are not displayed on screen)
-const schema = yup
-  .object({
-    amount: yup
-      .string()
-      .required("")
-      .transform(cleanupAmount)
-      .test("amount-gt0", "", (value) => Number(value) > 0),
-    transferableTokenId: yup.string().required(""),
-    from: yup
-      .string()
-      .required("")
-      .test("from-valid", "Invalid address (from)", (address) => isValidAddress(address as string)),
-    to: yup
-      .string()
-      .required("")
-      .test("to-valid", "Invalid address (to)", (address) => isValidAddress(address as string)),
-    tip: yup.string().required(), // this will disable the review button until tip is fetched from tip station
-  })
-  .required()
+const getSchema = (isEvm: boolean) =>
+  yup
+    .object({
+      amount: yup
+        .string()
+        .required("")
+        .transform(cleanupAmount)
+        .test("amount-gt0", "", (value) => Number(value) > 0),
+      transferableTokenId: yup.string().required(""),
+      from: yup
+        .string()
+        .required("")
+        .test("from-valid", "Invalid address (from)", (address) =>
+          isValidAddress(address as string)
+        ),
+      to: yup
+        .string()
+        .required("")
+        .test("to-valid", "Invalid address (to)", (address) => isValidAddress(address as string)),
+      ...(isEvm ? evmSchema : substrateSchema),
+    })
+    .required()
 
 export const SendForm = () => {
   const { formData, check, showForm } = useSendTokens()
 
   // default values used to reinitialiSe the form
   const defaultAsset = useMemo(() => formData.transferableTokenId, [formData.transferableTokenId])
+  const [isEvm, setIsEvm] = useState(false)
+
+  const schema = useMemo(() => getSchema(isEvm), [isEvm])
 
   // react-hook-form
   const {
@@ -246,6 +266,11 @@ export const SendForm = () => {
   const { amount, transferableTokenId, from, to } = watch()
   // derived data
   const transferableToken = useTransferableTokenById(transferableTokenId, from)
+
+  useEffect(() => {
+    setIsEvm(!!transferableToken?.evmNetworkId)
+  }, [transferableToken?.evmNetworkId])
+
   const { token } = transferableToken ?? {}
   const balance = useBalance(from, token?.id as string)
 
@@ -271,7 +296,7 @@ export const SendForm = () => {
   }, [chains, evmNetworks, transferableToken?.chainId, transferableToken?.evmNetworkId])
 
   // refresh tip while on edit form, but stop refreshing after review (showForm becomes false)
-  const { tip, error: tipError } = useTip(token?.chain?.id, showForm)
+  const { tip, error: tipError } = useTip(transferableToken?.chainId, showForm)
 
   useEffect(() => {
     // force type with ! because undefined value is used to check for an invalid form.
@@ -297,6 +322,15 @@ export const SendForm = () => {
     )
       setErrorMessage("Insufficient balance")
   }, [amount, balance, errorMessage, isValid, setError, token, tip])
+
+  const handleEvmFeeChange = useCallback(
+    (fees: FeeSettings) => {
+      setValue("maxFeePerGas", fees.maxFeePerGas)
+      setValue("maxPriorityFeePerGas", fees.maxPriorityFeePerGas)
+      setValue("priority", fees.priority, REVALIDATE)
+    },
+    [setValue]
+  )
 
   if (!showForm) return null
 
@@ -359,10 +393,21 @@ export const SendForm = () => {
           <div className="message">{errorMessage}</div>
           <div className="info">
             {balance && (
-              <span>
-                <span>Balance: &nbsp; </span>
-                {balance && <Balance row withFiat noCountUp balance={balance} />}
-              </span>
+              <Box flex column justify="flex-end" gap={0.1}>
+                <Box>Balance: {balance.status === "cache" && <LoaderIcon data-spin />}</Box>
+                <Box>
+                  <Balance row withFiat noCountUp balance={balance} />
+                </Box>
+              </Box>
+            )}
+            {isEvm && (
+              <EthTransactionFees
+                amount={amount}
+                from={from}
+                to={to}
+                transferableTokenId={transferableTokenId}
+                onChange={handleEvmFeeChange}
+              />
             )}
           </div>
           <SimpleButton

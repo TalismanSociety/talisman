@@ -15,6 +15,7 @@ export type DrawerProps = {
   asChild?: boolean
   className?: string
   children?: ReactNode
+  parent?: HTMLElement | null
 }
 
 const Container = styled.div`
@@ -106,6 +107,7 @@ export const Drawer: FC<DrawerProps> = ({
   fullScreen = false,
   asChild = false,
   className,
+  parent,
 }) => {
   const { render, show } = useOpenableComponent(open, 200)
 
@@ -130,7 +132,8 @@ export const Drawer: FC<DrawerProps> = ({
   if (asChild) return output
 
   // DOM node where the drawer will be rendered
-  const parent = document.getElementById("main") ?? document.getElementById("root") ?? document.body
+  const container =
+    parent ?? document.getElementById("main") ?? document.getElementById("root") ?? document.body
 
-  return createPortal(output, parent)
+  return createPortal(output, container)
 }

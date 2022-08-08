@@ -33,7 +33,6 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
-import { parseUnits } from "ethers/lib/utils"
 
 import { erc20Abi } from "../balances/rpc/abis"
 import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"
@@ -171,6 +170,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
     fromAddress,
     toAddress,
     amount,
+    maxFeePerGas,
+    maxPriorityFeePerGas,
   }: RequestAssetTransferEth): Promise<ResponseAssetTransferEth> {
     try {
       // eslint-disable-next-line no-var
@@ -197,14 +198,14 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
     if (token.type === "native") {
       transfer = {
-        value: parseUnits(amount, "wei"), // amount is planck
+        value: ethers.BigNumber.from(amount),
         to: ethers.utils.getAddress(toAddress),
       }
     } else if (token.type === "erc20") {
       const contract = new ethers.Contract(token.contractAddress, erc20Abi)
       transfer = await contract.populateTransaction["transfer"](
         toAddress,
-        parseUnits(amount, "wei")
+        ethers.BigNumber.from(amount)
       )
     } else {
       throw new Error(`Unhandled token type ${token.type}`)
@@ -214,10 +215,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
       chainId: evmNetworkId,
       from: ethers.utils.getAddress(fromAddress),
       nonce: await getTransactionCount(fromAddress, evmNetworkId),
-      // TODO
       type: 2,
-      maxFeePerGas: parseUnits("1", "gwei"),
-      maxPriorityFeePerGas: parseUnits("1", "gwei"),
+      maxFeePerGas: ethers.BigNumber.from(maxFeePerGas ?? "0"),
+      maxPriorityFeePerGas: ethers.BigNumber.from(maxPriorityFeePerGas ?? "0"),
       ...transfer,
     }
 

@@ -175,7 +175,9 @@ export default interface MessageTypes {
     tokenId: TokenId,
     fromAddress: string,
     toAddress: string,
-    amount: string
+    amount: string,
+    maxPriorityFeePerGas: string,
+    maxFeePerGas: string
   ) => Promise<ResponseAssetTransferEth>
   assetTransferCheckFees: (
     chainId: ChainId,

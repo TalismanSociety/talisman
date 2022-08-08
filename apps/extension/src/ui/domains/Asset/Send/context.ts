@@ -126,11 +126,12 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
       // checks stop here for EVM
       if (!chainId) {
+        // TODO check that we have enough to pay for fees
+
         setFormData((prev) => ({
           ...prev,
           ...newData,
         }))
-        // TODO ....
         setExpectedResult({
           type: "evm",
           transfer,
@@ -144,7 +145,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         from,
         to,
         transfer.amount.planck.toString(),
-        tip,
+        tip ?? "0",
         allowReap
       )
 
@@ -157,7 +158,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
           nativeToken.rates
         ),
         amount: new BalanceFormatter(
-          BigInt(partialFee) + BigInt(tip),
+          BigInt(partialFee) + BigInt(tip ?? "0"),
           nativeToken.decimals,
           nativeToken.rates
         ),
@@ -222,7 +223,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         transfer,
         fees,
         forfeits,
-        pendingTransferId: pendingTransferId,
+        pendingTransferId,
         unsigned,
       })
     },
@@ -237,7 +238,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   // execute the TX
   const send = useCallback(async () => {
-    const { amount, transferableTokenId, from, to, tip } = formData as SendTokensInputs
+    const { amount, transferableTokenId, from, to, tip, maxPriorityFeePerGas, maxFeePerGas } =
+      formData as SendTokensInputs
 
     const transferableToken = transferableTokens.find((tt) => tt.id === transferableTokenId)
     if (!transferableToken) throw new Error("Transferable token not found")
@@ -253,7 +255,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         from,
         to,
         tokensToPlanck(amount, token.decimals),
-        tip,
+        tip ?? "0",
         hasAcceptedForfeit
       )
       setTransactionId(id)
@@ -263,7 +265,9 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         token.id,
         from,
         to,
-        tokensToPlanck(amount, token.decimals)
+        tokensToPlanck(amount, token.decimals),
+        maxPriorityFeePerGas ?? "0",
+        maxFeePerGas ?? "0"
       )
       setTransactionHash(hash)
     } else throw new Error("Network not found")
