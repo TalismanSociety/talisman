@@ -4,6 +4,7 @@ import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { tokensToPlanck } from "@core/util/tokensToPlanck"
 import { assert } from "@polkadot/util"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import useBalances from "@ui/hooks/useBalances"
@@ -39,9 +40,18 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   // there must always be a token
   useEffect(() => {
-    if (formData.transferableTokenId === undefined && transferableTokens.length > 0)
-      setFormData({ transferableTokenId: transferableTokens[0].id })
-  }, [formData.transferableTokenId, transferableTokens])
+    if (formData.transferableTokenId !== undefined || !transferableTokens.length) return
+
+    // all transferable tokens may not be loaded yet, hardcode ids
+    let transferableTokenId = transferableTokens[0].id
+    if (formData.from) {
+      if (isEthereumAddress(formData.from)) transferableTokenId = "moonbeam-native-glmr-1284"
+      //transferableTokens.find((tt) => !!tt.evmNetworkId) ?? firstCompatibleToken
+      else transferableTokenId = "polkadot-native-dot-polkadot"
+      //firstCompatibleToken = transferableTokens.find((tt) => !!tt.chainId) ?? firstCompatibleToken
+    }
+    setFormData(({ from }) => ({ from, transferableTokenId }))
+  }, [formData.from, formData.transferableTokenId, transferableTokens])
 
   const evmNetworks = useEvmNetworks()
   const chains = useChains()
@@ -327,8 +337,6 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     transferableTokens,
     transferableToken,
   }
-
-  // console.log("SendForm.context", context)
 
   return context
 }

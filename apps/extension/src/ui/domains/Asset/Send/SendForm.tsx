@@ -211,9 +211,6 @@ const getSchema = (isEvm: boolean) =>
 
 export const SendForm = () => {
   const { formData, check, showForm } = useSendTokens()
-
-  // default values used to reinitialiSe the form
-  const defaultAsset = useMemo(() => formData.transferableTokenId, [formData.transferableTokenId])
   const [isEvm, setIsEvm] = useState(false)
 
   const schema = useMemo(() => getSchema(isEvm), [isEvm])
@@ -224,6 +221,7 @@ export const SendForm = () => {
     setValue,
     setError,
     watch,
+    reset,
     formState: { isValid, isSubmitting },
   } = useForm<SendTokensInputs>({
     mode: "onChange",
@@ -277,7 +275,7 @@ export const SendForm = () => {
   const chains = useChains()
   const evmNetworks = useEvmNetworks()
 
-  // TODO dedicated hook ? handle account filter inside ?
+  // account filters based on selected token
   const {
     addressType,
     genesisHash,
@@ -332,6 +330,11 @@ export const SendForm = () => {
     [setValue]
   )
 
+  //reset form if formData changes (helps loading with initial values)
+  useEffect(() => {
+    reset()
+  }, [formData, reset])
+
   if (!showForm) return null
 
   return (
@@ -353,7 +356,8 @@ export const SendForm = () => {
               }}
             />
             <AssetPicker
-              defaultValue={defaultAsset}
+              key={formData.transferableTokenId ?? "unknown"} // force a reset of the component
+              defaultValue={formData.transferableTokenId}
               onChange={onAssetChange}
               showChainsWithBalanceFirst
             />

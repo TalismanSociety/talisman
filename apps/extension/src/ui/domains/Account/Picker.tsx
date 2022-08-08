@@ -365,6 +365,7 @@ const AccountPicker: FC<Props> = ({
       addressType &&
       selectedAddress &&
       onChange &&
+      addressType !== "UNKNOWN" && // exclude case addressType is unknown (in send funds modal, this happens while tokens are loading)
       addressType !== getAddressType(selectedAddress)
     )
       setSelectedAddress(undefined)
