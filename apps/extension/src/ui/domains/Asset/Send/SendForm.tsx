@@ -261,7 +261,7 @@ export const SendForm = () => {
   const onToChange = useCallback((value: string) => setValue("to", value, REVALIDATE), [setValue])
 
   // current form values
-  const { amount, transferableTokenId, from, to } = watch()
+  const { amount, transferableTokenId, from, to, tip: formTip } = watch()
   // derived data
   const transferableToken = useTransferableTokenById(transferableTokenId)
 
@@ -297,10 +297,11 @@ export const SendForm = () => {
   const { tip, error: tipError } = useTip(transferableToken?.chainId, showForm)
 
   useEffect(() => {
+    if (isEvm) return
     // force type with ! because undefined value is used to check for an invalid form.
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     setValue("tip", tip!)
-  }, [setValue, tip])
+  }, [isEvm, setValue, tip])
 
   useEffect(() => {
     // clear non-form error if any field is changed
