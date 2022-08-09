@@ -40,9 +40,7 @@ export default class SigningHandler extends ExtensionHandler {
     if (isJsonPayload(payload)) {
       const { blockHash, genesisHash, signedExtensions } = payload
 
-      const chains = await db.chains.toArray()
-      const chain = chains.find((c) => c.genesisHash === genesisHash)
-
+      const chain = await db.chains.get({ genesisHash })
       if (chain) registry = await getTypeRegistry(chain.id, blockHash)
 
       // Get the metadata for the genesisHash
