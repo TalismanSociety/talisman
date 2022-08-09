@@ -24,6 +24,8 @@ window.addEventListener("message", ({ data, source }: Message): void => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (data.id) messageService.handleResponse(data as any)
+  // eslint-disable-next-line no-console
+  else if (DEBUG) console.error("Missing id for response", { data })
 })
 
 // redirect users if this page is considered as phishing, otherwise return false
