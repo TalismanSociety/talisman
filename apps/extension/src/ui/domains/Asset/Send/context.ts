@@ -1,5 +1,6 @@
 import { Balance, BalanceFormatter, BalanceStorage, Balances } from "@core/domains/balances/types"
 import { Chain } from "@core/domains/chains/types"
+import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { tokensToPlanck } from "@core/util/tokensToPlanck"
@@ -7,11 +8,13 @@ import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
+import { getExtensionEthereumProvider } from "@ui/domains/Ethereum/getExtensionEthereumProvider"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { chainUsesOrmlForNativeToken } from "@ui/hooks/useChainsTokens"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
+import { ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { SendTokensExpectedResult, SendTokensInputs, TokenAmountInfo } from "./types"
@@ -136,7 +139,21 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
       // checks stop here for EVM
       if (!chainId) {
-        // TODO check that we have enough to pay for fees
+        assert(evmNetworkId, "EVM network not found")
+        assert(!!newData.maxFeePerGas && !!newData.maxPriorityFeePerGas, "Missing gas information")
+
+        // check fees again
+        const txBase = await getEthTransferTransactionBase(
+          token,
+          tokensToPlanck(newData.amount, token.decimals),
+          newData.to
+        )
+        const provider = getExtensionEthereumProvider(evmNetworkId)
+        const estimatedGas = await provider.estimateGas(txBase)
+        const gasPrice = ethers.BigNumber.from(await provider.send("eth_gasPrice", []))
+        const gasCost = estimatedGas.mul(gasPrice)
+        const maxFee = estimatedGas.mul(newData.maxFeePerGas)
+        const maxFeeAndGasCost = gasCost.add(maxFee)
 
         setFormData((prev) => ({
           ...prev,
@@ -145,6 +162,16 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         setExpectedResult({
           type: "evm",
           transfer,
+          fees: {
+            amount: new BalanceFormatter(
+              maxFeeAndGasCost.toBigInt(),
+              nativeToken.decimals,
+              nativeToken.rates
+            ),
+            decimals: nativeToken.decimals,
+            symbol: nativeToken.symbol,
+            existentialDeposit: new BalanceFormatter("0", nativeToken.decimals, nativeToken.rates),
+          },
         })
         return
       }

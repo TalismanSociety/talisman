@@ -206,7 +206,7 @@ const SendReview = () => {
           <div className="message">{error}</div>
           {!!fees && (
             <div className="info">
-              <span>Fee:</span>
+              <span>{transferableToken?.evmNetworkId ? "Max fee:" : "Fee:"}</span>
               <Tokens
                 amount={fees.amount.tokens}
                 symbol={fees.symbol}

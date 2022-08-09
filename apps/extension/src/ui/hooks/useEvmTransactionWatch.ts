@@ -4,7 +4,7 @@ import * as Sentry from "@sentry/browser"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import urlJoin from "url-join"
 
-import { useEthereumProvider } from "./useEthereumProvider"
+import { useEthereumProvider } from "../domains/Ethereum/useEthereumProvider"
 import { useEvmNetwork } from "./useEvmNetwork"
 
 export const useEvmTransactionWatch = (

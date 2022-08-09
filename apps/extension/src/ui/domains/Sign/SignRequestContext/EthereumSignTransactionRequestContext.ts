@@ -3,7 +3,7 @@ import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHist
 import { getTransactionFeeParams } from "@talisman/util/getTransactionFeeParams"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import { useEthereumProvider } from "@ui/hooks/useEthereumProvider"
+import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useSigningRequestById from "@ui/hooks/useSigningRequestById"
 import { BigNumber, ethers } from "ethers"
