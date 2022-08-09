@@ -3,7 +3,6 @@
 
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
-import * as Sentry from "@sentry/browser"
 
 import { DEBUG } from "./constants"
 import TalismanInjected from "./inject/Injected"
@@ -25,7 +24,8 @@ window.addEventListener("message", ({ data, source }: Message): void => {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (data.id) messageService.handleResponse(data as any)
-  else Sentry.captureException(new Error("Missing id for response."), { tags: { ...data } })
+  // eslint-disable-next-line no-console
+  else if (DEBUG) console.error("Missing id for response", { data })
 })
 
 // redirect users if this page is considered as phishing, otherwise return false
@@ -48,7 +48,7 @@ function inject() {
   // inject substrate wallet provider
   injectExtension(enable, {
     name: "talisman",
-    version: process.env.VERSION || "",
+    version: process.env.VERSION ? process.env.VERSION : "",
   })
 
   // inject ethereum wallet provider

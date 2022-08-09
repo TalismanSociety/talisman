@@ -42,6 +42,21 @@ const getArchiveFileName = (env) => {
   }
 }
 
+const getManifestVersionName = (env) => {
+  switch (env.build) {
+    case "ci":
+      return `${process.env.npm_package_version} - ${getGitShortHash() ?? Date.now()} ci`
+    case "canary":
+      return `${process.env.npm_package_version} - ${getGitShortHash()}`
+    case "production":
+      return process.env.npm_package_version
+    case "qa":
+      return `${process.env.npm_package_version} - ${getGitShortHash()}`
+    default:
+      return `${process.env.npm_package_version} - ${getGitShortHash()} dev`
+  }
+}
+
 const getSentryPlugin = (env) => {
   if (!["production", "canary"].includes(env.build)) return
 
@@ -67,6 +82,7 @@ module.exports = {
   distDir,
   getGitShortHash,
   getRelease,
+  getManifestVersionName,
   getArchiveFileName,
   getSentryPlugin,
 }
