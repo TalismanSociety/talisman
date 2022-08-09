@@ -7,7 +7,7 @@ const ZipPlugin = require("zip-webpack-plugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 
 const common = require("./webpack.common.js")
-const { distDir, getArchiveFileName, getSentryPlugin } = require("./utils")
+const { distDir, getArchiveFileName, getSentryPlugin, getManifestVersionName } = require("./utils")
 
 const config = (env) =>
   merge(common(env), {
@@ -33,6 +33,8 @@ const config = (env) =>
               // Update the version in the manifest file to match the version in package.json
               manifest.version = process.env.npm_package_version
 
+              // add a version name key to distinguish in list of installed extensions
+              manifest.version_name = getManifestVersionName(env)
               // Set the canary title and icon if we're doing a canary build
               if (env.build === "canary") {
                 manifest.name = `${manifest.name} - Canary`
