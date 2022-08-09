@@ -25,16 +25,18 @@ import type {
   SubscriptionCallback,
 } from "@core/types"
 import { Address, Port } from "@core/types/base"
+import { planckToTokens } from "@core/util"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { TransactionRequest } from "@ethersproject/abstract-provider"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
+import * as Sentry from "@sentry/browser"
 import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
 
-import { erc20Abi } from "../balances/rpc/abis"
+import { getEthTransferTransactionBase } from "../ethereum/helpers"
 import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
 
@@ -187,52 +189,44 @@ export default class AssetTransferHandler extends ExtensionHandler {
     const provider = await getProviderForEvmNetworkId(evmNetworkId)
     if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
 
-    talismanAnalytics.capture("asset transfer", {
-      evmNetworkId,
-      tokenId,
-      amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
-      internal: keyring.getAccount(toAddress) !== undefined,
-    })
+    try {
+      talismanAnalytics.capture("asset transfer", {
+        evmNetworkId,
+        tokenId,
+        amount: roundToFirstInteger(Number(planckToTokens(amount, token.decimals))),
+        internal: keyring.getAccount(toAddress) !== undefined,
+      })
 
-    let transfer: Partial<TransactionRequest>
+      const transfer = await getEthTransferTransactionBase(token, amount, toAddress)
 
-    if (token.type === "native") {
-      transfer = {
-        value: ethers.BigNumber.from(amount),
-        to: ethers.utils.getAddress(toAddress),
+      const transaction: TransactionRequest = {
+        chainId: evmNetworkId,
+        from: ethers.utils.getAddress(fromAddress),
+        nonce: await getTransactionCount(fromAddress, evmNetworkId),
+        type: 2,
+        maxFeePerGas: ethers.BigNumber.from(maxFeePerGas ?? "0"),
+        maxPriorityFeePerGas: ethers.BigNumber.from(maxPriorityFeePerGas ?? "0"),
+        ...transfer,
       }
-    } else if (token.type === "erc20") {
-      const contract = new ethers.Contract(token.contractAddress, erc20Abi)
-      transfer = await contract.populateTransaction["transfer"](
-        toAddress,
-        ethers.BigNumber.from(amount)
-      )
-    } else {
-      throw new Error(`Unhandled token type ${token.type}`)
+
+      const privateKey = getPrivateKey(pair)
+      const wallet = new Wallet(privateKey, provider)
+
+      const response = await wallet.sendTransaction(transaction)
+
+      const { hash, ...otherDetails } = response
+      // eslint-disable-next-line no-console
+      DEBUG && console.debug("assetTransferEth - sent", { hash, ...otherDetails })
+
+      incrementTransactionCount(fromAddress, evmNetworkId)
+
+      return { hash }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      DEBUG && console.error(err)
+      Sentry.captureException(err, { tags: { evmNetworkId } })
+      throw new Error("Failed to send transaction")
     }
-
-    const transaction: TransactionRequest = {
-      chainId: evmNetworkId,
-      from: ethers.utils.getAddress(fromAddress),
-      nonce: await getTransactionCount(fromAddress, evmNetworkId),
-      type: 2,
-      maxFeePerGas: ethers.BigNumber.from(maxFeePerGas ?? "0"),
-      maxPriorityFeePerGas: ethers.BigNumber.from(maxPriorityFeePerGas ?? "0"),
-      ...transfer,
-    }
-
-    const privateKey = getPrivateKey(pair)
-    const wallet = new Wallet(privateKey, provider)
-
-    const response = await wallet.sendTransaction(transaction)
-
-    const { hash, ...otherDetails } = response
-    // eslint-disable-next-line no-console
-    DEBUG && console.debug("assetTransferEth - sent", { hash, ...otherDetails })
-
-    incrementTransactionCount(fromAddress, evmNetworkId)
-
-    return { hash }
   }
 
   private async assetTransferCheckFees({

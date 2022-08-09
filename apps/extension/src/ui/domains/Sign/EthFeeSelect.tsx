@@ -67,6 +67,7 @@ type EthFeeButtonProps = {
   priorityOptions: EthPriorityOptions
   priority: EthPriorityOptionName
   selected?: boolean
+  decimals: number
   symbol?: string
   onClick?: () => void
 }
@@ -118,6 +119,7 @@ const PriorityOption = ({
   priority,
   priorityOptions,
   selected,
+  decimals,
   symbol,
   onClick,
 }: EthFeeButtonProps) => {
@@ -131,9 +133,19 @@ const PriorityOption = ({
     <OptionButton onClick={onClick} type="button" className={classNames(selected && "selected")}>
       <div className="icon">{OPTIONS[priority].icon}</div>
       <div className="grow">{OPTIONS[priority].label}</div>
-      <div>{formatEtherValue(maxFeeAndGasCost, symbol)}</div>
+      <div>{formatEtherValue(maxFeeAndGasCost, decimals, symbol)}</div>
     </OptionButton>
   )
+}
+
+const OpenFeeSelectTracker = () => {
+  const { genericEvent } = useAnalytics()
+
+  useEffect(() => {
+    genericEvent("open evm fee select")
+  }, [genericEvent])
+
+  return null
 }
 
 type EthFeeSelectProps = {
@@ -142,6 +154,7 @@ type EthFeeSelectProps = {
   baseFeePerGas: BigNumber
   priorityOptions: EthPriorityOptions
   priority: EthPriorityOptionName
+  decimals: number
   symbol?: string
   onChange?: (priority: EthPriorityOptionName) => void
   drawerContainer?: HTMLElement | null
@@ -164,10 +177,6 @@ export const EthFeeSelect = ({
     },
     [close, onChange, genericEvent]
   )
-
-  useEffect(() => {
-    genericEvent("open evm fee select")
-  }, [genericEvent])
 
   return (
     <>
@@ -199,6 +208,7 @@ export const EthFeeSelect = ({
             onClick={handleSelect("high")}
             selected={priority === "high"}
           />
+          <OpenFeeSelectTracker />
         </Container>
       </Drawer>
     </>

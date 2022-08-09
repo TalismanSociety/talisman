@@ -115,8 +115,8 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
     // serialize values as wei, making it easy to parse & debug on backend
     const args = gasInfo
       ? [
-          ethers.utils.formatUnits(gasInfo.maxFeePerGas, "wei"),
-          ethers.utils.formatUnits(gasInfo.maxPriorityFeePerGas, "wei"),
+          ethers.utils.formatUnits(gasInfo.maxFeePerGas, 0),
+          ethers.utils.formatUnits(gasInfo.maxPriorityFeePerGas, 0),
         ]
       : []
     return baseRequest.approve(...args)
