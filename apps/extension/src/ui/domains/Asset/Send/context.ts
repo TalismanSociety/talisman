@@ -6,6 +6,7 @@ import { Token } from "@core/domains/tokens/types"
 import { tokensToPlanck } from "@core/util/tokensToPlanck"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import * as Sentry from "@sentry/browser"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { getExtensionEthereumProvider } from "@ui/domains/Ethereum/getExtensionEthereumProvider"
@@ -78,7 +79,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   const check = useCallback(
     async (newData: SendTokensInputs, allowReap = false) => {
-      const { amount, transferableTokenId, from, to, tip } = newData
+      const { amount, transferableTokenId, from, to, tip, maxFeePerGas, maxPriorityFeePerGas } =
+        newData
 
       const transferableToken = transferableTokens.find((tt) => tt.id === transferableTokenId)
       if (!transferableToken) throw new Error("Transferable token not found")
@@ -140,39 +142,51 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       // checks stop here for EVM
       if (!chainId) {
         assert(evmNetworkId, "EVM network not found")
-        assert(!!newData.maxFeePerGas && !!newData.maxPriorityFeePerGas, "Missing gas information")
+        assert(!!maxFeePerGas && !!maxPriorityFeePerGas, "Missing gas information")
 
-        // check fees again
-        const txBase = await getEthTransferTransactionBase(
-          token,
-          tokensToPlanck(newData.amount, token.decimals),
-          newData.to
-        )
-        const provider = getExtensionEthereumProvider(evmNetworkId)
-        const estimatedGas = await provider.estimateGas(txBase)
-        const gasPrice = ethers.BigNumber.from(await provider.send("eth_gasPrice", []))
-        const gasCost = estimatedGas.mul(gasPrice)
-        const maxFee = estimatedGas.mul(newData.maxFeePerGas)
-        const maxFeeAndGasCost = gasCost.add(maxFee)
+        try {
+          // check fees again
+          const txBase = await getEthTransferTransactionBase(
+            evmNetworkId,
+            from,
+            to,
+            token,
+            tokensToPlanck(amount, token.decimals)
+          )
+          const provider = getExtensionEthereumProvider(evmNetworkId)
+          const estimatedGas = await provider.estimateGas(txBase)
+          const gasPrice = ethers.BigNumber.from(await provider.send("eth_gasPrice", []))
+          const gasCost = estimatedGas.mul(gasPrice)
+          const maxFee = estimatedGas.mul(maxFeePerGas)
+          const maxFeeAndGasCost = gasCost.add(maxFee)
 
-        setFormData((prev) => ({
-          ...prev,
-          ...newData,
-        }))
-        setExpectedResult({
-          type: "evm",
-          transfer,
-          fees: {
-            amount: new BalanceFormatter(
-              maxFeeAndGasCost.toBigInt(),
-              nativeToken.decimals,
-              nativeToken.rates
-            ),
-            decimals: nativeToken.decimals,
-            symbol: nativeToken.symbol,
-            existentialDeposit: new BalanceFormatter("0", nativeToken.decimals, nativeToken.rates),
-          },
-        })
+          setFormData((prev) => ({
+            ...prev,
+            ...newData,
+          }))
+          setExpectedResult({
+            type: "evm",
+            transfer,
+            fees: {
+              amount: new BalanceFormatter(
+                maxFeeAndGasCost.toBigInt(),
+                nativeToken.decimals,
+                nativeToken.rates
+              ),
+              decimals: nativeToken.decimals,
+              symbol: nativeToken.symbol,
+              existentialDeposit: new BalanceFormatter(
+                "0",
+                nativeToken.decimals,
+                nativeToken.rates
+              ),
+            },
+          })
+        } catch (err) {
+          // if it fails here we don't want to display ethers full text message which includes stack trace
+          Sentry.captureException(err)
+          throw new Error("Failed to validate transaction")
+        }
         return
       }
 

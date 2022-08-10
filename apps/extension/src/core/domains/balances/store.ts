@@ -150,7 +150,7 @@ export class BalanceStore {
         assert(evmNetworkId, "chainId or evmNetworkId is required")
         const evmNetwork = await db.evmNetworks.get(evmNetworkId)
         assert(evmNetwork, "This token's network could not be found")
-        return (await NativeBalancesEvmRpc.fetchNativeBalances([address], [evmNetwork]))
+        return (await NativeBalancesEvmRpc.balances([address], [evmNetwork]))
           .find({ chainId, tokenId, address })
           .sorted[0]?.toJSON()
       }
@@ -162,7 +162,10 @@ export class BalanceStore {
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()
     }
-    if (tokenType === "erc20") throw new Error("Not implemented")
+    if (tokenType === "erc20")
+      return (await Erc20BalancesEvmRpc.balances([address], { [Number(evmNetworkId)]: [token] }))
+        .find({ chainId, tokenId, address })
+        .sorted[0]?.toJSON()
 
     // force compilation error if any token types don't have a case
     const exhaustiveCheck: never = tokenType

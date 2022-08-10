@@ -55,14 +55,14 @@ export const EthTransactionFees = ({
   useEffect(() => {
     if (!transferableToken?.evmNetworkId || !token || !amount || !to) setTx(undefined)
     else {
-      getEthTransferTransactionBase(token, tokensToPlanck(amount, token.decimals), to)
-        .then((baseTx) =>
-          setTx({
-            chainId: transferableToken.evmNetworkId,
-            from,
-            ...baseTx,
-          })
-        )
+      getEthTransferTransactionBase(
+        transferableToken.evmNetworkId,
+        from,
+        to,
+        token,
+        tokensToPlanck(amount, token.decimals)
+      )
+        .then(setTx)
         .catch((err) => {
           setTx(undefined)
           // eslint-disable-next-line no-console

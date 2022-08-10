@@ -3,7 +3,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
-import { Suspense, lazy, useCallback, useState } from "react"
+import { Suspense, lazy, useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
 import { formatDecimals } from "talisman-utils"
 
@@ -160,6 +160,12 @@ const SendReview = () => {
     }
     setSending(false)
   }, [send])
+
+  // reset if going back and forth
+  useEffect(() => {
+    setError(undefined)
+    setSending(false)
+  }, [showReview])
 
   if (!showReview || (!chain && !evmNetwork)) return null
 

@@ -197,11 +197,15 @@ export default class AssetTransferHandler extends ExtensionHandler {
         internal: keyring.getAccount(toAddress) !== undefined,
       })
 
-      const transfer = await getEthTransferTransactionBase(token, amount, toAddress)
+      const transfer = await getEthTransferTransactionBase(
+        evmNetworkId,
+        ethers.utils.getAddress(fromAddress),
+        ethers.utils.getAddress(toAddress),
+        token,
+        amount
+      )
 
       const transaction: TransactionRequest = {
-        chainId: evmNetworkId,
-        from: ethers.utils.getAddress(fromAddress),
         nonce: await getTransactionCount(fromAddress, evmNetworkId),
         type: 2,
         maxFeePerGas: ethers.BigNumber.from(maxFeePerGas ?? "0"),

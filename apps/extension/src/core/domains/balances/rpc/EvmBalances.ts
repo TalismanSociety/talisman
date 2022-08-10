@@ -60,7 +60,7 @@ export default class NativeBalancesEvmRpc {
     return await this.fetchNativeBalances(addresses, evmNetworks)
   }
 
-  public static async fetchNativeBalances(
+  private static async fetchNativeBalances(
     addresses: Address[],
     evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
   ): Promise<Balances> {
@@ -79,9 +79,7 @@ export default class NativeBalancesEvmRpc {
         async (address) =>
           new Balance({
             pallet: "balances",
-
             status: "live",
-
             address: address,
             evmNetworkId: evmNetwork.id,
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
