@@ -12,7 +12,7 @@ const SEED_LENGTH = 32
 const SEED_OFFSET = PKCS8_HEADER.length
 
 // built from reverse engineering polkadot keyring
-export const getPrivateKey = (pair: KeyringPair, passphrase?: string) => {
+export const getPrivateKey = (pair: KeyringPair, passphrase: string) => {
   if (pair.isLocked) pair.unlock(passphrase)
 
   const json = pair.toJson(passphrase)
