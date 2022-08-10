@@ -1,5 +1,6 @@
 import { passwordStore } from "@core/domains/app"
 import type { Address } from "@core/types/base"
+import { KeyringPair } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 
@@ -32,7 +33,6 @@ export const getPairFromAddress = (address: Address) => {
 
 export const getUnlockedPairFromAddress = (address: Address) => {
   const pair = getPairFromAddress(address)
-
   // if the keyring pair is locked, the password is needed
   if (pair.isLocked && !passwordStore.hasPassword) {
     throw new Error("Password needed to unlock the account")
@@ -40,6 +40,26 @@ export const getUnlockedPairFromAddress = (address: Address) => {
   if (pair.isLocked) pair.decodePkcs8(passwordStore.getPassword())
 
   return pair
+}
+
+export const getPairForAddressSafely = async (
+  address: Address,
+  cb: (pair: KeyringPair) => any,
+  onError?: (error: any) => void
+) => {
+  try {
+    // eslint-disable-next-line no-var
+    var pair = getUnlockedPairFromAddress(address)
+  } catch (error) {
+    if (onError) {
+      onError(error)
+      return
+    } else throw error
+  }
+  const result = await cb(pair)
+  pair.lock()
+
+  return result
 }
 
 export const isHardwareAccount = (address: Address) => {

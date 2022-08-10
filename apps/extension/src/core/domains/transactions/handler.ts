@@ -11,7 +11,7 @@ import {
   ResponseAssetTransferFeeQuery,
   TransactionStatus,
 } from "@core/domains/transactions/types"
-import { getPairFromAddress, getUnlockedPairFromAddress } from "@core/handlers/helpers"
+import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
@@ -103,55 +103,58 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tip,
     reapBalance = false,
   }: RequestAssetTransfer): Promise<ResponseAssetTransfer> {
-    try {
-      // eslint-disable-next-line no-var
-      var pair = getUnlockedPairFromAddress(fromAddress)
-    } catch (error) {
-      this.stores.password.clearPassword()
-      throw error
-    }
+    return await getPairForAddressSafely(
+      fromAddress,
+      async (pair) => {
+        const token = await db.tokens.get(tokenId)
+        if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
-    const token = await db.tokens.get(tokenId)
-    if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
-
-    talismanAnalytics.capture("asset transfer", {
-      chainId,
-      tokenId,
-      amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
-      internal: keyring.getAccount(toAddress) !== undefined,
-    })
-
-    return await new Promise((resolve, reject) => {
-      const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)
-
-      const tokenType = token.type
-      if (tokenType === "native")
-        return AssetTransfersRpc.transfer(
-          chainId,
-          amount,
-          pair,
-          toAddress,
-          tip,
-          reapBalance,
-          watchExtrinsic
-        )
-      if (tokenType === "orml")
-        return OrmlTokenTransfersRpc.transfer(
+        talismanAnalytics.capture("asset transfer", {
           chainId,
           tokenId,
-          amount,
-          pair,
-          toAddress,
-          tip,
-          watchExtrinsic
-        )
-      if (tokenType === "erc20")
-        throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
+          amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
+          internal: keyring.getAccount(toAddress) !== undefined,
+        })
 
-      // force compilation error if any token types don't have a case
-      const exhaustiveCheck: never = tokenType
-      throw new Error(`Unhandled token type ${exhaustiveCheck}`)
-    })
+        return await new Promise((resolve, reject) => {
+          const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)
+
+          const tokenType = token.type
+          if (tokenType === "native")
+            return AssetTransfersRpc.transfer(
+              chainId,
+              amount,
+              pair,
+              toAddress,
+              tip,
+              reapBalance,
+              watchExtrinsic
+            )
+          if (tokenType === "orml")
+            return OrmlTokenTransfersRpc.transfer(
+              chainId,
+              tokenId,
+              amount,
+              pair,
+              toAddress,
+              tip,
+              watchExtrinsic
+            )
+          if (tokenType === "erc20")
+            throw new Error(
+              "Erc20 token transfers are not implemented in this version of Talisman."
+            )
+
+          // force compilation error if any token types don't have a case
+          const exhaustiveCheck: never = tokenType
+          throw new Error(`Unhandled token type ${exhaustiveCheck}`)
+        })
+      },
+      (error) => {
+        this.stores.password.clearPassword()
+        throw error
+      }
+    )
   }
 
   private async assetTransferCheckFees({
@@ -163,22 +166,22 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tip,
     reapBalance = false,
   }: RequestAssetTransfer): Promise<ResponseAssetTransferFeeQuery> {
-    const pair = getPairFromAddress(fromAddress)
+    return getPairForAddressSafely(fromAddress, async (pair) => {
+      const token = await db.tokens.get(tokenId)
+      if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
-    const token = await db.tokens.get(tokenId)
-    if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+      const tokenType = token.type
+      if (tokenType === "native")
+        return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, tip, reapBalance)
+      if (tokenType === "orml")
+        return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
+      if (tokenType === "erc20")
+        throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
-    const tokenType = token.type
-    if (tokenType === "native")
-      return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, tip, reapBalance)
-    if (tokenType === "orml")
-      return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
-    if (tokenType === "erc20")
-      throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
-
-    // force compilation error if any token types don't have a case
-    const exhaustiveCheck: never = tokenType
-    throw new Error(`Unhandled token type ${exhaustiveCheck}`)
+      // force compilation error if any token types don't have a case
+      const exhaustiveCheck: never = tokenType
+      throw new Error(`Unhandled token type ${exhaustiveCheck}`)
+    })
   }
 
   private async assetTransferApproveSign({

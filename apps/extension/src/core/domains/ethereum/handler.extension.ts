@@ -5,7 +5,7 @@ import {
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
-import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
+import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import {
   ETH_ERROR_EIP1993_USER_REJECTED,
@@ -125,34 +125,40 @@ export class EthHandler extends ExtensionHandler {
       )
 
       const serialisedTx = serializeTransaction(goodTx)
-      try {
-        // eslint-disable-next-line no-var
-        var pair = getUnlockedPairFromAddress(queued.account.address)
-      } catch (error) {
-        this.stores.password.clearPassword()
-        reject(
-          error instanceof Error ? error : new Error(typeof error === "string" ? error : undefined)
-        )
-        return false
-      }
-      const signature = await pair.sign(serialisedTx)
 
-      const serialisedSignedTx = serializeTransaction(goodTx, signature)
-      const { chainId, hash } = await provider.sendTransaction(serialisedSignedTx)
+      return await getPairForAddressSafely(
+        queued.account.address,
+        async (pair) => {
+          const signature = pair.sign(serialisedTx)
 
-      incrementTransactionCount(queued.account.address, queued.ethChainId)
+          const serialisedSignedTx = serializeTransaction(goodTx, signature)
+          const { chainId, hash } = await provider.sendTransaction(serialisedSignedTx)
 
-      // notify user about transaction progress
-      if (await this.stores.settings.get("allowNotifications"))
-        watchEthereumTransaction(chainId, hash)
+          incrementTransactionCount(queued.account.address, queued.ethChainId)
 
-      resolve(hash)
+          // notify user about transaction progress
+          if (await this.stores.settings.get("allowNotifications"))
+            watchEthereumTransaction(chainId, hash)
 
-      talismanAnalytics.captureDelayed("sign transaction approve", {
-        type: "evm sign and send",
-        dapp: queued.url,
-        chain: queued.ethChainId,
-      })
+          resolve(hash)
+
+          talismanAnalytics.captureDelayed("sign transaction approve", {
+            type: "evm sign and send",
+            dapp: queued.url,
+            chain: queued.ethChainId,
+          })
+          return true
+        },
+        (error) => {
+          this.stores.password.clearPassword()
+          reject(
+            error instanceof Error
+              ? error
+              : new Error(typeof error === "string" ? error : undefined)
+          )
+          return false
+        }
+      )
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err, { err })
@@ -160,7 +166,6 @@ export class EthHandler extends ExtensionHandler {
       if (msg) throw new Error(msg)
       throw err
     }
-    return true
   }
 
   private async signApprove({ id }: RequestIdOnly): Promise<boolean> {
@@ -171,54 +176,56 @@ export class EthHandler extends ExtensionHandler {
 
       const { method, request, reject, resolve } = queued
 
-      try {
-        // eslint-disable-next-line no-var
-        var pair = getUnlockedPairFromAddress(queued.account.address)
-      } catch (error) {
-        this.stores.password.clearPassword()
-        reject(
-          error instanceof Error ? error : new Error(typeof error === "string" ? error : undefined)
-        )
-        return false
-      }
+      return await getPairForAddressSafely(
+        queued.account.address,
+        async (pair) => {
+          const privateKey = getPrivateKey(pair, this.stores.password.getPassword())
+          let signature: string
 
-      const privateKey = getPrivateKey(pair)
-      let signature: string
+          if (method === "personal_sign") {
+            signature = personalSign({ privateKey, data: request })
+          } else if (["eth_signTypedData", "eth_signTypedData_v1"].includes(method)) {
+            signature = signTypedData({
+              privateKey,
+              data: JSON.parse(request as string),
+              version: SignTypedDataVersion.V1,
+            })
+          } else if (method === "eth_signTypedData_v3") {
+            signature = signTypedData({
+              privateKey,
+              data: JSON.parse(request as string),
+              version: SignTypedDataVersion.V3,
+            })
+          } else if (method === "eth_signTypedData_v4") {
+            signature = signTypedData({
+              privateKey,
+              data: JSON.parse(request as string),
+              version: SignTypedDataVersion.V4,
+            })
+          } else {
+            throw new Error(`Unsupported method : ${method}`)
+          }
 
-      if (method === "personal_sign") {
-        signature = personalSign({ privateKey, data: request })
-      } else if (["eth_signTypedData", "eth_signTypedData_v1"].includes(method)) {
-        signature = signTypedData({
-          privateKey,
-          data: JSON.parse(request as string),
-          version: SignTypedDataVersion.V1,
-        })
-      } else if (method === "eth_signTypedData_v3") {
-        signature = signTypedData({
-          privateKey,
-          data: JSON.parse(request as string),
-          version: SignTypedDataVersion.V3,
-        })
-      } else if (method === "eth_signTypedData_v4") {
-        signature = signTypedData({
-          privateKey,
-          data: JSON.parse(request as string),
-          version: SignTypedDataVersion.V4,
-        })
-      } else {
-        throw new Error(`Unsupported method : ${method}`)
-      }
+          resolve(signature)
 
-      resolve(signature)
-
-      talismanAnalytics.captureDelayed("sign transaction approve", {
-        type: "evm sign",
-        method,
-        dapp: queued.url,
-        chain: queued.ethChainId,
-      })
-
-      return true
+          talismanAnalytics.captureDelayed("sign transaction approve", {
+            type: "evm sign",
+            method,
+            dapp: queued.url,
+            chain: queued.ethChainId,
+          })
+          return true
+        },
+        (error) => {
+          this.stores.password.clearPassword()
+          reject(
+            error instanceof Error
+              ? error
+              : new Error(typeof error === "string" ? error : undefined)
+          )
+          return false
+        }
+      )
     } catch (err) {
       const msg = getHumanReadableErrorMessage(err)
       if (msg) throw new Error(msg)
