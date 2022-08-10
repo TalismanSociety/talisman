@@ -179,7 +179,9 @@ export class EthHandler extends ExtensionHandler {
       return await getPairForAddressSafely(
         queued.account.address,
         async (pair) => {
-          const privateKey = getPrivateKey(pair, this.stores.password.getPassword())
+          const pw = this.stores.password.getPassword()
+          if (!pw) throw Error("Not logged in ")
+          const privateKey = getPrivateKey(pair, pw)
           let signature: string
 
           if (method === "personal_sign") {
