@@ -11,7 +11,7 @@ import { Erc20Token } from "@core/domains/tokens/types"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { db } from "@core/libs/db"
 import { Addresses, AddressesByChain, Port } from "@core/types/base"
-import { encodeAnyAddress } from "@core/util"
+import { encodeAnyAddress } from "@core/util/encodeAnyAddress"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
@@ -78,7 +78,7 @@ export class BalanceStore {
     ).subscribe({
       next: ([settings, chains, evmNetworks, tokens]) => {
         const erc20TokensByNetwork = Object.values(tokens).reduce((byNetwork, token) => {
-          if (token.type !== "erc20") return byNetwork
+          if (token.type !== "evm-erc20") return byNetwork
 
           const { evmNetwork } = token
           if (!evmNetwork) return byNetwork
@@ -138,20 +138,23 @@ export class BalanceStore {
     }
 
     const tokenType = token.type
-    if (["native", "orml"].includes(tokenType))
+    if (["substrate-native", "substrate-orml"].includes(tokenType))
       assert(chainId, "chainId is required for substrate token balances")
 
-    if (tokenType === "native")
+    if (tokenType === "substrate-native")
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return (await BalancesRpc.balances({ [chainId!]: [address] }))
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()
-    if (tokenType === "orml")
+    if (tokenType === "substrate-orml")
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return (await OrmlTokenBalancesRpc.tokens({ [chainId!]: [address] }))
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()
-    if (tokenType === "erc20") throw new Error("Not implemented")
+    if (tokenType === "evm-erc20") throw new Error("Not implemented")
+    // return (await Erc20BalancesEvmRpc.balances())
+    //   .find({ evmNetworkId, tokenId, address })
+    //   .sorted[0]?.toJSON()
 
     // force compilation error if any token types don't have a case
     const exhaustiveCheck: never = tokenType

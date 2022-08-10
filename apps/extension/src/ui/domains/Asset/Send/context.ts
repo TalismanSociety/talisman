@@ -1,8 +1,8 @@
 import { Balance, BalanceFormatter, BalanceStorage, Balances } from "@core/domains/balances/types"
 import { Token } from "@core/domains/tokens/types"
-import { tokensToPlanck } from "@core/util/tokensToPlanck"
 import { assert } from "@polkadot/util"
 import { provideContext } from "@talisman/util/provideContext"
+import { tokensToPlanck } from "@talismn/util"
 import { api } from "@ui/api"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
@@ -35,7 +35,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     [tokens]
   )
 
-  // nonEmptyBalances is needed in order to detect chains who use the orml pallet for their native token
+  // nonEmptyBalances is needed in order to detect chains who use the substrate-orml source for their native token
   const balances = useBalances()
   const nonEmptyBalances = useMemo(
     () =>

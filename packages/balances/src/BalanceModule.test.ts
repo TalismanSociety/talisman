@@ -1,20 +1,21 @@
-import { BalanceModule } from "./BalanceModule"
+import { IToken } from "@talismn/chaindata-provider/dist/types/Token"
 
-type TestToken = {
+import { BalanceModule, DefaultBalanceModule } from "./BalanceModule"
+
+type TestToken = IToken & {
   id: string
   type: "test"
 }
-type TestChainMeta = Record<string, never>
 
 describe("BalanceModule", () => {
   it("Can be implemented", () => {
-    const chainStorage = {
-      get: () => Promise.resolve(null),
+    // const chainStorage = {
+    //   get: () => Promise.resolve(null),
+    // }
+
+    const testModule: BalanceModule<TestToken> = {
+      ...DefaultBalanceModule(),
     }
-
-    class TestModule extends BalanceModule<TestToken, TestChainMeta> {}
-
-    const testModule = new TestModule(chainStorage)
 
     expect(testModule).toBeDefined()
   })

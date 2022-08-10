@@ -21,7 +21,7 @@ This README was written and verified with:
 - `apps/extension`: the Talisman browser extension (non-custodial wallet)
 - `packages/eslint-config-talisman`: shared `eslint` configurations
 - `packages/tsconfig`: shared `tsconfig.json`s used throughout the monorepo
-- `packages/talisman-utils`: library containing shared non-react code. It is not meant to be npm published.
+- `packages/util`: library containing shared non-react code. It is not meant to be npm published.
 
 All our package and apps are 100% [TypeScript](https://www.typescriptlang.org/).
 

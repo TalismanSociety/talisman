@@ -7,7 +7,7 @@ export const useCustomErc20Tokens = () => {
     async () =>
       (await db.tokens.toArray()).filter<CustomErc20Token>(
         (token): token is CustomErc20Token =>
-          token.type === "erc20" && "isCustom" in token && token.isCustom
+          token.type === "evm-erc20" && "isCustom" in token && token.isCustom
       ),
     []
   )

@@ -125,7 +125,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)
 
       const tokenType = token.type
-      if (tokenType === "native")
+      if (tokenType === "substrate-native")
         return AssetTransfersRpc.transfer(
           chainId,
           amount,
@@ -135,7 +135,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
           reapBalance,
           watchExtrinsic
         )
-      if (tokenType === "orml")
+      if (tokenType === "substrate-orml")
         return OrmlTokenTransfersRpc.transfer(
           chainId,
           tokenId,
@@ -145,7 +145,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
           tip,
           watchExtrinsic
         )
-      if (tokenType === "erc20")
+      if (tokenType === "evm-erc20")
         throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
       // force compilation error if any token types don't have a case
@@ -169,11 +169,11 @@ export default class AssetTransferHandler extends ExtensionHandler {
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
     const tokenType = token.type
-    if (tokenType === "native")
+    if (tokenType === "substrate-native")
       return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, tip, reapBalance)
-    if (tokenType === "orml")
+    if (tokenType === "substrate-orml")
       return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
-    if (tokenType === "erc20")
+    if (tokenType === "evm-erc20")
       throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
     // force compilation error if any token types don't have a case

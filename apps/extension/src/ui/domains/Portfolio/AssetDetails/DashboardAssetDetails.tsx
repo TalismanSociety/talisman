@@ -1,6 +1,6 @@
 import { Balances } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
-import { encodeAnyAddress } from "@core/util"
+import { encodeAnyAddress } from "@core/util/encodeAnyAddress"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"

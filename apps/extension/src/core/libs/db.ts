@@ -30,7 +30,7 @@ export class TalismanDatabase extends Dexie {
       chains: "id, genesisHash, name, nativeToken, tokens, evmNetworks",
       evmNetworks: "id, name, nativeToken, tokens, substrateChain",
       tokens: "id, type, symbol, coingeckoId, contractAddress, chain, evmNetwork",
-      balances: "id, pallet, address, chainId, evmNetworkId, tokenId",
+      balances: "id, source, address, chainId, evmNetworkId, tokenId",
       metadata: "genesisHash",
       metadataRpc: null,
       chainMetadataRpc: "chainId",

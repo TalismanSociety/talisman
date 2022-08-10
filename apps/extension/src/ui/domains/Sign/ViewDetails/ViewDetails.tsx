@@ -5,7 +5,7 @@ import {
   SigningRequest,
   TransactionDetails,
 } from "@core/domains/signing/types"
-import { encodeAnyAddress } from "@core/util"
+import { encodeAnyAddress } from "@core/util/encodeAnyAddress"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"

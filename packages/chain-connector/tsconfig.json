@@ -1,0 +1,8 @@
+{
+  "extends": "tsconfig/es6-react.json",
+  "include": ["src", "types"],
+  "compilerOptions": {
+    "target": "ES2015",
+    "outDir": "dist"
+  }
+}

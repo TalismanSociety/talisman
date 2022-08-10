@@ -2,10 +2,9 @@ import { ChainId } from "@core/domains/chains/types"
 import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { Address, AddressesByChain } from "@core/types/base"
+import { BalanceStorage, BalancesStorage } from "@talismn/balances"
 
-import { BalanceStorage, BalancesStorage } from "./storages"
-
-export { Balances, Balance, BalanceFormatter } from "./balances"
+export { Balances, Balance, BalanceFormatter } from "@talismn/balances"
 export type { BalanceStorage, BalancesStorage }
 
 export type BalancesUpdate = BalancesUpdateReset | BalancesUpdateUpsert | BalancesUpdateDelete

@@ -1,4 +1,4 @@
-import { encodeAnyAddress } from "@core/util"
+import { encodeAnyAddress } from "@core/util/encodeAnyAddress"
 import CopyToClipboard from "@talisman/components/CopyToClipboard"
 import Input from "@talisman/components/Field/Input"
 import { useNotification } from "@talisman/components/Notification"

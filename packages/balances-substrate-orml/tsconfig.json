@@ -1,0 +1,7 @@
+{
+  "extends": "tsconfig/es6-react.json",
+  "include": ["src", "types"],
+  "compilerOptions": {
+    "outDir": "dist"
+  }
+}

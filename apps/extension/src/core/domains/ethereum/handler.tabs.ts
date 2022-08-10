@@ -376,7 +376,7 @@ export class EthTabsHandler extends TabsHandler {
 
     const token: CustomErc20Token = {
       id: tokenId,
-      type: "erc20",
+      type: "evm-erc20",
       isTestnet: false,
       symbol: symbol ?? tokenInfo.symbol,
       decimals: decimals ?? tokenInfo.decimals,

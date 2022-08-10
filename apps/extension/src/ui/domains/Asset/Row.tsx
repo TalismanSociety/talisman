@@ -22,7 +22,7 @@ const Erc20tokenLogo = styled(Erc20Logo)`
 
 const AssetRow = ({ className, balance, withFiat, show }: IAssetRowType) => (
   <div className={`${className} chain-balance`} data-show={show}>
-    {balance.token?.type === "erc20" ? (
+    {balance.token?.type === "evm-erc20" ? (
       <Erc20tokenLogo id={balance.tokenId} />
     ) : (
       <Logo

@@ -265,7 +265,7 @@ export class EthHandler extends ExtensionHandler {
     const newToken: CustomNativeToken | null = network.nativeCurrency
       ? {
           id: `${networkId}-native-${network.nativeCurrency.symbol}`.toLowerCase(),
-          type: "native",
+          type: "substrate-native",
           isTestnet: false,
           symbol: network.nativeCurrency.symbol,
           decimals: network.nativeCurrency.decimals,

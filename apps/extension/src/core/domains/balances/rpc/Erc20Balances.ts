@@ -96,9 +96,10 @@ export default class Erc20BalancesEvmRpc {
         return addresses.map(
           async (address) =>
             new Balance({
-              pallet: "erc20",
+              source: "evm-erc20",
               status: "live",
               address,
+              multiChainId: { evmChainId: evmNetworkId },
               evmNetworkId: evmNetworkId,
               tokenId: token.id,
               free: await this.getFreeBalance(contract, address),

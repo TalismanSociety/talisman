@@ -78,18 +78,16 @@ export default class NativeBalancesEvmRpc {
       addresses.map(
         async (address) =>
           new Balance({
-            pallet: "balances",
+            source: "evm-native",
 
             status: "live",
 
             address: address,
+            multiChainId: { evmChainId: evmNetwork.id },
             evmNetworkId: evmNetwork.id,
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             tokenId: evmNetwork.nativeToken?.id!,
             free: await this.getFreeBalance(providers[evmNetwork.id], address),
-            reserved: "0",
-            miscFrozen: "0",
-            feeFrozen: "0",
           })
       )
     )

@@ -1,97 +1,153 @@
-export class BalanceModule<
-  TTokenType extends { id: string },
-  TChainExtraMeta extends Record<string, unknown>
-> {
-  protected chainStorage: ChainStorage
+import { ChainConnector } from "@talismn/chain-connector"
+import { ChainId, IToken } from "@talismn/chaindata-provider"
 
-  constructor(chainStorage: ChainStorage) {
-    this.chainStorage = chainStorage
-  }
+import { AddressesByToken, Balances, SubscriptionCallback, UnsubscribeFn } from "./types"
 
-  /** Detects whether a given substrate chain has support for this module */
-  async supportsSubstrateChain(chainId: ChainId): Promise<boolean> {
-    // return Promise.resolve(false)
-    return Object.keys(await this.fetchSubstrateChainTokens(chainId)).length > 0
-  }
-  /** Detects whether a given evm chain has support for this module */
-  async supportsEvmChain(chainId: ChainId): Promise<boolean> {
-    // return Promise.resolve(false)
-    return Object.keys(await this.fetchEvmChainTokens(chainId)).length > 0
-  }
+//
+// exported
+//
 
-  /** Detects which tokens are available on a given substrate chain */
-  async fetchSubstrateChainTokens(chainId: ChainId): Promise<Record<TTokenType["id"], TTokenType>> {
-    return Promise.resolve({} as Record<TTokenType["id"], TTokenType>)
-  }
-  /** Detects which tokens are available on a given evm chain */
-  async fetchEvmChainTokens(chainId: ChainId): Promise<Record<TTokenType["id"], TTokenType>> {
-    return Promise.resolve({} as Record<TTokenType["id"], TTokenType>)
-  }
+export interface BalanceModule<
+  TTokenType extends ExtendableTokenType,
+  TChainExtraMeta extends ExtendableChainExtraMeta = DefaultChainExtraMeta,
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+> extends BalanceModuleSubstrate<TTokenType, TChainExtraMeta, TModuleConfig>,
+    BalanceModuleEvm<TTokenType, TChainExtraMeta, TModuleConfig> {}
 
-  /** Pre-processes any substrate chain metadata required by this module ahead of time */
-  async fetchSubstrateChainMeta(chainId: ChainId): Promise<TChainExtraMeta | null> {
+// TODO: Document default balances module purpose/usage
+export const DefaultBalanceModule = <
+  TTokenType extends ExtendableTokenType,
+  TChainExtraMeta extends ExtendableChainExtraMeta = DefaultChainExtraMeta,
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+>(): BalanceModule<TTokenType, TChainExtraMeta, TModuleConfig> => ({
+  async fetchSubstrateChainMeta() {
     return null
-  }
-  /** Pre-processes any evm chain metadata required by this module ahead of time */
-  async fetchEvmChainMeta(chainId: ChainId): Promise<TChainExtraMeta | null> {
+  },
+  async fetchEvmChainMeta() {
     return null
-  }
+  },
 
-  // TODO: Provide a raw output separate to the `Balance` output
-  async balances(addressesByToken: AddressesByToken<TTokenType>): Promise<Balances>
-  async balances(
-    addressesByToken: AddressesByToken<TTokenType>,
-    callback: SubscriptionCallback<Balances>
-  ): Promise<UnsubscribeFn>
-  async balances(
-    addressesByToken: AddressesByToken<TTokenType>,
-    callback?: SubscriptionCallback<Balances>
-  ): Promise<Balances | UnsubscribeFn> {
-    // subscription request
-    if (callback !== undefined) return await this.subscribeBalances(addressesByToken, callback)
+  async fetchSubstrateChainTokens(chainConnector, chainId) {
+    return Promise.resolve({} as Record<TTokenType["id"], TTokenType>)
+  },
+  async fetchEvmChainTokens(chainConnector, chainId) {
+    return Promise.resolve({} as Record<TTokenType["id"], TTokenType>)
+  },
 
-    // one-off request
-    return await this.fetchBalances(addressesByToken)
-  }
-
-  async subscribeBalances(
-    addressesByToken: AddressesByToken<TTokenType>,
-    callback: SubscriptionCallback<Balances>
-  ): Promise<UnsubscribeFn> {
+  async subscribeBalances(chainConnector, addressesByToken, callback) {
     callback(new Error("Balance subscriptions are not implemented in this module."))
 
     return () => {}
-  }
+  },
 
-  async fetchBalances(addressesByToken: AddressesByToken<TTokenType>): Promise<Balances> {
+  async fetchBalances(chainConnector, addressesByToken) {
     throw new Error("Balance fetching is not implemented in this module.")
-  }
+  },
+})
 
-  // async transferTx
+/**
+ * Wraps a BalanceModule's fetch/subscribe methods with a single `balances` method.
+ * This `balances` method will subscribe if a callback parameter is provided, or otherwise fetch.
+ */
+export async function balances<
+  TTokenType extends ExtendableTokenType,
+  TChainExtraMeta extends ExtendableChainExtraMeta = DefaultChainExtraMeta,
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+>(
+  balanceModule: BalanceModule<TTokenType, TChainExtraMeta, TModuleConfig>,
+  chainConnector: ChainConnector,
+  addressesByToken: AddressesByToken<TTokenType>
+): Promise<Balances>
+export async function balances<
+  TTokenType extends ExtendableTokenType,
+  TChainExtraMeta extends ExtendableChainExtraMeta = DefaultChainExtraMeta,
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+>(
+  balanceModule: BalanceModule<TTokenType, TChainExtraMeta, TModuleConfig>,
+  chainConnector: ChainConnector,
+  addressesByToken: AddressesByToken<TTokenType>,
+  callback: SubscriptionCallback<Balances>
+): Promise<UnsubscribeFn>
+export async function balances<
+  TTokenType extends ExtendableTokenType,
+  TChainExtraMeta extends ExtendableChainExtraMeta = DefaultChainExtraMeta,
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+>(
+  balanceModule: BalanceModule<TTokenType, TChainExtraMeta, TModuleConfig>,
+  chainConnector: ChainConnector,
+  addressesByToken: AddressesByToken<TTokenType>,
+  callback?: SubscriptionCallback<Balances>
+): Promise<Balances | UnsubscribeFn> {
+  // subscription request
+  if (callback !== undefined)
+    return await balanceModule.subscribeBalances(chainConnector, addressesByToken, callback)
+
+  // one-off request
+  return await balanceModule.fetchBalances(chainConnector, addressesByToken)
 }
 
-// TODO: Move these elsewhere
-export type Balances = unknown
-export type Balance = unknown
-export type TokenId = string
-export type ChainId = string
-export type Chain = unknown
-export interface ChainStorage {
-  get(chainId: ChainId): Promise<Chain | null>
+//
+// internal
+//
+
+type ExtendableTokenType = IToken // { id: TokenId }
+type ExtendableChainExtraMeta = Record<string, unknown> | undefined
+type DefaultChainExtraMeta = Record<string, never> | undefined
+type ExtendableModuleConfig = Record<string, unknown> | undefined
+type DefaultModuleConfig = Record<string, never> | undefined
+
+interface BalanceModuleSubstrate<
+  TTokenType extends ExtendableTokenType,
+  TChainExtraMeta extends ExtendableChainExtraMeta = DefaultChainExtraMeta,
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+> extends BalanceModuleCommon<TTokenType, TChainExtraMeta, TModuleConfig> {
+  /** Pre-processes any substrate chain metadata required by this module ahead of time */
+  fetchSubstrateChainMeta(
+    chainConnector: ChainConnector,
+    chainId: ChainId
+  ): Promise<TChainExtraMeta | null>
+
+  /** Detects which tokens are available on a given substrate chain */
+  fetchSubstrateChainTokens(
+    chainConnector: ChainConnector,
+    chainId: ChainId
+  ): Promise<Record<TTokenType["id"], TTokenType>>
 }
-export type Address = string
-/**
- * A callback with either an error or a result.
- */
-export interface SubscriptionCallback<Result> {
-  (error: null, result: Result): void
-  (error: any, result?: never): void
+
+interface BalanceModuleEvm<
+  TTokenType extends ExtendableTokenType,
+  TChainExtraMeta extends ExtendableChainExtraMeta = DefaultChainExtraMeta,
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+> extends BalanceModuleCommon<TTokenType, TChainExtraMeta, TModuleConfig> {
+  /** Pre-processes any evm chain metadata required by this module ahead of time */
+  fetchEvmChainMeta(
+    chainConnector: ChainConnector,
+    chainId: ChainId
+  ): Promise<TChainExtraMeta | null>
+
+  /** Detects which tokens are available on a given evm chain */
+  fetchEvmChainTokens(
+    chainConnector: ChainConnector,
+    chainId: ChainId
+  ): Promise<Record<TTokenType["id"], TTokenType>>
 }
-/**
- * A function which cancels a subscription when called.
- */
-export type UnsubscribeFn = () => void
-export type AddressesByToken<TTokenType extends { id: string }> = Record<
-  TTokenType["id"],
-  Address[]
->
+
+interface BalanceModuleCommon<
+  TTokenType extends ExtendableTokenType,
+  TChainExtraMeta extends ExtendableChainExtraMeta = DefaultChainExtraMeta,
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+> {
+  // TODO: Provide a raw output separate to the `Balance` output
+  subscribeBalances(
+    chainConnector: ChainConnector,
+    addressesByToken: AddressesByToken<TTokenType>,
+    callback: SubscriptionCallback<Balances>
+  ): Promise<UnsubscribeFn>
+
+  fetchBalances(
+    chainConnector: ChainConnector,
+    addressesByToken: AddressesByToken<TTokenType>
+  ): Promise<Balances>
+
+  // transferTx(): Promise<>
+}

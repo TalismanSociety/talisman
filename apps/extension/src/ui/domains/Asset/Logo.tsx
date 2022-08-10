@@ -1,6 +1,6 @@
-import styled from "styled-components"
 import CustomTokenGeneric from "@talisman/theme/icons/custom-token-generic.svg"
-import { getBase64ImageUrl } from "talisman-utils"
+import { getBase64ImageUrl } from "@talismn/util"
+import styled from "styled-components"
 
 const genericTokenUrl = getBase64ImageUrl(CustomTokenGeneric)
 

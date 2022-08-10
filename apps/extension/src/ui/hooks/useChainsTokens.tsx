@@ -43,16 +43,16 @@ export const useChainsTokens = (chains: Chain[], evmNetworks?: EvmNetwork[]) => 
         if (!chain) return false
 
         const tokenType = token.type
-        if (tokenType === "native") {
+        if (tokenType === "substrate-native") {
           return !chainUsesOrmlForNativeToken(nonEmptyBalances, chain.id, token)
         }
-        if (tokenType === "orml") {
+        if (tokenType === "substrate-orml") {
           const nativeToken = chain.nativeToken ? tokensMap[chain.nativeToken.id] : undefined
           if (!nativeToken) return true
           if (token.symbol !== nativeToken.symbol) return true
           return chainUsesOrmlForNativeToken(nonEmptyBalances, chain.id, nativeToken)
         }
-        if (tokenType === "erc20") return true
+        if (tokenType === "evm-erc20") return true
 
         // force compilation error if any token types don't have a case
         const exhaustiveCheck: never = tokenType
@@ -67,13 +67,13 @@ export const useChainsTokens = (chains: Chain[], evmNetworks?: EvmNetwork[]) => 
   }, [tokens, chainList, tokensMap, nonEmptyBalances])
 }
 
-// Acala uses the balances pallet for its nativeToken.
-// Kintsugi uses the orml pallet for its nativeToken.
+// Acala uses the substrate-native source for its nativeToken.
+// Kintsugi uses the substrate-orml source for its nativeToken.
 //
 // To automatically determine which is in use, for the nativeToken we will:
-//  - Default to using the balances pallet, disable the orml pallet.
-//  - Check if any accounts have a non-zero balance on the orml pallet.
-//  - If so, disable the balances pallet and enable the orml pallet.
+//  - Default to using the substrate-native source, disable the substrate-orml source.
+//  - Check if any accounts have a non-zero balance on the substrate-orml source.
+//  - If so, disable the substrate-native source and enable the substrate-orml source.
 export function chainUsesOrmlForNativeToken(
   nonEmptyBalances: Balances,
   chainId: ChainId,
@@ -81,7 +81,7 @@ export function chainUsesOrmlForNativeToken(
 ): boolean {
   return (
     nonEmptyBalances
-      .find({ chainId, pallet: "orml-tokens" })
+      .find({ chainId, source: "substrate-orml" })
       .find((balance) => balance.token?.symbol === nativeToken.symbol).count > 0
   )
 }

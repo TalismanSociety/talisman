@@ -6,7 +6,7 @@ import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address, AddressesByChain } from "@core/types/base"
-import { decodeAnyAddress } from "@core/util"
+import { decodeAnyAddress } from "@core/util/decodeAnyAddress"
 import { TypeRegistry, createType } from "@polkadot/types"
 import * as Sentry from "@sentry/browser"
 import blake2Concat from "@talisman/util/blake2Concat"
@@ -78,7 +78,7 @@ export default class OrmlTokenBalancesRpc {
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     if (!chain.tokens) return () => {}
     const tokens = (await db.tokens.bulkGet(chain.tokens.map(({ id }) => id))).filter(
-      (token): token is OrmlToken => token !== undefined && token.type === "orml"
+      (token): token is OrmlToken => token !== undefined && token.type === "substrate-orml"
     )
 
     // set up method, return message type and params
@@ -118,7 +118,7 @@ export default class OrmlTokenBalancesRpc {
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     if (!chain.tokens) return new Balances([])
     const tokens = (await db.tokens.bulkGet(chain.tokens.map(({ id }) => id))).filter(
-      (token): token is OrmlToken => token !== undefined && token.type === "orml"
+      (token): token is OrmlToken => token !== undefined && token.type === "substrate-orml"
     )
 
     // set up method and params
@@ -257,11 +257,12 @@ export default class OrmlTokenBalancesRpc {
         const frozen = (balance.frozen.toBigInt() || BigInt("0")).toString()
 
         return new Balance({
-          pallet: "orml-tokens",
+          source: "substrate-orml",
 
           status: "live",
 
           address,
+          multiChainId: { subChainId: chain.id },
           chainId: chain.id,
           tokenId: token.id,
 

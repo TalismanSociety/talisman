@@ -1,9 +1,22 @@
-import { ChainId } from "@core/domains/chains/types"
-import { CustomErc20Token, TokenId } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { RequestIdOnly } from "@core/types/base"
+import { CustomErc20Token } from "@talismn/balances-evm-erc20"
+import {
+  CustomEvmNetwork,
+  EvmNetwork,
+  EvmNetworkId,
+  EvmNetworkList,
+} from "@talismn/chaindata-provider"
 
 import { AddEthereumChainParameter, WatchAssetBase } from "./base"
+
+export type {
+  EvmNetwork,
+  CustomEvmNetwork,
+  EvmNetworkId,
+  EvmNetworkList,
+  EthereumRpc,
+} from "@talismn/chaindata-provider"
 
 export type { AddEthereumChainParameter, WatchAssetBase }
 
@@ -22,33 +35,6 @@ export type WatchAssetRequest = {
   url: string
 }
 
-export type EthereumRpc = {
-  url: string // The url of this ethereum RPC
-  isHealthy: boolean // The health status of this ethereum RPC
-}
-
-export type EvmNetworkId = number
-export type EvmNetwork = {
-  id: EvmNetworkId
-  isTestnet: boolean
-  sortIndex: number | null
-  name: string | null
-  // TODO: Create ethereum tokens store (and reference here by id).
-  //       Or extend substrate tokens store to support both substrate and ethereum tokens.
-  nativeToken: { id: TokenId } | null
-  tokens: Array<{ id: TokenId }> | null
-  explorerUrl: string | null
-  rpcs: Array<EthereumRpc> | null
-  isHealthy: boolean
-  substrateChain: { id: ChainId } | null
-}
-export type CustomEvmNetwork = EvmNetwork & {
-  isCustom: true
-  explorerUrls: string[]
-  iconUrls: string[]
-}
-
-export type EvmNetworkList = Record<EvmNetworkId, EvmNetwork | CustomEvmNetwork>
 // ethereum networks
 
 export type AddEthereumChainRequest = {

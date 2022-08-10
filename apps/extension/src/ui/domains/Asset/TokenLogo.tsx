@@ -1,9 +1,9 @@
 import { Token } from "@core/domains/tokens/types"
 import genericTokenSvgIcon from "@talisman/theme/icons/custom-token-generic.svg"
+import { getBase64ImageUrl } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"
 import { CSSProperties, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
-import { getBase64ImageUrl } from "talisman-utils"
 
 const genericTokenIconUrl = getBase64ImageUrl(genericTokenSvgIcon)
 
@@ -31,10 +31,10 @@ const getChainLogoUrl = (chainId?: string | number) => {
 
 const getTokenLogoUrl = (token?: Token) => {
   // TODO better typing
-  if (token?.type === "erc20") {
+  if (token?.type === "evm-erc20") {
     const { isCustom, image } = token as { isCustom?: boolean; image?: string }
     return image ?? (isCustom ? null : getChainLogoUrl(token?.evmNetwork?.id))
-  } else if (token && ["native", "orml"].includes(token.type)) {
+  } else if (token && ["substrate-native", "substrate-orml"].includes(token.type)) {
     const { chain, evmNetwork } = token as { chain?: { id: string }; evmNetwork?: { id: number } }
     return getChainLogoUrl(chain?.id ?? evmNetwork?.id)
   }

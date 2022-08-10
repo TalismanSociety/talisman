@@ -1,7 +1,7 @@
 import { Balance } from "@core/domains/balances/types"
 import { ReactComponent as IconLoader } from "@talisman/theme/icons/loader.svg"
+import { MAX_DECIMALS_FORMAT } from "@talismn/util"
 import styled from "styled-components"
-import { MAX_DECIMALS_FORMAT } from "talisman-utils"
 
 import { Fiat } from "./Fiat"
 import { Tokens } from "./Tokens"

@@ -5,7 +5,7 @@ import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address, AddressesByChain } from "@core/types/base"
-import { decodeAnyAddress } from "@core/util"
+import { decodeAnyAddress } from "@core/util/decodeAnyAddress"
 import { TypeRegistry, createType } from "@polkadot/types"
 import { u8aToHex } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
@@ -257,11 +257,12 @@ export default class BalancesRpc {
         const feeFrozen = (balance.data?.feeFrozen.toBigInt() || BigInt("0")).toString()
 
         return new Balance({
-          pallet: "balances",
+          source: "substrate-native",
 
           status: "live",
 
           address,
+          multiChainId: { subChainId: chain.id },
           chainId: chain.id,
           tokenId: chain.nativeToken.id,
 
