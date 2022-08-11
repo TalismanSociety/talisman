@@ -152,6 +152,12 @@ const Container = styled(SendDialogContainer)`
   }
 `
 
+const AvailableBalance = styled(Balance)`
+  .loader {
+    display: none;
+  }
+`
+
 const cleanupAmount = (amount: string) => {
   return (
     amount
@@ -401,7 +407,7 @@ export const SendForm = () => {
               <Box flex column justify="flex-end" gap={0.1}>
                 <Box>Balance: {balance.status === "cache" && <LoaderIcon data-spin />}</Box>
                 <Box>
-                  <Balance row withFiat noCountUp balance={balance} />
+                  <AvailableBalance row withFiat noCountUp balance={balance} />
                 </Box>
               </Box>
             )}
