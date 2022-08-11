@@ -42,24 +42,26 @@ export const getUnlockedPairFromAddress = (address: Address) => {
   return pair
 }
 
-export const getPairForAddressSafely = async (
+export const getPairForAddressSafely = async <T>(
   address: Address,
-  cb: (pair: KeyringPair) => any,
+  cb: (pair: KeyringPair) => T,
   onError?: (error: any) => void
 ) => {
+  let pair: KeyringPair | null = null
   try {
-    // eslint-disable-next-line no-var
-    var pair = getUnlockedPairFromAddress(address)
+    try {
+      pair = getUnlockedPairFromAddress(address)
+    } catch (error) {
+      passwordStore.clearPassword()
+      throw new Error("not logged in")
+    }
+    return await cb(pair)
   } catch (error) {
-    if (onError) {
-      onError(error)
-      return
-    } else throw error
+    if (onError) onError(error)
+    throw error
+  } finally {
+    if (!!pair && !pair.isLocked) pair.lock()
   }
-  const result = await cb(pair)
-  pair.lock()
-
-  return result
 }
 
 export const isHardwareAccount = (address: Address) => {

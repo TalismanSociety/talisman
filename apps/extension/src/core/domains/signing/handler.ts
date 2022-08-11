@@ -73,13 +73,7 @@ export default class SigningHandler extends ExtensionHandler {
           ...result,
         })
       },
-      (error) => {
-        this.stores.password.clearPassword()
-        reject(
-          error instanceof Error ? error : new Error(typeof error === "string" ? error : undefined)
-        )
-        return false
-      }
+      reject
     )
 
     return true

@@ -126,7 +126,7 @@ export class EthHandler extends ExtensionHandler {
 
       const serialisedTx = serializeTransaction(goodTx)
 
-      return await getPairForAddressSafely(
+      return getPairForAddressSafely(
         queued.account.address,
         async (pair) => {
           const signature = pair.sign(serialisedTx)
@@ -149,15 +149,7 @@ export class EthHandler extends ExtensionHandler {
           })
           return true
         },
-        (error) => {
-          this.stores.password.clearPassword()
-          reject(
-            error instanceof Error
-              ? error
-              : new Error(typeof error === "string" ? error : undefined)
-          )
-          return false
-        }
+        reject
       )
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -176,7 +168,7 @@ export class EthHandler extends ExtensionHandler {
 
       const { method, request, reject, resolve } = queued
 
-      return await getPairForAddressSafely(
+      return getPairForAddressSafely(
         queued.account.address,
         async (pair) => {
           const pw = this.stores.password.getPassword()
@@ -218,15 +210,7 @@ export class EthHandler extends ExtensionHandler {
           })
           return true
         },
-        (error) => {
-          this.stores.password.clearPassword()
-          reject(
-            error instanceof Error
-              ? error
-              : new Error(typeof error === "string" ? error : undefined)
-          )
-          return false
-        }
+        reject
       )
     } catch (err) {
       const msg = getHumanReadableErrorMessage(err)
