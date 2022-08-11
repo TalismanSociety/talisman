@@ -8,6 +8,7 @@
     "@talismn/balances": "workspace:^",
     "@talismn/balances-evm-erc20": "workspace:^",
     "@talismn/balances-evm-native": "workspace:^",
+    "@talismn/balances-example": "workspace:^",
     "@talismn/balances-substrate-native": "workspace:^",
     "@talismn/balances-substrate-orml": "workspace:^",
     "@talismn/chaindata-provider-extension": "workspace:^",

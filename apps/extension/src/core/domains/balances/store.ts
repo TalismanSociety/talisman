@@ -146,6 +146,11 @@ export class BalanceStore {
       return (await BalancesRpc.balances({ [chainId!]: [address] }))
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()
+    if (tokenType === "evm-native")
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return (await BalancesRpc.balances({ [chainId!]: [address] }))
+        .find({ chainId, tokenId, address })
+        .sorted[0]?.toJSON()
     if (tokenType === "substrate-orml")
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return (await OrmlTokenBalancesRpc.tokens({ [chainId!]: [address] }))

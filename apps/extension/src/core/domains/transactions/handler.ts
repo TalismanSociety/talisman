@@ -135,6 +135,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
           reapBalance,
           watchExtrinsic
         )
+      if (tokenType === "evm-native")
+        throw new Error(
+          "Evm native token transfers are not implemented in this version of Talisman."
+        )
       if (tokenType === "substrate-orml")
         return OrmlTokenTransfersRpc.transfer(
           chainId,
@@ -171,6 +175,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
     const tokenType = token.type
     if (tokenType === "substrate-native")
       return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, tip, reapBalance)
+    if (tokenType === "evm-native")
+      throw new Error("Evm native token transfers are not implemented in this version of Talisman.")
     if (tokenType === "substrate-orml")
       return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
     if (tokenType === "evm-erc20")

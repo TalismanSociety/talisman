@@ -1,11 +1,8 @@
-import { IToken } from "@talismn/chaindata-provider/dist/types/Token"
+import { NewTokenType } from "@talismn/chaindata-provider"
 
 import { BalanceModule, DefaultBalanceModule } from "./BalanceModule"
 
-type TestToken = IToken & {
-  id: string
-  type: "test"
-}
+type TestToken = NewTokenType<"test", { id: string }>
 
 describe("BalanceModule", () => {
   it("Can be implemented", () => {

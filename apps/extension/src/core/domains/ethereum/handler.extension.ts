@@ -4,7 +4,7 @@ import {
   EthApproveSignAndSend,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
-import { CustomNativeToken } from "@core/domains/tokens/types"
+import { CustomEvmNativeToken } from "@core/domains/tokens/types"
 import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import {
@@ -262,14 +262,13 @@ export class EthHandler extends ExtensionHandler {
 
     const { network, resolve } = queued
     const networkId = parseInt(network.chainId, 16)
-    const newToken: CustomNativeToken | null = network.nativeCurrency
+    const newToken: CustomEvmNativeToken | null = network.nativeCurrency
       ? {
           id: `${networkId}-native-${network.nativeCurrency.symbol}`.toLowerCase(),
-          type: "substrate-native",
+          type: "evm-native",
           isTestnet: false,
           symbol: network.nativeCurrency.symbol,
           decimals: network.nativeCurrency.decimals,
-          existentialDeposit: "0",
           evmNetwork: { id: parseInt(network.chainId, 16) },
           isCustom: true,
         }

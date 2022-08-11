@@ -4,6 +4,7 @@ import { RequestIdOnly } from "@core/types/base"
 import { CustomEvmErc20Token } from "@talismn/balances-evm-erc20"
 
 export type { Token, TokenId, TokenList, IToken } from "@talismn/chaindata-provider"
+export type { EvmNativeToken, CustomEvmNativeToken } from "@talismn/balances-evm-native"
 export type {
   SubNativeToken as NativeToken,
   CustomSubNativeToken as CustomNativeToken,

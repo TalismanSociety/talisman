@@ -5518,7 +5518,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-example@workspace:packages/balances-example":
+"@talismn/balances-example@workspace:^, @talismn/balances-example@workspace:packages/balances-example":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-example@workspace:packages/balances-example"
   dependencies:
@@ -8035,6 +8035,7 @@ __metadata:
     "@talismn/balances": "workspace:^"
     "@talismn/balances-evm-erc20": "workspace:^"
     "@talismn/balances-evm-native": "workspace:^"
+    "@talismn/balances-example": "workspace:^"
     "@talismn/balances-substrate-native": "workspace:^"
     "@talismn/balances-substrate-orml": "workspace:^"
     "@talismn/chaindata-provider-extension": "workspace:^"

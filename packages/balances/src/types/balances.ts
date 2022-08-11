@@ -4,16 +4,16 @@ import { BigMath, NonFunctionProperties, isArrayOf, planckToTokens } from "@tali
 import memoize from "lodash/memoize"
 import { Memoize } from "typescript-memoize"
 
-import { BalanceStorage, BalancesStorage } from "./storages"
+import { BalanceJson, BalanceJsonList, IBalance } from "./balancetypes"
 
 /**
- * Have the importing library define its Token and BalanceStorage enums (as a sum type of all plugins) and pass them into some
+ * Have the importing library define its Token and BalanceJson enums (as a sum type of all plugins) and pass them into some
  * internal global typescript context, which is then picked up on by this module.
  */
 
-/** A utility type used to extract the underlying storage type of a specific source from a generalised BalanceStorage */
-export type NarrowStorage<S, P> = S extends { source: P } ? S : never
-export type BalanceSource = BalanceStorage["source"]
+/** A utility type used to extract the underlying `BalanceType` of a specific source from a generalised `BalanceJson` */
+export type NarrowBalanceType<S extends IBalance, P> = S extends { source: P } ? S : never
+export type BalanceSource = BalanceJson["source"]
 
 /** TODO: Remove this in favour of a frontend-friendly `ChaindataProvider` */
 export type HydrateDb = Partial<{
@@ -41,7 +41,7 @@ export class Balances {
   //
 
   constructor(
-    balances: Balances | BalancesStorage | Balance[] | BalanceStorage[] | Balance,
+    balances: Balances | BalanceJsonList | Balance[] | BalanceJson[] | Balance,
     hydrate?: HydrateDb
   ) {
     // handle Balances (convert to Balance[])
@@ -50,13 +50,13 @@ export class Balances {
     // handle Balance (convert to Balance[])
     if (balances instanceof Balance) return new Balances([balances], hydrate)
 
-    // handle BalancesStorage (the only remaining non-array type of balances) (convert to BalanceStorage[])
+    // handle BalanceJsonList (the only remaining non-array type of balances) (convert to BalanceJson[])
     if (!Array.isArray(balances)) return new Balances(Object.values(balances), hydrate)
 
     // handle no balances
     if (balances.length === 0) return this
 
-    // handle BalanceStorage[]
+    // handle BalanceJson[]
     if (!isArrayOf(balances, Balance))
       return new Balances(
         balances.map((storage) => new Balance(storage)),
@@ -69,9 +69,9 @@ export class Balances {
   }
 
   /**
-   * Calling toJSON on a collection of balances will return the underlying BalancesStorage.
+   * Calling toJSON on a collection of balances will return the underlying BalanceJsonList.
    */
-  toJSON = (): BalancesStorage =>
+  toJSON = (): BalanceJsonList =>
     Object.fromEntries(
       Object.entries(this.#balances).map(([id, balance]) => [id, balance.toJSON()])
     );
@@ -221,7 +221,7 @@ export class Balance {
   //
 
   /** The underlying data for this balance */
-  readonly #storage: BalanceStorage
+  readonly #storage: BalanceJson
 
   #db: HydrateDb | null = null
 
@@ -229,19 +229,28 @@ export class Balance {
   // Methods
   //
 
-  constructor(storage: BalanceStorage, hydrate?: HydrateDb) {
+  constructor(storage: BalanceJson, hydrate?: HydrateDb) {
     this.#format = memoize(this.#format)
     this.#storage = storage
     if (hydrate !== undefined) this.hydrate(hydrate)
   }
 
-  toJSON = () => this.#storage
+  toJSON = (): BalanceJson => this.#storage
 
   isSource = (source: BalanceSource) => this.#storage.source === source
-  asSource = <P extends BalanceSource>(source: P): NarrowStorage<BalanceStorage, P> | null => {
-    if (this.#storage.source === source) return this.#storage as NarrowStorage<BalanceStorage, P>
-    return null
-  }
+  // // TODO: Fix this method, the types don't work with our plugin architecture.
+  // // Specifically, the `BalanceJson` type is compiled down to `IBalance` in the following way:
+  // //
+  // //     toJSON: () => BalanceJson // works
+  // //     isSource: (source: BalanceSource) => boolean // works
+  // //     asSource: <P extends string>(source: P) => NarrowBalanceType<IBalance, P> | null // Doesn't work! IBalance should just be BalanceJson!
+  // //
+  // // `IBalance` won't match the type of `BalanceSource` after `PluginBalanceTypes` has been extended by balance plugins.
+  // // As a result, typescript will think that the returned #storage is not a BalanceJson.
+  // asSource = <P extends BalanceSource>(source: P): NarrowBalanceType<BalanceJson, P> | null => {
+  //   if (this.#storage.source === source) return this.#storage as NarrowBalanceType<BalanceJson, P>
+  //   return null
+  // }
 
   hydrate = (hydrate?: HydrateDb) => {
     if (hydrate !== undefined) this.#db = hydrate
@@ -311,14 +320,16 @@ export class Balance {
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
   @Memoize()
   get free() {
-    return this.#format(this.#storage.free)
+    return this.#format("0")
+    // return this.#format(this.#storage.free)
   }
   /** The reserved balance of this token. Is included in the total. */
   @Memoize()
   get reserved() {
     if (this.#storage.source === "evm-native") return this.#format("0")
     if (this.#storage.source === "evm-erc20") return this.#format("0")
-    return this.#format(this.#storage.reserved)
+    return this.#format("0")
+    // return this.#format(this.#storage.reserved)
   }
   /** The frozen balance of this token. Is included in the free amount. */
   @Memoize()
@@ -328,12 +339,14 @@ export class Balance {
 
     // if using the balances source, take the max of the feeFrozen and miscFrozen amounts
     if (this.#storage.source === "substrate-native") {
-      return this.#format(
-        BigMath.max(BigInt(this.#storage.feeFrozen), BigInt(this.#storage.miscFrozen))
-      )
+      return this.#format("0")
+      // return this.#format(
+      //   BigMath.max(BigInt(this.#storage.feeFrozen), BigInt(this.#storage.miscFrozen))
+      // )
     }
 
-    return this.#format(this.#storage.frozen)
+    return this.#format("0")
+    // return this.#format(this.#storage.frozen)
   }
   /** The transferable balance of this token. Is generally the free amount - the miscFrozen amount. */
   @Memoize()
@@ -341,9 +354,10 @@ export class Balance {
     // if using the balances source, only subtract miscFrozen (not feeFrozen) from free
     // also, don't go below 0
     if (this.#storage.source === "substrate-native") {
-      return this.#format(
-        BigMath.max(this.free.planck - BigInt(this.#storage.miscFrozen), BigInt("0"))
-      )
+      return this.#format("0")
+      // return this.#format(
+      //   BigMath.max(this.free.planck - BigInt(this.#storage.miscFrozen), BigInt("0"))
+      // )
     }
 
     // subtract frozen from free (but don't go below 0)
@@ -356,9 +370,10 @@ export class Balance {
     if (this.#storage.source !== "substrate-native") return this.free
 
     // subtract feeFrozen from free (but don't go below 0)
-    return this.#format(
-      BigMath.max(this.free.planck - BigInt(this.#storage.feeFrozen), BigInt("0"))
-    )
+    return this.#format("0")
+    // return this.#format(
+    //   BigMath.max(this.free.planck - BigInt(this.#storage.feeFrozen), BigInt("0"))
+    // )
   }
 }
 

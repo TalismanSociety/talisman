@@ -60,8 +60,8 @@ export default class TokensHandler extends ExtensionHandler {
           decimals: Number(decimals), // some dapps (ie moonriver.moonscan.io) may send a string here, which breaks balances
           coingeckoId,
           contractAddress,
-          chain: token.chainId ? { id: token.chainId } : undefined,
-          evmNetwork: token.evmNetworkId ? { id: token.evmNetworkId } : undefined,
+          // chain: token.chainId ? { id: token.chainId } : undefined,
+          evmNetwork: token.evmNetworkId ? { id: token.evmNetworkId } : null,
           isCustom: true,
           image,
         }

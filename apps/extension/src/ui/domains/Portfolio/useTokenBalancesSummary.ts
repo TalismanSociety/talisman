@@ -38,19 +38,23 @@ const getBestTokenForSymbol = (symbol: string, tokens?: Token[], chains?: Chain[
     // mainnet relay native
     matches?.find(
       (t) =>
-        !t.isTestnet && t.type === "native" && chains?.find((c) => !c.relay && c.id === t.chain?.id)
+        !t.isTestnet &&
+        ["substrate-native", "evm-native"].includes(t.type) &&
+        chains?.find((c) => !c.relay && c.id === t.chain?.id)
     ) ??
     // mainnet solo/para native
-    matches?.find((t) => !t.isTestnet && t.type === "native") ??
+    matches?.find((t) => !t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
     // mainnet which has an image
     matches?.find((t) => !t.isTestnet && (t as any).image) ??
     // testnet relay
     matches?.find(
       (t) =>
-        t.isTestnet && t.type === "native" && chains?.find((c) => !c.relay && c.id === t.chain?.id)
+        t.isTestnet &&
+        ["substrate-native", "evm-native"].includes(t.type) &&
+        chains?.find((c) => !c.relay && c.id === t.chain?.id)
     ) ??
     // testnet solo/para native
-    matches?.find((t) => t.isTestnet && t.type === "native") ??
+    matches?.find((t) => t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
     // testnet which has an image
     matches?.find((t) => t.isTestnet && (t as any).image) ??
     // fallback

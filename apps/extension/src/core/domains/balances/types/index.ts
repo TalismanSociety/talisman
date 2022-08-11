@@ -1,11 +1,17 @@
+import "@talismn/balances-substrate-native"
+import "@talismn/balances-substrate-orml"
+import "@talismn/balances-evm-native"
+import "@talismn/balances-evm-erc20"
+
 import { ChainId } from "@core/domains/chains/types"
 import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { Address, AddressesByChain } from "@core/types/base"
-import { BalanceStorage, BalancesStorage } from "@talismn/balances"
+import { BalanceJson, BalanceJsonList } from "@talismn/balances"
 
 export { Balances, Balance, BalanceFormatter } from "@talismn/balances"
-export type { BalanceStorage, BalancesStorage }
+export type BalanceStorage = BalanceJson
+export type BalancesStorage = BalanceJsonList
 
 export type BalancesUpdate = BalancesUpdateReset | BalancesUpdateUpsert | BalancesUpdateDelete
 export type BalancesUpdateReset = { type: "reset"; balances: BalancesStorage }
@@ -38,7 +44,7 @@ export type ResponseBalanceLocks = Record<Address, LockedBalance[]>
 
 export interface BalancesMessages {
   // balance message signatures
-  "pri(balances.get)": [RequestBalance, BalanceStorage]
+  "pri(balances.get)": [RequestBalance, BalanceJson]
   "pri(balances.locks.get)": [RequestBalanceLocks, ResponseBalanceLocks]
   "pri(balances.subscribe)": [null, boolean, boolean]
   "pri(balances.byparams.subscribe)": [RequestBalancesByParamsSubscribe, boolean, BalancesUpdate]

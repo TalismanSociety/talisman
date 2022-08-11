@@ -46,6 +46,7 @@ export const useChainsTokens = (chains: Chain[], evmNetworks?: EvmNetwork[]) => 
         if (tokenType === "substrate-native") {
           return !chainUsesOrmlForNativeToken(nonEmptyBalances, chain.id, token)
         }
+        if (tokenType === "evm-native") return true
         if (tokenType === "substrate-orml") {
           const nativeToken = chain.nativeToken ? tokensMap[chain.nativeToken.id] : undefined
           if (!nativeToken) return true

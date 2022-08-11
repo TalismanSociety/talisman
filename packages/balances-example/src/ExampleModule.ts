@@ -1,23 +1,19 @@
-import {
-  Balance,
-  BalanceModule,
-  Balances,
-  DefaultBalanceModule,
-  IBalanceStorage,
-} from "@talismn/balances"
-import { ChainId } from "@talismn/chaindata-provider"
-import { IToken } from "@talismn/chaindata-provider/dist/types/Token"
+import { Balance, Balances } from "@talismn/balances"
+import { BalanceModule, DefaultBalanceModule, NewBalanceType } from "@talismn/balances"
+import { ChainId, NewTokenType } from "@talismn/chaindata-provider"
 
-type ModuleType = "example"
+export type ModuleType = "example"
 
-export type ExampleToken = IToken & {
-  type: ModuleType
-  existentialDeposit: string
-  chain: { id: ChainId } | null
-}
+export type ExampleToken = NewTokenType<
+  ModuleType,
+  {
+    existentialDeposit: string
+    chain: { id: ChainId } | null
+  }
+>
 
-declare module "@talismn/chaindata-provider/dist/types/Token" {
-  export interface TokenTypes {
+declare module "@talismn/chaindata-provider/plugins" {
+  export interface PluginTokenTypes {
     ExampleToken: ExampleToken
   }
 }
@@ -27,15 +23,20 @@ export type ExampleChainMeta = {
 }
 export type ExampleConfig = Record<string, never>
 // TODO: Custom balance type for each module
-export type ExampleBalanceStorage = IBalanceStorage & {
-  source: ModuleType
+export type ExampleBalance = NewBalanceType<
+  ModuleType,
+  {
+    // TODO: Add a field which groups all of the types of balances together.
+    // Different sources can add whatever types they want to add to this list, in a type-safe way.
+    // i.e. the end user of these libs will be able to access the available types of balances for each group.
+    // Also, in the Balance type, ensure that trying to access a non-existent field for one balance type will just return `0`.
+    free: string
+  }
+>
 
-  free: string
-}
-
-declare module "@talismn/balances/dist/types/storages" {
-  export interface BalanceStorages {
-    ExampleBalanceStorage: ExampleBalanceStorage
+declare module "@talismn/balances/plugins" {
+  export interface PluginBalanceTypes {
+    ExampleBalance: ExampleBalance
   }
 }
 
@@ -81,31 +82,10 @@ export const ExampleModule: BalanceModule<ExampleToken, ExampleChainMeta, Exampl
   async subscribeBalances(chainConnector, addressesByToken, callback) {
     let subscribed = true
 
-    const publish = () => {
+    const publish = async () => {
       if (!subscribed) return
 
-      const reply = new Balances(
-        Object.entries(addressesByToken).flatMap(([tokenId, addresses]) =>
-          addresses
-            .map((address) => [address, tokenId.split("-")[0]])
-            .map(
-              ([address, chainId]) =>
-                new Balance({
-                  source: "example",
-                  status: "live",
-                  address,
-                  multiChainId: { subChainId: chainId },
-                  chainId,
-                  tokenId,
-
-                  free: ((Math.floor(Math.random() * 9) + 1) * Math.pow(10, 18)).toString(),
-                  // reserved: "0",
-                  // miscFrozen: "0",
-                  // feeFrozen: "0",
-                })
-            )
-        )
-      )
+      const reply = await this.fetchBalances(chainConnector, addressesByToken)
       callback(null, reply)
 
       const updateResponseMs = 5000 // 5s
@@ -120,66 +100,28 @@ export const ExampleModule: BalanceModule<ExampleToken, ExampleChainMeta, Exampl
     }
   },
 
-  // async fetchBalances(chainConnector,addressesByToken) {
-  //   return null
-  // },
+  async fetchBalances(chainConnector, addressesByToken) {
+    return new Balances(
+      Object.entries(addressesByToken).flatMap(([tokenId, addresses]) =>
+        addresses
+          .map((address) => [address, tokenId.split("-")[0]])
+          .map(
+            ([address, chainId]) =>
+              new Balance({
+                source: "example",
+                status: "live",
+                address,
+                multiChainId: { subChainId: chainId },
+                chainId,
+                tokenId,
+
+                free: ((Math.floor(Math.random() * 9) + 1) * Math.pow(10, 18)).toString(),
+                // reserved: "0",
+                // miscFrozen: "0",
+                // feeFrozen: "0",
+              })
+          )
+      )
+    )
+  },
 }
-
-// /** An example of a self-contained balances module */
-// export class ExampleModuleOldClassBased implements BalanceModule<ExampleToken, ExampleChainMeta> {
-//   // async supportsSubstrateChain(chainId: ChainId): Promise<boolean> {
-//   //   const chain = await this.chainStorage.get(chainId)
-//   //   throw new Error("Not implemented")
-//   // }
-//   // async supportsEvmChain(chainId: ChainId): Promise<boolean> {
-//   //   const chain = await this.chainStorage.get(chainId)
-//   //   throw new Error("Not implemented")
-//   // }
-
-//   async fetchSubstrateChainTokens(
-//     chainId: ChainId
-//   ): Promise<Record<ExampleToken["id"], ExampleToken>> {
-//     const chain = await this.chainStorage.get(chainId)
-//     throw new Error("Not implemented")
-//   }
-//   async fetchEvmChainTokens(chainId: ChainId): Promise<Record<ExampleToken["id"], ExampleToken>> {
-//     const chain = await this.chainStorage.get(chainId)
-//     throw new Error("Not implemented")
-//   }
-
-//   /** Pre-processes any metadata required by this module ahead of time */
-//   async fetchSubstrateChainMeta(chainId: ChainId): Promise<ExampleChainMeta> {
-//     const chain = await this.chainStorage.get(chainId)
-//     throw new Error("Not implemented")
-//   }
-//   async fetchEvmChainMeta(chainId: ChainId): Promise<ExampleChainMeta> {
-//     const chain = await this.chainStorage.get(chainId)
-//     throw new Error("Not implemented")
-//   }
-
-//   // /**
-//   //  * Subscribe to balances for this module with optional filtering.
-//   //  *
-//   //  * If subscriptions are not possible, this function should poll at some reasonable interval.
-//   //  */
-//   // async subscribeBalances(
-//   //   addresses: Address[],
-//   //   tokens: Array<Pick<ExampleToken, "id">>,
-//   //   callback: SubscriptionCallback<Balances>
-//   // ): Promise<UnsubscribeFn> {
-//   //   throw new Error("Not implemented")
-//   // }
-
-//   // /** Fetch balances for this module with optional filtering */
-//   // async fetchBalances(
-//   //   addresses: Address[],
-//   //   tokens: Array<Pick<ExampleToken, "id">>,
-//   //   callback?: SubscriptionCallback<Balances>
-//   // ): Promise<Balances | UnsubscribeFn> {
-//   //   throw new Error("Not implemented")
-//   // }
-// }
-
-// const exampleModule = new ExampleModule()
-
-// export {}

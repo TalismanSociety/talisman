@@ -1,6 +1,6 @@
+import { CustomErc20Token } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { RequestIdOnly } from "@core/types/base"
-import { CustomErc20Token } from "@talismn/balances-evm-erc20"
 import {
   CustomEvmNetwork,
   EvmNetwork,

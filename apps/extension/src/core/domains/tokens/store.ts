@@ -1,6 +1,7 @@
 import { DEBUG } from "@core/constants"
 import {
   Erc20Token,
+  EvmNativeToken,
   IToken,
   NativeToken,
   OrmlToken,
@@ -68,12 +69,13 @@ export class TokenStore {
 }
 
 const tokensResponseTypeMap = {
-  NativeToken: "native",
-  OrmlToken: "orml",
+  NativeToken: "substrate-native",
+  EvmNativeToken: "evm-native",
+  OrmlToken: "substrate-orml",
   // LiquidCrowdloanToken: "lc",
   // LiquidityProviderToken: "lp",
   // XcToken: "xc",
-  Erc20Token: "erc20",
+  Erc20Token: "evm-erc20",
 } as const
 type TokensResponseTypeMap = typeof tokensResponseTypeMap
 type TokensResponseType = keyof TokensResponseTypeMap
@@ -107,13 +109,22 @@ const tokensResponseToTokenList = (tokens: unknown[]): TokenList =>
 
       switch (tokenType) {
         case "NativeToken": {
-          const nativeToken: NativeToken = {
+          const substrateNativeToken: NativeToken = {
             ...commonTokenFields(token, tokenType),
+            type: "substrate-native",
             existentialDeposit: token.squidImplementationDetail.existentialDeposit,
             chain: token.squidImplementationDetailNativeToChains[0],
+          }
+          return { ...allTokens, [substrateNativeToken.id]: substrateNativeToken }
+        }
+
+        case "EvmNativeToken": {
+          const evmNativeToken: EvmNativeToken = {
+            ...commonTokenFields(token, tokenType),
+            type: "evm-native",
             evmNetwork: token.squidImplementationDetailNativeToEvmNetworks[0],
           }
-          return { ...allTokens, [nativeToken.id]: nativeToken }
+          return { ...allTokens, [evmNativeToken.id]: evmNativeToken }
         }
 
         case "OrmlToken": {
@@ -130,7 +141,7 @@ const tokensResponseToTokenList = (tokens: unknown[]): TokenList =>
           const erc20Token: Erc20Token = {
             ...commonTokenFields(token, tokenType),
             contractAddress: token.squidImplementationDetail.contractAddress,
-            chain: token.squidImplementationDetail.chain,
+            // chain: token.squidImplementationDetail.chain,
             evmNetwork: token.squidImplementationDetail.evmNetwork,
           }
           return { ...allTokens, [erc20Token.id]: erc20Token }
