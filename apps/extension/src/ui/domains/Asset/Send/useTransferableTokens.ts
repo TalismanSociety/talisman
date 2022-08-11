@@ -39,7 +39,15 @@ export const useTransferableTokens = () => {
           },
         ].filter(Boolean) as TransferableToken[]
       }) ?? []
-    )
+    ).filter((tt, i, arr) => {
+      // on substrate, there could be multiple tokens with same symbol on a same chain (ACA, KINT..)
+      // => keep only first one until we have new tokens API
+      const matches = arr.filter(
+        (tt2) => tt.chainId && tt.token.symbol === tt2.token.symbol && tt.chainId === tt2.chainId
+      )
+      if (matches.length < 2) return true
+      return matches[0] === tt // keep only if first match
+    })
   }, [tokens])
 
   return transferableTokens
