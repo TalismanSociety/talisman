@@ -2,7 +2,6 @@
 
 const { merge } = require("webpack-merge")
 const CopyPlugin = require("copy-webpack-plugin")
-const TerserPlugin = require("terser-webpack-plugin")
 const ZipPlugin = require("zip-webpack-plugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 
@@ -69,9 +68,7 @@ const config = (env) =>
     ].filter(Boolean),
     optimization: {
       minimize: true,
-      // ensure we're using the correct version of terser-webpack-plugin
-      // can be removed when we switch to webpack 5
-      minimizer: [new TerserPlugin({ terserOptions: { compress: true } })],
+      minimizer: [() => ({ terserOptions: { compress: true } })],
     },
   })
 
