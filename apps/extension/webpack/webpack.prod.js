@@ -61,11 +61,13 @@ const config = (env) =>
         filename: getArchiveFileName(env),
         exclude: new RegExp(/\.js\.map$/, "m"),
       }),
-      new BundleAnalyzerPlugin({
-        // analyzerMode defaults to server, spawning a http server which can hang the process
-        // static will instead output a static html file to the dist folder, and not hang the terminal
-        analyzerMode: env.build === "ci" ? "disabled" : "static",
-      }),
+      !["1", "on", "true", "yes"].includes(process?.env?.DISABLE_BUNDLE_ANALYZER)
+        ? new BundleAnalyzerPlugin({
+            // analyzerMode defaults to server, spawning a http server which can hang the process
+            // static will instead output a static html file to the dist folder, and not hang the terminal
+            analyzerMode: env.build === "ci" ? "disabled" : "static",
+          })
+        : false,
     ].filter(Boolean),
     optimization: {
       minimize: true,
