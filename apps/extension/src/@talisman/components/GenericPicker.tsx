@@ -250,11 +250,7 @@ const GenericPicker = ({
               </ul>
             </DivWithMount>
           )}
-          <button
-            className="btn-picker-select"
-            aria-label={"select picker-item-container"}
-            {...getToggleButtonProps()}
-          >
+          <button className="btn-picker-select" aria-label={"select"} {...getToggleButtonProps()}>
             {/* key is there to force rerender in case of missing logo */}
             {selectedItem && (
               <PickerItem key={selectedItem?.id ?? "EMPTY"} {...(selectedItem ?? {})} />
