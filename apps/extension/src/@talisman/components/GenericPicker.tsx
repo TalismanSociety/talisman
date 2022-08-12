@@ -1,33 +1,24 @@
-import { ChainList } from "@core/domains/chains/types"
-import { Erc20Token, NativeToken, Token, TokenId } from "@core/domains/tokens/types"
+import { TokenId } from "@core/domains/tokens/types"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
-import useChain from "@ui/hooks/useChain"
-import useChains from "@ui/hooks/useChains"
-import { useChainsTokensWithBalanceFirst } from "@ui/hooks/useChainsTokensWithBalanceFirst"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import useTokens from "@ui/hooks/useTokens"
 import Downshift from "downshift"
-import { FC, ReactNode, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
+import { ReactNode, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
-
-import Logo from "./Logo"
-import { useTransferableTokens } from "./Send/useTransferableTokens"
 
 const Container = styled.div`
   position: relative;
   display: inline-block;
 
-  .btn-select-asset {
+  .btn-picker-select {
     background: transparent;
     border: none;
     padding: 0;
   }
-  .btn-select-asset:hover .asset {
+  .btn-picker-select:hover .picker-item-container {
     color: var(--color-foreground-muted-2x);
   }
 
-  .asset-dropdown {
+  .picker-dropdown {
     z-index: 1;
     display: flex;
     flex-direction: column;
@@ -39,15 +30,15 @@ const Container = styled.div`
     opacity: 0;
     transition: opacity var(--transition-speed) ease-in-out;
   }
-  .asset-dropdown.mounted {
+  .picker-dropdown.mounted {
     opacity: 1;
   }
 
-  .asset-search-container {
+  .picker-search-container {
     padding: 0 1rem 1rem;
   }
 
-  .asset-search {
+  .picker-search {
     background: var(--color-background-muted);
     border: none;
     border-radius: var(--border-radius);
@@ -64,7 +55,7 @@ const Container = styled.div`
     line-height: 1.8rem;
   }
 
-  .asset-list {
+  .picker-items {
     max-height: 25rem;
     overflow-y: auto;
     padding: 0;
@@ -80,7 +71,7 @@ const Container = styled.div`
       line-height: 1;
       display: flex;
 
-      .asset {
+      .picker-item-container {
         width: 100%;
       }
     }
@@ -89,7 +80,7 @@ const Container = styled.div`
     }
   }
 
-  .asset {
+  .picker-item-container {
     display: inline-flex;
     border: none;
     gap: 0.8rem;
@@ -98,18 +89,18 @@ const Container = styled.div`
     cursor: pointer;
   }
 
-  .asset.asset-with-chain {
-    .asset-main {
+  .picker-item-container.item-with-subtitle {
+    .picker-item-main {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: flex-start;
     }
-    .token {
+    .picker-item-title {
       font-size: var(--font-size-medium);
       line-height: 1;
     }
-    .chain {
+    .picker-item-subtitle {
       font-size: var(--font-size-xsmall);
       color: var(--color-mid);
       line-height: 1;
@@ -149,19 +140,12 @@ export type PickerItemProps = {
 }
 
 const PickerItem = ({ logo, title, subtitle }: PickerItemProps) => {
-  //const evmNetwork = useEvmNetwork(Number(token?.evmNetwork?.id ?? 0))
-
-  // const effectiveChain = useMemo(() => {
-  //   if (!chain && chainsMap && token?.chain?.id) return chainsMap[token?.chain?.id]
-  //   return chain
-  // }, [chain, chainsMap, token?.chain?.id])
-
   return (
-    <span className={classNames("asset", !!subtitle && "asset-with-chain")}>
-      {!!logo && <span className="asset-logo">{logo}</span>}
-      <span className={"asset-main"}>
-        <span className="token">{title}</span>
-        {subtitle && <span className="chain">{subtitle}</span>}
+    <span className={classNames("picker-item-container", !!subtitle && "item-with-subtitle")}>
+      {!!logo && <span className="picker-item-logo">{logo}</span>}
+      <span className={"picker-item-main"}>
+        <span className="picker-item-title">{title}</span>
+        {subtitle && <span className="picker-item-subtitle">{subtitle}</span>}
       </span>
     </span>
   )
@@ -207,7 +191,7 @@ const GenericPicker = ({
     [items, selectedItemId]
   )
 
-  // if not set yet, set a token as soon as tokens are loaded
+  // select first available entry if needed
   useEffect(() => {
     if (selectedItemId === undefined && items.length > 0) {
       setSelectedItemId(items[0].id)
@@ -225,7 +209,7 @@ const GenericPicker = ({
     if (itemId) setSelectedItemId(itemId)
   }, [])
 
-  // returns the list of tokens to display in the combo box, filtered by user input
+  // returns the list of entries to display in the combo box, filtered by user input
   const searchItems = useCallback((text: string | null) => search(text, items), [items, search])
 
   return (
@@ -241,24 +225,23 @@ const GenericPicker = ({
       }) => (
         <Container className={className} {...getRootProps()}>
           {isOpen && (
-            <DivWithMount className="asset-dropdown" {...getMenuProps()}>
-              <div className="asset-search-container">
+            <DivWithMount className="picker-dropdown" {...getMenuProps()}>
+              <div className="picker-search-container">
                 <input
-                  className="asset-search"
-                  placeholder="Search tokens"
+                  className="picker-search"
+                  placeholder="Search"
                   autoFocus
                   {...getInputProps()}
                 />
               </div>
-              <ul className="asset-list">
+              <ul className="picker-items">
                 {searchItems(inputValue).map((item, index) => (
                   <li
-                    className="asset-item"
+                    className="picker-item-item"
                     {...getItemProps({
                       key: item.id,
                       index,
                       item: item.id,
-                      // item: item.id,
                     })}
                   >
                     <PickerItem {...item} />
@@ -268,8 +251,8 @@ const GenericPicker = ({
             </DivWithMount>
           )}
           <button
-            className="btn-select-asset"
-            aria-label={"select asset"}
+            className="btn-picker-select"
+            aria-label={"select picker-item-container"}
             {...getToggleButtonProps()}
           >
             {/* key is there to force rerender in case of missing logo */}

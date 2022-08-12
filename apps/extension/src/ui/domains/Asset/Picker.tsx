@@ -3,7 +3,7 @@ import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { FC } from "react"
 
-import GenericPicker, { PickerItemProps } from "./GenericPicker"
+import GenericPicker, { PickerItemProps } from "../../../@talisman/components/GenericPicker"
 import { useSortedTransferableTokens, useTransferableTokens } from "./Send/useTransferableTokens"
 import { TokenLogo } from "./TokenLogo"
 
