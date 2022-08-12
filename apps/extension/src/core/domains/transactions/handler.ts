@@ -228,7 +228,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     } catch (err) {
       // eslint-disable-next-line no-console
       DEBUG && console.error(err)
-      Sentry.captureException(err, { tags: { evmNetworkId } })
+      Sentry.captureException(err, { tags: { tokenId, evmNetworkId } })
       throw new Error("Failed to send transaction")
     }
   }

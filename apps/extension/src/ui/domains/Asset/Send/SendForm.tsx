@@ -267,7 +267,7 @@ export const SendForm = () => {
   const onToChange = useCallback((value: string) => setValue("to", value, REVALIDATE), [setValue])
 
   // current form values
-  const { amount, transferableTokenId, from, to, tip: formTip } = watch()
+  const { amount, transferableTokenId, from, to } = watch()
   // derived data
   const transferableToken = useTransferableTokenById(transferableTokenId)
 

@@ -32,7 +32,6 @@ const ethereumRequest =
     }
   }
 
-// TODO move to another module
 export const getExtensionEthereumProvider = (evmNetworkId: number) => {
   return new ethers.providers.Web3Provider(ethereumRequest(evmNetworkId))
 }

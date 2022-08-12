@@ -1,5 +1,5 @@
 import { Balance, BalanceFormatter, BalanceStorage, Balances } from "@core/domains/balances/types"
-import { Chain } from "@core/domains/chains/types"
+import { Chain, ChainId } from "@core/domains/chains/types"
 import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
@@ -12,7 +12,6 @@ import { api } from "@ui/api"
 import { getExtensionEthereumProvider } from "@ui/domains/Ethereum/getExtensionEthereumProvider"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
-import { chainUsesOrmlForNativeToken } from "@ui/hooks/useChainsTokens"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
 import { ethers } from "ethers"
@@ -23,6 +22,25 @@ import { useTransferableTokens } from "./useTransferableTokens"
 
 type Props = {
   initialValues?: Partial<SendTokensInputs>
+}
+
+// Acala uses the balances pallet for its nativeToken.
+// Kintsugi uses the orml pallet for its nativeToken.
+//
+// To automatically determine which is in use, for the nativeToken we will:
+//  - Default to using the balances pallet, disable the orml pallet.
+//  - Check if any accounts have a non-zero balance on the orml pallet.
+//  - If so, disable the balances pallet and enable the orml pallet.
+function chainUsesOrmlForNativeToken(
+  nonEmptyBalances: Balances,
+  chainId: ChainId,
+  nativeToken: Token
+): boolean {
+  return (
+    nonEmptyBalances
+      .find({ chainId, pallet: "orml-tokens" })
+      .find((balance) => balance.token?.symbol === nativeToken.symbol).count > 0
+  )
 }
 
 const useSendTokensProvider = ({ initialValues }: Props) => {

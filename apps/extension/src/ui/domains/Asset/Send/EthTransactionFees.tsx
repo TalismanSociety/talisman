@@ -8,7 +8,7 @@ import { EthFeeSelect } from "@ui/domains/Sign/EthFeeSelect"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { ethers } from "ethers"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
 
 import Fiat from "../Fiat"
@@ -35,7 +35,7 @@ type EthTransactionFeesProps = {
 }
 
 /**
- * This component should only be rendered if the selected chain is EVM and if form is valid
+ * This component should only be rendered if the selected chain is EVM
  * All EVM gas computation should be done from here
  */
 export const EthTransactionFees = ({
@@ -88,16 +88,21 @@ export const EthTransactionFees = ({
     }
   }, [gasInfo, onChange, priority])
 
-  // TODO what if we can't find the native token ?
-  if (!nativeToken || isLoading) return <Loader data-spin />
-
-  if (!gasInfo) return null
-
-  const fees = new BalanceFormatter(
-    ethers.utils.formatUnits(gasInfo.maxFeeAndGasCost, 0),
-    nativeToken?.decimals,
-    nativeToken?.rates
+  const fees = useMemo(
+    () =>
+      gasInfo
+        ? new BalanceFormatter(
+            ethers.utils.formatUnits(gasInfo.maxFeeAndGasCost, 0),
+            nativeToken?.decimals,
+            nativeToken?.rates
+          )
+        : null,
+    [gasInfo, nativeToken]
   )
+
+  if (!nativeToken || (isLoading && !gasInfo)) return <Loader data-spin />
+
+  if (!gasInfo || !fees) return null
 
   return (
     <Box textalign="right" flex column justify="flex-end" gap={0.1}>
@@ -118,11 +123,12 @@ export const EthTransactionFees = ({
           amount={fees.tokens}
           symbol={nativeToken?.symbol}
           decimals={nativeToken?.decimals}
+          noCountUp
         />
         {token?.rates && (
           <>
             {" "}
-            / <Fiat amount={fees.fiat("usd")} currency="usd" />
+            / <Fiat amount={fees.fiat("usd")} currency="usd" noCountUp />
           </>
         )}
       </Box>

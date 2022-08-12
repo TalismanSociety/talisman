@@ -1,4 +1,3 @@
-import { DEBUG } from "@core/constants"
 import { Suspense, lazy } from "react"
 
 import { SendTokensProvider } from "./context"

@@ -125,8 +125,6 @@ const SignTxWithoutValue = ({
   )
 }
 
-type EthRequestType = "message" | "txWithoutValue" | "txWithValue" | "unknown"
-
 export const EthSignTransactionRequest = () => {
   const {
     url,

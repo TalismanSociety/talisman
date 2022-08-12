@@ -41,17 +41,21 @@ export const useEvmTransactionFees = (tx?: ethers.providers.TransactionRequest) 
 
   // analyse fees on each block
   useEffect(() => {
-    if (!provider || !estimatedGas) return
+    if (!provider || !estimatedGas) {
+      setGasPrice(undefined)
+      setFeeHistoryAnalysis(undefined)
+      setBlockInfoError(undefined)
+      return
+    }
 
     const handleBlock = async () => {
       setIsLoadingBlockInfo(true)
       try {
-        const [feeData, feeOptions] = await Promise.all([
-          provider.getFeeData(), // only for gas price
+        const [gPrice, feeOptions] = await Promise.all([
+          provider.send("eth_gasPrice", []), // only for gas price, should replace by eth_gasPrice call
           getFeeHistoryAnalysis(provider),
         ])
-
-        setGasPrice(feeData.gasPrice)
+        setGasPrice(gPrice)
         setFeeHistoryAnalysis(feeOptions)
         setBlockInfoError(undefined)
       } catch (err) {
@@ -61,6 +65,9 @@ export const useEvmTransactionFees = (tx?: ethers.providers.TransactionRequest) 
     }
 
     provider.on("block", handleBlock)
+
+    //init
+    handleBlock()
 
     return () => {
       provider.off("block", handleBlock)
