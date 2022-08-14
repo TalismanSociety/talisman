@@ -109,16 +109,16 @@ class TalismanAnalytics {
 
     // balances top 5 tokens/networks
     // get Balance list per chain/evmNetwork and token
-    const balancesPerChainToken: Record<string, Balance[]> = Object.values(
-      balances.toJSON()
-    ).reduce((result, balance) => {
-      if (balance) {
+    const balancesPerChainToken: Record<string, Balance[]> = [...balances]
+      .filter(Boolean)
+      .reduce((result, balance) => {
         const key = `${balance.chainId || balance.evmNetworkId}-${balance.tokenId}`
+
         if (!result[key]) result[key] = []
-        result[key].push(new Balance(balance))
-      }
-      return result
-    }, {} as { [key: string]: Balance[] })
+        result[key].push(balance)
+
+        return result
+      }, {} as { [key: string]: Balance[] })
 
     // get fiat sum object for those arrays of Balances
     const fiatSumPerChainToken = await Promise.all(
