@@ -12,5 +12,6 @@
     "resolveJsonModule": true,
     "noEmit": false,
     "jsx": "react-jsx"
-  }
+  },
+  "exclude": ["node_modules", ".next", ".turbo", ".dist", "**/*.spec.ts", "**/*.test.ts"]
 }

@@ -1,5 +1,5 @@
 export {}
 
-describe("TokenRates", () => {
+describe("App", () => {
   it("Has some tests", () => {})
 })

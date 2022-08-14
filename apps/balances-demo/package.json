@@ -30,12 +30,12 @@
     "@babel/plugin-syntax-flow": "^7.18.6",
     "@babel/plugin-transform-react-jsx": "^7.18.10",
     "@testing-library/dom": "^8.16.1",
-    "@typescript-eslint/eslint-plugin": "^5.32.0",
-    "@typescript-eslint/parser": "^5.32.0",
+    "@typescript-eslint/eslint-plugin": "^4.4.0",
+    "@typescript-eslint/parser": "^4.4.0",
     "babel-eslint": "^10.1.0",
-    "eslint": "^8.21.0",
+    "eslint": "^7.5.0",
     "eslint-config-react-app": "^6.0.0",
-    "eslint-plugin-flowtype": "^8.0.3",
+    "eslint-plugin-flowtype": "^5.2.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jsx-a11y": "^6.6.1",
     "eslint-plugin-react": "^7.30.1",
@@ -49,9 +49,9 @@
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
+    "root": true,
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "eslint-config-talisman"
     ]
   },
   "browserslist": {

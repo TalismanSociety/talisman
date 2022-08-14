@@ -1,8 +1,9 @@
 {
-  "extends": "tsconfig/es6-react.json",
+  "extends": "@talismn/tsconfig/es6-react.json",
   "include": ["src", "types"],
   "compilerOptions": {
     "experimentalDecorators": true,
     "outDir": "dist"
-  }
+  },
+  "exclude": ["node_modules", ".next", ".turbo", ".dist", "**/*.spec.ts", "**/*.test.ts"]
 }
