@@ -29,7 +29,7 @@ class RpcFactory {
     const [socketUserId, ws] = await this.connectChainSocket(chainId)
 
     // wait for ws to be ready, but don't wait forever
-    this.waitForWs(ws)
+    await this.waitForWs(ws)
 
     try {
       // eslint-disable-next-line no-var
@@ -58,7 +58,7 @@ class RpcFactory {
     const [socketUserId, ws] = await this.connectChainSocket(chainId)
 
     // wait for ws to be ready, but don't wait forever
-    this.waitForWs(ws)
+    await this.waitForWs(ws)
 
     try {
       // eslint-disable-next-line no-var
@@ -90,12 +90,12 @@ class RpcFactory {
   private async waitForWs(
     ws: WsProvider,
 
-    // 10 seconds before we riot
-    timeout = 10_000
+    // 60 seconds before we riot
+    timeout: number | false = 60_000
   ): Promise<void> {
-    const timer = new Promise((resolve) => setTimeout(resolve, timeout))
+    const timer = timeout ? new Promise((resolve) => setTimeout(resolve, timeout)) : false
 
-    await Promise.race([ws.isReady, timer])
+    await Promise.race([ws.isReady, timer].filter(Boolean))
   }
 
   /**
@@ -111,18 +111,12 @@ class RpcFactory {
     if (this.#socketConnections[chainId]) return [socketUserId, this.#socketConnections[chainId]]
 
     const autoConnectMs = 1000
-    const requestTimeout = 20 * 1_000 // 20 seconds
     try {
       const healthyRpcs = (chain.rpcs || [])
         .filter(({ isHealthy }) => isHealthy)
         .map(({ url }) => url)
       if (healthyRpcs.length)
-        this.#socketConnections[chainId] = new WsProvider(
-          healthyRpcs,
-          autoConnectMs,
-          undefined,
-          requestTimeout
-        )
+        this.#socketConnections[chainId] = new WsProvider(healthyRpcs, autoConnectMs)
       else throw new Error(`No healthy RPCs available for chain ${chainId}`)
     } catch (error) {
       // eslint-disable-next-line no-console
