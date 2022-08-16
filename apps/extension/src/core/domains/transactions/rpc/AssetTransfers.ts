@@ -5,8 +5,6 @@ import { isHardwareAccount } from "@core/handlers/helpers"
 import RpcFactory from "@core/libs/RpcFactory"
 import { SubscriptionCallback } from "@core/types"
 import { Address } from "@core/types/base"
-import { getMetadataRpc } from "@core/util/getMetadataRpc"
-import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
@@ -144,16 +142,22 @@ export default class AssetTransfersRpc {
     const send: ProviderSendFunction = (method, params = []) =>
       RpcFactory.send(chainId, method, params)
 
-    const [{ block }, blockHash, genesisHash, metadataRpc, runtimeVersion, nonce, registry] =
-      await Promise.all([
-        send("chain_getBlock"),
-        send("chain_getBlockHash"),
-        send("chain_getBlockHash", [0]),
-        getMetadataRpc(chainId),
-        getRuntimeVersion(chainId),
-        send("system_accountNextIndex", [from.address]),
-        getTypeRegistry(chainId),
-      ])
+    const [
+      { block },
+      blockHash,
+      genesisHash,
+      nonce,
+      {
+        registry,
+        chainMetadataRpc: { metadataRpc, runtimeVersion },
+      },
+    ] = await Promise.all([
+      send("chain_getBlock"),
+      send("chain_getBlockHash"),
+      send("chain_getBlockHash", [0]),
+      send("system_accountNextIndex", [from.address]),
+      getTypeRegistry(chainId),
+    ])
 
     const { specVersion, transactionVersion } = runtimeVersion
 

@@ -25,7 +25,10 @@ export default class BlocksRpc {
     const blockFrame = response.block
 
     // decode block
-    const blockDecoded = (await getTypeRegistry(chainId)).createType<Block>("Block", blockFrame)
+    const blockDecoded = (await getTypeRegistry(chainId)).registry.createType<Block>(
+      "Block",
+      blockFrame
+    )
 
     return blockDecoded
   }

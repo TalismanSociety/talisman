@@ -34,7 +34,7 @@ const getExtrinsincResult = async (
   hexSignature: string
 ): Promise<ExtrinsicResult> => {
   try {
-    const registry = await getTypeRegistry(chainId, blockHash.toHex())
+    const { registry } = await getTypeRegistry(chainId, blockHash.toHex())
     const blockData = await RpcFactory.send(chainId, "chain_getBlock", [blockHash])
     const block = registry.createType("SignedBlock", blockData)
 
@@ -90,7 +90,7 @@ const watchExtrinsicStatus = async (
   cb: ExtrinsicStatusChangeHandler
 ) => {
   // this registry is only used to deterlube block hashes, so we can't specify one here
-  const registry = await getTypeRegistry(chainId)
+  const { registry } = await getTypeRegistry(chainId)
   let blockHash: Hash
 
   // keep track of subscriptions state because it raises errors when calling unsubscribe multiple times

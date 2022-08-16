@@ -33,7 +33,7 @@ export const getBalanceLocks = async ({
       .map((addressHash) => `0x${moduleStorageHash}${addressHash}`),
   ]
 
-  const [response, registry] = await Promise.all([
+  const [response, { registry }] = await Promise.all([
     RpcFactory.send(chainId, "state_queryStorageAt", params, true),
     getTypeRegistry(chainId),
   ])

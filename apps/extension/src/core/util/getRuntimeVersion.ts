@@ -3,18 +3,22 @@ import { RuntimeVersion } from "@polkadot/types/interfaces"
 
 // key = `${chainId}-${blockHash}`
 // very small object, it shouldn't be an issue to cache them until browser closes
-const cache: Record<string, Promise<RuntimeVersion>> = {}
+const cache: Record<string, RuntimeVersion> = {}
 
-export const getRuntimeVersion = (chainId: string, blockHash?: string) => {
+export const getRuntimeVersion = async (chainId: string, blockHash?: string) => {
+  // only cache if blockHash is specified
   const cacheKey = blockHash ? `${chainId}-${blockHash}` : null
 
+  // retrieve from cache if it exists
   if (cacheKey && cache[cacheKey]) return cache[cacheKey]
 
-  const promiseResult = RpcFactory.send<RuntimeVersion>(chainId, "state_getRuntimeVersion", [
-    blockHash,
-  ])
+  // fetch from chain
+  const method = "state_getRuntimeVersion"
+  const params = [blockHash]
+  const result = await RpcFactory.send<RuntimeVersion>(chainId, method, params)
 
-  if (cacheKey) cache[cacheKey] = promiseResult
+  // store in cache
+  if (cacheKey) cache[cacheKey] = result
 
-  return promiseResult
+  return result
 }
