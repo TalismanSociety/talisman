@@ -92,8 +92,8 @@ class RpcFactory {
   private async waitForWs(
     ws: WsProvider,
 
-    // 60 seconds before we riot
-    timeout: number | false = 60_000
+    // 30 seconds before we riot
+    timeout: number | false = 30_000
   ): Promise<void> {
     const timer = timeout ? new Promise((resolve) => setTimeout(resolve, timeout)) : false
 
