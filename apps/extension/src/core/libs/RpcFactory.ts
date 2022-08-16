@@ -29,7 +29,9 @@ class RpcFactory {
     const [socketUserId, ws] = await this.connectChainSocket(chainId)
 
     // wait for ws to be ready, but don't wait forever
-    await this.waitForWs(ws)
+    // 15 seconds before we riot
+    const timeout = 15_000
+    await this.waitForWs(ws, timeout)
 
     try {
       // eslint-disable-next-line no-var
