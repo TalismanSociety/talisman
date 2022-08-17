@@ -24,7 +24,7 @@ export interface RequestBalancesByParamsSubscribe {
   addressesByChain: AddressesByChain
 }
 
-export type BalanceLockType = "democracy" | "staking" | "vesting" | "other"
+export type BalanceLockType = "democracy" | "staking" | "vesting" | "dapp-staking" | "other"
 export type LockedBalance = {
   type: BalanceLockType
   amount: string //planck
