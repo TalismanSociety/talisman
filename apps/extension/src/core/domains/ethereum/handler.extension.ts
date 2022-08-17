@@ -59,15 +59,15 @@ type UnsignedTxWithGas = Omit<TransactionRequest, "gasLimit"> & { gas: string }
 const TX_GAS_LIMIT_DEFAULT = BigNumber.from("250000")
 const TX_GAS_LIMIT_MIN = BigNumber.from("21000")
 
-const txRequestToUnsignedTx = (
+const prepareTransaction = (
   tx: TransactionRequest | UnsignedTxWithGas,
   blockGasLimit: BigNumberish
-): UnsignedTransaction => {
+): TransactionRequest => {
   // we're using EIP1559 so gasPrice must be removed
   // eslint-disable-next-line prefer-const
-  let { from, gasPrice, ...unsignedTx } = tx
-  if ("gas" in unsignedTx) {
-    const { gas, ...rest1 } = unsignedTx as UnsignedTxWithGas
+  let { from, gasPrice, ...result } = tx
+  if ("gas" in result) {
+    const { gas, ...rest1 } = result as UnsignedTxWithGas
     let gasLimit = BigNumber.from(gas ?? TX_GAS_LIMIT_DEFAULT) // arbitrary default value
     if (gasLimit.gt(blockGasLimit)) {
       // probably bad formatting or error from the dapp, fallback to default value
@@ -78,18 +78,19 @@ const txRequestToUnsignedTx = (
     }
 
     // TODO : move gasLimit check to client side so we can show more accurate max fee before approval
-    unsignedTx = { ...rest1, gasLimit }
+    result = { ...rest1, gasLimit }
   }
 
-  if (unsignedTx.nonce) {
-    const { nonce, ...rest2 } = unsignedTx
+  if (result.nonce) {
+    const { nonce, ...rest2 } = result
     if (BigNumber.isBigNumber(nonce)) {
-      unsignedTx = { nonce: nonce.toNumber(), ...rest2 }
+      result = { nonce: nonce.toNumber(), ...rest2 }
     } else if (isString(nonce)) {
-      unsignedTx = { nonce: parseInt(nonce), ...rest2 }
+      result = { nonce: parseInt(nonce), ...rest2 }
     }
   }
-  return unsignedTx as UnsignedTransaction
+
+  return result
 }
 
 export class EthHandler extends ExtensionHandler {
@@ -113,18 +114,17 @@ export class EthHandler extends ExtensionHandler {
       const maxFeePerGas = parseUnits(strMaxFeePerGas, "wei")
       const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, "wei")
 
-      const goodTx = txRequestToUnsignedTx(
+      const tx = prepareTransaction(
         {
+          ...request,
           maxFeePerGas,
           maxPriorityFeePerGas,
           nonce,
           type: 2,
-          ...request,
         },
         block.gasLimit
       )
 
-      const serialisedTx = serializeTransaction(goodTx)
       try {
         // eslint-disable-next-line no-var
         var pair = getUnlockedPairFromAddress(queued.account.address)
@@ -135,10 +135,10 @@ export class EthHandler extends ExtensionHandler {
         )
         return false
       }
-      const signature = await pair.sign(serialisedTx)
 
-      const serialisedSignedTx = serializeTransaction(goodTx, signature)
-      const { chainId, hash } = await provider.sendTransaction(serialisedSignedTx)
+      const privateKey = getPrivateKey(pair)
+      const signer = new ethers.Wallet(privateKey, provider)
+      const { chainId, hash } = await signer.sendTransaction(tx)
 
       incrementTransactionCount(queued.account.address, queued.ethChainId)
 
