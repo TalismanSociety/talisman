@@ -267,8 +267,8 @@ export default class OrmlTokenBalancesRpc {
           tokenId: token.id,
 
           free,
-          reserved,
-          frozen,
+          reserves: reserved,
+          locks: frozen,
         })
       })
       .filter((balance): balance is Balance => Boolean(balance))

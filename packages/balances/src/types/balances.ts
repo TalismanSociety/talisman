@@ -4,7 +4,14 @@ import { BigMath, NonFunctionProperties, isArrayOf, planckToTokens } from "@tali
 import memoize from "lodash/memoize"
 import { Memoize } from "typescript-memoize"
 
-import { BalanceJson, BalanceJsonList, IBalance } from "./balancetypes"
+import {
+  BalanceJson,
+  BalanceJsonList,
+  IBalance,
+  excludeFromFeePayableLocks,
+  excludeFromTransferableAmount,
+  includeInTotalExtraAmount,
+} from "./balancetypes"
 
 /**
  * Have the importing library define its Token and BalanceJson enums (as a sum type of all plugins) and pass them into some
@@ -315,65 +322,78 @@ export class Balance {
    */
   @Memoize()
   get total() {
-    return this.#format(this.free.planck + this.reserved.planck)
+    const extra = includeInTotalExtraAmount(this.#storage.extra)
+    return this.#format(this.free.planck + this.reserved.planck + extra)
   }
   /** The non-reserved balance of this token. Includes the frozen amount. Is included in the total. */
   @Memoize()
   get free() {
-    return this.#format("0")
-    // return this.#format(this.#storage.free)
+    return this.#format(
+      typeof this.#storage.free === "string"
+        ? BigInt(this.#storage.free)
+        : Array.isArray(this.#storage.free)
+        ? this.#storage.free
+            .map((reserve) => BigInt(reserve.amount))
+            .reduce((a, b) => a + b, BigInt("0"))
+        : BigInt(this.#storage.free?.amount || "0")
+    )
   }
   /** The reserved balance of this token. Is included in the total. */
   @Memoize()
   get reserved() {
-    if (this.#storage.source === "evm-native") return this.#format("0")
-    if (this.#storage.source === "evm-erc20") return this.#format("0")
-    return this.#format("0")
-    // return this.#format(this.#storage.reserved)
+    return this.#format(
+      typeof this.#storage.reserves === "string"
+        ? BigInt(this.#storage.reserves)
+        : Array.isArray(this.#storage.reserves)
+        ? this.#storage.reserves
+            .map((reserve) => BigInt(reserve.amount))
+            .reduce((a, b) => a + b, BigInt("0"))
+        : BigInt(this.#storage.reserves?.amount || "0")
+    )
   }
   /** The frozen balance of this token. Is included in the free amount. */
   @Memoize()
+  get locked() {
+    return this.#format(
+      typeof this.#storage.locks === "string"
+        ? BigInt(this.#storage.locks)
+        : Array.isArray(this.#storage.locks)
+        ? this.#storage.locks
+            .map((lock) => BigInt(lock.amount))
+            .reduce((a, b) => BigMath.max(a, b), BigInt("0"))
+        : BigInt(this.#storage.locks?.amount || "0")
+    )
+  }
+  /** @depreacted - use balance.locked */
+  @Memoize()
   get frozen() {
-    if (this.#storage.source === "evm-native") return this.#format("0")
-    if (this.#storage.source === "evm-erc20") return this.#format("0")
-
-    // if using the balances source, take the max of the feeFrozen and miscFrozen amounts
-    if (this.#storage.source === "substrate-native") {
-      return this.#format("0")
-      // return this.#format(
-      //   BigMath.max(BigInt(this.#storage.feeFrozen), BigInt(this.#storage.miscFrozen))
-      // )
-    }
-
-    return this.#format("0")
-    // return this.#format(this.#storage.frozen)
+    return this.locked
   }
   /** The transferable balance of this token. Is generally the free amount - the miscFrozen amount. */
   @Memoize()
   get transferable() {
-    // if using the balances source, only subtract miscFrozen (not feeFrozen) from free
-    // also, don't go below 0
-    if (this.#storage.source === "substrate-native") {
-      return this.#format("0")
-      // return this.#format(
-      //   BigMath.max(this.free.planck - BigInt(this.#storage.miscFrozen), BigInt("0"))
-      // )
-    }
+    // if no locks exist, transferable is equal to the free amount
+    if (!this.#storage.locks) return this.free
 
-    // subtract frozen from free (but don't go below 0)
-    return this.#format(BigMath.max(this.free.planck - this.frozen.planck, BigInt("0")))
+    // find the largest lock (but ignore any locks which are marked as `includeInTransferable`)
+    const excludeAmount = excludeFromTransferableAmount(this.#storage.locks)
+
+    // subtract the lock from the free amount (but don't go below 0)
+    return this.#format(BigMath.max(this.free.planck - excludeAmount, BigInt("0")))
   }
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */
   @Memoize()
   get feePayable() {
-    // fees are only paid in native tokens (i.e. balances source) so feeFrozen is always 0 for orml
-    if (this.#storage.source !== "substrate-native") return this.free
+    // if no locks exist, feePayable is equal to the free amount
+    if (!this.#storage.locks) return this.free
 
-    // subtract feeFrozen from free (but don't go below 0)
-    return this.#format("0")
-    // return this.#format(
-    //   BigMath.max(this.free.planck - BigInt(this.#storage.feeFrozen), BigInt("0"))
-    // )
+    // find the largest lock which can't be used to pay tx fees
+    const excludeAmount = excludeFromFeePayableLocks(this.#storage.locks)
+      .map((lock) => BigInt(lock.amount))
+      .reduce((max, lock) => BigMath.max(max, lock), BigInt("0"))
+
+    // subtract the lock from the free amount (but don't go below 0)
+    return this.#format(BigMath.max(this.free.planck - excludeAmount, BigInt("0")))
   }
 }
 
@@ -465,8 +485,13 @@ export class FiatSumBalancesFormatter {
   }
   /** The frozen balance of these tokens. Is included in the free amount. */
   @Memoize()
+  get locked() {
+    return this.#sum("locked")
+  }
+  /** @deprecated - use balances.locked */
+  @Memoize()
   get frozen() {
-    return this.#sum("frozen")
+    return this.locked
   }
   /** The transferable balance of these tokens. Is generally the free amount - the miscFrozen amount. */
   @Memoize()

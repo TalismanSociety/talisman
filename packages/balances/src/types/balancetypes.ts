@@ -1,4 +1,5 @@
 import { ChainId, EvmNetworkId, MultiChainId, TokenId } from "@talismn/chaindata-provider"
+import { BigMath } from "@talismn/util"
 
 import { PluginBalanceTypes } from "../plugins"
 import { Address } from "./addresses"
@@ -57,15 +58,95 @@ export type IBalance = {
   chainId?: ChainId
   /** The evm chain this balance is on */
   evmNetworkId?: EvmNetworkId
+} & IBalanceAmounts
+export type IBalanceAmounts = {
+  /** The portion of a balance that is not reserved. The free balance is the only balance that matters for most operations. */
+  free?:
+    | Amount // module has only one free amount
+    | AmountWithLabel<string> // module has only one free amount, but it has a label
+    | Array<AmountWithLabel<string>> // module has multiple free amounts
 
-  // TODO: Add a field which groups all of the types of balances together.
-  // Different sources can add whatever types they want to add to this list, in a type-safe way.
-  // i.e. the end user of these libs will be able to access the available types of balances for each group.
-  // Also, in the Balance type, ensure that trying to access a non-existent field for one balance type will just return `0`.
+  /** The portion of a balance that is owned by the account but is reserved/suspended/unavailable. Reserved balance can still be slashed, but only after all the free balance has been slashed. */
+  reserves?:
+    | Amount // module has only one reserved amount
+    | AmountWithLabel<string> // module has only one reserved amount, but it has a label
+    | Array<AmountWithLabel<string>> // module has multiple reserved amounts
+
+  /** A freeze on a specified amount of an account's free balance until a specified block number. Multiple locks always operate over the same funds, so they overlay rather than stack. */
+  locks?:
+    | Amount // module has only one lock
+    | LockedAmount<string> // module has only one lock, but it has a label or should be included in the transferable amount
+    | Array<LockedAmount<string>> // module has multiple locks
+
+  /** Additional balances held by an account. By default these will not be included in the account total. Dapps may choose to add support for showing extra amounts on a case by case basis. */
+  extra?:
+    | ExtraAmount<string> // module has only one extra amount
+    | Array<ExtraAmount<string>> // module has multiple extra amounts
+}
+
+/** An unlabelled amount of a balance */
+export type Amount = string
+
+/** A labelled amount of a balance */
+export type AmountWithLabel<TLabel extends string> = { label: TLabel; amount: Amount }
+
+/** A labelled locked amount of a balance */
+export type LockedAmount<TLabel extends string> = AmountWithLabel<TLabel> & {
+  /**
+   * By default, the largest locked amount is subtrated from the transferable amount of this balance.
+   * If this property is set to true, this particular lock will be skipped when making this calculation.
+   * As such, this locked amount will be included in the calculated transferable amount.
+   */
+  includeInTransferable?: boolean
+
+  /**
+   * By default, tx fees can be deducted from locked amounts of balance.
+   * As such, locked amounts are ignored when calculating if the user has enough funds to pay tx fees.
+   * If this property is set to true, this particular lock will be subtracted from the available funds when making this calculation.
+   * As such, this locked amount will not be included in the calculated available funds.
+   */
+  excludeFromFeePayable?: boolean
+}
+
+export function excludeFromTransferableAmount(
+  locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>
+): bigint {
+  if (typeof locks === "string") return BigInt(locks)
+  if (!Array.isArray(locks)) locks = [locks]
+
+  return locks
+    .filter((lock) => lock.includeInTransferable !== true)
+    .map((lock) => BigInt(lock.amount))
+    .reduce((max, lock) => BigMath.max(max, lock), BigInt("0"))
+}
+export function excludeFromFeePayableLocks(
+  locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>
+): Array<LockedAmount<string>> {
+  if (typeof locks === "string") return []
+  if (!Array.isArray(locks)) locks = [locks]
+
+  return locks.filter((lock) => lock.excludeFromFeePayable)
+}
+
+/** A labelled extra amount of a balance */
+export type ExtraAmount<TLabel extends string> = AmountWithLabel<TLabel> & {
+  /** If set to true, this extra amount will be included in the calculation of the total amount of this balance. */
+  includeInTotal?: boolean
+}
+
+export function includeInTotalExtraAmount(
+  extra?: ExtraAmount<string> | Array<ExtraAmount<string>>
+): bigint {
+  if (!extra) return BigInt("0")
+  if (!Array.isArray(extra)) extra = [extra]
+
+  return extra
+    .filter((extra) => extra.includeInTotal)
+    .map((extra) => BigInt(extra.amount))
+    .reduce((a, b) => a + b, BigInt("0"))
 }
 
 /** Used by plugins to help define their custom `BalanceType` */
-export type NewBalanceType<
-  ModuleType extends string,
-  T extends Record<string, unknown>
-> = IBalance & { source: ModuleType } & T
+export type NewBalanceType<TModuleType extends string, T extends IBalanceAmounts> = IBalance & {
+  source: TModuleType
+} & T

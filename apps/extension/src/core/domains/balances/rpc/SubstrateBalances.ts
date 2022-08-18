@@ -267,9 +267,16 @@ export default class BalancesRpc {
           tokenId: chain.nativeToken.id,
 
           free,
-          reserved,
-          miscFrozen,
-          feeFrozen,
+          reserves: reserved,
+          locks: [
+            {
+              label: "fees",
+              amount: feeFrozen,
+              includeInTransferable: true,
+              excludeFromFeePayable: true,
+            },
+            { label: "misc", amount: miscFrozen },
+          ],
         })
       })
       .filter((balance): balance is Balance => Boolean(balance))
