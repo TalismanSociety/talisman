@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import { Balance, Balances } from "@core/domains/balances"
 import { BalanceSearchQuery } from "@core/domains/balances/types/balances"
 import { Chain } from "@core/domains/chains/types"
@@ -47,12 +48,40 @@ export const useTransferableTokens = () => {
       }) ?? []
     ).filter((tt, i, arr) => {
       // on substrate, there could be multiple tokens with same symbol on a same chain (ACA, KINT..)
-      // => keep only first one until we have new tokens API
-      const matches = arr.filter(
-        (tt2) => tt.chainId && tt.token.symbol === tt2.token.symbol && tt.chainId === tt2.chainId
-      )
-      if (matches.length < 2) return true
-      return matches[0] === tt // keep only if first match
+      // a good fix would be to detect on subsquid side if ANY account has tokens, if not the token shouldn't be included in github tokens file
+      // until then we hardcode an exclusion list here :
+
+      // ACA, BNC and KAR use native (orml won't work)
+      // INTR, KINT and MGX use orml (native won't work)
+
+      const IGNORED_TOKENS = [
+        "acala-orml-aca-acala",
+        "bifrost-kusama-orml-bnc-bifrost-kusama",
+        "bifrost-polkadot-orml-bnc-bifrost-polkadot",
+        "interlay-native-intr-interlay",
+        "karura-orml-kar-karura",
+        "kintsugi-native-kint-kintsugi",
+        "mangata-native-mgx-mangata",
+      ]
+
+      if (DEBUG) {
+        // detect new duplicates
+        const duplicates = arr.filter(
+          (tt2) =>
+            !IGNORED_TOKENS.includes(tt2.id) &&
+            tt.chainId &&
+            tt.token.symbol === tt2.token.symbol &&
+            tt.chainId === tt2.chainId
+        )
+        if (duplicates.length > 1)
+          // eslint-disable-next-line no-console
+          console.warn(
+            "Duplicate tokens found : ",
+            duplicates.map((tt2) => tt2.id)
+          )
+      }
+
+      return !IGNORED_TOKENS.includes(tt.id)
     })
   }, [tokens])
 
