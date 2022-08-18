@@ -3,6 +3,7 @@
 const { merge } = require("webpack-merge")
 const CopyPlugin = require("copy-webpack-plugin")
 const ZipPlugin = require("zip-webpack-plugin")
+const TerserPlugin = require("terser-webpack-plugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 
 const common = require("./webpack.common.js")
@@ -68,7 +69,7 @@ const config = (env) =>
     ].filter(Boolean),
     optimization: {
       minimize: true,
-      minimizer: [() => ({ terserOptions: { compress: true } })],
+      minimizer: [new TerserPlugin({ terserOptions: { compress: true } })],
     },
   })
 
