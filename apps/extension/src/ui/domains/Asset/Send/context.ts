@@ -179,7 +179,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
       // checks stop here for EVM
       if (!chainId) {
-        assert(evmNetworkId, "EVM network not found")
+        assert(evmNetworkId, "Ethereum network not found")
         assert(!!maxFeePerGas && !!maxPriorityFeePerGas, "Missing gas information")
 
         try {
