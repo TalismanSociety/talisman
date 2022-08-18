@@ -74,6 +74,26 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   const [transactionHash, setTransactionHash] = useState<string>()
 
   const transferableTokens = useTransferableTokens()
+  const evmNetworks = useEvmNetworks()
+  const chains = useChains()
+  const tokens = useTokens()
+  const chainsMap = useMemo(
+    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
+    [chains]
+  )
+  const evmNetworksMap = useMemo(
+    () => Object.fromEntries((evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])),
+    [evmNetworks]
+  )
+  const tokensMap = useMemo(
+    () => Object.fromEntries((tokens || []).map((token) => [token.id, token])),
+    [tokens]
+  )
+  const transferableTokensMap = useMemo(
+    () => Object.fromEntries((transferableTokens || []).map((tt) => [tt.id, tt])),
+    [transferableTokens]
+  )
+
   const transferableToken = useMemo(
     () => transferableTokens?.find((tt) => tt.id === formData.transferableTokenId),
     [formData.transferableTokenId, transferableTokens]
@@ -92,22 +112,6 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     setFormData(({ from }) => ({ from, transferableTokenId }))
   }, [formData.from, formData.transferableTokenId, transferableTokens])
 
-  const evmNetworks = useEvmNetworks()
-  const chains = useChains()
-  const tokens = useTokens()
-  const chainsMap = useMemo(
-    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
-    [chains]
-  )
-  const evmNetworksMap = useMemo(
-    () => Object.fromEntries((evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])),
-    [evmNetworks]
-  )
-  const tokensMap = useMemo(
-    () => Object.fromEntries((tokens || []).map((token) => [token.id, token])),
-    [tokens]
-  )
-
   // nonEmptyBalances is needed in order to detect chains who use the orml pallet for their native token
   const balances = useBalances()
   const nonEmptyBalances = useMemo(
@@ -121,7 +125,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       const { amount, transferableTokenId, from, to, tip, maxFeePerGas, maxPriorityFeePerGas } =
         newData
 
-      const transferableToken = transferableTokens.find((tt) => tt.id === transferableTokenId)
+      const transferableToken = transferableTokensMap[transferableTokenId]
       if (!transferableToken) throw new Error("Transferable token not found")
       const { token, chainId, evmNetworkId } = transferableToken
       if (!token) throw new Error("Token not found")
@@ -316,7 +320,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         unsigned,
       })
     },
-    [chainsMap, evmNetworksMap, nonEmptyBalances, tokensMap, transferableTokens]
+    [chainsMap, evmNetworksMap, nonEmptyBalances, tokensMap, transferableTokensMap]
   )
 
   // this makes user return to the first screen of the wizard
@@ -330,7 +334,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     const { amount, transferableTokenId, from, to, tip, maxPriorityFeePerGas, maxFeePerGas } =
       formData as SendTokensInputs
 
-    const transferableToken = transferableTokens.find((tt) => tt.id === transferableTokenId)
+    const transferableToken = transferableTokensMap[transferableTokenId]
     if (!transferableToken) throw new Error("Transferable token not found")
 
     const { token, chainId, evmNetworkId } = transferableToken
@@ -360,7 +364,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       )
       setTransactionHash(hash)
     } else throw new Error("Network not found")
-  }, [formData, hasAcceptedForfeit, transferableTokens])
+  }, [formData, hasAcceptedForfeit, transferableTokensMap])
 
   // execute the TX
   const sendWithSignature = useCallback(
