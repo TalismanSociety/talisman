@@ -167,7 +167,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
   )
 
   const handleCopyByteCode = useCallback(async () => {
-    if (!request.data) return
+    if (!request?.data) return
     try {
       await navigator.clipboard.writeText(request.data.toString())
       notify(
@@ -183,7 +183,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         title: `Copy failed`,
       })
     }
-  }, [request.data])
+  }, [request?.data])
 
   return (
     <ViewDetailsContainer>

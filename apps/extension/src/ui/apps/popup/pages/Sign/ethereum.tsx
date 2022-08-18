@@ -1,4 +1,4 @@
-import { AnyEthSigningRequest } from "@core/domains/signing/types"
+import { RequestID } from "@core/domains/signing/types"
 import {
   EthSignMessageRequestProvider,
   EthSignTransactionRequestProvider,
@@ -10,24 +10,24 @@ import { EthSignMessageRequest } from "./EthSignMessageRequest"
 import { EthSignTransactionRequest } from "./EthSignTransactionRequest"
 
 export const EthereumSignRequest = () => {
-  const { id } = useParams<"id">() as { id: string }
-  const signingRequest = useSigningRequestById(id) as AnyEthSigningRequest | undefined
+  const { id } = useParams<"id">() as { id: RequestID<"eth-send"> | RequestID<"eth-sign"> }
+  const signingRequest = useSigningRequestById(id)
+  if (!signingRequest) return null
 
-  if (signingRequest?.method === "eth_sendTransaction")
-    return (
-      <EthSignTransactionRequestProvider id={id}>
-        <EthSignTransactionRequest />
-      </EthSignTransactionRequestProvider>
-    )
-
-  // all other eth methods
-  if (signingRequest?.method)
-    return (
-      <EthSignMessageRequestProvider id={id}>
-        <EthSignMessageRequest />
-      </EthSignMessageRequestProvider>
-    )
-
-  // signing request not loaded yet
-  return null
+  switch (signingRequest.type) {
+    case "eth-send":
+      return (
+        <EthSignTransactionRequestProvider id={signingRequest.id}>
+          <EthSignTransactionRequest />
+        </EthSignTransactionRequestProvider>
+      )
+    case "eth-sign":
+      return (
+        <EthSignMessageRequestProvider id={signingRequest.id}>
+          <EthSignMessageRequest />
+        </EthSignMessageRequestProvider>
+      )
+    default:
+      return null
+  }
 }

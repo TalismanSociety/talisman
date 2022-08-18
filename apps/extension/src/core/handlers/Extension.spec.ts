@@ -172,8 +172,10 @@ describe("Extension", () => {
 
       expect(state.requestStores.signing.getRequestCount()).toBe(1)
 
+      const request = state.requestStores.signing.allRequests("substrate-sign")[0]
+
       const approveMessage = await messageSender("pri(signing.approveSign)", {
-        id: state.requestStores.signing.allRequests[0].id,
+        id: request.id,
       })
 
       expect(approveMessage).toEqual(true)
@@ -251,9 +253,10 @@ describe("Extension", () => {
 
       expect(state.requestStores.signing.getRequestCount()).toBe(1)
 
+      const request = state.requestStores.signing.allRequests("substrate-sign")[0]
       await expect(
         messageSender("pri(signing.approveSign)", {
-          id: state.requestStores.signing.allRequests[0].id,
+          id: request.id,
         })
       ).resolves.toEqual(true)
 
@@ -322,9 +325,10 @@ describe("Extension", () => {
 
       expect(state.requestStores.signing.getRequestCount()).toBe(1)
 
+      const request = state.requestStores.signing.allRequests("substrate-sign")[0]
       await expect(
         messageSender("pri(signing.approveSign)", {
-          id: state.requestStores.signing.allRequests[0].id,
+          id: request.id,
         })
       ).resolves.toEqual(true)
 
@@ -413,9 +417,10 @@ describe("Extension", () => {
 
       expect(state.requestStores.signing.getRequestCount()).toBe(1)
 
+      const request = state.requestStores.signing.allRequests("substrate-sign")[0]
       await expect(
         messageSender("pri(signing.approveSign)", {
-          id: state.requestStores.signing.allRequests[0].id,
+          id: request.id,
         })
       ).resolves.toEqual(true)
 

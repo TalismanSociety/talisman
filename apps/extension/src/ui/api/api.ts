@@ -1,4 +1,5 @@
 import { PORT_EXTENSION } from "@core/constants"
+import { AnyRequestID } from "@core/domains/signing/types"
 import MessageService from "@core/libs/MessageService"
 
 import MessageTypes from "./types"
@@ -45,7 +46,7 @@ export const api: MessageTypes = {
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
   decodeSignRequest: (id) => messageService.sendMessage("pri(signing.details)", { id }),
   subscribeSigningRequests: (cb) => messageService.subscribe("pri(signing.requests)", null, cb),
-  subscribeSigningRequest: (id: string, cb) =>
+  subscribeSigningRequest: (id, cb) =>
     messageService.subscribe("pri(signing.byid.subscribe)", { id }, cb),
   approveSign: (id) =>
     messageService.sendMessage("pri(signing.approveSign)", {

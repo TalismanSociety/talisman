@@ -1,20 +1,34 @@
-import { AnySigningRequest } from "@core/domains/signing/types"
+import { KnownRespondableRequest } from "@core/domains/signing/BaseRequestStore"
+import { AnySigningRequest, SigningRequests } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { isEthereumRequest } from "@core/util/isEthereumRequest"
-import useStatus from "@talisman/hooks/useStatus"
+import useStatus, { SetStatusFn, StatusOptions } from "@talisman/hooks/useStatus"
 import { useCallback } from "react"
 
 interface UseAnySigningRequestProps<T extends AnySigningRequest> {
-  approveSignFn: (requestId: string, ...args: any[]) => void
-  cancelSignFn: (requestId: string) => void
+  approveSignFn: (requestId: T["id"], ...args: any[]) => Promise<boolean>
+  cancelSignFn: (requestId: T["id"]) => Promise<boolean>
   currentRequest?: T
+}
+
+type SignableRequest<T extends keyof SigningRequests> = Pick<
+  KnownRespondableRequest<T>,
+  "request" | "id" | "account" | "url"
+> & {
+  setStatus: SetStatusFn
+  status: StatusOptions
+  isEthereumRequest: boolean
+  message?: string
+  approve: (...args: any[]) => void
+  reject: (...args: any[]) => void
+  setReady: SetStatusFn["ready"]
 }
 
 export const useAnySigningRequest = <T extends AnySigningRequest>({
   approveSignFn,
   cancelSignFn,
   currentRequest,
-}: UseAnySigningRequestProps<T>) => {
+}: UseAnySigningRequestProps<T>): SignableRequest<T["type"]> | null => {
   const { status, message, setStatus } = useStatus()
 
   const approve = useCallback(
@@ -51,12 +65,14 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
     setStatus.ready()
   }, [setStatus])
 
+  if (!currentRequest) return null
+
   return {
-    id: currentRequest?.id,
-    account: currentRequest?.account,
-    url: currentRequest?.url,
-    request: currentRequest?.request as T["request"],
-    isEthereumRequest: currentRequest && isEthereumRequest(currentRequest),
+    id: currentRequest.id,
+    account: currentRequest.account,
+    url: currentRequest.url,
+    request: currentRequest.request,
+    isEthereumRequest: isEthereumRequest(currentRequest),
     status,
     setStatus,
     message,

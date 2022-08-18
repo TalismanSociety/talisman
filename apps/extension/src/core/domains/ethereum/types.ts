@@ -1,4 +1,6 @@
-import { CustomErc20Token } from "@core/domains/tokens/types"
+import { ChainId } from "@core/domains/chains/types"
+import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
+import { CustomErc20Token, TokenId } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { RequestIdOnly } from "@core/types/base"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
@@ -38,9 +40,10 @@ export type WatchAssetBase = {
   }
 }
 
-export declare type EthApproveSignAndSend = RequestIdOnly & {
+export declare type EthApproveSignAndSend = KnownSigningRequestIdOnly<"eth-send"> & {
   transaction: ethers.providers.TransactionRequest
 }
+
 export type EthRequestSigningApproveSignature = {
   id: string
   signedPayload: `0x${string}`
@@ -108,10 +111,10 @@ export interface EthMessages {
   // eth signing message signatures
   "pri(eth.request)": [AnyEthRequestChainId, EthResponseTypes]
   "pri(eth.transactions.count)": [EthNonceRequest, number]
-  "pri(eth.signing.cancel)": [RequestIdOnly, boolean]
-  "pri(eth.signing.approveSign)": [RequestIdOnly, boolean]
-  "pri(eth.signing.approveSignHardware)": [EthRequestSigningApproveSignature, boolean]
+  "pri(eth.signing.cancel)": [KnownSigningRequestIdOnly<"eth-send" | "eth-sign">, boolean]
+  "pri(eth.signing.approveSign)": [KnownSigningRequestIdOnly<"eth-sign">, boolean]
   "pri(eth.signing.approveSignAndSend)": [EthApproveSignAndSend, boolean]
+  "pri(eth.signing.approveSignHardware)": [EthRequestSigningApproveSignature, boolean]
   "pri(eth.signing.approveSignAndSendHardware)": [EthRequestSigningApproveSignature, boolean]
   // eth add networks requests management
   // TODO change naming for network add requests, and maybe delete the first one

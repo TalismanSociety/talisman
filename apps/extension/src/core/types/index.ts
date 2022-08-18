@@ -39,6 +39,7 @@ type RemovedMessages =
   | "pri(accounts.export)"
   | "pri(accounts.forget)"
   | "pri(accounts.subscribe)"
+  | "pri(signing.cancel)"
   | "pri(signing.requests)"
   | "pri(derivation.create)"
   | "pri(derivation.validate)"
@@ -46,6 +47,7 @@ type RemovedMessages =
   | "pri(seed.validate)"
   | "pub(authorize.tab)"
 
+<<<<<<< HEAD
 type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AuthorisedSiteMessages &
   AccountsMessages &
@@ -59,6 +61,20 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   TokenMessages &
   TokenRatesMessages &
   EncryptMessages
+=======
+interface RequestSignaturesBase
+  extends Omit<PolkadotRequestSignatures, RemovedMessages>,
+    AuthorisedSiteMessages,
+    AccountsMessages,
+    AppMessages,
+    AssetTransferMessages,
+    BalancesMessages,
+    ChainsMessages,
+    EthMessages,
+    MnemonicMessages,
+    SigningMessages,
+    TokenMessages {}
+>>>>>>> 8cfe9f5a (refactor: wip -attempt to use new request store for signing only)
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]

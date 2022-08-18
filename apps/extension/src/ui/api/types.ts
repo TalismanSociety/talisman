@@ -25,7 +25,13 @@ import {
   RequestUpsertCustomEvmNetwork,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
-import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/types"
+import {
+  AnyEthSigningRequest,
+  AnyRequestID,
+  AnySigningRequest,
+  RequestID as SigningRequestId,
+  TransactionDetails,
+} from "@core/domains/signing/types"
 import {
   AuthRequestAddresses,
   AuthRequestId,
@@ -71,12 +77,18 @@ export default interface MessageTypes {
   allowPhishingSite: (url: string) => Promise<boolean>
 
   // signing messages -------------------------------------------------------
-  decodeSignRequest: (id: string) => Promise<TransactionDetails>
-  cancelSignRequest: (id: string) => Promise<boolean>
-  subscribeSigningRequest: (id: string, cb: (requests: AnySigningRequest) => void) => UnsubscribeFn
+  decodeSignRequest: (id: SigningRequestId<"substrate-sign">) => Promise<TransactionDetails | null>
+  cancelSignRequest: (id: SigningRequestId<"substrate-sign">) => Promise<boolean>
+  subscribeSigningRequest: (
+    id: AnyRequestID,
+    cb: (requests: AnySigningRequest) => void
+  ) => UnsubscribeFn
   subscribeSigningRequests: (cb: (requests: AnySigningRequest[]) => void) => UnsubscribeFn
-  approveSign: (id: string) => Promise<boolean>
-  approveSignHardware: (id: string, signature: HexString) => Promise<boolean>
+  approveSign: (id: SigningRequestId<"substrate-sign">) => Promise<boolean>
+  approveSignHardware: (
+    id: SigningRequestId<"substrate-sign">,
+    signature: HexString
+  ) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
   subscribeEncryptRequests: (cb: (requests: AnyEncryptRequest[]) => void) => UnsubscribeFn
@@ -203,14 +215,14 @@ export default interface MessageTypes {
   ) => Promise<ResponseAssetTransfer>
 
   // eth related messages
-  ethApproveSign: (id: string) => Promise<boolean>
+  ethApproveSign: (id: SigningRequestId<"eth-sign">) => Promise<boolean>
   ethApproveSignHardware: (id: string, signature: HexString) => Promise<boolean>
   ethApproveSignAndSend: (
-    id: string,
+    id: SigningRequestId<"eth-send">,
     transaction: ethers.providers.TransactionRequest
   ) => Promise<boolean>
   ethApproveSignAndSendHardware: (id: string, signedTransaction: HexString) => Promise<boolean>
-  ethCancelSign: (id: string) => Promise<boolean>
+  ethCancelSign: (id: SigningRequestId<"eth-sign" | "eth-send">) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
   ethGetTransactionsCount: (address: string, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>

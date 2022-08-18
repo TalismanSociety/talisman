@@ -1,4 +1,9 @@
-import { SignerPayloadJSON, SigningRequest, TransactionDetails } from "@core/domains/signing/types"
+import {
+  RequestID,
+  SignerPayloadJSON,
+  SubstrateSigningRequest,
+  TransactionDetails,
+} from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
@@ -7,7 +12,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
-export const usePolkadotTransactionDetails = (requestId?: string) => {
+export const usePolkadotTransactionDetails = (requestId?: RequestID<"substrate-sign">) => {
   const [analysing, setAnalysing] = useState(!!requestId)
   const [error, setError] = useState<string>()
   const [txDetails, setTxDetails] = useState<TransactionDetails>()
@@ -30,8 +35,8 @@ export const usePolkadotTransactionDetails = (requestId?: string) => {
   return { analysing, txDetails, error }
 }
 
-export const usePolkadotSigningRequest = (signingRequest?: SigningRequest) => {
-  const baseRequest = useAnySigningRequest<SigningRequest>({
+export const usePolkadotSigningRequest = (signingRequest?: SubstrateSigningRequest) => {
+  const baseRequest = useAnySigningRequest({
     currentRequest: signingRequest,
     approveSignFn: api.approveSign,
     cancelSignFn: api.cancelSignRequest,
@@ -46,8 +51,8 @@ export const usePolkadotSigningRequest = (signingRequest?: SigningRequest) => {
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
-      baseRequest.setStatus.processing("Approving request")
       if (!baseRequest || !baseRequest.id) return
+      baseRequest.setStatus.processing("Approving request")
       try {
         await api.approveSignHardware(baseRequest.id, signature)
         baseRequest.setStatus.success("Approved")

@@ -5,6 +5,10 @@ import {
   EthRequestSigningApproveSignature,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
+import type {
+  AnySigningRequestIdOnly,
+  KnownSigningRequestIdOnly,
+} from "@core/domains/signing/types"
 import { CustomEvmNativeToken } from "@core/domains/tokens/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
@@ -78,7 +82,7 @@ export class EthHandler extends ExtensionHandler {
     signedPayload,
   }: EthRequestSigningApproveSignature): Promise<boolean> {
     try {
-      const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
+      const queued = this.state.requestStores.signing.getRequest(id)
       assert(queued, "Unable to find request")
       const {
         method,
@@ -191,8 +195,8 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async signApprove({ id }: RequestIdOnly): Promise<boolean> {
-    const queued = this.state.requestStores.signing.getEthSignRequest(id)
+  private async signApprove({ id }: KnownSigningRequestIdOnly<"eth-sign">): Promise<boolean> {
+    const queued = this.state.requestStores.signing.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -254,8 +258,8 @@ export class EthHandler extends ExtensionHandler {
     }
   }
 
-  private signingCancel({ id }: RequestIdOnly): boolean {
-    const queued = this.state.requestStores.signing.getEthRequest(id)
+  private signingCancel({ id }: KnownSigningRequestIdOnly<"eth-send" | "eth-sign">): boolean {
+    const queued = this.state.requestStores.signing.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -487,7 +491,7 @@ export class EthHandler extends ExtensionHandler {
         )
 
       case "pri(eth.signing.approveSign)":
-        return this.signApprove(request as RequestIdOnly)
+        return this.signApprove(request as KnownSigningRequestIdOnly<"eth-sign">)
 
       case "pri(eth.signing.approveSignHardware)":
         return this.signApproveHardware(
@@ -495,7 +499,7 @@ export class EthHandler extends ExtensionHandler {
         )
 
       case "pri(eth.signing.cancel)":
-        return this.signingCancel(request as RequestIdOnly)
+        return this.signingCancel(request as KnownSigningRequestIdOnly<"eth-send" | "eth-sign">)
 
       // --------------------------------------------------------------------
       // ethereum watch asset requests handlers -----------------------------

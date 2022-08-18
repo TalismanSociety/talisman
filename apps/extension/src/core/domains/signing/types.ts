@@ -3,22 +3,19 @@ import {
   AccountJsonHardwareEthereum,
   AccountJsonHardwareSubstrate,
 } from "@core/domains/accounts/types"
-import {
-  EthGasSettingsEip1559,
-  EthGasSettingsLegacy,
-  EvmNetworkId,
-} from "@core/domains/ethereum/types"
-import { RequestIdOnly } from "@core/types/base"
+import { EthGasSettingsEip1559, EthGasSettingsLegacy } from "@core/domains/ethereum/types"
+import { BaseRequest } from "@core/types/base"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import {
-  SigningRequest as PolkadotSigningRequest,
-  RequestSigningApproveSignature,
+  RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
+  RequestSign,
   RequestSigningSubscribe,
+  ResponseSigning,
 } from "@polkadot/extension-base/background/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import { BigNumber, BigNumberish } from "ethers"
+import { BigNumberish } from "ethers"
 
-export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
+export type { ResponseSigning, SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
 export type {
   RequestSign,
@@ -26,31 +23,62 @@ export type {
   RequestSigningCancel,
   RequestSigningIsLocked,
   ResponseSigningIsLocked,
-  ResponseSigning,
 } from "@polkadot/extension-base/background/types"
 
-export type { RequestSigningApproveSignature }
+export type RequestID<T extends keyof SigningRequests> = `${T}.${string}`
+export type AnyRequestID = `${keyof SigningRequests}.${string}`
 
-export interface SigningRequest extends PolkadotSigningRequest {
-  request: PolkadotSigningRequest["request"]
+export type AnySigningRequestIdOnly = {
+  id: AnyRequestID
+}
+
+export type KnownSigningRequestIdOnly<T extends keyof SigningRequests> = {
+  id: RequestID<T>
+}
+
+export type RequestSigningApproveSignature = Omit<PolkadotRequestSigningApproveSignature, "id"> & {
+  id: RequestID<SUBSTRATE_SIGN>
+}
+
+interface BaseSigningRequest<T extends keyof SigningRequests> extends BaseRequest<T> {
+  id: RequestID<T>
+  url: string
+}
+
+type SUBSTRATE_SIGN = "substrate-sign"
+const SUBSTRATE_SIGN: SUBSTRATE_SIGN = "substrate-sign"
+
+export interface SubstrateSigningRequest extends BaseSigningRequest<SUBSTRATE_SIGN> {
+  request: RequestSign
   account: AccountJson | AccountJsonHardwareSubstrate
 }
 
-export interface EthBaseSignRequest extends Omit<SigningRequest, "request" | "account"> {
-  ethChainId: EvmNetworkId
+export interface EthBaseSignRequest<T extends keyof Omit<SigningRequests, "substrate-sign">>
+  extends BaseSigningRequest<T> {
+  ethChainId: number
   account: AccountJson | AccountJsonHardwareEthereum
-  type: "ethereum"
-  method:
-    | "personal_sign"
-    | "eth_sendTransaction"
-    | "eth_signTypedData"
-    | "eth_signTypedData_v1"
-    | "eth_signTypedData_v3"
-    | "eth_signTypedData_v4"
-  request: any
+  // method:
+  //   | "personal_sign"
+  //   | "eth_sendTransaction"
+  //   | "eth_signTypedData"
+  //   | "eth_signTypedData_v1"
+  //   | "eth_signTypedData_v3"
+  //   | "eth_signTypedData_v4"
+  request: string | EthTransactionRequest
 }
 
-export interface EthSignRequest extends EthBaseSignRequest {
+type ETH_SIGN = "eth-sign"
+type ETH_SEND = "eth-send"
+
+const ETH_SIGN: ETH_SIGN = "eth-sign"
+const ETH_SEND: ETH_SEND = "eth-send"
+
+export const SIGNING_TYPES = {
+  ETH_SIGN,
+  ETH_SEND,
+  SUBSTRATE_SIGN,
+}
+export interface EthSignRequest extends EthBaseSignRequest<ETH_SIGN> {
   request: string
   method:
     | "personal_sign"
@@ -60,13 +88,19 @@ export interface EthSignRequest extends EthBaseSignRequest {
     | "eth_signTypedData_v4"
 }
 
-export interface EthSignAndSendRequest extends EthBaseSignRequest {
+export interface EthSignAndSendRequest extends EthBaseSignRequest<ETH_SEND> {
   request: EthTransactionRequest
   method: "eth_sendTransaction"
 }
 
 export type AnyEthSigningRequest = EthSignAndSendRequest | EthSignRequest
-export type AnySigningRequest = SigningRequest | AnyEthSigningRequest
+export type AnySigningRequest = SubstrateSigningRequest | AnyEthSigningRequest
+
+export type SigningRequests = {
+  "eth-sign": [EthSignRequest, string]
+  "eth-send": [EthSignAndSendRequest, string]
+  "substrate-sign": [SubstrateSigningRequest, ResponseSigning]
+}
 
 export type EthResponseSign = string
 
@@ -128,9 +162,10 @@ export type EthTransactionDetails = {
 
 export interface SigningMessages {
   // signing message signatures
-  "pri(signing.approveSign)": [RequestIdOnly, boolean]
+  "pri(signing.approveSign)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]
   "pri(signing.approveSign.hardware)": [RequestSigningApproveSignature, boolean]
-  "pri(signing.details)": [RequestIdOnly, TransactionDetails]
+  "pri(signing.details)": [KnownSigningRequestIdOnly<"substrate-sign">, TransactionDetails]
   "pri(signing.requests)": [RequestSigningSubscribe, boolean, AnySigningRequest[]]
-  "pri(signing.byid.subscribe)": [RequestIdOnly, boolean, AnySigningRequest]
+  "pri(signing.cancel)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]
+  "pri(signing.byid.subscribe)": [AnySigningRequestIdOnly, boolean, AnySigningRequest]
 }
