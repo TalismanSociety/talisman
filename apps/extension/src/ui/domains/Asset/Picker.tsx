@@ -33,7 +33,9 @@ const AssetPicker: FC<IProps> = ({
     const networkName = chain?.chainName || evmNetwork?.name
     // display type only if chain has an evm network, or vice versa
     const networkType =
-      evmNetwork && (chain?.evmNetworks?.length || !!evmNetwork?.substrateChain) ? " (EVM)" : ""
+      evmNetwork && (chain?.evmNetworks?.length || !!evmNetwork?.substrateChain)
+        ? " (Ethereum)"
+        : ""
     const subtitle = networkName + networkType
     return {
       id,
