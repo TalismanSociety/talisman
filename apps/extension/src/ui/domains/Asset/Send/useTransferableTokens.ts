@@ -1,4 +1,5 @@
 import { Balance, Balances } from "@core/domains/balances"
+import { BalanceSearchQuery } from "@core/domains/balances/types/balances"
 import { Chain } from "@core/domains/chains/types"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { TokenId } from "@core/domains/tokens/types"
@@ -8,7 +9,12 @@ import { useMemo } from "react"
 
 import { TransferableToken, TransferableTokenId } from "./types"
 
-const nonEmptyBalancesFilter = (balance: Balance) => balance.free.planck > BigInt("0")
+const nonEmptyBalanceFilter = ({ balances }: { balances: Balances }) => {
+  return (
+    balances.sorted.reduce((acc, curr) => BigInt(curr.transferable.planck) + acc, BigInt(0)) >
+    BigInt(0)
+  )
+}
 
 /**
  *
@@ -64,9 +70,12 @@ export const useSortedTransferableTokens = (withBalanceFirst = false) => {
     return transferableTokens.map((transferableToken) => {
       const sortIndex =
         1 + balances.sorted.findIndex((b) => b.tokenId === transferableToken.token.id)
-      const balanceFilter = transferableToken.chainId
-        ? { chainId: transferableToken.chainId }
-        : { evmNetworkId: transferableToken.evmNetworkId }
+      const balanceFilter: BalanceSearchQuery = transferableToken.chainId
+        ? { tokenId: transferableToken.token.id, chainId: transferableToken.chainId }
+        : {
+            tokenId: transferableToken.token.id,
+            evmNetworkId: Number(transferableToken.evmNetworkId),
+          }
       return {
         ...transferableToken,
         sortIndex,
@@ -76,17 +85,17 @@ export const useSortedTransferableTokens = (withBalanceFirst = false) => {
   }, [balances, transferableTokens])
 
   const results = useMemo(() => {
+    //console.log({ sortable: sortable.map((s) => ({ ...s, b: s.balances.toJSON() })) })
     const sorted = sortable.sort(
       (a, b) =>
         (a?.sortIndex || Number.MAX_SAFE_INTEGER) - (b?.sortIndex || Number.MAX_SAFE_INTEGER)
     )
 
     if (!withBalanceFirst) return sorted
-    return sorted.sort(
-      (a, b) =>
-        (a.balances.find(nonEmptyBalancesFilter) ? 1 : 0) -
-        (b.balances.find(nonEmptyBalancesFilter) ? 1 : 0)
-    )
+    return [
+      ...sorted.filter((token) => nonEmptyBalanceFilter(token)),
+      ...sorted.filter((token) => !nonEmptyBalanceFilter(token)),
+    ] as TransferableToken[]
   }, [withBalanceFirst, sortable])
 
   // keep only TransferableToken fields
