@@ -8,14 +8,14 @@ export const getNetworkCategory = ({
   chain?: Chain | null
   evmNetwork?: EvmNetwork | null
 }) => {
-  if (evmNetwork) return evmNetwork.isTestnet ? "EVM Testnet" : "EVM blockchain"
+  if (evmNetwork) return evmNetwork.isTestnet ? "EVM Testnet" : "EVM Blockchain"
 
   if (chain) {
     if (chain.isTestnet) return "Testnet"
     return chain.paraId
       ? "Parachain"
       : (chain.parathreads || []).length > 0
-      ? "Relay chain"
+      ? "Relay Chain"
       : "Blockchain"
   }
 
