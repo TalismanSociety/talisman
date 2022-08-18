@@ -1,3 +1,4 @@
+import { DEFAULT_SEND_FUNDS_TOKEN_SUBSTRATE } from "@core/constants"
 import { TokenId } from "@core/domains/tokens/types"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
@@ -184,7 +185,7 @@ const GenericPicker = ({
 }: GenericPickerProps) => {
   const [selectedItemId, setSelectedItemId] = useState<PickerItemId>(
     // this is bad to hardcode but balances may not be loaded yet
-    () => value ?? defaultValue ?? items[0]?.id ?? "polkadot-native-dot-polkadot"
+    () => value ?? defaultValue ?? items[0]?.id
   )
   const selectedItem = useMemo(
     () => items?.find((item) => item.id === selectedItemId),

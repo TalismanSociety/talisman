@@ -1,3 +1,7 @@
+import {
+  DEFAULT_SEND_FUNDS_TOKEN_ETHEREUM,
+  DEFAULT_SEND_FUNDS_TOKEN_SUBSTRATE,
+} from "@core/constants"
 import { Balance, BalanceFormatter, BalanceStorage, Balances } from "@core/domains/balances/types"
 import { Chain, ChainId } from "@core/domains/chains/types"
 import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
@@ -43,10 +47,25 @@ function chainUsesOrmlForNativeToken(
   )
 }
 
+const checkInitialFormData = (
+  initialValues: Partial<SendTokensInputs> = {}
+): Partial<SendTokensInputs> => {
+  return {
+    ...initialValues,
+    transferableTokenId:
+      initialValues.transferableTokenId ??
+      (isEthereumAddress(initialValues.from)
+        ? DEFAULT_SEND_FUNDS_TOKEN_ETHEREUM
+        : DEFAULT_SEND_FUNDS_TOKEN_SUBSTRATE),
+  }
+}
+
 const useSendTokensProvider = ({ initialValues }: Props) => {
   // define only the state that is useful to be shared between the different screens of the wizard
   // keep everything else locally in each screen component
-  const [formData, setFormData] = useState<Partial<SendTokensInputs>>(initialValues ?? {})
+  const [formData, setFormData] = useState<Partial<SendTokensInputs>>(
+    checkInitialFormData(initialValues)
+  )
   const [expectedResult, setExpectedResult] = useState<SendTokensExpectedResult>()
   const [hasAcceptedForfeit, setHasAcceptedForfeit] = useState(false)
   // for substrate extrinsics
@@ -67,10 +86,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     // all transferable tokens may not be loaded yet, hardcode ids
     let transferableTokenId = transferableTokens[0].id
     if (formData.from) {
-      if (isEthereumAddress(formData.from)) transferableTokenId = "moonbeam-native-glmr-1284"
-      //transferableTokens.find((tt) => !!tt.evmNetworkId) ?? firstCompatibleToken
-      else transferableTokenId = "polkadot-native-dot-polkadot"
-      //firstCompatibleToken = transferableTokens.find((tt) => !!tt.chainId) ?? firstCompatibleToken
+      if (isEthereumAddress(formData.from)) transferableTokenId = DEFAULT_SEND_FUNDS_TOKEN_ETHEREUM
+      else transferableTokenId = DEFAULT_SEND_FUNDS_TOKEN_SUBSTRATE
     }
     setFormData(({ from }) => ({ from, transferableTokenId }))
   }, [formData.from, formData.transferableTokenId, transferableTokens])
@@ -78,10 +95,14 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   const evmNetworks = useEvmNetworks()
   const chains = useChains()
   const tokens = useTokens()
-  // const chainsMap = useMemo(
-  //   () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
-  //   [chains]
-  // )
+  const chainsMap = useMemo(
+    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
+    [chains]
+  )
+  const evmNetworksMap = useMemo(
+    () => Object.fromEntries((evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])),
+    [evmNetworks]
+  )
   const tokensMap = useMemo(
     () => Object.fromEntries((tokens || []).map((token) => [token.id, token])),
     [tokens]
@@ -105,9 +126,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       const { token, chainId, evmNetworkId } = transferableToken
       if (!token) throw new Error("Token not found")
 
-      const chain: Chain | null = (!!chainId && chains?.find((c) => c.id === chainId)) || null
-      const evmNetwork =
-        (!!evmNetworkId && evmNetworks?.find((n) => Number(n.id) === Number(evmNetworkId))) || null
+      const chain = (!!chainId && chainsMap[chainId]) || null
+      const evmNetwork = (!!evmNetworkId && evmNetworksMap[Number(evmNetworkId)]) || null
       if (!chain && !evmNetwork) throw new Error("Network not found")
 
       const network = (chain || evmNetwork) as Chain | EvmNetwork
@@ -296,7 +316,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         unsigned,
       })
     },
-    [chains, evmNetworks, nonEmptyBalances, tokensMap, transferableTokens]
+    [chainsMap, evmNetworksMap, nonEmptyBalances, tokensMap, transferableTokens]
   )
 
   // this makes user return to the first screen of the wizard
