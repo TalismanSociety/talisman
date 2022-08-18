@@ -151,7 +151,7 @@ export class BalanceStore {
         const evmNetwork = await db.evmNetworks.get(evmNetworkId)
         assert(evmNetwork, "This token's network could not be found")
         return (await NativeBalancesEvmRpc.balances([address], [evmNetwork]))
-          .find({ chainId, tokenId, address })
+          .find({ tokenId, address, evmNetworkId: Number(evmNetworkId) })
           .sorted[0]?.toJSON()
       }
     }
@@ -164,7 +164,7 @@ export class BalanceStore {
     }
     if (tokenType === "erc20")
       return (await Erc20BalancesEvmRpc.balances([address], { [Number(evmNetworkId)]: [token] }))
-        .find({ chainId, tokenId, address })
+        .find({ tokenId, address, evmNetworkId: Number(evmNetworkId) })
         .sorted[0]?.toJSON()
 
     // force compilation error if any token types don't have a case
