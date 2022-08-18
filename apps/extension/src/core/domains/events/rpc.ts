@@ -69,7 +69,7 @@ export default class EventsRpc {
     const eventsFrame = response[0]?.changes[0][1] || []
 
     // decode events
-    const events = (await getTypeRegistry(chainId)).createType(
+    const events = (await getTypeRegistry(chainId)).registry.createType(
       "Vec<FrameSystemEventRecord>",
       eventsFrame
     )

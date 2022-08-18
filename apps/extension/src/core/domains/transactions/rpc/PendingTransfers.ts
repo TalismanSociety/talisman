@@ -39,7 +39,7 @@ class PendingTransfer {
     const { chainId, unsigned, id } = this.data
 
     // create the unsigned extrinsic
-    const registry = await getTypeRegistry(chainId)
+    const { registry } = await getTypeRegistry(chainId)
     const tx = registry.createType(
       "Extrinsic",
       { method: unsigned.method },

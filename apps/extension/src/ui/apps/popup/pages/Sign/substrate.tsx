@@ -1,7 +1,7 @@
 import { AccountJsonHardware } from "@core/domains/accounts/types"
 import { SigningRequest } from "@core/domains/signing/types"
-import Button from "@talisman/components/Button"
-import Grid from "@talisman/components/Grid"
+import { Box } from "@talisman/components/Box"
+import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { PendingRequests } from "@ui/domains/Sign/PendingRequests"
@@ -61,14 +61,19 @@ export const SubstrateSignRequest = () => {
         {account && request && (
           <>
             {!account.isHardware && (
-              <Grid>
-                <Button disabled={processing} onClick={reject}>
+              <Box flex fullwidth gap={2.4}>
+                <SimpleButton disabled={processing} onClick={reject}>
                   Cancel
-                </Button>
-                <Button disabled={processing} processing={processing} primary onClick={approve}>
+                </SimpleButton>
+                <SimpleButton
+                  disabled={processing}
+                  processing={processing}
+                  primary
+                  onClick={approve}
+                >
                   Approve
-                </Button>
-              </Grid>
+                </SimpleButton>
+              </Box>
             )}
             {account.isHardware && (
               <Suspense fallback={null}>

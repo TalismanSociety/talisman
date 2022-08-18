@@ -1,5 +1,5 @@
-import styled from "styled-components"
 import { LoaderIcon } from "@talisman/theme/icons"
+import styled from "styled-components"
 
 type ButtonAdditionalProps = {
   primary?: boolean
@@ -52,7 +52,7 @@ export const SimpleButton = styled.button.attrs<ButtonAdditionalProps, ButtonAdd
   border-width: 1px;
   border-style: solid;
 
-  &:hover {
+  &:hover:not(:disabled) {
     background: var(--color-foreground);
     color: var(--color-background);
   }
@@ -65,7 +65,7 @@ export const SimpleButton = styled.button.attrs<ButtonAdditionalProps, ButtonAdd
     color: var(--color-background);
     border: var(--color-primary);
 
-    &:hover{
+    &:hover:not(:disabled){
       filter: brightness(0.8);
       background: var(--color-primary);
       color: var(--color-background);
