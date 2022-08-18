@@ -303,10 +303,8 @@ export const SendForm = () => {
   const { tip, error: tipError } = useTip(transferableToken?.chainId, showForm)
 
   useEffect(() => {
-    if (isEvm) return
-    // force type with ! because undefined value is used to check for an invalid form.
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    setValue("tip", tip!)
+    setValue("tip", isEvm ? undefined : tip!, REVALIDATE)
   }, [isEvm, setValue, tip])
 
   useEffect(() => {
@@ -336,11 +334,6 @@ export const SendForm = () => {
     },
     [setValue]
   )
-
-  //reset form if formData changes (helps loading with initial values)
-  useEffect(() => {
-    reset()
-  }, [formData, reset])
 
   if (!showForm) return null
 
