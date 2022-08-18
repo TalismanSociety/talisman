@@ -27,7 +27,6 @@ import styled from "styled-components"
 import { Address } from "./Address"
 
 const Container = styled.div<{ withAddressInput?: boolean }>`
-  // position: relative;
   display: flex;
   margin-left: 1.2rem;
   overflow: hidden;
@@ -62,7 +61,6 @@ const Container = styled.div<{ withAddressInput?: boolean }>`
         max-width: 28rem;
         display: flex;
         flex-direction: column;
-        //gap: 1rem;
         border-radius: 0 0 var(--border-radius) var(--border-radius);
 
         .account-avatar {
@@ -346,10 +344,9 @@ const AccountPicker: FC<Props> = ({
       setSelectedAddress(undefined)
   }, [accounts, genesisHash, selectedAddress])
 
-  const handleChange = useCallback(
-    (item: AccountJson | null) => setSelectedAddress(item?.address as string),
-    []
-  )
+  const handleChange = useCallback((item: AccountJson | null) => {
+    setSelectedAddress(item?.address as string)
+  }, [])
 
   const handlePasteAddress = useCallback(
     (cb: () => void) => (address: string) => {
@@ -359,20 +356,18 @@ const AccountPicker: FC<Props> = ({
     []
   )
 
-  // when addressType changes, remove current value if it doesn't match
+  // clear if not in the list
   useEffect(() => {
-    if (
-      addressType &&
-      selectedAddress &&
-      onChange &&
-      addressType !== "UNKNOWN" && // exclude case addressType is unknown (in send funds modal, this happens while tokens are loading)
-      addressType !== getAddressType(selectedAddress)
-    )
+    if (!filteredAccounts.some((acc) => acc.address === selectedAddress))
       setSelectedAddress(undefined)
-  }, [addressType, onChange, selectedAddress])
+  }, [filteredAccounts, selectedAddress])
 
   return (
-    <Downshift onChange={handleChange} itemToString={handleItemToString}>
+    <Downshift
+      key={`${addressType}-${genesisHash}`} // otherwise downshift may will trigger onChange after items changed and user selects again
+      onChange={handleChange}
+      itemToString={handleItemToString}
+    >
       {({ getItemProps, isOpen, getToggleButtonProps, getMenuProps, getRootProps, closeMenu }) => {
         return (
           <Container withAddressInput={withAddressInput} className={className} {...getRootProps()}>
