@@ -17,15 +17,16 @@ type LayoutProps = {
   centered?: boolean
   large?: boolean
   withBack?: boolean
+  backTo?: string
   className?: string
 }
 
-const UnstyledLayout: FC<LayoutProps> = ({ withBack, children, className }) => (
+const UnstyledLayout: FC<LayoutProps> = ({ withBack, backTo, children, className }) => (
   <main className={className}>
     <SideBar />
     <section className="main-area">
       <div className="children">
-        {!!withBack && <BackButton className="back" />}
+        {!!withBack && <BackButton className="back" to={backTo} />}
         {children}
       </div>
       <Suspense fallback={null}>
