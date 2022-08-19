@@ -50,10 +50,16 @@ export default class TokensHandler extends ExtensionHandler {
         assert(typeof token.symbol === "string", "A token symbol is required")
         assert(typeof token.decimals === "number", "A number of token decimals is required")
 
+        const tokenId = `${token.chainId || token.evmNetworkId}-erc20-${
+          token.contractAddress
+        }`.toLowerCase()
+        const existing = await db.tokens.get(tokenId)
+        assert(!existing, "This token already exists")
+
         const { symbol, decimals, coingeckoId, contractAddress, image } = token
 
         const newToken: CustomErc20Token = {
-          id: `${token.chainId || token.evmNetworkId}-erc20-${token.contractAddress}`,
+          id: tokenId,
           type: "erc20",
           isTestnet: (chain || evmNetwork)?.isTestnet || false,
           symbol,
