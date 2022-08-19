@@ -357,7 +357,7 @@ export class EthTabsHandler extends TabsHandler {
     const { symbol, address, decimals, image } = request.params.options
 
     const ethChainId = await this.getChainId(url)
-    const tokenId = `${ethChainId}-erc20-${address}`
+    const tokenId = `${ethChainId}-erc20-${address}`.toLowerCase()
 
     const existing = await db.tokens.get(tokenId)
     if (existing)
