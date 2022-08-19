@@ -12,7 +12,7 @@ import {
 import { SiteInfo } from "@ui/domains/Sign/SiteInfo"
 import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
 import { useSigningRequestById } from "@ui/hooks/useSigningRequestById"
-import { Suspense, lazy, useMemo } from "react"
+import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 
 import { Container } from "./common"
@@ -32,6 +32,11 @@ export const SubstrateSignRequest = () => {
       errorMessage: status === "ERROR" ? message : "",
     }
   }, [status, message])
+
+  useEffect(() => {
+    // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
+    if (status === "SUCCESS") window.close()
+  }, [status])
 
   return (
     <Container>

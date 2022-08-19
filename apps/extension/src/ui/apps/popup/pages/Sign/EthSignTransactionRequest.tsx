@@ -12,7 +12,7 @@ import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import useToken from "@ui/hooks/useToken"
 import { BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { formatDecimals } from "talisman-utils"
 
@@ -151,6 +151,11 @@ export const EthSignTransactionRequest = () => {
       errorMessage: status === "ERROR" ? message : blockInfoError ?? estimatedGasError ?? "",
     }
   }, [status, message, blockInfoError, estimatedGasError])
+
+  useEffect(() => {
+    // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
+    if (status === "SUCCESS") window.close()
+  }, [status])
 
   const nativeToken = useToken(network?.nativeToken?.id)
 
