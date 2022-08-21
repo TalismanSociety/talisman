@@ -6,6 +6,8 @@ import { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 
+import { getErc20TokenId } from "../ethereum/helpers"
+
 export default class TokensHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
@@ -38,10 +40,8 @@ export default class TokensHandler extends ExtensionHandler {
 
       case "pri(tokens.erc20.custom.add)": {
         const token = request as CustomErc20TokenCreate
-        assert(
-          typeof token.chainId === "string" || typeof token.evmNetworkId === "number",
-          "Either a chainId or an evmNetworkId is required"
-        )
+        const networkId = token.chainId || token.evmNetworkId
+        assert(networkId, "A chainId or an evmNetworkId is required")
         const chain = token.chainId ? await db.chains.get(token.chainId) : undefined
         const evmNetwork = token.evmNetworkId
           ? await db.evmNetworks.get(token.evmNetworkId)
@@ -50,9 +50,7 @@ export default class TokensHandler extends ExtensionHandler {
         assert(typeof token.symbol === "string", "A token symbol is required")
         assert(typeof token.decimals === "number", "A number of token decimals is required")
 
-        const tokenId = `${token.chainId || token.evmNetworkId}-erc20-${
-          token.contractAddress
-        }`.toLowerCase()
+        const tokenId = getErc20TokenId(networkId, token.contractAddress)
         const existing = await db.tokens.get(tokenId)
         assert(!existing, "This token already exists")
 
