@@ -1,4 +1,4 @@
-import { Amount, NewBalanceType } from "@talismn/balances"
+import { Amount, BalanceModule, DefaultBalanceModule, NewBalanceType } from "@talismn/balances"
 import { EvmChainId, EvmNetworkId, NewTokenType } from "@talismn/chaindata-provider"
 
 type ModuleType = "evm-erc20"
@@ -35,4 +35,8 @@ declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
     EvmErc20Balance: EvmErc20Balance
   }
+}
+
+export const EvmErc20Module: BalanceModule<ModuleType, EvmErc20Token | CustomEvmErc20Token> = {
+  ...DefaultBalanceModule("evm-erc20"),
 }

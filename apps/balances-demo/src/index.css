@@ -27,6 +27,12 @@ body {
   background: #101010;
   color: #d5d5d5;
 }
+@media (prefers-color-scheme: light) {
+  body {
+    background: #fff;
+    color: #444;
+  }
+}
 #root {
   padding: 2rem;
 }

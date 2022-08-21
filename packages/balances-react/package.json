@@ -1,0 +1,60 @@
+{
+  "name": "@talismn/balances-react",
+  "version": "0.0.0",
+  "repository": {
+    "directory": "packages/balances-react",
+    "type": "git",
+    "url": "https://github.com/talismansociety/talisman.git"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "dev": "tsc --watch",
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint . --max-warnings 0",
+    "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
+  },
+  "dependencies": {
+    "@talismn/balances": "workspace:^",
+    "@talismn/balances-evm-erc20": "workspace:^",
+    "@talismn/balances-evm-native": "workspace:^",
+    "@talismn/balances-example": "workspace:^",
+    "@talismn/balances-substrate-native": "workspace:^",
+    "@talismn/balances-substrate-orml": "workspace:^",
+    "@talismn/chain-connector": "workspace:^",
+    "@talismn/chaindata-provider": "workspace:^",
+    "@talismn/chaindata-provider-extension": "workspace:^",
+    "anylogger": "^1.0.11",
+    "dexie": "^3.2.2",
+    "dexie-react-hooks": "^1.1.1",
+    "react-use": "^17.4.0"
+  },
+  "devDependencies": {
+    "@talismn/tsconfig": "workspace:^",
+    "@types/jest": "^27.5.1",
+    "@types/react": "^18.0.17",
+    "eslint": "^8.4.0",
+    "eslint-config-talisman": "workspace:^",
+    "jest": "^28.1.0",
+    "react": "^18.2.0",
+    "ts-jest": "^28.0.2",
+    "typescript": "^4.6.4"
+  },
+  "peerDependencies": {
+    "react": "*",
+    "react-dom": "*"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "eslint-config-talisman"
+    ]
+  }
+}

@@ -11,4 +11,5 @@
 //
 
 export * from "./BalanceModule"
+export * from "./helpers"
 export * from "./types"

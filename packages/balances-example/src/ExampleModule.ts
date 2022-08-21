@@ -9,6 +9,7 @@ export type ExampleToken = NewTokenType<
   {
     existentialDeposit: string
     chain: { id: ChainId } | null
+    genesisHash: string
   }
 >
 
@@ -37,14 +38,19 @@ declare module "@talismn/balances/plugins" {
 }
 
 /** An example of a self-contained balances module */
-export const ExampleModule: BalanceModule<ExampleToken, ExampleChainMeta, ExampleConfig> = {
-  ...DefaultBalanceModule(),
+export const ExampleModule: BalanceModule<
+  ModuleType,
+  ExampleToken,
+  ExampleChainMeta,
+  ExampleConfig
+> = {
+  ...DefaultBalanceModule("example"),
 
   async fetchSubstrateChainMeta(chainConnector, chainId) {
     return { genesisHash: await chainConnector.send(chainId, "chain_getBlockHash", [0]) }
   },
 
-  async fetchSubstrateChainTokens(chainConnector, chainId) {
+  async fetchSubstrateChainTokens(chainConnector, chainId, chainMeta) {
     const type = "example" as const
 
     const symbol = "DOT"
@@ -52,6 +58,8 @@ export const ExampleModule: BalanceModule<ExampleToken, ExampleChainMeta, Exampl
 
     const id = `${chainId}-${type}-${symbol}`.toLowerCase()
     const id2 = `${chainId}-${type}-${symbol2}`.toLowerCase()
+
+    const { genesisHash } = chainMeta
 
     const token = {
       id,
@@ -61,6 +69,7 @@ export const ExampleModule: BalanceModule<ExampleToken, ExampleChainMeta, Exampl
       symbol,
       existentialDeposit: "0",
       chain: { id: chainId },
+      genesisHash,
     }
     const token2 = {
       id: id2,
@@ -70,18 +79,19 @@ export const ExampleModule: BalanceModule<ExampleToken, ExampleChainMeta, Exampl
       symbol: symbol2,
       existentialDeposit: "0",
       chain: { id: chainId },
+      genesisHash,
     }
 
     return { [token.id]: token, [token2.id]: token2 }
   },
 
-  async subscribeBalances(chainConnector, addressesByToken, callback) {
+  async subscribeBalances(chainConnector, chaindataProvider, addressesByToken, callback) {
     let subscribed = true
 
     const publish = async () => {
       if (!subscribed) return
 
-      const reply = await this.fetchBalances(chainConnector, addressesByToken)
+      const reply = await this.fetchBalances(chainConnector, chaindataProvider, addressesByToken)
       callback(null, reply)
 
       const updateResponseMs = 5000 // 5s
@@ -96,7 +106,7 @@ export const ExampleModule: BalanceModule<ExampleToken, ExampleChainMeta, Exampl
     }
   },
 
-  async fetchBalances(chainConnector, addressesByToken) {
+  async fetchBalances(chainConnector, chaindataProvider, addressesByToken) {
     return new Balances(
       Object.entries(addressesByToken).flatMap(([tokenId, addresses]) =>
         addresses

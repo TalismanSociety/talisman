@@ -28,6 +28,10 @@ export type Chain = {
   paraId: number | null // The paraId of this chain, if it is a parachain
   relay?: Chain // The parent relayChain of this parachain, if this chain is a parachain
 }
+export type CustomChain = Chain & {
+  isCustom: true
+}
+
 export type SubstrateRpc = {
   url: string // The url of this RPC
   isHealthy: boolean // The health status of this RPC

@@ -38,6 +38,9 @@
   },
   "dependencies": {
     "@talismn/chaindata-provider": "workspace:^",
-    "dexie": "^3.2.2"
+    "anylogger": "^1.0.11",
+    "dexie": "^3.2.2",
+    "graphql": "^16.6.0",
+    "graphql-tag": "^2.12.6"
   }
 }

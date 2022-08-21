@@ -1,4 +1,4 @@
-import { Amount, NewBalanceType } from "@talismn/balances"
+import { Amount, BalanceModule, DefaultBalanceModule, NewBalanceType } from "@talismn/balances"
 import { ChainId, NewTokenType, SubChainId } from "@talismn/chaindata-provider"
 
 type ModuleType = "substrate-orml"
@@ -33,4 +33,8 @@ declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
     SubOrmlBalance: SubOrmlBalance
   }
+}
+
+export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken> = {
+  ...DefaultBalanceModule("substrate-orml"),
 }

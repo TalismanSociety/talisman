@@ -1,17 +1,18 @@
 import {
   Chain,
   ChainId,
+  CustomChain,
+  CustomEvmNetwork,
   EvmNetwork,
   EvmNetworkId,
   Token,
   TokenId,
 } from "@talismn/chaindata-provider"
 import { Dexie } from "dexie"
-// import Browser from "webextension-polyfill"
 
 export class TalismanChaindataDatabase extends Dexie {
-  chains!: Dexie.Table<Chain, ChainId>
-  evmNetworks!: Dexie.Table<EvmNetwork /*| CustomEvmNetwork*/, EvmNetworkId>
+  chains!: Dexie.Table<Chain | CustomChain, ChainId>
+  evmNetworks!: Dexie.Table<EvmNetwork | CustomEvmNetwork, EvmNetworkId>
   tokens!: Dexie.Table<Token, TokenId>
 
   constructor() {
