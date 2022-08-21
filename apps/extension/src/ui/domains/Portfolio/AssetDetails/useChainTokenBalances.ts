@@ -26,6 +26,7 @@ type ChainTokenBalancesParams = {
 const getBalanceLockTypeTitle = (input: BalanceLockType, allLocks: LockedBalance[]) => {
   if (!input) return input
   if (input === "democracy") return "Governance"
+  if (input === "dapp-staking") return "DApp staking"
   if (input === "other")
     return allLocks.some(({ type }) => type !== "other") ? "Locked (other)" : "Locked"
 
