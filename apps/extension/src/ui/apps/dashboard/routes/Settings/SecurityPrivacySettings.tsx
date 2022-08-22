@@ -1,12 +1,12 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
-import Grid from "@talisman/components/Grid"
 import Field from "@talisman/components/Field"
+import Grid from "@talisman/components/Grid"
+import HeaderBlock from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
+import Spacer from "@talisman/components/Spacer"
 import Layout from "@ui/apps/dashboard/layout"
-import styled from "styled-components"
 import { useSettings } from "@ui/hooks/useSettings"
 import { useNavigate } from "react-router-dom"
+import styled from "styled-components"
 
 const LinkText = styled.span`
   color: var(--color-primary);
@@ -21,7 +21,7 @@ const SecurityPrivacySettings = () => {
   const { useAnalyticsTracking, useErrorTracking, update } = useSettings()
   const navigate = useNavigate()
   return (
-    <Layout centered withBack>
+    <Layout centered withBack backTo="/settings">
       <HeaderBlock title="Security and Privacy" text="Control security and privacy preferences" />
       <Spacer />
       <Grid columns={1}>
