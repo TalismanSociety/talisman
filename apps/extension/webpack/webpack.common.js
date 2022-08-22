@@ -16,9 +16,9 @@ const { srcDir, coreDir, distDir, getRelease, getGitShortHash } = require("./uti
 const config = (env) => ({
   entry: {
     substrate: ["@substrate/txwrapper-polkadot"],
-    popup: { import: path.join(srcDir, "index.popup.tsx") },
+    popup: { import: path.join(srcDir, "index.popup.tsx"), dependOn: "substrate" },
     onboarding: { import: path.join(srcDir, "index.onboarding.tsx") },
-    dashboard: { import: path.join(srcDir, "index.dashboard.tsx") },
+    dashboard: { import: path.join(srcDir, "index.dashboard.tsx"), dependOn: "substrate" },
     background: { import: path.join(coreDir, "background.ts"), dependOn: "substrate" },
     content_script: path.join(coreDir, "content_script.ts"),
     page: path.join(coreDir, "page.ts"),
