@@ -4,7 +4,7 @@ import { useMemo } from "react"
 
 const ethereumFilter = (chain: Chain) =>
   chain.account === "secp256k1" || chain.evmNetworks.length > 0
-const polkadotFilter = (chain: Chain) => chain.account !== "secp256k1"
+const polkadotFilter = (chain: Chain) => !ethereumFilter(chain)
 
 const useAddressTypeChainsFilter = (chains: Chain[], address: string) => {
   return useMemo(
