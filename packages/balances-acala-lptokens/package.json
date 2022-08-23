@@ -1,6 +1,6 @@
 {
   "name": "@talismn/balances-acala-lptokens",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "repository": {
     "directory": "packages/balances-acala-lptokens",
     "type": "git",
@@ -15,8 +15,9 @@
     "node": ">=14"
   },
   "scripts": {
-    "dev": "tsc --watch",
-    "build": "tsc",
+    "dev": "tsc --watch --declarationMap",
+    "build": "tsc --declarationMap",
+    "build:packages:prod": "rm -rf dist && tsc",
     "test": "jest",
     "lint": "eslint . --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"

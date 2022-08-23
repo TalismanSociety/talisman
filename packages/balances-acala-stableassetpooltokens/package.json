@@ -1,6 +1,6 @@
 {
   "name": "@talismn/balances-acala-stableassetpooltokens",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "repository": {
     "directory": "packages/balances-acala-stableassetpooltokens",
     "type": "git",

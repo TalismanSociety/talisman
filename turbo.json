@@ -18,6 +18,10 @@
       "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN", "$POSTHOG_AUTH_TOKEN"],
       "outputs": ["dist/**"]
     },
+    "build:packages:prod": {
+      "dependsOn": ["^build:packages:prod"],
+      "outputs": ["dist/**"]
+    },
     "lint": {
       "outputs": [],
       "cache": false

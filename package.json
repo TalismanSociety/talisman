@@ -14,6 +14,7 @@
     "build:extension:ci": "turbo run build:extension:ci",
     "build:extension:prod": "turbo run build:extension:prod",
     "build:extension:canary": "turbo run build:extension:canary",
+    "build:packages:prod": "turbo run build:packages:prod",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
     "clean": "turbo run clean --parallel && rm -rf dist && rm -rf node_modules",
