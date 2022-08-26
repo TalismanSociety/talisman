@@ -18,7 +18,7 @@
   "scripts": {
     "dev": "tsc --watch --declarationMap",
     "build": "tsc --declarationMap",
-    "build:packages:prod": "tsc",
+    "build:packages:prod": "rm -rf dist && tsc",
     "test": "jest",
     "lint": "eslint . --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"

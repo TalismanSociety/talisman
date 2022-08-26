@@ -20,13 +20,15 @@
     },
     "build:packages:prod": {
       "dependsOn": ["^build:packages:prod"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "cache": false
     },
     "lint": {
       "outputs": [],
       "cache": false
     },
     "dev": {
+      "dependsOn": ["^dev"],
       "cache": false
     },
     "clean": {
