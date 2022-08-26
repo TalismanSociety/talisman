@@ -7,13 +7,24 @@ import blake2Concat from "@talisman/util/blake2Concat"
 
 import { BalanceLockType, LockedBalance, RequestBalanceLocks, ResponseBalanceLocks } from "./types"
 
-const getLockedType = (input: string): BalanceLockType => {
+const getLockedType = (input: string, chainId: string): BalanceLockType => {
   if (input.includes("vesting")) return "vesting"
+  if (input.includes("calamvst")) return "vesting" // vesting on manta network
+  if (input.includes("ormlvest")) return "vesting" // vesting ORML tokens
   if (input.includes("democrac")) return "democracy"
+  if (input.includes("phrelect")) return "democracy" // specific to council
   if (input.includes("staking")) return "staking"
+  if (input.includes("stkngdel")) return "staking" // ex: MOVR staking
+  if (input.includes("kiltpstk")) return "staking" // Kilt specific staking
+  if (input.includes("dapstake")) return "dapp-staking" // Astar specific
+
+  // ignore technical or undocumented lock types
+  if (input.includes("pdexlock")) return "other"
+  if (input.includes("phala/sp")) return "other"
+
   // eslint-disable-next-line no-console
   console.warn(`unknown locked type : ${input}`)
-  Sentry.captureMessage(`unknown locked type : ${input}`)
+  Sentry.captureMessage(`unknown locked type : ${input}`, { tags: { chainId } })
   return "other"
 }
 
@@ -46,7 +57,7 @@ export const getBalanceLocks = async ({
       )
 
       acc[accountId] = locks.map((lock) => ({
-        type: getLockedType(lock.id.toUtf8()),
+        type: getLockedType(lock.id.toUtf8(), chainId),
         amount: lock.amount.toString(),
       }))
 

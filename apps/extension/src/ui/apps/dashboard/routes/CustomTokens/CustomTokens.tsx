@@ -117,7 +117,7 @@ export const CustomTokens = () => {
   if (!sortedTokens) return null
 
   return (
-    <Layout withBack centered>
+    <Layout withBack centered backTo="/settings">
       <HeaderBlock title="Manage custom tokens" text="Add or delete custom ERC20 tokens" />
       <TokensList>
         {sortedTokens.map((token) => (

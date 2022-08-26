@@ -61,7 +61,7 @@ const Options = () => {
   )
 
   return (
-    <Layout centered withBack>
+    <Layout centered withBack backTo="/settings">
       <HeaderBlock title="Extension options" text="Customise your extension experience" />
       <Spacer />
       <Grid columns={1}>
