@@ -1,25 +1,9 @@
 {
+  "extends": "@talismn/tsconfig/es6-react.json",
   "include": ["src", "types"],
   "compilerOptions": {
-    "strict": true,
-    "esModuleInterop": true,
-    "declaration": true,
-    "declarationMap": true,
-    "forceConsistentCasingInFileNames": true,
-    "inlineSources": false,
-    "isolatedModules": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "preserveWatchOutput": true,
-    "skipLibCheck": true,
     "experimentalDecorators": true,
-    "outDir": "dist",
-    "target": "es6",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "allowSyntheticDefaultImports": true,
-    "module": "esnext",
-    "moduleResolution": "node"
+    "outDir": "dist"
   },
   "exclude": ["node_modules", ".next", ".turbo", ".dist", "**/*.spec.ts", "**/*.test.ts"]
 }

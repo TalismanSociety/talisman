@@ -22,6 +22,7 @@
     "test": "turbo run test"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.24.3",
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
@@ -33,9 +34,7 @@
     "prettier": "^2.7.1",
     "prettier-plugin-import-sort": "^0.0.7",
     "ts-loader": "9.3.0",
-    "turbo": "latest",
-    "webpack": "^5.74.0",
-    "webpack-cli": "^4.9.2"
+    "turbo": "latest"
   },
   "resolutions": {
     "@polkadot/api-augment": "8.9.1",
@@ -108,8 +107,5 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx,css,scss,html,md,json}": "prettier --write",
     "*.{js,ts,jsx,tsx}": "eslint --fix --max-warnings 0"
-  },
-  "dependencies": {
-    "@changesets/cli": "^2.24.3"
   }
 }
