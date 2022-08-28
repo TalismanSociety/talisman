@@ -1,6 +1,9 @@
 {
   "name": "@talismn/balances-acala-lptokens",
   "version": "0.1.0",
+  "author": "Talisman",
+  "homepage": "https://talisman.xyz",
+  "license": "UNLICENSED",
   "repository": {
     "directory": "packages/balances-acala-lptokens",
     "type": "git",
@@ -18,6 +21,7 @@
     "dev": "tsc --watch --declarationMap",
     "build": "tsc --declarationMap",
     "build:packages:prod": "rm -rf dist && tsc",
+    "prepack": "yarn build:packages:prod",
     "test": "jest",
     "lint": "eslint . --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
