@@ -52,7 +52,7 @@
   "eslintConfig": {
     "root": true,
     "extends": [
-      "eslint-config-talisman"
+      "@talismn/eslint-config"
     ]
   },
   "browserslist": {

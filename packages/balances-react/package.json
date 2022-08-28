@@ -42,11 +42,11 @@
     "react-use": "^17.4.0"
   },
   "devDependencies": {
+    "@talismn/eslint-config": "workspace:^",
     "@talismn/tsconfig": "workspace:^",
     "@types/jest": "^27.5.1",
     "@types/react": "^18.0.17",
     "eslint": "^8.4.0",
-    "eslint-config-talisman": "workspace:^",
     "jest": "^28.1.0",
     "react": "^18.2.0",
     "ts-jest": "^28.0.2",
@@ -59,7 +59,7 @@
   "eslintConfig": {
     "root": true,
     "extends": [
-      "eslint-config-talisman"
+      "@talismn/eslint-config"
     ]
   }
 }
