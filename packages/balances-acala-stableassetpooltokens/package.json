@@ -4,6 +4,9 @@
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "UNLICENSED",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "directory": "packages/balances-acala-stableassetpooltokens",
     "type": "git",
