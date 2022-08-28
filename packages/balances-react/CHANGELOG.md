@@ -1,5 +1,21 @@
 # @talismn/balances-react
 
+## 0.1.1
+
+### Patch Changes
+
+- Fixed publish config
+- Updated dependencies
+  - @talismn/balances@0.1.1
+  - @talismn/balances-evm-erc20@0.1.1
+  - @talismn/balances-evm-native@0.1.1
+  - @talismn/balances-example@0.1.1
+  - @talismn/balances-substrate-native@0.1.1
+  - @talismn/balances-substrate-orml@0.1.1
+  - @talismn/chain-connector@0.1.1
+  - @talismn/chaindata-provider@0.1.1
+  - @talismn/chaindata-provider-extension@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes
