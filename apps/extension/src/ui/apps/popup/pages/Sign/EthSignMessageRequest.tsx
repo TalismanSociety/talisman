@@ -8,7 +8,7 @@ import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { dump as convertToYaml } from "js-yaml"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import styled from "styled-components"
 
 import { Container } from "./common"
@@ -124,6 +124,11 @@ export const EthSignMessageRequest = () => {
       errorMessage: status === "ERROR" ? message : "",
     }
   }, [status, message])
+
+  useEffect(() => {
+    // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
+    if (status === "SUCCESS") window.close()
+  }, [status])
 
   const isTypedData = useMemo(
     () => Boolean(request?.method?.startsWith("eth_signTypedData")),

@@ -1,12 +1,12 @@
-import { getMetadataRpc } from "@core/util/getMetadataRpc"
+import { getChainMetadataRpc } from "@core/util/getChainMetadataRpc"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 
 export const getTypeRegistry = async (chainId: string, blockHash?: string) => {
-  const metadataRpc = await getMetadataRpc(chainId, blockHash)
+  const chainMetadataRpc = await getChainMetadataRpc(chainId, blockHash)
 
   const registry = new TypeRegistry()
-  const metadata: Metadata = new Metadata(registry, metadataRpc)
+  const metadata: Metadata = new Metadata(registry, chainMetadataRpc.metadataRpc)
   metadata.registry.setMetadata(metadata)
 
-  return registry
+  return { registry, chainMetadataRpc }
 }

@@ -35,6 +35,7 @@ import { ethers, providers } from "ethers"
 import { isHexString } from "ethers/lib/utils"
 
 import { filterAccountsByAddresses } from "../accounts/helpers"
+import { getErc20TokenId } from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
 
 interface EthAuthorizedSite extends AuthorizedSite {
@@ -350,7 +351,7 @@ export class EthTabsHandler extends TabsHandler {
     const { symbol, address, decimals, image } = request.params.options
 
     const ethChainId = await this.getChainId(url)
-    const tokenId = `${ethChainId}-erc20-${address}`
+    const tokenId = getErc20TokenId(ethChainId, address)
 
     const existing = await db.tokens.get(tokenId)
     if (existing)

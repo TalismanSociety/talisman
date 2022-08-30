@@ -37,3 +37,5 @@ export const getEthTransferTransactionBase = async (
     ...tx,
   }
 }
+export const getErc20TokenId = (chainOrNetworkId: number | string, contractAddress: string) =>
+  `${chainOrNetworkId}-erc20-${contractAddress}`.toLowerCase()

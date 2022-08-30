@@ -28,6 +28,11 @@ class RpcFactory {
   ): Promise<T> {
     const [socketUserId, ws] = await this.connectChainSocket(chainId)
 
+    // wait for ws to be ready, but don't wait forever
+    // 15 seconds before we riot
+    const timeout = 15_000
+    await this.waitForWs(ws, timeout)
+
     try {
       // eslint-disable-next-line no-var
       var response = await ws.send(method, params, isCacheable)
@@ -52,10 +57,10 @@ class RpcFactory {
     params: unknown[],
     callback: ProviderInterfaceCallback
   ): Promise<() => Promise<void>> {
-    // TODO: Fix this function so that caller doesn't have to wait for
-    //      socket to connect before they can call unsubscribe()
-
     const [socketUserId, ws] = await this.connectChainSocket(chainId)
+
+    // wait for ws to be ready, but don't wait forever
+    await this.waitForWs(ws)
 
     try {
       // eslint-disable-next-line no-var
@@ -66,11 +71,33 @@ class RpcFactory {
     }
 
     const unsubscribe = async () => {
+      // TODO: What about when:
+      //
+      //   1. subscription is created
+      //   2. 10 seconds pass but the subscription isn't set up yet
+      //   3. unsubscribe is called (this method)
+      //   4. the subscription is finally set up
+      //
+      // is this a race condition?
       await ws.unsubscribe(responseMethod, unsubscribeMethod, subscriptionId)
       await this.disconnectChainSocket(chainId, socketUserId)
     }
 
     return unsubscribe
+  }
+
+  /**
+   * Wait for websocket to be ready, but don't wait forever
+   */
+  private async waitForWs(
+    ws: WsProvider,
+
+    // 30 seconds before we riot
+    timeout: number | false = 30_000
+  ): Promise<void> {
+    const timer = timeout ? new Promise((resolve) => setTimeout(resolve, timeout)) : false
+
+    await Promise.race([ws.isReady, timer].filter(Boolean))
   }
 
   /**
@@ -83,10 +110,7 @@ class RpcFactory {
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     const socketUserId = this.addSocketUser(chainId)
 
-    if (this.#socketConnections[chainId]) {
-      await this.#socketConnections[chainId].isReady
-      return [socketUserId, this.#socketConnections[chainId]]
-    }
+    if (this.#socketConnections[chainId]) return [socketUserId, this.#socketConnections[chainId]]
 
     const autoConnectMs = 1000
     try {
@@ -129,7 +153,6 @@ class RpcFactory {
       }, intervalMs)
     })()
 
-    await this.#socketConnections[chainId].isReady
     return [socketUserId, this.#socketConnections[chainId]]
   }
 

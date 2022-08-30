@@ -145,7 +145,7 @@ export const AddCustomErc20Token = () => {
           on{" "}
           <strong>
             {"iconUrls" in network
-              ? network.iconUrls.length && <TokenLogoSmall src={network.iconUrls[0]} alt="" />
+              ? !!network.iconUrls.length && <TokenLogoSmall src={network.iconUrls[0]} alt="" />
               : null}
             {network.name}
           </strong>

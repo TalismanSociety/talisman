@@ -1,7 +1,7 @@
 import { AccountJsonHardware } from "@core/domains/accounts/types"
 import { SigningRequest } from "@core/domains/signing/types"
-import Button from "@talisman/components/Button"
-import Grid from "@talisman/components/Grid"
+import { Box } from "@talisman/components/Box"
+import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { PendingRequests } from "@ui/domains/Sign/PendingRequests"
@@ -12,7 +12,7 @@ import {
 import { SiteInfo } from "@ui/domains/Sign/SiteInfo"
 import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
 import { useSigningRequestById } from "@ui/hooks/useSigningRequestById"
-import { Suspense, lazy, useMemo } from "react"
+import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 
 import { Container } from "./common"
@@ -32,6 +32,11 @@ export const SubstrateSignRequest = () => {
       errorMessage: status === "ERROR" ? message : "",
     }
   }, [status, message])
+
+  useEffect(() => {
+    // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
+    if (status === "SUCCESS") window.close()
+  }, [status])
 
   return (
     <Container>
@@ -61,14 +66,19 @@ export const SubstrateSignRequest = () => {
         {account && request && (
           <>
             {!account.isHardware && (
-              <Grid>
-                <Button disabled={processing} onClick={reject}>
+              <Box flex fullwidth gap={2.4}>
+                <SimpleButton disabled={processing} onClick={reject}>
                   Cancel
-                </Button>
-                <Button disabled={processing} processing={processing} primary onClick={approve}>
+                </SimpleButton>
+                <SimpleButton
+                  disabled={processing}
+                  processing={processing}
+                  primary
+                  onClick={approve}
+                >
                   Approve
-                </Button>
-              </Grid>
+                </SimpleButton>
+              </Box>
             )}
             {account.isHardware && (
               <Suspense fallback={null}>
