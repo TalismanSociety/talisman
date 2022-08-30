@@ -11,10 +11,11 @@ import { useMemo } from "react"
 import { TransferableToken, TransferableTokenId } from "./types"
 
 const nonEmptyBalanceFilter = ({ balances }: { balances: Balances }) => {
-  return (
-    balances.sorted.reduce((acc, curr) => BigInt(curr.transferable.planck) + acc, BigInt(0)) >
+  const amount = balances.sorted.reduce(
+    (amount, balance) => amount + BigInt(balance.transferable.planck),
     BigInt(0)
   )
+  return amount > BigInt(0)
 }
 
 /**
