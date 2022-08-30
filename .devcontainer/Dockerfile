@@ -14,4 +14,5 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 # RUN su node -c "npm install -g <your-package-list -here>"
 
 RUN echo "alias g='git'" | tee -a /etc/bash.bashrc
+RUN echo "alias vim='code'" | tee -a /etc/bash.bashrc
 RUN su node -c "echo 'enableTelemetry: 0' | tee -a ~/.yarnrc.yml"
