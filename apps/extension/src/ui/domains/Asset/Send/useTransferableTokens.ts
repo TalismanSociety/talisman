@@ -114,7 +114,6 @@ export const useSortedTransferableTokens = (withBalanceFirst = false) => {
   }, [balances, transferableTokens])
 
   const results = useMemo(() => {
-    //console.log({ sortable: sortable.map((s) => ({ ...s, b: s.balances.toJSON() })) })
     const sorted = sortable.sort(
       (a, b) =>
         (a?.sortIndex || Number.MAX_SAFE_INTEGER) - (b?.sortIndex || Number.MAX_SAFE_INTEGER)
