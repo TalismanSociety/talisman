@@ -1,10 +1,11 @@
-import { lazy, Suspense } from "react"
+import { Suspense, lazy } from "react"
+
+import { SendTokensProvider } from "./context"
 import { SendConfirmReap } from "./SendConfirmReap"
 import { SendForm } from "./SendForm"
-import { SendTokensProvider } from "./context"
-import { SendTokensInputs } from "./types"
-import { SendTransaction } from "./SendTransaction"
 import { SendTokensModalDialog } from "./SendTokensModalDialog"
+import { SendTransaction } from "./SendTransaction"
+import { SendTokensInputs } from "./types"
 
 const SendReview = lazy(() => import("./SendReview"))
 

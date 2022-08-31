@@ -14,6 +14,7 @@ import { MouseEventHandler, useCallback } from "react"
 import styled from "styled-components"
 
 import { useSendTokensModal } from "../Asset/Send"
+import { useTransferableTokens } from "../Asset/Send/useTransferableTokens"
 import { useAccountRemoveModal } from "./AccountRemoveModal"
 import { useAccountRenameModal } from "./AccountRenameModal"
 import { useAddressFormatterModal } from "./AddressFormatterModal"
@@ -30,6 +31,7 @@ export interface IAccountItem extends IAccountItemOptions {
   className?: string
 }
 
+// TODO : remove ?
 const AccountItem = ({
   address,
   withAvatar,
@@ -62,7 +64,7 @@ const AccountItem = ({
         notEmptyBalances.sorted[0]
       openSendTokensModal({
         from: address,
-        tokenId: balance?.tokenId,
+        //  tokenId: balance?.tokenId,
       })
       return
     },

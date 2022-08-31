@@ -1,8 +1,9 @@
-import { api } from "@ui/api"
-import { useMessageSubscription } from "./useMessageSubscription"
-import { useLiveQuery } from "dexie-react-hooks"
 import { db } from "@core/libs/db"
+import { api } from "@ui/api"
 import { useSettings } from "@ui/hooks/useSettings"
+import { useLiveQuery } from "dexie-react-hooks"
+
+import { useMessageSubscription } from "./useMessageSubscription"
 
 const subscribe = () => api.tokens(() => {})
 export const useTokens = () => {

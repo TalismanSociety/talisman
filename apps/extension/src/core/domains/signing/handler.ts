@@ -4,10 +4,8 @@ import { createSubscription, genericSubscription, unsubscribe } from "@core/hand
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
-import { watchSubstrateTransaction } from "@core/notifications"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
-import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTransactionDetails } from "@core/util/getTransactionDetails"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import isJsonPayload from "@core/util/isJsonPayload"
@@ -34,7 +32,7 @@ export default class SigningHandler extends ExtensionHandler {
           const { blockHash, genesisHash, signedExtensions } = payload
 
           const chain = await db.chains.get({ genesisHash })
-          if (chain) registry = await getTypeRegistry(chain.id, blockHash)
+          if (chain) registry = (await getTypeRegistry(chain.id, blockHash)).registry
 
           // Get the metadata for the genesisHash
           const currentMetadata = await db.metadata.get(genesisHash)
@@ -118,10 +116,10 @@ export default class SigningHandler extends ExtensionHandler {
     const chain = chains.find((c) => c.genesisHash === genesisHash)
     assert(chain, "Unable to find chain")
 
-    const [runtimeVersion, registry] = await Promise.all([
-      getRuntimeVersion(chain.id, blockHash),
-      getTypeRegistry(chain.id, blockHash),
-    ])
+    const {
+      registry,
+      chainMetadataRpc: { runtimeVersion },
+    } = await getTypeRegistry(chain.id, blockHash)
     registry.setSignedExtensions(signedExtensions)
 
     // convert to extrinsic

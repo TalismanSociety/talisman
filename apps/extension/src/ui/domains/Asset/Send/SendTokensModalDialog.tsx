@@ -80,7 +80,7 @@ const ShowTokensModalDialogHeader = () => {
 export const SendTokensModalDialog = ({ children }: { children?: ReactNode }) => {
   const { showTransaction } = useSendTokens()
   return (
-    <Container>
+    <Container id="send-funds-container">
       <ShowTokensModalDialogHeader />
       <Content withPaddingTop={showTransaction}>{children}</Content>
     </Container>

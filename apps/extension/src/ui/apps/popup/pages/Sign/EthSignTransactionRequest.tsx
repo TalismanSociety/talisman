@@ -12,7 +12,7 @@ import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import useToken from "@ui/hooks/useToken"
 import { BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { formatDecimals } from "talisman-utils"
 
@@ -125,8 +125,6 @@ const SignTxWithoutValue = ({
   )
 }
 
-type EthRequestType = "message" | "txWithoutValue" | "txWithValue" | "unknown"
-
 export const EthSignTransactionRequest = () => {
   const {
     url,
@@ -152,6 +150,11 @@ export const EthSignTransactionRequest = () => {
     }
   }, [status, message, blockInfoError, estimatedGasError])
 
+  useEffect(() => {
+    // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
+    if (status === "SUCCESS") window.close()
+  }, [status])
+
   const nativeToken = useToken(network?.nativeToken?.id)
 
   return (
@@ -171,7 +174,7 @@ export const EthSignTransactionRequest = () => {
         )}
       </Content>
       <Footer>
-        {gasInfo ? (
+        {nativeToken && gasInfo ? (
           <>
             <div className="center">
               <ViewDetailsEth />
@@ -182,12 +185,19 @@ export const EthSignTransactionRequest = () => {
                 <div>Priority</div>
               </div>
               <div>
-                <div>{formatEtherValue(gasInfo.maxFeeAndGasCost, nativeToken?.symbol)}</div>
+                <div>
+                  {formatEtherValue(
+                    gasInfo.maxFeeAndGasCost,
+                    nativeToken?.decimals,
+                    nativeToken?.symbol
+                  )}
+                </div>
                 <div>
                   <EthFeeSelect
                     {...gasInfo}
                     priority={priority ?? "low"}
                     onChange={setPriority}
+                    decimals={nativeToken?.decimals}
                     symbol={nativeToken?.symbol}
                   />
                 </div>

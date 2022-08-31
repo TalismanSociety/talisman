@@ -79,9 +79,7 @@ export default class NativeBalancesEvmRpc {
         async (address) =>
           new Balance({
             pallet: "balances",
-
             status: "live",
-
             address: address,
             evmNetworkId: evmNetwork.id,
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

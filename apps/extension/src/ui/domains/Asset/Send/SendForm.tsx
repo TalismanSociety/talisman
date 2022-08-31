@@ -1,14 +1,17 @@
 import { tokensToPlanck } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { Box } from "@talisman/components/Box"
 import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { LoaderIcon } from "@talisman/theme/icons"
+import { AccountAddressType } from "@talisman/util/getAddressType"
 import { getChainAddressType } from "@talisman/util/getChainAddressType"
 import { isValidAddress } from "@talisman/util/isValidAddress"
 import Account from "@ui/domains/Account"
 import { useBalance } from "@ui/hooks/useBalance"
-import useChain from "@ui/hooks/useChain"
+import useChains from "@ui/hooks/useChains"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useTip } from "@ui/hooks/useTip"
-import useToken from "@ui/hooks/useToken"
 import {
   ChangeEventHandler,
   Suspense,
@@ -25,8 +28,10 @@ import * as yup from "yup"
 import Balance from "../Balance"
 import AssetPicker from "../Picker"
 import { useSendTokens } from "./context"
+import { EthTransactionFees, FeeSettings } from "./EthTransactionFees"
 import { SendDialogContainer } from "./SendDialogContainer"
 import { SendTokensInputs } from "./types"
+import { useTransferableTokenById } from "./useTransferableTokens"
 
 const SendAddressConvertInfo = lazy(() => import("./SendAddressConvertInfo"))
 
@@ -139,10 +144,17 @@ const Container = styled(SendDialogContainer)`
 
     ${SimpleButton} {
       height: 5.6rem;
+      min-height: 5.6rem;
       font-size: 1.8rem;
       line-height: 1.8rem;
       width: 100%;
     }
+  }
+`
+
+const AvailableBalance = styled(Balance)`
+  .loader {
+    display: none;
   }
 `
 
@@ -168,33 +180,46 @@ const cleanupAmountInput = (amount: string) => {
 
 const REVALIDATE = { shouldValidate: true, shouldDirty: true, shouldTouch: true }
 
+const evmSchema = {
+  priority: yup.string().required(),
+  maxPriorityFeePerGas: yup.string().required(),
+  maxFeePerGas: yup.string().required(),
+}
+
+const substrateSchema = {
+  tip: yup.string().required(), // this will disable the review button until tip is fetched from tip station
+}
+
 // validation checks, used only to toggle submit button's disabled prop
 // (validation errors are not displayed on screen)
-const schema = yup
-  .object({
-    amount: yup
-      .string()
-      .required("")
-      .transform(cleanupAmount)
-      .test("amount-gt0", "", (value) => Number(value) > 0),
-    tokenId: yup.string().required(""),
-    from: yup
-      .string()
-      .required("")
-      .test("from-valid", "Invalid address (from)", (address) => isValidAddress(address as string)),
-    to: yup
-      .string()
-      .required("")
-      .test("to-valid", "Invalid address (to)", (address) => isValidAddress(address as string)),
-    tip: yup.string().required(), // this will disable the review button until tip is fetched from tip station
-  })
-  .required()
+const getSchema = (isEvm: boolean) =>
+  yup
+    .object({
+      amount: yup
+        .string()
+        .required("")
+        .transform(cleanupAmount)
+        .test("amount-gt0", "", (value) => Number(value) > 0),
+      transferableTokenId: yup.string().required(""),
+      from: yup
+        .string()
+        .required("")
+        .test("from-valid", "Invalid address (from)", (address) =>
+          isValidAddress(address as string)
+        ),
+      to: yup
+        .string()
+        .required("")
+        .test("to-valid", "Invalid address (to)", (address) => isValidAddress(address as string)),
+      ...(isEvm ? evmSchema : substrateSchema),
+    })
+    .required()
 
 export const SendForm = () => {
   const { formData, check, showForm } = useSendTokens()
+  const [isEvm, setIsEvm] = useState(false)
 
-  // default values used to reinitialiSe the form
-  const defaultAsset = useMemo(() => formData.tokenId, [formData.tokenId])
+  const schema = useMemo(() => getSchema(isEvm), [isEvm])
 
   // react-hook-form
   const {
@@ -202,6 +227,7 @@ export const SendForm = () => {
     setValue,
     setError,
     watch,
+    reset,
     formState: { isValid, isSubmitting },
   } = useForm<SendTokensInputs>({
     mode: "onChange",
@@ -225,7 +251,9 @@ export const SendForm = () => {
   // because these input components are all custom, we need to programmatically update form state
   // (can't use RHF register here without major changes)
   const onAssetChange = useCallback(
-    (tokenId: string) => setValue("tokenId", tokenId, REVALIDATE),
+    (transferableTokenId: string) => {
+      setValue("transferableTokenId", transferableTokenId, REVALIDATE)
+    },
     [setValue]
   )
   const onAmountChange: ChangeEventHandler<HTMLInputElement> = useCallback(
@@ -239,26 +267,45 @@ export const SendForm = () => {
   const onToChange = useCallback((value: string) => setValue("to", value, REVALIDATE), [setValue])
 
   // current form values
-  const { amount, tokenId, from, to } = watch()
+  const { amount, transferableTokenId, from, to } = watch()
   // derived data
-  const balance = useBalance(from, tokenId)
-  const token = useToken(tokenId)
-  const chainId = token?.chain?.id
-  const chain = useChain(chainId)
-  const { addressType, genesisHash } = useMemo(
-    () =>
-      chain ? { addressType: getChainAddressType(chain), genesisHash: chain.genesisHash } : {},
-    [chain]
-  )
-
-  // refresh tip while on edit form, but stop refreshing after review (showForm becomes false)
-  const { tip, error: tipError } = useTip(chainId, showForm)
+  const transferableToken = useTransferableTokenById(transferableTokenId)
 
   useEffect(() => {
-    // force type with ! because undefined value is used to check for an invalid form.
+    setIsEvm(!!transferableToken?.evmNetworkId)
+  }, [transferableToken?.evmNetworkId])
+
+  const { token } = transferableToken ?? {}
+  const balance = useBalance(from, token?.id as string)
+
+  const chains = useChains()
+  const evmNetworks = useEvmNetworks()
+
+  // account filters based on selected token
+  const {
+    addressType,
+    genesisHash,
+  }: { addressType: AccountAddressType; genesisHash?: string | null } = useMemo(() => {
+    const chain = chains?.find((c) => c.id === transferableToken?.chainId)
+    const evmNetwork = evmNetworks?.find((c) => c.id === Number(transferableToken?.evmNetworkId))
+
+    return chain
+      ? {
+          addressType: getChainAddressType(chain),
+          genesisHash: chain.genesisHash,
+        }
+      : {
+          addressType: evmNetwork ? "ethereum" : "UNKNOWN",
+        }
+  }, [chains, evmNetworks, transferableToken?.chainId, transferableToken?.evmNetworkId])
+
+  // refresh tip while on edit form, but stop refreshing after review (showForm becomes false)
+  const { tip, error: tipError } = useTip(transferableToken?.chainId, showForm)
+
+  useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    setValue("tip", tip!)
-  }, [setValue, tip])
+    setValue("tip", isEvm ? undefined : tip!, REVALIDATE)
+  }, [isEvm, setValue, tip])
 
   useEffect(() => {
     // clear non-form error if any field is changed
@@ -278,6 +325,15 @@ export const SendForm = () => {
     )
       setErrorMessage("Insufficient balance")
   }, [amount, balance, errorMessage, isValid, setError, token, tip])
+
+  const handleEvmFeeChange = useCallback(
+    (fees: FeeSettings) => {
+      if (fees.priority) setValue("priority", fees.priority)
+      setValue("maxFeePerGas", fees.maxFeePerGas)
+      setValue("maxPriorityFeePerGas", fees.maxPriorityFeePerGas, REVALIDATE)
+    },
+    [setValue]
+  )
 
   if (!showForm) return null
 
@@ -300,10 +356,10 @@ export const SendForm = () => {
               }}
             />
             <AssetPicker
-              defaultValue={defaultAsset}
+              key={formData.transferableTokenId ?? "unknown"} // force a reset of the component
+              defaultValue={formData.transferableTokenId}
               onChange={onAssetChange}
               showChainsWithBalanceFirst
-              address={from}
             />
           </div>
           <div>
@@ -331,9 +387,9 @@ export const SendForm = () => {
               genesisHash={genesisHash}
             />
           </div>
-          {to && chain && (
+          {to && token?.chain && (
             <Suspense fallback={null}>
-              <SendAddressConvertInfo address={to} chainId={chainId} />
+              <SendAddressConvertInfo address={to} chainId={token?.chain?.id} />
             </Suspense>
           )}
         </article>
@@ -341,10 +397,21 @@ export const SendForm = () => {
           <div className="message">{errorMessage}</div>
           <div className="info">
             {balance && (
-              <span>
-                <span>Balance: &nbsp; </span>
-                {balance && <Balance row withFiat noCountUp balance={balance} />}
-              </span>
+              <Box flex column justify="flex-end" gap={0.1}>
+                <Box>Balance: {balance.status === "cache" && <LoaderIcon data-spin />}</Box>
+                <Box>
+                  <AvailableBalance row withFiat noCountUp balance={balance} />
+                </Box>
+              </Box>
+            )}
+            {isEvm && (
+              <EthTransactionFees
+                amount={amount}
+                from={from}
+                to={to}
+                transferableTokenId={transferableTokenId}
+                onChange={handleEvmFeeChange}
+              />
             )}
           </div>
           <SimpleButton

@@ -19,7 +19,7 @@ const Description = styled.div`
 
 const About = () => {
   return (
-    <Layout withBack centered>
+    <Layout withBack centered backTo="/settings">
       <HeaderBlock title="About" />
       <Description>
         <p>
