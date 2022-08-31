@@ -67,6 +67,7 @@ type EthFeeButtonProps = {
   priorityOptions: EthPriorityOptions
   priority: EthPriorityOptionName
   selected?: boolean
+  decimals: number
   symbol?: string
   onClick?: () => void
 }
@@ -118,6 +119,7 @@ const PriorityOption = ({
   priority,
   priorityOptions,
   selected,
+  decimals,
   symbol,
   onClick,
 }: EthFeeButtonProps) => {
@@ -131,9 +133,19 @@ const PriorityOption = ({
     <OptionButton onClick={onClick} type="button" className={classNames(selected && "selected")}>
       <div className="icon">{OPTIONS[priority].icon}</div>
       <div className="grow">{OPTIONS[priority].label}</div>
-      <div>{formatEtherValue(maxFeeAndGasCost, symbol)}</div>
+      <div>{formatEtherValue(maxFeeAndGasCost, decimals, symbol)}</div>
     </OptionButton>
   )
+}
+
+const OpenFeeSelectTracker = () => {
+  const { genericEvent } = useAnalytics()
+
+  useEffect(() => {
+    genericEvent("open evm fee select")
+  }, [genericEvent])
+
+  return null
 }
 
 type EthFeeSelectProps = {
@@ -142,11 +154,18 @@ type EthFeeSelectProps = {
   baseFeePerGas: BigNumber
   priorityOptions: EthPriorityOptions
   priority: EthPriorityOptionName
+  decimals: number
   symbol?: string
   onChange?: (priority: EthPriorityOptionName) => void
+  drawerContainer?: HTMLElement | null
 }
 
-export const EthFeeSelect = ({ onChange, priority, ...props }: EthFeeSelectProps) => {
+export const EthFeeSelect = ({
+  onChange,
+  priority,
+  drawerContainer,
+  ...props
+}: EthFeeSelectProps) => {
   const { genericEvent } = useAnalytics()
 
   const { isOpen, open, close } = useOpenClose()
@@ -159,16 +178,12 @@ export const EthFeeSelect = ({ onChange, priority, ...props }: EthFeeSelectProps
     [close, onChange, genericEvent]
   )
 
-  useEffect(() => {
-    genericEvent("open evm fee select")
-  }, [genericEvent])
-
   return (
     <>
       <PillButton type="button" onClick={open}>
         {OPTIONS[priority].icon} {OPTIONS[priority].label}
       </PillButton>
-      <Drawer open={isOpen} anchor="bottom" onClose={close}>
+      <Drawer parent={drawerContainer} open={isOpen} anchor="bottom" onClose={close}>
         <Container>
           <h3>Fee Options</h3>
           <div className="subtitles">
@@ -193,6 +208,7 @@ export const EthFeeSelect = ({ onChange, priority, ...props }: EthFeeSelectProps
             onClick={handleSelect("high")}
             selected={priority === "high"}
           />
+          <OpenFeeSelectTracker />
         </Container>
       </Drawer>
     </>

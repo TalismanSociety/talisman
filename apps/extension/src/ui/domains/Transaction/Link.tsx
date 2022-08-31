@@ -5,21 +5,19 @@ import { useMemo } from "react"
 import styled from "styled-components"
 
 interface IProps {
-  id: string
   prefix?: string
   className?: string
+  blockHash?: string
+  blockNumber?: string
+  href?: string
 }
 
-const TransactionLink = ({ id, prefix, className }: IProps) => {
-  const { chainId, blockHash, blockNumber, extrinsicIndex } = useTransactionById(id)
-  const { subscanUrl } = useChain(chainId) || {}
-
+const TransactionLink = ({ blockHash, blockNumber, href, prefix, className }: IProps) => {
   const hashClassName = useMemo(() => `hash ${blockHash}`, [blockHash])
-  const href = useMemo(() => {
-    if (!subscanUrl) return null
-    if (!blockNumber || typeof extrinsicIndex !== "number") return `${subscanUrl}block/${blockHash}`
-    return `${subscanUrl}extrinsic/${blockNumber}-${extrinsicIndex}`
-  }, [blockHash, blockNumber, extrinsicIndex, subscanUrl])
+  const block = useMemo(
+    () => (blockNumber ? blockNumber : truncateString(blockHash, 4, 4)),
+    [blockHash, blockNumber]
+  )
 
   return (
     <span className={`transaction-link ${className}`}>
@@ -28,12 +26,10 @@ const TransactionLink = ({ id, prefix, className }: IProps) => {
           {!!prefix && <span className="prefix">{prefix} </span>}
           {href ? (
             <a className={hashClassName} href={href} target="_blank" rel="noopener noreferrer">
-              {blockNumber ? blockNumber : truncateString(blockHash, 4, 4)}
+              {block}
             </a>
           ) : (
-            <span className={hashClassName}>
-              {blockNumber ? blockNumber : truncateString(blockHash, 4, 4)}
-            </span>
+            <span className={hashClassName}>{block}</span>
           )}
         </>
       )}

@@ -111,8 +111,8 @@ export class EthHandler extends ExtensionHandler {
       const nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
       const block = await provider.getBlock("latest")
 
-      const maxFeePerGas = parseUnits(strMaxFeePerGas, "wei")
-      const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, "wei")
+      const maxFeePerGas = parseUnits(strMaxFeePerGas, 0)
+      const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, 0)
 
       const tx = prepareTransaction(
         {

@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import BlocksRpc from "@core/domains/blocks/rpc"
 import { ChainId } from "@core/domains/chains/types"
 import EventsRpc from "@core/domains/events/rpc"
@@ -7,7 +8,9 @@ import { pendingTransfers } from "@core/domains/transactions/rpc/PendingTransfer
 import {
   RequestAssetTransfer,
   RequestAssetTransferApproveSign,
+  RequestAssetTransferEth,
   ResponseAssetTransfer,
+  ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
   TransactionStatus,
 } from "@core/domains/transactions/types"
@@ -22,11 +25,20 @@ import type {
   SubscriptionCallback,
 } from "@core/types"
 import { Address, Port } from "@core/types/base"
+import { planckToTokens } from "@core/util"
+import { getPrivateKey } from "@core/util/getPrivateKey"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
+import { TransactionRequest } from "@ethersproject/abstract-provider"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
+import * as Sentry from "@sentry/browser"
 import BigNumber from "bignumber.js"
+import { Wallet, ethers } from "ethers"
+
+import { getEthTransferTransactionBase } from "../ethereum/helpers"
+import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"
+import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
 
 export default class AssetTransferHandler extends ExtensionHandler {
   private getExtrinsicWatch(
@@ -154,6 +166,73 @@ export default class AssetTransferHandler extends ExtensionHandler {
     })
   }
 
+  private async assetTransferEth({
+    evmNetworkId,
+    tokenId,
+    fromAddress,
+    toAddress,
+    amount,
+    maxFeePerGas,
+    maxPriorityFeePerGas,
+  }: RequestAssetTransferEth): Promise<ResponseAssetTransferEth> {
+    try {
+      // eslint-disable-next-line no-var
+      var pair = getUnlockedPairFromAddress(fromAddress)
+    } catch (error) {
+      this.stores.password.clearPassword()
+      throw error
+    }
+
+    const token = await db.tokens.get(tokenId)
+    if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+
+    const provider = await getProviderForEvmNetworkId(evmNetworkId)
+    if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
+
+    try {
+      talismanAnalytics.capture("asset transfer", {
+        evmNetworkId,
+        tokenId,
+        amount: roundToFirstInteger(Number(planckToTokens(amount, token.decimals))),
+        internal: keyring.getAccount(toAddress) !== undefined,
+      })
+
+      const transfer = await getEthTransferTransactionBase(
+        evmNetworkId,
+        ethers.utils.getAddress(fromAddress),
+        ethers.utils.getAddress(toAddress),
+        token,
+        amount
+      )
+
+      const transaction: TransactionRequest = {
+        nonce: await getTransactionCount(fromAddress, evmNetworkId),
+        type: 2,
+        maxFeePerGas: ethers.BigNumber.from(maxFeePerGas ?? "0"),
+        maxPriorityFeePerGas: ethers.BigNumber.from(maxPriorityFeePerGas ?? "0"),
+        ...transfer,
+      }
+
+      const privateKey = getPrivateKey(pair)
+      const wallet = new Wallet(privateKey, provider)
+
+      const response = await wallet.sendTransaction(transaction)
+
+      const { hash, ...otherDetails } = response
+      // eslint-disable-next-line no-console
+      DEBUG && console.debug("assetTransferEth - sent", { hash, ...otherDetails })
+
+      incrementTransactionCount(fromAddress, evmNetworkId)
+
+      return { hash }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      DEBUG && console.error(err)
+      Sentry.captureException(err, { tags: { tokenId, evmNetworkId } })
+      throw new Error("Failed to send transaction")
+    }
+  }
+
   private async assetTransferCheckFees({
     chainId,
     tokenId,
@@ -209,6 +288,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
     switch (type) {
       case "pri(assets.transfer)":
         return this.assetTransfer(request as RequestAssetTransfer)
+
+      case "pri(assets.transferEth)":
+        return this.assetTransferEth(request as RequestAssetTransferEth)
 
       case "pri(assets.transfer.checkFees)":
         return this.assetTransferCheckFees(request as RequestAssetTransfer)
