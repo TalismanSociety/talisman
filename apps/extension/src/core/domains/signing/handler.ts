@@ -14,38 +14,36 @@ import { TypeRegistry } from "@polkadot/types"
 import { assert } from "@polkadot/util"
 
 export default class SigningHandler extends ExtensionHandler {
-  private async signingApprove({ id }: RequestIdOnly): Promise<boolean> {
+  private async signingApprove({ id }: RequestIdOnly) {
     const queued = this.state.requestStores.signing.getPolkadotRequest(id)
 
     assert(queued, "Unable to find request")
 
     const { reject, request, resolve } = queued
 
-    await getPairForAddressSafely(
-      queued.account.address,
-      async (pair) => {
-        const { payload } = request
-        const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
+    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
+      const { payload } = request
+      const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
 
-        let registry = new TypeRegistry()
-        if (isJsonPayload(payload)) {
-          const { blockHash, genesisHash, signedExtensions } = payload
+      let registry = new TypeRegistry()
+      if (isJsonPayload(payload)) {
+        const { blockHash, genesisHash, signedExtensions } = payload
 
-          const chain = await db.chains.get({ genesisHash })
-          if (chain) registry = (await getTypeRegistry(chain.id, blockHash)).registry
+        const chain = await db.chains.get({ genesisHash })
+        if (chain) registry = (await getTypeRegistry(chain.id, blockHash)).registry
 
-          // Get the metadata for the genesisHash
-          const currentMetadata = await db.metadata.get(genesisHash)
-          registry.setSignedExtensions(signedExtensions, currentMetadata?.userExtensions)
+        // Get the metadata for the genesisHash
+        const currentMetadata = await db.metadata.get(genesisHash)
+        registry.setSignedExtensions(signedExtensions, currentMetadata?.userExtensions)
 
-          if (currentMetadata) registry.register(currentMetadata.types)
+        if (currentMetadata) registry.register(currentMetadata.types)
 
-          analyticsProperties.chain = currentMetadata?.chain || chain?.chainName
-        }
+        analyticsProperties.chain = currentMetadata?.chain || chain?.chainName
+      }
 
-        const result = request.sign(registry, pair)
+      const signResult = request.sign(registry, pair)
 
-        /* temporarily disabled 
+      /* temporarily disabled 
         // notify user about transaction progress
         if (isJsonPayload(payload) && (await this.stores.settings.get("allowNotifications"))) {
           const chains = await db.chains.toArray()
@@ -55,26 +53,30 @@ export default class SigningHandler extends ExtensionHandler {
             // our signature : 0x016c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
             // on chain signature : 0x6c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
             // => remove the 01 prefix
-            const signature = `0x${result.signature.slice(4)}`
+            const signature = `0x${signResult.signature.slice(4)}`
             watchSubstrateTransaction(chain, signature)
           }
         }
         */
 
-        talismanAnalytics.capture("sign transaction approve", {
-          ...analyticsProperties,
-          type: "signature",
-        })
+      talismanAnalytics.capture("sign transaction approve", {
+        ...analyticsProperties,
+        type: "signature",
+      })
 
-        resolve({
-          id,
-          ...result,
-        })
-      },
-      reject
-    )
-
-    return true
+      resolve({
+        id,
+        ...signResult,
+      })
+    })
+    if (result.ok) return true
+    else {
+      if (result.val === "Unauthorised") {
+        reject(new Error(result.val))
+      }
+      result.unwrap() // Throws error
+    }
+    return
   }
 
   private signingApproveHardware({ id, signature }: RequestSigningApproveSignature): boolean {
@@ -82,9 +84,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const { resolve } = queued
-
-    resolve({ id, signature })
+    queued.resolve({ id, signature })
     talismanAnalytics.capture("sign transaction approve", { type: "hardware" })
 
     return true
@@ -98,9 +98,8 @@ export default class SigningHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const { reject } = queued
     talismanAnalytics.capture("sign transaction reject")
-    reject(new Error("Cancelled"))
+    queued.reject(new Error("Cancelled"))
 
     return true
   }
@@ -169,7 +168,7 @@ export default class SigningHandler extends ExtensionHandler {
         return await this.signingApprove(request as RequestIdOnly)
 
       case "pri(signing.approveSign.hardware)":
-        return await this.signingApproveHardware(request as RequestSigningApproveSignature)
+        return this.signingApproveHardware(request as RequestSigningApproveSignature)
 
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestSigningCancel)

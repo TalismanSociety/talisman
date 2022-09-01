@@ -114,8 +114,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
     amount,
     tip,
     reapBalance = false,
-  }: RequestAssetTransfer): Promise<ResponseAssetTransfer> {
-    return getPairForAddressSafely(fromAddress, async (pair) => {
+  }: RequestAssetTransfer) {
+    const result = await getPairForAddressSafely(fromAddress, async (pair) => {
       const token = await db.tokens.get(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
@@ -126,7 +126,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
         internal: keyring.getAccount(toAddress) !== undefined,
       })
 
-      return await new Promise((resolve, reject) => {
+      return await new Promise<ResponseAssetTransfer>((resolve, reject) => {
         const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)
 
         const tokenType = token.type
@@ -158,6 +158,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
         throw new Error(`Unhandled token type ${exhaustiveCheck}`)
       })
     })
+
+    if (result.ok) return result.val
+    else result.unwrap() // throws error
+    return
   }
 
   private async assetTransferCheckFees({
@@ -168,8 +172,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
     amount,
     tip,
     reapBalance = false,
-  }: RequestAssetTransfer): Promise<ResponseAssetTransferFeeQuery> {
-    return getPairForAddressSafely(fromAddress, async (pair) => {
+  }: RequestAssetTransfer) {
+    const result = await getPairForAddressSafely(fromAddress, async (pair) => {
       const token = await db.tokens.get(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
@@ -185,6 +189,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const exhaustiveCheck: never = tokenType
       throw new Error(`Unhandled token type ${exhaustiveCheck}`)
     })
+    if (result.ok) return result.val
+    else result.unwrap() // throws error
+    return
   }
 
   private async assetTransferEth({
@@ -196,54 +203,55 @@ export default class AssetTransferHandler extends ExtensionHandler {
     maxFeePerGas,
     maxPriorityFeePerGas,
   }: RequestAssetTransferEth): Promise<ResponseAssetTransferEth> {
-    try {
-      return getPairForAddressSafely(fromAddress, async (pair) => {
-        const token = await db.tokens.get(tokenId)
-        if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+    const result = await getPairForAddressSafely(fromAddress, async (pair) => {
+      const token = await db.tokens.get(tokenId)
+      if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
-        const provider = await getProviderForEvmNetworkId(evmNetworkId)
-        if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
+      const provider = await getProviderForEvmNetworkId(evmNetworkId)
+      if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
 
-        talismanAnalytics.capture("asset transfer", {
-          evmNetworkId,
-          tokenId,
-          amount: roundToFirstInteger(Number(planckToTokens(amount, token.decimals))),
-          internal: keyring.getAccount(toAddress) !== undefined,
-        })
-
-        const transfer = await getEthTransferTransactionBase(
-          evmNetworkId,
-          ethers.utils.getAddress(fromAddress),
-          ethers.utils.getAddress(toAddress),
-          token,
-          amount
-        )
-
-        const transaction: TransactionRequest = {
-          nonce: await getTransactionCount(fromAddress, evmNetworkId),
-          type: 2,
-          maxFeePerGas: ethers.BigNumber.from(maxFeePerGas ?? "0"),
-          maxPriorityFeePerGas: ethers.BigNumber.from(maxPriorityFeePerGas ?? "0"),
-          ...transfer,
-        }
-
-        const privateKey = getPrivateKey(pair)
-        const wallet = new Wallet(privateKey, provider)
-
-        const response = await wallet.sendTransaction(transaction)
-
-        const { hash, ...otherDetails } = response
-        // eslint-disable-next-line no-console
-        DEBUG && console.debug("assetTransferEth - sent", { hash, ...otherDetails })
-
-        incrementTransactionCount(fromAddress, evmNetworkId)
-
-        return { hash }
+      talismanAnalytics.capture("asset transfer", {
+        evmNetworkId,
+        tokenId,
+        amount: roundToFirstInteger(Number(planckToTokens(amount, token.decimals))),
+        internal: keyring.getAccount(toAddress) !== undefined,
       })
-    } catch (err) {
+
+      const transfer = await getEthTransferTransactionBase(
+        evmNetworkId,
+        ethers.utils.getAddress(fromAddress),
+        ethers.utils.getAddress(toAddress),
+        token,
+        amount
+      )
+
+      const transaction: TransactionRequest = {
+        nonce: await getTransactionCount(fromAddress, evmNetworkId),
+        type: 2,
+        maxFeePerGas: ethers.BigNumber.from(maxFeePerGas ?? "0"),
+        maxPriorityFeePerGas: ethers.BigNumber.from(maxPriorityFeePerGas ?? "0"),
+        ...transfer,
+      }
+
+      const privateKey = getPrivateKey(pair)
+      const wallet = new Wallet(privateKey, provider)
+
+      const response = await wallet.sendTransaction(transaction)
+
+      const { hash, ...otherDetails } = response
       // eslint-disable-next-line no-console
-      DEBUG && console.error(err)
-      Sentry.captureException(err, { tags: { tokenId, evmNetworkId } })
+      DEBUG && console.debug("assetTransferEth - sent", { hash, ...otherDetails })
+
+      incrementTransactionCount(fromAddress, evmNetworkId)
+
+      return { hash }
+    })
+
+    if (result.ok) return result.val
+    else {
+      // eslint-disable-next-line no-console
+      DEBUG && console.error(result.val)
+      Sentry.captureException(result.val, { tags: { tokenId, evmNetworkId } })
       throw new Error("Failed to send transaction")
     }
   }

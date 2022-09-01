@@ -26,6 +26,7 @@ import { assert } from "@polkadot/util"
 import { BigNumber, BigNumberish, ethers } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import isString from "lodash/isString"
+import { Result } from "ts-results"
 
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
@@ -98,120 +99,124 @@ export class EthHandler extends ExtensionHandler {
     maxFeePerGas: strMaxFeePerGas = formatUnits(2, "gwei"),
     maxPriorityFeePerGas: strMaxPriorityFeePerGas = formatUnits(0, "gwei"),
   }: EthApproveSignAndSend): Promise<boolean> {
-    try {
-      const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
-      assert(queued, "Unable to find request")
-      const { request, resolve, reject, ethChainId } = queued
+    const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
+    assert(queued, "Unable to find request")
+    const { request, resolve, reject, ethChainId } = queued
 
-      const provider = await getProviderForEvmNetworkId(ethChainId)
-      assert(provider, "Unable to find provider for chain " + ethChainId)
+    const provider = await getProviderForEvmNetworkId(ethChainId)
+    assert(provider, "Unable to find provider for chain " + ethChainId)
 
-      // get up to date nonce (accounts for pending transactions)
-      const nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
-      const block = await provider.getBlock("latest")
+    // get up to date nonce (accounts for pending transactions)
+    const nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
+    const block = await provider.getBlock("latest")
 
-      const maxFeePerGas = parseUnits(strMaxFeePerGas, 0)
-      const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, 0)
+    const maxFeePerGas = parseUnits(strMaxFeePerGas, 0)
+    const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, 0)
 
-      const tx = prepareTransaction(
-        {
-          ...request,
-          maxFeePerGas,
-          maxPriorityFeePerGas,
-          nonce,
-          type: 2,
-        },
-        block.gasLimit
-      )
-      return getPairForAddressSafely(
-        queued.account.address,
-        async (pair) => {
-          const privateKey = getPrivateKey(pair)
-          const signer = new ethers.Wallet(privateKey, provider)
-          const { chainId, hash } = await signer.sendTransaction(tx)
+    const tx = prepareTransaction(
+      {
+        ...request,
+        maxFeePerGas,
+        maxPriorityFeePerGas,
+        nonce,
+        type: 2,
+      },
+      block.gasLimit
+    )
+    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
+      const privateKey = getPrivateKey(pair)
+      const signer = new ethers.Wallet(privateKey, provider)
+      const { chainId, hash } = await signer.sendTransaction(tx)
 
-          incrementTransactionCount(queued.account.address, queued.ethChainId)
+      incrementTransactionCount(queued.account.address, queued.ethChainId)
 
-          // notify user about transaction progress
-          if (await this.stores.settings.get("allowNotifications"))
-            watchEthereumTransaction(chainId, hash)
+      // notify user about transaction progress
+      if (await this.stores.settings.get("allowNotifications"))
+        watchEthereumTransaction(chainId, hash)
 
-          resolve(hash)
+      resolve(hash)
 
-          talismanAnalytics.captureDelayed("sign transaction approve", {
-            type: "evm sign and send",
-            dapp: queued.url,
-            chain: queued.ethChainId,
-          })
-          return true
-        },
-        reject
-      )
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err, { err })
-      const msg = getHumanReadableErrorMessage(err)
-      if (msg) throw new Error(msg)
-      throw err
+      talismanAnalytics.captureDelayed("sign transaction approve", {
+        type: "evm sign and send",
+        dapp: queued.url,
+        chain: queued.ethChainId,
+      })
+      return true
+    })
+
+    if (result.ok) {
+      return result.val
+    } else {
+      if (result.val === "Unauthorised") {
+        reject(Error(result.val))
+      } else {
+        const msg = getHumanReadableErrorMessage(result.val)
+        if (msg) throw new Error(msg)
+        else result.unwrap() // throws error
+      }
+      return false
     }
   }
 
   private async signApprove({ id }: RequestIdOnly): Promise<boolean> {
-    try {
-      const queued = this.state.requestStores.signing.getEthSignRequest(id)
+    const queued = this.state.requestStores.signing.getEthSignRequest(id)
 
-      assert(queued, "Unable to find request")
+    assert(queued, "Unable to find request")
 
-      const { method, request, reject, resolve } = queued
+    const { method, request, reject, resolve } = queued
 
-      return getPairForAddressSafely(
-        queued.account.address,
-        async (pair) => {
-          const pw = this.stores.password.getPassword()
-          if (!pw) throw Error("Not logged in ")
-          const privateKey = getPrivateKey(pair, pw)
-          let signature: string
+    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
+      const pw = this.stores.password.getPassword()
+      if (!pw) throw Error("Unauthorised")
+      const privateKey = getPrivateKey(pair, pw)
+      let signature: string
 
-          if (method === "personal_sign") {
-            signature = personalSign({ privateKey, data: request })
-          } else if (["eth_signTypedData", "eth_signTypedData_v1"].includes(method)) {
-            signature = signTypedData({
-              privateKey,
-              data: JSON.parse(request as string),
-              version: SignTypedDataVersion.V1,
-            })
-          } else if (method === "eth_signTypedData_v3") {
-            signature = signTypedData({
-              privateKey,
-              data: JSON.parse(request as string),
-              version: SignTypedDataVersion.V3,
-            })
-          } else if (method === "eth_signTypedData_v4") {
-            signature = signTypedData({
-              privateKey,
-              data: JSON.parse(request as string),
-              version: SignTypedDataVersion.V4,
-            })
-          } else {
-            throw new Error(`Unsupported method : ${method}`)
-          }
+      if (method === "personal_sign") {
+        signature = personalSign({ privateKey, data: request })
+      } else if (["eth_signTypedData", "eth_signTypedData_v1"].includes(method)) {
+        signature = signTypedData({
+          privateKey,
+          data: JSON.parse(request as string),
+          version: SignTypedDataVersion.V1,
+        })
+      } else if (method === "eth_signTypedData_v3") {
+        signature = signTypedData({
+          privateKey,
+          data: JSON.parse(request as string),
+          version: SignTypedDataVersion.V3,
+        })
+      } else if (method === "eth_signTypedData_v4") {
+        signature = signTypedData({
+          privateKey,
+          data: JSON.parse(request as string),
+          version: SignTypedDataVersion.V4,
+        })
+      } else {
+        throw new Error(`Unsupported method : ${method}`)
+      }
 
-          resolve(signature)
+      resolve(signature)
 
-          talismanAnalytics.captureDelayed("sign transaction approve", {
-            type: "evm sign",
-            method,
-            dapp: queued.url,
-            chain: queued.ethChainId,
-          })
-          return true
-        },
-        reject
-      )
-    } catch (err) {
-      const msg = getHumanReadableErrorMessage(err)
-      if (msg) throw new Error(msg)
-      throw err
+      talismanAnalytics.captureDelayed("sign transaction approve", {
+        type: "evm sign",
+        method,
+        dapp: queued.url,
+        chain: queued.ethChainId,
+      })
+
+      return true
+    })
+
+    if (result.ok) return result.val
+    else {
+      if (result.val === "Unauthorised") {
+        reject(Error(result.val))
+      } else {
+        const msg = getHumanReadableErrorMessage(result.val)
+        if (msg) throw new Error(msg)
+        else result.unwrap() // throws error
+      }
+      return false
     }
   }
 
@@ -223,6 +228,7 @@ export class EthHandler extends ExtensionHandler {
     const { reject } = queued
 
     reject(new EthProviderRpcError("Cancelled", ETH_ERROR_EIP1993_USER_REJECTED))
+
     talismanAnalytics.capture("sign transaction reject", {
       type: "evm sign",
       dapp: queued.url,
