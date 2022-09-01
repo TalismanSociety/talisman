@@ -71,10 +71,8 @@ export default class SigningHandler extends ExtensionHandler {
     })
     if (result.ok) return true
     else {
-      if (result.val === "Unauthorised") {
-        reject(new Error(result.val))
-      }
-      result.unwrap() // Throws error
+      if (result.val === "Unauthorised") reject(new Error(result.val))
+      else result.unwrap() // Throws error
     }
     return
   }
