@@ -86,6 +86,12 @@ const BtnBack = styled(BackButton)`
   position: absolute;
   top: 6.4rem;
   left: 6.4rem;
+  background: rgba(var(--color-foreground-raw), 0.1);
+  transition: background-color var(--transition-speed-fast) ease-in;
+
+  :hover {
+    background: rgba(var(--color-foreground-raw), 0.2);
+  }
 `
 
 type LayoutProps = {

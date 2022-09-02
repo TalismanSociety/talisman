@@ -1,18 +1,17 @@
+import Checkbox from "./Checkbox"
+import FileDrop from "./FileDrop"
 import Input from "./Input"
 import InputAutoWidth from "./InputAutoWidth"
-import Password from "./Password"
-import Textarea from "./Textarea"
-import FileDrop from "./FileDrop"
-import Toggle from "./Toggle"
-import Checkbox from "./Checkbox"
 import Number from "./Number"
 import Select from "./Select"
+import Textarea from "./Textarea"
+import Toggle from "./Toggle"
 
+// @ts-ignore
 const Field = () => {}
 
 Field.Input = Input
 Field.InputAutoWidth = InputAutoWidth
-Field.Password = Password
 Field.Textarea = Textarea
 Field.FileDrop = FileDrop
 Field.Toggle = Toggle
