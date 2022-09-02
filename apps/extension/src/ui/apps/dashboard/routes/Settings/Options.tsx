@@ -56,6 +56,7 @@ const Options = () => {
     hideBalances = false,
     allowNotifications = true,
     shouldMimicMetaMask = false,
+    useSmoldot = false,
     update,
   } = useSettings()
 
@@ -107,6 +108,13 @@ const Options = () => {
             <Field.Toggle value={useTestnets} onChange={handleSettingChange("useTestnets")} />
           </Setting>
         )}
+        <Setting
+          title="Unstoppable Connection"
+          // TODO: insert link to docs
+          subtitle="Sidestep RPCs and make your connection to the Polkadot Relay Chain with a Light Client."
+        >
+          <Field.Toggle value={useSmoldot} onChange={handleSettingChange("useSmoldot")} />
+        </Setting>
         <Setting
           title="Allow notifications"
           subtitle="Allow Talisman to send you notifications about transactions in progress"

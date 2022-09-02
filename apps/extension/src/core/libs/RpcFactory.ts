@@ -1,10 +1,12 @@
 import { DEBUG } from "@core/constants"
+import { settingsStore } from "@core/domains/app/store.settings"
 import { db } from "@core/libs/db"
 import { SmoldotProvider } from "@core/libs/SmoldotProvider"
 import { ChainId } from "@core/types"
 import { WsProvider } from "@polkadot/api"
 import { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import * as Sentry from "@sentry/browser"
+import { ReplaySubject, firstValueFrom } from "rxjs"
 
 type SocketUserId = number
 type Provider = WsProvider | SmoldotProvider
@@ -81,6 +83,10 @@ class RpcFactory {
     const chain = await db.chains.get(chainId)
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     const socketUserId = this.addSocketUser(chainId)
+
+    // cache latest value of useSmoldot
+    const useSmoldot = new ReplaySubject<boolean>(1)
+    settingsStore.observable.subscribe((settings) => useSmoldot.next(settings.useSmoldot))
 
     if (this.#socketConnections[chainId]) {
       await this.#socketConnections[chainId].isReady
@@ -193,7 +199,9 @@ class RpcFactory {
       return [socketUserId, this.#socketConnections[chainId].provider!]
     }
 
-    if (chainspecUrls[chain.id] !== undefined) {
+    const yeet = await firstValueFrom(useSmoldot)
+
+    if (chainspecUrls[chain.id] !== undefined && (await firstValueFrom(useSmoldot))) {
       return await connectSmoldot(chain.id)
     }
 

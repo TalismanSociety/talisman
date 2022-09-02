@@ -10,6 +10,7 @@ export interface SettingsStoreData {
   hideBalances: boolean
   allowNotifications: boolean
   shouldMimicMetaMask: boolean
+  useSmoldot: boolean
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -23,4 +24,5 @@ export const settingsStore = new SettingsStore("settings", {
   hideBalances: false,
   allowNotifications: true,
   shouldMimicMetaMask: false,
+  useSmoldot: false,
 })
