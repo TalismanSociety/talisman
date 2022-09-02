@@ -9,8 +9,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel --color",
-    "dev:balances-demo": "yarn workspace balances-demo run dev",
-    "dev:extension": "yarn workspace extension run dev",
+    "dev:balances-demo": "turbo run dev --parallel --color --scope balances-demo --include-dependencies",
+    "dev:extension": "turbo run dev --parallel --color --scope extension --include-dependencies",
     "build:extension:ci": "turbo run build:extension:ci",
     "build:extension:prod": "turbo run build:extension:prod",
     "build:extension:canary": "turbo run build:extension:canary",
