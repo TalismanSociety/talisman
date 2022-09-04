@@ -6,11 +6,9 @@ import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address, AddressesByChain } from "@core/types/base"
-import { decodeAnyAddress } from "@core/util/decodeAnyAddress"
 import { TypeRegistry, createType } from "@polkadot/types"
 import * as Sentry from "@sentry/browser"
-import blake2Concat from "@talisman/util/blake2Concat"
-import hasOwnProperty from "@talisman/util/hasOwnProperty"
+import { blake2Concat, decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 // Tokens.Account is the state_storage key prefix for orml tokens
 const moduleHash = "99971b5749ac43e0235e41b0d3786918" // xxhashAsHex("Tokens", 128).replace("0x", "")

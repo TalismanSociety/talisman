@@ -35,10 +35,10 @@ export const DefaultBalanceModule = <
     return null
   },
 
-  async fetchSubstrateChainTokens(chainConnector, chainId, chainMeta) {
+  async fetchSubstrateChainTokens() {
     return Promise.resolve({} as Record<TTokenType["id"], TTokenType>)
   },
-  async fetchEvmChainTokens(chainConnector, chainId, chainMeta) {
+  async fetchEvmChainTokens() {
     return Promise.resolve({} as Record<TTokenType["id"], TTokenType>)
   },
 
@@ -72,12 +72,14 @@ interface BalanceModuleSubstrate<
   /** Pre-processes any substrate chain metadata required by this module ahead of time */
   fetchSubstrateChainMeta(
     chainConnector: ChainConnector,
+    chaindataProvider: ChaindataProvider,
     chainId: ChainId
   ): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given substrate chain */
   fetchSubstrateChainTokens(
     chainConnector: ChainConnector,
+    chaindataProvider: ChaindataProvider,
     chainId: ChainId,
     chainMeta: TChainMeta
   ): Promise<Record<TTokenType["id"], TTokenType>>
@@ -90,11 +92,16 @@ interface BalanceModuleEvm<
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
 > extends BalanceModuleCommon<TModuleType, TTokenType, TChainMeta, TModuleConfig> {
   /** Pre-processes any evm chain metadata required by this module ahead of time */
-  fetchEvmChainMeta(chainConnector: ChainConnector, chainId: ChainId): Promise<TChainMeta | null>
+  fetchEvmChainMeta(
+    chainConnector: ChainConnector,
+    chaindataProvider: ChaindataProvider,
+    chainId: ChainId
+  ): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given evm chain */
   fetchEvmChainTokens(
     chainConnector: ChainConnector,
+    chaindataProvider: ChaindataProvider,
     chainId: ChainId,
     chainMeta: TChainMeta
   ): Promise<Record<TTokenType["id"], TTokenType>>

@@ -30,6 +30,9 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
+    "@polkadot/keyring": "^10.1.7",
+    "@polkadot/util": "^10.1.7",
+    "@polkadot/util-crypto": "^10.1.7",
     "bignumber.js": "^9.1.0"
   },
   "devDependencies": {

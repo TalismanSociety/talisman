@@ -5,11 +5,11 @@ import {
   SigningRequest,
   TransactionDetails,
 } from "@core/domains/signing/types"
-import { encodeAnyAddress } from "@core/util/encodeAnyAddress"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { scrollbarsStyle } from "@talisman/theme/styles"
+import { encodeAnyAddress } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
 import { FC, useEffect, useMemo } from "react"

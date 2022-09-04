@@ -1,5 +1,5 @@
-import { encodeAnyAddress } from "@core/util/encodeAnyAddress"
 import { AccountJson } from "@polkadot/extension-base/background/types"
+import { encodeAnyAddress } from "@talismn/util"
 import { useMemo } from "react"
 
 import useAccounts from "./useAccounts"

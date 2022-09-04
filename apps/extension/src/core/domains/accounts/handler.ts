@@ -16,12 +16,12 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
-import { encodeAnyAddress } from "@core/util/encodeAnyAddress"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { mnemonicValidate } from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import { encodeAnyAddress } from "@talismn/util"
 
 export default class AccountsHandler extends ExtensionHandler {
   private getRootAccount() {

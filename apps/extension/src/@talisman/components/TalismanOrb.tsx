@@ -1,4 +1,4 @@
-import { encodeAnyAddress } from "@core/util/encodeAnyAddress"
+import { encodeAnyAddress } from "@talismn/util"
 import md5 from "blueimp-md5"
 import Color from "color"
 import { nanoid } from "nanoid"

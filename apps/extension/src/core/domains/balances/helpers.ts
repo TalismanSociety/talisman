@@ -1,9 +1,8 @@
 import RpcFactory from "@core/libs/RpcFactory"
-import { decodeAnyAddress } from "@core/util/decodeAnyAddress"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
-import blake2Concat from "@talisman/util/blake2Concat"
+import { blake2Concat, decodeAnyAddress } from "@talismn/util"
 
 import { BalanceLockType, LockedBalance, RequestBalanceLocks, ResponseBalanceLocks } from "./types"
 

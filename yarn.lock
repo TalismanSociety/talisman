@@ -6035,6 +6035,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/util@workspace:packages/util"
   dependencies:
+    "@polkadot/keyring": ^10.1.7
+    "@polkadot/util": ^10.1.7
+    "@polkadot/util-crypto": ^10.1.7
     "@talismn/eslint-config": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1

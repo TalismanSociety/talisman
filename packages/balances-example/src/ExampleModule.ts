@@ -46,11 +46,11 @@ export const ExampleModule: BalanceModule<
 > = {
   ...DefaultBalanceModule("example"),
 
-  async fetchSubstrateChainMeta(chainConnector, chainId) {
+  async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId) {
     return { genesisHash: await chainConnector.send(chainId, "chain_getBlockHash", [0]) }
   },
 
-  async fetchSubstrateChainTokens(chainConnector, chainId, chainMeta) {
+  async fetchSubstrateChainTokens(chainConnector, chaindataProvider, chainId, chainMeta) {
     const type = "example" as const
 
     const symbol = "DOT"
