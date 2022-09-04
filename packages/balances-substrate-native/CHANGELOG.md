@@ -1,5 +1,13 @@
 # @talismn/balances-substrate-native
 
+## 0.1.2
+
+### Patch Changes
+
+- 2ccd51b: feat: implemented @talismn/balances-substrate-native
+- Updated dependencies [2ccd51b]
+  - @talismn/balances@0.1.2
+
 ## 0.1.1
 
 ### Patch Changes
