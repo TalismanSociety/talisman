@@ -22,8 +22,15 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
     integrations: [new Integrations.BrowserTracing()],
     release: process.env.RELEASE,
     sampleRate: 1,
+    maxBreadcrumbs: 20,
     // prevents sending the event if user has disabled error tracking
     beforeSend: async (event) => ((await firstValueFrom(useErrorTracking)) ? event : null),
+    beforeBreadcrumb: (breadCrumb, hint) => {
+      if (breadCrumb.data?.url) {
+        breadCrumb.data.url = normalizeUrl(breadCrumb.data.url)
+      }
+      return breadCrumb
+    },
 
     // Set tracesSampleRate to capture 5%
     // of transactions for performance monitoring.

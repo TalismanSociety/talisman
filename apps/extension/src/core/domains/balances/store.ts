@@ -123,11 +123,13 @@ export class BalanceStore {
     tokenId,
     address: chainFormattedAddress,
   }: RequestBalance): Promise<BalanceStorage | undefined> {
+    assert(chainId || evmNetworkId, "chainId or evmNetworkId is required")
     const address = encodeAnyAddress(chainFormattedAddress, 42)
 
     // search for existing balance in the store
     const storeBalances = new Balances(await db.balances.toArray())
-    const existing = storeBalances.find({ chainId, evmNetworkId, tokenId, address })
+    const networkFilter = chainId ? { chainId } : { evmNetworkId }
+    const existing = storeBalances.find({ ...networkFilter, tokenId, address })
     if (existing.count > 0) return existing.sorted[0]?.toJSON()
 
     // no existing balance found, fetch it directly via rpc
@@ -138,20 +140,32 @@ export class BalanceStore {
     }
 
     const tokenType = token.type
-    if (["native", "orml"].includes(tokenType))
-      assert(chainId, "chainId is required for substrate token balances")
 
-    if (tokenType === "native")
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return (await BalancesRpc.balances({ [chainId!]: [address] }))
-        .find({ chainId, tokenId, address })
-        .sorted[0]?.toJSON()
-    if (tokenType === "orml")
+    if (tokenType === "native") {
+      if (chainId) {
+        return (await BalancesRpc.balances({ [chainId]: [address] }))
+          .find({ chainId, tokenId, address })
+          .sorted[0]?.toJSON()
+      } else {
+        assert(evmNetworkId, "chainId or evmNetworkId is required")
+        const evmNetwork = await db.evmNetworks.get(evmNetworkId)
+        assert(evmNetwork, "This token's network could not be found")
+        return (await NativeBalancesEvmRpc.balances([address], [evmNetwork]))
+          .find({ tokenId, address, evmNetworkId: Number(evmNetworkId) })
+          .sorted[0]?.toJSON()
+      }
+    }
+    if (tokenType === "orml") {
+      assert(chainId, "chainId is required for substrate token balances")
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return (await OrmlTokensRpc.tokens({ [chainId!]: [address] }))
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()
-    if (tokenType === "erc20") throw new Error("Not implemented")
+    }
+    if (tokenType === "erc20")
+      return (await Erc20BalancesEvmRpc.balances([address], { [Number(evmNetworkId)]: [token] }))
+        .find({ tokenId, address, evmNetworkId: Number(evmNetworkId) })
+        .sorted[0]?.toJSON()
 
     // force compilation error if any token types don't have a case
     const exhaustiveCheck: never = tokenType

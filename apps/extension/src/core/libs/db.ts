@@ -4,6 +4,7 @@ import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethere
 import metadataInit from "@core/domains/metadata/_metadataInit"
 import { Token, TokenId } from "@core/domains/tokens/types"
 import { MetadataDef } from "@core/inject/types"
+import { RuntimeVersion } from "@polkadot/types/interfaces"
 import { Dexie } from "dexie"
 import Browser from "webextension-polyfill"
 
@@ -13,13 +14,13 @@ export class TalismanDatabase extends Dexie {
   tokens!: Dexie.Table<Token, TokenId>
   balances!: Dexie.Table<BalanceStorage, string>
   metadata!: Dexie.Table<MetadataDef, string>
-  metadataRpc!: Dexie.Table<ChainMetadataRpc, string>
+  chainMetadataRpc!: Dexie.Table<ChainMetadataRpc, string>
 
   constructor() {
     super("Talisman")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
-    this.version(2).stores({
+    this.version(3).stores({
       // You only need to specify properties that you wish to index.
       // The object store will allow any properties on your stored objects but you can only query them by indexed properties
       // https://dexie.org/docs/API-Reference#declare-database
@@ -31,7 +32,8 @@ export class TalismanDatabase extends Dexie {
       tokens: "id, type, symbol, coingeckoId, contractAddress, chain, evmNetwork",
       balances: "id, pallet, address, chainId, evmNetworkId, tokenId",
       metadata: "genesisHash",
-      metadataRpc: "chainId",
+      metadataRpc: null,
+      chainMetadataRpc: "chainId",
     })
 
     this.on("ready", async () => {
@@ -58,8 +60,9 @@ export class TalismanDatabase extends Dexie {
 
 export type ChainMetadataRpc = {
   chainId: string
-  specVersion: number
+  cacheKey: string
   metadataRpc: `0x${string}`
+  runtimeVersion: RuntimeVersion
 }
 
 export const db = new TalismanDatabase()

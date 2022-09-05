@@ -7,6 +7,7 @@ const distDir = path.join(__dirname, "..", "dist")
 const CopyPlugin = require("copy-webpack-plugin")
 const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
 const CircularDependencyPlugin = require("circular-dependency-plugin")
+const { getManifestVersionName } = require("./utils.js")
 
 const manifestPath = path.join(__dirname, "..", "public", "manifest.json")
 
@@ -27,6 +28,8 @@ const config = (env) =>
 
               // Update the version in the manifest file to match the version in package.json
               manifest.version = process.env.npm_package_version
+              // add a version name key to distinguish in list of installed extensions
+              manifest.version_name = getManifestVersionName(env)
 
               // Return the modified manifest
               return JSON.stringify(manifest, null, 2)

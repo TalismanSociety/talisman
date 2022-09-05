@@ -110,6 +110,7 @@ const config = (env) => ({
         // only pass through when env.build is undefined (running a development build)
         env.build === undefined ? process.env.TEST_MNEMONIC || "" : ""
       ),
+      "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
 
       // computed values
       "process.env.BUILD": JSON.stringify(env.build),

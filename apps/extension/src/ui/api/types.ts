@@ -20,6 +20,7 @@ import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
   CustomEvmNetwork,
+  EvmNetworkId,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
 import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/types"
@@ -34,6 +35,7 @@ import {
 import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
 import {
   ResponseAssetTransfer,
+  ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
 import { EthResponseType } from "@core/injectEth/types"
@@ -168,6 +170,15 @@ export default interface MessageTypes {
     tip: string,
     reapBalance?: boolean
   ) => Promise<ResponseAssetTransfer>
+  assetTransferEth: (
+    evmNetworkId: EvmNetworkId,
+    tokenId: TokenId,
+    fromAddress: string,
+    toAddress: string,
+    amount: string,
+    maxPriorityFeePerGas: string,
+    maxFeePerGas: string
+  ) => Promise<ResponseAssetTransferEth>
   assetTransferCheckFees: (
     chainId: ChainId,
     tokenId: TokenId,

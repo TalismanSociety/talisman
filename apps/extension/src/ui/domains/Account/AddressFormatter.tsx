@@ -9,9 +9,9 @@ import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
 import { ReactComponent as IconSearch } from "@talisman/theme/icons/search.svg"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useAccountChainsFilter } from "@ui/hooks/useAccountChainsFilter"
+import useAddressTypeChainsFilter from "@ui/hooks/useAddressTypeChainsFilter"
 import useChainsAndSearchSymbols from "@ui/hooks/useChainsAndSearchSymbols"
 import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
-import useMoonbeamChainsFilter from "@ui/hooks/useMoonbeamChainsFilter"
 import { useSortedChains } from "@ui/hooks/useSortedChains"
 import { PropsWithChildren, useState } from "react"
 import styled from "styled-components"
@@ -150,8 +150,8 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
   const [copied, setCopied] = useState("")
 
   const accountCompatibleChains = useAccountChainsFilter(chains, address)
-  const moonbeamFilteredChains = useMoonbeamChainsFilter(accountCompatibleChains, address)
-  const chainsWithPrefix = useHasPrefixChainsFilter(moonbeamFilteredChains)
+  const addressTypeCompatibleChains = useAddressTypeChainsFilter(accountCompatibleChains, address)
+  const chainsWithPrefix = useHasPrefixChainsFilter(addressTypeCompatibleChains)
   const chainsAndSearchSymbols = useChainsAndSearchSymbols(chainsWithPrefix)
 
   const [searchQuery, setSearchQuery] = useState("")

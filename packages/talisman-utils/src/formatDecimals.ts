@@ -1,5 +1,6 @@
 import BigNumber from "bignumber.js"
 
+const MIN_DIGITS = 4 // less truncates more than what compact formating is
 export const MAX_DECIMALS_FORMAT = 12
 
 /**
@@ -13,11 +14,12 @@ export const MAX_DECIMALS_FORMAT = 12
  */
 export const formatDecimals = (
   num?: string | number | null,
-  digits = 4,
+  digits = MIN_DIGITS,
   options: Partial<Intl.NumberFormatOptions> = {},
   locale = "en-US"
 ): string => {
   if (num === null || num === undefined) return ""
+  if (digits < MIN_DIGITS) digits = MIN_DIGITS
 
   const value = new BigNumber(num)
   // very small numbers should display "< 0.0001"
