@@ -1,8 +1,7 @@
 import { Box } from "@talisman/components/Box"
 import { DownloadIcon, PlusIcon } from "@talisman/theme/icons"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
-import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
-import { ReactNode, useCallback, useEffect } from "react"
+import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
