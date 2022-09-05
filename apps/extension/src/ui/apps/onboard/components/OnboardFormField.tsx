@@ -19,6 +19,13 @@ const Container = styled.div`
     color: var(--color-foreground);
     padding: 0.8rem 2.4rem;
     width: 100%;
+
+    :hover {
+      background: rgba(var(--color-foreground-raw), 0.1);
+    }
+    :focus {
+      background: rgba(var(--color-foreground-raw), 0.2);
+    }
   }
 
   .message {
