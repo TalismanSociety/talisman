@@ -5,7 +5,7 @@ import {
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
-import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
+import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import {
   ETH_ERROR_EIP1993_USER_REJECTED,
@@ -24,9 +24,9 @@ import type { TransactionRequest } from "@ethersproject/providers"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import { assert } from "@polkadot/util"
 import { BigNumber, BigNumberish, ethers } from "ethers"
-import type { UnsignedTransaction } from "ethers"
-import { formatUnits, parseUnits, serializeTransaction } from "ethers/lib/utils"
+import { formatUnits, parseUnits } from "ethers/lib/utils"
 import isString from "lodash/isString"
+import { Result } from "ts-results"
 
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
@@ -99,43 +99,31 @@ export class EthHandler extends ExtensionHandler {
     maxFeePerGas: strMaxFeePerGas = formatUnits(2, "gwei"),
     maxPriorityFeePerGas: strMaxPriorityFeePerGas = formatUnits(0, "gwei"),
   }: EthApproveSignAndSend): Promise<boolean> {
-    try {
-      const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
-      assert(queued, "Unable to find request")
-      const { request, resolve, reject, ethChainId } = queued
+    const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
+    assert(queued, "Unable to find request")
+    const { request, resolve, reject, ethChainId } = queued
 
-      const provider = await getProviderForEvmNetworkId(ethChainId)
-      assert(provider, "Unable to find provider for chain " + ethChainId)
+    const provider = await getProviderForEvmNetworkId(ethChainId)
+    assert(provider, "Unable to find provider for chain " + ethChainId)
 
-      // get up to date nonce (accounts for pending transactions)
-      const nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
-      const block = await provider.getBlock("latest")
+    // get up to date nonce (accounts for pending transactions)
+    const nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
+    const block = await provider.getBlock("latest")
 
-      const maxFeePerGas = parseUnits(strMaxFeePerGas, 0)
-      const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, 0)
+    const maxFeePerGas = parseUnits(strMaxFeePerGas, 0)
+    const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, 0)
 
-      const tx = prepareTransaction(
-        {
-          ...request,
-          maxFeePerGas,
-          maxPriorityFeePerGas,
-          nonce,
-          type: 2,
-        },
-        block.gasLimit
-      )
-
-      try {
-        // eslint-disable-next-line no-var
-        var pair = getUnlockedPairFromAddress(queued.account.address)
-      } catch (error) {
-        this.stores.password.clearPassword()
-        reject(
-          error instanceof Error ? error : new Error(typeof error === "string" ? error : undefined)
-        )
-        return false
-      }
-
+    const tx = prepareTransaction(
+      {
+        ...request,
+        maxFeePerGas,
+        maxPriorityFeePerGas,
+        nonce,
+        type: 2,
+      },
+      block.gasLimit
+    )
+    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const privateKey = getPrivateKey(pair)
       const signer = new ethers.Wallet(privateKey, provider)
       const { chainId, hash } = await signer.sendTransaction(tx)
@@ -153,36 +141,34 @@ export class EthHandler extends ExtensionHandler {
         dapp: queued.url,
         chain: queued.ethChainId,
       })
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err, { err })
-      const msg = getHumanReadableErrorMessage(err)
-      if (msg) throw new Error(msg)
-      throw err
+      return true
+    })
+
+    if (result.ok) {
+      return result.val
+    } else {
+      if (result.val === "Unauthorised") {
+        reject(Error(result.val))
+      } else {
+        const msg = getHumanReadableErrorMessage(result.val)
+        if (msg) throw new Error(msg)
+        else result.unwrap() // throws error
+      }
+      return false
     }
-    return true
   }
 
   private async signApprove({ id }: RequestIdOnly): Promise<boolean> {
-    try {
-      const queued = this.state.requestStores.signing.getEthSignRequest(id)
+    const queued = this.state.requestStores.signing.getEthSignRequest(id)
 
-      assert(queued, "Unable to find request")
+    assert(queued, "Unable to find request")
 
-      const { method, request, reject, resolve } = queued
+    const { method, request, reject, resolve } = queued
 
-      try {
-        // eslint-disable-next-line no-var
-        var pair = getUnlockedPairFromAddress(queued.account.address)
-      } catch (error) {
-        this.stores.password.clearPassword()
-        reject(
-          error instanceof Error ? error : new Error(typeof error === "string" ? error : undefined)
-        )
-        return false
-      }
-
-      const privateKey = getPrivateKey(pair)
+    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
+      const pw = this.stores.password.getPassword()
+      if (!pw) throw Error("Unauthorised")
+      const privateKey = getPrivateKey(pair, pw)
       let signature: string
 
       if (method === "personal_sign") {
@@ -219,10 +205,18 @@ export class EthHandler extends ExtensionHandler {
       })
 
       return true
-    } catch (err) {
-      const msg = getHumanReadableErrorMessage(err)
-      if (msg) throw new Error(msg)
-      throw err
+    })
+
+    if (result.ok) return result.val
+    else {
+      if (result.val === "Unauthorised") {
+        reject(Error(result.val))
+      } else {
+        const msg = getHumanReadableErrorMessage(result.val)
+        if (msg) throw new Error(msg)
+        else result.unwrap() // throws error
+      }
+      return false
     }
   }
 
@@ -234,6 +228,7 @@ export class EthHandler extends ExtensionHandler {
     const { reject } = queued
 
     reject(new EthProviderRpcError("Cancelled", ETH_ERROR_EIP1993_USER_REJECTED))
+
     talismanAnalytics.capture("sign transaction reject", {
       type: "evm sign",
       dapp: queued.url,
