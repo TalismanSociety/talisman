@@ -28,12 +28,17 @@ const Container = styled.div`
     }
   }
 
+  textarea {
+    resize: none;
+    padding: 2.4rem;
+  }
+
   .message {
     padding-top: 0.4rem;
     font-size: var(--font-size-small);
     line-height: var(--font-size-small);
     height: var(--font-size-large);
-    text-align: right;
+    text-align: left;
     color: var(--color-status-warning);
   }
 `

@@ -1,8 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Box } from "@talisman/components/Box"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
-import { TalismanWhiteLogo } from "@talisman/theme/logos"
-import { MouseEventHandler, ReactNode, useCallback, useEffect } from "react"
+import { MouseEventHandler, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -23,39 +22,6 @@ const Container = styled(Layout)`
     rgba(186, 132, 255, 0.3) 50%,
     rgba(244, 143, 69, 0.3) 100%
   );
-`
-
-const Logo = styled(TalismanWhiteLogo)`
-  width: 19.6rem;
-  height: auto;
-`
-
-const WelcomeCtaContainer = styled.button`
-  background: none;
-  border: none;
-  color: var(--color-foreground);
-  text-align: left;
-  background: rgba(var(--color-foreground-raw), 0.05);
-  backdrop-filter: blur(4.8rem);
-  padding: 3.2rem;
-  border-radius: 1.6rem;
-  cursor: pointer;
-  width: 38rem;
-  height: 18rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  transition: all var(--transition-speed-fast) ease-in-out;
-
-  svg {
-    transition: none;
-  }
-
-  :hover {
-    background: var(--color-foreground);
-    background: rgba(var(--color-foreground-raw), 0.95);
-    color: var(--color-background);
-  }
 `
 
 const A = styled.a`
@@ -96,7 +62,6 @@ export const PasswordPage = () => {
     resolver: yupResolver(schema),
   })
   const password = watch("password")
-  const tos = watch("agreeToS")
 
   const submit = useCallback(
     async (fields: FormData) => {
@@ -105,11 +70,6 @@ export const PasswordPage = () => {
     },
     [navigate, updateData]
   )
-
-  useEffect(() => {
-    // if mode isn't set yet, redirect to welcome page
-    if (!data.mode) navigate("/", { replace: true })
-  }, [data.mode, navigate])
 
   return (
     <Container withBack>

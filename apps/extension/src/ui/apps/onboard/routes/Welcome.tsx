@@ -6,7 +6,7 @@ import { ReactNode, useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
-import { OnboardingMode, useOnboard } from "../context"
+import { useOnboard } from "../context"
 import { Layout } from "../layout"
 
 const Container = styled(Layout)`
@@ -80,25 +80,14 @@ const Title = styled(Box)`
 `
 
 export const WelcomePage = () => {
-  const isOnboarded = useIsOnboarded()
   const { reset, updateData } = useOnboard()
   const navigate = useNavigate()
 
-  // check for onboarded status & redirect to dashboard
-  // if already onboarded - doing it here because if we
-  // do it in the root provider we get redirected as soon
-  // as the flag is set, and this page is always shown initially
-  useEffect(() => {
-    if (isOnboarded === "TRUE") {
-      window.location.href = window.location.href.replace("onboarding.html", "dashboard.html")
-    }
-  }, [isOnboarded])
-
   const handleNextClick = useCallback(
-    (mode: OnboardingMode) => () => {
+    (recovery: boolean) => () => {
       reset()
-      updateData({ mode })
-      navigate("/password")
+      updateData({ mnemonic: undefined }) // always clear this one, even in dev mode
+      navigate(recovery ? "/import" : "/password")
     },
     [navigate, reset, updateData]
   )
@@ -120,13 +109,13 @@ export const WelcomePage = () => {
             title="New wallet"
             icon={<PlusIcon />}
             description="Create a new Talisman wallet"
-            onClick={handleNextClick("new")}
+            onClick={handleNextClick(false)}
           />
           <WelcomeCta
             title="Import a wallet"
             icon={<DownloadIcon />}
             description="Import an existing wallet such as Polkadot.js or Metamask"
-            onClick={handleNextClick("import")}
+            onClick={handleNextClick(true)}
           />
         </Box>
       </Box>

@@ -1,5 +1,4 @@
 import { BackButton } from "@talisman/components/BackButton"
-import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
@@ -8,6 +7,7 @@ import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
 import { FC, Suspense, lazy } from "react"
 import styled from "styled-components"
 
+import { OnboardingToast } from "./OnboardingToast"
 import { SideBar } from "./SideBar"
 
 const DashboardNotifications = lazy(() => import("./DashboardNotifications"))
@@ -37,6 +37,7 @@ const UnstyledLayout: FC<LayoutProps> = ({ withBack, backTo, children, className
     <AccountRenameModal />
     <AccountRemoveModal />
     <AddressFormatterModal />
+    <OnboardingToast />
   </main>
 )
 

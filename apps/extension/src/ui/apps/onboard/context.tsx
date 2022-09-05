@@ -6,10 +6,7 @@ import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { ReactNode, useEffect } from "react"
 import { useCallback, useState } from "react"
 
-export type OnboardingMode = "new" | "import"
-
 export type OnboardingWizardData = {
-  mode?: OnboardingMode
   password?: string
   passwordConfirm?: string
   mnemonic?: string
@@ -19,7 +16,7 @@ export type OnboardingWizardData = {
 
 const DEFAULT_DATA: OnboardingWizardData = DEBUG
   ? {
-      mode: "new",
+      mnemonic: "test test test test test test test test test test test junk",
       password: "Password0*",
       passwordConfirm: "Password0*",
       agreeToS: true,
@@ -69,7 +66,7 @@ const Provider = ({ children }: { children?: ReactNode }) => {
   const isOnboarded = useIsOnboarded()
 
   useEffect(() => {
-    if (isOnboarded === "TRUE") window.location.href = "dashboard.html"
+    if (isOnboarded === "TRUE") window.location.href = "dashboard.html#/portfolio?onboarded"
   })
 
   // Wait until we know if user has already onboarded

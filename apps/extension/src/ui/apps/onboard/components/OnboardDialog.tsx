@@ -21,7 +21,7 @@ export const OnboardDialog = ({ title, children, className }: OnboardDialogProps
     <Box fontsize="xlarge" fg="foreground">
       {title}
     </Box>
-    <Box fg="mid" margin="4.8rem 0 0">
+    <Box fg="mid" margin="3.2rem 0 0">
       {children}
     </Box>
   </Container>
