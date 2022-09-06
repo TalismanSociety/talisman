@@ -10,13 +10,13 @@ import { useOnboard } from "../context"
 import { Layout } from "../layout"
 
 const Container = styled(Layout)`
-  background: rgb(131, 58, 180);
+  /* background: rgb(131, 58, 180);
   background: linear-gradient(
     20deg,
     var(--color-background) 0%,
     rgba(186, 132, 255, 0.3) 50%,
     rgba(244, 143, 69, 0.3) 100%
-  );
+  ); */
 
   > section > .hflex > .picture {
     width: auto;
