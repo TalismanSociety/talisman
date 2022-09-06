@@ -14,11 +14,11 @@ const getRandomCircleStyle = (parentSize: Size, cx?: number, cy?: number) => {
 
   const largerBound = Math.max(parentSize.width, parentSize.height)
 
-  const size = Math.round(Math.random() * largerBound * (hasLocation ? 2 : 3))
+  const size = Math.round(Math.random() * largerBound * (hasLocation ? 1 : 3))
   const color = Color.hsv(Math.random() * 360, 100, 100).hex()
   const top = (hasLocation ? cy : Math.round(Math.random() * parentSize.height)) - size / 2
   const left = (hasLocation ? cx : Math.round(Math.random() * parentSize.width)) - size / 2
-  const opacity = Math.random() / (hasLocation ? 1 : 5)
+  const opacity = Math.random() / (hasLocation ? 3 : 10)
 
   const target: TargetAndTransition = {
     width: size,
@@ -116,7 +116,6 @@ export const MysticalBackground = ({ className }: { className?: string }) => {
       <MousePad ref={refMouse}>
         {parentSize && (
           <>
-            <CelestialArtifact parentSize={parentSize} />
             <CelestialArtifact parentSize={parentSize} />
             <CelestialArtifact parentSize={parentSize} />
             <CelestialArtifact parentSize={parentSize} />
