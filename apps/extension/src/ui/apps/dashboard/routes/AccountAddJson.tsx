@@ -1,17 +1,18 @@
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
-import { useNavigate } from "react-router-dom"
-import { useNotification } from "@talisman/components/Notification"
-import Layout from "../layout"
-import { FormField } from "@talisman/components/Field/FormField"
 import { yupResolver } from "@hookform/resolvers/yup"
-import * as yup from "yup"
-import { useCallback } from "react"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import { ArrowRightIcon } from "@talisman/theme/icons"
-import { useForm } from "react-hook-form"
+import { FormField } from "@talisman/components/Field/FormField"
+import HeaderBlock from "@talisman/components/HeaderBlock"
 import { InputFileDrop } from "@talisman/components/InputFileDrop"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
+import { SimpleButton } from "@talisman/components/SimpleButton"
+import Spacer from "@talisman/components/Spacer"
+import { ArrowRightIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
+import { useCallback } from "react"
+import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
+import * as yup from "yup"
+
+import Layout from "../layout"
 
 type FormData = {
   fileContent: string
@@ -37,30 +38,34 @@ const getFileContent = (file?: File) =>
 
 const AccountJson = () => {
   const navigate = useNavigate()
-  const notification = useNotification()
 
   const submit = useCallback(
     async ({ fileContent, password }: FormData) => {
-      notification.processing({
-        title: "Importing account",
-        subtitle: "Please wait",
-        timeout: null,
-      })
+      const notificationId = notify(
+        {
+          type: "processing",
+          title: "Importing account",
+          subtitle: "Please wait",
+        },
+        { autoClose: false }
+      )
       try {
         await api.accountCreateFromJson(fileContent, password)
-        notification.success({
+        notifyUpdate(notificationId, {
+          type: "success",
           title: "Account created",
           subtitle: "",
         })
         navigate("/portfolio")
       } catch (err) {
-        notification.error({
-          title: "Error creating account",
-          subtitle: (err as Error)?.message ?? "",
+        notifyUpdate(notificationId, {
+          type: "error",
+          title: "Error importing account",
+          subtitle: (err as Error)?.message,
         })
       }
     },
-    [navigate, notification]
+    [navigate]
   )
 
   const {

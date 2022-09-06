@@ -2,7 +2,7 @@ import { AccountAddressType } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { useNotification } from "@talisman/components/Notification"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
@@ -44,7 +44,6 @@ const Spacer = styled.div<{ small?: boolean }>`
 
 const AccountNew = () => {
   const navigate = useNavigate()
-  const notification = useNotification()
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
 
@@ -74,27 +73,33 @@ const AccountNew = () => {
 
   const submit = useCallback(
     async ({ name, type }: FormData) => {
-      notification.processing({
-        title: "Creating account",
-        subtitle: "Please wait",
-        timeout: null,
-      })
+      const notificationId = notify(
+        {
+          type: "processing",
+          title: "Creating account",
+          subtitle: "Please wait",
+        },
+        { autoClose: false }
+      )
 
       try {
+        await new Promise((resolve) => setTimeout(resolve, 4000))
         await api.accountCreate(name, type)
-        notification.success({
+        notifyUpdate(notificationId, {
+          type: "success",
           title: "Account created",
           subtitle: name,
         })
         navigate("/portfolio")
       } catch (err) {
-        notification.error({
+        notifyUpdate(notificationId, {
+          type: "error",
           title: "Error creating account",
-          subtitle: (err as Error)?.message ?? "",
+          subtitle: (err as Error)?.message,
         })
       }
     },
-    [navigate, notification]
+    [navigate]
   )
 
   const handleTypeChange = useCallback(

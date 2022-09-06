@@ -1,8 +1,7 @@
 import { initSentry } from "@core/config/sentry"
 import * as Sentry from "@sentry/react"
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
-import NotificationProvider from "@talisman/components/Notification"
-import { NotificationsContainer } from "@talisman/components/NotificationsContainer"
+import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
 import ThemeProvider from "@talisman/theme"
 import React from "react"
 import { createRoot } from "react-dom/client"
@@ -23,9 +22,7 @@ export const renderTalisman = (app: any) => {
       <ThemeProvider>
         <ErrorBoundary>
           <SettingsProvider>
-            <HashRouter>
-              <NotificationProvider>{app}</NotificationProvider>
-            </HashRouter>
+            <HashRouter>{app}</HashRouter>
           </SettingsProvider>
           <NotificationsContainer />
         </ErrorBoundary>
