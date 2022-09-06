@@ -85,6 +85,15 @@ const MousePad = styled.div`
   width: 100%;
   height: 100%;
 `
+const Filter = styled.div`
+  z-index: 1;
+  filter: blur(50px);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+`
 
 export const MysticalBackground = ({ className }: { className?: string }) => {
   const [refSize, { width, height }] = useMeasure<HTMLDivElement>()
@@ -114,6 +123,7 @@ export const MysticalBackground = ({ className }: { className?: string }) => {
             <CelestialArtifact parentSize={parentSize} cx={elX} cy={elY} />
           </>
         )}
+        {/* <Filter /> */}
       </MousePad>
     </Container>
   )

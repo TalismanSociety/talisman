@@ -23,6 +23,7 @@ const Background = styled(MysticalBackground)`
   border: none;
 
   z-index: 0;
+  filter: blur(50px);
 `
 const Onboarding = () => {
   return (
