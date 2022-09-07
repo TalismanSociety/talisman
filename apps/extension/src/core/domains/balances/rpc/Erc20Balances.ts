@@ -8,7 +8,7 @@ import { Address } from "@core/types/base"
 import * as Sentry from "@sentry/browser"
 import { ethers } from "ethers"
 
-import erc20Abi from "./abis/erc20.json"
+import { erc20Abi } from "./abis"
 
 export default class Erc20BalancesEvmRpc {
   /**

@@ -8625,6 +8625,7 @@ __metadata:
     terser-webpack-plugin: 5.3.3
     ts-jest: 27.1.3
     ts-loader: 9.3.0
+    ts-results: ^3.3.0
     typescript: 4.6.4
     typescript-memoize: ^1.1.0
     typescript-plugin-styled-components: ~2.0.0
@@ -15404,6 +15405,13 @@ __metadata:
     ts-node-transpile-only: dist/bin-transpile.js
     ts-script: dist/bin-script-deprecated.js
   checksum: 1eede939beed9f4db35bcc88d78ef803815b99dcdbed1ecac728d861d74dc694918a7f0f437aa08d026193743a31e7e00e2ee34f875f909b5879981c1808e2a7
+  languageName: node
+  linkType: hard
+
+"ts-results@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "ts-results@npm:3.3.0"
+  checksum: 426c272901d7a0cf8e9539ed90739d03f8e99245fb669beabba8c6729b92da6574698018f9dc8d5d92e8a3e833a40899f855192208ff8dd7e4a68178f7740132
   languageName: node
   linkType: hard
 

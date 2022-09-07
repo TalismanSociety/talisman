@@ -20,6 +20,7 @@ import { extensionStores, tabStores } from "./stores"
 import Tabs from "./Tabs"
 
 jest.mock("@core/domains/chains/api")
+jest.setTimeout(10000)
 
 type SenderFunction<TMessageType extends MessageTypes> = (
   messageType: TMessageType,
@@ -105,7 +106,7 @@ describe("Extension", () => {
     expect(result.exportedJson.encoded).toBeDefined()
   })
 
-  describe("custom user extension", () => {
+  describe("custom user extension tests", () => {
     let address: string, payload: SignerPayloadJSON, pair: KeyringPair
 
     beforeEach(async () => {
@@ -158,20 +159,19 @@ describe("Extension", () => {
 
       expect(state.requestStores.signing.getRequestCount()).toBe(1)
 
-      await expect(
-        messageSender("pri(signing.approveSign)", {
-          id: state.requestStores.signing.allRequests[0].id,
-        })
-      ).resolves.toEqual(true)
+      const approveMessage = await messageSender("pri(signing.approveSign)", {
+        id: state.requestStores.signing.allRequests[0].id,
+      })
+
+      expect(approveMessage).toEqual(true)
 
       // eslint-disable-next-line jest/valid-expect-in-promise
-      requestPromise
+      return await requestPromise
         .then((result) =>
           // eslint-disable-next-line jest/no-conditional-expect
           expect((result as ResponseSigning)?.signature).toEqual(signatureExpected.signature)
         )
         .catch((err) => {
-          console.error(err)
           throw err
         })
     })
@@ -200,7 +200,7 @@ describe("Extension", () => {
         types,
         userExtensions,
       }
-      db.metadata.put(meta)
+      await db.metadata.put(meta)
 
       const payload: SignerPayloadJSON = {
         address,
@@ -245,7 +245,7 @@ describe("Extension", () => {
       ).resolves.toEqual(true)
 
       // eslint-disable-next-line jest/valid-expect-in-promise
-      requestPromise
+      return await requestPromise
         .then((result) => {
           // eslint-disable-next-line jest/no-conditional-expect
           expect(result?.signature).toEqual(signatureExpected.signature)
@@ -316,7 +316,7 @@ describe("Extension", () => {
       ).resolves.toEqual(true)
 
       // eslint-disable-next-line jest/valid-expect-in-promise
-      requestPromise
+      return await requestPromise
         .then((result) => {
           // eslint-disable-next-line jest/no-conditional-expect
           expect((result as ResponseSigning)?.signature).toEqual(signatureExpected.signature)
@@ -407,7 +407,7 @@ describe("Extension", () => {
       ).resolves.toEqual(true)
 
       // eslint-disable-next-line jest/valid-expect-in-promise
-      requestPromise
+      return await requestPromise
         .then((result) => {
           // eslint-disable-next-line jest/no-conditional-expect
           expect((result as ResponseSigning)?.signature).toEqual(signatureExpected.signature)

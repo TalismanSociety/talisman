@@ -71,13 +71,6 @@ export class EthTabsHandler extends TabsHandler {
     return provider
   }
 
-  async getSigner(url: string): Promise<providers.JsonRpcSigner> {
-    const site = await this.getSiteDetails(url)
-    const provider = await this.getProvider(url)
-
-    return provider.getSigner(site.ethAddresses[0])
-  }
-
   private async authoriseEth(url: string, request: RequestAuthorizeTab): Promise<boolean> {
     // Expected error codes
     // 4100	Unauthorized	        The requested method and/or account has not been authorized by the user.

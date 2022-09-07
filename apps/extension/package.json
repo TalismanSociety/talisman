@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.6.7",
+  "version": "1.7.0",
   "private": true,
   "dependencies": {
     "@alectalisman/webpack-ext-reloader": "^1.1.9-a",
@@ -101,6 +101,7 @@
     "talisman-utils": "*",
     "terser-webpack-plugin": "5.3.3",
     "ts-loader": "9.3.0",
+    "ts-results": "^3.3.0",
     "typescript": "4.6.4",
     "typescript-memoize": "^1.1.0",
     "typescript-plugin-styled-components": "~2.0.0",

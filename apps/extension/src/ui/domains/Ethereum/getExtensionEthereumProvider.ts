@@ -1,16 +1,14 @@
-import { JsonRpcProvider, JsonRpcFetchFunc } from "@ethersproject/providers"
-import { ethers } from "ethers"
-import { useMemo } from "react"
 import {
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
   EthProviderRpcError,
   EthRequestSignatures,
   EthRequestTypes,
-  ETH_ERROR_EIP1474_INTERNAL_ERROR,
 } from "@core/injectEth/types"
 import { api } from "@ui/api"
+import { ethers } from "ethers"
 
 const ethereumRequest =
-  (chainId: number): JsonRpcFetchFunc =>
+  (chainId: number): ethers.providers.JsonRpcFetchFunc =>
   async (method: string, params?: any[]) => {
     try {
       return await api.ethRequest({
@@ -34,11 +32,6 @@ const ethereumRequest =
     }
   }
 
-export const useEthereumProvider = (ethChainId?: number): JsonRpcProvider | undefined => {
-  const provider = useMemo(() => {
-    if (!ethChainId) return undefined
-    return new ethers.providers.Web3Provider(ethereumRequest(ethChainId))
-  }, [ethChainId])
-
-  return provider
+export const getExtensionEthereumProvider = (evmNetworkId: number) => {
+  return new ethers.providers.Web3Provider(ethereumRequest(evmNetworkId))
 }

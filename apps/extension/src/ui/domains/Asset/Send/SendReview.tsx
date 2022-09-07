@@ -1,18 +1,22 @@
-import { lazy, Suspense, useCallback, useState } from "react"
-import { Tokens } from "../Tokens"
+import Pill from "@talisman/components/Pill"
+import { SimpleButton } from "@talisman/components/SimpleButton"
+import useChain from "@ui/hooks/useChain"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import useToken from "@ui/hooks/useToken"
+import { Suspense, lazy, useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
+import { formatDecimals } from "talisman-utils"
+
+import Fiat from "../Fiat"
+import AssetLogo from "../Logo"
+import { TokenLogo } from "../TokenLogo"
+import { Tokens } from "../Tokens"
+import { useSendTokens } from "./context"
 import { SendDialogContainer } from "./SendDialogContainer"
+import { SendForfeitInfo } from "./SendForfeitInfo"
 import { SendReviewAddress } from "./SendReviewAddress"
 import { SendTokensExpectedResult, SendTokensInputs } from "./types"
-import { useSendTokens } from "./context"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import { SendForfeitInfo } from "./SendForfeitInfo"
-import AssetLogo from "../Logo"
-import useChain from "@ui/hooks/useChain"
-import Pill from "@talisman/components/Pill"
-import useToken from "@ui/hooks/useToken"
-import { formatDecimals } from "talisman-utils"
-import Fiat from "../Fiat"
+import { useTransferableTokenById, useTransferableTokens } from "./useTransferableTokens"
 
 const SendAddressConvertInfo = lazy(() => import("./SendAddressConvertInfo"))
 const SendLedgerApproval = lazy(() => import("./SendLedgerApproval"))
@@ -123,7 +127,8 @@ const NetworkPill = styled(Pill)`
 
 export const SendReviewHeader = () => {
   const { formData } = useSendTokens()
-  const token = useToken(formData.tokenId)
+  const transferableToken = useTransferableTokenById(formData.transferableTokenId)
+  const { token } = transferableToken || {}
   const chainId = token?.chain?.id
   const chain = useChain(chainId)
   if (!chain) return null
@@ -138,9 +143,10 @@ export const SendReviewHeader = () => {
 
 const SendReview = () => {
   const { formData, expectedResult, send, showReview } = useSendTokens()
-  const token = useToken(formData.tokenId)
-  const chainId = token?.chain?.id
-  const chain = useChain(chainId)
+  const transferableToken = useTransferableTokenById(formData.transferableTokenId)
+  const { token } = transferableToken || {}
+  const chain = useChain(transferableToken?.chainId)
+  const evmNetwork = useEvmNetwork(transferableToken?.evmNetworkId)
 
   const [error, setError] = useState<string>()
   const [sending, setSending] = useState(false)
@@ -150,12 +156,18 @@ const SendReview = () => {
     try {
       await send()
     } catch (err) {
-      setError(err instanceof Error ? err.message : (err as string))
+      setError(err instanceof Error ? err.message : "Unknown error")
     }
     setSending(false)
   }, [send])
 
-  if (!showReview || !chain) return null
+  // reset if going back and forth
+  useEffect(() => {
+    setError(undefined)
+    setSending(false)
+  }, [showReview])
+
+  if (!showReview || (!chain && !evmNetwork)) return null
 
   // force typings to get data to be displayed
   const { fees, transfer, pendingTransferId } = expectedResult as SendTokensExpectedResult
@@ -168,7 +180,7 @@ const SendReview = () => {
           <Row>You are sending</Row>
           <AssetRow>
             <span>{formatDecimals(transfer.amount.tokens, transfer.decimals)}</span>
-            <AssetLogo id={chain.id} />
+            <TokenLogo tokenId={token?.id} />
             <span>{transfer.symbol}</span>
             {transfer.amount.fiat("usd") !== null && (
               <Grey>
@@ -178,17 +190,19 @@ const SendReview = () => {
           </AssetRow>
           <Row>
             <span>from</span>
-            <SendReviewAddress address={from} chainId={chain.id} />
+            <SendReviewAddress address={from} chainId={chain?.id} />
           </Row>
           <Row>
             <span>to</span>
-            <SendReviewAddress address={to} chainId={chain.id} />
+            <SendReviewAddress address={to} chainId={chain?.id} />
           </Row>
         </h2>
         <div>
-          <Suspense fallback={null}>
-            <SendAddressConvertInfo review address={to} chainId={chainId} />
-          </Suspense>
+          {!!chain && (
+            <Suspense fallback={null}>
+              <SendAddressConvertInfo review address={to} chainId={chain.id} />
+            </Suspense>
+          )}
           <SendForfeitInfo expectedResult={expectedResult} />
         </div>
       </article>
@@ -196,21 +210,23 @@ const SendReview = () => {
         {/* prevent flickering by hiding the whole footer while ledger is loading */}
         <Suspense fallback={null}>
           <div className="message">{error}</div>
-          <div className="info">
-            <span>Fee:</span>
-            <Tokens
-              amount={fees.amount.tokens}
-              symbol={fees.symbol}
-              decimals={fees.decimals}
-              noCountUp
-            />
-            {fees.amount.fiat("usd") !== null && (
-              <>
-                <span> / </span>
-                <Fiat noCountUp amount={fees.amount.fiat("usd")} currency="usd" />
-              </>
-            )}
-          </div>
+          {!!fees && (
+            <div className="info">
+              <span>{transferableToken?.evmNetworkId ? "Max fee:" : "Fee:"}</span>
+              <Tokens
+                amount={fees.amount.tokens}
+                symbol={fees.symbol}
+                decimals={fees.decimals}
+                noCountUp
+              />
+              {fees.amount.fiat("usd") !== null && (
+                <>
+                  <span> / </span>
+                  <Fiat noCountUp amount={fees.amount.fiat("usd")} currency="usd" />
+                </>
+              )}
+            </div>
+          )}
           {pendingTransferId ? (
             <SendLedgerApproval />
           ) : (

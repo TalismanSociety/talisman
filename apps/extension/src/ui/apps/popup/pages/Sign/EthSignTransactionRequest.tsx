@@ -125,8 +125,6 @@ const SignTxWithoutValue = ({
   )
 }
 
-type EthRequestType = "message" | "txWithoutValue" | "txWithValue" | "unknown"
-
 export const EthSignTransactionRequest = () => {
   const {
     url,
@@ -176,7 +174,7 @@ export const EthSignTransactionRequest = () => {
         )}
       </Content>
       <Footer>
-        {gasInfo ? (
+        {nativeToken && gasInfo ? (
           <>
             <div className="center">
               <ViewDetailsEth />
@@ -187,12 +185,19 @@ export const EthSignTransactionRequest = () => {
                 <div>Priority</div>
               </div>
               <div>
-                <div>{formatEtherValue(gasInfo.maxFeeAndGasCost, nativeToken?.symbol)}</div>
+                <div>
+                  {formatEtherValue(
+                    gasInfo.maxFeeAndGasCost,
+                    nativeToken?.decimals,
+                    nativeToken?.symbol
+                  )}
+                </div>
                 <div>
                   <EthFeeSelect
                     {...gasInfo}
                     priority={priority ?? "low"}
                     onChange={setPriority}
+                    decimals={nativeToken?.decimals}
                     symbol={nativeToken?.symbol}
                   />
                 </div>

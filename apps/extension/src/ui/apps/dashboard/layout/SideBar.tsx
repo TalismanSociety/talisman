@@ -12,7 +12,6 @@ import {
   PaperPlaneIcon,
   PlusIcon,
   SettingsIcon,
-  StarIcon,
   UserIcon,
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
@@ -22,7 +21,7 @@ import Build from "@ui/domains/Build"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { MouseEventHandler, ReactNode, useCallback } from "react"
+import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
 import styled from "styled-components"
@@ -267,10 +266,10 @@ export const SideBar = () => {
     return false
   }, [genericEvent])
 
-  const handleCrowdloansClick = useCallback(() => {
-    genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
-    window.open("https://app.talisman.xyz/crowdloans", "_blank")
-  }, [genericEvent])
+  // const handleCrowdloansClick = useCallback(() => {
+  //   genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
+  //   window.open("https://app.talisman.xyz/crowdloans", "_blank")
+  // }, [genericEvent])
 
   const handleSettingsClick = useCallback(() => {
     genericEvent("goto settings", { from: "sidebar" })
@@ -338,7 +337,7 @@ export const SideBar = () => {
           >
             NFTs <ExtLinkIcon />
           </NavItemButton>
-          <NavItemButton
+          {/* <NavItemButton
             onClick={handleCrowdloansClick}
             icon={
               <ResponsiveTooltip tooltip="Crowdloans">
@@ -347,7 +346,7 @@ export const SideBar = () => {
             }
           >
             Crowdloans <ExtLinkIcon />
-          </NavItemButton>
+          </NavItemButton> */}
           <NavItemLink
             to="/settings"
             onClick={handleSettingsClick}

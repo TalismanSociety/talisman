@@ -1,6 +1,7 @@
 import { InfoIcon } from "@talisman/theme/icons"
 import { FC } from "react"
 import styled from "styled-components"
+
 import Fiat from "../Fiat"
 import { Tokens } from "../Tokens"
 import { SendTokensExpectedResult } from "./types"
@@ -25,6 +26,7 @@ type SendForfeitInfoProps = {
 }
 
 export const SendForfeitInfo: FC<SendForfeitInfoProps> = ({ expectedResult }) => {
+  if (expectedResult?.type !== "substrate") return null
   if (!expectedResult?.forfeits.length) return null
 
   return (
