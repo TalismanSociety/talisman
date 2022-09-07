@@ -4,7 +4,7 @@ import styled from "styled-components"
 
 const Container = styled.div`
   background: rgba(var(--color-foreground-raw), 0.05);
-  backdrop-filter: blur(4.8rem);
+  //backdrop-filter: blur(4.8rem);
   padding: 4.8rem;
   border-radius: 1.6rem;
   text-align: left;

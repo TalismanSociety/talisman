@@ -1,5 +1,5 @@
 export const MYSTICAL_PHYSICS = {
-  blur: 8,
+  blur: 48,
   sizeArtifact: 3,
   sizeTracker: 1,
   minOpacityArtifact: 0,
