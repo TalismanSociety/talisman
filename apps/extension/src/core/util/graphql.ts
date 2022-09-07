@@ -41,6 +41,17 @@ export const ChainFragment = gql`
   }
 `
 
+export const ChainIsHealthyFragment = gql`
+  fragment ChainIsHealthy on Chain {
+    id
+    rpcs {
+      url
+      isHealthy
+    }
+    isHealthy
+  }
+`
+
 export const EvmNetworkFragment = gql`
   fragment EvmNetwork on EvmNetwork {
     id

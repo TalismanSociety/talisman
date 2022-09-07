@@ -131,7 +131,10 @@ export default class Extension extends ExtensionHandler {
       // chain handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(chains.subscribe)":
-        return this.stores.chains.hydrateStore()
+        return Promise.all([
+          this.stores.chains.hydrateStore(),
+          this.stores.chains.updateRpcHealth(),
+        ]).then((results) => results[0] && results[1])
 
       // --------------------------------------------------------------------
       // transaction handlers -----------------------------------------------
