@@ -1,5 +1,5 @@
-import { ChainFragment, graphqlUrl } from "@core/util/graphql"
-import { print } from "graphql"
+import { ChainFragment, ChainIsHealthyFragment, graphqlUrl } from "@core/util/graphql"
+import { DocumentNode, print } from "graphql"
 import gql from "graphql-tag"
 
 /*
@@ -15,14 +15,27 @@ export const chainsQuery = gql`
   ${ChainFragment}
 `
 
-export const getChains = async () => {
+export const chainsIsHealthyQuery = gql`
+  {
+    chains(orderBy: sortIndex_ASC) {
+      ...ChainIsHealthy
+    }
+  }
+  ${ChainIsHealthyFragment}
+`
+
+const getChainsWithQuery = (query: DocumentNode) => async () => {
   const { data } = await (
     await fetch(graphqlUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: print(chainsQuery) }),
+      body: JSON.stringify({ query: print(query) }),
     })
   ).json()
 
   return data?.chains || []
 }
+
+export const getChains = getChainsWithQuery(chainsQuery)
+
+export const getChainsIsHealthyOnly = getChainsWithQuery(chainsIsHealthyQuery)
