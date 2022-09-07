@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import { AccountMeta } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
@@ -16,6 +17,7 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
+import { KeyringPair } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { mnemonicGenerate, mnemonicValidate } from "@polkadot/util-crypto"
@@ -23,6 +25,7 @@ import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
 import { AccountTypes } from "../accounts/helpers"
+import { generateSalt, getHashedPassword } from "./store.password"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalTypes>()
@@ -57,19 +60,23 @@ export default class AppHandler extends ExtensionHandler {
       confirmed = true
     }
 
-    const { pair } = keyring.addUri(mnemonic, pass, {
+    await this.stores.password.createPassword(pass)
+    const hashedPw = this.stores.password.getPassword()
+    assert(hashedPw, "Password creation failed")
+
+    const { pair } = keyring.addUri(mnemonic, hashedPw, {
       name,
       origin: AccountTypes.ROOT,
     } as AccountMeta)
-    await this.stores.seedPhrase.add(mnemonic, pair.address, pass, confirmed)
-    this.stores.password.setPassword(pass)
+
+    await this.stores.seedPhrase.add(mnemonic, pair.address, hashedPw, confirmed)
 
     try {
       // also derive a first ethereum account
       const derivationPath = getEthDerivationPath()
       keyring.addUri(
         `${mnemonic}${derivationPath}`,
-        pass,
+        hashedPw,
         {
           name: `${name} Ethereum`,
           origin: AccountTypes.DERIVED,
@@ -105,8 +112,48 @@ export default class AppHandler extends ExtensionHandler {
 
       // attempt unlock the pair
       // a successful unlock means authenticated
-      pair.unlock(pass)
-      this.stores.password.setPassword(pass)
+      const pwData = await this.stores.password.get()
+      const passwordHashMigrated = pwData.passwordVersion > 1
+      if (!passwordHashMigrated) {
+        pair.unlock(pass)
+      } else {
+        const hashedPw = await this.stores.password.getHashedPassword(pass)
+        pair.unlock(hashedPw)
+      }
+      pair.lock()
+      // if the password has not been migrated to the hashed version yet, need to do so
+      // check for passwordHashMigrated flag and perform migration if not
+      if (!passwordHashMigrated) {
+        const pairs = keyring.getPairs()
+
+        await this.stores.password.createPassword(pass)
+        const hashedPw = this.stores.password.getPassword() as string
+
+        // keep track of which pairs have been successfully migrated
+        const successfulPairs: KeyringPair[] = []
+        try {
+          // this should be done in a tx, if any of them fail then they should be rolled back
+          pairs.forEach((pair) => {
+            pair.decodePkcs8(pass)
+            keyring.encryptAccount(pair, hashedPw)
+            successfulPairs.push(pair)
+          })
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          DEBUG && console.error("Error migrating keypair passwords: ", error)
+          successfulPairs?.forEach((pair) => {
+            keyring.encryptAccount(pair, pass)
+          })
+          // salt has been set in PasswordStore.createPassword, need to unset it now
+          this.stores.password.set({ salt: undefined })
+          return false
+        }
+        // success
+        this.stores.password.set({ passwordVersion: 2 })
+      } else {
+        this.stores.password.setPlaintextPassword(pass)
+      }
+
       talismanAnalytics.capture("authenticate")
       return true
     } catch (e) {

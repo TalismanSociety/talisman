@@ -69,12 +69,11 @@ export default class SigningHandler extends ExtensionHandler {
         ...signResult,
       })
     })
-    if (result.ok) return true
-    else {
+    if (!result.ok) {
       if (result.val === "Unauthorised") reject(new Error(result.val))
       else result.unwrap() // Throws error
     }
-    return
+    return true
   }
 
   private signingApproveHardware({ id, signature }: RequestSigningApproveSignature): boolean {
