@@ -4,10 +4,10 @@ import { useMeasure, useMouse } from "react-use"
 import styled from "styled-components"
 
 import { CelestialArtifact } from "./CelestialArtifact"
-import { DARK_PACT } from "./DarkPact"
+import { MYSTICAL_PHYSICS } from "./MysticalPhysics"
 
 const Universe = styled.div`
-  filter: blur(${DARK_PACT.blur}px);
+  filter: blur(${MYSTICAL_PHYSICS.blur}px);
 `
 
 const CosmicRadar = styled.div`
@@ -37,10 +37,11 @@ export const MysticalBackground = ({ className }: { className?: string }) => {
   // useMouse doesn't detect if cursor goes out of the screen, so we also need to check for window hovering
   const windowHovered = useWindowHovered()
 
-  const trackerProps = useMemo(
+  // props for the artifact that follows mouse cursor
+  const acolyte = useMemo(
     () =>
       windowHovered && !!elX && !!elY && elX > 0 && elX < elW && elY > 0 && elY < elH
-        ? { cx: elX, cy: elY, isTracker: true }
+        ? { cx: elX, cy: elY, isAcolyte: true }
         : {},
     [elH, elW, elX, elY, windowHovered]
   )
@@ -53,7 +54,7 @@ export const MysticalBackground = ({ className }: { className?: string }) => {
             <CelestialArtifact parentSize={parentSize} />
             <CelestialArtifact parentSize={parentSize} />
             <CelestialArtifact parentSize={parentSize} />
-            <CelestialArtifact parentSize={parentSize} {...trackerProps} />
+            <CelestialArtifact parentSize={parentSize} {...acolyte} />
           </>
         )}
       </CosmicRadar>
