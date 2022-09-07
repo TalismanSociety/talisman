@@ -2,10 +2,11 @@
 import { Checkbox } from "@talisman/components/Checkbox"
 import styled from "styled-components"
 
+import { styleOnboardTranslucidBackground } from "./OnboardStyles"
+
 export const OnboardCheckbox = styled(Checkbox)`
   .square {
-    background: rgba(var(--color-foreground-raw), 0.05);
-    backdrop-filter: blur(4.8rem);
+    ${styleOnboardTranslucidBackground}
   }
 
   input:enabled:focus + span span {

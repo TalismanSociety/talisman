@@ -5,6 +5,7 @@ import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
+import { styleOnboardTranslucidBackground } from "../components/OnboardStyles"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
 
@@ -24,11 +25,10 @@ const Logo = styled(TalismanWhiteLogo)`
 `
 
 const WelcomeCtaContainer = styled.button`
+  ${styleOnboardTranslucidBackground}
   border: none;
   color: var(--color-foreground);
   text-align: left;
-  background: rgba(var(--color-foreground-raw), 0.05);
-  backdrop-filter: blur(4.8rem);
   padding: 3.2rem;
   border-radius: 1.6rem;
   cursor: pointer;
