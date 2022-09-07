@@ -19,20 +19,9 @@ const CosmicRadar = styled.div`
 `
 
 export const MysticalBackground = ({ className }: { className?: string }) => {
-  const [refSize, { width, height }] = useMeasure<HTMLDivElement>()
+  const [refSize, parentSize] = useMeasure<HTMLDivElement>()
   const refMouseLocation = useRef<HTMLDivElement>(null)
   const { elX, elY, elW, elH } = useMouse(refMouseLocation)
-
-  const parentSize = useMemo(
-    () =>
-      width && height
-        ? {
-            width,
-            height,
-          }
-        : undefined,
-    [height, width]
-  )
 
   // useMouse doesn't detect if cursor goes out of the screen, so we also need to check for window hovering
   const windowHovered = useWindowHovered()
@@ -49,7 +38,7 @@ export const MysticalBackground = ({ className }: { className?: string }) => {
   return (
     <Universe ref={refSize} className={className}>
       <CosmicRadar ref={refMouseLocation}>
-        {parentSize && (
+        {parentSize?.width && parentSize?.height && (
           <>
             <CelestialArtifact parentSize={parentSize} />
             <CelestialArtifact parentSize={parentSize} />
