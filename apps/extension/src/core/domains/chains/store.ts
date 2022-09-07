@@ -46,7 +46,8 @@ export class ChainStore {
   }
   /**
    * Update the store with the latest data on chain RPC health from subsquid.
-   * Updating is skipped when the last successful update was less than minimumHealthUpdateInterval ms ago.
+   * Updating is skipped when the last successful update was less than minimumHealthUpdateInterval ms ago, or if
+   * the method is already in the process of being called.
    *
    * @returns A promise which resolves to true if the store has been update, or false if the update was skipped.
    */
