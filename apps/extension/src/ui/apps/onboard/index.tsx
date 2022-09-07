@@ -1,6 +1,6 @@
 import styled from "styled-components"
 
-import { MysticalBackground } from "./components/MysticalBackground"
+import { MysticalBackground } from "./components/MysticalBackground/MysticalBackground"
 import Context from "./context"
 import OnboardingRoutes from "./routes"
 
@@ -23,7 +23,6 @@ const Background = styled(MysticalBackground)`
   border: none;
 
   z-index: 0;
-  filter: blur(8px);
 `
 const Onboarding = () => {
   return (
