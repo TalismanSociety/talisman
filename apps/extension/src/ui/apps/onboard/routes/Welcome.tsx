@@ -9,6 +9,13 @@ import { styleOnboardTranslucidBackground } from "../components/OnboardStyles"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
 
+const Container = styled(Layout)`
+  a {
+    color: var(--color-foreground);
+    color: white;
+  }
+`
+
 const Logo = styled(TalismanWhiteLogo)`
   width: 19.6rem;
   height: auto;
@@ -75,15 +82,15 @@ export const WelcomePage = () => {
   const handleNextClick = useCallback(
     (recovery: boolean) => () => {
       reset()
-      updateData({ mnemonic: undefined }) // always clear this one, even in dev mode
+      updateData({ agreeToS: true, mnemonic: undefined }) // always clear this one, even in dev mode
       navigate(recovery ? "/import" : "/password")
     },
     [navigate, reset, updateData]
   )
 
   return (
-    <Layout>
-      <Box flex gap={10} justify="center">
+    <Container>
+      <Box flex gap={10} justify="center" align="center">
         <Box fg="foreground" flex column gap={4.8} w={67.3}>
           <Box>
             <Logo />
@@ -93,7 +100,7 @@ export const WelcomePage = () => {
           </Title>
           <Box fontsize="xlarge">Talisman supports Polkadot, Kusama, Ethereum and more</Box>
         </Box>
-        <Box flex column gap={2.4} margin="6rem 0 0 0">
+        <Box flex column gap={2.4} w={38}>
           <WelcomeCta
             title="New wallet"
             icon={<PlusIcon />}
@@ -106,8 +113,27 @@ export const WelcomePage = () => {
             description="Import an existing wallet such as Polkadot.js or Metamask"
             onClick={handleNextClick(true)}
           />
+          <Box fg="mid" fontsize="small" lineheightcustom="2rem">
+            By continuing, you agree to the{" "}
+            <a
+              href="https://docs.talisman.xyz/legal-and-security/terms-of-use"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Terms of Service
+            </a>
+            <br />
+            and{" "}
+            <a
+              href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Privacy Policy
+            </a>
+          </Box>
         </Box>
       </Box>
-    </Layout>
+    </Container>
   )
 }

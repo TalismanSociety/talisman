@@ -8,7 +8,6 @@ import styled from "styled-components"
 import * as yup from "yup"
 
 import { OnboardButton } from "../components/OnboardButton"
-import { OnboardCheckbox } from "../components/OnboardCheckbox"
 import { OnboardDialog } from "../components/OnboardDialog"
 import { OnboardFormField } from "../components/OnboardFormField"
 import { useOnboard } from "../context"
@@ -101,28 +100,7 @@ export const PasswordPage = () => {
                   </OnboardFormField>
                 </Box>
               </Box>
-              <Box margin="0.8rem 0 2.4rem">
-                <OnboardCheckbox {...register("agreeToS")}>
-                  I agree to the{" "}
-                  <A
-                    href="https://docs.talisman.xyz/legal-and-security/terms-of-use"
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={noPropagation}
-                  >
-                    Terms of Service
-                  </A>{" "}
-                  and{" "}
-                  <A
-                    href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
-                    target="_blank"
-                    rel="noreferrer"
-                    onClick={noPropagation}
-                  >
-                    Privacy Policy
-                  </A>
-                </OnboardCheckbox>
-              </Box>
+              <Box h={1.6} />
               <OnboardButton type="submit" primary disabled={!isValid}>
                 Continue
               </OnboardButton>
