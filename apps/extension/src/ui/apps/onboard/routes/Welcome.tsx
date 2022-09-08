@@ -9,18 +9,6 @@ import { styleOnboardTranslucidBackground } from "../components/OnboardStyles"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
 
-const Container = styled(Layout)`
-  a {
-    color: var(--color-foreground);
-    color: white;
-  }
-`
-
-const Logo = styled(TalismanWhiteLogo)`
-  width: 19.6rem;
-  height: auto;
-`
-
 const WelcomeCtaContainer = styled.button`
   ${styleOnboardTranslucidBackground}
   border: none;
@@ -29,7 +17,6 @@ const WelcomeCtaContainer = styled.button`
   padding: 3.2rem;
   border-radius: 1.6rem;
   cursor: pointer;
-  width: 38rem;
   height: 18rem;
   display: flex;
   flex-direction: column;
@@ -45,6 +32,76 @@ const WelcomeCtaContainer = styled.button`
     background: rgba(var(--color-foreground-raw), 0.95);
     color: var(--color-background);
   }
+`
+
+const Title = styled(Box)`
+  font-family: WhyteInktrapMedium, sans-serif;
+`
+
+const Container = styled(Layout)`
+  a {
+    color: var(--color-foreground);
+    color: white;
+  }
+
+  @media (max-width: 1270px) {
+    > section {
+      align-items: center;
+
+      > div {
+        gap: 4.8;
+
+        ${Title} {
+          font-size: 8rem;
+          line-height: 8rem;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+        }
+
+        .welcome-description {
+          font-size: 2.4rem;
+          line-height: 2.9rem;
+        }
+
+        .welcome-text {
+          gap: 3.2rem;
+          width: 44rem;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 1024px) {
+    > section > div {
+      flex-direction: column;
+      gap: 4.8rem;
+
+      .welcome-text,
+      .welcome-buttons {
+        width: 44rem;
+      }
+    }
+  }
+
+  @media (max-width: 640px) {
+    > section > div {
+      ${Title} {
+        font-size: 6.4rem;
+        line-height: 6.4rem;
+        letter-spacing: -0.01em;
+      }
+
+      .welcome-description {
+        font-size: 2rem;
+        line-height: 2.4rem;
+      }
+    }
+  }
+`
+
+const Logo = styled(TalismanWhiteLogo)`
+  width: 19.6rem;
+  height: auto;
 `
 
 const WelcomeCta = ({
@@ -71,10 +128,6 @@ const WelcomeCta = ({
   )
 }
 
-const Title = styled(Box)`
-  font-family: WhyteInktrapMedium, sans-serif;
-`
-
 export const WelcomePage = () => {
   const { reset, updateData } = useOnboard()
   const navigate = useNavigate()
@@ -90,17 +143,19 @@ export const WelcomePage = () => {
 
   return (
     <Container>
-      <Box flex gap={10} justify="center" align="center">
-        <Box fg="foreground" flex column gap={4.8} w={67.3}>
+      <Box flex gap={10} justify="center" align="center" margin="8rem 0">
+        <Box className="welcome-text" fg="foreground" flex column gap={4.8} w={67.3}>
           <Box>
             <Logo />
           </Box>
           <Title fontsizecustom={12} lineheightcustom={12}>
             Multi-chain made easy
           </Title>
-          <Box fontsize="xlarge">Talisman supports Polkadot, Kusama, Ethereum and more</Box>
+          <Box className="welcome-description" fontsize="xlarge">
+            Talisman supports Polkadot, Kusama, Ethereum and more
+          </Box>
         </Box>
-        <Box flex column gap={2.4} w={38}>
+        <Box className="welcome-buttons" flex column gap={2.4} w={38}>
           <WelcomeCta
             title="New wallet"
             icon={<PlusIcon />}
