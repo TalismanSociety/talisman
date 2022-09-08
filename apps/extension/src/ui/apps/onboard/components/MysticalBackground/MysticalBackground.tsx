@@ -24,15 +24,15 @@ export const MysticalBackground = ({ className }: { className?: string }) => {
   const { elX, elY, elW, elH } = useMouse(refMouseLocation)
 
   // useMouse doesn't detect if cursor goes out of the screen, so we also need to check for window hovering
-  const windowHovered = useWindowHovered()
+  const isWindowHovered = useWindowHovered()
 
   // props for the artifact that follows mouse cursor
   const acolyte = useMemo(
     () =>
-      windowHovered && !!elX && !!elY && elX > 0 && elX < elW && elY > 0 && elY < elH
+      isWindowHovered && !!elX && !!elY && elX > 0 && elX < elW && elY > 0 && elY < elH
         ? { cx: elX, cy: elY, isAcolyte: true }
         : {},
-    [elH, elW, elX, elY, windowHovered]
+    [elH, elW, elX, elY, isWindowHovered]
   )
 
   return (

@@ -9,7 +9,7 @@ export const MYSTICAL_PHYSICS = {
   stiffnessArtifact: 500,
   stiffnessAcolyte: 500,
   easeArtifact: "easeInOut",
-  easeAcolyte: "easeOut",
+  easeAcolyte: "easeOut", // no ease in to ensure it follows mouse smoothly
   durationArtifact: 8,
   durationAcolyte: 6,
 }

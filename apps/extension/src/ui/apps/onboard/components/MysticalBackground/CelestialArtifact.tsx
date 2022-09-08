@@ -36,11 +36,11 @@ const generateCelestialTransform = (parentSize: Size, isAcolyte = false, cx = 0,
       (isAcolyte ? MYSTICAL_PHYSICS.maxOpacityAcolyte : MYSTICAL_PHYSICS.maxOpacityArtifact)
 
   const target: TargetAndTransition = {
+    top,
+    left,
     width: size,
     height: size,
     background: getBackgroundGradient(color),
-    top,
-    left,
     opacity,
     color, // not used except as memory, for color rotation
 

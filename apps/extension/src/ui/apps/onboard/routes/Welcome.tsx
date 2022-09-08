@@ -9,16 +9,6 @@ import { styleOnboardTranslucidBackground } from "../components/OnboardStyles"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
 
-const Container = styled(Layout)`
-  /* background: rgb(131, 58, 180);
-  background: linear-gradient(
-    20deg,
-    var(--color-background) 0%,
-    rgba(186, 132, 255, 0.3) 50%,
-    rgba(244, 143, 69, 0.3) 100%
-  ); */
-`
-
 const Logo = styled(TalismanWhiteLogo)`
   width: 19.6rem;
   height: auto;
@@ -92,7 +82,7 @@ export const WelcomePage = () => {
   )
 
   return (
-    <Container>
+    <Layout>
       <Box flex gap={10} justify="center">
         <Box fg="foreground" flex column gap={4.8} w={67.3}>
           <Box>
@@ -118,6 +108,6 @@ export const WelcomePage = () => {
           />
         </Box>
       </Box>
-    </Container>
+    </Layout>
   )
 }
