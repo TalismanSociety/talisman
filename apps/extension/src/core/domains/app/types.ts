@@ -1,7 +1,6 @@
 import posthog from "posthog-js"
 
 export interface RequestOnboard {
-  name: string
   pass: string
   passConfirm: string
   mnemonic?: string

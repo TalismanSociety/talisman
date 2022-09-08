@@ -48,12 +48,7 @@ import type { HexString } from "@polkadot/util/types"
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
   // UNSORTED
-  onboard: (
-    name: string,
-    pass: string,
-    passConfirm: string,
-    mnemonic?: string
-  ) => Promise<OnboardedType>
+  onboard: (pass: string, passConfirm: string, mnemonic?: string) => Promise<OnboardedType>
   authenticate: (pass: string) => Promise<boolean>
   lock: () => Promise<boolean>
   authStatus: () => Promise<LoggedinType>

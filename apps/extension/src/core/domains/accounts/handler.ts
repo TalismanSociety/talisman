@@ -17,6 +17,7 @@ import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { encodeAnyAddress } from "@core/util"
+import { sleep } from "@core/util/sleep"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
@@ -38,7 +39,7 @@ export default class AccountsHandler extends ExtensionHandler {
   //   - account seed (unlocked via password)
 
   private async accountCreate({ name, type }: RequestAccountCreate): Promise<boolean> {
-    await new Promise((resolve) => setTimeout(resolve, DEBUG ? 0 : 1000))
+    if (DEBUG) await sleep(1000)
     assert(this.stores.password.hasPassword, "Not logged in")
 
     const allAccounts = keyring.getAccounts()
@@ -126,7 +127,7 @@ export default class AccountsHandler extends ExtensionHandler {
     json,
     password: importedAccountPassword,
   }: RequestAccountCreateFromJson): Promise<boolean> {
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await sleep(1000)
 
     const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
@@ -215,7 +216,7 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private async accountRename({ address, name }: RequestAccountRename): Promise<boolean> {
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await sleep(1000)
 
     const pair = keyring.getPair(address)
     assert(pair, "Unable to find pair")

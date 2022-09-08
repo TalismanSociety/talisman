@@ -16,6 +16,7 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
+import { sleep } from "@core/util/sleep"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { mnemonicGenerate, mnemonicValidate } from "@polkadot/util-crypto"
@@ -27,14 +28,8 @@ import { AccountTypes } from "../accounts/helpers"
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalTypes>()
 
-  private async onboard({
-    name,
-    pass,
-    passConfirm,
-    mnemonic,
-  }: RequestOnboard): Promise<OnboardedType> {
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    assert(name, "Name cannot be empty")
+  private async onboard({ pass, passConfirm, mnemonic }: RequestOnboard): Promise<OnboardedType> {
+    await sleep(1000)
     assert(pass, "Password cannot be empty")
     assert(passConfirm, "Password confirm cannot be empty")
 
@@ -58,7 +53,7 @@ export default class AppHandler extends ExtensionHandler {
     }
 
     const { pair } = keyring.addUri(mnemonic, pass, {
-      name,
+      name: "My Polkadot Account",
       origin: AccountTypes.ROOT,
     } as AccountMeta)
     await this.stores.seedPhrase.add(mnemonic, pair.address, pass, confirmed)
@@ -71,7 +66,7 @@ export default class AppHandler extends ExtensionHandler {
         `${mnemonic}${derivationPath}`,
         pass,
         {
-          name: `${name} Ethereum`,
+          name: `My Ethereum Account`,
           origin: AccountTypes.DERIVED,
           parent: pair.address,
           derivationPath,

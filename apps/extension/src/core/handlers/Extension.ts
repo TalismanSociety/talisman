@@ -21,6 +21,7 @@ import { ExtensionStore } from "@core/handlers/stores"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
+import { sleep } from "@core/util/sleep"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 
 import { createSubscription, unsubscribe } from "./subscriptions"
@@ -77,7 +78,7 @@ export default class Extension extends ExtensionHandler {
       // mnemonic handlers --------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(mnemonic.unlock)":
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        await sleep(1000)
         return await this.stores.seedPhrase.getSeed(request as string)
 
       case "pri(mnemonic.confirm)":

@@ -1,4 +1,5 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
+import { sleep } from "@core/util/sleep"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
@@ -83,7 +84,6 @@ const AccountNew = () => {
       )
 
       try {
-        await new Promise((resolve) => setTimeout(resolve, 4000))
         await api.accountCreate(name, type)
         notifyUpdate(notificationId, {
           type: "success",

@@ -17,8 +17,8 @@ export type OnboardingWizardData = {
 const DEFAULT_DATA: OnboardingWizardData = DEBUG
   ? {
       mnemonic: "test test test test test test test test test test test junk",
-      password: "Password0*",
-      passwordConfirm: "Password0*",
+      password: "Password0",
+      passwordConfirm: "Password0",
       agreeToS: true,
     }
   : {}
@@ -36,7 +36,8 @@ const useAppOnboardProvider = () => {
 
     if (!password || !passwordConfirm) throw new Error("Password is not set")
 
-    await api.onboard("My Account", password, passwordConfirm, mnemonic)
+    if ((await api.onboard(password, passwordConfirm, mnemonic)) !== "TRUE")
+      throw new Error("Failed to onboard")
   }, [data])
 
   const reset = useCallback(() => {

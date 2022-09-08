@@ -28,9 +28,11 @@ export const notifyUpdate = (
   content: NotificationProps,
   options: ToastOptions = {}
 ) => {
-  toast.update(toastId, {
-    ...DEFAULT_OPTIONS,
-    render: () => <Notification {...content} />,
-    ...options,
-  })
+  if (toast.isActive(toastId))
+    toast.update(toastId, {
+      ...DEFAULT_OPTIONS,
+      render: () => <Notification {...content} />,
+      ...options,
+    })
+  else notify(content, options)
 }
