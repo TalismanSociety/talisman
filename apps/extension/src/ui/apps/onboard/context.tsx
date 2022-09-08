@@ -16,10 +16,10 @@ export type OnboardingWizardData = {
 
 const DEFAULT_DATA: OnboardingWizardData = DEBUG
   ? {
-      mnemonic: "test test test test test test test test test test test junk",
-      password: "Password0",
-      passwordConfirm: "Password0",
-      agreeToS: true,
+      // mnemonic: "test test test test test test test test test test test junk",
+      // password: "Password0",
+      // passwordConfirm: "Password0",
+      // agreeToS: true,
     }
   : {}
 

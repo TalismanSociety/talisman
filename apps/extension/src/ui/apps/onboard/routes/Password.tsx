@@ -69,7 +69,7 @@ export const PasswordPage = () => {
               Your password is used to unlock your wallet and is stored securely on your device. We
               recommend 12 characters, with uppercase and lowercase letters, symbols and numbers.
             </p>
-            <form onSubmit={handleSubmit(submit)}>
+            <form onSubmit={handleSubmit(submit)} autoComplete="off">
               <Box flex column>
                 <Box fontsize="small" margin="3.2rem 0 1.6rem 0">
                   Password strength: <PasswordStrength password={password} />
@@ -92,8 +92,8 @@ export const PasswordPage = () => {
                     <input
                       {...register("passwordConfirm")}
                       type="password"
+                      autoComplete="off"
                       placeholder="Re-enter password"
-                      autoComplete="new-password"
                       spellCheck={false}
                       data-lpignore
                     />
