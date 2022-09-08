@@ -147,6 +147,9 @@ const Button = styled.button<{ hasValue: boolean }>`
   .custom-address > span {
     color: var(--color-mid);
   }
+  .custom-address > .address {
+    font-size: var(--font-size-normal);
+  }
 
   &:hover,
   &:hover .account-name .name,
@@ -172,7 +175,7 @@ const FormattedAddress = ({ address, placeholder = "who?" }: any) => {
   return address ? (
     <span className="flex gap custom-address">
       <Avatar address={address} />
-      <Address address={address} />
+      <Address className="address" address={address} />
     </span>
   ) : (
     placeholder
@@ -356,11 +359,15 @@ const AccountPicker: FC<Props> = ({
     []
   )
 
-  // clear if not in the list
+  // clear if not compatible with token type
   useEffect(() => {
-    if (!filteredAccounts.some((acc) => acc.address === selectedAddress))
+    if (
+      addressType !== "UNKNOWN" &&
+      selectedAddress &&
+      getAddressType(selectedAddress) !== addressType
+    )
       setSelectedAddress(undefined)
-  }, [filteredAccounts, selectedAddress])
+  }, [addressType, selectedAddress])
 
   return (
     <Downshift
