@@ -48,10 +48,6 @@ export type AccountsList = Account[]
 
 export type AccountAddressType = "sr25519" | "ethereum"
 
-export interface RequestAccountCreate {
-  name: string
-}
-
 export interface RequestAccountCreateFromSeed {
   name: string
   seed: string

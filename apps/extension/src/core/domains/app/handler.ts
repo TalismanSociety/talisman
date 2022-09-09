@@ -25,6 +25,7 @@ import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
 import { AccountTypes } from "../accounts/helpers"
+import { migratePasswordV1ToV2 } from "./migrations"
 import { generateSalt, getHashedPassword } from "./store.password"
 
 export default class AppHandler extends ExtensionHandler {
@@ -61,6 +62,7 @@ export default class AppHandler extends ExtensionHandler {
     }
 
     await this.stores.password.createPassword(pass)
+    await this.stores.password.set({ passwordVersion: 2 })
     const hashedPw = this.stores.password.getPassword()
     assert(hashedPw, "Password creation failed")
 
@@ -124,32 +126,7 @@ export default class AppHandler extends ExtensionHandler {
       // if the password has not been migrated to the hashed version yet, need to do so
       // check for passwordHashMigrated flag and perform migration if not
       if (!passwordHashMigrated) {
-        const pairs = keyring.getPairs()
-
-        await this.stores.password.createPassword(pass)
-        const hashedPw = this.stores.password.getPassword() as string
-
-        // keep track of which pairs have been successfully migrated
-        const successfulPairs: KeyringPair[] = []
-        try {
-          // this should be done in a tx, if any of them fail then they should be rolled back
-          pairs.forEach((pair) => {
-            pair.decodePkcs8(pass)
-            keyring.encryptAccount(pair, hashedPw)
-            successfulPairs.push(pair)
-          })
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          DEBUG && console.error("Error migrating keypair passwords: ", error)
-          successfulPairs?.forEach((pair) => {
-            keyring.encryptAccount(pair, pass)
-          })
-          // salt has been set in PasswordStore.createPassword, need to unset it now
-          this.stores.password.set({ salt: undefined })
-          return false
-        }
-        // success
-        this.stores.password.set({ passwordVersion: 2 })
+        migratePasswordV1ToV2(this.stores.password, pass)
       } else {
         this.stores.password.setPlaintextPassword(pass)
       }

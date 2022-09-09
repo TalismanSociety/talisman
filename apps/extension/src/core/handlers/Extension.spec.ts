@@ -2,6 +2,7 @@ import { db } from "@core/libs/db"
 import { MessageTypes, RequestTypes, ResponseTypes } from "@core/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import type { ResponseSigning } from "@polkadot/extension-base/background/types"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import type { MetadataDef } from "@polkadot/extension-inject/types"
@@ -64,7 +65,7 @@ describe("Extension", () => {
   const getAccount = async (type?: KeypairType): Promise<string> => {
     const account = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
     expect(account).toBeDefined()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     if (!account) throw new Error("Account not found")
     return account.address
   }
@@ -79,7 +80,6 @@ describe("Extension", () => {
       passConfirm: password,
     })
     const account = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [account!.address] })
   })
 
@@ -90,19 +90,19 @@ describe("Extension", () => {
 
   test("exports account from keyring", async () => {
     expect(extensionStores.password.hasPassword).toBeTruthy()
-    const {
-      pair: { address },
-    } = keyring.addUri(suri, password)
+    const rootAccount = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
+    expect(rootAccount)
+
     const result = await extension.handle(
       "id",
       "pri(accounts.export)",
       {
-        address,
+        address: rootAccount!.address,
       },
       {} as chrome.runtime.Port
     )
 
-    expect(result.exportedJson.address).toBe(address)
+    expect(result.exportedJson.address).toBe(rootAccount!.address)
     expect(result.exportedJson.encoded).toBeDefined()
   })
 
@@ -113,7 +113,7 @@ describe("Extension", () => {
       state.requestStores.signing.clearRequests()
       address = await getAccount()
       pair = keyring.getPair(address)
-      pair.decodePkcs8(password)
+      pair.decodePkcs8(extensionStores.password.getPassword())
       payload = {
         address,
         blockHash: "0xe1b1dda72998846487e4d858909d4f9a6bbd6e338e4588e5d809de16b1317b80",
