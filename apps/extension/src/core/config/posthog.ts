@@ -33,7 +33,7 @@ const talismanProperties = {
   testBuild: DEBUG || ["qa", "ci"].includes(process.env.BUILD as string),
 }
 
-export const initPosthog = (allowTracking = false) => {
+export const initPosthog = (allowTracking = true) => {
   if (process.env.POSTHOG_AUTH_TOKEN) {
     posthog.init(process.env.POSTHOG_AUTH_TOKEN, {
       api_host: "https://app.posthog.com",
@@ -42,10 +42,6 @@ export const initPosthog = (allowTracking = false) => {
       disable_session_recording: true,
       persistence: "localStorage",
       ip: false,
-      loaded: (posthogInstance) => {
-        if (allowTracking && !posthogInstance.has_opted_in_capturing())
-          posthogInstance.opt_in_capturing()
-      },
       sanitize_properties: (properties, eventName) => {
         // We can remove all the posthog user profiling properties except for those that are required for PostHog to work
         const requiredProperties = Object.keys(properties).reduce((result, key) => {

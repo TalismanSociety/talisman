@@ -5,20 +5,20 @@ export interface SettingsStoreData {
   useErrorTracking: boolean
   useTestnets: boolean
   identiconType: IdenticonType
-  useAnalyticsTracking: boolean
+  useAnalyticsTracking?: boolean // undefined during onboarding
   hideBalances: boolean
-  allowNotifications: boolean
-  selectedAccount: string | undefined
+  allowNotifications: boolean // undefined = show all accounts
+  selectedAccount?: string
   shouldMimicMetaMask: boolean
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
 
 export const settingsStore = new SettingsStore("settings", {
-  useErrorTracking: false,
+  useErrorTracking: true,
   useTestnets: false,
   identiconType: "talisman-orb",
-  useAnalyticsTracking: false,
+  useAnalyticsTracking: undefined, // undefined for onboarding
   hideBalances: false,
   allowNotifications: true,
   shouldMimicMetaMask: false,

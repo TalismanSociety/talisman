@@ -10,18 +10,10 @@ export type OnboardingWizardData = {
   password?: string
   passwordConfirm?: string
   mnemonic?: string
-  agreeToS?: boolean
-  allowLogging?: boolean
+  allowTracking?: boolean
 }
 
-const DEFAULT_DATA: OnboardingWizardData = DEBUG
-  ? {
-      // mnemonic: "test test test test test test test test test test test junk",
-      // password: "Password0",
-      // passwordConfirm: "Password0",
-      // agreeToS: true,
-    }
-  : {}
+const DEFAULT_DATA: OnboardingWizardData = {}
 
 const useAppOnboardProvider = () => {
   // data used for account creation
@@ -46,12 +38,15 @@ const useAppOnboardProvider = () => {
 
   // update
   useEffect(() => {
-    if (data.allowLogging !== undefined)
+    // toggle both error and analytics tracking based on user input
+    // both these features have a subscription on the settings store, so nothing else is necessary
+    // don't coerce, value is undefined until user makes a choice
+    if (data.allowTracking !== undefined)
       settingsStore.set({
-        useErrorTracking: data.allowLogging,
-        useAnalyticsTracking: data.allowLogging,
+        useErrorTracking: data.allowTracking,
+        useAnalyticsTracking: data.allowTracking,
       })
-  }, [data.allowLogging])
+  }, [data.allowTracking])
 
   return {
     onboard,

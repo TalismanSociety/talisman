@@ -1,6 +1,8 @@
 import { Box } from "@talisman/components/Box"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import imgAnalytics from "@talisman/theme/images/analytics.png"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -35,20 +37,46 @@ const Picture = styled.img`
   width: 53.7rem;
 `
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Onboarding",
+  featureVersion: 3,
+  page: "Manage your privacy",
+}
+
 export const PrivacyPage = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
+
   const { updateData } = useOnboard()
   const navigate = useNavigate()
 
   const handleClick = useCallback(
-    (allowLogging: boolean) => () => {
-      updateData({ allowLogging })
+    (allowTracking: boolean) => () => {
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Goto",
+        action: allowTracking ? "No thanks" : "I agree",
+      })
+      updateData({ allowTracking })
       navigate("/onboard")
     },
     [navigate, updateData]
   )
 
+  const handleLearnMoreClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "GotoExternal",
+      action: "Learn more",
+    })
+  }, [])
+
   return (
-    <Container withBack picture={<Picture src={imgAnalytics} alt="Analytics" />}>
+    <Container
+      withBack
+      picture={<Picture src={imgAnalytics} alt="Analytics" />}
+      analytics={ANALYTICS_PAGE}
+    >
       <Dialog title="Manage your privacy">
         <Box margin="4.8rem 0" lineheightcustom={2.2}>
           To help improve Talisman we’d like to collect anonymous usage information and send
@@ -56,7 +84,10 @@ export const PrivacyPage = () => {
           information. You can always adjust these settings, or opt out completely at any time.
           <br />
           <br />
-          <a href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy">
+          <a
+            onClick={handleLearnMoreClick}
+            href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+          >
             Learn more
           </a>{" "}
           about what we track and how we use this data.

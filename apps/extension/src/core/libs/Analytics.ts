@@ -20,8 +20,22 @@ class TalismanAnalytics {
 
     this.init().then(() => {
       settingsStore.observable.subscribe(({ useAnalyticsTracking }) => {
-        if (useAnalyticsTracking && !posthog.has_opted_in_capturing()) posthog.opt_in_capturing()
-        else if (!useAnalyticsTracking) posthog.clear_opt_in_out_capturing()
+        if (useAnalyticsTracking === undefined) {
+          if (posthog.has_opted_in_capturing() || posthog.has_opted_out_capturing())
+            posthog.clear_opt_in_out_capturing()
+        } else if (
+          useAnalyticsTracking &&
+          (!posthog.has_opted_in_capturing() || posthog.has_opted_out_capturing())
+        ) {
+          posthog.clear_opt_in_out_capturing()
+          posthog.opt_in_capturing()
+        } else if (
+          !useAnalyticsTracking &&
+          (posthog.has_opted_in_capturing() || !posthog.has_opted_out_capturing())
+        ) {
+          posthog.clear_opt_in_out_capturing()
+          posthog.opt_out_capturing()
+        }
       })
     })
   }
@@ -37,7 +51,10 @@ class TalismanAnalytics {
     // have to put this manual check here because posthog is buggy and will not respect our settings
     // https://github.com/PostHog/posthog-js/issues/336
     const allowTracking = await settingsStore.get("useAnalyticsTracking")
-    if (!allowTracking) return
+
+    // we need to allow tracking during onboarding, while value is not defined
+    // so we need to explicitely check for false
+    if (allowTracking === false) return
 
     try {
       posthog.capture(eventName, properties)

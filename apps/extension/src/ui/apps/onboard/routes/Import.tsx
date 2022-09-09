@@ -1,6 +1,8 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Box } from "@talisman/components/Box"
 import { api } from "@ui/api"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
@@ -37,7 +39,16 @@ const schema = yup
   })
   .required()
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Onboarding",
+  featureVersion: 3,
+  page: "Import Wallet",
+}
+
 export const ImportPage = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
+
   const { data, updateData } = useOnboard()
   const navigate = useNavigate()
 
@@ -54,13 +65,18 @@ export const ImportPage = () => {
   const submit = useCallback(
     async (fields: FormData) => {
       updateData(fields)
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Submit",
+        action: "Import wallet",
+      })
       navigate(`/password`)
     },
     [navigate, updateData]
   )
 
   return (
-    <Layout withBack>
+    <Layout withBack analytics={ANALYTICS_PAGE}>
       <Box flex justify="center">
         <Box w={70.9}>
           <OnboardDialog title="Import account">

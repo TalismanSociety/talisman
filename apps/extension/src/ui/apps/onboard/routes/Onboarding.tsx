@@ -44,7 +44,7 @@ export const OnboardingPage = () => {
   }, [onboard, processOnboard])
 
   return (
-    <Container withBack>
+    <Container>
       <Box flex justify="center">
         <Box w={60}>
           <Dialog title="Creating your accounts">

@@ -1,6 +1,8 @@
 import { Box } from "@talisman/components/Box"
 import { DownloadIcon, PlusIcon } from "@talisman/theme/icons"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -128,14 +130,35 @@ const WelcomeCta = ({
   )
 }
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Onboarding",
+  featureVersion: 3,
+  page: "Welcome",
+}
+
+const handleLinkClick = (action: string) => () => {
+  sendAnalyticsEvent({
+    ...ANALYTICS_PAGE,
+    name: "GotoExternal",
+    action,
+  })
+}
+
 export const WelcomePage = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
   const { reset, updateData } = useOnboard()
   const navigate = useNavigate()
 
   const handleNextClick = useCallback(
-    (recovery: boolean) => () => {
+    (recovery: boolean) => async () => {
       reset()
-      updateData({ agreeToS: true, mnemonic: undefined }) // always clear this one, even in dev mode
+      updateData({ mnemonic: undefined }) // always clear this one, even in dev mode
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Goto",
+        action: recovery ? "Import Wallet Button" : "New Wallet Button",
+      })
       navigate(recovery ? "/import" : "/password")
     },
     [navigate, reset, updateData]
@@ -174,6 +197,7 @@ export const WelcomePage = () => {
               href="https://docs.talisman.xyz/legal-and-security/terms-of-use"
               target="_blank"
               rel="noreferrer"
+              onClick={handleLinkClick("Terms of Service")}
             >
               Terms of Service
             </a>
@@ -183,6 +207,7 @@ export const WelcomePage = () => {
               href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
               target="_blank"
               rel="noreferrer"
+              onClick={handleLinkClick("Privacy Policy")}
             >
               Privacy Policy
             </a>

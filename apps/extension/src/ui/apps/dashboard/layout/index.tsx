@@ -1,5 +1,6 @@
 import { BackButton } from "@talisman/components/BackButton"
 import { scrollbarsStyle } from "@talisman/theme/styles"
+import { AnalyticsPage } from "@ui/api/analytics"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
@@ -19,27 +20,30 @@ type LayoutProps = {
   withBack?: boolean
   backTo?: string
   className?: string
+  analytics?: AnalyticsPage
 }
 
-const UnstyledLayout: FC<LayoutProps> = ({ withBack, backTo, children, className }) => (
-  <main className={className}>
-    <SideBar />
-    <section className="main-area">
-      <div className="children">
-        {!!withBack && <BackButton className="back" to={backTo} />}
-        {children}
-      </div>
-      <Suspense fallback={null}>
-        <DashboardNotifications />
-      </Suspense>
-    </section>
-    <SendTokensModal />
-    <AccountRenameModal />
-    <AccountRemoveModal />
-    <AddressFormatterModal />
-    <OnboardingToast />
-  </main>
-)
+const UnstyledLayout: FC<LayoutProps> = ({ withBack, backTo, children, className, analytics }) => {
+  return (
+    <main className={className}>
+      <SideBar />
+      <section className="main-area">
+        <div className="children">
+          {!!withBack && <BackButton analytics={analytics} className="back" to={backTo} />}
+          {children}
+        </div>
+        <Suspense fallback={null}>
+          <DashboardNotifications />
+        </Suspense>
+      </section>
+      <SendTokensModal />
+      <AccountRenameModal />
+      <AccountRemoveModal />
+      <AddressFormatterModal />
+      <OnboardingToast />
+    </main>
+  )
+}
 
 const Layout = styled(UnstyledLayout)`
   width: 100%;

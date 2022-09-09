@@ -1,7 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Box } from "@talisman/components/Box"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
-import { MouseEventHandler, useCallback } from "react"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -23,8 +25,6 @@ type FormData = {
   agreeToS?: boolean
 }
 
-const noPropagation: MouseEventHandler = (e) => e.stopPropagation()
-
 const schema = yup
   .object({
     password: yup.string().required(""),
@@ -36,7 +36,16 @@ const schema = yup
   })
   .required()
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Onboarding",
+  featureVersion: 3,
+  page: "Set wallet password",
+}
+
 export const PasswordPage = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
+
   const { data, updateData } = useOnboard()
   const navigate = useNavigate()
 
@@ -55,13 +64,18 @@ export const PasswordPage = () => {
   const submit = useCallback(
     async (fields: FormData) => {
       updateData(fields)
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Submit",
+        action: "Set password",
+      })
       navigate(`/privacy`)
     },
     [navigate, updateData]
   )
 
   return (
-    <Layout withBack>
+    <Layout withBack analytics={ANALYTICS_PAGE}>
       <Box flex justify="center">
         <Box w={60}>
           <OnboardDialog title="Choose a password">
@@ -101,7 +115,7 @@ export const PasswordPage = () => {
                 </Box>
               </Box>
               <Box h={1.6} />
-              <OnboardButton type="submit" primary disabled={!isValid}>
+              <OnboardButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
                 Continue
               </OnboardButton>
             </form>
