@@ -57,8 +57,8 @@ const Unlock = ({ className }: any) => {
 
   // autologin, for developers only
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production" && process.env.PASSWORD)
-      submit({ password: process.env.PASSWORD })
+    // if (process.env.NODE_ENV !== "production" && process.env.PASSWORD)
+    // submit({ password: process.env.PASSWORD })
   }, [submit])
 
   return (

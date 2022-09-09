@@ -1,12 +1,10 @@
 import { randomUUID, scrypt } from "crypto"
 
 import { StorageProvider } from "@core/libs/Store"
-import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { genSalt, hash } from "bcryptjs"
 import { BehaviorSubject } from "rxjs"
 import { Err, Ok, Result } from "ts-results"
-import Browser from "webextension-polyfill"
 
 /* ----------------------------------------------------------------
 Contains sensitive data.
@@ -28,17 +26,12 @@ type PasswordStoreData = {
 
 const initialData = {
   passwordVersion: 1,
+  salt: undefined,
 }
 
 export class PasswordStore extends StorageProvider<PasswordStoreData> {
   #password?: string = undefined
   isLoggedIn = new BehaviorSubject<LoggedInType>(this.hasPassword ? TRUE : FALSE)
-
-  constructor() {
-    super("password", initialData)
-    // migration to remove password field from local storage for anyone who may have it there.
-    Browser.storage.local.remove("password")
-  }
 
   async createPassword(plaintextPw: string) {
     const salt = await generateSalt()
@@ -99,6 +92,6 @@ export const getHashedPassword = async (
   }
 }
 
-const passwordStore = new PasswordStore()
+const passwordStore = new PasswordStore("password", initialData)
 
 export default passwordStore

@@ -10,7 +10,7 @@ import passwordStore from "../store.password"
 const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
 const password = "passw0rd"
 
-const createAccount = (
+const createPair = (
   origin: AccountMeta["origin"] = "ROOT",
   derivationPath = "",
   parent?: string,
@@ -43,24 +43,24 @@ describe("App migrations", () => {
   })
 
   test("migrate password v1 -> v2", async () => {
-    expect((await passwordStore.get("passwordVersion")) === 1)
+    expect(await passwordStore.get("passwordVersion")).toBe(1)
 
     // create 4 substrate accounts
-    const rootAccount = createAccount()
+    const rootAccount = createPair()
     const indices = [1, 2, 3]
     indices.forEach((index) => {
-      createAccount("DERIVED", `${index}`, rootAccount.address)
+      createPair("DERIVED", `${index}`, rootAccount.address)
     })
     // create an ethereum account
-    createAccount("DERIVED", getEthDerivationPath(), rootAccount.address, "ethereum")
+    createPair("DERIVED", getEthDerivationPath(), rootAccount.address, "ethereum")
 
     // ensure can decrypt keypair
     rootAccount.decodePkcs8(password)
     rootAccount.lock()
 
     //run migration
-    await migratePasswordV1ToV2(passwordStore, password)
-    expect((await passwordStore.get("passwordVersion")) === 2)
+    await migratePasswordV1ToV2(password)
+    expect(await passwordStore.get("passwordVersion")).toBe(2)
 
     const hashedPw = passwordStore.getPassword()
     expect(hashedPw === "$2a$13$7AHTA/Vs6L.Yhj0P12wlo.nV9cP0/YiID9TtHCjLroCQdETKafqVa")

@@ -1,4 +1,3 @@
-import { DEBUG } from "@core/constants"
 import { AccountMeta } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
@@ -17,7 +16,6 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
-import { KeyringPair } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { mnemonicGenerate, mnemonicValidate } from "@polkadot/util-crypto"
@@ -26,7 +24,6 @@ import Browser from "webextension-polyfill"
 
 import { AccountTypes } from "../accounts/helpers"
 import { migratePasswordV1ToV2 } from "./migrations"
-import { generateSalt, getHashedPassword } from "./store.password"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalTypes>()
@@ -126,7 +123,7 @@ export default class AppHandler extends ExtensionHandler {
       // if the password has not been migrated to the hashed version yet, need to do so
       // check for passwordHashMigrated flag and perform migration if not
       if (!passwordHashMigrated) {
-        migratePasswordV1ToV2(this.stores.password, pass)
+        await migratePasswordV1ToV2(pass)
       } else {
         this.stores.password.setPlaintextPassword(pass)
       }
