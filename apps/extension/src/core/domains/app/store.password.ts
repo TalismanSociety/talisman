@@ -1,5 +1,3 @@
-import { randomUUID, scrypt } from "crypto"
-
 import { StorageProvider } from "@core/libs/Store"
 import { assert } from "@polkadot/util"
 import { genSalt, hash } from "bcryptjs"
@@ -93,5 +91,4 @@ export const getHashedPassword = async (
 }
 
 const passwordStore = new PasswordStore("password", initialData)
-
 export default passwordStore

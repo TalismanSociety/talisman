@@ -1,8 +1,7 @@
 import { DEBUG } from "@core/constants"
+import { passwordStore } from "@core/domains/app"
 import { KeyringPair } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
-
-import passwordStore from "./store.password"
 
 export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
   const pairs = keyring.getPairs()
@@ -32,7 +31,7 @@ export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
     return false
   }
   // success
-  passwordStore.set({ passwordVersion: 2 })
+  await passwordStore.set({ passwordVersion: 2 })
   return true
 }
 

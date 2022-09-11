@@ -1,11 +1,11 @@
 import { AccountAddressType, AccountMeta } from "@core/domains/accounts/types"
+import { passwordStore } from "@core/domains/app"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 
 import { migratePasswordV1ToV2 } from "../migrations"
-import passwordStore from "../store.password"
 
 const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
 const password = "passw0rd"
@@ -59,7 +59,9 @@ describe("App migrations", () => {
     rootAccount.lock()
 
     //run migration
-    await migratePasswordV1ToV2(password)
+    const result = await migratePasswordV1ToV2(password)
+    expect(result).toBeTruthy()
+
     expect(await passwordStore.get("passwordVersion")).toBe(2)
 
     const hashedPw = passwordStore.getPassword()
