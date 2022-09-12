@@ -11,7 +11,7 @@ import { migratePasswordV1ToV2 } from "../migrations"
 const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
 const password = "passw0rd"
 
-jest.setTimeout(10_000)
+jest.setTimeout(20_000)
 
 const createPair = (
   origin: AccountMeta["origin"] = "ROOT",
@@ -48,9 +48,9 @@ describe("App migrations", () => {
   test("migrate password v1 -> v2", async () => {
     expect(await passwordStore.get("passwordVersion")).toBe(1)
 
-    // create 4 substrate accounts
+    // create some substrate accounts
     const rootAccount = createPair()
-    const indices = [1, 2, 3]
+    const indices = [1, 2]
     indices.forEach((index) => {
       createPair("DERIVED", `${index}`, rootAccount.address)
     })
