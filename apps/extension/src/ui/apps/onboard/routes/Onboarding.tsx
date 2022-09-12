@@ -9,7 +9,9 @@ import { Layout } from "../layout"
 
 const Container = styled(Layout)`
   ${OnboardLoader} {
-    font-size: 20rem;
+    margin-top: 7.2rem;
+    margin-bottom: 2.4rem;
+    font-size: 14rem;
     color: var(--color-foreground);
   }
 `
@@ -47,7 +49,7 @@ export const OnboardingPage = () => {
     <Container>
       <Box flex justify="center">
         <Box w={60}>
-          <Dialog title="Creating your accounts">
+          <Dialog title="Creating your wallet">
             <OnboardLoader />
             <ErrorMessage>{error}</ErrorMessage>
           </Dialog>
