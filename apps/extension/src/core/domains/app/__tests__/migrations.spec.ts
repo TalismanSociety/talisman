@@ -1,3 +1,4 @@
+import { seedPhraseStore } from "@core/domains/accounts"
 import { AccountAddressType, AccountMeta } from "@core/domains/accounts/types"
 import { passwordStore } from "@core/domains/app"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
@@ -9,6 +10,8 @@ import { migratePasswordV1ToV2 } from "../migrations"
 
 const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
 const password = "passw0rd"
+
+jest.setTimeout(10_000)
 
 const createPair = (
   origin: AccountMeta["origin"] = "ROOT",
@@ -53,6 +56,9 @@ describe("App migrations", () => {
     })
     // create an ethereum account
     createPair("DERIVED", getEthDerivationPath(), rootAccount.address, "ethereum")
+
+    // create a seedphrase encrypted with the plaintext password
+    await seedPhraseStore.add(mnemonic, rootAccount.address, password, true)
 
     // ensure can decrypt keypair
     rootAccount.decodePkcs8(password)
