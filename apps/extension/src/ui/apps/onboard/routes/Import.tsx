@@ -43,7 +43,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
   featureVersion: 3,
-  page: "Import Wallet",
+  page: "Onboarding - Step 2a - Import wallet",
 }
 
 export const ImportPage = () => {

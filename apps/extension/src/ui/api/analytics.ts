@@ -16,6 +16,7 @@ export type AnalyticsPage = {
 export type AnalyticsEvent = AnalyticsPage & {
   name: AnalyticsEventName
   action?: string
+  site?: string
   properties?: posthog.Properties
 }
 

@@ -1,4 +1,5 @@
 import { Box } from "@talisman/components/Box"
+import { AnalyticsPage } from "@ui/api/analytics"
 import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
 
@@ -25,6 +26,13 @@ const ErrorMessage = styled.div`
   color: var(--color-status-error);
 `
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Onboarding",
+  featureVersion: 3,
+  page: "Onboarding - Step 4 - Creating your wallet spinner",
+}
+
 export const OnboardingPage = () => {
   const [error, setError] = useState<string>()
   const { onboard } = useOnboard()
@@ -46,7 +54,7 @@ export const OnboardingPage = () => {
   }, [onboard, processOnboard])
 
   return (
-    <Container>
+    <Container analytics={ANALYTICS_PAGE}>
       <Box flex justify="center">
         <Box w={60}>
           <Dialog title="Creating your wallet">

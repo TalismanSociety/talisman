@@ -134,7 +134,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
   featureVersion: 3,
-  page: "Welcome",
+  page: "Onboarding - Step 1 - Welcome",
 }
 
 const handleLinkClick = (action: string) => () => {
@@ -142,6 +142,7 @@ const handleLinkClick = (action: string) => () => {
     ...ANALYTICS_PAGE,
     name: "GotoExternal",
     action,
+    site: "Talisman Docs",
   })
 }
 

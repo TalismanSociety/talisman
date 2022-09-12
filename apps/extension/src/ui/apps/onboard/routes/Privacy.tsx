@@ -41,7 +41,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
   featureVersion: 3,
-  page: "Manage your privacy",
+  page: "Onboarding - Step 3 - Manage your privacy",
 }
 
 export const PrivacyPage = () => {
@@ -55,7 +55,7 @@ export const PrivacyPage = () => {
       sendAnalyticsEvent({
         ...ANALYTICS_PAGE,
         name: "Goto",
-        action: allowTracking ? "No thanks" : "I agree",
+        action: `Manage your privacy - ${allowTracking ? "I agree" : "No thanks"}`,
       })
       updateData({ allowTracking })
       navigate("/onboard")
@@ -67,7 +67,8 @@ export const PrivacyPage = () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "GotoExternal",
-      action: "Learn more",
+      action: "Learn more about privacy",
+      site: "Talisman Docs",
     })
   }, [])
 

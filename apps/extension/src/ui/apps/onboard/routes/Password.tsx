@@ -40,7 +40,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
   featureVersion: 3,
-  page: "Set wallet password",
+  page: "Onboarding - Step 2b - Password",
 }
 
 export const PasswordPage = () => {
@@ -67,7 +67,7 @@ export const PasswordPage = () => {
       sendAnalyticsEvent({
         ...ANALYTICS_PAGE,
         name: "Submit",
-        action: "Set password",
+        action: "Choose password continue button",
       })
       navigate(`/privacy`)
     },
