@@ -12,7 +12,7 @@ export const OnboardLoader = styled(({ className }: { className?: string }) => (
         r="20"
         fill="none"
         stroke="currentColor"
-        strokeWidth="4"
+        strokeWidth="3"
       />
     </svg>
   </div>
