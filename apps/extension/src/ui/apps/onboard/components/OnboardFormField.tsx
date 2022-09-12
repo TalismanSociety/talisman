@@ -21,10 +21,10 @@ const Container = styled.div`
     width: 100%;
 
     :hover {
-      background: rgba(var(--color-foreground-raw), 0.1);
+      background: rgba(var(--color-foreground-raw), 0.075);
     }
     :focus {
-      background: rgba(var(--color-foreground-raw), 0.2);
+      background: rgba(var(--color-foreground-raw), 0.1);
     }
   }
 
