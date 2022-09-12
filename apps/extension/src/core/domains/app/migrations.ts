@@ -56,7 +56,7 @@ export const migratePasswordV2ToV1 = async (plaintextPw: string) => {
   const pairs = keyring.getPairs()
 
   const hashedPw = await passwordStore.getHashedPassword(plaintextPw)
-  q
+
   // keep track of which pairs have been successfully migrated
   const successfulPairs: KeyringPair[] = []
   try {
