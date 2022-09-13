@@ -1,17 +1,18 @@
+import { SettingsStoreData } from "@core/domains/app"
 import { Dropdown, DropdownProps } from "@talisman/components/Dropdown"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Layout from "@ui/apps/dashboard/layout"
 import { useSettings } from "@ui/hooks/useSettings"
 import styled from "styled-components"
 
-type AllowedValues = 0 | 5 | 30 | 60
+type AllowedValues = SettingsStoreData["autoLockTimeout"]
 type Option = { value: AllowedValues; label: string }
 
 const OPTIONS: Record<AllowedValues, Option> = {
   0: { value: 0, label: "Disabled" },
-  5: { value: 5, label: "5 minutes" },
-  30: { value: 30, label: "30 minutes" },
-  60: { value: 60, label: "60 minutes" },
+  300: { value: 300, label: "5 minutes" },
+  1800: { value: 1800, label: "30 minutes" },
+  3600: { value: 3600, label: "60 minutes" },
 }
 
 const PickerItem = styled.div`

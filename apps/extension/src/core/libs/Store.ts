@@ -150,7 +150,6 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
    */
   #onStorageChanged = (changes: Record<string, Storage.StorageChange>, areaName: string) => {
     if (areaName !== "local") return
-
     const change = changes[this.#prefix]
     if (!change) return
 

@@ -1,4 +1,4 @@
-import { BehaviorSubject } from "rxjs"
+import { BehaviorSubject, Observable, timer } from "rxjs"
 import Browser from "webextension-polyfill"
 /* ----------------------------------------------------------------
 Contains sensitive data.
@@ -15,10 +15,16 @@ export type LoggedInType = LOGGEDIN_TRUE | LOGGEDIN_FALSE | LOGGEDIN_UNKNOWN
 export class PasswordStore {
   #password?: string = undefined
   isLoggedIn = new BehaviorSubject<LoggedInType>(this.hasPassword ? TRUE : FALSE)
+  #autoLockTimer?: NodeJS.Timeout
 
   constructor() {
     // migration to remove password field from local storage for anyone who may have it there.
     Browser.storage.local.remove("password")
+  }
+
+  public resetAutoLockTimer(seconds: number) {
+    if (this.#autoLockTimer) clearTimeout(this.#autoLockTimer)
+    if (seconds > 0) this.#autoLockTimer = setTimeout(() => this.clearPassword(), seconds * 1000)
   }
 
   setPassword(password: string | undefined) {

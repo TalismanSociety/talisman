@@ -10,7 +10,7 @@ export interface SettingsStoreData {
   allowNotifications: boolean
   selectedAccount: string | undefined
   shouldMimicMetaMask: boolean
-  autoLockTimeout: 0 | 5 | 30 | 60
+  autoLockTimeout: 0 | 300 | 1800 | 3600
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
