@@ -1,7 +1,6 @@
 import { Box } from "@talisman/components/Box"
 import imgFundWallet from "@talisman/theme/images/fund-wallet.png"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
-import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
