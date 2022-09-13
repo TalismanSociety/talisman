@@ -9,6 +9,7 @@ type ONBOARDED_FALSE = "FALSE"
 type ONBOARDED_UNKNOWN = "UNKNOWN"
 const TRUE: ONBOARDED_TRUE = "TRUE"
 const FALSE: ONBOARDED_FALSE = "FALSE"
+const UNKNOWN: ONBOARDED_UNKNOWN = "UNKNOWN"
 
 export type OnboardedType = ONBOARDED_TRUE | ONBOARDED_FALSE | ONBOARDED_UNKNOWN
 
@@ -23,7 +24,7 @@ export type AppStoreData = {
 const ANALYTICS_VERSION = "1.5.0"
 
 export const DEFAULT_APP_STATE = {
-  onboarded: FALSE,
+  onboarded: UNKNOWN,
   hideBraveWarning: false,
   hasBraveWarningBeenShown: false,
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
