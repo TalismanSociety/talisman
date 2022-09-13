@@ -63,8 +63,7 @@ const Settings = () => {
           icon={<IconClock />}
           title="Auto-lock Timer"
           subtitle="Set a timer to automatically lock the Talisman extension"
-          to={`/`}
-          disabled
+          to={`/settings/autolock`}
         />
         <CtaButton
           icon={<IconGlobe />}

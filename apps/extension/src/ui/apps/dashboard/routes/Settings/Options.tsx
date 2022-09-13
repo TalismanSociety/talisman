@@ -11,37 +11,6 @@ import { useSettings } from "@ui/hooks/useSettings"
 import { useCallback } from "react"
 import styled from "styled-components"
 
-const Button = styled(SimpleButton)`
-  width: auto;
-`
-
-const ModalDescription = styled.p`
-  color: var(--color-mid);
-  text-align: center;
-  font-size: var(--font-size-normal);
-  padding: 0.8rem 1.8rem;
-`
-
-const CustomNetworksCount = styled.span`
-  margin-right: 1.6rem;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  span {
-    display: block;
-    width: 2.4rem;
-    height: 2.4rem;
-    color: var(--color-primary);
-    background: rgba(213, 255, 92, 0.12);
-    text-align: center;
-    border-radius: 50%;
-    line-height: 2.4rem;
-    padding-top: 0.1rem;
-  }
-`
-
 const Options = () => {
   const {
     identiconType = "talisman-orb",

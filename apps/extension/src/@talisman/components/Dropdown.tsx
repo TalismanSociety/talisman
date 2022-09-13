@@ -107,7 +107,6 @@ export type DropdownProps<T> = {
   label?: string
   items: T[]
   propertyKey: keyof T
-  labelKey?: keyof T
   renderItem: RenderItemFunc<T>
   defaultSelectedItem?: T | null | undefined
   placeholder?: string
@@ -118,7 +117,7 @@ export type DropdownProps<T> = {
 // typing T is unnecessary here but if we remove it it makes compiler unable to parse the component
 // this is an issue when using generics inside a tsx file, see https://github.com/microsoft/TypeScript/issues/15713
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-export const Dropdown = <T extends any>({
+export const Dropdown = <T extends Record<string, unknown>>({
   className,
   label,
   items,
