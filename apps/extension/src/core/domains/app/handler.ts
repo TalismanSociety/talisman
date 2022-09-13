@@ -2,6 +2,7 @@ import { AccountMeta } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
   AnalyticsCaptureRequest,
+  AppMessages,
   LoggedinType,
   ModalOpenParams,
   ModalTypes,
@@ -23,6 +24,7 @@ import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
 import { AccountTypes } from "../accounts/helpers"
+import { changePassword } from "./helpers"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalTypes>()
@@ -128,6 +130,39 @@ export default class AppHandler extends ExtensionHandler {
     return this.authStatus()
   }
 
+  private async changePassword({
+    currentPw,
+    newPw,
+    newPwConfirm,
+  }: RequestTypes["pri(app.changePassword)"]) {
+    const rootAccount = this.getRootAccount()
+    assert(rootAccount, "No root account")
+
+    // only allow users who have confirmed backing up their seed phrase to change PW
+    const mnemonicConfirmed = await this.stores.seedPhrase.get("confirmed")
+    assert(
+      mnemonicConfirmed,
+      "Please backup your seed phrase before attempting to change your password."
+    )
+
+    // fetch keyring pair from address
+    const pair = keyring.getPair(rootAccount.address)
+
+    // attempt unlock the pair
+    // a successful unlock means password is ok
+    try {
+      pair.unlock(currentPw)
+    } catch (err) {
+      throw new Error("Incorrect password")
+    }
+    // test if the two inputs of the new password are the same
+    assert(newPw === newPwConfirm, "New password and new password confirmation must match")
+
+    const result = await changePassword({ currentPw, newPw })
+    if (!result.ok) throw Error(result.val)
+    return result.val
+  }
+
   private async dashboardOpen({ route }: RequestRoute): Promise<boolean> {
     if (!(await this.stores.app.getIsOnboarded())) return this.onboardOpen()
     this.state.openDashboard({ route })
@@ -195,6 +230,9 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.lock)":
         return this.lock()
+
+      case "pri(app.changePassword)":
+        return await this.changePassword(request as RequestTypes["pri(app.changePassword)"])
 
       case "pri(app.dashboardOpen)":
         return await this.dashboardOpen(request as RequestRoute)

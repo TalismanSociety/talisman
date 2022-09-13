@@ -14,6 +14,18 @@ interface SeedPhraseData {
   confirmed: boolean
 }
 
+export const encryptSeed = async (seed: string, password: string) => {
+  const seedObj = { seed: `----${seed}` }
+
+  const cipher = await passworder.encrypt(password, seedObj)
+
+  const { seed: checkedSeed } = await passworder.decrypt<storedSeed>(password, cipher)
+
+  assert(seedObj.seed === checkedSeed, "Seed encryption failed")
+
+  return cipher
+}
+
 export class SeedPhraseStore extends SubscribableStorageProvider<
   SeedPhraseData,
   "pri(mnemonic.subscribe)"
@@ -28,17 +40,8 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
 
     assert(!storedCipher, `Seed already exists in SeedPhraseStore`)
 
-    const seedObj = { seed: `----${seed}` }
-
-    const cipher = await passworder.encrypt(password, seedObj)
-
-    const { seed: checkedSeed } = await passworder.decrypt<storedSeed>(password, cipher)
-
-    assert(seedObj.seed === checkedSeed, "Seed encryption failed")
-
-    const data = { cipher, address, confirmed }
-
-    await this.set(data)
+    const cipher = await encryptSeed(seed, password)
+    await this.set({ cipher, address, confirmed })
     return true
   }
 

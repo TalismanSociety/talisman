@@ -34,8 +34,13 @@ type StringTernary = FALSE | TRUE | UNKNOWN
 export type OnboardedType = StringTernary
 export type LoggedinType = StringTernary
 
+export type ChangePasswordRequest = {
+  currentPw: string
+  newPw: string
+  newPwConfirm: string
+}
+
 export interface AppMessages {
-  // app message signatures ///// REQUIRES SORTING
   "pri(app.onboard)": [RequestOnboard, OnboardedType]
   "pri(app.onboardStatus)": [null, OnboardedType]
   "pri(app.onboardStatus.subscribe)": [null, boolean, OnboardedType]
@@ -43,6 +48,7 @@ export interface AppMessages {
   "pri(app.authStatus)": [null, LoggedinType]
   "pri(app.authStatus.subscribe)": [null, boolean, LoggedinType]
   "pri(app.lock)": [null, boolean]
+  "pri(app.changePassword)": [ChangePasswordRequest, boolean]
   "pri(app.dashboardOpen)": [RequestRoute, boolean]
   "pri(app.onboardOpen)": [null, boolean]
   "pri(app.popupOpen)": [null, boolean]
