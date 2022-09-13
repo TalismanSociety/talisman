@@ -1,4 +1,4 @@
-import { BehaviorSubject, Observable, timer } from "rxjs"
+import { BehaviorSubject } from "rxjs"
 import Browser from "webextension-polyfill"
 /* ----------------------------------------------------------------
 Contains sensitive data.
