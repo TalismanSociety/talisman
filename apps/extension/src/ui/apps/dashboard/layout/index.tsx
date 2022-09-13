@@ -4,6 +4,7 @@ import { AnalyticsPage } from "@ui/api/analytics"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
 import { FC, Suspense, lazy } from "react"
 import styled from "styled-components"
@@ -37,6 +38,7 @@ const UnstyledLayout: FC<LayoutProps> = ({ withBack, backTo, children, className
         </Suspense>
       </section>
       <SendTokensModal />
+      <BuyTokensModal />
       <AccountRenameModal />
       <AccountRemoveModal />
       <AddressFormatterModal />

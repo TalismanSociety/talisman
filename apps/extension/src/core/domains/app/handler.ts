@@ -79,7 +79,7 @@ export default class AppHandler extends ExtensionHandler {
       console.error(err)
     }
 
-    const result = await this.stores.app.setOnboarded()
+    const result = await this.stores.app.setOnboarded(method === "new")
     talismanAnalytics.capture("onboarded", { method })
     return result
   }

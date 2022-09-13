@@ -7,6 +7,7 @@ import { WithTooltip } from "@talisman/components/Tooltip"
 import { breakpoints } from "@talisman/theme/definitions"
 import {
   CopyIcon,
+  CreditCardIcon,
   ExternalLinkIcon,
   ImageIcon,
   PaperPlaneIcon,
@@ -16,6 +17,7 @@ import {
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import Build from "@ui/domains/Build"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
@@ -276,6 +278,12 @@ export const SideBar = () => {
     navigate("/settings")
   }, [genericEvent, navigate])
 
+  const { open: openBuyModal } = useBuyTokensModal()
+  const handleBuyClick = useCallback(() => {
+    genericEvent("open buy tokens", { from: "sidebar" })
+    openBuyModal()
+  }, [genericEvent, openBuyModal])
+
   return (
     <Container>
       <PaddedItem>
@@ -316,6 +324,16 @@ export const SideBar = () => {
           >
             Portfolio
           </NavItemLink>
+          <NavItemButton
+            onClick={handleBuyClick}
+            icon={
+              <ResponsiveTooltip tooltip="Buy Crypto">
+                <CreditCardIcon />
+              </ResponsiveTooltip>
+            }
+          >
+            Buy Crypto
+          </NavItemButton>
           <NavItemLink
             to="/accounts/add"
             onClick={handleAddAccountClick}

@@ -1,5 +1,12 @@
 import { DEBUG } from "@core/constants"
+import { FeaturesStoreData, featuresStore } from "@core/domains/app/store.features"
+import { FeatureFlag } from "@core/domains/app/types"
 import posthog from "posthog-js"
+
+const REFRESH_FEATURE_FLAGS_INTERVAL = 5 * 60 * 1000 // 5 minutes
+
+// Dev mode features, should include all of them
+const DEFAULT_FEATURE_FLAGS: FeatureFlag[] = ["BUY_CRYPTO", "WALLET_FUNDING"]
 
 const unsafeProperties = [
   "$os",
@@ -33,7 +40,7 @@ const talismanProperties = {
   testBuild: DEBUG || ["qa", "ci"].includes(process.env.BUILD as string),
 }
 
-export const initPosthog = (allowTracking = true) => {
+export const initPosthog = () => {
   if (process.env.POSTHOG_AUTH_TOKEN) {
     posthog.init(process.env.POSTHOG_AUTH_TOKEN, {
       api_host: "https://app.posthog.com",
@@ -54,5 +61,24 @@ export const initPosthog = (allowTracking = true) => {
         }
       },
     })
+
+    // update feature store on each reload of feature flags
+    posthog.onFeatureFlags((features, variants) => {
+      featuresStore.set({
+        features,
+        variants,
+      } as FeaturesStoreData)
+    })
+
+    // reload feature flags every 5 minutes
+    setInterval(() => {
+      posthog.reloadFeatureFlags()
+    }, REFRESH_FEATURE_FLAGS_INTERVAL)
+  } else {
+    // DEV mode, enable all features
+    featuresStore.set({
+      features: DEFAULT_FEATURE_FLAGS,
+      variants: {},
+    } as FeaturesStoreData)
   }
 }

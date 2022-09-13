@@ -6,6 +6,7 @@ import { IconMore } from "@talisman/theme/icons"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import { FundYourWallet } from "@ui/domains/Asset/Buy/FundYourWallet"
 import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
@@ -15,6 +16,8 @@ import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAccountExport } from "@ui/hooks/useAccountExport"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAppState } from "@ui/hooks/useAppState"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import React, { useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
@@ -23,6 +26,7 @@ const Stats = styled(Statistics)`
 `
 // memoise to re-render only if balances object changes
 const PageContent = React.memo(({ balances }: { balances: Balances }) => {
+  const { showWalletFunding } = useAppState()
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
   const { canExportAccount, exportAccount } = useAccountExport(account)
@@ -52,12 +56,22 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
     genericEvent("open copy address", { from: "dashboard portfolio" })
   }, [account, genericEvent, openAddressFormatterModal])
 
+  const enableWalletFunding = useIsFeatureEnabled("WALLET_FUNDING")
+  const displayWalletFunding = useMemo(
+    () => Boolean(showWalletFunding && enableWalletFunding),
+    [showWalletFunding, enableWalletFunding]
+  )
+
   return (
-    <div>
+    <Box flex column fullheight>
       <Box flex fullwidth gap={1.6}>
-        <Stats title="Total Portfolio Value" fiat={portfolio} />
-        <Stats title="Locked" fiat={locked} locked />
-        <Stats title="Available" fiat={available} />
+        {!displayWalletFunding && (
+          <>
+            <Stats title="Total Portfolio Value" fiat={portfolio} />
+            <Stats title="Locked" fiat={locked} locked />
+            <Stats title="Available" fiat={available} />
+          </>
+        )}
         <Box grow flex justify="flex-end" align="center" gap={1.6}>
           {account && (
             <PopNav
@@ -82,13 +96,21 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
           )}
         </Box>
       </Box>
-      <Box margin="3.8rem 0 0 0">
-        <NetworkPicker />
-      </Box>
-      <Box margin="1.2rem 0 0 0">
-        <DashboardAssetsTable balances={balancesToDisplay} />
-      </Box>
-    </div>
+      {displayWalletFunding ? (
+        <Box margin="3.8rem 0 0 0" grow flex justify="center" align="center">
+          <FundYourWallet />
+        </Box>
+      ) : (
+        <>
+          <Box margin="3.8rem 0 0 0">
+            <NetworkPicker />
+          </Box>
+          <Box margin="1.2rem 0 0 0">
+            <DashboardAssetsTable balances={balancesToDisplay} />
+          </Box>
+        </>
+      )}
+    </Box>
   )
 })
 

@@ -24,6 +24,10 @@ export interface AnalyticsCaptureRequest {
   options?: posthog.Properties
 }
 
+// values must match the flags defined in Posthog
+export type FeatureFlag = "WALLET_FUNDING" | "BUY_CRYPTO"
+export type FeatureVariants = Record<FeatureFlag, string | boolean>
+
 type FALSE = "FALSE"
 type TRUE = "TRUE"
 type UNKNOWN = "UNKNOWN"
@@ -49,4 +53,5 @@ export interface AppMessages {
   "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenParams]
   "pri(app.promptLogin)": [boolean, boolean]
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
+  //"pri(app.isFeatureEnabled)": [FeatureFlag, boolean]
 }

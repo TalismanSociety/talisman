@@ -11,6 +11,25 @@ import posthog from "posthog-js"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
 
+const ensureUserPreference = (useAnalyticsTracking: boolean | undefined) => {
+  if (useAnalyticsTracking === undefined) {
+    if (posthog.has_opted_in_capturing() || posthog.has_opted_out_capturing())
+      posthog.clear_opt_in_out_capturing()
+  } else if (
+    useAnalyticsTracking &&
+    (!posthog.has_opted_in_capturing() || posthog.has_opted_out_capturing())
+  ) {
+    posthog.clear_opt_in_out_capturing()
+    posthog.opt_in_capturing()
+  } else if (
+    !useAnalyticsTracking &&
+    (posthog.has_opted_in_capturing() || !posthog.has_opted_out_capturing())
+  ) {
+    posthog.clear_opt_in_out_capturing()
+    posthog.opt_out_capturing()
+  }
+}
+
 class TalismanAnalytics {
   lastGeneralReport = Date.now()
   enabled = Boolean(process.env.POSTHOG_AUTH_TOKEN)
@@ -20,29 +39,15 @@ class TalismanAnalytics {
 
     this.init().then(() => {
       settingsStore.observable.subscribe(({ useAnalyticsTracking }) => {
-        if (useAnalyticsTracking === undefined) {
-          if (posthog.has_opted_in_capturing() || posthog.has_opted_out_capturing())
-            posthog.clear_opt_in_out_capturing()
-        } else if (
-          useAnalyticsTracking &&
-          (!posthog.has_opted_in_capturing() || posthog.has_opted_out_capturing())
-        ) {
-          posthog.clear_opt_in_out_capturing()
-          posthog.opt_in_capturing()
-        } else if (
-          !useAnalyticsTracking &&
-          (posthog.has_opted_in_capturing() || !posthog.has_opted_out_capturing())
-        ) {
-          posthog.clear_opt_in_out_capturing()
-          posthog.opt_out_capturing()
-        }
+        ensureUserPreference(useAnalyticsTracking)
       })
     })
   }
 
   async init() {
     const allowTracking = await settingsStore.get("useAnalyticsTracking")
-    return initPosthog(allowTracking)
+    initPosthog()
+    ensureUserPreference(allowTracking)
   }
 
   async capture(eventName: string, properties?: posthog.Properties) {

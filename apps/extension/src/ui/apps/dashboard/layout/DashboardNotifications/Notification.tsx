@@ -10,6 +10,7 @@ const Button = styled.button`
   color: black;
   padding: 0.4rem 1.6rem;
   font-size: 1.4rem;
+  line-height: 2.2rem;
   white-space: nowrap;
   border: none;
   cursor: pointer;
