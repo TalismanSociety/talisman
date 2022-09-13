@@ -32,12 +32,9 @@ const StyledDropdown = styled((props: DropdownProps<Option>) => Dropdown(props))
   margin-top: 3.2rem;
 
   label {
-    background-color: var(--color-background-muted);
-    border-top-left-radius: var(--border-radius-tiny);
-    border-top-right-radius: var(--border-radius-tiny);
     display: flex;
     align-items: center;
-    padding: 1.6rem;
+    padding-bottom: 1.6rem;
     line-height: 1;
     text-align: left;
     color: var(--color-mid);
@@ -45,8 +42,6 @@ const StyledDropdown = styled((props: DropdownProps<Option>) => Dropdown(props))
 
   button {
     width: 100%;
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
   }
 `
 
