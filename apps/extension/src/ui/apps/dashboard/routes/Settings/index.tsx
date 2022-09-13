@@ -54,6 +54,12 @@ const Settings = () => {
           to={`/settings/security-privacy-settings`}
         />
         <CtaButton
+          icon={<IconLock />}
+          title="Change password"
+          subtitle="Change your Talisman password"
+          to={`/settings/change-password`}
+        />
+        <CtaButton
           icon={<IconInfo />}
           title="About"
           subtitle="Read our Privacy Policy and Terms of Use"
@@ -70,13 +76,6 @@ const Settings = () => {
           icon={<IconGlobe />}
           title="Language"
           subtitle="Choose your preferred language"
-          to={`/`}
-          disabled
-        />
-        <CtaButton
-          icon={<IconLock />}
-          title="Change password"
-          subtitle="Change your Talisman password"
           to={`/`}
           disabled
         />
