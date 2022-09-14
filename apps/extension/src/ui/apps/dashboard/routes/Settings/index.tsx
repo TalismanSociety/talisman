@@ -6,7 +6,7 @@ import { ModalDialog } from "@talisman/components/ModalDialog"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
-import { ReactComponent as IconGlobe } from "@talisman/theme/icons/globe.svg"
+import { ReactComponent as IconEye } from "@talisman/theme/icons/eye.svg"
 import { ReactComponent as IconInfo } from "@talisman/theme/icons/info.svg"
 import { ReactComponent as IconKey } from "@talisman/theme/icons/key.svg"
 import { ReactComponent as IconLink } from "@talisman/theme/icons/link.svg"
@@ -50,7 +50,7 @@ const Settings = () => {
           to={`/settings/options`}
         />
         <CtaButton
-          icon={<IconLock />}
+          icon={<IconEye />}
           title="Security and Privacy"
           subtitle="Control security and privacy preferences"
           to={`/settings/security-privacy-settings`}
@@ -65,6 +65,12 @@ const Settings = () => {
           }
           to={`/settings/change-password`}
           disabled={!mnemonicConfirmed}
+        />
+        <CtaButton
+          icon={<IconClock />}
+          title="Auto-lock Timer"
+          subtitle="Set a timer to automatically lock the Talisman extension"
+          to={`/settings/autolock`}
         />
         <CtaButton
           icon={<IconInfo />}

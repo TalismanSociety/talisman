@@ -22,11 +22,13 @@ import { ExtensionHandler } from "@core/libs/Handler"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import Browser from "webextension-polyfill"
 
 import { createSubscription, unsubscribe } from "./subscriptions"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
+  #autoLockTimeout = 0 // cached value so we don't have to get data from the store every time
 
   constructor(state: State, stores: ExtensionStore) {
     super(state, stores)
@@ -42,6 +44,17 @@ export default class Extension extends ExtensionHandler {
       sites: new SitesAuthorisationHandler(state, stores),
       tokens: new TokensHandler(state, stores),
     }
+
+    // connect auto lock timeout setting to the password store
+    this.stores.settings.observable.subscribe(({ autoLockTimeout }) => {
+      this.#autoLockTimeout = autoLockTimeout
+      stores.password.resetAutoLockTimer(autoLockTimeout)
+    })
+
+    // update the autolock timer whenever a setting is changed
+    Browser.storage.onChanged.addListener(() => {
+      stores.password.resetAutoLockTimer(this.#autoLockTimeout)
+    })
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -50,6 +63,9 @@ export default class Extension extends ExtensionHandler {
     request: RequestTypes[TMessageType],
     port: Port
   ): Promise<ResponseType<TMessageType>> {
+    // Reset the auto lock timer on any message, the user is still actively using the extension
+    this.stores.password.resetAutoLockTimer(this.#autoLockTimeout)
+
     // --------------------------------------------------------------------
     // First try to unsubscribe                          ------------------
     // --------------------------------------------------------------------
