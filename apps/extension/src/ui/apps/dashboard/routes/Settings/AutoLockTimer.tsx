@@ -43,6 +43,10 @@ const StyledDropdown = styled((props: DropdownProps<Option>) => Dropdown(props))
   button {
     width: 100%;
   }
+
+  ul {
+    top: initial;
+  }
 `
 
 export const AutoLockTimer = () => {
