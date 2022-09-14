@@ -14,9 +14,11 @@ import { ReactComponent as IconList } from "@talisman/theme/icons/list.svg"
 import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
 import Layout from "@ui/apps/dashboard/layout"
 import Mnemonic from "@ui/domains/Account/Mnemonic"
+import { useMnemonicBackupConfirmed } from "@ui/hooks/useMnemonicBackupConfirmed"
 
 const Settings = () => {
   const { isOpen, open, close } = useOpenClose()
+  const mnemonicConfirmed = useMnemonicBackupConfirmed() === "TRUE"
 
   return (
     <Layout centered>
@@ -56,28 +58,19 @@ const Settings = () => {
         <CtaButton
           icon={<IconLock />}
           title="Change password"
-          subtitle="Change your Talisman password"
+          subtitle={
+            mnemonicConfirmed
+              ? "Change your Talisman password"
+              : "Please back up your seed phrase before you change your password."
+          }
           to={`/settings/change-password`}
+          disabled={!mnemonicConfirmed}
         />
         <CtaButton
           icon={<IconInfo />}
           title="About"
           subtitle="Read our Privacy Policy and Terms of Use"
           to={`/settings/about`}
-        />
-        <CtaButton
-          icon={<IconClock />}
-          title="Auto-lock Timer"
-          subtitle="Set a timer to automatically lock the Talisman extension"
-          to={`/`}
-          disabled
-        />
-        <CtaButton
-          icon={<IconGlobe />}
-          title="Language"
-          subtitle="Choose your preferred language"
-          to={`/`}
-          disabled
         />
       </Grid>
       <Modal open={isOpen} onClose={close}>
