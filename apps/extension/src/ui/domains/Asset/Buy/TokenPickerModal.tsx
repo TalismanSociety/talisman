@@ -1,29 +1,48 @@
+import { Balances } from "@core/domains/balances"
 import { Token } from "@core/domains/tokens/types"
+import { planckToTokens } from "@core/util"
+import { getNetworkInfo } from "@core/util/getNetworkInfo"
 import { Box } from "@talisman/components/Box"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { SearchIcon } from "@talisman/theme/icons"
+import { LoaderIcon, SearchIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
+import { usePortfolio } from "@ui/domains/Portfolio/context"
+import { useBalance } from "@ui/hooks/useBalance"
+import useBalances from "@ui/hooks/useBalances"
+import useChain from "@ui/hooks/useChain"
+import useChains from "@ui/hooks/useChains"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
+import { chain } from "lodash"
 import {
   ButtonHTMLAttributes,
   ChangeEventHandler,
   DetailedHTMLProps,
   useCallback,
+  useMemo,
   useState,
 } from "react"
 import { useDebounce } from "react-use"
 import styled from "styled-components"
 
+import Fiat from "../Fiat"
 import { useTransferableTokenById } from "../Send/useTransferableTokens"
 import { TokenLogo } from "../TokenLogo"
+import Tokens from "../Tokens"
+
+type TokenProps = {
+  token: Token
+  balances: Balances
+  network: { label: string | null; type: string }
+}
 
 type TokenButtonProps = DetailedHTMLProps<
   ButtonHTMLAttributes<HTMLButtonElement>,
   HTMLButtonElement
-> & {
-  token: Token
-}
+> &
+  TokenProps
 
 const Button = styled.button`
   background: var(--color-background-muted);
@@ -36,23 +55,50 @@ const Button = styled.button`
   }
 `
 
-const TokenButton = ({ token, onClick }: TokenButtonProps) => {
+const FetchingIcon = styled(LoaderIcon)`
+  line-height: 1;
+  font-size: 2rem;
+`
+
+const TokenButton = ({ token, balances, network, onClick }: TokenButtonProps) => {
+  const { isFetching, totalTokens, totalFiat } = useMemo(
+    () => ({
+      isFetching: balances.sorted.some((b) => b.status === "cache"),
+      totalTokens: balances.sorted.reduce(
+        (prev, balance) => prev + balance.transferable.planck,
+        BigInt(0)
+      ),
+      totalFiat: balances.sum.fiat("usd").transferable,
+    }),
+    [balances]
+  )
+
   return (
     <Button type="button" onClick={onClick}>
-      <Box flex>
+      <Box flex fg="foreground">
         <Box padding="1.6rem" fontsize="xlarge">
           <TokenLogo tokenId={token.id} />
         </Box>
-        <Box grow flex column justify="center" gap={0.4}>
-          <Box fontsize="normal" bold flex inline align="center" gap={0.6}>
+        <Box grow textalign="left" flex column justify="center" gap={0.4}>
+          <Box fontsize="small" bold flex gap={0.6}>
             {token.symbol}
-            {/* {isFetching && <FetchingIcon data-spin />} */}
+            {isFetching && <FetchingIcon data-spin />}
           </Box>
-          {/* {!!networkIds.length && (
-            <div>
-              <NetworksLogoStack networkIds={networkIds} />
-            </div>
-          )} */}
+          <Box fontsize="xsmall" fg="mid">
+            {network.label}
+          </Box>
+        </Box>
+        <Box textalign="right" flex column justify="center" gap={0.4} padding="0 0.4rem 0 0">
+          <Box>
+            <Tokens
+              amount={planckToTokens(totalTokens.toString(), token.decimals)}
+              symbol={token?.symbol}
+              isBalance
+            />
+          </Box>
+          <Box fg="mid">
+            <Fiat amount={totalFiat} currency="usd" isBalance noCountUp />
+          </Box>
         </Box>
       </Box>
     </Button>
@@ -60,7 +106,8 @@ const TokenButton = ({ token, onClick }: TokenButtonProps) => {
 }
 
 type TokenPickerFormProps = {
-  onTokenSelect?: (symbol: string) => void
+  filter?: (token: Token) => boolean
+  onTokenSelect?: (tokenId: string) => void
 }
 
 const FormContainer = styled(Box)`
@@ -76,31 +123,64 @@ const FormContainer = styled(Box)`
   }
 `
 
-export const TokenPickerForm = ({ onTokenSelect }: TokenPickerFormProps) => {
-  const [search, setSearch] = useState<string>()
-  const allTokens = useTokens()
+export const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
+  const allBalances = useBalances()
+  const chains = useChains()
+  const evmNetworks = useEvmNetworks()
 
+  const chainsMap = useMemo(
+    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
+    [chains]
+  )
+  const evmNetworksMap = useMemo(
+    () => Object.fromEntries((evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])),
+    [evmNetworks]
+  )
+
+  const allTokens = useTokens()
+  const allowedTokens = useMemo(
+    () =>
+      (filter && allTokens ? allTokens.filter(filter) : allTokens ?? []).map<TokenProps>(
+        (token) => {
+          const chain = chainsMap[token.chain?.id as string]
+          const evmNetwork = evmNetworksMap[String("evmNetwork" in token && token.evmNetwork?.id)]
+          const network = getNetworkInfo({ chain, evmNetwork })
+
+          const balances = new Balances(allBalances.find({ tokenId: token.id }))
+
+          return {
+            token,
+            network,
+            balances,
+          }
+        }
+      ),
+    [filter, allTokens, chainsMap, evmNetworksMap, allBalances]
+  )
+  const [search, setSearch] = useState<string>()
   const handleSearchChanged: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
     setSearch(e.target.value)
   }, [])
 
-  const [tokens, setTokens] = useState<Token[]>(allTokens ?? [])
+  const [tokens, setTokens] = useState<TokenProps[]>(allowedTokens ?? [])
   const updateTokens = useCallback(() => {
     const lower = search?.toLowerCase()
     setTokens(
-      allTokens?.filter(
-        ({ symbol, chain }) =>
+      allowedTokens?.filter(
+        ({ token, network }) =>
           !lower ||
-          [symbol, chain?.id].filter(Boolean).some((str) => str?.toLowerCase().includes(lower))
+          [token.symbol, network?.label]
+            .filter(Boolean)
+            .some((str) => str?.toLowerCase().includes(lower))
       ) ?? []
     )
-  }, [allTokens, search])
+  }, [allowedTokens, search])
 
   useDebounce(updateTokens, 100, [updateTokens])
 
   const handleTokenClick = useCallback(
-    (symbol: string) => () => {
-      onTokenSelect?.(symbol)
+    (tokenId: string) => () => {
+      onTokenSelect?.(tokenId)
     },
     [onTokenSelect]
   )
@@ -115,7 +195,7 @@ export const TokenPickerForm = ({ onTokenSelect }: TokenPickerFormProps) => {
         bg="background-muted"
         fg="mid"
         align="middle"
-        margin={2}
+        margin="0 2rem 2rem 2rem"
         borderradius="small"
       >
         <Box flex column justify={"center"} fontsize="large" fg="background-muted-2x">
@@ -129,11 +209,11 @@ export const TokenPickerForm = ({ onTokenSelect }: TokenPickerFormProps) => {
         fullwidth
         flex
         column
-        overflow="auto"
+        overflow="hidden scroll"
         h={37}
       >
-        {tokens?.map((t) => (
-          <TokenButton key={t.id} token={t} onClick={handleTokenClick(t.id)} />
+        {tokens?.map((props) => (
+          <TokenButton key={props.token.id} {...props} onClick={handleTokenClick(props.token.id)} />
         ))}
       </Box>
     </FormContainer>
@@ -147,9 +227,6 @@ const Dialog = styled(ModalDialog)`
   }
   > .content {
     padding: 0;
-    /* background: var(--color-background-muted-3x);
-    */
-
     border-top-left-radius: 0;
     border-top-right-radius: 0;
   }
@@ -158,15 +235,20 @@ const Dialog = styled(ModalDialog)`
 type TokenPickerModalProps = {
   isOpen: boolean
   close?: () => void
+  filter?: (token: Token) => boolean
+  onTokenSelect: (tokenId: string) => void
 }
 
-export const TokenPickerModal = ({ isOpen, close }: TokenPickerModalProps) => {
-  //const { isOpen, close } = useTokenPickerModal()
-
+export const TokenPickerModal = ({
+  isOpen,
+  close,
+  filter,
+  onTokenSelect,
+}: TokenPickerModalProps) => {
   return (
     <Modal open={isOpen} onClose={close}>
       <Dialog title="Select a token" onClose={close}>
-        <TokenPickerForm />
+        <TokenPickerForm filter={filter} onTokenSelect={onTokenSelect} />
       </Dialog>
     </Modal>
   )

@@ -142,6 +142,7 @@ export default class Tabs extends TabsHandler {
     return this.state.requestStores.metadata.injectMetadata(url, request)
   }
 
+  // result for "pub(metadata.list)"
   private async metadataList(): Promise<InjectedMetadataKnown[]> {
     return ((await db.metadata.toArray()) || []).map(({ genesisHash, specVersion }) => ({
       genesisHash,

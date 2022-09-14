@@ -5,7 +5,7 @@ export const getNetworkInfo = ({
   chain,
   evmNetwork,
 }: {
-  chain?: Chain
+  chain?: Chain | null
   evmNetwork?: EvmNetwork
 }) => {
   if (evmNetwork)

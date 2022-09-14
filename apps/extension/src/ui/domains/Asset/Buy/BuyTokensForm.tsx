@@ -1,18 +1,21 @@
-import { AccountJson, AccountJsonAny } from "@core/domains/accounts/types"
+import { DEBUG } from "@core/constants"
+import { AccountJsonAny } from "@core/domains/accounts/types"
+import { Token } from "@core/domains/tokens/types"
+import { encodeAnyAddress } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Box } from "@talisman/components/Box"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Dropdown, RenderItemFunc } from "@talisman/components/Dropdown"
 import { SimpleButton } from "@talisman/components/SimpleButton"
-import { ChevronRightIcon } from "@talisman/theme/icons"
 import Account from "@ui/domains/Account"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useCallback } from "react"
+import useChains from "@ui/hooks/useChains"
+import useTokens from "@ui/hooks/useTokens"
+import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import styled from "styled-components"
 import * as yup from "yup"
 
 import { TokenAmountField } from "./TokenAmountField"
-import { TokenPickerModal } from "./TokenPickerModal"
 
 const Form = styled.form`
   padding-top: 3rem;
@@ -52,6 +55,17 @@ const AccountDropDown = styled(Dropdown)<AccountJsonAny>`
 
     > li {
       padding: 0.8rem 1.6rem;
+
+      .account-name > .text > .account-name-row {
+        color: var(--color-background-muted-2x);
+      }
+
+      &[aria-selected="true"] {
+        background-color: #333333;
+        .account-name > .text > .account-name-row {
+          color: var(--color-mid);
+        }
+      }
     }
   }
 `
@@ -79,14 +93,20 @@ const renderAccountItem: RenderItemFunc<AccountJsonAny> = (account, key) => {
   return <Account.Name withAvatar address={account?.address} />
 }
 
+const TOKENS_ETH = ["moonbeam-native-glmr", "moonriver-native-movr", "1-native-eth"]
+const TOKENS_SUBSTRATE = ["astar-native-astr", "polkadot-native-dot", "kusama-native-ksm"]
+const BANXA_URL = DEBUG ? "https://talisman.banxa-sandbox.com/" : "https://talisman.banxa.com/"
+
 type FormData = {
   address: string
   amountUSD: number
+  tokenId: string
 }
 
 const schema = yup.object({
   address: yup.string().required(""),
   amountUSD: yup.number().required("").min(0),
+  tokenId: yup.string().required(""),
 })
 
 export const BuyTokensForm = () => {
@@ -101,31 +121,86 @@ export const BuyTokensForm = () => {
   } = useForm<FormData>({
     mode: "all",
     resolver: yupResolver(schema),
-    // defaultValues: {
-    //   address: "",
-    // },
-    // reValidateMode: "onChange",
-    // criteriaMode: "all",
   })
 
-  const submit = useCallback(async (formData: FormData) => {
-    //console.log("submit", formData)
-  }, [])
+  const [address, tokenId] = watch(["address", "tokenId"])
+  const tokens = useTokens()
+  const chains = useChains()
+
+  const submit = useCallback(
+    async (formData: FormData) => {
+      if (!formData.tokenId) throw new Error("Token not found")
+      if (!formData.address) throw new Error("Address not found")
+
+      const account = accounts.find(({ address }) => address === formData.address)
+      if (!account) throw new Error("Account not found")
+
+      const token = tokens?.find(({ id }) => id === formData.tokenId)
+      if (!token) throw new Error("Token not found")
+
+      const chain = chains?.find(({ id }) => id === (token.chain?.id as string))
+      const isEthereum = isEthereumAddress(account.address)
+      if (!isEthereum && !chain) throw new Error("Chain not found")
+
+      const walletAddress = isEthereum
+        ? account.address
+        : encodeAnyAddress(account.address, chain?.prefix ?? undefined)
+
+      const qs = new URLSearchParams({
+        walletAddress,
+        coinType: token?.symbol,
+        coinAmount: String(formData.amountUSD),
+        fiatType: "USD",
+        walletAddressTag: account.name ?? "Talisman",
+      })
+
+      const redirectUrl = `${BANXA_URL}?${qs}`
+      window.open(redirectUrl, "_blank")
+    },
+    [accounts, chains, tokens]
+  )
 
   const handleOnChange = useCallback(
     (acc: AccountJsonAny) => {
-      //console.log("handleChange", acc)
+      if (tokenId && TOKENS_ETH.includes(tokenId) && !isEthereumAddress(acc.address))
+        setValue("tokenId", "")
+      if (tokenId && TOKENS_SUBSTRATE.includes(tokenId) && isEthereumAddress(acc.address))
+        setValue("tokenId", "")
+
       setValue("address", acc?.address, { shouldValidate: true })
     },
-    [setValue]
+    [setValue, tokenId]
   )
 
-  const handleTokenChanged = useCallback((symbol: string) => {
-    //console.log("handleTokenChanged")
-  }, [])
+  const handleTokenChanged = useCallback(
+    (tokenId: string) => {
+      if (TOKENS_ETH.includes(tokenId) && (!address || !isEthereumAddress(address))) {
+        const acc = accounts.find((acc) => isEthereumAddress(acc.address))
+        setValue("address", acc?.address ?? "")
+      }
+      if (TOKENS_SUBSTRATE.includes(tokenId) && (!address || isEthereumAddress(address))) {
+        const acc = accounts.find((acc) => !isEthereumAddress(acc.address))
+        setValue("address", acc?.address ?? "")
+      }
 
-  const curr = watch()
-  //console.log({ errors, curr, isValid })
+      setValue("tokenId", tokenId, { shouldValidate: true })
+    },
+    [accounts, address, setValue]
+  )
+
+  const filterTokens = useCallback(
+    (token: Token) => {
+      if (!address) return [...TOKENS_ETH, ...TOKENS_SUBSTRATE].includes(token.id)
+      const allowedTokens = isEthereumAddress(address) ? TOKENS_ETH : TOKENS_SUBSTRATE
+      return allowedTokens.includes(token.id)
+    },
+    [address]
+  )
+  const selectedAccount = useMemo(
+    () => accounts.find((acc) => acc.address === address),
+    [accounts, address]
+  )
+
   return (
     <Form onSubmit={handleSubmit(submit)}>
       <AccountDropDown
@@ -134,11 +209,15 @@ export const BuyTokensForm = () => {
         renderItem={renderAccountItem}
         onChange={handleOnChange}
         placeholder="Select Account"
+        defaultSelectedItem={selectedAccount}
+        key={address} // uncontrolled component, will reset if value changes
       />
       <TokenAmountField
         fieldProps={register("amountUSD")}
         prefix="$"
         onTokenChanged={handleTokenChanged}
+        tokensFilter={filterTokens}
+        tokenId={tokenId}
       />
       <Button type="submit" primary disabled={!isValid}>
         Continue
