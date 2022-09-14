@@ -54,6 +54,12 @@ export class AppStore extends SubscribableStorageProvider<
     })
   }
 
+  async init() {
+    // Onboarding page won't display with UNKNOWN
+    // Initialize to FALSE after install
+    if ((await this.get("onboarded")) === UNKNOWN) await this.set({ onboarded: FALSE })
+  }
+
   async getIsOnboarded() {
     return (await this.get("onboarded")) === TRUE
   }
