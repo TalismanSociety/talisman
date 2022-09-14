@@ -1,20 +1,32 @@
-import { AccountAddressType } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { Box } from "@talisman/components/Box"
 import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
+import { MnemonicModal } from "@talisman/components/MnemonicModal"
 import { useNotification } from "@talisman/components/Notification"
 import { SimpleButton } from "@talisman/components/SimpleButton"
-import { ArrowRightIcon } from "@talisman/theme/icons"
-import { classNames } from "@talisman/util/classNames"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { InfoIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
-import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
-import useAccounts from "@ui/hooks/useAccounts"
-import { useCallback, useMemo } from "react"
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import * as yup from "yup"
+
+const Button = styled.button`
+  border-radius: var(--border-radius-small);
+  background-color: var(--color-primary);
+  color: black;
+  padding: 1.6rem;
+  font-size: 1.4rem;
+  white-space: nowrap;
+  border: none;
+  cursor: pointer;
+  width: 20rem;
+`
 
 const Container = styled(Layout)`
   form {
@@ -26,6 +38,12 @@ const Container = styled(Layout)`
       display: flex;
       justify-content: end;
     }
+  }
+  .mnemonic-warning svg {
+    color: var(--color-primary);
+    margin-right: 1rem;
+    width: 4em;
+    height: 4em;
   }
 `
 const InfoP = styled.p`
@@ -42,6 +60,8 @@ type FormData = {
 const ChangePassword = () => {
   const navigate = useNavigate()
   const notification = useNotification()
+  const { isNotConfirmed } = useMnemonicBackup()
+  const { isOpen, open, close } = useOpenClose()
 
   const schema = yup
     .object({
@@ -89,54 +109,86 @@ const ChangePassword = () => {
   )
 
   return (
-    <Container withBack centered>
-      <HeaderBlock title="Change your password" />
-      <InfoP>
-        Your password is used to unlock your wallet and is stored securely on your device. We
-        recommend 12 characters, with uppercase and lowercase letters, symbols and numbers.
-      </InfoP>
-      <form onSubmit={handleSubmit(submit)}>
-        <FormField error={errors.currentPw} label="Old Password">
-          <input
-            {...register("currentPw")}
-            placeholder="Enter Old Password"
-            spellCheck={false}
-            autoComplete="off"
-            autoFocus
-            data-lpignore
-            type="password"
-            tabIndex={1}
-          />
-        </FormField>
-        <FormField error={errors.newPw} label="New Password">
-          <input
-            {...register("newPw")}
-            placeholder="Enter New Password"
-            spellCheck={false}
-            autoComplete="off"
-            data-lpignore
-            type="password"
-            tabIndex={2}
-          />
-        </FormField>
-        <FormField error={errors.newPwConfirm}>
-          <input
-            {...register("newPwConfirm")}
-            placeholder="Confirm New Password"
-            spellCheck={false}
-            autoComplete="off"
-            data-lpignore
-            type="password"
-            tabIndex={3}
-          />
-        </FormField>
-        <div className="buttons">
-          <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-            Submit
-          </SimpleButton>
-        </div>
-      </form>
-    </Container>
+    <>
+      <Container withBack centered>
+        <HeaderBlock title="Change your password" />
+        <InfoP>
+          Your password is used to unlock your wallet and is stored securely on your device. We
+          recommend 12 characters, with uppercase and lowercase letters, symbols and numbers.
+        </InfoP>
+        {isNotConfirmed && (
+          <Box
+            className="mnemonic-warning"
+            flex
+            column
+            padding={1.6}
+            gap={1}
+            border="1px solid white"
+            borderradius="small"
+          >
+            <Box flex justify={"space-between"} align={"center"}>
+              <InfoIcon />
+              You'll need to confirm your secret recovery phrase is backed up before you change your
+              password.
+            </Box>
+            <Box flex justify={"end"}>
+              <Button onClick={open}>Backup Seed Phrase</Button>
+            </Box>
+          </Box>
+        )}
+
+        <form onSubmit={handleSubmit(submit)}>
+          <FormField error={errors.currentPw} label="Old Password">
+            <input
+              {...register("currentPw")}
+              placeholder="Enter Old Password"
+              spellCheck={false}
+              autoComplete="off"
+              autoFocus
+              data-lpignore
+              type="password"
+              tabIndex={1}
+              disabled={isNotConfirmed}
+            />
+          </FormField>
+          <FormField error={errors.newPw} label="New Password">
+            <input
+              {...register("newPw")}
+              placeholder="Enter New Password"
+              spellCheck={false}
+              autoComplete="off"
+              data-lpignore
+              type="password"
+              tabIndex={2}
+              disabled={isNotConfirmed}
+            />
+          </FormField>
+          <FormField error={errors.newPwConfirm}>
+            <input
+              {...register("newPwConfirm")}
+              placeholder="Confirm New Password"
+              spellCheck={false}
+              autoComplete="off"
+              data-lpignore
+              type="password"
+              tabIndex={3}
+              disabled={isNotConfirmed}
+            />
+          </FormField>
+          <div className="buttons">
+            <SimpleButton
+              type="submit"
+              primary
+              disabled={!isValid || isNotConfirmed}
+              processing={isSubmitting}
+            >
+              Submit
+            </SimpleButton>
+          </div>
+        </form>
+      </Container>
+      <MnemonicModal open={isOpen} onClose={close} />
+    </>
   )
 }
 
