@@ -22,7 +22,15 @@ const Container = styled(Layout)`
     .field {
       margin-bottom: 2.8rem;
     }
+    .buttons {
+      display: flex;
+      justify-content: end;
+    }
   }
+`
+const InfoP = styled.p`
+  color: var(--color-mid);
+  margin: 2rem 0;
 `
 
 type FormData = {
@@ -62,12 +70,13 @@ const ChangePassword = () => {
         await api.changePassword(currentPw, newPw, newPwConfirm)
         notification.success({
           title: "Password changed",
-          subtitle: name,
         })
         navigate("/portfolio")
       } catch (err) {
         if ((err as Error).message === "Incorrect password")
           setError("currentPw", { message: (err as Error).message })
+        if ((err as Error).message === "New password and new password confirmation must match")
+          setError("newPwConfirm", { message: (err as Error).message })
         else {
           notification.error({
             title: "Error changing password",
@@ -82,11 +91,15 @@ const ChangePassword = () => {
   return (
     <Container withBack centered>
       <HeaderBlock title="Change your password" />
+      <InfoP>
+        Your password is used to unlock your wallet and is stored securely on your device. We
+        recommend 12 characters, with uppercase and lowercase letters, symbols and numbers.
+      </InfoP>
       <form onSubmit={handleSubmit(submit)}>
-        <FormField error={errors.currentPw}>
+        <FormField error={errors.currentPw} label="Old Password">
           <input
             {...register("currentPw")}
-            placeholder="Current Password"
+            placeholder="Enter Old Password"
             spellCheck={false}
             autoComplete="off"
             autoFocus
@@ -95,10 +108,10 @@ const ChangePassword = () => {
             tabIndex={1}
           />
         </FormField>
-        <FormField error={errors.newPw}>
+        <FormField error={errors.newPw} label="New Password">
           <input
             {...register("newPw")}
-            placeholder="New Password"
+            placeholder="Enter New Password"
             spellCheck={false}
             autoComplete="off"
             data-lpignore
@@ -109,7 +122,7 @@ const ChangePassword = () => {
         <FormField error={errors.newPwConfirm}>
           <input
             {...register("newPwConfirm")}
-            placeholder="New Password (Again)"
+            placeholder="Confirm New Password"
             spellCheck={false}
             autoComplete="off"
             data-lpignore
@@ -119,7 +132,7 @@ const ChangePassword = () => {
         </FormField>
         <div className="buttons">
           <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-            Submit <ArrowRightIcon />
+            Submit
           </SimpleButton>
         </div>
       </form>
