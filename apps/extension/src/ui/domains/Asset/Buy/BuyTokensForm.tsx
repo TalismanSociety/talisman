@@ -149,7 +149,7 @@ export const BuyTokensForm = () => {
       const qs = new URLSearchParams({
         walletAddress,
         coinType: token?.symbol,
-        coinAmount: String(formData.amountUSD),
+        fiatAmount: String(formData.amountUSD),
         fiatType: "USD",
         walletAddressTag: account.name ?? "Talisman",
       })
