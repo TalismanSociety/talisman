@@ -3,6 +3,7 @@ import { IconButton } from "@talisman/components/IconButton"
 import Nav, { NavItemButton } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
+  CreditCardIcon,
   LayoutIcon,
   LockIcon,
   MaximizeIcon,
@@ -16,6 +17,7 @@ import { api } from "@ui/api"
 import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import Build from "@ui/domains/Build"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { FC, useCallback } from "react"
 import styled from "styled-components"
 
@@ -66,6 +68,7 @@ const Container = styled.aside`
 export const NavigationDrawer: FC = () => {
   const { isOpen, close } = useNavigationContext()
   const { genericEvent } = useAnalytics()
+  const showBuyTokens = useIsFeatureEnabled("BUY_CRYPTO")
 
   const handleLock = useCallback(async () => {
     genericEvent("lock", { from: "popup nav" })
@@ -81,6 +84,11 @@ export const NavigationDrawer: FC = () => {
   const handleSendFundsClick = useCallback(() => {
     genericEvent("open send funds", { from: "popup nav" })
     api.modalOpen("send")
+  }, [genericEvent])
+
+  const handleBuyTokensClick = useCallback(() => {
+    genericEvent("open buy tokens", { from: "popup nav" })
+    api.modalOpen("buy")
   }, [genericEvent])
 
   const handlePortfolioClick = useCallback(() => {
@@ -116,6 +124,11 @@ export const NavigationDrawer: FC = () => {
               <NavItemButton icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
                 Send Funds
               </NavItemButton>
+              {showBuyTokens && (
+                <NavItemButton icon={<CreditCardIcon />} onClick={handleBuyTokensClick}>
+                  Buy Crypto
+                </NavItemButton>
+              )}
               <NavItemButton icon={<MaximizeIcon />} onClick={handlePortfolioClick}>
                 Expand View
               </NavItemButton>

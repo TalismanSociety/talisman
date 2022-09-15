@@ -14,7 +14,7 @@ export interface RequestRoute {
   route: string
 }
 
-export declare type ModalTypes = "send"
+export declare type ModalTypes = "send" | "buy"
 export interface ModalOpenParams {
   modalType: ModalTypes
 }
