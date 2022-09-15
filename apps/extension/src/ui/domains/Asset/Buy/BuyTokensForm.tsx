@@ -55,15 +55,19 @@ const AccountDropDown = styled(Dropdown)<AccountJsonAny>`
 
     > li {
       padding: 0.8rem 1.6rem;
+      opacity: 0.8;
 
       .account-name > .text > .account-name-row {
-        color: var(--color-background-muted-2x);
+        //color: var(--color-background-muted-2x);
+        color: var(--color-mid);
+        opacity: 0.8;
       }
 
       &[aria-selected="true"] {
+        opacity: 1;
         background-color: #333333;
         .account-name > .text > .account-name-row {
-          color: var(--color-mid);
+          opacity: 1;
         }
       }
     }
