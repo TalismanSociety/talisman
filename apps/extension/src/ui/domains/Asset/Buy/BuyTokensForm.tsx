@@ -15,7 +15,7 @@ import { useForm } from "react-hook-form"
 import styled from "styled-components"
 import * as yup from "yup"
 
-import { TokenAmountField } from "./TokenAmountField"
+import { TokenAmountField } from "../TokenAmountField"
 
 const Form = styled.form`
   padding-top: 3rem;
@@ -121,7 +121,7 @@ export const BuyTokensForm = () => {
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isValid },
+    formState: { isValid },
   } = useForm<FormData>({
     mode: "all",
     resolver: yupResolver(schema),

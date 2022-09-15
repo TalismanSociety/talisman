@@ -4,6 +4,7 @@ import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveMod
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
 import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
+import { ReceiveTokensModalProvider } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -99,7 +100,9 @@ const Dashboard = () => (
         <AddressFormatterModalProvider>
           <SendTokensModalProvider>
             <BuyTokensModalProvider>
-              <DashboardInner />
+              <ReceiveTokensModalProvider>
+                <DashboardInner />
+              </ReceiveTokensModalProvider>
             </BuyTokensModalProvider>
           </SendTokensModalProvider>
         </AddressFormatterModalProvider>

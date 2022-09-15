@@ -7,15 +7,10 @@ import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { LoaderIcon, SearchIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
-import { usePortfolio } from "@ui/domains/Portfolio/context"
-import { useBalance } from "@ui/hooks/useBalance"
 import useBalances from "@ui/hooks/useBalances"
-import useChain from "@ui/hooks/useChain"
 import useChains from "@ui/hooks/useChains"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
-import { chain } from "lodash"
 import {
   ButtonHTMLAttributes,
   ChangeEventHandler,
@@ -27,10 +22,9 @@ import {
 import { useDebounce } from "react-use"
 import styled from "styled-components"
 
-import Fiat from "../Fiat"
-import { useTransferableTokenById } from "../Send/useTransferableTokens"
-import { TokenLogo } from "../TokenLogo"
-import Tokens from "../Tokens"
+import Fiat from "./Fiat"
+import { TokenLogo } from "./TokenLogo"
+import Tokens from "./Tokens"
 
 type TokenProps = {
   token: Token

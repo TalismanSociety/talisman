@@ -6,7 +6,7 @@ import useToken from "@ui/hooks/useToken"
 import { useCallback } from "react"
 import styled from "styled-components"
 
-import { TokenLogo } from "../TokenLogo"
+import { TokenLogo } from "./TokenLogo"
 import { TokenPickerModal } from "./TokenPickerModal"
 
 const Amount = styled.div`

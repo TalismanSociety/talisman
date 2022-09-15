@@ -1,11 +1,10 @@
 import { Box } from "@talisman/components/Box"
 import imgFundWallet from "@talisman/theme/images/fund-wallet.png"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
 
+import { useReceiveTokensModal } from "../Receive/ReceiveTokensModalContext"
 import { useBuyTokensModal } from "./BuyTokensModalContext"
 
 const Button = styled.button`
@@ -42,20 +41,10 @@ const PrimaryButton = styled(Button)`
 `
 
 export const FundYourWallet = () => {
-  const { open: openBuyModal } = useBuyTokensModal()
-  const { open: openCopyModal } = useAddressFormatterModal()
-  const { account, accounts } = useSelectedAccount()
-  const [address, setAddress] = useState<string>()
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
-
-  useEffect(() => {
-    setAddress(account?.address ?? accounts.find(({ origin }) => origin === "ROOT")?.address)
-  }, [account?.address, accounts])
-
-  const handleCopyClick = useCallback(() => {
-    if (!address) return
-    openCopyModal(address)
-  }, [address, openCopyModal])
+  const { open: openBuyModal } = useBuyTokensModal()
+  const { open: openReceiveModal } = useReceiveTokensModal()
+  const { open: openCopyModal } = useAddressFormatterModal()
 
   return (
     <Box w={31.8} fg="mid" textalign="center" flex column gap={2.4} align="center">
@@ -68,7 +57,7 @@ export const FundYourWallet = () => {
       <Box>This is where you'll see your balances.</Box>
       <Box>Get started with some crypto so you can start using apps.</Box>
       <Box flex gap={0.8} fullwidth>
-        <DefaultButton onClick={handleCopyClick}>Receive Funds</DefaultButton>
+        <DefaultButton onClick={openReceiveModal}>Receive Funds</DefaultButton>
         {showBuyCryptoButton && <PrimaryButton onClick={openBuyModal}>Buy Crypto</PrimaryButton>}
       </Box>
     </Box>
