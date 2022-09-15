@@ -91,6 +91,7 @@ type TokenAmountFieldProps = {
   tokenId?: string
   onTokenChanged?: (tokenId: string) => void
   tokensFilter?: (token: Token) => boolean
+  onTokenButtonClick?: () => void // use for analytics only
 }
 
 /*
@@ -101,6 +102,7 @@ export const TokenAmountField = ({
   prefix,
   tokenId,
   onTokenChanged,
+  onTokenButtonClick,
   fieldProps,
   tokensFilter,
 }: TokenAmountFieldProps) => {
@@ -115,12 +117,21 @@ export const TokenAmountField = ({
     [close, onTokenChanged]
   )
 
+  const handleTokenButtonClick = useCallback(() => {
+    onTokenButtonClick?.()
+    open()
+  }, [onTokenButtonClick, open])
+
   return (
     <>
       <Amount>
         {/* CSS trick here we need prefix to be after input to have a valid CSS rule for prefix color change base on input beeing empty
         items will be displayed in reverse order to make this workaround possible */}
-        <button type="button" onClick={open} className={classNames(token && "token")}>
+        <button
+          type="button"
+          onClick={handleTokenButtonClick}
+          className={classNames(token && "token")}
+        >
           {token ? (
             <>
               <TokenLogo tokenId={tokenId} /> {token.symbol}

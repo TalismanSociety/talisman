@@ -9,6 +9,10 @@ import styled from "styled-components"
 
 import AddressFormatter from "./AddressFormatter"
 
+type Props = {
+  onCopy?: (chainId: string) => void
+}
+
 const useAddressFormatterModalProvider = () => {
   const [address, setAddress] = useState<string>()
 

@@ -5,9 +5,12 @@ import { Box } from "@talisman/components/Box"
 import { Dropdown, RenderItemFunc } from "@talisman/components/Dropdown"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { CheckIcon, CopyIcon } from "@talisman/theme/icons"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import Account from "@ui/domains/Account"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import styled from "styled-components"
@@ -102,9 +105,16 @@ const schema = yup.object({
   address: yup.string().required(""),
 })
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Account Funding",
+  featureVersion: 1,
+  page: "Receive Tokens Modal",
+}
+
 export const ReceiveTokensForm = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
   const accounts = useAccounts()
-  const { close } = useReceiveTokensModal()
   const { open: openCopyAddressModal } = useAddressFormatterModal()
   const [isCopied, setIsCopied] = useState(false)
 
@@ -144,12 +154,30 @@ export const ReceiveTokensForm = () => {
 
       const isEthereumAccount = isEthereumAddress(account.address)
       if (isEthereumAccount) setIsCopied(true)
+
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Interact",
+        action: "Copy address button",
+        properties: {
+          accountType: isEthereumAccount ? "Ethereum" : "Substrate",
+        },
+      })
     },
     [accounts, openCopyAddressModal]
   )
 
   const handleOnChange = useCallback(
     (acc: AccountJsonAny) => {
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Interact",
+        action: "Account selection",
+        properties: {
+          accountType: isEthereumAddress(acc.address) ? "Ethereum" : "Substrate",
+        },
+      })
+
       setValue("address", acc?.address, { shouldValidate: true })
     },
     [setValue]

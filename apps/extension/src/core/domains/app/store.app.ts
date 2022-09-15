@@ -52,6 +52,8 @@ export class AppStore extends SubscribableStorageProvider<
         Browser.storage.local.remove("talismanOnboarded")
       }
     })
+
+    this.init()
   }
 
   async init() {

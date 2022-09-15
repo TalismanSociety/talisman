@@ -1,10 +1,13 @@
 import { Box } from "@talisman/components/Box"
 import imgFundWallet from "@talisman/theme/images/fund-wallet.png"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useCallback } from "react"
 import styled from "styled-components"
 
-import { useReceiveTokensModal } from "../Receive/ReceiveTokensModalContext"
-import { useBuyTokensModal } from "./BuyTokensModalContext"
+import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
+import { useReceiveTokensModal } from "../Asset/Receive/ReceiveTokensModalContext"
 
 const Button = styled.button`
   border-radius: 24px;
@@ -39,10 +42,36 @@ const PrimaryButton = styled(Button)`
   }
 `
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Account Funding",
+  featureVersion: 1,
+  page: "Dashboard - Empty state",
+}
+
 export const FundYourWallet = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
   const { open: openBuyModal } = useBuyTokensModal()
   const { open: openReceiveModal } = useReceiveTokensModal()
+
+  const handleReceiveClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Receive funds button",
+    })
+    openReceiveModal()
+  }, [openReceiveModal])
+
+  const handleBuyClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Buy crypto button",
+    })
+    openBuyModal()
+  }, [openBuyModal])
 
   return (
     <Box w={31.8} fg="mid" textalign="center" flex column gap={2.4} align="center">
@@ -55,8 +84,8 @@ export const FundYourWallet = () => {
       <Box>This is where you'll see your balances.</Box>
       <Box>Get started with some crypto so you can start using apps.</Box>
       <Box flex gap={0.8} fullwidth>
-        <DefaultButton onClick={openReceiveModal}>Receive Funds</DefaultButton>
-        {showBuyCryptoButton && <PrimaryButton onClick={openBuyModal}>Buy Crypto</PrimaryButton>}
+        <DefaultButton onClick={handleReceiveClick}>Receive Funds</DefaultButton>
+        {showBuyCryptoButton && <PrimaryButton onClick={handleBuyClick}>Buy Crypto</PrimaryButton>}
       </Box>
     </Box>
   )

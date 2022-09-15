@@ -6,8 +6,10 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Dropdown, RenderItemFunc } from "@talisman/components/Dropdown"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import Account from "@ui/domains/Account"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChains from "@ui/hooks/useChains"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback, useMemo } from "react"
@@ -113,7 +115,15 @@ const schema = yup.object({
   tokenId: yup.string().required(""),
 })
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Account Funding",
+  featureVersion: 1,
+  page: "Buy Crypto Modal",
+}
+
 export const BuyTokensForm = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
   const accounts = useAccounts()
 
   const {
@@ -158,14 +168,29 @@ export const BuyTokensForm = () => {
         walletAddressTag: account.name ?? "Talisman",
       })
 
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "GotoExternal",
+        action: "Continue button - go to Banxa",
+      })
+
       const redirectUrl = `${BANXA_URL}?${qs}`
       window.open(redirectUrl, "_blank")
     },
     [accounts, chains, tokens]
   )
 
-  const handleOnChange = useCallback(
+  const handleAccountChange = useCallback(
     (acc: AccountJsonAny) => {
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Interact",
+        action: "Account selection",
+        properties: {
+          accountType: isEthereumAddress(acc.address) ? "Ethereum" : "Substrate",
+        },
+      })
+
       if (tokenId && TOKENS_ETH.includes(tokenId) && !isEthereumAddress(acc.address))
         setValue("tokenId", "")
       if (tokenId && TOKENS_SUBSTRATE.includes(tokenId) && isEthereumAddress(acc.address))
@@ -178,6 +203,14 @@ export const BuyTokensForm = () => {
 
   const handleTokenChanged = useCallback(
     (tokenId: string) => {
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Interact",
+        action: "Select Token",
+        properties: {
+          asset: tokenId,
+        },
+      })
       if (TOKENS_ETH.includes(tokenId) && (!address || !isEthereumAddress(address))) {
         const acc = accounts.find((acc) => isEthereumAddress(acc.address))
         setValue("address", acc?.address ?? "")
@@ -205,13 +238,21 @@ export const BuyTokensForm = () => {
     [accounts, address]
   )
 
+  const handleTokenButtonClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Interact",
+      action: "Choose Token button",
+    })
+  }, [])
+
   return (
     <Form onSubmit={handleSubmit(submit)}>
       <AccountDropDown
         items={accounts as AccountJsonAny[]}
         propertyKey="address"
         renderItem={renderAccountItem}
-        onChange={handleOnChange}
+        onChange={handleAccountChange}
         placeholder="Select Account"
         defaultSelectedItem={selectedAccount}
         key={address} // uncontrolled component, will reset if value changes
@@ -220,6 +261,7 @@ export const BuyTokensForm = () => {
         fieldProps={register("amountUSD")}
         prefix="$"
         onTokenChanged={handleTokenChanged}
+        onTokenButtonClick={handleTokenButtonClick}
         tokensFilter={filterTokens}
         tokenId={tokenId}
       />
