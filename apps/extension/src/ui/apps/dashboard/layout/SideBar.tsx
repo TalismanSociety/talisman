@@ -18,6 +18,7 @@ import {
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
+import { useReceiveTokensModal } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
 import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import Build from "@ui/domains/Build"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
@@ -248,11 +249,12 @@ export const SideBar = () => {
     genericEvent("open send funds", { from: "sidebar" })
   }, [account?.address, genericEvent, openSendTokens])
 
+  const { open: openReceiveTokensModal } = useReceiveTokensModal()
   const handleCopyClick = useCallback(() => {
-    if (!account) return
-    openCopyAddressModal(account.address)
+    if (account) openCopyAddressModal(account.address)
+    else openReceiveTokensModal()
     genericEvent("open copy address", { from: "sidebar" })
-  }, [account, genericEvent, openCopyAddressModal])
+  }, [account, genericEvent, openCopyAddressModal, openReceiveTokensModal])
 
   const handlePortfolioClick = useCallback(() => {
     genericEvent("goto portfolio", { from: "sidebar" })
@@ -295,11 +297,9 @@ export const SideBar = () => {
           <PillButton onClick={handleSendClick}>
             Send <PaperPlaneIcon />
           </PillButton>
-          {account && (
-            <PillButton onClick={handleCopyClick}>
-              Copy <CopyIcon />
-            </PillButton>
-          )}
+          <PillButton onClick={handleCopyClick}>
+            Copy <CopyIcon />
+          </PillButton>
         </Pills>
         {/* Buttons for small screens */}
         <Buttons>
