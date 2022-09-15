@@ -58,8 +58,8 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
 
   const enableWalletFunding = useIsFeatureEnabled("WALLET_FUNDING")
   const displayWalletFunding = useMemo(
-    () => Boolean(showWalletFunding && enableWalletFunding),
-    [showWalletFunding, enableWalletFunding]
+    () => !account && Boolean(showWalletFunding && enableWalletFunding),
+    [account, showWalletFunding, enableWalletFunding]
   )
 
   return (
