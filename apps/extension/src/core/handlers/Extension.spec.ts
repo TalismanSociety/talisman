@@ -12,13 +12,11 @@ import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-import type { KeypairType } from "@polkadot/util-crypto/types"
 import { v4 } from "uuid"
 
 import Extension from "./Extension"
 import State from "./State"
-import { extensionStores, tabStores } from "./stores"
-import Tabs from "./Tabs"
+import { extensionStores } from "./stores"
 
 jest.mock("@core/domains/chains/api")
 jest.setTimeout(10000)
@@ -37,10 +35,9 @@ const getMessageSenderFn =
 describe("Extension", () => {
   let extension: Extension
   let state: State
-  let tabs: Tabs
   let messageSender: SenderFunction<MessageTypes>
   const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
-  const password = "passw0rd "
+  const password = "passw0rd " // has a space
 
   async function createExtension(): Promise<Extension> {
     await cryptoWaitReady()
@@ -57,12 +54,11 @@ describe("Extension", () => {
     })
     state = new State()
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    tabs = new Tabs(state, tabStores)
 
     return new Extension(state, extensionStores)
   }
 
-  const getAccount = async (type?: KeypairType): Promise<string> => {
+  const getAccount = async (): Promise<string> => {
     const account = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
     expect(account).toBeDefined()
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -84,9 +80,75 @@ describe("Extension", () => {
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [account!.address] })
   })
 
+  beforeEach(async () => {
+    await messageSender("pri(app.authenticate)", {
+      pass: password,
+    })
+  })
+
   test("user can be onboarded", async () => {
     expect(await extensionStores.app.getIsOnboarded()).toBeTruthy()
     expect(extensionStores.password.hasPassword).toBeTruthy()
+  })
+
+  test("user can login with password with spaces when isTrimmed is set to true", async () => {
+    expect(await extensionStores.password.get("isTrimmed"))
+    // logout then log in again
+    await messageSender("pri(app.lock)")
+    expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
+
+    const login = await messageSender("pri(app.authenticate)", {
+      pass: password,
+    })
+    expect(login)
+    expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
+  })
+
+  test("user can login with password with additional spaces when isTrimmed is set to true", async () => {
+    expect(await extensionStores.password.get("isTrimmed"))
+    // logout then log in again
+    await messageSender("pri(app.lock)")
+    expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
+
+    const loginExtraSpaces = await messageSender("pri(app.authenticate)", {
+      pass: `  ${password}  `,
+    })
+    expect(loginExtraSpaces)
+    expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
+  })
+
+  test("user can not login with password with spaces when isTrimmed is set to false", async () => {
+    await extensionStores.password.set({ isTrimmed: false })
+    expect(await extensionStores.password.get("isTrimmed")).toBe(false)
+
+    // logout then log in again
+    await messageSender("pri(app.lock)")
+    expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
+
+    const loginExtraSpaces = await messageSender("pri(app.authenticate)", {
+      pass: `  ${password}  `,
+    })
+    expect(loginExtraSpaces).toBe(false)
+    expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
+    // set trimming back to true for the other tests
+    await extensionStores.password.set({ isTrimmed: true })
+  })
+
+  test("user can login with trimmed password when isTrimmed is set to false", async () => {
+    await extensionStores.password.set({ isTrimmed: false })
+    expect(await extensionStores.password.get("isTrimmed")).toBe(false)
+
+    // logout then log in again
+    await messageSender("pri(app.lock)")
+    expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
+
+    const loginExtraSpaces = await messageSender("pri(app.authenticate)", {
+      pass: password.trim(),
+    })
+    expect(loginExtraSpaces).toBe(true)
+    expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
+    // set trimming back to true for the other tests
+    await extensionStores.password.set({ isTrimmed: true })
   })
 
   test("exports account from keyring", async () => {
