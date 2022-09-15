@@ -2,6 +2,7 @@ import { Box } from "@talisman/components/Box"
 import imgFundWallet from "@talisman/theme/images/fund-wallet.png"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
 
@@ -45,6 +46,7 @@ export const FundYourWallet = () => {
   const { open: openCopyModal } = useAddressFormatterModal()
   const { account, accounts } = useSelectedAccount()
   const [address, setAddress] = useState<string>()
+  const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
 
   useEffect(() => {
     setAddress(account?.address ?? accounts.find(({ origin }) => origin === "ROOT")?.address)
@@ -67,7 +69,7 @@ export const FundYourWallet = () => {
       <Box>Get started with some crypto so you can start using apps.</Box>
       <Box flex gap={0.8} fullwidth>
         <DefaultButton onClick={handleCopyClick}>Receive Funds</DefaultButton>
-        <PrimaryButton onClick={openBuyModal}>Buy Crypto</PrimaryButton>
+        {showBuyCryptoButton && <PrimaryButton onClick={openBuyModal}>Buy Crypto</PrimaryButton>}
       </Box>
     </Box>
   )

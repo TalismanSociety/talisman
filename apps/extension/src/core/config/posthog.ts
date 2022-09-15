@@ -1,12 +1,8 @@
 import { DEBUG } from "@core/constants"
 import { FeaturesStoreData, featuresStore } from "@core/domains/app/store.features"
-import { FeatureFlag } from "@core/domains/app/types"
 import posthog from "posthog-js"
 
 const REFRESH_FEATURE_FLAGS_INTERVAL = 5 * 60 * 1000 // 5 minutes
-
-// Dev mode features, should include all of them
-const DEFAULT_FEATURE_FLAGS: FeatureFlag[] = ["BUY_CRYPTO", "WALLET_FUNDING"]
 
 const unsafeProperties = [
   "$os",
@@ -74,11 +70,5 @@ export const initPosthog = () => {
     setInterval(() => {
       posthog.reloadFeatureFlags()
     }, REFRESH_FEATURE_FLAGS_INTERVAL)
-  } else {
-    // DEV mode, enable all features
-    featuresStore.set({
-      features: DEFAULT_FEATURE_FLAGS,
-      variants: {},
-    } as FeaturesStoreData)
   }
 }

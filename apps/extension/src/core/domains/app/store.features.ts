@@ -23,3 +23,17 @@ export class FeaturesStore extends StorageProvider<FeaturesStoreData> {
 }
 
 export const featuresStore = new FeaturesStore("features", FEATURE_STORE_INITIAL_DATA)
+
+// in dev build the developer may or not have a posthog token
+// without token, posthog won't be initialized and won't update the store
+if (!process.env.POSTHOG_AUTH_TOKEN) {
+  // @devs : add all feature flags here, comment some if needed for testing
+  const DEV_FEATURE_FLAGS: FeatureFlag[] = [
+    "WALLET_FUNDING", // shown when onboarding until wallet has funds
+    "BUY_CRYPTO", // nav buttons + button in fund wallet component
+  ]
+  featuresStore.set({
+    ...FEATURE_STORE_INITIAL_DATA,
+    features: DEV_FEATURE_FLAGS,
+  })
+}

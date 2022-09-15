@@ -18,7 +18,6 @@ import { useAccountExport } from "@ui/hooks/useAccountExport"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { useSettings } from "@ui/hooks/useSettings"
 import React, { useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 

@@ -23,6 +23,7 @@ import Build from "@ui/domains/Build"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
@@ -240,6 +241,7 @@ export const SideBar = () => {
   const { open: openCopyAddressModal } = useAddressFormatterModal()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
+  const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
 
   const handleSendClick = useCallback(() => {
     openSendTokens({ from: account?.address })
@@ -324,16 +326,18 @@ export const SideBar = () => {
           >
             Portfolio
           </NavItemLink>
-          <NavItemButton
-            onClick={handleBuyClick}
-            icon={
-              <ResponsiveTooltip tooltip="Buy Crypto">
-                <CreditCardIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            Buy Crypto
-          </NavItemButton>
+          {showBuyCryptoButton && (
+            <NavItemButton
+              onClick={handleBuyClick}
+              icon={
+                <ResponsiveTooltip tooltip="Buy Crypto">
+                  <CreditCardIcon />
+                </ResponsiveTooltip>
+              }
+            >
+              Buy Crypto
+            </NavItemButton>
+          )}
           <NavItemLink
             to="/accounts/add"
             onClick={handleAddAccountClick}
