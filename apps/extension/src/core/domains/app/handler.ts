@@ -59,19 +59,22 @@ export default class AppHandler extends ExtensionHandler {
       confirmed = true
     }
 
-    const { pair } = keyring.addUri(mnemonic, pass, {
+    this.stores.password.setPassword(pass)
+    const transformedPw = await this.stores.password.getPassword()
+    assert(transformedPw, "Password error")
+
+    const { pair } = keyring.addUri(mnemonic, transformedPw, {
       name,
       origin: AccountTypes.ROOT,
     } as AccountMeta)
-    await this.stores.seedPhrase.add(mnemonic, pair.address, pass, confirmed)
-    this.stores.password.setPassword(pass)
+    await this.stores.seedPhrase.add(mnemonic, pair.address, transformedPw, confirmed)
 
     try {
       // also derive a first ethereum account
       const derivationPath = getEthDerivationPath()
       keyring.addUri(
         `${mnemonic}${derivationPath}`,
-        pass,
+        transformedPw,
         {
           name: `${name} Ethereum`,
           origin: AccountTypes.DERIVED,
@@ -107,7 +110,8 @@ export default class AppHandler extends ExtensionHandler {
 
       // attempt unlock the pair
       // a successful unlock means authenticated
-      pair.unlock(pass)
+      const password = await this.stores.password.transformPassword(pass)
+      pair.unlock(password)
       this.stores.password.setPassword(pass)
       talismanAnalytics.capture("authenticate")
       return true

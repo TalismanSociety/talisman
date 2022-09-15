@@ -42,10 +42,14 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     this.setPassword(undefined)
   }
 
+  async transformPassword(password: string) {
+    if (await this.get("isTrimmed")) return password.trim()
+    return password
+  }
+
   async getPassword() {
-    if (!this.#rawPassword) return false
-    if (await this.get("isTrimmed")) return this.#rawPassword.trim()
-    return this.#rawPassword
+    if (!this.#rawPassword) return undefined
+    return await this.transformPassword(this.#rawPassword)
   }
 
   get hasPassword() {

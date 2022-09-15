@@ -1,3 +1,4 @@
+import { passwordStore } from "@core/domains/app"
 import { db } from "@core/libs/db"
 import { MessageTypes, RequestTypes, ResponseTypes } from "@core/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
@@ -39,7 +40,7 @@ describe("Extension", () => {
   let tabs: Tabs
   let messageSender: SenderFunction<MessageTypes>
   const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
-  const password = "passw0rd"
+  const password = "passw0rd "
 
   async function createExtension(): Promise<Extension> {
     await cryptoWaitReady()
@@ -89,10 +90,12 @@ describe("Extension", () => {
   })
 
   test("exports account from keyring", async () => {
-    expect(extensionStores.password.hasPassword).toBeTruthy()
+    // need to use the pw from the store, because it may need to be trimmed
+    const pw = await passwordStore.getPassword()
+    expect(pw).toBeTruthy()
     const {
       pair: { address },
-    } = keyring.addUri(suri, password)
+    } = keyring.addUri(suri, pw)
     const result = await extension.handle(
       "id",
       "pri(accounts.export)",
@@ -111,9 +114,11 @@ describe("Extension", () => {
 
     beforeEach(async () => {
       state.requestStores.signing.clearRequests()
+      // need to use the pw from the store, because it may need to be trimmed
       address = await getAccount()
       pair = keyring.getPair(address)
-      pair.decodePkcs8(password)
+      const pw = await passwordStore.getPassword()
+      pair.decodePkcs8(pw)
       payload = {
         address,
         blockHash: "0xe1b1dda72998846487e4d858909d4f9a6bbd6e338e4588e5d809de16b1317b80",
