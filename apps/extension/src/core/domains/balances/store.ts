@@ -22,6 +22,8 @@ import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
 import { Subject, combineLatest, firstValueFrom } from "rxjs"
 
+import { appStore } from "../app"
+
 type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account">
 type EvmNetworkIdAndHealth = Pick<
   EvmNetwork,
@@ -398,6 +400,16 @@ export class BalanceStore {
         Object.entries(updates).map(([id, balance]) => ({ id, ...balance }))
       )
     })
+
+    // turn off the wallet funding UI as soon as a balance is detected
+    if (await appStore.get("showWalletFunding")) {
+      if (
+        balancesUpdates.sorted.some(
+          (b) => b.free.planck + b.frozen.planck + b.reserved.planck > BigInt(0)
+        )
+      )
+        await appStore.set({ showWalletFunding: false })
+    }
   }
 
   /**

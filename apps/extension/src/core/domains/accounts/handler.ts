@@ -85,7 +85,6 @@ export default class AccountsHandler extends ExtensionHandler {
       type
     )
 
-    appStore.set({ showWalletFunding: false })
     talismanAnalytics.capture("account create", { type, method: "derived" })
 
     return true
@@ -118,7 +117,6 @@ export default class AccountsHandler extends ExtensionHandler {
         type // if undefined, defaults to keyring's default (sr25519 atm)
       )
 
-      appStore.set({ showWalletFunding: false })
       talismanAnalytics.capture("account create", { type, method: "seed" })
 
       return true
@@ -161,7 +159,6 @@ export default class AccountsHandler extends ExtensionHandler {
 
       keyring.encryptAccount(pair, password)
 
-      appStore.set({ showWalletFunding: false })
       talismanAnalytics.capture("account create", { type: pair.type, method: "json" })
       return true
     } catch (error) {
@@ -184,7 +181,6 @@ export default class AccountsHandler extends ExtensionHandler {
       origin: AccountTypes.HARDWARE,
     })
 
-    appStore.set({ showWalletFunding: false })
     talismanAnalytics.capture("account create", { type: "substrate", method: "hardware" })
 
     return true

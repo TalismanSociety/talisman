@@ -1,6 +1,5 @@
 import { Box } from "@talisman/components/Box"
 import imgFundWallet from "@talisman/theme/images/fund-wallet.png"
-import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import styled from "styled-components"
 
@@ -44,7 +43,6 @@ export const FundYourWallet = () => {
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
   const { open: openBuyModal } = useBuyTokensModal()
   const { open: openReceiveModal } = useReceiveTokensModal()
-  const { open: openCopyModal } = useAddressFormatterModal()
 
   return (
     <Box w={31.8} fg="mid" textalign="center" flex column gap={2.4} align="center">
