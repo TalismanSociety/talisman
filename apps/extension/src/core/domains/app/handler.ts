@@ -152,17 +152,20 @@ export default class AppHandler extends ExtensionHandler {
     // fetch keyring pair from address
     const pair = keyring.getPair(rootAccount.address)
 
+    const transformedPw = await this.stores.password.transformPassword(currentPw)
+    assert(transformedPw, "Password error")
+    assert(transformedPw === (await this.stores.password.getPassword()), "Incorrect Password")
     // attempt unlock the pair
     // a successful unlock means password is ok
     try {
-      pair.unlock(currentPw)
+      pair.unlock(transformedPw)
     } catch (err) {
       throw new Error("Incorrect password")
     }
     // test if the two inputs of the new password are the same
     assert(newPw === newPwConfirm, "New password and new password confirmation must match")
 
-    const result = await changePassword({ currentPw, newPw })
+    const result = await changePassword({ currentPw: transformedPw, newPw })
     if (!result.ok) throw Error(result.val)
     await this.stores.password.set({ isTrimmed: false })
     return result.val
