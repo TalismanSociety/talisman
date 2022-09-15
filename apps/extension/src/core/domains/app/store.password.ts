@@ -1,5 +1,6 @@
+import { StorageProvider } from "@core/libs/Store"
 import { BehaviorSubject } from "rxjs"
-import Browser from "webextension-polyfill"
+
 /* ----------------------------------------------------------------
 Contains sensitive data.
 Should not be used outside of the Extension handler.
@@ -12,15 +13,20 @@ const TRUE: LOGGEDIN_TRUE = "TRUE"
 const FALSE: LOGGEDIN_FALSE = "FALSE"
 
 export type LoggedInType = LOGGEDIN_TRUE | LOGGEDIN_FALSE | LOGGEDIN_UNKNOWN
-export class PasswordStore {
-  #password?: string = undefined
+
+type PasswordStoreData = {
+  isTrimmed: boolean
+}
+
+const initialData: PasswordStoreData = {
+  // passwords from early versions of Talisman were 'trimmed'.
+  isTrimmed: true,
+}
+
+export class PasswordStore extends StorageProvider<PasswordStoreData> {
+  #rawPassword?: string = undefined
   isLoggedIn = new BehaviorSubject<LoggedInType>(this.hasPassword ? TRUE : FALSE)
   #autoLockTimer?: NodeJS.Timeout
-
-  constructor() {
-    // migration to remove password field from local storage for anyone who may have it there.
-    Browser.storage.local.remove("password")
-  }
 
   public resetAutoLockTimer(seconds: number) {
     if (this.#autoLockTimer) clearTimeout(this.#autoLockTimer)
@@ -28,7 +34,7 @@ export class PasswordStore {
   }
 
   setPassword(password: string | undefined) {
-    this.#password = password
+    this.#rawPassword = password
     this.isLoggedIn.next(password !== undefined ? TRUE : FALSE)
   }
 
@@ -36,16 +42,17 @@ export class PasswordStore {
     this.setPassword(undefined)
   }
 
-  getPassword() {
-    // This is intentionally indirect to reduce possible misuse of password
-    return this.#password
+  async getPassword() {
+    if (!this.#rawPassword) return false
+    if (await this.get("isTrimmed")) return this.#rawPassword.trim()
+    return this.#rawPassword
   }
 
   get hasPassword() {
-    return !!this.getPassword()
+    return !!this.#rawPassword
   }
 }
 
-const passwordStore = new PasswordStore()
+const passwordStore = new PasswordStore("password", initialData)
 
 export default passwordStore

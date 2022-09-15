@@ -160,6 +160,7 @@ export default class AppHandler extends ExtensionHandler {
 
     const result = await changePassword({ currentPw, newPw })
     if (!result.ok) throw Error(result.val)
+    await this.stores.password.set({ isTrimmed: false })
     return result.val
   }
 
