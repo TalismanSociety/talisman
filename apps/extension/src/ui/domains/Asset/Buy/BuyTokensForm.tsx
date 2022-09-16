@@ -1,5 +1,6 @@
 import { DEBUG } from "@core/constants"
 import { AccountJsonAny } from "@core/domains/accounts/types"
+import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
 import { encodeAnyAddress } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
@@ -9,10 +10,11 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import Account from "@ui/domains/Account"
 import useAccounts from "@ui/hooks/useAccounts"
+import useAddressTypeChainsFilter from "@ui/hooks/useAddressTypeChainsFilter"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChains from "@ui/hooks/useChains"
 import useTokens from "@ui/hooks/useTokens"
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import styled from "styled-components"
 import * as yup from "yup"
@@ -99,8 +101,18 @@ const renderAccountItem: RenderItemFunc<AccountJsonAny> = (account, key) => {
   return <Account.Name withAvatar address={account?.address} />
 }
 
-const TOKENS_ETH = ["moonbeam-native-glmr", "moonriver-native-movr", "1-native-eth"]
-const TOKENS_SUBSTRATE = ["astar-native-astr", "polkadot-native-dot", "kusama-native-ksm"]
+// list to keep up to date, it's used when github is unreachable
+const DEFAULT_BUY_TOKEN_IDS = [
+  // SUB
+  "polkadot-native-dot",
+  "kusama-native-ksm",
+  "astar-native-astr",
+  // ETH
+  "moonbeam-native-glmr",
+  "moonriver-native-movr",
+  "1-native-eth",
+]
+
 const BANXA_URL = DEBUG ? "https://talisman.banxa-sandbox.com/" : "https://talisman.banxa.com/"
 
 type FormData = {
@@ -122,6 +134,65 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Buy Crypto Modal",
 }
 
+const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: string) => {
+  const [supportedTokenIds, setSupportedTokenIds] = useState<string[]>()
+
+  useEffect(() => {
+    // pull up to date list from github
+    // note that there is a 5min cache on github files
+    fetch(
+      "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/split-entities/tokens-buy.json"
+    )
+      .then(async (response) => {
+        const tokenIds: string[] = await response.json()
+        setSupportedTokenIds(tokenIds)
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error(err)
+        setSupportedTokenIds(DEFAULT_BUY_TOKEN_IDS)
+      })
+  }, [])
+
+  const supportedTokens = useMemo(
+    () => tokens?.filter((t) => supportedTokenIds?.includes(t.id)) ?? [],
+    [supportedTokenIds, tokens]
+  )
+
+  const { substrateTokenIds, ethereumTokenIds } = useMemo(() => {
+    return {
+      substrateTokenIds:
+        supportedTokens
+          ?.filter((t) => {
+            if (!["orml", "native"].includes(t.type)) return false
+            const chain = chains?.find((c) => c.id === t.chain?.id)
+            return chain && chain.account !== "secp256k1"
+          })
+          .map((t) => t.id) ?? [],
+      ethereumTokenIds:
+        supportedTokens
+          ?.filter((t) => {
+            if (!["erc20", "native"].includes(t.type)) return false
+            const chain = chains?.find((c) => c.id === t.chain?.id)
+            return !chain || (chain.account === "secp256k1" && chain.evmNetworks.length > 0)
+          })
+          .map((t) => t.id) ?? [],
+    }
+  }, [chains, supportedTokens])
+
+  const filterTokens = useCallback(
+    (token: Token) => {
+      if (!supportedTokenIds) return false
+      if (!address) return supportedTokenIds.includes(token.id)
+      const allowedTokens = isEthereumAddress(address) ? ethereumTokenIds : substrateTokenIds
+      return allowedTokens.includes(token.id)
+    },
+    [address, ethereumTokenIds, substrateTokenIds, supportedTokenIds]
+  )
+
+  return { substrateTokenIds, ethereumTokenIds, filterTokens }
+}
+
 export const BuyTokensForm = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const accounts = useAccounts()
@@ -140,6 +211,12 @@ export const BuyTokensForm = () => {
   const [address, tokenId] = watch(["address", "tokenId"])
   const tokens = useTokens()
   const chains = useChains()
+
+  const { ethereumTokenIds, substrateTokenIds, filterTokens } = useSupportedTokenIds(
+    chains,
+    tokens,
+    address
+  )
 
   const submit = useCallback(
     async (formData: FormData) => {
@@ -191,14 +268,14 @@ export const BuyTokensForm = () => {
         },
       })
 
-      if (tokenId && TOKENS_ETH.includes(tokenId) && !isEthereumAddress(acc.address))
+      if (tokenId && ethereumTokenIds.includes(tokenId) && !isEthereumAddress(acc.address))
         setValue("tokenId", "")
-      if (tokenId && TOKENS_SUBSTRATE.includes(tokenId) && isEthereumAddress(acc.address))
+      if (tokenId && substrateTokenIds.includes(tokenId) && isEthereumAddress(acc.address))
         setValue("tokenId", "")
 
       setValue("address", acc?.address, { shouldValidate: true })
     },
-    [setValue, tokenId]
+    [ethereumTokenIds, setValue, substrateTokenIds, tokenId]
   )
 
   const handleTokenChanged = useCallback(
@@ -211,28 +288,20 @@ export const BuyTokensForm = () => {
           asset: tokenId,
         },
       })
-      if (TOKENS_ETH.includes(tokenId) && (!address || !isEthereumAddress(address))) {
+      if (ethereumTokenIds.includes(tokenId) && (!address || !isEthereumAddress(address))) {
         const acc = accounts.find((acc) => isEthereumAddress(acc.address))
         setValue("address", acc?.address ?? "")
       }
-      if (TOKENS_SUBSTRATE.includes(tokenId) && (!address || isEthereumAddress(address))) {
+      if (substrateTokenIds.includes(tokenId) && (!address || isEthereumAddress(address))) {
         const acc = accounts.find((acc) => !isEthereumAddress(acc.address))
         setValue("address", acc?.address ?? "")
       }
 
       setValue("tokenId", tokenId, { shouldValidate: true })
     },
-    [accounts, address, setValue]
+    [accounts, address, ethereumTokenIds, setValue, substrateTokenIds]
   )
 
-  const filterTokens = useCallback(
-    (token: Token) => {
-      if (!address) return [...TOKENS_ETH, ...TOKENS_SUBSTRATE].includes(token.id)
-      const allowedTokens = isEthereumAddress(address) ? TOKENS_ETH : TOKENS_SUBSTRATE
-      return allowedTokens.includes(token.id)
-    },
-    [address]
-  )
   const selectedAccount = useMemo(
     () => accounts.find((acc) => acc.address === address),
     [accounts, address]
