@@ -42,7 +42,7 @@ const STRENGTH_OPTIONS: Options<string> = [
   {
     id: 2,
     value: "Medium",
-    minDiversity: 2,
+    minDiversity: 1,
     minLength: 6,
   },
   {

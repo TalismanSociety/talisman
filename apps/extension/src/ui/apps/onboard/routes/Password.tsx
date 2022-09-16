@@ -27,7 +27,7 @@ type FormData = {
 
 const schema = yup
   .object({
-    password: yup.string().required(""),
+    password: yup.string().min(6, "").required(""), // matches the medium strengh requirement
     passwordConfirm: yup
       .string()
       .trim()
@@ -55,7 +55,8 @@ export const PasswordPage = () => {
     watch,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
-    mode: "onChange",
+    mode: "all",
+    reValidateMode: "onChange",
     defaultValues: data,
     resolver: yupResolver(schema),
   })
