@@ -134,8 +134,16 @@ export const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps)
   const allTokens = useTokens()
   const allowedTokens = useMemo(
     () =>
-      (filter && allTokens ? allTokens.filter(filter) : allTokens ?? []).map<TokenProps>(
-        (token) => {
+      (filter && allTokens ? allTokens.filter(filter) : allTokens ?? [])
+        .sort((t1, t2) => {
+          const chain1 = chainsMap[t1.chain?.id as string]
+          const chain2 = chainsMap[t2.chain?.id as string]
+          return (
+            (chain1?.sortIndex || Number.MAX_SAFE_INTEGER) -
+            (chain2?.sortIndex || Number.MAX_SAFE_INTEGER)
+          )
+        })
+        .map<TokenProps>((token) => {
           const chain = chainsMap[token.chain?.id as string]
           const evmNetwork = evmNetworksMap[String("evmNetwork" in token && token.evmNetwork?.id)]
           const network = getNetworkInfo({ chain, evmNetwork })
@@ -147,8 +155,7 @@ export const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps)
             network,
             balances,
           }
-        }
-      ),
+        }),
     [filter, allTokens, chainsMap, evmNetworksMap, allBalances]
   )
   const [search, setSearch] = useState<string>()
