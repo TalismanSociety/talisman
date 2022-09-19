@@ -90,6 +90,9 @@ const prepareTransaction = (
     }
   }
 
+  // ensure chainId isn't an hex (ex: Zerion)
+  if (typeof result.chainId === "string") result.chainId = parseInt(result.chainId, 16)
+
   return result
 }
 
@@ -123,6 +126,7 @@ export class EthHandler extends ExtensionHandler {
       },
       block.gasLimit
     )
+
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const privateKey = getPrivateKey(pair)
       const signer = new ethers.Wallet(privateKey, provider)
