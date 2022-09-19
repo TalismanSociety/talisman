@@ -22,7 +22,7 @@ import { Port, RequestIdOnly } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import type { TransactionRequest } from "@ethersproject/providers"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
-import { assert } from "@polkadot/util"
+import { assert, isHex } from "@polkadot/util"
 import { BigNumber, BigNumberish, ethers } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import isString from "lodash/isString"
@@ -91,7 +91,8 @@ const prepareTransaction = (
   }
 
   // ensure chainId isn't an hex (ex: Zerion)
-  if (typeof result.chainId === "string") result.chainId = parseInt(result.chainId, 16)
+  if (typeof result.chainId === "string" && (result.chainId as string).startsWith("0x"))
+    result.chainId = parseInt(result.chainId, 16)
 
   return result
 }
