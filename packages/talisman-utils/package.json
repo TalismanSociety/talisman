@@ -6,9 +6,6 @@
   "files": [
     "/dist"
   ],
-  "engines": {
-    "node": ">=14"
-  },
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
