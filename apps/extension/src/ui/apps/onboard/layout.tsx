@@ -134,23 +134,21 @@ export const Layout: FC<LayoutProps> = ({
   children,
   className,
 }) => (
-  <>
-    <Main className={className}>
-      <motion.section variants={FADE_IN} initial="init" animate="anim" transition={TRANS_SLOW}>
-        {!!withBack && <BtnBack analytics={analytics} />}
-        {picture ? (
-          <div className="hflex">
-            <motion.div className="picture" variants={SLIDE_IN_LEFT} transition={TRANS_MED}>
-              {picture}
-            </motion.div>
-            <motion.div className="content" variants={SLIDE_IN_RIGHT} transition={TRANS_MED}>
-              {children}
-            </motion.div>
-          </div>
-        ) : (
-          children
-        )}
-      </motion.section>
-    </Main>
-  </>
+  <Main className={className}>
+    <motion.section variants={FADE_IN} initial="init" animate="anim" transition={TRANS_SLOW}>
+      {!!withBack && <BtnBack analytics={analytics} />}
+      {picture ? (
+        <div className="hflex">
+          <motion.div className="picture" variants={SLIDE_IN_LEFT} transition={TRANS_MED}>
+            {picture}
+          </motion.div>
+          <motion.div className="content" variants={SLIDE_IN_RIGHT} transition={TRANS_MED}>
+            {children}
+          </motion.div>
+        </div>
+      ) : (
+        children
+      )}
+    </motion.section>
+  </Main>
 )

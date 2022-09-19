@@ -11,7 +11,7 @@ import posthog from "posthog-js"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
 
-const ensureUserPreference = (useAnalyticsTracking: boolean | undefined) => {
+const ensurePosthogPreferences = (useAnalyticsTracking: boolean | undefined) => {
   if (useAnalyticsTracking === undefined) {
     if (posthog.has_opted_in_capturing() || posthog.has_opted_out_capturing())
       posthog.clear_opt_in_out_capturing()
@@ -39,7 +39,7 @@ class TalismanAnalytics {
 
     this.init().then(() => {
       settingsStore.observable.subscribe(({ useAnalyticsTracking }) => {
-        ensureUserPreference(useAnalyticsTracking)
+        ensurePosthogPreferences(useAnalyticsTracking)
       })
     })
   }
@@ -47,7 +47,7 @@ class TalismanAnalytics {
   async init() {
     const allowTracking = await settingsStore.get("useAnalyticsTracking")
     initPosthog()
-    ensureUserPreference(allowTracking)
+    ensurePosthogPreferences(allowTracking)
   }
 
   async capture(eventName: string, properties?: posthog.Properties) {

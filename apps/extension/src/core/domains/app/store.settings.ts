@@ -7,8 +7,8 @@ export interface SettingsStoreData {
   identiconType: IdenticonType
   useAnalyticsTracking?: boolean // undefined during onboarding
   hideBalances: boolean
-  allowNotifications: boolean // undefined = show all accounts
-  selectedAccount?: string
+  allowNotifications: boolean
+  selectedAccount?: string // undefined = show all accounts
   shouldMimicMetaMask: boolean
 }
 

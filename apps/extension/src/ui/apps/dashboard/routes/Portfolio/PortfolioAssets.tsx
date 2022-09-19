@@ -64,44 +64,40 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
 
   return (
     <Box flex column fullheight>
-      <Box flex fullwidth gap={1.6}>
-        {!displayWalletFunding && (
-          <>
-            <Stats title="Total Portfolio Value" fiat={portfolio} />
-            <Stats title="Locked" fiat={locked} locked />
-            <Stats title="Available" fiat={available} />
-          </>
-        )}
-        <Box grow flex justify="flex-end" align="center" gap={1.6}>
-          {account && (
-            <PopNav
-              trigger={
-                <IconButton>
-                  <IconMore />
-                </IconButton>
-              }
-              className="icon more"
-              closeOnMouseOut
-            >
-              <PopNav.Item onClick={sendFunds}>Send funds</PopNav.Item>
-              <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
-              {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
-              {canExportAccount && (
-                <PopNav.Item onClick={exportAccount}>Export Private Key</PopNav.Item>
-              )}
-              {canRemove && (
-                <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
-              )}
-            </PopNav>
-          )}
-        </Box>
-      </Box>
       {displayWalletFunding ? (
         <Box margin="3.8rem 0 0 0" grow flex justify="center" align="center">
           <FundYourWallet />
         </Box>
       ) : (
         <>
+          <Box flex fullwidth gap={1.6}>
+            <Stats title="Total Portfolio Value" fiat={portfolio} />
+            <Stats title="Locked" fiat={locked} locked />
+            <Stats title="Available" fiat={available} />
+            <Box grow flex justify="flex-end" align="center" gap={1.6}>
+              {account && (
+                <PopNav
+                  trigger={
+                    <IconButton>
+                      <IconMore />
+                    </IconButton>
+                  }
+                  className="icon more"
+                  closeOnMouseOut
+                >
+                  <PopNav.Item onClick={sendFunds}>Send funds</PopNav.Item>
+                  <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
+                  {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
+                  {canExportAccount && (
+                    <PopNav.Item onClick={exportAccount}>Export Private Key</PopNav.Item>
+                  )}
+                  {canRemove && (
+                    <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
+                  )}
+                </PopNav>
+              )}
+            </Box>
+          </Box>
           <Box margin="3.8rem 0 0 0">
             <NetworkPicker />
           </Box>

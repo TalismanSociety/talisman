@@ -9,14 +9,11 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import Account from "@ui/domains/Account"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import styled from "styled-components"
 import * as yup from "yup"
-
-import { useReceiveTokensModal } from "./ReceiveTokensModalContext"
 
 const Form = styled.form`
   display: flex;

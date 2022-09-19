@@ -23,7 +23,7 @@ export type {
 
 // account types ----------------------------------
 
-export type AccountJsonHardware = AccountJson & {
+export interface AccountJsonHardware extends AccountJson {
   isHardware: true
   accountIndex: number
   addressOffset: number

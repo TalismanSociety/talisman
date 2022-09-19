@@ -24,8 +24,6 @@ import { assert } from "@polkadot/util"
 import { mnemonicValidate } from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 
-import { appStore } from "../app"
-
 export default class AccountsHandler extends ExtensionHandler {
   private getRootAccount() {
     // TODO this is duplicated in handlers/app.ts

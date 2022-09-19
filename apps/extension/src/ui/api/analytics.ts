@@ -13,6 +13,7 @@ export type AnalyticsPage = {
   page: string
 }
 
+// For UI, all events should be tied to the page they are sent from
 export type AnalyticsEvent = AnalyticsPage & {
   name: AnalyticsEventName
   action?: string
