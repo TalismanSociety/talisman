@@ -1,27 +1,21 @@
 import { SubscribableStorageProvider } from "@core/libs/Store"
 import passworder from "@metamask/browser-passworder"
 import { assert } from "@polkadot/util"
+import { Err, Ok, Result } from "ts-results"
 
 const storageKey = "nursery"
 
-type storedSeed = {
-  seed: string
-}
-
-interface SeedPhraseData {
+export type SeedPhraseData = {
   cipher: string
   address: string
   confirmed: boolean
 }
 
 export const encryptSeed = async (seed: string, password: string) => {
-  const seedObj = { seed: `----${seed}` }
+  const cipher = await passworder.encrypt(password, seed)
 
-  const cipher = await passworder.encrypt(password, seedObj)
-
-  const { seed: checkedSeed } = await passworder.decrypt<storedSeed>(password, cipher)
-
-  assert(seedObj.seed === checkedSeed, "Seed encryption failed")
+  const checkedSeed = await passworder.decrypt(password, cipher)
+  assert(seed === checkedSeed, "Seed encryption failed")
 
   return cipher
 }
@@ -35,14 +29,13 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
     address: string,
     password: string,
     confirmed = false
-  ): Promise<boolean> {
+  ): Promise<Result<boolean, "Seed already exists in SeedPhraseStore">> {
     const storedCipher = await this.get("cipher")
-
-    assert(!storedCipher, `Seed already exists in SeedPhraseStore`)
+    if (storedCipher) return Err("Seed already exists in SeedPhraseStore")
 
     const cipher = await encryptSeed(seed, password)
     await this.set({ cipher, address, confirmed })
-    return true
+    return Ok(true)
   }
 
   public async setConfirmed(confirmed = false) {
@@ -50,15 +43,15 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
     return true
   }
 
-  public async getSeed(password: string) {
+  public async getSeed(password: string): Promise<Result<string, "Incorrect pass phrase">> {
+    let seed: string
+    const cipher = await this.get("cipher")
     try {
-      const cipher = (await this.get("cipher")) as string
-      const { seed } = await passworder.decrypt<storedSeed>(password, cipher)
-      if (seed.slice(0, 4) !== "----") throw new Error("Incorrect pass phrase")
-      return seed.split("----")[1]
+      seed = await passworder.decrypt<string>(password, cipher)
     } catch (e) {
-      throw new Error("Incorrect pass phrase")
+      return Err("Incorrect pass phrase")
     }
+    return Ok(seed)
   }
 }
 

@@ -21,6 +21,7 @@ import { ExtensionStore } from "@core/handlers/stores"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
+import { assert } from "@polkadot/util"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import Browser from "webextension-polyfill"
 
@@ -92,9 +93,16 @@ export default class Extension extends ExtensionHandler {
       // --------------------------------------------------------------------
       // mnemonic handlers --------------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(mnemonic.unlock)":
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        return await this.stores.seedPhrase.getSeed(request as string)
+      case "pri(mnemonic.unlock)": {
+        const transformedPw = await this.stores.password.transformPassword(
+          request as RequestTypes["pri(mnemonic.unlock)"]
+        )
+        assert(transformedPw, "Password error")
+
+        const seedResult = await this.stores.seedPhrase.getSeed(transformedPw)
+        assert(seedResult.ok, seedResult.val)
+        return seedResult.val
+      }
 
       case "pri(mnemonic.confirm)":
         return await this.stores.seedPhrase.setConfirmed(request as boolean)

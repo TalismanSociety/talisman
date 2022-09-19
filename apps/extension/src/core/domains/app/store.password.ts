@@ -14,7 +14,7 @@ const FALSE: LOGGEDIN_FALSE = "FALSE"
 
 export type LoggedInType = LOGGEDIN_TRUE | LOGGEDIN_FALSE | LOGGEDIN_UNKNOWN
 
-type PasswordStoreData = {
+export type PasswordStoreData = {
   isTrimmed: boolean
 }
 
@@ -24,7 +24,7 @@ const initialData: PasswordStoreData = {
 }
 
 export class PasswordStore extends StorageProvider<PasswordStoreData> {
-  #rawPassword?: string = undefined
+  #rawPassword?: string
   isLoggedIn = new BehaviorSubject<LoggedInType>(this.hasPassword ? TRUE : FALSE)
   #autoLockTimer?: NodeJS.Timeout
 
@@ -43,7 +43,8 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
   }
 
   async transformPassword(password: string) {
-    if (await this.get("isTrimmed")) return password.trim()
+    const shouldTrim = await this.get("isTrimmed")
+    if (shouldTrim) return password.trim()
     return password
   }
 

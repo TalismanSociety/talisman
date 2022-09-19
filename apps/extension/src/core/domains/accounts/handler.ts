@@ -54,9 +54,10 @@ export default class AccountsHandler extends ExtensionHandler {
       // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
       isEthereum ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
 
-    const rootSeed = await this.stores.seedPhrase.getSeed(password)
-    assert(rootSeed, "Global seed not available")
+    const rootSeedResult = await this.stores.seedPhrase.getSeed(password)
+    if (rootSeedResult.err) throw new Error("Global seed not available")
 
+    const rootSeed = rootSeedResult.val
     let accountIndex
     let derivedAddress: string | null = null
     for (accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
@@ -96,8 +97,11 @@ export default class AccountsHandler extends ExtensionHandler {
     assert(password, "Not logged in")
 
     // get seed and compare against master seed - cannot import root seed
-    const rootSeed = await this.stores.seedPhrase.getSeed(password)
-    assert(rootSeed.trim() !== seed.trim(), "Cannot re-import your master seed")
+    const rootSeedResult = await this.stores.seedPhrase.getSeed(password)
+    if (rootSeedResult.err) throw new Error("Global seed not available")
+    const rootSeed = rootSeedResult.val
+
+    assert(rootSeed !== seed.trim(), "Cannot re-import your master seed")
 
     const seedAddress = addressFromMnemonic(seed, type)
     const notExists = !keyring.getAccounts().some(({ address }) => address === seedAddress)
@@ -105,7 +109,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     try {
       keyring.addUri(
-        `${seed.trim()}`,
+        rootSeed,
         password,
         {
           name,

@@ -1,11 +1,20 @@
 // import Extension from "./Extension"
+import { encryptSeed } from "@core/domains/accounts/store"
 import AppHandler from "@core/domains/app/handler"
 import State from "@core/handlers/State"
-import { extensionStores } from "@core/handlers/stores"
+import {
+  GettableStoreData,
+  extensionStores,
+  getLocalStorage,
+  setLocalStorage,
+} from "@core/handlers/stores"
+import { StorageProvider } from "@core/libs/Store"
 import { MessageTypes, RequestTypes, ResponseTypes } from "@core/types"
+import passworder from "@metamask/browser-passworder"
 /* eslint-disable no-console */
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
+import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { v4 } from "uuid"
@@ -29,30 +38,26 @@ describe("Extension", () => {
   let extension: AppHandler
   let state: State
   let messageSender: SenderFunction<MessageTypes>
-  const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
+  let baseStoreState: Partial<GettableStoreData> = {}
+  let accountsJson: KeyringPairs$Json
 
   async function createExtension(): Promise<AppHandler> {
     await cryptoWaitReady()
 
     keyring.loadAll({ store: new AccountsStore() })
 
-    extensionStores.sites.set({
-      "localhost:3000": {
-        addresses: [],
-        id: "11",
-        origin: "example.com",
-        url: "http://localhost:3000",
-      },
-    })
     state = new State()
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-
     return new AppHandler(state, extensionStores)
   }
 
+  afterAll(async () => {
+    await Browser.storage.local.clear()
+  })
+
   beforeAll(async () => {
     await Browser.storage.local.clear()
+
     extension = await createExtension()
     messageSender = getMessageSenderFn(extension)
 
@@ -61,10 +66,25 @@ describe("Extension", () => {
       pass: password,
       passConfirm: password,
     })
+
+    baseStoreState = await getLocalStorage()
+
+    accountsJson = await keyring.backupAccounts(
+      keyring.getPairs().map((pair) => pair.address),
+      await extensionStores.password.transformPassword(password)
+    )
   })
 
   beforeEach(async () => {
-    await messageSender("pri(app.authenticate)", {
+    const { seedPhrase, password: passwordStoreData, settings } = baseStoreState
+    await setLocalStorage({ seedPhrase, password: passwordStoreData, settings })
+    extensionStores.password.clearPassword()
+
+    keyring.restoreAccounts(
+      accountsJson,
+      await extensionStores.password.transformPassword(password)
+    )
+    const login = await messageSender("pri(app.authenticate)", {
       pass: password,
     })
   })
@@ -108,32 +128,12 @@ describe("Extension", () => {
     })
     expect(loginExtraSpaces).toBe(false)
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
-    // set trimming back to true for the other tests
-    await extensionStores.password.set({ isTrimmed: true })
   })
 
-  test("can login with trimmed password when isTrimmed is set to false", async () => {
-    await extensionStores.password.set({ isTrimmed: false })
-    expect(await extensionStores.password.get("isTrimmed")).toBe(false)
-
-    // logout then log in again
-    await messageSender("pri(app.lock)")
-    expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
-
-    const loginExtraSpaces = await messageSender("pri(app.authenticate)", {
-      pass: password.trim(),
-    })
-    expect(loginExtraSpaces).toBe(true)
-    expect(extensionStores.password.isLoggedIn.value).toBe("TRUE")
-    // set trimming back to true for the other tests
-    await extensionStores.password.set({ isTrimmed: true })
-  })
-
-  test("can change password", async () => {
+  test("can change password to one without spaces", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
     // seed phrase store needs to have confirmed === true
     await extensionStores.seedPhrase.set({ confirmed: true })
-    // create a keypair
 
     const newPw = "noSpaces"
     const changePassword = await messageSender("pri(app.changePassword)", {
@@ -155,5 +155,37 @@ describe("Extension", () => {
     expect(pairAgain.isLocked)
     pairAgain.decodePkcs8(newPw)
     expect(pairAgain.isLocked).toBeFalsy()
+
+    const seedResult = await extensionStores.seedPhrase.getSeed(newPw)
+    expect(seedResult.ok && seedResult.val).toBeTruthy()
+  })
+
+  test("can change password to one with spaces", async () => {
+    expect(await extensionStores.password.get("isTrimmed")).toBe(true)
+    await extensionStores.seedPhrase.set({ confirmed: true })
+
+    const newPw = " Spaces "
+    const changePassword = await messageSender("pri(app.changePassword)", {
+      currentPw: password,
+      newPw,
+      newPwConfirm: newPw,
+    })
+
+    expect(changePassword).toBe(true)
+    expect(await extensionStores.password.get("isTrimmed")).toBe(false)
+
+    expect(newPw).toEqual(await extensionStores.password.transformPassword(newPw))
+    // should now be able to unlock a keypair with the plain text pw
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
+    assert(account, "No account")
+    expect(account)
+
+    const pairAgain = keyring.getPair(account.address)
+    expect(pairAgain.isLocked)
+    pairAgain.decodePkcs8(newPw)
+    expect(pairAgain.isLocked).toBeFalsy()
+
+    const seedResult = await extensionStores.seedPhrase.getSeed(newPw)
+    expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 })
