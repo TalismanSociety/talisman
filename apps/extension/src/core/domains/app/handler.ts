@@ -2,7 +2,6 @@ import { AccountMeta } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
   AnalyticsCaptureRequest,
-  AppMessages,
   LoggedinType,
   ModalOpenParams,
   ModalTypes,
@@ -167,6 +166,7 @@ export default class AppHandler extends ExtensionHandler {
 
     const result = await changePassword({ currentPw: transformedPw, newPw })
     if (!result.ok) throw Error(result.val)
+    await this.stores.password.setPassword(newPw)
     await this.stores.password.set({ isTrimmed: false })
     return result.val
   }
