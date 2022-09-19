@@ -42,7 +42,6 @@ export const MysticalBackground = ({ className }: { className?: string }) => {
           <>
             <CelestialArtifact parentSize={parentSize} />
             <CelestialArtifact parentSize={parentSize} />
-            <CelestialArtifact parentSize={parentSize} />
             <CelestialArtifact parentSize={parentSize} {...acolyte} />
           </>
         )}
