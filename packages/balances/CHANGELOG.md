@@ -1,5 +1,16 @@
 # @talismn/balances
 
+## 0.1.3
+
+### Patch Changes
+
+- 5af305c: switched build output from esm to commonjs for ecosystem compatibility
+- Updated dependencies [5af305c]
+  - @talismn/chain-connector@0.1.2
+  - @talismn/chaindata-provider@0.1.2
+  - @talismn/token-rates@0.1.2
+  - @talismn/util@0.1.3
+
 ## 0.1.2
 
 ### Patch Changes

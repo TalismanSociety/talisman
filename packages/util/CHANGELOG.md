@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 0.1.3
+
+### Patch Changes
+
+- 5af305c: switched build output from esm to commonjs for ecosystem compatibility
+
 ## 0.1.2
 
 ### Patch Changes

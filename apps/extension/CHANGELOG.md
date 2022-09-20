@@ -1,5 +1,19 @@
 # extension
 
+## 1.6.9
+
+### Patch Changes
+
+- Updated dependencies [5af305c]
+  - @talismn/balances@0.1.3
+  - @talismn/balances-evm-erc20@0.1.3
+  - @talismn/balances-evm-native@0.1.3
+  - @talismn/balances-substrate-native@0.1.3
+  - @talismn/balances-substrate-orml@0.1.3
+  - @talismn/chaindata-provider@0.1.2
+  - @talismn/token-rates@0.1.2
+  - @talismn/util@0.1.3
+
 ## 1.6.8
 
 ### Patch Changes
