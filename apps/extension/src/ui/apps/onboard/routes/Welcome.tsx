@@ -176,7 +176,7 @@ export const WelcomePage = () => {
             Multi-chain made easy
           </Title>
           <Box className="welcome-description" fontsize="xlarge">
-            Talisman supports Polkadot, Kusama, Ethereum and more
+            Talisman supports Polkadot, Kusama, Ethereum, and more
           </Box>
         </Box>
         <Box className="welcome-buttons" flex column gap={2.4} w={38}>

@@ -115,7 +115,7 @@ const ChangePassword = () => {
         <HeaderBlock title="Change your password" />
         <InfoP>
           Your password is used to unlock your wallet and is stored securely on your device. We
-          recommend 12 characters, with uppercase and lowercase letters, symbols and numbers.
+          recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers.
         </InfoP>
         {isNotConfirmed && (
           <Box
