@@ -1,7 +1,7 @@
 import { DEBUG } from "@core/constants"
 import { ChangePasswordRequest } from "@core/domains/app/types"
 import { KeyringPair } from "@polkadot/keyring/types"
-import keyring, { Keyring } from "@polkadot/ui-keyring"
+import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
 import { Err, Ok, Result } from "ts-results"
 import Browser from "webextension-polyfill"
@@ -12,13 +12,20 @@ export const TALISMAN_BACKUP_KEYRING_KEY = "talismanKeyringBackup"
 
 export const restoreBackupKeyring = async (
   password: string
-): Promise<Result<Keyring, "No keyring backup found">> => {
-  const backupJson = (await Browser.storage.local.get(TALISMAN_BACKUP_KEYRING_KEY))[
-    TALISMAN_BACKUP_KEYRING_KEY
-  ]
-  if (!backupJson) return Err("No keyring backup found")
+): Promise<Result<boolean, "No keyring backup found" | "Unable to restore backup keyring">> => {
+  const backupJsonObj = await Browser.storage.local.get(TALISMAN_BACKUP_KEYRING_KEY)
 
-  return Ok(new Keyring())
+  if (!backupJsonObj || !backupJsonObj[TALISMAN_BACKUP_KEYRING_KEY])
+    return Err("No keyring backup found")
+
+  const backupJson = backupJsonObj[TALISMAN_BACKUP_KEYRING_KEY]
+  try {
+    keyring.restoreAccounts(JSON.parse(backupJson), password)
+  } catch (error) {
+    return Err("Unable to restore backup keyring")
+  }
+  await Browser.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)
+  return Ok(true)
 }
 
 const migratePairs = async (
@@ -26,14 +33,6 @@ const migratePairs = async (
   newPw: string
 ): Promise<Result<KeyringPair[], "Error re-encrypting keypairs">> => {
   const pairs = keyring.getPairs()
-  const backupJson = await keyring.backupAccounts(
-    pairs.map(({ address }) => address),
-    currentPw
-  )
-
-  // store the keyring object as
-  await Browser.storage.local.set({ [TALISMAN_BACKUP_KEYRING_KEY]: JSON.stringify(backupJson) })
-
   // keep track of which pairs have been successfully migrated
   const successfulPairs: KeyringPair[] = []
   try {
@@ -43,15 +42,10 @@ const migratePairs = async (
       keyring.encryptAccount(pair, newPw)
       successfulPairs.push(pair)
     })
-    if (successfulPairs.length !== backupJson.accounts.length)
-      throw new Error("Unable to re-encrypt all keypairs when changing password")
   } catch (error) {
-    await Browser.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)
-    keyring.restoreAccounts(backupJson, currentPw)
     Sentry.captureException(error)
     return Err("Error re-encrypting keypairs")
   }
-  await Browser.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)
   return Ok(successfulPairs)
 }
 
@@ -81,19 +75,31 @@ export const changePassword = async ({
   Result<boolean, "Error changing password">
 > => {
   try {
+    const backupJson = await keyring.backupAccounts(
+      keyring.getPairs().map(({ address }) => address),
+      currentPw
+    )
+    Browser.storage.local.set({ [TALISMAN_BACKUP_KEYRING_KEY]: JSON.stringify(backupJson) })
+
+    // attempt to migrate keypairs first
     const keypairMigrationResult = await migratePairs(currentPw, newPw)
-    if (keypairMigrationResult.ok) {
-      // now migrate seed phrase store password
-      const mnemonicMigrationResult = await migrateMnemonic(currentPw, newPw)
-      if (mnemonicMigrationResult.err) throw Error(mnemonicMigrationResult.val)
-    } else {
+    if (keypairMigrationResult.err) {
       throw Error(keypairMigrationResult.val)
     }
+    if (keypairMigrationResult.val.length !== backupJson.accounts.length)
+      throw new Error("Unable to re-encrypt all keypairs when changing password")
+    // now migrate seed phrase store password
+    const mnemonicMigrationResult = await migrateMnemonic(currentPw, newPw)
+    if (mnemonicMigrationResult.err) {
+      throw Error(mnemonicMigrationResult.val)
+    }
   } catch (error) {
+    await restoreBackupKeyring(currentPw)
     // eslint-disable-next-line no-console
     DEBUG && console.error("Error migrating password: ", error)
     return Err("Error changing password")
   }
+  await Browser.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)
   // success
   return Ok(true)
 }

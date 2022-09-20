@@ -1,5 +1,4 @@
 // import Extension from "./Extension"
-import { encryptSeed } from "@core/domains/accounts/store"
 import AppHandler from "@core/domains/app/handler"
 import State from "@core/handlers/State"
 import {
@@ -8,9 +7,7 @@ import {
   getLocalStorage,
   setLocalStorage,
 } from "@core/handlers/stores"
-import { StorageProvider } from "@core/libs/Store"
 import { MessageTypes, RequestTypes, ResponseTypes } from "@core/types"
-import passworder from "@metamask/browser-passworder"
 /* eslint-disable no-console */
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"

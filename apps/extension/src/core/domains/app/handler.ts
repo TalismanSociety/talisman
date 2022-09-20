@@ -154,7 +154,7 @@ export default class AppHandler extends ExtensionHandler {
     const transformedPw = await this.stores.password.transformPassword(currentPw)
     assert(transformedPw, "Password error")
     assert(transformedPw === (await this.stores.password.getPassword()), "Incorrect Password")
-    // attempt unlock the pair
+    // attempt to unlock the pair
     // a successful unlock means password is ok
     try {
       pair.unlock(transformedPw)
