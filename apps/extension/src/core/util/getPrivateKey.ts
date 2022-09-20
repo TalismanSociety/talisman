@@ -1,6 +1,5 @@
 // Copyright 2017-2022 @polkadot/keyring authors & contributors
 // SPDX-License-Identifier: Apache-2.0
-import { passwordStore } from "@core/domains/app"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { u8aEq, u8aToBuffer } from "@polkadot/util"
 import { jsonDecrypt } from "@polkadot/util-crypto"
@@ -13,11 +12,11 @@ const SEED_LENGTH = 32
 const SEED_OFFSET = PKCS8_HEADER.length
 
 // built from reverse engineering polkadot keyring
-export const getPrivateKey = (pair: KeyringPair, passphrase?: string) => {
-  const password = passphrase ?? passwordStore.getPassword()
+export const getPrivateKey = (pair: KeyringPair, password: string) => {
   if (pair.isLocked) pair.unlock(password)
 
   const json = pair.toJson(password)
+  pair.lock()
   const decrypted = jsonDecrypt(json, password)
 
   const header = decrypted.subarray(0, PKCS8_HEADER.length)

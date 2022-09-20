@@ -1,16 +1,17 @@
-import { useCallback, useState } from "react"
-import styled from "styled-components"
-import { useOnboard } from "../context"
-import { Layout } from "../layout"
-import imgAgyle from "@talisman/theme/images/onboard_agyle.png"
-import { ArrowRightIcon } from "@talisman/theme/icons"
-import * as yup from "yup"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
 import { FormField } from "@talisman/components/Field/FormField"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
+import { SimpleButton } from "@talisman/components/SimpleButton"
+import { ArrowRightIcon } from "@talisman/theme/icons"
+import imgAgyle from "@talisman/theme/images/onboard_agyle.png"
+import { useCallback, useState } from "react"
+import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
+import styled from "styled-components"
+import * as yup from "yup"
+
+import { useOnboard } from "../context"
+import { Layout } from "../layout"
 
 const Image = styled.img`
   // force size to avoid page layout shift on load

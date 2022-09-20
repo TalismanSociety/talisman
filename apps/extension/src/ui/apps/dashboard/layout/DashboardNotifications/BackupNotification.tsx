@@ -1,9 +1,8 @@
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { InfoIcon } from "@talisman/theme/icons"
-import Mnemonic from "@ui/domains/Account/Mnemonic"
+import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+
 import { Notification } from "./Notification"
 
 export const BackupNotification = () => {
@@ -22,11 +21,7 @@ export const BackupNotification = () => {
         onActionClick={open}
         onClose={confirm}
       />
-      <Modal open={isOpen} onClose={close}>
-        <ModalDialog title="Secret Phrase" onClose={close}>
-          <Mnemonic />
-        </ModalDialog>
-      </Modal>
+      <MnemonicModal open={isOpen} onClose={close} />
     </>
   )
 }

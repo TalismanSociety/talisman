@@ -24,6 +24,7 @@ import { Portfolio } from "./routes/Portfolio"
 import Settings from "./routes/Settings"
 import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
 import { AutoLockTimer } from "./routes/Settings/AutoLockTimer"
+import ChangePassword from "./routes/Settings/ChangePassword"
 import Options from "./routes/Settings/Options"
 import SecurityPrivacySettings from "./routes/Settings/SecurityPrivacySettings"
 import SitesConnected from "./routes/Settings/SitesConnected"
@@ -80,6 +81,7 @@ const DashboardInner = () => {
           <Route path="options" element={<Options />} />
           <Route path="about" element={<About />} />
           <Route path="analytics" element={<AnalyticsOptIn />} />
+          <Route path="change-password" element={<ChangePassword />} />
           <Route path="autolock" element={<AutoLockTimer />} />
         </Route>
         <Route path="tokens">

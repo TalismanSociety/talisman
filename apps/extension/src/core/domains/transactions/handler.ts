@@ -204,6 +204,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
     maxPriorityFeePerGas,
   }: RequestAssetTransferEth): Promise<ResponseAssetTransferEth> {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
+      const password = await this.stores.password.getPassword()
+      assert(password, "Unauthorised")
+
       const token = await db.tokens.get(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
@@ -233,7 +236,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
         ...transfer,
       }
 
-      const privateKey = getPrivateKey(pair)
+      const privateKey = getPrivateKey(pair, password)
       const wallet = new Wallet(privateKey, provider)
 
       const response = await wallet.sendTransaction(transaction)

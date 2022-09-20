@@ -1,22 +1,22 @@
 import CtaButton from "@talisman/components/CtaButton"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
-import { ReactComponent as IconGlobe } from "@talisman/theme/icons/globe.svg"
+import { ReactComponent as IconEye } from "@talisman/theme/icons/eye.svg"
 import { ReactComponent as IconInfo } from "@talisman/theme/icons/info.svg"
 import { ReactComponent as IconKey } from "@talisman/theme/icons/key.svg"
 import { ReactComponent as IconLink } from "@talisman/theme/icons/link.svg"
 import { ReactComponent as IconList } from "@talisman/theme/icons/list.svg"
 import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
 import Layout from "@ui/apps/dashboard/layout"
-import Mnemonic from "@ui/domains/Account/Mnemonic"
+import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 const Settings = () => {
   const { isOpen, open, close } = useOpenClose()
+  const { isNotConfirmed } = useMnemonicBackup()
 
   return (
     <Layout centered>
@@ -48,10 +48,21 @@ const Settings = () => {
           to={`/settings/options`}
         />
         <CtaButton
-          icon={<IconLock />}
+          icon={<IconEye />}
           title="Security and Privacy"
           subtitle="Control security and privacy preferences"
           to={`/settings/security-privacy-settings`}
+        />
+        <CtaButton
+          icon={<IconLock />}
+          title="Change password"
+          subtitle={
+            isNotConfirmed
+              ? "Please back up your secret recovery phrase before you change your password."
+              : "Change your Talisman password"
+          }
+          to={`/settings/change-password`}
+          disabled={isNotConfirmed}
         />
         <CtaButton
           icon={<IconClock />}
@@ -65,26 +76,8 @@ const Settings = () => {
           subtitle="Read our Privacy Policy and Terms of Use"
           to={`/settings/about`}
         />
-        <CtaButton
-          icon={<IconGlobe />}
-          title="Language"
-          subtitle="Choose your preferred language"
-          to={`/`}
-          disabled
-        />
-        <CtaButton
-          icon={<IconLock />}
-          title="Change password"
-          subtitle="Change your Talisman password"
-          to={`/`}
-          disabled
-        />
       </Grid>
-      <Modal open={isOpen} onClose={close}>
-        <ModalDialog title="Secret Phrase" onClose={close}>
-          <Mnemonic />
-        </ModalDialog>
-      </Modal>
+      <MnemonicModal open={isOpen} onClose={close} />
     </Layout>
   )
 }
