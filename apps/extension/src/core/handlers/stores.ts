@@ -52,6 +52,12 @@ export const tabStores = {
   settings: settingsStore,
 }
 
+export const extensionStores = {
+  ...tabStores,
+  password: passwordStore,
+  seedPhrase: seedPhraseStore,
+}
+
 const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
   settings: settingsStore,
   password: passwordStore,
@@ -61,6 +67,7 @@ const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
   transactions: transactionStore,
 }
 
+// utility functions used in tests
 const getStoreData = async <K extends GettableStoreKeys>([storeName, store]: [
   K,
   GettableStores[K][0]
@@ -68,7 +75,6 @@ const getStoreData = async <K extends GettableStoreKeys>([storeName, store]: [
   return [storeName, await store.get()]
 }
 
-// utility functions used in tests
 export const getLocalStorage = async (): Promise<GettableStoreData> =>
   Object.fromEntries(
     await Promise.all(
@@ -89,14 +95,6 @@ export const setLocalStorage = async <T extends GettableStoreKeys>(
       async ([storeName, storeData]) => await localStorageStores[storeName].set(storeData)
     )
   )
-}
-
-export const extensionStores = {
-  ...tabStores,
-  password: passwordStore,
-  seedPhrase: seedPhraseStore,
-  get: getLocalStorage,
-  set: setLocalStorage,
 }
 
 export type Store = ExtensionStore | TabStore

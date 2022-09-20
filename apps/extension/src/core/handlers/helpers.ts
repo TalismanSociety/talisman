@@ -26,13 +26,13 @@ export function stripUrl(url: string): string {
   return parts[2]
 }
 
-export const getPairFromAddress = (address: Address) => {
+const getPairFromAddress = (address: Address) => {
   const pair = keyring.getPair(address)
   if (!pair) throw new Error("Unable to find pair")
   return pair
 }
 
-export const getUnlockedPairFromAddress = async (address: Address) => {
+const getUnlockedPairFromAddress = async (address: Address) => {
   const pair = getPairFromAddress(address)
   // if the keyring pair is locked, the password is needed
   if (pair.isLocked) {
