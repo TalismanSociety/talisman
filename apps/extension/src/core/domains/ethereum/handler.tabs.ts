@@ -468,9 +468,12 @@ export class EthTabsHandler extends TabsHandler {
 
         const site = await this.getSiteDetails(url)
 
-        let provider
+        // checks that the request targets currently selected network
+        if (txRequest.chainId && site.ethChainId !== txRequest.chainId)
+          throw new EthProviderRpcError("Wrong network", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
         try {
-          provider = await this.getProvider(url)
+          await this.getProvider(url)
         } catch (error) {
           throw new EthProviderRpcError(
             "Network not supported",

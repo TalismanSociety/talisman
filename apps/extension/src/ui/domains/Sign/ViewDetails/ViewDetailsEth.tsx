@@ -4,7 +4,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
-import { BigNumberish } from "ethers"
+import { BigNumber, BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
@@ -84,7 +84,7 @@ const Address = ({ address }: AddressProps) => {
 }
 
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
-  const { request, network, gasInfo, priority } = useEthSignTransactionRequest()
+  const { request, network, gasInfo, priority, transaction } = useEthSignTransactionRequest()
   const { genericEvent } = useAnalytics()
 
   const nativeToken = useToken(network?.nativeToken?.id)
@@ -99,6 +99,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     genericEvent("open sign transaction view details", { type: "ethereum" })
   }, [genericEvent])
 
+  if (!transaction || !gasInfo) return null
+
   return (
     <ViewDetailsContainer>
       <div className="grow">
@@ -112,22 +114,42 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         <ViewDetailsField label="Value to be transferred" breakAll>
           {formatEthValue(request.value)}
         </ViewDetailsField>
-        <ViewDetailsField label="Network">{network?.name}</ViewDetailsField>
+        <ViewDetailsField label="Network">{network?.name ?? "Unknown"}</ViewDetailsField>
         <ViewDetailsField label="Network usage">
           {Math.round((gasInfo?.gasUsedRatio ?? 0) * 100)}%
         </ViewDetailsField>
         <ViewDetailsField label="Estimated gas &amp; price per gas">
-          {gasInfo?.estimatedGas?.toNumber() || null} gas at {formatEthValue(gasInfo?.gasPrice)}
+          {gasInfo.estimatedGas?.toNumber() || null} gas at {formatEthValue(gasInfo?.gasPrice)}
         </ViewDetailsField>
-        <ViewDetailsField label="Total gas cost">
-          {formatEthValue(gasInfo?.estimatedGas?.mul(gasInfo.gasPrice))}
+        <ViewDetailsField label="Gas Limit">
+          {gasInfo.gasLimit?.toNumber() || null} gas
         </ViewDetailsField>
-        <ViewDetailsField label={`Max fee (${priority} priority)`}>
-          {formatEthValue(gasInfo?.maxFee)}
-        </ViewDetailsField>
-        <ViewDetailsField label="Max transaction cost">
-          {formatEthValue(gasInfo?.maxFeeAndGasCost)}
-        </ViewDetailsField>
+        {transaction?.type === 2 ? (
+          <>
+            <ViewDetailsField label="Base fee per gas">
+              {formatEthValue(gasInfo.baseFeePerGas)}
+            </ViewDetailsField>
+            <ViewDetailsField label={`Max priority fee per gas (${priority} priority)`}>
+              {formatEthValue(gasInfo.maxPriorityFeePerGas)}
+            </ViewDetailsField>
+            <ViewDetailsField label="Max transaction cost">
+              {formatEthValue(gasInfo.maxFeeAndGasCost)}
+            </ViewDetailsField>
+          </>
+        ) : (
+          <>
+            <ViewDetailsField label="Gas price">
+              {formatEthValue(transaction.gasPrice)}
+            </ViewDetailsField>
+            <ViewDetailsField label="Estimated fee">
+              {formatEthValue(gasInfo.estimatedGas.mul(transaction.gasPrice as BigNumber))}
+              {!BigNumber.from(transaction.gasLimit).eq(gasInfo.estimatedGas) &&
+                `(max: ${formatEthValue(
+                  gasInfo.estimatedGas.mul(transaction.gasLimit as BigNumber)
+                )})`}
+            </ViewDetailsField>
+          </>
+        )}
       </div>
       <Button onClick={onClose}>Close</Button>
     </ViewDetailsContainer>

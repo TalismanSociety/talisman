@@ -1,6 +1,6 @@
+import { getTransactionFeeParams } from "@core/domains/ethereum/helpers"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
-import { getTransactionFeeParams } from "@talisman/util/getTransactionFeeParams"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { BigNumber, ethers } from "ethers"
 import { useEffect, useMemo, useState } from "react"

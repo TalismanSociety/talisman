@@ -141,6 +141,7 @@ export const EthSignTransactionRequest = () => {
     estimatedGasError,
     network,
     isAnalysing,
+    transaction,
   } = useEthSignTransactionRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -181,13 +182,17 @@ export const EthSignTransactionRequest = () => {
             </div>
             <div className="gasInfo">
               <div>
-                <div>Max Fee</div>
-                <div>Priority</div>
+                <div>Estimated Fee</div>
+                <div>{transaction?.type === 2 && "Priority"}</div>
               </div>
               <div>
                 <div>
                   {formatEtherValue(
-                    gasInfo.maxFeeAndGasCost,
+                    transaction?.type === 2
+                      ? gasInfo.estimatedGas.mul(
+                          gasInfo.baseFeePerGas.add(gasInfo.maxPriorityFeePerGas)
+                        )
+                      : gasInfo.estimatedGas.mul(gasInfo.gasPrice),
                     nativeToken?.decimals,
                     nativeToken?.symbol
                   )}

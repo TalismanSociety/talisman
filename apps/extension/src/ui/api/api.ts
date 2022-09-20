@@ -181,11 +181,10 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(eth.signing.approveSign)", {
       id,
     }),
-  ethApproveSignAndSend: (id, maxFeePerGas, maxPriorityFeePerGas) =>
+  ethApproveSignAndSend: (id, transaction) =>
     messageService.sendMessage("pri(eth.signing.approveSignAndSend)", {
       id,
-      maxFeePerGas,
-      maxPriorityFeePerGas,
+      transaction,
     }),
   ethCancelSign: (id) =>
     messageService.sendMessage("pri(eth.signing.cancel)", {

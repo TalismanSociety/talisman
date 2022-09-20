@@ -44,6 +44,7 @@ import { AddressesByChain } from "@core/types/base"
 import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
+import { ethers } from "ethers"
 
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
@@ -198,8 +199,7 @@ export default interface MessageTypes {
   ethApproveSign: (id: string) => Promise<boolean>
   ethApproveSignAndSend: (
     id: string,
-    maxFeePerGas: string,
-    maxPriorityFeePerGas: string
+    transaction: ethers.providers.TransactionRequest
   ) => Promise<boolean>
   ethCancelSign: (id: string) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>

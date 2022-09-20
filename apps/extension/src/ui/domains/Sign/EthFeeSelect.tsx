@@ -1,13 +1,15 @@
+import { getTransactionFeeParams } from "@core/domains/ethereum/helpers"
 import { EthPriorityOptionName, EthPriorityOptions } from "@core/domains/signing/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { classNames } from "@talisman/util/classNames"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
-import { getTransactionFeeParams } from "@talisman/util/getTransactionFeeParams"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BigNumber } from "ethers"
 import { useCallback, useEffect } from "react"
 import styled from "styled-components"
+
+import { useEthSignTransactionRequest } from "./SignRequestContext"
 
 const PillButton = styled.button`
   background: var(--color-background-muted-3x);
@@ -167,6 +169,7 @@ export const EthFeeSelect = ({
   ...props
 }: EthFeeSelectProps) => {
   const { genericEvent } = useAnalytics()
+  const { transaction } = useEthSignTransactionRequest()
 
   const { isOpen, open, close } = useOpenClose()
   const handleSelect = useCallback(
@@ -177,6 +180,9 @@ export const EthFeeSelect = ({
     },
     [close, onChange, genericEvent]
   )
+
+  // this is only usefull with EIP-1559
+  if (transaction?.type !== 2) return null
 
   return (
     <>
