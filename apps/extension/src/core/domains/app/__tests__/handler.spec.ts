@@ -39,6 +39,18 @@ describe("Extension", () => {
   let baseStoreState: Partial<GettableStoreData> = {}
   let accountsJson: KeyringPairs$Json
 
+  async function setTrimmedPassword(): Promise<void> {
+    // emulate onboarding v2, passwords were trimmed
+    await extensionStores.seedPhrase.set({ confirmed: true })
+    await messageSender("pri(app.changePassword)", {
+      currentPw: password,
+      newPw: password.trim(),
+      newPwConfirm: password.trim(),
+    })
+    await extensionStores.password.set({ isTrimmed: true })
+    await extensionStores.seedPhrase.set({ confirmed: false })
+  }
+
   async function createExtension(): Promise<AppHandler> {
     await cryptoWaitReady()
 
@@ -87,7 +99,9 @@ describe("Extension", () => {
   })
 
   test("can login with password with spaces when isTrimmed is set to true", async () => {
-    expect(await extensionStores.password.get("isTrimmed"))
+    await setTrimmedPassword()
+
+    expect(await extensionStores.password.get("isTrimmed")).toBe(true)
     // logout then log in again
     await messageSender("pri(app.lock)")
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
@@ -100,7 +114,9 @@ describe("Extension", () => {
   })
 
   test("can login with password with additional spaces when isTrimmed is set to true", async () => {
-    expect(await extensionStores.password.get("isTrimmed"))
+    await setTrimmedPassword()
+
+    expect(await extensionStores.password.get("isTrimmed")).toBe(true)
     // logout then log in again
     await messageSender("pri(app.lock)")
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
@@ -127,7 +143,39 @@ describe("Extension", () => {
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
   })
 
-  test("can change password to one without spaces", async () => {
+  test("can change password to one without spaces (not trimmed)", async () => {
+    expect(await extensionStores.password.get("isTrimmed")).toBe(false)
+    // seed phrase store needs to have confirmed === true
+    await extensionStores.seedPhrase.set({ confirmed: true })
+
+    const newPw = "noSpaces"
+    const changePassword = await messageSender("pri(app.changePassword)", {
+      currentPw: password,
+      newPw,
+      newPwConfirm: newPw,
+    })
+
+    expect(changePassword).toBe(true)
+    expect(await extensionStores.password.get("isTrimmed")).toBe(false)
+
+    expect(newPw).toEqual(await extensionStores.password.transformPassword(newPw))
+    // should now be able to unlock a keypair with the plain text pw
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
+    assert(account, "No account")
+    expect(account)
+
+    const pairAgain = keyring.getPair(account.address)
+    expect(pairAgain.isLocked)
+    pairAgain.decodePkcs8(newPw)
+    expect(pairAgain.isLocked).toBeFalsy()
+
+    const seedResult = await extensionStores.seedPhrase.getSeed(newPw)
+    expect(seedResult.ok && seedResult.val).toBeTruthy()
+  })
+
+  test("can change password to one without spaces (trimmed)", async () => {
+    await setTrimmedPassword()
+
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
     // seed phrase store needs to have confirmed === true
     await extensionStores.seedPhrase.set({ confirmed: true })
@@ -157,7 +205,38 @@ describe("Extension", () => {
     expect(seedResult.ok && seedResult.val).toBeTruthy()
   })
 
-  test("can change password to one with spaces", async () => {
+  test("can change password to one with spaces (not trimmed)", async () => {
+    expect(await extensionStores.password.get("isTrimmed")).toBe(false)
+    await extensionStores.seedPhrase.set({ confirmed: true })
+
+    const newPw = " Spaces "
+    const changePassword = await messageSender("pri(app.changePassword)", {
+      currentPw: password,
+      newPw,
+      newPwConfirm: newPw,
+    })
+
+    expect(changePassword).toBe(true)
+    expect(await extensionStores.password.get("isTrimmed")).toBe(false)
+
+    expect(newPw).toEqual(await extensionStores.password.transformPassword(newPw))
+    // should now be able to unlock a keypair with the plain text pw
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
+    assert(account, "No account")
+    expect(account)
+
+    const pairAgain = keyring.getPair(account.address)
+    expect(pairAgain.isLocked)
+    pairAgain.decodePkcs8(newPw)
+    expect(pairAgain.isLocked).toBeFalsy()
+
+    const seedResult = await extensionStores.seedPhrase.getSeed(newPw)
+    expect(seedResult.ok && seedResult.val).toBeTruthy()
+  })
+
+  test("can change password to one with spaces (trimmed)", async () => {
+    await setTrimmedPassword() // test with legacy onboard
+
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
     await extensionStores.seedPhrase.set({ confirmed: true })
 

@@ -2,7 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { Box } from "@talisman/components/Box"
 import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { useNotification } from "@talisman/components/Notification"
+import { notify } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { InfoIcon } from "@talisman/theme/icons"
@@ -59,7 +59,6 @@ type FormData = {
 
 const ChangePassword = () => {
   const navigate = useNavigate()
-  const notification = useNotification()
   const { isNotConfirmed } = useMnemonicBackup()
   const { isOpen, open, close } = useOpenClose()
 
@@ -88,7 +87,8 @@ const ChangePassword = () => {
     async ({ currentPw, newPw, newPwConfirm }: FormData) => {
       try {
         await api.changePassword(currentPw, newPw, newPwConfirm)
-        notification.success({
+        notify({
+          type: "success",
           title: "Password changed",
         })
         navigate("/portfolio")
@@ -98,14 +98,15 @@ const ChangePassword = () => {
         if ((err as Error).message === "New password and new password confirmation must match")
           setError("newPwConfirm", { message: (err as Error).message })
         else {
-          notification.error({
+          notify({
+            type: "error",
             title: "Error changing password",
             subtitle: (err as Error)?.message ?? "",
           })
         }
       }
     },
-    [navigate, notification, setError]
+    [navigate, setError]
   )
 
   return (

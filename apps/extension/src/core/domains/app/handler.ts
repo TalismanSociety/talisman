@@ -54,6 +54,7 @@ export default class AppHandler extends ExtensionHandler {
     }
 
     this.stores.password.setPassword(pass)
+    await this.stores.password.set({ isTrimmed: false })
     const transformedPw = await this.stores.password.getPassword()
     assert(transformedPw, "Password error")
 
