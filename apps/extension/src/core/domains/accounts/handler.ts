@@ -40,7 +40,8 @@ export default class AccountsHandler extends ExtensionHandler {
 
   private async accountCreate({ name, type }: RequestAccountCreate): Promise<boolean> {
     if (DEBUG) await sleep(1000)
-    assert(this.stores.password.hasPassword, "Not logged in")
+    const password = await this.stores.password.getPassword()
+    assert(password, "Not logged in")
 
     const allAccounts = keyring.getAccounts()
     const existing = allAccounts.find((account) => account.meta?.name === name)
@@ -54,10 +55,10 @@ export default class AccountsHandler extends ExtensionHandler {
       // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
       isEthereum ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
 
-    const password = this.stores.password.getPassword()
-    const rootSeed = await this.stores.seedPhrase.getSeed(password || "")
-    assert(rootSeed, "Global seed not available")
+    const rootSeedResult = await this.stores.seedPhrase.getSeed(password)
+    if (rootSeedResult.err) throw new Error("Global seed not available")
 
+    const rootSeed = rootSeedResult.val
     let accountIndex
     let derivedAddress: string | null = null
     for (accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
@@ -93,12 +94,15 @@ export default class AccountsHandler extends ExtensionHandler {
     seed,
     type,
   }: RequestAccountCreateFromSeed): Promise<boolean> {
-    const password = this.stores.password.getPassword()
+    const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     // get seed and compare against master seed - cannot import root seed
-    const rootSeed = await this.stores.seedPhrase.getSeed(password)
-    assert(rootSeed.trim() !== seed.trim(), "Cannot re-import your master seed")
+    const rootSeedResult = await this.stores.seedPhrase.getSeed(password)
+    if (rootSeedResult.err) throw new Error("Global seed not available")
+    const rootSeed = rootSeedResult.val
+
+    assert(rootSeed !== seed.trim(), "Cannot re-import your master seed")
 
     const seedAddress = addressFromMnemonic(seed, type)
     const notExists = !keyring.getAccounts().some(({ address }) => address === seedAddress)
@@ -106,7 +110,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     try {
       keyring.addUri(
-        `${seed.trim()}`,
+        rootSeed,
         password,
         {
           name,
@@ -129,7 +133,7 @@ export default class AccountsHandler extends ExtensionHandler {
   }: RequestAccountCreateFromJson): Promise<boolean> {
     await sleep(1000)
 
-    const password = this.stores.password.getPassword()
+    const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     try {
@@ -203,8 +207,8 @@ export default class AccountsHandler extends ExtensionHandler {
     return true
   }
 
-  private accountExport({ address }: RequestAccountExport): ResponseAccountExport {
-    const password = this.stores.password.getPassword()
+  private async accountExport({ address }: RequestAccountExport): Promise<ResponseAccountExport> {
+    const password = await this.stores.password.getPassword()
     assert(password, "User not logged in")
 
     const pair = keyring.getPair(address)

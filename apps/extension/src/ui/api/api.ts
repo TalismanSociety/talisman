@@ -17,6 +17,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(app.onboard)", { pass, passConfirm, mnemonic }),
   authenticate: (pass) => messageService.sendMessage("pri(app.authenticate)", { pass }),
   lock: () => messageService.sendMessage("pri(app.lock)"),
+  changePassword: (currentPw, newPw, newPwConfirm) =>
+    messageService.sendMessage("pri(app.changePassword)", { currentPw, newPw, newPwConfirm }),
   authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
   authStatusSubscribe: (cb) => messageService.subscribe("pri(app.authStatus.subscribe)", null, cb),
   onboardStatus: () => messageService.sendMessage("pri(app.onboardStatus)"),

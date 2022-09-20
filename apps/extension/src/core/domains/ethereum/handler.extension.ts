@@ -26,7 +26,6 @@ import { assert } from "@polkadot/util"
 import { BigNumber, BigNumberish, ethers } from "ethers"
 import { formatUnits, parseUnits } from "ethers/lib/utils"
 import isString from "lodash/isString"
-import { Result } from "ts-results"
 
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
@@ -124,7 +123,9 @@ export class EthHandler extends ExtensionHandler {
       block.gasLimit
     )
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
-      const privateKey = getPrivateKey(pair)
+      const password = await this.stores.password.getPassword()
+      assert(password, "Unauthorised")
+      const privateKey = getPrivateKey(pair, password)
       const signer = new ethers.Wallet(privateKey, provider)
       const { chainId, hash } = await signer.sendTransaction(tx)
 
@@ -166,8 +167,8 @@ export class EthHandler extends ExtensionHandler {
     const { method, request, reject, resolve } = queued
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
-      const pw = this.stores.password.getPassword()
-      if (!pw) throw Error("Unauthorised")
+      const pw = await this.stores.password.getPassword()
+      assert(pw, "Unauthorised")
       const privateKey = getPrivateKey(pair, pw)
       let signature: string
 

@@ -51,6 +51,7 @@ export default interface MessageTypes {
   onboard: (pass: string, passConfirm: string, mnemonic?: string) => Promise<OnboardedType>
   authenticate: (pass: string) => Promise<boolean>
   lock: () => Promise<boolean>
+  changePassword: (currentPw: string, newPw: string, newPwConfirm: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
   onboardStatus: () => Promise<OnboardedType>

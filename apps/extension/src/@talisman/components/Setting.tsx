@@ -4,7 +4,7 @@ import styled from "styled-components"
 
 interface SettingsProps {
   title: string
-  subtitle: ReactNode
+  subtitle?: ReactNode
   children?: ReactNode
 }
 
@@ -47,7 +47,7 @@ const Settings: React.FC<SettingsProps> = ({ title, subtitle, children }) => (
   <StyledSettings small>
     <span className="text">
       <div className="title">{title}</div>
-      <div className="subtitle">{subtitle}</div>
+      {subtitle && <div className="subtitle">{subtitle}</div>}
     </span>
     <span className="children">{children}</span>
   </StyledSettings>
