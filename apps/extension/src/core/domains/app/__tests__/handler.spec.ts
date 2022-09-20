@@ -59,7 +59,7 @@ describe("Extension", () => {
     messageSender = getMessageSenderFn(extension)
 
     await messageSender("pri(app.onboard)", {
-      name: "testRootAccount",
+      name: "My Polkadot Account",
       pass: password,
       passConfirm: password,
     })
@@ -144,7 +144,7 @@ describe("Extension", () => {
 
     expect(newPw).toEqual(await extensionStores.password.transformPassword(newPw))
     // should now be able to unlock a keypair with the plain text pw
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
     assert(account, "No account")
     expect(account)
 
@@ -173,7 +173,7 @@ describe("Extension", () => {
 
     expect(newPw).toEqual(await extensionStores.password.transformPassword(newPw))
     // should now be able to unlock a keypair with the plain text pw
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
     assert(account, "No account")
     expect(account)
 
