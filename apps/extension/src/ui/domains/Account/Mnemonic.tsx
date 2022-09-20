@@ -59,7 +59,7 @@ const Mnemonic = ({ className }: any) => {
           <Spacer />
           <Field.Toggle
             className="toggle"
-            info="Don't prompt me again"
+            info="I've backed it up"
             value={isConfirmed}
             onChange={(val: boolean) => toggleConfirmed(val)}
           />

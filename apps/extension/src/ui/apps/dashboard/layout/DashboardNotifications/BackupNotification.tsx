@@ -1,6 +1,6 @@
-import { MnemonicModal } from "@talisman/components/MnemonicModal"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { InfoIcon } from "@talisman/theme/icons"
+import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 import { Notification } from "./Notification"

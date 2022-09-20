@@ -1,7 +1,6 @@
 import CtaButton from "@talisman/components/CtaButton"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { MnemonicModal } from "@talisman/components/MnemonicModal"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
@@ -12,6 +11,7 @@ import { ReactComponent as IconLink } from "@talisman/theme/icons/link.svg"
 import { ReactComponent as IconList } from "@talisman/theme/icons/list.svg"
 import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
 import Layout from "@ui/apps/dashboard/layout"
+import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 const Settings = () => {
