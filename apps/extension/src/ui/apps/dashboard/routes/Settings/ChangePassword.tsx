@@ -156,7 +156,7 @@ const ChangePassword = () => {
               {...register("newPw")}
               placeholder="Enter New Password"
               spellCheck={false}
-              autoComplete="off"
+              autoComplete="new-password"
               data-lpignore
               type="password"
               tabIndex={2}
