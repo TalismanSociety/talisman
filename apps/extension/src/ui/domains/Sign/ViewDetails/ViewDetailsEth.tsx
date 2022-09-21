@@ -84,7 +84,7 @@ const Address = ({ address }: AddressProps) => {
 }
 
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
-  const { request, network, gasInfo, priority, transaction } = useEthSignTransactionRequest()
+  const { request, network, txDetails, priority, transaction } = useEthSignTransactionRequest()
   const { genericEvent } = useAnalytics()
 
   const nativeToken = useToken(network?.nativeToken?.id)
@@ -99,7 +99,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     genericEvent("open sign transaction view details", { type: "ethereum" })
   }, [genericEvent])
 
-  if (!transaction || !gasInfo) return null
+  if (!transaction || !txDetails) return null
 
   return (
     <ViewDetailsContainer>
@@ -116,24 +116,22 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         </ViewDetailsField>
         <ViewDetailsField label="Network">{network?.name ?? "Unknown"}</ViewDetailsField>
         <ViewDetailsField label="Network usage">
-          {Math.round((gasInfo?.gasUsedRatio ?? 0) * 100)}%
+          {Math.round((txDetails?.gasUsedRatio ?? 0) * 100)}%
         </ViewDetailsField>
         <ViewDetailsField label="Estimated gas &amp; price per gas">
-          {gasInfo.estimatedGas?.toNumber() || null} gas at {formatEthValue(gasInfo?.gasPrice)}
+          {BigNumber.from(txDetails.estimatedGas).toNumber() || null} gas at{" "}
+          {formatEthValue(txDetails?.gasPrice)}
         </ViewDetailsField>
         <ViewDetailsField label="Gas Limit">
-          {gasInfo.gasLimit?.toNumber() || null} gas
+          {BigNumber.from(transaction.gasLimit)?.toNumber() || null} gas
         </ViewDetailsField>
         {transaction?.type === 2 ? (
           <>
             <ViewDetailsField label="Base fee per gas">
-              {formatEthValue(gasInfo.baseFeePerGas)}
+              {formatEthValue(txDetails.baseFeePerGas)}
             </ViewDetailsField>
             <ViewDetailsField label={`Max priority fee per gas (${priority} priority)`}>
-              {formatEthValue(gasInfo.maxPriorityFeePerGas)}
-            </ViewDetailsField>
-            <ViewDetailsField label="Max transaction cost">
-              {formatEthValue(gasInfo.maxFeeAndGasCost)}
+              {formatEthValue(transaction.maxPriorityFeePerGas)}
             </ViewDetailsField>
           </>
         ) : (
@@ -141,15 +139,14 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
             <ViewDetailsField label="Gas price">
               {formatEthValue(transaction.gasPrice)}
             </ViewDetailsField>
-            <ViewDetailsField label="Estimated fee">
-              {formatEthValue(gasInfo.estimatedGas.mul(transaction.gasPrice as BigNumber))}
-              {!BigNumber.from(transaction.gasLimit).eq(gasInfo.estimatedGas) &&
-                `(max: ${formatEthValue(
-                  gasInfo.estimatedGas.mul(transaction.gasLimit as BigNumber)
-                )})`}
-            </ViewDetailsField>
           </>
         )}
+        <ViewDetailsField label="Estimated transaction cost">
+          {formatEthValue(txDetails.estimatedFee)}
+        </ViewDetailsField>
+        <ViewDetailsField label="Max transaction cost">
+          {formatEthValue(txDetails.maxFee)}
+        </ViewDetailsField>
       </div>
       <Button onClick={onClose}>Close</Button>
     </ViewDetailsContainer>
@@ -158,17 +155,12 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
 
 export const ViewDetailsEth = () => {
   const { isOpen, open, close } = useOpenClose()
-  const { hasError, isAnalysing } = useEthSignTransactionRequest()
+  const { error, isLoading } = useEthSignTransactionRequest()
 
   return (
     <>
-      <ViewDetailsButton
-        onClick={open}
-        hide={isOpen}
-        isAnalysing={isAnalysing}
-        hasError={hasError}
-      />
-      <Drawer anchor="bottom" open={isOpen && !isAnalysing} onClose={close}>
+      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={isLoading} hasError={!!error} />
+      <Drawer anchor="bottom" open={isOpen && !isLoading} onClose={close}>
         <ViewDetailsContent onClose={close} />
       </Drawer>
     </>

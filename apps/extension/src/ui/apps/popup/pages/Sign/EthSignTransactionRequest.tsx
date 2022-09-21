@@ -134,22 +134,21 @@ export const EthSignTransactionRequest = () => {
     status,
     message,
     account,
-    gasInfo,
+    txDetails,
     priority,
     setPriority,
-    blockInfoError,
-    estimatedGasError,
+    error,
     network,
-    isAnalysing,
+    isLoading,
     transaction,
   } = useEthSignTransactionRequest()
 
   const { processing, errorMessage } = useMemo(() => {
     return {
       processing: status === "PROCESSING",
-      errorMessage: status === "ERROR" ? message : blockInfoError ?? estimatedGasError ?? "",
+      errorMessage: status === "ERROR" ? message : error ?? "",
     }
-  }, [status, message, blockInfoError, estimatedGasError])
+  }, [status, message, error])
 
   useEffect(() => {
     // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
@@ -175,7 +174,7 @@ export const EthSignTransactionRequest = () => {
         )}
       </Content>
       <Footer>
-        {nativeToken && gasInfo ? (
+        {nativeToken && transaction && txDetails ? (
           <>
             <div className="center">
               <ViewDetailsEth />
@@ -188,18 +187,15 @@ export const EthSignTransactionRequest = () => {
               <div>
                 <div>
                   {formatEtherValue(
-                    transaction?.type === 2
-                      ? gasInfo.estimatedGas.mul(
-                          gasInfo.baseFeePerGas.add(gasInfo.maxPriorityFeePerGas)
-                        )
-                      : gasInfo.estimatedGas.mul(gasInfo.gasPrice),
+                    txDetails.estimatedFee,
                     nativeToken?.decimals,
                     nativeToken?.symbol
                   )}
                 </div>
                 <div>
                   <EthFeeSelect
-                    {...gasInfo}
+                    transaction={transaction}
+                    txDetails={txDetails}
                     priority={priority ?? "low"}
                     onChange={setPriority}
                     decimals={nativeToken?.decimals}
@@ -218,7 +214,7 @@ export const EthSignTransactionRequest = () => {
                 Cancel
               </SimpleButton>
               <SimpleButton
-                disabled={processing || isAnalysing}
+                disabled={processing || isLoading}
                 processing={processing}
                 primary
                 onClick={approve}

@@ -20,6 +20,7 @@ import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
   CustomEvmNetwork,
+  EthGasSettings,
   EvmNetworkId,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
@@ -178,8 +179,7 @@ export default interface MessageTypes {
     fromAddress: string,
     toAddress: string,
     amount: string,
-    maxPriorityFeePerGas: string,
-    maxFeePerGas: string
+    gasSettings: EthGasSettings
   ) => Promise<ResponseAssetTransferEth>
   assetTransferCheckFees: (
     chainId: ChainId,

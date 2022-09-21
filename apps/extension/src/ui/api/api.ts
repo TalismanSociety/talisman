@@ -142,23 +142,14 @@ export const api: MessageTypes = {
       tip,
       reapBalance,
     }),
-  assetTransferEth: (
-    evmNetworkId,
-    tokenId,
-    fromAddress,
-    toAddress,
-    amount,
-    maxPriorityFeePerGas,
-    maxFeePerGas
-  ) =>
+  assetTransferEth: (evmNetworkId, tokenId, fromAddress, toAddress, amount, gasSettings) =>
     messageService.sendMessage("pri(assets.transferEth)", {
       evmNetworkId,
       tokenId,
       fromAddress,
       toAddress,
       amount,
-      maxPriorityFeePerGas,
-      maxFeePerGas,
+      gasSettings,
     }),
   assetTransferCheckFees: (chainId, tokenId, fromAddress, toAddress, amount, tip, reapBalance) =>
     messageService.sendMessage("pri(assets.transfer.checkFees)", {

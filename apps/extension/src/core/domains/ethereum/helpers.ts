@@ -59,6 +59,21 @@ export const rebuildTransactionRequestNumbers = (
   return tx
 }
 
+export const rebuildGasSettings = (gasSettings: EthGasSettings) => {
+  const gs = { ...gasSettings } as EthGasSettings
+
+  gs.gasLimit = BigNumber.from(gs.gasLimit)
+
+  if (gs.type === 2) {
+    gs.maxFeePerGas = BigNumber.from(gs.maxFeePerGas)
+    gs.maxPriorityFeePerGas = BigNumber.from(gs.maxPriorityFeePerGas)
+  } else if (gs.type === 0) {
+    gs.gasPrice = BigNumber.from(gs.gasPrice)
+  } else throw new Error("Unexpected gas settings type")
+
+  return gs
+}
+
 const TX_GAS_LIMIT_DEFAULT = BigNumber.from("250000")
 const TX_GAS_LIMIT_MIN = BigNumber.from("21000")
 
@@ -78,20 +93,46 @@ export const getGasLimit = (
   return gasLimit
 }
 
-export const getTransactionFeeParams = (
-  gasPrice: BigNumber,
-  estimatedGas: BigNumber,
-  baseFeePerGas: BigNumber,
-  maxPriorityFeePerGas: BigNumber
+export const getLegacyTotalFees = (
+  estimatedGas: BigNumberish,
+  gasLimit: BigNumberish,
+  gasPrice: BigNumberish
 ) => {
-  // if network is busy, gas can augment 12.5% per block.
-  // multiplying it by 2 allows fee to be sufficient even if tx has to wait for 8 blocks
-  const maxFeePerGas = baseFeePerGas.mul(2).add(maxPriorityFeePerGas)
-  const gasCost = estimatedGas.mul(gasPrice)
-  const maxFee = estimatedGas.mul(maxFeePerGas)
-  const maxFeeAndGasCost = gasCost.add(maxFee)
+  const estimatedFee = BigNumber.from(estimatedGas).mul(gasPrice)
+  const maxFee = BigNumber.from(gasLimit).mul(gasPrice)
 
-  return { maxFeePerGas, gasCost, maxFee, maxFeeAndGasCost }
+  return { estimatedFee, maxFee }
+}
+
+const FEE_MAX_RAISE_RATIO_PER_BLOCK = 0.125
+export const getMaxFeePerGas = (
+  baseFeePerGas: BigNumberish,
+  maxPriorityFeePerGas: BigNumberish,
+  maxBlockWait = 8
+) => {
+  let base = BigNumber.from(baseFeePerGas)
+  //baseFeePerGas can augment 12.5% per block
+  for (let i = 0; i < maxBlockWait; i++)
+    base = base.mul((1 + FEE_MAX_RAISE_RATIO_PER_BLOCK) * 1000).div(1000)
+
+  return base.add(maxPriorityFeePerGas)
+}
+
+export const getEip1559TotalFees = (
+  estimatedGas: BigNumberish,
+  gasLimit: BigNumberish,
+  baseFeePerGas: BigNumberish,
+  maxPriorityFeePerGas: BigNumberish
+) => {
+  // for the estimate, assume gas will stay the same
+  const estimatedFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 0)
+  const estimatedFee = BigNumber.from(estimatedGas).mul(estimatedFeePerGas)
+
+  // max cost if transaction waits 8 blocks and prices raises 12.5% each time
+  const maxFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 8)
+  const maxFee = BigNumber.from(gasLimit).mul(maxFeePerGas)
+
+  return { estimatedFee, maxFee }
 }
 
 export const prepareTransaction = (
@@ -113,15 +154,6 @@ export const prepareTransaction = (
     customData,
     // apply user gas settings
     ...gasSettings,
-  }
-
-  // ensure nonce is a number
-  if (result.nonce) {
-    if (BigNumber.isBigNumber(result.nonce)) {
-      result.nonce = result.nonce.toNumber()
-    } else if (typeof nonce === "string") {
-      result.nonce = parseInt(nonce)
-    }
   }
 
   return result

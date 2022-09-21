@@ -65,7 +65,6 @@ export class EthHandler extends ExtensionHandler {
 
     // rebuild BigNumber property values (converted to json when serialized)
     const tx = rebuildTransactionRequestNumbers(transaction)
-
     tx.nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
