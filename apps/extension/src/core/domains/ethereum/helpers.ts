@@ -104,15 +104,18 @@ export const getLegacyTotalFees = (
   return { estimatedFee, maxFee }
 }
 
+// Assume this value is the same for all EVM chains, isn't it ?
 const FEE_MAX_RAISE_RATIO_PER_BLOCK = 0.125
+
 export const getMaxFeePerGas = (
   baseFeePerGas: BigNumberish,
   maxPriorityFeePerGas: BigNumberish,
-  maxBlockWait = 8
+  maxBlocksWait = 8
 ) => {
   let base = BigNumber.from(baseFeePerGas)
+
   //baseFeePerGas can augment 12.5% per block
-  for (let i = 0; i < maxBlockWait; i++)
+  for (let i = 0; i < maxBlocksWait; i++)
     base = base.mul((1 + FEE_MAX_RAISE_RATIO_PER_BLOCK) * 1000).div(1000)
 
   return base.add(maxPriorityFeePerGas)
@@ -128,7 +131,7 @@ export const getEip1559TotalFees = (
   const estimatedFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 0)
   const estimatedFee = BigNumber.from(estimatedGas).mul(estimatedFeePerGas)
 
-  // max cost if transaction waits 8 blocks and prices raises 12.5% each time
+  // max cost if transaction waits 8 blocks and consumes the whole gasLimit
   const maxFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 8)
   const maxFee = BigNumber.from(gasLimit).mul(maxFeePerGas)
 
