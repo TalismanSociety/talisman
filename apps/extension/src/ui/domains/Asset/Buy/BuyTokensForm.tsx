@@ -149,7 +149,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
       })
       .catch((err) => {
         // eslint-disable-next-line no-console
-        console.error(err)
+        DEBUG && console.error(err)
         setSupportedTokenIds(DEFAULT_BUY_TOKEN_IDS)
       })
   }, [])
