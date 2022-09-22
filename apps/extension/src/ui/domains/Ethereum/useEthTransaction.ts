@@ -151,7 +151,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
   }
 }
 
-export const useEvmTransaction = (
+export const useEthTransaction = (
   tx?: ethers.providers.TransactionRequest,
   defaultPriority: EthPriorityOptionName = "low"
 ) => {

@@ -9,8 +9,6 @@ import { BigNumberish, ethers } from "ethers"
 import { useCallback, useEffect } from "react"
 import styled from "styled-components"
 
-// TODO move to ethereum domain
-
 const PillButton = styled.button`
   background: var(--color-background-muted-3x);
   padding: 0.6rem 0.8rem;
