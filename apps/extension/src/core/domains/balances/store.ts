@@ -46,7 +46,6 @@ export class BalanceStore {
   #addresses: Addresses = {}
 
   #subscribers: Subject<void> = new Subject()
-  #showWalletFunding = false
 
   /**
    * Initialize the store with a set of addresses and chains.
@@ -58,10 +57,6 @@ export class BalanceStore {
       if (Object.keys(accounts).length < 1) return
 
       this.setAccounts(accounts)
-    })
-
-    appStore.observable.subscribe(({ showWalletFunding }) => {
-      this.#showWalletFunding = showWalletFunding
     })
 
     // subscribe to the chainstore and add chains to the list here
@@ -405,17 +400,6 @@ export class BalanceStore {
         Object.entries(updates).map(([id, balance]) => ({ id, ...balance }))
       )
     })
-
-    // turn off the wallet funding UI as soon as a balance is detected
-    if (
-      this.#showWalletFunding &&
-      balancesUpdates.sorted.some(
-        (b) => b.free.planck + b.frozen.planck + b.reserved.planck > BigInt(0)
-      )
-    ) {
-      this.#showWalletFunding = false
-      await appStore.set({ showWalletFunding: false })
-    }
   }
 
   /**
