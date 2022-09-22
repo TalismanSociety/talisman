@@ -59,8 +59,12 @@ export default class Extension extends ExtensionHandler {
       stores.password.resetAutoLockTimer(this.#autoLockTimeout)
     })
 
+    this.initWalletFunding()
+  }
+
+  private initWalletFunding() {
     // We need to show a specific UI until wallet has funds in it.
-    // showWalletFunding flag is turned on when onboarding.
+    // Note that showWalletFunding flag is turned on when onboarding.
     // Turn off the showWalletFunding flag as soon as there is a positive balance
     const subAppStore = this.stores.app.observable.subscribe(({ showWalletFunding, onboarded }) => {
       if (!showWalletFunding) {
