@@ -19,13 +19,11 @@ const ensurePosthogPreferences = (useAnalyticsTracking: boolean | undefined) => 
     useAnalyticsTracking &&
     (!posthog.has_opted_in_capturing() || posthog.has_opted_out_capturing())
   ) {
-    posthog.clear_opt_in_out_capturing()
     posthog.opt_in_capturing()
   } else if (
     !useAnalyticsTracking &&
     (posthog.has_opted_in_capturing() || !posthog.has_opted_out_capturing())
   ) {
-    posthog.clear_opt_in_out_capturing()
     posthog.opt_out_capturing()
   }
 }

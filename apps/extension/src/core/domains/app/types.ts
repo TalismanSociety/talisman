@@ -59,5 +59,4 @@ export interface AppMessages {
   "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenParams]
   "pri(app.promptLogin)": [boolean, boolean]
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
-  //"pri(app.isFeatureEnabled)": [FeatureFlag, boolean]
 }
