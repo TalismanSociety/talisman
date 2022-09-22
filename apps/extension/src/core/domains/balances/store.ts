@@ -22,8 +22,6 @@ import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
 import { Subject, combineLatest, firstValueFrom } from "rxjs"
 
-import { appStore } from "../app"
-
 type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account">
 type EvmNetworkIdAndHealth = Pick<
   EvmNetwork,
