@@ -1,26 +1,19 @@
-import { Route, Routes, Navigate } from "react-router-dom"
-import { Welcome } from "./Welcome"
-import { Terms } from "./Terms"
-import { Analytics } from "./Analytics"
-import { Onboard } from "./Onboard"
-import { EnterSecret } from "./EnterSecret"
-import { EnterName } from "./EnterName"
-import { EnterPass } from "./EnterPass"
-import { Complete } from "./Complete"
+import { Navigate, Route, Routes } from "react-router-dom"
+
+import { ImportPage } from "./Import"
+import { OnboardingPage } from "./Onboarding"
+import { PasswordPage } from "./Password"
+import { PrivacyPage } from "./Privacy"
+import { WelcomePage } from "./Welcome"
 
 const OnboardingRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Welcome />} />
-      <Route path="terms" element={<Terms />} />
-      <Route path="onboard" element={<Onboard />} />
-      <Route path="create">
-        <Route path="secret" element={<EnterSecret />} />
-        <Route path="name" element={<EnterName />} />
-        <Route path="pass" element={<EnterPass />} />
-      </Route>
-      <Route path="analytics" element={<Analytics />} />
-      <Route path="complete" element={<Complete />} />
+      <Route path="/" element={<WelcomePage />} />
+      <Route path="import" element={<ImportPage />} />
+      <Route path="password" element={<PasswordPage />} />
+      <Route path="privacy" element={<PrivacyPage />} />
+      <Route path="onboard" element={<OnboardingPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

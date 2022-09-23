@@ -4,7 +4,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { Checkbox } from "@talisman/components/Checkbox"
 import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { useNotification } from "@talisman/components/Notification"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { classNames } from "@talisman/util/classNames"
 import { api } from "@ui/api"
@@ -162,7 +162,6 @@ export const AccountAddSecretMnemonic = () => {
   const { data, updateData } = useAccountAddSecret()
   const navigate = useNavigate()
 
-  const notification = useNotification()
   const allAccounts = useAccounts()
   const accountAddresses = useMemo(() => allAccounts.map((a) => a.address), [allAccounts])
 
@@ -261,28 +260,33 @@ export const AccountAddSecretMnemonic = () => {
       updateData({ type, name, mnemonic, multi })
       if (multi) navigate("accounts")
       else {
-        notification.processing({
-          title: `Importing account`,
-          subtitle: "Please wait",
-          timeout: null,
-        })
+        const notificationId = notify(
+          {
+            type: "processing",
+            title: "Importing account",
+            subtitle: "Please wait",
+          },
+          { autoClose: false }
+        )
         try {
           const uri = await getAccountUri(mnemonic, type)
           await api.accountCreateFromSeed(name, uri, type)
-          notification.success({
+          notifyUpdate(notificationId, {
+            type: "success",
             title: "Account imported",
             subtitle: name,
           })
           navigate("/portfolio")
         } catch (err) {
-          notification.error({
+          notifyUpdate(notificationId, {
+            type: "error",
             title: "Error importing account",
             subtitle: (err as Error)?.message ?? "",
           })
         }
       }
     },
-    [navigate, notification, updateData]
+    [navigate, updateData]
   )
 
   const handleTypeChange = useCallback(

@@ -1,7 +1,6 @@
 import posthog from "posthog-js"
 
 export interface RequestOnboard {
-  name: string
   pass: string
   passConfirm: string
   mnemonic?: string
@@ -15,7 +14,7 @@ export interface RequestRoute {
   route: string
 }
 
-export declare type ModalTypes = "send"
+export declare type ModalTypes = "send" | "buy"
 export interface ModalOpenParams {
   modalType: ModalTypes
 }
@@ -24,6 +23,10 @@ export interface AnalyticsCaptureRequest {
   eventName: string
   options?: posthog.Properties
 }
+
+// values must match the flags defined in Posthog
+export type FeatureFlag = "WALLET_FUNDING" | "BUY_CRYPTO"
+export type FeatureVariants = Record<FeatureFlag, string | boolean>
 
 type FALSE = "FALSE"
 type TRUE = "TRUE"

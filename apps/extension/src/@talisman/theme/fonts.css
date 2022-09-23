@@ -24,3 +24,12 @@
   src: url("./fonts/Surt-SemiBoldExp.woff2") format("woff2");
   font-display: fallback;
 }
+
+@font-face {
+  font-family: "WhyteInktrapMedium";
+  font-style: normal;
+  font-weight: 500;
+  font-display: auto;
+  src: url("./fonts/Whyte-Inktrap-Medium.woff2") format("woff2");
+  font-display: fallback;
+}

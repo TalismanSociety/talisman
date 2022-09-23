@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { api } from "@ui/api"
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { useSendTokensModal } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import { useEffect } from "react"
 import Browser from "webextension-polyfill"
@@ -19,6 +20,7 @@ const focusCurrentTab = async () => {
  */
 export const useModalSubscription = () => {
   const { open: openSendFundsModal } = useSendTokensModal()
+  const { open: openBuyTokensModal } = useBuyTokensModal()
 
   useEffect(() => {
     const unsubscribe = api.modalOpenSubscribe(async ({ modalType }) => {
@@ -27,11 +29,15 @@ export const useModalSubscription = () => {
           await focusCurrentTab()
           openSendFundsModal()
           break
+        case "buy":
+          await focusCurrentTab()
+          openBuyTokensModal()
+          break
         default:
           break
       }
     })
 
     return () => unsubscribe()
-  }, [openSendFundsModal])
+  }, [openBuyTokensModal, openSendFundsModal])
 }

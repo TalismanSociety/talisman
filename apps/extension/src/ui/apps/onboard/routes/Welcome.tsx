@@ -1,164 +1,220 @@
-import { useEffect } from "react"
+import { Box } from "@talisman/components/Box"
+import { DownloadIcon, PlusIcon } from "@talisman/theme/icons"
+import { TalismanWhiteLogo } from "@talisman/theme/logos"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { ReactNode, useCallback } from "react"
+import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
-import Button from "@talisman/components/Button"
-import { FullColorLogo } from "@talisman/theme/logos"
+
+import { styleOnboardTranslucidBackground } from "../components/OnboardStyles"
+import { useOnboard } from "../context"
 import { Layout } from "../layout"
-import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
-import { motion, Transition, Variants } from "framer-motion"
 
-import imgSwami from "@talisman/theme/images/onboard_swami.png"
-import imgHood from "@talisman/theme/images/onboard_hood.png"
-import imgAgyle from "@talisman/theme/images/onboard_agyle.png"
-import imgNipsey from "@talisman/theme/images/onboard_nipsey.png"
-
-const Logo = styled(FullColorLogo)`
-  height: 4rem;
-  width: auto;
-  position: absolute;
-  top: 4.2rem;
-`
-
-const Content = styled(motion.div)`
+const WelcomeCtaContainer = styled.button`
+  ${styleOnboardTranslucidBackground}
+  border: none;
+  color: var(--color-foreground);
+  text-align: left;
+  padding: 3.2rem;
+  border-radius: 1.6rem;
+  cursor: pointer;
+  height: 18rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  //background: var(--color-background);
-  z-index: 1;
-  width: 100%;
-  gap: 4.8rem;
-  padding-bottom: 17.7rem;
-  position: relative;
-  padding: 12rem 0;
-`
+  justify-content: space-between;
+  transition: all var(--transition-speed-fast) ease-in-out;
 
-const H1 = styled(motion.h1)`
-  &&& {
-    font-size: 12.6rem;
-    line-height: 13.1rem;
-    font-weight: var(--font-weight-bold);
-    z-index: 1;
+  svg {
+    transition: none;
+  }
+
+  :hover {
+    background: var(--color-foreground);
+    background: rgba(var(--color-foreground-raw), 0.95);
+    color: var(--color-background);
   }
 `
 
-const P = styled(motion.p)`
-  &&& {
-    font-size: var(--font-size-large);
-    line-height: var(--font-size-xlarge);
-    font-weight: var(--font-weight-bold);
-    width: 46.9rem;
-    padding-right: 3rem;
+const Title = styled(Box)`
+  font-family: WhyteInktrapMedium, sans-serif;
+`
+
+const Container = styled(Layout)`
+  a {
     color: var(--color-foreground);
-    z-index: 1;
+    color: white;
   }
-`
 
-const Agyle = styled(motion.img).attrs({
-  src: imgAgyle,
-  alt: "Agyle",
-})`
-  position: absolute;
-  right: 62.39rem;
-  bottom: 0;
-  height: 41.88rem;
-  width: 28.605rem;
-  @media (max-width: 1346px) {
-    display: none;
-  }
-  z-index: 1;
-`
-const Nipsey = styled(motion.img).attrs({
-  src: imgNipsey,
-  alt: "Nipsey",
-})`
-  position: absolute;
-  right: 29rem;
-  bottom: 7.423rem;
-  height: 50.677rem;
-  width: 50.578rem;
-  z-index: 0;
-  @media (max-width: 1180px) {
-    display: none;
-  }
-`
-const Swami = styled(motion.img).attrs({
-  src: imgSwami,
-  alt: "Swami",
-})`
-  position: absolute;
-  right: 7.586rem;
-  bottom: 0;
-  height: 47.942rem;
-  width: 42.994rem;
-  @media (max-width: 960px) {
-    display: none;
-  }
-`
-const Hood = styled(motion.img).attrs({
-  src: imgHood,
-  alt: "Hood",
-})`
-  position: absolute;
-  right: -7rem;
-  bottom: 5.95rem;
-  height: 50.677rem;
-  width: 33.949rem;
-  @media (max-width: 970px) {
-    display: none;
-  }
-`
+  @media (max-width: 1270px) {
+    > section {
+      align-items: center;
 
-const BtnNext = styled(Button)`
-  width: 24rem;
-`
+      > div {
+        gap: 4.8;
 
-const STAGGER_CHILDREN: Transition = { staggerChildren: 0.2, delay: 0.2 }
+        ${Title} {
+          font-size: 8rem;
+          line-height: 8rem;
+          font-weight: 500;
+          letter-spacing: -0.01em;
+        }
 
-const SLIDE_IN_LEFT: Variants = {
-  initial: { x: -200, opacity: 0 },
-  animate: { x: 0, opacity: 1 },
-}
+        .welcome-description {
+          font-size: 2.4rem;
+          line-height: 2.9rem;
+        }
 
-const SLIDE_IN_RIGHT: Variants = {
-  initial: { x: 500, opacity: 0 },
-  animate: { x: 0, opacity: 1 },
-}
-
-export const Welcome = () => {
-  const isOnboarded = useIsOnboarded()
-
-  // check for onboarded status & redirect to dashboard
-  // if already onboarded - doing it here because if we
-  // do it in the root provider we get redirected as soon
-  // as the flag is set, and this page is always shown initially
-  useEffect(() => {
-    if (isOnboarded === "TRUE") {
-      window.location.href = window.location.href.replace("onboarding.html", "dashboard.html")
+        .welcome-text {
+          gap: 3.2rem;
+          width: 44rem;
+        }
+      }
     }
-  }, [isOnboarded])
+  }
+
+  @media (max-width: 1024px) {
+    > section > div {
+      flex-direction: column;
+      gap: 4.8rem;
+
+      .welcome-text,
+      .welcome-buttons {
+        width: 44rem;
+      }
+    }
+  }
+
+  @media (max-width: 640px) {
+    > section > div {
+      ${Title} {
+        font-size: 6.4rem;
+        line-height: 6.4rem;
+        letter-spacing: -0.01em;
+      }
+
+      .welcome-description {
+        font-size: 2rem;
+        line-height: 2.4rem;
+      }
+    }
+  }
+`
+
+const Logo = styled(TalismanWhiteLogo)`
+  width: 19.6rem;
+  height: auto;
+`
+
+const WelcomeCta = ({
+  title,
+  icon,
+  description,
+  onClick,
+}: {
+  title: ReactNode
+  icon: ReactNode
+  description: ReactNode
+  onClick: () => void
+}) => {
+  return (
+    <WelcomeCtaContainer type="button" onClick={onClick}>
+      <Box flex fullwidth justify="space-between">
+        <Box grow fontsize="xlarge">
+          {title}
+        </Box>
+        <Box fontsizecustom={4}>{icon}</Box>
+      </Box>
+      <Box>{description}</Box>
+    </WelcomeCtaContainer>
+  )
+}
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Onboarding",
+  featureVersion: 3,
+  page: "Onboarding - Step 1 - Welcome",
+}
+
+const handleLinkClick = (action: string) => () => {
+  sendAnalyticsEvent({
+    ...ANALYTICS_PAGE,
+    name: "GotoExternal",
+    action,
+    site: "Talisman Docs",
+  })
+}
+
+export const WelcomePage = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
+  const { reset, updateData } = useOnboard()
+  const navigate = useNavigate()
+
+  const handleNextClick = useCallback(
+    (recovery: boolean) => async () => {
+      reset()
+      updateData({ mnemonic: undefined }) // always clear this one, even in dev mode
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Goto",
+        action: recovery ? "Import Wallet Button" : "New Wallet Button",
+      })
+      navigate(recovery ? "/import" : "/password")
+    },
+    [navigate, reset, updateData]
+  )
 
   return (
-    <Layout>
-      <div>
-        <Logo />
-      </div>
-      <Content transition={STAGGER_CHILDREN} initial="initial" animate="animate">
-        <H1 variants={SLIDE_IN_LEFT}>Unlock the Paraverse</H1>
-        <P variants={SLIDE_IN_LEFT}>
-          Talisman is a multi-chain wallet that unlocks a universe of applications in Polkadot and
-          Kusama.
-        </P>
-        <motion.div variants={SLIDE_IN_LEFT}>
-          <BtnNext primary to={`/terms`}>
-            Get started
-          </BtnNext>
-        </motion.div>
-        <motion.div transition={STAGGER_CHILDREN} initial="initial" animate="animate">
-          <Agyle variants={SLIDE_IN_RIGHT} />
-          <Nipsey variants={SLIDE_IN_RIGHT} />
-          <Swami variants={SLIDE_IN_RIGHT} />
-          <Hood variants={SLIDE_IN_RIGHT} />
-        </motion.div>
-      </Content>
-    </Layout>
+    <Container>
+      <Box flex gap={10} justify="center" align="center" margin="8rem 0">
+        <Box className="welcome-text" fg="foreground" flex column gap={4.8} w={67.3}>
+          <Box>
+            <Logo />
+          </Box>
+          <Title fontsizecustom={12} lineheightcustom={12}>
+            Multi-chain made easy
+          </Title>
+          <Box className="welcome-description" fontsize="xlarge">
+            Talisman supports Polkadot, Kusama, Ethereum, and more
+          </Box>
+        </Box>
+        <Box className="welcome-buttons" flex column gap={2.4} w={38}>
+          <WelcomeCta
+            title="New wallet"
+            icon={<PlusIcon />}
+            description="Create a new Talisman wallet"
+            onClick={handleNextClick(false)}
+          />
+          <WelcomeCta
+            title="Import a wallet"
+            icon={<DownloadIcon />}
+            description="Import an existing wallet such as Polkadot.js or Metamask"
+            onClick={handleNextClick(true)}
+          />
+          <Box fg="mid" fontsize="small" lineheightcustom="2rem">
+            By continuing, you agree to the{" "}
+            <a
+              href="https://docs.talisman.xyz/legal-and-security/terms-of-use"
+              target="_blank"
+              rel="noreferrer"
+              onClick={handleLinkClick("Terms of Service")}
+            >
+              Terms of Service
+            </a>
+            <br />
+            and{" "}
+            <a
+              href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+              target="_blank"
+              rel="noreferrer"
+              onClick={handleLinkClick("Privacy Policy")}
+            >
+              Privacy Policy
+            </a>
+          </Box>
+        </Box>
+      </Box>
+    </Container>
   )
 }

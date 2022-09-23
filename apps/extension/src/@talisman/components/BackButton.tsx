@@ -1,6 +1,7 @@
 import Button from "@talisman/components/Button"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
-import { FC, useCallback } from "react"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { ReactNode, useCallback } from "react"
 import { To, useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -23,9 +24,23 @@ const StyledButton = styled(Button)`
   }
 `
 
-export const BackButton: FC<ILinkProps> = ({ children, to, ...props }) => {
+type BackButtonProps = ILinkProps & {
+  children?: ReactNode
+  analytics?: AnalyticsPage
+}
+
+export const BackButton = ({ analytics, children, to, ...props }: BackButtonProps) => {
   const navigate = useNavigate()
-  const handleBackClick = useCallback(() => navigate(to ?? (-1 as To)), [navigate, to])
+  const handleBackClick = useCallback(() => {
+    if (analytics) {
+      sendAnalyticsEvent({
+        ...analytics,
+        name: "Goto",
+        action: "Back",
+      })
+    }
+    navigate(to ?? (-1 as To))
+  }, [analytics, navigate, to])
 
   return (
     <StyledButton small onClick={handleBackClick} {...props}>
