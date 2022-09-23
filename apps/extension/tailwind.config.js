@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{html,ts,tsx}", "./public/*.html"],
+  content: ["./src/**/*.{html,ts,tsx,svg}", "./public/*.html"], // can't get it to work for html files in public folder
   theme: {
     colors: {
       white: "#fafafa",
@@ -94,7 +94,11 @@ module.exports = {
         900: "#311d0e",
       },
     },
-    extend: {},
+    extend: {
+      lineHeight: {
+        base: 1.2,
+      },
+    },
   },
   plugins: [],
 }
