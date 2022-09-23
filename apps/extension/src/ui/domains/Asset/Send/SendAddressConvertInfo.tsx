@@ -41,13 +41,13 @@ const SendAddressConvertInfo: FC<SendAddressConvertedWarningProps> = ({
 
   return review ? (
     <Container>
-      <InfoIcon />
+      <InfoIcon className="inline" />
       Recipient address has been converted from <Address address={address} /> to {chain?.name} chain
       format : <Address address={formattedAddress} />
     </Container>
   ) : (
     <Container>
-      <InfoIcon />
+      <InfoIcon className="inline" />
       Recipient address will be converted to {chain?.name} chain format :{" "}
       <Address address={formattedAddress} />
     </Container>
