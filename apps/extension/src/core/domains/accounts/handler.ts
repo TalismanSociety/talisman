@@ -110,7 +110,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     try {
       keyring.addUri(
-        rootSeed,
+        seed,
         password,
         {
           name,
