@@ -103,10 +103,6 @@ const OptionButton = styled.button`
 type EthFeeButtonProps = {
   transaction: ethers.providers.TransactionRequest
   txDetails: EthTransactionDetails
-  // estimatedGas: BigNumber
-  // gasPrice: BigNumber
-  // baseFeePerGas: BigNumber
-  // priorityOptions: EthPriorityOptions
   priority: EthPriorityOptionName
   selected?: boolean
   decimals: number
@@ -117,11 +113,7 @@ type EthFeeButtonProps = {
 const PriorityOption = ({
   txDetails,
   transaction,
-  // gasPrice,
-  // baseFeePerGas,
-  // estimatedGas,
   priority,
-  // priorityOptions,
   selected,
   decimals,
   symbol,
@@ -133,13 +125,6 @@ const PriorityOption = ({
     txDetails.baseFeePerGas as BigNumberish,
     txDetails.priorityOptions?.[priority] as BigNumberish
   )
-  // TODO extraire méthode avec estim + max, utiliser estim
-  // const { maxFeeAndGasCost } = getTransactionFeeParams(
-  //   gasPrice,
-  //   estimatedGas,
-  //   baseFeePerGas,
-  //   priorityOptions?.[priority]
-  // )
   return (
     <OptionButton onClick={onClick} type="button" className={classNames(selected && "selected")}>
       <div className="icon">{OPTIONS[priority].icon}</div>
