@@ -4,7 +4,7 @@ import { encodeAnyAddress } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
-import { useNotification } from "@talisman/components/Notification"
+import { notify } from "@talisman/components/Notifications"
 import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -102,7 +102,6 @@ const SmallIconButton = styled(IconButton)`
 
 const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) => {
   const { account } = useSelectedAccount()
-  const notification = useNotification()
 
   const address = useMemo(() => {
     if (!account) return null
@@ -113,11 +112,12 @@ const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) =>
   const handleClick = useCallback(() => {
     if (!address) return
     navigator.clipboard.writeText(address)
-    notification.success({
+    notify({
+      type: "success",
       title: `Address copied`,
       subtitle: shortenAddress(address),
     })
-  }, [address, notification])
+  }, [address])
 
   if (!address) return null
 

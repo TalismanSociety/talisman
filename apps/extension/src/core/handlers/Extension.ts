@@ -18,11 +18,13 @@ import TokensHandler from "@core/domains/tokens/handler"
 import { AssetTransferHandler } from "@core/domains/transactions"
 import State from "@core/handlers/State"
 import { ExtensionStore } from "@core/handlers/stores"
+import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
 
 import { createSubscription, unsubscribe } from "./subscriptions"
@@ -55,6 +57,32 @@ export default class Extension extends ExtensionHandler {
     // update the autolock timer whenever a setting is changed
     Browser.storage.onChanged.addListener(() => {
       stores.password.resetAutoLockTimer(this.#autoLockTimeout)
+    })
+
+    this.initWalletFunding()
+  }
+
+  private initWalletFunding() {
+    // We need to show a specific UI until wallet has funds in it.
+    // Note that showWalletFunding flag is turned on when onboarding.
+    // Turn off the showWalletFunding flag as soon as there is a positive balance
+    const subAppStore = this.stores.app.observable.subscribe(({ showWalletFunding, onboarded }) => {
+      if (!showWalletFunding) {
+        if (onboarded === "TRUE") subAppStore.unsubscribe()
+        return
+      }
+
+      // look only for free balance because reserved and frozen properties are not indexed
+      const obsHasFunds = liveQuery(
+        async () => await db.balances.filter((b) => b.free !== "0").count()
+      )
+      const subBalances = obsHasFunds.subscribe((hasFunds) => {
+        if (hasFunds) {
+          this.stores.app.set({ showWalletFunding: false })
+          subBalances.unsubscribe()
+          subAppStore.unsubscribe()
+        }
+      })
     })
   }
 

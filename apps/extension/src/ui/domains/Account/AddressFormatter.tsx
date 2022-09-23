@@ -1,7 +1,7 @@
 import { encodeAnyAddress } from "@core/util"
 import CopyToClipboard from "@talisman/components/CopyToClipboard"
 import Input from "@talisman/components/Field/Input"
-import { useNotification } from "@talisman/components/Notification"
+import { notify } from "@talisman/components/Notifications"
 import { useSearchFilter } from "@talisman/hooks/useSearchFilter"
 import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
 import { ReactComponent as IconCheck } from "@talisman/theme/icons/check.svg"
@@ -145,7 +145,6 @@ interface IPropsAddressFormatter extends PropsWithChildren<any> {
 }
 
 const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressFormatter) => {
-  const notification = useNotification()
   const chains = useSortedChains()
   const [copied, setCopied] = useState("")
 
@@ -179,7 +178,8 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
               address={convertedAddress}
               onCopy={() => {
                 setCopied(chain.id)
-                notification.success({
+                notify({
+                  type: "success",
                   title: `${chain.name} address copied`,
                   subtitle: `Address: ${shortenAddress(convertedAddress)}`,
                 })

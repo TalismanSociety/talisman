@@ -26,6 +26,7 @@ import { TabsHandler } from "@core/libs/Handler"
 import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
+import { sleep } from "@core/util/sleep"
 import { toBuffer } from "@ethereumjs/util"
 import { recoverPersonalSignature } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
@@ -415,7 +416,7 @@ export class EthTabsHandler extends TabsHandler {
         await this.authoriseEth(url, { origin: "", ethereum: true })
         // TODO understand why site store isn't up to date already
         // wait for site store to update
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        await sleep(500)
         return await this.accountsList(url)
 
       case "eth_accounts":

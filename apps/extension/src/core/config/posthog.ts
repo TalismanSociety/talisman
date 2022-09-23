@@ -1,5 +1,8 @@
 import { DEBUG } from "@core/constants"
+import { FeaturesStoreData, featuresStore } from "@core/domains/app/store.features"
 import posthog from "posthog-js"
+
+const REFRESH_FEATURE_FLAGS_INTERVAL = 5 * 60 * 1000 // 5 minutes
 
 const unsafeProperties = [
   "$os",
@@ -33,7 +36,7 @@ const talismanProperties = {
   testBuild: DEBUG || ["qa", "ci"].includes(process.env.BUILD as string),
 }
 
-export const initPosthog = (allowTracking = false) => {
+export const initPosthog = () => {
   if (process.env.POSTHOG_AUTH_TOKEN) {
     posthog.init(process.env.POSTHOG_AUTH_TOKEN, {
       api_host: "https://app.posthog.com",
@@ -42,10 +45,6 @@ export const initPosthog = (allowTracking = false) => {
       disable_session_recording: true,
       persistence: "localStorage",
       ip: false,
-      loaded: (posthogInstance) => {
-        if (allowTracking && !posthogInstance.has_opted_in_capturing())
-          posthogInstance.opt_in_capturing()
-      },
       sanitize_properties: (properties, eventName) => {
         // We can remove all the posthog user profiling properties except for those that are required for PostHog to work
         const requiredProperties = Object.keys(properties).reduce((result, key) => {
@@ -58,5 +57,18 @@ export const initPosthog = (allowTracking = false) => {
         }
       },
     })
+
+    // update feature store on each reload of feature flags
+    posthog.onFeatureFlags((features, variants) => {
+      featuresStore.set({
+        features,
+        variants,
+      } as FeaturesStoreData)
+    })
+
+    // reload feature flags every 5 minutes
+    setInterval(() => {
+      posthog.reloadFeatureFlags()
+    }, REFRESH_FEATURE_FLAGS_INTERVAL)
   }
 }
