@@ -16,7 +16,8 @@ const Status = ({ text, className }: IProps) => (
 )
 
 const StyledStatus = styled(Status)`
-  .layout-content {
+  .layout-content,
+  .children {
     display: flex;
     flex-direction: column;
     align-items: center;

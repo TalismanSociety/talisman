@@ -35,7 +35,7 @@ export const SiteInfo: FC<SiteInfoProps> = ({ siteUrl = "" }) => {
 
   return (
     <Container className="site-info">
-      <img className={classNames("favicon", favicon && "show")} src={favicon} alt="" />
+      <img className={classNames("favicon inline-block", favicon && "show")} src={favicon} alt="" />
       <p>{domain}</p>
     </Container>
   )

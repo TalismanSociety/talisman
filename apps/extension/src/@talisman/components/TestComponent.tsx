@@ -1,3 +1,3 @@
 export const TestComponent = () => {
-  return <button className="bg-orange-400 text-white rounded">TW button</button>
+  return <button className="bg-orange rounded text-white">TW button</button>
 }

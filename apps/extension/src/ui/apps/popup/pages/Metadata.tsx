@@ -24,19 +24,36 @@ const Container = ({ className }: any) => {
     <Layout className={className} isThinking={status === "PROCESSING"}>
       <Header text={"Update Metadata"} />
       <Content>
-        <h1>Your metadata is out of date</h1>
-        <h2>
-          Approving this update will sync your metadata for the <strong>{request?.chain}</strong>{" "}
-          chain from <strong>{url}</strong>
-        </h2>
-        <hr />
-        <div className="stats">
-          <p>
-            <strong>Symbol:</strong> {request?.tokenSymbol}
-          </p>
-          <p>
-            <strong>Decimals:</strong> {request?.tokenDecimals}
-          </p>
+        <div>
+          <h1>Your metadata is out of date</h1>
+          <h2 className="font-medium">
+            Approving this update will sync your metadata for the <strong>{request?.chain}</strong>{" "}
+            chain from <strong>{url}</strong>
+          </h2>
+          <hr className="my-10" />
+          <div className="stats space-y-2 text-left">
+            <table>
+              <tr>
+                <td className="pr-4">
+                  <strong>Symbol:</strong>
+                </td>
+                <td>{request?.tokenSymbol}</td>
+              </tr>
+              <tr>
+                <td className="pr-4">
+                  <strong>Decimals:</strong>
+                </td>
+                <td>{request?.tokenDecimals}</td>
+              </tr>
+            </table>
+
+            <p>
+              <strong>Symbol:</strong> {request?.tokenSymbol}
+            </p>
+            <p>
+              <strong>Decimals:</strong> {request?.tokenDecimals}
+            </p>
+          </div>
         </div>
       </Content>
       <Footer>
@@ -73,11 +90,10 @@ const StyledContainer = styled(Container)`
     }
 
     h2 {
-      font-size: var(--font-size-medium);
-      color: var(--color-background-muted-2x);
+      color: var(--color-mid);
       word-break: break-word;
       strong {
-        color: var(--color-mid);
+        color: var(--color-foreground-muted-2x);
       }
     }
 
@@ -87,16 +103,16 @@ const StyledContainer = styled(Container)`
       p {
         font-weight: var(--font-weight-normal);
         font-size: var(--font-size-small);
-        color: var(--color-mid);
+        color: var(--color-foreground-muted-2x);
         line-height: 1em;
-        margin: 0;
+        margin: 0.4rem 0;
         text-align: left;
 
         strong {
           font-weight: var(--font-weight-normal);
           text-align: right;
           min-width: 10rem;
-          color: var(--color-background-muted-2x);
+          color: var(--color-mid);
           display: inline-block;
           margin-right: 0.4em;
         }

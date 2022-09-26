@@ -202,13 +202,10 @@ const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
             w="100%"
             h="100%"
           >
-            <Box fontsize="small" fg="foreground" bold noWrap>
+            <Box className="flex items-center gap-2" fontsize="small" fg="foreground" bold noWrap>
               {token.symbol}
               {isFetching && (
-                <span>
-                  {" "}
-                  <FetchingIcon data-spin />
-                </span>
+                <FetchingIcon data-spin className="inline align-baseline opacity-100" />
               )}
             </Box>
             {!!networkIds.length && (
@@ -225,7 +222,7 @@ const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
               symbol={token?.symbol}
               isBalance
             />
-            {locked ? <RowLockIcon className="lock" /> : null}
+            {locked ? <RowLockIcon className="lock inline align-baseline" /> : null}
           </Box>
           <Box fg="mid" fontsize="xsmall" lineheight="normal">
             {fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}
@@ -338,9 +335,12 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
         </BalancesGroup>
         <BalancesGroup
           label={
-            <span>
-              Locked <SectionLockIcon />
-            </span>
+            <div className="flex items-center gap-2">
+              <div>Locked</div>
+              <div>
+                <SectionLockIcon />
+              </div>
+            </div>
           }
           fiatAmount={totalLocked}
         >
