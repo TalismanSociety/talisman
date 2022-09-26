@@ -1,5 +1,12 @@
 # @talismn/balances-substrate-orml
 
+## 0.1.7
+
+### Patch Changes
+
+- 1582220: fix: orml tokens always 0
+  - @talismn/balances@0.1.7
+
 ## 0.1.6
 
 ### Patch Changes
