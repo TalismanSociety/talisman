@@ -1,3 +1,5 @@
+import "anylogger-loglevel"
+
 import "./index.css"
 
 import React from "react"

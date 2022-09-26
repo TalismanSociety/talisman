@@ -8,7 +8,7 @@ import {
   DefaultBalanceModule,
   NewBalanceType,
 } from "@talismn/balances"
-import { ChainId, NewTokenType, SubChainId, TokenId, TokenList } from "@talismn/chaindata-provider"
+import { ChainId, NewTokenType, SubChainId, TokenList } from "@talismn/chaindata-provider"
 import { blake2Concat, decodeAnyAddress, hasOwnProperty, twox64Concat } from "@talismn/util"
 
 import log from "./log"
@@ -198,7 +198,7 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
 
             // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
             if (token.type !== "substrate-orml") {
-              log.warn(`This module doesn't handle tokens of type ${token.type}`)
+              log.debug(`This module doesn't handle tokens of type ${token.type}`)
               return false
             }
 
@@ -432,9 +432,9 @@ function formatRpcResult(
 
       const balance: any = createType(new TypeRegistry(), AccountData, change)
 
-      const free = (balance.data?.free.toBigInt() || BigInt("0")).toString()
-      const reserved = (balance.data?.reserved.toBigInt() || BigInt("0")).toString()
-      const frozen = (balance.data?.frozen.toBigInt() || BigInt("0")).toString()
+      const free = (balance.free.toBigInt() || BigInt("0")).toString()
+      const reserved = (balance.reserved.toBigInt() || BigInt("0")).toString()
+      const frozen = (balance.frozen.toBigInt() || BigInt("0")).toString()
 
       return new Balance({
         source: "substrate-orml",

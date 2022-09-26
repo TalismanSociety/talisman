@@ -1,20 +1,13 @@
 import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
 import { EvmErc20Module } from "@talismn/balances-evm-erc20"
 import { EvmNativeModule } from "@talismn/balances-evm-native"
-import { ExampleModule } from "@talismn/balances-example"
 import { useBalances, useChaindata, useTokens } from "@talismn/balances-react"
 import { SubNativeModule } from "@talismn/balances-substrate-native"
 import { SubOrmlModule } from "@talismn/balances-substrate-orml"
 import { Token } from "@talismn/chaindata-provider"
 import { useEffect, useMemo, useState } from "react"
 
-const balanceModules = [
-  // ExampleModule,
-  SubNativeModule,
-  SubOrmlModule,
-  EvmNativeModule,
-  EvmErc20Module,
-]
+const balanceModules = [SubNativeModule, SubOrmlModule, EvmNativeModule, EvmErc20Module]
 
 export function App(): JSX.Element {
   const chaindata = useChaindata()
@@ -33,15 +26,16 @@ export function App(): JSX.Element {
         <div key={balance.id} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <img src={balance.token?.logo} style={{ height: "2rem", borderRadius: "9999999rem" }} />
           <img
-            src={`https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/split-entities/assets/${balance.chainId}/logo.svg`}
+            src={balance.chain?.logo || undefined}
             style={{ height: "2rem", borderRadius: "9999999rem" }}
           />
           <span>{balance.chain?.name}</span>
           <span>{balance.transferable.tokens}</span>
           <span>{balance.token?.symbol}</span>
+          <span>{balance.address}</span>
         </div>
       ))}
-      <pre>{JSON.stringify({ addresses, balances }, null, 2)}</pre>
+      <pre>{JSON.stringify({ addresses, tokenIds, balances }, null, 2)}</pre>
     </>
   )
 }

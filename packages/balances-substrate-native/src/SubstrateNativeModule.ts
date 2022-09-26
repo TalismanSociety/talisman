@@ -161,7 +161,7 @@ export const SubNativeModule: BalanceModule<
 
       // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
       if (token.type !== "substrate-native") {
-        log.warn(`This module doesn't handle tokens of type ${token.type}`)
+        log.debug(`This module doesn't handle tokens of type ${token.type}`)
         return () => {}
       }
 

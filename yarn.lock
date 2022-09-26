@@ -7951,7 +7951,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"anylogger@npm:^1.0.11":
+"anylogger-loglevel@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "anylogger-loglevel@npm:1.0.0"
+  dependencies:
+    anylogger: ^1.0.3
+    loglevel: ^1.6.8
+  peerDependencies:
+    anylogger: ^1.0.3
+    loglevel: ^1.6.6
+  checksum: 9767caa942e0574b69d49755ede2437cab15857a2d6678d10162836c2eea3c5d5ff0c601a4c8465a55d9dc8944d83b694b006ed18cc8ce28b676d91a1b3ff432
+  languageName: node
+  linkType: hard
+
+"anylogger@npm:^1.0.11, anylogger@npm:^1.0.3":
   version: 1.0.11
   resolution: "anylogger@npm:1.0.11"
   checksum: a0117e1bb00e2daf339e561308efabb701edc743670397b5000b119c6a4bea78199414c20f0eee7645581966489796b7afa15bb3417c51da10454f51d8e15042
@@ -8665,6 +8678,8 @@ __metadata:
     "@types/react-dom": ^18.0.0
     "@typescript-eslint/eslint-plugin": ^4.4.0
     "@typescript-eslint/parser": ^4.4.0
+    anylogger: ^1.0.11
+    anylogger-loglevel: ^1.0.0
     babel-eslint: ^10.1.0
     eslint: ^7.5.0
     eslint-config-react-app: ^6.0.0
@@ -8673,6 +8688,7 @@ __metadata:
     eslint-plugin-jsx-a11y: ^6.6.1
     eslint-plugin-react: ^7.30.1
     eslint-plugin-react-hooks: ^4.6.0
+    loglevel: ^1.8.0
     react: ^18.2.0
     react-dom: ^18.2.0
     react-scripts: 5.0.1
@@ -16227,6 +16243,13 @@ __metadata:
     slice-ansi: ^4.0.0
     wrap-ansi: ^6.2.0
   checksum: ae2f85bbabc1906034154fb7d4c4477c79b3e703d22d78adee8b3862fa913942772e7fa11713e3d96fb46de4e3cabefbf5d0a544344f03b58d3c4bff52aa9eb2
+  languageName: node
+  linkType: hard
+
+"loglevel@npm:^1.6.8, loglevel@npm:^1.8.0":
+  version: 1.8.0
+  resolution: "loglevel@npm:1.8.0"
+  checksum: 41aeea17de24aba8dba68084a31fe9189648bce4f39c1277e021bb276c3c53a75b0d337395919cf271068ad40ecefabad0e4fdeb4a8f11908beee532b898f4a7
   languageName: node
   linkType: hard
 
