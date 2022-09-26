@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 0.1.3
+
+### Patch Changes
+
+- d5f69f7: fix: migrated orml token code into substrate orml module
+
 ## 0.1.2
 
 ### Patch Changes

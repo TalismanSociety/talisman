@@ -1,6 +1,6 @@
 {
   "name": "balances-demo",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "dependencies": {
     "@polkadot/api": "^9.1.1",

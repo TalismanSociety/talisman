@@ -1,5 +1,14 @@
 # @talismn/balances-substrate-native
 
+## 0.1.4
+
+### Patch Changes
+
+- d5f69f7: fix: migrated orml token code into substrate orml module
+- Updated dependencies [d5f69f7]
+  - @talismn/balances@0.1.4
+  - @talismn/chaindata-provider@0.1.3
+
 ## 0.1.3
 
 ### Patch Changes
