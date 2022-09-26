@@ -60,3 +60,27 @@ All our package and apps are 100% [TypeScript](https://www.typescriptlang.org/).
 rm -rf dist && DOCKER_BUILDKIT=1 docker build --output type=local,dest=./dist .
 
 ```
+
+### Update packages
+
+```bash
+# Make changes, and then run:
+yarn changeset
+# Select the packages which have been modified and write a commit message
+
+
+# Later on, after merging some created changesets:
+yarn changeset version
+# Commit the changed files and then go to the next step, `Publish packages`.
+
+
+```
+
+### Publish packages
+
+```bash
+yarn plugin import workspace-tools
+
+yarn npm login
+yarn workspaces foreach --no-private npm publish --tolerate-republish
+```
