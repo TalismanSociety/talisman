@@ -160,8 +160,10 @@ export const SubNativeModule: BalanceModule<
       if (!token) throw new Error(`Token ${tokenId} not found`)
 
       // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-      if (token.type !== "substrate-native")
-        throw new Error(`This module doesn't handle tokens of type ${token.type}`)
+      if (token.type !== "substrate-native") {
+        log.warn(`This module doesn't handle tokens of type ${token.type}`)
+        return () => {}
+      }
 
       const chainId = token.chain?.id
       if (!chainId) throw new Error(`Token ${tokenId} has no chain`)

@@ -1,5 +1,6 @@
 import { Metadata, TypeRegistry, createType } from "@polkadot/types"
 import {
+  AddressesByToken,
   Amount,
   Balance,
   BalanceModule,
@@ -7,7 +8,7 @@ import {
   DefaultBalanceModule,
   NewBalanceType,
 } from "@talismn/balances"
-import { ChainId, NewTokenType, SubChainId, TokenId } from "@talismn/chaindata-provider"
+import { ChainId, NewTokenType, SubChainId, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { blake2Concat, decodeAnyAddress, hasOwnProperty, twox64Concat } from "@talismn/util"
 
 import log from "./log"
@@ -182,44 +183,60 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
 
   async subscribeBalances(chainConnector, chaindataProvider, addressesByToken, callback) {
     const tokens = await chaindataProvider.tokens()
-    const subscriptions = Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
-      const token = tokens[tokenId]
-      if (!token) throw new Error(`Token ${tokenId} not found`)
 
-      // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-      if (token.type !== "substrate-orml")
-        throw new Error(`This module doesn't handle tokens of type ${token.type}`)
+    const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
 
-      const chainId = token.chain?.id
-      if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
+    const subscriptions = Object.entries(addressesByTokenGroupedByChain).map(
+      async ([chainId, addressesByToken]) => {
+        const tokensAndAddresses = Object.entries(addressesByToken)
+          .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
+          .filter(([tokenId, token]) => {
+            if (!token) {
+              log.error(`Token ${tokenId} not found`)
+              return false
+            }
 
-      const stateKey = token.stateKey
-      if (!stateKey) throw new Error(`Token ${tokenId} has no stateKey`)
+            // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
+            if (token.type !== "substrate-orml") {
+              log.warn(`This module doesn't handle tokens of type ${token.type}`)
+              return false
+            }
 
-      // set up method, return message type and params
-      const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
-      const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
-      const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
-      const params = buildParams(addresses, stateKey)
+            const stateKey = token.stateKey
+            if (!stateKey) {
+              log.error(`Token ${token.id} has no stateKey`)
+              return false
+            }
 
-      // build lookup table of `rpc hex output` -> `input address`
-      const references = buildReferences(addresses, stateKey)
+            return true
+          })
+          .map(([, token, addresses]): [SubOrmlToken, string[]] => [token, addresses])
 
-      // set up subscription
-      const unsubscribe = await chainConnector.subscribe(
-        chainId,
-        subscribeMethod,
-        unsubscribeMethod,
-        responseMethod,
-        params,
-        (error, result) => {
-          if (error) return callback(error)
-          callback(null, formatRpcResult(tokenId, chainId, references, result))
-        }
-      )
+        // set up method, return message type and params
+        const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
+        const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
+        const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
+        const params = buildParams(tokensAndAddresses)
 
-      return unsubscribe
-    })
+        // build lookup table of `rpc hex output` -> `input address`
+        const references = buildReferences(tokensAndAddresses)
+
+        // set up subscription
+        const unsubscribe = await chainConnector.subscribe(
+          chainId,
+          subscribeMethod,
+          unsubscribeMethod,
+          responseMethod,
+          params,
+          (error, result) => {
+            if (error) return callback(error)
+            callback(null, formatRpcResult(chainId, tokens, references, result))
+          }
+        )
+
+        return unsubscribe
+      }
+    )
 
     return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
   },
@@ -227,34 +244,75 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
   async fetchBalances(chainConnector, chaindataProvider, addressesByToken) {
     const tokens = await chaindataProvider.tokens()
 
+    const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
+
     const balances = await Promise.all(
-      Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
-        const token = tokens[tokenId]
-        if (!token) throw new Error(`Token ${tokenId} not found`)
+      Object.entries(addressesByTokenGroupedByChain).map(async ([chainId, addressesByToken]) => {
+        const tokensAndAddresses = Object.entries(addressesByToken)
+          .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
+          .filter(([tokenId, token]) => {
+            if (!token) {
+              log.error(`Token ${tokenId} not found`)
+              return false
+            }
 
-        const chainId = token.chain?.id
-        if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
+            // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
+            if (token.type !== "substrate-orml") {
+              log.warn(`This module doesn't handle tokens of type ${token.type}`)
+              return false
+            }
 
-        const stateKey = token.stateKey
-        if (!stateKey) throw new Error(`Token ${tokenId} has no stateKey`)
+            const stateKey = token.stateKey
+            if (!stateKey) {
+              log.error(`Token ${token.id} has no stateKey`)
+              return false
+            }
+
+            return true
+          })
+          .map(([, token, addresses]): [SubOrmlToken, string[]] => [token, addresses])
 
         // set up method and params
         const method = "state_queryStorageAt" // method we call to fetch
-        const params = buildParams(addresses, stateKey)
+        const params = buildParams(tokensAndAddresses)
 
         // build lookup table of `rpc hex output` -> `input address`
-        const references = buildReferences(addresses, stateKey)
+        const references = buildReferences(tokensAndAddresses)
 
         // query rpc
         const response = await chainConnector.send(chainId, method, params)
         const result = response[0]
 
-        return formatRpcResult(tokenId, chainId, references, result)
+        return formatRpcResult(chainId, tokens, references, result)
       })
     )
 
     return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
   },
+}
+
+function groupAddressesByTokenByChain(
+  addressesByToken: AddressesByToken<SubOrmlToken>,
+  tokens: TokenList
+): Record<string, AddressesByToken<SubOrmlToken>> {
+  return Object.entries(addressesByToken).reduce((byChain, [tokenId, addresses]) => {
+    const token = tokens[tokenId]
+    if (!token) {
+      log.error(`Token ${tokenId} not found`)
+      return byChain
+    }
+
+    const chainId = token.chain?.id
+    if (!chainId) {
+      log.error(`Token ${tokenId} has no chain`)
+      return byChain
+    }
+
+    if (!byChain[chainId]) byChain[chainId] = {}
+    byChain[chainId][tokenId] = addresses
+
+    return byChain
+  }, {} as Record<string, AddressesByToken<SubOrmlToken>>)
 }
 
 /**
@@ -263,13 +321,19 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
  * @param addresses - The addresses to query.
  * @returns The params to be sent to the RPC.
  */
-function buildParams(addresses: string[], stateKey: `0x${string}`): string[][] {
-  const tokenHash = stateKey.replace("0x", "")
+function buildParams(tokensAndAddresses: Array<[SubOrmlToken, string[]]>): string[][] {
   return [
-    addresses
-      .map((address) => decodeAnyAddress(address))
-      .map((addressBytes) => blake2Concat(addressBytes).replace("0x", ""))
-      .map((addressHash) => `0x${moduleStorageHash}${addressHash}${tokenHash}`),
+    tokensAndAddresses
+      .map(([token, addresses]): [string, string[]] => [
+        token.stateKey.replace("0x", ""),
+        addresses,
+      ])
+      .flatMap(([tokenHash, addresses]) =>
+        addresses
+          .map((address) => decodeAnyAddress(address))
+          .map((addressBytes) => blake2Concat(addressBytes).replace("0x", ""))
+          .map((addressHash) => `0x${moduleStorageHash}${addressHash}${tokenHash}`)
+      ),
   ]
 }
 
@@ -297,18 +361,27 @@ function buildParams(addresses: string[], stateKey: `0x${string}`): string[][] {
  * ```
  */
 function buildReferences(
-  addresses: string[],
-  stateKey: `0x${string}`
+  tokensAndAddresses: Array<[SubOrmlToken, string[]]>
 ): Array<[string, string, string]> {
-  const tokenHash = stateKey.replace("0x", "")
-  return addresses
-    .map((address) => [address, decodeAnyAddress(address)] as const)
-    .map(([address, addressBytes]) => [address, blake2Concat(addressBytes).replace("0x", "")])
-    .map(([address, addressHash]) => [
-      address,
-      stateKey,
-      `0x${moduleStorageHash}${addressHash}${tokenHash}`,
+  return tokensAndAddresses
+    .map(([token, addresses]): [string, string, string[]] => [
+      token.id,
+      token.stateKey.replace("0x", ""),
+      addresses,
     ])
+    .flatMap(([tokenId, tokenHash, addresses]) =>
+      addresses
+        .map((address): [string, Uint8Array] => [address, decodeAnyAddress(address)])
+        .map(([address, addressBytes]): [string, string] => [
+          address,
+          blake2Concat(addressBytes).replace("0x", ""),
+        ])
+        .map(([address, addressHash]): [string, string, string] => [
+          address,
+          tokenId,
+          `0x${moduleStorageHash}${addressHash}${tokenHash}`,
+        ])
+    )
 }
 
 /**
@@ -321,8 +394,8 @@ function buildReferences(
  * @returns A formatted list of balances.
  */
 function formatRpcResult(
-  tokenId: TokenId,
   chainId: ChainId,
+  tokens: TokenList,
   references: Array<[string, string, string]>,
   result: unknown
 ): Balances {
@@ -343,17 +416,19 @@ function formatRpcResult(
         return false
       }
 
-      const [address, stateKey] = references.find(([, , hex]) => reference === hex) || []
-      if (address === undefined || stateKey === undefined) {
+      const [address, tokenId] = references.find(([, , hex]) => reference === hex) || []
+      if (address === undefined || tokenId === undefined) {
         const search = reference
         const set = references.map(([, , reference]) => reference).join(",\n")
-        log.error(`Failed to find address & stateKey:\n${search} in\n${set}`)
+        log.error(`Failed to find address & tokenId:\n${search} in\n${set}`)
         return false
       }
 
-      // TODO: Look up stateKey in list of queried tokens
-      // For now we've split each token into its own call,
-      // so we already have the tokenId
+      const token = tokens[tokenId]
+      if (!token) {
+        log.error(`Failed to find token for chain ${chainId} tokenId ${tokenId}`)
+        return false
+      }
 
       const balance: any = createType(new TypeRegistry(), AccountData, change)
 
