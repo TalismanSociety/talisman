@@ -1,5 +1,17 @@
 # extension
 
+## 1.6.11
+
+### Patch Changes
+
+- @talismn/balances@0.1.5
+- @talismn/balances-evm-erc20@0.1.5
+- @talismn/balances-evm-native@0.1.5
+- @talismn/balances-substrate-native@0.1.5
+- @talismn/balances-substrate-orml@0.1.5
+- @talismn/chaindata-provider@0.1.4
+- @talismn/token-rates@0.1.4
+
 ## 1.6.10
 
 ### Patch Changes

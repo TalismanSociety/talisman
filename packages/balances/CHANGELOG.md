@@ -1,5 +1,13 @@
 # @talismn/balances
 
+## 0.1.5
+
+### Patch Changes
+
+- @talismn/chain-connector@0.1.4
+- @talismn/chaindata-provider@0.1.4
+- @talismn/token-rates@0.1.4
+
 ## 0.1.4
 
 ### Patch Changes

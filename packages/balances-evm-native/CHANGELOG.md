@@ -1,5 +1,12 @@
 # @talismn/balances-evm-native
 
+## 0.1.5
+
+### Patch Changes
+
+- @talismn/balances@0.1.5
+- @talismn/chaindata-provider@0.1.4
+
 ## 0.1.4
 
 ### Patch Changes

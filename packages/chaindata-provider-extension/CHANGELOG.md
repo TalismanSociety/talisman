@@ -1,5 +1,12 @@
 # @talismn/chaindata-provider-extension
 
+## 0.1.4
+
+### Patch Changes
+
+- 2338966: fix: wrong chaindata-provider-extension chaindata-squid url
+  - @talismn/chaindata-provider@0.1.4
+
 ## 0.1.3
 
 ### Patch Changes
