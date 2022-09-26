@@ -401,7 +401,7 @@ export const SendForm = () => {
                 <div className="flex items-center gap-2">
                   <div>Balance: </div>
                   <div>
-                    {(true || balance.status === "cache") && (
+                    {balance.status === "cache" && (
                       <LoaderIcon className="opacity-1 h-6 w-6 animate-spin" />
                     )}
                   </div>
