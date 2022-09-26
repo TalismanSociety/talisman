@@ -165,7 +165,7 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
         isTestnet,
         symbol,
         decimals: decimals[index],
-        logo: `https://github.com/TalismanSociety/chaindata/blob/feat/v3/token-assets/${subOrmlTokenId(
+        logo: `https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets-tokens/${subOrmlTokenId(
           chainId,
           symbol
         )}.svg`,

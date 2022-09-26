@@ -142,7 +142,7 @@ export const SubNativeModule: BalanceModule<
       isTestnet,
       symbol,
       decimals,
-      logo: `https://github.com/TalismanSociety/chaindata/blob/feat/v3/token-assets/${subNativeTokenId(
+      logo: `https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets-tokens/${subNativeTokenId(
         chainId,
         symbol
       )}.svg`,
