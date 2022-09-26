@@ -1,5 +1,12 @@
 # @talismn/balances-substrate-native
 
+## 0.1.6
+
+### Patch Changes
+
+- b0cec1a: fix: orml token performance
+  - @talismn/balances@0.1.6
+
 ## 0.1.5
 
 ### Patch Changes
