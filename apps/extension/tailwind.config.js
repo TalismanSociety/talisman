@@ -3,6 +3,7 @@ module.exports = {
   content: ["./src/**/*.{html,ts,tsx,svg}", "./public/*.html"], // can't get it to work for html files in public folder
   theme: {
     colors: {
+      current: "currentColor",
       white: "#fafafa", // rgb(250, 250, 250)
       black: "#000000", // rgb(0, 0, 0)
       body: {
@@ -23,9 +24,47 @@ module.exports = {
       pink: "#fd8fff", // rgb(253, 143, 255)
       orange: "#fd4848", // rgb(253, 72, 72)
     },
+    lineHeight: {
+      3: "0.6rem",
+      4: "0.8rem",
+      5: "1rem",
+      6: "1.2rem",
+      7: "1.4rem",
+      8: "1.6rem",
+      9: "1.8rem",
+      10: "2rem",
+      none: 1,
+      base: 1.2,
+    },
+    fontSize: {
+      "tiny": "1.0rem",
+      "xs": "1.2rem",
+      "sm": "1.4rem",
+      "base": "1.6rem",
+      "md": "1.8rem",
+      "lg": "2.4rem",
+      "xl": "3.2rem",
+      "2xl": "3.6rem",
+      "3xl": "4rem",
+    },
+    borderRadius: {
+      "none": "0",
+      "xs": "0.4rem",
+      "sm": "0.8rem",
+      "DEFAULT": "1.2rem",
+      "lg": "1.6rem",
+      "xl": "2.4rem",
+      "2xl": "3.2rem",
+      "3xl": "4.8rem",
+      "full": "9999px",
+    },
     extend: {
-      lineHeight: {
-        base: 1.2,
+      fontFamily: {
+        // recommended way of overriding default font
+        sans: 'Surt, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
+        mono: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace',
+        whyteInkTrap:
+          'WhyteInktrapMedium, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
       },
     },
   },
