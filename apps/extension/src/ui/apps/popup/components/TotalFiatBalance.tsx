@@ -12,9 +12,11 @@ const ToggleHide = styled(IconButton).attrs((props: { showIcon?: boolean }) => (
 }))`
   position: absolute;
   top: 0;
-  left: 0;
+  left: 0.5rem;
   display: ${({ showIcon }) => (showIcon ? "inline-block" : "none")};
   font-size: 1.6rem;
+  width: 2rem;
+  height: 2rem;
 `
 const Container = styled.div`
   display: flex;

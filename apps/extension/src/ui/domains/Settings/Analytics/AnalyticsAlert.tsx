@@ -28,7 +28,7 @@ export const AlertCard = styled(({ className, onLearnMoreClick, onAccept, onReje
       className={className}
       title={
         <>
-          <EyeIcon className="icon" /> Help us improve Talisman
+          <EyeIcon className="icon inline-block" /> Help us improve Talisman
         </>
       }
       description={
