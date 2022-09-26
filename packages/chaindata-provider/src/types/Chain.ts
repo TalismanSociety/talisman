@@ -11,6 +11,7 @@ export type Chain = {
   genesisHash: string | null // The genesisHash of this chain
   prefix: number | null // The substrate prefix of this chain
   name: string | null // The name of this chain
+  logo: string | null // A url to the logo of this chain
   chainName: string // The on-chain name of this chain
   implName: string | null // The implementation name of this chain
   specName: string | null // The spec name of this chain

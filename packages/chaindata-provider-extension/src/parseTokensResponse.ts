@@ -26,10 +26,14 @@ const isToken = (token: IToken & unknown): token is Token => {
   if (typeof symbol !== "string") return false
 
   const decimals = token.decimals
-  if (typeof decimals !== "string") return false
+  if (typeof decimals !== "number") return false
 
-  const coingeckoId = token.coingeckoId
-  if (typeof coingeckoId !== "string") return false
+  const logo = token.logo
+  if (typeof logo !== "string") return false
+
+  // coingeckoId can be undefined
+  // const coingeckoId = token.coingeckoId
+  // if (typeof coingeckoId !== "string") return false
 
   return true
 }

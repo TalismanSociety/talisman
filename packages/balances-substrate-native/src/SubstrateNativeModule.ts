@@ -64,7 +64,7 @@ export type SubNativeToken = NewTokenType<
   ModuleType,
   {
     existentialDeposit: string
-    chain: { id: ChainId } | null
+    chain: { id: ChainId }
   }
 >
 export type CustomSubNativeToken = SubNativeToken & {
@@ -142,6 +142,10 @@ export const SubNativeModule: BalanceModule<
       isTestnet,
       symbol,
       decimals,
+      logo: `https://github.com/TalismanSociety/chaindata/blob/feat/v3/token-assets/${subNativeTokenId(
+        chainId,
+        symbol
+      )}.svg`,
       existentialDeposit: existentialDeposit || "0",
       chain: { id: chainId },
     }
@@ -299,7 +303,7 @@ function formatRpcResult(
       if (!address) {
         const search = reference.slice(-64)
         const set = addressReferences.map(([, reference]) => reference).join(",\n")
-        log.error(`Failed to find address: \n${search} in \n${set}`)
+        log.error(`Failed to find address:\n${search} in\n${set}`)
         return false
       }
 

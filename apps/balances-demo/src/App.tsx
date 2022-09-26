@@ -2,14 +2,14 @@ import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
 import { EvmErc20Module } from "@talismn/balances-evm-erc20"
 import { EvmNativeModule } from "@talismn/balances-evm-native"
 import { ExampleModule } from "@talismn/balances-example"
-import { useBalances, useChaindata } from "@talismn/balances-react"
+import { useBalances, useChaindata, useTokens } from "@talismn/balances-react"
 import { SubNativeModule } from "@talismn/balances-substrate-native"
 import { SubOrmlModule } from "@talismn/balances-substrate-orml"
 import { Token } from "@talismn/chaindata-provider"
 import { useEffect, useMemo, useState } from "react"
 
 const balanceModules = [
-  ExampleModule,
+  // ExampleModule,
   SubNativeModule,
   SubOrmlModule,
   EvmNativeModule,
@@ -20,13 +20,8 @@ export function App(): JSX.Element {
   const chaindata = useChaindata()
   const addresses = useExtensionAddresses()
 
-  // // NOTE: In prod the tokens list will be fetched in chaindata / in a web worker, not here
-  // const tokens = useTokens(chainConnector)
-  // const tokens = chaindata.tokens()
-
-  // TODO: Use the tokens from chaindata
-  // i.e. const tokens = useTokens(chaindata)
-  const tokenIds = useMemo(() => ["polkadot-example-dot", "polkadot-example-ksm"], [])
+  const tokens = useTokens(chaindata)
+  const tokenIds = useMemo(() => Object.keys(tokens), [tokens])
 
   const addressesByToken = useAddressesByToken(addresses, tokenIds)
   const balances = useBalances(balanceModules, chaindata, addressesByToken)
@@ -36,6 +31,7 @@ export function App(): JSX.Element {
       <h2>Balances Demo</h2>
       {balances?.sorted.map((balance) => (
         <div key={balance.id} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <img src={balance.token?.logo} style={{ height: "2rem", borderRadius: "9999999rem" }} />
           <img
             src={`https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/split-entities/assets/${balance.chainId}/logo.svg`}
             style={{ height: "2rem", borderRadius: "9999999rem" }}

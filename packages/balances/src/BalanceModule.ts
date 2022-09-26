@@ -42,13 +42,13 @@ export const DefaultBalanceModule = <
     return Promise.resolve({} as Record<TTokenType["id"], TTokenType>)
   },
 
-  async subscribeBalances(chainConnector, chaindataProvider, addressesByToken, callback) {
+  async subscribeBalances(_chainConnector, _chaindataProvider, _addressesByToken, callback) {
     callback(new Error("Balance subscriptions are not implemented in this module."))
 
     return () => {}
   },
 
-  async fetchBalances(chainConnector, chaindataProvider, addressesByToken) {
+  async fetchBalances() {
     throw new Error("Balance fetching is not implemented in this module.")
   },
 })
@@ -68,7 +68,7 @@ interface BalanceModuleSubstrate<
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
-> extends BalanceModuleCommon<TModuleType, TTokenType, TChainMeta, TModuleConfig> {
+> extends BalanceModuleCommon<TModuleType, TTokenType> {
   /** Pre-processes any substrate chain metadata required by this module ahead of time */
   fetchSubstrateChainMeta(
     chainConnector: ChainConnector,
@@ -81,7 +81,8 @@ interface BalanceModuleSubstrate<
     chainConnector: ChainConnector,
     chaindataProvider: ChaindataProvider,
     chainId: ChainId,
-    chainMeta: TChainMeta
+    chainMeta: TChainMeta,
+    moduleConfig: TModuleConfig
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 
@@ -90,7 +91,7 @@ interface BalanceModuleEvm<
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
-> extends BalanceModuleCommon<TModuleType, TTokenType, TChainMeta, TModuleConfig> {
+> extends BalanceModuleCommon<TModuleType, TTokenType> {
   /** Pre-processes any evm chain metadata required by this module ahead of time */
   fetchEvmChainMeta(
     chainConnector: ChainConnector,
@@ -103,16 +104,12 @@ interface BalanceModuleEvm<
     chainConnector: ChainConnector,
     chaindataProvider: ChaindataProvider,
     chainId: ChainId,
-    chainMeta: TChainMeta
+    chainMeta: TChainMeta,
+    moduleConfig: TModuleConfig
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 
-interface BalanceModuleCommon<
-  TModuleType extends string,
-  TTokenType extends ExtendableTokenType,
-  TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
-> {
+interface BalanceModuleCommon<TModuleType extends string, TTokenType extends ExtendableTokenType> {
   get type(): TModuleType
 
   /**

@@ -45,6 +45,7 @@ export type IToken = {
   isTestnet: boolean
   symbol: string
   decimals: number
+  logo: string
   coingeckoId?: string
 
   // These are here because they *may* be present on a number of different token types.
