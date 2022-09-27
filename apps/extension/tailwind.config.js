@@ -5,7 +5,12 @@ module.exports = {
     colors: {
       current: "currentColor",
       white: "#fafafa", // rgb(250, 250, 250)
-      black: "#121212", // rgb(0, 0, 0)
+      black: {
+        DEFAULT: "#121212",
+        primary: "#121212",
+        secondary: "#1B1B1B",
+        tertiary: "#262626",
+      },
       body: {
         disabled: "#5a5a5a", // rgb(90, 90, 90)
         secondary: "#a5a5a5", // rgb(165, 165, 165)
@@ -19,21 +24,42 @@ module.exports = {
         warn: "#f48f45", // rgb(244, 143, 69)
         error: "#d22424", // rgb(210, 36, 36)
       },
-      green: "#d5ff5c", // rgb(213, 255, 92)
-      blue: "#005773", // rgb(0, 87, 115)
-      pink: "#fd8fff", // rgb(253, 143, 255)
-      orange: "#fd4848", // rgb(253, 72, 72)
+      green: {
+        200: "#cdf4d1",
+        DEFAULT: "#38d448", // rgb(56, 212, 72)
+        500: "#38d448", // rgb(56, 212, 72)
+      },
+      orange: {
+        200: "#ecdcb1",
+        DEFAULT: "#f48f45", // rgb(244, 143, 69)
+        500: "#f48f45", // rgb(244, 143, 69)
+      },
+      red: {
+        200: "e0b5b5",
+        DEFAULT: "#d22424", // rgb(210, 36, 36)
+        500: "#d22424", // rgb(210, 36, 36)
+      },
+      primary: {
+        DEFAULT: "#d5ff5c", // rgb(213, 255, 92)}
+        500: "#d5ff5c", // rgb(213, 255, 92)}
+        700: "#c8eb46", // rgb(236, 255, 92)}
+      },
+      brand: {
+        blue: "#005773", // rgb(0, 87, 115)
+        pink: "#fd8fff", // rgb(253, 143, 255)
+        orange: "#fd4848", // rgb(253, 72, 72)
+      },
+
       grey: {
-        // shades between our white and our black
         50: "#fafafa",
-        100: "#f4f4f4",
+        100: "#f2f2f2",
         200: "#e4e4e4",
         300: "#d4d4d4",
-        400: "#a1a1a1",
+        400: "#a5a5a5",
         500: "#717171",
-        600: "#525252",
+        600: "#5a5a5a",
         700: "#3f3f3f",
-        800: "#272727",
+        800: "#262626",
         900: "#181818",
       },
     },
