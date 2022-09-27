@@ -7,7 +7,7 @@ import {
   RequestSigningSubscribe,
 } from "@polkadot/extension-base/background/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import { BigNumber } from "ethers"
+import { BigNumber, BigNumberish } from "ethers"
 
 export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
@@ -84,6 +84,16 @@ export type TransactionDetails = {
 
 export type EthPriorityOptionName = "low" | "medium" | "high"
 export type EthPriorityOptions = Record<EthPriorityOptionName, BigNumber>
+
+export type EthTransactionDetails = {
+  estimatedGas: BigNumberish
+  gasPrice: BigNumberish
+  estimatedFee: BigNumberish
+  maxFee: BigNumberish
+  baseFeePerGas?: BigNumberish
+  gasUsedRatio?: number
+  priorityOptions?: EthPriorityOptions
+}
 
 export interface SigningMessages {
   // signing message signatures

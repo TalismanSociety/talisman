@@ -3,7 +3,7 @@ import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { RequestIdOnly } from "@core/types/base"
 
-import { EvmNetworkId } from "../ethereum/types"
+import { EthGasSettings, EvmNetworkId } from "../ethereum/types"
 
 // Asset Transfer Messages
 export interface RequestAssetTransfer {
@@ -21,8 +21,7 @@ export interface RequestAssetTransferEth {
   fromAddress: string
   toAddress: string
   amount: string
-  maxPriorityFeePerGas: string
-  maxFeePerGas: string
+  gasSettings: EthGasSettings
 }
 
 export interface RequestAssetTransferApproveSign {
