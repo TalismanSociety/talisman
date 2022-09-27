@@ -1,7 +1,7 @@
 import StytledHeaderBlock from "@talisman/components/HeaderBlock"
 import { classNames } from "@talisman/util/classNames"
 import Color from "color"
-import { ReactNode, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Layout from "../layout"
 
 const ColorTile = ({ className }: { className?: string }) => {
@@ -11,9 +11,8 @@ const ColorTile = ({ className }: { className?: string }) => {
 
   useEffect(() => {
     if (!ref.current) return
-    const st = getComputedStyle(ref.current)
-    const col = new Color(st.backgroundColor)
-    setColor(col)
+    const style = getComputedStyle(ref.current)
+    setColor(new Color(style.backgroundColor))
   }, [])
 
   const text = useMemo(() => {
@@ -47,7 +46,8 @@ export const TestPage = () => {
     <Layout withBack backTo="/">
       <StytledHeaderBlock title="Test page" />
       <div className="space-y-8">
-        <div className="flex">
+        <h3>Grey shades</h3>
+        <div className="flex flex-wrap">
           <ColorTile className="bg-white" />
           <ColorTile className="bg-grey-50" />
           <ColorTile className="bg-grey-100" />
@@ -61,13 +61,15 @@ export const TestPage = () => {
           <ColorTile className="bg-grey-900" />
           <ColorTile className="bg-black" />
         </div>
-        <div className="flex">
+        <h3>Black</h3>
+        <div className="flex flex-wrap">
           <ColorTile className="bg-black" />
           <ColorTile className="bg-black-primary" />
           <ColorTile className="bg-black-secondary" />
           <ColorTile className="bg-black-tertiary" />
         </div>
-        <div className="flex">
+        <h3>Body</h3>
+        <div className="flex flex-wrap">
           <ColorTile className="bg-body" />
           <ColorTile className="bg-body-disabled" />
           <ColorTile className="bg-body-secondary" />
@@ -75,20 +77,42 @@ export const TestPage = () => {
           <ColorTile className="bg-field" />
           <ColorTile className="bg-pill" />
         </div>
-        <div className="flex">
-          <ColorTile className="bg-alert-success" />
-          <ColorTile className="bg-alert-warn" />
-          <ColorTile className="bg-alert-error" />
-        </div>
-        <div className="flex">
+        <h3>Primary</h3>
+        <div className="flex flex-wrap">
           <ColorTile className="bg-primary" />
           <ColorTile className="bg-primary-500" />
           <ColorTile className="bg-primary-700" />
         </div>
-        <div className="flex">
-          <ColorTile className="bg-blue" />
-          <ColorTile className="bg-pink" />
+        <h3>Alerts</h3>
+        <div className="flex flex-wrap">
+          <ColorTile className="bg-alert-success" />
+          <ColorTile className="bg-alert-warn" />
+          <ColorTile className="bg-alert-error" />
+        </div>
+        <h3>Greens</h3>
+        <div className="flex flex-wrap">
+          <ColorTile className="bg-green-200" />
+          <ColorTile className="bg-green" />
+          <ColorTile className="bg-green-500" />
+        </div>
+        <h3>Oranges</h3>
+        <div className="flex flex-wrap">
+          <ColorTile className="bg-orange-200" />
           <ColorTile className="bg-orange" />
+          <ColorTile className="bg-orange-500" />
+        </div>
+        <h3>Reds</h3>
+        <div className="flex flex-wrap">
+          <ColorTile className="bg-red-200" />
+          <ColorTile className="bg-red" />
+          <ColorTile className="bg-red-500" />
+        </div>
+        <h3>Brand</h3>
+        <div className="flex flex-wrap"></div>
+        <div className="flex">
+          <ColorTile className="bg-brand-blue" />
+          <ColorTile className="bg-brand-pink" />
+          <ColorTile className="bg-brand-orange" />
         </div>
       </div>
     </Layout>
