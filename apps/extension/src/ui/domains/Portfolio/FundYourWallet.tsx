@@ -1,4 +1,5 @@
 import { Box } from "@talisman/components/Box"
+import { breakpoints } from "@talisman/theme/definitions"
 import imgFundWallet from "@talisman/theme/images/fund-wallet.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -8,6 +9,24 @@ import styled from "styled-components"
 
 import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
 import { useReceiveTokensModal } from "../Asset/Receive/ReceiveTokensModalContext"
+
+const Container = styled(Box)`
+  width: 31.8rem;
+  color: var(--color-mid);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  align-items: center;
+
+  @media (min-width: ${breakpoints.large}px) {
+    zoom: 1.2;
+  }
+
+  @media (min-width: ${breakpoints.xl}px) {
+    zoom: 1.5;
+  }
+`
 
 const Button = styled.button`
   border-radius: 24px;
@@ -74,7 +93,7 @@ export const FundYourWallet = () => {
   }, [openBuyModal])
 
   return (
-    <Box w={31.8} fg="mid" textalign="center" flex column gap={2.4} align="center">
+    <Container>
       <Box fg="foreground" fontsize="medium">
         Fund your wallet
       </Box>
@@ -87,6 +106,6 @@ export const FundYourWallet = () => {
         <DefaultButton onClick={handleReceiveClick}>Receive Funds</DefaultButton>
         {showBuyCryptoButton && <PrimaryButton onClick={handleBuyClick}>Buy Crypto</PrimaryButton>}
       </Box>
-    </Box>
+    </Container>
   )
 }
