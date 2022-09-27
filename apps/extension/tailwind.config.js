@@ -5,7 +5,7 @@ module.exports = {
     colors: {
       current: "currentColor",
       white: "#fafafa", // rgb(250, 250, 250)
-      black: "#000000", // rgb(0, 0, 0)
+      black: "#121212", // rgb(0, 0, 0)
       body: {
         disabled: "#5a5a5a", // rgb(90, 90, 90)
         secondary: "#a5a5a5", // rgb(165, 165, 165)
@@ -23,6 +23,19 @@ module.exports = {
       blue: "#005773", // rgb(0, 87, 115)
       pink: "#fd8fff", // rgb(253, 143, 255)
       orange: "#fd4848", // rgb(253, 72, 72)
+      grey: {
+        // shades between our white and our black
+        50: "#fafafa",
+        100: "#f4f4f4",
+        200: "#e4e4e4",
+        300: "#d4d4d4",
+        400: "#a1a1a1",
+        500: "#717171",
+        600: "#525252",
+        700: "#3f3f3f",
+        800: "#272727",
+        900: "#181818",
+      },
     },
     lineHeight: {
       3: "0.6rem",
