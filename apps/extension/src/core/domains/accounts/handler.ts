@@ -39,7 +39,6 @@ export default class AccountsHandler extends ExtensionHandler {
   //   - account seed (unlocked via password)
 
   private async accountCreate({ name, type }: RequestAccountCreate): Promise<boolean> {
-    await sleep(1000)
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
@@ -168,15 +167,13 @@ export default class AccountsHandler extends ExtensionHandler {
     }
   }
 
-  private async accountsCreateHardware({
+  private accountsCreateHardware({
     accountIndex,
     address,
     addressOffset,
     genesisHash,
     name,
-  }: Omit<RequestAccountCreateHardware, "hardwareType">): Promise<boolean> {
-    await sleep(1000)
-
+  }: Omit<RequestAccountCreateHardware, "hardwareType">): boolean {
     keyring.addHardware(address, "ledger", {
       accountIndex,
       addressOffset,

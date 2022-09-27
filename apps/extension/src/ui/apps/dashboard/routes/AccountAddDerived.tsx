@@ -1,4 +1,5 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
+import { sleep } from "@core/util/sleep"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
@@ -81,6 +82,9 @@ const AccountNew = () => {
         },
         { autoClose: false }
       )
+
+      // pause to prevent double notification
+      await sleep(1000)
 
       try {
         await api.accountCreate(name, type)
