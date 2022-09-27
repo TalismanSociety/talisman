@@ -57,7 +57,7 @@ export const AccountRemoveModal = () => {
         <StyledDialog
           icon={<IconAlert />}
           title="Are you sure?"
-          text="Ensure you have backed up your secret phrase or private key before removing."
+          text="Ensure you have backed up your recovery phrase or private key before removing."
           confirmText="Remove"
           cancelText="Cancel"
           onConfirm={handleConfirm}

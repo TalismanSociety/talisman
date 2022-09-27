@@ -9,7 +9,7 @@ type MnemonicModalProps = {
 
 export const MnemonicModal = ({ open, onClose }: MnemonicModalProps) => (
   <Modal open={open} onClose={onClose}>
-    <ModalDialog title="Secret Phrase" onClose={onClose}>
+    <ModalDialog title="Recovery Phrase" onClose={onClose}>
       <Mnemonic />
     </ModalDialog>
   </Modal>

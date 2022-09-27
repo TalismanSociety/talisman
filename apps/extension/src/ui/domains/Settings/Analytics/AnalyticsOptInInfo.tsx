@@ -94,7 +94,7 @@ export const AnalyticsOptInInfo: FC<{
           </li>
           <li>
             <StyledXIcon />
-            Secret phrases or private keys
+            Recovery phrases or private keys
           </li>
           <li>
             <StyledXIcon />

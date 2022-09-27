@@ -1,7 +1,7 @@
-import styled from "styled-components"
-import { BraveIcon } from "@talisman/theme/icons"
-import { Card } from "@talisman/components/Card"
 import Button from "@talisman/components/Button"
+import { Card } from "@talisman/components/Card"
+import { BraveIcon } from "@talisman/theme/icons"
+import styled from "styled-components"
 
 type Props = {
   className?: string
@@ -18,7 +18,7 @@ export const BraveWarningCard = styled(({ className, onLearnMoreClick }: Props) 
         </>
       }
       description={
-        <span>Due to a recent update, users may be experiencing issues loading balances</span>
+        <span>Due to a recent update, users may be experiencing issues loading balances.</span>
       }
       cta={<Button onClick={onLearnMoreClick}>Learn more</Button>}
     />

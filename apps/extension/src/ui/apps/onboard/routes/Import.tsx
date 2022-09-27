@@ -33,7 +33,7 @@ const schema = yup
       .trim()
       .required("")
       .transform(cleanupMnemonic)
-      .test("is-valid-mnemonic", "Invalid secret", (val) =>
+      .test("is-valid-mnemonic", "Invalid recovery phrase", (val) =>
         api.accountValidateMnemonic(val as string)
       ),
   })
@@ -79,17 +79,17 @@ export const ImportPage = () => {
     <Layout withBack analytics={ANALYTICS_PAGE}>
       <Box flex justify="center">
         <Box w={70.9}>
-          <OnboardDialog title="Import account">
+          <OnboardDialog title="Import wallet">
             <p>
-              Please enter your 12 or 24 word secret recovery phrase, with each word seperated by a
-              space. Please ensure no-one can see you entering your recovery phrase.
+              Please enter your 12 or 24 word recovery phrase, with each word separated by a space.
+              Please ensure no-one can see you entering your recovery phrase.
             </p>
             <form onSubmit={handleSubmit(submit)}>
               <Box margin="4.8rem 0 0 0">
                 <OnboardFormField error={errors.mnemonic}>
                   <textarea
                     {...register("mnemonic")}
-                    placeholder="Enter your secret recovery phrase"
+                    placeholder="Enter your recovery phrase"
                     rows={5}
                     data-lpignore
                     spellCheck={false}
@@ -98,7 +98,7 @@ export const ImportPage = () => {
                 </OnboardFormField>
                 <Box h={2.4}></Box>
                 <OnboardButton type="submit" primary disabled={!isValid}>
-                  Import Accounts
+                  Import
                 </OnboardButton>
               </Box>
             </form>

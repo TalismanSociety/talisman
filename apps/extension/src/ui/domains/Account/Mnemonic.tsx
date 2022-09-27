@@ -53,7 +53,7 @@ const Mnemonic = ({ className }: any) => {
     <div className={className}>
       {mnemonic ? (
         <>
-          <HeaderBlock text="Your secret phrase protects your account. If you share it you may lose your funds." />
+          <HeaderBlock text="Your recovery phrase protects your accounts. If you share it you may lose your funds." />
           <Spacer />
           <Field.Textarea className="secret" value={mnemonic} fieldProps={{ rows: 3 }} />
           <Spacer />
@@ -69,10 +69,11 @@ const Mnemonic = ({ className }: any) => {
           <HeaderBlock
             text={
               <>
-                Your secret phrase protects your account. If you share it you may lose your funds.
+                Your recovery phrase protects your accounts. If you share it you may lose your
+                funds.
                 <br />
                 <br />
-                <strong>Enter your password to show your secret phrase</strong>.
+                <strong>Enter your password to show your recovery phrase</strong>.
               </>
             }
           />
@@ -90,7 +91,7 @@ const Mnemonic = ({ className }: any) => {
           <Spacer />
           <div className="buttons">
             <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-              View Secret Phrase
+              View Recovery Phrase
             </SimpleButton>
           </div>
         </form>

@@ -26,7 +26,7 @@ const Settings = () => {
         <CtaButton
           icon={<IconKey />}
           title="Backup Account"
-          subtitle="Export your private key or copy your secret phrase"
+          subtitle="Export your private key or copy your recovery phrase"
           onClick={open}
         />
         <CtaButton
@@ -58,7 +58,7 @@ const Settings = () => {
           title="Change password"
           subtitle={
             isNotConfirmed
-              ? "Please back up your secret recovery phrase before you change your password."
+              ? "Please back up your recovery phrase before you change your password."
               : "Change your Talisman password"
           }
           to={`/settings/change-password`}

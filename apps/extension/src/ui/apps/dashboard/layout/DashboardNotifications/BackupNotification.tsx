@@ -15,8 +15,8 @@ export const BackupNotification = () => {
     <>
       <Notification
         icon={<InfoIcon />}
-        title="Please backup your account. "
-        description="If you don't backup your account you may lose access to all your funds."
+        title="Please backup your recovery phrase. "
+        description="If you don't backup your recovery phrase you may lose access to all your funds."
         action="Backup Now"
         onActionClick={open}
         onClose={confirm}
