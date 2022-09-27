@@ -168,13 +168,15 @@ export default class AccountsHandler extends ExtensionHandler {
     }
   }
 
-  private accountsCreateHardware({
+  private async accountsCreateHardware({
     accountIndex,
     address,
     addressOffset,
     genesisHash,
     name,
-  }: Omit<RequestAccountCreateHardware, "hardwareType">): boolean {
+  }: Omit<RequestAccountCreateHardware, "hardwareType">): Promise<boolean> {
+    await sleep(1000)
+
     keyring.addHardware(address, "ledger", {
       accountIndex,
       addressOffset,
