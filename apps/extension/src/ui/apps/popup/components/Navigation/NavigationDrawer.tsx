@@ -6,7 +6,6 @@ import {
   CreditCardIcon,
   ExternalLinkIcon,
   ImageIcon,
-  LayoutIcon,
   LockIcon,
   MaximizeIcon,
   PaperPlaneIcon,
@@ -75,7 +74,6 @@ const Container = styled.aside`
 `
 
 export const ExtLinkIcon = styled(ExternalLinkIcon)`
-  // margin: 0.2rem 0 0 0.4rem;
   vertical-align: text-top;
   display: inline;
 `
