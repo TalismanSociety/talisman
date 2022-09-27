@@ -12,6 +12,23 @@ import { useForm } from "react-hook-form"
 import styled from "styled-components"
 import * as yup from "yup"
 
+const Description = () => (
+  <>
+    Your recovery phrase gives you access to your wallet and funds. It can be used to restore your
+    Talisman created accounts if you lose access to your device, or forget your password.
+    <br />
+    <br />
+    We strongly encourage you to back up your recovery phrase by writing it down and storing it in a
+    secure location.{" "}
+    <a
+      href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/back-up-your-secret-phrase"
+      target="_blank"
+    >
+      Learn more
+    </a>
+  </>
+)
+
 type FormData = {
   password: string
 }
@@ -53,8 +70,8 @@ const Mnemonic = ({ className }: any) => {
     <div className={className}>
       {mnemonic ? (
         <>
-          <HeaderBlock text="Your recovery phrase protects your accounts. If you share it you may lose your funds." />
-          <Spacer />
+          <HeaderBlock text={<Description />} />
+          <Spacer small />
           <Field.Textarea className="secret" value={mnemonic} fieldProps={{ rows: 3 }} />
           <Spacer />
           <Field.Toggle
@@ -69,15 +86,14 @@ const Mnemonic = ({ className }: any) => {
           <HeaderBlock
             text={
               <>
-                Your recovery phrase protects your accounts. If you share it you may lose your
-                funds.
+                <Description />
                 <br />
                 <br />
                 <strong>Enter your password to show your recovery phrase</strong>.
               </>
             }
           />
-          <Spacer />
+          <Spacer small />
           <FormField error={errors.password} prefix={<KeyIcon />}>
             <input
               {...register("password")}
@@ -101,6 +117,30 @@ const Mnemonic = ({ className }: any) => {
 }
 
 const StyledMnemonic = styled(Mnemonic)`
+  .header-block,
+  .header-block p {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 1.8rem;
+    line-height: 2.2rem;
+
+    a,
+    a:link,
+    a:visited,
+    a:hover {
+      color: var(--color-foreground);
+      opacity: 1;
+    }
+
+    strong {
+      font-style: normal;
+      font-weight: 400;
+      font-size: 1.8rem;
+      line-height: 2.2rem;
+      color: var(--color-foreground);
+    }
+  }
+
   .toggle {
     flex-direction: row;
     justify-content: flex-end;
@@ -150,6 +190,10 @@ const StyledMnemonic = styled(Mnemonic)`
 
   form svg {
     opacity: 0.5;
+  }
+
+  ${SimpleButton} {
+    width: 100%;
   }
 `
 
