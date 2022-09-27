@@ -1,11 +1,11 @@
-import { EthPriorityOptionName, EthPriorityOptions } from "@core/domains/signing/types"
+import { getEip1559TotalFees } from "@core/domains/ethereum/helpers"
+import { EthPriorityOptionName, EthTransactionDetails } from "@core/domains/signing/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { classNames } from "@talisman/util/classNames"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
-import { getTransactionFeeParams } from "@talisman/util/getTransactionFeeParams"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { BigNumber } from "ethers"
+import { BigNumberish, ethers } from "ethers"
 import { useCallback, useEffect } from "react"
 import styled from "styled-components"
 
@@ -60,18 +60,6 @@ const OPTIONS: Record<EthPriorityOptionName, { icon: string; label: string }> = 
   high: { icon: "🚀", label: "High" },
 }
 
-type EthFeeButtonProps = {
-  estimatedGas: BigNumber
-  gasPrice: BigNumber
-  baseFeePerGas: BigNumber
-  priorityOptions: EthPriorityOptions
-  priority: EthPriorityOptionName
-  selected?: boolean
-  decimals: number
-  symbol?: string
-  onClick?: () => void
-}
-
 const OptionButton = styled.button`
   display: flex;
   width: 100%;
@@ -112,28 +100,36 @@ const OptionButton = styled.button`
   }
 `
 
+type EthFeeButtonProps = {
+  transaction: ethers.providers.TransactionRequest
+  txDetails: EthTransactionDetails
+  priority: EthPriorityOptionName
+  selected?: boolean
+  decimals: number
+  symbol?: string
+  onClick?: () => void
+}
+
 const PriorityOption = ({
-  gasPrice,
-  baseFeePerGas,
-  estimatedGas,
+  txDetails,
+  transaction,
   priority,
-  priorityOptions,
   selected,
   decimals,
   symbol,
   onClick,
 }: EthFeeButtonProps) => {
-  const { maxFeeAndGasCost } = getTransactionFeeParams(
-    gasPrice,
-    estimatedGas,
-    baseFeePerGas,
-    priorityOptions[priority]
+  const { estimatedFee } = getEip1559TotalFees(
+    txDetails.estimatedGas,
+    transaction.gasLimit as BigNumberish,
+    txDetails.baseFeePerGas as BigNumberish,
+    txDetails.priorityOptions?.[priority] as BigNumberish
   )
   return (
     <OptionButton onClick={onClick} type="button" className={classNames(selected && "selected")}>
       <div className="icon">{OPTIONS[priority].icon}</div>
       <div className="grow">{OPTIONS[priority].label}</div>
-      <div>{formatEtherValue(maxFeeAndGasCost, decimals, symbol)}</div>
+      <div>{formatEtherValue(estimatedFee, decimals, symbol)}</div>
     </OptionButton>
   )
 }
@@ -149,10 +145,8 @@ const OpenFeeSelectTracker = () => {
 }
 
 type EthFeeSelectProps = {
-  estimatedGas: BigNumber
-  gasPrice: BigNumber
-  baseFeePerGas: BigNumber
-  priorityOptions: EthPriorityOptions
+  transaction: ethers.providers.TransactionRequest
+  txDetails: EthTransactionDetails
   priority: EthPriorityOptionName
   decimals: number
   symbol?: string
@@ -161,6 +155,8 @@ type EthFeeSelectProps = {
 }
 
 export const EthFeeSelect = ({
+  transaction,
+  txDetails,
   onChange,
   priority,
   drawerContainer,
@@ -178,6 +174,9 @@ export const EthFeeSelect = ({
     [close, onChange, genericEvent]
   )
 
+  // this is only usefull with EIP-1559
+  if (!txDetails.priorityOptions || transaction?.type !== 2) return null
+
   return (
     <>
       <PillButton type="button" onClick={open}>
@@ -191,20 +190,26 @@ export const EthFeeSelect = ({
             <div>Max transaction fee</div>
           </div>
           <PriorityOption
-            priority={"low"}
+            transaction={transaction}
+            txDetails={txDetails}
             {...props}
+            priority={"low"}
             onClick={handleSelect("low")}
             selected={priority === "low"}
           />
           <PriorityOption
-            priority={"medium"}
+            transaction={transaction}
+            txDetails={txDetails}
             {...props}
+            priority={"medium"}
             onClick={handleSelect("medium")}
             selected={priority === "medium"}
           />
           <PriorityOption
-            priority={"high"}
+            transaction={transaction}
+            txDetails={txDetails}
             {...props}
+            priority={"high"}
             onClick={handleSelect("high")}
             selected={priority === "high"}
           />

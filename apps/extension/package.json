@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.7.1",
+  "version": "1.8.0",
   "private": true,
   "dependencies": {
     "@alectalisman/webpack-ext-reloader": "^1.1.9-a",
@@ -150,6 +150,7 @@
     "build:extension:canary": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=canary",
     "build:extension:prod": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=production",
     "test": "jest",
+    "test:watch": "jest --watch",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "clean": "rm -rf dist && rm -rf .turbo && rm -rf node_modules"

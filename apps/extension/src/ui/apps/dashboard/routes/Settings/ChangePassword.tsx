@@ -129,7 +129,7 @@ const ChangePassword = () => {
           >
             <Box flex justify={"space-between"} align={"center"}>
               <InfoIcon />
-              You'll need to confirm your secret recovery phrase is backed up before you change your
+              You'll need to confirm your recovery phrase is backed up before you change your
               password.
             </Box>
             <Box flex justify={"end"}>

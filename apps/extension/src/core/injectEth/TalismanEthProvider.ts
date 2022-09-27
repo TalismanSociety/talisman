@@ -41,6 +41,9 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
   isTalisman = true
   // can be turned on from settings, provides compatibility with dapps that only support MetaMask
   isMetaMask = false
+  // non standard but exists in MetaMask, some dapps expect it (ex: Zerion)
+  chainId = ""
+
   // cannot use private syntax here (ex: #sendRequest) or wallet won't init on some dapps
   private _sendRequest: SendRequest
   private _initialized = false
@@ -74,7 +77,7 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
     return this._initialized
   }
 
-  public enable() {
+  public async enable() {
     // eslint-disable-next-line no-console
     safeConsoleDebug("[talismanEth.enable] : (initialized = %s)", this._initialized)
     // some frameworks such as web3modal requires this method to exist
@@ -86,6 +89,12 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
   private async initialize(): Promise<void> {
     // eslint-disable-next-line no-console
     safeConsoleDebug("TalismanEthProvider : pub(eth.subscribe)")
+
+    // query before init so it doesn't trigger a chainChanged event
+    this.chainId = (await this._sendRequest("pub(eth.request)", {
+      method: "eth_chainId",
+      params: null,
+    })) as string
 
     // this subscribes to backend's provider events :
     // - all client subscriptions (https://eips.ethereum.org/EIPS/eip-758)
@@ -99,8 +108,13 @@ export class TalismanEthProvider extends EventEmitter implements EthProvider {
         case "connect":
         case "disconnect":
         case "chainChanged":
-        case "accountsChanged":
+        case "accountsChanged": {
+          // keep chainId field in sync
+          if (result.type === "chainChanged") this.chainId = result.data as string
+
+          // broadcast event to dapp
           return this.emit(result.type, result.data)
+        }
 
         // UNKNOWN
         default:

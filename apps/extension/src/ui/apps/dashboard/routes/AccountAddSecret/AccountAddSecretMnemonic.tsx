@@ -134,7 +134,7 @@ const getAccountUri = async (secret: string, type: AccountAddressType) => {
 
   if (await testValidMnemonic(secret))
     return type === "ethereum" ? `${secret}${ETHEREUM_DERIVATION_PATH}` : secret
-  throw new Error("Invalid secret phrase")
+  throw new Error("Invalid recovery phrase")
 }
 
 const testNoDuplicate = async (
@@ -337,7 +337,7 @@ export const AccountAddSecretMnemonic = () => {
         <FormField error={errors.mnemonic} extra={`Word count : ${words}`}>
           <textarea
             {...register("mnemonic")}
-            placeholder={`Enter your 12 or 24 word Secret Phrase${
+            placeholder={`Enter your 12 or 24 word recovery phrase${
               type === "ethereum" ? " or private key" : ""
             }`}
             rows={5}
@@ -354,7 +354,7 @@ export const AccountAddSecretMnemonic = () => {
         <Spacer small />
         <Spacer small />
         <Checkbox {...register("multi")} className={classNames(isPrivateKey && "invisible")}>
-          Import multiple accounts from this secret phrase
+          Import multiple accounts from this recovery phrase
         </Checkbox>
         <Spacer />
         <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>

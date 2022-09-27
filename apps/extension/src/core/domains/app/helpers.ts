@@ -32,7 +32,7 @@ const migratePairs = async (
   currentPw: string,
   newPw: string
 ): Promise<Result<KeyringPair[], "Error re-encrypting keypairs">> => {
-  const pairs = keyring.getPairs()
+  const pairs = keyring.getPairs().filter((pair) => !pair.meta.isHardware)
   // keep track of which pairs have been successfully migrated
   const successfulPairs: KeyringPair[] = []
   try {
@@ -86,7 +86,10 @@ export const changePassword = async ({
     if (keypairMigrationResult.err) {
       throw Error(keypairMigrationResult.val)
     }
-    if (keypairMigrationResult.val.length !== backupJson.accounts.length)
+    if (
+      keypairMigrationResult.val.length !==
+      backupJson.accounts.filter((acc) => !acc.meta.isHardware).length
+    )
       throw new Error("Unable to re-encrypt all keypairs when changing password")
     // now migrate seed phrase store password
     const mnemonicMigrationResult = await migrateMnemonic(currentPw, newPw)

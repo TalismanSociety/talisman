@@ -6,7 +6,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
-import { EthFeeSelect } from "@ui/domains/Sign/EthFeeSelect"
+import { EthFeeSelect } from "@ui/domains/Ethereum/EthFeeSelect"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import useToken from "@ui/hooks/useToken"
@@ -134,21 +134,21 @@ export const EthSignTransactionRequest = () => {
     status,
     message,
     account,
-    gasInfo,
+    txDetails,
     priority,
     setPriority,
-    blockInfoError,
-    estimatedGasError,
+    error,
     network,
-    isAnalysing,
+    isLoading,
+    transaction,
   } = useEthSignTransactionRequest()
 
   const { processing, errorMessage } = useMemo(() => {
     return {
       processing: status === "PROCESSING",
-      errorMessage: status === "ERROR" ? message : blockInfoError ?? estimatedGasError ?? "",
+      errorMessage: status === "ERROR" ? message : error ?? "",
     }
-  }, [status, message, blockInfoError, estimatedGasError])
+  }, [status, message, error])
 
   useEffect(() => {
     // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
@@ -174,27 +174,28 @@ export const EthSignTransactionRequest = () => {
         )}
       </Content>
       <Footer>
-        {nativeToken && gasInfo ? (
+        {nativeToken && transaction && txDetails ? (
           <>
             <div className="center">
               <ViewDetailsEth />
             </div>
             <div className="gasInfo">
               <div>
-                <div>Max Fee</div>
-                <div>Priority</div>
+                <div>Estimated Fee</div>
+                <div>{transaction?.type === 2 && "Priority"}</div>
               </div>
               <div>
                 <div>
                   {formatEtherValue(
-                    gasInfo.maxFeeAndGasCost,
+                    txDetails.estimatedFee,
                     nativeToken?.decimals,
                     nativeToken?.symbol
                   )}
                 </div>
                 <div>
                   <EthFeeSelect
-                    {...gasInfo}
+                    transaction={transaction}
+                    txDetails={txDetails}
                     priority={priority ?? "low"}
                     onChange={setPriority}
                     decimals={nativeToken?.decimals}
@@ -213,7 +214,7 @@ export const EthSignTransactionRequest = () => {
                 Cancel
               </SimpleButton>
               <SimpleButton
-                disabled={processing || isAnalysing}
+                disabled={processing || isLoading}
                 processing={processing}
                 primary
                 onClick={approve}
