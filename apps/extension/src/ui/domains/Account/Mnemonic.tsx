@@ -14,18 +14,20 @@ import * as yup from "yup"
 
 const Description = () => (
   <>
-    Your recovery phrase gives you access to your wallet and funds. It can be used to restore your
-    Talisman created accounts if you lose access to your device, or forget your password.
-    <br />
-    <br />
-    We strongly encourage you to back up your recovery phrase by writing it down and storing it in a
-    secure location.{" "}
-    <a
-      href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/back-up-your-secret-phrase"
-      target="_blank"
-    >
-      Learn more
-    </a>
+    <p>
+      Your recovery phrase gives you access to your wallet and funds. It can be used to restore your
+      Talisman created accounts if you lose access to your device, or forget your password.
+    </p>
+    <p>
+      We strongly encourage you to back up your recovery phrase by writing it down and storing it in
+      a secure location.{" "}
+      <a
+        href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/back-up-your-secret-phrase"
+        target="_blank"
+      >
+        Learn more
+      </a>
+    </p>
   </>
 )
 
@@ -87,8 +89,6 @@ const Mnemonic = ({ className }: any) => {
             text={
               <>
                 <Description />
-                <br />
-                <br />
                 <strong>Enter your password to show your recovery phrase</strong>.
               </>
             }
