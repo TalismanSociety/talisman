@@ -230,7 +230,10 @@ export const SendForm = () => {
     resolver: yupResolver(schema),
   })
 
-  const isValid = useMemo(() => isValidForm && !!gasSettings, [gasSettings, isValidForm])
+  const isValid = useMemo(
+    () => isValidForm && (!isEvm || !!gasSettings),
+    [gasSettings, isEvm, isValidForm]
+  )
 
   const [errorMessage, setErrorMessage] = useState<string>()
   const submit = useCallback(
