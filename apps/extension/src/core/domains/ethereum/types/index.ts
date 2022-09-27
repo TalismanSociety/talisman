@@ -2,15 +2,16 @@ import { ChainId } from "@core/domains/chains/types"
 import { CustomErc20Token, TokenId } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { RequestIdOnly } from "@core/types/base"
+import { BigNumberish, ethers } from "ethers"
 
 import { AddEthereumChainParameter, WatchAssetBase } from "./base"
 
 export type { AddEthereumChainParameter, WatchAssetBase }
 
 export declare type EthApproveSignAndSend = RequestIdOnly & {
-  maxPriorityFeePerGas: string
-  maxFeePerGas: string
+  transaction: ethers.providers.TransactionRequest
 }
+
 export interface AnyEthRequestChainId extends AnyEthRequest {
   chainId: number
 }
@@ -86,3 +87,16 @@ export interface EthMessages {
   "pri(eth.networks.removeCustomNetwork)": [RequestIdOnly, boolean]
   "pri(eth.networks.clearCustomNetworks)": [null, boolean]
 }
+
+export type EthGasSettingsLegacy = {
+  type: 0
+  gasLimit: BigNumberish
+  gasPrice: BigNumberish
+}
+export type EthGasSettingsEip1559 = {
+  type: 2
+  gasLimit: BigNumberish
+  maxFeePerGas: BigNumberish
+  maxPriorityFeePerGas: BigNumberish
+}
+export type EthGasSettings = EthGasSettingsLegacy | EthGasSettingsEip1559

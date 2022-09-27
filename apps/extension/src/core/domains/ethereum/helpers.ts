@@ -2,7 +2,9 @@ import { erc20Abi } from "@core/domains/balances/rpc/abis"
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { ethers } from "ethers"
+import { BigNumber, BigNumberish, ethers } from "ethers"
+
+import { EthGasSettings } from "./types"
 
 export const getEthDerivationPath = (index = 0) => `/m/44'/60'/0'/0/${index}`
 
@@ -37,5 +39,125 @@ export const getEthTransferTransactionBase = async (
     ...tx,
   }
 }
+
 export const getErc20TokenId = (chainOrNetworkId: number | string, contractAddress: string) =>
   `${chainOrNetworkId}-erc20-${contractAddress}`.toLowerCase()
+
+// BigNumbers need to be reconstructed if they are serialized then deserialized
+export const rebuildTransactionRequestNumbers = (
+  transaction: ethers.providers.TransactionRequest
+) => {
+  const tx = { ...transaction } as ethers.providers.TransactionRequest
+
+  if (tx.gasLimit) tx.gasLimit = BigNumber.from(tx.gasLimit)
+  if (tx.gasPrice) tx.gasPrice = BigNumber.from(tx.gasPrice)
+  if (tx.maxFeePerGas) tx.maxFeePerGas = BigNumber.from(tx.maxFeePerGas)
+  if (tx.maxPriorityFeePerGas) tx.maxPriorityFeePerGas = BigNumber.from(tx.maxPriorityFeePerGas)
+  if (tx.value) tx.value = BigNumber.from(tx.value)
+  if (tx.nonce) tx.nonce = BigNumber.from(tx.nonce)
+
+  return tx
+}
+
+export const rebuildGasSettings = (gasSettings: EthGasSettings) => {
+  const gs = { ...gasSettings } as EthGasSettings
+
+  gs.gasLimit = BigNumber.from(gs.gasLimit)
+
+  if (gs.type === 2) {
+    gs.maxFeePerGas = BigNumber.from(gs.maxFeePerGas)
+    gs.maxPriorityFeePerGas = BigNumber.from(gs.maxPriorityFeePerGas)
+  } else if (gs.type === 0) {
+    gs.gasPrice = BigNumber.from(gs.gasPrice)
+  } else throw new Error("Unexpected gas settings type")
+
+  return gs
+}
+
+const TX_GAS_LIMIT_DEFAULT = BigNumber.from("250000")
+const TX_GAS_LIMIT_MIN = BigNumber.from("21000")
+
+export const getGasLimit = (
+  blockGasLimit: BigNumberish,
+  estimatedGas: BigNumberish,
+  suggestedGasLimit?: BigNumberish
+) => {
+  let gasLimit = BigNumber.from(suggestedGasLimit ?? estimatedGas ?? TX_GAS_LIMIT_DEFAULT) // arbitrary default value
+  if (gasLimit.gt(blockGasLimit)) {
+    // probably bad formatting or error from the dapp, fallback to default value
+    gasLimit = TX_GAS_LIMIT_DEFAULT
+  } else if (gasLimit.lt(TX_GAS_LIMIT_MIN)) {
+    // invalid, all chains use 21000 as minimum, fallback to default value
+    gasLimit = TX_GAS_LIMIT_DEFAULT
+  }
+  return gasLimit
+}
+
+export const getLegacyTotalFees = (
+  estimatedGas: BigNumberish,
+  gasLimit: BigNumberish,
+  gasPrice: BigNumberish
+) => {
+  const estimatedFee = BigNumber.from(estimatedGas).mul(gasPrice)
+  const maxFee = BigNumber.from(gasLimit).mul(gasPrice)
+
+  return { estimatedFee, maxFee }
+}
+
+// Assume this value is the same for all EVM chains, isn't it ?
+const FEE_MAX_RAISE_RATIO_PER_BLOCK = 0.125
+
+export const getMaxFeePerGas = (
+  baseFeePerGas: BigNumberish,
+  maxPriorityFeePerGas: BigNumberish,
+  maxBlocksWait = 8
+) => {
+  let base = BigNumber.from(baseFeePerGas)
+
+  //baseFeePerGas can augment 12.5% per block
+  for (let i = 0; i < maxBlocksWait; i++)
+    base = base.mul((1 + FEE_MAX_RAISE_RATIO_PER_BLOCK) * 1000).div(1000)
+
+  return base.add(maxPriorityFeePerGas)
+}
+
+export const getEip1559TotalFees = (
+  estimatedGas: BigNumberish,
+  gasLimit: BigNumberish,
+  baseFeePerGas: BigNumberish,
+  maxPriorityFeePerGas: BigNumberish
+) => {
+  // for the estimate, assume gas will stay the same
+  const estimatedFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 0)
+  const estimatedFee = BigNumber.from(estimatedGas).mul(estimatedFeePerGas)
+
+  // max cost if transaction waits 8 blocks and consumes the whole gasLimit
+  const maxFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 8)
+  const maxFee = BigNumber.from(gasLimit).mul(maxFeePerGas)
+
+  return { estimatedFee, maxFee }
+}
+
+export const prepareTransaction = (
+  tx: ethers.providers.TransactionRequest,
+  gasSettings: EthGasSettings
+) => {
+  // keep only known fields except gas related ones
+  const { chainId, data, from, to, value, nonce, accessList, ccipReadEnabled, customData } = tx
+
+  const result: ethers.providers.TransactionRequest = {
+    chainId,
+    data,
+    from,
+    to,
+    value,
+    nonce,
+    accessList,
+    ccipReadEnabled,
+    customData,
+    // apply user gas settings
+    ...gasSettings,
+  }
+
+  return result
+}

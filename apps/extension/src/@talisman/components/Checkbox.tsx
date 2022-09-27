@@ -32,8 +32,9 @@ const CheckboxContainer = styled.label`
     // checkbox size should be relative to current font size
     width: 1.25em;
     min-width: 1.25em;
+    height: 1.25em;
+    min-height: 1.25em;
     margin-right: 0.5em;
-    vertical-align: middle;
     display: inline-flex;
     flex-direction: column;
     justify-content: top;
@@ -55,7 +56,7 @@ const CheckboxContainer = styled.label`
   }
 
   input:enabled:hover:not(:checked) + span span {
-    border: 0.1rem solid rgba(var(--color-primary-raw), 0.25);
+    //border: 0.1rem solid rgba(var(--color-primary-raw), 0.25);
     svg {
       opacity: 0.1;
     }

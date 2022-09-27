@@ -3,13 +3,15 @@ import RpcFactory from "@core/libs/RpcFactory"
 import { InterfaceTypes } from "@polkadot/types/types/registry"
 import * as Sentry from "@sentry/browser"
 
+import { sleep } from "./sleep"
+
 const tryRpcSend = async (chainId: string, method: string, attempts: number, params: unknown[]) => {
   for (let i = 1; i <= attempts; i++) {
     try {
       return await RpcFactory.send(chainId, method, params)
     } catch (err) {
       if (i === attempts) throw err
-      await new Promise((resolve) => setTimeout(resolve, 300))
+      await sleep(300)
     }
   }
 }

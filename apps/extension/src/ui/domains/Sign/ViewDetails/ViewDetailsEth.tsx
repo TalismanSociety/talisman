@@ -4,7 +4,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
-import { BigNumberish } from "ethers"
+import { BigNumber, BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
@@ -84,7 +84,7 @@ const Address = ({ address }: AddressProps) => {
 }
 
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
-  const { request, network, gasInfo, priority } = useEthSignTransactionRequest()
+  const { request, network, txDetails, priority, transaction } = useEthSignTransactionRequest()
   const { genericEvent } = useAnalytics()
 
   const nativeToken = useToken(network?.nativeToken?.id)
@@ -99,6 +99,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     genericEvent("open sign transaction view details", { type: "ethereum" })
   }, [genericEvent])
 
+  if (!transaction || !txDetails) return null
+
   return (
     <ViewDetailsContainer>
       <div className="grow">
@@ -112,21 +114,38 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         <ViewDetailsField label="Value to be transferred" breakAll>
           {formatEthValue(request.value)}
         </ViewDetailsField>
-        <ViewDetailsField label="Network">{network?.name}</ViewDetailsField>
+        <ViewDetailsField label="Network">{network?.name ?? "Unknown"}</ViewDetailsField>
         <ViewDetailsField label="Network usage">
-          {Math.round((gasInfo?.gasUsedRatio ?? 0) * 100)}%
+          {Math.round((txDetails?.gasUsedRatio ?? 0) * 100)}%
         </ViewDetailsField>
         <ViewDetailsField label="Estimated gas &amp; price per gas">
-          {gasInfo?.estimatedGas?.toNumber() || null} gas at {formatEthValue(gasInfo?.gasPrice)}
+          {BigNumber.from(txDetails.estimatedGas).toNumber() || null} gas at{" "}
+          {formatEthValue(txDetails?.gasPrice)}
         </ViewDetailsField>
-        <ViewDetailsField label="Total gas cost">
-          {formatEthValue(gasInfo?.estimatedGas?.mul(gasInfo.gasPrice))}
+        <ViewDetailsField label="Gas Limit">
+          {BigNumber.from(transaction.gasLimit)?.toNumber() || null} gas
         </ViewDetailsField>
-        <ViewDetailsField label={`Max fee (${priority} priority)`}>
-          {formatEthValue(gasInfo?.maxFee)}
+        {transaction?.type === 2 ? (
+          <>
+            <ViewDetailsField label="Base fee per gas">
+              {formatEthValue(txDetails.baseFeePerGas)}
+            </ViewDetailsField>
+            <ViewDetailsField label={`Max priority fee per gas (${priority} priority)`}>
+              {formatEthValue(transaction.maxPriorityFeePerGas)}
+            </ViewDetailsField>
+          </>
+        ) : (
+          <>
+            <ViewDetailsField label="Gas price">
+              {formatEthValue(transaction.gasPrice)}
+            </ViewDetailsField>
+          </>
+        )}
+        <ViewDetailsField label="Estimated transaction cost">
+          {formatEthValue(txDetails.estimatedFee)}
         </ViewDetailsField>
         <ViewDetailsField label="Max transaction cost">
-          {formatEthValue(gasInfo?.maxFeeAndGasCost)}
+          {formatEthValue(txDetails.maxFee)}
         </ViewDetailsField>
       </div>
       <Button onClick={onClose}>Close</Button>
@@ -136,17 +155,12 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
 
 export const ViewDetailsEth = () => {
   const { isOpen, open, close } = useOpenClose()
-  const { hasError, isAnalysing } = useEthSignTransactionRequest()
+  const { error, isLoading } = useEthSignTransactionRequest()
 
   return (
     <>
-      <ViewDetailsButton
-        onClick={open}
-        hide={isOpen}
-        isAnalysing={isAnalysing}
-        hasError={hasError}
-      />
-      <Drawer anchor="bottom" open={isOpen && !isAnalysing} onClose={close}>
+      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={isLoading} hasError={!!error} />
+      <Drawer anchor="bottom" open={isOpen && !isLoading} onClose={close}>
         <ViewDetailsContent onClose={close} />
       </Drawer>
     </>

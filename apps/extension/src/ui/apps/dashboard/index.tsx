@@ -3,6 +3,8 @@ import { api } from "@ui/api"
 import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
+import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
+import { ReceiveTokensModalProvider } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -24,6 +26,7 @@ import { Portfolio } from "./routes/Portfolio"
 import Settings from "./routes/Settings"
 import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
 import { AutoLockTimer } from "./routes/Settings/AutoLockTimer"
+import ChangePassword from "./routes/Settings/ChangePassword"
 import Options from "./routes/Settings/Options"
 import SecurityPrivacySettings from "./routes/Settings/SecurityPrivacySettings"
 import SitesConnected from "./routes/Settings/SitesConnected"
@@ -80,6 +83,7 @@ const DashboardInner = () => {
           <Route path="options" element={<Options />} />
           <Route path="about" element={<About />} />
           <Route path="analytics" element={<AnalyticsOptIn />} />
+          <Route path="change-password" element={<ChangePassword />} />
           <Route path="autolock" element={<AutoLockTimer />} />
         </Route>
         <Route path="tokens">
@@ -99,7 +103,11 @@ const Dashboard = () => (
       <AccountRenameModalProvider>
         <AddressFormatterModalProvider>
           <SendTokensModalProvider>
-            <DashboardInner />
+            <BuyTokensModalProvider>
+              <ReceiveTokensModalProvider>
+                <DashboardInner />
+              </ReceiveTokensModalProvider>
+            </BuyTokensModalProvider>
           </SendTokensModalProvider>
         </AddressFormatterModalProvider>
       </AccountRenameModalProvider>

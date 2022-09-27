@@ -1,16 +1,17 @@
 import { initSentry } from "@core/config/sentry"
 import * as Sentry from "@sentry/react"
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
-import NotificationProvider from "@talisman/components/Notification"
+import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
 import ThemeProvider from "@talisman/theme"
 import React from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 
+import { AppStateProvider } from "./hooks/useAppState"
+import { FeaturesProvider } from "./hooks/useFeatures"
 import { SettingsProvider } from "./hooks/useSettings"
 
 initSentry(Sentry)
-
 const container = document.getElementById("root")
 
 // render a context dependent app with all providers
@@ -22,11 +23,14 @@ export const renderTalisman = (app: any) => {
     <React.StrictMode>
       <ThemeProvider>
         <ErrorBoundary>
-          <SettingsProvider>
-            <HashRouter>
-              <NotificationProvider>{app}</NotificationProvider>
-            </HashRouter>
-          </SettingsProvider>
+          <FeaturesProvider>
+            <SettingsProvider>
+              <AppStateProvider>
+                <HashRouter>{app}</HashRouter>
+              </AppStateProvider>
+            </SettingsProvider>
+          </FeaturesProvider>
+          <NotificationsContainer />
         </ErrorBoundary>
       </ThemeProvider>
     </React.StrictMode>

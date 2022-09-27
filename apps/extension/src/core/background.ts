@@ -4,15 +4,16 @@
 // Runs in the extension background, handling all keyring access
 // Adapted from https://github.com/polkadot-js/extension/packages/extension/src/background.ts
 
+import { initSentry } from "@core/config/sentry"
 import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "@core/constants"
+import { consoleOverride } from "@core/util/logging"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-import Browser, { Runtime } from "webextension-polyfill"
 import * as Sentry from "@sentry/browser"
-import { initSentry } from "@core/config/sentry"
-import { consoleOverride } from "@core/util/logging"
+import Browser, { Runtime } from "webextension-polyfill"
+
 import talismanHandler from "./handlers"
 
 initSentry(Sentry)

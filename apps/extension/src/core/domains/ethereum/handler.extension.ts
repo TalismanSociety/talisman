@@ -20,7 +20,6 @@ import { watchEthereumTransaction } from "@core/notifications"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
-import type { TransactionRequest } from "@ethersproject/providers"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import { assert, isHex } from "@polkadot/util"
 import { BigNumber, BigNumberish, ethers } from "ethers"
@@ -28,6 +27,7 @@ import { formatUnits, parseUnits } from "ethers/lib/utils"
 import isString from "lodash/isString"
 import { Result } from "ts-results"
 
+import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 
@@ -35,6 +35,9 @@ import { getTransactionCount, incrementTransactionCount } from "./transactionCou
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
 const getHumanReadableErrorMessage = (error: unknown) => {
   const { code, reason } = error as { code?: string; reason?: string }
+
+  if (reason === "processing response error") return "Invalid transaction"
+
   if (reason) return reason
   if (code === ethers.errors.INSUFFICIENT_FUNDS) return "Insufficient balance"
   if (code === ethers.errors.CALL_EXCEPTION) return "Contract method failed"
@@ -54,55 +57,8 @@ const getHumanReadableErrorMessage = (error: unknown) => {
   return undefined
 }
 
-type UnsignedTxWithGas = Omit<TransactionRequest, "gasLimit"> & { gas: string }
-
-const TX_GAS_LIMIT_DEFAULT = BigNumber.from("250000")
-const TX_GAS_LIMIT_MIN = BigNumber.from("21000")
-
-const prepareTransaction = (
-  tx: TransactionRequest | UnsignedTxWithGas,
-  blockGasLimit: BigNumberish
-): TransactionRequest => {
-  // we're using EIP1559 so gasPrice must be removed
-  // eslint-disable-next-line prefer-const
-  let { from, gasPrice, ...result } = tx
-  if ("gas" in result) {
-    const { gas, ...rest1 } = result as UnsignedTxWithGas
-    let gasLimit = BigNumber.from(gas ?? TX_GAS_LIMIT_DEFAULT) // arbitrary default value
-    if (gasLimit.gt(blockGasLimit)) {
-      // probably bad formatting or error from the dapp, fallback to default value
-      gasLimit = TX_GAS_LIMIT_DEFAULT
-    } else if (gasLimit.lt(TX_GAS_LIMIT_MIN)) {
-      // invalid, all chains use 21000 as minimum, fallback to default value
-      gasLimit = TX_GAS_LIMIT_DEFAULT
-    }
-
-    // TODO : move gasLimit check to client side so we can show more accurate max fee before approval
-    result = { ...rest1, gasLimit }
-  }
-
-  if (result.nonce) {
-    const { nonce, ...rest2 } = result
-    if (BigNumber.isBigNumber(nonce)) {
-      result = { nonce: nonce.toNumber(), ...rest2 }
-    } else if (isString(nonce)) {
-      result = { nonce: parseInt(nonce), ...rest2 }
-    }
-  }
-
-  // ensure chainId isn't an hex (ex: Zerion)
-  if (typeof result.chainId === "string" && (result.chainId as string).startsWith("0x"))
-    result.chainId = parseInt(result.chainId, 16)
-
-  return result
-}
-
 export class EthHandler extends ExtensionHandler {
-  private async signAndSendApprove({
-    id,
-    maxFeePerGas: strMaxFeePerGas = formatUnits(2, "gwei"),
-    maxPriorityFeePerGas: strMaxPriorityFeePerGas = formatUnits(0, "gwei"),
-  }: EthApproveSignAndSend): Promise<boolean> {
+  private async signAndSendApprove({ id, transaction }: EthApproveSignAndSend): Promise<boolean> {
     const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
     assert(queued, "Unable to find request")
     const { request, resolve, reject, ethChainId } = queued
@@ -110,27 +66,16 @@ export class EthHandler extends ExtensionHandler {
     const provider = await getProviderForEvmNetworkId(ethChainId)
     assert(provider, "Unable to find provider for chain " + ethChainId)
 
-    // get up to date nonce (accounts for pending transactions)
-    const nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
-    const block = await provider.getBlock("latest")
-
-    const maxFeePerGas = parseUnits(strMaxFeePerGas, 0)
-    const maxPriorityFeePerGas = parseUnits(strMaxPriorityFeePerGas, 0)
-
-    const tx = prepareTransaction(
-      {
-        ...request,
-        maxFeePerGas,
-        maxPriorityFeePerGas,
-        nonce,
-        type: 2,
-      },
-      block.gasLimit
-    )
+    // rebuild BigNumber property values (converted to json when serialized)
+    const tx = rebuildTransactionRequestNumbers(transaction)
+    tx.nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
-      const privateKey = getPrivateKey(pair)
+      const password = await this.stores.password.getPassword()
+      assert(password, "Unauthorised")
+      const privateKey = getPrivateKey(pair, password)
       const signer = new ethers.Wallet(privateKey, provider)
+
       const { chainId, hash } = await signer.sendTransaction(tx)
 
       incrementTransactionCount(queued.account.address, queued.ethChainId)
@@ -171,8 +116,8 @@ export class EthHandler extends ExtensionHandler {
     const { method, request, reject, resolve } = queued
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
-      const pw = this.stores.password.getPassword()
-      if (!pw) throw Error("Unauthorised")
+      const pw = await this.stores.password.getPassword()
+      assert(pw, "Unauthorised")
       const privateKey = getPrivateKey(pair, pw)
       let signature: string
 

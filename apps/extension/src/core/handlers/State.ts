@@ -8,6 +8,7 @@ import { MetadataRequestsStore } from "@core/domains/metadata"
 import { SigningRequestsStore } from "@core/domains/signing"
 import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
+import { sleep } from "@core/util/sleep"
 import Browser from "webextension-polyfill"
 
 import { stripUrl } from "./helpers"
@@ -156,7 +157,7 @@ export default class State {
         Browser.tabs.onUpdated.addListener(handler)
       }),
       // promise for the timeout
-      new Promise((resolve) => setTimeout(resolve, 3000)),
+      sleep(3000),
     ])
   }
 

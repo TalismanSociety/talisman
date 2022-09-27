@@ -4,7 +4,7 @@ import {
 } from "@core/constants"
 import { Balance, BalanceFormatter, BalanceStorage, Balances } from "@core/domains/balances/types"
 import { Chain, ChainId } from "@core/domains/chains/types"
-import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
+import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { tokensToPlanck } from "@core/util/tokensToPlanck"
@@ -18,10 +18,15 @@ import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
-import { ethers } from "ethers"
+import { BigNumber } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { SendTokensExpectedResult, SendTokensInputs, TokenAmountInfo } from "./types"
+import {
+  SendTokensData,
+  SendTokensExpectedResult,
+  SendTokensInputs,
+  TokenAmountInfo,
+} from "./types"
 import { useTransferableTokens } from "./useTransferableTokens"
 
 type Props = {
@@ -63,7 +68,7 @@ const checkInitialFormData = (
 const useSendTokensProvider = ({ initialValues }: Props) => {
   // define only the state that is useful to be shared between the different screens of the wizard
   // keep everything else locally in each screen component
-  const [formData, setFormData] = useState<Partial<SendTokensInputs>>(
+  const [formData, setFormData] = useState<Partial<SendTokensData>>(
     checkInitialFormData(initialValues)
   )
   const [expectedResult, setExpectedResult] = useState<SendTokensExpectedResult>()
@@ -121,9 +126,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   )
 
   const check = useCallback(
-    async (newData: SendTokensInputs, allowReap = false) => {
-      const { amount, transferableTokenId, from, to, tip, maxFeePerGas, maxPriorityFeePerGas } =
-        newData
+    async (newData: SendTokensData, allowReap = false) => {
+      const { amount, transferableTokenId, from, to, tip, gasSettings } = newData
 
       const transferableToken = transferableTokensMap[transferableTokenId]
       if (!transferableToken) throw new Error("Transferable token not found")
@@ -184,23 +188,23 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       // checks stop here for EVM
       if (!chainId) {
         assert(evmNetworkId, "Ethereum network not found")
-        assert(!!maxFeePerGas && !!maxPriorityFeePerGas, "Missing gas information")
+        assert(gasSettings, "Missing gas information")
 
         try {
           // check fees again
-          const txBase = await getEthTransferTransactionBase(
-            evmNetworkId,
-            from,
-            to,
-            token,
-            tokensToPlanck(amount, token.decimals)
-          )
           const provider = getExtensionEthereumProvider(evmNetworkId)
-          const estimatedGas = await provider.estimateGas(txBase)
-          const gasPrice = ethers.BigNumber.from(await provider.send("eth_gasPrice", []))
-          const gasCost = estimatedGas.mul(gasPrice)
-          const maxFee = estimatedGas.mul(maxFeePerGas)
-          const maxFeeAndGasCost = gasCost.add(maxFee)
+          const { baseFeePerGas } = await provider.getBlock("latest")
+          const bigGasLimit = BigNumber.from(gasSettings.gasLimit)
+
+          if (gasSettings.type === 2 && !baseFeePerGas)
+            throw new Error("Could not load baseFeePerGas")
+
+          const maxFeeAndGasCost =
+            gasSettings.type === 0
+              ? bigGasLimit.mul(gasSettings.gasPrice)
+              : bigGasLimit.mul(
+                  getMaxFeePerGas(baseFeePerGas as BigNumber, gasSettings.maxPriorityFeePerGas)
+                )
 
           setFormData((prev) => ({
             ...prev,
@@ -331,8 +335,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   // execute the TX
   const send = useCallback(async () => {
-    const { amount, transferableTokenId, from, to, tip, maxPriorityFeePerGas, maxFeePerGas } =
-      formData as SendTokensInputs
+    const { amount, transferableTokenId, from, to, tip, gasSettings } = formData as SendTokensData
 
     const transferableToken = transferableTokensMap[transferableTokenId]
     if (!transferableToken) throw new Error("Transferable token not found")
@@ -353,14 +356,14 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       )
       setTransactionId(id)
     } else if (evmNetworkId) {
+      if (!gasSettings) throw new Error("Missing gas settings")
       const { hash } = await api.assetTransferEth(
         evmNetworkId,
         token.id,
         from,
         to,
         tokensToPlanck(amount, token.decimals),
-        maxPriorityFeePerGas ?? "0",
-        maxFeePerGas ?? "0"
+        gasSettings
       )
       setTransactionHash(hash)
     } else throw new Error("Network not found")
