@@ -4,6 +4,8 @@ import Nav, { NavItemButton } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
   CreditCardIcon,
+  ExternalLinkIcon,
+  ImageIcon,
   LayoutIcon,
   LockIcon,
   MaximizeIcon,
@@ -63,6 +65,19 @@ const Container = styled.aside`
     width: auto;
     height: 2.5rem;
   }
+
+  ${NavItemButton} {
+    transition: none;
+    :hover {
+      background: var(--color-background-muted);
+    }
+  }
+`
+
+export const ExtLinkIcon = styled(ExternalLinkIcon)`
+  // margin: 0.2rem 0 0 0.4rem;
+  vertical-align: text-top;
+  display: inline;
 `
 
 export const NavigationDrawer: FC = () => {
@@ -101,9 +116,9 @@ export const NavigationDrawer: FC = () => {
     api.dashboardOpen("/settings")
   }, [genericEvent])
 
-  const handleWebAppClick = useCallback(() => {
-    genericEvent("open webapp", { from: "popup nav" })
-    window.open("https://app.talisman.xyz")
+  const handleNFTClick = useCallback(() => {
+    genericEvent("open web app nfts", { from: "popup nav" })
+    window.open("https://app.talisman.xyz/nfts")
   }, [genericEvent])
 
   return (
@@ -124,6 +139,9 @@ export const NavigationDrawer: FC = () => {
               <NavItemButton icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
                 Send Funds
               </NavItemButton>
+              <NavItemButton icon={<ImageIcon />} onClick={handleNFTClick}>
+                NFTs <ExtLinkIcon />
+              </NavItemButton>
               {showBuyTokens && (
                 <NavItemButton icon={<CreditCardIcon />} onClick={handleBuyTokensClick}>
                   Buy Crypto
@@ -135,9 +153,7 @@ export const NavigationDrawer: FC = () => {
               <NavItemButton icon={<SettingsIcon />} onClick={handleSettingsClick}>
                 Settings
               </NavItemButton>
-              <NavItemButton icon={<LayoutIcon />} onClick={handleWebAppClick}>
-                Talisman Web App
-              </NavItemButton>
+
               <NavItemButton icon={<LockIcon />} onClick={handleLock}>
                 Lock
               </NavItemButton>

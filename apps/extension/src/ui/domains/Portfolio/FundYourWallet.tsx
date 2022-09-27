@@ -19,12 +19,14 @@ const Container = styled(Box)`
   gap: 2.4rem;
   align-items: center;
 
-  @media (min-width: ${breakpoints.large}px) {
-    zoom: 1.2;
+  @media (min-width: ${breakpoints["2xl"]}px) {
+    margin-top: 3rem;
+    transform: scale(1.2);
   }
 
-  @media (min-width: ${breakpoints.xl}px) {
-    zoom: 1.5;
+  @media (min-width: ${breakpoints["3xl"]}px) {
+    margin-top: 8rem;
+    transform: scale(1.5);
   }
 `
 

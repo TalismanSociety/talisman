@@ -326,6 +326,16 @@ export const SideBar = () => {
           >
             Portfolio
           </NavItemLink>
+          <NavItemButton
+            onClick={handleNftsClick}
+            icon={
+              <ResponsiveTooltip tooltip="NFTs">
+                <ImageIcon />
+              </ResponsiveTooltip>
+            }
+          >
+            NFTs <ExtLinkIcon />
+          </NavItemButton>
           {showBuyCryptoButton && (
             <NavItemButton
               onClick={handleBuyClick}
@@ -349,16 +359,7 @@ export const SideBar = () => {
           >
             Add Account
           </NavItemLink>
-          <NavItemButton
-            onClick={handleNftsClick}
-            icon={
-              <ResponsiveTooltip tooltip="NFTs">
-                <ImageIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            NFTs <ExtLinkIcon />
-          </NavItemButton>
+
           {/* <NavItemButton
             onClick={handleCrowdloansClick}
             icon={

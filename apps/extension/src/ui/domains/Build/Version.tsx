@@ -1,5 +1,5 @@
-import styled from "styled-components"
 import Pill from "@talisman/components/Pill"
+import styled from "styled-components"
 
 interface IProps {
   className?: string
@@ -7,9 +7,14 @@ interface IProps {
 
 const BuildVersion = ({ className }: IProps) => {
   return (
-    <Pill className={`${className} build-version`} small primary>
-      <span>v{process.env.VERSION}</span>
-    </Pill>
+    <a
+      href="https://docs.talisman.xyz/talisman/prepare-for-your-journey/wallet-release-notes"
+      target="_blank"
+    >
+      <Pill className={`${className} build-version`} small primary>
+        <span>v{process.env.VERSION}</span>
+      </Pill>
+    </a>
   )
 }
 

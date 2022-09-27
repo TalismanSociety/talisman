@@ -43,7 +43,9 @@ export const custom = {
 }
 
 export const breakpoints = {
-  medium: 720,
-  large: 1024,
-  xl: 1280,
+  "medium": 720,
+  "large": 1024,
+  "xl": 1280,
+  "2xl": 1536,
+  "3xl": 1920,
 }
