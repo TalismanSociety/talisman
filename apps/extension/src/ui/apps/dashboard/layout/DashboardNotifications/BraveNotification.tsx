@@ -42,8 +42,8 @@ export const BraveWarningNotification = () => {
     <>
       <Notification
         icon={<BraveIcon className="icon" />}
-        title="Attention Brave users! "
-        description="Due to a recent update, users may be experiencing issues loading balances"
+        title="Attention Brave users. "
+        description="Due to a recent Brave update, users may be experiencing issues loading balances."
         action="Learn more"
         onActionClick={open}
         onClose={handleHide}

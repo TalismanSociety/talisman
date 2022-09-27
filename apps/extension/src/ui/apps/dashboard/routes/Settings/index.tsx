@@ -3,8 +3,8 @@ import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { ShieldIcon, ToolIcon } from "@talisman/theme/icons"
 import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
-import { ReactComponent as IconEye } from "@talisman/theme/icons/eye.svg"
 import { ReactComponent as IconInfo } from "@talisman/theme/icons/info.svg"
 import { ReactComponent as IconKey } from "@talisman/theme/icons/key.svg"
 import { ReactComponent as IconLink } from "@talisman/theme/icons/link.svg"
@@ -25,8 +25,8 @@ const Settings = () => {
       <Grid columns={1}>
         <CtaButton
           icon={<IconKey />}
-          title="Backup Account"
-          subtitle="Export your private key or copy your secret phrase"
+          title="Backup Wallet"
+          subtitle="Backup your recovery phrase"
           onClick={open}
         />
         <CtaButton
@@ -37,18 +37,18 @@ const Settings = () => {
         />
         <CtaButton
           icon={<IconList />}
-          title="Manage custom tokens"
+          title="Manage Custom Tokens"
           subtitle="Add or delete custom ERC20 tokens"
           to={`/tokens`}
         />
         <CtaButton
-          icon={<IconList />}
+          icon={<ToolIcon />}
           title="Extension Options"
           subtitle="Customise your extension experience"
           to={`/settings/options`}
         />
         <CtaButton
-          icon={<IconEye />}
+          icon={<ShieldIcon />}
           title="Security and Privacy"
           subtitle="Control security and privacy preferences"
           to={`/settings/security-privacy-settings`}
@@ -58,7 +58,7 @@ const Settings = () => {
           title="Change password"
           subtitle={
             isNotConfirmed
-              ? "Please back up your secret recovery phrase before you change your password."
+              ? "Please back up your recovery phrase before you change your password."
               : "Change your Talisman password"
           }
           to={`/settings/change-password`}
