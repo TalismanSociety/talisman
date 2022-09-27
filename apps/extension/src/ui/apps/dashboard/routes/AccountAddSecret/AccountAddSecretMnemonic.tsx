@@ -337,7 +337,7 @@ export const AccountAddSecretMnemonic = () => {
         <FormField error={errors.mnemonic} extra={`Word count : ${words}`}>
           <textarea
             {...register("mnemonic")}
-            placeholder={`Enter your 12 or 24 word Recovery Phrase${
+            placeholder={`Enter your 12 or 24 word recovery phrase${
               type === "ethereum" ? " or private key" : ""
             }`}
             rows={5}

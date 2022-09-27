@@ -359,7 +359,6 @@ export const SideBar = () => {
           >
             Add Account
           </NavItemLink>
-
           {/* <NavItemButton
             onClick={handleCrowdloansClick}
             icon={

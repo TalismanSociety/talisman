@@ -151,7 +151,6 @@ export const NavigationDrawer: FC = () => {
               <NavItemButton icon={<SettingsIcon />} onClick={handleSettingsClick}>
                 Settings
               </NavItemButton>
-
               <NavItemButton icon={<LockIcon />} onClick={handleLock}>
                 Lock
               </NavItemButton>
