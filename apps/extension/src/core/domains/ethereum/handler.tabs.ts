@@ -469,6 +469,10 @@ export class EthTabsHandler extends TabsHandler {
 
         const site = await this.getSiteDetails(url)
 
+        // ensure chainId isn't an hex (ex: Zerion)
+        if (typeof txRequest.chainId === "string" && (txRequest.chainId as string).startsWith("0x"))
+          txRequest.chainId = parseInt(txRequest.chainId, 16)
+
         // checks that the request targets currently selected network
         if (txRequest.chainId && site.ethChainId !== txRequest.chainId)
           throw new EthProviderRpcError("Wrong network", ETH_ERROR_EIP1474_INVALID_PARAMS)
