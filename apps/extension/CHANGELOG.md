@@ -1,5 +1,17 @@
 # extension
 
+## 1.6.14
+
+### Patch Changes
+
+- Updated dependencies [cbd4770]
+- Updated dependencies [3db774a]
+  - @talismn/balances-substrate-native@0.1.8
+  - @talismn/balances-substrate-orml@0.1.8
+  - @talismn/balances@0.1.8
+  - @talismn/balances-evm-erc20@0.1.8
+  - @talismn/balances-evm-native@0.1.8
+
 ## 1.6.13
 
 ### Patch Changes

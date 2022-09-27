@@ -1,5 +1,13 @@
 # @talismn/balances-substrate-native
 
+## 0.1.8
+
+### Patch Changes
+
+- cbd4770: fix: token logo urls
+- Updated dependencies [3db774a]
+  - @talismn/balances@0.1.8
+
 ## 0.1.7
 
 ### Patch Changes

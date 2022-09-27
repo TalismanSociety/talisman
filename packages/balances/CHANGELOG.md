@@ -1,5 +1,11 @@
 # @talismn/balances
 
+## 0.1.8
+
+### Patch Changes
+
+- 3db774a: fix: useBalances creating too many subscriptions when called from multiple components
+
 ## 0.1.7
 
 ## 0.1.6
