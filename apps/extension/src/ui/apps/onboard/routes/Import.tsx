@@ -98,7 +98,7 @@ export const ImportPage = () => {
                 </OnboardFormField>
                 <Box h={2.4}></Box>
                 <OnboardButton type="submit" primary disabled={!isValid}>
-                  Import
+                  Import wallet
                 </OnboardButton>
               </Box>
             </form>
