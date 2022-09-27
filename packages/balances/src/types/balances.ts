@@ -208,6 +208,7 @@ export class Balances {
 
   /**
    * Get the summed value of balances in this collection.
+   * TODO: Sum up token amounts AND fiat amounts
    *
    * @example
    * // Get the sum of all transferable balances in usd.

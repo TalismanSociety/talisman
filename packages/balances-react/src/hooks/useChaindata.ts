@@ -15,6 +15,8 @@ import { useEffect, useState } from "react"
 
 import log from "../log"
 
+// TODO: Allow user to call useChaindata from multiple places
+
 export function useChaindata() {
   const [chaindataProvider, setChaindataProvider] = useState<
     (ChaindataProvider & { generation?: number }) | null

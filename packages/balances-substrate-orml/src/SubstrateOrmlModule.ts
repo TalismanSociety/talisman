@@ -181,6 +181,7 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
     return tokens
   },
 
+  // TODO: Don't create empty subscriptions
   async subscribeBalances(chainConnector, chaindataProvider, addressesByToken, callback) {
     const tokens = await chaindataProvider.tokens()
 
