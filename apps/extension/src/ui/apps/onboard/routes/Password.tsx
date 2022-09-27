@@ -28,10 +28,7 @@ type FormData = {
 const schema = yup
   .object({
     password: yup.string().min(6, "").required(""), // matches the medium strengh requirement
-    passwordConfirm: yup
-      .string()
-      .trim()
-      .oneOf([yup.ref("password")], "Passwords must match"),
+    passwordConfirm: yup.string().oneOf([yup.ref("password")], "Passwords must match"),
     agreeToS: yup.boolean().oneOf([true], ""),
   })
   .required()
