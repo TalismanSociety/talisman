@@ -1,6 +1,5 @@
 import {
   Address,
-  AddressesByToken,
   Amount,
   Balance,
   BalanceModule,
@@ -8,7 +7,7 @@ import {
   DefaultBalanceModule,
   NewBalanceType,
 } from "@talismn/balances"
-import { EvmChainId, EvmNetworkId, NewTokenType, TokenList } from "@talismn/chaindata-provider"
+import { EvmChainId, EvmNetworkId, NewTokenType } from "@talismn/chaindata-provider"
 import ethers from "ethers"
 
 import log from "./log"
