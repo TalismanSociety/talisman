@@ -11,7 +11,6 @@ import {
   RequestAssetTransferEth,
   ResponseAssetTransfer,
   ResponseAssetTransferEth,
-  ResponseAssetTransferFeeQuery,
   TransactionStatus,
 } from "@core/domains/transactions/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
