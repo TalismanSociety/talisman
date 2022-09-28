@@ -23,11 +23,6 @@ const Container = styled(Box)`
     margin-top: 3rem;
     transform: scale(1.2);
   }
-
-  @media (min-width: ${breakpoints["3xl"]}px) {
-    margin-top: 8rem;
-    transform: scale(1.5);
-  }
 `
 
 const Button = styled.button`
