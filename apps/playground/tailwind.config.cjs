@@ -7,6 +7,6 @@ module.exports = {
   content: [
     "./src/**/*.{html,ts,tsx,svg}",
     "./public/*.html",
-    "../../packages/talisman-ui/**/*.{html,ts,tsx,svg}",
+    "../../packages/talisman-ui/**/*.{html,ts,tsx,svg,css}",
   ],
 }

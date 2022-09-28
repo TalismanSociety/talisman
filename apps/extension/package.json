@@ -99,6 +99,7 @@
     "semver": "^7.3.7",
     "style-loader": "3.3.1",
     "styled-components": "5.3.5",
+    "talisman-ui": "*",
     "talisman-utils": "*",
     "terser-webpack-plugin": "5.3.3",
     "ts-loader": "9.3.0",
