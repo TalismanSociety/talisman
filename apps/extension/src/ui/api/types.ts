@@ -20,6 +20,7 @@ import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
   CustomEvmNetwork,
+  EthGasSettings,
   EvmNetworkId,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
@@ -44,18 +45,15 @@ import { AddressesByChain } from "@core/types/base"
 import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
+import { ethers } from "ethers"
 
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
   // UNSORTED
-  onboard: (
-    name: string,
-    pass: string,
-    passConfirm: string,
-    mnemonic?: string
-  ) => Promise<OnboardedType>
+  onboard: (pass: string, passConfirm: string, mnemonic?: string) => Promise<OnboardedType>
   authenticate: (pass: string) => Promise<boolean>
   lock: () => Promise<boolean>
+  changePassword: (currentPw: string, newPw: string, newPwConfirm: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
   onboardStatus: () => Promise<OnboardedType>
@@ -176,8 +174,7 @@ export default interface MessageTypes {
     fromAddress: string,
     toAddress: string,
     amount: string,
-    maxPriorityFeePerGas: string,
-    maxFeePerGas: string
+    gasSettings: EthGasSettings
   ) => Promise<ResponseAssetTransferEth>
   assetTransferCheckFees: (
     chainId: ChainId,
@@ -197,8 +194,7 @@ export default interface MessageTypes {
   ethApproveSign: (id: string) => Promise<boolean>
   ethApproveSignAndSend: (
     id: string,
-    maxFeePerGas: string,
-    maxPriorityFeePerGas: string
+    transaction: ethers.providers.TransactionRequest
   ) => Promise<boolean>
   ethCancelSign: (id: string) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>

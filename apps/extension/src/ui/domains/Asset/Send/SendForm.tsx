@@ -1,3 +1,4 @@
+import { EthGasSettings } from "@core/domains/ethereum/types"
 import { tokensToPlanck } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Box } from "@talisman/components/Box"
@@ -180,12 +181,6 @@ const cleanupAmountInput = (amount: string) => {
 
 const REVALIDATE = { shouldValidate: true, shouldDirty: true, shouldTouch: true }
 
-const evmSchema = {
-  priority: yup.string().required(),
-  maxPriorityFeePerGas: yup.string().required(),
-  maxFeePerGas: yup.string().required(),
-}
-
 const substrateSchema = {
   tip: yup.string().required(), // this will disable the review button until tip is fetched from tip station
 }
@@ -211,13 +206,14 @@ const getSchema = (isEvm: boolean) =>
         .string()
         .required("")
         .test("to-valid", "Invalid address (to)", (address) => isValidAddress(address as string)),
-      ...(isEvm ? evmSchema : substrateSchema),
+      ...(isEvm ? {} : substrateSchema),
     })
-    .required()
+    .required("")
 
 export const SendForm = () => {
   const { formData, check, showForm } = useSendTokens()
   const [isEvm, setIsEvm] = useState(false)
+  const [gasSettings, setGasSettings] = useState<EthGasSettings | undefined>(formData?.gasSettings)
 
   const schema = useMemo(() => getSchema(isEvm), [isEvm])
 
@@ -227,24 +223,28 @@ export const SendForm = () => {
     setValue,
     setError,
     watch,
-    reset,
-    formState: { isValid, isSubmitting },
+    formState: { isValid: isValidForm, isSubmitting, errors },
   } = useForm<SendTokensInputs>({
     mode: "onChange",
     defaultValues: formData,
     resolver: yupResolver(schema),
   })
 
+  const isValid = useMemo(
+    () => isValidForm && (!isEvm || !!gasSettings),
+    [gasSettings, isEvm, isValidForm]
+  )
+
   const [errorMessage, setErrorMessage] = useState<string>()
   const submit = useCallback(
     async (data: SendTokensInputs) => {
       try {
-        await check(data)
+        await check({ ...data, gasSettings })
       } catch (err) {
         setErrorMessage(err instanceof Error ? err.message : (err as string))
       }
     },
-    [check]
+    [check, gasSettings]
   )
 
   // handlers for all input components
@@ -328,9 +328,8 @@ export const SendForm = () => {
 
   const handleEvmFeeChange = useCallback(
     (fees: FeeSettings) => {
-      if (fees.priority) setValue("priority", fees.priority)
-      setValue("maxFeePerGas", fees.maxFeePerGas)
-      setValue("maxPriorityFeePerGas", fees.maxPriorityFeePerGas, REVALIDATE)
+      setValue("priority", fees.priority)
+      setGasSettings(fees.gasSettings)
     },
     [setValue]
   )

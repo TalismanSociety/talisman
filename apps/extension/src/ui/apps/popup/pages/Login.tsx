@@ -17,7 +17,7 @@ type FormData = {
 
 const schema = yup
   .object({
-    password: yup.string().trim().required(""),
+    password: yup.string().required(""),
   })
   .required()
 

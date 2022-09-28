@@ -1,5 +1,6 @@
 import { BackButton } from "@talisman/components/BackButton"
 import { hideScrollbarsStyle } from "@talisman/theme/styles"
+import { AnalyticsPage } from "@ui/api/analytics"
 import { Transition, Variants, motion } from "framer-motion"
 import { FC, ReactNode } from "react"
 import styled from "styled-components"
@@ -86,6 +87,12 @@ const BtnBack = styled(BackButton)`
   position: absolute;
   top: 6.4rem;
   left: 6.4rem;
+  background: rgba(var(--color-foreground-raw), 0.1);
+  transition: background-color var(--transition-speed-fast) ease-in;
+
+  :hover {
+    background: rgba(var(--color-foreground-raw), 0.2);
+  }
 `
 
 type LayoutProps = {
@@ -93,6 +100,7 @@ type LayoutProps = {
   className?: string
   picture?: ReactNode
   children?: ReactNode
+  analytics?: AnalyticsPage
 }
 
 const FADE_IN: Variants = {
@@ -119,10 +127,16 @@ const SLIDE_IN_RIGHT: Variants = {
   anim: { x: 0 },
 }
 
-export const Layout: FC<LayoutProps> = ({ withBack = false, picture, children, className }) => (
+export const Layout: FC<LayoutProps> = ({
+  analytics,
+  withBack = false,
+  picture,
+  children,
+  className,
+}) => (
   <Main className={className}>
     <motion.section variants={FADE_IN} initial="init" animate="anim" transition={TRANS_SLOW}>
-      {!!withBack && <BtnBack />}
+      {!!withBack && <BtnBack analytics={analytics} />}
       {picture ? (
         <div className="hflex">
           <motion.div className="picture" variants={SLIDE_IN_LEFT} transition={TRANS_MED}>

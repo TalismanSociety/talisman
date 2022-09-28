@@ -6,7 +6,7 @@ import { formatUnits, parseUnits } from "ethers/lib/utils"
 const BLOCKS_HISTORY_LENGTH = 4
 const REWARD_PERCENTILES = [10, 30, 60]
 
-const FALLBACK_OPTIONS: EthPriorityOptions = {
+export const DEFAULT_ETH_PRIORITY_OPTIONS: EthPriorityOptions = {
   low: parseUnits("1", "gwei"),
   medium: parseUnits("10", "gwei"),
   high: parseUnits("50", "gwei"),
@@ -76,7 +76,7 @@ export const getFeeHistoryAnalysis = async (
       feeHistory.gasUsedRatio.length
 
     // lookup the max priority fee per gas based on our percentiles options
-    const avgMaxPriorityPerGas: BigNumber[] = []
+    const avgMaxPriorityFeePerGas: BigNumber[] = []
     if (feeHistory.reward) {
       const percentilesCount = feeHistory.reward?.[0]?.length
       for (let i = 0; i < percentilesCount; i++) {
@@ -84,13 +84,13 @@ export const getFeeHistoryAnalysis = async (
         for (let j = 0; j < feeHistory.reward.length; j++)
           sum = sum.add(BigNumber.from(feeHistory.reward[j][i]))
         const avg = sum.div(BigNumber.from(feeHistory.reward.length))
-        avgMaxPriorityPerGas.push(avg)
+        avgMaxPriorityFeePerGas.push(avg)
       }
     } else
-      avgMaxPriorityPerGas.push(
-        FALLBACK_OPTIONS.low,
-        FALLBACK_OPTIONS.medium,
-        FALLBACK_OPTIONS.high
+      avgMaxPriorityFeePerGas.push(
+        DEFAULT_ETH_PRIORITY_OPTIONS.low,
+        DEFAULT_ETH_PRIORITY_OPTIONS.medium,
+        DEFAULT_ETH_PRIORITY_OPTIONS.high
       )
 
     // select recommended option based on recent network usage
@@ -101,9 +101,9 @@ export const getFeeHistoryAnalysis = async (
     return {
       baseFeePerGas: feeHistory.baseFeePerGas[0],
       options: {
-        low: avgMaxPriorityPerGas[0],
-        medium: avgMaxPriorityPerGas[1],
-        high: avgMaxPriorityPerGas[2],
+        low: avgMaxPriorityFeePerGas[0],
+        medium: avgMaxPriorityFeePerGas[1],
+        high: avgMaxPriorityFeePerGas[2],
       },
       recommended,
       gasUsedRatio: avgGasUsedRatio,
@@ -112,8 +112,8 @@ export const getFeeHistoryAnalysis = async (
     Sentry.captureException(err)
     //some networks don't support eth_feeHistory, fallback to default options
     return {
-      baseFeePerGas: FALLBACK_OPTIONS.low,
-      options: FALLBACK_OPTIONS,
+      baseFeePerGas: DEFAULT_ETH_PRIORITY_OPTIONS.low,
+      options: DEFAULT_ETH_PRIORITY_OPTIONS,
       recommended: "low",
       gasUsedRatio: -1, // unknown
     }

@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "private": true,
   "dependencies": {
     "@alectalisman/webpack-ext-reloader": "^1.1.9-a",
@@ -92,6 +92,7 @@
     "react-is": "17.0.2",
     "react-loading-skeleton": "3.0.3",
     "react-router-dom": "6.3.0",
+    "react-toastify": "^9.0.8",
     "react-use": "17.4.0",
     "remove-files-webpack-plugin": "^1.5.0",
     "rxjs": "^7.5.5",
@@ -145,6 +146,7 @@
     "build:extension:canary": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=canary",
     "build:extension:prod": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=production",
     "test": "jest",
+    "test:watch": "jest --watch",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "clean": "rm -rf dist && rm -rf .turbo && rm -rf node_modules"
