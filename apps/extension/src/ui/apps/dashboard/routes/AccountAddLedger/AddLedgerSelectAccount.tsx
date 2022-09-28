@@ -1,3 +1,4 @@
+import { sleep } from "@core/util/sleep"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
@@ -85,6 +86,9 @@ export const AddLedgerSelectAccount = () => {
         },
         { autoClose: false }
       )
+
+      // pause to prevent double notification
+      await sleep(1000)
 
       try {
         await importAccounts(accounts)
