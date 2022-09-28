@@ -1,5 +1,16 @@
 # @talismn/balances
 
+## 0.1.9
+
+### Patch Changes
+
+- d66c5bc: fix: evm native tokens
+- Updated dependencies [d66c5bc]
+  - @talismn/chain-connector-evm@0.1.5
+  - @talismn/chaindata-provider@0.1.5
+  - @talismn/chain-connector@0.1.5
+  - @talismn/token-rates@0.1.5
+
 ## 0.1.8
 
 ### Patch Changes

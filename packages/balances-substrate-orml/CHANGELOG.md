@@ -1,5 +1,14 @@
 # @talismn/balances-substrate-orml
 
+## 0.1.9
+
+### Patch Changes
+
+- d66c5bc: fix: evm native tokens
+- Updated dependencies [d66c5bc]
+  - @talismn/balances@0.1.9
+  - @talismn/chaindata-provider@0.1.5
+
 ## 0.1.8
 
 ### Patch Changes

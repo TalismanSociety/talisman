@@ -1,5 +1,13 @@
 # @talismn/balances-acala-stableassetpooltokens
 
+## 0.1.9
+
+### Patch Changes
+
+- Updated dependencies [d66c5bc]
+  - @talismn/balances@0.1.9
+  - @talismn/chaindata-provider@0.1.5
+
 ## 0.1.8
 
 ### Patch Changes

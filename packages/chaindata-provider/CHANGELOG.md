@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 0.1.5
+
+### Patch Changes
+
+- d66c5bc: fix: evm native tokens
+
 ## 0.1.4
 
 ## 0.1.3

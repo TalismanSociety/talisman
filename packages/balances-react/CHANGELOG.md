@@ -1,5 +1,21 @@
 # @talismn/balances-react
 
+## 0.1.9
+
+### Patch Changes
+
+- d66c5bc: fix: evm native tokens
+- Updated dependencies [d66c5bc]
+  - @talismn/balances@0.1.9
+  - @talismn/balances-evm-native@0.1.9
+  - @talismn/balances-example@0.1.9
+  - @talismn/balances-substrate-native@0.1.9
+  - @talismn/balances-substrate-orml@0.1.9
+  - @talismn/chaindata-provider@0.1.5
+  - @talismn/balances-evm-erc20@0.1.9
+  - @talismn/chain-connector@0.1.5
+  - @talismn/chaindata-provider-extension@0.1.5
+
 ## 0.1.8
 
 ### Patch Changes
