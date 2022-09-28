@@ -51,7 +51,9 @@ export const getPairForAddressSafely = async <T>(
   let pair: KeyringPair | null = null
   try {
     try {
-      pair = await getUnlockedPairFromAddress(address)
+      pair = isHardwareAccount(address)
+        ? getPairFromAddress(address)
+        : await getUnlockedPairFromAddress(address)
     } catch (error) {
       passwordStore.clearPassword()
       throw error
