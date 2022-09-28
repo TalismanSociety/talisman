@@ -83,7 +83,7 @@ interface BalanceModuleSubstrate<
     chaindataProvider: ChaindataProvider,
     chainId: ChainId,
     chainMeta: TChainMeta,
-    moduleConfig: TModuleConfig
+    moduleConfig: TModuleConfig | undefined
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 
@@ -106,7 +106,7 @@ interface BalanceModuleEvm<
     chaindataProvider: ChaindataProvider,
     chainId: ChainId,
     chainMeta: TChainMeta,
-    moduleConfig: TModuleConfig
+    moduleConfig: TModuleConfig | undefined
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 

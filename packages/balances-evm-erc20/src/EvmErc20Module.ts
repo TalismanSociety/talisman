@@ -3,6 +3,11 @@ import { EvmChainId, EvmNetworkId, NewTokenType } from "@talismn/chaindata-provi
 
 type ModuleType = "evm-erc20"
 
+export const evmErc20TokenId = (
+  chainId: EvmNetworkId,
+  tokenContractAddress: EvmErc20Token["contractAddress"]
+) => `${chainId}-evm-erc20-${tokenContractAddress}`.toLowerCase()
+
 export type EvmErc20Token = NewTokenType<
   ModuleType,
   {

@@ -76,8 +76,8 @@ export const EvmNativeModule: BalanceModule<
   async fetchEvmChainTokens(chainConnector, chaindataProvider, chainId, chainMeta, moduleConfig) {
     const { isTestnet } = chainMeta
 
-    const symbol = moduleConfig.symbol || "ETH"
-    const decimals = typeof moduleConfig.decimals === "number" ? moduleConfig.decimals : 18
+    const symbol = moduleConfig?.symbol || "ETH"
+    const decimals = typeof moduleConfig?.decimals === "number" ? moduleConfig.decimals : 18
 
     const id = evmNativeTokenId(chainId, symbol)
     const nativeToken: EvmNativeToken = {
