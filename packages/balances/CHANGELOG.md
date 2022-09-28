@@ -1,5 +1,11 @@
 # @talismn/balances
 
+## 0.1.10
+
+### Patch Changes
+
+- 850a4d0: fix: access property of undefined error
+
 ## 0.1.9
 
 ### Patch Changes

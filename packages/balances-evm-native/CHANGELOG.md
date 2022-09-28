@@ -1,5 +1,13 @@
 # @talismn/balances-evm-native
 
+## 0.1.10
+
+### Patch Changes
+
+- 850a4d0: fix: access property of undefined error
+- Updated dependencies [850a4d0]
+  - @talismn/balances@0.1.10
+
 ## 0.1.9
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # @talismn/balances-substrate-native
 
+## 0.1.10
+
+### Patch Changes
+
+- Updated dependencies [850a4d0]
+  - @talismn/balances@0.1.10
+
 ## 0.1.9
 
 ### Patch Changes
