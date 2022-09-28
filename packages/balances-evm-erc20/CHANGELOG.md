@@ -1,5 +1,12 @@
 # @talismn/balances-evm-erc20
 
+## 0.1.11
+
+### Patch Changes
+
+- 9cefc14: fix: evm erc20 tokens
+  - @talismn/balances@0.1.11
+
 ## 0.1.10
 
 ### Patch Changes
