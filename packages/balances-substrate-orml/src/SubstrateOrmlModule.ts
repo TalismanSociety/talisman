@@ -159,16 +159,14 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
       const stateKey = stateKeys[symbol]
       if (stateKey === undefined) continue
 
+      const id = subOrmlTokenId(chainId, symbol)
       const token: SubOrmlToken = {
-        id: subOrmlTokenId(chainId, symbol),
+        id,
         type: "substrate-orml",
         isTestnet,
         symbol,
         decimals: decimals[index],
-        logo: `https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets-tokens/${subOrmlTokenId(
-          chainId,
-          symbol
-        )}.svg`,
+        logo: `https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets-tokens/${id}.svg`,
         // TODO: Fetch the ED
         existentialDeposit: "0",
         stateKey,
@@ -182,13 +180,16 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
   },
 
   // TODO: Don't create empty subscriptions
-  async subscribeBalances(chainConnector, chaindataProvider, addressesByToken, callback) {
+  async subscribeBalances(chainConnectors, chaindataProvider, addressesByToken, callback) {
     const tokens = await chaindataProvider.tokens()
 
     const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
 
     const subscriptions = Object.entries(addressesByTokenGroupedByChain).map(
       async ([chainId, addressesByToken]) => {
+        if (!chainConnectors.substrate)
+          throw new Error(`This module requires a substrate chain connector`)
+
         const tokensAndAddresses = Object.entries(addressesByToken)
           .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
           .filter(([tokenId, token]) => {
@@ -223,7 +224,7 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
         const references = buildReferences(tokensAndAddresses)
 
         // set up subscription
-        const unsubscribe = await chainConnector.subscribe(
+        const unsubscribe = await chainConnectors.substrate.subscribe(
           chainId,
           subscribeMethod,
           unsubscribeMethod,
@@ -242,13 +243,16 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
     return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
   },
 
-  async fetchBalances(chainConnector, chaindataProvider, addressesByToken) {
+  async fetchBalances(chainConnectors, chaindataProvider, addressesByToken) {
     const tokens = await chaindataProvider.tokens()
 
     const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
 
     const balances = await Promise.all(
       Object.entries(addressesByTokenGroupedByChain).map(async ([chainId, addressesByToken]) => {
+        if (!chainConnectors.substrate)
+          throw new Error(`This module requires a substrate chain connector`)
+
         const tokensAndAddresses = Object.entries(addressesByToken)
           .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
           .filter(([tokenId, token]) => {
@@ -259,7 +263,7 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
 
             // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
             if (token.type !== "substrate-orml") {
-              log.warn(`This module doesn't handle tokens of type ${token.type}`)
+              log.debug(`This module doesn't handle tokens of type ${token.type}`)
               return false
             }
 
@@ -281,7 +285,7 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
         const references = buildReferences(tokensAndAddresses)
 
         // query rpc
-        const response = await chainConnector.send(chainId, method, params)
+        const response = await chainConnectors.substrate.send(chainId, method, params)
         const result = response[0]
 
         return formatRpcResult(chainId, tokens, references, result)

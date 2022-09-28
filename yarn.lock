@@ -5921,6 +5921,7 @@ __metadata:
   resolution: "@talismn/balances@workspace:packages/balances"
   dependencies:
     "@talismn/chain-connector": "workspace:^"
+    "@talismn/chain-connector-evm": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
     "@talismn/token-rates": "workspace:^"
@@ -5936,6 +5937,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@talismn/chain-connector-evm@workspace:^, @talismn/chain-connector-evm@workspace:packages/chain-connector-evm":
+  version: 0.0.0-use.local
+  resolution: "@talismn/chain-connector-evm@workspace:packages/chain-connector-evm"
+  dependencies:
+    "@talismn/chaindata-provider": "workspace:^"
+    "@talismn/eslint-config": "workspace:^"
+    "@talismn/tsconfig": "workspace:^"
+    "@types/jest": ^27.5.1
+    anylogger: ^1.0.11
+    eslint: ^8.4.0
+    ethers: 5.6.4
+    jest: ^28.1.0
+    ts-jest: ^28.0.2
+    typescript: ^4.6.4
+  languageName: unknown
+  linkType: soft
+
 "@talismn/chain-connector@workspace:^, @talismn/chain-connector@workspace:packages/chain-connector":
   version: 0.0.0-use.local
   resolution: "@talismn/chain-connector@workspace:packages/chain-connector"
@@ -5947,7 +5965,6 @@ __metadata:
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
-    debug: ^4.3.4
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2

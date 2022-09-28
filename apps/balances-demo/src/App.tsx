@@ -34,11 +34,6 @@ export function App(): JSX.Element {
               src={balance.token?.logo}
               style={{ height: "2rem", borderRadius: "9999999rem" }}
             />
-            <img
-              alt="chain logo"
-              src={balance.chain?.logo || undefined}
-              style={{ height: "2rem", borderRadius: "9999999rem" }}
-            />
 
             <span>{balance.status}</span>
 

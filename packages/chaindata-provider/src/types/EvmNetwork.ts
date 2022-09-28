@@ -3,8 +3,7 @@ import { TokenId } from "./Token"
 
 export type EvmNetworkList = Record<EvmNetworkId, EvmNetwork | CustomEvmNetwork>
 
-/** TODO: Refactor to string */
-export type EvmNetworkId = number
+export type EvmNetworkId = string
 export type EvmNetwork = {
   id: EvmNetworkId
   isTestnet: boolean

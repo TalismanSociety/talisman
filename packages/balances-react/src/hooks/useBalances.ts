@@ -6,6 +6,7 @@ import {
   balances as balancesFn,
 } from "@talismn/balances"
 import { ChainConnector } from "@talismn/chain-connector"
+import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { ChaindataProvider, Token } from "@talismn/chaindata-provider"
 import { Dexie } from "dexie"
 import { useLiveQuery } from "dexie-react-hooks"
@@ -72,7 +73,7 @@ function useBalancesSubscriptions(
   const addSubscription = (
     key: string,
     balanceModule: BalanceModule<any, any, any, any>,
-    chainConnector: ChainConnector,
+    chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
     chaindataProvider: ChaindataProvider,
     addressesByToken: AddressesByToken<Token>
   ) => {
@@ -82,7 +83,7 @@ function useBalancesSubscriptions(
 
       const unsub = balancesFn(
         balanceModule,
-        chainConnector,
+        chainConnectors,
         chaindataProvider,
         addressesByToken,
         (error, balances) => {
@@ -140,8 +141,10 @@ function useBalancesSubscriptions(
   }
 
   const chainConnector = useChainConnector(chaindataProvider)
+  const chainConnectorEvm = useChainConnectorEvm()
   useEffect(() => {
     if (chainConnector === null) return
+    if (chainConnectorEvm === null) return
     if (chaindataProvider === null) return
     if (addressesByToken === null) return
 
@@ -152,7 +155,7 @@ function useBalancesSubscriptions(
       addSubscription(
         subscriptionKey,
         balanceModule,
-        chainConnector,
+        { substrate: chainConnector, evm: chainConnectorEvm },
         chaindataProvider,
         addressesByToken
       )
@@ -163,7 +166,7 @@ function useBalancesSubscriptions(
     const unsubAll = () => unsubs.forEach((unsub) => unsub())
 
     return unsubAll
-  }, [addressesByToken, chainConnector])
+  }, [addressesByToken, chainConnector, chainConnectorEvm])
 }
 
 // TODO: Allow advanced users of this library to provide their own chain connector
@@ -175,6 +178,14 @@ function useChainConnector(chaindataProvider: ChaindataProvider | null) {
   }, [chaindataProvider])
 
   return chainConnector
+}
+function useChainConnectorEvm() {
+  const [chainConnectorEvm, setChainConnectorEvm] = useState<ChainConnectorEvm | null>(null)
+  useEffect(() => {
+    setChainConnectorEvm(new ChainConnectorEvm())
+  }, [])
+
+  return chainConnectorEvm
 }
 
 export class BalancesDatabase extends Dexie {

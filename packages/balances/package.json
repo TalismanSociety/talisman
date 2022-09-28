@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@talismn/chain-connector": "workspace:^",
+    "@talismn/chain-connector-evm": "workspace:^",
     "@talismn/chaindata-provider": "workspace:^",
     "@talismn/token-rates": "workspace:^",
     "@talismn/util": "workspace:^",

@@ -87,13 +87,13 @@ export const ExampleModule: BalanceModule<
     return { [token.id]: token, [token2.id]: token2 }
   },
 
-  async subscribeBalances(chainConnector, chaindataProvider, addressesByToken, callback) {
+  async subscribeBalances(chainConnectors, chaindataProvider, addressesByToken, callback) {
     let subscribed = true
 
     const publish = async () => {
       if (!subscribed) return
 
-      const reply = await this.fetchBalances(chainConnector, chaindataProvider, addressesByToken)
+      const reply = await this.fetchBalances(chainConnectors, chaindataProvider, addressesByToken)
       callback(null, reply)
 
       const updateResponseMs = 5000 // 5s
@@ -108,7 +108,7 @@ export const ExampleModule: BalanceModule<
     }
   },
 
-  async fetchBalances(chainConnector, chaindataProvider, addressesByToken) {
+  async fetchBalances(chainConnectors, chaindataProvider, addressesByToken) {
     return new Balances(
       Object.entries(addressesByToken).flatMap(([tokenId, addresses]) =>
         addresses

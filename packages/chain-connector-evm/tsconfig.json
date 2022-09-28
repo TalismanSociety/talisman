@@ -1,0 +1,9 @@
+{
+  "extends": "@talismn/tsconfig/es6-node.json",
+  "include": ["src", "types"],
+  "compilerOptions": {
+    "target": "ES2015",
+    "outDir": "dist"
+  },
+  "exclude": ["node_modules", ".next", ".turbo", ".dist", "**/*.spec.ts", "**/*.test.ts"]
+}

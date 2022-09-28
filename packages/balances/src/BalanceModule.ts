@@ -1,4 +1,5 @@
 import { ChainConnector } from "@talismn/chain-connector"
+import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { ChainId, ChaindataProvider, IToken } from "@talismn/chaindata-provider"
 
 import { AddressesByToken, Balances, SubscriptionCallback, UnsubscribeFn } from "./types"
@@ -42,7 +43,7 @@ export const DefaultBalanceModule = <
     return Promise.resolve({} as Record<TTokenType["id"], TTokenType>)
   },
 
-  async subscribeBalances(_chainConnector, _chaindataProvider, _addressesByToken, callback) {
+  async subscribeBalances(_chainConnectors, _chaindataProvider, _addressesByToken, callback) {
     callback(new Error("Balance subscriptions are not implemented in this module."))
 
     return () => {}
@@ -94,14 +95,14 @@ interface BalanceModuleEvm<
 > extends BalanceModuleCommon<TModuleType, TTokenType> {
   /** Pre-processes any evm chain metadata required by this module ahead of time */
   fetchEvmChainMeta(
-    chainConnector: ChainConnector,
+    chainConnector: ChainConnectorEvm,
     chaindataProvider: ChaindataProvider,
     chainId: ChainId
   ): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given evm chain */
   fetchEvmChainTokens(
-    chainConnector: ChainConnector,
+    chainConnector: ChainConnectorEvm,
     chaindataProvider: ChaindataProvider,
     chainId: ChainId,
     chainMeta: TChainMeta,
@@ -118,7 +119,7 @@ interface BalanceModuleCommon<TModuleType extends string, TTokenType extends Ext
    * If subscriptions are not possible, this function should poll at some reasonable interval.
    */
   subscribeBalances(
-    chainConnector: ChainConnector,
+    chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
     chaindataProvider: ChaindataProvider,
     addressesByToken: AddressesByToken<TTokenType>,
     // TODO: Provide a raw output separate to the `Balance` output
@@ -127,7 +128,7 @@ interface BalanceModuleCommon<TModuleType extends string, TTokenType extends Ext
 
   /** Fetch balances for this module with optional filtering */
   fetchBalances(
-    chainConnector: ChainConnector,
+    chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
     chaindataProvider: ChaindataProvider,
     addressesByToken: AddressesByToken<TTokenType>
   ): Promise<Balances>

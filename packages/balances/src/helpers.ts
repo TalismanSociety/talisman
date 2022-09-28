@@ -1,4 +1,5 @@
 import { ChainConnector } from "@talismn/chain-connector"
+import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { ChaindataProvider } from "@talismn/chaindata-provider"
 
 import {
@@ -22,7 +23,7 @@ export async function balances<
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
 >(
   balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig>,
-  chainConnector: ChainConnector,
+  chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
   chaindataProvider: ChaindataProvider,
   addressesByToken: AddressesByToken<TTokenType>
 ): Promise<Balances>
@@ -33,7 +34,7 @@ export async function balances<
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
 >(
   balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig>,
-  chainConnector: ChainConnector,
+  chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
   chaindataProvider: ChaindataProvider,
   addressesByToken: AddressesByToken<TTokenType>,
   callback: SubscriptionCallback<Balances>
@@ -45,7 +46,7 @@ export async function balances<
   TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
 >(
   balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig>,
-  chainConnector: ChainConnector,
+  chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
   chaindataProvider: ChaindataProvider,
   addressesByToken: AddressesByToken<TTokenType>,
   callback?: SubscriptionCallback<Balances>
@@ -53,12 +54,12 @@ export async function balances<
   // subscription request
   if (callback !== undefined)
     return await balanceModule.subscribeBalances(
-      chainConnector,
+      chainConnectors,
       chaindataProvider,
       addressesByToken,
       callback
     )
 
   // one-off request
-  return await balanceModule.fetchBalances(chainConnector, chaindataProvider, addressesByToken)
+  return await balanceModule.fetchBalances(chainConnectors, chaindataProvider, addressesByToken)
 }

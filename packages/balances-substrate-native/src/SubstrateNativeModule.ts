@@ -136,16 +136,14 @@ export const SubNativeModule: BalanceModule<
   async fetchSubstrateChainTokens(chainConnector, chaindataProvider, chainId, chainMeta) {
     const { isTestnet, symbol, decimals, existentialDeposit } = chainMeta
 
+    const id = subNativeTokenId(chainId, symbol)
     const nativeToken: SubNativeToken = {
-      id: subNativeTokenId(chainId, chainMeta.symbol),
+      id,
       type: "substrate-native",
       isTestnet,
       symbol,
       decimals,
-      logo: `https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets-tokens/${subNativeTokenId(
-        chainId,
-        symbol
-      )}.svg`,
+      logo: `https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets-tokens/${id}.svg`,
       existentialDeposit: existentialDeposit || "0",
       chain: { id: chainId },
     }
@@ -153,9 +151,12 @@ export const SubNativeModule: BalanceModule<
     return { [nativeToken.id]: nativeToken }
   },
 
-  async subscribeBalances(chainConnector, chaindataProvider, addressesByToken, callback) {
+  async subscribeBalances(chainConnectors, chaindataProvider, addressesByToken, callback) {
     const tokens = await chaindataProvider.tokens()
     const subscriptions = Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
+      if (!chainConnectors.substrate)
+        throw new Error(`This module requires a substrate chain connector`)
+
       const token = tokens[tokenId]
       if (!token) throw new Error(`Token ${tokenId} not found`)
 
@@ -178,7 +179,7 @@ export const SubNativeModule: BalanceModule<
       const addressReferences = buildAddressReferences(addresses)
 
       // set up subscription
-      const unsubscribe = await chainConnector.subscribe(
+      const unsubscribe = await chainConnectors.substrate.subscribe(
         chainId,
         subscribeMethod,
         unsubscribeMethod,
@@ -196,31 +197,42 @@ export const SubNativeModule: BalanceModule<
     return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
   },
 
-  async fetchBalances(chainConnector, chaindataProvider, addressesByToken) {
+  async fetchBalances(chainConnectors, chaindataProvider, addressesByToken) {
     const tokens = await chaindataProvider.tokens()
 
-    const balances = await Promise.all(
-      Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
-        const token = tokens[tokenId]
-        if (!token) throw new Error(`Token ${tokenId} not found`)
+    const balances = (
+      await Promise.all(
+        Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
+          if (!chainConnectors.substrate)
+            throw new Error(`This module requires a substrate chain connector`)
 
-        const chainId = token.chain?.id
-        if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
+          const token = tokens[tokenId]
+          if (!token) throw new Error(`Token ${tokenId} not found`)
 
-        // set up method and params
-        const method = "state_queryStorageAt" // method we call to fetch
-        const params = buildParams(addresses)
+          // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
+          if (token.type !== "substrate-native") {
+            log.debug(`This module doesn't handle tokens of type ${token.type}`)
+            return false
+          }
 
-        // build lookup table of `rpc hex output` -> `input address`
-        const addressReferences = buildAddressReferences(addresses)
+          const chainId = token.chain?.id
+          if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
 
-        // query rpc
-        const response = await chainConnector.send(chainId, method, params)
-        const result = response[0]
+          // set up method and params
+          const method = "state_queryStorageAt" // method we call to fetch
+          const params = buildParams(addresses)
 
-        return formatRpcResult(tokenId, chainId, addressReferences, result)
-      })
-    )
+          // build lookup table of `rpc hex output` -> `input address`
+          const addressReferences = buildAddressReferences(addresses)
+
+          // query rpc
+          const response = await chainConnectors.substrate.send(chainId, method, params)
+          const result = response[0]
+
+          return formatRpcResult(tokenId, chainId, addressReferences, result)
+        })
+      )
+    ).filter((balances): balances is Balances => balances !== false)
 
     return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
   },
