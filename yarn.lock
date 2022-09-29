@@ -13811,6 +13811,8 @@ __metadata:
     "@types/react-dom": ^18.0.6
     "@vitejs/plugin-react": ^2.1.0
     autoprefixer: ^10.4.12
+    eslint: ^8.15.0
+    eslint-config-talisman: "*"
     postcss: ^8.4.16
     react: ^18.2.0
     react-dom: ^18.2.0
