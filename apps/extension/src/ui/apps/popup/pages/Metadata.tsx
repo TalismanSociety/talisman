@@ -32,21 +32,6 @@ const Container = ({ className }: any) => {
           </h2>
           <hr className="my-10" />
           <div className="stats space-y-2 text-left">
-            <table>
-              <tr>
-                <td className="pr-4">
-                  <strong>Symbol:</strong>
-                </td>
-                <td>{request?.tokenSymbol}</td>
-              </tr>
-              <tr>
-                <td className="pr-4">
-                  <strong>Decimals:</strong>
-                </td>
-                <td>{request?.tokenDecimals}</td>
-              </tr>
-            </table>
-
             <p>
               <strong>Symbol:</strong> {request?.tokenSymbol}
             </p>

@@ -44,7 +44,7 @@ export const AssetBalanceCellValue = ({
       >
         <Box
           fg={locked ? "mid" : "foreground"}
-          className={classNames("flex items-center justify-end gap-1")}
+          className={classNames("flex items-center justify-end gap-2")}
         >
           <div>
             <Tokens
