@@ -172,8 +172,8 @@ const DEFAULT_SEARCH = (text: string | null, items: PickerItemProps[]) => {
       return 0
     })
     .sort((a, b) => {
-      if (a.subtitle?.toString().toLowerCase() === ls) return -1
-      if (b.subtitle?.toString().toLowerCase() === ls) return 1
+      if (typeof a.subtitle === "string" && a.subtitle.toLowerCase() === ls) return -1
+      if (typeof b.subtitle === "string" && b.subtitle.toLowerCase() === ls) return 1
       return 0
     })
 }
