@@ -4,14 +4,13 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
-import { notify } from "@talisman/components/Notifications"
 import { CopyIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback, useMemo } from "react"
 import styled from "styled-components"
 
@@ -37,12 +36,7 @@ const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) =>
 
   const handleClick = useCallback(() => {
     if (!address) return
-    navigator.clipboard.writeText(address)
-    notify({
-      type: "success",
-      title: `Address copied`,
-      subtitle: shortenAddress(address),
-    })
+    copyAddress(address)
   }, [address])
 
   if (!address) return null
