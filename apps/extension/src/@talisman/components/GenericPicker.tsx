@@ -162,7 +162,8 @@ const DEFAULT_SEARCH = (text: string | null, items: PickerItemProps[]) => {
   return items.filter(
     (item) =>
       item.title?.toString().toLowerCase().includes(ls) ||
-      (typeof item.subtitle === "string" && item.subtitle.toLowerCase().includes(ls))
+      (typeof item.subtitle === "string" &&
+        item.subtitle.toLowerCase().replace("(Ethereum)", "").includes(ls))
   )
 }
 
