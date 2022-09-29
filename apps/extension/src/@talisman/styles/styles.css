@@ -15,9 +15,6 @@
 
   input::placeholder {
     @apply text-current opacity-30;
-    /* color:
-    currentColor; opacity: 0.3;
-    */
   }
 }
 
@@ -29,7 +26,4 @@
 
 /* Talisman utilities */
 @layer utilities {
-  .spin {
-    animation: spin linear 3s infinite;
-  }
 }
