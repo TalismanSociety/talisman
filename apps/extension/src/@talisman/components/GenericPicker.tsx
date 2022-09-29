@@ -163,7 +163,7 @@ const DEFAULT_SEARCH = (text: string | null, items: PickerItemProps[]) => {
     (item) =>
       item.title?.toString().toLowerCase().includes(ls) ||
       (typeof item.subtitle === "string" &&
-        item.subtitle.toLowerCase().replace("(Ethereum)", "").includes(ls))
+        item.subtitle.toLowerCase().replace("(ethereum)", "").includes(ls))
   )
 }
 
