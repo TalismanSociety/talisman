@@ -4,7 +4,7 @@ import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { FC } from "react"
 
 import GenericPicker, { PickerItemProps } from "../../../@talisman/components/GenericPicker"
-import { useSortedTransferableTokens, useTransferableTokens } from "./Send/useTransferableTokens"
+import { useSortedTransferableTokens } from "./Send/useTransferableTokens"
 import { TokenLogo } from "./TokenLogo"
 
 interface IProps {
