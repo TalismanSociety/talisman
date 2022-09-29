@@ -21,6 +21,7 @@ import { useChainTokenBalances } from "./useChainTokenBalances"
 
 const Table = styled.table`
   border-spacing: 0;
+  border-collapse: separate;
   width: 100%;
   color: var(--color-mid);
   text-align: left;

@@ -397,7 +397,14 @@ export const SendForm = () => {
           <div className="info">
             {balance && (
               <Box flex column justify="flex-end" gap={0.1}>
-                <Box>Balance: {balance.status === "cache" && <LoaderIcon data-spin />}</Box>
+                <div className="flex items-center gap-2">
+                  <div>Balance: </div>
+                  <div>
+                    {balance.status === "cache" && (
+                      <LoaderIcon className="opacity-1 h-6 w-6 animate-spin" />
+                    )}
+                  </div>
+                </div>
                 <Box>
                   <AvailableBalance row withFiat noCountUp balance={balance} />
                 </Box>

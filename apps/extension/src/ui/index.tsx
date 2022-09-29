@@ -1,3 +1,5 @@
+import "@talisman/styles/styles.css"
+
 import { initSentry } from "@core/config/sentry"
 import * as Sentry from "@sentry/react"
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"

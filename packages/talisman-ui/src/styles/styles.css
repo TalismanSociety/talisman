@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Talisman specific defaults */
+@layer base {
+  html {
+    font-size: 10px;
+    @apply leading-base text-body bg-black-primary;
+  }
+
+  body {
+    @apply text-base;
+  }
+
+  input::placeholder {
+    @apply text-current opacity-30;
+  }
+}
+
+/* Talisman components rules */
+/* Put here classes that are to be used everywhere (card, btn, badge..) */
+/* Access to the theme is provided by theme() function if needed */
+@layer components {
+  /* Examples
+    .card {
+      background-color: theme('colors.white');
+      border-radius: theme('borderRadius.lg');
+      padding: theme('spacing.6');
+      box-shadow: theme('boxShadow.xl');
+    }
+
+    .bbb {
+      @apply bg-brand-blue p-4;
+    }
+
+  */
+}
+
+/* Talisman utilities */
+@layer utilities {
+  .spin {
+    animation: spin linear 3s infinite;
+  }
+}

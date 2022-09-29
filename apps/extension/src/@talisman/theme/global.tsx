@@ -157,10 +157,6 @@ const Global = createGlobalStyle`
       outline: none;
   }
 
-  ::placeholder {
-    color: rgba(${({ theme }) => theme?.foreground}, 0.2);
-  }
-
   .muted{
     font-size: 0.8em;
     opacity: 0.4;

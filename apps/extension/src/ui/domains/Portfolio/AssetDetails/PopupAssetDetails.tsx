@@ -141,7 +141,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
                 {row.locked ? (
                   <>
                     {" "}
-                    <LockIcon className="lock" />
+                    <LockIcon className="lock inline align-baseline" />
                   </>
                 ) : null}
               </Box>
