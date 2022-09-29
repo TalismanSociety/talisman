@@ -167,13 +167,13 @@ const DEFAULT_SEARCH = (text: string | null, items: PickerItemProps[]) => {
           item.subtitle.toLowerCase().replace("(ethereum)", "").includes(ls))
     )
     .sort((a, b) => {
-      if (a.title?.toString().toLowerCase() === ls) return -1
-      if (b.title?.toString().toLowerCase() === ls) return 1
+      if (typeof a.subtitle === "string" && a.subtitle.toLowerCase() === ls) return -1
+      if (typeof b.subtitle === "string" && b.subtitle.toLowerCase() === ls) return 1
       return 0
     })
     .sort((a, b) => {
-      if (typeof a.subtitle === "string" && a.subtitle.toLowerCase() === ls) return -1
-      if (typeof b.subtitle === "string" && b.subtitle.toLowerCase() === ls) return 1
+      if (a.title?.toString().toLowerCase() === ls) return -1
+      if (b.title?.toString().toLowerCase() === ls) return 1
       return 0
     })
 }
