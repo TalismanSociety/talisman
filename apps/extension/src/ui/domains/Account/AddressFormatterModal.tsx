@@ -1,9 +1,8 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { notify } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
-import { shortenAddress } from "@talisman/util/shortenAddress"
+import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
 
@@ -18,23 +17,10 @@ const useAddressFormatterModalProvider = () => {
 
   const close = useCallback(() => setAddress(undefined), [])
 
-  const handleOpen = useCallback(async (addr: string) => {
+  const handleOpen = useCallback((addr: string) => {
     if (isEthereumAddress(addr)) {
       //if ethereum address, do not open the modal, just copy the address
-      try {
-        await navigator.clipboard.writeText(addr)
-        notify({
-          type: "success",
-          title: `Address copied`,
-          subtitle: shortenAddress(addr),
-        })
-      } catch (err) {
-        notify({
-          type: "error",
-          title: `Copy failed`,
-          subtitle: shortenAddress(addr),
-        })
-      }
+      copyAddress(addr)
     } else {
       // setting the address will open the substrate copy address modal
       setAddress(addr)
