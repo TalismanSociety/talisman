@@ -245,7 +245,7 @@ export const AccountAddSecretMnemonic = () => {
   useEffect(() => {
     const refreshTargetAddress = async () => {
       try {
-        const uri = await getAccountUri(mnemonic, type)
+        const uri = await getAccountUri(cleanupMnemonic(mnemonic), type)
         setTargetAddress(await api.addressFromMnemonic(uri, type))
       } catch (err) {
         setTargetAddress(undefined)
