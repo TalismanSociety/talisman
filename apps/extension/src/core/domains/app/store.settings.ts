@@ -22,6 +22,6 @@ export const settingsStore = new SettingsStore("settings", {
   useAnalyticsTracking: undefined, // undefined for onboarding
   hideBalances: false,
   allowNotifications: true,
-  shouldMimicMetaMask: false,
+  shouldMimicMetaMask: true,
   autoLockTimeout: 0,
 })
