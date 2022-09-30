@@ -3,10 +3,9 @@ import { Box } from "@talisman/components/Box"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
 import * as yup from "yup"
 
 import { OnboardButton } from "../components/OnboardButton"
@@ -14,10 +13,6 @@ import { OnboardDialog } from "../components/OnboardDialog"
 import { OnboardFormField } from "../components/OnboardFormField"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
-
-const A = styled.a`
-  color: var(--color-foreground);
-`
 
 type FormData = {
   password?: string
@@ -50,6 +45,7 @@ export const PasswordPage = () => {
     register,
     handleSubmit,
     watch,
+    trigger,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "all",
@@ -58,6 +54,11 @@ export const PasswordPage = () => {
     resolver: yupResolver(schema),
   })
   const password = watch("password")
+
+  // revalidate to get rid of "must match" error message after editing first field
+  useEffect(() => {
+    trigger()
+  }, [trigger, password])
 
   const submit = useCallback(
     async (fields: FormData) => {
