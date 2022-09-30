@@ -94,14 +94,16 @@ export const NavigationDrawer: FC = () => {
     api.dashboardOpen("/accounts/add")
   }, [genericEvent])
 
-  const handleSendFundsClick = useCallback(() => {
+  const handleSendFundsClick = useCallback(async () => {
     genericEvent("open send funds", { from: "popup nav" })
-    api.modalOpen("send")
+    await api.modalOpen("send")
+    window.close()
   }, [genericEvent])
 
-  const handleBuyTokensClick = useCallback(() => {
+  const handleBuyTokensClick = useCallback(async () => {
     genericEvent("open buy tokens", { from: "popup nav" })
-    api.modalOpen("buy")
+    await api.modalOpen("buy")
+    window.close()
   }, [genericEvent])
 
   const handlePortfolioClick = useCallback(() => {
