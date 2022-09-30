@@ -178,8 +178,8 @@ export default class AppHandler extends ExtensionHandler {
     const [tab] = await Browser.tabs.query({ url: queryUrl })
     if (!tab) {
       await this.state.openDashboard({ route: "/portfolio" })
-      // wait for new page to subscribe to backend
-      while (!this.#modalOpenRequest.observed) await sleep(100)
+      // wait for newly created page to load and subscribe to backend (max 5 seconds)
+      for (let i = 0; i < 50 && !this.#modalOpenRequest.observed; i++) await sleep(100)
     }
     this.#modalOpenRequest.next(modalType)
   }
