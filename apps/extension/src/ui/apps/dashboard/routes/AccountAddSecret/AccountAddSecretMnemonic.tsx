@@ -293,6 +293,7 @@ export const AccountAddSecretMnemonic = () => {
   const handleTypeChange = useCallback(
     (type: AccountAddressType) => {
       setValue("type", type, { shouldValidate: true })
+      // revalidate to get rid of "invalid mnemonic" with a private key, when switching to ethereum
       trigger()
     },
     [setValue, trigger]
