@@ -218,6 +218,7 @@ export const AccountAddSecretMnemonic = () => {
     handleSubmit,
     setValue,
     watch,
+    trigger,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     defaultValues: data,
@@ -292,8 +293,9 @@ export const AccountAddSecretMnemonic = () => {
   const handleTypeChange = useCallback(
     (type: AccountAddressType) => {
       setValue("type", type, { shouldValidate: true })
+      trigger()
     },
-    [setValue]
+    [setValue, trigger]
   )
 
   const handleGenerateNew = useCallback(() => {
