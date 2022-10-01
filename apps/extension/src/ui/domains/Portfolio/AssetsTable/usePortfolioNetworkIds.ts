@@ -1,4 +1,4 @@
-import { Balances } from "@core/domains/balances"
+import { Balances } from "@core/domains/balances/types"
 import { useMemo } from "react"
 
 export const usePortfolioNetworkIds = (balances: Balances) => {

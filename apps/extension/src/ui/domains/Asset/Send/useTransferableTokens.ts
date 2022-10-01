@@ -1,5 +1,5 @@
 import { DEBUG } from "@core/constants"
-import { Balance, Balances } from "@core/domains/balances"
+import { Balances } from "@core/domains/balances/types"
 import { BalanceSearchQuery } from "@core/domains/balances/types/balances"
 import { Chain } from "@core/domains/chains/types"
 import { EvmNetwork } from "@core/domains/ethereum/types"
