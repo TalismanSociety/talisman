@@ -12,6 +12,7 @@ import {
 } from "@core/domains/balances/types"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
+import metadataInit from "@core/domains/metadata/_metadataInit"
 import { SigningHandler } from "@core/domains/signing"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
 import TokensHandler from "@core/domains/tokens/handler"
@@ -59,7 +60,31 @@ export default class Extension extends ExtensionHandler {
       stores.password.resetAutoLockTimer(this.#autoLockTimeout)
     })
 
+    this.initDb()
+
     this.initWalletFunding()
+  }
+
+  private initDb() {
+    db.on("ready", async () => {
+      // if store has no metadata yet
+      if ((await db.metadata.count()) < 1) {
+        // delete old localstorage-managed 'db'
+        Browser.storage.local.remove([
+          "chains",
+          "ethereumNetworks",
+          "tokens",
+          "balances",
+          "metadata",
+        ])
+
+        // delete old idb-managed metadata+metadataRpc db
+        indexedDB.deleteDatabase("talisman")
+
+        // add initial metadata
+        db.metadata.bulkAdd(metadataInit)
+      }
+    })
   }
 
   private initWalletFunding() {
