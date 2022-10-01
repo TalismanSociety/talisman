@@ -4,7 +4,7 @@ import Field from "@talisman/components/Field"
 import Button from "@talisman/components/Button"
 import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 import Browser from "webextension-polyfill"
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 
 const ModalContainer = styled.div<{ small?: boolean }>`
   display: flex;

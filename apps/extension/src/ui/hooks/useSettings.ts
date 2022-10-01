@@ -1,4 +1,4 @@
-import { SettingsStoreData, settingsStore } from "@core/domains/app"
+import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
 import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useEffect, useState } from "react"
 

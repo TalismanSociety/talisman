@@ -1,5 +1,4 @@
-import { DEBUG } from "@core/constants"
-import { settingsStore } from "@core/domains/app"
+import { settingsStore } from "@core/domains/app/store.settings"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
