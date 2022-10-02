@@ -1,5 +1,16 @@
 # @talismn/balances
 
+## 0.1.12
+
+### Patch Changes
+
+- ca50757: feat: implemented token fiat rates in @talismn/balances
+- Updated dependencies [ca50757]
+  - @talismn/chaindata-provider@0.1.6
+  - @talismn/token-rates@0.1.6
+  - @talismn/chain-connector@0.1.6
+  - @talismn/chain-connector-evm@0.1.6
+
 ## 0.1.11
 
 ## 0.1.10

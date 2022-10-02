@@ -1,5 +1,13 @@
 # @talismn/balances-substrate-equilibrium
 
+## 0.1.12
+
+### Patch Changes
+
+- Updated dependencies [ca50757]
+  - @talismn/balances@0.1.12
+  - @talismn/chaindata-provider@0.1.6
+
 ## 0.1.11
 
 ### Patch Changes
