@@ -15,6 +15,7 @@ import { useDebounce } from "react-use"
 
 import log from "../log"
 import { useChains, useEvmNetworks, useTokens } from "./useChaindata"
+import { useTokenRates } from "./useTokenRates"
 
 export function useBalances(
   // TODO: Make this array of BalanceModules more type-safe
@@ -27,6 +28,7 @@ export function useBalances(
   const chains = useChains(chaindataProvider)
   const evmNetworks = useEvmNetworks(chaindataProvider)
   const tokens = useTokens(chaindataProvider)
+  const tokenRates = useTokenRates(tokens)
   const balances = useLiveQuery(
     async () =>
       new Balances(
@@ -39,9 +41,9 @@ export function useBalances(
             return true
           })
           .toArray(),
-        { chains, evmNetworks, tokens }
+        { chains, evmNetworks, tokens, tokenRates }
       ),
-    [balanceModules, addressesByToken, chains, evmNetworks, tokens]
+    [balanceModules, addressesByToken, chains, evmNetworks, tokens, tokenRates]
   )
 
   // debounce every 100ms to prevent hammering UI with updates

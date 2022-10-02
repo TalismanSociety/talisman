@@ -52,10 +52,6 @@ export type IToken = {
   // By including them here (as potentially undefined), we can avoid having to check for them on every token type.
   chain?: { id: ChainId } | null
   evmNetwork?: { id: EvmNetworkId } | null
-
-  // TODO: Refactor these out of the Token type, they should be defined in @talismn/token-rates
-  //       This will be a breaking change which requires us to refactor the wallet extension.
-  rates?: TokenRates
 }
 
 /** Used by plugins to help define their custom `TokenType` */
@@ -65,46 +61,3 @@ export type NewTokenType<
 > = IToken & {
   type: ModuleType
 } & TokenParams
-
-// TODO: Refactor these out of the Token type, they should be defined in @talismn/token-rates
-//       This will be a breaking change which requires us to refactor the wallet extension.
-export type TokenRates = {
-  /** us dollar rate */
-  usd: number | null
-
-  /** australian dollar rate */
-  aud: number | null
-
-  /** new zealand dollar rate */
-  nzd: number | null
-
-  /** canadian dollar rate */
-  cud: number | null
-
-  /** hong kong dollar rate */
-  hkd: number | null
-
-  /** euro rate */
-  eur: number | null
-
-  /** british pound sterling rate */
-  gbp: number | null
-
-  /** japanese yen rate */
-  jpy: number | null
-
-  /** south korean won rate */
-  krw: number | null
-
-  /** chinese yuan rate */
-  cny: number | null
-
-  /** btc rate */
-  btc: number | null
-
-  /** eth rate */
-  eth: number | null
-
-  /** dot rate */
-  dot: number | null
-}

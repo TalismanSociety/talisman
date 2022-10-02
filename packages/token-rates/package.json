@@ -30,7 +30,8 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@talismn/chaindata-provider": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:^",
+    "axios": "^0.27.2"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",

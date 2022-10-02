@@ -1,5 +1,5 @@
 import { ChainList, EvmNetworkList, TokenList } from "@talismn/chaindata-provider"
-import { TokenRateCurrency, TokenRates } from "@talismn/token-rates"
+import { TokenRateCurrency, TokenRates, TokenRatesList } from "@talismn/token-rates"
 import { BigMath, NonFunctionProperties, isArrayOf, planckToTokens } from "@talismn/util"
 import memoize from "lodash/memoize"
 import { Memoize } from "typescript-memoize"
@@ -27,6 +27,7 @@ export type HydrateDb = Partial<{
   chains: ChainList
   evmNetworks: EvmNetworkList
   tokens: TokenList
+  tokenRates: TokenRatesList
 }>
 
 export type BalanceSearchQuery =
@@ -268,7 +269,7 @@ export class Balance {
     new BalanceFormatter(
       typeof balance === "bigint" ? balance.toString() : balance,
       this.decimals || undefined,
-      this.token?.rates || undefined
+      this.#db?.tokenRates && this.#db.tokenRates[this.tokenId]
     )
 
   //

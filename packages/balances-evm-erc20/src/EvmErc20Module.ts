@@ -86,6 +86,7 @@ export const EvmErc20Module: BalanceModule<
 
     const tokens: Record<string, EvmErc20Token> = {}
     for (const tokenConfig of moduleConfig?.tokens || []) {
+      // TODO: Use imported erc20 abi to fetch `symbol` and `decimals` from the evm network rpc
       const symbol = tokenConfig?.symbol || "ETH"
       const decimals = typeof tokenConfig?.decimals === "number" ? tokenConfig.decimals : 18
       const contractAddress = tokenConfig?.contractAddress

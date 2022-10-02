@@ -1,5 +1,4 @@
 import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
-import { BalanceFormatter } from "@talismn/balances"
 import { EvmErc20Module } from "@talismn/balances-evm-erc20"
 import { EvmNativeModule } from "@talismn/balances-evm-native"
 import { useBalances, useChaindata, useTokens } from "@talismn/balances-react"
@@ -37,48 +36,62 @@ export function App(): JSX.Element {
 
             <span>{balance.status}</span>
 
-            <span>{balance.chain?.name}</span>
+            <span>{balance.chain?.name || balance.evmNetwork?.name}</span>
             <span>
               {formatDecimals(balance.transferable.tokens)} {balance.token?.symbol}
             </span>
             <span style={{ opacity: "0.6", fontSize: "0.8em" }}>
-              ${balance.transferable.fiat("usd") || " -"}
+              {typeof balance.transferable.fiat("usd") === "number"
+                ? new Intl.NumberFormat(undefined, {
+                    style: "currency",
+                    currency: "usd",
+                    currencyDisplay: "narrowSymbol",
+                  }).format(balance.transferable.fiat("usd") || 0)
+                : " -"}
             </span>
             <span>{balance.address}</span>
           </div>
         )
       )}
 
-      {/* Display balances per token */}
-      {Object.values(tokens).map((token) => (
-        <div key={token.id} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <img
-            alt="token logo"
-            src={token?.logo}
-            style={{ height: "2rem", borderRadius: "9999999rem" }}
-          />
-
-          {/* Can't do this yet, alec hasn't implemented it: */}
-          {/* <span>{balances?.find({tokenId:token.id}).sum}</span> */}
-
-          {/* So sum it up manually instead: */}
-          <span>
-            {formatDecimals(
-              new BalanceFormatter(
-                balances?.find({ tokenId: token.id }).sorted.reduce((sum, balance) => {
-                  return sum + balance.transferable.planck
-                }, BigInt("0")) || BigInt("0"),
-                token.decimals
-              ).tokens
-            )}{" "}
-            {token.symbol}
-          </span>
-
-          <span style={{ opacity: "0.6", fontSize: "0.8em" }}>
-            ${balances?.find({ tokenId: token.id }).sum.fiat("usd").transferable}
-          </span>
-        </div>
-      ))}
+      {
+        //      {/* Display balances per token */}
+        //      {Object.values(tokens).map((token) => (
+        //        <div key={token.id} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        //          <img
+        //            alt="token logo"
+        //            src={token?.logo}
+        //            style={{ height: "2rem", borderRadius: "9999999rem" }}
+        //          />
+        //
+        //          {/* Can't do this yet, alec hasn't implemented it: */}
+        //          {/* <span>{balances?.find({tokenId:token.id}).sum}</span> */}
+        //
+        //          {/* So sum it up manually instead: */}
+        //          <span>
+        //            {formatDecimals(
+        //              new BalanceFormatter(
+        //                balances?.find({ tokenId: token.id }).sorted.reduce((sum, balance) => {
+        //                  return sum + balance.transferable.planck
+        //                }, BigInt("0")) || BigInt("0"),
+        //                token.decimals
+        //              ).tokens
+        //            )}{" "}
+        //            {token.symbol}
+        //          </span>
+        //
+        //          <span style={{ opacity: "0.6", fontSize: "0.8em" }}>
+        //            {typeof balances?.find({ tokenId: token.id }).sum.fiat("usd").transferable === "number"
+        //              ? new Intl.NumberFormat(undefined, {
+        //                  style: "currency",
+        //                  currency: "usd",
+        //                  currencyDisplay: "narrowSymbol",
+        //                }).format(balances?.find({ tokenId: token.id }).sum.fiat("usd").transferable || 0)
+        //              : " -"}
+        //          </span>
+        //        </div>
+        //      ))}
+      }
     </>
   )
 }
