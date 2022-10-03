@@ -1,15 +1,13 @@
-import { SettingsStoreData } from "@core/domains/app"
+import { SettingsStoreData } from "@core/domains/app/store.settings"
 import Field from "@talisman/components/Field"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import Layout from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useSettings } from "@ui/hooks/useSettings"
 import { useCallback } from "react"
-import styled from "styled-components"
 
 const Options = () => {
   const {

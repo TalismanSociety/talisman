@@ -1,4 +1,4 @@
-import { SettingsStoreData } from "@core/domains/app"
+import { SettingsStoreData } from "@core/domains/app/store.settings"
 import { Dropdown, DropdownProps } from "@talisman/components/Dropdown"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Layout from "@ui/apps/dashboard/layout"

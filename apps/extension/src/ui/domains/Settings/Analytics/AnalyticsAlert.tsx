@@ -1,4 +1,4 @@
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 import Button, { ButtonGroup } from "@talisman/components/Button"
 import { Card } from "@talisman/components/Card"
 import { Drawer } from "@talisman/components/Drawer"

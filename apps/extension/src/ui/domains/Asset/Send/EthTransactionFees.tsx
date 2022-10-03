@@ -1,4 +1,4 @@
-import { BalanceFormatter } from "@core/domains/balances"
+import { BalanceFormatter } from "@core/domains/balances/types"
 import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { EthGasSettings } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"

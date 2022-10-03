@@ -1,4 +1,4 @@
-import { Balances } from "@core/domains/balances"
+import { Balances } from "@core/domains/balances/types"
 import { BalanceFormatter, BalanceLockType, LockedBalance } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
 import { getNetworkCategory } from "@core/util/getNetworkCategory"

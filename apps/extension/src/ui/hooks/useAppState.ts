@@ -1,4 +1,4 @@
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 import { AppStoreData, DEFAULT_APP_STATE } from "@core/domains/app/store.app"
 import { provideContext } from "@talisman/util/provideContext"
 import { useEffect, useState } from "react"
