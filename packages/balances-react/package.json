@@ -31,12 +31,8 @@
   },
   "dependencies": {
     "@talismn/balances": "workspace:^",
-    "@talismn/balances-evm-erc20": "workspace:^",
-    "@talismn/balances-evm-native": "workspace:^",
-    "@talismn/balances-example": "workspace:^",
-    "@talismn/balances-substrate-native": "workspace:^",
-    "@talismn/balances-substrate-orml": "workspace:^",
     "@talismn/chain-connector": "workspace:^",
+    "@talismn/chain-connector-evm": "workspace:^",
     "@talismn/chaindata-provider": "workspace:^",
     "@talismn/chaindata-provider-extension": "workspace:^",
     "anylogger": "^1.0.11",

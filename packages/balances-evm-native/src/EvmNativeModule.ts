@@ -8,7 +8,7 @@ import {
   NewBalanceType,
 } from "@talismn/balances"
 import { EvmChainId, EvmNetworkId, NewTokenType } from "@talismn/chaindata-provider"
-import ethers from "ethers"
+import { ethers } from "ethers"
 
 import log from "./log"
 
@@ -195,5 +195,9 @@ async function getFreeBalance(
   provider: ethers.providers.JsonRpcProvider,
   address: Address
 ): Promise<string> {
+  if (!isEthereumAddress(address)) return "0"
+
   return ((await provider.getBalance(address)).toBigInt() || BigInt("0")).toString()
 }
+
+const isEthereumAddress = (address: string) => address.startsWith("0x") && address.length === 42

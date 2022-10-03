@@ -5793,6 +5793,7 @@ __metadata:
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
     eslint: ^8.4.0
+    ethers: 5.6.4
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
@@ -5810,6 +5811,7 @@ __metadata:
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
     eslint: ^8.4.0
+    ethers: 5.6.4
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
@@ -5838,12 +5840,8 @@ __metadata:
   resolution: "@talismn/balances-react@workspace:packages/balances-react"
   dependencies:
     "@talismn/balances": "workspace:^"
-    "@talismn/balances-evm-erc20": "workspace:^"
-    "@talismn/balances-evm-native": "workspace:^"
-    "@talismn/balances-example": "workspace:^"
-    "@talismn/balances-substrate-native": "workspace:^"
-    "@talismn/balances-substrate-orml": "workspace:^"
     "@talismn/chain-connector": "workspace:^"
+    "@talismn/chain-connector-evm": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/chaindata-provider-extension": "workspace:^"
     "@talismn/eslint-config": "workspace:^"

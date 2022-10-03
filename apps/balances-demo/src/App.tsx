@@ -15,7 +15,13 @@ export function App(): JSX.Element {
   const addresses = useExtensionAddresses()
 
   const tokens = useTokens(chaindata)
-  const tokenIds = useMemo(() => Object.keys(tokens), [tokens])
+  const tokenIds = useMemo(
+    () =>
+      Object.values(tokens)
+        .filter(({ isTestnet }) => !isTestnet)
+        .map(({ id }) => id),
+    [tokens]
+  )
 
   const addressesByToken = useAddressesByToken(addresses, tokenIds)
   const balances = useBalances(balanceModules, chaindata, addressesByToken)
