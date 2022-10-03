@@ -1,5 +1,6 @@
 import { AppPill } from "@talisman/components/AppPill"
 import Button from "@talisman/components/Button"
+import { Checkbox } from "@talisman/components/Checkbox"
 import { Drawer } from "@talisman/components/Drawer"
 import Field from "@talisman/components/Field"
 import Grid from "@talisman/components/Grid"
@@ -133,6 +134,9 @@ const Connect = ({ className, onSuccess }: any) => {
             ? "Choose the account you'd like to connect"
             : "Choose the account(s) you'd like to connect"}
         </h3>
+        <div>
+          <Checkbox>Show Eth accounts</Checkbox>
+        </div>
         <article className="accounts">
           {accounts.map(({ address, approved, toggle }) => (
             <StyledAccountItem

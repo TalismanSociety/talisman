@@ -4399,6 +4399,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tailwindcss/forms@npm:^0.5.3":
+  version: 0.5.3
+  resolution: "@tailwindcss/forms@npm:0.5.3"
+  dependencies:
+    mini-svg-data-uri: ^1.2.3
+  peerDependencies:
+    tailwindcss: ">=3.0.0 || >= 3.0.0-alpha.1"
+  checksum: 9eddb4dbd06d01b1068138ff52a54ed0e35a28e7bfd3c72e226fc28658ecd92a9c078c4abe9c83db090984672040644d7ae2e035933fb619dd703df1d87aa275
+  languageName: node
+  linkType: hard
+
 "@talismn/chaindata-js@npm:^0.0.7":
   version: 0.0.7
   resolution: "@talismn/chaindata-js@npm:0.0.7"
@@ -12085,6 +12096,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mini-svg-data-uri@npm:^1.2.3":
+  version: 1.4.4
+  resolution: "mini-svg-data-uri@npm:1.4.4"
+  bin:
+    mini-svg-data-uri: cli.js
+  checksum: 997f1fbd8d59a70f03761e18626d335197a3479cb9d1ff75678e4b64b864d32a0b8fc18115eabde035e5299b8b4a354a78e57dd6ac10f9d604162a6170898d09
+  languageName: node
+  linkType: hard
+
 "minimalistic-assert@npm:^1.0.0, minimalistic-assert@npm:^1.0.1":
   version: 1.0.1
   resolution: "minimalistic-assert@npm:1.0.1"
@@ -13100,6 +13120,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "playground@workspace:apps/playground"
   dependencies:
+    "@tailwindcss/forms": ^0.5.3
     "@types/react": 18.0.14
     "@types/react-dom": 18.0.5
     "@vitejs/plugin-react": ^2.1.0
@@ -13109,6 +13130,7 @@ __metadata:
     postcss: ^8.4.16
     react: 18.2.0
     react-dom: 18.2.0
+    react-router-dom: 6.3.0
     tailwindcss: ^3.1.8
     talisman-ui: "*"
     typescript: 4.6.4
@@ -15239,6 +15261,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "talisman-ui@workspace:packages/talisman-ui"
   dependencies:
+    "@tailwindcss/forms": ^0.5.3
     "@types/react": 18.0.14
     "@types/react-dom": 18.0.5
     autoprefixer: ^10.4.12
@@ -15252,6 +15275,7 @@ __metadata:
     tsconfig: "*"
     typescript: 4.6.4
   peerDependencies:
+    "@tailwindcss/forms": ">=0.5.3"
     autoprefixer: ">=10.4.12"
     postcss: "*"
     react: ">=18.2.0"
