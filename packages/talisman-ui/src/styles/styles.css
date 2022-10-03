@@ -37,7 +37,7 @@
 
 /* Talisman utilities */
 @layer utilities {
-  .spin {
+  /* .spin {
     animation: spin linear 3s infinite;
-  }
+  } */
 }

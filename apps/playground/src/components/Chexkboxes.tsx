@@ -40,10 +40,10 @@ export const Checkboxes = () => {
             <Checkbox disabled>Label of the checkbox</Checkbox>
           </Box>
           <Box title="checked">
-            <Checkbox inputProps={{ defaultChecked: true }}>Label of the checkbox</Checkbox>
+            <Checkbox defaultChecked>Label of the checkbox</Checkbox>
           </Box>
           <Box title="checked+disabled">
-            <Checkbox disabled inputProps={{ defaultChecked: true }}>
+            <Checkbox disabled defaultChecked>
               Label of the checkbox
             </Checkbox>
           </Box>
@@ -58,10 +58,10 @@ export const Checkboxes = () => {
             <Checkbox disabled>Label of the checkbox</Checkbox>
           </Box>
           <Box title="checked">
-            <Checkbox inputProps={{ defaultChecked: true }}>Label of the checkbox</Checkbox>
+            <Checkbox defaultChecked>Label of the checkbox</Checkbox>
           </Box>
           <Box title="checked+disabled">
-            <Checkbox disabled inputProps={{ defaultChecked: true }}>
+            <Checkbox disabled defaultChecked>
               Label of the checkbox
             </Checkbox>
           </Box>
@@ -76,10 +76,10 @@ export const Checkboxes = () => {
             <Checkbox disabled>Label of the checkbox</Checkbox>
           </Box>
           <Box title="checked">
-            <Checkbox inputProps={{ defaultChecked: true }}>Label of the checkbox</Checkbox>
+            <Checkbox defaultChecked>Label of the checkbox</Checkbox>
           </Box>
           <Box title="checked+disabled">
-            <Checkbox disabled inputProps={{ defaultChecked: true }}>
+            <Checkbox disabled defaultChecked>
               Label of the checkbox
             </Checkbox>
           </Box>
@@ -94,10 +94,10 @@ export const Checkboxes = () => {
             <Checkbox disabled>Label of the checkbox</Checkbox>
           </Box>
           <Box title="checked">
-            <Checkbox inputProps={{ defaultChecked: true }}>Label of the checkbox</Checkbox>
+            <Checkbox defaultChecked>Label of the checkbox</Checkbox>
           </Box>
           <Box title="checked+disabled">
-            <Checkbox disabled inputProps={{ defaultChecked: true }}>
+            <Checkbox disabled defaultChecked>
               Label of the checkbox
             </Checkbox>
           </Box>
