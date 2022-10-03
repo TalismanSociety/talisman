@@ -1,5 +1,19 @@
 # @talismn/balances-react
 
+## 0.1.13
+
+### Patch Changes
+
+- 7168ea7: fix: missing/unnecessary/broken deps in @talismn/balances libs
+- db04d0d: fix: missing token rates and empty token rates requests
+- 67d8982: fix: only attempt to fetch each token using its respective balance module
+- Updated dependencies [7168ea7]
+  - @talismn/chaindata-provider-extension@0.1.7
+  - @talismn/balances@0.1.13
+  - @talismn/chain-connector@0.1.7
+  - @talismn/chaindata-provider@0.1.7
+  - @talismn/chain-connector-evm@0.1.7
+
 ## 0.1.12
 
 ### Patch Changes

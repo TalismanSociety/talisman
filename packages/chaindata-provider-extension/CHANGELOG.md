@@ -1,5 +1,12 @@
 # @talismn/chaindata-provider-extension
 
+## 0.1.7
+
+### Patch Changes
+
+- 7168ea7: fix: missing/unnecessary/broken deps in @talismn/balances libs
+  - @talismn/chaindata-provider@0.1.7
+
 ## 0.1.6
 
 ### Patch Changes

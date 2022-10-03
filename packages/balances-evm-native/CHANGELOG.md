@@ -1,5 +1,13 @@
 # @talismn/balances-evm-native
 
+## 0.1.13
+
+### Patch Changes
+
+- 7168ea7: fix: missing/unnecessary/broken deps in @talismn/balances libs
+  - @talismn/balances@0.1.13
+  - @talismn/chaindata-provider@0.1.7
+
 ## 0.1.12
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @talismn/balances-evm-erc20
 
+## 0.1.13
+
+### Patch Changes
+
+- 7168ea7: fix: missing/unnecessary/broken deps in @talismn/balances libs
+- 1efb1ff: feat: fetch evm erc20 symbol and decimals from contract
+  - @talismn/balances@0.1.13
+  - @talismn/chaindata-provider@0.1.7
+
 ## 0.1.12
 
 ### Patch Changes

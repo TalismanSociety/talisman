@@ -1,5 +1,12 @@
 # @talismn/token-rates
 
+## 0.1.7
+
+### Patch Changes
+
+- db04d0d: fix: missing token rates and empty token rates requests
+  - @talismn/chaindata-provider@0.1.7
+
 ## 0.1.6
 
 ### Patch Changes
