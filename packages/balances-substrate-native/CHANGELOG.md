@@ -1,5 +1,12 @@
 # @talismn/balances-substrate-native
 
+## 0.1.14
+
+### Patch Changes
+
+- eff20f6: fix: dont fetch ethereum account balances in substrate-native module
+  - @talismn/balances@0.1.14
+
 ## 0.1.13
 
 ### Patch Changes
