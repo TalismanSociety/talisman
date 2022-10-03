@@ -324,10 +324,13 @@ function formatRpcResult(
       const accountInfo = AccountInfoOverrides[chainId] || AccountInfo
       const balance: any = createType(new TypeRegistry(), accountInfo, change)
 
-      const free = (balance.data?.free.toBigInt() || BigInt("0")).toString()
-      const reserved = (balance.data?.reserved.toBigInt() || BigInt("0")).toString()
-      const miscFrozen = (balance.data?.miscFrozen.toBigInt() || BigInt("0")).toString()
-      const feeFrozen = (balance.data?.feeFrozen.toBigInt() || BigInt("0")).toString()
+      let free = (balance.data?.free.toBigInt() || BigInt("0")).toString()
+      let reserved = (balance.data?.reserved.toBigInt() || BigInt("0")).toString()
+      let miscFrozen = (balance.data?.miscFrozen.toBigInt() || BigInt("0")).toString()
+      let feeFrozen = (balance.data?.feeFrozen.toBigInt() || BigInt("0")).toString()
+
+      // we use the evm-native module to fetch native token balances for ethereum addresses
+      if (isEthereumAddress(address)) free = reserved = miscFrozen = feeFrozen = "0"
 
       return new Balance({
         source: "substrate-native",
@@ -356,3 +359,5 @@ function formatRpcResult(
 
   return new Balances(balances)
 }
+
+const isEthereumAddress = (address: string) => address.startsWith("0x") && address.length === 42
