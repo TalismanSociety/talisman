@@ -86,12 +86,35 @@ export const EvmErc20Module: BalanceModule<
 
     const tokens: Record<string, EvmErc20Token> = {}
     for (const tokenConfig of moduleConfig?.tokens || []) {
-      // TODO: Use imported erc20 abi to fetch `symbol` and `decimals` from the evm network rpc
-      const symbol = tokenConfig?.symbol || "ETH"
-      const decimals = typeof tokenConfig?.decimals === "number" ? tokenConfig.decimals : 18
       const contractAddress = tokenConfig?.contractAddress
+      if (!contractAddress) continue
 
-      if (!symbol || typeof decimals !== "number" || !contractAddress) continue
+      const [contractSymbol, contractDecimals] = await (async () => {
+        const evmNetwork = await chaindataProvider.getEvmNetwork(chainId)
+        if (!evmNetwork) return []
+
+        const provider = chainConnector.getProviderForEvmNetwork(evmNetwork)
+        if (!provider) return []
+
+        const contract = new ethers.Contract(contractAddress, erc20Abi, provider)
+
+        try {
+          return [await contract.symbol(), await contract.decimals()]
+        } catch (error) {
+          log.error(`Failed to retrieve contract symbol and decimals`, String(error))
+          return []
+        }
+      })()
+
+      const symbol = tokenConfig?.symbol || contractSymbol || "ETH"
+      const decimals =
+        typeof tokenConfig?.decimals === "number"
+          ? tokenConfig.decimals
+          : typeof contractDecimals === "number"
+          ? contractDecimals
+          : 18
+
+      if (!symbol || typeof decimals !== "number") continue
 
       const id = evmErc20TokenId(chainId, contractAddress)
       const token: EvmErc20Token = {
