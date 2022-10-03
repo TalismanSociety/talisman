@@ -27,20 +27,25 @@ const coingeckoCurrencies: Array<keyof TokenRates> = [
 // export function tokenRates(tokens: WithCoingeckoId[]): TokenRatesList {}
 export async function fetchTokenRates(tokens: TokenList) {
   // create a map from `coingeckoId` -> `tokenId` for each token
-  const coingeckoIdToTokenId = Object.fromEntries(
-    Object.values(tokens)
-      // ignore testnet tokens
-      .filter(({ isTestnet }) => !isTestnet)
+  const coingeckoIdToTokenIds = Object.values(tokens)
+    // ignore testnet tokens
+    .filter(({ isTestnet }) => !isTestnet)
 
-      // ignore tokens which don't have a coingeckoId
-      .filter(hasCoingeckoId)
+    // ignore tokens which don't have a coingeckoId
+    .filter(hasCoingeckoId)
 
-      // get each token's coingeckoId
-      .map(({ id, coingeckoId }) => [coingeckoId, id])
-  )
+    // get each token's coingeckoId
+    .reduce((coingeckoIdToTokenIds, { id, coingeckoId }) => {
+      if (!coingeckoIdToTokenIds[coingeckoId]) coingeckoIdToTokenIds[coingeckoId] = []
+      coingeckoIdToTokenIds[coingeckoId].push(id)
+      return coingeckoIdToTokenIds
+    }, {} as Record<string, string[]>)
 
   // create a list of coingeckoIds we want to fetch
-  const coingeckoIds = Object.keys(coingeckoIdToTokenId)
+  const coingeckoIds = Object.keys(coingeckoIdToTokenIds)
+
+  // skip network request if there is nothing for us to fetch
+  if (coingeckoIds.length < 1) return {}
 
   // construct a coingecko request
   const idsSerialized = coingeckoIds.join(",")
@@ -60,15 +65,15 @@ export async function fetchTokenRates(tokens: TokenList) {
 
   // build a TokenRatesList from the token prices result
   const ratesList: TokenRatesList = Object.fromEntries(
-    coingeckoIds.map((coingeckoId) => {
-      const tokenId = coingeckoIdToTokenId[coingeckoId]
+    coingeckoIds.flatMap((coingeckoId) => {
+      const tokenIds = coingeckoIdToTokenIds[coingeckoId]
       const rates = NewTokenRates()
 
       for (const currency of coingeckoCurrencies) {
         rates[currency] = ((coingeckoPrices || {})[coingeckoId] || {})[currency] || null
       }
 
-      return [tokenId, rates]
+      return tokenIds.map((tokenId) => [tokenId, rates])
     })
   )
 

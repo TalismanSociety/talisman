@@ -8,6 +8,7 @@ export function useTokenRates(tokens?: TokenList): TokenRatesList {
   const [tokenRates, setTokenRates] = useState<TokenRatesList>()
   useEffect(() => {
     if (!tokens) return
+    if (Object.keys(tokens).length < 1) return
 
     // when we make a new request, we want to ignore any old requests which haven't yet completed
     // otherwise we risk replacing the most recent data with older data
