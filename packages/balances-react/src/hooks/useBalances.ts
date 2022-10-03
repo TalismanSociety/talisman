@@ -144,6 +144,7 @@ function useBalancesSubscriptions(
 
   const chainConnector = useChainConnector(chaindataProvider)
   const chainConnectorEvm = useChainConnectorEvm()
+  const tokens = useTokens(chaindataProvider)
   useEffect(() => {
     if (chainConnector === null) return
     if (chainConnectorEvm === null) return
@@ -153,13 +154,21 @@ function useBalancesSubscriptions(
     const unsubs = balanceModules.map((balanceModule) => {
       const subscriptionKey = `${balanceModule.type}-${JSON.stringify(addressesByToken)}`
 
+      // filter out tokens to only include those which this module knows how to fetch balances for
+      const moduleTokenIds = Object.values(tokens)
+        .filter(({ type }) => type === balanceModule.type)
+        .map(({ id }) => id)
+      const addressesByModuleToken = Object.fromEntries(
+        Object.entries(addressesByToken).filter(([tokenId]) => moduleTokenIds.includes(tokenId))
+      )
+
       // add balance subscription for this module
       addSubscription(
         subscriptionKey,
         balanceModule,
         { substrate: chainConnector, evm: chainConnectorEvm },
         chaindataProvider,
-        addressesByToken
+        addressesByModuleToken
       )
 
       // return an unsub method, to be called when this effect unmounts
@@ -168,7 +177,7 @@ function useBalancesSubscriptions(
     const unsubAll = () => unsubs.forEach((unsub) => unsub())
 
     return unsubAll
-  }, [addressesByToken, chainConnector, chainConnectorEvm])
+  }, [addressesByToken, chainConnector, chainConnectorEvm, tokens])
 }
 
 // TODO: Allow advanced users of this library to provide their own chain connector
