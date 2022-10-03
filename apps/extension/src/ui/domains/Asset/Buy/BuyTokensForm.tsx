@@ -242,7 +242,6 @@ export const BuyTokensForm = () => {
         coinType: token?.symbol,
         fiatAmount: String(formData.amountUSD),
         fiatType: "USD",
-        walletAddressTag: account.name ?? "Talisman",
       })
 
       sendAnalyticsEvent({
