@@ -2,7 +2,16 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
-import { AllAccountsIcon, ChevronRightIcon, CopyIcon, UsbIcon } from "@talisman/theme/icons"
+import {
+  AllAccountsIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  CreditCardIcon,
+  PaperPlaneIcon,
+  UsbIcon,
+} from "@talisman/theme/icons"
+import { api } from "@ui/api"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
@@ -13,8 +22,16 @@ import useBalances from "@ui/hooks/useBalances"
 import { MouseEventHandler, memo, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
+import { PillButton } from "talisman-ui"
 
 import { TotalFiatBalance } from "../../components/TotalFiatBalance"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Popup",
+  feature: "Porfolio",
+  featureVersion: 2,
+  page: "Portfolio Home",
+}
 
 type AccountOption = {
   address?: string
@@ -127,9 +144,43 @@ const AccountButton = ({ address, name, total, genesisHash }: AccountOption) => 
   )
 }
 
+const TopActions = () => {
+  const handleSendFundsClick = useCallback(async () => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Send Funds button",
+    })
+    await api.modalOpen("send")
+    window.close()
+  }, [])
+
+  const handleBuyTokensClick = useCallback(async () => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Buy Crypto button",
+    })
+    await api.modalOpen("buy")
+    window.close()
+  }, [])
+
+  return (
+    <div className="mt-8 flex justify-center gap-4">
+      <PillButton onClick={handleSendFundsClick} icon={PaperPlaneIcon}>
+        Send
+      </PillButton>
+      <PillButton onClick={handleBuyTokensClick} icon={CreditCardIcon}>
+        Buy
+      </PillButton>
+    </div>
+  )
+}
+
 const Accounts = memo(({ options }: { options: AccountOption[] }) => (
   <Box flex column fullwidth>
     <TotalFiatBalance />
+    <TopActions />
     <Box flex column fullwidth gap={0.8} padding="2.4rem 0">
       {options.map((option) => (
         <AccountButton key={option.address ?? "all"} {...option} />
