@@ -1,5 +1,11 @@
 # @talismn/balances-substrate-orml
 
+## 0.1.15
+
+### Patch Changes
+
+- @talismn/balances@0.1.15
+
 ## 0.1.14
 
 ### Patch Changes

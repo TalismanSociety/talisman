@@ -1,5 +1,12 @@
 # @talismn/balances-evm-erc20
 
+## 0.1.15
+
+### Patch Changes
+
+- 139aca4: feat: added coingeckoId to evm module configs
+  - @talismn/balances@0.1.15
+
 ## 0.1.14
 
 ### Patch Changes
