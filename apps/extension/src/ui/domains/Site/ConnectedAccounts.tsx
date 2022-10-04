@@ -145,7 +145,7 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
       </div>
       {providerType === "polkadot" && (
         <div className="text-body-secondary my-4 text-sm">
-          <WithTooltip tooltip="Some apps may not be compatible with ethereum accounts">
+          <WithTooltip tooltip="Some apps do not work with Ethereum accounts">
             <Checkbox onChange={handleShowEthAccountsChanged} defaultChecked={showEthAccounts}>
               Show Eth accounts
             </Checkbox>
