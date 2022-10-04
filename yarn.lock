@@ -8958,6 +8958,7 @@ __metadata:
     "@sentry/webpack-plugin": ^1.18.8
     "@substrate/txwrapper-polkadot": "*"
     "@svgr/webpack": ^6.2.1
+    "@tailwindcss/forms": ^0.5.3
     "@talismn/chaindata-js": ^0.0.7
     "@testing-library/dom": ^8.14.0
     "@testing-library/jest-dom": ^5.11.4

@@ -93,8 +93,6 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
     setProviderType(defaultProvider)
   }, [defaultProvider])
 
-  const displayAccounts = useMemo(() => {}, [])
-
   const title = useMemo(() => {
     switch (providerType) {
       case "polkadot":
