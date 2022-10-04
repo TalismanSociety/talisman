@@ -122,7 +122,7 @@ export const NavigationDrawer: FC = () => {
   }, [genericEvent])
 
   return (
-    <Drawer anchor="right" open={isOpen} onClose={close} fullScreen>
+    <Drawer anchor="bottom" open={isOpen} onClose={close} fullScreen>
       <Container>
         <header>
           <FullColorSmallLogo className="logo" />

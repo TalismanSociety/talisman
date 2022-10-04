@@ -2,8 +2,8 @@ import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import Site from "@ui/domains/Site"
 import { Suspense, lazy } from "react"
 import { Route, Routes } from "react-router-dom"
+import { BottomNav } from "../../components/Navigation/BottomNav"
 
-import { NavigationMenuButton } from "../../components/Navigation/NavigationMenuButton"
 import Layout, { Content, Header } from "../../Layout"
 import { PortfolioAccounts } from "./PortfolioAccounts"
 import { PortfolioAsset } from "./PortfolioAsset"
@@ -18,8 +18,8 @@ export const Portfolio = () => {
   return (
     <PortfolioProvider>
       {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
-      <Layout>
-        <Header text={<Site.ConnectedAccountsPill />} nav={<NavigationMenuButton />} />
+      <Layout withBottomNav>
+        <Header text={<Site.ConnectedAccountsPill />} />
         <Content>
           <Routes>
             <Route path="assets" element={<PortfolioAssets />} />
