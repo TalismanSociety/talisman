@@ -48,6 +48,7 @@ export type EvmErc20ModuleConfig = {
   tokens?: Array<{
     symbol?: string
     decimals?: number
+    coingeckoId?: string
     contractAddress?: string
   }>
 }
@@ -113,6 +114,8 @@ export const EvmErc20Module: BalanceModule<
           : typeof contractDecimals === "number"
           ? contractDecimals
           : 18
+      const coingeckoId =
+        typeof tokenConfig?.coingeckoId === "string" ? tokenConfig.coingeckoId : undefined
 
       if (!symbol || typeof decimals !== "number") continue
 
@@ -124,6 +127,7 @@ export const EvmErc20Module: BalanceModule<
         symbol,
         decimals,
         logo: `https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets-tokens/${id}.svg`,
+        coingeckoId,
         contractAddress,
         evmNetwork: { id: chainId },
       }

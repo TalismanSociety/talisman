@@ -41,6 +41,7 @@ export type EvmNativeChainMeta = {
 export type EvmNativeModuleConfig = {
   symbol?: string
   decimals?: number
+  coingeckoId?: string
 }
 
 export type EvmNativeBalance = NewBalanceType<
@@ -77,6 +78,8 @@ export const EvmNativeModule: BalanceModule<
 
     const symbol = moduleConfig?.symbol || "ETH"
     const decimals = typeof moduleConfig?.decimals === "number" ? moduleConfig.decimals : 18
+    const coingeckoId =
+      typeof moduleConfig?.coingeckoId === "string" ? moduleConfig.coingeckoId : undefined
 
     const id = evmNativeTokenId(chainId, symbol)
     const nativeToken: EvmNativeToken = {
@@ -86,6 +89,7 @@ export const EvmNativeModule: BalanceModule<
       symbol,
       decimals,
       logo: `https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets-tokens/${id}.svg`,
+      coingeckoId,
       evmNetwork: { id: chainId },
     }
 
