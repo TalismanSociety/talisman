@@ -53,8 +53,15 @@ const Button = styled.article`
   gap: 1.2rem;
   overflow: hidden;
 
+  .chevron {
+    color: var(--color-mid);
+  }
+
   &:hover {
     background-color: var(--color-background-muted-3x);
+    .chevron {
+      color: var(--color-foreground);
+    }
   }
 `
 
@@ -127,7 +134,7 @@ const AccountButton = ({ address, name, total, genesisHash }: AccountOption) => 
           <Fiat amount={total} isBalance />
         </Box>
       </Box>
-      <Box flex column justify="center" fg="foreground" fontsize="large">
+      <Box flex column justify="center" fontsize="large">
         <ChevronRightIcon className="chevron" />
       </Box>
     </Button>
