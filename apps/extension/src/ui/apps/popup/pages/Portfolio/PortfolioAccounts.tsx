@@ -98,31 +98,21 @@ const AccountButton = ({ address, name, total, genesisHash }: AccountOption) => 
         )}
       </Box>
       <Box flex column justify="center" align="flex-start" grow gap={0.4} overflow="hidden">
-        <Box
-          flex
-          fg="foreground"
-          fontsize="normal"
-          lineheight="normal"
-          fullwidth
-          align="start"
-          gap={0.6}
-        >
-          <Box overflow="hidden" textOverflow="ellipsis" noWrap>
-            {name}
-          </Box>
+        <div className="text-body flex w-full items-center gap-3 text-base leading-none">
+          <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{name}</div>
           {genesisHash && (
-            <Box fg="primary">
+            <div className="text-primary">
               <UsbIcon />
-            </Box>
+            </div>
           )}
           {address ? (
-            <Box overflow="hidden" h="1.4rem">
+            <div className="flex flex-col justify-end">
               <CopyButton onClick={handleCopyClick}>
                 <CopyIcon />
               </CopyButton>
-            </Box>
+            </div>
           ) : null}
-        </Box>
+        </div>
         <Box
           fg="mid"
           fontsize="small"
