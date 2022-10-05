@@ -175,7 +175,7 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
     <FadeIn>
       <div className="bg-field text-body-secondary leading-base rounded-sm p-10 text-center text-sm">
         <div>
-          You don't have any {symbol} {account ? " in this account" : ""}.
+          You don't have any {symbol} {account ? " in this account" : ""}
         </div>
         <div className="mt-6 flex justify-center gap-4">
           {!!account && (
