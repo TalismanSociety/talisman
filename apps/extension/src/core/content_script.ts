@@ -11,11 +11,12 @@ import Browser from "webextension-polyfill"
 const port = Browser.runtime.connect({ name: PORT_CONTENT })
 // send any messages from the extension back to the page
 port.onMessage.addListener((data): void => {
-  window.postMessage({ ...data, origin: "talisman-content" }, "*")
+  window.postMessage({ ...data, origin: "talisman-content" }, window.location.toString())
 })
 
 // all messages from the page, pass them to the extension
 window.addEventListener("message", ({ data, source }: Message): void => {
+  // listener will also fire on messages from extension to the page
   // only allow messages from our window, by the inject
   if (source !== window || data.origin !== "talisman-page") {
     return

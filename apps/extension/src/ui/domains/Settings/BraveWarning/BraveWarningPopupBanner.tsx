@@ -1,4 +1,4 @@
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 import { Modal } from "@talisman/components/Modal"
 import { Drawer } from "@talisman/components/Drawer"
 import { ModalDialog } from "@talisman/components/ModalDialog"

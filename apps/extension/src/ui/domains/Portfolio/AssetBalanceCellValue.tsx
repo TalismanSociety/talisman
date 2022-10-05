@@ -42,9 +42,11 @@ export const AssetBalanceCellValue = ({
         className={className}
         noWrap
       >
-        <Box
-          fg={locked ? "mid" : "foreground"}
-          className={classNames("flex items-center justify-end gap-2")}
+        <div
+          className={classNames(
+            "flex items-center justify-end gap-2",
+            locked ? "text-body-secondary" : "text-body"
+          )}
         >
           <div>
             <Tokens
@@ -58,7 +60,7 @@ export const AssetBalanceCellValue = ({
               <LockIcon className="lock" />
             </div>
           ) : null}
-        </Box>
+        </div>
         <div>{fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}</div>
       </Box>
     </WithTooltip>

@@ -3,10 +3,9 @@ import { Box } from "@talisman/components/Box"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback } from "react"
+import { useCallback, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
 import * as yup from "yup"
 
 import { OnboardButton } from "../components/OnboardButton"
@@ -14,10 +13,6 @@ import { OnboardDialog } from "../components/OnboardDialog"
 import { OnboardFormField } from "../components/OnboardFormField"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
-
-const A = styled.a`
-  color: var(--color-foreground);
-`
 
 type FormData = {
   password?: string
@@ -27,8 +22,11 @@ type FormData = {
 
 const schema = yup
   .object({
-    password: yup.string().min(6, "").required(""), // matches the medium strengh requirement
-    passwordConfirm: yup.string().oneOf([yup.ref("password")], "Passwords must match"),
+    password: yup.string().required("").min(6, "Password must be at least 6 characters long"), // matches the medium strengh requirement
+    passwordConfirm: yup
+      .string()
+      .required("")
+      .oneOf([yup.ref("password")], "Passwords must match"),
     agreeToS: yup.boolean().oneOf([true], ""),
   })
   .required()
@@ -50,6 +48,7 @@ export const PasswordPage = () => {
     register,
     handleSubmit,
     watch,
+    trigger,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "all",
@@ -58,6 +57,11 @@ export const PasswordPage = () => {
     resolver: yupResolver(schema),
   })
   const password = watch("password")
+
+  // revalidate to get rid of "must match" error message after editing first field
+  useEffect(() => {
+    trigger()
+  }, [trigger, password])
 
   const submit = useCallback(
     async (fields: FormData) => {
@@ -86,31 +90,27 @@ export const PasswordPage = () => {
                 <Box fontsize="small" margin="3.2rem 0 1.6rem 0">
                   Password strength: <PasswordStrength password={password} />
                 </Box>
-                <Box>
-                  <OnboardFormField error={errors.password}>
-                    <input
-                      {...register("password")}
-                      type="password"
-                      placeholder="Enter password"
-                      autoComplete="new-password"
-                      spellCheck={false}
-                      data-lpignore
-                      autoFocus
-                    />
-                  </OnboardFormField>
-                </Box>
-                <Box margin="-0.8rem 0 0 0">
-                  <OnboardFormField error={errors.passwordConfirm}>
-                    <input
-                      {...register("passwordConfirm")}
-                      type="password"
-                      autoComplete="off"
-                      placeholder="Re-enter password"
-                      spellCheck={false}
-                      data-lpignore
-                    />
-                  </OnboardFormField>
-                </Box>
+                <OnboardFormField error={errors.password}>
+                  <input
+                    {...register("password")}
+                    type="password"
+                    placeholder="Enter password"
+                    autoComplete="new-password"
+                    spellCheck={false}
+                    data-lpignore
+                    autoFocus
+                  />
+                </OnboardFormField>
+                <OnboardFormField error={errors.passwordConfirm}>
+                  <input
+                    {...register("passwordConfirm")}
+                    type="password"
+                    autoComplete="off"
+                    placeholder="Re-enter password"
+                    spellCheck={false}
+                    data-lpignore
+                  />
+                </OnboardFormField>
               </Box>
               <Box h={1.6} />
               <OnboardButton type="submit" primary disabled={!isValid} processing={isSubmitting}>

@@ -1,4 +1,4 @@
-import { Balances } from "@core/domains/balances"
+import { Balances } from "@core/domains/balances/types"
 import { Token } from "@core/domains/tokens/types"
 import { planckToTokens } from "@core/util"
 import { getNetworkInfo } from "@core/util/getNetworkInfo"

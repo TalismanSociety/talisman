@@ -202,12 +202,12 @@ const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
             w="100%"
             h="100%"
           >
-            <Box className="flex items-center gap-2" fontsize="small" fg="foreground" bold noWrap>
+            <div className="text-body flex items-center gap-2 whitespace-nowrap text-sm font-bold">
               {token.symbol}
               {isFetching && (
                 <FetchingIcon data-spin className="inline align-baseline opacity-100" />
               )}
-            </Box>
+            </div>
             {!!networkIds.length && (
               <Box fontsize="normal">
                 <NetworksLogoStack networkIds={networkIds} />

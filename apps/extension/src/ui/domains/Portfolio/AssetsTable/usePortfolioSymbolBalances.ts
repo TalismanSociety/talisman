@@ -1,4 +1,4 @@
-import { Balance, Balances } from "@core/domains/balances"
+import { Balance, Balances } from "@core/domains/balances/types"
 import { useMemo } from "react"
 
 import { usePortfolio } from "../context"

@@ -21,7 +21,7 @@
   },
   "web_accessible_resources": ["page.js", "dashboard.js.map"],
   "content_security_policy": "script-src 'self' blob: 'unsafe-eval' 'wasm-eval'; object-src 'self'",
-  "permissions": ["https://*/*", "http://localhost/*", "storage", "tabs"],
+  "permissions": ["storage", "tabs", "notifications"],
   "icons": {
     "16": "favicon16x16.png",
     "24": "favicon24x24.png",

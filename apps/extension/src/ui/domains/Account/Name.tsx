@@ -1,6 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
-import CopyToClipboard from "@talisman/components/CopyToClipboard"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { LinkIcon, UsbIcon } from "@talisman/theme/icons"
 import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
@@ -75,9 +74,7 @@ const AccountName = ({
             <span className="name">{account?.name ?? address}</span>
             <span className="copy">
               {withCopy && (
-                <CopyToClipboard value={address} onCopy={handleCopyClick}>
-                  <IconCopy className={`${className} copyIcon`} />
-                </CopyToClipboard>
+                <IconCopy onClick={handleCopyClick} className={`${className} copyIcon`} />
               )}
             </span>
           </span>

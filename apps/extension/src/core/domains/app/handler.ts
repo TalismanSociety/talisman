@@ -176,7 +176,11 @@ export default class AppHandler extends ExtensionHandler {
   private async openModal({ modalType }: ModalOpenParams): Promise<void> {
     const queryUrl = Browser.runtime.getURL("dashboard.html")
     const [tab] = await Browser.tabs.query({ url: queryUrl })
-    if (!tab) await this.state.openDashboard({ route: "/portfolio" })
+    if (!tab) {
+      await this.state.openDashboard({ route: "/portfolio" })
+      // wait for newly created page to load and subscribe to backend (max 5 seconds)
+      for (let i = 0; i < 50 && !this.#modalOpenRequest.observed; i++) await sleep(100)
+    }
     this.#modalOpenRequest.next(modalType)
   }
 
