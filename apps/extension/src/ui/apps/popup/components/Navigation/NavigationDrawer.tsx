@@ -20,7 +20,6 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import Build from "@ui/domains/Build"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useSettings } from "@ui/hooks/useSettings"
@@ -92,7 +91,6 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 export const NavigationDrawer: FC = () => {
   const { isOpen, close } = useNavigationContext()
-  const { genericEvent } = useAnalytics()
   const showBuyTokens = useIsFeatureEnabled("BUY_CRYPTO")
 
   const handleLock = useCallback(async () => {
@@ -101,11 +99,9 @@ export const NavigationDrawer: FC = () => {
       name: "Interact",
       action: "Lock wallet",
     })
-    // legacy, remove when enough data with new one
-    genericEvent("lock", { from: "popup nav" })
     await api.lock()
     close()
-  }, [close, genericEvent])
+  }, [close])
 
   const handleAddAccountClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -113,11 +109,9 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Add account button",
     })
-    // legacy, remove when enough data with new one
-    genericEvent("goto add account", { from: "popup nav" })
     api.dashboardOpen("/accounts/add")
     window.close()
-  }, [genericEvent])
+  }, [])
 
   const handleSendFundsClick = useCallback(async () => {
     sendAnalyticsEvent({
@@ -125,12 +119,9 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Send Funds button",
     })
-    // legacy, remove when enough data with new one
-    genericEvent("open send funds", { from: "popup nav" })
-
     await api.modalOpen("send")
     window.close()
-  }, [genericEvent])
+  }, [])
 
   const handleBuyTokensClick = useCallback(async () => {
     sendAnalyticsEvent({
@@ -138,11 +129,9 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Buy Crypto button",
     })
-    // legacy, remove when enough data with new one
-    genericEvent("open buy tokens", { from: "popup nav" })
     await api.modalOpen("buy")
     window.close()
-  }, [genericEvent])
+  }, [])
 
   const handleSettingsClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -150,10 +139,8 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Settings button",
     })
-    // legacy, remove when enough data with new one
-    genericEvent("goto settings", { from: "popup nav" })
     api.dashboardOpen("/settings")
-  }, [genericEvent])
+  }, [])
 
   const handleBackupClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -161,10 +148,8 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Backup wallet button",
     })
-    // legacy, remove when enough data with new one
-    genericEvent("goto backup", { from: "popup nav" })
     api.dashboardOpen("/settings?showBackupModal")
-  }, [genericEvent])
+  }, [])
 
   const { hideBalances, update } = useSettings()
   const toggleHideBalance = useCallback(() => {
@@ -173,11 +158,9 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Hide balances button",
     })
-    // legacy, remove when enough data with new one
-    genericEvent("toggle hide balance", { from: "popup nav" })
     update({ hideBalances: !hideBalances })
     close()
-  }, [close, genericEvent, hideBalances, update])
+  }, [close, hideBalances, update])
 
   const { isNotConfirmed } = useMnemonicBackup()
 

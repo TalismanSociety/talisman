@@ -1,10 +1,13 @@
 import { Box } from "@talisman/components/Box"
 import { CopyIcon } from "@talisman/theme/icons"
+import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback } from "react"
 import styled from "styled-components"
 
 import { useAddressFormatterModal } from "../Account/AddressFormatterModal"
+import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
 
 const PillButton = styled.button`
   background: rgba(var(--color-mid-raw), 0.15);
@@ -41,6 +44,12 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
     open(account.address)
   }, [account, open])
 
+  const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
+  const { open: openBuyCrypto } = useBuyTokensModal()
+  const handleBuyCryptoClick = useCallback(() => {
+    openBuyCrypto()
+  }, [openBuyCrypto])
+
   return (
     <Box
       fg="mid"
@@ -61,6 +70,11 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
         <Box flex justify="center" gap={0.8}>
           {account && (
             <PillButton onClick={handleCopy}>
+              Copy address <CopyIcon />
+            </PillButton>
+          )}
+          {showBuyCrypto && (
+            <PillButton onClick={handleBuyCryptoClick}>
               Copy address <CopyIcon />
             </PillButton>
           )}

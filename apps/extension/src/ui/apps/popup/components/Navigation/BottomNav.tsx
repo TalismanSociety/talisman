@@ -58,7 +58,6 @@ export const BottomNav = () => {
       name: "Goto",
       action: "NFTs button",
     })
-    //genericEvent("open web app nfts", { from: "popup nav" })
     window.open("https://app.talisman.xyz/nfts")
   }, [])
 
