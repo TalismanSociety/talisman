@@ -151,7 +151,7 @@ export const NavigationDrawer: FC = () => {
                 </NavItemButton>
               )}
               <NavItemButton
-                icon={hideBalances ? <EyeOffIcon /> : <EyeIcon />}
+                icon={hideBalances ? <EyeIcon /> : <EyeOffIcon />}
                 onClick={toggleHideBalance}
               >
                 {hideBalances ? "Show" : "Hide"} Balances{" "}
