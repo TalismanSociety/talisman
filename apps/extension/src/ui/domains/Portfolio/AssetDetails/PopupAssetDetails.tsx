@@ -166,8 +166,9 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
   }, [account?.address, open])
 
   const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
-  const handleBuyCryptoClick = useCallback(() => {
-    api.modalOpen("buy")
+  const handleBuyCryptoClick = useCallback(async () => {
+    await api.modalOpen("buy")
+    window.close()
   }, [])
 
   return (

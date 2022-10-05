@@ -71,6 +71,7 @@ export const BottomNav = () => {
     // portfolio pages expect an account argument to stay in sync with popup
     const qs = `?account=${account?.address ?? "all"}`
     api.dashboardOpen(`${location.pathname}${qs}`)
+    window.close()
   }, [account, location.pathname])
 
   const handleMoreClick = useCallback(() => {

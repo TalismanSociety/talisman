@@ -100,8 +100,8 @@ export const NavigationDrawer: FC = () => {
       action: "Lock wallet",
     })
     await api.lock()
-    close()
-  }, [close])
+    window.close()
+  }, [])
 
   const handleAddAccountClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -140,6 +140,7 @@ export const NavigationDrawer: FC = () => {
       action: "Settings button",
     })
     api.dashboardOpen("/settings")
+    window.close()
   }, [])
 
   const handleBackupClick = useCallback(() => {
@@ -149,6 +150,7 @@ export const NavigationDrawer: FC = () => {
       action: "Backup wallet button",
     })
     api.dashboardOpen("/settings?showBackupModal")
+    window.close()
   }, [])
 
   const { hideBalances, update } = useSettings()
