@@ -13,10 +13,21 @@ import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
 import Layout from "@ui/apps/dashboard/layout"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useEffect } from "react"
+import { useSearchParams } from "react-router-dom"
 
 const Settings = () => {
   const { isOpen, open, close } = useOpenClose()
   const { isNotConfirmed } = useMnemonicBackup()
+
+  // auto open backup popup if requested in query string
+  const [searchParams, setSearchParams] = useSearchParams()
+  useEffect(() => {
+    if (searchParams.get("showBackupModal") !== null) {
+      open()
+      setSearchParams({})
+    }
+  }, [open, searchParams, setSearchParams])
 
   return (
     <Layout centered>

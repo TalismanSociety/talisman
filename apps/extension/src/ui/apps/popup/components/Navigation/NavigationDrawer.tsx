@@ -5,9 +5,11 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
   CreditCardIcon,
   ExternalLinkIcon,
-  ImageIcon,
+  EyeIcon,
+  EyeOffIcon,
+  InfoIcon,
+  KeyIcon,
   LockIcon,
-  MaximizeIcon,
   PaperPlaneIcon,
   PlusIcon,
   SettingsIcon,
@@ -19,6 +21,8 @@ import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import Build from "@ui/domains/Build"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useSettings } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
 import styled from "styled-components"
 
@@ -92,6 +96,7 @@ export const NavigationDrawer: FC = () => {
   const handleAddAccountClick = useCallback(() => {
     genericEvent("goto add account", { from: "popup nav" })
     api.dashboardOpen("/accounts/add")
+    window.close()
   }, [genericEvent])
 
   const handleSendFundsClick = useCallback(async () => {
@@ -106,20 +111,24 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [genericEvent])
 
-  const handlePortfolioClick = useCallback(() => {
-    genericEvent("goto portfolio", { from: "popup nav" })
-    api.dashboardOpen("/accounts")
-  }, [genericEvent])
-
   const handleSettingsClick = useCallback(() => {
     genericEvent("goto settings", { from: "popup nav" })
     api.dashboardOpen("/settings")
   }, [genericEvent])
 
-  const handleNFTClick = useCallback(() => {
-    genericEvent("open web app nfts", { from: "popup nav" })
-    window.open("https://app.talisman.xyz/nfts")
+  const handleBackupClick = useCallback(() => {
+    genericEvent("goto backup", { from: "popup nav" })
+    api.dashboardOpen("/settings?showBackupModal")
   }, [genericEvent])
+
+  const { hideBalances, update } = useSettings()
+  const toggleHideBalance = useCallback(() => {
+    genericEvent("toggle hide balance", { from: "popup nav" })
+    update({ hideBalances: !hideBalances })
+    close()
+  }, [close, genericEvent, hideBalances, update])
+
+  const { isNotConfirmed } = useMnemonicBackup()
 
   return (
     <Drawer anchor="bottom" open={isOpen} onClose={close} fullScreen>
@@ -133,28 +142,34 @@ export const NavigationDrawer: FC = () => {
         <main>
           <ScrollContainer>
             <Nav column>
-              <NavItemButton icon={<PlusIcon />} onClick={handleAddAccountClick}>
-                Add Account
-              </NavItemButton>
               <NavItemButton icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
                 Send Funds
-              </NavItemButton>
-              <NavItemButton icon={<ImageIcon />} onClick={handleNFTClick}>
-                NFTs <ExtLinkIcon />
               </NavItemButton>
               {showBuyTokens && (
                 <NavItemButton icon={<CreditCardIcon />} onClick={handleBuyTokensClick}>
                   Buy Crypto
                 </NavItemButton>
               )}
-              <NavItemButton icon={<MaximizeIcon />} onClick={handlePortfolioClick}>
-                Expand View
+              <NavItemButton
+                icon={hideBalances ? <EyeOffIcon /> : <EyeIcon />}
+                onClick={toggleHideBalance}
+              >
+                {hideBalances ? "Show" : "Hide"} Balances{" "}
+              </NavItemButton>
+              <NavItemButton icon={<PlusIcon />} onClick={handleAddAccountClick}>
+                Add Account
               </NavItemButton>
               <NavItemButton icon={<SettingsIcon />} onClick={handleSettingsClick}>
                 Settings
               </NavItemButton>
+              <NavItemButton icon={<KeyIcon />} onClick={handleBackupClick}>
+                <span className="inline-flex items-center gap-4">
+                  <span>Backup Wallet</span>
+                  {isNotConfirmed && <InfoIcon className="text-primary inline-block" />}
+                </span>
+              </NavItemButton>
               <NavItemButton icon={<LockIcon />} onClick={handleLock}>
-                Lock
+                Lock Wallet
               </NavItemButton>
             </Nav>
           </ScrollContainer>
