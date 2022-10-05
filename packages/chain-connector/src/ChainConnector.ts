@@ -91,16 +91,13 @@ export class ChainConnector {
     }
 
     const autoConnectMs = 1000
-    try {
-      const healthyRpcs = (chain.rpcs || [])
-        .filter(({ isHealthy }) => isHealthy)
-        .map(({ url }) => url)
-      if (healthyRpcs.length)
-        this.#socketConnections[chainId] = new WsProvider(healthyRpcs, autoConnectMs)
-      else throw new Error(`No healthy RPCs available for chain ${chainId}`)
-    } catch (error) {
-      log.error(error)
-      throw error
+    const healthyRpcs = (chain.rpcs || [])
+      .filter(({ isHealthy }) => isHealthy)
+      .map(({ url }) => url)
+    if (healthyRpcs.length) {
+      this.#socketConnections[chainId] = new WsProvider(healthyRpcs, autoConnectMs)
+    } else {
+      throw new Error(`No healthy RPCs available for chain ${chainId}`)
     }
 
     // set up healthcheck (keeps ws open when idle), don't wait for setup to complete

@@ -9,6 +9,7 @@ import {
   NewBalanceType,
 } from "@talismn/balances"
 import { EvmChainId, EvmNetworkId, NewTokenType, TokenList } from "@talismn/chaindata-provider"
+import { hasOwnProperty } from "@talismn/util"
 import { ethers } from "ethers"
 
 import erc20Abi from "./erc20.json"
@@ -286,7 +287,15 @@ function groupAddressesByTokenByEvmNetwork(
 async function getFreeBalance(contract: ethers.Contract, address: Address): Promise<string> {
   if (!isEthereumAddress(address)) return "0"
 
-  return ((await contract.balanceOf(address)).toBigInt() || BigInt("0")).toString()
+  try {
+    return ((await contract.balanceOf(address)).toBigInt() || BigInt("0")).toString()
+  } catch (error) {
+    const errorMessage = hasOwnProperty(error, "message") ? error.message : error
+    log.warn(
+      `Failed to get balance from contract ${contract.address} for address ${address}: ${errorMessage}`
+    )
+    return "0"
+  }
 }
 
 const isEthereumAddress = (address: string) => address.startsWith("0x") && address.length === 42

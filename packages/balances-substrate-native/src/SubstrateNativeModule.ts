@@ -153,46 +153,53 @@ export const SubNativeModule: BalanceModule<
 
   async subscribeBalances(chainConnectors, chaindataProvider, addressesByToken, callback) {
     const tokens = await chaindataProvider.tokens()
-    const subscriptions = Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
-      if (!chainConnectors.substrate)
-        throw new Error(`This module requires a substrate chain connector`)
+    const subscriptions = Object.entries(addressesByToken)
+      .map(async ([tokenId, addresses]) => {
+        if (!chainConnectors.substrate)
+          throw new Error(`This module requires a substrate chain connector`)
 
-      const token = tokens[tokenId]
-      if (!token) throw new Error(`Token ${tokenId} not found`)
+        const token = tokens[tokenId]
+        if (!token) throw new Error(`Token ${tokenId} not found`)
 
-      // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-      if (token.type !== "substrate-native") {
-        log.debug(`This module doesn't handle tokens of type ${token.type}`)
-        return () => {}
-      }
-
-      const chainId = token.chain?.id
-      if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
-
-      // set up method, return message type and params
-      const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
-      const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
-      const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
-      const params = buildParams(addresses)
-
-      // build lookup table of `rpc hex output` -> `input address`
-      const addressReferences = buildAddressReferences(addresses)
-
-      // set up subscription
-      const unsubscribe = await chainConnectors.substrate.subscribe(
-        chainId,
-        subscribeMethod,
-        unsubscribeMethod,
-        responseMethod,
-        params,
-        (error, result) => {
-          if (error) return callback(error)
-          callback(null, formatRpcResult(tokenId, chainId, addressReferences, result))
+        // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
+        if (token.type !== "substrate-native") {
+          log.debug(`This module doesn't handle tokens of type ${token.type}`)
+          return () => {}
         }
-      )
 
-      return unsubscribe
-    })
+        const chainId = token.chain?.id
+        if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
+
+        // set up method, return message type and params
+        const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
+        const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
+        const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
+        const params = buildParams(addresses)
+
+        // build lookup table of `rpc hex output` -> `input address`
+        const addressReferences = buildAddressReferences(addresses)
+
+        // set up subscription
+        const unsubscribe = await chainConnectors.substrate.subscribe(
+          chainId,
+          subscribeMethod,
+          unsubscribeMethod,
+          responseMethod,
+          params,
+          (error, result) => {
+            if (error) return callback(error)
+            callback(null, formatRpcResult(tokenId, chainId, addressReferences, result))
+          }
+        )
+
+        return unsubscribe
+      })
+      .map((subscription) =>
+        subscription.catch((error) => {
+          log.warn(`Failed to create subscription: ${error.message}`)
+          return () => {}
+        })
+      )
 
     return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
   },

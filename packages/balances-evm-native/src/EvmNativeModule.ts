@@ -8,6 +8,7 @@ import {
   NewBalanceType,
 } from "@talismn/balances"
 import { EvmChainId, EvmNetworkId, NewTokenType } from "@talismn/chaindata-provider"
+import { hasOwnProperty } from "@talismn/util"
 import { ethers } from "ethers"
 
 import log from "./log"
@@ -201,7 +202,15 @@ async function getFreeBalance(
 ): Promise<string> {
   if (!isEthereumAddress(address)) return "0"
 
-  return ((await provider.getBalance(address)).toBigInt() || BigInt("0")).toString()
+  try {
+    return ((await provider.getBalance(address)).toBigInt() || BigInt("0")).toString()
+  } catch (error) {
+    const errorMessage = hasOwnProperty(error, "message") ? error.message : error
+    log.warn(
+      `Failed to get balance from chain ${provider.network.chainId} for address ${address}: ${errorMessage}`
+    )
+    return "0"
+  }
 }
 
 const isEthereumAddress = (address: string) => address.startsWith("0x") && address.length === 42

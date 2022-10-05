@@ -185,8 +185,8 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
 
     const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
 
-    const subscriptions = Object.entries(addressesByTokenGroupedByChain).map(
-      async ([chainId, addressesByToken]) => {
+    const subscriptions = Object.entries(addressesByTokenGroupedByChain)
+      .map(async ([chainId, addressesByToken]) => {
         if (!chainConnectors.substrate)
           throw new Error(`This module requires a substrate chain connector`)
 
@@ -237,8 +237,13 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
         )
 
         return unsubscribe
-      }
-    )
+      })
+      .map((subscription) =>
+        subscription.catch((error) => {
+          log.warn(`Failed to create subscription: ${error.message}`)
+          return () => {}
+        })
+      )
 
     return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
   },
