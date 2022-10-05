@@ -1,6 +1,7 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talisman/util/classNames"
 import { api } from "@ui/api"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useFeatureVariantEquals } from "@ui/hooks/useFeatures"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
@@ -29,6 +30,13 @@ const BottomNavButton: FC<BottomNavButtonProps> = ({ current, className, childre
   </button>
 )
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Popup",
+  feature: "Navigation",
+  featureVersion: 3,
+  page: "Portfolio",
+}
+
 export const BottomNav = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -36,20 +44,44 @@ export const BottomNav = () => {
   const { open } = useNavigationContext()
 
   const handleHomeClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Home button",
+    })
     navigate("/portfolio")
   }, [navigate])
 
   const handleNftClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "NFTs button",
+    })
     //genericEvent("open web app nfts", { from: "popup nav" })
     window.open("https://app.talisman.xyz/nfts")
   }, [])
 
   const handleExpandClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Fullscreen button",
+    })
     // assume paths are the same in dashboard
     // portfolio pages expect an account argument to stay in sync with popup
     const qs = `?account=${account?.address ?? "all"}`
     api.dashboardOpen(`${location.pathname}${qs}`)
   }, [account, location.pathname])
+
+  const handleMoreClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Interact",
+      action: "More button",
+    })
+    open()
+  }, [open])
 
   const showTooltip = useFeatureVariantEquals("POPUP_BOTTOM_NAV_VARIANT", "WITH_TOOLTIP")
 
@@ -71,7 +103,7 @@ export const BottomNav = () => {
         </BottomNavButton>
       </WithTooltip>
       <WithTooltip as="div" tooltip={showTooltip && "More Options"}>
-        <BottomNavButton onClick={open}>
+        <BottomNavButton onClick={handleMoreClick}>
           <NavIconMore />
         </BottomNavButton>
       </WithTooltip>

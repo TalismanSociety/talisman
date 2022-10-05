@@ -17,6 +17,7 @@ import {
 } from "@talisman/theme/icons"
 import { FullColorSmallLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import Build from "@ui/domains/Build"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -82,47 +83,97 @@ export const ExtLinkIcon = styled(ExternalLinkIcon)`
   display: inline;
 `
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Popup",
+  feature: "Navigation",
+  featureVersion: 3,
+  page: "Portfolio",
+}
+
 export const NavigationDrawer: FC = () => {
   const { isOpen, close } = useNavigationContext()
   const { genericEvent } = useAnalytics()
   const showBuyTokens = useIsFeatureEnabled("BUY_CRYPTO")
 
   const handleLock = useCallback(async () => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Interact",
+      action: "Lock wallet",
+    })
+    // legacy, remove when enough data with new one
     genericEvent("lock", { from: "popup nav" })
     await api.lock()
     close()
   }, [close, genericEvent])
 
   const handleAddAccountClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Add account button",
+    })
+    // legacy, remove when enough data with new one
     genericEvent("goto add account", { from: "popup nav" })
     api.dashboardOpen("/accounts/add")
     window.close()
   }, [genericEvent])
 
   const handleSendFundsClick = useCallback(async () => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Send Funds button",
+    })
+    // legacy, remove when enough data with new one
     genericEvent("open send funds", { from: "popup nav" })
+
     await api.modalOpen("send")
     window.close()
   }, [genericEvent])
 
   const handleBuyTokensClick = useCallback(async () => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Buy Crypto button",
+    })
+    // legacy, remove when enough data with new one
     genericEvent("open buy tokens", { from: "popup nav" })
     await api.modalOpen("buy")
     window.close()
   }, [genericEvent])
 
   const handleSettingsClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Settings button",
+    })
+    // legacy, remove when enough data with new one
     genericEvent("goto settings", { from: "popup nav" })
     api.dashboardOpen("/settings")
   }, [genericEvent])
 
   const handleBackupClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Backup wallet button",
+    })
+    // legacy, remove when enough data with new one
     genericEvent("goto backup", { from: "popup nav" })
     api.dashboardOpen("/settings?showBackupModal")
   }, [genericEvent])
 
   const { hideBalances, update } = useSettings()
   const toggleHideBalance = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Hide balances button",
+    })
+    // legacy, remove when enough data with new one
     genericEvent("toggle hide balance", { from: "popup nav" })
     update({ hideBalances: !hideBalances })
     close()

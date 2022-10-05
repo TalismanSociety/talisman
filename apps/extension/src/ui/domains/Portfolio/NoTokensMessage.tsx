@@ -55,7 +55,7 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
     >
       <Box>
         <Box>
-          You don't have any {symbol} {account ? "in this account" : "in Talisman"}
+          You don't have any {symbol} {account ? "in this account" : "in Talisman"}.
         </Box>
         <Box h={2.4} />
         <Box flex justify="center" gap={0.8}>
