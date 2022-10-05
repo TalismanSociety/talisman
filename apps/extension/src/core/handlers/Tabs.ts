@@ -1,6 +1,8 @@
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
+import RequestMessageEncrypt from "@core/domains/pgp/RequestMessageEncrypt"
+import { EncryptPayload, EncryptResult, RequestEncrypt } from "@core/domains/pgp/types"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
@@ -133,6 +135,16 @@ export default class Tabs extends TabsHandler {
     const pair = this.getSigningPair(address)
 
     return this.state.requestStores.signing.sign(url, new RequestExtrinsicSign(request), {
+      address,
+      ...pair.meta,
+    })
+  }
+
+  private messageEncrypt(url: string, request: EncryptPayload): Promise<EncryptResult> {
+    const address = request.address
+    const pair = this.getSigningPair(address)
+
+    return this.state.requestStores.pgp.encrypt(url, new RequestMessageEncrypt(request), {
       address,
       ...pair.meta,
     })
@@ -301,6 +313,9 @@ export default class Tabs extends TabsHandler {
 
       case "pub(rpc.unsubscribe)":
         return this.rpcUnsubscribe(request as RequestRpcUnsubscribe, port)
+
+      case "pub(pgp.encrypt)":
+        return this.messageEncrypt(url, request as EncryptPayload)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)
