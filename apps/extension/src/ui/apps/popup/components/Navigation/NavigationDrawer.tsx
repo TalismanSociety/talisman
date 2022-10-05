@@ -5,9 +5,11 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
   CreditCardIcon,
   ExternalLinkIcon,
-  ImageIcon,
+  EyeIcon,
+  EyeOffIcon,
+  InfoIcon,
+  KeyIcon,
   LockIcon,
-  MaximizeIcon,
   PaperPlaneIcon,
   PlusIcon,
   SettingsIcon,
@@ -15,10 +17,12 @@ import {
 } from "@talisman/theme/icons"
 import { FullColorSmallLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import Build from "@ui/domains/Build"
-import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
+import { useSettings } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
 import styled from "styled-components"
 
@@ -78,51 +82,92 @@ export const ExtLinkIcon = styled(ExternalLinkIcon)`
   display: inline;
 `
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Popup",
+  feature: "Navigation",
+  featureVersion: 3,
+  page: "Portfolio",
+}
+
 export const NavigationDrawer: FC = () => {
   const { isOpen, close } = useNavigationContext()
-  const { genericEvent } = useAnalytics()
   const showBuyTokens = useIsFeatureEnabled("BUY_CRYPTO")
 
   const handleLock = useCallback(async () => {
-    genericEvent("lock", { from: "popup nav" })
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Interact",
+      action: "Lock wallet",
+    })
     await api.lock()
-    close()
-  }, [close, genericEvent])
+    window.close()
+  }, [])
 
   const handleAddAccountClick = useCallback(() => {
-    genericEvent("goto add account", { from: "popup nav" })
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Add account button",
+    })
     api.dashboardOpen("/accounts/add")
-  }, [genericEvent])
+    window.close()
+  }, [])
 
   const handleSendFundsClick = useCallback(async () => {
-    genericEvent("open send funds", { from: "popup nav" })
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Send Funds button",
+    })
     await api.modalOpen("send")
     window.close()
-  }, [genericEvent])
+  }, [])
 
   const handleBuyTokensClick = useCallback(async () => {
-    genericEvent("open buy tokens", { from: "popup nav" })
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Buy Crypto button",
+    })
     await api.modalOpen("buy")
     window.close()
-  }, [genericEvent])
-
-  const handlePortfolioClick = useCallback(() => {
-    genericEvent("goto portfolio", { from: "popup nav" })
-    api.dashboardOpen("/accounts")
-  }, [genericEvent])
+  }, [])
 
   const handleSettingsClick = useCallback(() => {
-    genericEvent("goto settings", { from: "popup nav" })
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Settings button",
+    })
     api.dashboardOpen("/settings")
-  }, [genericEvent])
+    window.close()
+  }, [])
 
-  const handleNFTClick = useCallback(() => {
-    genericEvent("open web app nfts", { from: "popup nav" })
-    window.open("https://app.talisman.xyz/nfts")
-  }, [genericEvent])
+  const handleBackupClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Backup wallet button",
+    })
+    api.dashboardOpen("/settings?showBackupModal")
+    window.close()
+  }, [])
+
+  const { hideBalances, update } = useSettings()
+  const toggleHideBalance = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Hide balances button",
+    })
+    update({ hideBalances: !hideBalances })
+    close()
+  }, [close, hideBalances, update])
+
+  const { isNotConfirmed } = useMnemonicBackup()
 
   return (
-    <Drawer anchor="right" open={isOpen} onClose={close} fullScreen>
+    <Drawer anchor="bottom" open={isOpen} onClose={close} fullScreen>
       <Container>
         <header>
           <FullColorSmallLogo className="logo" />
@@ -133,28 +178,34 @@ export const NavigationDrawer: FC = () => {
         <main>
           <ScrollContainer>
             <Nav column>
-              <NavItemButton icon={<PlusIcon />} onClick={handleAddAccountClick}>
-                Add Account
-              </NavItemButton>
               <NavItemButton icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
                 Send Funds
-              </NavItemButton>
-              <NavItemButton icon={<ImageIcon />} onClick={handleNFTClick}>
-                NFTs <ExtLinkIcon />
               </NavItemButton>
               {showBuyTokens && (
                 <NavItemButton icon={<CreditCardIcon />} onClick={handleBuyTokensClick}>
                   Buy Crypto
                 </NavItemButton>
               )}
-              <NavItemButton icon={<MaximizeIcon />} onClick={handlePortfolioClick}>
-                Expand View
+              <NavItemButton
+                icon={hideBalances ? <EyeIcon /> : <EyeOffIcon />}
+                onClick={toggleHideBalance}
+              >
+                {hideBalances ? "Show" : "Hide"} Balances{" "}
+              </NavItemButton>
+              <NavItemButton icon={<PlusIcon />} onClick={handleAddAccountClick}>
+                Add Account
               </NavItemButton>
               <NavItemButton icon={<SettingsIcon />} onClick={handleSettingsClick}>
                 Settings
               </NavItemButton>
+              <NavItemButton icon={<KeyIcon />} onClick={handleBackupClick}>
+                <span className="inline-flex items-center gap-4">
+                  <span>Backup Wallet</span>
+                  {isNotConfirmed && <InfoIcon className="text-primary inline-block" />}
+                </span>
+              </NavItemButton>
               <NavItemButton icon={<LockIcon />} onClick={handleLock}>
-                Lock
+                Lock Wallet
               </NavItemButton>
             </Nav>
           </ScrollContainer>

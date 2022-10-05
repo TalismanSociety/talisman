@@ -2,7 +2,7 @@ import { FC, SVGProps, useMemo } from "react"
 import { IconLoader } from "../icons"
 import { classNames } from "../utils"
 
-type ButtonProps = React.DetailedHTMLProps<
+export type ButtonProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
   HTMLButtonElement
 > & {

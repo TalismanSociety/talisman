@@ -153,7 +153,7 @@ const Global = createGlobalStyle`
     }
   }
 
-  *:focus{
+  *:not(.allow-focus):focus{
       outline: none;
   }
 
