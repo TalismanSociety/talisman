@@ -87,6 +87,7 @@ const Unlock = ({ className }: any) => {
               type="password"
               placeholder="Enter your password"
               spellCheck={false}
+              autoComplete="off"
               data-lpignore
               autoFocus
             />
