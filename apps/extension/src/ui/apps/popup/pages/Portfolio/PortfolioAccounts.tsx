@@ -19,6 +19,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useFeatures, useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { MouseEventHandler, memo, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -162,14 +163,20 @@ const TopActions = () => {
     window.close()
   }, [])
 
+  const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
+
   return (
     <div className="mt-8 flex justify-center gap-4">
-      <PillButton onClick={handleSendFundsClick} icon={PaperPlaneIcon}>
-        Send
-      </PillButton>
-      <PillButton onClick={handleBuyTokensClick} icon={CreditCardIcon}>
-        Buy
-      </PillButton>
+      <>
+        <PillButton onClick={handleSendFundsClick} icon={PaperPlaneIcon}>
+          Send
+        </PillButton>
+        {canBuy && (
+          <PillButton onClick={handleBuyTokensClick} icon={CreditCardIcon}>
+            Buy
+          </PillButton>
+        )}
+      </>
     </div>
   )
 }
