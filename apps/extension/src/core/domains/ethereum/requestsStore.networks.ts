@@ -2,7 +2,7 @@ import type {
   AddEthereumChainParameter,
   AddEthereumChainRequest,
 } from "@core/domains/ethereum/types"
-import { stripUrl } from "@core/handlers/helpers"
+import { stripUrl } from "@core/util/stripUrl"
 import { RequestStore } from "@core/libs/RequestStore"
 
 class AddNetworkError extends Error {}
@@ -12,16 +12,17 @@ export default class EthereumNetworksRequestsStore extends RequestStore<
   null
 > {
   async requestAddNetwork(url: string, network: AddEthereumChainParameter) {
-    const idStr = stripUrl(url)
+    const { err, val: urlVal } = stripUrl(url)
+    if (err) throw new AddNetworkError(urlVal)
 
     // Do not enqueue duplicate requests from the same app
-    const isDuplicate = this.getAllRequests().some((request) => request.idStr === idStr)
+    const isDuplicate = this.getAllRequests().some((request) => request.idStr === urlVal)
 
     if (isDuplicate) {
       throw new AddNetworkError(
         "Pending add network already exists for this site. Please accept or reject the request."
       )
     }
-    await this.createRequest({ url, network, idStr })
+    await this.createRequest({ url, network, idStr: urlVal })
   }
 }

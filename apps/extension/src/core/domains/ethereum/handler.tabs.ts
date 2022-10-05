@@ -5,7 +5,7 @@ import {
   RequestAuthorizeTab,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token } from "@core/domains/tokens/types"
-import { stripUrl } from "@core/handlers/helpers"
+import { stripUrl } from "@core/util/stripUrl"
 import {
   AnyEthRequest,
   ETH_ERROR_EIP1474_INVALID_INPUT,
@@ -254,7 +254,9 @@ export class EthTabsHandler extends TabsHandler {
     // switch automatically to new chain
     const ethereumNetwork = await db.evmNetworks.get(chainId)
     if (ethereumNetwork) {
-      this.stores.sites.updateSite(stripUrl(url), { ethChainId: chainId })
+      const { err, val } = stripUrl(url)
+      if (err) throw new Error(val)
+      this.stores.sites.updateSite(val, { ethChainId: chainId })
     }
 
     return null
@@ -282,13 +284,16 @@ export class EthTabsHandler extends TabsHandler {
     if (!provider)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-    this.stores.sites.updateSite(stripUrl(url), { ethChainId: chainId })
+    const { err, val } = stripUrl(url)
+    if (err) throw new Error(val)
+    this.stores.sites.updateSite(val, { ethChainId: chainId })
 
     return null
   }
 
   private getChainId = async (url: string) => {
-    const site = await this.stores.sites.get(stripUrl(url))
+    // url validation carried out inside stores.sites.getSiteFromUrl
+    const site = await this.stores.sites.getSiteFromUrl(url)
     return site?.ethChainId ?? DEFAULT_ETH_CHAIN_ID
   }
 
