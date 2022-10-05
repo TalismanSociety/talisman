@@ -159,23 +159,11 @@ const handleItemToString = (tokenId?: TokenId | null) => ""
 const DEFAULT_SEARCH = (text: string | null, items: PickerItemProps[]) => {
   if (!text) return items
   const ls = text.toLowerCase()
-  return items
-    .filter(
-      (item) =>
-        item.title?.toString().toLowerCase().includes(ls) ||
-        (typeof item.subtitle === "string" &&
-          item.subtitle.toLowerCase().replace("(ethereum)", "").includes(ls))
-    )
-    .sort((a, b) => {
-      if (typeof a.subtitle === "string" && a.subtitle.toLowerCase() === ls) return -1
-      if (typeof b.subtitle === "string" && b.subtitle.toLowerCase() === ls) return 1
-      return 0
-    })
-    .sort((a, b) => {
-      if (a.title?.toString().toLowerCase() === ls) return -1
-      if (b.title?.toString().toLowerCase() === ls) return 1
-      return 0
-    })
+  return items.filter(
+    (item) =>
+      item.title?.toString().toLowerCase().includes(ls) ||
+      (typeof item.subtitle === "string" && item.subtitle.toLowerCase().includes(ls))
+  )
 }
 
 type GenericPickerProps = {

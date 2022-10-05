@@ -7,6 +7,35 @@ import GenericPicker, { PickerItemProps } from "../../../@talisman/components/Ge
 import { useSortedTransferableTokens } from "./Send/useTransferableTokens"
 import { TokenLogo } from "./TokenLogo"
 
+// Used to sort and filter tokens from the GenericPicker component
+// Exclude (ethereum) as it's added on all ETH chains
+// If an exact match is found in title or subtitle, it must be displayed first
+const searchAccounts = (text: string | null, items: PickerItemProps[]) => {
+  if (!text) return items
+  const ls = text.toLowerCase()
+  return (
+    items
+      .filter(
+        (item) =>
+          item.title?.toString().toLowerCase().includes(ls) ||
+          (typeof item.subtitle === "string" &&
+            item.subtitle.toLowerCase().replace("(ethereum)", "").includes(ls))
+      )
+      // Exact match on subtitle should come up first
+      .sort((a, b) => {
+        if (typeof a.subtitle === "string" && a.subtitle.toLowerCase() === ls) return -1
+        if (typeof b.subtitle === "string" && b.subtitle.toLowerCase() === ls) return 1
+        return 0 // no match, keep original order
+      })
+      // Exact match on title should come up first (this has priority over subtitle as it's done after)
+      .sort((a, b) => {
+        if (a.title?.toString().toLowerCase() === ls) return -1
+        if (b.title?.toString().toLowerCase() === ls) return 1
+        return 0 // no match, keep original order
+      })
+  )
+}
+
 interface IProps {
   defaultValue?: TokenId
   value?: TokenId
@@ -52,6 +81,7 @@ const AssetPicker: FC<IProps> = ({
       onChange={onChange}
       value={value}
       defaultValue={defaultValue}
+      search={searchAccounts}
     />
   )
 }
