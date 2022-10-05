@@ -1,12 +1,10 @@
-import { HomeIcon, IconMore, ImageIcon, MaximizeIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { api } from "@ui/api"
-import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback, useMemo } from "react"
-import { createPortal } from "react-dom"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useNavigationContext } from "../../context/NavigationContext"
+import { NavIconExpand, NavIconHome, NavIconMore, NavIconNft } from "./icons"
 
 type BottomNavButtonProps = DetailedHTMLProps<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -18,10 +16,10 @@ type BottomNavButtonProps = DetailedHTMLProps<
 const BottomNavButton: FC<BottomNavButtonProps> = ({ current, className, children, ...props }) => (
   <button
     {...props}
-    disabled={props.disabled ?? current}
     className={classNames(
       " text-body-secondary hover:bg-grey-800 hover:text-body flex h-20 w-20 justify-center rounded-sm text-center",
-      current && "text-body cursor-default hover:bg-transparent",
+      "allow-focus focus-visible:border-body active:text-body",
+      current && "text-body",
       className
     )}
   >
@@ -52,18 +50,18 @@ export const BottomNav = () => {
   }, [account, location.pathname])
 
   return (
-    <div className="border-t-grey-800  flex h-32 min-h-[6.4rem] justify-between border-t px-12">
+    <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] justify-between border-t px-12 text-3xl">
       <BottomNavButton onClick={handleHomeClick} current={location.pathname === "/portfolio"}>
-        <HomeIcon />
+        <NavIconHome />
       </BottomNavButton>
       <BottomNavButton onClick={handleNftClick}>
-        <ImageIcon />
+        <NavIconNft />
       </BottomNavButton>
       <BottomNavButton onClick={handleExpandClick}>
-        <MaximizeIcon />
+        <NavIconExpand />
       </BottomNavButton>
       <BottomNavButton onClick={open}>
-        <IconMore />
+        <NavIconMore />
       </BottomNavButton>
     </div>
   )
