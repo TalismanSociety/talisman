@@ -15,6 +15,7 @@ import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
+import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
@@ -66,7 +67,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
             <ChevronLeftIcon />
           </IconButton>
           <IconBox fontsizecustom="3.6rem" flex column justify="center">
-            {account?.address ? <AccountAvatar address={account.address} /> : <AllAccountsIcon />}
+            <CurrentAccountAvatar />
           </IconBox>
           <Box grow flex column gap={0.4} padding="0 0 0 0.4rem" fontsize="small" overflow="hidden">
             <Box fg="mid" overflow="hidden" textOverflow="ellipsis" noWrap>
