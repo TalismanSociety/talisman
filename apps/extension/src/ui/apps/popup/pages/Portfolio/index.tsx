@@ -1,7 +1,7 @@
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import Site from "@ui/domains/Site"
-import { Suspense, lazy, useMemo } from "react"
+import { Suspense, lazy } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
 
 import Layout, { Content, Header } from "../../Layout"
@@ -18,9 +18,7 @@ const AccountAvatar = () => {
   const location = useLocation()
 
   // do now show it on portfolio's home
-  const showAccountAvatar = useMemo(() => location.pathname !== "/portfolio", [location.pathname])
-
-  if (!showAccountAvatar) return null
+  if (location.pathname === "/portfolio") return null
 
   return (
     <div className="text-xl">
