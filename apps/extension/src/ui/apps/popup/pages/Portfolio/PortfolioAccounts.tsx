@@ -2,7 +2,16 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
-import { AllAccountsIcon, ChevronRightIcon, CopyIcon, UsbIcon } from "@talisman/theme/icons"
+import {
+  AllAccountsIcon,
+  ChevronRightIcon,
+  CopyIcon,
+  CreditCardIcon,
+  PaperPlaneIcon,
+  UsbIcon,
+} from "@talisman/theme/icons"
+import { api } from "@ui/api"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import Fiat from "@ui/domains/Asset/Fiat"
@@ -10,11 +19,20 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useFeatures, useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { MouseEventHandler, memo, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
+import { PillButton } from "talisman-ui"
 
 import { TotalFiatBalance } from "../../components/TotalFiatBalance"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Popup",
+  feature: "Porfolio",
+  featureVersion: 2,
+  page: "Portfolio Home",
+}
 
 type AccountOption = {
   address?: string
@@ -36,8 +54,15 @@ const Button = styled.article`
   gap: 1.2rem;
   overflow: hidden;
 
+  .chevron {
+    color: var(--color-mid);
+  }
+
   &:hover {
     background-color: var(--color-background-muted-3x);
+    .chevron {
+      color: var(--color-foreground);
+    }
   }
 `
 
@@ -81,31 +106,21 @@ const AccountButton = ({ address, name, total, genesisHash }: AccountOption) => 
         )}
       </Box>
       <Box flex column justify="center" align="flex-start" grow gap={0.4} overflow="hidden">
-        <Box
-          flex
-          fg="foreground"
-          fontsize="normal"
-          lineheight="normal"
-          fullwidth
-          align="start"
-          gap={0.6}
-        >
-          <Box overflow="hidden" textOverflow="ellipsis" noWrap>
-            {name}
-          </Box>
+        <div className="text-body flex w-full items-center gap-3 text-base leading-none">
+          <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{name}</div>
           {genesisHash && (
-            <Box fg="primary">
+            <div className="text-primary">
               <UsbIcon />
-            </Box>
+            </div>
           )}
           {address ? (
-            <Box overflow="hidden" h="1.4rem">
+            <div className="flex flex-col justify-end">
               <CopyButton onClick={handleCopyClick}>
                 <CopyIcon />
               </CopyButton>
-            </Box>
+            </div>
           ) : null}
-        </Box>
+        </div>
         <Box
           fg="mid"
           fontsize="small"
@@ -120,16 +135,56 @@ const AccountButton = ({ address, name, total, genesisHash }: AccountOption) => 
           <Fiat amount={total} isBalance />
         </Box>
       </Box>
-      <Box flex column justify="center" fg="foreground" fontsize="large">
+      <Box flex column justify="center" fontsize="large">
         <ChevronRightIcon className="chevron" />
       </Box>
     </Button>
   )
 }
 
+const TopActions = () => {
+  const handleSendFundsClick = useCallback(async () => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Send Funds button",
+    })
+    await api.modalOpen("send")
+    window.close()
+  }, [])
+
+  const handleBuyTokensClick = useCallback(async () => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Buy Crypto button",
+    })
+    await api.modalOpen("buy")
+    window.close()
+  }, [])
+
+  const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
+
+  return (
+    <div className="mt-8 flex justify-center gap-4">
+      <>
+        <PillButton onClick={handleSendFundsClick} icon={PaperPlaneIcon}>
+          Send
+        </PillButton>
+        {canBuy && (
+          <PillButton onClick={handleBuyTokensClick} icon={CreditCardIcon}>
+            Buy
+          </PillButton>
+        )}
+      </>
+    </div>
+  )
+}
+
 const Accounts = memo(({ options }: { options: AccountOption[] }) => (
   <Box flex column fullwidth>
     <TotalFiatBalance />
+    <TopActions />
     <Box flex column fullwidth gap={0.8} padding="2.4rem 0">
       {options.map((option) => (
         <AccountButton key={option.address ?? "all"} {...option} />
