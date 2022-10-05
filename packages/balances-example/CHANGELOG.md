@@ -1,5 +1,12 @@
 # @talismn/balances-example
 
+## 0.1.16
+
+### Patch Changes
+
+- @talismn/balances@0.1.16
+- @talismn/chaindata-provider@0.1.8
+
 ## 0.1.15
 
 ### Patch Changes

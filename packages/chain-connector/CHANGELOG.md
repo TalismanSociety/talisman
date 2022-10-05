@@ -1,5 +1,12 @@
 # @talismn/chain-connector
 
+## 0.1.8
+
+### Patch Changes
+
+- d13f514: fix: improved error handling for failing balance subscriptions
+  - @talismn/chaindata-provider@0.1.8
+
 ## 0.1.7
 
 ### Patch Changes
