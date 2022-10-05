@@ -34,7 +34,7 @@ export const CurrentAccountAvatar = ({
   }, [account, withTooltip])
 
   return withTooltip ? (
-    <WithTooltip tooltip={tooltip}>
+    <WithTooltip as="div" tooltip={tooltip} className="flex flex-col justify-center">
       <Avatar account={account} className={className} />
     </WithTooltip>
   ) : (
