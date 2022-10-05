@@ -40,6 +40,7 @@ export const PillButton: FC<PillButtonProps> = ({
         "bg-grey-800 text-body-secondary inline-flex items-center justify-center leading-none outline-none",
         "gap-[0.333em] rounded-[1em] px-[1em] py-[0.666em]",
         "hover:bg-grey-700",
+        "allow-focus outline-offset-0 focus-visible:outline-current",
         className
       )}
       {...props}
