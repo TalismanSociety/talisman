@@ -1,7 +1,7 @@
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useEffect } from "react"
-import { Route, Routes, useLocation, useNavigate, useSearchParams } from "react-router-dom"
+import { Route, Routes, useSearchParams } from "react-router-dom"
 
 import Layout from "../../layout"
 import { PortfolioAsset } from "./PortfolioAsset"

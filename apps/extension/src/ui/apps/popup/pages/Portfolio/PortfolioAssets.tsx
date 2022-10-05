@@ -3,18 +3,11 @@ import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import {
-  AllAccountsIcon,
-  ChevronLeftIcon,
-  CopyIcon,
-  IconMore,
-  PaperPlaneIcon,
-} from "@talisman/theme/icons"
+import { ChevronLeftIcon, CopyIcon, IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
-import AccountAvatar from "@ui/domains/Account/Avatar"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"

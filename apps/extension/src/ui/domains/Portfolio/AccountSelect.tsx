@@ -13,7 +13,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useSelect, UseSelectStateChange } from "downshift"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { useCallback, useMemo } from "react"
 import styled, { css } from "styled-components"
 
 const Button = styled.button`

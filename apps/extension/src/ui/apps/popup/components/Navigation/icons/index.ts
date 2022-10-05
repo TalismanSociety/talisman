@@ -1,3 +1,4 @@
+// These SVG are purposely sized 40x40 for the bottom nav
 export { ReactComponent as NavIconExpand } from "./nav-expand.svg"
 export { ReactComponent as NavIconHome } from "./nav-home.svg"
 export { ReactComponent as NavIconMore } from "./nav-more.svg"

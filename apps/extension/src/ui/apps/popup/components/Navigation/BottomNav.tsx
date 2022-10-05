@@ -20,7 +20,8 @@ const BottomNavButton: FC<BottomNavButtonProps> = ({ current, className, childre
   <button
     {...props}
     className={classNames(
-      " text-body-secondary hover:bg-grey-800 hover:text-body flex h-20 w-20 justify-center rounded-sm text-center",
+      " text-body-secondary flex h-20 w-20 justify-center rounded-sm text-center",
+      "hover:bg-grey-800 hover:text-body",
       "allow-focus focus-visible:border-body active:text-body",
       current && "text-body",
       className
