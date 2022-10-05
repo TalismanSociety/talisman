@@ -1,6 +1,6 @@
 import { Err, Ok, Result } from "ts-results"
 
-export const stripUrl = (
+export const urlToDomain = (
   urlStr: string
 ): Result<string, "URL protocol unsupported" | "Invalid URL"> => {
   let url: URL

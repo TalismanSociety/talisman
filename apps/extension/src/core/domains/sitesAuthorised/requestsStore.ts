@@ -3,7 +3,7 @@ import {
   AuthRequestResponse,
   RequestAuthorizeTab,
 } from "@core/domains/sitesAuthorised/types"
-import { stripUrl } from "@core/util/stripUrl"
+import { urlToDomain } from "@core/util/urlToDomain"
 import { RequestStore } from "@core/libs/RequestStore"
 import type { RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
@@ -19,7 +19,7 @@ export default class SitesRequestsStore extends RequestStore<AuthRequestBase, Au
   }
 
   async requestAuthorizeUrl(url: string, request: RequestAuthorizeTab) {
-    const { err, val: urlVal } = stripUrl(url)
+    const { err, val: urlVal } = urlToDomain(url)
     if (err) throw new AuthError(urlVal)
 
     // Do not enqueue duplicate authorization requests.

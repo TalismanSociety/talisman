@@ -5,7 +5,7 @@ import {
   RequestAuthorizeTab,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token } from "@core/domains/tokens/types"
-import { stripUrl } from "@core/util/stripUrl"
+import { urlToDomain } from "@core/util/urlToDomain"
 import {
   AnyEthRequest,
   ETH_ERROR_EIP1474_INVALID_INPUT,
@@ -254,7 +254,7 @@ export class EthTabsHandler extends TabsHandler {
     // switch automatically to new chain
     const ethereumNetwork = await db.evmNetworks.get(chainId)
     if (ethereumNetwork) {
-      const { err, val } = stripUrl(url)
+      const { err, val } = urlToDomain(url)
       if (err) throw new Error(val)
       this.stores.sites.updateSite(val, { ethChainId: chainId })
     }
@@ -284,7 +284,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!provider)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-    const { err, val } = stripUrl(url)
+    const { err, val } = urlToDomain(url)
     if (err) throw new Error(val)
     this.stores.sites.updateSite(val, { ethChainId: chainId })
 

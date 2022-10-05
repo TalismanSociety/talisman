@@ -2,7 +2,7 @@ import { FC } from "react"
 import styled from "styled-components"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { classNames } from "@talisman/util/classNames"
-import { stripUrl } from "@core/util/stripUrl"
+import { urlToDomain } from "@core/util/urlToDomain"
 
 const Container = styled.div`
   text-align: center;
@@ -29,7 +29,7 @@ type SiteInfoProps = {
 
 export const SiteInfo: FC<SiteInfoProps> = ({ siteUrl = "" }) => {
   const favicon = useFaviconUrl(siteUrl)
-  const domain = stripUrl(siteUrl)
+  const domain = urlToDomain(siteUrl)
 
   if (!siteUrl || domain.err) return null
 

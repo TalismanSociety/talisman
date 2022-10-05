@@ -1,5 +1,5 @@
 import { AuthorizedSite, AuthorizedSites, ProviderType } from "@core/domains/sitesAuthorised/types"
-import { stripUrl } from "@core/util/stripUrl"
+import { urlToDomain } from "@core/util/urlToDomain"
 import { SubscribableByIdStorageProvider } from "@core/libs/Store"
 import { assert } from "@polkadot/util"
 import Browser from "webextension-polyfill"
@@ -33,7 +33,7 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
   }
 
   async getSiteFromUrl(url: string) {
-    const { val, err } = stripUrl(url)
+    const { val, err } = urlToDomain(url)
     if (err) throw new Error(val)
 
     return await this.get(val)

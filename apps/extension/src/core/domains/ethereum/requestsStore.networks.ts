@@ -2,7 +2,7 @@ import type {
   AddEthereumChainParameter,
   AddEthereumChainRequest,
 } from "@core/domains/ethereum/types"
-import { stripUrl } from "@core/util/stripUrl"
+import { urlToDomain } from "@core/util/urlToDomain"
 import { RequestStore } from "@core/libs/RequestStore"
 
 class AddNetworkError extends Error {}
@@ -12,7 +12,7 @@ export default class EthereumNetworksRequestsStore extends RequestStore<
   null
 > {
   async requestAddNetwork(url: string, network: AddEthereumChainParameter) {
-    const { err, val: urlVal } = stripUrl(url)
+    const { err, val: urlVal } = urlToDomain(url)
     if (err) throw new AddNetworkError(urlVal)
 
     // Do not enqueue duplicate requests from the same app
