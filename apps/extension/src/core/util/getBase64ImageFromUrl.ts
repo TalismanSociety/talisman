@@ -1,10 +1,10 @@
 import { DEBUG } from "@core/constants"
+import { api } from "@ui/api"
 
 export const getBase64ImageFromUrl = async (url: string) => {
   try {
-    const response = await fetch(url)
+    const response = await api.fetchProxy(url)
     const blob = await response.blob()
-
     return new Promise<string>((resolve, reject) => {
       const reader = new FileReader()
       reader.onloadend = function () {

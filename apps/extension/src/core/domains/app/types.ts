@@ -13,6 +13,9 @@ export interface RequestLogin {
 export interface RequestRoute {
   route: string
 }
+export interface RequestFetchProxy {
+  url: string
+}
 
 export declare type ModalTypes = "send" | "buy"
 export interface ModalOpenParams {
@@ -63,4 +66,5 @@ export interface AppMessages {
   "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenParams]
   "pri(app.promptLogin)": [boolean, boolean]
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
+  "pri(app.fetchProxy)": [RequestFetchProxy, Response]
 }

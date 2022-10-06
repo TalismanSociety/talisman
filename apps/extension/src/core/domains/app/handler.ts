@@ -6,6 +6,7 @@ import type {
   ModalOpenParams,
   ModalTypes,
   OnboardedType,
+  RequestFetchProxy,
   RequestLogin,
   RequestOnboard,
   RequestRoute,
@@ -253,6 +254,9 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.promptLogin)":
         return this.promptLogin(request as boolean)
+
+      case "pri(app.fetchProxy)":
+        return await fetch((request as RequestFetchProxy).url)
 
       case "pri(app.modalOpen.request)":
         return this.openModal(request as ModalOpenParams)

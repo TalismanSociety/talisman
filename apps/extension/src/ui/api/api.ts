@@ -29,6 +29,7 @@ export const api: MessageTypes = {
   popupOpen: () => messageService.sendMessage("pri(app.popupOpen)"),
   promptLogin: (closeOnSuccess = false) =>
     messageService.sendMessage("pri(app.promptLogin)", closeOnSuccess),
+  fetchProxy: (url) => messageService.sendMessage("pri(app.fetchProxy)", { url }),
   approveMetaRequest: (id) => messageService.sendMessage("pri(metadata.approve)", { id }),
   rejectMetaRequest: (id) => messageService.sendMessage("pri(metadata.reject)", { id }),
   subscribeMetadataRequests: (cb) => messageService.subscribe("pri(metadata.requests)", null, cb),

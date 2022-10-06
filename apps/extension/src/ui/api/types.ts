@@ -61,6 +61,7 @@ export default interface MessageTypes {
   dashboardOpen: (route: string) => Promise<boolean>
   onboardOpen: () => Promise<boolean>
   popupOpen: () => Promise<boolean>
+  fetchProxy: (url: string) => Promise<Response>
   promptLogin: (closeOnSuccess?: boolean) => Promise<boolean>
   approveMetaRequest: (id: string) => Promise<boolean>
   rejectMetaRequest: (id: string) => Promise<boolean>
