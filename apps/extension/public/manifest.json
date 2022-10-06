@@ -29,5 +29,11 @@
     "48": "favicon48x48.png",
     "64": "favicon64x64.png",
     "128": "favicon128x128.png"
-  }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "strict_min_version": "95"
+    }
+  },
+  "minimum_chrome_version": "92"
 }

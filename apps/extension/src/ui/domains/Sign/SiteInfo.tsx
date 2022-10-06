@@ -1,8 +1,8 @@
 import { FC } from "react"
-import urlToDomain from "@talisman/util/urlToDomain"
 import styled from "styled-components"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { classNames } from "@talisman/util/classNames"
+import { urlToDomain } from "@core/util/urlToDomain"
 
 const Container = styled.div`
   text-align: center;
@@ -31,12 +31,12 @@ export const SiteInfo: FC<SiteInfoProps> = ({ siteUrl = "" }) => {
   const favicon = useFaviconUrl(siteUrl)
   const domain = urlToDomain(siteUrl)
 
-  if (!siteUrl) return null
+  if (!siteUrl || domain.err) return null
 
   return (
     <Container className="site-info">
       <img className={classNames("favicon inline-block", favicon && "show")} src={favicon} alt="" />
-      <p>{domain}</p>
+      <p>{domain.val}</p>
     </Container>
   )
 }
