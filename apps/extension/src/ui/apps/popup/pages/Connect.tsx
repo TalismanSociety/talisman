@@ -149,7 +149,7 @@ const Connect = ({ className, onSuccess }: any) => {
         {!ethereum && (
           <div className="text-body-secondary my-8 text-sm">
             <WithTooltip tooltip="Some apps do not work with Ethereum accounts">
-              <Checkbox onChange={handleShowEthAccountsChanged}>Show Eth accounts</Checkbox>
+              <Checkbox onChange={handleShowEthAccountsChanged}>Show Ethereum accounts</Checkbox>
             </WithTooltip>
           </div>
         )}
