@@ -13,7 +13,8 @@
     @apply text-base;
   }
 
-  input::placeholder {
+  input::placeholder,
+  textarea::placeholder {
     @apply text-current opacity-30;
   }
 }
