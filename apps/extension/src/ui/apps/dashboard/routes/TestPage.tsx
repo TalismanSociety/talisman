@@ -3,7 +3,7 @@ import { classNames } from "@talisman/util/classNames"
 import Color from "color"
 import { useEffect, useMemo, useRef, useState } from "react"
 import Layout from "../layout"
-import { Button } from "talisman-ui"
+import { Button, Checkbox } from "talisman-ui"
 
 const ColorTile = ({ className }: { className?: string }) => {
   const [color, setColor] = useState<Color>()
@@ -48,6 +48,10 @@ export const TestPage = () => {
       <StytledHeaderBlock title="Test page" />
       <div className="space-y-8">
         <Button>Library button</Button>
+        <div className="text-xl">
+          <div>XL checkbox</div>
+          <Checkbox>label of the checkbox</Checkbox>
+        </div>
         <h3>Grey shades</h3>
         <div className="flex flex-wrap">
           <ColorTile className="bg-white" />
