@@ -4,6 +4,7 @@ import { urlToDomain } from "./urlToDomain"
 describe("Tests urlToDomain function", () => {
   it("works", () => {
     expect(urlToDomain("https://something.com/anything")).toEqual(Ok("something.com"))
+    expect(urlToDomain("https://something.com:3000/anything")).toEqual(Ok("something.com:3000"))
     expect(urlToDomain("https://something.com/anything?moreStuff=true&yes=more")).toEqual(
       Ok("something.com")
     )
