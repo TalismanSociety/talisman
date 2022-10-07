@@ -32,7 +32,7 @@
   },
   "browser_specific_settings": {
     "gecko": {
-      "strict_min_version": "95"
+      "strict_min_version": "95.0"
     }
   },
   "minimum_chrome_version": "92"
