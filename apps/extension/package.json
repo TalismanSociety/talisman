@@ -112,7 +112,6 @@
     "url-join": "^5.0.0",
     "url-loader": "4.1.1",
     "uuid": "^8.3.2",
-    "wagmi": "^0.6.8",
     "webextension-polyfill": "^0.8.0",
     "webpack": "^5.74.0",
     "webpack-cli": "^4.9.2",

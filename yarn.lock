@@ -4383,6 +4383,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@talismn/wagmi-connector@npm:^0.0.4":
+  version: 0.0.4
+  resolution: "@talismn/wagmi-connector@npm:0.0.4"
+  peerDependencies:
+    "@wagmi/core": ^0.4.7
+  checksum: a7ef5766966f6d1dee1ae702cd08f024b690acae7d232f5c3666b8ac239d09c6b4a127fd7c5ea8bdec6bd844c14927bb860d36ca0add87f48066fe2de4a332ce
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-core@npm:4.10.1":
   version: 4.10.1
   resolution: "@tanstack/query-core@npm:4.10.1"
@@ -9717,7 +9726,6 @@ __metadata:
     url-join: ^5.0.0
     url-loader: 4.1.1
     uuid: ^8.3.2
-    wagmi: ^0.6.8
     webextension-polyfill: ^0.8.0
     webpack: ^5.74.0
     webpack-bundle-analyzer: ^4.5.0
@@ -13957,21 +13965,26 @@ __metadata:
   resolution: "playground@workspace:apps/playground"
   dependencies:
     "@tailwindcss/forms": ^0.5.3
+    "@talismn/wagmi-connector": ^0.0.4
     "@types/react": 18.0.14
     "@types/react-dom": 18.0.5
     "@vitejs/plugin-react": ^2.1.0
     autoprefixer: ^10.4.12
     eslint: ^8.15.0
     eslint-config-talisman: "*"
+    ethers: ^5.7.1
     postcss: ^8.4.16
     react: 18.2.0
     react-dom: 18.2.0
+    react-hook-form: ^7.37.0
     react-router-dom: 6.3.0
+    react-use: ^17.4.0
     tailwindcss: ^3.1.8
     talisman-ui: "*"
     typescript: 4.6.4
     vite: ^3.1.0
     vite-plugin-svgr: ^2.2.1
+    wagmi: ^0.6.8
   languageName: unknown
   linkType: soft
 
@@ -14591,6 +14604,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-hook-form@npm:^7.37.0":
+  version: 7.37.0
+  resolution: "react-hook-form@npm:7.37.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17 || ^18
+  checksum: 9dedc9a419c1f4cff35bc4e5d1cc39fa019e2c72401af04ac456dc1d5b87070156ee97070834d7d308293470bac45f652e12ab3cc86f36abd0e0a3ed32e89628
+  languageName: node
+  linkType: hard
+
 "react-is@npm:17.0.2, react-is@npm:^17.0.1, react-is@npm:^17.0.2":
   version: 17.0.2
   resolution: "react-is@npm:17.0.2"
@@ -14692,7 +14714,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-use@npm:17.4.0":
+"react-use@npm:17.4.0, react-use@npm:^17.4.0":
   version: 17.4.0
   resolution: "react-use@npm:17.4.0"
   dependencies:
