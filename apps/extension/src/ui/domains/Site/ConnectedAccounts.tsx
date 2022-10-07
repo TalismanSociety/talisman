@@ -2,13 +2,15 @@ import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import Field from "@talisman/components/Field"
 import Panel from "@talisman/components/Panel"
 import Spacer from "@talisman/components/Spacer"
+import { WithTooltip } from "@talisman/components/Tooltip"
 import Account from "@ui/domains/Account"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import useAuthorisedSiteProviders from "@ui/hooks/useAuthorisedSiteProviders"
 import { useConnectedAccounts } from "@ui/hooks/useConnectedAccounts"
-import { FC, useEffect, useMemo, useState } from "react"
+import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
+import { Checkbox } from "talisman-ui"
 
 import { NetworkSelect } from "../Ethereum/NetworkSelect"
 import { ProviderTypeSwitch } from "./ProviderTypeSwitch"
@@ -80,7 +82,10 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
   const { genericEvent } = useAnalytics()
   const { authorizedProviders, defaultProvider } = useAuthorisedSiteProviders(siteId)
   const [providerType, setProviderType] = useState<ProviderType>(defaultProvider)
-  const accounts = useConnectedAccounts(siteId, providerType)
+  const { accounts, showEthAccounts, setShowEthAccounts } = useConnectedAccounts(
+    siteId,
+    providerType
+  )
   const { ethChainId, setEthChainId, url } = useAuthorisedSiteById(siteId, providerType)
 
   useEffect(() => {
@@ -98,6 +103,16 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
         throw new Error(`Unknown provider type: ${providerType}`)
     }
   }, [providerType])
+
+  const handleShowEthAccountsChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      if (!e.target.checked)
+        for (const account of accounts.filter((a) => a.isConnected && a.type === "ethereum"))
+          account.toggle()
+      setShowEthAccounts(e.target.checked)
+    },
+    [accounts, setShowEthAccounts]
+  )
 
   return (
     <Container>
@@ -126,14 +141,23 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
       <div>
         <h3>{title}</h3>
       </div>
+      {providerType === "polkadot" && (
+        <div className="text-body-secondary my-4 text-sm">
+          <WithTooltip tooltip="Some apps do not work with Ethereum accounts">
+            <Checkbox onChange={handleShowEthAccountsChanged} defaultChecked={showEthAccounts}>
+              Show Eth accounts
+            </Checkbox>
+          </WithTooltip>
+        </div>
+      )}
       <section className="accounts">
-        {accounts?.map(({ address, isConnected, connect }) => (
+        {accounts?.map(({ address, isConnected, toggle }) => (
           <StyledAccountItem
             key={address}
             className={"account"}
             address={address}
             value={isConnected}
-            onChange={connect}
+            onChange={toggle}
           />
         ))}
       </section>
