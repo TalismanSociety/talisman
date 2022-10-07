@@ -1,7 +1,7 @@
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import Nav, { NavItemButton, NavItemLink } from "@talisman/components/Nav"
-import { PillButton } from "@talisman/components/PillButton"
+import { PillButton } from "talisman-ui"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { breakpoints } from "@talisman/theme/definitions"
@@ -294,11 +294,11 @@ export const SideBar = () => {
         <AccountSelect responsive />
         {/* Pills for large screens */}
         <Pills>
-          <PillButton onClick={handleSendClick}>
-            Send <PaperPlaneIcon />
+          <PillButton icon={PaperPlaneIcon} onClick={handleSendClick}>
+            Send
           </PillButton>
-          <PillButton onClick={handleCopyClick}>
-            Copy <CopyIcon />
+          <PillButton icon={CopyIcon} onClick={handleCopyClick}>
+            Copy
           </PillButton>
         </Pills>
         {/* Buttons for small screens */}

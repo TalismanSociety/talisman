@@ -8,6 +8,7 @@ import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import type { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 
 export default class SitesAuthorisationHandler extends ExtensionHandler {
   private authorizedForget({ id, type }: RequestAuthorizedSiteForget): boolean {
@@ -27,7 +28,11 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     const queued = this.state.requestStores.sites.getRequest(id)
     assert(queued, "Unable to find request")
 
-    talismanAnalytics.capture("authorised site approve", { url: queued.idStr })
+    talismanAnalytics.capture("authorised site approve", {
+      url: queued.idStr,
+      authType: queued.request.ethereum ? "ethereum" : "substrate",
+      withEthAccounts: queued.request.ethereum ? undefined : addresses.some(isEthereumAddress),
+    })
     const { resolve } = queued
     resolve({ addresses, ethChainId })
 
@@ -39,7 +44,10 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
 
     const { reject } = queued
-    talismanAnalytics.capture("authorised site reject", { url: queued.idStr })
+    talismanAnalytics.capture("authorised site reject", {
+      url: queued.idStr,
+      authType: queued.request.ethereum ? "ethereum" : "substrate",
+    })
     reject(new Error("Rejected"))
 
     return true

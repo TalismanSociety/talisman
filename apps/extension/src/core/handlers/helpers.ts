@@ -5,27 +5,6 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { Err, Ok, Result } from "ts-results"
 
-let idCounter = 0
-
-export function getId(): string {
-  return `${Date.now()}.${++idCounter}`
-}
-
-export function stripUrl(url: string): string {
-  assert(
-    url &&
-      (url.startsWith("http:") ||
-        url.startsWith("https:") ||
-        url.startsWith("ipfs:") ||
-        url.startsWith("ipns:")),
-    `Invalid url ${url}, expected to start with http: or https: or ipfs: or ipns:`
-  )
-
-  const parts = url.split("/")
-
-  return parts[2]
-}
-
 const getPairFromAddress = (address: Address) => {
   const pair = keyring.getPair(address)
   if (!pair) throw new Error("Unable to find pair")

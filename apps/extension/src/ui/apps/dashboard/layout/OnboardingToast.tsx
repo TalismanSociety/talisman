@@ -12,7 +12,8 @@ const OnboardNotification = () => (
     <Box grow lineheightcustom={2.4}>
       Pin Talisman for easy access
       <br />
-      Click <ExtensionButtonIcon /> then <PinIcon /> to pin Talisman
+      Click <ExtensionButtonIcon className="inline-block align-baseline" /> then{" "}
+      <PinIcon className="inline-block" /> to pin Talisman
     </Box>
   </Box>
 )

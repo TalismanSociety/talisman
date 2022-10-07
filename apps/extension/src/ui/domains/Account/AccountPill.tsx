@@ -1,10 +1,11 @@
-import { FC } from "react"
-import styled from "styled-components"
 import { AccountJson } from "@polkadot/extension-base/background/types"
-import CopyToClipboard from "@talisman/components/CopyToClipboard"
-import AccountAvatar from "./Avatar"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { WithTooltip } from "@talisman/components/Tooltip"
+import { shortenAddress } from "@talisman/util/shortenAddress"
+import { copyAddress } from "@ui/util/copyAddress"
+import { FC, useCallback } from "react"
+import styled from "styled-components"
+
+import AccountAvatar from "./Avatar"
 
 const Container = styled.span`
   display: inline-flex;
@@ -41,15 +42,17 @@ type AccountPillProps = {
 }
 
 export const AccountPill: FC<AccountPillProps> = ({ account, prefix }) => {
+  const handleClick = useCallback(() => {
+    copyAddress(account.address)
+  }, [account.address])
+
   if (!account) return null
   return (
-    <CopyToClipboard value={account.address}>
-      <WithTooltip tooltip={account.address}>
-        <Container>
-          <AccountAvatar address={account.address} />
-          <span className="account-name">{account.name ?? shortenAddress(account.address)}</span>
-        </Container>
-      </WithTooltip>
-    </CopyToClipboard>
+    <WithTooltip tooltip={account.address}>
+      <Container onClick={handleClick}>
+        <AccountAvatar address={account.address} />
+        <span className="account-name">{account.name ?? shortenAddress(account.address)}</span>
+      </Container>
+    </WithTooltip>
   )
 }

@@ -28,12 +28,13 @@ export const featuresStore = new FeaturesStore("features", FEATURE_STORE_INITIAL
 // without token, posthog won't be initialized and won't update the store
 if (!process.env.POSTHOG_AUTH_TOKEN) {
   // @devs : add all feature flags here, comment some if needed for testing
-  const DEV_FEATURE_FLAGS: FeatureFlag[] = [
-    "WALLET_FUNDING", // shown when onboarding until wallet has funds
-    "BUY_CRYPTO", // nav buttons + button in fund wallet component
-  ]
+  const DEV_FEATURE_VARIANTS: FeatureVariants = {
+    WALLET_FUNDING: true, // shown when onboarding until wallet has funds
+    BUY_CRYPTO: true, // nav buttons + button in fund wallet component
+    POPUP_BOTTOM_NAV_VARIANT: "WITH_TOOLTIP",
+  }
   featuresStore.set({
-    ...FEATURE_STORE_INITIAL_DATA,
-    features: DEV_FEATURE_FLAGS,
+    features: Object.keys(DEV_FEATURE_VARIANTS) as FeatureFlag[],
+    variants: DEV_FEATURE_VARIANTS,
   })
 }

@@ -132,7 +132,11 @@ export const AddCustomErc20Token = () => {
       />
       <Content>
         <div>
-          <TokenLogo src={request.token.image ?? unknownToken} alt={request.token.symbol} />
+          <TokenLogo
+            className="inline-block"
+            src={request.token.image ?? unknownToken}
+            alt={request.token.symbol}
+          />
         </div>
         <h1>New Token</h1>
         <p>

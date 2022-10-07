@@ -1,0 +1,31 @@
+{
+  "name": "playground",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host localhost --port 3000",
+    "pg:build": "tsc && vite build",
+    "pg:preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-router-dom": "6.3.0",
+    "talisman-ui": "*"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.3",
+    "@types/react": "18.0.14",
+    "@types/react-dom": "18.0.5",
+    "@vitejs/plugin-react": "^2.1.0",
+    "autoprefixer": "^10.4.12",
+    "eslint": "^8.15.0",
+    "eslint-config-talisman": "*",
+    "postcss": "^8.4.16",
+    "tailwindcss": "^3.1.8",
+    "typescript": "4.6.4",
+    "vite": "^3.1.0",
+    "vite-plugin-svgr": "^2.2.1"
+  }
+}

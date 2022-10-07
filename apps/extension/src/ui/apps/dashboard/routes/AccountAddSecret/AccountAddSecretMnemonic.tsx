@@ -218,6 +218,7 @@ export const AccountAddSecretMnemonic = () => {
     handleSubmit,
     setValue,
     watch,
+    trigger,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     defaultValues: data,
@@ -245,7 +246,7 @@ export const AccountAddSecretMnemonic = () => {
   useEffect(() => {
     const refreshTargetAddress = async () => {
       try {
-        const uri = await getAccountUri(mnemonic, type)
+        const uri = await getAccountUri(cleanupMnemonic(mnemonic), type)
         setTargetAddress(await api.addressFromMnemonic(uri, type))
       } catch (err) {
         setTargetAddress(undefined)
@@ -292,8 +293,10 @@ export const AccountAddSecretMnemonic = () => {
   const handleTypeChange = useCallback(
     (type: AccountAddressType) => {
       setValue("type", type, { shouldValidate: true })
+      // revalidate to get rid of "invalid mnemonic" with a private key, when switching to ethereum
+      trigger()
     },
-    [setValue]
+    [setValue, trigger]
   )
 
   const handleGenerateNew = useCallback(() => {

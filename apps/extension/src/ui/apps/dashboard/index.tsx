@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { api } from "@ui/api"
 import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
@@ -30,6 +31,7 @@ import ChangePassword from "./routes/Settings/ChangePassword"
 import Options from "./routes/Settings/Options"
 import SecurityPrivacySettings from "./routes/Settings/SecurityPrivacySettings"
 import SitesConnected from "./routes/Settings/SitesConnected"
+import { TestPage } from "./routes/TestPage"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
 const AccountAddLedger = lazy(() => import("./routes/AccountAddLedger"))
@@ -91,6 +93,7 @@ const DashboardInner = () => {
           <Route path="add" element={<CustomTokenAdd />} />
           <Route path=":id" element={<CustomTokenDetails />} />
         </Route>
+        {DEBUG && <Route path="test" element={<TestPage />} />}
         <Route path="*" element={<Navigate to="/portfolio" replace />} />
       </Routes>
     </Suspense>
