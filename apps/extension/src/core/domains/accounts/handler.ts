@@ -16,12 +16,13 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
-import { encodeAnyAddress } from "@core/util"
+import { decodeAnyAddress, encodeAnyAddress } from "@core/util"
 import { sleep } from "@core/util/sleep"
+import { createPair } from "@polkadot/keyring"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { mnemonicValidate } from "@polkadot/util-crypto"
+import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 
 export default class AccountsHandler extends ExtensionHandler {
@@ -174,13 +175,45 @@ export default class AccountsHandler extends ExtensionHandler {
     genesisHash,
     name,
   }: Omit<RequestAccountCreateHardware, "hardwareType">): boolean {
-    keyring.addHardware(address, "ledger", {
-      accountIndex,
-      addressOffset,
-      genesisHash,
-      name,
-      origin: AccountTypes.HARDWARE,
-    })
+    // TODO check already exists
+
+    const isEthereum = isEthereumAddress(address)
+
+    if (isEthereum) {
+      // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
+      // => create the pair without helper
+      const pair = createPair(
+        {
+          type: "ethereum",
+          toSS58: ethereumEncode,
+        },
+        {
+          publicKey: decodeAnyAddress(address),
+          secretKey: new Uint8Array(),
+        },
+        {
+          accountIndex, // TODO remove ?
+          addressOffset, // TODO remove ?
+          name,
+          hardwareType: "ledger",
+          isHardware: true,
+          origin: AccountTypes.HARDWARE,
+          // TODO specify derivation path here ?
+        },
+        null
+      )
+
+      // add to the underlying keyring, allowing not to specify a password
+      keyring.keyring.addPair(pair)
+      keyring.saveAccount(pair)
+    } else
+      keyring.addHardware(address, "ledger", {
+        accountIndex,
+        addressOffset,
+        genesisHash,
+        name,
+        origin: AccountTypes.HARDWARE,
+      })
 
     talismanAnalytics.capture("account create", { type: "substrate", method: "hardware" })
 

@@ -1,16 +1,19 @@
+import { AccountAddressType } from "@core/domains/accounts/types"
 import { Chain } from "@core/domains/chains/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Dropdown, RenderItemFunc } from "@talisman/components/Dropdown"
+import StytledHeaderBlock from "@talisman/components/HeaderBlock"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { classNames } from "@talisman/util/classNames"
+import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
 import Asset from "@ui/domains/Asset"
 import useChain from "@ui/hooks/useChain"
 import { useLedger } from "@ui/hooks/useLedger"
 import { useLedgerChains } from "@ui/hooks/useLedgerChains"
 import useToken from "@ui/hooks/useToken"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -18,6 +21,8 @@ import * as yup from "yup"
 
 import Layout from "../../layout"
 import { useAddLedgerAccount } from "./context"
+import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
+import { ConnectLedgerSubstrate } from "./Shared/ConnectLedgerSubstrate"
 
 const Container = styled(Layout)`
   .dropdown {
@@ -85,6 +90,7 @@ const Text = styled.p`
 
 type FormData = {
   chainId: string
+  type: AccountAddressType
 }
 
 const renderOption: RenderItemFunc<Chain> = (chain) => {
@@ -111,14 +117,18 @@ export const AddLedgerSelectNetwork = () => {
     () =>
       yup
         .object({
-          chainId: yup
-            .string()
-            .required("")
-            .test(
-              "is-ledger-chain",
-              "Network not supported",
-              (id) => !!ledgerChains.find((c) => c.id === id)
-            ),
+          type: yup.string().oneOf(["sr25519", "ethereum"], ""),
+          chainId: yup.string().when("type", {
+            is: "sr25519",
+            then: yup
+              .string()
+              .required("")
+              .test(
+                "is-ledger-chain",
+                "Network not supported",
+                (id) => !!ledgerChains.find((c) => c.id === id)
+              ),
+          }),
         })
         .required(),
     [ledgerChains]
@@ -128,21 +138,22 @@ export const AddLedgerSelectNetwork = () => {
     handleSubmit,
     watch,
     setValue,
-    formState: { isValid, isSubmitting },
+    resetField,
+    formState: { isValid, isSubmitting, errors },
   } = useForm<FormData>({
     mode: "onChange",
     defaultValues,
     resolver: yupResolver(schema),
   })
 
-  const chainId = watch("chainId")
-  const chain = useChain(chainId)
-  const token = useToken(chain?.nativeToken?.id)
-  const ledger = useLedger(chain?.genesisHash)
+  const [accountType, chainId] = watch(["type", "chainId"])
+  // const chain = useChain(chainId)
+  // const token = useToken(chain?.nativeToken?.id)
+  // const ledger = useLedger(accountType, chain?.genesisHash)
 
   const submit = useCallback(
-    async ({ chainId }: FormData) => {
-      updateData({ chainId })
+    async ({ type, chainId }: FormData) => {
+      updateData({ type, chainId })
       navigate("account")
     },
     [navigate, updateData]
@@ -155,25 +166,53 @@ export const AddLedgerSelectNetwork = () => {
     [setValue]
   )
 
+  const handleTypeChange = useCallback(
+    (type: AccountAddressType) => {
+      if (type === "ethereum") setValue("chainId", "")
+      setValue("type", type, { shouldValidate: true })
+    },
+    [setValue]
+  )
+
+  const [isLedgerReady, setIsLedgerReady] = useState(false)
+
+  const showStep2 = accountType === "ethereum" || (accountType === "sr25519" && chainId)
+
   return (
     <Container withBack centered>
       <form data-button-pull-left onSubmit={handleSubmit(submit)}>
         <div className="grow">
-          <H1>Import from Ledger</H1>
-          <H2>Step 1</H2>
-          <Dropdown
-            key={defaultChain?.id ?? "DEFAULT"}
-            propertyKey="id"
-            items={ledgerChains}
-            defaultSelectedItem={defaultChain}
-            placeholder="Select a network"
-            renderItem={renderOption}
-            onChange={handleNetworkChange}
+          <StytledHeaderBlock
+            title="Import from Ledger"
+            text="What type of account would you like to import ?"
           />
-          <Text>Please note: a Ledger account can only be used on a single network.</Text>
-          <div className={classNames("step2", chainId && "fadeIn")}>
+          <Spacer small />
+          <AccountTypeSelector onChange={handleTypeChange} />
+          <Spacer />
+          {accountType === "sr25519" && (
+            <>
+              <H2>Step 1</H2>
+              <Dropdown
+                key={defaultChain?.id ?? "DEFAULT"}
+                propertyKey="id"
+                items={ledgerChains}
+                defaultSelectedItem={defaultChain}
+                placeholder="Select a network"
+                renderItem={renderOption}
+                onChange={handleNetworkChange}
+              />
+              <Text>Please note: a Ledger account can only be used on a single network.</Text>
+            </>
+          )}
+          <div className={classNames("step2", showStep2 && "fadeIn")}>
             <H2>Step 2</H2>
-            <Text>
+            {accountType === "sr25519" && (
+              <ConnectLedgerSubstrate onReadyChanged={setIsLedgerReady} chainId={chainId} />
+            )}
+            {accountType === "ethereum" && (
+              <ConnectLedgerEthereum onReadyChanged={setIsLedgerReady} />
+            )}
+            {/* <Text>
               Connect and unlock your Ledger, then open the{" "}
               <Highlight>
                 {chain?.chainName} {token?.symbol ? `(${token.symbol})` : null}
@@ -181,7 +220,7 @@ export const AddLedgerSelectNetwork = () => {
               app on your Ledger.
             </Text>
             <Spacer small />
-            <LedgerConnectionStatus {...ledger} />
+            <LedgerConnectionStatus {...ledger} /> */}
           </div>
           <Spacer />
         </div>
@@ -189,7 +228,7 @@ export const AddLedgerSelectNetwork = () => {
           <SimpleButton
             type="submit"
             primary
-            disabled={!ledger.isReady || !isValid}
+            disabled={!isLedgerReady || !isValid}
             processing={isSubmitting}
           >
             Continue

@@ -4,6 +4,7 @@ import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { LedgerAccountPicker } from "@ui/domains/Account/LedgerAccountPicker"
+import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Navigate, useNavigate } from "react-router-dom"
@@ -116,7 +117,8 @@ export const AddLedgerSelectAccount = () => {
     [setValue]
   )
 
-  if (!data.chainId) return <Navigate to="./" replace />
+  if (!data.type) return <Navigate to="./" replace />
+  if (data.type === "sr25519" && !data.chainId) return <Navigate to="./" replace />
 
   return (
     <Container withBack centered>
@@ -124,7 +126,12 @@ export const AddLedgerSelectAccount = () => {
         <div className="grow">
           <H1>Import from Ledger</H1>
           <Text>Please select which account(s) you'd like to import.</Text>
-          <LedgerAccountPicker chainId={data.chainId as string} onChange={handleAccountsChange} />
+          {data.type === "sr25519" && (
+            <LedgerAccountPicker chainId={data.chainId as string} onChange={handleAccountsChange} />
+          )}
+          {data.type === "ethereum" && (
+            <LedgerEthereumAccountPicker onChange={handleAccountsChange} />
+          )}
         </div>
         <div className="buttons">
           <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
