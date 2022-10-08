@@ -3,7 +3,7 @@ import { animate, AnimationPlaybackControls } from "framer-motion"
 
 import { useCallback, useEffect, useMemo, useRef } from "react"
 
-import { MYSTICAL_PHYSICS } from "./MysticalPhysics"
+import { MysticalPhysics } from "./MysticalPhysics"
 
 export type ParentSize = {
   width: number
@@ -32,28 +32,29 @@ const rotateColor = (color: string) => {
 }
 
 const generateCharacteristics = (
+  config: MysticalPhysics,
   parentSize: ParentSize,
   isAcolyte = false,
   cx?: number,
   cy?: number
 ) => {
-  const largerBound = Math.min(parentSize.width, parentSize.height)
+  const largerBound = Math.max(parentSize.width, parentSize.height)
   const sizeRatio =
-    (isAcolyte ? MYSTICAL_PHYSICS.minSizeAcolyte : MYSTICAL_PHYSICS.minSizeArtifact) +
+    (isAcolyte ? config.minSizeAcolyte : config.minSizeArtifact) +
     Math.random() *
       (isAcolyte
-        ? MYSTICAL_PHYSICS.maxSizeAcolyte - MYSTICAL_PHYSICS.minSizeAcolyte
-        : MYSTICAL_PHYSICS.maxSizeArtifact - MYSTICAL_PHYSICS.minSizeArtifact)
+        ? config.maxSizeAcolyte - config.minSizeAcolyte
+        : config.maxSizeArtifact - config.minSizeArtifact)
 
   const radius = Math.round(sizeRatio * largerBound) / 2
 
   const color = Color.hsv(Math.random() * 360, 100, 100).hex()
   const opacity =
-    (isAcolyte ? MYSTICAL_PHYSICS.minOpacityAcolyte : MYSTICAL_PHYSICS.minOpacityArtifact) +
+    (isAcolyte ? config.minOpacityAcolyte : config.minOpacityArtifact) +
     Math.random() *
       (isAcolyte
-        ? MYSTICAL_PHYSICS.maxOpacityAcolyte - MYSTICAL_PHYSICS.minOpacityAcolyte
-        : MYSTICAL_PHYSICS.maxOpacityArtifact - MYSTICAL_PHYSICS.minOpacityArtifact)
+        ? config.maxOpacityAcolyte - config.minOpacityAcolyte
+        : config.maxOpacityArtifact - config.minOpacityArtifact)
 
   const characteristics: ArtifactCharacteristics = {
     cx: isAcolyte && cx ? cx : Math.round(Math.random() * parentSize.width),
@@ -66,6 +67,7 @@ const generateCharacteristics = (
 }
 
 export const useCelestialArtifact = (
+  config: MysticalPhysics,
   parentSize: ParentSize,
   isAcolyte?: boolean,
   cx?: number,
@@ -73,7 +75,7 @@ export const useCelestialArtifact = (
 ) => {
   const refAnimations = useRef<ArtifactAnimations>({})
   const refResult = useRef<ArtifactCharacteristics>(
-    generateCharacteristics(parentSize, isAcolyte, cx, cy)
+    generateCharacteristics(config, parentSize, isAcolyte, cx, cy)
   )
 
   // keep acolyte info as ref to prevent change() to be retriggered when hovering
@@ -95,11 +97,11 @@ export const useCelestialArtifact = (
   // transition is different for acolytes
   const transition = useMemo(
     () => ({
-      ease: isAcolyte ? MYSTICAL_PHYSICS.easeAcolyte : MYSTICAL_PHYSICS.easeArtifact,
-      duration: isAcolyte ? MYSTICAL_PHYSICS.durationAcolyte : MYSTICAL_PHYSICS.durationArtifact,
-      stiffness: isAcolyte ? MYSTICAL_PHYSICS.stiffnessAcolyte : MYSTICAL_PHYSICS.stiffnessArtifact,
+      ease: isAcolyte ? config.easeAcolyte : config.easeArtifact,
+      duration: isAcolyte ? config.durationAcolyte : config.durationArtifact,
+      stiffness: isAcolyte ? config.stiffnessAcolyte : config.stiffnessArtifact,
     }),
-    [isAcolyte]
+    [config, isAcolyte]
   )
 
   // sets one property
@@ -120,25 +122,25 @@ export const useCelestialArtifact = (
   // changes all properties with newly generated values
   const change = useCallback(() => {
     const { isAcolyte, cx, cy } = refAcolyte.current
-    const target = generateCharacteristics(parentSize, isAcolyte, cx, cy)
+    const target = generateCharacteristics(config, parentSize, isAcolyte, cx, cy)
     target.color = rotateColor(refResult.current.color)
 
     for (const key of Object.keys(target)) {
       const k = key as keyof ArtifactCharacteristics
       if (k) updateCharacteristic(k, target[k])
     }
-  }, [parentSize, updateCharacteristic])
+  }, [config, parentSize, updateCharacteristic])
 
   // trigger change once in a while
   useEffect(() => {
-    const interval = setInterval(change, MYSTICAL_PHYSICS.durationArtifact * 1000)
+    const interval = setInterval(change, config.durationArtifact * 1000)
 
     change()
 
     return () => {
       clearInterval(interval)
     }
-  }, [change])
+  }, [change, config.durationArtifact])
 
   // follow mouse cursor
   useEffect(() => {

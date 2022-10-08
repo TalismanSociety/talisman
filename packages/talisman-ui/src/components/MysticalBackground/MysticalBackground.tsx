@@ -4,8 +4,15 @@ import { useMeasure, useMouse } from "react-use"
 
 import MysticalCanvas from "./MysticalCanvas"
 import { classNames } from "../../utils"
+import { MysticalPhysics, MYSTICAL_PHYSICS } from "./MysticalPhysics"
 
-export const MysticalBackground = ({ className }: { className?: string }) => {
+export const MysticalBackground = ({
+  className,
+  config = MYSTICAL_PHYSICS,
+}: {
+  config?: MysticalPhysics
+  className?: string
+}) => {
   const [refSize, size] = useMeasure<HTMLDivElement>()
   const refMouseLocation = useRef<HTMLDivElement>(null)
   const { elX, elY, elW, elH } = useMouse(refMouseLocation)
@@ -25,9 +32,10 @@ export const MysticalBackground = ({ className }: { className?: string }) => {
   return (
     <div ref={refSize} className={classNames("relative", className)}>
       <div ref={refMouseLocation} className="absolute top-0 left-0 h-full w-full">
-        {!!size.height && (
+        {config && !!size.height && (
           <MysticalCanvas
             size={size}
+            config={config}
             {...acolyte}
             className="absolute top-0 left-0 h-full w-full"
           />

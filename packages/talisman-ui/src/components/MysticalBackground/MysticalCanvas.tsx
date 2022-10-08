@@ -1,12 +1,12 @@
 import React, { useRef, useEffect, FC } from "react"
 import { ArtifactCharacteristics, ParentSize, useCelestialArtifact } from "./useCelestialArtifact"
-import { MYSTICAL_PHYSICS } from "./MysticalPhysics"
-import { useAnimationFrame } from "framer-motion"
+import { MysticalPhysics } from "./MysticalPhysics"
 
 type MysticalCanvasProps = React.DetailedHTMLProps<
   React.CanvasHTMLAttributes<HTMLCanvasElement>,
   HTMLCanvasElement
 > & {
+  config: MysticalPhysics
   size: ParentSize
   cx?: number
   cy?: number
@@ -28,11 +28,11 @@ const drawArtifact = (ctx: CanvasRenderingContext2D, artifact: ArtifactCharacter
   ctx.globalAlpha = 1
 }
 
-const MysticalCanvas: FC<MysticalCanvasProps> = ({ size, cx, cy, ...props }) => {
+const MysticalCanvas: FC<MysticalCanvasProps> = ({ config, size, cx, cy, ...props }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const artifact1 = useCelestialArtifact(size)
-  const artifact2 = useCelestialArtifact(size)
-  const acolyte = useCelestialArtifact(size, !!(cx && cy), cx, cy)
+  const artifact1 = useCelestialArtifact(config, size)
+  const artifact2 = useCelestialArtifact(config, size)
+  const acolyte = useCelestialArtifact(config, size, !!(cx && cy), cx, cy)
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -46,7 +46,7 @@ const MysticalCanvas: FC<MysticalCanvasProps> = ({ size, cx, cy, ...props }) => 
     // render on every frame
     const render = () => {
       context.clearRect(0, 0, canvas.width, canvas.height)
-      context.filter = `blur(${MYSTICAL_PHYSICS.blur}px)`
+      context.filter = `blur(${config.blur}px)`
       drawArtifact(context, artifact1)
       drawArtifact(context, artifact2)
       drawArtifact(context, acolyte)
@@ -59,7 +59,7 @@ const MysticalCanvas: FC<MysticalCanvasProps> = ({ size, cx, cy, ...props }) => 
     return () => {
       window.cancelAnimationFrame(animationFrameId)
     }
-  }, [artifact1, artifact2, acolyte])
+  }, [artifact1, artifact2, acolyte, config])
 
   return <canvas ref={canvasRef} width={size.width} height={size.height} {...props} />
 }

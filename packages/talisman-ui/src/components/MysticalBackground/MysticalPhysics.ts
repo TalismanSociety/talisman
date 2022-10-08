@@ -1,4 +1,4 @@
-type MysticalPhysics = {
+export type MysticalPhysics = {
   blur: number
   minSizeArtifact: number
   minSizeAcolyte: number
