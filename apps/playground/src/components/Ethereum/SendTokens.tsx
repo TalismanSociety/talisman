@@ -33,7 +33,6 @@ const TransactionReceipt = ({ hash }: { hash?: string }) => {
 }
 
 export const SendTokens = () => {
-  // const { data, isIdle, isError, isLoading, isSuccess, sendTransaction } = useSendTransaction()
   const { isConnected } = useAccount()
   const [defaultValues, setDefaultValues] = useLocalStorage("pg:send-tokens", DEFAULT_VALUE)
 
@@ -62,7 +61,6 @@ export const SendTokens = () => {
   const {
     sendTransaction,
     isLoading,
-    isIdle,
     isSuccess,
     isError,
     data,

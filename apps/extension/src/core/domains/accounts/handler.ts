@@ -5,6 +5,7 @@ import type {
   RequestAccountCreateFromJson,
   RequestAccountCreateFromSeed,
   RequestAccountCreateHardware,
+  RequestAccountCreateHardwareEthereum,
   RequestAccountExport,
   RequestAccountForget,
   RequestAccountRename,
@@ -168,6 +169,43 @@ export default class AccountsHandler extends ExtensionHandler {
     }
   }
 
+  private accountsCreateHardwareEthereum({
+    name,
+    address,
+    path,
+  }: RequestAccountCreateHardwareEthereum): boolean {
+    assert(isEthereumAddress(address), "Not an Ethereum address")
+
+    // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
+    // => create the pair without helper
+    const pair = createPair(
+      {
+        type: "ethereum",
+        toSS58: ethereumEncode,
+      },
+      {
+        publicKey: decodeAnyAddress(address),
+        secretKey: new Uint8Array(),
+      },
+      {
+        name,
+        hardwareType: "ledger",
+        isHardware: true,
+        origin: AccountTypes.HARDWARE,
+        path,
+      },
+      null
+    )
+
+    // add to the underlying keyring, allowing not to specify a password
+    keyring.keyring.addPair(pair)
+    keyring.saveAccount(pair)
+
+    talismanAnalytics.capture("account create", { type: "ethereum", method: "hardware" })
+
+    return true
+  }
+
   private accountsCreateHardware({
     accountIndex,
     address,
@@ -177,43 +215,43 @@ export default class AccountsHandler extends ExtensionHandler {
   }: Omit<RequestAccountCreateHardware, "hardwareType">): boolean {
     // TODO check already exists
 
-    const isEthereum = isEthereumAddress(address)
+    // const isEthereum = isEthereumAddress(address)
 
-    if (isEthereum) {
-      // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
-      // => create the pair without helper
-      const pair = createPair(
-        {
-          type: "ethereum",
-          toSS58: ethereumEncode,
-        },
-        {
-          publicKey: decodeAnyAddress(address),
-          secretKey: new Uint8Array(),
-        },
-        {
-          accountIndex, // TODO remove ?
-          addressOffset, // TODO remove ?
-          name,
-          hardwareType: "ledger",
-          isHardware: true,
-          origin: AccountTypes.HARDWARE,
-          // TODO specify derivation path here ?
-        },
-        null
-      )
+    // if (isEthereum) {
+    //   // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
+    //   // => create the pair without helper
+    //   const pair = createPair(
+    //     {
+    //       type: "ethereum",
+    //       toSS58: ethereumEncode,
+    //     },
+    //     {
+    //       publicKey: decodeAnyAddress(address),
+    //       secretKey: new Uint8Array(),
+    //     },
+    //     {
+    //       accountIndex, // TODO remove ?
+    //       addressOffset, // TODO remove ?
+    //       name,
+    //       hardwareType: "ledger",
+    //       isHardware: true,
+    //       origin: AccountTypes.HARDWARE,
+    //       // TODO specify derivation path here ?
+    //     },
+    //     null
+    //   )
 
-      // add to the underlying keyring, allowing not to specify a password
-      keyring.keyring.addPair(pair)
-      keyring.saveAccount(pair)
-    } else
-      keyring.addHardware(address, "ledger", {
-        accountIndex,
-        addressOffset,
-        genesisHash,
-        name,
-        origin: AccountTypes.HARDWARE,
-      })
+    //   // add to the underlying keyring, allowing not to specify a password
+    //   keyring.keyring.addPair(pair)
+    //   keyring.saveAccount(pair)
+    // } else
+    keyring.addHardware(address, "ledger", {
+      accountIndex,
+      addressOffset,
+      genesisHash,
+      name,
+      origin: AccountTypes.HARDWARE,
+    })
 
     talismanAnalytics.capture("account create", { type: "substrate", method: "hardware" })
 
@@ -296,6 +334,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
       case "pri(accounts.create.hardware)":
         return this.accountsCreateHardware(request as RequestAccountCreateHardware)
+      case "pri(accounts.create.hardware.eth)":
+        return this.accountsCreateHardwareEthereum(request as RequestAccountCreateHardwareEthereum)
       case "pri(accounts.forget)":
         return this.accountForget(request as RequestAccountForget)
       case "pri(accounts.export)":

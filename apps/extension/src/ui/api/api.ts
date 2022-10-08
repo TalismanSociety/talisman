@@ -76,6 +76,12 @@ export const api: MessageTypes = {
       genesisHash,
       name,
     }),
+  accountCreateHardwareEthereum: (name, address, path) =>
+    messageService.sendMessage("pri(accounts.create.hardware.eth)", {
+      name,
+      address,
+      path,
+    }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountForget: (address) => messageService.sendMessage("pri(accounts.forget)", { address }),
   accountExport: (address) => messageService.sendMessage("pri(accounts.export)", { address }),
@@ -172,16 +178,28 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(eth.signing.approveSign)", {
       id,
     }),
+  ethApproveSignHardware: (id, signature) =>
+    messageService.sendMessage("pri(eth.signing.approveSignHardware)", {
+      id,
+      signature,
+    }),
   ethApproveSignAndSend: (id, transaction) =>
     messageService.sendMessage("pri(eth.signing.approveSignAndSend)", {
       id,
       transaction,
+    }),
+  ethApproveSignAndSendHardware: (id, signature) =>
+    messageService.sendMessage("pri(eth.signing.approveSignAndSendHardware)", {
+      id,
+      signature,
     }),
   ethCancelSign: (id) =>
     messageService.sendMessage("pri(eth.signing.cancel)", {
       id,
     }),
   ethRequest: (request) => messageService.sendMessage("pri(eth.request)", request),
+  ethGetNonce: (address, evmNetworkId) =>
+    messageService.sendMessage("pri(eth.nonce.getNext)", { address, evmNetworkId }),
   ethNetworkAddGetRequests: () =>
     messageService.sendMessage("pri(eth.networks.add.requests)", null),
   ethNetworkAddApprove: (id) => messageService.sendMessage("pri(eth.networks.add.approve)", { id }),

@@ -140,10 +140,11 @@ export const getEip1559TotalFees = (
 
 export const prepareTransaction = (
   tx: ethers.providers.TransactionRequest,
-  gasSettings: EthGasSettings
+  gasSettings: EthGasSettings,
+  nonce: number
 ) => {
   // keep only known fields except gas related ones
-  const { chainId, data, from, to, value, nonce, accessList, ccipReadEnabled, customData } = tx
+  const { chainId, data, from, to, value, accessList, ccipReadEnabled, customData } = tx
 
   const result: ethers.providers.TransactionRequest = {
     chainId,

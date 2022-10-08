@@ -6,7 +6,7 @@ import { CheckCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
-import { LedgerAccountDef } from "@ui/apps/dashboard/routes/AccountAddLedger/context"
+import { LedgerAccountDefSubstrate } from "@ui/apps/dashboard/routes/AccountAddLedger/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
 import { LedgerStatus, useLedger } from "@ui/hooks/useLedger"
@@ -92,29 +92,24 @@ const LoadNext = styled.button`
   border: none;
   outline: none;
   padding: 1.6rem;
-  //background: var(--color-background-muted);
   border-radius: var(--border-radius-tiny);
   cursor: pointer;
-  //color: var(--color-mid);
-
   background: var(--color-background-muted-3x);
   color: var(--color-primary);
   opacity: 0.6;
   :hover {
-    //background: var(--color-background-muted-3x);
-    //color: var(--color-foreground-muted-2x);
     opacity: 1;
   }
 `
 
-type LedgerAccountInfo = LedgerAccountDef & {
+type LedgerAccountInfo = LedgerAccountDefSubstrate & {
   balance: BalanceFormatter
   empty?: boolean
   connected?: boolean
   selected?: boolean
 }
 
-const useLedgerChainAccounts = (chainId: string, selectedAccounts: LedgerAccountDef[]) => {
+const useLedgerChainAccounts = (chainId: string, selectedAccounts: LedgerAccountDefSubstrate[]) => {
   const walletAccounts = useAccounts()
   const chain = useChain(chainId)
   const token = useToken(chain?.nativeToken?.id)
@@ -317,8 +312,8 @@ const AccountButtonShimmer: FC = () => {
 
 type LedgerAccountPickerProps = {
   chainId: string
-  defaultAccounts?: LedgerAccountDef[]
-  onChange?: (accounts: LedgerAccountDef[]) => void
+  defaultAccounts?: LedgerAccountDefSubstrate[]
+  onChange?: (accounts: LedgerAccountDefSubstrate[]) => void
 }
 
 export const LedgerAccountPicker: FC<LedgerAccountPickerProps> = ({
@@ -326,7 +321,8 @@ export const LedgerAccountPicker: FC<LedgerAccountPickerProps> = ({
   defaultAccounts = [],
   onChange,
 }) => {
-  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDef[]>(defaultAccounts)
+  const [selectedAccounts, setSelectedAccounts] =
+    useState<LedgerAccountDefSubstrate[]>(defaultAccounts)
   const {
     token,
     accounts,
@@ -341,7 +337,7 @@ export const LedgerAccountPicker: FC<LedgerAccountPickerProps> = ({
   } = useLedgerChainAccounts(chainId, selectedAccounts)
 
   const handleToggleAccount = useCallback(
-    (acc: LedgerAccountDef) => () => {
+    (acc: LedgerAccountDefSubstrate) => () => {
       const { genesisHash, address, accountIndex, addressOffset, name } = acc
       setSelectedAccounts((prev) =>
         prev.some((sa) => sa.address === address)

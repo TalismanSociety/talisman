@@ -12,9 +12,31 @@ import {
 } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName, EthTransactionDetails } from "@core/domains/signing/types"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
+import { api } from "@ui/api"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
+
+const useNonce = (address?: string, evmNetworkId?: number) => {
+  const [nonce, setNonce] = useState<number>()
+  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string>()
+
+  useEffect(() => {
+    setIsLoading(true)
+    setError(undefined)
+    setNonce(undefined)
+
+    if (address && evmNetworkId)
+      api
+        .ethGetNonce(address, evmNetworkId)
+        .then(setNonce)
+        .catch(() => setError("Failed to load nonce"))
+        .finally(() => setIsLoading(false))
+  }, [address, evmNetworkId])
+
+  return { nonce, isLoading, error }
+}
 
 const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
   // initialize with undefined, which is used to trigger the check
@@ -178,6 +200,8 @@ export const useEthTransaction = (
     error: blockFeeDataError,
   } = useBlockFeeData(provider, hasEip1559Support)
 
+  const { nonce, isLoading: isLoadingNonce, error: nonceError } = useNonce(tx?.from, tx?.chainId)
+
   const [priority, setPriority] = useState<EthPriorityOptionName>(defaultPriority)
 
   const gasSettings: EthGasSettings | undefined = useMemo(() => {
@@ -217,9 +241,9 @@ export const useEthTransaction = (
   ])
 
   const transaction = useMemo(() => {
-    if (!provider || !tx || !gasSettings) return undefined
-    return prepareTransaction(tx, gasSettings)
-  }, [gasSettings, provider, tx])
+    if (!provider || !tx || !gasSettings || nonce === undefined) return undefined
+    return prepareTransaction(tx, gasSettings, nonce)
+  }, [gasSettings, provider, tx, nonce])
 
   const txDetails: EthTransactionDetails | undefined = useMemo(() => {
     if (!gasPrice || !estimatedGas) return undefined

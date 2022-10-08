@@ -2,6 +2,7 @@ import { ChainId } from "@core/domains/chains/types"
 import { CustomErc20Token, TokenId } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { RequestIdOnly } from "@core/types/base"
+import { RequestSigningApproveSignature } from "@polkadot/extension-base/background/types"
 import { BigNumberish, ethers } from "ethers"
 
 import { AddEthereumChainParameter, WatchAssetBase } from "./base"
@@ -14,6 +15,11 @@ export declare type EthApproveSignAndSend = RequestIdOnly & {
 
 export interface AnyEthRequestChainId extends AnyEthRequest {
   chainId: number
+}
+
+export type EthNonceRequest = {
+  address: string
+  evmNetworkId: number
 }
 
 export type WatchAssetRequest = {
@@ -66,9 +72,12 @@ export interface EthMessages {
   "pub(eth.mimicMetaMask)": [null, boolean]
   // eth signing message signatures
   "pri(eth.request)": [AnyEthRequestChainId, EthResponseTypes]
+  "pri(eth.nonce.getNext)": [EthNonceRequest, number]
   "pri(eth.signing.cancel)": [RequestIdOnly, boolean]
   "pri(eth.signing.approveSign)": [RequestIdOnly, boolean]
+  "pri(eth.signing.approveSignHardware)": [RequestSigningApproveSignature, boolean]
   "pri(eth.signing.approveSignAndSend)": [EthApproveSignAndSend, boolean]
+  "pri(eth.signing.approveSignAndSendHardware)": [RequestSigningApproveSignature, boolean]
   // eth add networks requests management
   // TODO change naming for network add requests, and maybe delete the first one
   "pri(eth.networks.add.requests)": [null, AddEthereumChainRequest[]]

@@ -22,7 +22,6 @@ for (const chain of talismanChains) chainsMap[chain.id] = chain
 // Configure chains & providers with the Alchemy provider.
 // Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
 const { chains, provider, webSocketProvider } = configureChains(Object.values(chainsMap), [
-  // alchemyProvider({ apiKey: "yourAlchemyApiKey" }),
   publicProvider(),
 ])
 
@@ -31,18 +30,6 @@ export const wagmiClient = createClient({
   autoConnect: true,
   connectors: [
     new MetaMaskConnector({ chains }),
-    // new CoinbaseWalletConnector({
-    //   chains,
-    //   options: {
-    //     appName: "wagmi",
-    //   },
-    // }),
-    // new WalletConnectConnector({
-    //   chains,
-    //   options: {
-    //     qrcode: true,
-    //   },
-    // }),
     new TalismanConnector({ chains }),
     new InjectedConnector({
       chains,

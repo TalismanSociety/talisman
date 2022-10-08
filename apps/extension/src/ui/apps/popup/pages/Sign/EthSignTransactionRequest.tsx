@@ -1,4 +1,8 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import {
+  AccountJsonAny,
+  AccountJsonHardware,
+  AccountJsonHardwareEthereum,
+} from "@core/domains/accounts/types"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
@@ -12,11 +16,13 @@ import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import useToken from "@ui/hooks/useToken"
 import { BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
-import { useEffect, useMemo } from "react"
+import { lazy, Suspense, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { formatDecimals } from "talisman-utils"
 
 import { Container } from "./common"
+
+const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 const SignContainer = styled(Container)`
   .layout-content .children h2 {
@@ -141,6 +147,7 @@ export const EthSignTransactionRequest = () => {
     network,
     isLoading,
     transaction,
+    approveHardware,
   } = useEthSignTransactionRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -207,7 +214,19 @@ export const EthSignTransactionRequest = () => {
           </>
         ) : null}
         {errorMessage && <p className="error">{errorMessage}</p>}
-        {account && request && (
+        {account && request && account.isHardware ? (
+          transaction && (
+            <Suspense fallback={null}>
+              <LedgerEthereum
+                method="transaction"
+                payload={transaction}
+                account={account as AccountJsonHardwareEthereum}
+                onSignature={approveHardware}
+                onReject={reject}
+              />
+            </Suspense>
+          )
+        ) : (
           <>
             <Grid>
               <SimpleButton disabled={processing} onClick={reject}>

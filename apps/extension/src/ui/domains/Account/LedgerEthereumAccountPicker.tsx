@@ -7,7 +7,7 @@ import { CheckCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { api } from "@ui/api"
-import { LedgerAccountDef } from "@ui/apps/dashboard/routes/AccountAddLedger/context"
+import { LedgerAccountDefEthereum } from "@ui/apps/dashboard/routes/AccountAddLedger/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import useChain from "@ui/hooks/useChain"
 import { LedgerStatus, useLedger } from "@ui/hooks/useLedger"
@@ -110,14 +110,14 @@ const LoadNext = styled.button`
   }
 `
 
-type LedgerEthereumAccountInfo = LedgerAccountDef & {
+type LedgerEthereumAccountInfo = LedgerAccountDefEthereum & {
   balance: BalanceFormatter
   empty?: boolean
   connected?: boolean
   selected?: boolean
 }
 
-const useLedgerEthereumAccounts = (selectedAccounts: LedgerAccountDef[]) => {
+const useLedgerEthereumAccounts = (selectedAccounts: LedgerAccountDefEthereum[]) => {
   const walletAccounts = useAccounts()
   const tokens = useTokens()
   const token = useToken(
@@ -142,7 +142,8 @@ const useLedgerEthereumAccounts = (selectedAccounts: LedgerAccountDef[]) => {
 
       const accountIndex = ledgerAccounts.length
 
-      const { address } = await ledger.getAddress(getEthDerivationPath(accountIndex))
+      const path = getEthDerivationPath(accountIndex)
+      const { address } = await ledger.getAddress(path)
 
       const balance = new Balance(
         await api.getBalance({
@@ -156,13 +157,11 @@ const useLedgerEthereumAccounts = (selectedAccounts: LedgerAccountDef[]) => {
       if (!balance) throw new Error("Failed to load account balance.")
 
       const newAccount: LedgerEthereumAccountInfo = {
-        accountIndex,
-        addressOffset: 0,
         address,
         name: `Ledger Ethereum ${accountIndex + 1}`,
+        path,
         balance: balance.total,
         empty: balance.total.planck === BigInt(0),
-        genesisHash: "", //TODO remove
       }
       setLedgerAccounts((prev) => [...prev, newAccount])
     } catch (err) {
@@ -319,15 +318,16 @@ const AccountButtonShimmer: FC = () => {
 }
 
 type LedgerEthereumAccountPickerProps = {
-  defaultAccounts?: LedgerAccountDef[]
-  onChange?: (accounts: LedgerAccountDef[]) => void
+  defaultAccounts?: LedgerAccountDefEthereum[]
+  onChange?: (accounts: LedgerAccountDefEthereum[]) => void
 }
 
 export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> = ({
   defaultAccounts = [],
   onChange,
 }) => {
-  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDef[]>(defaultAccounts)
+  const [selectedAccounts, setSelectedAccounts] =
+    useState<LedgerAccountDefEthereum[]>(defaultAccounts)
   const {
     token,
     accounts,
@@ -342,13 +342,13 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
   } = useLedgerEthereumAccounts(selectedAccounts)
 
   const handleToggleAccount = useCallback(
-    (acc: LedgerAccountDef) => () => {
-      const { genesisHash, address, accountIndex, addressOffset, name } = acc
+    (acc: LedgerAccountDefEthereum) => () => {
+      const { name, address, path } = acc
       setSelectedAccounts(
         (prev) =>
           prev.some((sa) => sa.address === address)
             ? prev.filter((sa) => sa.address !== address)
-            : prev.concat({ genesisHash, address, accountIndex, addressOffset, name }) //TODO remove genhash
+            : prev.concat({ address, name, path }) //TODO remove genhash
       )
     },
     []

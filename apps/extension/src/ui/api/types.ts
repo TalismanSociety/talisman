@@ -1,4 +1,8 @@
-import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
+import {
+  AccountAddressType,
+  RequestAccountCreateHardware,
+  RequestAccountCreateHardwareEthereum,
+} from "@core/domains/accounts/types"
 import type { AccountJson } from "@core/domains/accounts/types"
 import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
 import {
@@ -92,6 +96,7 @@ export default interface MessageTypes {
   accountCreateHardware: (
     request: Omit<RequestAccountCreateHardware, "hardwareType">
   ) => Promise<boolean>
+  accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountForget: (address: string) => Promise<boolean>
   accountExport: (address: string) => Promise<{ exportedJson: KeyringPair$Json }>
@@ -192,12 +197,15 @@ export default interface MessageTypes {
 
   // eth related messages
   ethApproveSign: (id: string) => Promise<boolean>
+  ethApproveSignHardware: (id: string, signature: HexString) => Promise<boolean>
   ethApproveSignAndSend: (
     id: string,
     transaction: ethers.providers.TransactionRequest
   ) => Promise<boolean>
+  ethApproveSignAndSendHardware: (id: string, signedTransaction: HexString) => Promise<boolean>
   ethCancelSign: (id: string) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
+  ethGetNonce: (address: string, evmNetworkId: number) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: string) => Promise<boolean>
   ethNetworkAddCancel: (is: string) => Promise<boolean>
