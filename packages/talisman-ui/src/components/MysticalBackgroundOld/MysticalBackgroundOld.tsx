@@ -18,6 +18,7 @@ const CosmicRadar = styled.div`
   height: 100%;
 `
 
+// still beeing used in playground to compare with new version
 export const MysticalBackgroundOld = ({ className }: { className?: string }) => {
   const [refSize, parentSize] = useMeasure<HTMLDivElement>()
   const refMouseLocation = useRef<HTMLDivElement>(null)

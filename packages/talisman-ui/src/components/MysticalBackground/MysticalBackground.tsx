@@ -1,5 +1,5 @@
 import { useWindowHovered } from "./useWindowHovered"
-import { useMemo, useRef } from "react"
+import { useRef } from "react"
 import { useMeasure, useMouse } from "react-use"
 
 import MysticalCanvas from "./MysticalCanvas"
