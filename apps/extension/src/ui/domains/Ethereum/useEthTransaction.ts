@@ -310,6 +310,23 @@ export const useEthTransaction = (
     transaction,
   ])
 
+  const isLoading = useMemo(
+    () =>
+      !txDetails &&
+      (isLoadingEip1559Support || isLoadingEstimatedGas || isLoadingBlockFeeData || isLoadingNonce),
+    [
+      isLoadingBlockFeeData,
+      isLoadingEip1559Support,
+      isLoadingEstimatedGas,
+      isLoadingNonce,
+      txDetails,
+    ]
+  )
+  const error = useMemo(
+    () => errorEip1559Support ?? estimatedGasError ?? blockFeeDataError ?? nonceError,
+    [blockFeeDataError, errorEip1559Support, estimatedGasError, nonceError]
+  )
+
   const result = useMemo(
     () => ({
       transaction,
@@ -317,22 +334,10 @@ export const useEthTransaction = (
       gasSettings,
       priority,
       setPriority,
-      isLoading:
-        !txDetails && (isLoadingEip1559Support || isLoadingEstimatedGas || isLoadingBlockFeeData),
-      error: errorEip1559Support ?? estimatedGasError ?? blockFeeDataError,
+      isLoading,
+      error,
     }),
-    [
-      transaction,
-      txDetails,
-      gasSettings,
-      priority,
-      isLoadingEip1559Support,
-      isLoadingEstimatedGas,
-      isLoadingBlockFeeData,
-      errorEip1559Support,
-      estimatedGasError,
-      blockFeeDataError,
-    ]
+    [transaction, txDetails, gasSettings, priority, isLoading, error]
   )
 
   return result

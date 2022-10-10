@@ -60,6 +60,63 @@ export const formatLedgerErrorMessage = (
   return { status: "error", message: ledgerError, requiresManualRetry: false }
 }
 
+export const formatLedgerEthereumErrorMessage = (
+  ledgerError: string,
+  network = "the network"
+): LedgerError => {
+  if (
+    ledgerError?.includes("Ledger locked") //||
+    // ledgerError?.includes("Code: 26628") ||
+    // ledgerError?.includes("Transaction rejected")
+  )
+    return {
+      status: "warning",
+      message: "Please unlock your Ledger.",
+      requiresManualRetry: false,
+    }
+
+  if (
+    ledgerError?.includes("Ledger App not open") ||
+    ledgerError?.includes("App does not seem to be open")
+  )
+    return {
+      status: "warning",
+      message: `Please open <strong>${capitalize(network)}</strong> app on your Ledger.`,
+      requiresManualRetry: false,
+    }
+
+  if (ledgerError?.includes("TransportInterfaceNotAvailable"))
+    return {
+      status: "warning",
+      message: `Connection failed, retrying...`,
+      requiresManualRetry: false,
+    }
+
+  if (
+    ledgerError === "NetworkError" ||
+    ledgerError === "NotFoundError" ||
+    ledgerError === "Timeout" ||
+    ledgerError === "TransportWebUSBGestureRequired" ||
+    ledgerError ===
+      "Failed to execute 'requestDevice' on 'USB': Must be handling a user gesture to show a permission request."
+  )
+    return {
+      status: ledgerError === "TransportWebUSBGestureRequired" ? "warning" : "error",
+      message: `Failed to connect ${
+        ledgerError === "TransportWebUSBGestureRequired" ? "automatically " : ""
+      }to your Ledger. Click here to retry.`,
+      requiresManualRetry: true,
+    }
+  if (messagesMap.get(ledgerError))
+    return {
+      status: "error",
+      message: messagesMap.get(ledgerError) as string,
+      requiresManualRetry: false,
+    }
+
+  return { status: "error", message: ledgerError, requiresManualRetry: false }
+}
+
 export const formatLedgerSigningError = (err: string, network = "the network"): LedgerError => {
   switch (err) {
     case "Transaction rejected":

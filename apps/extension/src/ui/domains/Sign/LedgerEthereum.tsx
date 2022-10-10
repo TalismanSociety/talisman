@@ -1,10 +1,7 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
-import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
-import { TypeRegistry } from "@polkadot/types"
-import type { ExtrinsicPayload } from "@polkadot/types/interfaces"
 import { Drawer } from "@talisman/components/Drawer"
 import { useLedgerEthereum } from "@ui/hooks/useLedgerEthereum"
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
 import {
   LedgerConnectionStatus,
@@ -12,21 +9,80 @@ import {
 } from "../Account/LedgerConnectionStatus"
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { ethers } from "ethers"
+import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 
-interface Props {
+// TODO rename payload type ?
+export type LedgerEthereumSignMethod = "eip712" | "transaction" | "personalSign"
+
+type LedgerEthereumProps = {
   account: AccountJsonHardwareEthereum
   className?: string
-  genesisHash?: string
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject: () => void
-  method: "eip712" | "transaction" | "personalSign"
+  method: LedgerEthereumSignMethod
   payload: any // string message, typed object for eip712, TransactionRequest for tx
 }
 
-const registry = new TypeRegistry()
+const signWithLedger = async (
+  ledger: LedgerEthereumApp,
+  method: LedgerEthereumSignMethod,
+  payload: any,
+  accountPath: string
+): Promise<`0x${string}`> => {
+  if (method === "eip712") {
+    const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
 
-function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is SignerPayloadRaw {
-  return !!(payload as SignerPayloadRaw).data
+    const sig = await ledger.signEIP712Message(accountPath, jsonMessage)
+    sig.r = "0x" + sig.r
+    sig.s = "0x" + sig.s
+    return ethers.utils.joinSignature(sig) as `0x${string}`
+  }
+  if (method === "personalSign") {
+    const messageHex = ethers.utils
+      .hexlify(typeof payload === "string" ? ethers.utils.toUtf8Bytes(payload) : payload)
+      .substring(2)
+
+    const sig = await ledger.signPersonalMessage(accountPath, messageHex)
+    sig.r = "0x" + sig.r
+    sig.s = "0x" + sig.s
+    return ethers.utils.joinSignature(sig) as `0x${string}`
+  }
+  if (method === "transaction") {
+    const {
+      to,
+      nonce,
+      gasLimit,
+      gasPrice,
+      data,
+      value,
+      chainId,
+      type,
+      maxPriorityFeePerGas,
+      maxFeePerGas,
+    } = await ethers.utils.resolveProperties(payload as ethers.providers.TransactionRequest)
+
+    const baseTx: ethers.utils.UnsignedTransaction = {
+      to,
+      nonce: nonce ? ethers.BigNumber.from(nonce).toNumber() : undefined,
+      gasLimit,
+      gasPrice,
+      data,
+      value,
+      chainId,
+      type,
+      maxPriorityFeePerGas,
+      maxFeePerGas,
+    }
+    const unsignedTx = ethers.utils.serializeTransaction(baseTx).substring(2)
+    const sig = await ledger.signTransaction(accountPath, unsignedTx, null) // resolver)
+
+    return ethers.utils.serializeTransaction(payload, {
+      v: ethers.BigNumber.from("0x" + sig.v).toNumber(),
+      r: "0x" + sig.r,
+      s: "0x" + sig.s,
+    }) as `0x${string}`
+  }
+  throw new Error("Unsupported method")
 }
 
 const LedgerContent = styled.div`
@@ -72,17 +128,16 @@ const LedgerConnectionContent = styled.div`
   }
 `
 
-const LedgerEthereum = ({
+const LedgerEthereum: FC<LedgerEthereumProps> = ({
   account,
   className = "",
   onSignature,
   onReject,
   method,
   payload,
-}: Props): React.ReactElement<Props> => {
+}) => {
   const [isSigning, setIsSigning] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [extrinsicPayload, setExtrinsicPayload] = useState<ExtrinsicPayload>()
   const { ledger, refresh, status, message, isReady, requiresManualRetry } = useLedgerEthereum()
 
   const connectionStatus: LedgerConnectionStatusProps = useMemo(
@@ -95,106 +150,29 @@ const LedgerEthereum = ({
     [refresh, status, message, requiresManualRetry]
   )
 
-  useEffect(() => {
-    if (isRawPayload(payload)) {
-      setError("Message signing is not supported for hardware wallets.")
-    } else {
-      registry.setSignedExtensions(payload.signedExtensions)
-      setExtrinsicPayload(
-        registry.createType("ExtrinsicPayload", payload, { version: payload.version })
-      )
-    }
-  }, [payload])
-
   const _onRefresh = useCallback(() => {
     refresh()
     setError(null)
   }, [refresh, setError])
 
   const signLedger = useCallback(() => {
-    if (!ledger || !extrinsicPayload || !onSignature) {
+    if (!ledger || !onSignature) {
       return
     }
 
-    const sign = async (): Promise<`0x${string}`> => {
-      if (method === "eip712") {
-        const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
-
-        const sig = await ledger.signEIP712Message(account.path, jsonMessage)
-        sig.r = "0x" + sig.r
-        sig.s = "0x" + sig.s
-        return ethers.utils.joinSignature(sig) as `0x${string}`
-      }
-      if (method === "personalSign") {
-        const messageHex = ethers.utils
-          .hexlify(typeof payload === "string" ? ethers.utils.toUtf8Bytes(payload) : payload)
-          .substring(2)
-
-        const sig = await ledger.signPersonalMessage(account.path, messageHex)
-        sig.r = "0x" + sig.r
-        sig.s = "0x" + sig.s
-        return ethers.utils.joinSignature(sig) as `0x${string}`
-      }
-      if (method === "transaction") {
-        const tx = await ethers.utils.resolveProperties(
-          payload as ethers.providers.TransactionRequest
-        )
-        const {
-          to,
-          nonce,
-          gasLimit,
-          gasPrice,
-          data,
-          value,
-          chainId,
-          type,
-          maxPriorityFeePerGas,
-          maxFeePerGas,
-        } = tx
-        const baseTx: ethers.utils.UnsignedTransaction = {
-          to,
-          nonce: nonce ? ethers.BigNumber.from(nonce).toNumber() : undefined,
-          gasLimit,
-          gasPrice,
-          data,
-          value,
-          chainId,
-          type,
-          maxPriorityFeePerGas,
-          maxFeePerGas,
-          // accessList, // unsupported on ledger
-        }
-        // const baseTx: ethers.utils.UnsignedTransaction = {
-        //   chainId: tx.chainId || undefined,
-        //   data: tx.data || undefined,
-        //   gasLimit: tx.gasLimit || undefined,
-        //   gasPrice: tx.gasPrice || undefined,
-        //   nonce: tx.nonce ? ethers.BigNumber.from(tx.nonce).toNumber() : undefined,
-        //   to: tx.to || undefined,
-        //   value: tx.value || undefined,
-        //   type: tx.type
-        // }
-        const unsignedTx = ethers.utils.serializeTransaction(baseTx).substring(2)
-        const sig = await ledger.signTransaction(account.path, unsignedTx) // resolver)
-
-        return ethers.utils.serializeTransaction(payload, {
-          v: ethers.BigNumber.from("0x" + sig.v).toNumber(),
-          r: "0x" + sig.r,
-          s: "0x" + sig.s,
-        }) as `0x${string}`
-      }
-      throw new Error("Unsupported method")
-    }
-
     setError(null)
-    return sign()
+    return signWithLedger(ledger, method, payload, account.path)
       .then((signature) => onSignature({ signature }))
-      .catch((e: Error) => {
-        if (e.message === "Transaction rejected") return onReject()
+      .catch((e: any) => {
+        if (
+          e.statusCode === 27013
+          // TODO need this ?  || e.message === "Transaction rejected"
+        )
+          return onReject()
         setError(e.message)
         setIsSigning(false)
       })
-  }, [ledger, extrinsicPayload, onSignature, method, payload, account.path, onReject])
+  }, [ledger, onSignature, method, payload, account.path, onReject])
 
   useEffect(() => {
     if (isReady && !error && !isSigning) {

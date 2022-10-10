@@ -1,8 +1,4 @@
-import {
-  AccountJsonAny,
-  AccountJsonHardware,
-  AccountJsonHardwareEthereum,
-} from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
@@ -16,7 +12,7 @@ import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import useToken from "@ui/hooks/useToken"
 import { BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
-import { lazy, Suspense, useCallback, useEffect, useMemo } from "react"
+import { lazy, Suspense, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { formatDecimals } from "talisman-utils"
 
@@ -233,7 +229,7 @@ export const EthSignTransactionRequest = () => {
                 Cancel
               </SimpleButton>
               <SimpleButton
-                disabled={processing || isLoading}
+                disabled={!transaction || processing || isLoading}
                 processing={processing}
                 primary
                 onClick={approve}
