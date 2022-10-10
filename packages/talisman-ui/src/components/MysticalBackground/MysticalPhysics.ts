@@ -17,11 +17,11 @@ export type MysticalPhysics = {
 }
 
 export const MYSTICAL_PHYSICS: MysticalPhysics = {
-  blur: 100,
+  blur: 0,
   minSizeArtifact: 0,
   minSizeAcolyte: 0.1,
-  maxSizeArtifact: 3,
-  maxSizeAcolyte: 1,
+  maxSizeArtifact: 4,
+  maxSizeAcolyte: 1.4,
   minOpacityArtifact: 0.05,
   minOpacityAcolyte: 0.15,
   maxOpacityArtifact: 0.2,
@@ -29,7 +29,7 @@ export const MYSTICAL_PHYSICS: MysticalPhysics = {
   stiffnessArtifact: 100,
   stiffnessAcolyte: 200,
   easeArtifact: "easeInOut",
-  easeAcolyte: "easeOut", // no ease in to ensure it follows mouse smoothly
+  easeAcolyte: "easeOut",
   durationArtifact: 8,
-  durationAcolyte: 7,
+  durationAcolyte: 10,
 }
