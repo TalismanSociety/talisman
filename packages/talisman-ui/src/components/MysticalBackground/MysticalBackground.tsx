@@ -21,16 +21,14 @@ export const MysticalBackground = ({
   const isWindowHovered = useWindowHovered()
 
   // props for the artifact that follows mouse cursor
-  const acolyte = useMemo(
-    () =>
-      isWindowHovered && !!elX && !!elY && elX > 0 && elX < elW && elY > 0 && elY < elH
-        ? { cx: elX, cy: elY }
-        : {},
-    [elH, elW, elX, elY, isWindowHovered]
-  )
+  // changes a lot when hovering, do not memoize
+  const acolyte =
+    isWindowHovered && !!elX && !!elY && elX > 0 && elX < elW && elY > 0 && elY < elH
+      ? { cx: elX, cy: elY }
+      : {}
 
   return (
-    <div ref={refSize} className={classNames("relative", className)}>
+    <div ref={refSize} className={classNames(className)}>
       <div ref={refMouseLocation} className="absolute top-0 left-0 h-full w-full">
         {config && !!size.height && (
           <MysticalCanvas

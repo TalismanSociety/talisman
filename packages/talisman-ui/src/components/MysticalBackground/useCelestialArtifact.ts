@@ -46,7 +46,7 @@ const generateCharacteristics = (
         ? config.maxSizeAcolyte - config.minSizeAcolyte
         : config.maxSizeArtifact - config.minSizeArtifact)
 
-  const radius = Math.round(sizeRatio * largerBound) / 2
+  const radius = (sizeRatio * largerBound) / 2
 
   const color = Color.hsv(Math.random() * 360, 100, 100).hex()
   const opacity =
@@ -57,8 +57,8 @@ const generateCharacteristics = (
         : config.maxOpacityArtifact - config.minOpacityArtifact)
 
   const characteristics: ArtifactCharacteristics = {
-    cx: isAcolyte && cx ? cx : Math.round(Math.random() * parentSize.width),
-    cy: isAcolyte && cy ? cy : Math.round(Math.random() * parentSize.height),
+    cx: isAcolyte && cx ? cx : Math.random() * parentSize.width,
+    cy: isAcolyte && cy ? cy : Math.random() * parentSize.height,
     radius,
     opacity,
     color,
