@@ -12,21 +12,27 @@ import {
 } from "@core/domains/balances/types"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
+import metadataInit from "@core/domains/metadata/_metadataInit"
 import { SigningHandler } from "@core/domains/signing"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
 import TokensHandler from "@core/domains/tokens/handler"
 import { AssetTransferHandler } from "@core/domains/transactions"
 import State from "@core/handlers/State"
 import { ExtensionStore } from "@core/handlers/stores"
+import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
+import { assert } from "@polkadot/util"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import { liveQuery } from "dexie"
+import Browser from "webextension-polyfill"
 
 import { createSubscription, unsubscribe } from "./subscriptions"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
+  #autoLockTimeout = 0 // cached value so we don't have to get data from the store every time
 
   constructor(state: State, stores: ExtensionStore) {
     super(state, stores)
@@ -42,6 +48,67 @@ export default class Extension extends ExtensionHandler {
       sites: new SitesAuthorisationHandler(state, stores),
       tokens: new TokensHandler(state, stores),
     }
+
+    // connect auto lock timeout setting to the password store
+    this.stores.settings.observable.subscribe(({ autoLockTimeout }) => {
+      this.#autoLockTimeout = autoLockTimeout
+      stores.password.resetAutoLockTimer(autoLockTimeout)
+    })
+
+    // update the autolock timer whenever a setting is changed
+    Browser.storage.onChanged.addListener(() => {
+      stores.password.resetAutoLockTimer(this.#autoLockTimeout)
+    })
+
+    this.initDb()
+
+    this.initWalletFunding()
+  }
+
+  private initDb() {
+    db.on("ready", async () => {
+      // if store has no metadata yet
+      if ((await db.metadata.count()) < 1) {
+        // delete old localstorage-managed 'db'
+        Browser.storage.local.remove([
+          "chains",
+          "ethereumNetworks",
+          "tokens",
+          "balances",
+          "metadata",
+        ])
+
+        // delete old idb-managed metadata+metadataRpc db
+        indexedDB.deleteDatabase("talisman")
+
+        // add initial metadata
+        db.metadata.bulkAdd(metadataInit)
+      }
+    })
+  }
+
+  private initWalletFunding() {
+    // We need to show a specific UI until wallet has funds in it.
+    // Note that showWalletFunding flag is turned on when onboarding.
+    // Turn off the showWalletFunding flag as soon as there is a positive balance
+    const subAppStore = this.stores.app.observable.subscribe(({ showWalletFunding, onboarded }) => {
+      if (!showWalletFunding) {
+        if (onboarded === "TRUE") subAppStore.unsubscribe()
+        return
+      }
+
+      // look only for free balance because reserved and frozen properties are not indexed
+      const obsHasFunds = liveQuery(
+        async () => await db.balances.filter((b) => b.free !== "0").count()
+      )
+      const subBalances = obsHasFunds.subscribe((hasFunds) => {
+        if (hasFunds) {
+          this.stores.app.set({ showWalletFunding: false })
+          subBalances.unsubscribe()
+          subAppStore.unsubscribe()
+        }
+      })
+    })
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -50,6 +117,9 @@ export default class Extension extends ExtensionHandler {
     request: RequestTypes[TMessageType],
     port: Port
   ): Promise<ResponseType<TMessageType>> {
+    // Reset the auto lock timer on any message, the user is still actively using the extension
+    this.stores.password.resetAutoLockTimer(this.#autoLockTimeout)
+
     // --------------------------------------------------------------------
     // First try to unsubscribe                          ------------------
     // --------------------------------------------------------------------
@@ -76,9 +146,16 @@ export default class Extension extends ExtensionHandler {
       // --------------------------------------------------------------------
       // mnemonic handlers --------------------------------------------------
       // --------------------------------------------------------------------
-      case "pri(mnemonic.unlock)":
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        return await this.stores.seedPhrase.getSeed(request as string)
+      case "pri(mnemonic.unlock)": {
+        const transformedPw = await this.stores.password.transformPassword(
+          request as RequestTypes["pri(mnemonic.unlock)"]
+        )
+        assert(transformedPw, "Password error")
+
+        const seedResult = await this.stores.seedPhrase.getSeed(transformedPw)
+        assert(seedResult.ok, seedResult.val)
+        return seedResult.val
+      }
 
       case "pri(mnemonic.confirm)":
         return await this.stores.seedPhrase.setConfirmed(request as boolean)

@@ -1,6 +1,7 @@
-import { Balance, BalanceFormatter, Balances } from "@core/domains/balances/types"
+import { Balance, BalanceFormatter } from "@core/domains/balances/types"
+import { EthGasSettings } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName, SignerPayloadJSON } from "@core/domains/signing/types"
-import { Token, TokenId } from "@core/domains/tokens/types"
+import { Token } from "@core/domains/tokens/types"
 
 export type TransferableTokenId = string
 
@@ -31,8 +32,10 @@ export type SendTokensInputs = {
   to: string
   tip?: string
   priority?: EthPriorityOptionName
-  maxPriorityFeePerGas?: string
-  maxFeePerGas?: string
+}
+
+export type SendTokensData = SendTokensInputs & {
+  gasSettings?: EthGasSettings
 }
 
 export type SendTokensExpectedResult =

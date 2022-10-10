@@ -1,52 +1,52 @@
+import { Chain } from "@core/domains/chains/types"
 import { encodeAnyAddress } from "@core/util"
-import CopyToClipboard from "@talisman/components/CopyToClipboard"
 import Input from "@talisman/components/Field/Input"
-import { useNotification } from "@talisman/components/Notification"
 import { useSearchFilter } from "@talisman/hooks/useSearchFilter"
 import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
 import { ReactComponent as IconCheck } from "@talisman/theme/icons/check.svg"
 import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
 import { ReactComponent as IconSearch } from "@talisman/theme/icons/search.svg"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useAccountChainsFilter } from "@ui/hooks/useAccountChainsFilter"
 import useAddressTypeChainsFilter from "@ui/hooks/useAddressTypeChainsFilter"
 import useChainsAndSearchSymbols from "@ui/hooks/useChainsAndSearchSymbols"
 import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
 import { useSortedChains } from "@ui/hooks/useSortedChains"
-import { PropsWithChildren, useState } from "react"
+import { copyAddress } from "@ui/util/copyAddress"
+import { PropsWithChildren, useCallback, useState } from "react"
 import styled from "styled-components"
 
 import Logo from "../Asset/Logo"
 import { Address } from "./Address"
 
-interface IPropsAddressFormat extends PropsWithChildren<any> {
-  name: string
+type AddressFormatProps = {
+  name: string | null
   address: string
   id: string
+  className?: string
+  copied?: boolean
+  onClick: () => void
 }
 
 const AddressFormat = styled(
-  ({ name, address, id, className, onCopy, copied = false }: IPropsAddressFormat) => {
+  ({ name, address, id, className, onClick, copied }: AddressFormatProps) => {
     return (
-      <CopyToClipboard value={address} onCopy={onCopy}>
-        <div className={`${className} flex gap`}>
-          <span className="flex gap min-w-0">
-            <Logo id={id} />
-            <span className="min-w-0">
-              <div className="truncate color-text">{name}</div>
-              <Address as="div" className="subtext" address={address} />
+      <div onClick={onClick} className={`${className} gap flex`}>
+        <span className="gap flex min-w-0">
+          <Logo id={id} />
+          <span className="min-w-0">
+            <div className="color-text truncate">{name}</div>
+            <Address as="div" className="subtext" address={address} />
+          </span>
+        </span>
+        <span className="gap flex">
+          {copied && (
+            <span className="copied flex">
+              <IconCheck /> Copied
             </span>
-          </span>
-          <span className="flex gap">
-            {copied && (
-              <span className="flex copied">
-                <IconCheck /> Copied
-              </span>
-            )}
-            <IconCopy className="copy" />
-          </span>
-        </div>
-      </CopyToClipboard>
+          )}
+          <IconCopy className="copy" />
+        </span>
+      </div>
     )
   }
 )`
@@ -145,7 +145,6 @@ interface IPropsAddressFormatter extends PropsWithChildren<any> {
 }
 
 const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressFormatter) => {
-  const notification = useNotification()
   const chains = useSortedChains()
   const [copied, setCopied] = useState("")
 
@@ -159,6 +158,14 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
     searchQuery,
     ["name", "searchSymbols"],
     chainsAndSearchSymbols
+  )
+
+  const handleCopyClick = useCallback(
+    (chain: Chain, convertedAddress: string) => async () => {
+      setCopied(chain.id)
+      if (await copyAddress(convertedAddress, `${chain.name} address copied`)) onClose()
+    },
+    [onClose]
   )
 
   return (
@@ -177,14 +184,7 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
               id={chain.id}
               name={chain.name}
               address={convertedAddress}
-              onCopy={() => {
-                setCopied(chain.id)
-                notification.success({
-                  title: `${chain.name} address copied`,
-                  subtitle: `Address: ${shortenAddress(convertedAddress)}`,
-                })
-                onClose()
-              }}
+              onClick={handleCopyClick(chain, convertedAddress)}
               copied={chain.id === copied}
             />
           )

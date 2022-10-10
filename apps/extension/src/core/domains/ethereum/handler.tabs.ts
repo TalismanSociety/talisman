@@ -5,7 +5,7 @@ import {
   RequestAuthorizeTab,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token } from "@core/domains/tokens/types"
-import { stripUrl } from "@core/handlers/helpers"
+import { urlToDomain } from "@core/util/urlToDomain"
 import {
   AnyEthRequest,
   ETH_ERROR_EIP1474_INVALID_INPUT,
@@ -26,6 +26,7 @@ import { TabsHandler } from "@core/libs/Handler"
 import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
+import { sleep } from "@core/util/sleep"
 import { toBuffer } from "@ethereumjs/util"
 import { recoverPersonalSignature } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
@@ -253,7 +254,9 @@ export class EthTabsHandler extends TabsHandler {
     // switch automatically to new chain
     const ethereumNetwork = await db.evmNetworks.get(chainId)
     if (ethereumNetwork) {
-      this.stores.sites.updateSite(stripUrl(url), { ethChainId: chainId })
+      const { err, val } = urlToDomain(url)
+      if (err) throw new Error(val)
+      this.stores.sites.updateSite(val, { ethChainId: chainId })
     }
 
     return null
@@ -281,13 +284,16 @@ export class EthTabsHandler extends TabsHandler {
     if (!provider)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-    this.stores.sites.updateSite(stripUrl(url), { ethChainId: chainId })
+    const { err, val } = urlToDomain(url)
+    if (err) throw new Error(val)
+    this.stores.sites.updateSite(val, { ethChainId: chainId })
 
     return null
   }
 
   private getChainId = async (url: string) => {
-    const site = await this.stores.sites.get(stripUrl(url))
+    // url validation carried out inside stores.sites.getSiteFromUrl
+    const site = await this.stores.sites.getSiteFromUrl(url)
     return site?.ethChainId ?? DEFAULT_ETH_CHAIN_ID
   }
 
@@ -415,7 +421,7 @@ export class EthTabsHandler extends TabsHandler {
         await this.authoriseEth(url, { origin: "", ethereum: true })
         // TODO understand why site store isn't up to date already
         // wait for site store to update
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        await sleep(500)
         return await this.accountsList(url)
 
       case "eth_accounts":
@@ -468,9 +474,16 @@ export class EthTabsHandler extends TabsHandler {
 
         const site = await this.getSiteDetails(url)
 
-        let provider
+        // ensure chainId isn't an hex (ex: Zerion)
+        if (typeof txRequest.chainId === "string" && (txRequest.chainId as string).startsWith("0x"))
+          txRequest.chainId = parseInt(txRequest.chainId, 16)
+
+        // checks that the request targets currently selected network
+        if (txRequest.chainId && site.ethChainId !== txRequest.chainId)
+          throw new EthProviderRpcError("Wrong network", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
         try {
-          provider = await this.getProvider(url)
+          await this.getProvider(url)
         } catch (error) {
           throw new EthProviderRpcError(
             "Network not supported",

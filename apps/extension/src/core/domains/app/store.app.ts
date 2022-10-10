@@ -11,6 +11,7 @@ type ONBOARDED_FALSE = "FALSE"
 type ONBOARDED_UNKNOWN = "UNKNOWN"
 const TRUE: ONBOARDED_TRUE = "TRUE"
 const FALSE: ONBOARDED_FALSE = "FALSE"
+const UNKNOWN: ONBOARDED_UNKNOWN = "UNKNOWN"
 
 export type OnboardedType = ONBOARDED_TRUE | ONBOARDED_FALSE | ONBOARDED_UNKNOWN
 
@@ -19,16 +20,18 @@ export type AppStoreData = {
   hideBraveWarning: boolean
   hasBraveWarningBeenShown: boolean
   analyticsRequestShown: boolean
+  showWalletFunding: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
 
-const DEFAULT_VALUE = {
-  onboarded: FALSE,
+export const DEFAULT_APP_STATE = {
+  onboarded: UNKNOWN,
   hideBraveWarning: false,
   hasBraveWarningBeenShown: false,
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
+  showWalletFunding: false, // true after onboarding with a newly created account
 }
 
 export class AppStore extends SubscribableStorageProvider<
@@ -39,7 +42,7 @@ export class AppStore extends SubscribableStorageProvider<
   onboardingRequestsByUrl: { [url: string]: boolean } = {}
 
   constructor() {
-    super("app", DEFAULT_VALUE)
+    super("app", DEFAULT_APP_STATE)
 
     // One time migration to using this store instead of storing directly in local storage from State
     Browser.storage.local.get("talismanOnboarded").then((result) => {
@@ -51,14 +54,22 @@ export class AppStore extends SubscribableStorageProvider<
         Browser.storage.local.remove("talismanOnboarded")
       }
     })
+
+    this.init()
+  }
+
+  async init() {
+    // Onboarding page won't display with UNKNOWN
+    // Initialize to FALSE after install
+    if ((await this.get("onboarded")) === UNKNOWN) await this.set({ onboarded: FALSE })
   }
 
   async getIsOnboarded() {
     return (await this.get("onboarded")) === TRUE
   }
 
-  async setOnboarded() {
-    return (await this.set({ onboarded: TRUE })).onboarded
+  async setOnboarded(showWalletFunding: boolean) {
+    return (await this.set({ onboarded: TRUE, showWalletFunding })).onboarded
   }
 
   async ensureOnboarded() {

@@ -38,6 +38,25 @@ const About = () => {
       </Description>
       <Grid columns={1}>
         <CtaButton
+          title="Help and Support"
+          subtitle="For help and support please visit our Discord"
+          to="https://discord.gg/EF3Zf4R5bD"
+          external
+        />
+        <CtaButton
+          title="Docs"
+          subtitle="Learn how to use Talisman"
+          to="https://docs.talisman.xyz"
+          external
+          allowReferrer
+        />
+        <CtaButton
+          title="Changelog"
+          subtitle="Review wallet release notes"
+          to="https://docs.talisman.xyz/talisman/prepare-for-your-journey/wallet-release-notes"
+          external
+        />
+        <CtaButton
           title="Privacy Policy"
           subtitle="Read our Privacy Policy"
           to="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
@@ -50,19 +69,6 @@ const About = () => {
           to="https://docs.talisman.xyz/talisman/legal-and-security/terms-of-use"
           external
           allowReferrer
-        />
-        <CtaButton
-          title="Docs"
-          subtitle="Read our developer documentation"
-          to="https://docs.talisman.xyz"
-          external
-          allowReferrer
-        />
-        <CtaButton
-          title="Help and Support"
-          subtitle="For help and support please visit our Discord"
-          to="https://discord.gg/EF3Zf4R5bD"
-          external
         />
       </Grid>
     </Layout>

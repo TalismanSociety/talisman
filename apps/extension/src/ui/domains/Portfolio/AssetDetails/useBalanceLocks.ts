@@ -3,7 +3,7 @@ import { ChainId } from "@core/domains/chains/types"
 import { Address } from "@core/types/base"
 import * as Sentry from "@sentry/browser"
 import { api } from "@ui/api"
-import { flatMap } from "lodash"
+import flatMap from "lodash/flatMap"
 import { useMemo, useState } from "react"
 import { useDebounce } from "react-use"
 

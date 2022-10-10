@@ -1,46 +1,13 @@
-import { SettingsStoreData } from "@core/domains/app"
+import { SettingsStoreData } from "@core/domains/app/store.settings"
 import Field from "@talisman/components/Field"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import Layout from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useSettings } from "@ui/hooks/useSettings"
 import { useCallback } from "react"
-import styled from "styled-components"
-
-const Button = styled(SimpleButton)`
-  width: auto;
-`
-
-const ModalDescription = styled.p`
-  color: var(--color-mid);
-  text-align: center;
-  font-size: var(--font-size-normal);
-  padding: 0.8rem 1.8rem;
-`
-
-const CustomNetworksCount = styled.span`
-  margin-right: 1.6rem;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  span {
-    display: block;
-    width: 2.4rem;
-    height: 2.4rem;
-    color: var(--color-primary);
-    background: rgba(213, 255, 92, 0.12);
-    text-align: center;
-    border-radius: 50%;
-    line-height: 2.4rem;
-    padding-top: 0.1rem;
-  }
-`
 
 const Options = () => {
   const {

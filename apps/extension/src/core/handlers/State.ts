@@ -8,9 +8,8 @@ import { MetadataRequestsStore } from "@core/domains/metadata"
 import { SigningRequestsStore } from "@core/domains/signing"
 import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
+import { sleep } from "@core/util/sleep"
 import Browser from "webextension-polyfill"
-
-import { stripUrl } from "./helpers"
 
 const WINDOW_OPTS: Browser.Windows.CreateCreateDataType = {
   // This is not allowed on FF, only on Chrome - disable completely
@@ -53,7 +52,7 @@ export default class State {
         } else siteAuth.addresses = addresses
 
         await sitesAuthorisationStore.set({
-          [stripUrl(url)]: siteAuth,
+          [idStr]: siteAuth,
         })
       }
     ),
@@ -156,7 +155,7 @@ export default class State {
         Browser.tabs.onUpdated.addListener(handler)
       }),
       // promise for the timeout
-      new Promise((resolve) => setTimeout(resolve, 3000)),
+      sleep(3000),
     ])
   }
 
@@ -198,15 +197,14 @@ export default class State {
     return tab
   }
 
-  public async openOnboarding(tabUrl?: string) {
+  public async openOnboarding() {
     if (this.#onboardingTabOpening) return
     this.#onboardingTabOpening = true
     const url = Browser.runtime.getURL(`onboarding.html`)
 
     const onboarded = await appStore.getIsOnboarded()
-    const shouldFocus = onboarded || !tabUrl || !appStore.onboardingRequestsByUrl[stripUrl(tabUrl)]
-    await this.openTabOnce({ url, shouldFocus })
-    if (shouldFocus && tabUrl) appStore.onboardingRequestsByUrl[stripUrl(tabUrl)] = true
+
+    await this.openTabOnce({ url, shouldFocus: onboarded })
     this.#onboardingTabOpening = false
   }
 

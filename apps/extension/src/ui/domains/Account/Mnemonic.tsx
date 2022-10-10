@@ -12,13 +12,32 @@ import { useForm } from "react-hook-form"
 import styled from "styled-components"
 import * as yup from "yup"
 
+const Description = () => (
+  <>
+    <p>
+      Your recovery phrase gives you access to your wallet and funds. It can be used to restore your
+      Talisman created accounts if you lose access to your device, or forget your password.
+    </p>
+    <p>
+      We strongly encourage you to back up your recovery phrase by writing it down and storing it in
+      a secure location.{" "}
+      <a
+        href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/back-up-your-secret-phrase"
+        target="_blank"
+      >
+        Learn more
+      </a>
+    </p>
+  </>
+)
+
 type FormData = {
   password: string
 }
 
 const schema = yup
   .object({
-    password: yup.string().trim().required(""),
+    password: yup.string().required(""),
   })
   .required()
 
@@ -53,13 +72,13 @@ const Mnemonic = ({ className }: any) => {
     <div className={className}>
       {mnemonic ? (
         <>
-          <HeaderBlock text="Your secret phrase protects your account. If you share it you may lose your funds." />
-          <Spacer />
+          <HeaderBlock text={<Description />} />
+          <Spacer small />
           <Field.Textarea className="secret" value={mnemonic} fieldProps={{ rows: 3 }} />
           <Spacer />
           <Field.Toggle
             className="toggle"
-            info="Don't prompt me again"
+            info="I've backed it up"
             value={isConfirmed}
             onChange={(val: boolean) => toggleConfirmed(val)}
           />
@@ -69,14 +88,12 @@ const Mnemonic = ({ className }: any) => {
           <HeaderBlock
             text={
               <>
-                Your secret phrase protects your account. If you share it you may lose your funds.
-                <br />
-                <br />
-                <strong>Enter your password to show your secret phrase</strong>.
+                <Description />
+                <strong>Enter your password to show your recovery phrase</strong>.
               </>
             }
           />
-          <Spacer />
+          <Spacer small />
           <FormField error={errors.password} prefix={<KeyIcon />}>
             <input
               {...register("password")}
@@ -90,7 +107,7 @@ const Mnemonic = ({ className }: any) => {
           <Spacer />
           <div className="buttons">
             <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-              View Secret Phrase
+              View Recovery Phrase
             </SimpleButton>
           </div>
         </form>
@@ -100,6 +117,30 @@ const Mnemonic = ({ className }: any) => {
 }
 
 const StyledMnemonic = styled(Mnemonic)`
+  .header-block,
+  .header-block p {
+    font-style: normal;
+    font-weight: 400;
+    font-size: 1.8rem;
+    line-height: 2.2rem;
+
+    a,
+    a:link,
+    a:visited,
+    a:hover {
+      color: var(--color-foreground);
+      opacity: 1;
+    }
+
+    strong {
+      font-style: normal;
+      font-weight: 400;
+      font-size: 1.8rem;
+      line-height: 2.2rem;
+      color: var(--color-foreground);
+    }
+  }
+
   .toggle {
     flex-direction: row;
     justify-content: flex-end;
@@ -149,6 +190,10 @@ const StyledMnemonic = styled(Mnemonic)`
 
   form svg {
     opacity: 0.5;
+  }
+
+  ${SimpleButton} {
+    width: 100%;
   }
 `
 

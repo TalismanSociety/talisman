@@ -153,12 +153,8 @@ const Global = createGlobalStyle`
     }
   }
 
-  *:focus{
+  *:not(.allow-focus):focus{
       outline: none;
-  }
-
-  ::placeholder {
-    color: rgba(${({ theme }) => theme?.foreground}, 0.2);
   }
 
   .muted{

@@ -4,11 +4,10 @@ import { encodeAnyAddress } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
-import { useNotification } from "@talisman/components/Notification"
 import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { copyAddress } from "@ui/util/copyAddress"
 import { Fragment, useCallback, useMemo } from "react"
 import styled from "styled-components"
 
@@ -21,6 +20,7 @@ import { useChainTokenBalances } from "./useChainTokenBalances"
 
 const Table = styled.table`
   border-spacing: 0;
+  border-collapse: separate;
   width: 100%;
   color: var(--color-mid);
   text-align: left;
@@ -101,7 +101,6 @@ const SmallIconButton = styled(IconButton)`
 
 const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) => {
   const { account } = useSelectedAccount()
-  const notification = useNotification()
 
   const address = useMemo(() => {
     if (!account) return null
@@ -111,12 +110,8 @@ const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) =>
 
   const handleClick = useCallback(() => {
     if (!address) return
-    navigator.clipboard.writeText(address)
-    notification.success({
-      title: `Address copied`,
-      subtitle: shortenAddress(address),
-    })
-  }, [address, notification])
+    copyAddress(address)
+  }, [address])
 
   if (!address) return null
 

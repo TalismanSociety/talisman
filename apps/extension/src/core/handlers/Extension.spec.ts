@@ -1,3 +1,4 @@
+import { passwordStore } from "@core/domains/app"
 import { db } from "@core/libs/db"
 import { MessageTypes, RequestTypes, ResponseTypes } from "@core/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
@@ -12,13 +13,12 @@ import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-import type { KeypairType } from "@polkadot/util-crypto/types"
 import { v4 } from "uuid"
+import Browser from "webextension-polyfill"
 
 import Extension from "./Extension"
 import State from "./State"
-import { extensionStores, tabStores } from "./stores"
-import Tabs from "./Tabs"
+import { extensionStores } from "./stores"
 
 jest.mock("@core/domains/chains/api")
 jest.setTimeout(10000)
@@ -37,10 +37,9 @@ const getMessageSenderFn =
 describe("Extension", () => {
   let extension: Extension
   let state: State
-  let tabs: Tabs
   let messageSender: SenderFunction<MessageTypes>
   const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
-  const password = "passw0rd"
+  const password = "passw0rd " // has a space
 
   async function createExtension(): Promise<Extension> {
     await cryptoWaitReady()
@@ -57,13 +56,12 @@ describe("Extension", () => {
     })
     state = new State()
     /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-    tabs = new Tabs(state, tabStores)
 
     return new Extension(state, extensionStores)
   }
 
-  const getAccount = async (type?: KeypairType): Promise<string> => {
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
+  const getAccount = async (): Promise<string> => {
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
     expect(account).toBeDefined()
 
     if (!account) throw new Error("Account not found")
@@ -71,16 +69,23 @@ describe("Extension", () => {
   }
 
   beforeAll(async () => {
+    await Browser.storage.local.clear()
     extension = await createExtension()
     messageSender = getMessageSenderFn(extension)
 
     await messageSender("pri(app.onboard)", {
-      name: "testRootAccount",
       pass: password,
       passConfirm: password,
     })
-    const account = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
+    const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await extensionStores.sites.updateSite("localhost:3000", { addresses: [account!.address] })
+  })
+
+  beforeEach(async () => {
+    await messageSender("pri(app.authenticate)", {
+      pass: password,
+    })
   })
 
   test("user can be onboarded", async () => {
@@ -89,20 +94,23 @@ describe("Extension", () => {
   })
 
   test("exports account from keyring", async () => {
-    expect(extensionStores.password.hasPassword).toBeTruthy()
-    const rootAccount = keyring.getAccounts().find(({ meta }) => meta.name === "testRootAccount")
-    expect(rootAccount)
+    // need to use the pw from the store, because it may need to be trimmed
+    const pw = await passwordStore.getPassword()
+    expect(pw).toBeTruthy()
+    const {
+      pair: { address },
+    } = keyring.addUri(suri, pw)
 
     const result = await extension.handle(
       "id",
       "pri(accounts.export)",
       {
-        address: rootAccount!.address,
+        address,
       },
       {} as chrome.runtime.Port
     )
 
-    expect(result.exportedJson.address).toBe(rootAccount!.address)
+    expect(result.exportedJson.address).toBe(address)
     expect(result.exportedJson.encoded).toBeDefined()
   })
 
@@ -111,9 +119,11 @@ describe("Extension", () => {
 
     beforeEach(async () => {
       state.requestStores.signing.clearRequests()
+      // need to use the pw from the store, because it may need to be trimmed
       address = await getAccount()
       pair = keyring.getPair(address)
-      pair.decodePkcs8(extensionStores.password.getPassword())
+      const pw = await passwordStore.getPassword()
+      pair.decodePkcs8(pw)
       payload = {
         address,
         blockHash: "0xe1b1dda72998846487e4d858909d4f9a6bbd6e338e4588e5d809de16b1317b80",

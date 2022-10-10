@@ -21,11 +21,16 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
   const authRequests = useAuthRequests()
   const ethereum = !!currentRequest?.request.ethereum
   const [chainId, setChainId] = useState(DEFAULT_ETH_CHAIN_ID) // Default to moonbeam
+  const [showEthAccounts, setShowEthAccounts] = useState(false)
 
   const accounts = useMemo(
     () =>
-      allAccounts.filter(({ type }) => !currentRequest?.request.ethereum || type === "ethereum"),
-    [allAccounts, currentRequest?.request.ethereum]
+      allAccounts.filter(
+        ({ type }) =>
+          showEthAccounts ||
+          (currentRequest?.request.ethereum ? type === "ethereum" : type !== "ethereum")
+      ),
+    [allAccounts, currentRequest?.request?.ethereum, showEthAccounts]
   )
   const isMissingEthAccount = useMemo(
     () => ethereum && !!allAccounts.length && !accounts.length,
@@ -70,6 +75,8 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
     setChainId,
     ethereum,
     isMissingEthAccount,
+    showEthAccounts,
+    setShowEthAccounts,
   }
 }
 

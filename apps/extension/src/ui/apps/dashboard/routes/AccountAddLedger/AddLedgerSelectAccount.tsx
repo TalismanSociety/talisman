@@ -1,5 +1,6 @@
+import { sleep } from "@core/util/sleep"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { useNotification } from "@talisman/components/Notification"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { LedgerAccountPicker } from "@ui/domains/Account/LedgerAccountPicker"
@@ -52,7 +53,6 @@ type FormData = {
 export const AddLedgerSelectAccount = () => {
   const { data, importAccounts } = useAddLedgerAccount()
   const navigate = useNavigate()
-  const notification = useNotification()
 
   const schema = useMemo(
     () =>
@@ -77,27 +77,36 @@ export const AddLedgerSelectAccount = () => {
   const submit = useCallback(
     async ({ accounts }: FormData) => {
       const suffix = accounts?.length > 1 ? "s" : ""
-      notification.processing({
-        title: "Importing account" + suffix,
-        subtitle: "Please wait",
-        timeout: null,
-      })
+
+      const notificationId = notify(
+        {
+          type: "processing",
+          title: "Importing account" + suffix,
+          subtitle: "Please wait",
+        },
+        { autoClose: false }
+      )
+
+      // pause to prevent double notification
+      await sleep(1000)
+
       try {
         await importAccounts(accounts)
-
-        notification.success({
+        notifyUpdate(notificationId, {
+          type: "success",
           title: `Account${suffix} imported`,
           subtitle: null,
         })
         navigate("/")
       } catch (err) {
-        notification.error({
+        notifyUpdate(notificationId, {
+          type: "error",
           title: "Importing account" + suffix,
           subtitle: (err as Error).message,
         })
       }
     },
-    [importAccounts, navigate, notification]
+    [importAccounts, navigate]
   )
 
   const handleAccountsChange = useCallback(

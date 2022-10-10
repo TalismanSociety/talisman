@@ -22,7 +22,6 @@ import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-
 
 import { CurrentSiteProvider } from "./context/CurrentSiteContext"
 import { NavigationProvider } from "./context/NavigationContext"
-import Account from "./pages/Account"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import Connect from "./pages/Connect"
@@ -104,7 +103,6 @@ const Popup = () => {
             <NavigationProvider>
               <AddressFormatterModalProvider>
                 <Routes>
-                  <Route path="/" element={<Account />}></Route>
                   <Route path="portfolio/*" element={<Portfolio />}></Route>
                   <Route path="auth" element={<Connect />}></Route>
                   <Route path="sign/eth/:id" element={<EthereumSignRequest />}></Route>

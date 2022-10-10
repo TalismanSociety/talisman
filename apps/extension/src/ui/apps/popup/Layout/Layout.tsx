@@ -2,15 +2,17 @@ import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import React, { PropsWithChildren, useEffect, useState } from "react"
 import styled from "styled-components"
+import { BottomNav } from "../components/Navigation/BottomNav"
 
 import { NavigationDrawer } from "../components/Navigation/NavigationDrawer"
 
 export interface IProps extends PropsWithChildren<any> {
   isThinking?: boolean
   className?: any
+  withBottomNav?: boolean
 }
 
-const Layout = ({ isThinking, className, children }: IProps) => {
+const Layout = ({ className, withBottomNav, children }: IProps) => {
   const [header, setHeader] = useState<any>()
   const [content, setContent] = useState<any>()
   const [footer, setFooter] = useState<any>()
@@ -28,6 +30,7 @@ const Layout = ({ isThinking, className, children }: IProps) => {
         {header}
         {content}
         {footer}
+        {withBottomNav && <BottomNav />}
         <AddressFormatterModal />
         {/* NavigationDrawer here so user can see the drawer close smoothly in case he navigates from one page to another (as long as both page use this Layout) */}
         <NavigationDrawer />

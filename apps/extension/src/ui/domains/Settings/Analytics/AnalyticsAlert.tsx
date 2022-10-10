@@ -1,4 +1,4 @@
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 import Button, { ButtonGroup } from "@talisman/components/Button"
 import { Card } from "@talisman/components/Card"
 import { Drawer } from "@talisman/components/Drawer"
@@ -28,15 +28,14 @@ export const AlertCard = styled(({ className, onLearnMoreClick, onAccept, onReje
       className={className}
       title={
         <>
-          <EyeIcon className="icon" /> Help us improve Talisman
+          <EyeIcon className="icon inline-block" /> Help us improve Talisman
         </>
       }
       description={
         <>
           <p>
-            We'd like to gather
+            We'd like to gather{" "}
             <span className="learn-more" onClick={onLearnMoreClick}>
-              {" "}
               anonymous usage data
             </span>{" "}
             to help improve the experience of using Talisman.

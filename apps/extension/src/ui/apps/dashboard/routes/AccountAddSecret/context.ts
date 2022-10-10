@@ -1,5 +1,6 @@
 import { DEBUG } from "@core/constants"
 import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
+import { sleep } from "@core/util/sleep"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useCallback, useState } from "react"
@@ -35,7 +36,7 @@ const useAccountAddSecretProvider = () => {
     )
 
     // poudre de perlimpinpin
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await sleep(1000)
   }, [])
 
   return { data, updateData, importAccounts }

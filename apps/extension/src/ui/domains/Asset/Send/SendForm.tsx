@@ -1,3 +1,5 @@
+import { EthGasSettings } from "@core/domains/ethereum/types"
+import { Token } from "@core/domains/tokens/types"
 import { tokensToPlanck } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Box } from "@talisman/components/Box"
@@ -20,8 +22,9 @@ import {
   useEffect,
   useMemo,
   useState,
+  ReactNode,
 } from "react"
-import { useForm } from "react-hook-form"
+import { useForm, FieldError } from "react-hook-form"
 import styled from "styled-components"
 import * as yup from "yup"
 
@@ -30,7 +33,7 @@ import AssetPicker from "../Picker"
 import { useSendTokens } from "./context"
 import { EthTransactionFees, FeeSettings } from "./EthTransactionFees"
 import { SendDialogContainer } from "./SendDialogContainer"
-import { SendTokensInputs } from "./types"
+import { SendTokensInputs, TransferableToken } from "./types"
 import { useTransferableTokenById } from "./useTransferableTokens"
 
 const SendAddressConvertInfo = lazy(() => import("./SendAddressConvertInfo"))
@@ -152,6 +155,17 @@ const Container = styled(SendDialogContainer)`
   }
 `
 
+const FieldContainer = ({ error, children }: { error?: FieldError; children: ReactNode }) => (
+  <div className="relative">
+    {children}
+    {!!error?.message && (
+      <div className="text-alert-warn absolute bottom-[-1em] left-0 !h-[1em] text-xs leading-none">
+        {error?.message}
+      </div>
+    )}
+  </div>
+)
+
 const AvailableBalance = styled(Balance)`
   .loader {
     display: none;
@@ -178,13 +192,14 @@ const cleanupAmountInput = (amount: string) => {
   )
 }
 
-const REVALIDATE = { shouldValidate: true, shouldDirty: true, shouldTouch: true }
-
-const evmSchema = {
-  priority: yup.string().required(),
-  maxPriorityFeePerGas: yup.string().required(),
-  maxFeePerGas: yup.string().required(),
+// ensures the input doesn't have more decimals than target token allows
+const isDecimalsValid = (amount?: string, token?: Token) => {
+  if (!amount || !token) return true
+  const decimals = Number(amount.split(".")[1]?.length ?? 0)
+  return decimals < token.decimals
 }
+
+const REVALIDATE = { shouldValidate: true, shouldDirty: true, shouldTouch: true }
 
 const substrateSchema = {
   tip: yup.string().required(), // this will disable the review button until tip is fetched from tip station
@@ -192,15 +207,22 @@ const substrateSchema = {
 
 // validation checks, used only to toggle submit button's disabled prop
 // (validation errors are not displayed on screen)
-const getSchema = (isEvm: boolean) =>
+const getSchema = (isEvm: boolean, tokens?: TransferableToken[]) =>
   yup
     .object({
+      transferableTokenId: yup.string().required(""),
       amount: yup
         .string()
         .required("")
         .transform(cleanupAmount)
-        .test("amount-gt0", "", (value) => Number(value) > 0),
-      transferableTokenId: yup.string().required(""),
+        .test("amount-gt0", "", (value) => Number(value) > 0)
+        .when("transferableTokenId", (transferableTokenId, schema) => {
+          const token = tokens?.find((t) => t.id === transferableTokenId)?.token
+          return schema.test({
+            test: (amount: string) => isDecimalsValid(amount, token),
+            message: `To many decimals (max ${token?.decimals})`,
+          })
+        }),
       from: yup
         .string()
         .required("")
@@ -211,15 +233,16 @@ const getSchema = (isEvm: boolean) =>
         .string()
         .required("")
         .test("to-valid", "Invalid address (to)", (address) => isValidAddress(address as string)),
-      ...(isEvm ? evmSchema : substrateSchema),
+      ...(isEvm ? {} : substrateSchema),
     })
-    .required()
+    .required("")
 
 export const SendForm = () => {
-  const { formData, check, showForm } = useSendTokens()
+  const { formData, check, showForm, transferableTokens } = useSendTokens()
   const [isEvm, setIsEvm] = useState(false)
+  const [gasSettings, setGasSettings] = useState<EthGasSettings | undefined>(formData?.gasSettings)
 
-  const schema = useMemo(() => getSchema(isEvm), [isEvm])
+  const schema = useMemo(() => getSchema(isEvm, transferableTokens), [isEvm, transferableTokens])
 
   // react-hook-form
   const {
@@ -227,24 +250,28 @@ export const SendForm = () => {
     setValue,
     setError,
     watch,
-    reset,
-    formState: { isValid, isSubmitting },
+    formState: { isValid: isValidForm, isSubmitting, errors },
   } = useForm<SendTokensInputs>({
     mode: "onChange",
     defaultValues: formData,
     resolver: yupResolver(schema),
   })
 
+  const isValid = useMemo(
+    () => isValidForm && (!isEvm || !!gasSettings),
+    [gasSettings, isEvm, isValidForm]
+  )
+
   const [errorMessage, setErrorMessage] = useState<string>()
   const submit = useCallback(
     async (data: SendTokensInputs) => {
       try {
-        await check(data)
+        await check({ ...data, gasSettings })
       } catch (err) {
         setErrorMessage(err instanceof Error ? err.message : (err as string))
       }
     },
-    [check]
+    [check, gasSettings]
   )
 
   // handlers for all input components
@@ -321,16 +348,17 @@ export const SendForm = () => {
       balance &&
       isValid &&
       tip &&
-      balance.transferable.planck < BigInt(tokensToPlanck(amount, token.decimals)) + BigInt(tip)
+      // user input may include to many decimals, make sure to exclude them before converting to BigInt
+      balance.transferable.planck <
+        BigInt(tokensToPlanck(amount, token.decimals).split(".")[0]) + BigInt(tip)
     )
       setErrorMessage("Insufficient balance")
   }, [amount, balance, errorMessage, isValid, setError, token, tip])
 
   const handleEvmFeeChange = useCallback(
     (fees: FeeSettings) => {
-      if (fees.priority) setValue("priority", fees.priority)
-      setValue("maxFeePerGas", fees.maxFeePerGas)
-      setValue("maxPriorityFeePerGas", fees.maxPriorityFeePerGas, REVALIDATE)
+      setValue("priority", fees.priority)
+      setGasSettings(fees.gasSettings)
     },
     [setValue]
   )
@@ -342,7 +370,7 @@ export const SendForm = () => {
       <form onSubmit={handleSubmit(submit)}>
         <article>
           <div>I want to send</div>
-          <div>
+          <FieldContainer error={errors.amount}>
             <InputAutoWidth
               className={`amount ${amount?.length > 0 && parseFloat(amount) > 0 ? `active` : ""}`}
               value={amount} // controlled : this is bad but we need to enforce the value to be a number
@@ -361,7 +389,8 @@ export const SendForm = () => {
               onChange={onAssetChange}
               showChainsWithBalanceFirst
             />
-          </div>
+          </FieldContainer>
+
           <div>
             <span>from</span>
             {/* Set a tabindex to ensure the underlying popup can receive focus (workaround to the wildcard transform issue) */}
@@ -398,7 +427,14 @@ export const SendForm = () => {
           <div className="info">
             {balance && (
               <Box flex column justify="flex-end" gap={0.1}>
-                <Box>Balance: {balance.status === "cache" && <LoaderIcon data-spin />}</Box>
+                <div className="flex items-center gap-2">
+                  <div>Balance: </div>
+                  <div>
+                    {balance.status === "cache" && (
+                      <LoaderIcon className="opacity-1 h-6 w-6 animate-spin" />
+                    )}
+                  </div>
+                </div>
                 <Box>
                   <AvailableBalance row withFiat noCountUp balance={balance} />
                 </Box>

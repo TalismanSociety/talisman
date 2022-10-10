@@ -17,7 +17,7 @@ type FormData = {
 
 const schema = yup
   .object({
-    password: yup.string().trim().required(""),
+    password: yup.string().required(""),
   })
   .required()
 
@@ -87,6 +87,7 @@ const Unlock = ({ className }: any) => {
               type="password"
               placeholder="Enter your password"
               spellCheck={false}
+              autoComplete="off"
               data-lpignore
               autoFocus
             />

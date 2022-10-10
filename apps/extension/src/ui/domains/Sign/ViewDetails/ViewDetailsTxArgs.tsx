@@ -57,7 +57,7 @@ export const ViewDetailsTxArgs: FC<ViewDetailsTxArgsProps> = ({ label, args }) =
         />
       }
     >
-      <CodeBlock code={code} />
+      <CodeBlock className="mt-2" code={code} />
     </ViewDetailsField>
   )
 }

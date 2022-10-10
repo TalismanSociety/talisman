@@ -1,10 +1,9 @@
-import { appStore } from "@core/domains/app"
+import { appStore } from "@core/domains/app/store.app"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BraveIcon } from "@talisman/theme/icons"
-import { api } from "@ui/api"
 import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarningModal"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
@@ -12,6 +11,7 @@ import { Notification } from "./Notification"
 
 export const BraveWarningNotification = () => {
   const isBrave = useIsBrave()
+  // TODO use useAppState instead
   const [hideBraveWarning, setHideBraveWarning] = useState<boolean | undefined>(true)
   const [hasBraveWarningBeenShown, setHasBraveWarningBeenShown] = useState<boolean | undefined>(
     true
@@ -42,8 +42,8 @@ export const BraveWarningNotification = () => {
     <>
       <Notification
         icon={<BraveIcon className="icon" />}
-        title="Attention Brave users! "
-        description="Due to a recent update, users may be experiencing issues loading balances"
+        title="Attention Brave users. "
+        description="Due to a recent Brave update, users may be experiencing issues loading balances."
         action="Learn more"
         onActionClick={open}
         onClose={handleHide}

@@ -1,5 +1,6 @@
 import { AppPill } from "@talisman/components/AppPill"
-import Button from "@talisman/components/Button"
+import { Button } from "talisman-ui"
+import { Checkbox } from "talisman-ui"
 import { Drawer } from "@talisman/components/Drawer"
 import Field from "@talisman/components/Field"
 import Grid from "@talisman/components/Grid"
@@ -11,10 +12,11 @@ import { api } from "@ui/api"
 import Account from "@ui/domains/Account"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useCurrentAuthorisationRequest from "@ui/hooks/useCurrentAuthorisationRequest"
-import { useCallback, useEffect } from "react"
+import { ChangeEventHandler, useCallback, useEffect } from "react"
 import styled from "styled-components"
 
 import Layout, { Content, Footer, Header } from "../Layout"
+import { WithTooltip } from "@talisman/components/Tooltip"
 
 const AccountItem = ({ address, value = 1, onChange, className }: any) => (
   <Panel className={className} onClick={() => onChange(!value)} small>
@@ -93,6 +95,7 @@ const Connect = ({ className, onSuccess }: any) => {
     ignore,
     ethereum,
     isMissingEthAccount,
+    setShowEthAccounts,
   } = useCurrentAuthorisationRequest({
     onError: (msg) => window.close(),
     onRejection: (msg) => window.close(),
@@ -116,6 +119,16 @@ const Connect = ({ className, onSuccess }: any) => {
     [ignore, reject]
   )
 
+  const handleShowEthAccountsChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      if (!e.target.checked)
+        for (const account of accounts.filter((a) => a.approved && a.type === "ethereum"))
+          account.toggle()
+      setShowEthAccounts(e.target.checked)
+    },
+    [accounts, setShowEthAccounts]
+  )
+
   return (
     <Layout className={className}>
       <Header
@@ -128,11 +141,18 @@ const Connect = ({ className, onSuccess }: any) => {
       />
 
       <Content>
-        <h3>
+        <h3 className="my-14 pt-10 text-center font-bold">
           {ethereum
             ? "Choose the account you'd like to connect"
             : "Choose the account(s) you'd like to connect"}
         </h3>
+        {!ethereum && (
+          <div className="text-body-secondary my-8 text-sm">
+            <WithTooltip tooltip="Some apps do not work with Ethereum accounts">
+              <Checkbox onChange={handleShowEthAccountsChanged}>Show Ethereum accounts</Checkbox>
+            </WithTooltip>
+          </div>
+        )}
         <article className="accounts">
           {accounts.map(({ address, approved, toggle }) => (
             <StyledAccountItem
@@ -153,12 +173,12 @@ const Connect = ({ className, onSuccess }: any) => {
         </article>
       </Content>
       <Footer>
-        <Grid>
+        <div className="grid w-full grid-cols-2 gap-12">
           <Button onClick={reject}>Reject</Button>
           <Button primary onClick={authorise} disabled={connected.length <= 0}>
             Connect {connected.length > 0 && connected.length}
           </Button>
-        </Grid>
+        </div>
       </Footer>
     </Layout>
   )

@@ -19,17 +19,26 @@ export type LoggedInType = LOGGEDIN_TRUE | LOGGEDIN_FALSE | LOGGEDIN_UNKNOWN
 
 type PasswordStoreData = {
   salt?: string
-  passwordVersion: number // 1: unhashed, trimmed; 2: hashed, trimmed; 3: hashed, untrimmed
+  isTrimmed: boolean
+  isHashed: boolean
 }
 
 const initialData = {
-  passwordVersion: 1,
+  // passwords from early versions of Talisman were 'trimmed'.
+  isTrimmed: true,
+  isHashed: false,
   salt: undefined,
 }
 
 export class PasswordStore extends StorageProvider<PasswordStoreData> {
-  #password?: string = undefined
+  #rawPassword?: string = undefined
   isLoggedIn = new BehaviorSubject<LoggedInType>(this.hasPassword ? TRUE : FALSE)
+  #autoLockTimer?: NodeJS.Timeout
+
+  public resetAutoLockTimer(seconds: number) {
+    if (this.#autoLockTimer) clearTimeout(this.#autoLockTimer)
+    if (seconds > 0) this.#autoLockTimer = setTimeout(() => this.clearPassword(), seconds * 1000)
+  }
 
   async createPassword(plaintextPw: string) {
     const salt = await generateSalt()
@@ -41,8 +50,8 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     }
   }
 
-  public setHashedPassword(password: string | undefined) {
-    this.#password = password
+  setHashedPassword(password: string | undefined) {
+    this.#rawPassword = password
     this.isLoggedIn.next(password !== undefined ? TRUE : FALSE)
   }
 
@@ -66,13 +75,19 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     this.setHashedPassword(undefined)
   }
 
-  getPassword() {
-    // This is intentionally indirect to reduce possible misuse of password
-    return this.#password
+  async transformPassword(password: string) {
+    const shouldTrim = await this.get("isTrimmed")
+    if (shouldTrim) return password.trim()
+    return password
+  }
+
+  async getPassword() {
+    if (!this.#rawPassword) return undefined
+    return await this.transformPassword(this.#rawPassword)
   }
 
   get hasPassword() {
-    return !!this.getPassword()
+    return !!this.#rawPassword
   }
 }
 

@@ -16,6 +16,7 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
+import { sleep } from "@core/util/sleep"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { mnemonicGenerate, mnemonicValidate } from "@polkadot/util-crypto"
@@ -23,19 +24,14 @@ import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
 import { AccountTypes } from "../accounts/helpers"
+import { changePassword } from "./helpers"
 import { migratePasswordV1ToV2 } from "./migrations"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalTypes>()
 
-  private async onboard({
-    name,
-    pass,
-    passConfirm,
-    mnemonic,
-  }: RequestOnboard): Promise<OnboardedType> {
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    assert(name, "Name cannot be empty")
+  private async onboard({ pass, passConfirm, mnemonic }: RequestOnboard): Promise<OnboardedType> {
+    await sleep(1000)
     assert(pass, "Password cannot be empty")
     assert(passConfirm, "Password confirm cannot be empty")
 
@@ -59,25 +55,24 @@ export default class AppHandler extends ExtensionHandler {
     }
 
     await this.stores.password.createPassword(pass)
-    await this.stores.password.set({ passwordVersion: 2 })
-    const hashedPw = this.stores.password.getPassword()
-    assert(hashedPw, "Password creation failed")
+    await this.stores.password.set({ isTrimmed: false, isHashed: true })
+    const transformedPw = await this.stores.password.getPassword()
+    assert(transformedPw, "Password creation failed")
 
-    const { pair } = keyring.addUri(mnemonic, hashedPw, {
-      name,
+    const { pair } = keyring.addUri(mnemonic, transformedPw, {
+      name: "My Polkadot Account",
       origin: AccountTypes.ROOT,
     } as AccountMeta)
-
-    await this.stores.seedPhrase.add(mnemonic, pair.address, hashedPw, confirmed)
+    await this.stores.seedPhrase.add(mnemonic, pair.address, transformedPw, confirmed)
 
     try {
       // also derive a first ethereum account
       const derivationPath = getEthDerivationPath()
       keyring.addUri(
         `${mnemonic}${derivationPath}`,
-        hashedPw,
+        transformedPw,
         {
-          name: `${name} Ethereum`,
+          name: `My Ethereum Account`,
           origin: AccountTypes.DERIVED,
           parent: pair.address,
           derivationPath,
@@ -90,7 +85,7 @@ export default class AppHandler extends ExtensionHandler {
       console.error(err)
     }
 
-    const result = await this.stores.app.setOnboarded()
+    const result = await this.stores.app.setOnboarded(method === "new")
     talismanAnalytics.capture("onboarded", { method })
     return result
   }
@@ -111,22 +106,10 @@ export default class AppHandler extends ExtensionHandler {
 
       // attempt unlock the pair
       // a successful unlock means authenticated
-      const pwData = await this.stores.password.get()
-      const passwordHashMigrated = pwData.passwordVersion > 1
-      if (!passwordHashMigrated) {
-        pair.unlock(pass)
-      } else {
-        const hashedPw = await this.stores.password.getHashedPassword(pass)
-        pair.unlock(hashedPw)
-      }
+      const password = await this.stores.password.transformPassword(pass)
+      pair.unlock(password)
       pair.lock()
-      // if the password has not been migrated to the hashed version yet, need to do so
-      // check for passwordHashMigrated flag and perform migration if not
-      if (!passwordHashMigrated) {
-        await migratePasswordV1ToV2(pass)
-      } else {
-        this.stores.password.setPlaintextPassword(pass)
-      }
+      this.stores.password.setPassword(pass)
 
       talismanAnalytics.capture("authenticate")
       return true
@@ -149,6 +132,44 @@ export default class AppHandler extends ExtensionHandler {
     return this.authStatus()
   }
 
+  private async changePassword({
+    currentPw,
+    newPw,
+    newPwConfirm,
+  }: RequestTypes["pri(app.changePassword)"]) {
+    const rootAccount = this.getRootAccount()
+    assert(rootAccount, "No root account")
+
+    // only allow users who have confirmed backing up their seed phrase to change PW
+    const mnemonicConfirmed = await this.stores.seedPhrase.get("confirmed")
+    assert(
+      mnemonicConfirmed,
+      "Please backup your seed phrase before attempting to change your password."
+    )
+
+    // fetch keyring pair from address
+    const pair = keyring.getPair(rootAccount.address)
+
+    const transformedPw = await this.stores.password.transformPassword(currentPw)
+    assert(transformedPw, "Password error")
+    assert(transformedPw === (await this.stores.password.getPassword()), "Incorrect Password")
+    // attempt to unlock the pair
+    // a successful unlock means password is ok
+    try {
+      pair.unlock(transformedPw)
+    } catch (err) {
+      throw new Error("Incorrect password")
+    }
+    // test if the two inputs of the new password are the same
+    assert(newPw === newPwConfirm, "New password and new password confirmation must match")
+
+    const result = await changePassword({ currentPw: transformedPw, newPw })
+    if (!result.ok) throw Error(result.val)
+    await this.stores.password.setPassword(newPw)
+    await this.stores.password.set({ isTrimmed: false, isHashed: true })
+    return result.val
+  }
+
   private async dashboardOpen({ route }: RequestRoute): Promise<boolean> {
     if (!(await this.stores.app.getIsOnboarded())) return this.onboardOpen()
     this.state.openDashboard({ route })
@@ -158,7 +179,11 @@ export default class AppHandler extends ExtensionHandler {
   private async openModal({ modalType }: ModalOpenParams): Promise<void> {
     const queryUrl = Browser.runtime.getURL("dashboard.html")
     const [tab] = await Browser.tabs.query({ url: queryUrl })
-    if (!tab) await this.state.openDashboard({ route: "/portfolio" })
+    if (!tab) {
+      await this.state.openDashboard({ route: "/portfolio" })
+      // wait for newly created page to load and subscribe to backend (max 5 seconds)
+      for (let i = 0; i < 50 && !this.#modalOpenRequest.observed; i++) await sleep(100)
+    }
     this.#modalOpenRequest.next(modalType)
   }
 
@@ -216,6 +241,9 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.lock)":
         return this.lock()
+
+      case "pri(app.changePassword)":
+        return await this.changePassword(request as RequestTypes["pri(app.changePassword)"])
 
       case "pri(app.dashboardOpen)":
         return await this.dashboardOpen(request as RequestRoute)

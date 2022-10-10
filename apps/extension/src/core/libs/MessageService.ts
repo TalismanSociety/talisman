@@ -73,7 +73,7 @@ export default class MessageService {
     subscriber?: (data: unknown) => void
   ): Promise<ResponseTypes[TMessageType]> {
     return new Promise((resolve, reject): void => {
-      const id = `${Date.now()}.${++this.idCounter}`
+      const id = crypto.randomUUID()
 
       this.handlers[id] = {
         reject,
@@ -99,7 +99,7 @@ export default class MessageService {
     request: RequestTypes[TMessageType],
     subscriber: (data: SubscriptionMessageTypes[TMessageType]) => void
   ): UnsubscribeFn {
-    const id = `${Date.now()}.${++this.idCounter}`
+    const id = crypto.randomUUID()
 
     // mock the promise resolve/reject methods
     this.handlers[id] = {

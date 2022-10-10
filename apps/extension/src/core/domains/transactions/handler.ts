@@ -11,7 +11,6 @@ import {
   RequestAssetTransferEth,
   ResponseAssetTransfer,
   ResponseAssetTransferEth,
-  ResponseAssetTransferFeeQuery,
   TransactionStatus,
 } from "@core/domains/transactions/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
@@ -36,7 +35,7 @@ import * as Sentry from "@sentry/browser"
 import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
 
-import { getEthTransferTransactionBase } from "../ethereum/helpers"
+import { getEthTransferTransactionBase, rebuildGasSettings } from "../ethereum/helpers"
 import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
 
@@ -200,10 +199,12 @@ export default class AssetTransferHandler extends ExtensionHandler {
     fromAddress,
     toAddress,
     amount,
-    maxFeePerGas,
-    maxPriorityFeePerGas,
+    gasSettings,
   }: RequestAssetTransferEth): Promise<ResponseAssetTransferEth> {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
+      const password = await this.stores.password.getPassword()
+      assert(password, "Unauthorised")
+
       const token = await db.tokens.get(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
@@ -227,13 +228,11 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
       const transaction: TransactionRequest = {
         nonce: await getTransactionCount(fromAddress, evmNetworkId),
-        type: 2,
-        maxFeePerGas: ethers.BigNumber.from(maxFeePerGas ?? "0"),
-        maxPriorityFeePerGas: ethers.BigNumber.from(maxPriorityFeePerGas ?? "0"),
+        ...rebuildGasSettings(gasSettings),
         ...transfer,
       }
 
-      const privateKey = getPrivateKey(pair)
+      const privateKey = getPrivateKey(pair, password)
       const wallet = new Wallet(privateKey, provider)
 
       const response = await wallet.sendTransaction(transaction)
