@@ -38,6 +38,16 @@ const signWithLedger = async (
   payload: any,
   accountPath: string
 ): Promise<`0x${string}`> => {
+  // uncomment someday
+  // if (["eth_signTypedData", "eth_signTypedData_v3", "eth_signTypedData_v4"].includes(method)) {
+  //   const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
+
+  //   const sig = await ledger.signEIP712Message(accountPath, jsonMessage)
+  //   sig.r = "0x" + sig.r
+  //   sig.s = "0x" + sig.s
+  //   return ethers.utils.joinSignature(sig) as `0x${string}`
+  // }
+
   if (method === "eth_signTypedData_v4") {
     const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
 
