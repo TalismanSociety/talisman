@@ -175,7 +175,8 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
 
 export const useEthTransaction = (
   tx?: ethers.providers.TransactionRequest,
-  defaultPriority: EthPriorityOptionName = "low"
+  defaultPriority: EthPriorityOptionName = "low",
+  lockTransaction = false
 ) => {
   const provider = useEthereumProvider(tx?.chainId)
   const {
@@ -240,10 +241,17 @@ export const useEthTransaction = (
     tx?.gasLimit,
   ])
 
-  const transaction = useMemo(() => {
+  const liveUpdatingTransaction = useMemo(() => {
     if (!provider || !tx || !gasSettings || nonce === undefined) return undefined
     return prepareTransaction(tx, gasSettings, nonce)
   }, [gasSettings, provider, tx, nonce])
+
+  // transaction may be locked once sent to hardware device for signing
+  const [transaction, setTransaction] = useState(liveUpdatingTransaction)
+
+  useEffect(() => {
+    if (!lockTransaction) setTransaction(liveUpdatingTransaction)
+  }, [liveUpdatingTransaction, lockTransaction])
 
   const txDetails: EthTransactionDetails | undefined = useMemo(() => {
     if (!gasPrice || !estimatedGas) return undefined

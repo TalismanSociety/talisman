@@ -6,7 +6,7 @@ import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useSigningRequestById from "@ui/hooks/useSigningRequestById"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
@@ -19,9 +19,13 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
     [signingRequest]
   )
 
+  // once the payload is sent to ledger, we must freeze the payload
+  const [isPayloadLocked, setIsPayloadLocked] = useState(false)
+
   const { transaction, txDetails, priority, setPriority, isLoading, error } = useEthTransaction(
     transactionRequest,
-    "low"
+    "low",
+    isPayloadLocked
   )
 
   const baseRequest = useAnySigningRequest<EthSignAndSendRequest>({
@@ -59,6 +63,8 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
     transaction,
     approve,
     approveHardware,
+    isPayloadLocked,
+    setIsPayloadLocked,
   }
 }
 

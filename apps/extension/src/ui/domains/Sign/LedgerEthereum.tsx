@@ -23,12 +23,13 @@ export type LedgerEthereumSignMethod =
 
 type LedgerEthereumProps = {
   account: AccountJsonHardwareEthereum
-  manualSend?: boolean
   className?: string
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject: () => void
   method: LedgerEthereumSignMethod
   payload: any // string message, typed object for eip712, TransactionRequest for tx
+  manualSend?: boolean // requests user to click a button to send the payload to the ledger
+  onSendToLedger?: () => void // triggered when tx is sent to the ledger
 }
 
 const signWithLedger = async (
@@ -161,13 +162,14 @@ const LedgerConnectionContent = styled.div`
 `
 
 const LedgerEthereum: FC<LedgerEthereumProps> = ({
-  manualSend,
   account,
   className = "",
-  onSignature,
-  onReject,
   method,
   payload,
+  manualSend,
+  onSendToLedger,
+  onSignature,
+  onReject,
 }) => {
   const [autoSend, setAutoSend] = useState(!manualSend)
   const [isSigning, setIsSigning] = useState(false)
@@ -195,14 +197,26 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
     }
 
     setError(null)
+    onSendToLedger?.()
     return signWithLedger(ledger, method, payload, account.path)
       .then((signature) => onSignature({ signature }))
       .catch((e: any) => {
         if (e.statusCode === 27013) return onReject()
         setError(e.message)
         setIsSigning(false)
+        setAutoSend(!manualSend)
       })
-  }, [ledger, onSignature, autoSend, method, payload, account.path, onReject])
+  }, [
+    ledger,
+    onSignature,
+    autoSend,
+    onSendToLedger,
+    method,
+    payload,
+    account.path,
+    onReject,
+    manualSend,
+  ])
 
   useEffect(() => {
     if (isReady && !error && !isSigning && autoSend) {
@@ -210,6 +224,10 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
       signLedger()?.finally(() => setIsSigning(false))
     }
   }, [signLedger, isSigning, error, isReady, autoSend])
+
+  const handleSendClick = useCallback(() => {
+    setAutoSend(true)
+  }, [])
 
   return (
     <LedgerContent>
@@ -220,7 +238,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
               status="ready"
               message="Click to send request to ledger"
               requiresManualRetry
-              refresh={() => setAutoSend(true)}
+              refresh={handleSendClick}
             />
           ) : (
             <LedgerConnectionStatus {...{ ...connectionStatus }} refresh={_onRefresh} />

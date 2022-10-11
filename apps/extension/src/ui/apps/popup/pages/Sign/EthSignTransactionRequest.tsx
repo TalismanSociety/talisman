@@ -12,7 +12,7 @@ import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import useToken from "@ui/hooks/useToken"
 import { BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
-import { lazy, Suspense, useEffect, useMemo } from "react"
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
 import { formatDecimals } from "talisman-utils"
 
@@ -144,6 +144,8 @@ export const EthSignTransactionRequest = () => {
     isLoading,
     transaction,
     approveHardware,
+    isPayloadLocked,
+    setIsPayloadLocked,
   } = useEthSignTransactionRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -159,6 +161,10 @@ export const EthSignTransactionRequest = () => {
   }, [status])
 
   const nativeToken = useToken(network?.nativeToken?.id)
+
+  const handleSendToLedger = useCallback(() => {
+    setIsPayloadLocked(true)
+  }, [setIsPayloadLocked])
 
   return (
     <SignContainer>
@@ -197,6 +203,7 @@ export const EthSignTransactionRequest = () => {
                 </div>
                 <div>
                   <EthFeeSelect
+                    disabled={isPayloadLocked}
                     transaction={transaction}
                     txDetails={txDetails}
                     priority={priority ?? "low"}
@@ -211,35 +218,34 @@ export const EthSignTransactionRequest = () => {
         ) : null}
         {errorMessage && <p className="error">{errorMessage}</p>}
         {account && request && account.isHardware ? (
-          transaction && (
+          transaction ? (
             <Suspense fallback={null}>
               <LedgerEthereum
                 manualSend
-                className="mt-4"
+                className="mt-6"
                 method="transaction"
                 payload={transaction}
                 account={account as AccountJsonHardwareEthereum}
                 onSignature={approveHardware}
                 onReject={reject}
+                onSendToLedger={handleSendToLedger}
               />
             </Suspense>
-          )
+          ) : null
         ) : (
-          <>
-            <Grid>
-              <SimpleButton disabled={processing} onClick={reject}>
-                Cancel
-              </SimpleButton>
-              <SimpleButton
-                disabled={!transaction || processing || isLoading}
-                processing={processing}
-                primary
-                onClick={approve}
-              >
-                Approve
-              </SimpleButton>
-            </Grid>
-          </>
+          <Grid>
+            <SimpleButton disabled={processing} onClick={reject}>
+              Cancel
+            </SimpleButton>
+            <SimpleButton
+              disabled={!transaction || processing || isLoading}
+              processing={processing}
+              primary
+              onClick={approve}
+            >
+              Approve
+            </SimpleButton>
+          </Grid>
         )}
       </Footer>
     </SignContainer>
