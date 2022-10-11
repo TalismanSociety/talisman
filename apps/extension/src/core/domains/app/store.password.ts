@@ -17,7 +17,7 @@ const FALSE: LOGGEDIN_FALSE = "FALSE"
 
 export type LoggedInType = LOGGEDIN_TRUE | LOGGEDIN_FALSE | LOGGEDIN_UNKNOWN
 
-type PasswordStoreData = {
+export type PasswordStoreData = {
   salt?: string
   isTrimmed: boolean
   isHashed: boolean
@@ -31,7 +31,7 @@ const initialData = {
 }
 
 export class PasswordStore extends StorageProvider<PasswordStoreData> {
-  #rawPassword?: string = undefined
+  #password?: string = undefined
   isLoggedIn = new BehaviorSubject<LoggedInType>(this.hasPassword ? TRUE : FALSE)
   #autoLockTimer?: NodeJS.Timeout
 
@@ -45,13 +45,14 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     const pwResult = await getHashedPassword(plaintextPw, salt)
     if (!pwResult.ok) pwResult.unwrap()
     else {
-      this.setHashedPassword(pwResult.val)
-      await this.set({ salt })
+      this.setPassword(pwResult.val)
+      await this.set({ salt, isHashed: true })
     }
+    return pwResult.val
   }
 
-  setHashedPassword(password: string | undefined) {
-    this.#rawPassword = password
+  setPassword(password: string | undefined) {
+    this.#password = password
     this.isLoggedIn.next(password !== undefined ? TRUE : FALSE)
   }
 
@@ -60,34 +61,43 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     assert(salt, "Password salt has not been generated yet")
     const pwResult = await getHashedPassword(plaintextPw, salt)
     if (!pwResult.ok) pwResult.unwrap()
-    return pwResult.val as string
+    return pwResult.val
   }
 
   public async setPlaintextPassword(plaintextPw: string) {
-    const salt = await this.get("salt")
-    assert(salt, "Password salt has not been generated yet")
-    const pwResult = await getHashedPassword(plaintextPw, salt)
-    if (!pwResult.ok) pwResult.unwrap()
-    else this.setHashedPassword(pwResult.val)
+    const pw = await this.transformPassword(plaintextPw)
+    this.setPassword(pw)
   }
 
   public clearPassword() {
-    this.setHashedPassword(undefined)
+    this.setPassword(undefined)
   }
 
   async transformPassword(password: string) {
-    const shouldTrim = await this.get("isTrimmed")
-    if (shouldTrim) return password.trim()
-    return password
+    let result = password
+    const { isTrimmed, isHashed, salt } = await this.get()
+    if (isTrimmed) result = result.trim()
+    if (isHashed) {
+      assert(salt, "Password salt has not been generated yet")
+      const { ok, val: hashedPwVal } = await getHashedPassword(result, salt)
+      if (!ok) throw new Error(hashedPwVal)
+      result = hashedPwVal
+    }
+    return result
+  }
+
+  async checkPassword(password: string, cb: (transformedPassword: string) => Promise<boolean>) {
+    const pw = await this.transformPassword(password)
+    return cb(pw)
   }
 
   async getPassword() {
-    if (!this.#rawPassword) return undefined
-    return await this.transformPassword(this.#rawPassword)
+    if (!this.#password) return undefined
+    return this.#password
   }
 
   get hasPassword() {
-    return !!this.#rawPassword
+    return !!this.#password
   }
 }
 
@@ -96,12 +106,12 @@ export const generateSalt = () => genSalt(13)
 export const getHashedPassword = async (
   password: string,
   salt: string
-): Promise<Result<string, unknown>> => {
+): Promise<Result<string, string>> => {
   try {
     const derivedHash = await hash(password, salt)
     return Ok(derivedHash)
   } catch (error) {
-    return Err(error)
+    return Err(error as string)
   }
 }
 

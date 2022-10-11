@@ -1,10 +1,10 @@
-import { PasswordStore } from "@core/domains/app/store.password"
+import { PasswordStore, generateSalt, getHashedPassword } from "@core/domains/app/store.password"
 import Browser from "webextension-polyfill"
 
 const spaceyPw = "  passWord  "
-const pwStoreInitial = { isTrimmed: true }
+const pwStoreInitial = { isTrimmed: true, isHashed: false }
 
-describe("Test password store", () => {
+describe("Test password store password not hashed", () => {
   afterEach(async () => {
     await Browser.storage.local.clear()
   })
@@ -12,7 +12,7 @@ describe("Test password store", () => {
   test("setting isTrimmed false ensures passwords with spaces are not trimmed", async () => {
     const passwordStore = new PasswordStore("password", pwStoreInitial)
     await passwordStore.set({ isTrimmed: false })
-    passwordStore.setPassword(spaceyPw)
+    await passwordStore.setPlaintextPassword(spaceyPw)
     const returnedPw = await passwordStore.getPassword()
     expect(returnedPw).toEqual(spaceyPw)
   })
@@ -20,8 +20,28 @@ describe("Test password store", () => {
   test("setting isTrimmed true ensures passwords with spaces are trimmed", async () => {
     const passwordStore = new PasswordStore("password", pwStoreInitial)
     expect(await passwordStore.get("isTrimmed")).toBe(true)
-    passwordStore.setPassword(spaceyPw)
+    await passwordStore.setPlaintextPassword(spaceyPw)
     const returnedPw = await passwordStore.getPassword()
     expect(returnedPw).toEqual(spaceyPw.trim())
+  })
+
+  test("setting isHashed true ensures passwords are hashed", async () => {
+    const salt = await generateSalt()
+    const passwordStore = new PasswordStore("password", { isHashed: true, salt })
+
+    const { ok, val: expectedHashedPw } = await getHashedPassword(spaceyPw, salt)
+    expect(ok)
+    expect(await passwordStore.get("isHashed")).toBe(true)
+    await passwordStore.setPlaintextPassword(spaceyPw)
+    const returnedPw = await passwordStore.getPassword()
+    expect(returnedPw).toEqual(expectedHashedPw)
+  })
+
+  test("setting isHashed false ensures passwords are not hashed", async () => {
+    const passwordStore = new PasswordStore("password", { isHashed: false, isTrimmed: false })
+    expect(await passwordStore.get("isHashed")).toBe(false)
+    await passwordStore.setPlaintextPassword(spaceyPw)
+    const returnedPw = await passwordStore.getPassword()
+    expect(returnedPw).toEqual(spaceyPw)
   })
 })

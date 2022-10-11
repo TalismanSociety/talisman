@@ -46,7 +46,7 @@ describe("App migrations", () => {
   })
 
   test("migrate password v1 -> v2", async () => {
-    expect(await passwordStore.get("passwordVersion")).toBe(1)
+    expect(await passwordStore.get("isHashed")).toBe(false)
 
     // create some substrate accounts
     const rootAccount = createPair()
@@ -68,9 +68,9 @@ describe("App migrations", () => {
     const result = await migratePasswordV1ToV2(password)
     expect(result).toBeTruthy()
 
-    expect(await passwordStore.get("passwordVersion")).toBe(2)
+    expect(await passwordStore.get("isHashed")).toBe(true)
 
-    const hashedPw = passwordStore.getPassword()
+    const hashedPw = await passwordStore.getPassword()
     expect(hashedPw === "$2a$13$7AHTA/Vs6L.Yhj0P12wlo.nV9cP0/YiID9TtHCjLroCQdETKafqVa")
     expect(hashedPw !== password)
     const newRootAccounts = keyring.getPairs().filter(({ meta }) => meta.origin === "ROOT")

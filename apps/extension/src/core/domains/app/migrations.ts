@@ -1,5 +1,5 @@
 import { DEBUG } from "@core/constants"
-import { passwordStore } from "@core/domains/app"
+import passwordStore from "@core/domains/app/store.password"
 import { KeyringPair } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 
@@ -9,7 +9,7 @@ export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
   const pairs = keyring.getPairs()
 
   await passwordStore.createPassword(plaintextPw) // also creates salt and stores it in the store
-  const hashedPw = passwordStore.getPassword() as string
+  const hashedPw = (await passwordStore.getPassword()) as string
 
   // keep track of which pairs have been successfully migrated
   const successfulPairs: KeyringPair[] = []
@@ -24,10 +24,12 @@ export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
     })
 
     // now migrate seed phrase store password
-    const seed = await seedPhraseStore.getSeed(plaintextPw)
-    const cipher = await encryptSeed(seed, hashedPw)
-    await seedPhraseStore.set({ cipher })
-    seedPhraseMigrated = true
+    const { ok, val: seed } = await seedPhraseStore.getSeed(plaintextPw)
+    if (ok) {
+      const cipher = await encryptSeed(seed, hashedPw)
+      await seedPhraseStore.set({ cipher })
+      seedPhraseMigrated = true
+    } else throw new Error(seed)
   } catch (error) {
     // eslint-disable-next-line no-console
     DEBUG && console.error("Error migrating password: ", error)
@@ -40,15 +42,17 @@ export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
 
     if (seedPhraseMigrated) {
       // revert seedphrase conversion
-      const seed = await seedPhraseStore.getSeed(hashedPw)
-      const cipher = await encryptSeed(seed, plaintextPw)
-      await seedPhraseStore.set({ cipher })
+      const { ok, val: seed } = await seedPhraseStore.getSeed(hashedPw)
+      if (ok) {
+        const cipher = await encryptSeed(seed, plaintextPw)
+        await seedPhraseStore.set({ cipher })
+      }
     }
 
     return false
   }
   // success
-  await passwordStore.set({ passwordVersion: 2 })
+  await passwordStore.set({ isHashed: true })
   return true
 }
 
@@ -76,6 +80,6 @@ export const migratePasswordV2ToV1 = async (plaintextPw: string) => {
     return false
   }
   // success
-  passwordStore.set({ salt: undefined, passwordVersion: 1 })
+  passwordStore.set({ salt: undefined, isTrimmed: false })
   return true
 }

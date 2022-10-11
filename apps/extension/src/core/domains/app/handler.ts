@@ -54,10 +54,9 @@ export default class AppHandler extends ExtensionHandler {
       confirmed = true
     }
 
-    await this.stores.password.createPassword(pass)
-    await this.stores.password.set({ isTrimmed: false, isHashed: true })
-    const transformedPw = await this.stores.password.getPassword()
+    const transformedPw = await this.stores.password.createPassword(pass)
     assert(transformedPw, "Password creation failed")
+    await this.stores.password.set({ isTrimmed: false, isHashed: true })
 
     const { pair } = keyring.addUri(mnemonic, transformedPw, {
       name: "My Polkadot Account",
@@ -96,23 +95,23 @@ export default class AppHandler extends ExtensionHandler {
     )
 
     try {
-      // get root account
-      const rootAccount = this.getRootAccount()
+      return await this.stores.password.checkPassword(pass, async (transformedPassword) => {
+        // get root account
+        const rootAccount = this.getRootAccount()
 
-      assert(rootAccount, "No root account")
+        assert(rootAccount, "No root account")
 
-      // fetch keyring pair from address
-      const pair = keyring.getPair(rootAccount.address)
+        // fetch keyring pair from address
+        const pair = keyring.getPair(rootAccount.address)
+        // attempt unlock the pair
+        // a successful unlock means authenticated
+        pair.unlock(transformedPassword)
+        pair.lock()
+        await this.stores.password.setPlaintextPassword(pass)
 
-      // attempt unlock the pair
-      // a successful unlock means authenticated
-      const password = await this.stores.password.transformPassword(pass)
-      pair.unlock(password)
-      pair.lock()
-      this.stores.password.setPassword(pass)
-
-      talismanAnalytics.capture("authenticate")
-      return true
+        talismanAnalytics.capture("authenticate")
+        return true
+      })
     } catch (e) {
       this.stores.password.clearPassword()
       return false
@@ -163,9 +162,11 @@ export default class AppHandler extends ExtensionHandler {
     // test if the two inputs of the new password are the same
     assert(newPw === newPwConfirm, "New password and new password confirmation must match")
 
-    const result = await changePassword({ currentPw: transformedPw, newPw })
+    const hashedNewPw = await this.stores.password.getHashedPassword(newPw)
+
+    const result = await changePassword({ currentPw: transformedPw, newPw: hashedNewPw })
     if (!result.ok) throw Error(result.val)
-    await this.stores.password.setPassword(newPw)
+    await this.stores.password.setPlaintextPassword(newPw)
     await this.stores.password.set({ isTrimmed: false, isHashed: true })
     return result.val
   }
