@@ -8,8 +8,7 @@ import seedPhraseStore, { encryptSeed } from "../accounts/store"
 export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
   const pairs = keyring.getPairs()
 
-  await passwordStore.createPassword(plaintextPw) // also creates salt and stores it in the store
-  const hashedPw = (await passwordStore.getPassword()) as string
+  const { salt, password: hashedPw } = await passwordStore.createPassword(plaintextPw)
 
   // keep track of which pairs have been successfully migrated
   const successfulPairs: KeyringPair[] = []
@@ -37,8 +36,6 @@ export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
       pair.decodePkcs8(hashedPw)
       keyring.encryptAccount(pair, plaintextPw)
     })
-    // salt has been set in PasswordStore.createPassword, need to unset it now
-    passwordStore.set({ salt: undefined })
 
     if (seedPhraseMigrated) {
       // revert seedphrase conversion
@@ -52,7 +49,8 @@ export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
     return false
   }
   // success
-  await passwordStore.set({ isHashed: true })
+  await passwordStore.set({ isHashed: true, salt })
+  passwordStore.setPassword(hashedPw)
   return true
 }
 
@@ -80,6 +78,6 @@ export const migratePasswordV2ToV1 = async (plaintextPw: string) => {
     return false
   }
   // success
-  passwordStore.set({ salt: undefined, isTrimmed: false })
+  passwordStore.set({ salt: undefined, isTrimmed: false, isHashed: false })
   return true
 }

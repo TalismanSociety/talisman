@@ -44,11 +44,7 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     const salt = await generateSalt()
     const pwResult = await getHashedPassword(plaintextPw, salt)
     if (!pwResult.ok) pwResult.unwrap()
-    else {
-      this.setPassword(pwResult.val)
-      await this.set({ salt, isHashed: true })
-    }
-    return pwResult.val
+    return { password: pwResult.val, salt }
   }
 
   setPassword(password: string | undefined) {

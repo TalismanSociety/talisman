@@ -25,7 +25,6 @@ import Browser from "webextension-polyfill"
 
 import { AccountTypes } from "../accounts/helpers"
 import { changePassword } from "./helpers"
-import { migratePasswordV1ToV2 } from "./migrations"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalTypes>()
@@ -54,9 +53,10 @@ export default class AppHandler extends ExtensionHandler {
       confirmed = true
     }
 
-    const transformedPw = await this.stores.password.createPassword(pass)
+    const { password: transformedPw, salt } = await this.stores.password.createPassword(pass)
     assert(transformedPw, "Password creation failed")
-    await this.stores.password.set({ isTrimmed: false, isHashed: true })
+    this.stores.password.setPassword(transformedPw)
+    await this.stores.password.set({ isTrimmed: false, isHashed: true, salt })
 
     const { pair } = keyring.addUri(mnemonic, transformedPw, {
       name: "My Polkadot Account",
@@ -162,12 +162,24 @@ export default class AppHandler extends ExtensionHandler {
     // test if the two inputs of the new password are the same
     assert(newPw === newPwConfirm, "New password and new password confirmation must match")
 
-    const hashedNewPw = await this.stores.password.getHashedPassword(newPw)
+    const isHashedAlready = await this.stores.password.get("isHashed")
+
+    let hashedNewPw, newSalt
+    if (isHashedAlready) hashedNewPw = await this.stores.password.getHashedPassword(newPw)
+    else {
+      const { salt, password } = await this.stores.password.createPassword(newPw)
+      hashedNewPw = password
+      newSalt = salt
+    }
 
     const result = await changePassword({ currentPw: transformedPw, newPw: hashedNewPw })
     if (!result.ok) throw Error(result.val)
     await this.stores.password.setPlaintextPassword(newPw)
-    await this.stores.password.set({ isTrimmed: false, isHashed: true })
+    const pwStoreData: Record<string, any> = { isTrimmed: false, isHashed: true }
+    if (newSalt) {
+      pwStoreData.salt = newSalt
+    }
+    await this.stores.password.set(pwStoreData)
     return result.val
   }
 
