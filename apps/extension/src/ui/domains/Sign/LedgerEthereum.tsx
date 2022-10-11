@@ -10,9 +10,16 @@ import {
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { ethers } from "ethers"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
+import { TypedDataUtils, SignTypedDataVersion } from "@metamask/eth-sig-util"
 
 // TODO rename payload type ?
-export type LedgerEthereumSignMethod = "eip712" | "transaction" | "personalSign"
+export type LedgerEthereumSignMethod =
+  | "transaction"
+  | "personal_sign"
+  | "eth_signTypedData"
+  | "eth_signTypedData_v1"
+  | "eth_signTypedData_v3"
+  | "eth_signTypedData_v4"
 
 type LedgerEthereumProps = {
   account: AccountJsonHardwareEthereum
@@ -29,15 +36,37 @@ const signWithLedger = async (
   payload: any,
   accountPath: string
 ): Promise<`0x${string}`> => {
-  if (method === "eip712") {
+  if (method === "eth_signTypedData_v4") {
     const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
 
-    const sig = await ledger.signEIP712Message(accountPath, jsonMessage)
+    // often problems here with missing salt, or chainId beeing string instead of number
+    // => in most cases we cannot use ledger.signEIP712Message() without altering the payload
+    // => let's hash using MM libraries, the user will only see those hashes on his ledger
+
+    const { domain, types, primaryType, message } = TypedDataUtils.sanitizeData(jsonMessage)
+    const domainSeparatorHex = TypedDataUtils.hashStruct(
+      "EIP712Domain",
+      domain,
+      types,
+      SignTypedDataVersion.V4
+    ).toString("hex")
+    const hashStructMessageHex = TypedDataUtils.hashStruct(
+      primaryType as string,
+      message,
+      types,
+      SignTypedDataVersion.V4
+    ).toString("hex")
+
+    const sig = await ledger.signEIP712HashedMessage(
+      accountPath,
+      domainSeparatorHex,
+      hashStructMessageHex
+    )
     sig.r = "0x" + sig.r
     sig.s = "0x" + sig.s
     return ethers.utils.joinSignature(sig) as `0x${string}`
   }
-  if (method === "personalSign") {
+  if (method === "personal_sign") {
     const messageHex = ethers.utils
       .hexlify(typeof payload === "string" ? ethers.utils.toUtf8Bytes(payload) : payload)
       .substring(2)
@@ -82,7 +111,9 @@ const signWithLedger = async (
       s: "0x" + sig.s,
     }) as `0x${string}`
   }
-  throw new Error("Unsupported method")
+
+  // sign typed data v0, v1, v3...
+  throw new Error("This type of message cannot be signed with ledger.")
 }
 
 const LedgerContent = styled.div`
@@ -164,11 +195,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
     return signWithLedger(ledger, method, payload, account.path)
       .then((signature) => onSignature({ signature }))
       .catch((e: any) => {
-        if (
-          e.statusCode === 27013
-          // TODO need this ?  || e.message === "Transaction rejected"
-        )
-          return onReject()
+        if (e.statusCode === 27013) return onReject()
         setError(e.message)
         setIsSigning(false)
       })

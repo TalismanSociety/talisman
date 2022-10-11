@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import * as Sentry from "@sentry/browser"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
@@ -6,9 +6,10 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
+import LedgerEthereum from "@ui/domains/Sign/LedgerEthereum"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { dump as convertToYaml } from "js-yaml"
-import { useEffect, useMemo } from "react"
+import { Suspense, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
 import { Container } from "./common"
@@ -115,7 +116,7 @@ const SignMessage = ({
 }
 
 export const EthSignMessageRequest = () => {
-  const { url, request, approve, reject, status, message, account, network } =
+  const { url, request, approve, approveHardware, reject, status, message, account, network } =
     useEthSignMessageRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -155,14 +156,31 @@ export const EthSignMessageRequest = () => {
         {errorMessage && <p className="error">{errorMessage}</p>}
         {account && request && (
           <>
-            <Grid>
-              <SimpleButton disabled={processing} onClick={reject}>
-                Cancel
-              </SimpleButton>
-              <SimpleButton disabled={processing} processing={processing} primary onClick={approve}>
-                Approve
-              </SimpleButton>
-            </Grid>
+            {account.isHardware ? (
+              <Suspense fallback={null}>
+                <LedgerEthereum
+                  method={request.method}
+                  payload={request.request}
+                  account={account as AccountJsonHardwareEthereum}
+                  onSignature={approveHardware}
+                  onReject={reject}
+                />
+              </Suspense>
+            ) : (
+              <Grid>
+                <SimpleButton disabled={processing} onClick={reject}>
+                  Cancel
+                </SimpleButton>
+                <SimpleButton
+                  disabled={processing}
+                  processing={processing}
+                  primary
+                  onClick={approve}
+                >
+                  Approve
+                </SimpleButton>
+              </Grid>
+            )}
           </>
         )}
       </Footer>
