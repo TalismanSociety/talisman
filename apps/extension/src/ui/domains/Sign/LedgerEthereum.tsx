@@ -23,6 +23,7 @@ export type LedgerEthereumSignMethod =
 
 type LedgerEthereumProps = {
   account: AccountJsonHardwareEthereum
+  manualSend?: boolean
   className?: string
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject: () => void
@@ -160,6 +161,7 @@ const LedgerConnectionContent = styled.div`
 `
 
 const LedgerEthereum: FC<LedgerEthereumProps> = ({
+  manualSend,
   account,
   className = "",
   onSignature,
@@ -167,6 +169,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   method,
   payload,
 }) => {
+  const [autoSend, setAutoSend] = useState(!manualSend)
   const [isSigning, setIsSigning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { ledger, refresh, status, message, isReady, requiresManualRetry } = useLedgerEthereum()
@@ -187,7 +190,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   }, [refresh, setError])
 
   const signLedger = useCallback(() => {
-    if (!ledger || !onSignature) {
+    if (!ledger || !onSignature || !autoSend) {
       return
     }
 
@@ -199,24 +202,29 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
         setError(e.message)
         setIsSigning(false)
       })
-  }, [ledger, onSignature, method, payload, account.path, onReject])
+  }, [ledger, onSignature, autoSend, method, payload, account.path, onReject])
 
   useEffect(() => {
-    if (isReady && !error && !isSigning) {
+    if (isReady && !error && !isSigning && autoSend) {
       setIsSigning(true)
       signLedger()?.finally(() => setIsSigning(false))
     }
-  }, [signLedger, isSigning, error, isReady])
+  }, [signLedger, isSigning, error, isReady, autoSend])
 
   return (
     <LedgerContent>
       {!error && (
         <LedgerConnectionContent className={`full-width ${className}`}>
-          <LedgerConnectionStatus
-            {...{ ...connectionStatus }}
-            refresh={_onRefresh}
-            hideOnSuccess={true}
-          />
+          {isReady && !autoSend ? (
+            <LedgerConnectionStatus
+              status="ready"
+              message="Click to send request to ledger"
+              requiresManualRetry
+              refresh={() => setAutoSend(true)}
+            />
+          ) : (
+            <LedgerConnectionStatus {...{ ...connectionStatus }} refresh={_onRefresh} />
+          )}
         </LedgerConnectionContent>
       )}
       {error && (

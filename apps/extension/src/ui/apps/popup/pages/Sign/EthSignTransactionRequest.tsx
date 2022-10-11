@@ -214,6 +214,8 @@ export const EthSignTransactionRequest = () => {
           transaction && (
             <Suspense fallback={null}>
               <LedgerEthereum
+                manualSend
+                className="mt-4"
                 method="transaction"
                 payload={transaction}
                 account={account as AccountJsonHardwareEthereum}
