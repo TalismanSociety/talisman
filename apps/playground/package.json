@@ -9,6 +9,8 @@
     "pg:preview": "vite preview"
   },
   "dependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "@metamask/eth-sig-util": "4.0.1",
     "@talismn/wagmi-connector": "^0.0.4",
     "ethers": "^5.7.1",
     "react": "18.2.0",

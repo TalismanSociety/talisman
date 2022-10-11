@@ -2,7 +2,6 @@ import {
   useAccount,
   usePrepareSendTransaction,
   useSendTransaction,
-  useTransaction,
   useWaitForTransaction,
 } from "wagmi"
 import { useForm } from "react-hook-form"
@@ -10,7 +9,6 @@ import { parseEther } from "ethers/lib/utils"
 import { Section } from "./Section"
 import { Button } from "talisman-ui"
 import { useLocalStorage } from "react-use"
-import { useEffect } from "react"
 
 type FormData = { recipient: string; amount: string }
 
@@ -82,7 +80,7 @@ export const SendTokens = () => {
             Recipient
           </label>
           <input
-            className="w-[60rem]"
+            className="w-[60rem] font-mono"
             id="send-tokens-to"
             type="text"
             autoComplete="off"

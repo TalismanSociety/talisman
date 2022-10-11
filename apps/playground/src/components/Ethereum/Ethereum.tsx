@@ -1,12 +1,10 @@
-import { ReactNode } from "react"
-import { Button } from "talisman-ui"
-import { IconArrowRight } from "../../icons"
 import { TestLayout } from "../TestLayout"
-import { WagmiConfig, createClient } from "wagmi"
-import { getDefaultProvider } from "ethers"
+import { WagmiConfig } from "wagmi"
 import { Connect } from "./Connect"
 import { wagmiClient } from "./connectors"
 import { SendTokens } from "./SendTokens"
+import { PersonalSign } from "./PersonalSign"
+import { SignTypedData } from "./SignTypedData"
 
 export const Ethereum = () => {
   return (
@@ -14,6 +12,8 @@ export const Ethereum = () => {
       <TestLayout title="Ethereum">
         <Connect />
         <SendTokens />
+        <PersonalSign />
+        <SignTypedData />
       </TestLayout>
     </WagmiConfig>
   )

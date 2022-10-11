@@ -2,8 +2,9 @@
 
 @layer base {
   pre,
-  input {
-    @apply text-body-secondary bg-field rounded-sm p-4;
+  input,
+  textarea {
+    @apply text-body-secondary bg-field resize-none rounded-sm p-4;
   }
   pre {
     @apply max-w-full overflow-auto;

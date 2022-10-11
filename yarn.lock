@@ -1982,6 +1982,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@esbuild-plugins/node-globals-polyfill@npm:^0.1.1":
+  version: 0.1.1
+  resolution: "@esbuild-plugins/node-globals-polyfill@npm:0.1.1"
+  peerDependencies:
+    esbuild: "*"
+  checksum: 68a41e2c377724e9cd46ca344ad219d289cc41a8b273d0d89bbc82bd90025b067b28234a865d8862a3f38c2a028ca4c93138dfca4e1e75e617efc314156c1ce0
+  languageName: node
+  linkType: hard
+
 "@esbuild/android-arm@npm:0.15.9":
   version: 0.15.9
   resolution: "@esbuild/android-arm@npm:0.15.9"
@@ -9607,6 +9616,7 @@ __metadata:
     "@hookform/resolvers": 2.8.8
     "@ledgerhq/hw-app-eth": ^6.29.9
     "@ledgerhq/hw-transport-webhid": ^6.27.6
+    "@ledgerhq/hw-transport-webusb": ^6.27.1
     "@metamask/browser-passworder": 3.0.0
     "@metamask/eth-sig-util": 4.0.1
     "@peculiar/webcrypto": ^1.3.2
@@ -13964,6 +13974,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "playground@workspace:apps/playground"
   dependencies:
+    "@esbuild-plugins/node-globals-polyfill": ^0.1.1
+    "@metamask/eth-sig-util": 4.0.1
     "@tailwindcss/forms": ^0.5.3
     "@talismn/wagmi-connector": ^0.0.4
     "@types/react": 18.0.14

@@ -18,7 +18,9 @@ export const Connect = () => {
       {isConnected ? (
         <div className="space-y-4">
           <div>Connector : {connector?.name}</div>
-          <div>Address : {address}</div>
+          <div>
+            Address : <span className="font-mono">{address}</span>
+          </div>
           <div>
             Network : {chain?.name ?? "UNKNOWN"} ({chain?.id ?? "N/A"})
           </div>
