@@ -26,21 +26,23 @@ export const AlertCard = styled(({ className, onAccept }: Props) => {
     <Card
       className={className}
       title={
-        <>
-          <LockIcon className="icon inline-block" /> Update Your Password
-        </>
+        <div className="flex flex-col p-2">
+          <LockIcon className="icon p-1" />
+          <span className="mt-2">Update Your Password</span>
+        </div>
       }
       description={
         <p>
           We’re upgrading our security measures, including enhanced password encryption. Please
           update your password to continue.{" "}
           <a
-            href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+            href="https://medium.com/we-are-talisman/talismans-security-model-1e60391694c0"
             target="_blank"
             rel="noreferrer"
           >
-            Learn more about our new security features.
-          </a>
+            Learn more
+          </a>{" "}
+          about our new security features.
         </p>
       }
       cta={
@@ -64,6 +66,10 @@ export const AlertCard = styled(({ className, onAccept }: Props) => {
 
   .card-title {
     gap: 1rem;
+    svg {
+      width: 4rem;
+      height: 4rem;
+    }
   }
 
   .card-description {
