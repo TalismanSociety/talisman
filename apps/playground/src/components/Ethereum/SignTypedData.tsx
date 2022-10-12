@@ -1,6 +1,6 @@
 import { useAccount, useNetwork } from "wagmi"
 import { recoverTypedSignature, SignTypedDataVersion } from "@metamask/eth-sig-util"
-import { Section } from "./Section"
+import { Section } from "./shared/Section"
 import { Button, classNames } from "talisman-ui"
 import { useCallback, useMemo, useState } from "react"
 import { ethers } from "ethers"

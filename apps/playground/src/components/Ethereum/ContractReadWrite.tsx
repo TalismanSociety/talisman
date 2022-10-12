@@ -7,7 +7,7 @@ import {
   useSignMessage,
 } from "wagmi"
 import { useForm } from "react-hook-form"
-import { Section } from "./Section"
+import { Section } from "./shared/Section"
 import { Button, classNames } from "talisman-ui"
 import { useCallback, useEffect, useMemo } from "react"
 import { ethers } from "ethers"

@@ -5,16 +5,27 @@
       "owner": "0x3aE3199223732c2745dA671aDd5d0B834b6c3d86"
     }
   },
+  "137": {
+    "USDC": {
+      "address": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174"
+    }
+  },
   "592": {
     "Greeter": {
       "address": "0xb832e1FC4cDC6a86411AB1df442c43f879c99447",
       "owner": "0x3aE3199223732c2745dA671aDd5d0B834b6c3d86"
+    },
+    "USDC": {
+      "address": "0x6a2d262d56735dba19dd70682b39f6be9a931d98"
     }
   },
   "1284": {
     "Greeter": {
       "address": "0xb832e1FC4cDC6a86411AB1df442c43f879c99447",
       "owner": "0x3aE3199223732c2745dA671aDd5d0B834b6c3d86"
+    },
+    "USDC": {
+      "address": "0x8f552a71efe5eefc207bf75485b356a0b3f01ec9"
     }
   },
   "1285": {

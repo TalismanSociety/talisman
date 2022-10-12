@@ -1,6 +1,6 @@
 import { Button } from "talisman-ui"
 import { useAccount, useBalance, useConnect, useDisconnect, useNetwork } from "wagmi"
-import { Section } from "./Section"
+import { Section } from "./shared/Section"
 
 export const Connect = () => {
   const { address, isConnected, connector } = useAccount()
@@ -14,7 +14,7 @@ export const Connect = () => {
   const { disconnect } = useDisconnect()
 
   return (
-    <Section>
+    <Section title="Connection">
       {isConnected ? (
         <div className="space-y-4">
           <div>Connector : {connector?.name}</div>
