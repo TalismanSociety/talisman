@@ -53,9 +53,13 @@ const SendLedgerEthereum = () => {
 
   const [signed, setSigned] = useState(false)
   const handleSigned = useCallback(
-    ({ signature }: { signature: HexString }) => {
-      setSigned(true)
-      sendWithSignatureEthereum(signature)
+    async ({ signature }: { signature: HexString }) => {
+      try {
+        setSigned(true)
+        await sendWithSignatureEthereum(signature)
+      } catch (err) {
+        setError((err as Error).message)
+      }
     },
     [sendWithSignatureEthereum]
   )

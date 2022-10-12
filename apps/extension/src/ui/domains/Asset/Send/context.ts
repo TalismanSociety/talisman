@@ -19,7 +19,7 @@ import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
-import { BigNumber } from "ethers"
+import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import {
@@ -208,6 +208,9 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
                   getMaxFeePerGas(baseFeePerGas as BigNumber, gasSettings.maxPriorityFeePerGas)
                 )
 
+          if (maxFeeAndGasCost.gt(nativeFromBalance.transferable.planck))
+            throw new Error(`Insufficient ${nativeToken.symbol} balance to pay for gas`)
+
           setFormData((prev) => ({
             ...prev,
             ...newData,
@@ -233,7 +236,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         } catch (err) {
           // if it fails here we don't want to display ethers full text message which includes stack trace
           Sentry.captureException(err)
-          throw new Error("Failed to validate transaction")
+          throw new Error((err as Error).message)
         }
         return
       }
