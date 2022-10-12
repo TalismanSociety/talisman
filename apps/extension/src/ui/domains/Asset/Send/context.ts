@@ -14,6 +14,7 @@ import * as Sentry from "@sentry/browser"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { getExtensionEthereumProvider } from "@ui/domains/Ethereum/getExtensionEthereumProvider"
+import useAccounts from "@ui/hooks/useAccounts"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
@@ -78,6 +79,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   // for evm transactions
   const [transactionHash, setTransactionHash] = useState<string>()
 
+  const accounts = useAccounts()
   const transferableTokens = useTransferableTokens()
   const evmNetworks = useEvmNetworks()
   const chains = useChains()
@@ -369,6 +371,15 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     } else throw new Error("Network not found")
   }, [formData, hasAcceptedForfeit, transferableTokensMap])
 
+  const approvalMode = useMemo((): "hwSubstrate" | "hwEthereum" | "backend" => {
+    const account = accounts.find((acc) => acc.address === formData.from)
+    if (account?.isHardware) {
+      if (expectedResult?.type === "substrate") return "hwSubstrate"
+      if (expectedResult?.type === "evm") return "hwEthereum"
+    }
+    return "backend"
+  }, [accounts, expectedResult?.type, formData.from])
+
   // execute the TX
   const sendWithSignature = useCallback(
     async (signature: `0x${string}` | Uint8Array) => {
@@ -379,6 +390,25 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       setTransactionId(id)
     },
     [expectedResult]
+  )
+
+  // execute the TX
+  const sendWithSignatureEthereum = useCallback(
+    async (signature: `0x${string}`) => {
+      if (expectedResult?.type !== "evm") throw new Error("Review data not found")
+
+      const { amount, transferableTokenId } = formData as SendTokensData
+      const transferableToken = transferableTokensMap[transferableTokenId]
+      if (!transferableToken) throw new Error("Transferable token not found")
+
+      const { token, evmNetworkId } = transferableToken
+      if (!token) throw new Error("Token not found")
+      if (!evmNetworkId) throw new Error("network not found")
+
+      const { hash } = await api.assetTransferEthHardware(evmNetworkId, token.id, amount, signature)
+      setTransactionHash(hash)
+    },
+    [expectedResult?.type, formData, transferableTokensMap]
   )
 
   // required to access review screen if an amount is to be forfeited
@@ -420,8 +450,10 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     showReview,
     showTransaction,
     sendWithSignature,
+    sendWithSignatureEthereum,
     transferableTokens,
     transferableToken,
+    approvalMode,
   }
 
   return context

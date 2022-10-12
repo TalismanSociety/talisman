@@ -9,6 +9,7 @@ import {
   RequestAssetTransfer,
   RequestAssetTransferApproveSign,
   RequestAssetTransferEth,
+  RequestAssetTransferEthHardware,
   ResponseAssetTransfer,
   ResponseAssetTransferEth,
   TransactionStatus,
@@ -17,6 +18,7 @@ import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { watchEthereumTransaction } from "@core/notifications"
 import type {
   RequestSignatures,
   RequestTypes,
@@ -34,6 +36,7 @@ import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
+import { Err, Ok, Result } from "ts-results"
 
 import { getEthTransferTransactionBase, rebuildGasSettings } from "../ethereum/helpers"
 import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"
@@ -193,6 +196,42 @@ export default class AssetTransferHandler extends ExtensionHandler {
     return
   }
 
+  private async assetTransferEthHardware({
+    evmNetworkId,
+    tokenId,
+    amount,
+    signedTransaction,
+  }: RequestAssetTransferEthHardware): Promise<ResponseAssetTransferEth> {
+    try {
+      const provider = await getProviderForEvmNetworkId(evmNetworkId)
+      if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
+
+      const token = await db.tokens.get(tokenId)
+      if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+
+      const { from, to, hash, ...otherDetails } = await provider.sendTransaction(signedTransaction)
+
+      // eslint-disable-next-line no-console
+      DEBUG && console.debug("assetTransferEth - sent", { from, to, hash, ...otherDetails })
+
+      talismanAnalytics.capture("asset transfer", {
+        evmNetworkId,
+        tokenId,
+        amount: roundToFirstInteger(Number(planckToTokens(amount, token.decimals))),
+        internal: to && keyring.getAccount(to) !== undefined,
+      })
+
+      incrementTransactionCount(from, evmNetworkId)
+
+      return { hash }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      DEBUG && console.error((err as Error).message, err)
+      Sentry.captureException(err, { tags: { tokenId, evmNetworkId } })
+      throw new Error("Failed to send transaction")
+    }
+  }
+
   private async assetTransferEth({
     evmNetworkId,
     tokenId,
@@ -286,6 +325,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
       case "pri(assets.transferEth)":
         return this.assetTransferEth(request as RequestAssetTransferEth)
+
+      case "pri(assets.transferEthHardware)":
+        return this.assetTransferEthHardware(request as RequestAssetTransferEthHardware)
 
       case "pri(assets.transfer.checkFees)":
         return this.assetTransferCheckFees(request as RequestAssetTransfer)

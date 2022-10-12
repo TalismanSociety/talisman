@@ -21,11 +21,8 @@ import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
-import { assert, isHex } from "@polkadot/util"
-import { BigNumber, BigNumberish, ethers } from "ethers"
-import { formatUnits, parseUnits } from "ethers/lib/utils"
-import isString from "lodash/isString"
-import { Result } from "ts-results"
+import { assert } from "@polkadot/util"
+import { ethers } from "ethers"
 import { RequestSigningApproveSignature } from "../signing/types"
 
 import { rebuildTransactionRequestNumbers } from "./helpers"
@@ -70,7 +67,13 @@ export class EthHandler extends ExtensionHandler {
     const provider = await getProviderForEvmNetworkId(ethChainId)
     assert(provider, "Unable to find provider for chain " + ethChainId)
 
-    const { chainId, hash } = await provider.sendTransaction(signedTransaction)
+    const { chainId, hash, from } = await provider.sendTransaction(signedTransaction)
+
+    incrementTransactionCount(from, chainId)
+
+    // notify user about transaction progress
+    if (await this.stores.settings.get("allowNotifications"))
+      watchEthereumTransaction(chainId, hash)
 
     resolve(hash)
 
@@ -81,61 +84,21 @@ export class EthHandler extends ExtensionHandler {
       chain: chainId,
     })
     return true
-
-    // rebuild BigNumber property values (converted to json when serialized)
-    // const tx = rebuildTransactionRequestNumbers(transaction)
-    // tx.nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
-
-    // const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
-    //   const password = await this.stores.password.getPassword()
-    //   assert(password, "Unauthorised")
-    //   const privateKey = getPrivateKey(pair, password)
-    //   const signer = new ethers.Wallet(privateKey, provider)
-
-    //   const { chainId, hash } = await signer.sendTransaction(tx)
-
-    //   incrementTransactionCount(queued.account.address, queued.ethChainId)
-
-    //   // notify user about transaction progress
-    //   if (await this.stores.settings.get("allowNotifications"))
-    //     watchEthereumTransaction(chainId, hash)
-
-    //   resolve(hash)
-
-    //   talismanAnalytics.captureDelayed("sign transaction approve", {
-    //     type: "evm sign and send",
-    //     dapp: queued.url,
-    //     chain: queued.ethChainId,
-    //   })
-    //   return true
-    // })
-
-    // if (result.ok) {
-    //   return result.val
-    // } else {
-    //   if (result.val === "Unauthorised") {
-    //     reject(Error(result.val))
-    //   } else {
-    //     const msg = getHumanReadableErrorMessage(result.val)
-    //     if (msg) throw new Error(msg)
-    //     else result.unwrap() // throws error
-    //   }
-    //   return false
-    // }
   }
+
   private async signAndSendApprove({ id, transaction }: EthApproveSignAndSend): Promise<boolean> {
     const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
     assert(queued, "Unable to find request")
-    const { request, resolve, reject, ethChainId } = queued
+    const { resolve, reject, ethChainId, account, url } = queued
 
     const provider = await getProviderForEvmNetworkId(ethChainId)
     assert(provider, "Unable to find provider for chain " + ethChainId)
 
     // rebuild BigNumber property values (converted to json when serialized)
     const tx = rebuildTransactionRequestNumbers(transaction)
-    tx.nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
+    tx.nonce = await getTransactionCount(account.address, ethChainId)
 
-    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
+    const result = await getPairForAddressSafely(account.address, async (pair) => {
       const password = await this.stores.password.getPassword()
       assert(password, "Unauthorised")
       const privateKey = getPrivateKey(pair, password)
@@ -143,7 +106,7 @@ export class EthHandler extends ExtensionHandler {
 
       const { chainId, hash } = await signer.sendTransaction(tx)
 
-      incrementTransactionCount(queued.account.address, queued.ethChainId)
+      incrementTransactionCount(account.address, ethChainId)
 
       // notify user about transaction progress
       if (await this.stores.settings.get("allowNotifications"))
@@ -153,8 +116,8 @@ export class EthHandler extends ExtensionHandler {
 
       talismanAnalytics.captureDelayed("sign transaction approve", {
         type: "evm sign and send",
-        dapp: queued.url,
-        chain: queued.ethChainId,
+        dapp: url,
+        chain: ethChainId,
       })
       return true
     })

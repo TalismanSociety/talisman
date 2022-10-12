@@ -181,6 +181,12 @@ export default interface MessageTypes {
     amount: string,
     gasSettings: EthGasSettings
   ) => Promise<ResponseAssetTransferEth>
+  assetTransferEthHardware: (
+    evmNetworkId: EvmNetworkId,
+    tokenId: TokenId,
+    amount: string,
+    signedTransaction: HexString
+  ) => Promise<ResponseAssetTransferEth>
   assetTransferCheckFees: (
     chainId: ChainId,
     tokenId: TokenId,

@@ -1,6 +1,6 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { Drawer } from "@talisman/components/Drawer"
-import { useLedgerEthereum } from "@ui/hooks/useLedgerEthereum"
+import { LedgerDetailedError, useLedgerEthereum } from "@ui/hooks/useLedgerEthereum"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
 import {
@@ -11,6 +11,49 @@ import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { ethers } from "ethers"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { TypedDataUtils, SignTypedDataVersion } from "@metamask/eth-sig-util"
+
+const LedgerContent = styled.div`
+  .cancel-link {
+    margin-top: 0.5em;
+    font-size: var(--font-size-small);
+    color: var(--color-background-muted-2x);
+    display: block;
+    text-align: center;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+`
+
+const LedgerConnectionContent = styled.div`
+  font-size: var(--font-size-small);
+  line-height: 2rem;
+  display: flex;
+  max-height: 36rem;
+
+  color: var(--color-foreground-muted);
+  .title {
+    color: var(--color-mid);
+    margin-bottom: 1.6rem;
+  }
+
+  button {
+    margin-top: 2.4rem;
+    width: 100%;
+  }
+
+  .error {
+    color: var(--color-status-error);
+  }
+
+  .warning {
+    color: var(--color-status-warning);
+  }
+
+  .ledger-connection {
+    width: 100%;
+    margin: 0;
+  }
+`
 
 // TODO rename payload type ?
 export type LedgerEthereumSignMethod =
@@ -38,7 +81,7 @@ const signWithLedger = async (
   payload: any,
   accountPath: string
 ): Promise<`0x${string}`> => {
-  // uncomment someday
+  // TODO Uncomment wen this method actually works
   // if (["eth_signTypedData", "eth_signTypedData_v3", "eth_signTypedData_v4"].includes(method)) {
   //   const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
 
@@ -128,49 +171,6 @@ const signWithLedger = async (
   throw new Error("This type of message cannot be signed with ledger.")
 }
 
-const LedgerContent = styled.div`
-  .cancel-link {
-    margin-top: 0.5em;
-    font-size: var(--font-size-small);
-    color: var(--color-background-muted-2x);
-    display: block;
-    text-align: center;
-    text-decoration: underline;
-    cursor: pointer;
-  }
-`
-
-const LedgerConnectionContent = styled.div`
-  font-size: var(--font-size-small);
-  line-height: 2rem;
-  display: flex;
-  max-height: 36rem;
-
-  color: var(--color-foreground-muted);
-  .title {
-    color: var(--color-mid);
-    margin-bottom: 1.6rem;
-  }
-
-  button {
-    margin-top: 2.4rem;
-    width: 100%;
-  }
-
-  .error {
-    color: var(--color-status-error);
-  }
-
-  .warning {
-    color: var(--color-status-warning);
-  }
-
-  .ledger-connection {
-    width: 100%;
-    margin: 0;
-  }
-`
-
 const LedgerEthereum: FC<LedgerEthereumProps> = ({
   account,
   className = "",
@@ -183,8 +183,14 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
 }) => {
   const [autoSend, setAutoSend] = useState(!manualSend)
   const [isSigning, setIsSigning] = useState(false)
+  const [isSigned, setIsSigned] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { ledger, refresh, status, message, isReady, requiresManualRetry } = useLedgerEthereum()
+
+  // reset
+  useEffect(() => {
+    setIsSigned(false)
+  }, [method, payload])
 
   const connectionStatus: LedgerConnectionStatusProps = useMemo(
     () => ({
@@ -201,21 +207,24 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
     setError(null)
   }, [refresh, setError])
 
-  const signLedger = useCallback(() => {
+  const signLedger = useCallback(async () => {
     if (!ledger || !onSignature || !autoSend) {
       return
     }
 
     setError(null)
     onSendToLedger?.()
-    return signWithLedger(ledger, method, payload, account.path)
-      .then((signature) => onSignature({ signature }))
-      .catch((e: any) => {
-        if (e.statusCode === 27013) return onReject()
-        setError(e.message)
-        setIsSigning(false)
-        setAutoSend(!manualSend)
-      })
+    try {
+      const signature = await signWithLedger(ledger, method, payload, account.path)
+      setIsSigned(true)
+      onSignature({ signature })
+    } catch (err) {
+      const error = err as LedgerDetailedError
+      if (error.statusCode === 27013) return onReject()
+      setError(error.message)
+      setIsSigning(false)
+      setAutoSend(!manualSend)
+    }
   }, [
     ledger,
     onSignature,
@@ -229,11 +238,11 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   ])
 
   useEffect(() => {
-    if (isReady && !error && !isSigning && autoSend) {
+    if (isReady && !error && !isSigning && autoSend && !isSigned) {
       setIsSigning(true)
-      signLedger()?.finally(() => setIsSigning(false))
+      signLedger().finally(() => setIsSigning(false))
     }
-  }, [signLedger, isSigning, error, isReady, autoSend])
+  }, [signLedger, isSigning, error, isReady, autoSend, isSigned])
 
   const handleSendClick = useCallback(() => {
     setAutoSend(true)
