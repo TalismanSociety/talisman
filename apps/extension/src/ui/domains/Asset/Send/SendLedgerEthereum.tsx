@@ -64,6 +64,8 @@ const SendLedgerEthereum = () => {
     [sendWithSignatureEthereum]
   )
 
+  const parent = useMemo(() => document.getElementById("send-funds-container"), [])
+
   if (error) return <div className="text-alert-error">{error}</div>
 
   // hide until ready or after it's signed
@@ -76,6 +78,7 @@ const SendLedgerEthereum = () => {
       onReject={cancel}
       onSignature={handleSigned}
       payload={transaction}
+      parent={parent}
     />
   )
 }

@@ -11,6 +11,7 @@ import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { ethers } from "ethers"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { TypedDataUtils, SignTypedDataVersion } from "@metamask/eth-sig-util"
+import { DEBUG } from "@core/constants"
 
 const LedgerContent = styled.div`
   .cancel-link {
@@ -67,11 +68,12 @@ export type LedgerEthereumSignMethod =
 type LedgerEthereumProps = {
   account: AccountJsonHardwareEthereum
   className?: string
-  onSignature?: (result: { signature: `0x${string}` }) => void
-  onReject: () => void
   method: LedgerEthereumSignMethod
   payload: any // string message, typed object for eip712, TransactionRequest for tx
   manualSend?: boolean // requests user to click a button to send the payload to the ledger
+  parent?: HTMLElement | null
+  onSignature?: (result: { signature: `0x${string}` }) => void
+  onReject: () => void
   onSendToLedger?: () => void // triggered when tx is sent to the ledger
 }
 
@@ -177,6 +179,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   method,
   payload,
   manualSend,
+  parent,
   onSendToLedger,
   onSignature,
   onReject,
@@ -220,6 +223,8 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
       onSignature({ signature })
     } catch (err) {
       const error = err as LedgerDetailedError
+      // eslint-disable-next-line no-console
+      if (DEBUG) console.error(error.message, { error })
       if (error.statusCode === 27013) return onReject()
       setError(error.message)
       setIsSigning(false)
@@ -265,7 +270,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
         </LedgerConnectionContent>
       )}
       {error && (
-        <Drawer anchor="bottom" open={true}>
+        <Drawer anchor="bottom" open={true} parent={parent}>
           <LedgerSigningStatus
             message={error ? error : ""}
             status={error ? "error" : isSigning ? "signing" : undefined}
