@@ -5,6 +5,7 @@ import { wagmiClient } from "./connectors"
 import { SendTokens } from "./SendTokens"
 import { PersonalSign } from "./PersonalSign"
 import { SignTypedData } from "./SignTypedData"
+import { ContractReadWrite } from "./ContractReadWrite"
 
 export const Ethereum = () => {
   return (
@@ -12,6 +13,7 @@ export const Ethereum = () => {
       <TestLayout title="Ethereum">
         <Connect />
         <SendTokens />
+        <ContractReadWrite />
         <PersonalSign />
         <SignTypedData />
       </TestLayout>

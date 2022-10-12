@@ -9,25 +9,13 @@ import { parseEther } from "ethers/lib/utils"
 import { Section } from "./Section"
 import { Button } from "talisman-ui"
 import { useLocalStorage } from "react-use"
+import { TransactionReceipt } from "./shared/TransactionReceipt"
 
 type FormData = { recipient: string; amount: string }
 
 const DEFAULT_VALUE = {
   recipient: "0x5C9EBa3b10E45BF6db77267B40B95F3f91Fc5f67",
   amount: "0.001",
-}
-
-const TransactionReceipt = ({ hash }: { hash?: string }) => {
-  const { data, error, isLoading, isError } = useWaitForTransaction({
-    enabled: !!hash,
-    hash: hash as `0x${string}`,
-  })
-
-  if (!hash) return null
-
-  if (isLoading) return <div>Fetching transaction…</div>
-  if (isError) return <div>Error : {error?.message}</div>
-  return <pre>Transaction: {JSON.stringify(data, undefined, 2)}</pre>
 }
 
 export const SendTokens = () => {
