@@ -73,46 +73,52 @@ export const ContractReadWrite = () => {
   )
 
   useEffect(() => {
-    setValue("message", (readData as unknown as string) ?? "")
+    setValue("message", (readData as unknown as string) ?? "", { shouldValidate: true })
   }, [readData, setValue])
 
   if (!isConnected) return null
 
   return (
     <Section title="Personal Sign">
-      <form className="text-md text-body-secondary space-y-4" onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex items-center">
-          <label className="w-48" htmlFor="send-tokens-to">
-            Message
-          </label>
-          <input
-            type="text"
-            className="w-[60rem] "
-            id="send-tokens-to"
-            autoComplete="off"
-            spellCheck={false}
-            {...register("message", { required: true })}
-          />
-        </div>
-        <div>
-          <Button type="submit" processing={readIsLoading} disabled={!isValid || isSubmitting}>
-            Sign message
-          </Button>
-        </div>
-      </form>
-      <div className="my-8">
-        {writeIsSuccess && (
-          <>
-            <pre className="text-alert-success my-8 ">
-              Transaction: {JSON.stringify(writeData, undefined, 2)}
-            </pre>
-            <TransactionReceipt hash={writeData?.hash} />
-          </>
-        )}
-        {writeIsError && (
-          <div className="text-alert-error my-8 ">Error : {writeError?.message}</div>
-        )}
-      </div>
+      {contractAddress ? (
+        <>
+          <form className="text-md text-body-secondary space-y-4" onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex items-center">
+              <label className="w-48" htmlFor="send-tokens-to">
+                Message
+              </label>
+              <input
+                type="text"
+                className="w-[60rem] "
+                id="send-tokens-to"
+                autoComplete="off"
+                spellCheck={false}
+                {...register("message", { required: true })}
+              />
+            </div>
+            <div>
+              <Button type="submit" processing={readIsLoading} disabled={!isValid || isSubmitting}>
+                Sign message
+              </Button>
+            </div>
+          </form>
+          <div className="my-8">
+            {writeIsSuccess && (
+              <>
+                <pre className="text-alert-success my-8 ">
+                  Transaction: {JSON.stringify(writeData, undefined, 2)}
+                </pre>
+                <TransactionReceipt hash={writeData?.hash} />
+              </>
+            )}
+            {writeIsError && (
+              <div className="text-alert-error my-8 ">Error : {writeError?.message}</div>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="text-body-secondary">Test contract isn't deployed on this network.</div>
+      )}
     </Section>
   )
 }
