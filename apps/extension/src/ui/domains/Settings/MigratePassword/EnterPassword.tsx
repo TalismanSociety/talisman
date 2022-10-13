@@ -6,6 +6,7 @@ import { api } from "@ui/api"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import styled from "styled-components"
+import { useMigratePassword } from "./context"
 import * as yup from "yup"
 
 const FullWidthButton = styled(SimpleButton)`
@@ -21,11 +22,9 @@ const schema = yup
   })
   .required()
 
-export const EnterPasswordForm = ({
-  onSuccess,
-}: {
-  onSuccess: (password: string, mnemonic: string) => void
-}) => {
+export const EnterPasswordForm = () => {
+  const { setPassword, setMnemonic } = useMigratePassword()
+
   const {
     register,
     handleSubmit,
@@ -42,7 +41,8 @@ export const EnterPasswordForm = ({
         // use mnemonicUnlock message because authenticate causes logout on failure
         const mnemonic = await api.mnemonicUnlock(password)
         if (mnemonic) {
-          onSuccess(password, mnemonic)
+          setPassword(password)
+          setMnemonic(mnemonic)
         } else throw new Error("Incorrect password")
       } catch (err) {
         setError("password", {
@@ -50,7 +50,7 @@ export const EnterPasswordForm = ({
         })
       }
     },
-    [onSuccess, setError]
+    [setPassword, setMnemonic, setError]
   )
 
   return (
