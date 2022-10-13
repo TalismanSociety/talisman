@@ -3,6 +3,7 @@ import { useMigratePassword, MigratePasswordProvider } from "./context"
 import styled from "styled-components"
 import { BackUpMnemonicDialog } from "./BackUpMnemonicDialog"
 import { EnterPasswordForm } from "./EnterPassword"
+import { NewPasswordForm } from "./NewPasswordForm"
 
 type MigratePasswordModalProps = {
   open: boolean
@@ -16,9 +17,13 @@ const Modal = styled(BaseModal)`
 `
 
 const MigratePasswordModalContent = () => {
-  const { hasPassword, hasBackedUpMnemonic, mnemonic } = useMigratePassword()
+  const { hasPassword, hasBackedUpMnemonic, passwordTrimmed, hasNewPassword } = useMigratePassword()
+
   if (!hasPassword) return <EnterPasswordForm />
-  if (!hasBackedUpMnemonic && mnemonic) return <BackUpMnemonicDialog />
+  if (!hasBackedUpMnemonic) return <BackUpMnemonicDialog />
+  if (passwordTrimmed) {
+    if (!hasNewPassword) return <NewPasswordForm />
+  }
   return <>COOL stuff thanks</>
 }
 
