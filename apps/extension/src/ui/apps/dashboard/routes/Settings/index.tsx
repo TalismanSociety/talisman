@@ -16,13 +16,7 @@ import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
-import styled from "styled-components"
-
-const Dialog = styled(ModalDialog)`
-  width: 50.3rem;
-`
+import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 
 const Settings = () => {
   const { isOpen: isOpenMigratePw, open: openMigratePw, close: closeMigratePw } = useOpenClose()
@@ -37,7 +31,7 @@ const Settings = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   useEffect(() => {
     if (searchParams.get("showMigratePasswordModal") !== null) {
-      // migrating the password requires backing up the seed, so this modal has priority
+      // migrating the password requires confirming backup of the seed, so this modal has priority
       openMigratePw()
       setSearchParams({})
     } else if (searchParams.get("showBackupModal") !== null) {
@@ -55,7 +49,7 @@ const Settings = () => {
           icon={<IconKey />}
           title="Backup Wallet"
           subtitle="Backup your recovery phrase"
-          onClick={open}
+          onClick={openBackupMnemonic}
         />
         <CtaButton
           icon={<IconLink />}
@@ -106,11 +100,7 @@ const Settings = () => {
         />
       </Grid>
       <MnemonicModal open={isOpenBackupMnemonic} onClose={closeBackupMnemonic} />
-      <Modal open={isOpenMigratePw} onClose={closeMigratePw}>
-        <Dialog title="Backup recovery phrase" onClose={closeMigratePw}>
-          MIGRATE YOUR PASSWORD
-        </Dialog>
-      </Modal>
+      <MigratePasswordModal open={isOpenMigratePw} onClose={closeMigratePw} />
     </Layout>
   )
 }
