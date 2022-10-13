@@ -5,6 +5,7 @@ import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address } from "@core/types/base"
 import * as Sentry from "@sentry/browser"
+import hasOwnProperty from "@talisman/util/hasOwnProperty"
 import { ethers } from "ethers"
 
 export default class NativeBalancesEvmRpc {
@@ -132,6 +133,20 @@ export default class NativeBalancesEvmRpc {
     provider: ethers.providers.JsonRpcProvider,
     address: Address
   ): Promise<string> {
-    return ((await provider.getBalance(address)).toBigInt() || BigInt("0")).toString()
+    if (!this.isEthereumAddress(address)) return "0"
+
+    try {
+      return ((await provider.getBalance(address)).toBigInt() || BigInt("0")).toString()
+    } catch (error) {
+      const errorMessage = hasOwnProperty(error, "message") ? error.message : error
+      const warning = `Failed to get balance from chain ${provider.network.chainId} for address ${address}: ${errorMessage}`
+      // eslint-disable-next-line no-console
+      DEBUG && console.warn(warning)
+      return "0"
+    }
+  }
+
+  private static isEthereumAddress(address: string) {
+    return address.startsWith("0x") && address.length === 42
   }
 }

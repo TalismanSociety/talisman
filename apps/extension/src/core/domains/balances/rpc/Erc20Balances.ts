@@ -6,6 +6,7 @@ import { Erc20Token } from "@core/domains/tokens/types"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address } from "@core/types/base"
 import * as Sentry from "@sentry/browser"
+import hasOwnProperty from "@talisman/util/hasOwnProperty"
 import { ethers } from "ethers"
 
 import { erc20Abi } from "./abis"
@@ -147,6 +148,20 @@ export default class Erc20BalancesEvmRpc {
     contract: ethers.Contract,
     address: Address
   ): Promise<string> {
-    return ((await contract.balanceOf(address)).toBigInt() || BigInt("0")).toString()
+    if (!this.isEthereumAddress(address)) return "0"
+
+    try {
+      return ((await contract.balanceOf(address)).toBigInt() || BigInt("0")).toString()
+    } catch (error) {
+      const errorMessage = hasOwnProperty(error, "message") ? error.message : error
+      const warning = `Failed to get balance from contract ${contract.address} for address ${address}: ${errorMessage}`
+      // eslint-disable-next-line no-console
+      DEBUG && console.warn(warning)
+      return "0"
+    }
+  }
+
+  private static isEthereumAddress(address: string) {
+    return address.startsWith("0x") && address.length === 42
   }
 }
