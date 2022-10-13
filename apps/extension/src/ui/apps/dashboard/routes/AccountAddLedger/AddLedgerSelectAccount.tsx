@@ -1,11 +1,13 @@
+import { LedgerEthDerivationPathType } from "@core/domains/ethereum/helpers"
 import { sleep } from "@core/util/sleep"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { Dropdown } from "@talisman/components/Dropdown"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { LedgerAccountPicker } from "@ui/domains/Account/LedgerAccountPicker"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
-import { useCallback, useMemo } from "react"
+import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Navigate, useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -13,6 +15,51 @@ import * as yup from "yup"
 
 import Layout from "../../layout"
 import { LedgerAccountDef, useAddLedgerAccount } from "./context"
+
+const options: Record<LedgerEthDerivationPathType, string> = {
+  LedgerLive: "Ledger Live",
+  Legacy: "Legacy (MEW, MyCrypto)",
+  BIP44: "BIP44 Standard (MetaMask, Trezor)",
+}
+
+type Option = { key: LedgerEthDerivationPathType; label: string }
+
+const items = Object.entries(options).map<Option>(([key, value]) => ({
+  key: key as LedgerEthDerivationPathType,
+  label: value,
+}))
+
+type LedgerDerivationPathSelectorProps = {
+  defaultValue: LedgerEthDerivationPathType
+  onChange: (value: LedgerEthDerivationPathType) => void
+}
+
+const LedgerDerivationPathSelector: FC<LedgerDerivationPathSelectorProps> = ({
+  defaultValue = "LedgerLive",
+  onChange,
+}) => {
+  const defaultSelectedItem = useMemo(
+    () => items.find((i) => i.key === defaultValue),
+    [defaultValue]
+  )
+
+  const handleChange = useCallback(
+    (item: Option | null) => {
+      if (item) onChange(item.key)
+    },
+    [onChange]
+  )
+
+  return (
+    <Dropdown
+      items={items}
+      defaultSelectedItem={defaultSelectedItem}
+      propertyKey="key"
+      renderItem={(item) => <div>{item.label}</div>}
+      onChange={handleChange}
+    />
+  )
+}
 
 const Container = styled(Layout)`
   ${SimpleButton} {
@@ -117,20 +164,39 @@ export const AddLedgerSelectAccount = () => {
     [setValue]
   )
 
-  if (!data.type) return <Navigate to="./" replace />
-  if (data.type === "sr25519" && !data.chainId) return <Navigate to="./" replace />
+  const [derivationPath, setDerivationPath] = useState<LedgerEthDerivationPathType>("LedgerLive")
+
+  if (!data.type) return <Navigate to="/accounts/add/ledger" replace />
+  if (data.type === "sr25519" && !data.chainId)
+    return <Navigate to="/accounts/add/ledger" replace />
 
   return (
     <Container withBack centered>
       <form data-button-pull-left onSubmit={handleSubmit(submit)}>
         <div className="grow">
           <H1>Import from Ledger</H1>
+          {data.type === "ethereum" && (
+            <>
+              <Text>
+                If you're importing an existing account, select the correct derivation path below.
+              </Text>
+              <div>
+                <LedgerDerivationPathSelector
+                  defaultValue="LedgerLive"
+                  onChange={setDerivationPath}
+                />
+              </div>
+            </>
+          )}
           <Text>Please select which account(s) you'd like to import.</Text>
           {data.type === "sr25519" && (
             <LedgerAccountPicker chainId={data.chainId as string} onChange={handleAccountsChange} />
           )}
           {data.type === "ethereum" && (
-            <LedgerEthereumAccountPicker onChange={handleAccountsChange} />
+            <LedgerEthereumAccountPicker
+              derivationPathType={derivationPath}
+              onChange={handleAccountsChange}
+            />
           )}
         </div>
         <div className="buttons">

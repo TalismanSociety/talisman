@@ -8,15 +8,16 @@ import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import TransportWebHID from "@ledgerhq/hw-transport-webhid"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import Transport from "@ledgerhq/hw-transport"
+import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 
 export type LedgerStatus = "ready" | "warning" | "error" | "connecting" | "unknown"
 
-export type LedgerEthDerivationPathType = "LedgerLive" | "Legacy" | "BIP44"
-const DERIVATION_PATHS: Record<LedgerEthDerivationPathType, string> = {
-  LedgerLive: "m/44'/60'/0'/0/0",
-  Legacy: "m/44'/60'/0'",
-  BIP44: "m/44'/60'/0'/0",
-}
+// export type LedgerEthDerivationPathType = "LedgerLive" | "Legacy" | "BIP44"
+// const DERIVATION_PATHS: Record<LedgerEthDerivationPathType, string> = {
+//   LedgerLive: "m/44'/60'/0'/0/0",
+//   Legacy: "m/44'/60'/0'",
+//   BIP44: "m/44'/60'/0'/0",
+// }
 
 export type LedgerDetailedError = {
   message: string
@@ -169,7 +170,7 @@ export const useLedgerEthereum = (): LedgerState => {
 
       // this may hang at this point just after plugging the ledger
       await Promise.race([
-        ledger.getAddress(DERIVATION_PATHS.LedgerLive),
+        ledger.getAddress(getEthLedgerDerivationPath("LedgerLive")),
         new Promise((_, reject) => setTimeout(() => reject("Timeout"), 5000)),
       ])
 
@@ -187,11 +188,14 @@ export const useLedgerEthereum = (): LedgerState => {
       else if (ledgerError.message === "Timeout") setLedgerError("Timeout")
       else if (ledgerError.name === "TransportInterfaceNotAvailable")
         setLedgerError(ledgerError.name)
-      else if (ledgerError.statusCode === 57346) setLedgerError("Ledger App not open 57346")
-      else if (ledgerError.statusCode === 25873) setLedgerError("Ledger App not open 25873")
-      else if (ledgerError.statusCode === 27010) setLedgerError("Ledger locked 27010")
-      else if (ledgerError.statusCode === 27906) setLedgerError("Ledger App not open 27906")
-      else if (ledgerError.statusCode === 27404) setLedgerError("Ledger locked 27404")
+      else if ([57346, 25873, 28160, 27906].includes(ledgerError.statusCode))
+        setLedgerError("Ledger App not open")
+      else if ([27010, 27404].includes(ledgerError.statusCode)) setLedgerError("Ledger locked")
+      // else if (ledgerError.statusCode === 25873) setLedgerError("Ledger App not open 25873")
+      // else if (ledgerError.statusCode === 28160) setLedgerError("Ledger App not open 28160")
+      // else if (ledgerError.statusCode === 27010) setLedgerError("Ledger locked 27010")
+      // else if (ledgerError.statusCode === 27906) setLedgerError("Ledger App not open 27906")
+      // else if (ledgerError.statusCode === 27404) setLedgerError("Ledger locked 27404")
       else setLedgerError((err as Error).message)
 
       //release transport

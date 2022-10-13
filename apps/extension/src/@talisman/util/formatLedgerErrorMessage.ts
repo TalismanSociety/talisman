@@ -62,13 +62,9 @@ export const formatLedgerErrorMessage = (
 
 export const formatLedgerEthereumErrorMessage = (
   ledgerError: string,
-  network = "the network"
+  network = "Ethereum"
 ): LedgerError => {
-  if (
-    ledgerError?.includes("Ledger locked") //||
-    // ledgerError?.includes("Code: 26628") ||
-    // ledgerError?.includes("Transaction rejected")
-  )
+  if (ledgerError?.includes("Ledger locked"))
     return {
       status: "warning",
       message: "Please unlock your Ledger.",

@@ -57,14 +57,14 @@ export const AccountTypeSelector = ({
     <Container className={className} tabIndex={0}>
       <AccountTypeButton
         title="Polkadot"
-        className={classNames(type === "sr25519" && "selected")}
+        className={classNames("allow-focus", type === "sr25519" && "selected")}
         icon={<PolkadotCircleLogo />}
         subtitle="Polkadot, Kusama &amp; Parachains"
         onClick={handleClick("sr25519")}
       />
       <AccountTypeButton
         title="Ethereum"
-        className={classNames(type === "ethereum" && "selected")}
+        className={classNames("allow-focus", type === "ethereum" && "selected")}
         icon={<EthereumCircleLogo />}
         subtitle="Moonbeam, Moonriver, Astar etc."
         onClick={handleClick("ethereum")}

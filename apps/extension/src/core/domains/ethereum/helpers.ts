@@ -6,7 +6,21 @@ import { BigNumber, BigNumberish, ethers } from "ethers"
 
 import { EthGasSettings } from "./types"
 
-export const getEthDerivationPath = (index = 0) => `/m/44'/60'/0'/0/${index}`
+// TODO move to types file
+export type LedgerEthDerivationPathType = "LedgerLive" | "Legacy" | "BIP44"
+
+const LEDGER_DERIVATION_PATHS: Record<LedgerEthDerivationPathType, string> = {
+  LedgerLive: "m/44'/60'/INDEX'/0/0",
+  Legacy: "m/44'/60'/0'/INDEX",
+  BIP44: "m/44'/60'/0'/0/INDEX",
+}
+
+export const getEthDerivationPath = (index = 0, pattern = "/m/44'/60'/0'/0/INDEX") =>
+  pattern.replace("INDEX", index.toString())
+
+export const getEthLedgerDerivationPath = (type: LedgerEthDerivationPathType, index = 0) => {
+  return getEthDerivationPath(index, LEDGER_DERIVATION_PATHS[type])
+}
 
 export const getEthTransferTransactionBase = async (
   evmNetworkId: number,

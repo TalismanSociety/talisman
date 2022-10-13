@@ -1,5 +1,9 @@
 import { Balance, BalanceFormatter } from "@core/domains/balances/types"
-import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import {
+  getEthDerivationPath,
+  getEthLedgerDerivationPath,
+  LedgerEthDerivationPathType,
+} from "@core/domains/ethereum/helpers"
 import { Token } from "@core/domains/tokens/types"
 import { Checkbox } from "@talisman/components/Checkbox"
 import { Skeleton } from "@talisman/components/Skeleton"
@@ -117,7 +121,10 @@ type LedgerEthereumAccountInfo = LedgerAccountDefEthereum & {
   selected?: boolean
 }
 
-const useLedgerEthereumAccounts = (selectedAccounts: LedgerAccountDefEthereum[]) => {
+const useLedgerEthereumAccounts = (
+  derivationPathType: LedgerEthDerivationPathType,
+  selectedAccounts: LedgerAccountDefEthereum[]
+) => {
   const walletAccounts = useAccounts()
   const tokens = useTokens()
   const token = useToken(
@@ -127,6 +134,11 @@ const useLedgerEthereumAccounts = (selectedAccounts: LedgerAccountDefEthereum[])
   const [ledgerAccounts, setLedgerAccounts] = useState<LedgerEthereumAccountInfo[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string>()
+
+  // reset if derivation path is changed
+  useEffect(() => {
+    setLedgerAccounts([])
+  }, [derivationPathType])
 
   const { isReady, ledger, status, message, requiresManualRetry, refresh } = useLedgerEthereum()
 
@@ -142,7 +154,8 @@ const useLedgerEthereumAccounts = (selectedAccounts: LedgerAccountDefEthereum[])
 
       const accountIndex = ledgerAccounts.length
 
-      const path = getEthDerivationPath(accountIndex)
+      const path = getEthLedgerDerivationPath(derivationPathType, accountIndex)
+
       const { address } = await ledger.getAddress(path)
 
       const balance = new Balance(
@@ -168,7 +181,7 @@ const useLedgerEthereumAccounts = (selectedAccounts: LedgerAccountDefEthereum[])
       setError((err as Error).message)
     }
     setLoading(false)
-  }, [token, isReady, ledger, ledgerAccounts.length])
+  }, [ledger, token, isReady, ledgerAccounts.length, derivationPathType])
 
   const accounts = useMemo(
     () =>
@@ -318,11 +331,13 @@ const AccountButtonShimmer: FC = () => {
 }
 
 type LedgerEthereumAccountPickerProps = {
+  derivationPathType: LedgerEthDerivationPathType
   defaultAccounts?: LedgerAccountDefEthereum[]
   onChange?: (accounts: LedgerAccountDefEthereum[]) => void
 }
 
 export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> = ({
+  derivationPathType,
   defaultAccounts = [],
   onChange,
 }) => {
@@ -339,7 +354,7 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
     message,
     requiresManualRetry,
     refresh,
-  } = useLedgerEthereumAccounts(selectedAccounts)
+  } = useLedgerEthereumAccounts(derivationPathType, selectedAccounts)
 
   const handleToggleAccount = useCallback(
     (acc: LedgerAccountDefEthereum) => () => {

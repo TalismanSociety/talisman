@@ -187,7 +187,7 @@ export const AddLedgerSelectNetwork = () => {
             text="What type of account would you like to import ?"
           />
           <Spacer small />
-          <AccountTypeSelector onChange={handleTypeChange} />
+          <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
           <Spacer />
           {accountType === "sr25519" && (
             <>
@@ -205,7 +205,7 @@ export const AddLedgerSelectNetwork = () => {
             </>
           )}
           <div className={classNames("step2", showStep2 && "fadeIn")}>
-            <H2>Step 2</H2>
+            {accountType === "sr25519" && <H2>Step 2</H2>}
             {accountType === "sr25519" && (
               <ConnectLedgerSubstrate onReadyChanged={setIsLedgerReady} chainId={chainId} />
             )}
