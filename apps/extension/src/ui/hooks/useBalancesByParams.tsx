@@ -1,4 +1,4 @@
-import { Balances } from "@core/domains/balances/types"
+import { AddressesByEvmNetwork, Balances } from "@core/domains/balances/types"
 import { AddressesByChain } from "@core/types/base"
 import { api } from "@ui/api"
 import { useChains } from "@ui/hooks/useChains"
@@ -12,7 +12,10 @@ import { BehaviorSubject } from "rxjs"
 
 const INITIAL_VALUE = new Balances({})
 
-export const useBalancesByParams = (addressesByChain: AddressesByChain) => {
+export const useBalancesByParams = (
+  addressesByChain: AddressesByChain = {},
+  addressesByEvmNetwork: AddressesByEvmNetwork = { addresses: [], evmNetworks: [] }
+) => {
   const _chains = useChains()
   const _evmNetworks = useEvmNetworks()
   const _tokens = useTokens()
@@ -39,7 +42,7 @@ export const useBalancesByParams = (addressesByChain: AddressesByChain) => {
 
   const subscribe = useCallback(
     (subject: BehaviorSubject<Balances>) =>
-      api.balancesByParams(addressesByChain, async (update) => {
+      api.balancesByParams(addressesByChain, addressesByEvmNetwork, async (update) => {
         switch (update.type) {
           case "reset": {
             const newBalances = new Balances(update.balances, dbRef.current)
@@ -61,11 +64,14 @@ export const useBalancesByParams = (addressesByChain: AddressesByChain) => {
           }
         }
       }),
-    [addressesByChain]
+    [addressesByChain, addressesByEvmNetwork]
   )
 
   // subscrition must be reinitialized (using the key) if parameters change
-  const subscriptionKey = useMemo(() => md5(JSON.stringify(addressesByChain)), [addressesByChain])
+  const subscriptionKey = useMemo(
+    () => md5(JSON.stringify(addressesByChain) + md5(JSON.stringify(addressesByEvmNetwork))),
+    [addressesByChain, addressesByEvmNetwork]
+  )
 
   const balances = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
 

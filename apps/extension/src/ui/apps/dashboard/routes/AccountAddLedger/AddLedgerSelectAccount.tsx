@@ -7,6 +7,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { LedgerAccountPicker } from "@ui/domains/Account/LedgerAccountPicker"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
+import { LedgerEthereumAccountPicker2 } from "@ui/domains/Account/LedgerEthereumAccountPicker2"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Navigate, useNavigate } from "react-router-dom"
@@ -188,12 +189,17 @@ export const AddLedgerSelectAccount = () => {
               </div>
             </>
           )}
-          <Text>Please select which account(s) you'd like to import.</Text>
+          <Text>
+            Please select which account(s) you'd like to import.
+            <br />
+            Amounts displayed for each account are the sum of GLMR, MOVR, ASTR and ETH.
+          </Text>
           {data.type === "sr25519" && (
             <LedgerAccountPicker chainId={data.chainId as string} onChange={handleAccountsChange} />
           )}
           {data.type === "ethereum" && (
-            <LedgerEthereumAccountPicker
+            <LedgerEthereumAccountPicker2
+              name="Ledger Ethereum"
               derivationPathType={derivationPath}
               onChange={handleAccountsChange}
             />

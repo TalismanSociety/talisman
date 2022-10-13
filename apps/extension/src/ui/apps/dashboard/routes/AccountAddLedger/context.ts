@@ -11,7 +11,7 @@ import { useCallback, useState } from "react"
 
 export type LedgerAccountDefSubstrate = Omit<RequestAccountCreateHardware, "hardwareType">
 export type LedgerAccountDefEthereum = RequestAccountCreateHardwareEthereum
-export type LedgerAccountDef = LedgerAccountDefSubstrate | RequestAccountCreateHardwareEthereum
+export type LedgerAccountDef = LedgerAccountDefSubstrate | LedgerAccountDefEthereum
 
 type LedgerCreationInputs = {
   type: AccountAddressType

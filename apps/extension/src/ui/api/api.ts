@@ -96,8 +96,12 @@ export const api: MessageTypes = {
   getBalanceLocks: ({ chainId, addresses }) =>
     messageService.sendMessage("pri(balances.locks.get)", { chainId, addresses }),
   balances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
-  balancesByParams: (addressesByChain, cb) =>
-    messageService.subscribe("pri(balances.byparams.subscribe)", { addressesByChain }, cb),
+  balancesByParams: (addressesByChain, addressesByEvmNetwork, cb) =>
+    messageService.subscribe(
+      "pri(balances.byparams.subscribe)",
+      { addressesByChain, addressesByEvmNetwork },
+      cb
+    ),
 
   // authorized sites messages ------------------------------------------
   authorizedSites: () => messageService.sendMessage("pri(sites.list)"),

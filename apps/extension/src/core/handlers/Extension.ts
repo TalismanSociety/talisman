@@ -3,6 +3,7 @@ import { AccountsHandler } from "@core/domains/accounts"
 import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { getBalanceLocks } from "@core/domains/balances/helpers"
+import NativeBalancesEvmRpc from "@core/domains/balances/rpc/EvmBalances"
 import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
 import {
   Balances,
@@ -184,9 +185,19 @@ export default class Extension extends ExtensionHandler {
         // create subscription callback
         const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
 
+        const { addressesByChain, addressesByEvmNetwork } =
+          request as RequestBalancesByParamsSubscribe
+
         // subscribe to balances by params
-        const unsub = await BalancesRpc.balances(
-          (request as RequestBalancesByParamsSubscribe).addressesByChain,
+        const unsub = await BalancesRpc.balances(addressesByChain, (error, balances) => {
+          // eslint-disable-next-line no-console
+          if (error) DEBUG && console.error(error)
+          else callback({ type: "upsert", balances: (balances ?? new Balances([])).toJSON() })
+        })
+
+        const unsubEvm = await NativeBalancesEvmRpc.balances(
+          addressesByEvmNetwork?.addresses ?? [],
+          addressesByEvmNetwork?.evmNetworks ?? [],
           (error, balances) => {
             // eslint-disable-next-line no-console
             if (error) DEBUG && console.error(error)
@@ -198,6 +209,7 @@ export default class Extension extends ExtensionHandler {
         port.onDisconnect.addListener((): void => {
           unsubscribe(id)
           unsub()
+          unsubEvm()
         })
 
         // subscription created

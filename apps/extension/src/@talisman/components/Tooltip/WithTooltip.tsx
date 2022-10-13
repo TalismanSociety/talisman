@@ -76,7 +76,8 @@ export const WithTooltip = ({
       position: strategy,
       top: (y ?? 0) - (boundary?.offsetTop ?? 0),
       left: (x ?? 0) - (boundary?.offsetLeft ?? 0),
-      whiteSpace: noWrap ? "nowrap" : undefined,
+      whiteSpace: noWrap ? "pre" : undefined,
+      lineHeight: 1.2,
     }),
     [boundary?.offsetLeft, boundary?.offsetTop, noWrap, strategy, x, y]
   )

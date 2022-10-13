@@ -13,9 +13,11 @@ import {
   OnboardedType,
 } from "@core/domains/app/types"
 import {
+  AddressesByEvmNetwork,
   BalancesUpdate,
   RequestBalance,
   RequestBalanceLocks,
+  RequestBalancesByParamsSubscribe,
   ResponseBalanceLocks,
 } from "@core/domains/balances/types"
 import { BalanceStorage } from "@core/domains/balances/types"
@@ -114,6 +116,7 @@ export default interface MessageTypes {
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
+    addressesByEvmNetwork: AddressesByEvmNetwork,
     cb: (balances: BalancesUpdate) => void
   ) => UnsubscribeFn
 
