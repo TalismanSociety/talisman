@@ -1,200 +1,90 @@
-import { yupResolver } from "@hookform/resolvers/yup"
-import Field from "@talisman/components/Field"
-import { FormField } from "@talisman/components/Field/FormField"
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import Spacer from "@talisman/components/Spacer"
-import { KeyIcon } from "@talisman/theme/icons"
-import { api } from "@ui/api"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useCallback, useState } from "react"
-import { useForm } from "react-hook-form"
+import Pill from "@talisman/components/Pill"
+import { MouseEventHandler, useState } from "react"
 import styled from "styled-components"
-import * as yup from "yup"
+import { CheckIcon, CopyIcon } from "@talisman/theme/icons"
 
-const Description = () => (
-  <>
-    <p>
-      Your recovery phrase gives you access to your wallet and funds. It can be used to restore your
-      Talisman created accounts if you lose access to your device, or forget your password.
-    </p>
-    <p>
-      We strongly encourage you to back up your recovery phrase by writing it down and storing it in
-      a secure location.{" "}
-      <a
-        href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/back-up-your-secret-phrase"
-        target="_blank"
-      >
-        Learn more
-      </a>
-    </p>
-  </>
-)
+import { classNames } from "talisman-ui"
 
-type FormData = {
-  password: string
-}
+const SecretText = styled.div`
+  position: relative;
+  padding: 1rem;
 
-const schema = yup
-  .object({
-    password: yup.string().required(""),
-  })
-  .required()
-
-const Mnemonic = ({ className }: any) => {
-  const [mnemonic, setMnemonic] = useState<string>()
-  const { isConfirmed, toggleConfirmed } = useMnemonicBackup()
-
-  const {
-    register,
-    handleSubmit,
-    setError,
-    formState: { errors, isValid, isSubmitting },
-  } = useForm<FormData>({
-    mode: "onChange",
-    resolver: yupResolver(schema),
-  })
-
-  const submit = useCallback(
-    async ({ password }: FormData) => {
-      try {
-        setMnemonic(await api.mnemonicUnlock(password))
-      } catch (err) {
-        setError("password", {
-          message: (err as Error)?.message ?? "",
-        })
-      }
-    },
-    [setError]
-  )
-
-  return (
-    <div className={className}>
-      {mnemonic ? (
-        <>
-          <HeaderBlock text={<Description />} />
-          <Spacer small />
-          <Field.Textarea className="secret" value={mnemonic} fieldProps={{ rows: 3 }} />
-          <Spacer />
-          <Field.Toggle
-            className="toggle"
-            info="I've backed it up"
-            value={isConfirmed}
-            onChange={(val: boolean) => toggleConfirmed(val)}
-          />
-        </>
-      ) : (
-        <form onSubmit={handleSubmit(submit)}>
-          <HeaderBlock
-            text={
-              <>
-                <Description />
-                <strong>Enter your password to show your recovery phrase</strong>.
-              </>
-            }
-          />
-          <Spacer small />
-          <FormField error={errors.password} prefix={<KeyIcon />}>
-            <input
-              {...register("password")}
-              type="password"
-              placeholder="Enter password"
-              spellCheck={false}
-              data-lpignore
-              autoFocus
-            />
-          </FormField>
-          <Spacer />
-          <div className="buttons">
-            <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-              View Recovery Phrase
-            </SimpleButton>
-          </div>
-        </form>
-      )}
-    </div>
-  )
-}
-
-const StyledMnemonic = styled(Mnemonic)`
-  .header-block,
-  .header-block p {
-    font-style: normal;
-    font-weight: 400;
-    font-size: 1.8rem;
-    line-height: 2.2rem;
-
-    a,
-    a:link,
-    a:visited,
-    a:hover {
-      color: var(--color-foreground);
-      opacity: 1;
-    }
-
-    strong {
-      font-style: normal;
-      font-weight: 400;
-      font-size: 1.8rem;
-      line-height: 2.2rem;
-      color: var(--color-foreground);
-    }
+  .content {
+    filter: blur(10px);
+    cursor: pointer;
   }
 
-  .toggle {
-    flex-direction: row;
-    justify-content: flex-end;
+  &:after {
+    content: "☝";
+    position: absolute;
+    top: calc(50% - 28px); // accounts for height of icon itself
+    left: 50%;
+    font-size: var(--font-size-large);
+    filter: saturate(0);
+    opacity: 0.6;
+    cursor: pointer;
   }
 
-  .secret {
-    textarea {
-      filter: blur(10px);
-      cursor: pointer;
-    }
-
+  &:hover,
+  &:focus-within {
     &:after {
-      content: "☝";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: var(--font-size-large);
-      filter: saturate(0);
-      opacity: 0.5;
-      cursor: pointer;
+      display: none;
     }
-
-    &:hover,
-    &:focus-within {
-      &:after {
-        display: none;
-      }
-      textarea {
-        filter: blur(0);
-        cursor: auto;
-      }
+    .content {
+      filter: blur(0);
+      cursor: auto;
     }
-  }
-
-  .password {
-    .message {
-      color: var(--color-status-error);
-    }
-  }
-
-  .buttons {
-    display: flex;
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  form svg {
-    opacity: 0.5;
-  }
-
-  ${SimpleButton} {
-    width: 100%;
   }
 `
 
-export default StyledMnemonic
+type MnemonicProps = {
+  onMouseEnter?: MouseEventHandler
+  mnemonic: string
+}
+
+export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
+  const [hasCopied, setHasCopied] = useState(false)
+  const [hasHovered, setHasHovered] = useState(false)
+
+  return (
+    <>
+      <span
+        className="inline-block py-4 text-sm"
+        onClick={() => {
+          if (hasHovered && !hasCopied) {
+            window.navigator.clipboard.writeText(mnemonic)
+            setHasCopied(true)
+          }
+        }}
+      >
+        {!hasCopied && (
+          <span className={classNames(hasHovered ? "text-white" : "text-black", "cursor-pointer")}>
+            <CopyIcon className="mr-2 inline" /> <span>Copy to clipboard</span>
+          </span>
+        )}
+        {hasCopied && (
+          <span className="text-primary">
+            <CheckIcon className="mr-2 inline" />
+            Copied
+          </span>
+        )}
+      </span>
+
+      <SecretText
+        className="secret"
+        onMouseEnter={(e) => {
+          setHasHovered(true)
+          onMouseEnter && onMouseEnter(e)
+        }}
+      >
+        <div className="content flex flex-wrap">
+          {mnemonic.split(" ").map((word) => (
+            <Pill muted={true} className="mr-2 mb-1" key={`mnemonic-${word}`}>
+              {word}
+            </Pill>
+          ))}
+        </div>
+      </SecretText>
+    </>
+  )
+}
