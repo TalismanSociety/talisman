@@ -35,97 +35,91 @@ export type LedgerState = {
   message: string
   ledger: LedgerEthereumApp | null
   refresh: () => void
+  disconnect: () => void
 }
 
-const useIsLedgerSupported = () => {
-  const [isSupported, setIsSupported] = useState<boolean>()
+// const useIsLedgerSupported = () => {
+//   const [isSupported, setIsSupported] = useState<boolean>()
 
-  useEffect(() => {
-    TransportWebHID.isSupported().then(setIsSupported)
-  }, [])
+//   useEffect(() => {
+//     TransportWebHID.isSupported().then(setIsSupported)
+//   }, [])
 
-  return isSupported
-}
+//   return isSupported
+// }
 
-const useLedgerUSBTransport = () => {
-  const [transport, setTransport] = useState<Transport>()
-  // const isSupported = useIsLedgerSupported()
-  // const [isConnected, setIsConnected] = useState(false)
-  const [error, setError] = useState<string>()
+// const useLedgerUSBTransport = () => {
+//   const [transport, setTransport] = useState<Transport>()
+//   // const isSupported = useIsLedgerSupported()
+//   // const [isConnected, setIsConnected] = useState(false)
+//   const [error, setError] = useState<string>()
 
-  // ensure there is only 1 connection attempt or subsequent ones will throw errors
-  const refConnecting = useRef(false)
-  //const refTransport = useRef<Transport>();
+//   // ensure there is only 1 connection attempt or subsequent ones will throw errors
+//   const refConnecting = useRef(false)
+//   //const refTransport = useRef<Transport>();
 
-  // const disconnect = useCallback(() => {
-  //   setTransport((t) => {
-  //     console.log("disconnecting", { t })
-  //     return undefined // clear state
-  //   })
-  // }, [])
+//   // const disconnect = useCallback(() => {
+//   //   setTransport((t) => {
+//   //     console.log("disconnecting", { t })
+//   //     return undefined // clear state
+//   //   })
+//   // }, [])
 
-  // useEffect(() => {
-  //   return () => {
-  //     console.log("unmount - transport?.close()")
-  //     transport?.close()
-  //   }
-  // }, [])
+//   // useEffect(() => {
+//   //   return () => {
+//   //     console.log("unmount - transport?.close()")
+//   //     transport?.close()
+//   //   }
+//   // }, [])
 
-  useEffect(() => {
-    const handleDisconnect = () => {
-      setTransport(undefined)
-    }
+//   useEffect(() => {
+//     const handleDisconnect = () => {
+//       setTransport(undefined)
+//     }
 
-    // console.log("transport connected", { transport })
-    transport?.on("disconnect", handleDisconnect)
+//     // console.log("transport connected", { transport })
+//     transport?.on("disconnect", handleDisconnect)
 
-    return () => {
-      transport?.off("disconnect", handleDisconnect)
-    }
-  }, [transport])
+//     return () => {
+//       transport?.off("disconnect", handleDisconnect)
+//     }
+//   }, [transport])
 
-  const connect = useCallback(async () => {
-    if (transport || refConnecting.current) return
-    refConnecting.current = true
+//   const connect = useCallback(async () => {
+//     if (transport || refConnecting.current) return
+//     refConnecting.current = true
 
-    try {
-      assert(await TransportWebUSB.isSupported(), "Sorry, Ledger is not supported on your browser.")
+//     try {
+//       assert(await TransportWebUSB.isSupported(), "Sorry, Ledger is not supported on your browser.")
 
-      const newTransport = await TransportWebUSB.create()
-      setTransport(newTransport)
-    } catch (err) {
-      const ledgerError = err as LedgerDetailedError
-      //console.log("failed to create transport", { err })
-      // eslint-disable-next-line no-console
-      console.error(ledgerError.message, ledgerError)
-      //console.log("connect", { err })
-      if (ledgerError.statusCode === 25873) setError("Ledger App not opened 25873")
-      else if (ledgerError.statusCode === 27906) setError("Ledger App not opened 27906")
-      else if (ledgerError.statusCode === 27404) setError("Ledger App not opened 27404")
-      else setError((err as Error).message)
-    }
+//       const newTransport = await TransportWebUSB.create()
+//       setTransport(newTransport)
+//     } catch (err) {
+//       const ledgerError = err as LedgerDetailedError
+//       //console.log("failed to create transport", { err })
+//       // eslint-disable-next-line no-console
+//       console.error(ledgerError.message, ledgerError)
+//       //console.log("connect", { err })
+//       if (ledgerError.statusCode === 25873) setError("Ledger App not opened 25873")
+//       else if (ledgerError.statusCode === 27906) setError("Ledger App not opened 27906")
+//       else if (ledgerError.statusCode === 27404) setError("Ledger App not opened 27404")
+//       else setError((err as Error).message)
+//     }
 
-    refConnecting.current = false
-  }, [transport])
+//     refConnecting.current = false
+//   }, [transport])
 
-  const ledger = useMemo(() => (transport ? new LedgerEthereumApp(transport) : null), [transport])
+//   const ledger = useMemo(() => (transport ? new LedgerEthereumApp(transport) : null), [transport])
 
-  return { ledger, transport, connect, error }
-}
+//   return { ledger, transport, connect, error }
+// }
 
 export const useLedgerEthereum = (): LedgerState => {
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
   const [ledgerError, setLedgerError] = useState<string>()
   const [isReady, setIsReady] = useState(false)
-
-  //const { ledger, transport, error: transportError, connect } = useLedgerUSBTransport()
-  const [transport, setTransport] = useState<Transport>()
   const [ledger, setLedger] = useState<LedgerEthereumApp | null>(null)
-
-  // useEffect(() => {
-  //   setLedgerError(error)
-  // }, [error])
 
   const { status, message, requiresManualRetry } = useMemo<{
     status: LedgerStatus
@@ -150,8 +144,6 @@ export const useLedgerEthereum = (): LedgerState => {
 
     return { status: "unknown", message: "", requiresManualRetry: false }
   }, [ledgerError, isLoading, isReady])
-
-  //console.log({ status, transport, ledger, transportError, ledgerError })
 
   const refConnecting = useRef(false)
 
@@ -189,7 +181,6 @@ export const useLedgerEthereum = (): LedgerState => {
       const ledgerError = err as LedgerDetailedError
       // eslint-disable-next-line no-console
       console.error(ledgerError.message, ledgerError)
-      //console.log({ err })
       if (ledgerError.name === "TransportWebUSBGestureRequired") setLedgerError(ledgerError.name)
       else if (ledgerError.name === "NetworkError") setLedgerError("NetworkError")
       else if (ledgerError.name === "NotFoundError") setLedgerError("NotFoundError")
@@ -235,6 +226,10 @@ export const useLedgerEthereum = (): LedgerState => {
     connectLedger()
   }, [connectLedger, refreshCounter])
 
+  const disconnect = useCallback(() => {
+    ledger?.transport?.close()
+  }, [ledger?.transport])
+
   return {
     isLedgerCapable: getIsLedgerCapable(),
     isLoading,
@@ -244,5 +239,6 @@ export const useLedgerEthereum = (): LedgerState => {
     message,
     ledger,
     refresh,
+    disconnect,
   }
 }

@@ -79,7 +79,7 @@ export const ContractReadWrite = () => {
   if (!isConnected) return null
 
   return (
-    <Section title="Personal Sign">
+    <Section title="Contract Read/Write">
       {contractAddress ? (
         <>
           <form className="text-md text-body-secondary space-y-4" onSubmit={handleSubmit(onSubmit)}>

@@ -2,7 +2,6 @@ import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { LedgerDetailedError, useLedgerEthereum } from "@ui/hooks/useLedgerEthereum"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import styled from "styled-components"
 import {
   LedgerConnectionStatus,
   LedgerConnectionStatusProps,
@@ -12,49 +11,7 @@ import { ethers } from "ethers"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { TypedDataUtils, SignTypedDataVersion } from "@metamask/eth-sig-util"
 import { DEBUG } from "@core/constants"
-
-const LedgerContent = styled.div`
-  .cancel-link {
-    margin-top: 0.5em;
-    font-size: var(--font-size-small);
-    color: var(--color-background-muted-2x);
-    display: block;
-    text-align: center;
-    text-decoration: underline;
-    cursor: pointer;
-  }
-`
-
-const LedgerConnectionContent = styled.div`
-  font-size: var(--font-size-small);
-  line-height: 2rem;
-  display: flex;
-  max-height: 36rem;
-
-  color: var(--color-foreground-muted);
-  .title {
-    color: var(--color-mid);
-    margin-bottom: 1.6rem;
-  }
-
-  button {
-    margin-top: 2.4rem;
-    width: 100%;
-  }
-
-  .error {
-    color: var(--color-status-error);
-  }
-
-  .warning {
-    color: var(--color-status-warning);
-  }
-
-  .ledger-connection {
-    width: 100%;
-    margin: 0;
-  }
-`
+import { Button, classNames } from "talisman-ui"
 
 // TODO rename payload type ?
 export type LedgerEthereumSignMethod =
@@ -77,6 +34,7 @@ type LedgerEthereumProps = {
   onSendToLedger?: () => void // triggered when tx is sent to the ledger
 }
 
+// TODO move this into useLedgerEthereum
 const signWithLedger = async (
   ledger: LedgerEthereumApp,
   method: LedgerEthereumSignMethod,
@@ -188,7 +146,8 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   const [isSigning, setIsSigning] = useState(false)
   const [isSigned, setIsSigned] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { ledger, refresh, status, message, isReady, requiresManualRetry } = useLedgerEthereum()
+  const { ledger, refresh, status, message, isReady, requiresManualRetry, disconnect } =
+    useLedgerEthereum()
 
   // reset
   useEffect(() => {
@@ -253,24 +212,30 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
     setAutoSend(true)
   }, [])
 
+  const handleCancelClick = useCallback(() => {
+    // disconnect() // TODO not working, need to cancel the device signing
+    onReject()
+  }, [onReject])
+
   return (
-    <LedgerContent>
+    <div className={classNames("flex w-full flex-col gap-6", className)}>
       {!error && (
-        <LedgerConnectionContent className={`full-width ${className}`}>
+        <>
           {isReady && !autoSend ? (
-            <LedgerConnectionStatus
-              status="ready"
-              message="Click to send request to ledger"
-              requiresManualRetry
-              refresh={handleSendClick}
-            />
+            <Button className="w-full" primary onClick={handleSendClick}>
+              Send to Ledger
+            </Button>
           ) : (
             <LedgerConnectionStatus {...{ ...connectionStatus }} refresh={_onRefresh} />
           )}
-        </LedgerConnectionContent>
+        </>
       )}
+      <Button className="w-full" onClick={handleCancelClick}>
+        Cancel
+      </Button>
       {error && (
         <Drawer anchor="bottom" open={true} parent={parent}>
+          {/* Shouldn't be a LedgerSigningStatus, just an error message */}
           <LedgerSigningStatus
             message={error ? error : ""}
             status={error ? "error" : isSigning ? "signing" : undefined}
@@ -278,10 +243,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
           />
         </Drawer>
       )}
-      <span className="cancel-link" onClick={onReject}>
-        Cancel transaction
-      </span>
-    </LedgerContent>
+    </div>
   )
 }
 

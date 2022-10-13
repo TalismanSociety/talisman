@@ -4,8 +4,7 @@ import { LedgerState } from "@ui/hooks/useLedger"
 import { useEffect, useState } from "react"
 import styled from "styled-components"
 
-const Panel = styled.p<{ status?: string; onClick?: () => void; hide?: boolean }>`
-  margin: 2.4rem 0;
+const Panel = styled.div<{ status?: string; onClick?: () => void; hide?: boolean }>`
   background: var(--color-background-muted);
   padding: 1.6rem;
   border-radius: var(--border-radius);
@@ -26,6 +25,8 @@ const Panel = styled.p<{ status?: string; onClick?: () => void; hide?: boolean }
   span {
     line-height: 2rem !important;
   }
+  height: 5.6rem;
+  width: 100%;
 
   ${(props) =>
     props.onClick
@@ -93,7 +94,7 @@ export const LedgerConnectionStatus = ({
       {status === "ready" && <CheckCircleIcon />}
       {status === "warning" && <XCircleIcon />}
       {status === "error" && <XCircleIcon />}
-      {status === "connecting" && <LoaderIcon data-spin />}
+      {status === "connecting" && <LoaderIcon className="animate-spin-slow text-white" />}
       <span>{wrapStrong(message)}</span>
     </Panel>
   )
