@@ -5,7 +5,6 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChain from "@ui/hooks/useChain"
 import { useLedger } from "@ui/hooks/useLedger"
-import useToken from "@ui/hooks/useToken"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 
@@ -17,7 +16,6 @@ const useLedgerChainAccounts = (
 ) => {
   const walletAccounts = useAccounts()
   const chain = useChain(chainId)
-  const token = useToken(chain?.nativeToken?.id)
 
   const [ledgerAccounts, setLedgerAccounts] = useState<(LedgerSubstrateAccount | undefined)[]>([
     ...Array(itemsPerPage),
