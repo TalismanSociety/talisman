@@ -12,9 +12,12 @@ import { BehaviorSubject } from "rxjs"
 
 const INITIAL_VALUE = new Balances({})
 
+const DEFAULT_BY_CHAIN = {}
+const DEFAULT_By_EVM_NETWORK = { addresses: [], evmNetworks: [] }
+
 export const useBalancesByParams = (
-  addressesByChain: AddressesByChain = {},
-  addressesByEvmNetwork: AddressesByEvmNetwork = { addresses: [], evmNetworks: [] }
+  addressesByChain: AddressesByChain = DEFAULT_BY_CHAIN,
+  addressesByEvmNetwork: AddressesByEvmNetwork = DEFAULT_By_EVM_NETWORK
 ) => {
   const _chains = useChains()
   const _evmNetworks = useEvmNetworks()

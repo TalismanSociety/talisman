@@ -1,405 +1,174 @@
-import { Balance, BalanceFormatter } from "@core/domains/balances/types"
+import { AccountAddressType } from "@core/domains/accounts/types"
+import { AddressesByEvmNetwork } from "@core/domains/balances/types"
 import {
-  getEthDerivationPath,
   getEthLedgerDerivationPath,
   LedgerEthDerivationPathType,
 } from "@core/domains/ethereum/helpers"
-import { Token } from "@core/domains/tokens/types"
-import { Checkbox } from "@talisman/components/Checkbox"
-import { Skeleton } from "@talisman/components/Skeleton"
-import { CheckCircleIcon } from "@talisman/theme/icons"
-import { classNames } from "@talisman/util/classNames"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { api } from "@ui/api"
 import { LedgerAccountDefEthereum } from "@ui/apps/dashboard/routes/AccountAddLedger/context"
 import useAccounts from "@ui/hooks/useAccounts"
-import useChain from "@ui/hooks/useChain"
-import { LedgerStatus, useLedger } from "@ui/hooks/useLedger"
+import useBalancesByParams from "@ui/hooks/useBalancesByParams"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useLedgerEthereum } from "@ui/hooks/useLedgerEthereum"
-import useToken from "@ui/hooks/useToken"
-import useTokens from "@ui/hooks/useTokens"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import styled from "styled-components"
+import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 
-import Fiat from "../Asset/Fiat"
-import { Tokens } from "../Asset/Tokens"
-import { Address } from "./Address"
-import Avatar from "./Avatar"
-import { LedgerConnectionStatus } from "./LedgerConnectionStatus"
-
-const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
-
-  .picker-button {
-    background: none;
-    border: none;
-    outline: none;
-    padding: 1.6rem;
-    background: var(--color-background-muted);
-    border-radius: var(--border-radius-tiny);
-    max-width: 100%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    text-align: left;
-    gap: 1.6rem;
-    color: var(--color-foreground-muted);
-    :not(:disabled) {
-      cursor: pointer;
-
-      :hover {
-        background: var(--color-background-muted-3x);
-      }
-    }
-    :disabled {
-      opacity: 0.55;
-    }
-
-    .vflex {
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-      line-height: 1.6rem;
-
-      div,
-      span {
-        font-size: 1.6rem;
-        line-height: 1.6rem;
-        //width: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .caption {
-        font-size: 1.4rem;
-        line-height: 1.4rem;
-        color: var(--color-mid);
-      }
-    }
-
-    .grow {
-      overflow: hidden;
-    }
-
-    .right {
-      text-align: right;
-    }
-
-    input[type="checkbox"] + span span {
-      margin-right: 0;
-    }
-  }
-`
-
-const LoadNext = styled.button`
-  background: none;
-  border: none;
-  outline: none;
-  padding: 1.6rem;
-  //background: var(--color-background-muted);
-  border-radius: var(--border-radius-tiny);
-  cursor: pointer;
-  //color: var(--color-mid);
-
-  background: var(--color-background-muted-3x);
-  color: var(--color-primary);
-  opacity: 0.6;
-  :hover {
-    //background: var(--color-background-muted-3x);
-    //color: var(--color-foreground-muted-2x);
-    opacity: 1;
-  }
-`
-
-type LedgerEthereumAccountInfo = LedgerAccountDefEthereum & {
-  balance: BalanceFormatter
-  empty?: boolean
-  connected?: boolean
-  selected?: boolean
-}
+const BALANCE_CHECK_EVM_NETWORK_IDS = [1284, 1285, 592, 1]
 
 const useLedgerEthereumAccounts = (
+  name: string,
   derivationPathType: LedgerEthDerivationPathType,
-  selectedAccounts: LedgerAccountDefEthereum[]
+  selectedAccounts: LedgerAccountDefEthereum[],
+  pageIndex: number,
+  itemsPerPage: number
 ) => {
   const walletAccounts = useAccounts()
-  const tokens = useTokens()
-  const token = useToken(
-    tokens?.find((t) => t.type === "native" && Number(t.evmNetwork?.id) === 1284)?.id
-  )
-
-  const [ledgerAccounts, setLedgerAccounts] = useState<LedgerEthereumAccountInfo[]>([])
-  const [loading, setLoading] = useState(false)
+  const [derivedAccounts, setDerivedAccounts] = useState<(LedgerEthereumAccount | undefined)[]>([
+    ...Array(itemsPerPage),
+  ])
   const [error, setError] = useState<string>()
 
-  // reset if derivation path is changed
-  useEffect(() => {
-    setLedgerAccounts([])
-  }, [derivationPathType])
+  const { isReady, ledger } = useLedgerEthereum()
 
-  const { isReady, ledger, status, message, requiresManualRetry, refresh } = useLedgerEthereum()
+  const loadPage = useCallback(async () => {
+    if (!ledger || !isReady) return
 
-  const loadNextAccount = useCallback(async () => {
-    if (!ledger || !token || !isReady) return
-
-    setLoading(true)
     setError(undefined)
 
+    const skip = pageIndex * itemsPerPage
+
     try {
-      // required for formating balances correctly
-      const tokens = { [token.id]: token }
+      const newAccounts: (LedgerEthereumAccount | undefined)[] = [...Array(itemsPerPage)]
 
-      const accountIndex = ledgerAccounts.length
+      for (let i = 0; i < itemsPerPage; i++) {
+        const accountIndex = skip + i
+        const path = getEthLedgerDerivationPath(derivationPathType, accountIndex)
 
-      const path = getEthLedgerDerivationPath(derivationPathType, accountIndex)
+        const { address } = await ledger.getAddress(path)
 
-      const { address } = await ledger.getAddress(path)
-
-      const balance = new Balance(
-        await api.getBalance({
+        newAccounts[i] = {
+          accountIndex,
+          name: `${name.trim()} ${accountIndex + 1}`,
+          path,
           address,
-          evmNetworkId: 1284,
-          tokenId: token.id,
-        }),
-        { tokens }
-      )
+        } as LedgerEthereumAccount
 
-      if (!balance) throw new Error("Failed to load account balance.")
-
-      const newAccount: LedgerEthereumAccountInfo = {
-        address,
-        name: `Ledger Ethereum ${accountIndex + 1}`,
-        path,
-        balance: balance.total,
-        empty: balance.total.planck === BigInt(0),
+        setDerivedAccounts((prev) => [...newAccounts])
       }
-      setLedgerAccounts((prev) => [...prev, newAccount])
     } catch (err) {
       setError((err as Error).message)
     }
-    setLoading(false)
-  }, [ledger, token, isReady, ledgerAccounts.length, derivationPathType])
+  }, [derivationPathType, isReady, itemsPerPage, ledger, name, pageIndex])
+
+  const evmNetworks = useEvmNetworks()
+
+  const balanceParams: AddressesByEvmNetwork = useMemo(() => {
+    const evmNetworkIds = [1284, 1285, 592, 1]
+
+    const result = {
+      addresses: derivedAccounts
+        .filter((acc) => !!acc)
+        .map((acc) => acc?.address)
+        .filter(Boolean) as string[],
+      evmNetworks: (evmNetworks || [])
+        .filter((chain) => evmNetworkIds.includes(Number(chain.id)))
+        .map(({ id, nativeToken }) => ({ id, nativeToken: { id: nativeToken?.id as string } })),
+    }
+
+    return result
+  }, [derivedAccounts, evmNetworks])
+
+  const balances = useBalancesByParams({}, balanceParams)
 
   const accounts = useMemo(
     () =>
-      ledgerAccounts.map((la) => ({
-        ...la,
-        connected: walletAccounts?.some(
-          (wa) => convertAddress(wa.address, null) === convertAddress(la.address, null)
-        ),
-        selected: selectedAccounts.some((sa) => sa.address === la.address),
-      })),
-    [ledgerAccounts, selectedAccounts, walletAccounts]
+      derivedAccounts.map((acc) => {
+        if (!acc) return null
+
+        const existingAccount = walletAccounts?.find(
+          (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null)
+        )
+
+        const accountBalances = balances.sorted.filter(
+          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
+        )
+
+        return {
+          ...acc,
+          name: existingAccount?.name ?? acc.name,
+          connected: !!existingAccount,
+          selected: selectedAccounts.some((sa) => sa.path === acc.path),
+          balances: accountBalances,
+          isBalanceLoading:
+            accountBalances.length < BALANCE_CHECK_EVM_NETWORK_IDS.length ||
+            accountBalances.some((b) => b.status !== "live"),
+        }
+      }),
+    [balances.sorted, derivedAccounts, selectedAccounts, walletAccounts]
   )
 
   useEffect(() => {
-    if (error) return
-    const lastAccount = accounts[accounts.length - 1]
-    if (!lastAccount?.empty || lastAccount?.connected) loadNextAccount()
-  }, [error, accounts, loadNextAccount])
-
-  const canLoadMore = useMemo(
-    () => !error && ledgerAccounts[ledgerAccounts.length - 1]?.empty && !loading,
-    [error, ledgerAccounts, loading]
-  )
+    // refresh on every page change
+    loadPage()
+  }, [loadPage])
 
   return {
-    token,
-    ledger,
     accounts,
-    loading,
     error,
-    canLoadMore,
-    loadNextAccount,
-    status,
-    message,
-    requiresManualRetry,
-    refresh,
   }
 }
 
-type AccountButtonProps = LedgerEthereumAccountInfo & {
-  token: Token
-  onClick: () => void
-}
-
-const ConnectedIcon = styled(CheckCircleIcon)`
-  color: var(--color-primary);
-  width: 2.4rem;
-  height: 2.4rem;
-`
-
-const Center = styled.div`
-  min-width: 2.4rem;
-  text-align: center;
-`
-
-const AccountButton: FC<AccountButtonProps> = ({
-  token,
-  name,
-  address,
-  balance,
-  connected,
-  selected,
-  onClick,
-}) => {
-  return (
-    <button
-      type="button"
-      className={classNames("picker-button")}
-      disabled={connected}
-      onClick={onClick}
-    >
-      <Avatar address={address} />
-      <div className="vflex grow">
-        <div>{name}</div>
-        <div className="caption">
-          <Address address={address} />
-        </div>
-      </div>
-      <div className="vflex right">
-        <div>
-          <Tokens amount={balance.tokens} symbol={token.symbol} decimals={token.decimals} />
-        </div>
-        <div className="caption">
-          <Fiat amount={balance.fiat("usd")} currency="usd" />
-        </div>
-      </div>
-      <Center>{connected ? <ConnectedIcon /> : <Checkbox checked={selected} disabled />}</Center>
-    </button>
-  )
-}
-
-const AccountButtonShimmer: FC = () => {
-  return (
-    <button type="button" className={classNames("picker-button")} disabled>
-      <Skeleton
-        baseColor="#5A5A5A"
-        highlightColor="#A5A5A5"
-        width={"3.2rem"}
-        height={"3.2rem"}
-        borderRadius={"50%"}
-      />
-      <div className="vflex grow">
-        <div>
-          <Skeleton
-            baseColor="#5A5A5A"
-            highlightColor="#A5A5A5"
-            width={"13rem"}
-            height={"1.6rem"}
-          />
-        </div>
-        <div className="caption">
-          <Skeleton
-            baseColor="#5A5A5A"
-            highlightColor="#A5A5A5"
-            width={"6.8rem"}
-            height={"1.4rem"}
-          />
-        </div>
-      </div>
-      <div className="vflex right">
-        <div>
-          <Skeleton
-            baseColor="#5A5A5A"
-            highlightColor="#A5A5A5"
-            width={"13rem"}
-            height={"1.6rem"}
-          />
-        </div>
-        <div className="caption">
-          <Skeleton
-            baseColor="#5A5A5A"
-            highlightColor="#A5A5A5"
-            width={"6.8rem"}
-            height={"1.4rem"}
-          />
-        </div>
-      </div>
-      <Skeleton
-        style={{ paddingRight: "0.8rem" }}
-        baseColor="#5A5A5A"
-        highlightColor="#A5A5A5"
-        width={"2rem"}
-        height={"1.8rem"}
-      />
-    </button>
-  )
-}
-
 type LedgerEthereumAccountPickerProps = {
+  name: string
   derivationPathType: LedgerEthDerivationPathType
-  defaultAccounts?: LedgerAccountDefEthereum[]
   onChange?: (accounts: LedgerAccountDefEthereum[]) => void
 }
 
+type LedgerEthereumAccount = DerivedAccountBase & LedgerAccountDefEthereum
+
 export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> = ({
+  name,
   derivationPathType,
-  defaultAccounts = [],
   onChange,
 }) => {
-  const [selectedAccounts, setSelectedAccounts] =
-    useState<LedgerAccountDefEthereum[]>(defaultAccounts)
-  const {
-    token,
-    accounts,
-    loading,
-    error,
-    canLoadMore,
-    loadNextAccount,
-    status,
-    message,
-    requiresManualRetry,
-    refresh,
-  } = useLedgerEthereumAccounts(derivationPathType, selectedAccounts)
-
-  const handleToggleAccount = useCallback(
-    (acc: LedgerAccountDefEthereum) => () => {
-      const { name, address, path } = acc
-      setSelectedAccounts(
-        (prev) =>
-          prev.some((sa) => sa.address === address)
-            ? prev.filter((sa) => sa.address !== address)
-            : prev.concat({ address, name, path }) //TODO remove genhash
-      )
-    },
-    []
+  const itemsPerPage = 5
+  const [pageIndex, setPageIndex] = useState(0)
+  const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefEthereum[]>([])
+  const { accounts, error } = useLedgerEthereumAccounts(
+    name,
+    derivationPathType,
+    selectedAccounts,
+    pageIndex,
+    itemsPerPage
   )
+
+  const handleToggleAccount = useCallback((acc: DerivedAccountBase) => {
+    const { name, address, path } = acc as LedgerEthereumAccount
+    setSelectedAccounts((prev) =>
+      prev.some((pa) => pa.path === path)
+        ? prev.filter((pa) => pa.path !== path)
+        : prev.concat({ name, address, path })
+    )
+  }, [])
 
   useEffect(() => {
     if (onChange) onChange(selectedAccounts)
   }, [onChange, selectedAccounts])
 
-  const statusProps = useMemo(() => {
-    if (["warning", "error"].includes(status))
-      return { status, message, requiresManualRetry, refresh }
-    if (error)
-      return {
-        status: "error" as LedgerStatus,
-        message: error,
-        requiresManualRetry: false,
-        refresh,
-      }
-
-    return null
-  }, [error, message, refresh, requiresManualRetry, status])
+  const handlePageFirst = useCallback(() => setPageIndex(0), [])
+  const handlePagePrev = useCallback(() => setPageIndex((prev) => prev - 1), [])
+  const handlePageNext = useCallback(() => setPageIndex((prev) => prev + 1), [])
 
   return (
-    <Container>
-      {statusProps && <LedgerConnectionStatus {...statusProps} />}
-      {accounts.map((account) => (
-        <AccountButton
-          token={token as Token}
-          key={account.address}
-          {...account}
-          onClick={handleToggleAccount(account)}
-        />
-      ))}
-      {loading && <AccountButtonShimmer />}
-      {canLoadMore && <LoadNext onClick={loadNextAccount}>Load next</LoadNext>}
-    </Container>
+    <>
+      <DerivedAccountPickerBase
+        accounts={accounts}
+        onAccountClick={handleToggleAccount}
+        onPagerFirstClick={handlePageFirst}
+        onPagerPrevClick={handlePagePrev}
+        onPagerNextClick={handlePageNext}
+      />
+      <p className="text-alert-error">{error}</p>
+    </>
   )
 }

@@ -3,17 +3,14 @@ import {
   getEthLedgerDerivationPath,
   LedgerEthDerivationPathType,
 } from "@core/domains/ethereum/helpers"
-import { AddressesByChain } from "@core/types/base"
 import { Checkbox } from "@talisman/components/Checkbox"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { convertAddress } from "@talisman/util/convertAddress"
-import { api } from "@ui/api"
 import { LedgerAccountDefEthereum } from "@ui/apps/dashboard/routes/AccountAddLedger/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
-import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useLedgerEthereum } from "@ui/hooks/useLedgerEthereum"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -288,7 +285,7 @@ const useLedgerEthereumAccounts = (
 
         newAccounts[i] = {
           accountIndex,
-          name: `${name}${accountIndex + 1}`,
+          name: `${name.trim()} ${accountIndex + 1}`,
           path,
           address,
         } as LedgerEthereumAccountInfo

@@ -7,7 +7,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { LedgerAccountPicker } from "@ui/domains/Account/LedgerAccountPicker"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
-import { LedgerEthereumAccountPicker2 } from "@ui/domains/Account/LedgerEthereumAccountPicker2"
+import { LedgerSubstrateAccountPicker } from "@ui/domains/Account/LedgerSubstrateAccountPicker"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Navigate, useNavigate } from "react-router-dom"
@@ -92,7 +92,7 @@ const H1 = styled.h1`
 
 const Text = styled.p`
   color: var(--color-mid);
-  margin: 3rem 0 2.4rem 0;
+  margin: 1em 0 2.4rem 0;
 `
 
 type FormData = {
@@ -187,18 +187,26 @@ export const AddLedgerSelectAccount = () => {
                   onChange={setDerivationPath}
                 />
               </div>
+              <div className="h-4" />
             </>
           )}
           <Text>
             Please select which account(s) you'd like to import.
-            <br />
-            Amounts displayed for each account are the sum of GLMR, MOVR, ASTR and ETH.
+            {data.type === "ethereum" && (
+              <>
+                <br />
+                Amounts displayed for each account are the sum of GLMR, MOVR, ASTR and ETH.
+              </>
+            )}
           </Text>
           {data.type === "sr25519" && (
-            <LedgerAccountPicker chainId={data.chainId as string} onChange={handleAccountsChange} />
+            <LedgerSubstrateAccountPicker
+              chainId={data.chainId as string}
+              onChange={handleAccountsChange}
+            />
           )}
           {data.type === "ethereum" && (
-            <LedgerEthereumAccountPicker2
+            <LedgerEthereumAccountPicker
               name="Ledger Ethereum"
               derivationPathType={derivationPath}
               onChange={handleAccountsChange}
