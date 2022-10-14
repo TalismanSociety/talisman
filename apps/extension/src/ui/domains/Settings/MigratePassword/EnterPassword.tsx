@@ -1,17 +1,13 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FormField } from "@talisman/components/Field/FormField"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { api } from "@ui/api"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
-import styled from "styled-components"
-import { useMigratePassword } from "./context"
+import { Button } from "talisman-ui"
 import * as yup from "yup"
+import { useMigratePassword } from "./context"
 
-const FullWidthButton = styled(SimpleButton)`
-  width: 100%;
-`
 type FormData = {
   password: string
 }
@@ -81,15 +77,16 @@ export const EnterPasswordForm = () => {
             autoFocus
           />
         </FormField>
-        <FullWidthButton
+        <Button
           className="mt-12"
           type="submit"
           primary
+          fullWidth
           disabled={!isValid}
           processing={isSubmitting}
         >
           Continue
-        </FullWidthButton>
+        </Button>
       </form>
     </ModalDialog>
   )

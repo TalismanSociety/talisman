@@ -1,13 +1,14 @@
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { SimpleButton } from "@talisman/components/SimpleButton"
+import { Button } from "talisman-ui"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { Mnemonic } from "@ui/domains/Account/Mnemonic"
 import { useMigratePassword } from "./context"
 import { useState } from "react"
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 const ShowMnemonic = () => {
   const [hasHovered, setHasHovered] = useState(false)
-  const { setHasBackedUpMnemonic, mnemonic } = useMigratePassword()
+  const { setMnemonicBackupConfirmed, mnemonic } = useMigratePassword()
 
   if (!mnemonic) return null
 
@@ -25,14 +26,14 @@ const ShowMnemonic = () => {
       <Mnemonic mnemonic={mnemonic} onMouseEnter={() => setHasHovered(true)} />
 
       <div className="mt-20 flex justify-end">
-        <SimpleButton
+        <Button
           primary={hasHovered}
-          inverted={!hasHovered}
-          onClick={() => setHasBackedUpMnemonic(true)}
+          onClick={setMnemonicBackupConfirmed}
           disabled={!hasHovered}
+          icon={ArrowRightIcon}
         >
-          I've backed it up <ArrowRightIcon />
-        </SimpleButton>
+          I've backed it up
+        </Button>
       </div>
     </ModalDialog>
   )
@@ -40,8 +41,7 @@ const ShowMnemonic = () => {
 
 export const BackUpMnemonicDialog = () => {
   const [showMnemonic, setShowMnemonic] = useState<boolean>(false)
-  const { setHasBackedUpMnemonic } = useMigratePassword()
-
+  const { setMnemonicBackupConfirmed } = useMigratePassword()
   if (showMnemonic) return <ShowMnemonic />
   return (
     <ModalDialog title="Don't lose access to your wallet">
@@ -55,12 +55,12 @@ export const BackUpMnemonicDialog = () => {
         in a secure location
       </p>
       <div className="mt-20 flex justify-between">
-        <SimpleButton className="mr-4" onClick={() => setHasBackedUpMnemonic(true)}>
+        <Button className="mr-4 px-4" onClick={setMnemonicBackupConfirmed} fullWidth>
           I've already backed up
-        </SimpleButton>
-        <SimpleButton onClick={() => setShowMnemonic(true)} primary>
+        </Button>
+        <Button onClick={() => setShowMnemonic(true)} primary fullWidth>
           Backup now
-        </SimpleButton>
+        </Button>
       </div>
     </ModalDialog>
   )

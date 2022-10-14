@@ -4,6 +4,7 @@ import styled from "styled-components"
 import { BackUpMnemonicDialog } from "./BackUpMnemonicDialog"
 import { EnterPasswordForm } from "./EnterPassword"
 import { MigratePasswordSuccess } from "./Success"
+import { MigratePasswordError } from "./Error"
 import { NewPasswordForm } from "./NewPasswordForm"
 import { statusOptions } from "@talisman/hooks/useStatus"
 import StatusIcon from "@talisman/components/StatusIcon"
@@ -30,6 +31,7 @@ const MigratePasswordModalContent = () => {
       </ModalDialog>
     )
   if (status === statusOptions.SUCCESS) return <MigratePasswordSuccess />
+  if (status === statusOptions.ERROR) return <MigratePasswordError />
 
   if (!hasPassword) return <EnterPasswordForm />
   if (!hasBackedUpMnemonic) return <BackUpMnemonicDialog />
@@ -41,7 +43,7 @@ const MigratePasswordModalContent = () => {
 
 export const MigratePasswordModal = ({ open, onClose }: MigratePasswordModalProps) => (
   <Modal open={open} onClose={onClose}>
-    <MigratePasswordProvider>
+    <MigratePasswordProvider onComplete={onClose}>
       <MigratePasswordModalContent />
     </MigratePasswordProvider>
   </Modal>
