@@ -6,6 +6,7 @@ import ledgerNetworks from "@core/util/ledgerNetworks"
 import { formatLedgerErrorMessage } from "@talisman/util/formatLedgerErrorMessage"
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
 import { useSetInterval } from "./useSetInterval"
+import { DEBUG } from "@core/constants"
 
 export type LedgerStatus = "ready" | "warning" | "error" | "connecting" | "unknown"
 
@@ -47,7 +48,15 @@ export const useLedger = (genesis?: string | null): LedgerState => {
       return new Ledger("webusb", network)
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error(err)
+      DEBUG && console.error("ledger " + (err as Error).message, err)
+
+      if (err instanceof DOMException) {
+        if (err.name === "SecurityError")
+          setLedgerError("Failed to connect USB. Restart your browser and retry.")
+        else setLedgerError("Unknown error, cannot connect to Ledger")
+        return null
+      }
+
       setLedgerError((err as Error).message)
       return null
     }
@@ -95,7 +104,15 @@ export const useLedger = (genesis?: string | null): LedgerState => {
         setIsReady(true)
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error(err)
+        DEBUG && console.error("connectLedger " + (err as Error).message, { err })
+
+        if (err instanceof DOMException) {
+          if (err.name === "SecurityError")
+            setLedgerError("Failed to connect USB. Restart your browser and retry.")
+          else setLedgerError("Unknown error, cannot connect to Ledger")
+          return
+        }
+
         setLedgerError((err as Error).message)
       }
 

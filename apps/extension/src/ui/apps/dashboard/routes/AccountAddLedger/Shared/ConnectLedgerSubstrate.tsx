@@ -8,9 +8,11 @@ import { useEffect } from "react"
 export const ConnectLedgerSubstrate = ({
   chainId,
   onReadyChanged,
+  className,
 }: {
   chainId: string
   onReadyChanged?: (ready: boolean) => void
+  className?: string
 }) => {
   const chain = useChain(chainId)
   const token = useToken(chain?.nativeToken?.id)
@@ -25,7 +27,7 @@ export const ConnectLedgerSubstrate = ({
   }, [ledger.isReady, onReadyChanged])
 
   return (
-    <div>
+    <div className={className}>
       <div className="text-body-secondary m-0">
         Connect and unlock your Ledger, then open the{" "}
         <span className="text-body">

@@ -237,6 +237,8 @@ type AccountButtonProps = DerivedAccountBase & {
 
 type DerivedAccountPickerBaseProps = {
   accounts: (DerivedAccountBase | null)[]
+  canPageBack?: boolean
+  disablePaging?: boolean
   onPagerFirstClick?: () => void
   onPagerPrevClick?: () => void
   onPagerNextClick?: () => void
@@ -245,6 +247,8 @@ type DerivedAccountPickerBaseProps = {
 
 export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
   accounts = [],
+  disablePaging,
+  canPageBack,
   onPagerFirstClick,
   onPagerPrevClick,
   onPagerNextClick,
@@ -256,8 +260,6 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
     },
     [onAccountClick]
   )
-
-  const isFirstPage = useMemo(() => accounts?.[0]?.accountIndex === 0, [accounts])
 
   return (
     <Container>
@@ -275,9 +277,19 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
         )}
       </div>
       <Pager>
-        {!isFirstPage && <PagerButton onClick={onPagerFirstClick}>&lt;&lt;</PagerButton>}
-        {!isFirstPage && <PagerButton onClick={onPagerPrevClick}>&lt;</PagerButton>}
-        <PagerButton onClick={onPagerNextClick}>&gt;</PagerButton>
+        {canPageBack && (
+          <PagerButton disabled={disablePaging} onClick={onPagerFirstClick}>
+            &lt;&lt;
+          </PagerButton>
+        )}
+        {canPageBack && (
+          <PagerButton disabled={disablePaging} onClick={onPagerPrevClick}>
+            &lt;
+          </PagerButton>
+        )}
+        <PagerButton disabled={disablePaging} onClick={onPagerNextClick}>
+          &gt;
+        </PagerButton>
       </Pager>
     </Container>
   )

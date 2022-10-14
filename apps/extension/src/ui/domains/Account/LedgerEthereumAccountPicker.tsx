@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import { AccountAddressType } from "@core/domains/accounts/types"
 import { AddressesByEvmNetwork } from "@core/domains/balances/types"
 import {
@@ -11,7 +12,9 @@ import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useLedgerEthereum } from "@ui/hooks/useLedgerEthereum"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { classNames } from "talisman-ui"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
+import { LedgerConnectionStatus } from "./LedgerConnectionStatus"
 
 const BALANCE_CHECK_EVM_NETWORK_IDS = [1284, 1285, 592, 1]
 
@@ -26,15 +29,16 @@ const useLedgerEthereumAccounts = (
   const [derivedAccounts, setDerivedAccounts] = useState<(LedgerEthereumAccount | undefined)[]>([
     ...Array(itemsPerPage),
   ])
+  const [isBusy, setIsBusy] = useState<boolean>()
   const [error, setError] = useState<string>()
 
-  const { isReady, ledger } = useLedgerEthereum()
+  const { isReady, ledger, ...connectionStatus } = useLedgerEthereum()
 
   const loadPage = useCallback(async () => {
     if (!ledger || !isReady) return
 
     setError(undefined)
-
+    setIsBusy(true)
     const skip = pageIndex * itemsPerPage
 
     try {
@@ -56,8 +60,15 @@ const useLedgerEthereumAccounts = (
         setDerivedAccounts((prev) => [...newAccounts])
       }
     } catch (err) {
-      setError((err as Error).message)
+      // eslint-disable-next-line no-console
+      DEBUG && console.error((err as Error).message, err)
+      if ((err as Error).message?.toLowerCase().includes("busy")) setError("Ledger is busy")
+      else if ((err as Error).message?.toLowerCase().includes("disconnected"))
+        setError("Ledger is disconnected")
+      else if ((err as any).statusCode === 27404) setError("Ledger is locked")
+      else setError("Failed to connect to Ledger")
     }
+    setIsBusy(false)
   }, [derivationPathType, isReady, itemsPerPage, ledger, name, pageIndex])
 
   const evmNetworks = useEvmNetworks()
@@ -114,7 +125,9 @@ const useLedgerEthereumAccounts = (
 
   return {
     accounts,
+    isBusy,
     error,
+    connectionStatus,
   }
 }
 
@@ -134,7 +147,7 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefEthereum[]>([])
-  const { accounts, error } = useLedgerEthereumAccounts(
+  const { accounts, error, isBusy } = useLedgerEthereumAccounts(
     name,
     derivationPathType,
     selectedAccounts,
@@ -163,12 +176,14 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
     <>
       <DerivedAccountPickerBase
         accounts={accounts}
+        canPageBack={pageIndex > 0}
+        disablePaging={isBusy}
         onAccountClick={handleToggleAccount}
         onPagerFirstClick={handlePageFirst}
         onPagerPrevClick={handlePagePrev}
         onPagerNextClick={handlePageNext}
       />
-      <p className="text-alert-error">{error}</p>
+      <p className="text-alert-error"> {error} </p>
     </>
   )
 }

@@ -7,12 +7,9 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { classNames } from "@talisman/util/classNames"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
-import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
 import Asset from "@ui/domains/Asset"
 import useChain from "@ui/hooks/useChain"
-import { useLedger } from "@ui/hooks/useLedger"
 import { useLedgerChains } from "@ui/hooks/useLedgerChains"
-import useToken from "@ui/hooks/useToken"
 import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
@@ -138,7 +135,6 @@ export const AddLedgerSelectNetwork = () => {
     handleSubmit,
     watch,
     setValue,
-    resetField,
     formState: { isValid, isSubmitting, errors },
   } = useForm<FormData>({
     mode: "onChange",
@@ -147,9 +143,6 @@ export const AddLedgerSelectNetwork = () => {
   })
 
   const [accountType, chainId] = watch(["type", "chainId"])
-  // const chain = useChain(chainId)
-  // const token = useToken(chain?.nativeToken?.id)
-  // const ledger = useLedger(accountType, chain?.genesisHash)
 
   const submit = useCallback(
     async ({ type, chainId }: FormData) => {
@@ -188,7 +181,6 @@ export const AddLedgerSelectNetwork = () => {
           />
           <Spacer small />
           <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
-          <Spacer />
           {accountType === "sr25519" && (
             <>
               <H2>Step 1</H2>
@@ -204,36 +196,33 @@ export const AddLedgerSelectNetwork = () => {
               <Text>Please note: a Ledger account can only be used on a single network.</Text>
             </>
           )}
-          <div className={classNames("step2", showStep2 && "fadeIn")}>
+          <div className={classNames(showStep2 ? "visible" : "invisible")}>
             {accountType === "sr25519" && <H2>Step 2</H2>}
             {accountType === "sr25519" && (
-              <ConnectLedgerSubstrate onReadyChanged={setIsLedgerReady} chainId={chainId} />
+              <ConnectLedgerSubstrate
+                className="min-h-[11rem]"
+                onReadyChanged={setIsLedgerReady}
+                chainId={chainId}
+              />
             )}
             {accountType === "ethereum" && (
-              <ConnectLedgerEthereum onReadyChanged={setIsLedgerReady} />
+              <ConnectLedgerEthereum className="mt-14" onReadyChanged={setIsLedgerReady} />
             )}
-            {/* <Text>
-              Connect and unlock your Ledger, then open the{" "}
-              <Highlight>
-                {chain?.chainName} {token?.symbol ? `(${token.symbol})` : null}
-              </Highlight>{" "}
-              app on your Ledger.
-            </Text>
-            <Spacer small />
-            <LedgerConnectionStatus {...ledger} /> */}
           </div>
           <Spacer />
         </div>
-        <div className="buttons">
-          <SimpleButton
-            type="submit"
-            primary
-            disabled={!isLedgerReady || !isValid}
-            processing={isSubmitting}
-          >
-            Continue
-          </SimpleButton>
-        </div>
+        {!!accountType && (
+          <div className="buttons">
+            <SimpleButton
+              type="submit"
+              primary
+              disabled={!isLedgerReady || !isValid}
+              processing={isSubmitting}
+            >
+              Continue
+            </SimpleButton>
+          </div>
+        )}
       </form>
     </Container>
   )

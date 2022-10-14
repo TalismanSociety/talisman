@@ -7,6 +7,7 @@ import useChain from "@ui/hooks/useChain"
 import { useLedger } from "@ui/hooks/useLedger"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
+import { LedgerConnectionStatus } from "./LedgerConnectionStatus"
 
 const useLedgerChainAccounts = (
   chainId: string,
@@ -20,15 +21,15 @@ const useLedgerChainAccounts = (
   const [ledgerAccounts, setLedgerAccounts] = useState<(LedgerSubstrateAccount | undefined)[]>([
     ...Array(itemsPerPage),
   ])
-  const [loading, setLoading] = useState(false)
+  const [isBusy, setIsBusy] = useState(false)
   const [error, setError] = useState<string>()
 
-  const { isReady, ledger } = useLedger(chain?.genesisHash)
+  const { isReady, ledger, ...connectionStatus } = useLedger(chain?.genesisHash)
 
   const loadPage = useCallback(async () => {
     if (!ledger || !isReady || !chain) return
 
-    setLoading(true)
+    setIsBusy(true)
     setError(undefined)
 
     const skip = pageIndex * itemsPerPage
@@ -54,7 +55,7 @@ const useLedgerChainAccounts = (
       setError((err as Error).message)
     }
 
-    setLoading(false)
+    setIsBusy(false)
   }, [chain, isReady, itemsPerPage, ledger, pageIndex])
 
   const addressesByChain: AddressesByChain = useMemo(() => {
@@ -105,8 +106,9 @@ const useLedgerChainAccounts = (
     chain,
     ledger,
     accounts,
-    loading,
+    isBusy,
     error,
+    connectionStatus,
   }
 }
 
@@ -124,7 +126,7 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrate[]>([])
-  const { accounts, error } = useLedgerChainAccounts(
+  const { accounts, error, isBusy } = useLedgerChainAccounts(
     chainId,
     selectedAccounts,
     pageIndex,
@@ -153,12 +155,16 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
     <>
       <DerivedAccountPickerBase
         accounts={accounts}
+        disablePaging={isBusy}
+        canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}
         onPagerFirstClick={handlePageFirst}
         onPagerPrevClick={handlePagePrev}
         onPagerNextClick={handlePageNext}
       />
-      <p className="text-alert-error">{error}</p>
+      <p className="text-alert-error">
+        {error ? "An error occured, Ledger might be locked." : null}
+      </p>
     </>
   )
 }

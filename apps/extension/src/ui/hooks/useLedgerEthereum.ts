@@ -9,6 +9,7 @@ import TransportWebHID from "@ledgerhq/hw-transport-webhid"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import Transport from "@ledgerhq/hw-transport"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
+import { DEBUG } from "@core/constants"
 
 export type LedgerStatus = "ready" | "warning" | "error" | "connecting" | "unknown"
 
@@ -179,9 +180,18 @@ export const useLedgerEthereum = (): LedgerState => {
       setIsReady(true)
     } catch (err) {
       setLedger(null)
+
       const ledgerError = err as LedgerDetailedError
       // eslint-disable-next-line no-console
-      console.error(ledgerError.message, ledgerError)
+      DEBUG && console.error(ledgerError.message, { ledgerError })
+
+      if (err instanceof DOMException) {
+        if (err.name === "SecurityError")
+          setLedgerError("Failed to connect USB. Restart your browser and retry.")
+        else setLedgerError("Unknown error, cannot connect to Ledger")
+        return
+      }
+
       if (ledgerError.name === "TransportWebUSBGestureRequired") setLedgerError(ledgerError.name)
       else if (ledgerError.name === "NetworkError") setLedgerError("NetworkError")
       else if (ledgerError.name === "NotFoundError") setLedgerError("NotFoundError")

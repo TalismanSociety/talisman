@@ -201,6 +201,7 @@ export const DerivedFromMnemonicAccountPicker: FC<DerivedAccountPickerProps> = (
     <>
       <DerivedAccountPickerBase
         accounts={accounts}
+        canPageBack={pageIndex > 0}
         onAccountClick={handleToggleAccount}
         onPagerFirstClick={handlePageFirst}
         onPagerPrevClick={handlePagePrev}
