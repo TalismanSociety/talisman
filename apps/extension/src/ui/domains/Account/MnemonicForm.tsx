@@ -1,8 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import Field from "@talisman/components/Field"
 import { FormField } from "@talisman/components/Field/FormField"
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import { SimpleButton } from "@talisman/components/SimpleButton"
+
 import Spacer from "@talisman/components/Spacer"
 import { KeyIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
@@ -10,26 +9,28 @@ import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 import styled from "styled-components"
+import { Button } from "talisman-ui"
 import * as yup from "yup"
 import { Mnemonic } from "./Mnemonic"
 
 const Description = () => (
-  <>
-    <p>
+  <div className="text-body-secondary whitespace-pre-wrap font-light">
+    <p className="mt-1">
       Your recovery phrase gives you access to your wallet and funds. It can be used to restore your
       Talisman created accounts if you lose access to your device, or forget your password.
     </p>
-    <p>
+    <p className="mt-1">
       We strongly encourage you to back up your recovery phrase by writing it down and storing it in
       a secure location.{" "}
       <a
         href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/back-up-your-secret-phrase"
         target="_blank"
+        className="text-body opacity-100"
       >
-        Learn more
+        Learn more.
       </a>
     </p>
-  </>
+  </div>
 )
 
 type FormData = {
@@ -73,7 +74,7 @@ const MnemonicForm = ({ className }: any) => {
     <div className={className}>
       {mnemonic ? (
         <>
-          <HeaderBlock text={<Description />} />
+          <Description />
           <Spacer small />
           <Mnemonic mnemonic={mnemonic} />
           <Spacer />
@@ -86,14 +87,8 @@ const MnemonicForm = ({ className }: any) => {
         </>
       ) : (
         <form onSubmit={handleSubmit(submit)}>
-          <HeaderBlock
-            text={
-              <>
-                <Description />
-                <strong>Enter your password to show your recovery phrase</strong>.
-              </>
-            }
-          />
+          <Description />
+          <strong>Enter your password to show your recovery phrase</strong>.
           <Spacer small />
           <FormField error={errors.password} prefix={<KeyIcon />}>
             <input
@@ -106,11 +101,9 @@ const MnemonicForm = ({ className }: any) => {
             />
           </FormField>
           <Spacer />
-          <div className="buttons">
-            <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-              View Recovery Phrase
-            </SimpleButton>
-          </div>
+          <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>
+            View Recovery Phrase
+          </Button>
         </form>
       )}
     </div>
@@ -118,83 +111,13 @@ const MnemonicForm = ({ className }: any) => {
 }
 
 const StyledMnemonicForm = styled(MnemonicForm)`
-  .header-block,
-  .header-block p {
-    font-style: normal;
-    font-weight: 400;
-    font-size: 1.8rem;
-    line-height: 2.2rem;
-
-    a,
-    a:link,
-    a:visited,
-    a:hover {
-      color: var(--color-foreground);
-      opacity: 1;
-    }
-
-    strong {
-      font-style: normal;
-      font-weight: 400;
-      font-size: 1.8rem;
-      line-height: 2.2rem;
-      color: var(--color-foreground);
-    }
-  }
-
   .toggle {
     flex-direction: row;
     justify-content: flex-end;
   }
 
-  .secret {
-    textarea {
-      filter: blur(10px);
-      cursor: pointer;
-    }
-
-    &:after {
-      content: "☝";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: var(--font-size-large);
-      filter: saturate(0);
-      opacity: 0.5;
-      cursor: pointer;
-    }
-
-    &:hover,
-    &:focus-within {
-      &:after {
-        display: none;
-      }
-      textarea {
-        filter: blur(0);
-        cursor: auto;
-      }
-    }
-  }
-
-  .password {
-    .message {
-      color: var(--color-status-error);
-    }
-  }
-
-  .buttons {
-    display: flex;
-    width: 100%;
-    justify-content: flex-end;
-  }
-
   form svg {
     opacity: 0.5;
-  }
-
-  ${SimpleButton} {
-    width: 100%;
   }
 `
 
