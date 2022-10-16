@@ -63,8 +63,8 @@ export default class State {
     evmAssets: new EvmWatchAssetRequestsStore((req) =>
       this.popupOpen(req && `?customAsset=${req.id}`)
     ),
-    pgp: new PGPRequestsStore(() => {
-      return this.popupOpen()
+    pgp: new PGPRequestsStore((pgpRequest) => {
+      return this.popupOpen(pgpRequest && `?pgp=${pgpRequest.id}`)
     })
   }
 

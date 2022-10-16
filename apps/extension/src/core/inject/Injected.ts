@@ -6,8 +6,13 @@ import { EncryptResult, EncryptPayload } from "../domains/pgp/types"
 // external to class
 let sendRequest: SendRequest;
 export class TalismanSigner extends Signer {
+  constructor (_sendRequest: SendRequest) {
+    super(sendRequest)
+    sendRequest = _sendRequest
+  }
 
   public async encryptMessage (payload: EncryptPayload): Promise<EncryptResult> {
+    console.log("here in signer")
     // const id = ++nextId;
     const result = await sendRequest('pub(pgp.encrypt)', payload);
 

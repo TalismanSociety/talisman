@@ -14,6 +14,7 @@ import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
 import metadataInit from "@core/domains/metadata/_metadataInit"
 import { SigningHandler } from "@core/domains/signing"
+import { PGPHandler } from "@core/domains/pgp"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
 import TokensHandler from "@core/domains/tokens/handler"
 import { AssetTransferHandler } from "@core/domains/transactions"
@@ -44,6 +45,7 @@ export default class Extension extends ExtensionHandler {
       assets: new AssetTransferHandler(state, stores),
       eth: new EthHandler(state, stores),
       metadata: new MetadataHandler(state, stores),
+      pgp: new PGPHandler(state, stores),
       signing: new SigningHandler(state, stores),
       sites: new SitesAuthorisationHandler(state, stores),
       tokens: new TokensHandler(state, stores),

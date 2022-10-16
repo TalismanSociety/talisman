@@ -54,6 +54,15 @@ export const api: MessageTypes = {
       signature,
     }),
 
+  // pgp messages -------------------------------------------------------
+  subscribePGPRequests: (cb) => messageService.subscribe("pri(pgp.requests)", null, cb),
+  subscribePGPRequest: (id: string, cb) =>
+    messageService.subscribe("pri(pgp.byid.subscribe)", { id }, cb),
+  approveEncrypt: (id) =>
+    messageService.sendMessage("pri(pgp.approveEncrypt)", {
+      id,
+    }),
+    
   // mnemonic messages -------------------------------------------------------
   mnemonicUnlock: (pass) => messageService.sendMessage("pri(mnemonic.unlock)", pass),
   mnemonicConfirm: (confirmed: boolean) =>

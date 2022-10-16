@@ -2,7 +2,7 @@ import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
 import RequestMessageEncrypt from "@core/domains/pgp/RequestMessageEncrypt"
-import { EncryptPayload, EncryptResult, RequestEncrypt } from "@core/domains/pgp/types"
+import { EncryptPayload, EncryptResult, RequestEncrypt, ResponseEncrypt } from "@core/domains/pgp/types"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
@@ -140,7 +140,7 @@ export default class Tabs extends TabsHandler {
     })
   }
 
-  private messageEncrypt(url: string, request: EncryptPayload): Promise<EncryptResult> {
+  private messageEncrypt(url: string, request: EncryptPayload): Promise<ResponseEncrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
 

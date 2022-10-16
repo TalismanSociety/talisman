@@ -1,14 +1,14 @@
 import { RequestStore, TRespondableRequest } from "@core/libs/RequestStore"
 import { AccountJson } from "../accounts/types"
-import { EncryptRequest, EncryptResult } from "./types"
+import { EncryptRequest, ResponseEncrypt } from "./types"
 
+type EncryptRequestRespondable = TRespondableRequest<EncryptRequest, ResponseEncrypt>
 export class PGPRequestsStore extends RequestStore<
   EncryptRequest,
-  EncryptResult
+  ResponseEncrypt
 > {
-  // TODO-pgp: do we really need this??
   mapRequestToData(
-    request: EncryptRequest
+    request: EncryptRequestRespondable
   ) {
     const { account, id, request: pgpRequest, url } = request
     return {
@@ -16,23 +16,23 @@ export class PGPRequestsStore extends RequestStore<
       id,
       request: pgpRequest,
       url,
-    } as EncryptRequest
+    } as EncryptRequestRespondable
   }
 
-  public getPGPRequest(id: string): EncryptRequest {
+  public getPGPRequest(id: string): EncryptRequestRespondable {
     const request = this.requests[id]
-    return request as EncryptRequest
+    return request as EncryptRequestRespondable
   }
 
   public encrypt(
     url: string,
     request: EncryptRequest["request"],
     account: AccountJson
-  ): Promise<EncryptResult> {
+  ): Promise<ResponseEncrypt> {
     return this.createRequest({
       url,
       request,
       account,
-    } as EncryptRequest) as Promise<EncryptResult>
+    } as EncryptRequest) as Promise<ResponseEncrypt>
   }
 }

@@ -39,6 +39,7 @@ import {
   ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
+import { PGPRequest } from "@core/domains/pgp/types"
 import { EthResponseType } from "@core/injectEth/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
@@ -73,6 +74,11 @@ export default interface MessageTypes {
   subscribeSigningRequests: (cb: (requests: AnySigningRequest[]) => void) => UnsubscribeFn
   approveSign: (id: string) => Promise<boolean>
   approveSignHardware: (id: string, signature: HexString) => Promise<boolean>
+
+  // pgp messages -------------------------------------------------------
+  subscribePGPRequests: (cb: (requests: PGPRequest[]) => void) => UnsubscribeFn
+  subscribePGPRequest: (id: string, cb: (requests: PGPRequest) => void) => UnsubscribeFn
+  approveEncrypt: (id: string) => Promise<boolean>
 
   // app message types -------------------------------------------------------
   modalOpen: (modalType: ModalTypes) => Promise<boolean>
