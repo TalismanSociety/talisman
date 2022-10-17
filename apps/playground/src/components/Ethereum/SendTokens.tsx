@@ -1,9 +1,4 @@
-import {
-  useAccount,
-  usePrepareSendTransaction,
-  useSendTransaction,
-  useWaitForTransaction,
-} from "wagmi"
+import { useAccount, usePrepareSendTransaction, useSendTransaction } from "wagmi"
 import { useForm } from "react-hook-form"
 import { parseEther } from "ethers/lib/utils"
 import { Section } from "./shared/Section"
@@ -32,12 +27,7 @@ export const SendTokens = () => {
   })
 
   const formData = watch()
-  const {
-    config,
-    error,
-    isSuccess: prepIsSuccess,
-    status,
-  } = usePrepareSendTransaction({
+  const { config } = usePrepareSendTransaction({
     request: {
       to: formData.recipient,
       value: formData.amount ? parseEther(formData.amount) : undefined,

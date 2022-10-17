@@ -5,8 +5,6 @@ import { Button, classNames } from "talisman-ui"
 import { useCallback, useMemo, useState } from "react"
 import { ethers } from "ethers"
 
-type FormData = { message: string }
-
 // same test messages as MetaMasks's test-dapp
 const TEST_MESSAGES = {
   eth_signTypedData: () => [

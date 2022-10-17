@@ -2,7 +2,6 @@ import GreeterJson from "./Greeter.json"
 export * from "./types"
 export * from "./types/common"
 import ContractsJson from "./ContractsAddresses.json"
-import { ethers } from "ethers"
 
 export const GreeterAbi = GreeterJson
 

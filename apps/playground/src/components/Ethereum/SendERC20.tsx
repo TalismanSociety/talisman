@@ -40,17 +40,6 @@ export const SendERC20 = () => {
   })
 
   const formData = watch()
-  // const {
-  //   config,
-  //   error: prepError,
-  //   isSuccess: prepIsSuccess,
-  //   status: prepStatus,
-  // } = usePrepareSendTransaction({
-  //   request: {
-  //     to: formData.recipient,
-  //     value: formData.amount ? parseEther(formData.amount) : undefined,
-  //   },
-  // })
 
   const contractAddress = useMemo(() => getUSDCAddress(chain?.id) as string, [chain?.id])
   const {

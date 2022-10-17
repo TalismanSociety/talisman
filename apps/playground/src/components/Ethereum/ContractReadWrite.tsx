@@ -8,9 +8,8 @@ import {
 } from "wagmi"
 import { useForm } from "react-hook-form"
 import { Section } from "./shared/Section"
-import { Button, classNames } from "talisman-ui"
+import { Button } from "talisman-ui"
 import { useCallback, useEffect, useMemo } from "react"
-import { ethers } from "ethers"
 import { getGreeterAddress, GreeterAbi } from "./contracts"
 import { TransactionReceipt } from "./shared/TransactionReceipt"
 
@@ -21,7 +20,7 @@ const DEFAULT_VALUE: FormData = {
 }
 
 export const ContractReadWrite = () => {
-  const { isConnected, address } = useAccount()
+  const { isConnected } = useAccount()
   const { chain } = useNetwork()
 
   const contractAddress = useMemo(() => getGreeterAddress(chain?.id) as string, [chain?.id])

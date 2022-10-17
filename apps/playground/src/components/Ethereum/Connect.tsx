@@ -5,7 +5,7 @@ import { Section } from "./shared/Section"
 export const Connect = () => {
   const { address, isConnected, connector } = useAccount()
   const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
-  const { chain, chains } = useNetwork()
+  const { chain } = useNetwork()
   const { data: balance } = useBalance({
     chainId: chain?.id,
     addressOrName: address,
