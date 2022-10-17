@@ -12,7 +12,7 @@ import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import useToken from "@ui/hooks/useToken"
 import { BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from "react"
+import { lazy, Suspense, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { formatDecimals } from "talisman-utils"
 
@@ -162,6 +162,7 @@ export const EthSignTransactionRequest = () => {
 
   const nativeToken = useToken(network?.nativeToken?.id)
 
+  // gas settings must be locked as soon as payload is sent to ledger
   const handleSendToLedger = useCallback(() => {
     setIsPayloadLocked(true)
   }, [setIsPayloadLocked])

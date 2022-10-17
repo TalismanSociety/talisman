@@ -1,4 +1,4 @@
-import { AccountJsonHardware } from "@core/domains/accounts/types"
+import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
 import { SigningRequest } from "@core/domains/signing/types"
 import { Box } from "@talisman/components/Box"
 import { SimpleButton } from "@talisman/components/SimpleButton"
@@ -84,7 +84,7 @@ export const SubstrateSignRequest = () => {
               <Suspense fallback={null}>
                 <Ledger
                   payload={(request as SigningRequest["request"]).payload}
-                  account={account as AccountJsonHardware}
+                  account={account as AccountJsonHardwareSubstrate}
                   genesisHash={chain?.genesisHash ?? undefined}
                   onSignature={approveHardware}
                   onReject={reject}

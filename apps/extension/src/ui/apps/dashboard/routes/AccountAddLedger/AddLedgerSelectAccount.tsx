@@ -1,4 +1,4 @@
-import { LedgerEthDerivationPathType } from "@core/domains/ethereum/helpers"
+import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import { sleep } from "@core/util/sleep"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Dropdown } from "@talisman/components/Dropdown"

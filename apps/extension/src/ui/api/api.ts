@@ -69,7 +69,7 @@ export const api: MessageTypes = {
   accountCreateFromJson: (json, password) =>
     messageService.sendMessage("pri(accounts.create.json)", { json, password }),
   accountCreateHardware: ({ accountIndex, address, addressOffset, genesisHash, name }) =>
-    messageService.sendMessage("pri(accounts.create.hardware)", {
+    messageService.sendMessage("pri(accounts.create.hardware.substrate)", {
       accountIndex,
       address,
       addressOffset,
@@ -77,7 +77,7 @@ export const api: MessageTypes = {
       name,
     }),
   accountCreateHardwareEthereum: (name, address, path) =>
-    messageService.sendMessage("pri(accounts.create.hardware.eth)", {
+    messageService.sendMessage("pri(accounts.create.hardware.ethereum)", {
       name,
       address,
       path,
@@ -209,8 +209,8 @@ export const api: MessageTypes = {
       id,
     }),
   ethRequest: (request) => messageService.sendMessage("pri(eth.request)", request),
-  ethGetNonce: (address, evmNetworkId) =>
-    messageService.sendMessage("pri(eth.nonce.getNext)", { address, evmNetworkId }),
+  ethGetTransactionsCount: (address, evmNetworkId) =>
+    messageService.sendMessage("pri(eth.transactions.count)", { address, evmNetworkId }),
   ethNetworkAddGetRequests: () =>
     messageService.sendMessage("pri(eth.networks.add.requests)", null),
   ethNetworkAddApprove: (id) => messageService.sendMessage("pri(eth.networks.add.approve)", { id }),

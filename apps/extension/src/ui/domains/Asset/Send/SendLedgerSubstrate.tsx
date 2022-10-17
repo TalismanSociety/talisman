@@ -1,4 +1,4 @@
-import { AccountJsonHardware } from "@core/domains/accounts/types"
+import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
 import { TypeRegistry } from "@polkadot/types"
 import { formatLedgerSigningError } from "@talisman/util/formatLedgerErrorMessage"
 import {
@@ -7,7 +7,7 @@ import {
 } from "@ui/domains/Account/LedgerConnectionStatus"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
-import { useLedger } from "@ui/hooks/useLedger"
+import { useLedgerSubstrate } from "@ui/hooks/useLedgerSubstrate"
 import useToken from "@ui/hooks/useToken"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
@@ -31,20 +31,19 @@ const SendLedgerApprovalContainer = styled.div`
 // keep it global, we can and will re-use this across requests
 const registry = new TypeRegistry()
 
-const SendLedgerApproval = () => {
+const SendLedgerSubstrate = () => {
   const { formData, expectedResult, sendWithSignature, cancel } = useSendTokens()
   const { from, transferableTokenId } = formData as SendTokensInputs
   const [isSigning, setIsSigning] = useState(false)
   const [signed, setSigned] = useState(false)
   const [error, setError] = useState<string>()
 
-  const account = useAccountByAddress(from) as AccountJsonHardware
+  const account = useAccountByAddress(from) as AccountJsonHardwareSubstrate
   const transferableToken = useTransferableTokenById(transferableTokenId)
   const { token } = transferableToken ?? {}
   const chain = useChain(token?.chain?.id)
-  const { ledger, isReady, status, message, refresh, requiresManualRetry, network } = useLedger(
-    chain?.genesisHash
-  )
+  const { ledger, isReady, status, message, refresh, requiresManualRetry, network } =
+    useLedgerSubstrate(chain?.genesisHash)
 
   const payload = useMemo(() => {
     if (expectedResult?.type !== "substrate") return null
@@ -127,4 +126,4 @@ const SendLedgerApproval = () => {
 }
 
 // default export to allow lazy loading
-export default SendLedgerApproval
+export default SendLedgerSubstrate

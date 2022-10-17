@@ -1,7 +1,7 @@
 import Spacer from "@talisman/components/Spacer"
 import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
 import useChain from "@ui/hooks/useChain"
-import { useLedger } from "@ui/hooks/useLedger"
+import { useLedgerSubstrate } from "@ui/hooks/useLedgerSubstrate"
 import useToken from "@ui/hooks/useToken"
 import { useEffect } from "react"
 
@@ -16,7 +16,7 @@ export const ConnectLedgerSubstrate = ({
 }) => {
   const chain = useChain(chainId)
   const token = useToken(chain?.nativeToken?.id)
-  const ledger = useLedger(chain?.genesisHash)
+  const ledger = useLedgerSubstrate(chain?.genesisHash)
 
   useEffect(() => {
     onReadyChanged?.(ledger.isReady)

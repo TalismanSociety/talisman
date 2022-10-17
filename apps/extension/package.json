@@ -10,7 +10,6 @@
     "@floating-ui/react-dom": "^0.6.0",
     "@hookform/resolvers": "2.8.8",
     "@ledgerhq/hw-app-eth": "^6.29.9",
-    "@ledgerhq/hw-transport-webhid": "^6.27.6",
     "@ledgerhq/hw-transport-webusb": "^6.27.1",
     "@metamask/browser-passworder": "3.0.0",
     "@metamask/eth-sig-util": "4.0.1",

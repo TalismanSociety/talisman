@@ -2954,18 +2954,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport-webhid@npm:^6.27.6":
-  version: 6.27.6
-  resolution: "@ledgerhq/hw-transport-webhid@npm:6.27.6"
-  dependencies:
-    "@ledgerhq/devices": ^7.0.3
-    "@ledgerhq/errors": ^6.11.1
-    "@ledgerhq/hw-transport": ^6.27.6
-    "@ledgerhq/logs": ^6.10.1
-  checksum: 3643a64bbecdefd2139e5d6c0193ba3baae7831cadcdbef4e4f30db5c6a15db6a5bce32b37f82e3fd406094cd2ee3edf05fcb214f64505fc4f2afc59c2e09870
-  languageName: node
-  linkType: hard
-
 "@ledgerhq/hw-transport-webusb@npm:^6.27.1":
   version: 6.27.1
   resolution: "@ledgerhq/hw-transport-webusb@npm:6.27.1"
@@ -9615,7 +9603,6 @@ __metadata:
     "@floating-ui/react-dom": ^0.6.0
     "@hookform/resolvers": 2.8.8
     "@ledgerhq/hw-app-eth": ^6.29.9
-    "@ledgerhq/hw-transport-webhid": ^6.27.6
     "@ledgerhq/hw-transport-webusb": ^6.27.1
     "@metamask/browser-passworder": 3.0.0
     "@metamask/eth-sig-util": 4.0.1

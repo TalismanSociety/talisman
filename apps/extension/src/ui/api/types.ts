@@ -1,8 +1,4 @@
-import {
-  AccountAddressType,
-  RequestAccountCreateHardware,
-  RequestAccountCreateHardwareEthereum,
-} from "@core/domains/accounts/types"
+import { AccountAddressType, RequestAccountCreateHardware } from "@core/domains/accounts/types"
 import type { AccountJson } from "@core/domains/accounts/types"
 import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
 import {
@@ -17,7 +13,6 @@ import {
   BalancesUpdate,
   RequestBalance,
   RequestBalanceLocks,
-  RequestBalancesByParamsSubscribe,
   ResponseBalanceLocks,
 } from "@core/domains/balances/types"
 import { BalanceStorage } from "@core/domains/balances/types"
@@ -214,7 +209,7 @@ export default interface MessageTypes {
   ethApproveSignAndSendHardware: (id: string, signedTransaction: HexString) => Promise<boolean>
   ethCancelSign: (id: string) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
-  ethGetNonce: (address: string, evmNetworkId: number) => Promise<number>
+  ethGetTransactionsCount: (address: string, evmNetworkId: number) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: string) => Promise<boolean>
   ethNetworkAddCancel: (is: string) => Promise<boolean>

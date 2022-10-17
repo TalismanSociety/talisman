@@ -18,7 +18,6 @@ import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
-import { watchEthereumTransaction } from "@core/notifications"
 import type {
   RequestSignatures,
   RequestTypes,

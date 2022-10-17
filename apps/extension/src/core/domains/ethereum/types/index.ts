@@ -72,7 +72,7 @@ export interface EthMessages {
   "pub(eth.mimicMetaMask)": [null, boolean]
   // eth signing message signatures
   "pri(eth.request)": [AnyEthRequestChainId, EthResponseTypes]
-  "pri(eth.nonce.getNext)": [EthNonceRequest, number]
+  "pri(eth.transactions.count)": [EthNonceRequest, number]
   "pri(eth.signing.cancel)": [RequestIdOnly, boolean]
   "pri(eth.signing.approveSign)": [RequestIdOnly, boolean]
   "pri(eth.signing.approveSignHardware)": [RequestSigningApproveSignature, boolean]
@@ -109,3 +109,5 @@ export type EthGasSettingsEip1559 = {
   maxPriorityFeePerGas: BigNumberish
 }
 export type EthGasSettings = EthGasSettingsLegacy | EthGasSettingsEip1559
+
+export type LedgerEthDerivationPathType = "LedgerLive" | "Legacy" | "BIP44"

@@ -22,7 +22,7 @@ export type LedgerState = {
   refresh: () => void
 }
 
-export const useLedger = (genesis?: string | null): LedgerState => {
+export const useLedgerSubstrate = (genesis?: string | null): LedgerState => {
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
   const [ledgerError, setLedgerError] = useState<string>()

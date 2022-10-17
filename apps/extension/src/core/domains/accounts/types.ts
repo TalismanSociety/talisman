@@ -23,7 +23,7 @@ export type {
 
 // account types ----------------------------------
 
-export interface AccountJsonHardware extends AccountJson {
+export interface AccountJsonHardwareSubstrate extends AccountJson {
   isHardware: true
   accountIndex: number
   addressOffset: number
@@ -35,7 +35,10 @@ export interface AccountJsonHardwareEthereum extends AccountJson {
   path: string
 }
 
-export type AccountJsonAny = AccountJsonHardwareEthereum | AccountJsonHardware | AccountJson
+export type AccountJsonAny =
+  | AccountJsonHardwareEthereum
+  | AccountJsonHardwareSubstrate
+  | AccountJson
 
 export type IdenticonType = "talisman-orb" | "polkadot-identicon"
 
@@ -96,8 +99,11 @@ export interface AccountsMessages {
   "pri(accounts.create)": [RequestAccountCreate, boolean]
   "pri(accounts.create.seed)": [RequestAccountCreateFromSeed, boolean]
   "pri(accounts.create.json)": [RequestAccountCreateFromJson, boolean]
-  "pri(accounts.create.hardware)": [Omit<RequestAccountCreateHardware, "hardwareType">, boolean]
-  "pri(accounts.create.hardware.eth)": [RequestAccountCreateHardwareEthereum, boolean]
+  "pri(accounts.create.hardware.substrate)": [
+    Omit<RequestAccountCreateHardware, "hardwareType">,
+    boolean
+  ]
+  "pri(accounts.create.hardware.ethereum)": [RequestAccountCreateHardwareEthereum, boolean]
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
   "pri(accounts.rename)": [RequestAccountRename, boolean]

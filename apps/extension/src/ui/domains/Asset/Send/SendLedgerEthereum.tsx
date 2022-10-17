@@ -26,7 +26,7 @@ const SendLedgerEthereum = () => {
     if (!token || !evmNetworkId || !gasSettings) return
 
     const [nonce, txBase] = await Promise.all([
-      api.ethGetNonce(account.address, evmNetworkId),
+      api.ethGetTransactionsCount(account.address, evmNetworkId),
       getEthTransferTransactionBase(
         evmNetworkId,
         ethers.utils.getAddress(from),

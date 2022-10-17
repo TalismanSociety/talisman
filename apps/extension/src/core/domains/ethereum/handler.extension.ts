@@ -356,11 +356,13 @@ export class EthHandler extends ExtensionHandler {
     switch (type) {
       case "pri(eth.signing.approveSignAndSend)":
         return this.signAndSendApprove(request as EthApproveSignAndSend)
+
       case "pri(eth.signing.approveSignAndSendHardware)":
         return this.signAndSendApproveHardware(request as RequestSigningApproveSignature)
 
       case "pri(eth.signing.approveSign)":
         return await this.signApprove(request as RequestIdOnly)
+
       case "pri(eth.signing.approveSignHardware)":
         return await this.signApproveHardware(request as RequestSigningApproveSignature)
 
@@ -433,8 +435,8 @@ export class EthHandler extends ExtensionHandler {
         return true
       }
 
-      case "pri(eth.nonce.getNext)": {
-        const { address, evmNetworkId } = request as RequestTypes["pri(eth.nonce.getNext)"]
+      case "pri(eth.transactions.count)": {
+        const { address, evmNetworkId } = request as RequestTypes["pri(eth.transactions.count)"]
         return getTransactionCount(address, evmNetworkId)
       }
 

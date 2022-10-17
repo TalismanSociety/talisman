@@ -1,5 +1,5 @@
 import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
-import { LedgerState } from "@ui/hooks/useLedger"
+import { LedgerState } from "@ui/hooks/useLedgerSubstrate"
 import { formatLedgerErrorMessage } from "@talisman/util/formatLedgerErrorMessage"
 import Button from "@talisman/components/Button"
 import styled from "styled-components"

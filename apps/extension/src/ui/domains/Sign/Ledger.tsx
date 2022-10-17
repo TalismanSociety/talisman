@@ -1,10 +1,10 @@
-import { AccountJsonHardware } from "@core/domains/accounts/types"
+import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { TypeRegistry } from "@polkadot/types"
 import type { ExtrinsicPayload } from "@polkadot/types/interfaces"
 import type { HexString } from "@polkadot/util/types"
 import { Drawer } from "@talisman/components/Drawer"
-import { useLedger } from "@ui/hooks/useLedger"
+import { useLedgerSubstrate } from "@ui/hooks/useLedgerSubstrate"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
 
@@ -15,7 +15,7 @@ import {
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 
 interface Props {
-  account: AccountJsonHardware
+  account: AccountJsonHardwareSubstrate
   className?: string
   genesisHash?: string
   onSignature?: ({ signature }: { signature: HexString }) => void
@@ -83,7 +83,8 @@ const Ledger = ({
   const [isSigning, setIsSigning] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [extrinsicPayload, setExtrinsicPayload] = useState<ExtrinsicPayload>()
-  const { ledger, refresh, status, message, isReady, requiresManualRetry } = useLedger(genesisHash)
+  const { ledger, refresh, status, message, isReady, requiresManualRetry } =
+    useLedgerSubstrate(genesisHash)
 
   const connectionStatus: LedgerConnectionStatusProps = useMemo(
     () => ({

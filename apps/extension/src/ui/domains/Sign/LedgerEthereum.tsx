@@ -54,9 +54,8 @@ const signWithLedger = async (
   if (method === "eth_signTypedData_v4") {
     const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
 
-    // often problems here with missing salt, or chainId beeing string instead of number
-    // => in most cases we cannot use ledger.signEIP712Message() without altering the payload
-    // => let's hash using MM libraries, the user will only see those hashes on his ledger
+    // at this time we cannot use ledger.signEIP712Message() (see comments above) without altering the payload (missing salt & wrong time for chainId)
+    // => let's hash using MM libraries, what's annoying is that the user will only see those hashes on his ledger
 
     const { domain, types, primaryType, message } = TypedDataUtils.sanitizeData(jsonMessage)
     const domainSeparatorHex = TypedDataUtils.hashStruct(

@@ -4,22 +4,19 @@ import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { BigNumber, BigNumberish, ethers } from "ethers"
 
-import { EthGasSettings } from "./types"
+import { EthGasSettings, LedgerEthDerivationPathType } from "./types"
 
-// TODO move to types file
-export type LedgerEthDerivationPathType = "LedgerLive" | "Legacy" | "BIP44"
-
-const LEDGER_DERIVATION_PATHS: Record<LedgerEthDerivationPathType, string> = {
+const DERIVATION_PATHS_PATTERNS = {
+  BIP44: "m/44'/60'/0'/0/INDEX",
   LedgerLive: "m/44'/60'/INDEX'/0/0",
   Legacy: "m/44'/60'/0'/INDEX",
-  BIP44: "m/44'/60'/0'/0/INDEX",
 }
 
-export const getEthDerivationPath = (index = 0, pattern = "/m/44'/60'/0'/0/INDEX") =>
+export const getEthDerivationPath = (index = 0, pattern = DERIVATION_PATHS_PATTERNS.BIP44) =>
   pattern.replace("INDEX", index.toString())
 
 export const getEthLedgerDerivationPath = (type: LedgerEthDerivationPathType, index = 0) => {
-  return getEthDerivationPath(index, LEDGER_DERIVATION_PATHS[type])
+  return getEthDerivationPath(index, DERIVATION_PATHS_PATTERNS[type])
 }
 
 export const getEthTransferTransactionBase = async (

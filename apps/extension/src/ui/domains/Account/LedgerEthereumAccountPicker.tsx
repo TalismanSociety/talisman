@@ -1,10 +1,7 @@
 import { DEBUG } from "@core/constants"
-import { AccountAddressType } from "@core/domains/accounts/types"
 import { AddressesByEvmNetwork } from "@core/domains/balances/types"
-import {
-  getEthLedgerDerivationPath,
-  LedgerEthDerivationPathType,
-} from "@core/domains/ethereum/helpers"
+import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
+import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/apps/dashboard/routes/AccountAddLedger/context"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -12,9 +9,7 @@ import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useLedgerEthereum } from "@ui/hooks/useLedgerEthereum"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { classNames } from "talisman-ui"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
-import { LedgerConnectionStatus } from "./LedgerConnectionStatus"
 
 const BALANCE_CHECK_EVM_NETWORK_IDS = [1284, 1285, 592, 1]
 
@@ -183,7 +178,7 @@ export const LedgerEthereumAccountPicker: FC<LedgerEthereumAccountPickerProps> =
         onPagerPrevClick={handlePagePrev}
         onPagerNextClick={handlePageNext}
       />
-      <p className="text-alert-error"> {error} </p>
+      <p className="text-alert-error">{error}</p>
     </>
   )
 }

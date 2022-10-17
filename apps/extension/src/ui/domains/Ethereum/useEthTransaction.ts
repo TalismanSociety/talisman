@@ -29,7 +29,7 @@ const useNonce = (address?: string, evmNetworkId?: number) => {
 
     if (address && evmNetworkId)
       api
-        .ethGetNonce(address, evmNetworkId)
+        .ethGetTransactionsCount(address, evmNetworkId)
         .then(setNonce)
         .catch(() => setError("Failed to load nonce"))
         .finally(() => setIsLoading(false))

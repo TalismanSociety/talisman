@@ -106,7 +106,10 @@ export default class AccountsHandler extends ExtensionHandler {
     assert(rootSeed !== seed.trim(), "Cannot re-import your master seed")
 
     const seedAddress = addressFromMnemonic(seed, type)
-    const notExists = !keyring.getAccounts().some(({ address }) => address === seedAddress)
+
+    const notExists = !keyring
+      .getAccounts()
+      .some((acc) => acc.address.toLowerCase() === seedAddress.toLowerCase())
     assert(notExists, "Account already exists")
 
     try {
@@ -152,7 +155,9 @@ export default class AccountsHandler extends ExtensionHandler {
         origin: AccountTypes.JSON,
       })
 
-      const notExists = !keyring.getAccounts().some(({ address }) => address === pair.address)
+      const notExists = !keyring
+        .getAccounts()
+        .some((acc) => acc.address.toLowerCase() === pair.address.toLowerCase())
       assert(notExists, "Account already exists")
 
       pair.decodePkcs8(importedAccountPassword)
@@ -175,6 +180,11 @@ export default class AccountsHandler extends ExtensionHandler {
     path,
   }: RequestAccountCreateHardwareEthereum): boolean {
     assert(isEthereumAddress(address), "Not an Ethereum address")
+
+    const notExists = !keyring
+      .getAccounts()
+      .some((acc) => acc.address.toLowerCase() === address.toLowerCase())
+    assert(notExists, "Account already exists")
 
     // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
     // => create the pair without helper
@@ -213,38 +223,11 @@ export default class AccountsHandler extends ExtensionHandler {
     genesisHash,
     name,
   }: Omit<RequestAccountCreateHardware, "hardwareType">): boolean {
-    // TODO check already exists
+    const notExists = !keyring
+      .getAccounts()
+      .some((acc) => acc.address.toLowerCase() === address.toLowerCase())
+    assert(notExists, "Account already exists")
 
-    // const isEthereum = isEthereumAddress(address)
-
-    // if (isEthereum) {
-    //   // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
-    //   // => create the pair without helper
-    //   const pair = createPair(
-    //     {
-    //       type: "ethereum",
-    //       toSS58: ethereumEncode,
-    //     },
-    //     {
-    //       publicKey: decodeAnyAddress(address),
-    //       secretKey: new Uint8Array(),
-    //     },
-    //     {
-    //       accountIndex, // TODO remove ?
-    //       addressOffset, // TODO remove ?
-    //       name,
-    //       hardwareType: "ledger",
-    //       isHardware: true,
-    //       origin: AccountTypes.HARDWARE,
-    //       // TODO specify derivation path here ?
-    //     },
-    //     null
-    //   )
-
-    //   // add to the underlying keyring, allowing not to specify a password
-    //   keyring.keyring.addPair(pair)
-    //   keyring.saveAccount(pair)
-    // } else
     keyring.addHardware(address, "ledger", {
       accountIndex,
       addressOffset,
@@ -332,9 +315,9 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountCreateSeed(request as RequestAccountCreateFromSeed)
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
-      case "pri(accounts.create.hardware)":
+      case "pri(accounts.create.hardware.substrate)":
         return this.accountsCreateHardware(request as RequestAccountCreateHardware)
-      case "pri(accounts.create.hardware.eth)":
+      case "pri(accounts.create.hardware.ethereum)":
         return this.accountsCreateHardwareEthereum(request as RequestAccountCreateHardwareEthereum)
       case "pri(accounts.forget)":
         return this.accountForget(request as RequestAccountForget)

@@ -1,6 +1,6 @@
 import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
-import { LedgerState } from "@ui/hooks/useLedger"
+import { LedgerState } from "@ui/hooks/useLedgerSubstrate" //TODO we use it also for ethereum
 import { useEffect, useState } from "react"
 import styled from "styled-components"
 

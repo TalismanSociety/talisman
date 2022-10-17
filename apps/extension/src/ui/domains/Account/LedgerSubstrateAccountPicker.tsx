@@ -4,10 +4,9 @@ import { LedgerAccountDefSubstrate } from "@ui/apps/dashboard/routes/AccountAddL
 import useAccounts from "@ui/hooks/useAccounts"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChain from "@ui/hooks/useChain"
-import { useLedger } from "@ui/hooks/useLedger"
+import { useLedgerSubstrate } from "@ui/hooks/useLedgerSubstrate"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
-import { LedgerConnectionStatus } from "./LedgerConnectionStatus"
 
 const useLedgerChainAccounts = (
   chainId: string,
@@ -24,7 +23,7 @@ const useLedgerChainAccounts = (
   const [isBusy, setIsBusy] = useState(false)
   const [error, setError] = useState<string>()
 
-  const { isReady, ledger, ...connectionStatus } = useLedger(chain?.genesisHash)
+  const { isReady, ledger, ...connectionStatus } = useLedgerSubstrate(chain?.genesisHash)
 
   const loadPage = useCallback(async () => {
     if (!ledger || !isReady || !chain) return

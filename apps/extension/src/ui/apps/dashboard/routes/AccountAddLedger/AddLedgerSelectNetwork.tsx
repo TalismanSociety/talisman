@@ -135,7 +135,7 @@ export const AddLedgerSelectNetwork = () => {
     handleSubmit,
     watch,
     setValue,
-    formState: { isValid, isSubmitting, errors },
+    formState: { isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
     defaultValues,
@@ -197,13 +197,15 @@ export const AddLedgerSelectNetwork = () => {
             </>
           )}
           <div className={classNames(showStep2 ? "visible" : "invisible")}>
-            {accountType === "sr25519" && <H2>Step 2</H2>}
             {accountType === "sr25519" && (
-              <ConnectLedgerSubstrate
-                className="min-h-[11rem]"
-                onReadyChanged={setIsLedgerReady}
-                chainId={chainId}
-              />
+              <>
+                <H2>Step 2</H2>
+                <ConnectLedgerSubstrate
+                  className="min-h-[11rem]"
+                  onReadyChanged={setIsLedgerReady}
+                  chainId={chainId}
+                />
+              </>
             )}
             {accountType === "ethereum" && (
               <ConnectLedgerEthereum className="mt-14" onReadyChanged={setIsLedgerReady} />

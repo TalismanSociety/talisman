@@ -18,7 +18,7 @@ import { SendTokensExpectedResult, SendTokensInputs } from "./types"
 import { useTransferableTokenById } from "./useTransferableTokens"
 
 const SendAddressConvertInfo = lazy(() => import("./SendAddressConvertInfo"))
-const SendLedgerApproval = lazy(() => import("./SendLedgerApproval"))
+const SendLedgerSubstrate = lazy(() => import("./SendLedgerSubstrate"))
 const SendLedgerEthereum = lazy(() => import("./SendLedgerEthereum"))
 
 const Container = styled(SendDialogContainer)`
@@ -227,7 +227,7 @@ const SendReview = () => {
               )}
             </div>
           )}
-          {approvalMode === "hwSubstrate" && <SendLedgerApproval />}
+          {approvalMode === "hwSubstrate" && <SendLedgerSubstrate />}
           {approvalMode === "hwEthereum" && <SendLedgerEthereum />}
           {approvalMode === "backend" && (
             <div className="buttons">
