@@ -7,7 +7,7 @@ import {
   useSignMessage,
 } from "wagmi"
 import { useForm } from "react-hook-form"
-import { Section } from "./shared/Section"
+import { Section } from "../Section"
 import { Button } from "talisman-ui"
 import { useCallback, useEffect, useMemo } from "react"
 import { getGreeterAddress, GreeterAbi } from "./contracts"

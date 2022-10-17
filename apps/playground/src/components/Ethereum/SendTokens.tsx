@@ -1,7 +1,7 @@
 import { useAccount, usePrepareSendTransaction, useSendTransaction } from "wagmi"
 import { useForm } from "react-hook-form"
 import { parseEther } from "ethers/lib/utils"
-import { Section } from "./shared/Section"
+import { Section } from "../Section"
 import { Button } from "talisman-ui"
 import { useLocalStorage } from "react-use"
 import { TransactionReceipt } from "./shared/TransactionReceipt"

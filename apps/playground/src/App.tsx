@@ -4,7 +4,8 @@ import { Buttons } from "./components/Buttons"
 import { Nav } from "./components/Nav"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { Checkboxes } from "./components/Chexkboxes"
-import { Ethereum } from "./components/Ethereum/Ethereum"
+import { Ethereum } from "./components/Ethereum"
+import { Substrate } from "./components/Substrate"
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <BrowserRouter>
           <Nav />
           <Routes>
+            <Route path="substrate" element={<Substrate />} />
             <Route path="ethereum" element={<Ethereum />} />
             <Route path="button" element={<Buttons />} />
             <Route path="checkbox" element={<Checkboxes />} />
