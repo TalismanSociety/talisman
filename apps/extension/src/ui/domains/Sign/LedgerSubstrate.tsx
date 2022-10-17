@@ -4,9 +4,10 @@ import { TypeRegistry } from "@polkadot/types"
 import type { ExtrinsicPayload } from "@polkadot/types/interfaces"
 import type { HexString } from "@polkadot/util/types"
 import { Drawer } from "@talisman/components/Drawer"
-import { useLedgerSubstrate } from "@ui/hooks/useLedgerSubstrate"
+import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
+import { Button, classNames } from "talisman-ui"
 
 import {
   LedgerConnectionStatus,
@@ -72,7 +73,7 @@ const LedgerConnectionContent = styled.div`
   }
 `
 
-const Ledger = ({
+const LedgerSubstrate = ({
   account,
   className = "",
   genesisHash,
@@ -100,7 +101,7 @@ const Ledger = ({
     if (isRawPayload(payload)) {
       setError("Message signing is not supported for hardware wallets.")
     } else {
-      registry.setSignedExtensions(payload.signedExtensions)
+      if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
       setExtrinsicPayload(
         registry.createType("ExtrinsicPayload", payload, { version: payload.version })
       )
@@ -112,7 +113,7 @@ const Ledger = ({
     setError(null)
   }, [refresh, setError])
 
-  const signLedger = useCallback(() => {
+  const signLedger = useCallback(async () => {
     if (!ledger || !extrinsicPayload || !onSignature) {
       return
     }
@@ -131,21 +132,22 @@ const Ledger = ({
   useEffect(() => {
     if (isReady && !error && !isSigning) {
       setIsSigning(true)
-      signLedger()?.finally(() => setIsSigning(false))
+      signLedger().finally(() => setIsSigning(false))
     }
   }, [signLedger, isSigning, error, isReady])
 
   return (
-    <LedgerContent>
+    <div className={classNames("flex w-full flex-col gap-6", className)}>
       {!error && (
-        <LedgerConnectionContent className={`full-width ${className}`}>
-          <LedgerConnectionStatus
-            {...{ ...connectionStatus }}
-            refresh={_onRefresh}
-            hideOnSuccess={true}
-          />
-        </LedgerConnectionContent>
+        <LedgerConnectionStatus
+          {...{ ...connectionStatus }}
+          refresh={_onRefresh}
+          hideOnSuccess={true}
+        />
       )}
+      <Button className="w-full" onClick={onReject}>
+        Cancel
+      </Button>
       {error && (
         <Drawer anchor="bottom" open={true}>
           <LedgerSigningStatus
@@ -155,12 +157,9 @@ const Ledger = ({
           />
         </Drawer>
       )}
-      <span className="cancel-link" onClick={onReject}>
-        Cancel transaction
-      </span>
-    </LedgerContent>
+    </div>
   )
 }
 
 // default export to allow for lazy loading
-export default Ledger
+export default LedgerSubstrate

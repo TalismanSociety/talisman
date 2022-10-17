@@ -7,7 +7,7 @@ import { LedgerAccountDefEthereum } from "@ui/apps/dashboard/routes/AccountAddLe
 import useAccounts from "@ui/hooks/useAccounts"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useLedgerEthereum } from "@ui/hooks/useLedgerEthereum"
+import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 

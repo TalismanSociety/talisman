@@ -12,12 +12,12 @@ import {
 import { SiteInfo } from "@ui/domains/Sign/SiteInfo"
 import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
 import { useSigningRequestById } from "@ui/hooks/useSigningRequestById"
-import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
+import { Suspense, lazy, useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 
 import { Container } from "./common"
 
-const Ledger = lazy(() => import("@ui/domains/Sign/Ledger"))
+const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
 export const SubstrateSignRequest = () => {
   const { id } = useParams() as { id: string }
@@ -82,7 +82,7 @@ export const SubstrateSignRequest = () => {
             )}
             {account.isHardware && (
               <Suspense fallback={null}>
-                <Ledger
+                <LedgerSubstrate
                   payload={(request as SigningRequest["request"]).payload}
                   account={account as AccountJsonHardwareSubstrate}
                   genesisHash={chain?.genesisHash ?? undefined}

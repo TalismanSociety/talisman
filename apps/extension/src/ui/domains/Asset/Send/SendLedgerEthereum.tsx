@@ -19,7 +19,7 @@ const SendLedgerEthereum = () => {
   const transferableToken = useTransferableTokenById(transferableTokenId)
   const { token, evmNetworkId } = transferableToken ?? {}
 
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<Error>()
   const [transaction, setTransaction] = useState<ethers.providers.TransactionRequest>()
 
   const getTransaction = useCallback(async () => {
@@ -47,7 +47,7 @@ const SendLedgerEthereum = () => {
     getTransaction()
       .then(setTransaction)
       .catch((err) => {
-        setError((err as Error).message)
+        setError(err as Error)
       })
   }, [getTransaction])
 
@@ -58,7 +58,7 @@ const SendLedgerEthereum = () => {
         setSigned(true)
         await sendWithSignatureEthereum(signature)
       } catch (err) {
-        setError((err as Error).message)
+        setError(err as Error)
       }
     },
     [sendWithSignatureEthereum]
@@ -66,7 +66,7 @@ const SendLedgerEthereum = () => {
 
   const parent = useMemo(() => document.getElementById("send-funds-container"), [])
 
-  if (error) return <div className="text-alert-error">{error}</div>
+  if (error) return <div className="text-alert-error">{error.message}</div>
 
   // hide until ready or after it's signed
   if (!transaction || signed) return null

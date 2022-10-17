@@ -1,7 +1,7 @@
 import Spacer from "@talisman/components/Spacer"
 import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
 import useChain from "@ui/hooks/useChain"
-import { useLedgerSubstrate } from "@ui/hooks/useLedgerSubstrate"
+import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import useToken from "@ui/hooks/useToken"
 import { useEffect } from "react"
 

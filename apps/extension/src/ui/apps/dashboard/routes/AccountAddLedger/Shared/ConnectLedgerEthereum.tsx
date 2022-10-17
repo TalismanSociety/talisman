@@ -1,6 +1,6 @@
 import Spacer from "@talisman/components/Spacer"
 import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
-import { useLedgerEthereum } from "@ui/hooks/useLedgerEthereum"
+import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { useEffect } from "react"
 
 export const ConnectLedgerEthereum = ({

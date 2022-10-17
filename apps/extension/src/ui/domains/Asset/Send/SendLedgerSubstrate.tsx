@@ -1,127 +1,50 @@
 import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
-import { TypeRegistry } from "@polkadot/types"
-import { formatLedgerSigningError } from "@talisman/util/formatLedgerErrorMessage"
-import {
-  LedgerConnectionStatus,
-  LedgerConnectionStatusProps,
-} from "@ui/domains/Account/LedgerConnectionStatus"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
-import useChain from "@ui/hooks/useChain"
-import { useLedgerSubstrate } from "@ui/hooks/useLedgerSubstrate"
-import useToken from "@ui/hooks/useToken"
-import { useCallback, useEffect, useMemo, useState } from "react"
-import styled from "styled-components"
+import { useCallback, useMemo, useState } from "react"
 
 import { useSendTokens } from "./context"
-import { SendTokensExpectedResult, SendTokensInputs } from "./types"
-import { useTransferableTokenById } from "./useTransferableTokens"
-
-const SendLedgerApprovalContainer = styled.div`
-  .cancel-link {
-    margin-top: 0.5em;
-    font-size: var(--font-size-small);
-    color: var(--color-background-muted-2x);
-    display: block;
-    text-align: center;
-    text-decoration: underline;
-    cursor: pointer;
-  }
-`
-
-// keep it global, we can and will re-use this across requests
-const registry = new TypeRegistry()
+import { SendTokensInputs } from "./types"
+import LedgerSubstrate from "@ui/domains/Sign/LedgerSubstrate"
+import { HexString } from "@polkadot/util/types"
 
 const SendLedgerSubstrate = () => {
   const { formData, expectedResult, sendWithSignature, cancel } = useSendTokens()
-  const { from, transferableTokenId } = formData as SendTokensInputs
-  const [isSigning, setIsSigning] = useState(false)
-  const [signed, setSigned] = useState(false)
-  const [error, setError] = useState<string>()
+  const { from } = formData as SendTokensInputs
+  const [error, setError] = useState<Error>()
 
   const account = useAccountByAddress(from) as AccountJsonHardwareSubstrate
-  const transferableToken = useTransferableTokenById(transferableTokenId)
-  const { token } = transferableToken ?? {}
-  const chain = useChain(token?.chain?.id)
-  const { ledger, isReady, status, message, refresh, requiresManualRetry, network } =
-    useLedgerSubstrate(chain?.genesisHash)
 
   const payload = useMemo(() => {
     if (expectedResult?.type !== "substrate") return null
-    const { unsigned } = expectedResult
-    registry.setSignedExtensions(unsigned.signedExtensions)
-    return registry.createType("ExtrinsicPayload", unsigned, { version: unsigned.version })
+    return expectedResult.unsigned
   }, [expectedResult])
 
-  const approveIfReady = useCallback(async () => {
-    try {
-      if (
-        !payload ||
-        !account ||
-        !ledger ||
-        !isReady ||
-        isSigning ||
-        signed ||
-        error ||
-        status !== "ready"
-      )
-        return
-      const { accountIndex, addressOffset } = account
-
-      setError(undefined)
-      setIsSigning(true)
-
-      const { signature } = await ledger.sign(payload.toU8a(true), accountIndex, addressOffset)
-      await sendWithSignature(signature)
-
-      setSigned(true)
-    } catch (err) {
-      setError((err as Error).message)
-    }
-    setIsSigning(false)
-  }, [account, ledger, isReady, isSigning, signed, error, status, payload, sendWithSignature])
-
-  useEffect(() => {
-    approveIfReady()
-  }, [approveIfReady])
-
-  useEffect(() => {
-    setError(undefined)
-    setSigned(false)
-  }, [isReady])
-
-  const connectionStatus: LedgerConnectionStatusProps = useMemo(() => {
-    if (error)
-      return {
-        refresh,
-        ...formatLedgerSigningError(error, network ?? undefined),
+  const [signed, setSigned] = useState(false)
+  const handleSigned = useCallback(
+    async ({ signature }: { signature: HexString }) => {
+      try {
+        setSigned(true)
+        await sendWithSignature(signature)
+      } catch (err) {
+        setError(err as Error)
       }
+    },
+    [sendWithSignature]
+  )
 
-    if (signed)
-      return {
-        refresh,
-        status: "ready",
-        message: "Transaction signed successfully.",
-        requiresManualRetry: false,
-      }
-
-    return {
-      status: status === "ready" ? "connecting" : status,
-      message: status === "ready" ? "Please approve from your Ledger." : message,
-      refresh,
-      requiresManualRetry,
-    }
-  }, [error, refresh, network, signed, status, message, requiresManualRetry])
+  if (error) return <div className="text-alert-error">{error.message}</div>
 
   // hide when done
-  if (signed) return null
+  if (!payload || signed) return null
 
   return (
-    <SendLedgerApprovalContainer>
-      <LedgerConnectionStatus {...connectionStatus} />
-      <span className="cancel-link" onClick={cancel}>
-        Cancel transaction
-      </span>
-    </SendLedgerApprovalContainer>
+    <LedgerSubstrate
+      account={account}
+      genesisHash={account.genesisHash}
+      payload={payload}
+      onReject={cancel}
+      onSignature={handleSigned}
+    />
   )
 }
 

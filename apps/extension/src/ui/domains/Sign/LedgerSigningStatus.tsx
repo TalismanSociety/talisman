@@ -1,6 +1,4 @@
 import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
-import { LedgerState } from "@ui/hooks/useLedgerSubstrate"
-import { formatLedgerErrorMessage } from "@talisman/util/formatLedgerErrorMessage"
 import Button from "@talisman/components/Button"
 import styled from "styled-components"
 
@@ -31,7 +29,7 @@ const Container = styled.div<{ status?: string }>`
 `
 
 interface LedgerSigningStatusProps {
-  message: LedgerState["message"]
+  message: string
   requiresConfirmation?: boolean
   status?: "error" | "signing"
   confirm?: (args: any) => void
@@ -48,7 +46,7 @@ export const LedgerSigningStatus = ({
       {status === "error" && (
         <>
           <AlertCircleIcon />
-          <span>{formatLedgerErrorMessage(message).message}</span>
+          <span>{message}</span>
         </>
       )}
       {status === "signing" && (

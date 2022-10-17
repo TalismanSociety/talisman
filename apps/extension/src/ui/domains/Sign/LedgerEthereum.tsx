@@ -1,6 +1,6 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { Drawer } from "@talisman/components/Drawer"
-import { LedgerDetailedError, useLedgerEthereum } from "@ui/hooks/useLedgerEthereum"
+import { LedgerDetailedError, useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import {
   LedgerConnectionStatus,
@@ -13,7 +13,6 @@ import { TypedDataUtils, SignTypedDataVersion } from "@metamask/eth-sig-util"
 import { DEBUG } from "@core/constants"
 import { Button, classNames } from "talisman-ui"
 
-// TODO rename payload type ?
 export type LedgerEthereumSignMethod =
   | "transaction"
   | "personal_sign"
@@ -145,8 +144,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   const [isSigning, setIsSigning] = useState(false)
   const [isSigned, setIsSigned] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { ledger, refresh, status, message, isReady, requiresManualRetry, disconnect } =
-    useLedgerEthereum()
+  const { ledger, refresh, status, message, isReady, requiresManualRetry } = useLedgerEthereum()
 
   // reset
   useEffect(() => {
@@ -212,7 +210,6 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
   }, [])
 
   const handleCancelClick = useCallback(() => {
-    // disconnect() // TODO not working, need to cancel the device signing
     onReject()
   }, [onReject])
 

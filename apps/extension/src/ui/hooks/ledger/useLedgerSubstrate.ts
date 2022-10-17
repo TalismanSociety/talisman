@@ -3,29 +3,15 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { Ledger } from "@polkadot/hw-ledger"
 import { assert } from "@polkadot/util"
 import ledgerNetworks from "@core/util/ledgerNetworks"
-import { formatLedgerErrorMessage } from "@talisman/util/formatLedgerErrorMessage"
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
-import { useSetInterval } from "./useSetInterval"
+import { useSetInterval } from "../useSetInterval"
 import { DEBUG } from "@core/constants"
+import { getLedgerErrorProps, LedgerStatus } from "./common"
 
-export type LedgerStatus = "ready" | "warning" | "error" | "connecting" | "unknown"
-
-export type LedgerState = {
-  isLedgerCapable: boolean
-  isLoading: boolean
-  isReady: boolean
-  requiresManualRetry?: boolean
-  status: LedgerStatus
-  message: string
-  ledger: Ledger | null
-  network: string | null
-  refresh: () => void
-}
-
-export const useLedgerSubstrate = (genesis?: string | null): LedgerState => {
+export const useLedgerSubstrate = (genesis?: string | null) => {
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
-  const [ledgerError, setLedgerError] = useState<string>()
+  const [error, setError] = useState<Error>()
   const [isReady, setIsReady] = useState(false)
 
   const { network } = useMemo(
@@ -48,16 +34,9 @@ export const useLedgerSubstrate = (genesis?: string | null): LedgerState => {
       return new Ledger("webusb", network)
     } catch (err) {
       // eslint-disable-next-line no-console
-      DEBUG && console.error("ledger " + (err as Error).message, err)
+      DEBUG && console.error("create ledger " + (err as Error).message, err)
 
-      if (err instanceof DOMException) {
-        if (err.name === "SecurityError")
-          setLedgerError("Failed to connect USB. Restart your browser and retry.")
-        else setLedgerError("Unknown error, cannot connect to Ledger")
-        return null
-      }
-
-      setLedgerError((err as Error).message)
+      setError(err as Error)
       return null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -68,7 +47,7 @@ export const useLedgerSubstrate = (genesis?: string | null): LedgerState => {
     message: string
     requiresManualRetry: boolean
   }>(() => {
-    if (ledgerError) return formatLedgerErrorMessage(ledgerError, network ?? undefined)
+    if (error) return getLedgerErrorProps(error, network ?? "Unknown network")
 
     if (isLoading)
       return {
@@ -85,8 +64,9 @@ export const useLedgerSubstrate = (genesis?: string | null): LedgerState => {
       }
 
     return { status: "unknown", message: "", requiresManualRetry: false }
-  }, [isReady, isLoading, ledgerError, network])
+  }, [isReady, isLoading, error, network])
 
+  // TODO merge with ledger creation like for eth
   const connectLedger = useCallback(
     async (resetError?: boolean) => {
       setIsReady(false)
@@ -95,25 +75,18 @@ export const useLedgerSubstrate = (genesis?: string | null): LedgerState => {
       setIsLoading(true)
       // when displaying an error and polling silently, on the UI we don't want the error to disappear
       // so error should be cleared explicitly
-      if (resetError) setLedgerError(undefined)
+      if (resetError) setError(undefined)
 
       try {
         // verify that Ledger connection is ready by querying first address
         await ledger.getAddress(false)
-        setLedgerError(undefined)
+        setError(undefined)
         setIsReady(true)
       } catch (err) {
         // eslint-disable-next-line no-console
         DEBUG && console.error("connectLedger " + (err as Error).message, { err })
 
-        if (err instanceof DOMException) {
-          if (err.name === "SecurityError")
-            setLedgerError("Failed to connect USB. Restart your browser and retry.")
-          else setLedgerError("Unknown error, cannot connect to Ledger")
-          return
-        }
-
-        setLedgerError((err as Error).message)
+        setError(err as Error)
       }
 
       setIsLoading(false)
@@ -139,7 +112,6 @@ export const useLedgerSubstrate = (genesis?: string | null): LedgerState => {
   }, [connectLedger])
 
   return {
-    isLedgerCapable: getIsLedgerCapable(),
     isLoading,
     isReady,
     requiresManualRetry,

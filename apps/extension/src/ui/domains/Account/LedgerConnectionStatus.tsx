@@ -1,6 +1,6 @@
 import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
-import { LedgerState } from "@ui/hooks/useLedgerSubstrate" //TODO we use it also for ethereum
+import { LedgerStatus } from "@ui/hooks/ledger/common"
 import { useEffect, useState } from "react"
 import styled from "styled-components"
 
@@ -47,11 +47,13 @@ const Panel = styled.div<{ status?: string; onClick?: () => void; hide?: boolean
       : ""}
 `
 
-export interface LedgerConnectionStatusProps
-  extends Pick<LedgerState, "status" | "requiresManualRetry" | "refresh"> {
-  hideOnSuccess?: boolean
+export type LedgerConnectionStatusProps = {
+  status: LedgerStatus
   message: string
+  requiresManualRetry?: boolean
+  hideOnSuccess?: boolean
   className?: string
+  refresh: () => void
 }
 
 const Strong = styled.strong`
