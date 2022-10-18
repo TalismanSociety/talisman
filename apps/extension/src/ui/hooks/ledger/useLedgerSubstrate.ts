@@ -2,11 +2,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Ledger } from "@polkadot/hw-ledger"
 import { assert } from "@polkadot/util"
-import ledgerNetworks from "@core/util/ledgerNetworks"
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
 import { useSetInterval } from "../useSetInterval"
 import { DEBUG } from "@core/constants"
 import { getLedgerErrorProps, LedgerStatus } from "./common"
+import { useLedgerAppNetworkName as useLedgerSubstrateAppName } from "./useLedgerSubstrateAppName"
 
 export const useLedgerSubstrate = (genesis?: string | null) => {
   const [isLoading, setIsLoading] = useState(false)
@@ -14,15 +14,7 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
   const [error, setError] = useState<Error>()
   const [isReady, setIsReady] = useState(false)
 
-  const { network } = useMemo(
-    () =>
-      genesis
-        ? ledgerNetworks.find(({ genesisHash: [hash] }) => hash === genesis) ?? {
-            network: "unknown network",
-          }
-        : { network: null },
-    [genesis]
-  )
+  const network = useLedgerSubstrateAppName(genesis)
 
   const ledger = useMemo(() => {
     if (!network) return null
