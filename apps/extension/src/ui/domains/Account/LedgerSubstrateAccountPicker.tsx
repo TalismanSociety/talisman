@@ -76,11 +76,15 @@ const useLedgerChainAccounts = (
         if (!acc) return null
 
         const existingAccount = walletAccounts?.find(
-          (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null)
+          (wa) =>
+            convertAddress(wa.address, null) === convertAddress(acc.address, null) &&
+            acc.genesisHash === wa.genesisHash
         )
 
         const accountBalances = balances.sorted.filter(
-          (b) => convertAddress(b.address, null) === convertAddress(acc.address, null)
+          (b) =>
+            convertAddress(b.address, null) === convertAddress(acc.address, null) &&
+            b.chainId === chain?.id
         )
 
         return {
@@ -93,7 +97,7 @@ const useLedgerChainAccounts = (
             accountBalances.length < 1 || accountBalances.some((b) => b.status !== "live"),
         }
       }),
-    [balances.sorted, ledgerAccounts, selectedAccounts, walletAccounts]
+    [balances.sorted, chain?.id, ledgerAccounts, selectedAccounts, walletAccounts]
   )
 
   useEffect(() => {

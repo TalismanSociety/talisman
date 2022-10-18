@@ -117,7 +117,9 @@ const useDerivedAccounts = (
         if (!acc) return null
 
         const existingAccount = walletAccounts?.find(
-          (wa) => convertAddress(wa.address, null) === convertAddress(acc.address, null)
+          (wa) =>
+            convertAddress(wa.address, null) === convertAddress(acc.address, null) &&
+            acc.genesisHash === wa.genesisHash
         )
 
         const accountBalances = balances.sorted.filter(
