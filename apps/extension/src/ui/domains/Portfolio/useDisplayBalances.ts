@@ -18,7 +18,8 @@ const shouldDisplayBalance = (balance: Balance, account?: AccountJsonAny) => {
       balance.chain?.id === "moonriver") ||
     (account?.type !== "sr25519" &&
       balance.token?.symbol === "GLMR" &&
-      balance.chain?.id === "moonbeam")
+      balance.chain?.id === "moonbeam") ||
+    (account?.genesisHash && account.genesisHash === balance.chain?.genesisHash)
   )
 }
 
