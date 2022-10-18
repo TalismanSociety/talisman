@@ -64,7 +64,7 @@ export const Identity = () => {
   useEffect(() => {
     setValue(
       "display",
-      identityRegistration?.value
+      identityRegistration?.value?.info
         ? (identityRegistration.value.info.display.asRaw.toHuman() as string)
         : "",
       {
