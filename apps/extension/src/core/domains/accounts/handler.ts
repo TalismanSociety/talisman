@@ -181,11 +181,6 @@ export default class AccountsHandler extends ExtensionHandler {
   }: RequestAccountCreateHardwareEthereum): boolean {
     assert(isEthereumAddress(address), "Not an Ethereum address")
 
-    const notExists = !keyring
-      .getAccounts()
-      .some((acc) => acc.address.toLowerCase() === address.toLowerCase())
-    assert(notExists, "Account already exists")
-
     // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
     // => create the pair without helper
     const pair = createPair(
@@ -223,11 +218,6 @@ export default class AccountsHandler extends ExtensionHandler {
     genesisHash,
     name,
   }: Omit<RequestAccountCreateHardware, "hardwareType">): boolean {
-    const notExists = !keyring
-      .getAccounts()
-      .some((acc) => acc.address.toLowerCase() === address.toLowerCase())
-    assert(notExists, "Account already exists")
-
     keyring.addHardware(address, "ledger", {
       accountIndex,
       addressOffset,
