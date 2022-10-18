@@ -119,10 +119,8 @@ export const Identity = () => {
         setStatus(status)
 
         if (status.isFinalized) {
-          const success = events.find(({ event }) => event.method === "ExtrinsicSuccess")
-          const failed = events.find(({ event }) => event.method === "ExtrinsicFailed")
-          // eslint-disable-next-line no-console
-          console.log({ success, failed })
+          // const success = events.find(({ event }) => event.method === "ExtrinsicSuccess")
+          // const failed = events.find(({ event }) => event.method === "ExtrinsicFailed")
           unsub()
           setTxProcessing(false)
           refresh()

@@ -1,5 +1,5 @@
 import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
-import { SigningRequest } from "@core/domains/signing/types"
+import { SignerPayloadRaw, SigningRequest } from "@core/domains/signing/types"
 import { Box } from "@talisman/components/Box"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
@@ -26,6 +26,12 @@ export const SubstrateSignRequest = () => {
     usePolkadotSigningRequest(signingRequest)
   const { analysing, txDetails, error: txDetailsError } = usePolkadotTransactionDetails(id)
 
+  const payloadType = useMemo(() => {
+    if (!request?.payload) return "unknown"
+    if ((request.payload as SignerPayloadRaw).data) return "message"
+    else return "transaction"
+  }, [request?.payload])
+
   const { processing, errorMessage } = useMemo(() => {
     return {
       processing: status === "PROCESSING",
@@ -45,13 +51,20 @@ export const SubstrateSignRequest = () => {
         {account && request && (
           <>
             <SiteInfo siteUrl={url} />
-            <div className="grow">
-              <h1>Approve Request</h1>
+            <div className="flex grow flex-col">
+              <h1>{payloadType === "message" ? "Sign" : "Approve"} Request</h1>
               <h2 className="center">
-                You are approving a request with account{" "}
-                <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
+                You are {payloadType === "message" ? "signing a message" : "approving a request"}{" "}
+                with account <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
                 {chain ? ` on ${chain.name}` : null}
               </h2>
+              {payloadType === "message" ? (
+                <textarea
+                  readOnly
+                  className="scrollable scrollable-700 bg-black-tertiary scroll my-12 w-full grow resize-none overflow-x-auto rounded-sm p-6 font-mono text-base"
+                  value={(request.payload as SignerPayloadRaw).data}
+                />
+              ) : null}
             </div>
             {errorMessage && <div className="error">{errorMessage}</div>}
             <div className="bottom">
@@ -85,7 +98,7 @@ export const SubstrateSignRequest = () => {
                 <LedgerSubstrate
                   payload={(request as SigningRequest["request"]).payload}
                   account={account as AccountJsonHardwareSubstrate}
-                  genesisHash={chain?.genesisHash ?? undefined}
+                  genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                   onSignature={approveHardware}
                   onReject={reject}
                 />

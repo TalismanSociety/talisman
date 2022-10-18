@@ -35,7 +35,6 @@ const ViewDetailsContainer = styled.div`
   .grow {
     flex-grow: 1;
     overflow-y: auto;
-    ${scrollbarsStyle()}
   }
 
   color: var(--color-foreground-muted-2x);
@@ -116,8 +115,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   }, [genericEvent])
 
   return (
-    <ViewDetailsContainer>
-      <div className="grow">
+    <ViewDetailsContainer className="">
+      <div className="scrollable scrollable-700 grow">
         <div className="title">Details</div>
         <ViewDetailsField label="From" breakAll>
           {accountAddress}
@@ -129,7 +128,13 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
         <ViewDetailsTxDesc label="Description" tx={txDetails} />
         <ViewDetailsTxArgs label="Arguments" args={txDetails?.method.args} />
         <ViewDetailsField label="Type">{type}</ViewDetailsField>
-        <ViewDetailsField label="Data">{data}</ViewDetailsField>
+        <ViewDetailsField label="Data">
+          <div className="mt-2 pr-2">
+            <pre className="text-body-secondary scrollable scrollable-700 bg-black-secondary rounded-xs w-full overflow-x-auto p-4">
+              {data}
+            </pre>
+          </div>
+        </ViewDetailsField>
         <ViewDetailsField label="Decoding error">
           {txDetailsError && <span className="error">{txDetailsError}</span>}
         </ViewDetailsField>

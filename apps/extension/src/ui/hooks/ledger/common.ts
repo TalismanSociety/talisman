@@ -24,8 +24,9 @@ export const getLedgerErrorProps = (err: Error, appName: string): LedgerErrorPro
         message: "Failed to connect USB. Restart your browser and retry.",
       }
 
-    case "TransportInterfaceNotAvailable":
-      // temporary error just after unlocking, simulate that we're still loading
+    case "NetworkError": // while connecting
+    case "InvalidStateError": // while connecting
+    case "TransportInterfaceNotAvailable": // after unlock
       return {
         status: "connecting",
         message: `Connecting to Ledger...`,
@@ -59,8 +60,6 @@ export const getLedgerErrorProps = (err: Error, appName: string): LedgerErrorPro
     }
 
     case "TransportOpenUserCancelled":
-    case "InvalidStateError":
-    case "NetworkError":
     case "NotFoundError":
     case "TransportWebUSBGestureRequired":
       return {
