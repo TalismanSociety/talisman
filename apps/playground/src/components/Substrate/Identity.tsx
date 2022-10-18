@@ -109,8 +109,35 @@ export const Identity = () => {
     [account, api, refresh]
   )
 
+  const handleClearIdentityClick = useCallback(async () => {
+    setTxError(undefined)
+    if (!api || !account) return
+    try {
+      setTxProcessing(true)
+      const unsub = await api.tx.identity.clearIdentity().signAndSend(account.address, (result) => {
+        const { status, events } = result
+        setStatus(status)
+
+        if (status.isFinalized) {
+          const success = events.find(({ event }) => event.method === "ExtrinsicSuccess")
+          const failed = events.find(({ event }) => event.method === "ExtrinsicFailed")
+          // eslint-disable-next-line no-console
+          console.log({ success, failed })
+          unsub()
+          setTxProcessing(false)
+          refresh()
+        }
+      })
+    } catch (err) {
+      setTxError(err as Error)
+      setTxProcessing(false)
+    }
+  }, [account, api, refresh])
+
+  if (!api || !account) return null
+
   return (
-    <Section title="Identity">
+    <Section title="Transactions (on Identity pallet)">
       <form className="mb-8 space-y-8" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex items-center gap-8">
           <label htmlFor="display">Display name : </label>
@@ -122,9 +149,18 @@ export const Identity = () => {
             {...register("display", { required: true })}
           />
         </div>
-        <Button disabled={!isValid} processing={isSubmitting || txProcessing} type="submit">
-          Update
-        </Button>
+        <div className="flex gap-8">
+          <Button disabled={!isValid} processing={isSubmitting || txProcessing} type="submit">
+            Set Identity
+          </Button>
+          <Button
+            disabled={!identityRegistration}
+            processing={isSubmitting || txProcessing}
+            onClick={handleClearIdentityClick}
+          >
+            Clear Identity
+          </Button>
+        </div>
         {status && <pre>TX progress : {JSON.stringify(status.toHuman(), undefined, 2)}</pre>}
         {txError && <div className="text-alert-error">{txError.message}</div>}
       </form>

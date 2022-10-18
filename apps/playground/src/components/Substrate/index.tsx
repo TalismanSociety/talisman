@@ -1,5 +1,6 @@
 import { TestLayout } from "../TestLayout"
 import { Account } from "./Account"
+import { Balance } from "./Balance"
 import { Identity } from "./Identity"
 import { Network } from "./Network"
 import { SignMessage } from "./SignMessage"
@@ -22,6 +23,7 @@ export const Substrate = () => {
           <TestLayout title="Substrate">
             <Network />
             <Account />
+            <Balance />
             <SignMessage />
             <Identity />
           </TestLayout>
