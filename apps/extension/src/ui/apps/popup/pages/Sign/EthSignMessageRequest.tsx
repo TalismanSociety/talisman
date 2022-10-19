@@ -1,4 +1,5 @@
 import { AccountJsonAny, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { isHexString, stripHexPrefix } from "@ethereumjs/util"
 import * as Sentry from "@sentry/browser"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
@@ -98,6 +99,12 @@ const SignMessage = ({
       } catch (err) {
         Sentry.captureException(err)
       }
+    }
+    if (isHexString(request)) {
+      const stripped = stripHexPrefix(request)
+      const buff = Buffer.from(stripped, "hex")
+      // if 32 bytes display as is, can be tested when approving NFT listings on tofunft.com
+      return buff.length === 32 ? request : buff.toString("utf8")
     }
     return request
   }, [request, typed])
