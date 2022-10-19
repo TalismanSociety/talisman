@@ -187,7 +187,6 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         )
       }
 
-      // checks stop here for EVM
       if (!chainId) {
         assert(evmNetworkId, "Ethereum network not found")
         assert(gasSettings, "Missing gas information")
@@ -208,7 +207,11 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
                   getMaxFeePerGas(baseFeePerGas as BigNumber, gasSettings.maxPriorityFeePerGas)
                 )
 
-          if (maxFeeAndGasCost.gt(nativeFromBalance.transferable.planck))
+          if (
+            maxFeeAndGasCost
+              .add(tokenIsNativeToken ? transfer.amount.planck : 0)
+              .gt(nativeFromBalance.transferable.planck)
+          )
             throw new Error(`Insufficient ${nativeToken.symbol} balance to pay for gas`)
 
           setFormData((prev) => ({
