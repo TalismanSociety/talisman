@@ -1,6 +1,6 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { Drawer } from "@talisman/components/Drawer"
-import { LedgerDetailedError, useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
+import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import {
   LedgerConnectionStatus,
@@ -178,10 +178,11 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
       setIsSigned(true)
       onSignature({ signature })
     } catch (err) {
-      const error = err as LedgerDetailedError
+      const error = err as Error & { statusCode?: number }
       // eslint-disable-next-line no-console
       if (DEBUG) console.error(error.message, { error })
       if (error.statusCode === 27013) return onReject()
+
       setError(error.message)
       setIsSigning(false)
       setAutoSend(!manualSend)
