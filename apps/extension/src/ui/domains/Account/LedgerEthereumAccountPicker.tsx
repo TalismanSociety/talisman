@@ -68,23 +68,25 @@ const useLedgerEthereumAccounts = (
 
   const evmNetworks = useEvmNetworks()
 
-  const balanceParams: AddressesByEvmNetwork = useMemo(() => {
-    const evmNetworkIds = [1284, 1285, 592, 1]
+  // which balances to fetch
+  const addressesByEvmNetwork = useMemo(() => {
+    // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
+    if (derivedAccounts.filter(Boolean).length < derivedAccounts.length) return undefined
 
-    const result = {
+    const result: AddressesByEvmNetwork = {
       addresses: derivedAccounts
         .filter((acc) => !!acc)
         .map((acc) => acc?.address)
         .filter(Boolean) as string[],
       evmNetworks: (evmNetworks || [])
-        .filter((chain) => evmNetworkIds.includes(Number(chain.id)))
+        .filter((chain) => BALANCE_CHECK_EVM_NETWORK_IDS.includes(Number(chain.id)))
         .map(({ id, nativeToken }) => ({ id, nativeToken: { id: nativeToken?.id as string } })),
     }
 
     return result
   }, [derivedAccounts, evmNetworks])
 
-  const balances = useBalancesByParams({}, balanceParams)
+  const balances = useBalancesByParams({ addressesByEvmNetwork })
 
   const accounts = useMemo(
     () =>
@@ -106,11 +108,12 @@ const useLedgerEthereumAccounts = (
           selected: selectedAccounts.some((sa) => sa.path === acc.path),
           balances: accountBalances,
           isBalanceLoading:
+            !addressesByEvmNetwork ||
             accountBalances.length < BALANCE_CHECK_EVM_NETWORK_IDS.length ||
             accountBalances.some((b) => b.status !== "live"),
         }
       }),
-    [balances.sorted, derivedAccounts, selectedAccounts, walletAccounts]
+    [balances.sorted, derivedAccounts, selectedAccounts, addressesByEvmNetwork, walletAccounts]
   )
 
   useEffect(() => {

@@ -71,12 +71,23 @@ const useDerivedAccounts = (
   const chains = useChains()
   const evmNetworks = useEvmNetworks()
 
-  const { chainIds, addressesByChain, addressesByEvmNetwork } = useMemo(() => {
-    const chainIds = type === "ethereum" ? [] : BALANCE_CHECK_SUBSTRATE_CHAIN_IDS
+  const { expectedBalancesCount, addressesByChain, addressesByEvmNetwork } = useMemo(() => {
+    const expectedBalancesCount =
+      type === "ethereum"
+        ? BALANCE_CHECK_EVM_NETWORK_IDS.length
+        : BALANCE_CHECK_SUBSTRATE_CHAIN_IDS.length
+
+    // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
+    if (derivedAccounts.filter(Boolean).length < derivedAccounts.length)
+      return {
+        expectedBalancesCount,
+      }
+
     const evmNetworkIds = type === "ethereum" ? BALANCE_CHECK_EVM_NETWORK_IDS : []
+    const chainIds = type === "ethereum" ? [] : BALANCE_CHECK_SUBSTRATE_CHAIN_IDS
     const testChains = (chains || []).filter((chain) => chainIds.includes(chain.id))
 
-    const addressesByChain =
+    const addressesByChain: AddressesByChain =
       type === "ethereum"
         ? {}
         : testChains.reduce(
@@ -87,7 +98,7 @@ const useDerivedAccounts = (
                 .map((acc) => acc as DerivedFromMnemonicAccount)
                 .map((account) => convertAddress(account.address, curr.prefix)),
             }),
-            {} as AddressesByChain
+            {}
           )
 
     const addressesByEvmNetwork: AddressesByEvmNetwork =
@@ -106,10 +117,10 @@ const useDerivedAccounts = (
           }
         : { addresses: [], evmNetworks: [] }
 
-    return { chainIds, addressesByChain, addressesByEvmNetwork }
+    return { expectedBalancesCount, addressesByChain, addressesByEvmNetwork }
   }, [chains, derivedAccounts, evmNetworks, type])
 
-  const balances = useBalancesByParams(addressesByChain, addressesByEvmNetwork)
+  const balances = useBalancesByParams({ addressesByChain, addressesByEvmNetwork })
 
   const accounts: (DerivedFromMnemonicAccount | null)[] = useMemo(
     () =>
@@ -133,11 +144,20 @@ const useDerivedAccounts = (
           selected: selectedAccounts.some((sa) => sa.seed === acc.seed),
           balances: accountBalances,
           isBalanceLoading:
-            accountBalances.length < chainIds.length ||
+            (!addressesByChain && !addressesByEvmNetwork) ||
+            accountBalances.length < expectedBalancesCount ||
             accountBalances.some((b) => b.status !== "live"),
         }
       }),
-    [balances.sorted, chainIds.length, derivedAccounts, selectedAccounts, walletAccounts]
+    [
+      addressesByChain,
+      addressesByEvmNetwork,
+      balances.sorted,
+      derivedAccounts,
+      expectedBalancesCount,
+      selectedAccounts,
+      walletAccounts,
+    ]
   )
 
   useEffect(() => {

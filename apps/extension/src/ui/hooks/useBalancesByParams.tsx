@@ -15,10 +15,15 @@ const INITIAL_VALUE = new Balances({})
 const DEFAULT_BY_CHAIN = {}
 const DEFAULT_By_EVM_NETWORK = { addresses: [], evmNetworks: [] }
 
-export const useBalancesByParams = (
-  addressesByChain: AddressesByChain = DEFAULT_BY_CHAIN,
-  addressesByEvmNetwork: AddressesByEvmNetwork = DEFAULT_By_EVM_NETWORK
-) => {
+type BalanceByParamsProps = {
+  addressesByChain?: AddressesByChain
+  addressesByEvmNetwork?: AddressesByEvmNetwork
+}
+
+export const useBalancesByParams = ({
+  addressesByChain = DEFAULT_BY_CHAIN,
+  addressesByEvmNetwork = DEFAULT_By_EVM_NETWORK,
+}: BalanceByParamsProps) => {
   const _chains = useChains()
   const _evmNetworks = useEvmNetworks()
   const _tokens = useTokens()
@@ -72,7 +77,10 @@ export const useBalancesByParams = (
 
   // subscrition must be reinitialized (using the key) if parameters change
   const subscriptionKey = useMemo(
-    () => md5(JSON.stringify(addressesByChain) + md5(JSON.stringify(addressesByEvmNetwork))),
+    () =>
+      `useBalancesByParams-${md5(JSON.stringify(addressesByChain))}-${md5(
+        JSON.stringify(addressesByEvmNetwork)
+      )}`,
     [addressesByChain, addressesByEvmNetwork]
   )
 

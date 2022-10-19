@@ -59,8 +59,11 @@ const useLedgerChainAccounts = (
     setIsBusy(false)
   }, [app, chain, isReady, itemsPerPage, ledger, pageIndex])
 
-  const addressesByChain: AddressesByChain = useMemo(() => {
-    return chain
+  const addressesByChain = useMemo(() => {
+    // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
+    if (ledgerAccounts.filter(Boolean).length < ledgerAccounts.length) return undefined
+
+    const result: AddressesByChain = chain
       ? {
           [chain.id]: ledgerAccounts
             .filter((acc) => !!acc)
@@ -68,9 +71,11 @@ const useLedgerChainAccounts = (
             .map((account) => convertAddress(account.address, chain.prefix)),
         }
       : {}
+
+    return result
   }, [chain, ledgerAccounts])
 
-  const balances = useBalancesByParams(addressesByChain)
+  const balances = useBalancesByParams({ addressesByChain })
 
   const accounts: (LedgerSubstrateAccount | null)[] = useMemo(
     () =>
@@ -96,10 +101,12 @@ const useLedgerChainAccounts = (
           selected: selectedAccounts.some((sa) => sa.address === acc.address),
           balances: accountBalances,
           isBalanceLoading:
-            accountBalances.length < 1 || accountBalances.some((b) => b.status !== "live"),
+            !addressesByChain || // show spinner when not fetching yet
+            accountBalances.length < 1 ||
+            accountBalances.some((b) => b.status !== "live"),
         }
       }),
-    [balances.sorted, chain?.id, ledgerAccounts, selectedAccounts, walletAccounts]
+    [balances.sorted, chain?.id, ledgerAccounts, selectedAccounts, addressesByChain, walletAccounts]
   )
 
   useEffect(() => {
