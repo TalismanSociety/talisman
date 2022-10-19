@@ -27,7 +27,7 @@ const MigratePasswordModalContent = () => {
   if (status === statusOptions.PROCESSING)
     return (
       <ModalDialog title="Please wait...">
-        <StatusIcon status="SPINNING" />
+        <StatusIcon status="SPINNING" className="my-20" />
       </ModalDialog>
     )
   if (status === statusOptions.SUCCESS) return <MigratePasswordSuccess />

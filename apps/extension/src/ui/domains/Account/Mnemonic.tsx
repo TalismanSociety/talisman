@@ -1,4 +1,3 @@
-import Pill from "@talisman/components/Pill"
 import { MouseEventHandler, useState } from "react"
 import styled from "styled-components"
 import { CheckIcon, CopyIcon } from "@talisman/theme/icons"
@@ -79,9 +78,12 @@ export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
       >
         <div className="content flex flex-wrap">
           {mnemonic.split(" ").map((word) => (
-            <Pill muted={true} className="mr-2 mb-1" key={`mnemonic-${word}`}>
+            <span
+              className="bg-body-secondary mr-2 mb-1 rounded-lg bg-opacity-30 py-3 px-4 opacity-70 "
+              key={`mnemonic-${word}`}
+            >
               {word}
-            </Pill>
+            </span>
           ))}
         </div>
       </SecretText>

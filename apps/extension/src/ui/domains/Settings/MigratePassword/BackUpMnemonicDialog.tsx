@@ -4,7 +4,6 @@ import { ArrowRightIcon } from "@talisman/theme/icons"
 import { Mnemonic } from "@ui/domains/Account/Mnemonic"
 import { useMigratePassword } from "./context"
 import { useState } from "react"
-import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
 const ShowMnemonic = () => {
   const [hasHovered, setHasHovered] = useState(false)

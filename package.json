@@ -22,7 +22,6 @@
   "devDependencies": {
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
-    "@types/bcryptjs": "^2.4.2",
     "husky": "^8.0.1",
     "import-sort-style-module": "^6.0.0",
     "lint-staged": "^12.4.1",
