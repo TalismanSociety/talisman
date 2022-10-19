@@ -85,17 +85,15 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
           }
         case 28160: // non-compatible app
         case 25831: // home screen
+        case 25873:
         case 27906:
         case 57346:
+        default:
           return {
             status: "warning",
             message: `Please open <strong>${capitalize(appName)}</strong> app on your Ledger.`,
             requiresManualRetry: false,
           }
-
-        default:
-          // eslint-disable-next-line no-console
-          DEBUG && console.warn("Unknown error code", { error })
       }
       break
     }
