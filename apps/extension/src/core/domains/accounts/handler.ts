@@ -11,6 +11,7 @@ import type {
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
@@ -206,16 +207,21 @@ export default class AccountsHandler extends ExtensionHandler {
     return true
   }
 
-  private async accountExport({ address }: RequestAccountExport): Promise<ResponseAccountExport> {
+  private async accountExport({
+    address,
+    exportPw,
+  }: RequestAccountExport): Promise<ResponseAccountExport> {
     const password = await this.stores.password.getPassword()
     assert(password, "User not logged in")
 
     const pair = keyring.getPair(address)
     talismanAnalytics.capture("account export", { type: pair.type })
 
-    return {
-      exportedJson: keyring.backupAccount(pair, password),
-    }
+    const { err, val } = await getPairForAddressSafely(address, (pair) => ({
+      exportedJson: pair.toJson(exportPw),
+    }))
+    if (err) throw new Error(val as string)
+    return val
   }
 
   private async accountRename({ address, name }: RequestAccountRename): Promise<boolean> {

@@ -19,6 +19,7 @@ export const api: MessageTypes = {
   lock: () => messageService.sendMessage("pri(app.lock)"),
   changePassword: (currentPw, newPw, newPwConfirm) =>
     messageService.sendMessage("pri(app.changePassword)", { currentPw, newPw, newPwConfirm }),
+  checkPassword: (password) => messageService.sendMessage("pri(app.checkPassword)", { password }),
   authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
   authStatusSubscribe: (cb) => messageService.subscribe("pri(app.authStatus.subscribe)", null, cb),
   onboardStatus: () => messageService.sendMessage("pri(app.onboardStatus)"),
@@ -78,7 +79,8 @@ export const api: MessageTypes = {
     }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountForget: (address) => messageService.sendMessage("pri(accounts.forget)", { address }),
-  accountExport: (address) => messageService.sendMessage("pri(accounts.export)", { address }),
+  accountExport: (address, exportPw) =>
+    messageService.sendMessage("pri(accounts.export)", { address, exportPw }),
   accountRename: (address, name) =>
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
   accountValidateMnemonic: (mnemonic) =>

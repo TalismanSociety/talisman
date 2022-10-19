@@ -65,6 +65,7 @@ export interface RequestAccountForget {
 
 export interface RequestAccountExport {
   address: string
+  exportPw: string
 }
 
 export interface RequestAccountRename {

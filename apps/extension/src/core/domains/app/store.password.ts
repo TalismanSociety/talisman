@@ -82,9 +82,11 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     return result
   }
 
-  async checkPassword(password: string, cb: (transformedPassword: string) => Promise<boolean>) {
+  async checkPassword(password: string) {
+    assert(this.isLoggedIn.value, "Unauthorised")
     const pw = await this.transformPassword(password)
-    return cb(pw)
+    assert(pw === (await this.getPassword()), "Incorrect password")
+    return pw
   }
 
   async getPassword() {

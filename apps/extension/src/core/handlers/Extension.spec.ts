@@ -101,11 +101,14 @@ describe("Extension", () => {
       pair: { address },
     } = keyring.addUri(suri, pw)
 
+    const exportPw = "newPassword"
+
     const result = await extension.handle(
       "id",
       "pri(accounts.export)",
       {
         address,
+        exportPw,
       },
       {} as chrome.runtime.Port
     )

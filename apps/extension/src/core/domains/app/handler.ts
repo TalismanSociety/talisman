@@ -95,23 +95,22 @@ export default class AppHandler extends ExtensionHandler {
     )
 
     try {
-      return await this.stores.password.checkPassword(pass, async (transformedPassword) => {
-        // get root account
-        const rootAccount = this.getRootAccount()
+      const transformedPassword = await this.stores.password.transformPassword(pass)
+      // get root account
+      const rootAccount = this.getRootAccount()
 
-        assert(rootAccount, "No root account")
+      assert(rootAccount, "No root account")
 
-        // fetch keyring pair from address
-        const pair = keyring.getPair(rootAccount.address)
-        // attempt unlock the pair
-        // a successful unlock means authenticated
-        pair.unlock(transformedPassword)
-        pair.lock()
-        await this.stores.password.setPlaintextPassword(pass)
+      // fetch keyring pair from address
+      const pair = keyring.getPair(rootAccount.address)
+      // attempt unlock the pair
+      // a successful unlock means authenticated
+      pair.unlock(transformedPassword)
+      pair.lock()
+      await this.stores.password.setPlaintextPassword(pass)
 
-        talismanAnalytics.capture("authenticate")
-        return true
-      })
+      talismanAnalytics.capture("authenticate")
+      return true
     } catch (e) {
       this.stores.password.clearPassword()
       return false
@@ -181,6 +180,11 @@ export default class AppHandler extends ExtensionHandler {
     }
     await this.stores.password.set(pwStoreData)
     return result.val
+  }
+
+  private async checkPassword({ password }: RequestTypes["pri(app.checkPassword)"]) {
+    await this.stores.password.checkPassword(password)
+    return true
   }
 
   private async dashboardOpen({ route }: RequestRoute): Promise<boolean> {
@@ -257,6 +261,9 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.changePassword)":
         return await this.changePassword(request as RequestTypes["pri(app.changePassword)"])
+
+      case "pri(app.checkPassword)":
+        return await this.checkPassword(request as RequestTypes["pri(app.checkPassword)"])
 
       case "pri(app.dashboardOpen)":
         return await this.dashboardOpen(request as RequestRoute)

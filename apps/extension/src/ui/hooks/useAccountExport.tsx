@@ -7,15 +7,18 @@ const EXPORTABLE_ORIGINS = ["SEED", "JSON", "DERIVED"]
 
 export const useAccountExport = (account?: AccountJsonAny) => {
   const canExportAccount = useMemo(
-    () => EXPORTABLE_ORIGINS.includes(account?.origin as string),
-    [account?.origin]
+    () => account && EXPORTABLE_ORIGINS.includes(account?.origin as string),
+    [account]
   )
 
-  const exportAccount = useCallback(async () => {
-    if (!account) return
-    const { exportedJson } = await api.accountExport(account.address)
-    downloadJson(exportedJson, `${exportedJson.meta?.name || "talisman"}`)
-  }, [account])
+  const exportAccount = useCallback(
+    async (newPw: string) => {
+      if (!account) return
+      const { exportedJson } = await api.accountExport(account.address, newPw)
+      downloadJson(exportedJson, `${exportedJson.meta?.name || "talisman"}`)
+    },
+    [account]
+  )
 
   return { canExportAccount, exportAccount }
 }
