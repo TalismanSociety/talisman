@@ -19,9 +19,10 @@ const StackedButtonGroup = styled(ButtonGroup)`
 type Props = {
   className?: string
   onAccept: () => void
+  onReject: () => void
 }
 
-export const AlertCard = styled(({ className, onAccept }: Props) => {
+export const AlertCard = styled(({ className, onAccept, onReject }: Props) => {
   return (
     <Card
       className={className}
@@ -50,6 +51,7 @@ export const AlertCard = styled(({ className, onAccept }: Props) => {
           <Button primary onClick={onAccept}>
             Update Password
           </Button>
+          <Button onClick={onReject}>Not for now</Button>
         </StackedButtonGroup>
       }
     />
@@ -110,12 +112,18 @@ const PasswordMigrationAlertPopupDrawer = () => {
   const { close, isOpen, setIsOpen } = useOpenClose()
 
   useEffect(() => {
-    const sub = passwordStore.observable.subscribe(({ isHashed }) => {
-      setIsOpen(!isHashed)
+    const sub = passwordStore.observable.subscribe(({ isHashed, ignorePasswordUpdate }) => {
+      setIsOpen(!isHashed && !ignorePasswordUpdate)
     })
     return () => {
       sub.unsubscribe()
     }
+  }, [setIsOpen])
+
+  const handleReject = useCallback(async () => {
+    // don't bug the user with repeated requests
+    await passwordStore.set({ ignorePasswordUpdate: true })
+    setIsOpen(false)
   }, [setIsOpen])
 
   const handleAccept = useCallback(() => {
@@ -133,7 +141,7 @@ const PasswordMigrationAlertPopupDrawer = () => {
 
   return (
     <Drawer open={isOpen} anchor="bottom">
-      <AlertCard onAccept={handleAccept} />
+      <AlertCard onAccept={handleAccept} onReject={handleReject} />
     </Drawer>
   )
 }

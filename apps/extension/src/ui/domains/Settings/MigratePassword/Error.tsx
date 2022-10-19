@@ -2,6 +2,7 @@ import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useSettings } from "@ui/hooks/useSettings"
 import { useMigratePassword } from "./context"
 import { Button, Checkbox } from "talisman-ui"
+import { passwordStore } from "@core/domains/app"
 
 export const MigratePasswordError = () => {
   const { statusMessage, onComplete } = useMigratePassword()
@@ -45,9 +46,17 @@ export const MigratePasswordError = () => {
         </span>
       </p>
       <p className="text-body-secondary text-sm">
-        The update was not completed, but you may continue to use Talisman.
+        The update was not completed, but you may continue to use Talisman. You will be asked to
+        update again next time the extension is restarted.
       </p>
-      <Button fullWidth onClick={onComplete}>
+      <Button
+        fullWidth
+        onClick={async () => {
+          onComplete()
+          // don't bug the user with repeated requests
+          await passwordStore.set({ ignorePasswordUpdate: true })
+        }}
+      >
         Close
       </Button>
     </ModalDialog>
