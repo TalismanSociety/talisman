@@ -8826,6 +8826,7 @@ __metadata:
     "@testing-library/jest-dom": ^5.11.4
     "@testing-library/react": ^13.3.0
     "@testing-library/user-event": ^13.5.0
+    "@types/bcryptjs": ^2.4.2
     "@types/blueimp-md5": 2.18.0
     "@types/chrome": ^0.0.180
     "@types/color": 3.0.3
@@ -15210,7 +15211,6 @@ __metadata:
   dependencies:
     "@commitlint/cli": ^17.0.0
     "@commitlint/config-conventional": ^17.0.0
-    "@types/bcryptjs": ^2.4.2
     husky: ^8.0.1
     import-sort-style-module: ^6.0.0
     lint-staged: ^12.4.1
