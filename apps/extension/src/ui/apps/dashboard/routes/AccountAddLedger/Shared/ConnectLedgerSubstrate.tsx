@@ -4,6 +4,7 @@ import useChain from "@ui/hooks/useChain"
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import useToken from "@ui/hooks/useToken"
 import { useEffect } from "react"
+import { useLedgerSubstrateApp } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 
 export const ConnectLedgerSubstrate = ({
   chainId,
@@ -17,6 +18,7 @@ export const ConnectLedgerSubstrate = ({
   const chain = useChain(chainId)
   const token = useToken(chain?.nativeToken?.id)
   const ledger = useLedgerSubstrate(chain?.genesisHash)
+  const app = useLedgerSubstrateApp(chain?.genesisHash)
 
   useEffect(() => {
     onReadyChanged?.(ledger.isReady)
@@ -26,12 +28,14 @@ export const ConnectLedgerSubstrate = ({
     }
   }, [ledger.isReady, onReadyChanged])
 
+  if (!app) return null
+
   return (
     <div className={className}>
       <div className="text-body-secondary m-0">
         Connect and unlock your Ledger, then open the{" "}
         <span className="text-body">
-          {chain?.chainName} {token?.symbol ? `(${token.symbol})` : null}
+          {app.label} {token?.symbol ? `(${token.symbol})` : null}
         </span>{" "}
         app on your Ledger.
       </div>
