@@ -425,21 +425,23 @@ export const SendForm = () => {
         <footer>
           <div className="message">{errorMessage}</div>
           <div className="info">
-            {balance && (
-              <Box flex column justify="flex-end" gap={0.1}>
-                <div className="flex items-center gap-2">
-                  <div>Balance: </div>
-                  <div>
-                    {balance.status === "cache" && (
-                      <LoaderIcon className="opacity-1 h-6 w-6 animate-spin" />
-                    )}
+            <Box flex column justify="flex-end" gap={0.1}>
+              {balance && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <div>Balance: </div>
+                    <div>
+                      {balance.status === "cache" && (
+                        <LoaderIcon className="opacity-1 h-6 w-6 animate-spin" />
+                      )}
+                    </div>
                   </div>
-                </div>
-                <Box>
-                  <AvailableBalance row withFiat noCountUp balance={balance} />
-                </Box>
-              </Box>
-            )}
+                  <Box>
+                    <AvailableBalance row withFiat noCountUp balance={balance} />
+                  </Box>
+                </>
+              )}
+            </Box>
             {isEvm && (
               <EthTransactionFees
                 amount={amount}
