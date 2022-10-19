@@ -1,5 +1,3 @@
-import { DEBUG } from "@core/constants"
-
 // this should live in chaindata in the future
 export const ledgerNetworks = [
   {
@@ -111,6 +109,16 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
   // Polkadot specific errors, wrapped in simple Error object
   // only message is available
   switch (err.message) {
+    case "Device is busy":
+    case "NetworkError: Failed to execute 'transferOut' on 'USBDevice': A transfer error has occurred.":
+    case "NetworkError: Failed to execute 'transferIn' on 'USBDevice': A transfer error has occurred.":
+    case "Failed to execute 'requestDevice' on 'USB': Must be handling a user gesture to show a permission request.":
+      return {
+        status: "error",
+        message: "Failed to connect to your Ledger. Click here to retry.",
+        requiresManualRetry: true,
+      }
+
     case "App does not seem to be open": // locked but underlying app is eth
     case "Unknown Status Code: 28161": // just unlocked, didn't open kusama yet
     case "Unknown Status Code: 38913": // just unlocked, didn't open kusama yet

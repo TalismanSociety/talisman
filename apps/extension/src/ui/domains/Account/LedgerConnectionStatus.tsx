@@ -59,9 +59,14 @@ export type LedgerConnectionStatusProps = {
 const Strong = styled.strong`
   color: var(--color-foreground-muted-2x);
   text-transform: capitalize;
+  &&& {
+    padding: 0;
+  }
 `
 
 const wrapStrong = (text: string) => {
+  if (!text) return text
+
   const splitter = new RegExp("(<strong>[^<]*?</strong>)", "g")
   const extractor = new RegExp("^<strong>([^<]*?)</strong>$", "g")
 

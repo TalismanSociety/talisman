@@ -16,9 +16,10 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
   const [isReady, setIsReady] = useState(false)
 
   const ledger = useMemo(() => {
+    if (!app) return null
     try {
       assert(getIsLedgerCapable(), "Sorry, Ledger is not supported on your browser.")
-      assert(app, "There is no Ledger app available for this network.")
+      assert(app.name, "There is no Ledger app available for this network.")
 
       return new Ledger("webusb", app.name)
     } catch (err) {
@@ -29,7 +30,7 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
       return null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [genesis, refreshCounter])
+  }, [app, refreshCounter])
 
   const { status, message, requiresManualRetry } = useMemo<{
     status: LedgerStatus

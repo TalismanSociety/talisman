@@ -49,9 +49,7 @@ export const useLedgerEthereum = () => {
   const refConnecting = useRef(false)
 
   const connectLedger = useCallback(async (resetError?: boolean) => {
-    if (refConnecting.current) {
-      return
-    }
+    if (refConnecting.current) return
     refConnecting.current = true
 
     setIsLoading(true)
