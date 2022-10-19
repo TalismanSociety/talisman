@@ -6,24 +6,21 @@ import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
 import { useSetInterval } from "../useSetInterval"
 import { DEBUG } from "@core/constants"
 import { getLedgerErrorProps, LedgerStatus } from "./common"
-import { useLedgerAppNetworkName as useLedgerSubstrateAppName } from "./useLedgerSubstrateAppName"
+import { useLedgerSubstrateApp } from "./useLedgerSubstrateApp"
 
 export const useLedgerSubstrate = (genesis?: string | null) => {
+  const app = useLedgerSubstrateApp(genesis)
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
   const [error, setError] = useState<Error>()
   const [isReady, setIsReady] = useState(false)
 
-  const network = useLedgerSubstrateAppName(genesis)
-
   const ledger = useMemo(() => {
-    if (!network) return null
-
     try {
       assert(getIsLedgerCapable(), "Sorry, Ledger is not supported on your browser.")
-      assert(network !== "unknown network", "There is no Ledger app available for this network.")
+      assert(app, "There is no Ledger app available for this network.")
 
-      return new Ledger("webusb", network)
+      return new Ledger("webusb", app.name)
     } catch (err) {
       // eslint-disable-next-line no-console
       DEBUG && console.error("create ledger " + (err as Error).message, err)
@@ -39,7 +36,7 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
     message: string
     requiresManualRetry: boolean
   }>(() => {
-    if (error) return getLedgerErrorProps(error, network ?? "Unknown network")
+    if (error) return getLedgerErrorProps(error, app?.label)
 
     if (isLoading)
       return {
@@ -56,9 +53,8 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
       }
 
     return { status: "unknown", message: "", requiresManualRetry: false }
-  }, [isReady, isLoading, error, network])
+  }, [isReady, isLoading, error, app])
 
-  // TODO merge with ledger creation like for eth
   const connectLedger = useCallback(
     async (resetError?: boolean) => {
       setIsReady(false)
@@ -109,7 +105,7 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
     requiresManualRetry,
     status,
     message,
-    network,
+    network: app,
     ledger,
     refresh,
   }

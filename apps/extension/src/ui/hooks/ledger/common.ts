@@ -7,18 +7,22 @@ export const ledgerNetworks = [
     // https://github.com/polkadot-js/common/blob/master/packages/networks/src/defaults/ledger.ts
     name: "polkadot",
     genesisHash: "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    label: "Polkadot", // used both in "Please open Polkadot app" message and for naming accounts e.g. "Ledger Polkadot 1"
   },
   {
     name: "kusama",
     genesisHash: "0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe",
+    label: "Kusama",
   },
   {
     name: "acala",
     genesisHash: "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
+    label: "Acala",
   },
   {
     name: "nodle-para",
     genesisHash: "0x97da7ede98d7bad4e36b4d734b6055425a3be036da2a332ea5a7037656427a21",
+    label: "Nodle",
   },
   // commented because statemine accounts override kusama accounts when imported
   // {
@@ -33,6 +37,7 @@ export const ledgerNetworks = [
   {
     name: "centrifuge",
     genesisHash: "0xb3db41421702df9a7fcac62b53ffeac85f7853cc4e689e0b93aeb3db18c09d82",
+    label: "Centrifuge",
   },
 ]
 
@@ -46,7 +51,7 @@ export type LedgerErrorProps = {
 
 const capitalize = (str: string) => (str.length > 1 ? str[0].toUpperCase() + str.slice(1) : str)
 
-export const getLedgerErrorProps = (err: Error, appName: string): LedgerErrorProps => {
+export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): LedgerErrorProps => {
   const error = err as Error & { name?: string; statusCode?: number }
 
   // Generic errors
@@ -110,6 +115,7 @@ export const getLedgerErrorProps = (err: Error, appName: string): LedgerErrorPro
   switch (err.message) {
     case "App does not seem to be open": // locked but underlying app is eth
     case "Unknown Status Code: 28161": // just unlocked, didn't open kusama yet
+    case "Unknown Status Code: 38913": // just unlocked, didn't open kusama yet
       return {
         status: "warning",
         message: `Please open <strong>${capitalize(appName)}</strong> app on your Ledger.`,

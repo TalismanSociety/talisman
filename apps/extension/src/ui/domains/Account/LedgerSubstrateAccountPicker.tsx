@@ -7,6 +7,7 @@ import useChain from "@ui/hooks/useChain"
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
+import { useLedgerSubstrateApp } from "@ui/hooks/ledger/useLedgerSubstrateApp"
 
 const useLedgerChainAccounts = (
   chainId: string,
@@ -16,6 +17,7 @@ const useLedgerChainAccounts = (
 ) => {
   const walletAccounts = useAccounts()
   const chain = useChain(chainId)
+  const app = useLedgerSubstrateApp(chain?.genesisHash)
 
   const [ledgerAccounts, setLedgerAccounts] = useState<(LedgerSubstrateAccount | undefined)[]>([
     ...Array(itemsPerPage),
@@ -26,7 +28,7 @@ const useLedgerChainAccounts = (
   const { isReady, ledger, ...connectionStatus } = useLedgerSubstrate(chain?.genesisHash)
 
   const loadPage = useCallback(async () => {
-    if (!ledger || !isReady || !chain) return
+    if (!app || !ledger || !isReady || !chain) return
 
     setIsBusy(true)
     setError(undefined)
@@ -45,7 +47,7 @@ const useLedgerChainAccounts = (
           accountIndex,
           addressOffset: 0,
           address,
-          name: `Ledger ${chain.chainName} ${accountIndex + 1}`,
+          name: `Ledger ${app.label} ${accountIndex + 1}`,
         } as LedgerSubstrateAccount
 
         setLedgerAccounts((prev) => [...newAccounts])
@@ -55,7 +57,7 @@ const useLedgerChainAccounts = (
     }
 
     setIsBusy(false)
-  }, [chain, isReady, itemsPerPage, ledger, pageIndex])
+  }, [app, chain, isReady, itemsPerPage, ledger, pageIndex])
 
   const addressesByChain: AddressesByChain = useMemo(() => {
     return chain
