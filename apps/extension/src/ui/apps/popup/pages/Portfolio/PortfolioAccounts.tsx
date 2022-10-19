@@ -19,7 +19,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
-import { useFeatures, useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { MouseEventHandler, memo, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -39,6 +39,7 @@ type AccountOption = {
   name: string
   total?: number
   genesisHash?: string | null
+  isHardware?: boolean
 }
 
 const Button = styled.article`
@@ -73,7 +74,7 @@ const CopyButton = styled(IconButton)`
   width: 1.4rem;
 `
 
-const AccountButton = ({ address, name, total, genesisHash }: AccountOption) => {
+const AccountButton = ({ address, name, total, genesisHash, isHardware }: AccountOption) => {
   const { open } = useAddressFormatterModal()
   const { select } = useSelectedAccount()
   const navigate = useNavigate()
@@ -108,7 +109,7 @@ const AccountButton = ({ address, name, total, genesisHash }: AccountOption) => 
       <Box flex column justify="center" align="flex-start" grow gap={0.4} overflow="hidden">
         <div className="text-body flex w-full items-center gap-3 text-base leading-none">
           <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{name}</div>
-          {genesisHash && (
+          {isHardware && (
             <div className="text-primary">
               <UsbIcon />
             </div>
@@ -204,10 +205,11 @@ export const PortfolioAccounts = () => {
         name: "All Accounts",
         total: balances.sum.fiat("usd").total,
       },
-      ...accounts.map(({ address, name, genesisHash }) => ({
+      ...accounts.map(({ address, name, genesisHash, isHardware }) => ({
         address,
         genesisHash,
         name: name ?? "Unknown Account",
+        isHardware,
         total: balances.find({ address }).sum.fiat("usd").total,
       })),
     ]
