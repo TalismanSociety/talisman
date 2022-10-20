@@ -36,15 +36,11 @@ const MnemonicForm = ({ className }: MnemonicFormProps) => {
   const { isConfirmed, toggleConfirmed } = useMnemonicBackup()
   const [mnemonic, setMnemonic] = useState<string>()
   const { password } = usePasswordUnlock()
-  const getMnemonic = useCallback(
-    async (password: string) => await api.mnemonicUnlock(password),
-    []
-  )
 
   useEffect(() => {
     if (!password) return
-    getMnemonic(password).then((result) => setMnemonic(result))
-  }, [getMnemonic, password])
+    api.mnemonicUnlock(password).then((result) => setMnemonic(result))
+  }, [password])
 
   return (
     <div className={className}>
