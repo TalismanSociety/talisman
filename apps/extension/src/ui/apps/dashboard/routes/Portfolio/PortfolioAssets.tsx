@@ -29,13 +29,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const { showWalletFunding } = useAppState()
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
-  const {
-    canExportAccount,
-    exportAccount,
-    open: openAccountExportModal,
-    close: closeAccountExportModal,
-    isOpen: isOpenAccountExportModal,
-  } = useAccountExportModal()
+  const { canExportAccount, open: openAccountExportModal } = useAccountExportModal()
   const { canRemove, open: openAccountRemoveModal } = useAccountRemoveModal()
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openAddressFormatterModal } = useAddressFormatterModal()
@@ -69,54 +63,50 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   )
 
   return (
-    <>
-      <Box flex column fullheight>
-        {displayWalletFunding ? (
-          <Box margin="3.8rem 0 0 0" grow flex justify="center" align="center">
-            <FundYourWallet />
+    <Box flex column fullheight>
+      {displayWalletFunding ? (
+        <Box margin="3.8rem 0 0 0" grow flex justify="center" align="center">
+          <FundYourWallet />
+        </Box>
+      ) : (
+        <>
+          <Box flex fullwidth gap={1.6}>
+            <Stats title="Total Portfolio Value" fiat={portfolio} />
+            <Stats title="Locked" fiat={locked} locked />
+            <Stats title="Available" fiat={available} />
+            <Box grow flex justify="flex-end" align="center" gap={1.6}>
+              {account && (
+                <PopNav
+                  trigger={
+                    <IconButton>
+                      <IconMore />
+                    </IconButton>
+                  }
+                  className="icon more"
+                  closeOnMouseOut
+                >
+                  <PopNav.Item onClick={sendFunds}>Send funds</PopNav.Item>
+                  <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
+                  {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
+                  {canExportAccount && (
+                    <PopNav.Item onClick={openAccountExportModal}>Export Private Key</PopNav.Item>
+                  )}
+                  {canRemove && (
+                    <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
+                  )}
+                </PopNav>
+              )}
+            </Box>
           </Box>
-        ) : (
-          <>
-            <Box flex fullwidth gap={1.6}>
-              <Stats title="Total Portfolio Value" fiat={portfolio} />
-              <Stats title="Locked" fiat={locked} locked />
-              <Stats title="Available" fiat={available} />
-              <Box grow flex justify="flex-end" align="center" gap={1.6}>
-                {account && (
-                  <PopNav
-                    trigger={
-                      <IconButton>
-                        <IconMore />
-                      </IconButton>
-                    }
-                    className="icon more"
-                    closeOnMouseOut
-                  >
-                    <PopNav.Item onClick={sendFunds}>Send funds</PopNav.Item>
-                    <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
-                    {canRename && (
-                      <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>
-                    )}
-                    {canExportAccount && (
-                      <PopNav.Item onClick={openAccountExportModal}>Export Private Key</PopNav.Item>
-                    )}
-                    {canRemove && (
-                      <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
-                    )}
-                  </PopNav>
-                )}
-              </Box>
-            </Box>
-            <Box margin="3.8rem 0 0 0">
-              <NetworkPicker />
-            </Box>
-            <Box margin="1.2rem 0 0 0">
-              <DashboardAssetsTable balances={balancesToDisplay} />
-            </Box>
-          </>
-        )}
-      </Box>
-    </>
+          <Box margin="3.8rem 0 0 0">
+            <NetworkPicker />
+          </Box>
+          <Box margin="1.2rem 0 0 0">
+            <DashboardAssetsTable balances={balancesToDisplay} />
+          </Box>
+        </>
+      )}
+    </Box>
   )
 })
 

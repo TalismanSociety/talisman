@@ -76,10 +76,10 @@ export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
         }}
       >
         <div className="content flex flex-wrap">
-          {mnemonic.split(" ").map((word) => (
+          {mnemonic.split(" ").map((word, i) => (
             <span
               className="bg-black-tertiary text-body-secondary mx-2 my-2 rounded-lg py-3 px-4"
-              key={`mnemonic-${word}`}
+              key={`mnemonic-${i}`}
             >
               {word}
             </span>
