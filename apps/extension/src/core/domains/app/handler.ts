@@ -166,6 +166,7 @@ export default class AppHandler extends ExtensionHandler {
     let hashedNewPw, newSalt
     if (isHashedAlready) hashedNewPw = await this.stores.password.getHashedPassword(newPw)
     else {
+      // need to create a new password and salt
       const { salt, password } = await this.stores.password.createPassword(newPw)
       hashedNewPw = password
       newSalt = salt
@@ -173,12 +174,12 @@ export default class AppHandler extends ExtensionHandler {
 
     const result = await changePassword({ currentPw: transformedPw, newPw: hashedNewPw })
     if (!result.ok) throw Error(result.val)
-    await this.stores.password.setPlaintextPassword(hashedNewPw)
     const pwStoreData: Record<string, any> = { isTrimmed: false, isHashed: true }
     if (newSalt) {
       pwStoreData.salt = newSalt
     }
     await this.stores.password.set(pwStoreData)
+    await this.stores.password.setPlaintextPassword(newPw)
     return result.val
   }
 
