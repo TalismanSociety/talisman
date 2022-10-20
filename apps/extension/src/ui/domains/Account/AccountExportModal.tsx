@@ -1,16 +1,51 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
-import { useAccountExport } from "@ui/hooks/useAccountExport"
-import styled from "styled-components"
-import { PasswordUnlock } from "./PasswordUnlock"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import downloadJson from "@talisman/util/downloadJson"
+import { provideContext } from "@talisman/util/provideContext"
+import { api } from "@ui/api"
+import { useCallback, useEffect, useMemo } from "react"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FormField } from "@talisman/components/Field/FormField"
-import { Button, Checkbox } from "talisman-ui"
-import { useCallback } from "react"
-import { useForm } from "react-hook-form"
-import * as yup from "yup"
+import { Modal } from "@talisman/components/Modal"
+import { ModalDialog } from "@talisman/components/ModalDialog"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
+import { useForm } from "react-hook-form"
+import styled from "styled-components"
+import { Button } from "talisman-ui"
+import * as yup from "yup"
+import { PasswordUnlock } from "./PasswordUnlock"
+import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
+
+const EXPORTABLE_ORIGINS = ["SEED", "JSON", "DERIVED"]
+
+export const useAccountExportModalProvider = () => {
+  const { account } = useSelectedAccount()
+  const { isOpen, open, close } = useOpenClose()
+
+  useEffect(() => {
+    close()
+  }, [account, close])
+
+  const canExportAccount = useMemo(
+    () => account && EXPORTABLE_ORIGINS.includes(account?.origin as string),
+    [account]
+  )
+
+  const exportAccount = useCallback(
+    async (newPw: string) => {
+      if (!account) return
+      const { exportedJson } = await api.accountExport(account.address, newPw)
+      downloadJson(exportedJson, `${exportedJson.meta?.name || "talisman"}`)
+    },
+    [account]
+  )
+
+  return { account, canExportAccount, exportAccount, isOpen, open, close }
+}
+
+export const [AccountExportModalProvider, useAccountExportModal] = provideContext(
+  useAccountExportModalProvider
+)
 
 type FormData = {
   newPw: string
@@ -27,14 +62,8 @@ const schema = yup
   })
   .required()
 
-const ExportAccountForm = ({
-  account,
-  onSuccess,
-}: {
-  account: AccountJsonAny
-  onSuccess?: () => void
-}) => {
-  const { canExportAccount, exportAccount } = useAccountExport(account)
+const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
+  const { canExportAccount, exportAccount } = useAccountExportModal()
   const {
     register,
     handleSubmit,
@@ -114,17 +143,12 @@ const ExportAccountForm = ({
   )
 }
 
-type ExportAccountModalProps = {
-  account: AccountJsonAny
-  isOpen: boolean
-  close: () => void
-}
-
 const Dialog = styled(ModalDialog)`
   width: 50.3rem;
 `
 
-export const ExportAccountModal = ({ isOpen, close, account }: ExportAccountModalProps) => {
+export const AccountExportModal = () => {
+  const { isOpen, close } = useAccountExportModal()
   return (
     <Modal open={isOpen} onClose={close}>
       <Dialog title="Export account JSON" onClose={close}>
@@ -135,7 +159,7 @@ export const ExportAccountModal = ({ isOpen, close, account }: ExportAccountModa
             </div>
           }
         >
-          <ExportAccountForm account={account} onSuccess={close} />
+          <ExportAccountForm onSuccess={close} />
         </PasswordUnlock>
       </Dialog>
     </Modal>

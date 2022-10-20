@@ -211,15 +211,12 @@ export default class AccountsHandler extends ExtensionHandler {
     address,
     exportPw,
   }: RequestAccountExport): Promise<ResponseAccountExport> {
-    const password = await this.stores.password.getPassword()
-    assert(password, "User not logged in")
-
-    const pair = keyring.getPair(address)
-    talismanAnalytics.capture("account export", { type: pair.type })
-
-    const { err, val } = await getPairForAddressSafely(address, (pair) => ({
-      exportedJson: pair.toJson(exportPw),
-    }))
+    const { err, val } = await getPairForAddressSafely(address, (pair) => {
+      talismanAnalytics.capture("account export", { type: pair.type })
+      return {
+        exportedJson: pair.toJson(exportPw),
+      }
+    })
     if (err) throw new Error(val as string)
     return val
   }

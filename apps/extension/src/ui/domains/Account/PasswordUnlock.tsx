@@ -5,16 +5,7 @@ import Spacer from "@talisman/components/Spacer"
 import { KeyIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
-import {
-  createContext,
-  FC,
-  ProviderProps,
-  ReactNode,
-  useCallback,
-  useContext,
-  useState,
-  cloneElement,
-} from "react"
+import { ReactNode, useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Button } from "talisman-ui"
 import * as yup from "yup"
@@ -48,7 +39,6 @@ export type UsePasswordUnlockChildProps<C extends Record<string, any>> = C & {
 
 function usePasswordUnlockContext(): PasswordUnlockContext {
   const [password, setPassword] = useState<string>()
-  const [passwordValid, setPasswordValid] = useState<boolean>()
 
   const checkPassword = useCallback(
     async (password: string) => {

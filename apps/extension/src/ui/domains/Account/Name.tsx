@@ -41,7 +41,7 @@ const AccountTypeIcon: FC<AccountTypeIconProps> = ({ account, className }) => {
   return null
 }
 
-interface IAccountName extends IAccountNameOptions {
+export interface IAccountName extends IAccountNameOptions {
   address: string
   balances?: Balances
   className?: string

@@ -6,7 +6,6 @@ import { classNames } from "talisman-ui"
 
 const SecretText = styled.div`
   position: relative;
-  padding: 1rem;
 
   .content {
     filter: blur(10px);
@@ -70,7 +69,7 @@ export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
       </span>
 
       <SecretText
-        className="secret"
+        className="secret bg-black-secondary rounded p-2"
         onMouseEnter={(e) => {
           setHasHovered(true)
           onMouseEnter && onMouseEnter(e)
@@ -79,7 +78,7 @@ export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
         <div className="content flex flex-wrap">
           {mnemonic.split(" ").map((word) => (
             <span
-              className="bg-body-secondary mr-2 mb-1 rounded-lg bg-opacity-30 py-3 px-4 opacity-70 "
+              className="bg-black-tertiary text-body-secondary mx-2 my-2 rounded-lg py-3 px-4"
               key={`mnemonic-${word}`}
             >
               {word}

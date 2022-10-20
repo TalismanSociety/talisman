@@ -15,7 +15,7 @@ const getUnlockedPairFromAddress = async (address: Address) => {
   const pair = getPairFromAddress(address)
   // if the keyring pair is locked, the password is needed
   if (pair.isLocked) {
-    const pw = await passwordStore.getPassword()
+    const pw = passwordStore.getPassword()
     assert(pw, "Unauthorised")
     pair.decodePkcs8(pw)
   }
