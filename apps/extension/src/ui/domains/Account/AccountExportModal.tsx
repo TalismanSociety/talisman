@@ -13,7 +13,7 @@ import { useForm } from "react-hook-form"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
 import * as yup from "yup"
-import { PasswordUnlock } from "./PasswordUnlock"
+import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
 
 const EXPORTABLE_ORIGINS = ["SEED", "JSON", "DERIVED"]
@@ -32,9 +32,9 @@ export const useAccountExportModalProvider = () => {
   )
 
   const exportAccount = useCallback(
-    async (newPw: string) => {
+    async (password: string, newPw: string) => {
       if (!account) return
-      const { exportedJson } = await api.accountExport(account.address, newPw)
+      const { exportedJson } = await api.accountExport(account.address, password, newPw)
       downloadJson(exportedJson, `${exportedJson.meta?.name || "talisman"}`)
     },
     [account]
@@ -64,6 +64,7 @@ const schema = yup
 
 const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const { canExportAccount, exportAccount } = useAccountExportModal()
+  const { password } = usePasswordUnlock()
   const {
     register,
     handleSubmit,
@@ -79,8 +80,9 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
   const submit = useCallback(
     async ({ newPw }: FormData) => {
+      if (!password) return
       try {
-        await exportAccount(newPw)
+        await exportAccount(password, newPw)
         onSuccess && onSuccess()
       } catch (err) {
         setError("newPwConfirm", {
@@ -88,10 +90,10 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         })
       }
     },
-    [exportAccount, setError, onSuccess]
+    [exportAccount, setError, onSuccess, password]
   )
 
-  if (!canExportAccount) return null
+  if (!canExportAccount || !password) return null
   return (
     <div>
       <form onSubmit={handleSubmit(submit)}>

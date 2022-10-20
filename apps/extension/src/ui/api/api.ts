@@ -79,8 +79,8 @@ export const api: MessageTypes = {
     }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountForget: (address) => messageService.sendMessage("pri(accounts.forget)", { address }),
-  accountExport: (address, exportPw) =>
-    messageService.sendMessage("pri(accounts.export)", { address, exportPw }),
+  accountExport: (address, password, exportPw) =>
+    messageService.sendMessage("pri(accounts.export)", { address, password, exportPw }),
   accountRename: (address, name) =>
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
   accountValidateMnemonic: (mnemonic) =>

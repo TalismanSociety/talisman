@@ -209,8 +209,11 @@ export default class AccountsHandler extends ExtensionHandler {
 
   private async accountExport({
     address,
+    password,
     exportPw,
   }: RequestAccountExport): Promise<ResponseAccountExport> {
+    await this.stores.password.checkPassword(password)
+
     const { err, val } = await getPairForAddressSafely(address, (pair) => {
       talismanAnalytics.capture("account export", { type: pair.type })
       return {

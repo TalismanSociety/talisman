@@ -95,7 +95,11 @@ export default interface MessageTypes {
   ) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountForget: (address: string) => Promise<boolean>
-  accountExport: (address: string, exportPw: string) => Promise<{ exportedJson: KeyringPair$Json }>
+  accountExport: (
+    address: string,
+    password: string,
+    exportPw: string
+  ) => Promise<{ exportedJson: KeyringPair$Json }>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 

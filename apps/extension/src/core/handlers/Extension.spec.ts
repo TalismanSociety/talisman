@@ -95,7 +95,7 @@ describe("Extension", () => {
 
   test("exports account from keyring", async () => {
     // need to use the pw from the store, because it may need to be trimmed
-    const pw = await passwordStore.getPassword()
+    const pw = passwordStore.getPassword()
     expect(pw).toBeTruthy()
     const {
       pair: { address },
@@ -108,6 +108,7 @@ describe("Extension", () => {
       "pri(accounts.export)",
       {
         address,
+        password: pw!,
         exportPw,
       },
       {} as chrome.runtime.Port
