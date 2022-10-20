@@ -23,6 +23,7 @@ const WINDOW_OPTS: Browser.Windows.CreateCreateDataType = {
 export default class State {
   // Prevents opening two onboarding tabs at once
   #onboardingTabOpening = false
+
   // Request stores handle ephemeral data relating to to requests for signing, metadata, and authorisation of sites
   readonly requestStores = {
     signing: new SigningRequestsStore((signingRequest) => {

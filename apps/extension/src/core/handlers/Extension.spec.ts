@@ -3,6 +3,7 @@ import { db } from "@core/libs/db"
 import { MessageTypes, RequestTypes, ResponseTypes } from "@core/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import type { ResponseSigning } from "@polkadot/extension-base/background/types"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import type { MetadataDef } from "@polkadot/extension-inject/types"
@@ -62,7 +63,7 @@ describe("Extension", () => {
   const getAccount = async (): Promise<string> => {
     const account = keyring.getAccounts().find(({ meta }) => meta.name === "My Polkadot Account")
     expect(account).toBeDefined()
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     if (!account) throw new Error("Account not found")
     return account.address
   }
@@ -94,16 +95,22 @@ describe("Extension", () => {
 
   test("exports account from keyring", async () => {
     // need to use the pw from the store, because it may need to be trimmed
-    const pw = await passwordStore.getPassword()
+    const pw = passwordStore.getPassword()
     expect(pw).toBeTruthy()
+
     const {
       pair: { address },
     } = keyring.addUri(suri, pw)
+
+    const exportPw = "newPassword"
+
     const result = await extension.handle(
       "id",
       "pri(accounts.export)",
       {
         address,
+        password,
+        exportPw,
       },
       {} as chrome.runtime.Port
     )
