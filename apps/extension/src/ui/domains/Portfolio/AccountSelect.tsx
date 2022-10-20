@@ -118,6 +118,9 @@ const RESPONSIVE_CONTAINER_STYLE = css`
       align-items: center;
       text-align: center;
     }
+    ${Button} .ao-rows .ao-rowName {
+      justify-content: center;
+    }
 
     &.open > ul {
       border: 0.02rem solid var(--color-background-muted-3x);
@@ -195,6 +198,14 @@ const Container = styled.div<{ responsive?: boolean }>`
 
   .current {
     display: none;
+  }
+
+  .ao-rows .ao-rowName > div:first-child {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
   }
 
   ${({ responsive }) => (responsive ? RESPONSIVE_CONTAINER_STYLE : "")}
