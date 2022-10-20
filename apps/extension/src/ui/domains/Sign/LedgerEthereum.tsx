@@ -12,6 +12,7 @@ import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { TypedDataUtils, SignTypedDataVersion } from "@metamask/eth-sig-util"
 import { DEBUG } from "@core/constants"
 import { Button, classNames } from "talisman-ui"
+import { stripHexPrefix } from "@ethereumjs/util"
 
 export type LedgerEthereumSignMethod =
   | "transaction"
@@ -33,7 +34,6 @@ type LedgerEthereumProps = {
   onSendToLedger?: () => void // triggered when tx is sent to the ledger
 }
 
-// TODO move this into useLedgerEthereum
 const signWithLedger = async (
   ledger: LedgerEthereumApp,
   method: LedgerEthereumSignMethod,
@@ -80,11 +80,7 @@ const signWithLedger = async (
     return ethers.utils.joinSignature(sig) as `0x${string}`
   }
   if (method === "personal_sign") {
-    const messageHex = ethers.utils
-      .hexlify(typeof payload === "string" ? ethers.utils.toUtf8Bytes(payload) : payload)
-      .substring(2)
-
-    const sig = await ledger.signPersonalMessage(accountPath, messageHex)
+    const sig = await ledger.signPersonalMessage(accountPath, stripHexPrefix(payload))
     sig.r = "0x" + sig.r
     sig.s = "0x" + sig.s
     return ethers.utils.joinSignature(sig) as `0x${string}`
@@ -115,7 +111,7 @@ const signWithLedger = async (
       maxPriorityFeePerGas,
       maxFeePerGas,
     }
-    const unsignedTx = ethers.utils.serializeTransaction(baseTx).substring(2)
+    const unsignedTx = stripHexPrefix(ethers.utils.serializeTransaction(baseTx))
     const sig = await ledger.signTransaction(accountPath, unsignedTx, null) // resolver)
 
     return ethers.utils.serializeTransaction(payload, {
@@ -223,7 +219,9 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
               Send to Ledger
             </Button>
           ) : (
-            <LedgerConnectionStatus {...{ ...connectionStatus }} refresh={_onRefresh} />
+            !isSigned && (
+              <LedgerConnectionStatus {...{ ...connectionStatus }} refresh={_onRefresh} />
+            )
           )}
         </>
       )}
