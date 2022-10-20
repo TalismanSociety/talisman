@@ -97,6 +97,7 @@ describe("Extension", () => {
     // need to use the pw from the store, because it may need to be trimmed
     const pw = passwordStore.getPassword()
     expect(pw).toBeTruthy()
+
     const {
       pair: { address },
     } = keyring.addUri(suri, pw)
@@ -108,7 +109,7 @@ describe("Extension", () => {
       "pri(accounts.export)",
       {
         address,
-        password: pw!,
+        password,
         exportPw,
       },
       {} as chrome.runtime.Port
