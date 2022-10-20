@@ -55,6 +55,7 @@ export default interface MessageTypes {
   authenticate: (pass: string) => Promise<boolean>
   lock: () => Promise<boolean>
   changePassword: (currentPw: string, newPw: string, newPwConfirm: string) => Promise<boolean>
+  checkPassword: (password: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
   onboardStatus: () => Promise<OnboardedType>
@@ -96,7 +97,11 @@ export default interface MessageTypes {
   accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountForget: (address: string) => Promise<boolean>
-  accountExport: (address: string) => Promise<{ exportedJson: KeyringPair$Json }>
+  accountExport: (
+    address: string,
+    password: string,
+    exportPw: string
+  ) => Promise<{ exportedJson: KeyringPair$Json }>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 

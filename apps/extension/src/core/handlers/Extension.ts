@@ -61,6 +61,9 @@ export default class Extension extends ExtensionHandler {
       stores.password.resetAutoLockTimer(this.#autoLockTimeout)
     })
 
+    // Resets password update notification at extension restart if user has asked to ignore it previously
+    stores.password.set({ ignorePasswordUpdate: false })
+
     this.initDb()
 
     this.initWalletFunding()

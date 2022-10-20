@@ -1,6 +1,6 @@
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import Mnemonic from "@ui/domains/Account/Mnemonic"
+import MnemonicForm from "@ui/domains/Account/MnemonicForm"
 import styled from "styled-components"
 
 type MnemonicModalProps = {
@@ -15,7 +15,7 @@ const Dialog = styled(ModalDialog)`
 export const MnemonicModal = ({ open, onClose }: MnemonicModalProps) => (
   <Modal open={open} onClose={onClose}>
     <Dialog title="Backup recovery phrase" onClose={onClose}>
-      <Mnemonic />
+      <MnemonicForm />
     </Dialog>
   </Modal>
 )

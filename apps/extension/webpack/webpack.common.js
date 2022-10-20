@@ -90,6 +90,7 @@ const config = (env) => ({
     fallback: {
       stream: false,
       assert: require.resolve("assert"),
+      crypto: require.resolve("crypto-browserify"),
     },
   },
   plugins: [

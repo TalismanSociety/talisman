@@ -1,6 +1,7 @@
 import { DEBUG } from "@core/constants"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { api } from "@ui/api"
+import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
 import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
@@ -104,15 +105,17 @@ const Dashboard = () => (
   <SelectedAccountProvider>
     <AccountRemoveModalProvider>
       <AccountRenameModalProvider>
-        <AddressFormatterModalProvider>
-          <SendTokensModalProvider>
-            <BuyTokensModalProvider>
-              <ReceiveTokensModalProvider>
-                <DashboardInner />
-              </ReceiveTokensModalProvider>
-            </BuyTokensModalProvider>
-          </SendTokensModalProvider>
-        </AddressFormatterModalProvider>
+        <AccountExportModalProvider>
+          <AddressFormatterModalProvider>
+            <SendTokensModalProvider>
+              <BuyTokensModalProvider>
+                <ReceiveTokensModalProvider>
+                  <DashboardInner />
+                </ReceiveTokensModalProvider>
+              </BuyTokensModalProvider>
+            </SendTokensModalProvider>
+          </AddressFormatterModalProvider>
+        </AccountExportModalProvider>
       </AccountRenameModalProvider>
     </AccountRemoveModalProvider>
   </SelectedAccountProvider>

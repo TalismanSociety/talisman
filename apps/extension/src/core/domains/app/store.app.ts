@@ -4,6 +4,8 @@ import { assert } from "@polkadot/util"
 import { gt } from "semver"
 import Browser from "webextension-polyfill"
 
+import { migratePasswordV2ToV1 } from "./migrations"
+
 type ONBOARDED_TRUE = "TRUE"
 type ONBOARDED_FALSE = "FALSE"
 type ONBOARDED_UNKNOWN = "UNKNOWN"
@@ -91,4 +93,6 @@ if (DEBUG) {
       analyticsRequestShown: false,
     })
   }
+  // @ts-ignore
+  window.migratePasswordV2ToV1 = migratePasswordV2ToV1
 }
