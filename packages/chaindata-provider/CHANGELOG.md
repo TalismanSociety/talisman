@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 0.1.9
+
+### Patch Changes
+
+- 8ecb8214: fix: get token logo urls from chaindata-provider
+
 ## 0.1.8
 
 ## 0.1.7

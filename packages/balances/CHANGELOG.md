@@ -1,5 +1,15 @@
 # @talismn/balances
 
+## 0.1.17
+
+### Patch Changes
+
+- Updated dependencies [8ecb8214]
+  - @talismn/chaindata-provider@0.1.9
+  - @talismn/chain-connector@0.1.9
+  - @talismn/chain-connector-evm@0.1.9
+  - @talismn/token-rates@0.1.9
+
 ## 0.1.16
 
 ### Patch Changes

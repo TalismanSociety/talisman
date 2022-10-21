@@ -1,5 +1,14 @@
 # @talismn/balances-substrate-native
 
+## 0.1.17
+
+### Patch Changes
+
+- 8ecb8214: fix: get token logo urls from chaindata-provider
+- Updated dependencies [8ecb8214]
+  - @talismn/chaindata-provider@0.1.9
+  - @talismn/balances@0.1.17
+
 ## 0.1.16
 
 ### Patch Changes
