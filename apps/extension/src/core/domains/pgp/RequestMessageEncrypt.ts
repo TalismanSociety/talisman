@@ -8,6 +8,7 @@ export default class RequestMessageEncrypt implements RequestEncrypt {
     };
 
     encrypt(pair: KeyringPair) {
-      return {result: pair.encryptMessage(this.payload.message, this.payload.address)}
+      //TODO-pgp: nuke?
+      return {result: ''}
     }
 }

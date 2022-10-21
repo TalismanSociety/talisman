@@ -1,10 +1,12 @@
 import { PGPRequest } from "@core/domains/pgp/types"
 import Button from "@talisman/components/Button"
 import Grid from "@talisman/components/Grid"
+import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { usePgpEncryptRequest } from "@ui/domains/PGP/PgpEncryptRequestContext"
+import { SiteInfo } from "@ui/domains/Sign/SiteInfo"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import usePGPRequestById from "@ui/hooks/usePGPRequestById"
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
 
@@ -18,36 +20,42 @@ const Container = ({ className }: any) => {
     usePgpEncryptRequest(pgpRequest)
 
   useEffect(() => {
-    popupOpenEvent("metadata")
+    popupOpenEvent("pgp")
   }, [popupOpenEvent])
+
+  const { processing, errorMessage } = useMemo(() => {
+    return {
+      processing: status === "PROCESSING",
+      errorMessage: status === "ERROR" ? message : "",
+    }
+  }, [status, message])
 
 
   return (
     <Layout className={className} isThinking={status === "PROCESSING"}>
-      <Header text={"Encrypt/Decrypt data"} />
+      <Header text={"Encrypt/Decrypt Request"} />
       <Content>
-        <div>
-          <h1>blah blah</h1>
-          <h2 className="font-medium">
-            blah blah from <strong>{}</strong>
-          </h2>
-          <hr className="my-10" />
-          <div className="stats space-y-2 text-left">
-            <p>
-              <strong>blah:</strong>
-            </p>
-            <p>
-              <strong>blah:</strong>
-            </p>
-          </div>
-        </div>
+      {account && request && (
+          <>
+            <SiteInfo siteUrl={url} />
+            <div className="grow">
+              <h1>Approve Request</h1>
+              <h2 className="center">
+                You are approving a request with account{" "}
+                <AccountPill account={account} prefix={undefined} />
+              </h2>
+            </div>
+            {errorMessage && <div className="error">{errorMessage}</div>}
+            <div className="bottom">
+                TODO: request details
+            </div>
+          </>
+        )}
       </Content>
       <Footer>
         <Grid>
           <Button onClick={reject}>Cancel</Button>
-          <Button primary onClick={approve}>
-            Approve
-          </Button>
+          <Button primary onClick={approve}>Approve</Button>
         </Grid>
       </Footer>
     </Layout>

@@ -3,24 +3,38 @@ import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
-import { assert } from "@polkadot/util"
-import { PGPRequest } from "./types"
+import { getPrivateKey } from "@core/util/getPrivateKey"
+import { sr25519Decrypt } from "@core/util/sr25519decrypt"
+import { sr25519Encrypt } from "@core/util/sr25519encrypt"
+import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
+import { Keypair } from "@polkadot/util-crypto/types"
+import { PGPRequest, RequestPGPCancel } from "./types"
 
 export default class PGPHandler extends ExtensionHandler {
   private async encryptApprove({ id }: RequestIdOnly) {
-    const queued = this.state.requestStores.pgp.getPGPRequest(id)
+    const queued = this.state.requestStores.pgp.getEncryptRequest(id)
     assert(queued, "Unable to find request")
 
     const { reject, request, resolve } = queued
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
+      const pw = await this.stores.password.getPassword() as string
+      const pk = getPrivateKey(pair, pw)
+      const kp = { publicKey: pair.publicKey, secretKey: u8aToU8a(pk) } as Keypair
 
-      const encryptResult = await pair.encryptMessage(payload.message, payload.recipient)
+      assert(u8aToU8a(payload.recipient).length === 32, "Supplied recipient pubkey is incorrect length.")
+      
+      // TODO-pgp: delete these assersions?
+      assert(kp.publicKey.length === 32, "Talisman pubkey is incorrect length")
+      assert(kp.secretKey.length === 64, "Talisman secretKey is incorrect length")
+
+      // get encrypted result as integer array
+      const encryptResult = sr25519Encrypt( u8aToU8a(payload.message) , u8aToU8a(payload.recipient), kp);
 
       resolve({
         id,
-        result: encryptResult,
+        result: u8aToHex(encryptResult),
       })
     })
     if (result.ok) return true
@@ -31,7 +45,47 @@ export default class PGPHandler extends ExtensionHandler {
     return
   }
 
-  //TODO-pgp: reject request
+  private async decryptApprove({ id }: RequestIdOnly) {
+    const queued = this.state.requestStores.pgp.getDecryptRequest(id)
+    assert(queued, "Unable to find request")
+
+    const { reject, request, resolve } = queued
+
+    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
+      const { payload } = request
+      
+      const pw = await this.stores.password.getPassword() as string
+      const pk = getPrivateKey(pair, pw)
+
+      // TODO-pgp: delete this?
+      assert(pk.length === 64, "Talisman secretKey is incorrect length")
+      
+      // get decrypted response as integer array
+      const decryptResult = sr25519Decrypt(u8aToU8a(payload.message), {secretKey: u8aToU8a(pk)})
+
+      resolve({
+        id,
+        result: u8aToHex(decryptResult),
+      })
+    })
+    if (result.ok) return true
+    else {
+      if (result.val === "Unauthorised") reject(new Error(result.val))
+      else result.unwrap() // Throws error
+    }
+    return
+  }
+
+  private pgpCancel({ id }: RequestPGPCancel): boolean {
+    const queued = this.state.requestStores.pgp.getRequest(id)
+
+    assert(queued, "Unable to find request")
+
+    // TODO-pgp: log analytics event here
+    queued.reject(new Error("Cancelled"))
+
+    return true
+  }
 
   public async handle<TMessageType extends MessageTypes>(
     id: string,
@@ -61,6 +115,12 @@ export default class PGPHandler extends ExtensionHandler {
 
       case "pri(pgp.approveEncrypt)":
         return await this.encryptApprove(request as RequestIdOnly)
+
+      case "pri(pgp.approveDecrypt)":
+        return await this.decryptApprove(request as RequestIdOnly)
+
+      case "pri(pgp.cancel)":
+        return await this.pgpCancel(request as RequestPGPCancel)
   
       default:
         throw new Error(`Unable to handle message of type ${type}`)

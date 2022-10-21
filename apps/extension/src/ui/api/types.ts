@@ -79,6 +79,8 @@ export default interface MessageTypes {
   subscribePGPRequests: (cb: (requests: PGPRequest[]) => void) => UnsubscribeFn
   subscribePGPRequest: (id: string, cb: (requests: PGPRequest) => void) => UnsubscribeFn
   approveEncrypt: (id: string) => Promise<boolean>
+  approveDecrypt: (id: string) => Promise<boolean>
+  cancelPGPRequest: (id: string) => Promise<boolean>
 
   // app message types -------------------------------------------------------
   modalOpen: (modalType: ModalTypes) => Promise<boolean>

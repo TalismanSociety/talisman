@@ -62,6 +62,12 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(pgp.approveEncrypt)", {
       id,
     }),
+  approveDecrypt: (id) =>
+    messageService.sendMessage("pri(pgp.approveDecrypt)", {
+      id,
+    }),
+  cancelPGPRequest: (id) => messageService.sendMessage("pri(pgp.cancel)", { id }),
+
     
   // mnemonic messages -------------------------------------------------------
   mnemonicUnlock: (pass) => messageService.sendMessage("pri(mnemonic.unlock)", pass),

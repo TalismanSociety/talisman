@@ -1,8 +1,9 @@
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
+import RequestMessageDecrypt from "@core/domains/pgp/RequestMessageDecrypt"
 import RequestMessageEncrypt from "@core/domains/pgp/RequestMessageEncrypt"
-import { EncryptPayload, EncryptResult, RequestEncrypt, ResponseEncrypt } from "@core/domains/pgp/types"
+import { DecryptPayload, EncryptPayload, ResponseDecrypt, ResponseEncrypt } from "@core/domains/pgp/types"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
@@ -143,8 +144,17 @@ export default class Tabs extends TabsHandler {
   private messageEncrypt(url: string, request: EncryptPayload): Promise<ResponseEncrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
-
     return this.state.requestStores.pgp.encrypt(url, new RequestMessageEncrypt(request), {
+      address,
+      ...pair.meta,
+    })
+  }
+
+  private messageDecrypt(url: string, request: DecryptPayload): Promise<ResponseDecrypt> {
+    const address = request.address
+    const pair = this.getSigningPair(address)
+
+    return this.state.requestStores.pgp.decrypt(url, new RequestMessageDecrypt(request), {
       address,
       ...pair.meta,
     })
@@ -314,8 +324,12 @@ export default class Tabs extends TabsHandler {
       case "pub(rpc.unsubscribe)":
         return this.rpcUnsubscribe(request as RequestRpcUnsubscribe, port)
 
-      case "pub(pgp.encrypt)":
+      case "pub(pgp.encrypt)": {
         return this.messageEncrypt(url, request as EncryptPayload)
+      }
+
+      case "pub(pgp.decrypt)":
+        return this.messageDecrypt(url, request as DecryptPayload)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)
