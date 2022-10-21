@@ -9,7 +9,13 @@ import {
   LockedAmount,
   NewBalanceType,
 } from "@talismn/balances"
-import { ChainId, NewTokenType, SubChainId, TokenId } from "@talismn/chaindata-provider"
+import {
+  ChainId,
+  NewTokenType,
+  SubChainId,
+  TokenId,
+  githubTokenLogoUrl,
+} from "@talismn/chaindata-provider"
 import { blake2Concat, decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 import log from "./log"
@@ -143,7 +149,7 @@ export const SubNativeModule: BalanceModule<
       isTestnet,
       symbol,
       decimals,
-      logo: `https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets-tokens/${id}.svg`,
+      logo: githubTokenLogoUrl(id),
       existentialDeposit: existentialDeposit || "0",
       chain: { id: chainId },
     }

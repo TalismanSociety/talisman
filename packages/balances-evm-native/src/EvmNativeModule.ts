@@ -7,7 +7,12 @@ import {
   DefaultBalanceModule,
   NewBalanceType,
 } from "@talismn/balances"
-import { EvmChainId, EvmNetworkId, NewTokenType } from "@talismn/chaindata-provider"
+import {
+  EvmChainId,
+  EvmNetworkId,
+  NewTokenType,
+  githubTokenLogoUrl,
+} from "@talismn/chaindata-provider"
 import { hasOwnProperty } from "@talismn/util"
 import { ethers } from "ethers"
 
@@ -89,7 +94,7 @@ export const EvmNativeModule: BalanceModule<
       isTestnet,
       symbol,
       decimals,
-      logo: `https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets-tokens/${id}.svg`,
+      logo: githubTokenLogoUrl(id),
       coingeckoId,
       evmNetwork: { id: chainId },
     }

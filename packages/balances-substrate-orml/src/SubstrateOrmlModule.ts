@@ -8,7 +8,13 @@ import {
   DefaultBalanceModule,
   NewBalanceType,
 } from "@talismn/balances"
-import { ChainId, NewTokenType, SubChainId, TokenList } from "@talismn/chaindata-provider"
+import {
+  ChainId,
+  NewTokenType,
+  SubChainId,
+  TokenList,
+  githubTokenLogoUrl,
+} from "@talismn/chaindata-provider"
 import { blake2Concat, decodeAnyAddress, hasOwnProperty, twox64Concat } from "@talismn/util"
 
 import log from "./log"
@@ -166,7 +172,7 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
         isTestnet,
         symbol,
         decimals: decimals[index],
-        logo: `https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets-tokens/${id}.svg`,
+        logo: githubTokenLogoUrl(id),
         // TODO: Fetch the ED
         existentialDeposit: "0",
         stateKey,
