@@ -1,3 +1,5 @@
+import { DEBUG } from "@core/constants"
+
 // this should live in chaindata in the future
 export const ledgerNetworks = [
   {
@@ -136,10 +138,13 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
       }
   }
 
-  // Unknown error, display the error message so user can contact support
+  // eslint-disable-next-line no-console
+  DEBUG && console.warn("unmanaged ledger error", { err })
+
+  // Fallback error message
   return {
     status: "error",
-    message: err.message,
-    requiresManualRetry: false,
+    message: "Failed to connect to your Ledger. Click here to retry.",
+    requiresManualRetry: true,
   }
 }
