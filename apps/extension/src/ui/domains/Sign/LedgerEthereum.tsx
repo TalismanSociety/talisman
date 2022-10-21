@@ -12,7 +12,7 @@ import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { TypedDataUtils, SignTypedDataVersion } from "@metamask/eth-sig-util"
 import { DEBUG } from "@core/constants"
 import { Button, classNames } from "talisman-ui"
-import { stripHexPrefix } from "@ethereumjs/util"
+import { bufferToHex, stripHexPrefix, isHexString } from "@ethereumjs/util"
 
 export type LedgerEthereumSignMethod =
   | "transaction"
@@ -80,7 +80,10 @@ const signWithLedger = async (
     return ethers.utils.joinSignature(sig) as `0x${string}`
   }
   if (method === "personal_sign") {
-    const sig = await ledger.signPersonalMessage(accountPath, stripHexPrefix(payload))
+    // ensure that it is hex encoded
+    const messageHex = isHexString(payload) ? payload : bufferToHex(Buffer.from(payload, "utf8"))
+
+    const sig = await ledger.signPersonalMessage(accountPath, stripHexPrefix(messageHex))
     sig.r = "0x" + sig.r
     sig.s = "0x" + sig.s
     return ethers.utils.joinSignature(sig) as `0x${string}`
