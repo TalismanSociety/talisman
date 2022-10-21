@@ -224,10 +224,11 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
       return { hash }
     } catch (err) {
+      const error = err as Error & { reason?: string; error?: Error }
       // eslint-disable-next-line no-console
-      DEBUG && console.error((err as Error).message, err)
+      DEBUG && console.error(error.message, { err })
       Sentry.captureException(err, { tags: { tokenId, evmNetworkId } })
-      throw new Error("Failed to send transaction")
+      throw new Error(error?.error?.message ?? error.reason ?? "Failed to send transaction")
     }
   }
 
@@ -286,11 +287,11 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
     if (result.ok) return result.val
     else {
-      const error = result.val as Error & { reason?: string }
+      const error = result.val as Error & { reason?: string; error?: Error }
       // eslint-disable-next-line no-console
       DEBUG && console.error(result.val, { err: result.val })
       Sentry.captureException(result.val, { tags: { tokenId, evmNetworkId } })
-      throw new Error(error.reason ?? "Failed to send transaction")
+      throw new Error(error?.error?.message ?? error.reason ?? "Failed to send transaction")
     }
   }
 
