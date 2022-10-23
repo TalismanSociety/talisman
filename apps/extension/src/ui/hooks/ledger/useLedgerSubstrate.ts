@@ -1,5 +1,5 @@
 // Adapted from @polkadot/extension-ui
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Ledger } from "@polkadot/hw-ledger"
 import { assert } from "@polkadot/util"
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
@@ -14,23 +14,50 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
   const [refreshCounter, setRefreshCounter] = useState(0)
   const [error, setError] = useState<Error>()
   const [isReady, setIsReady] = useState(false)
+  const [ledger, setLedger] = useState<Ledger | null>(null)
 
-  const ledger = useMemo(() => {
-    if (!app) return null
-    try {
-      assert(getIsLedgerCapable(), "Sorry, Ledger is not supported on your browser.")
-      assert(app.name, "There is no Ledger app available for this network.")
+  const refConnecting = useRef(false)
 
-      return new Ledger("webusb", app.name)
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      DEBUG && console.error("create ledger " + (err as Error).message, err)
+  const connectLedger = useCallback(
+    async (resetError?: boolean) => {
+      if (!app) return
+      if (refConnecting.current) return
+      refConnecting.current = true
 
-      setError(err as Error)
-      return null
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [app, refreshCounter])
+      setIsReady(false)
+      setIsLoading(true)
+      // when displaying an error and polling silently, on the UI we don't want the error to disappear
+      // so error should be cleared explicitly
+      if (resetError) setError(undefined)
+
+      try {
+        assert(getIsLedgerCapable(), "Sorry, Ledger is not supported on your browser.")
+        assert(app?.name, "There is no Ledger app available for this network.")
+
+        const ledger = new Ledger("webusb", app.name)
+
+        // verify that Ledger connection is ready by querying first address
+        await Promise.race([
+          ledger.getAddress(false),
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000)),
+        ])
+
+        setLedger(ledger)
+        setError(undefined)
+        setIsReady(true)
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        DEBUG && console.error("connectLedger " + (err as Error).message, { err })
+
+        setLedger(null)
+        setError(err as Error)
+      }
+
+      refConnecting.current = false
+      setIsLoading(false)
+    },
+    [app]
+  )
 
   const { status, message, requiresManualRetry } = useMemo<{
     status: LedgerStatus
@@ -56,37 +83,10 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
     return { status: "unknown", message: "", requiresManualRetry: false }
   }, [isReady, isLoading, error, app])
 
-  const connectLedger = useCallback(
-    async (resetError?: boolean) => {
-      setIsReady(false)
-      if (!ledger) return
-
-      setIsLoading(true)
-      // when displaying an error and polling silently, on the UI we don't want the error to disappear
-      // so error should be cleared explicitly
-      if (resetError) setError(undefined)
-
-      try {
-        // verify that Ledger connection is ready by querying first address
-        await ledger.getAddress(false)
-        setError(undefined)
-        setIsReady(true)
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        DEBUG && console.error("connectLedger " + (err as Error).message, { err })
-
-        setError(err as Error)
-      }
-
-      setIsLoading(false)
-    },
-    [ledger]
-  )
-
   // automatic connection (startup + polling)
   useEffect(() => {
     connectLedger()
-  }, [connectLedger])
+  }, [connectLedger, refreshCounter])
 
   // if not connected, poll every 2 seconds
   // this will recreate the ledger instance which triggers automatic connection

@@ -65,6 +65,8 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
         message: "Failed to connect USB. Restart your browser and retry.",
       }
 
+    case "TransportOpenUserCancelled":
+    case "NotFoundError":
     case "NetworkError": // while connecting
     case "InvalidStateError": // while connecting
     case "TransportInterfaceNotAvailable": // after unlock
@@ -95,11 +97,8 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
             requiresManualRetry: false,
           }
       }
-      break
     }
 
-    case "TransportOpenUserCancelled":
-    case "NotFoundError":
     case "TransportWebUSBGestureRequired":
       return {
         status: "error",
@@ -111,9 +110,6 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
   // Polkadot specific errors, wrapped in simple Error object
   // only message is available
   switch (err.message) {
-    case "Device is busy":
-    case "NetworkError: Failed to execute 'transferOut' on 'USBDevice': A transfer error has occurred.":
-    case "NetworkError: Failed to execute 'transferIn' on 'USBDevice': A transfer error has occurred.":
     case "Failed to execute 'requestDevice' on 'USB': Must be handling a user gesture to show a permission request.":
       return {
         status: "error",
@@ -134,6 +130,16 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
       return {
         status: "warning",
         message: "Please unlock your Ledger.",
+        requiresManualRetry: false,
+      }
+
+    case "Device is busy":
+    case "NetworkError: Failed to execute 'transferOut' on 'USBDevice': A transfer error has occurred.":
+    case "NetworkError: Failed to execute 'transferIn' on 'USBDevice': A transfer error has occurred.":
+    case "Timeout": // this one is throw by Talisman in case of timeout when calling ledger.getAddress
+      return {
+        status: "connecting",
+        message: `Connecting to Ledger...`,
         requiresManualRetry: false,
       }
   }
