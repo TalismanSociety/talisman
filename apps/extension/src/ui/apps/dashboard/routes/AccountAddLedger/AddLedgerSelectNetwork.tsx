@@ -20,6 +20,7 @@ import Layout from "../../layout"
 import { useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
 import { ConnectLedgerSubstrate } from "./Shared/ConnectLedgerSubstrate"
+import { useFeatureFlag } from "@ui/hooks/useFeatures"
 
 const Container = styled(Layout)`
   .dropdown {
@@ -105,6 +106,11 @@ const Highlight = styled.span`
 
 export const AddLedgerSelectNetwork = () => {
   const { data: defaultValues, updateData } = useAddLedgerAccount()
+  const { isEnabled: allowEthereum } = useFeatureFlag("LEDGER_EVM")
+  const enabledAddressTypes: AccountAddressType[] = useMemo(
+    () => (allowEthereum ? ["sr25519", "ethereum"] : ["sr25519"]),
+    [allowEthereum]
+  )
 
   const navigate = useNavigate()
   const ledgerChains = useLedgerChains()
@@ -180,7 +186,11 @@ export const AddLedgerSelectNetwork = () => {
             text="What type of account would you like to import ?"
           />
           <Spacer small />
-          <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
+          <AccountTypeSelector
+            defaultType={accountType}
+            onChange={handleTypeChange}
+            enabledAddressTypes={enabledAddressTypes}
+          />
           {accountType === "sr25519" && (
             <>
               <H2>Step 1</H2>

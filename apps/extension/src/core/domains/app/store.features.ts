@@ -32,6 +32,7 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     WALLET_FUNDING: true, // shown when onboarding until wallet has funds
     BUY_CRYPTO: true, // nav buttons + button in fund wallet component
     POPUP_BOTTOM_NAV_VARIANT: "WITH_TOOLTIP",
+    LEDGER_EVM: true,
   }
   featuresStore.set({
     features: Object.keys(DEV_FEATURE_VARIANTS) as FeatureFlag[],

@@ -29,6 +29,7 @@ export type FeatureVariants = {
   WALLET_FUNDING?: boolean
   BUY_CRYPTO?: boolean
   POPUP_BOTTOM_NAV_VARIANT?: "WITH_TOOLTIP" | "WITHOUT_TOOLTIP"
+  LEDGER_EVM: boolean
 }
 export type FeatureFlag = keyof FeatureVariants
 
