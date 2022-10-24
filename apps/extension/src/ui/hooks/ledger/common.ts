@@ -65,7 +65,6 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
         message: "Failed to connect USB. Restart your browser and retry.",
       }
 
-    case "TransportOpenUserCancelled":
     case "NotFoundError":
     case "NetworkError": // while connecting
     case "InvalidStateError": // while connecting
@@ -99,6 +98,7 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
       }
     }
 
+    case "TransportOpenUserCancelled": // occurs when user doesn't select a device in the browser popup
     case "TransportWebUSBGestureRequired":
       return {
         status: "error",
