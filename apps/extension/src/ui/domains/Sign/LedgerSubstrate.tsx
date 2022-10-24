@@ -20,6 +20,7 @@ interface Props {
   onSignature?: ({ signature }: { signature: HexString }) => void
   onReject: () => void
   payload: SignerPayloadJSON | SignerPayloadRaw
+  parent?: HTMLElement | null
 }
 
 const registry = new TypeRegistry()
@@ -35,6 +36,7 @@ const LedgerSubstrate = ({
   onSignature,
   onReject,
   payload,
+  parent,
 }: Props): React.ReactElement<Props> => {
   const [isSigning, setIsSigning] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -74,15 +76,20 @@ const LedgerSubstrate = ({
     }
 
     setError(null)
+
     return ledger
       .sign(unsigned, account.accountIndex, account.addressOffset)
       .then(onSignature)
       .catch((e: Error) => {
         if (e.message === "Transaction rejected") return onReject()
-        // TODO before merge, add DEBUG &&
-        // eslint-disable-next-line no-console
-        console.error("ledger sign Substrate : " + e.message, { err: e })
-        setError(e.message)
+        if (e.message === "Txn version not supported")
+          setError("This type of transaction is not supported on your ledger.")
+        else {
+          // TODO before merge, add DEBUG &&
+          // eslint-disable-next-line no-console
+          console.error("ledger sign Substrate : " + e.message, { err: e })
+          setError(e.message)
+        }
         setIsSigning(false)
       })
   }, [account, ledger, onSignature, onReject, unsigned, setError])
@@ -107,7 +114,7 @@ const LedgerSubstrate = ({
         Cancel
       </Button>
       {error && (
-        <Drawer anchor="bottom" open={true}>
+        <Drawer anchor="bottom" open={true} parent={parent}>
           <LedgerSigningStatus
             message={error ? error : ""}
             status={error ? "error" : isSigning ? "signing" : undefined}
