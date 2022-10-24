@@ -237,7 +237,6 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
             },
           })
         } catch (err) {
-          // if it fails here we don't want to display ethers full text message which includes stack trace
           Sentry.captureException(err)
           throw new Error((err as Error).message)
         }

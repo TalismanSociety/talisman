@@ -178,7 +178,8 @@ export const AddLedgerSelectAccount = () => {
           {data.type === "ethereum" && (
             <>
               <Text>
-                If you're importing an existing account, select the correct derivation path below.
+                The derivation path will be different based on which application you used to
+                initialise your Ledger account.
               </Text>
               <div>
                 <LedgerDerivationPathSelector
