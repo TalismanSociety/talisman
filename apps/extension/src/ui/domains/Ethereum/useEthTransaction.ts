@@ -193,17 +193,9 @@ export const useEthTransaction = (
   lockTransaction = false
 ) => {
   const provider = useEthereumProvider(tx?.chainId)
-  const {
-    hasEip1559Support,
-    isLoading: isLoadingEip1559Support,
-    error: errorEip1559Support,
-  } = useHasEip1559Support(provider)
-
-  const {
-    estimatedGas,
-    isLoading: isLoadingEstimatedGas,
-    error: estimatedGasError,
-  } = useEstimatedGas(provider, tx)
+  const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(provider)
+  const { nonce, error: nonceError } = useNonce(tx?.from, tx?.chainId)
+  const { estimatedGas, error: estimatedGasError } = useEstimatedGas(provider, tx)
 
   const {
     gasPrice,
@@ -211,11 +203,8 @@ export const useEthTransaction = (
     baseFeePerGas,
     blockGasLimit,
     feeHistoryAnalysis,
-    isLoading: isLoadingBlockFeeData,
     error: blockFeeDataError,
   } = useBlockFeeData(provider, hasEip1559Support)
-
-  const { nonce, isLoading: isLoadingNonce, error: nonceError } = useNonce(tx?.from, tx?.chainId)
 
   const [priority, setPriority] = useState<EthPriorityOptionName>(defaultPriority)
 
@@ -329,22 +318,12 @@ export const useEthTransaction = (
     transaction,
   ])
 
-  const isLoading = useMemo(
-    () =>
-      !txDetails &&
-      (isLoadingEip1559Support || isLoadingEstimatedGas || isLoadingBlockFeeData || isLoadingNonce),
-    [
-      isLoadingBlockFeeData,
-      isLoadingEip1559Support,
-      isLoadingEstimatedGas,
-      isLoadingNonce,
-      txDetails,
-    ]
-  )
   const error = useMemo(
     () => errorEip1559Support ?? estimatedGasError ?? blockFeeDataError ?? nonceError,
     [blockFeeDataError, errorEip1559Support, estimatedGasError, nonceError]
   )
+
+  const isLoading = useMemo(() => tx && !txDetails && !error, [error, txDetails, tx])
 
   const result = useMemo(
     () => ({

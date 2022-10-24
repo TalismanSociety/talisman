@@ -207,7 +207,7 @@ export const EthSignTransactionRequest = () => {
                     disabled={isPayloadLocked}
                     transaction={transaction}
                     txDetails={txDetails}
-                    priority={priority ?? "low"}
+                    priority={priority}
                     onChange={setPriority}
                     decimals={nativeToken?.decimals}
                     symbol={nativeToken?.symbol}
