@@ -223,7 +223,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
         <>
           {isReady && !autoSend ? (
             <Button className="w-full" primary onClick={handleSendClick}>
-              Send to Ledger
+              Approve on Ledger
             </Button>
           ) : (
             !isSigned && (

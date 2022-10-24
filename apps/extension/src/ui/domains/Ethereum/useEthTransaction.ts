@@ -134,6 +134,20 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
           provider.getBlock("latest"),
           withFeeOptions ? getFeeHistoryAnalysis(provider) : undefined,
         ])
+
+        if (feeOptions) {
+          // `gasPrice - baseFee` is equal to the current minimum maxPriorityPerGas value required to make it into next block
+          // if smaller than our historical data based value, use it.
+          // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
+          const minimumMaxPriorityFeePerGas = BigNumber.from(gPrice).sub(baseFeePerGas ?? 0)
+          if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.low))
+            feeOptions.options.low = minimumMaxPriorityFeePerGas
+          if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.medium))
+            feeOptions.options.medium = minimumMaxPriorityFeePerGas
+          if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.high))
+            feeOptions.options.high = minimumMaxPriorityFeePerGas
+        }
+
         setGasPrice(gPrice)
         setBaseFeePerGas(baseFeePerGas)
         setBlockGasLimit(gasLimit)
@@ -212,15 +226,12 @@ export const useEthTransaction = (
     const gasLimit = getGasLimit(blockGasLimit, estimatedGas, tx?.gasLimit)
 
     if (hasEip1559Support) {
-      if (!feeHistoryAnalysis) return undefined
+      if (!feeHistoryAnalysis || !baseFeePerGas) return undefined
       const maxPriorityFeePerGas = feeHistoryAnalysis.options[priority]
       return {
         type: 2,
         maxPriorityFeePerGas,
-        maxFeePerGas: getMaxFeePerGas(
-          baseFeePerGas ?? feeHistoryAnalysis.baseFeePerGas,
-          maxPriorityFeePerGas
-        ),
+        maxFeePerGas: getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas),
         gasLimit,
       } as EthGasSettingsEip1559
     }

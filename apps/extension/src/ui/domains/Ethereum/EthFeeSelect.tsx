@@ -193,7 +193,7 @@ export const EthFeeSelect = ({
           <h3>Fee Options</h3>
           <div className="subtitles">
             <div>Priority</div>
-            <div>Max transaction fee</div>
+            <div>Estimated fee</div>
           </div>
           <PriorityOption
             transaction={transaction}
