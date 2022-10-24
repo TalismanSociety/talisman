@@ -161,11 +161,11 @@ export const EthSignMessageRequest = () => {
         )}
       </Content>
       <Footer>
-        {errorMessage && <p className="error">{errorMessage}</p>}
-        {account && request && (
-          <>
-            {account.isHardware ? (
-              <Suspense fallback={null}>
+        <Suspense fallback={null}>
+          {errorMessage && <p className="error">{errorMessage}</p>}
+          {account && request && (
+            <>
+              {account.isHardware ? (
                 <LedgerEthereum
                   method={request.method}
                   payload={request.request}
@@ -173,24 +173,24 @@ export const EthSignMessageRequest = () => {
                   onSignature={approveHardware}
                   onReject={reject}
                 />
-              </Suspense>
-            ) : (
-              <Grid>
-                <SimpleButton disabled={processing} onClick={reject}>
-                  Cancel
-                </SimpleButton>
-                <SimpleButton
-                  disabled={processing}
-                  processing={processing}
-                  primary
-                  onClick={approve}
-                >
-                  Approve
-                </SimpleButton>
-              </Grid>
-            )}
-          </>
-        )}
+              ) : (
+                <Grid>
+                  <SimpleButton disabled={processing} onClick={reject}>
+                    Cancel
+                  </SimpleButton>
+                  <SimpleButton
+                    disabled={processing}
+                    processing={processing}
+                    primary
+                    onClick={approve}
+                  >
+                    Approve
+                  </SimpleButton>
+                </Grid>
+              )}
+            </>
+          )}
+        </Suspense>
       </Footer>
     </SignContainer>
   )

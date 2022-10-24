@@ -1,6 +1,7 @@
 import { AccountJsonAny, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { AppPill } from "@talisman/components/AppPill"
+import { FadeIn } from "@talisman/components/FadeIn"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
@@ -184,43 +185,43 @@ export const EthSignTransactionRequest = () => {
         )}
       </Content>
       <Footer>
-        {nativeToken && transaction && txDetails ? (
-          <>
-            <div className="center">
-              <ViewDetailsEth />
-            </div>
-            <div className="gasInfo">
-              <div>
-                <div>Estimated Fee</div>
-                <div>{transaction?.type === 2 && "Priority"}</div>
+        <Suspense fallback={null}>
+          {nativeToken && transaction && txDetails ? (
+            <>
+              <div className="center">
+                <ViewDetailsEth />
               </div>
-              <div>
+              <div className="gasInfo">
                 <div>
-                  {formatEtherValue(
-                    txDetails.estimatedFee,
-                    nativeToken?.decimals,
-                    nativeToken?.symbol
-                  )}
+                  <div>Estimated Fee</div>
+                  <div>{transaction?.type === 2 && "Priority"}</div>
                 </div>
                 <div>
-                  <EthFeeSelect
-                    disabled={isPayloadLocked}
-                    transaction={transaction}
-                    txDetails={txDetails}
-                    priority={priority}
-                    onChange={setPriority}
-                    decimals={nativeToken?.decimals}
-                    symbol={nativeToken?.symbol}
-                  />
+                  <div>
+                    {formatEtherValue(
+                      txDetails.estimatedFee,
+                      nativeToken?.decimals,
+                      nativeToken?.symbol
+                    )}
+                  </div>
+                  <div>
+                    <EthFeeSelect
+                      disabled={isPayloadLocked}
+                      transaction={transaction}
+                      txDetails={txDetails}
+                      priority={priority}
+                      onChange={setPriority}
+                      decimals={nativeToken?.decimals}
+                      symbol={nativeToken?.symbol}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </>
-        ) : null}
-        {errorMessage && <p className="error">{errorMessage}</p>}
-        {account && request && account.isHardware ? (
-          transaction ? (
-            <Suspense fallback={null}>
+            </>
+          ) : null}
+          {errorMessage && <p className="error">{errorMessage}</p>}
+          {account && request && account.isHardware ? (
+            transaction ? (
               <LedgerEthereum
                 manualSend
                 className="mt-6"
@@ -231,23 +232,23 @@ export const EthSignTransactionRequest = () => {
                 onReject={reject}
                 onSendToLedger={handleSendToLedger}
               />
-            </Suspense>
-          ) : null
-        ) : (
-          <Grid>
-            <SimpleButton disabled={processing} onClick={reject}>
-              Cancel
-            </SimpleButton>
-            <SimpleButton
-              disabled={!transaction || processing || isLoading}
-              processing={processing}
-              primary
-              onClick={approve}
-            >
-              Approve
-            </SimpleButton>
-          </Grid>
-        )}
+            ) : null
+          ) : (
+            <Grid>
+              <SimpleButton disabled={processing} onClick={reject}>
+                Cancel
+              </SimpleButton>
+              <SimpleButton
+                disabled={!transaction || processing || isLoading}
+                processing={processing}
+                primary
+                onClick={approve}
+              >
+                Approve
+              </SimpleButton>
+            </Grid>
+          )}
+        </Suspense>
       </Footer>
     </SignContainer>
   )
