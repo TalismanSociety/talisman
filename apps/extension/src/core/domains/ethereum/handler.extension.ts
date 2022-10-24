@@ -2,6 +2,7 @@ import {
   AnyEthRequestChainId,
   CustomEvmNetwork,
   EthApproveSignAndSend,
+  EthRequestSigningApproveSignature,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
@@ -23,7 +24,6 @@ import { getPrivateKey } from "@core/util/getPrivateKey"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import { assert } from "@polkadot/util"
 import { ethers } from "ethers"
-import { RequestSigningApproveSignature } from "../signing/types"
 
 import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
@@ -58,8 +58,8 @@ const getHumanReadableErrorMessage = (error: unknown) => {
 export class EthHandler extends ExtensionHandler {
   private async signAndSendApproveHardware({
     id,
-    signature: signedTransaction,
-  }: RequestSigningApproveSignature): Promise<boolean> {
+    signedPayload,
+  }: EthRequestSigningApproveSignature): Promise<boolean> {
     const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
     assert(queued, "Unable to find request")
     const { resolve, ethChainId } = queued
@@ -67,7 +67,7 @@ export class EthHandler extends ExtensionHandler {
     const provider = await getProviderForEvmNetworkId(ethChainId)
     assert(provider, "Unable to find provider for chain " + ethChainId)
 
-    const { chainId, hash, from } = await provider.sendTransaction(signedTransaction)
+    const { chainId, hash, from } = await provider.sendTransaction(signedPayload)
 
     incrementTransactionCount(from, chainId)
 
@@ -136,14 +136,14 @@ export class EthHandler extends ExtensionHandler {
     }
   }
 
-  private signApproveHardware({ id, signature }: RequestSigningApproveSignature): boolean {
+  private signApproveHardware({ id, signedPayload }: EthRequestSigningApproveSignature): boolean {
     const queued = this.state.requestStores.signing.getEthSignRequest(id)
 
     assert(queued, "Unable to find request")
 
     const { method, resolve } = queued
 
-    resolve(signature)
+    resolve(signedPayload)
 
     talismanAnalytics.captureDelayed("sign approve", {
       type: "evm",
@@ -358,13 +358,17 @@ export class EthHandler extends ExtensionHandler {
         return this.signAndSendApprove(request as EthApproveSignAndSend)
 
       case "pri(eth.signing.approveSignAndSendHardware)":
-        return this.signAndSendApproveHardware(request as RequestSigningApproveSignature)
+        return this.signAndSendApproveHardware(
+          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"]
+        )
 
       case "pri(eth.signing.approveSign)":
-        return await this.signApprove(request as RequestIdOnly)
+        return this.signApprove(request as RequestIdOnly)
 
       case "pri(eth.signing.approveSignHardware)":
-        return await this.signApproveHardware(request as RequestSigningApproveSignature)
+        return this.signApproveHardware(
+          request as RequestTypes["pri(eth.signing.approveSignHardware)"]
+        )
 
       case "pri(eth.signing.cancel)":
         return this.signingCancel(request as RequestIdOnly)
