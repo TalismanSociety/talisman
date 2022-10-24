@@ -46,8 +46,10 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
         setError(undefined)
         setIsReady(true)
       } catch (err) {
+        // temporarily disabled debug check for this, to troubleshot on other people's computers
+        // TODO before merge, add DEBUG &&
         // eslint-disable-next-line no-console
-        DEBUG && console.error("connectLedger " + (err as Error).message, { err })
+        console.error("connectLedger Substrate " + (err as Error).message, { err })
 
         setLedger(null)
         setError(err as Error)

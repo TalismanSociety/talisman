@@ -178,9 +178,13 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
       onSignature({ signature })
     } catch (err) {
       const error = err as Error & { statusCode?: number }
-      // eslint-disable-next-line no-console
-      if (DEBUG) console.error(error.message, { error })
+      // if user rejects from device
       if (error.statusCode === 27013) return onReject()
+
+      // temporarily disabled debug check for this, to troubleshot on other people's computers
+      // TODO before merge, add DEBUG &&
+      // eslint-disable-next-line no-console
+      console.error("ledger sign Ethereum", { error })
 
       setError(error.message)
       setIsSigning(false)

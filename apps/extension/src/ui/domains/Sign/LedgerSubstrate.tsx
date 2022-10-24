@@ -79,6 +79,9 @@ const LedgerSubstrate = ({
       .then(onSignature)
       .catch((e: Error) => {
         if (e.message === "Transaction rejected") return onReject()
+        // TODO before merge, add DEBUG &&
+        // eslint-disable-next-line no-console
+        console.error("ledger sign Substrate : " + e.message, { err: e })
         setError(e.message)
         setIsSigning(false)
       })
