@@ -3,14 +3,14 @@ import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { tokensToPlanck } from "@core/util"
 import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
-import LedgerEthereum from "@ui/domains/Sign/LedgerEthereum"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { ethers } from "ethers"
-import { useCallback, useEffect, useMemo, useState } from "react"
-
+import { lazy, useCallback, useEffect, useMemo, useState } from "react"
 import { useSendTokens } from "./context"
 import { SendTokensData } from "./types"
 import { useTransferableTokenById } from "./useTransferableTokens"
+
+const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 const SendLedgerEthereum = () => {
   const { formData, sendWithSignatureEthereum, cancel } = useSendTokens()

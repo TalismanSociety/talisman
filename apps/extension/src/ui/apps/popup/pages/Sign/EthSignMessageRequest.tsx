@@ -7,13 +7,14 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
-import LedgerEthereum from "@ui/domains/Sign/LedgerEthereum"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { dump as convertToYaml } from "js-yaml"
-import { Suspense, useEffect, useMemo } from "react"
+import { lazy, Suspense, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
 import { Container } from "./common"
+
+const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 const Message = styled.textarea<{ typed: boolean }>`
   background-color: var(--color-background-muted-3x);

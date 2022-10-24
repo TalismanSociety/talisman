@@ -44,7 +44,11 @@ export const useLedgerEthereum = () => {
       setLedger(ledger)
       setIsReady(true)
     } catch (err) {
-      transport?.close()
+      try {
+        await transport?.close()
+      } catch (err2) {
+        // ignore
+      }
       // temporarily disabled debug check for this, to troubleshot on other people's computers
       // TODO before merge, add DEBUG &&
       // eslint-disable-next-line no-console
