@@ -9548,7 +9548,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^5.7.1":
+"ethers@npm:5.7.1, ethers@npm:^5.7.1":
   version: 5.7.1
   resolution: "ethers@npm:5.7.1"
   dependencies:
@@ -9800,7 +9800,7 @@ __metadata:
     eslint: ^8.15.0
     eslint-config-talisman: "*"
     eslint-webpack-plugin: ^3.1.1
-    ethers: ^5.7.1
+    ethers: 5.7.1
     fake-indexeddb: ^3.1.7
     file-loader: 6.2.0
     fork-ts-checker-notifier-webpack-plugin: ^6.0.0
