@@ -30,6 +30,12 @@ import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
 
 import { createSubscription, unsubscribe } from "./subscriptions"
+import chainsInit from "../libs/init/chains.json"
+import evmNetworksInit from "../libs/init/evmNetworks.json"
+import tokensInit from "../libs/init/tokens.json"
+import { Chain } from "@core/domains/chains/types"
+import { EvmNetwork } from "@core/domains/ethereum/types"
+import { Token } from "@core/domains/tokens/types"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
@@ -87,6 +93,11 @@ export default class Extension extends ExtensionHandler {
 
         // add initial metadata
         db.metadata.bulkAdd(metadataInit)
+
+        // init other tables (workaround to wallet beeing installed when subsquid is down)
+        db.chains.bulkAdd(chainsInit as unknown as Chain[])
+        db.evmNetworks.bulkAdd(evmNetworksInit as unknown as EvmNetwork[])
+        db.tokens.bulkAdd(tokensInit as unknown as Token[])
       }
     })
   }
