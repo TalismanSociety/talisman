@@ -104,12 +104,6 @@ export const useLedgerEthereum = () => {
     connectLedger()
   }, [connectLedger, refreshCounter])
 
-  useEffect(() => {
-    return () => {
-      refTransport.current?.close()
-    }
-  }, [])
-
   return {
     isLoading,
     isReady,

@@ -68,7 +68,6 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
     case "NotFoundError":
     case "NetworkError": // while connecting
     case "InvalidStateError": // while connecting
-    case "TransportInterfaceNotAvailable": // after unlock
       return {
         status: "connecting",
         message: `Connecting to Ledger...`,
@@ -100,6 +99,7 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
 
     case "TransportOpenUserCancelled": // occurs when user doesn't select a device in the browser popup
     case "TransportWebUSBGestureRequired":
+    case "TransportInterfaceNotAvailable": // occurs after unlock, or if browser requires a click to connect usb (only on MacOS w/chrome)
       return {
         status: "error",
         message: "Failed to connect to your Ledger. Click here to retry.",
