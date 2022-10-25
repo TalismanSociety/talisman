@@ -4,6 +4,7 @@ import { getProviderForEvmNetworkId } from "@core/domains/ethereum/rpcProviders"
 import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address } from "@core/types/base"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { ethers } from "ethers"
 
@@ -75,21 +76,36 @@ export default class NativeBalancesEvmRpc {
 
     // fetch all balances
     const balanceRequests = fetchNetworks.flatMap((evmNetwork) =>
-      addresses.map(
-        async (address) =>
-          new Balance({
+      addresses
+        .map(async (address) => {
+          let free
+          try {
+            free = await this.getFreeBalance(providers[evmNetwork.id], address)
+          } catch (error) {
+            const chance = Math.random()
+            if (chance > 0.9) {
+              // only log 10% of cases, because this error could occur repeatedly
+              Sentry.captureException(error, {
+                extra: { evmNetworkId: evmNetwork.id, nativeToken: evmNetwork.nativeToken?.id },
+              })
+            }
+            return false
+          }
+
+          return new Balance({
             pallet: "balances",
             status: "live",
             address: address,
             evmNetworkId: evmNetwork.id,
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             tokenId: evmNetwork.nativeToken?.id!,
-            free: await this.getFreeBalance(providers[evmNetwork.id], address),
+            free,
             reserved: "0",
             miscFrozen: "0",
             feeFrozen: "0",
           })
-      )
+        })
+        .filter(Boolean)
     )
 
     // wait for balance fetches to complete
@@ -101,7 +117,6 @@ export default class NativeBalancesEvmRpc {
         if (result.status === "rejected") {
           // eslint-disable-next-line no-console
           DEBUG && console.error(result.reason)
-          Sentry.captureException(result.reason)
           return null
         }
 
@@ -132,6 +147,7 @@ export default class NativeBalancesEvmRpc {
     provider: ethers.providers.JsonRpcProvider,
     address: Address
   ): Promise<string> {
+    if (!isEthereumAddress(address)) return BigInt("0").toString()
     return ((await provider.getBalance(address)).toBigInt() || BigInt("0")).toString()
   }
 }
