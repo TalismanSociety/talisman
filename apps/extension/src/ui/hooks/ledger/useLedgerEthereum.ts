@@ -5,7 +5,6 @@ import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import Transport from "@ledgerhq/hw-transport"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 import { getLedgerErrorProps, LedgerStatus } from "./common"
-import { DEBUG } from "@core/constants"
 
 export const useLedgerEthereum = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -15,6 +14,7 @@ export const useLedgerEthereum = () => {
   const [ledger, setLedger] = useState<LedgerEthereumApp | null>(null)
 
   const refConnecting = useRef(false)
+  const refTransport = useRef<Transport | null>(null)
 
   const connectLedger = useCallback(async (resetError?: boolean) => {
     if (refConnecting.current) return
@@ -27,12 +27,10 @@ export const useLedgerEthereum = () => {
     // so error should be cleared explicitly
     if (resetError) setLedgerError(undefined)
 
-    let transport: Transport | null = null
-
     try {
-      transport = await TransportWebUSB.create()
+      refTransport.current = await TransportWebUSB.create()
 
-      const ledger = new LedgerEthereumApp(transport)
+      const ledger = new LedgerEthereumApp(refTransport.current)
 
       // this may hang at this point just after plugging the ledger
       await Promise.race([
@@ -44,15 +42,16 @@ export const useLedgerEthereum = () => {
       setLedger(ledger)
       setIsReady(true)
     } catch (err) {
-      try {
-        await transport?.close()
-      } catch (err2) {
-        // ignore
-      }
       // temporarily disabled debug check for this, to troubleshot on other people's computers
       // TODO before merge, add DEBUG &&
       // eslint-disable-next-line no-console
       console.error("connectLedger Ethereum : " + (err as Error).message, { err })
+
+      try {
+        await refTransport.current?.close()
+      } catch (err2) {
+        // ignore
+      }
       setLedger(null)
       setLedgerError(err as Error)
     }
@@ -104,6 +103,12 @@ export const useLedgerEthereum = () => {
   useEffect(() => {
     connectLedger()
   }, [connectLedger, refreshCounter])
+
+  useEffect(() => {
+    return () => {
+      refTransport.current?.close()
+    }
+  }, [])
 
   return {
     isLoading,
