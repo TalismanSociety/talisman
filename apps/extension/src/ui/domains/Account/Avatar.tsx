@@ -62,9 +62,6 @@ const Container = styled.div`
     top: -0.2em;
     right: -0.2em;
     background-size: cover;
-    /* 
-    width: 0.5em;
-    height: 0.5em; */
   }
 `
 

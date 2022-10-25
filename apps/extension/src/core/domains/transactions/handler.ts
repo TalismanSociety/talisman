@@ -35,7 +35,6 @@ import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
-import { Err, Ok, Result } from "ts-results"
 
 import { getEthTransferTransactionBase, rebuildGasSettings } from "../ethereum/helpers"
 import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"

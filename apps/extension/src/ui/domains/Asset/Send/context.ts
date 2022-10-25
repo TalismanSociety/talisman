@@ -19,7 +19,7 @@ import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
-import { BigNumber, ethers } from "ethers"
+import { BigNumber } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import {
