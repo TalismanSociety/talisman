@@ -196,7 +196,7 @@ const cleanupAmountInput = (amount: string) => {
 const isDecimalsValid = (amount?: string, token?: Token) => {
   if (!amount || !token) return true
   const decimals = Number(amount.split(".")[1]?.length ?? 0)
-  return decimals < token.decimals
+  return decimals <= token.decimals
 }
 
 const REVALIDATE = { shouldValidate: true, shouldDirty: true, shouldTouch: true }
