@@ -1,5 +1,6 @@
 import { Chain, ChainId } from "@core/domains/chains/types"
 import RpcFactory from "@core/libs/RpcFactory"
+import { log } from "@core/log"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { Vec } from "@polkadot/types-codec"
 import { EventRecord, Hash } from "@polkadot/types/interfaces"
@@ -81,6 +82,7 @@ const getExtrinsincResult = async (
     // errors commonly arise here due to misconfigured metadata
     // this is difficult to debug and may not be solvable at our end, so we are no longer logging them to Sentry
     // eg https://sentry.io/share/issue/6762fac9d55e4df9be29a25f108f075e/
+    log.error(error)
   }
 
   return Err("Unable to get result")
@@ -118,6 +120,7 @@ const watchExtrinsicStatus = async (
     [],
     async (error, data) => {
       if (error) {
+        log.error(error)
         Sentry.captureException(error, { extra: { chainId } })
         return
       }
