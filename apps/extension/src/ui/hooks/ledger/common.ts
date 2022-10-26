@@ -110,6 +110,7 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
   // Polkadot specific errors, wrapped in simple Error object
   // only message is available
   switch (err.message) {
+    case "Timeout": // this one is throw by Talisman in case of timeout when calling ledger.getAddress
     case "Failed to execute 'requestDevice' on 'USB': Must be handling a user gesture to show a permission request.":
       return {
         status: "error",
@@ -136,7 +137,6 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
     case "Device is busy":
     case "NetworkError: Failed to execute 'transferOut' on 'USBDevice': A transfer error has occurred.":
     case "NetworkError: Failed to execute 'transferIn' on 'USBDevice': A transfer error has occurred.":
-    case "Timeout": // this one is throw by Talisman in case of timeout when calling ledger.getAddress
       return {
         status: "connecting",
         message: `Connecting to Ledger...`,
