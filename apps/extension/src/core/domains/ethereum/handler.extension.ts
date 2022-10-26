@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import {
   AnyEthRequestChainId,
   CustomEvmNetwork,
@@ -22,6 +23,7 @@ import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
+import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { ethers } from "ethers"
 
@@ -60,30 +62,43 @@ export class EthHandler extends ExtensionHandler {
     id,
     signedPayload,
   }: EthRequestSigningApproveSignature): Promise<boolean> {
-    const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
-    assert(queued, "Unable to find request")
-    const { resolve, ethChainId } = queued
+    try {
+      const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
+      assert(queued, "Unable to find request")
+      const {
+        method,
+        resolve,
+        ethChainId,
+        account: { address: accountAddress },
+      } = queued
 
-    const provider = await getProviderForEvmNetworkId(ethChainId)
-    assert(provider, "Unable to find provider for chain " + ethChainId)
+      const provider = await getProviderForEvmNetworkId(ethChainId)
+      assert(provider, "Unable to find provider for chain " + ethChainId)
 
-    const { chainId, hash, from } = await provider.sendTransaction(signedPayload)
+      const { chainId, hash, from } = await provider.sendTransaction(signedPayload)
 
-    incrementTransactionCount(from, chainId)
+      incrementTransactionCount(from, chainId)
 
-    // notify user about transaction progress
-    if (await this.stores.settings.get("allowNotifications"))
-      watchEthereumTransaction(chainId, hash)
+      // notify user about transaction progress
+      if (await this.stores.settings.get("allowNotifications"))
+        watchEthereumTransaction(chainId, hash)
 
-    resolve(hash)
+      resolve(hash)
 
-    talismanAnalytics.captureDelayed("sign and send transaction", {
-      type: "evm sign and send",
-      isHardware: true,
-      dapp: queued.url,
-      chain: chainId,
-    })
-    return true
+      const account = keyring.getAccount(accountAddress)
+      talismanAnalytics.captureDelayed("sign transaction approve", {
+        method,
+        dapp: queued.url,
+        chain: chainId,
+        networkType: "ethereum",
+        hardwareType: account?.meta.hardwareType,
+      })
+      return true
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      DEBUG && console.error("signAndSendApproveHardware", { err })
+      throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
+    }
   }
 
   private async signAndSendApprove({ id, transaction }: EthApproveSignAndSend): Promise<boolean> {
@@ -118,6 +133,7 @@ export class EthHandler extends ExtensionHandler {
         type: "evm sign and send",
         dapp: url,
         chain: ethChainId,
+        networkType: "ethereum",
       })
       return true
     })
@@ -128,9 +144,7 @@ export class EthHandler extends ExtensionHandler {
       if (result.val === "Unauthorised") {
         reject(Error(result.val))
       } else {
-        const msg = getHumanReadableErrorMessage(result.val)
-        if (msg) throw new Error(msg)
-        else result.unwrap() // throws error
+        throw new Error(getHumanReadableErrorMessage(result.val) ?? "Failed to send transaction")
       }
       return false
     }
@@ -141,16 +155,22 @@ export class EthHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const { method, resolve } = queued
+    const {
+      method,
+      resolve,
+      account: { address: accountAddress },
+    } = queued
 
     resolve(signedPayload)
 
+    const account = keyring.getAccount(accountAddress)
     talismanAnalytics.captureDelayed("sign approve", {
-      type: "evm",
       method,
       isHardware: true,
       dapp: queued.url,
       chain: queued.ethChainId,
+      networkType: "ethereum",
+      hardwareType: account?.meta.hardwareType,
     })
 
     return true
@@ -196,10 +216,11 @@ export class EthHandler extends ExtensionHandler {
       resolve(signature)
 
       talismanAnalytics.captureDelayed("sign approve", {
-        type: "evm sign",
         method,
+        isHardware: true,
         dapp: queued.url,
         chain: queued.ethChainId,
+        networkType: "ethereum",
       })
 
       return true
@@ -227,8 +248,7 @@ export class EthHandler extends ExtensionHandler {
 
     reject(new EthProviderRpcError("Cancelled", ETH_ERROR_EIP1993_USER_REJECTED))
 
-    talismanAnalytics.capture("sign reject", {
-      type: "evm sign",
+    talismanAnalytics.captureDelayed("sign reject", {
       method: queued.method,
       dapp: queued.url,
       chain: queued.ethChainId,
@@ -290,7 +310,10 @@ export class EthHandler extends ExtensionHandler {
       if (newToken) await db.tokens.put(newToken)
     })
 
-    talismanAnalytics.capture("add network evm", { network: network.chainName, isCustom: false })
+    talismanAnalytics.captureDelayed("add network evm", {
+      network: network.chainName,
+      isCustom: false,
+    })
 
     resolve(null)
 
@@ -322,7 +345,7 @@ export class EthHandler extends ExtensionHandler {
     }
 
     await db.tokens.put(safeToken)
-    talismanAnalytics.capture("add asset evm", {
+    talismanAnalytics.captureDelayed("add asset evm", {
       contractAddress: token.contractAddress,
       symbol: token.symbol,
       network: token.evmNetwork,
@@ -435,7 +458,10 @@ export class EthHandler extends ExtensionHandler {
 
         newNetwork.isCustom = true
         await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.put(newNetwork))
-        talismanAnalytics.capture("add network evm", { network: newNetwork.name, isCustom: true })
+        talismanAnalytics.captureDelayed("add network evm", {
+          network: newNetwork.name,
+          isCustom: true,
+        })
         return true
       }
 

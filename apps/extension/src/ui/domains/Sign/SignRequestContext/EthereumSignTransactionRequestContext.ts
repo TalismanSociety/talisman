@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import { rebuildTransactionRequestNumbers } from "@core/domains/ethereum/helpers"
 import { EthSignAndSendRequest } from "@core/domains/signing/types"
 import { HexString } from "@polkadot/util/types"
@@ -46,7 +47,9 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
         await api.ethApproveSignAndSendHardware(baseRequest.id, signature)
         baseRequest.setStatus.success("Approved")
       } catch (err) {
-        baseRequest.setStatus.error("Failed to approve sign request")
+        // eslint-disable-next-line no-console
+        DEBUG && console.error("failed to approve hardware", { err })
+        baseRequest.setStatus.error((err as Error).message)
       }
     },
     [baseRequest]

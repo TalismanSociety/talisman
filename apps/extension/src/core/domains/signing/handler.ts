@@ -13,6 +13,7 @@ import isJsonPayload from "@core/util/isJsonPayload"
 import { RequestSigningApproveSignature } from "@polkadot/extension-base/background/types"
 import { TypeRegistry } from "@polkadot/types"
 import { assert } from "@polkadot/util"
+import keyring from "@polkadot/ui-keyring"
 
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({ id }: RequestIdOnly) {
@@ -58,9 +59,9 @@ export default class SigningHandler extends ExtensionHandler {
         }
       }
 
-      talismanAnalytics.capture("sign transaction approve", {
+      talismanAnalytics.captureDelayed("sign transaction approve", {
         ...analyticsProperties,
-        type: "signature",
+        networkType: "substrate",
       })
 
       resolve({
@@ -75,13 +76,36 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
-  private signingApproveHardware({ id, signature }: RequestSigningApproveSignature): boolean {
+  private async signingApproveHardware({
+    id,
+    signature,
+  }: RequestSigningApproveSignature): Promise<boolean> {
     const queued = this.state.requestStores.signing.getPolkadotRequest(id)
-
     assert(queued, "Unable to find request")
 
+    const {
+      request,
+      url,
+      account: { address: accountAddress },
+    } = queued
+    const { payload } = request
+
+    const analyticsProperties: { dapp: string; chain?: string } = { dapp: url }
+    const account = keyring.getAccount(accountAddress)
+
+    if (isJsonPayload(payload)) {
+      const { genesisHash } = payload
+      const chain = await db.chains.get({ genesisHash })
+      analyticsProperties.chain = chain?.chainName
+    }
+
     queued.resolve({ id, signature })
-    talismanAnalytics.capture("sign transaction approve", { type: "hardware" })
+
+    talismanAnalytics.captureDelayed("sign transaction approve", {
+      ...analyticsProperties,
+      networkType: "substrate",
+      hardwareType: account?.meta.hardwareType,
+    })
 
     return true
   }
@@ -91,10 +115,11 @@ export default class SigningHandler extends ExtensionHandler {
      * This method used for both Eth and Polkadot requests
      */
     const queued = this.state.requestStores.signing.getRequest(id)
-
     assert(queued, "Unable to find request")
 
-    talismanAnalytics.capture("sign transaction reject")
+    talismanAnalytics.captureDelayed("sign reject", {
+      networkType: "substrate",
+    })
     queued.reject(new Error("Cancelled"))
 
     return true

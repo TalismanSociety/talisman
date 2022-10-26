@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import { AnySigningRequest } from "@core/domains/signing/types"
 import { isEthereumRequest } from "@core/util/isEthereumRequest"
 import useStatus from "@talisman/hooks/useStatus"
@@ -25,7 +26,7 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
         setStatus.success("Approved")
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error(err)
+        DEBUG && console.error("failed to approve", { err })
         setStatus.error(
           isEthereumRequest(currentRequest)
             ? (err as Error).message

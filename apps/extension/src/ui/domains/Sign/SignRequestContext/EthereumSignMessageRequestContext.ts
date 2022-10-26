@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import { EthSignRequest } from "@core/domains/signing/types"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
@@ -27,7 +28,9 @@ const useEthSignMessageRequestProvider = ({ id }: { id: string }) => {
         await api.ethApproveSignHardware(baseRequest.id, signature)
         baseRequest.setStatus.success("Approved")
       } catch (err) {
-        baseRequest.setStatus.error("Failed to approve sign request")
+        // eslint-disable-next-line no-console
+        DEBUG && console.error("failed to approve hardware", { err })
+        baseRequest.setStatus.error((err as Error).message)
       }
     },
     [baseRequest]
