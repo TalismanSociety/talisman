@@ -186,7 +186,12 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
       // eslint-disable-next-line no-console
       console.error("ledger sign Ethereum", { error })
 
-      setError(error.reason ?? error.message)
+      // ETH ledger app requires EIP-1559 type 2 transactions
+      if (error.reason === "invalid object key - maxPriorityFeePerGas")
+        setError(
+          "Sorry, Talisman doesn't support signing transactions with Ledger on this network."
+        )
+      else setError(error.reason ?? error.message)
       setIsSigning(false)
       setAutoSend(!manualSend)
     }
