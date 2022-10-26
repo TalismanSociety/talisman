@@ -4,6 +4,7 @@
 // Adapted from https://github.com/polkadot-js/extension/
 
 import { ETH_ERROR_EIP1474_INTERNAL_ERROR, EthProviderRpcError } from "@core/injectEth/types"
+import { log } from "@core/log"
 import type {
   MessageTypes,
   MessageTypesWithNoSubscriptions,
@@ -135,10 +136,9 @@ export default class MessageService {
     const handler = this.handlers[data.id]
 
     if (!handler) {
-      const { id, error } = data
-      Sentry.captureException(new Error(`No handler for this response`), {
-        extra: { id, error },
-      })
+      const { id, error } = data // don't print all properties, this could log sensitive data
+      log.error("No handler for message: ", { id, error })
+
       return
     }
 
