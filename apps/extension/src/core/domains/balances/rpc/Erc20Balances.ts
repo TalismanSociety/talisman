@@ -3,6 +3,7 @@ import { Balance, Balances } from "@core/domains/balances/types"
 import { getProviderForEvmNetworkId } from "@core/domains/ethereum/rpcProviders"
 import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { Erc20Token } from "@core/domains/tokens/types"
+import { log } from "@core/log"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address } from "@core/types/base"
 import { isEthereumAddress } from "@polkadot/util-crypto"
@@ -94,32 +95,31 @@ export default class Erc20BalancesEvmRpc {
           erc20Abi,
           providers[evmNetworkId]
         )
-        return addresses
-          .map(async (address) => {
-            let free
-            try {
-              free = await this.getFreeBalance(contract, address)
-            } catch (error) {
-              const chance = Math.random()
-              if (chance > 0.9) {
-                // only log 10% of cases, because this error could occur repeatedly
-                Sentry.captureException(error, {
-                  extra: { contract: token.contractAddress, evmNetworkId, tokenId: token.id },
-                })
-              }
-              return false
+        return addresses.map(async (address) => {
+          let free
+          try {
+            free = await this.getFreeBalance(contract, address)
+          } catch (error) {
+            log.error("Error fetching ERC20 Balances", error)
+            const chance = Math.random()
+            if (chance > 0.9) {
+              // only log 10% of cases, because this error could occur repeatedly
+              Sentry.captureException(error, {
+                extra: { contract: token.contractAddress, evmNetworkId, tokenId: token.id },
+              })
             }
+            return false
+          }
 
-            return new Balance({
-              pallet: "erc20",
-              status: "live",
-              address,
-              evmNetworkId: evmNetworkId,
-              tokenId: token.id,
-              free,
-            })
+          return new Balance({
+            pallet: "erc20",
+            status: "live",
+            address,
+            evmNetworkId: evmNetworkId,
+            tokenId: token.id,
+            free,
           })
-          .filter(Boolean)
+        })
       })
     )
 
@@ -129,9 +129,9 @@ export default class Erc20BalancesEvmRpc {
     // filter out errors
     const balances = balanceResults
       .map((result) => {
+        if (!result) return null
         if (result.status === "rejected") {
-          // eslint-disable-next-line no-console
-          DEBUG && console.error(result.reason)
+          log.error(result.reason)
           return null
         }
 
