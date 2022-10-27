@@ -10,7 +10,7 @@ export const ConnectLedgerEthereum = ({
   onReadyChanged?: (ready: boolean) => void
   className?: string
 }) => {
-  const ledger = useLedgerEthereum()
+  const ledger = useLedgerEthereum(true)
 
   useEffect(() => {
     onReadyChanged?.(ledger.isReady)

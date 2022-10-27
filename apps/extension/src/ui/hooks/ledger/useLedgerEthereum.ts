@@ -5,8 +5,9 @@ import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import Transport from "@ledgerhq/hw-transport"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 import { getLedgerErrorProps, LedgerStatus } from "./common"
+import { log } from "@core/log"
 
-export const useLedgerEthereum = () => {
+export const useLedgerEthereum = (persist = false) => {
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
   const [ledgerError, setLedgerError] = useState<Error>()
@@ -15,6 +16,17 @@ export const useLedgerEthereum = () => {
 
   const refConnecting = useRef(false)
   const refTransport = useRef<Transport | null>(null)
+
+  useEffect(() => {
+    return () => {
+      // ensures the transport is closed on unmount, allowing other tabs to access the ledger
+      // the persist argument can be used to prevent this behaviour, when the hook is used
+      // in two components that need to share the ledger connection
+      if (!persist && ledger?.transport) {
+        ledger.transport.close()
+      }
+    }
+  }, [ledger?.transport, persist])
 
   const connectLedger = useCallback(async (resetError?: boolean) => {
     if (refConnecting.current) return
@@ -31,7 +43,6 @@ export const useLedgerEthereum = () => {
       refTransport.current = await TransportWebUSB.create()
 
       const ledger = new LedgerEthereumApp(refTransport.current)
-
       // this may hang at this point just after plugging the ledger
       await Promise.race([
         ledger.getAddress(getEthLedgerDerivationPath("LedgerLive")),
@@ -43,13 +54,13 @@ export const useLedgerEthereum = () => {
       setIsReady(true)
     } catch (err) {
       // temporarily disabled debug check for this, to troubleshot on other people's computers
-      // TODO before merge, add DEBUG &&
-      // eslint-disable-next-line no-console
-      console.error("connectLedger Ethereum : " + (err as Error).message, { err })
+      log.error("connectLedger Ethereum : " + (err as Error).message, { err })
 
       try {
         await refTransport.current?.close()
+        refTransport.current = null
       } catch (err2) {
+        log.error("Can't close ledger transport", err2)
         // ignore
       }
       setLedger(null)
