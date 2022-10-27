@@ -1,22 +1,25 @@
 import {
+  erc20ABI,
   useAccount,
   useContractRead,
+  useContractWrite,
   useNetwork,
   usePrepareContractWrite,
   usePrepareSendTransaction,
   useSendTransaction,
+  useSigner,
   useWaitForTransaction,
 } from "wagmi"
 import { useForm } from "react-hook-form"
-import { parseEther, parseUnits } from "ethers/lib/utils"
+import { parseEther, parseUnits, serializeTransaction } from "ethers/lib/utils"
 import { Section } from "../Section"
 import { Button } from "talisman-ui"
 import { useLocalStorage } from "react-use"
 import { TransactionReceipt } from "./shared/TransactionReceipt"
 import erc20 from "./contracts/erc20.json"
 import { getUSDCAddress } from "./contracts"
-import { useMemo } from "react"
-import { BigNumber, ethers } from "ethers"
+import { useCallback, useMemo } from "react"
+import { BigNumber, ethers, providers } from "ethers"
 
 type FormData = { recipient: string; amount: string }
 
@@ -26,7 +29,7 @@ const DEFAULT_VALUE = {
 }
 
 export const SendERC20 = () => {
-  const { isConnected, address } = useAccount()
+  const { isConnected, address, connector } = useAccount()
   const { chain } = useNetwork()
   const [defaultValues, setDefaultValues] = useLocalStorage("pg:send-erc20", DEFAULT_VALUE)
 
@@ -78,6 +81,19 @@ export const SendERC20 = () => {
   })
 
   const {
+    isLoading: writeIsLoading,
+    isSuccess: writeIsSuccess,
+    error: writeError,
+    write,
+  } = useContractWrite({
+    addressOrName: contractAddress,
+    contractInterface: erc20,
+    functionName: "transfer",
+    mode: "recklesslyUnprepared",
+    args: [formData.recipient, parseUnits(formData.amount, 6)],
+  })
+
+  const {
     sendTransaction,
     isLoading: sendIsLoading,
     isSuccess: sendIsSuccess,
@@ -90,6 +106,34 @@ export const SendERC20 = () => {
     setDefaultValues(data)
     sendTransaction?.()
   }
+
+  // allows testing an impossible contract interaction (transfer more than you have to test)
+  const handleSendUnchecked = useCallback(async () => {
+    if (!connector) return
+
+    const ci = new ethers.utils.Interface(erc20ABI)
+
+    const funcFragment = ci.fragments.find(
+      (f) => f.type === "function" && f.name === "transfer"
+    ) as ethers.utils.FunctionFragment
+
+    const data = ci.encodeFunctionData(funcFragment, [
+      formData.recipient,
+      parseUnits(formData.amount, 6),
+    ])
+
+    const provider = await connector.getProvider()
+    const sig = await provider.request({
+      method: "eth_sendTransaction",
+      params: [
+        {
+          from: address,
+          to: contractAddress,
+          data,
+        },
+      ],
+    })
+  }, [address, connector, contractAddress, formData.amount, formData.recipient])
 
   if (!isConnected) return null
 
@@ -150,6 +194,14 @@ export const SendERC20 = () => {
                 disabled={!isValid || isSubmitting || !prepIsSuccess}
               >
                 Send Transaction
+              </Button>
+              <Button
+                type="button"
+                processing={writeIsLoading}
+                disabled={!isValid || isSubmitting}
+                onClick={handleSendUnchecked}
+              >
+                Send Transaction (unchecked)
               </Button>
               {sendIsSuccess && (
                 <pre className="text-alert-success my-8 ">
