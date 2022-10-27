@@ -68,10 +68,10 @@
     "rpcs": [
       {
         "url": "https://goerli.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
-        "isHealthy": true
+        "isHealthy": false
       }
     ],
-    "isHealthy": true,
+    "isHealthy": false,
     "substrateChain": null
   },
   {
@@ -111,8 +111,8 @@
     "nativeToken": { "id": "shibuya-testnet-native-sby" },
     "tokens": [],
     "explorerUrl": "https://blockscout.com/shibuya",
-    "rpcs": [{ "url": "https://evm.shibuya.astar.network", "isHealthy": true }],
-    "isHealthy": true,
+    "rpcs": [{ "url": "https://evm.shibuya.astar.network", "isHealthy": false }],
+    "isHealthy": false,
     "substrateChain": { "id": "shibuya-testnet" }
   },
   {
@@ -264,13 +264,13 @@
     "tokens": [],
     "explorerUrl": "https://moonbase.moonscan.io/",
     "rpcs": [
-      { "url": "https://rpc.api.moonbase.moonbeam.network", "isHealthy": true },
+      { "url": "https://rpc.api.moonbase.moonbeam.network", "isHealthy": false },
       {
         "url": "https://moonbeam-alpha.api.onfinality.io/public-ws",
-        "isHealthy": true
+        "isHealthy": false
       }
     ],
-    "isHealthy": true,
+    "isHealthy": false,
     "substrateChain": { "id": "moonbase-alpha-testnet" }
   },
   {
@@ -299,11 +299,11 @@
     "rpcs": [
       {
         "url": "https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
-        "isHealthy": true
+        "isHealthy": false
       },
       { "url": "https://nunki.htznr.fault.dev/rpc", "isHealthy": false }
     ],
-    "isHealthy": true,
+    "isHealthy": false,
     "substrateChain": null
   }
 ]
