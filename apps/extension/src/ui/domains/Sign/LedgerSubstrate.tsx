@@ -1,5 +1,6 @@
 import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
+import { log } from "@core/log"
 import { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
 import { Drawer } from "@talisman/components/Drawer"
@@ -85,9 +86,7 @@ const LedgerSubstrate = ({
         if (e.message === "Txn version not supported")
           setError("This type of transaction is not supported on your ledger.")
         else {
-          // TODO before merge, add DEBUG &&
-          // eslint-disable-next-line no-console
-          console.error("ledger sign Substrate : " + e.message, { err: e })
+          log.error("ledger sign Substrate : " + e.message, { err: e })
           setError(e.message)
         }
         setIsSigning(false)

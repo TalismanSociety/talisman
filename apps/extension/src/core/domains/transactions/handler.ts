@@ -18,6 +18,7 @@ import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { log } from "@core/log"
 import type {
   RequestSignatures,
   RequestTypes,
@@ -209,8 +210,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
       const { from, to, hash, ...otherDetails } = await provider.sendTransaction(signedTransaction)
 
-      // eslint-disable-next-line no-console
-      DEBUG && console.debug("assetTransferEth - sent", { from, to, hash, ...otherDetails })
+      log.log("assetTransferEth - sent", { from, to, hash, ...otherDetails })
 
       talismanAnalytics.capture("asset transfer", {
         evmNetworkId,
@@ -276,8 +276,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const response = await wallet.sendTransaction(transaction)
 
       const { hash, ...otherDetails } = response
-      // eslint-disable-next-line no-console
-      DEBUG && console.debug("assetTransferEth - sent", { hash, ...otherDetails })
+      log.log("assetTransferEth - sent", { hash, ...otherDetails })
 
       incrementTransactionCount(fromAddress, evmNetworkId)
 
@@ -287,8 +286,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     if (result.ok) return result.val
     else {
       const error = result.val as Error & { reason?: string; error?: Error }
-      // eslint-disable-next-line no-console
-      DEBUG && console.error(result.val, { err: result.val })
+      log.error("Failed to send transaction", { err: result.val })
       Sentry.captureException(result.val, { tags: { tokenId, evmNetworkId } })
       throw new Error(error?.error?.message ?? error.reason ?? "Failed to send transaction")
     }

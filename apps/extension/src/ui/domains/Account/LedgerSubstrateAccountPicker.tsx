@@ -8,7 +8,7 @@ import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 import { useLedgerSubstrateApp } from "@ui/hooks/ledger/useLedgerSubstrateApp"
-import { DEBUG } from "@core/constants"
+import { log } from "@core/log"
 
 const useLedgerChainAccounts = (
   chainId: string,
@@ -54,8 +54,7 @@ const useLedgerChainAccounts = (
         setLedgerAccounts([...newAccounts])
       }
     } catch (err) {
-      // eslint-disable-next-line no-console
-      DEBUG && console.error("Failed to load page", { err })
+      log.error("Failed to load page", { err })
       setError((err as Error).message)
     }
 

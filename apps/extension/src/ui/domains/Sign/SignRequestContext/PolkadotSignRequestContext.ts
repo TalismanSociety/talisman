@@ -1,5 +1,5 @@
-import { DEBUG } from "@core/constants"
 import { SignerPayloadJSON, SigningRequest, TransactionDetails } from "@core/domains/signing/types"
+import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
 import useChains from "@ui/hooks/useChains"
@@ -58,8 +58,7 @@ export const usePolkadotSigningRequest = (signingRequest?: SigningRequest) => {
         await api.approveSignHardware(baseRequest.id, signature)
         baseRequest.setStatus.success("Approved")
       } catch (err) {
-        // eslint-disable-next-line no-console
-        DEBUG && console.error("failed to approve hardware", { err })
+        log.error("failed to approve hardware", { err })
         baseRequest.setStatus.error("Failed to approve sign request")
       }
     },

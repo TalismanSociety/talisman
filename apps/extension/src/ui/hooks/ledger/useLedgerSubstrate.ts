@@ -4,9 +4,9 @@ import { Ledger } from "@polkadot/hw-ledger"
 import { assert } from "@polkadot/util"
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
 import { useSetInterval } from "../useSetInterval"
-import { DEBUG } from "@core/constants"
 import { getLedgerErrorProps, LedgerStatus } from "./common"
 import { useLedgerSubstrateApp } from "./useLedgerSubstrateApp"
+import { log } from "@core/log"
 
 export const useLedgerSubstrate = (genesis?: string | null) => {
   const app = useLedgerSubstrateApp(genesis)
@@ -46,10 +46,7 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
         setError(undefined)
         setIsReady(true)
       } catch (err) {
-        // temporarily disabled debug check for this, to troubleshot on other people's computers
-        // TODO before merge, add DEBUG &&
-        // eslint-disable-next-line no-console
-        console.error("connectLedger Substrate " + (err as Error).message, { err })
+        log.error("connectLedger Substrate " + (err as Error).message, { err })
 
         setLedger(null)
         setError(err as Error)

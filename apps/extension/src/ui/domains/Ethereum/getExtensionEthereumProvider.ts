@@ -4,6 +4,7 @@ import {
   EthRequestSignatures,
   EthRequestTypes,
 } from "@core/injectEth/types"
+import { log } from "@core/log"
 import { api } from "@ui/api"
 import { ethers } from "ethers"
 
@@ -17,8 +18,7 @@ const ethereumRequest =
         params: params as EthRequestSignatures[EthRequestTypes][0],
       })
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.debug("[provider.request] error on %s", method, (err as Error).message)
+      log.error("[provider.request] error on %s", method, (err as Error).message)
 
       throw new EthProviderRpcError((err as Error).message, ETH_ERROR_EIP1474_INTERNAL_ERROR)
     }

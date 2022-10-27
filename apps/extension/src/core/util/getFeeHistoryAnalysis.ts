@@ -1,7 +1,7 @@
 import { EthPriorityOptions } from "@core/domains/signing/types"
 import * as Sentry from "@sentry/browser"
 import { BigNumber, ethers } from "ethers"
-import { formatUnits, parseUnits } from "ethers/lib/utils"
+import { parseUnits } from "ethers/lib/utils"
 
 const BLOCKS_HISTORY_LENGTH = 4
 const REWARD_PERCENTILES = [10, 20, 30]
@@ -17,31 +17,6 @@ type FeeHistory = {
   baseFeePerGas: BigNumber[]
   gasUsedRatio: number[]
   reward?: BigNumber[][]
-}
-
-const logFeeHistory = (feeHistory: FeeHistory) => {
-  let avgMaxPriorityFeePerGas: string[] | undefined = undefined
-  if (feeHistory.reward?.[0]?.length) {
-    const valuesCount = feeHistory.reward?.[0]?.length
-    const avgs = []
-    for (let i = 0; i < valuesCount; i++) {
-      let sum = BigNumber.from(0)
-      for (let j = 0; j < feeHistory.reward.length; j++)
-        sum = sum.add(BigNumber.from(feeHistory.reward[j][i]))
-      const avg = sum.div(BigNumber.from(feeHistory.reward.length))
-      avgs.push(`${formatUnits(avg, "gwei")} GWEI`)
-    }
-
-    avgMaxPriorityFeePerGas = avgs
-  }
-
-  // eslint-disable-next-line no-console
-  console.debug("FeeHistory", {
-    gasUsed: feeHistory.gasUsedRatio.map((gu) => `${Math.round(gu * 100)}%`),
-    baseFeePerGas: feeHistory.baseFeePerGas.map((bf) => `${formatUnits(bf, "gwei")} GWEI`),
-    rewards: feeHistory.reward?.map((rs) => rs.map((r) => `${formatUnits(r, "gwei")} GWEI`)),
-    avgMaxPriorityFeePerGas,
-  })
 }
 
 export type FeeHistoryAnalysis = {
@@ -66,7 +41,6 @@ export const getFeeHistoryAnalysis = async (
       gasUsedRatio: rawHistoryFee.gasUsedRatio as number[],
       reward: rawHistoryFee.reward.map((reward: string[]) => reward.map((r) => BigNumber.from(r))),
     }
-    logFeeHistory(feeHistory)
 
     // how busy the network is
     const avgGasUsedRatio =

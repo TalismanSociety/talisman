@@ -53,7 +53,6 @@ export const useLedgerEthereum = (persist = false) => {
       setLedger(ledger)
       setIsReady(true)
     } catch (err) {
-      // temporarily disabled debug check for this, to troubleshot on other people's computers
       log.error("connectLedger Ethereum : " + (err as Error).message, { err })
 
       try {

@@ -10,9 +10,9 @@ import { LedgerSigningStatus } from "./LedgerSigningStatus"
 import { ethers } from "ethers"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { TypedDataUtils, SignTypedDataVersion } from "@metamask/eth-sig-util"
-import { DEBUG } from "@core/constants"
 import { Button, classNames } from "talisman-ui"
 import { bufferToHex, stripHexPrefix, isHexString } from "@ethereumjs/util"
+import { log } from "@core/log"
 
 export type LedgerEthereumSignMethod =
   | "transaction"
@@ -181,10 +181,7 @@ const LedgerEthereum: FC<LedgerEthereumProps> = ({
       // if user rejects from device
       if (error.statusCode === 27013) return onReject()
 
-      // temporarily disabled debug check for this, to troubleshot on other people's computers
-      // TODO before merge, add DEBUG &&
-      // eslint-disable-next-line no-console
-      console.error("ledger sign Ethereum", { error })
+      log.error("ledger sign Ethereum", { error })
 
       // ETH ledger app requires EIP-1559 type 2 transactions
       if (error.reason === "invalid object key - maxPriorityFeePerGas")

@@ -36,6 +36,7 @@ import tokensInit from "../libs/init/tokens.json"
 import { Chain } from "@core/domains/chains/types"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
+import { log } from "@core/log"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
@@ -204,8 +205,7 @@ export default class Extension extends ExtensionHandler {
 
         // subscribe to balances by params
         const unsub = await BalancesRpc.balances(addressesByChain, (error, balances) => {
-          // eslint-disable-next-line no-console
-          if (error) DEBUG && console.error(error)
+          if (error) log.error(error)
           else callback({ type: "upsert", balances: (balances ?? new Balances([])).toJSON() })
         })
 
