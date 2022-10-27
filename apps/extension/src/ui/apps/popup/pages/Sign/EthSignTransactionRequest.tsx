@@ -15,6 +15,7 @@ import { BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
 import { lazy, Suspense, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
+import { Button } from "talisman-ui"
 import { formatDecimals } from "talisman-utils"
 
 import { Container } from "./common"
@@ -232,7 +233,11 @@ export const EthSignTransactionRequest = () => {
                 onReject={reject}
                 onSendToLedger={handleSendToLedger}
               />
-            ) : null
+            ) : (
+              <Button className="w-full" onClick={reject}>
+                Cancel
+              </Button>
+            )
           ) : (
             <Grid>
               <SimpleButton disabled={processing} onClick={reject}>

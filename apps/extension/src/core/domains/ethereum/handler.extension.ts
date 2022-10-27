@@ -34,7 +34,19 @@ import { getTransactionCount, incrementTransactionCount } from "./transactionCou
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
 const getHumanReadableErrorMessage = (error: unknown) => {
-  const { code, reason } = error as { code?: string; reason?: string }
+  const {
+    code,
+    reason,
+    error: serverError,
+  } = error as { code?: string; reason?: string; error?: any }
+
+  if (serverError) {
+    const message = serverError?.reason ?? serverError?.message
+    return message
+      .replace("VM Exception while processing transaction: revert", "")
+      .replace("VM Exception while processing transaction:", "")
+      .trim()
+  }
 
   if (reason === "processing response error") return "Invalid transaction"
 
@@ -364,10 +376,12 @@ export class EthHandler extends ExtensionHandler {
   ): Promise<unknown> {
     const provider = await getProviderForEvmNetworkId(chainId)
     assert(provider, `No healthy RPCs available for provider for chain ${chainId}`)
-    const result = await provider.send(request.method, request.params as unknown as any[])
-    // eslint-disable-next-line no-console
-    console.debug(request.method, request.params, result)
-    return result
+    try {
+      return await provider.send(request.method, request.params as unknown as any[])
+    } catch (err) {
+      const msg = getHumanReadableErrorMessage(err)
+      throw new Error(msg ?? (err as Error)?.message)
+    }
   }
 
   public async handle<TMessageType extends MessageTypes>(
