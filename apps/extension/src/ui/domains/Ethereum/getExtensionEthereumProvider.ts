@@ -18,15 +18,7 @@ const ethereumRequest =
       })
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error(err)
-      if (err instanceof EthProviderRpcError) {
-        const { code, message, name } = err
-        // eslint-disable-next-line no-console
-        console.debug("[provider.request] RPC error on %s", method, { code, message, name })
-        throw err
-      }
-      // eslint-disable-next-line no-console
-      console.debug("[provider.request] error on %s", method, err)
+      console.debug("[provider.request] error on %s", method, (err as Error).message)
 
       throw new EthProviderRpcError((err as Error).message, ETH_ERROR_EIP1474_INTERNAL_ERROR)
     }
