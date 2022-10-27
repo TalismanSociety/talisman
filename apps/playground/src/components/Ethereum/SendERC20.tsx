@@ -179,7 +179,7 @@ export const SendERC20 = () => {
               </div>
               <div>
                 Target balance :{" "}
-                {!balanceOfSelfIsError && balanceOfSelfData
+                {!balanceOfSelfIsError && balanceOfTargetData
                   ? ethers.utils.formatUnits(
                       BigNumber.from(balanceOfTargetData as unknown as string),
                       6
