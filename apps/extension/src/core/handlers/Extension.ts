@@ -27,8 +27,10 @@ import { assert } from "@polkadot/util"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
-
 import { createSubscription, unsubscribe } from "./subscriptions"
+import { log } from "@core/log"
+import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
+import { talismanAnalytics } from "@core/libs/Analytics"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
@@ -64,8 +66,8 @@ export default class Extension extends ExtensionHandler {
     stores.password.set({ ignorePasswordUpdate: false })
 
     this.initDb()
-
     this.initWalletFunding()
+    this.checkSpiritKeyOwnership()
   }
 
   private initDb() {
@@ -112,6 +114,23 @@ export default class Extension extends ExtensionHandler {
         }
       })
     })
+  }
+
+  private checkSpiritKeyOwnership() {
+    // wait 10 seconds as this check is low priority
+    // also need to be wait for keyring to be loaded and accounts populated
+    setTimeout(async () => {
+      try {
+        const hasSpiritKey = await fetchHasSpiritKey()
+        this.stores.app.set({ hasSpiritKey })
+        await talismanAnalytics.capture("Spirit Key ownership check", {
+          $set: { hasSpiritKey },
+        })
+      } catch (err) {
+        // ignore, don't update app store nor posthog property
+        log.error("Failed to check Spirit Key ownership", { err })
+      }
+    }, 10_000)
   }
 
   public async handle<TMessageType extends MessageTypes>(
