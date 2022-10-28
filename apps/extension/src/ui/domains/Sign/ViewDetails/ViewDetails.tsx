@@ -9,7 +9,6 @@ import { encodeAnyAddress } from "@core/util"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { scrollbarsStyle } from "@talisman/theme/styles"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
 import { FC, useEffect, useMemo } from "react"
@@ -129,11 +128,13 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
         <ViewDetailsTxArgs label="Arguments" args={txDetails?.method.args} />
         <ViewDetailsField label="Type">{type}</ViewDetailsField>
         <ViewDetailsField label="Data">
-          <div className="mt-2 pr-2">
-            <pre className="text-body-secondary scrollable scrollable-700 bg-black-secondary rounded-xs w-full overflow-x-auto p-4">
-              {data}
-            </pre>
-          </div>
+          {data && (
+            <div className="mt-2 pr-2">
+              <pre className="text-body-secondary scrollable scrollable-700 bg-black-secondary rounded-xs w-full overflow-x-auto p-4">
+                {data}
+              </pre>
+            </div>
+          )}
         </ViewDetailsField>
         <ViewDetailsField label="Decoding error">
           {txDetailsError && <span className="error">{txDetailsError}</span>}
