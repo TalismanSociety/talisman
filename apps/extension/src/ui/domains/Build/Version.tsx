@@ -1,4 +1,6 @@
 import Pill from "@talisman/components/Pill"
+import { KeyIcon } from "@talisman/theme/icons"
+import { useAppState } from "@ui/hooks/useAppState"
 import styled from "styled-components"
 
 interface IProps {
@@ -6,6 +8,8 @@ interface IProps {
 }
 
 const BuildVersion = ({ className }: IProps) => {
+  const { hasSpiritKey } = useAppState()
+
   return (
     <a
       href="https://docs.talisman.xyz/talisman/prepare-for-your-journey/wallet-release-notes"
@@ -13,6 +17,11 @@ const BuildVersion = ({ className }: IProps) => {
     >
       <Pill className={`${className} build-version`} small primary>
         <span>v{process.env.VERSION}</span>
+        {hasSpiritKey && (
+          <span className="pb-1">
+            <KeyIcon className="text-primary-500 inline-block" />
+          </span>
+        )}
       </Pill>
     </a>
   )
