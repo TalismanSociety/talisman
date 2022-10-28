@@ -18,6 +18,12 @@ export const Nav = () => {
       >
         Checkbox
       </Link>
+      <Link
+        to="/mystical-background"
+        className={classNames(location.pathname === "/mystical-background" && "text-primary-500")}
+      >
+        Mystical Background
+      </Link>
     </div>
   )
 }
