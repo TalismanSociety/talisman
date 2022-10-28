@@ -78,7 +78,7 @@ export default class OrmlTokenTransfersRpc {
   }
 
   /**
-   * Calculates an estimated fee for transfering an amount of an orml token from one account to another.
+   * Calculates an estimated fee for transferring an amount of an orml token from one account to another.
    *
    * @param chainId - The chain to make the transfer on.
    * @param tokenId - The token id to transfer.

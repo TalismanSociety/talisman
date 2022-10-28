@@ -9,6 +9,7 @@ import {
   OnboardedType,
 } from "@core/domains/app/types"
 import {
+  AddressesByEvmNetwork,
   BalancesUpdate,
   RequestBalance,
   RequestBalanceLocks,
@@ -93,6 +94,7 @@ export default interface MessageTypes {
   accountCreateHardware: (
     request: Omit<RequestAccountCreateHardware, "hardwareType">
   ) => Promise<boolean>
+  accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountForget: (address: string) => Promise<boolean>
   accountExport: (
@@ -114,6 +116,7 @@ export default interface MessageTypes {
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
+    addressesByEvmNetwork: AddressesByEvmNetwork,
     cb: (balances: BalancesUpdate) => void
   ) => UnsubscribeFn
 
@@ -181,6 +184,12 @@ export default interface MessageTypes {
     amount: string,
     gasSettings: EthGasSettings
   ) => Promise<ResponseAssetTransferEth>
+  assetTransferEthHardware: (
+    evmNetworkId: EvmNetworkId,
+    tokenId: TokenId,
+    amount: string,
+    signedTransaction: HexString
+  ) => Promise<ResponseAssetTransferEth>
   assetTransferCheckFees: (
     chainId: ChainId,
     tokenId: TokenId,
@@ -197,12 +206,15 @@ export default interface MessageTypes {
 
   // eth related messages
   ethApproveSign: (id: string) => Promise<boolean>
+  ethApproveSignHardware: (id: string, signature: HexString) => Promise<boolean>
   ethApproveSignAndSend: (
     id: string,
     transaction: ethers.providers.TransactionRequest
   ) => Promise<boolean>
+  ethApproveSignAndSendHardware: (id: string, signedTransaction: HexString) => Promise<boolean>
   ethCancelSign: (id: string) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
+  ethGetTransactionsCount: (address: string, evmNetworkId: number) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: string) => Promise<boolean>
   ethNetworkAddCancel: (is: string) => Promise<boolean>

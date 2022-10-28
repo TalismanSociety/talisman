@@ -10,7 +10,7 @@ import { useCallback, useEffect } from "react"
 import styled from "styled-components"
 
 const PillButton = styled.button`
-  background: var(--color-background-muted-3x);
+  background: var(--color-background-muted);
   padding: 0.6rem 0.8rem;
   border-radius: 4.8rem;
   font-weight: var(--font-weight-regular);
@@ -22,9 +22,13 @@ const PillButton = styled.button`
   font-size: var(--font-size-tiny);
   line-height: var(--font-size-xsmall);
 
-  :hover {
+  :not(:disabled):hover {
     background: var(--color-background-muted-3x);
-    color: var(--color-foreground-muted-2x);
+    color: var(--color-foreground-muted-3x);
+  }
+
+  :disabled {
+    cursor: default;
   }
 `
 
@@ -145,6 +149,7 @@ const OpenFeeSelectTracker = () => {
 }
 
 type EthFeeSelectProps = {
+  disabled?: boolean
   transaction: ethers.providers.TransactionRequest
   txDetails: EthTransactionDetails
   priority: EthPriorityOptionName
@@ -160,6 +165,7 @@ export const EthFeeSelect = ({
   onChange,
   priority,
   drawerContainer,
+  disabled,
   ...props
 }: EthFeeSelectProps) => {
   const { genericEvent } = useAnalytics()
@@ -179,15 +185,15 @@ export const EthFeeSelect = ({
 
   return (
     <>
-      <PillButton type="button" onClick={open}>
+      <PillButton disabled={disabled} type="button" onClick={open}>
         {OPTIONS[priority].icon} {OPTIONS[priority].label}
       </PillButton>
-      <Drawer parent={drawerContainer} open={isOpen} anchor="bottom" onClose={close}>
+      <Drawer parent={drawerContainer} open={isOpen && !disabled} anchor="bottom" onClose={close}>
         <Container>
           <h3>Fee Options</h3>
           <div className="subtitles">
             <div>Priority</div>
-            <div>Max transaction fee</div>
+            <div>Estimated fee</div>
           </div>
           <PriorityOption
             transaction={transaction}

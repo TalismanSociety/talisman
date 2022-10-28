@@ -27,13 +27,11 @@ import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
 import { sleep } from "@core/util/sleep"
-import { toBuffer } from "@ethereumjs/util"
 import { recoverPersonalSignature } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ethers, providers } from "ethers"
-import { isHexString } from "ethers/lib/utils"
 
 import { filterAccountsByAddresses } from "../accounts/helpers"
 import { getErc20TokenId } from "./helpers"
@@ -320,13 +318,8 @@ export class EthTabsHandler extends TabsHandler {
       : [params[1], ethers.utils.getAddress(params[0])]
 
     // message is either a raw string or a hex string or an object (signTypedData_v1)
-    // normalize the message, it must be stored unencoded in the request to be displayed to the user
     const message =
-      typeof uncheckedMessage === "string"
-        ? isHexString(uncheckedMessage)
-          ? toBuffer(uncheckedMessage).toString("utf-8")
-          : uncheckedMessage
-        : JSON.stringify(uncheckedMessage)
+      typeof uncheckedMessage === "string" ? uncheckedMessage : JSON.stringify(uncheckedMessage)
 
     const site = await this.getSiteDetails(url)
     try {

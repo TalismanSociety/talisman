@@ -1,7 +1,9 @@
+import { DEBUG } from "@core/constants"
 import {
   AnyEthRequestChainId,
   CustomEvmNetwork,
   EthApproveSignAndSend,
+  EthRequestSigningApproveSignature,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
@@ -21,11 +23,9 @@ import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
-import { assert, isHex } from "@polkadot/util"
-import { BigNumber, BigNumberish, ethers } from "ethers"
-import { formatUnits, parseUnits } from "ethers/lib/utils"
-import isString from "lodash/isString"
-import { Result } from "ts-results"
+import keyring from "@polkadot/ui-keyring"
+import { assert } from "@polkadot/util"
+import { ethers } from "ethers"
 
 import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
@@ -34,7 +34,19 @@ import { getTransactionCount, incrementTransactionCount } from "./transactionCou
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
 const getHumanReadableErrorMessage = (error: unknown) => {
-  const { code, reason } = error as { code?: string; reason?: string }
+  const {
+    code,
+    reason,
+    error: serverError,
+  } = error as { code?: string; reason?: string; error?: any }
+
+  if (serverError) {
+    const message = serverError?.reason ?? serverError?.message
+    return message
+      .replace("VM Exception while processing transaction: revert", "")
+      .replace("VM Exception while processing transaction:", "")
+      .trim()
+  }
 
   if (reason === "processing response error") return "Invalid transaction"
 
@@ -58,19 +70,62 @@ const getHumanReadableErrorMessage = (error: unknown) => {
 }
 
 export class EthHandler extends ExtensionHandler {
+  private async signAndSendApproveHardware({
+    id,
+    signedPayload,
+  }: EthRequestSigningApproveSignature): Promise<boolean> {
+    try {
+      const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
+      assert(queued, "Unable to find request")
+      const {
+        method,
+        resolve,
+        ethChainId,
+        account: { address: accountAddress },
+      } = queued
+
+      const provider = await getProviderForEvmNetworkId(ethChainId)
+      assert(provider, "Unable to find provider for chain " + ethChainId)
+
+      const { chainId, hash, from } = await provider.sendTransaction(signedPayload)
+
+      incrementTransactionCount(from, chainId)
+
+      // notify user about transaction progress
+      if (await this.stores.settings.get("allowNotifications"))
+        watchEthereumTransaction(chainId, hash)
+
+      resolve(hash)
+
+      const account = keyring.getAccount(accountAddress)
+      talismanAnalytics.captureDelayed("sign transaction approve", {
+        method,
+        dapp: queued.url,
+        chain: chainId,
+        networkType: "ethereum",
+        hardwareType: account?.meta.hardwareType,
+      })
+      return true
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      DEBUG && console.error("signAndSendApproveHardware", { err })
+      throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
+    }
+  }
+
   private async signAndSendApprove({ id, transaction }: EthApproveSignAndSend): Promise<boolean> {
     const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
     assert(queued, "Unable to find request")
-    const { request, resolve, reject, ethChainId } = queued
+    const { resolve, reject, ethChainId, account, url } = queued
 
     const provider = await getProviderForEvmNetworkId(ethChainId)
     assert(provider, "Unable to find provider for chain " + ethChainId)
 
     // rebuild BigNumber property values (converted to json when serialized)
     const tx = rebuildTransactionRequestNumbers(transaction)
-    tx.nonce = await getTransactionCount(queued.account.address, queued.ethChainId)
+    tx.nonce = await getTransactionCount(account.address, ethChainId)
 
-    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
+    const result = await getPairForAddressSafely(account.address, async (pair) => {
       const password = await this.stores.password.getPassword()
       assert(password, "Unauthorised")
       const privateKey = getPrivateKey(pair, password)
@@ -78,7 +133,7 @@ export class EthHandler extends ExtensionHandler {
 
       const { chainId, hash } = await signer.sendTransaction(tx)
 
-      incrementTransactionCount(queued.account.address, queued.ethChainId)
+      incrementTransactionCount(account.address, ethChainId)
 
       // notify user about transaction progress
       if (await this.stores.settings.get("allowNotifications"))
@@ -88,8 +143,9 @@ export class EthHandler extends ExtensionHandler {
 
       talismanAnalytics.captureDelayed("sign transaction approve", {
         type: "evm sign and send",
-        dapp: queued.url,
-        chain: queued.ethChainId,
+        dapp: url,
+        chain: ethChainId,
+        networkType: "ethereum",
       })
       return true
     })
@@ -100,12 +156,36 @@ export class EthHandler extends ExtensionHandler {
       if (result.val === "Unauthorised") {
         reject(Error(result.val))
       } else {
-        const msg = getHumanReadableErrorMessage(result.val)
-        if (msg) throw new Error(msg)
-        else result.unwrap() // throws error
+        throw new Error(getHumanReadableErrorMessage(result.val) ?? "Failed to send transaction")
       }
       return false
     }
+  }
+
+  private signApproveHardware({ id, signedPayload }: EthRequestSigningApproveSignature): boolean {
+    const queued = this.state.requestStores.signing.getEthSignRequest(id)
+
+    assert(queued, "Unable to find request")
+
+    const {
+      method,
+      resolve,
+      account: { address: accountAddress },
+    } = queued
+
+    resolve(signedPayload)
+
+    const account = keyring.getAccount(accountAddress)
+    talismanAnalytics.captureDelayed("sign approve", {
+      method,
+      isHardware: true,
+      dapp: queued.url,
+      chain: queued.ethChainId,
+      networkType: "ethereum",
+      hardwareType: account?.meta.hardwareType,
+    })
+
+    return true
   }
 
   private async signApprove({ id }: RequestIdOnly): Promise<boolean> {
@@ -147,11 +227,12 @@ export class EthHandler extends ExtensionHandler {
 
       resolve(signature)
 
-      talismanAnalytics.captureDelayed("sign transaction approve", {
-        type: "evm sign",
+      talismanAnalytics.captureDelayed("sign approve", {
         method,
+        isHardware: true,
         dapp: queued.url,
         chain: queued.ethChainId,
+        networkType: "ethereum",
       })
 
       return true
@@ -179,8 +260,8 @@ export class EthHandler extends ExtensionHandler {
 
     reject(new EthProviderRpcError("Cancelled", ETH_ERROR_EIP1993_USER_REJECTED))
 
-    talismanAnalytics.capture("sign transaction reject", {
-      type: "evm sign",
+    talismanAnalytics.captureDelayed("sign reject", {
+      method: queued.method,
       dapp: queued.url,
       chain: queued.ethChainId,
     })
@@ -241,7 +322,10 @@ export class EthHandler extends ExtensionHandler {
       if (newToken) await db.tokens.put(newToken)
     })
 
-    talismanAnalytics.capture("add network evm", { network: network.chainName, isCustom: false })
+    talismanAnalytics.captureDelayed("add network evm", {
+      network: network.chainName,
+      isCustom: false,
+    })
 
     resolve(null)
 
@@ -273,7 +357,7 @@ export class EthHandler extends ExtensionHandler {
     }
 
     await db.tokens.put(safeToken)
-    talismanAnalytics.capture("add asset evm", {
+    talismanAnalytics.captureDelayed("add asset evm", {
       contractAddress: token.contractAddress,
       symbol: token.symbol,
       network: token.evmNetwork,
@@ -292,10 +376,12 @@ export class EthHandler extends ExtensionHandler {
   ): Promise<unknown> {
     const provider = await getProviderForEvmNetworkId(chainId)
     assert(provider, `No healthy RPCs available for provider for chain ${chainId}`)
-    const result = await provider.send(request.method, request.params as unknown as any[])
-    // eslint-disable-next-line no-console
-    console.debug(request.method, request.params, result)
-    return result
+    try {
+      return await provider.send(request.method, request.params as unknown as any[])
+    } catch (err) {
+      const msg = getHumanReadableErrorMessage(err)
+      throw new Error(msg ?? (err as Error)?.message)
+    }
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -308,8 +394,18 @@ export class EthHandler extends ExtensionHandler {
       case "pri(eth.signing.approveSignAndSend)":
         return this.signAndSendApprove(request as EthApproveSignAndSend)
 
+      case "pri(eth.signing.approveSignAndSendHardware)":
+        return this.signAndSendApproveHardware(
+          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"]
+        )
+
       case "pri(eth.signing.approveSign)":
-        return await this.signApprove(request as RequestIdOnly)
+        return this.signApprove(request as RequestIdOnly)
+
+      case "pri(eth.signing.approveSignHardware)":
+        return this.signApproveHardware(
+          request as RequestTypes["pri(eth.signing.approveSignHardware)"]
+        )
 
       case "pri(eth.signing.cancel)":
         return this.signingCancel(request as RequestIdOnly)
@@ -376,8 +472,16 @@ export class EthHandler extends ExtensionHandler {
 
         newNetwork.isCustom = true
         await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.put(newNetwork))
-        talismanAnalytics.capture("add network evm", { network: newNetwork.name, isCustom: true })
+        talismanAnalytics.captureDelayed("add network evm", {
+          network: newNetwork.name,
+          isCustom: true,
+        })
         return true
+      }
+
+      case "pri(eth.transactions.count)": {
+        const { address, evmNetworkId } = request as RequestTypes["pri(eth.transactions.count)"]
+        return getTransactionCount(address, evmNetworkId)
       }
 
       case "pri(eth.networks.removeCustomNetwork)": {

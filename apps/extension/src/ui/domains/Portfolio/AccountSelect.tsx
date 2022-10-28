@@ -118,6 +118,9 @@ const RESPONSIVE_CONTAINER_STYLE = css`
       align-items: center;
       text-align: center;
     }
+    ${Button} .ao-rows .ao-rowName {
+      justify-content: center;
+    }
 
     &.open > ul {
       border: 0.02rem solid var(--color-background-muted-3x);
@@ -197,6 +200,14 @@ const Container = styled.div<{ responsive?: boolean }>`
     display: none;
   }
 
+  .ao-rows .ao-rowName > div:first-child {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+  }
+
   ${({ responsive }) => (responsive ? RESPONSIVE_CONTAINER_STYLE : "")}
 `
 
@@ -207,9 +218,17 @@ type AccountOptionProps = AnyAccountOptionProps & {
   totalUsd: number
   genesisHash?: string | null
   name?: string
+  isHardware?: boolean
 }
 
-const AccountOption = ({ address, totalUsd, genesisHash, name, withTrack }: AccountOptionProps) => {
+const AccountOption = ({
+  address,
+  totalUsd,
+  genesisHash,
+  name,
+  isHardware,
+  withTrack,
+}: AccountOptionProps) => {
   const { genericEvent } = useAnalytics()
   const handleClick = useCallback(() => {
     if (!withTrack) return
@@ -233,7 +252,7 @@ const AccountOption = ({ address, totalUsd, genesisHash, name, withTrack }: Acco
           <Box overflow="hidden" textOverflow="ellipsis" noWrap flex column justify="center">
             {name ?? (address ? shortenAddress(address) : "unknown")}
           </Box>
-          {genesisHash && (
+          {isHardware && (
             <Box fg="primary" flex column justify="center">
               <UsbIcon />
             </Box>

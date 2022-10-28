@@ -25,7 +25,7 @@ const getUnlockedPairFromAddress = (address: Address) => {
 
 export const getPairForAddressSafely = async <T>(
   address: Address,
-  cb: (pair: KeyringPair) => T
+  cb: (pair: KeyringPair) => T | Promise<T>
 ): Promise<Result<T, "Unauthorised" | unknown>> => {
   let pair: KeyringPair | null = null
   try {

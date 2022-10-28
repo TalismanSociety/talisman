@@ -1,4 +1,5 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { isHexString, stripHexPrefix } from "@ethereumjs/util"
 import * as Sentry from "@sentry/browser"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
@@ -8,10 +9,12 @@ import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { dump as convertToYaml } from "js-yaml"
-import { useEffect, useMemo } from "react"
+import { lazy, Suspense, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
 import { Container } from "./common"
+
+const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 const Message = styled.textarea<{ typed: boolean }>`
   background-color: var(--color-background-muted-3x);
@@ -98,6 +101,12 @@ const SignMessage = ({
         Sentry.captureException(err)
       }
     }
+    if (isHexString(request)) {
+      const stripped = stripHexPrefix(request)
+      const buff = Buffer.from(stripped, "hex")
+      // if 32 bytes display as is, can be tested when approving NFT listings on tofunft.com
+      return buff.length === 32 ? request : buff.toString("utf8")
+    }
     return request
   }, [request, typed])
 
@@ -115,7 +124,7 @@ const SignMessage = ({
 }
 
 export const EthSignMessageRequest = () => {
-  const { url, request, approve, reject, status, message, account, network } =
+  const { url, request, approve, approveHardware, reject, status, message, account, network } =
     useEthSignMessageRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -152,19 +161,36 @@ export const EthSignMessageRequest = () => {
         )}
       </Content>
       <Footer>
-        {errorMessage && <p className="error">{errorMessage}</p>}
-        {account && request && (
-          <>
-            <Grid>
-              <SimpleButton disabled={processing} onClick={reject}>
-                Cancel
-              </SimpleButton>
-              <SimpleButton disabled={processing} processing={processing} primary onClick={approve}>
-                Approve
-              </SimpleButton>
-            </Grid>
-          </>
-        )}
+        <Suspense fallback={null}>
+          {errorMessage && <p className="error">{errorMessage}</p>}
+          {account && request && (
+            <>
+              {account.isHardware ? (
+                <LedgerEthereum
+                  method={request.method}
+                  payload={request.request}
+                  account={account as AccountJsonHardwareEthereum}
+                  onSignature={approveHardware}
+                  onReject={reject}
+                />
+              ) : (
+                <Grid>
+                  <SimpleButton disabled={processing} onClick={reject}>
+                    Cancel
+                  </SimpleButton>
+                  <SimpleButton
+                    disabled={processing}
+                    processing={processing}
+                    primary
+                    onClick={approve}
+                  >
+                    Approve
+                  </SimpleButton>
+                </Grid>
+              )}
+            </>
+          )}
+        </Suspense>
       </Footer>
     </SignContainer>
   )
