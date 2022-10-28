@@ -6,6 +6,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { Checkboxes } from "./components/Chexkboxes"
 import { Ethereum } from "./components/Ethereum"
 import { Substrate } from "./components/Substrate"
+import { Background } from "./components/Background"
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <Route path="ethereum" element={<Ethereum />} />
             <Route path="button" element={<Buttons />} />
             <Route path="checkbox" element={<Checkboxes />} />
+            <Route path="mystical-background" element={<Background />} />
           </Routes>
         </BrowserRouter>
       </div>

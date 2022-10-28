@@ -1,7 +1,7 @@
-import { useWindowHovered } from "@ui/hooks/useWindowHovered"
 import { useMemo, useRef } from "react"
 import { useMeasure, useMouse } from "react-use"
 import styled from "styled-components"
+import { useWindowHovered } from "../MysticalBackground/useWindowHovered"
 
 import { CelestialArtifact } from "./CelestialArtifact"
 import { MYSTICAL_PHYSICS } from "./MysticalPhysics"
@@ -18,7 +18,8 @@ const CosmicRadar = styled.div`
   height: 100%;
 `
 
-export const MysticalBackground = ({ className }: { className?: string }) => {
+// still beeing used in playground to compare with new version
+export const MysticalBackgroundOld = ({ className }: { className?: string }) => {
   const [refSize, parentSize] = useMeasure<HTMLDivElement>()
   const refMouseLocation = useRef<HTMLDivElement>(null)
   const { elX, elY, elW, elH } = useMouse(refMouseLocation)
