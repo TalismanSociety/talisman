@@ -110,6 +110,7 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <FormField error={errors.newPw} className="mb-12">
             <input
               {...register("newPw")}
+              autoFocus={true}
               placeholder="Enter New Password"
               spellCheck={false}
               autoComplete="new-password"

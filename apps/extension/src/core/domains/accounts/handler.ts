@@ -1,4 +1,3 @@
-import { DEBUG } from "@core/constants"
 import { AccountTypes, filterPublicAccounts } from "@core/domains/accounts/helpers"
 import type {
   RequestAccountCreate,
@@ -258,10 +257,16 @@ export default class AccountsHandler extends ExtensionHandler {
   }: RequestAccountExport): Promise<ResponseAccountExport> {
     await this.stores.password.checkPassword(password)
 
-    const { err, val } = await getPairForAddressSafely(address, (pair) => {
+    const { err, val } = await getPairForAddressSafely(address, async (pair) => {
       talismanAnalytics.capture("account export", { type: pair.type })
+
+      const exportedJson = pair.toJson(exportPw)
+
+      // exporting the json causes the keypair to be re-encoded with the export password, which we do not want, so we re-re-encode it with the proper one
+      pair.toJson(await this.stores.password.transformPassword(password))
+
       return {
-        exportedJson: pair.toJson(exportPw),
+        exportedJson,
       }
     })
     if (err) throw new Error(val as string)
