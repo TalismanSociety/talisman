@@ -38,11 +38,8 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
 
   // if specific account we have 2 rows minimum, if all accounts we have 4
   const skeletons = useMemo(() => {
-    // in this case we don't know the number of min rows
-    if (networkFilter)
-      // TODO in useDisplayBalances, if there is a network selected, force display the native token (ERC20s/ORML don't need to be shimmered)
-      // when done, turn below 0 into 1
-      return 0
+    // in this case we don't know the number of min rows, balances should be already loaded anyway
+    if (networkFilter) return 1
 
     // If no accounts then it means "all accounts", expect all default tokens (substrate + eth)
     // if account has a genesis hash then we expect only 1 chain
