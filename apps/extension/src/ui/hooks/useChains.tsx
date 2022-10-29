@@ -1,21 +1,18 @@
-import { api } from "@ui/api"
-import { useMessageSubscription } from "./useMessageSubscription"
-import { useLiveQuery } from "dexie-react-hooks"
-import { db } from "@core/libs/db"
 import { useSettings } from "@ui/hooks/useSettings"
+import { useDbCache } from "./useDbData"
+import { useMemo } from "react"
+import { useDbDataSubscription } from "./useDbDataSubscription"
 
-const subscribe = () => api.chains(() => {})
 export const useChains = () => {
-  // make sure the store is hydrated
-  useMessageSubscription("chains", null, subscribe)
+  // keep db data up to date
+  useDbDataSubscription("chains")
 
   const { useTestnets = false } = useSettings()
-  return useLiveQuery(
-    async () =>
-      (await db.chains.toArray()).filter((chain) =>
-        useTestnets ? true : chain.isTestnet === false
-      ),
-    [useTestnets]
+  const { allChains } = useDbCache()
+
+  return useMemo(
+    () => allChains.filter(({ isTestnet }) => (useTestnets ? true : isTestnet === false)),
+    [allChains, useTestnets]
   )
 }
 

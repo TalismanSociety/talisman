@@ -1,51 +1,35 @@
 import { Balances } from "@core/domains/balances/types"
-import { db } from "@core/libs/db"
-import { api } from "@ui/api"
-import { useChains } from "@ui/hooks/useChains"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
-import { useTokens } from "@ui/hooks/useTokens"
-import { useLiveQuery } from "dexie-react-hooks"
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useDebounce } from "react-use"
+import { useDbCache } from "./useDbData"
+import { useDbDataSubscription } from "./useDbDataSubscription"
 
-const subscribe = () => api.balances(() => {})
 export const useBalances = () => {
-  // make sure the rpcs are connected
-  useMessageSubscription("balances", null, subscribe)
+  // keep db data up to date
+  useDbDataSubscription("chains")
+  useDbDataSubscription("evmNetworks")
+  useDbDataSubscription("tokens")
+  useDbDataSubscription("balances")
 
-  const _chains = useChains()
-  const _evmNetworks = useEvmNetworks()
-  const _tokens = useTokens()
+  const {
+    allBalances,
+    chainsMap: chains,
+    evmNetworksMap: evmNetworks,
+    tokensMap: tokens,
+  } = useDbCache()
 
-  const chains = useMemo(
-    () => Object.fromEntries((_chains || []).map((chain) => [chain.id, chain])),
-    [_chains]
-  )
-  const evmNetworks = useMemo(
-    () => Object.fromEntries((_evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])),
-    [_evmNetworks]
-  )
-  const tokens = useMemo(
-    () => Object.fromEntries((_tokens || []).map((token) => [token.id, token])),
-    [_tokens]
-  )
-
-  const balances = useLiveQuery(
-    async () => new Balances(await db.balances.toArray(), { chains, evmNetworks, tokens }),
-    [chains, evmNetworks, tokens]
+  const [balances, setBalances] = useState<Balances>(
+    () => new Balances(allBalances, { chains, evmNetworks, tokens })
   )
 
   // debounce every 100ms to prevent hammering UI with updates
-  const [debouncedBalances, setDebouncedBalances] = useState<Balances>(balances ?? new Balances([]))
-  useDebounce(
-    () => {
-      if (balances) setDebouncedBalances(balances)
-    },
-    100,
-    [balances]
-  )
+  useDebounce(() => setBalances(new Balances(allBalances, { chains, evmNetworks, tokens })), 100, [
+    allBalances,
+    chains,
+    evmNetworks,
+    tokens,
+  ])
 
-  return debouncedBalances
+  return balances
 }
 export default useBalances

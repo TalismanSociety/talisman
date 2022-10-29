@@ -1,17 +1,16 @@
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import { db } from "@core/libs/db"
-import { api } from "@ui/api"
-import { useLiveQuery } from "dexie-react-hooks"
+import { useMemo } from "react"
+import { useDbCache } from "./useDbData"
+import { useDbDataSubscription } from "./useDbDataSubscription"
 
-import { useMessageSubscription } from "./useMessageSubscription"
-
-const subscribe = () => api.ethereumNetworks(() => {})
 export const useEvmNetwork = (id?: EvmNetworkId): EvmNetwork | CustomEvmNetwork | undefined => {
-  // make sure the store is hydrated
-  useMessageSubscription("ethereumNetworks", null, subscribe)
+  // keep db table up to date
+  useDbDataSubscription("evmNetworks")
 
-  return useLiveQuery(
-    async () => (id !== undefined ? await db.evmNetworks.get(id) : undefined),
-    [id]
+  const { allEvmNetworks } = useDbCache()
+
+  return useMemo(
+    () => allEvmNetworks.find((evmNetwork) => Number(evmNetwork.id) === Number(id)),
+    [allEvmNetworks, id]
   )
 }

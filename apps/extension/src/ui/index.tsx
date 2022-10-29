@@ -12,6 +12,7 @@ import { HashRouter } from "react-router-dom"
 import { AppStateProvider } from "./hooks/useAppState"
 import { FeaturesProvider } from "./hooks/useFeatures"
 import { SettingsProvider } from "./hooks/useSettings"
+import { DbCacheProvider } from "./hooks/useDbData"
 
 initSentry(Sentry)
 const container = document.getElementById("root")
@@ -28,7 +29,9 @@ export const renderTalisman = (app: any) => {
           <FeaturesProvider>
             <SettingsProvider>
               <AppStateProvider>
-                <HashRouter>{app}</HashRouter>
+                <DbCacheProvider>
+                  <HashRouter>{app}</HashRouter>
+                </DbCacheProvider>
               </AppStateProvider>
             </SettingsProvider>
           </FeaturesProvider>
