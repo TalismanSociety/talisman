@@ -8,6 +8,7 @@ import { useDebounce } from "react-use"
 import { BehaviorSubject } from "rxjs"
 import { useDbCache } from "./useDbData"
 import { useDbDataSubscription } from "./useDbDataSubscription"
+import { useBalancesHydrate } from "./useBalancesHydrate"
 
 const INITIAL_VALUE = new Balances({})
 
@@ -24,25 +25,19 @@ export const useBalancesByParams = ({
   addressesByChain = DEFAULT_BY_CHAIN,
   addressesByEvmNetwork = DEFAULT_By_EVM_NETWORK,
 }: BalanceByParamsProps) => {
-  // keep shared db data up to date
-  useDbDataSubscription("chains")
-  useDbDataSubscription("evmNetworks")
-  useDbDataSubscription("tokens")
-
-  // We cannot use the balances from db cache here, as backend won't update the db
-  const { chainsMap: chains, evmNetworksMap: evmNetworks, tokensMap: tokens } = useDbCache()
+  const hydrate = useBalancesHydrate()
 
   const subscribe = useCallback(
     (subject: BehaviorSubject<Balances>) =>
       api.balancesByParams(addressesByChain, addressesByEvmNetwork, async (update) => {
         switch (update.type) {
           case "reset": {
-            const newBalances = new Balances(update.balances, { chains, evmNetworks, tokens })
+            const newBalances = new Balances(update.balances, hydrate)
             return subject.next(newBalances)
           }
 
           case "upsert": {
-            const newBalances = new Balances(update.balances, { chains, evmNetworks, tokens })
+            const newBalances = new Balances(update.balances, hydrate)
             return subject.next(subject.value.add(newBalances))
           }
 
@@ -56,7 +51,7 @@ export const useBalancesByParams = ({
           }
         }
       }),
-    [addressesByChain, addressesByEvmNetwork, chains, evmNetworks, tokens]
+    [addressesByChain, addressesByEvmNetwork, hydrate]
   )
 
   // subscrition must be reinitialized (using the key) if parameters change

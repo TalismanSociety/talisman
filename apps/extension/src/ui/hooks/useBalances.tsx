@@ -3,32 +3,19 @@ import { useState } from "react"
 import { useDebounce } from "react-use"
 import { useDbCache } from "./useDbData"
 import { useDbDataSubscription } from "./useDbDataSubscription"
+import { useBalancesHydrate } from "./useBalancesHydrate"
 
 export const useBalances = () => {
   // keep db data up to date
-  useDbDataSubscription("chains")
-  useDbDataSubscription("evmNetworks")
-  useDbDataSubscription("tokens")
   useDbDataSubscription("balances")
+  const { allBalances } = useDbCache()
 
-  const {
-    allBalances,
-    chainsMap: chains,
-    evmNetworksMap: evmNetworks,
-    tokensMap: tokens,
-  } = useDbCache()
+  const hydrate = useBalancesHydrate()
 
-  const [balances, setBalances] = useState<Balances>(
-    () => new Balances(allBalances, { chains, evmNetworks, tokens })
-  )
+  const [balances, setBalances] = useState<Balances>(() => new Balances(allBalances, hydrate))
 
   // debounce every 100ms to prevent hammering UI with updates
-  useDebounce(() => setBalances(new Balances(allBalances, { chains, evmNetworks, tokens })), 100, [
-    allBalances,
-    chains,
-    evmNetworks,
-    tokens,
-  ])
+  useDebounce(() => setBalances(new Balances(allBalances, hydrate)), 100, [allBalances, hydrate])
 
   return balances
 }
