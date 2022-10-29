@@ -284,17 +284,13 @@ const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
   return <AccountOption name="All accounts" totalUsd={total} withTrack={withTrack} />
 }
 
-type AccountItem = {
-  id: string
-  name: string
+type DropdownItem = {
+  name?: string
   address?: string
   genesisHash?: string | null
   isHardware?: boolean
 }
-const OPTION_ALL_ACCOUNTS: AccountItem = {
-  id: "all",
-  name: "All accounts",
-}
+const OPTION_ALL_ACCOUNTS: DropdownItem = {}
 
 type AccountSelectProps = {
   responsive?: boolean
@@ -304,22 +300,22 @@ type AccountSelectProps = {
 export const AccountSelect = ({ responsive, className }: AccountSelectProps) => {
   const { account, accounts, select } = useSelectedAccount()
 
-  const items = useMemo<AccountItem[]>(
+  const items = useMemo<DropdownItem[]>(
     () =>
       [OPTION_ALL_ACCOUNTS, ...accounts]
         .filter((a) => a.address !== account?.address)
-        .map((a) => a as AccountItem),
+        .map((a) => a as DropdownItem),
     [account?.address, accounts]
   )
 
   const handleItemChange = useCallback(
-    (changes: UseSelectStateChange<AccountItem | undefined>) => {
+    (changes: UseSelectStateChange<DropdownItem | undefined>) => {
       select(changes.selectedItem?.address)
     },
     [select]
   )
   const { isOpen, getToggleButtonProps, getMenuProps, getItemProps, closeMenu } = useSelect<
-    AccountItem | undefined
+    DropdownItem | undefined
   >({
     items,
     selectedItem: undefined, // there should never be a selected item, as we don't display currently selected option in the dropdown itself
