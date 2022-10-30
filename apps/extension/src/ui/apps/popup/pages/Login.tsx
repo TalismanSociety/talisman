@@ -44,8 +44,7 @@ const Unlock = ({ className }: any) => {
         if (await api.authenticate(password)) {
           const qs = new URLSearchParams(window.location.search)
           if (qs.get("closeOnSuccess") === "true") window.close()
-        }
-        throw new Error("Paraverse access denied")
+        } else throw new Error("Paraverse access denied")
       } catch (err) {
         setError("password", {
           message: (err as Error)?.message ?? "",
@@ -87,6 +86,7 @@ const Unlock = ({ className }: any) => {
               type="password"
               placeholder="Enter your password"
               spellCheck={false}
+              autoComplete="off"
               data-lpignore
               autoFocus
             />

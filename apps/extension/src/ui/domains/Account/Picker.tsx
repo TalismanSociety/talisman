@@ -1,4 +1,4 @@
-import { AccountJsonHardware } from "@core/domains/accounts/types"
+import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import Field from "@talisman/components/Field/Field"
 import { ReactComponent as EnterIcon } from "@talisman/theme/icons/corner-down-left.svg"
@@ -173,7 +173,7 @@ const FormattedAddress = ({ address, placeholder = "who?" }: any) => {
   if (localAccount) return <Name withAvatar address={localAccount?.address} />
 
   return address ? (
-    <span className="flex gap custom-address">
+    <span className="gap custom-address flex">
       <Avatar address={address} />
       <Address className="address" address={address} />
     </span>
@@ -328,7 +328,8 @@ const AccountPicker: FC<Props> = ({
         .filter((account) => account?.address !== exclude)
         .filter((account) => !addressType || addressType === getAddressType(account.address))
         .filter(
-          (acc) => !acc.isHardware || (acc as AccountJsonHardware).genesisHash === genesisHash
+          (acc) =>
+            !acc.isHardware || (acc as AccountJsonHardwareSubstrate).genesisHash === genesisHash
         ),
     [accounts, addressType, exclude, genesisHash]
   )
@@ -341,7 +342,7 @@ const AccountPicker: FC<Props> = ({
           a.isHardware &&
           a.address === selectedAddress &&
           genesisHash &&
-          (a as AccountJsonHardware).genesisHash !== genesisHash
+          (a as AccountJsonHardwareSubstrate).genesisHash !== genesisHash
       )
     )
       setSelectedAddress(undefined)

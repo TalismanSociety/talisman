@@ -12,8 +12,8 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
-import { useSelect } from "downshift"
-import { useCallback, useEffect, useMemo } from "react"
+import { useSelect, UseSelectStateChange } from "downshift"
+import { useCallback, useMemo } from "react"
 import styled, { css } from "styled-components"
 
 const Button = styled.button`
@@ -118,6 +118,9 @@ const RESPONSIVE_CONTAINER_STYLE = css`
       align-items: center;
       text-align: center;
     }
+    ${Button} .ao-rows .ao-rowName {
+      justify-content: center;
+    }
 
     &.open > ul {
       border: 0.02rem solid var(--color-background-muted-3x);
@@ -197,6 +200,14 @@ const Container = styled.div<{ responsive?: boolean }>`
     display: none;
   }
 
+  .ao-rows .ao-rowName > div:first-child {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+  }
+
   ${({ responsive }) => (responsive ? RESPONSIVE_CONTAINER_STYLE : "")}
 `
 
@@ -207,9 +218,17 @@ type AccountOptionProps = AnyAccountOptionProps & {
   totalUsd: number
   genesisHash?: string | null
   name?: string
+  isHardware?: boolean
 }
 
-const AccountOption = ({ address, totalUsd, genesisHash, name, withTrack }: AccountOptionProps) => {
+const AccountOption = ({
+  address,
+  totalUsd,
+  genesisHash,
+  name,
+  isHardware,
+  withTrack,
+}: AccountOptionProps) => {
   const { genericEvent } = useAnalytics()
   const handleClick = useCallback(() => {
     if (!withTrack) return
@@ -233,7 +252,7 @@ const AccountOption = ({ address, totalUsd, genesisHash, name, withTrack }: Acco
           <Box overflow="hidden" textOverflow="ellipsis" noWrap flex column justify="center">
             {name ?? (address ? shortenAddress(address) : "unknown")}
           </Box>
-          {genesisHash && (
+          {isHardware && (
             <Box fg="primary" flex column justify="center">
               <UsbIcon />
             </Box>
@@ -279,15 +298,19 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
     () => [OPTION_ALL_ACCOUNTS, ...accounts].filter((a) => a.address !== account?.address),
     [account?.address, accounts]
   )
+
+  const handleItemChange = useCallback(
+    (changes: UseSelectStateChange<AccountJsonAny | undefined>) => {
+      select(changes.selectedItem?.address)
+    },
+    [select]
+  )
   const { isOpen, selectedItem, getToggleButtonProps, getMenuProps, getItemProps, closeMenu } =
     useSelect<AccountJsonAny | undefined>({
       items,
-      defaultSelectedItem: account,
+      selectedItem: account,
+      onSelectedItemChange: handleItemChange,
     })
-
-  useEffect(() => {
-    if (selectedItem) select(selectedItem.address)
-  }, [selectedItem, select])
 
   return (
     <Container

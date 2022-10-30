@@ -1,27 +1,29 @@
-import { DEBUG } from "@core/constants"
 import { AccountTypes, filterPublicAccounts } from "@core/domains/accounts/helpers"
 import type {
   RequestAccountCreate,
   RequestAccountCreateFromJson,
   RequestAccountCreateFromSeed,
   RequestAccountCreateHardware,
+  RequestAccountCreateHardwareEthereum,
   RequestAccountExport,
   RequestAccountForget,
   RequestAccountRename,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
+import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
-import { encodeAnyAddress } from "@core/util"
+import { decodeAnyAddress, encodeAnyAddress } from "@core/util"
 import { sleep } from "@core/util/sleep"
+import { createPair } from "@polkadot/keyring"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { mnemonicValidate } from "@polkadot/util-crypto"
+import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 
 export default class AccountsHandler extends ExtensionHandler {
@@ -104,7 +106,10 @@ export default class AccountsHandler extends ExtensionHandler {
     assert(rootSeed !== seed.trim(), "Cannot re-import your master seed")
 
     const seedAddress = addressFromMnemonic(seed, type)
-    const notExists = !keyring.getAccounts().some(({ address }) => address === seedAddress)
+
+    const notExists = !keyring
+      .getAccounts()
+      .some((acc) => acc.address.toLowerCase() === seedAddress.toLowerCase())
     assert(notExists, "Account already exists")
 
     try {
@@ -150,7 +155,9 @@ export default class AccountsHandler extends ExtensionHandler {
         origin: AccountTypes.JSON,
       })
 
-      const notExists = !keyring.getAccounts().some(({ address }) => address === pair.address)
+      const notExists = !keyring
+        .getAccounts()
+        .some((acc) => acc.address.toLowerCase() === pair.address.toLowerCase())
       assert(notExists, "Account already exists")
 
       pair.decodePkcs8(importedAccountPassword)
@@ -165,6 +172,43 @@ export default class AccountsHandler extends ExtensionHandler {
     } catch (error) {
       throw new Error((error as Error).message)
     }
+  }
+
+  private accountsCreateHardwareEthereum({
+    name,
+    address,
+    path,
+  }: RequestAccountCreateHardwareEthereum): boolean {
+    assert(isEthereumAddress(address), "Not an Ethereum address")
+
+    // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
+    // => create the pair without helper
+    const pair = createPair(
+      {
+        type: "ethereum",
+        toSS58: ethereumEncode,
+      },
+      {
+        publicKey: decodeAnyAddress(address),
+        secretKey: new Uint8Array(),
+      },
+      {
+        name,
+        hardwareType: "ledger",
+        isHardware: true,
+        origin: AccountTypes.HARDWARE,
+        path,
+      },
+      null
+    )
+
+    // add to the underlying keyring, allowing not to specify a password
+    keyring.keyring.addPair(pair)
+    keyring.saveAccount(pair)
+
+    talismanAnalytics.capture("account create", { type: "ethereum", method: "hardware" })
+
+    return true
   }
 
   private accountsCreateHardware({
@@ -206,16 +250,27 @@ export default class AccountsHandler extends ExtensionHandler {
     return true
   }
 
-  private async accountExport({ address }: RequestAccountExport): Promise<ResponseAccountExport> {
-    const password = await this.stores.password.getPassword()
-    assert(password, "User not logged in")
+  private async accountExport({
+    address,
+    password,
+    exportPw,
+  }: RequestAccountExport): Promise<ResponseAccountExport> {
+    await this.stores.password.checkPassword(password)
 
-    const pair = keyring.getPair(address)
-    talismanAnalytics.capture("account export", { type: pair.type })
+    const { err, val } = await getPairForAddressSafely(address, async (pair) => {
+      talismanAnalytics.capture("account export", { type: pair.type })
 
-    return {
-      exportedJson: keyring.backupAccount(pair, password),
-    }
+      const exportedJson = pair.toJson(exportPw)
+
+      // exporting the json causes the keypair to be re-encoded with the export password, which we do not want, so we re-re-encode it with the proper one
+      pair.toJson(await this.stores.password.transformPassword(password))
+
+      return {
+        exportedJson,
+      }
+    })
+    if (err) throw new Error(val as string)
+    return val
   }
 
   private async accountRename({ address, name }: RequestAccountRename): Promise<boolean> {
@@ -261,8 +316,10 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountCreateSeed(request as RequestAccountCreateFromSeed)
       case "pri(accounts.create.json)":
         return this.accountCreateJson(request as RequestAccountCreateFromJson)
-      case "pri(accounts.create.hardware)":
+      case "pri(accounts.create.hardware.substrate)":
         return this.accountsCreateHardware(request as RequestAccountCreateHardware)
+      case "pri(accounts.create.hardware.ethereum)":
+        return this.accountsCreateHardwareEthereum(request as RequestAccountCreateHardwareEthereum)
       case "pri(accounts.forget)":
         return this.accountForget(request as RequestAccountForget)
       case "pri(accounts.export)":

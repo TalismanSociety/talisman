@@ -9,6 +9,7 @@ import {
   OnboardedType,
 } from "@core/domains/app/types"
 import {
+  AddressesByEvmNetwork,
   BalancesUpdate,
   RequestBalance,
   RequestBalanceLocks,
@@ -55,6 +56,7 @@ export default interface MessageTypes {
   authenticate: (pass: string) => Promise<boolean>
   lock: () => Promise<boolean>
   changePassword: (currentPw: string, newPw: string, newPwConfirm: string) => Promise<boolean>
+  checkPassword: (password: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
   onboardStatus: () => Promise<OnboardedType>
@@ -100,9 +102,14 @@ export default interface MessageTypes {
   accountCreateHardware: (
     request: Omit<RequestAccountCreateHardware, "hardwareType">
   ) => Promise<boolean>
+  accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountForget: (address: string) => Promise<boolean>
-  accountExport: (address: string) => Promise<{ exportedJson: KeyringPair$Json }>
+  accountExport: (
+    address: string,
+    password: string,
+    exportPw: string
+  ) => Promise<{ exportedJson: KeyringPair$Json }>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 
@@ -117,6 +124,7 @@ export default interface MessageTypes {
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
+    addressesByEvmNetwork: AddressesByEvmNetwork,
     cb: (balances: BalancesUpdate) => void
   ) => UnsubscribeFn
 
@@ -184,6 +192,12 @@ export default interface MessageTypes {
     amount: string,
     gasSettings: EthGasSettings
   ) => Promise<ResponseAssetTransferEth>
+  assetTransferEthHardware: (
+    evmNetworkId: EvmNetworkId,
+    tokenId: TokenId,
+    amount: string,
+    signedTransaction: HexString
+  ) => Promise<ResponseAssetTransferEth>
   assetTransferCheckFees: (
     chainId: ChainId,
     tokenId: TokenId,
@@ -200,12 +214,15 @@ export default interface MessageTypes {
 
   // eth related messages
   ethApproveSign: (id: string) => Promise<boolean>
+  ethApproveSignHardware: (id: string, signature: HexString) => Promise<boolean>
   ethApproveSignAndSend: (
     id: string,
     transaction: ethers.providers.TransactionRequest
   ) => Promise<boolean>
+  ethApproveSignAndSendHardware: (id: string, signedTransaction: HexString) => Promise<boolean>
   ethCancelSign: (id: string) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
+  ethGetTransactionsCount: (address: string, evmNetworkId: number) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: string) => Promise<boolean>
   ethNetworkAddCancel: (is: string) => Promise<boolean>

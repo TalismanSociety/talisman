@@ -13,7 +13,8 @@
     @apply text-base;
   }
 
-  input::placeholder {
+  input::placeholder,
+  textarea::placeholder {
     @apply text-current opacity-30;
   }
 }
@@ -22,8 +23,66 @@
 /* Put here classes that are to be used everywhere (card, btn, badge..) */
 /* Access to the theme is provided by theme() function if needed */
 @layer components {
+  input[type="checkbox"].form-checkbox:checked {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M14.6667 6.5L8.25001 12.9167L5.33334 10' stroke='%23D5FF5C' stroke-width='1.33333' stroke-linecap='round' stroke-linejoin='round' /%3e%3c/svg%3e");
+  }
+  input[type="checkbox"].form-checkbox:checked:disabled {
+    background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M14.6667 6.5L8.25001 12.9167L5.33334 10' stroke='%235A5A5A' stroke-width='1.33333' stroke-linecap='round' stroke-linejoin='round' /%3e%3c/svg%3e");
+  }
+
+  /* we want focus state only for keyboard nav, so we disable :focus and use only :focus-visible */
+  input[type="checkbox"].form-checkbox:focus:not(:focus-visible) {
+    box-shadow: none;
+  }
 }
 
 /* Talisman utilities */
 @layer utilities {
+  .scrollable::-webkit-scrollbar {
+    background-color: transparent;
+  }
+  .scrollable::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px currentColor;
+    border: solid 3px transparent;
+    border-radius: 25px;
+    cursor: pointer;
+  }
+  .scrollable:-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+  .scrollable::-webkit-resizer {
+    display: none;
+  }
+  .scrollable {
+    resize: none;
+    scrollbar-color: currentColor transparent;
+  }
+
+  .scrollable-500::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px theme(colors.grey.500);
+  }
+  .scrollable-500 {
+    scrollbar-color: theme(colors.grey.500) transparent;
+  }
+
+  .scrollable-600::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px theme(colors.grey.600);
+  }
+  .scrollable-600 {
+    scrollbar-color: theme(colors.grey.600) transparent;
+  }
+
+  .scrollable-700::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px theme(colors.grey.700);
+  }
+  .scrollable-700 {
+    scrollbar-color: theme(colors.grey.700) transparent;
+  }
+
+  .scrollable-800::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px theme(colors.grey.800);
+  }
+  .scrollable-800 {
+    scrollbar-color: theme(colors.grey.800) transparent;
+  }
 }

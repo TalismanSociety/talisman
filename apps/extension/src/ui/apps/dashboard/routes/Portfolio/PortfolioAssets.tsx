@@ -3,6 +3,7 @@ import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { IconMore } from "@talisman/theme/icons"
+import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
@@ -14,7 +15,6 @@ import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
-import { useAccountExport } from "@ui/hooks/useAccountExport"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
@@ -29,7 +29,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const { showWalletFunding } = useAppState()
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
-  const { canExportAccount, exportAccount } = useAccountExport(account)
+  const { canExportAccount, open: openAccountExportModal } = useAccountExportModal()
   const { canRemove, open: openAccountRemoveModal } = useAccountRemoveModal()
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openAddressFormatterModal } = useAddressFormatterModal()
@@ -89,7 +89,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
                   <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
                   {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
                   {canExportAccount && (
-                    <PopNav.Item onClick={exportAccount}>Export Private Key</PopNav.Item>
+                    <PopNav.Item onClick={openAccountExportModal}>Export Private Key</PopNav.Item>
                   )}
                   {canRemove && (
                     <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>

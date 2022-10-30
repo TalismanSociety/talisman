@@ -56,7 +56,7 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
     return true
   }
 
-  public async getSeed(password: string): Promise<Result<string, "Incorrect pass phrase">> {
+  public async getSeed(password: string): Promise<Result<string, "Incorrect password">> {
     let seed: string
     const cipher = await this.get("cipher")
     try {
@@ -69,7 +69,7 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
         seed = decryptedSeed
       }
     } catch (e) {
-      return Err("Incorrect pass phrase")
+      return Err("Incorrect password")
     }
     return Ok(seed)
   }

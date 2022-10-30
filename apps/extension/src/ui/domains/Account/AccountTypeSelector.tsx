@@ -36,12 +36,16 @@ type AccountTypeSelectorProps = {
   defaultType?: AccountAddressType
   onChange: (type: AccountAddressType) => void
   className?: string
+  enabledAddressTypes?: AccountAddressType[]
 }
+
+const DEFAULT_ADDRESS_TYPES: AccountAddressType[] = ["sr25519", "ethereum"]
 
 export const AccountTypeSelector = ({
   defaultType,
   onChange,
   className,
+  enabledAddressTypes = DEFAULT_ADDRESS_TYPES,
 }: AccountTypeSelectorProps) => {
   const [type, setType] = useState<AccountAddressType | undefined>(defaultType)
 
@@ -57,17 +61,19 @@ export const AccountTypeSelector = ({
     <Container className={className} tabIndex={0}>
       <AccountTypeButton
         title="Polkadot"
-        className={classNames(type === "sr25519" && "selected")}
+        className={classNames("allow-focus", type === "sr25519" && "selected")}
         icon={<PolkadotCircleLogo />}
         subtitle="Polkadot, Kusama &amp; Parachains"
         onClick={handleClick("sr25519")}
+        disabled={!enabledAddressTypes.includes("sr25519")}
       />
       <AccountTypeButton
         title="Ethereum"
-        className={classNames(type === "ethereum" && "selected")}
+        className={classNames("allow-focus", type === "ethereum" && "selected")}
         icon={<EthereumCircleLogo />}
         subtitle="Moonbeam, Moonriver, Astar etc."
         onClick={handleClick("ethereum")}
+        disabled={!enabledAddressTypes.includes("ethereum")}
       />
     </Container>
   )

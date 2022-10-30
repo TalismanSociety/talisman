@@ -56,12 +56,12 @@ const Container = styled.div`
   }
 
   div.chain-logo {
-    background: black;
+    background-color: black;
     position: absolute;
-    top: -0.1em;
-    right: -0.1em;
-    width: 0.5em;
-    height: 0.5em;
+    font-size: 0.5em;
+    top: -0.2em;
+    right: -0.2em;
+    background-size: cover;
   }
 `
 

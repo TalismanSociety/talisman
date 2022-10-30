@@ -3,24 +3,18 @@ import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import {
-  AllAccountsIcon,
-  ChevronLeftIcon,
-  CopyIcon,
-  IconMore,
-  PaperPlaneIcon,
-} from "@talisman/theme/icons"
+import { ChevronLeftIcon, CopyIcon, IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
+import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
-import AccountAvatar from "@ui/domains/Account/Avatar"
+import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
-import { useAccountExport } from "@ui/hooks/useAccountExport"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import React, { useCallback, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
@@ -36,7 +30,7 @@ const IconBox = styled(Box)`
 const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
-  const { canExportAccount, exportAccount } = useAccountExport(account)
+  const { canExportAccount, open: openExportAccountModal } = useAccountExportModal()
   const { canRemove, open: openAccountRemoveModal } = useAccountRemoveModal()
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openAddressFormatterModal } = useAddressFormatterModal()
@@ -66,7 +60,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
             <ChevronLeftIcon />
           </IconButton>
           <IconBox fontsizecustom="3.6rem" flex column justify="center">
-            {account?.address ? <AccountAvatar address={account.address} /> : <AllAccountsIcon />}
+            <CurrentAccountAvatar />
           </IconBox>
           <Box grow flex column gap={0.4} padding="0 0 0 0.4rem" fontsize="small" overflow="hidden">
             <Box fg="mid" overflow="hidden" textOverflow="ellipsis" noWrap>
@@ -104,7 +98,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
                 <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
                 {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
                 {canExportAccount && (
-                  <PopNav.Item onClick={exportAccount}>Export Private Key</PopNav.Item>
+                  <PopNav.Item onClick={openExportAccountModal}>Export Private Key</PopNav.Item>
                 )}
                 {canRemove && (
                   <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>

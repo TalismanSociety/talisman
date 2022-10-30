@@ -21,7 +21,7 @@
   },
   "web_accessible_resources": ["page.js", "dashboard.js.map"],
   "content_security_policy": "script-src 'self' blob: 'unsafe-eval' 'wasm-eval'; object-src 'self'",
-  "permissions": ["storage", "tabs"],
+  "permissions": ["storage", "tabs", "notifications"],
   "icons": {
     "16": "favicon16x16.png",
     "24": "favicon24x24.png",
@@ -29,5 +29,11 @@
     "48": "favicon48x48.png",
     "64": "favicon64x64.png",
     "128": "favicon128x128.png"
-  }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "strict_min_version": "95.0"
+    }
+  },
+  "minimum_chrome_version": "92"
 }

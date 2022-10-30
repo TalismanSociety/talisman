@@ -2,12 +2,14 @@ import { FC, SVGProps, useMemo } from "react"
 import { IconLoader } from "../icons"
 import { classNames } from "../utils"
 
-type ButtonProps = React.DetailedHTMLProps<
+export type ButtonProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
   HTMLButtonElement
 > & {
   processing?: boolean
   primary?: boolean
+  fullWidth?: boolean
+  small?: boolean
   icon?: FC<SVGProps<SVGSVGElement>>
 }
 
@@ -15,6 +17,8 @@ export const Button: FC<ButtonProps> = ({
   icon: Icon,
   disabled,
   primary,
+  fullWidth,
+  small,
   processing,
   className,
   ...props
@@ -48,7 +52,9 @@ export const Button: FC<ButtonProps> = ({
       type="button"
       disabled={disabled || processing}
       className={classNames(
-        "text-md bg relative inline-flex h-28 items-center justify-center rounded px-12 outline-none transition-colors ",
+        "bg relative inline-flex  items-center justify-center rounded outline-none transition-colors ",
+        small ? "h-20 px-8 text-sm" : "text-md h-28 px-12",
+        fullWidth ? "w-full" : "",
         colors,
         className
       )}
@@ -60,7 +66,7 @@ export const Button: FC<ButtonProps> = ({
         >
           <div>{props.children}</div>
           {Icon && (
-            <div className="text-lg">
+            <div className={small ? "text-md" : "text-lg"}>
               <Icon />
             </div>
           )}

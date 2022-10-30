@@ -27,7 +27,7 @@ export const PortfolioAccount = ({
       <Box overflow="hidden" textOverflow="ellipsis" noWrap>
         {account.name ?? "Unnknown"}
       </Box>
-      {!!account?.genesisHash && (
+      {!!account?.isHardware && (
         <Box fg="primary">
           <UsbIcon />
         </Box>
