@@ -9,6 +9,7 @@ import { sr25519Encrypt } from "@core/util/sr25519encrypt"
 import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
 import { Keypair } from "@polkadot/util-crypto/types"
 import { PGPRequest, RequestPGPCancel } from "./types"
+import { talismanAnalytics } from "@core/libs/Analytics"
 
 export default class PGPHandler extends ExtensionHandler {
   private async encryptApprove({ id }: RequestIdOnly) {
@@ -25,12 +26,13 @@ export default class PGPHandler extends ExtensionHandler {
 
       assert(u8aToU8a(payload.recipient).length === 32, "Supplied recipient pubkey is incorrect length.")
       
-      // TODO-pgp: delete these assersions?
       assert(kp.publicKey.length === 32, "Talisman pubkey is incorrect length")
       assert(kp.secretKey.length === 64, "Talisman secretKey is incorrect length")
 
       // get encrypted result as integer array
       const encryptResult = sr25519Encrypt( u8aToU8a(payload.message) , u8aToU8a(payload.recipient), kp);
+
+    talismanAnalytics.capture("encrypt message approve")
 
       resolve({
         id,
@@ -57,11 +59,12 @@ export default class PGPHandler extends ExtensionHandler {
       const pw = await this.stores.password.getPassword() as string
       const pk = getPrivateKey(pair, pw)
 
-      // TODO-pgp: delete this?
       assert(pk.length === 64, "Talisman secretKey is incorrect length")
       
       // get decrypted response as integer array
       const decryptResult = sr25519Decrypt(u8aToU8a(payload.message), {secretKey: u8aToU8a(pk)})
+
+    talismanAnalytics.capture("decrypt message approve")
 
       resolve({
         id,
@@ -81,7 +84,8 @@ export default class PGPHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    // TODO-pgp: log analytics event here
+    talismanAnalytics.capture("encrypt/decrypt message reject")
+
     queued.reject(new Error("Cancelled"))
 
     return true
