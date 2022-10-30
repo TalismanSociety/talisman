@@ -1,22 +1,50 @@
 import { PGPRequest } from "@core/domains/pgp/types"
-import Button from "@talisman/components/Button"
+import { SimpleButton } from "@talisman/components/SimpleButton"
 import Grid from "@talisman/components/Grid"
+import { AccountJson } from "@core/domains/accounts/types"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
+import { AppPill } from "@talisman/components/AppPill"
 import { usePgpEncryptRequest } from "@ui/domains/PGP/PgpEncryptRequestContext"
-import { SiteInfo } from "@ui/domains/Sign/SiteInfo"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import usePGPRequestById from "@ui/hooks/usePGPRequestById"
 import { useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
+import { SignContainer, Message } from "./Sign/common"
 
-import Layout, { Content, Footer, Header } from "../Layout"
+import { Content, Footer, Header } from "../Layout"
 
-const Container = ({ className }: any) => {
+const SignMessage = ({
+  account,
+  request,
+  isDecrypt
+}: {
+  account: AccountJson
+  request: string
+  isDecrypt: boolean
+}) => {
+  const data = useMemo(() => {
+    return request
+  }, [request])
+
+  return (
+    <>
+      <h1 className="no-margin-top">{isDecrypt ? "Decrypt " : "Encrypt "}Request</h1>
+      <h2>
+        You are { isDecrypt ? "decrypting" : "encrypting" } some data with
+        <br />
+        <AccountPill account={account} />
+      </h2>
+      <Message readOnly defaultValue={data}/>
+    </>
+  )
+}
+
+const PGPSign = ({ className }: any) => {
   const { popupOpenEvent } = useAnalytics()
   const { id } = useParams() as { id: string }
   const pgpRequest = usePGPRequestById(id) as PGPRequest | undefined
-  const { url, request, approve, reject, status, message, account } =
+  const { url, request, approve, reject, status, message, account, isDecrypt } =
     usePgpEncryptRequest(pgpRequest)
 
   useEffect(() => {
@@ -32,37 +60,41 @@ const Container = ({ className }: any) => {
 
 
   return (
-    <Layout className={className} isThinking={status === "PROCESSING"}>
-      <Header text={"Encrypt/Decrypt Request"} />
+    <SignContainer>
+      <Header text={<AppPill url={url} />}></Header>
       <Content>
-      {account && request && (
+        {account && request && (
           <>
-            <SiteInfo siteUrl={url} />
-            <div className="grow">
-              <h1>Approve Request</h1>
-              <h2 className="center">
-                You are approving a request with account{" "}
-                <AccountPill account={account} prefix={undefined} />
-              </h2>
-            </div>
-            {errorMessage && <div className="error">{errorMessage}</div>}
-            <div className="bottom">
-                TODO: request details
+            <div className="sign-summary">
+              <SignMessage
+                account={account}
+                request={request?.payload.message as string}
+                isDecrypt={isDecrypt}
+              />
             </div>
           </>
         )}
       </Content>
       <Footer>
-        <Grid>
-          <Button onClick={reject}>Cancel</Button>
-          <Button primary onClick={approve}>Approve</Button>
-        </Grid>
+        {errorMessage && <p className="error">{errorMessage}</p>}
+        {account && request && (
+          <>
+            <Grid>
+              <SimpleButton disabled={processing} onClick={reject}>
+                Cancel
+              </SimpleButton>
+              <SimpleButton disabled={processing} processing={processing} primary onClick={approve}>
+                Approve
+              </SimpleButton>
+            </Grid>
+          </>
+        )}
       </Footer>
-    </Layout>
+    </SignContainer>
   )
 }
 
-const StyledContainer = styled(Container)`
+const StyledPGPSign = styled(PGPSign)`
   .layout-header {
     .pill {
       background: var(--color-background-muted);
@@ -118,4 +150,4 @@ const StyledContainer = styled(Container)`
   }
 `
 
-export default StyledContainer
+export default StyledPGPSign

@@ -1,7 +1,6 @@
-import { PGPRequest } from "@core/domains/pgp/types"
+import { PGPRequest, DecryptRequest } from "@core/domains/pgp/types"
 import { isDecryptRequest } from "@core/util/isDecryptRequest"
 import useStatus from "@talisman/hooks/useStatus"
-import { classNames } from "@talisman/util/classNames"
 import { api } from "@ui/api"
 import { useCallback } from "react"
 
@@ -42,7 +41,7 @@ export const usePgpEncryptRequest = (currentRequest?: PGPRequest) => {
     }
     window.close()
   }, [currentRequest])
-
+  
   return {
     id: currentRequest?.id,
     account: currentRequest?.account,
@@ -53,6 +52,6 @@ export const usePgpEncryptRequest = (currentRequest?: PGPRequest) => {
     message,
     approve,
     reject,
+    isDecrypt: ((currentRequest as DecryptRequest)?.request?.payload?.sender !== undefined) // bit hacky, should really use isDecryptRequest from utils
   }
 }
-

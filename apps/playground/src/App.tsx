@@ -2,7 +2,7 @@ import { useState } from "react"
 import talismanLogo from "./assets/talisman-full-color.svg"
 import "./styles/styles.css"
 import { Button } from "talisman-ui"
-import { Buttons } from "./components/Buttons"
+import { Sumi } from "./components/Sumi"
 
 function App() {
   const [count, setCount] = useState(0)
@@ -19,7 +19,8 @@ function App() {
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
         </p>
-        <Buttons />
+        {/* <Buttons /> */}
+        <Sumi />
       </div>
     </div>
   )
