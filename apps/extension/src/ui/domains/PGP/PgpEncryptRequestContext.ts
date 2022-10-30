@@ -22,9 +22,15 @@ export const usePgpEncryptRequest = (currentRequest?: PGPRequest) => {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error(err)
-        setStatus.error(
+        if(isDecryptRequest(currentRequest)){
+          setStatus.error(
+            "Failed to approve decrypt request"
+        )
+        } else {
+          setStatus.error(
             "Failed to approve encrypt request"
         )
+        }
       }
     },
     [currentRequest, setStatus]
