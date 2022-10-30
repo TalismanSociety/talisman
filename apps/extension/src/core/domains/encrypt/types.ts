@@ -60,17 +60,11 @@ export interface DecryptResult {
 
 export interface RequestEncrypt {
   readonly payload: EncryptPayload;
-  encrypt(pair: KeyringPair): {
-      result: string;
-  };
 }
 
 
 export interface RequestDecrypt {
   readonly payload: DecryptPayload;
-  decrypt(pair: KeyringPair): {
-      result: string | null;
-  };
 }
 
 export type AnyEncryptRequest = EncryptRequest | DecryptRequest

@@ -7,8 +7,4 @@ export default class RequestMessageDecrypt implements RequestDecrypt {
       this.payload = payload
     };
 
-    decrypt(pair: KeyringPair) {
-        // TODO-pgp: nuke this interface??
-      return {result: ''}
-    }
 }
