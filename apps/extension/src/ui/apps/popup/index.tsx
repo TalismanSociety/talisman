@@ -16,7 +16,7 @@ import { useEthWatchAssetRequests } from "@ui/hooks/useEthWatchAssetRequests"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useMetadataRequests } from "@ui/hooks/useMetadataRequests"
-import { usePGPRequests } from "@ui/hooks/usePGPRequests"
+import { useEncryptRequests } from "@ui/hooks/useEncryptRequests"
 import { useSigningRequests } from "@ui/hooks/useSigningRequests"
 import { useEffect, useMemo } from "react"
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom"
@@ -29,7 +29,7 @@ import Connect from "./pages/Connect"
 import Loading from "./pages/Loading"
 import Login from "./pages/Login"
 import Metadata from "./pages/Metadata"
-import PGP from "./pages/Pgp"
+import Encrypt from "./pages/Encrypt"
 import { Portfolio } from "./pages/Portfolio"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
@@ -38,7 +38,7 @@ const Popup = () => {
   const isOnboarded = useIsOnboarded()
   const isLoggedIn = useIsLoggedIn()
   const metaDataRequests = useMetadataRequests()
-  const pgpRequests = usePGPRequests()
+  const encryptRequests = useEncryptRequests()
   const signingRequests = useSigningRequests()
   const authRequests = useAuthRequests()
   const ethNetworkAddRequests = useEthNetworkAddRequests()
@@ -65,16 +65,16 @@ const Popup = () => {
         if (isEthereumRequest(request)) navigate(`/sign/eth/${request.id}`)
         else navigate(`/sign/${request.id}`)
       }
-    } else if (pgpRequests.length > 0) {
+    } else if (encryptRequests.length > 0) {
       const params = new URL(window.location.href).searchParams
-      const reqId = params.get("pgp")
-      const request = pgpRequests.find((r) => r.id === reqId) ?? pgpRequests[0]
-      if (request) navigate(`/pgp/${request.id}`)
+      const reqId = params.get("encrypt")
+      const request = encryptRequests.find((r) => r.id === reqId) ?? encryptRequests[0]
+      if (request) navigate(`/encrypt/${request.id}`)
     } 
     else if (!location.pathname || location.pathname === "/") navigate("/portfolio")
   }, [
     metaDataRequests,
-    pgpRequests,
+    encryptRequests,
     signingRequests,
     authRequests,
     navigate,
@@ -118,7 +118,7 @@ const Popup = () => {
                   <Route path="sign/eth/:id" element={<EthereumSignRequest />}></Route>
                   <Route path="sign/:id" element={<SubstrateSignRequest />}></Route>
                   <Route path="metadata" element={<Metadata />}></Route>
-                  <Route path="pgp/:id" element={<PGP />}></Route>
+                  <Route path="encrypt/:id" element={<Encrypt />}></Route>
                   <Route path="eth-network-add" element={<AddEthereumNetwork />}></Route>
                   <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
                   {/* Not used for now */}

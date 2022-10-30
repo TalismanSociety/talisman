@@ -1,7 +1,7 @@
 import PolkadotInjected from "@polkadot/extension-base/page/Injected"
 import Signer from "@polkadot/extension-base/page/Signer"
 import type { SendRequest } from "@core/types"
-import { EncryptResult, EncryptPayload, DecryptPayload, DecryptResult } from "../domains/pgp/types"
+import { EncryptResult, EncryptPayload, DecryptPayload, DecryptResult } from "../domains/encrypt/types"
 
 // external to class
 let sendRequest: SendRequest;
@@ -12,7 +12,7 @@ export class TalismanSigner extends Signer {
   }
 
   public async encryptMessage (payload: EncryptPayload): Promise<EncryptResult> {
-    const result = await sendRequest('pub(pgp.encrypt)', payload);
+    const result = await sendRequest('pub(encrypt.encrypt)', payload);
 
     return {
       ...result,
@@ -20,7 +20,7 @@ export class TalismanSigner extends Signer {
   }
 
   public async decryptMessage (payload: DecryptPayload): Promise<DecryptResult> {
-    const result = await sendRequest('pub(pgp.decrypt)', payload);
+    const result = await sendRequest('pub(encrypt.decrypt)', payload);
 
     return {
       ...result,

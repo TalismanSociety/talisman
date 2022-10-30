@@ -1,10 +1,10 @@
-import { PGPRequest, DecryptRequest } from "@core/domains/pgp/types"
+import { AnyEncryptRequest, DecryptRequest } from "@core/domains/encrypt/types"
 import { isDecryptRequest } from "@core/util/isDecryptRequest"
 import useStatus from "@talisman/hooks/useStatus"
 import { api } from "@ui/api"
 import { useCallback } from "react"
 
-export const usePgpEncryptRequest = (currentRequest?: PGPRequest) => {
+export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
   const { status, message, setStatus } = useStatus()
 
   const approve = useCallback(
@@ -39,7 +39,7 @@ export const usePgpEncryptRequest = (currentRequest?: PGPRequest) => {
   const reject = useCallback(async () => {
     try {
       if (currentRequest) {
-        await api.cancelPGPRequest(currentRequest.id)
+        await api.cancelEncryptRequest(currentRequest.id)
       }
     } catch (err) {
       // ignore, request doesn't exist

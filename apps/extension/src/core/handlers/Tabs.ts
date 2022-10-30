@@ -1,9 +1,9 @@
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
-import RequestMessageDecrypt from "@core/domains/pgp/RequestMessageDecrypt"
-import RequestMessageEncrypt from "@core/domains/pgp/RequestMessageEncrypt"
-import { DecryptPayload, EncryptPayload, ResponseDecrypt, ResponseEncrypt } from "@core/domains/pgp/types"
+import RequestMessageDecrypt from "@core/domains/encrypt/RequestMessageDecrypt"
+import RequestMessageEncrypt from "@core/domains/encrypt/RequestMessageEncrypt"
+import { DecryptPayload, EncryptPayload, ResponseDecrypt, ResponseEncrypt } from "@core/domains/encrypt/types"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
@@ -144,7 +144,7 @@ export default class Tabs extends TabsHandler {
   private messageEncrypt(url: string, request: EncryptPayload): Promise<ResponseEncrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
-    return this.state.requestStores.pgp.encrypt(url, new RequestMessageEncrypt(request), {
+    return this.state.requestStores.encrypt.encrypt(url, new RequestMessageEncrypt(request), {
       address,
       ...pair.meta,
     })
@@ -154,7 +154,7 @@ export default class Tabs extends TabsHandler {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return this.state.requestStores.pgp.decrypt(url, new RequestMessageDecrypt(request), {
+    return this.state.requestStores.encrypt.decrypt(url, new RequestMessageDecrypt(request), {
       address,
       ...pair.meta,
     })
@@ -324,11 +324,11 @@ export default class Tabs extends TabsHandler {
       case "pub(rpc.unsubscribe)":
         return this.rpcUnsubscribe(request as RequestRpcUnsubscribe, port)
 
-      case "pub(pgp.encrypt)": {
+      case "pub(encrypt.encrypt)": {
         return this.messageEncrypt(url, request as EncryptPayload)
       }
 
-      case "pub(pgp.decrypt)":
+      case "pub(encrypt.decrypt)":
         return this.messageDecrypt(url, request as DecryptPayload)
 
       default:

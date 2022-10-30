@@ -8,12 +8,12 @@ import { sr25519Decrypt } from "@core/util/sr25519decrypt"
 import { sr25519Encrypt } from "@core/util/sr25519encrypt"
 import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
 import { Keypair } from "@polkadot/util-crypto/types"
-import { PGPRequest, RequestPGPCancel } from "./types"
+import { AnyEncryptRequest, RequestEncryptCancel } from "./types"
 import { talismanAnalytics } from "@core/libs/Analytics"
 
-export default class PGPHandler extends ExtensionHandler {
+export default class EncryptHandler extends ExtensionHandler {
   private async encryptApprove({ id }: RequestIdOnly) {
-    const queued = this.state.requestStores.pgp.getEncryptRequest(id)
+    const queued = this.state.requestStores.encrypt.getEncryptRequest(id)
     assert(queued, "Unable to find request")
 
     const { reject, request, resolve } = queued
@@ -48,7 +48,7 @@ export default class PGPHandler extends ExtensionHandler {
   }
 
   private async decryptApprove({ id }: RequestIdOnly) {
-    const queued = this.state.requestStores.pgp.getDecryptRequest(id)
+    const queued = this.state.requestStores.encrypt.getDecryptRequest(id)
     assert(queued, "Unable to find request")
 
     const { reject, request, resolve } = queued
@@ -79,8 +79,8 @@ export default class PGPHandler extends ExtensionHandler {
     return
   }
 
-  private pgpCancel({ id }: RequestPGPCancel): boolean {
-    const queued = this.state.requestStores.pgp.getRequest(id)
+  private encryptCancel({ id }: RequestEncryptCancel): boolean {
+    const queued = this.state.requestStores.encrypt.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -98,15 +98,15 @@ export default class PGPHandler extends ExtensionHandler {
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(pgp.requests)":
-        return this.state.requestStores.pgp.subscribe<"pri(pgp.requests)">(id, port)
+      case "pri(encrypt.requests)":
+        return this.state.requestStores.encrypt.subscribe<"pri(encrypt.requests)">(id, port)
 
-      case "pri(pgp.byid.subscribe)": {
-        const cb = createSubscription<"pri(pgp.byid.subscribe)">(id, port)
-        const subscription = this.state.requestStores.pgp.observable.subscribe(
-          (reqs: PGPRequest[]) => {
-            const pgpRequest = reqs.find((req) => req.id === (request as RequestIdOnly).id)
-            if (pgpRequest) cb(pgpRequest)
+      case "pri(encrypt.byid.subscribe)": {
+        const cb = createSubscription<"pri(encrypt.byid.subscribe)">(id, port)
+        const subscription = this.state.requestStores.encrypt.observable.subscribe(
+          (reqs: AnyEncryptRequest[]) => {
+            const req = reqs.find((req) => req.id === (request as RequestIdOnly).id)
+            if (req) cb(req)
           }
         )
 
@@ -117,14 +117,14 @@ export default class PGPHandler extends ExtensionHandler {
         return true
       }
 
-      case "pri(pgp.approveEncrypt)":
+      case "pri(encrypt.approveEncrypt)":
         return await this.encryptApprove(request as RequestIdOnly)
 
-      case "pri(pgp.approveDecrypt)":
+      case "pri(encrypt.approveDecrypt)":
         return await this.decryptApprove(request as RequestIdOnly)
 
-      case "pri(pgp.cancel)":
-        return await this.pgpCancel(request as RequestPGPCancel)
+      case "pri(encrypt.cancel)":
+        return await this.encryptCancel(request as RequestEncryptCancel)
   
       default:
         throw new Error(`Unable to handle message of type ${type}`)

@@ -7,19 +7,19 @@ import { DecryptRequest, EncryptRequest, ResponseDecrypt, ResponseEncrypt } from
 type EncryptRequestRespondable = TRespondableRequest<EncryptRequest, ResponseEncrypt>
 type DecryptRequestRespondable = TRespondableRequest<DecryptRequest, ResponseDecrypt>
 
-export class PGPRequestsStore extends RequestStore<
+export class EncryptRequestsStore extends RequestStore<
   EncryptRequest | DecryptRequest,
   ResponseEncrypt | ResponseDecrypt
 > {
   mapRequestToData(
     request: EncryptRequestRespondable | DecryptRequestRespondable
   ) {
-    const { account, id, request: pgpRequest, url } = request
+    const { account, id, request: anyEncryptRequest, url } = request
     if(isDecryptRequest(request)){
       return {
         account,
         id,
-        request: pgpRequest,
+        request: anyEncryptRequest,
         url,
       } as DecryptRequestRespondable
     }
@@ -27,7 +27,7 @@ export class PGPRequestsStore extends RequestStore<
     return {
       account,
       id,
-      request: pgpRequest,
+      request: anyEncryptRequest,
       url,
     } as EncryptRequestRespondable  
   }

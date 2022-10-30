@@ -1,12 +1,12 @@
-import { PGPRequest } from "@core/domains/pgp/types"
+import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import Grid from "@talisman/components/Grid"
 import { AccountJson } from "@core/domains/accounts/types"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { AppPill } from "@talisman/components/AppPill"
-import { usePgpEncryptRequest } from "@ui/domains/PGP/PgpEncryptRequestContext"
+import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import usePGPRequestById from "@ui/hooks/usePGPRequestById"
+import useEncryptRequestById from "@ui/hooks/useEncryptRequestById"
 import { useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
@@ -40,15 +40,15 @@ const SignMessage = ({
   )
 }
 
-const PGPSign = ({ className }: any) => {
+const EncryptApprove = ({ className }: any) => {
   const { popupOpenEvent } = useAnalytics()
   const { id } = useParams() as { id: string }
-  const pgpRequest = usePGPRequestById(id) as PGPRequest | undefined
+  const encryptRequest = useEncryptRequestById(id) as AnyEncryptRequest | undefined
   const { url, request, approve, reject, status, message, account, isDecrypt } =
-    usePgpEncryptRequest(pgpRequest)
+    useEncryptRequest(encryptRequest)
 
   useEffect(() => {
-    popupOpenEvent("pgp")
+    popupOpenEvent("encrypt")
   }, [popupOpenEvent])
 
   const { processing, errorMessage } = useMemo(() => {
@@ -94,7 +94,7 @@ const PGPSign = ({ className }: any) => {
   )
 }
 
-const StyledPGPSign = styled(PGPSign)`
+const StyledEncryptApprove = styled(EncryptApprove)`
   .layout-header {
     .pill {
       background: var(--color-background-muted);
@@ -150,4 +150,4 @@ const StyledPGPSign = styled(PGPSign)`
   }
 `
 
-export default StyledPGPSign
+export default StyledEncryptApprove

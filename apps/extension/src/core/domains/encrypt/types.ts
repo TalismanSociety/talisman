@@ -73,7 +73,7 @@ export interface RequestDecrypt {
   };
 }
 
-export type PGPRequest = EncryptRequest | DecryptRequest
+export type AnyEncryptRequest = EncryptRequest | DecryptRequest
 
 
 export interface EncryptRequest {
@@ -100,19 +100,19 @@ export interface ResponseDecrypt {
 }
 
 // might remove - just inheriting pattern from RequestSigningSubscribe from "@polkadot/extension-base/background/types"
-export declare type RequestPGPSubscribe = null;
+export declare type RequestEncryptSubscribe = null;
 
-export interface RequestPGPCancel {
+export interface RequestEncryptCancel {
   id: string;
 }
 
-export interface PGPMessages {
-  // PGP message signatures
-  "pub(pgp.encrypt)": [EncryptPayload, EncryptResult]
-  "pub(pgp.decrypt)": [DecryptPayload, DecryptResult]
-  "pri(pgp.requests)": [RequestPGPSubscribe, boolean, PGPRequest[]]
-  "pri(pgp.byid.subscribe)": [RequestIdOnly, boolean, PGPRequest]
-  "pri(pgp.approveEncrypt)": [RequestIdOnly, boolean]
-  "pri(pgp.approveDecrypt)": [RequestIdOnly, boolean]
-  "pri(pgp.cancel)": [RequestIdOnly, boolean]
+export interface EncryptMessages {
+  // Encrypt message signatures
+  "pub(encrypt.encrypt)": [EncryptPayload, EncryptResult]
+  "pub(encrypt.decrypt)": [DecryptPayload, DecryptResult]
+  "pri(encrypt.requests)": [RequestEncryptSubscribe, boolean, AnyEncryptRequest[]]
+  "pri(encrypt.byid.subscribe)": [RequestIdOnly, boolean, AnyEncryptRequest]
+  "pri(encrypt.approveEncrypt)": [RequestIdOnly, boolean]
+  "pri(encrypt.approveDecrypt)": [RequestIdOnly, boolean]
+  "pri(encrypt.cancel)": [RequestIdOnly, boolean]
 }
