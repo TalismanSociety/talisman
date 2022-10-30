@@ -161,8 +161,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
     })
 
     if (result.ok) return result.val
-    else result.unwrap() // throws error
-    return
+    else if (result.val instanceof Error) throw result.val
+    else throw new Error("Failed to submit transaction")
   }
 
   private async assetTransferCheckFees({
@@ -191,8 +191,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
       throw new Error(`Unhandled token type ${exhaustiveCheck}`)
     })
     if (result.ok) return result.val
-    else result.unwrap() // throws error
-    return
+    else if (result.val instanceof Error) throw result.val
+    else throw new Error("Failed to check fees")
   }
 
   private async assetTransferEthHardware({
@@ -292,7 +292,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     }
   }
 
-  private async assetTransferApproveSign({
+  private assetTransferApproveSign({
     id,
     signature,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
@@ -300,7 +300,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     assert(pendingTx, `No pending transfer with id ${id}`)
     const { data, transfer } = pendingTx
 
-    return await new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const watchExtrinsic = this.getExtrinsicWatch(
         data.chainId,
         data.unsigned.address,
