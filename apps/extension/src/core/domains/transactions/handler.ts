@@ -161,6 +161,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     })
 
     if (result.ok) return result.val
+    else if ((result.val as any)?.code === 1010) throw new Error("Invalid signature")
     else if (result.val instanceof Error) throw result.val
     else throw new Error("Failed to submit transaction")
   }
@@ -191,6 +192,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       throw new Error(`Unhandled token type ${exhaustiveCheck}`)
     })
     if (result.ok) return result.val
+    else if ((result.val as any)?.code === 1010) throw new Error("Invalid signature")
     else if (result.val instanceof Error) throw result.val
     else throw new Error("Failed to check fees")
   }
