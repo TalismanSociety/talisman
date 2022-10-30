@@ -10,7 +10,6 @@ import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { construct, methods } from "@substrate/txwrapper-polkadot"
-
 import { pendingTransfers } from "./PendingTransfers"
 
 type ProviderSendFunction<T = any> = (method: string, params?: unknown[]) => Promise<T>
@@ -50,12 +49,6 @@ export default class AssetTransfersRpc {
       reapBalance,
       true
     )
-
-    callback(null, {
-      nonce: tx.nonce.toString(),
-      hash: tx.hash.toString(),
-      status: registry.createType<ExtrinsicStatus>("ExtrinsicStatus", { future: true }),
-    })
 
     const unsubscribe = await RpcFactory.subscribe(
       chainId,

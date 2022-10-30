@@ -140,7 +140,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
             tip,
             reapBalance,
             watchExtrinsic
-          )
+          ).catch(reject)
         if (tokenType === "orml")
           return OrmlTokenTransfersRpc.transfer(
             chainId,
@@ -150,7 +150,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
             toAddress,
             tip,
             watchExtrinsic
-          )
+          ).catch(reject)
         if (tokenType === "erc20")
           throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
@@ -307,7 +307,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
         resolve,
         reject
       )
-      transfer(signature, watchExtrinsic)
+      transfer(signature, watchExtrinsic).catch(reject)
     })
   }
 
