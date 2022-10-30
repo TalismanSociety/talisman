@@ -161,9 +161,11 @@ export default class AssetTransferHandler extends ExtensionHandler {
     })
 
     if (result.ok) return result.val
-    else if ((result.val as any)?.code === 1010) throw new Error("Invalid signature")
+    // 1010 (Invalid signature) happens often on kusama, simply retrying usually works.
+    // This message should hopefully motivate the user to retry
+    else if ((result.val as any)?.code === 1010) throw new Error("Failed to send transaction")
     else if (result.val instanceof Error) throw result.val
-    else throw new Error("Failed to submit transaction")
+    else throw new Error("Failed to send transaction")
   }
 
   private async assetTransferCheckFees({
@@ -192,7 +194,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
       throw new Error(`Unhandled token type ${exhaustiveCheck}`)
     })
     if (result.ok) return result.val
-    else if ((result.val as any)?.code === 1010) throw new Error("Invalid signature")
+    // 1010 (Invalid signature) happens often on kusama, simply retrying usually works.
+    // This message should hopefully motivate the user to retry
+    else if ((result.val as any)?.code === 1010) throw new Error("Failed to send transaction")
     else if (result.val instanceof Error) throw result.val
     else throw new Error("Failed to check fees")
   }
