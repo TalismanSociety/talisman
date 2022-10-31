@@ -74,8 +74,7 @@ const Popup = () => {
       const reqId = params.get("encrypt")
       const request = encryptRequests.find((r) => r.id === reqId) ?? encryptRequests[0]
       if (request) navigate(`/encrypt/${request.id}`)
-    } 
-    else if (!location.pathname || location.pathname === "/") navigate("/portfolio")
+    } else if (!location.pathname || location.pathname === "/") navigate("/portfolio")
   }, [
     metaDataRequests,
     encryptRequests,

@@ -54,7 +54,7 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   EthMessages &
   MnemonicMessages &
   SigningMessages &
-  TokenMessages & 
+  TokenMessages &
   EncryptMessages
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]

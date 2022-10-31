@@ -20,19 +20,26 @@ export default class EncryptHandler extends ExtensionHandler {
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
-      const pw = await this.stores.password.getPassword() as string
+      const pw = (await this.stores.password.getPassword()) as string
       const pk = getPrivateKey(pair, pw)
       const kp = { publicKey: pair.publicKey, secretKey: u8aToU8a(pk) } as Keypair
 
-      assert(u8aToU8a(payload.recipient).length === 32, "Supplied recipient pubkey is incorrect length.")
-      
+      assert(
+        u8aToU8a(payload.recipient).length === 32,
+        "Supplied recipient pubkey is incorrect length."
+      )
+
       assert(kp.publicKey.length === 32, "Talisman pubkey is incorrect length")
       assert(kp.secretKey.length === 64, "Talisman secretKey is incorrect length")
 
       // get encrypted result as integer array
-      const encryptResult = sr25519Encrypt( u8aToU8a(payload.message) , u8aToU8a(payload.recipient), kp);
+      const encryptResult = sr25519Encrypt(
+        u8aToU8a(payload.message),
+        u8aToU8a(payload.recipient),
+        kp
+      )
 
-    talismanAnalytics.capture("encrypt message approve")
+      talismanAnalytics.capture("encrypt message approve")
 
       resolve({
         id,
@@ -55,16 +62,16 @@ export default class EncryptHandler extends ExtensionHandler {
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
-      
-      const pw = await this.stores.password.getPassword() as string
+
+      const pw = (await this.stores.password.getPassword()) as string
       const pk = getPrivateKey(pair, pw)
 
       assert(pk.length === 64, "Talisman secretKey is incorrect length")
-      
-      // get decrypted response as integer array
-      const decryptResult = sr25519Decrypt(u8aToU8a(payload.message), {secretKey: u8aToU8a(pk)})
 
-    talismanAnalytics.capture("decrypt message approve")
+      // get decrypted response as integer array
+      const decryptResult = sr25519Decrypt(u8aToU8a(payload.message), { secretKey: u8aToU8a(pk) })
+
+      talismanAnalytics.capture("decrypt message approve")
 
       resolve({
         id,
@@ -125,10 +132,9 @@ export default class EncryptHandler extends ExtensionHandler {
 
       case "pri(encrypt.cancel)":
         return await this.encryptCancel(request as RequestEncryptCancel)
-  
+
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }
-
   }
 }

@@ -50,48 +50,48 @@ export const Container = styled(Layout)`
 `
 
 export const SignContainer = styled(Container)`
-.layout-content .children h2 {
-  text-align: center;
-  padding: 0;
-}
+  .layout-content .children h2 {
+    text-align: center;
+    padding: 0;
+  }
 
-.layout-content .children h1.no-margin-top {
-  margin: 0 0 1.6rem 0;
-}
+  .layout-content .children h1.no-margin-top {
+    margin: 0 0 1.6rem 0;
+  }
 
-.sign-summary {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-}
+  .sign-summary {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
 
-strong {
-  color: var(--color-foreground);
-  background: var(--color-background-muted);
-  border-radius: 4.8rem;
-  padding: 0.4rem 0.8rem;
-  white-space: nowrap;
-}
+  strong {
+    color: var(--color-foreground);
+    background: var(--color-background-muted);
+    border-radius: 4.8rem;
+    padding: 0.4rem 0.8rem;
+    white-space: nowrap;
+  }
 
-${SimpleButton} {
-  width: auto;
-}
+  ${SimpleButton} {
+    width: auto;
+  }
 
-.center {
-  text-align: center;
-}
+  .center {
+    text-align: center;
+  }
 
-${Grid} {
-  margin-top: 1.6rem;
-}
+  ${Grid} {
+    margin-top: 1.6rem;
+  }
 
-.error {
-  color: var(--color-status-error);
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .error {
+    color: var(--color-status-error);
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 `
 
 export const Message = styled.textarea<{ typed?: boolean }>`

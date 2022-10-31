@@ -12,7 +12,7 @@ import { dump as convertToYaml } from "js-yaml"
 import { lazy, Suspense, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
-import {SignContainer, Message } from "./common"
+import { SignContainer, Message } from "./common"
 
 const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 

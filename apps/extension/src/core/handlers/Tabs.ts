@@ -3,7 +3,12 @@ import { RequestAccountList } from "@core/domains/accounts/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
 import RequestMessageDecrypt from "@core/domains/encrypt/RequestMessageDecrypt"
 import RequestMessageEncrypt from "@core/domains/encrypt/RequestMessageEncrypt"
-import { DecryptPayload, EncryptPayload, ResponseDecrypt, ResponseEncrypt } from "@core/domains/encrypt/types"
+import {
+  DecryptPayload,
+  EncryptPayload,
+  ResponseDecrypt,
+  ResponseEncrypt,
+} from "@core/domains/encrypt/types"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"

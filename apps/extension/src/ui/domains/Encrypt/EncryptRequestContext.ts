@@ -12,7 +12,7 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
       setStatus.processing("Approving request")
       if (!currentRequest) return
       try {
-        if(isDecryptRequest(currentRequest)){
+        if (isDecryptRequest(currentRequest)) {
           await api.approveDecrypt(currentRequest.id)
           setStatus.success("Approved")
         } else {
@@ -22,14 +22,10 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error(err)
-        if(isDecryptRequest(currentRequest)){
-          setStatus.error(
-            "Failed to approve decrypt request"
-        )
+        if (isDecryptRequest(currentRequest)) {
+          setStatus.error("Failed to approve decrypt request")
         } else {
-          setStatus.error(
-            "Failed to approve encrypt request"
-        )
+          setStatus.error("Failed to approve encrypt request")
         }
       }
     },
@@ -47,7 +43,7 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
     }
     window.close()
   }, [currentRequest])
-  
+
   return {
     id: currentRequest?.id,
     account: currentRequest?.account,
@@ -58,6 +54,6 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
     message,
     approve,
     reject,
-    isDecrypt: ((currentRequest as DecryptRequest)?.request?.payload?.sender !== undefined) // bit hacky, should really use isDecryptRequest from utils
+    isDecrypt: (currentRequest as DecryptRequest)?.request?.payload?.sender !== undefined, // bit hacky, should really use isDecryptRequest from utils
   }
 }

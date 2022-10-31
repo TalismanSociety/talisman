@@ -64,7 +64,7 @@ export default class State {
     ),
     encrypt: new EncryptRequestsStore((encryptRequest) => {
       return this.popupOpen(encryptRequest && `?encrypt=${encryptRequest.id}`)
-    })
+    }),
   }
 
   #windows: number[] = []

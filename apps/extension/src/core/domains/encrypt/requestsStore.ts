@@ -11,11 +11,9 @@ export class EncryptRequestsStore extends RequestStore<
   EncryptRequest | DecryptRequest,
   ResponseEncrypt | ResponseDecrypt
 > {
-  mapRequestToData(
-    request: EncryptRequestRespondable | DecryptRequestRespondable
-  ) {
+  mapRequestToData(request: EncryptRequestRespondable | DecryptRequestRespondable) {
     const { account, id, request: anyEncryptRequest, url } = request
-    if(isDecryptRequest(request)){
+    if (isDecryptRequest(request)) {
       return {
         account,
         id,
@@ -29,7 +27,7 @@ export class EncryptRequestsStore extends RequestStore<
       id,
       request: anyEncryptRequest,
       url,
-    } as EncryptRequestRespondable  
+    } as EncryptRequestRespondable
   }
 
   public getEncryptRequest(id: string): EncryptRequestRespondable {

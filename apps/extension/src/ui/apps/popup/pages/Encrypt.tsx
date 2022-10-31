@@ -17,7 +17,7 @@ import { Content, Footer, Header } from "../Layout"
 const SignMessage = ({
   account,
   request,
-  isDecrypt
+  isDecrypt,
 }: {
   account: AccountJson
   request: string
@@ -31,11 +31,11 @@ const SignMessage = ({
     <>
       <h1 className="no-margin-top">{isDecrypt ? "Decrypt " : "Encrypt "}Request</h1>
       <h2>
-        You are { isDecrypt ? "decrypting" : "encrypting" } some data with
+        You are {isDecrypt ? "decrypting" : "encrypting"} some data with
         <br />
         <AccountPill account={account} />
       </h2>
-      <Message readOnly defaultValue={data}/>
+      <Message readOnly defaultValue={data} />
     </>
   )
 }
@@ -57,7 +57,6 @@ const EncryptApprove = ({ className }: any) => {
       errorMessage: status === "ERROR" ? message : "",
     }
   }, [status, message])
-
 
   return (
     <SignContainer>
