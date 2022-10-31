@@ -1,11 +1,11 @@
 import type { TokenId } from "@core/domains/tokens/types"
 import { useMemo } from "react"
-import { useDbCache } from "./useDbData"
-import { useDbDataSubscription } from "./useDbDataSubscription"
+import { useDbCache } from "./useDbCache"
+import { useDbCacheSubscription } from "./useDbCacheSubscription"
 
 const useToken = (id?: TokenId) => {
   // keep db table up to date
-  useDbDataSubscription("tokens")
+  useDbCacheSubscription("tokens")
 
   const { allTokens } = useDbCache()
 

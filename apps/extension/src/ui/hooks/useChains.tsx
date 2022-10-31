@@ -1,11 +1,11 @@
 import { useSettings } from "@ui/hooks/useSettings"
-import { useDbCache } from "./useDbData"
+import { useDbCache } from "./useDbCache"
 import { useMemo } from "react"
-import { useDbDataSubscription } from "./useDbDataSubscription"
+import { useDbCacheSubscription } from "./useDbCacheSubscription"
 
 export const useChains = () => {
   // keep db data up to date
-  useDbDataSubscription("chains")
+  useDbCacheSubscription("chains")
 
   const { useTestnets = false } = useSettings()
   const { allChains } = useDbCache()

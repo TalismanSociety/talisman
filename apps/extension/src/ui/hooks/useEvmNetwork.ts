@@ -1,11 +1,11 @@
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { useMemo } from "react"
-import { useDbCache } from "./useDbData"
-import { useDbDataSubscription } from "./useDbDataSubscription"
+import { useDbCache } from "./useDbCache"
+import { useDbCacheSubscription } from "./useDbCacheSubscription"
 
 export const useEvmNetwork = (id?: EvmNetworkId): EvmNetwork | CustomEvmNetwork | undefined => {
   // keep db table up to date
-  useDbDataSubscription("evmNetworks")
+  useDbCacheSubscription("evmNetworks")
 
   const { allEvmNetworks } = useDbCache()
 

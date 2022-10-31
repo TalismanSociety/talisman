@@ -12,7 +12,7 @@ import { HashRouter } from "react-router-dom"
 import { AppStateProvider } from "./hooks/useAppState"
 import { FeaturesProvider } from "./hooks/useFeatures"
 import { SettingsProvider } from "./hooks/useSettings"
-import { DbCacheProvider } from "./hooks/useDbData"
+import { DbCacheProvider } from "./hooks/useDbCache"
 
 initSentry(Sentry)
 const container = document.getElementById("root")

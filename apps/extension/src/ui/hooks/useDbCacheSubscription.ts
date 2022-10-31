@@ -7,7 +7,7 @@ const DO_NOTHING = () => {}
 export type DbEntityType = "chains" | "evmNetworks" | "tokens" | "balances"
 
 // when this hook is called, backend keeps the associated db table in sync with the datasource (blockchain, subsquid, etc.)
-export const useDbDataSubscription = (subscribeTo: DbEntityType) => {
+export const useDbCacheSubscription = (subscribeTo: DbEntityType) => {
   const subscribe = useCallback(() => {
     switch (subscribeTo) {
       case "chains":

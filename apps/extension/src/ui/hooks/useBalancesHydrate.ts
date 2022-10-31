@@ -1,11 +1,11 @@
 import { useMemo } from "react"
-import { useDbCache } from "./useDbData"
-import { useDbDataSubscription } from "./useDbDataSubscription"
+import { useDbCache } from "./useDbCache"
+import { useDbCacheSubscription } from "./useDbCacheSubscription"
 
 export const useBalancesHydrate = () => {
-  useDbDataSubscription("chains")
-  useDbDataSubscription("evmNetworks")
-  useDbDataSubscription("tokens")
+  useDbCacheSubscription("chains")
+  useDbCacheSubscription("evmNetworks")
+  useDbCacheSubscription("tokens")
 
   const { chainsMap: chains, evmNetworksMap: evmNetworks, tokensMap: tokens } = useDbCache()
 

@@ -1,13 +1,13 @@
 import { Balances } from "@core/domains/balances/types"
 import { useState } from "react"
 import { useDebounce } from "react-use"
-import { useDbCache } from "./useDbData"
-import { useDbDataSubscription } from "./useDbDataSubscription"
+import { useDbCache } from "./useDbCache"
+import { useDbCacheSubscription } from "./useDbCacheSubscription"
 import { useBalancesHydrate } from "./useBalancesHydrate"
 
 export const useBalances = () => {
   // keep db data up to date
-  useDbDataSubscription("balances")
+  useDbCacheSubscription("balances")
   const { allBalances } = useDbCache()
 
   const hydrate = useBalancesHydrate()
