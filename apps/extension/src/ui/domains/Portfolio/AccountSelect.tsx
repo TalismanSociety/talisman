@@ -221,6 +221,10 @@ type AccountOptionProps = AnyAccountOptionProps & {
   isHardware?: boolean
 }
 
+type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & {
+  address: string
+}
+
 const AccountOption = ({
   address,
   totalUsd,
@@ -266,10 +270,6 @@ const AccountOption = ({
   )
 }
 
-type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & {
-  address: string
-}
-
 const SingleAccountOption = (props: SingleAccountOptionProps) => {
   const { sum } = useBalancesByAddress(props.address)
   const { total } = useMemo(() => sum.fiat("usd"), [sum])
@@ -284,7 +284,13 @@ const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
   return <AccountOption name="All accounts" totalUsd={total} withTrack={withTrack} />
 }
 
-const OPTION_ALL_ACCOUNTS = { address: undefined } as unknown as AccountJsonAny
+type DropdownItem = {
+  name?: string
+  address?: string
+  genesisHash?: string | null
+  isHardware?: boolean
+}
+const OPTION_ALL_ACCOUNTS: DropdownItem = {}
 
 type AccountSelectProps = {
   responsive?: boolean
@@ -294,23 +300,27 @@ type AccountSelectProps = {
 export const AccountSelect = ({ responsive, className }: AccountSelectProps) => {
   const { account, accounts, select } = useSelectedAccount()
 
-  const items = useMemo<AccountJsonAny[]>(
-    () => [OPTION_ALL_ACCOUNTS, ...accounts].filter((a) => a.address !== account?.address),
+  const items = useMemo<DropdownItem[]>(
+    () =>
+      [OPTION_ALL_ACCOUNTS, ...accounts]
+        .filter((a) => a.address !== account?.address)
+        .map((a) => a as DropdownItem),
     [account?.address, accounts]
   )
 
   const handleItemChange = useCallback(
-    (changes: UseSelectStateChange<AccountJsonAny | undefined>) => {
+    (changes: UseSelectStateChange<DropdownItem | undefined>) => {
       select(changes.selectedItem?.address)
     },
     [select]
   )
-  const { isOpen, selectedItem, getToggleButtonProps, getMenuProps, getItemProps, closeMenu } =
-    useSelect<AccountJsonAny | undefined>({
-      items,
-      selectedItem: account,
-      onSelectedItemChange: handleItemChange,
-    })
+  const { isOpen, getToggleButtonProps, getMenuProps, getItemProps, closeMenu } = useSelect<
+    DropdownItem | undefined
+  >({
+    items,
+    selectedItem: undefined, // there should never be a selected item, as we don't display currently selected option in the dropdown itself
+    onSelectedItemChange: handleItemChange,
+  })
 
   return (
     <Container
@@ -331,7 +341,7 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
             {items.map((item, index) => (
               <li key={item.address ?? "all"} {...getItemProps({ item, index })}>
                 {item.address ? (
-                  <SingleAccountOption {...item} withTrack />
+                  <SingleAccountOption {...item} address={item.address} withTrack />
                 ) : (
                   <AllAccountsOption withTrack />
                 )}
