@@ -10,7 +10,6 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import Account from "@ui/domains/Account"
 import useAccounts from "@ui/hooks/useAccounts"
-import useAddressTypeChainsFilter from "@ui/hooks/useAddressTypeChainsFilter"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChains from "@ui/hooks/useChains"
 import useTokens from "@ui/hooks/useTokens"
@@ -20,6 +19,7 @@ import styled from "styled-components"
 import * as yup from "yup"
 
 import { TokenAmountField } from "../TokenAmountField"
+import { useBuyTokensModal } from "./BuyTokensModalContext"
 
 const Form = styled.form`
   padding-top: 3rem;
@@ -195,6 +195,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
 
 export const BuyTokensForm = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
+  const { close } = useBuyTokensModal()
   const accounts = useAccounts()
 
   const {
@@ -250,10 +251,13 @@ export const BuyTokensForm = () => {
         action: "Continue button - go to Banxa",
       })
 
+      // close modal before redirect or chrome will keep it visible until user comes back
+      close()
+
       const redirectUrl = `${BANXA_URL}?${qs}`
       window.open(redirectUrl, "_blank")
     },
-    [accounts, chains, tokens]
+    [accounts, chains, close, tokens]
   )
 
   const handleAccountChange = useCallback(
