@@ -33,6 +33,7 @@ const Unlock = ({ className }: any) => {
     handleSubmit,
     setError,
     setValue,
+    setFocus,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
@@ -47,12 +48,11 @@ const Unlock = ({ className }: any) => {
           if (qs.get("closeOnSuccess") === "true") window.close()
         } else throw new Error("Paraverse access denied")
       } catch (err) {
-        setError("password", {
-          message: (err as Error)?.message ?? "",
-        })
+        setError("password", { message: (err as Error)?.message ?? "" })
+        setFocus("password", { shouldSelect: true })
       }
     },
-    [setError]
+    [setError, setFocus]
   )
 
   // autologin, for developers only
