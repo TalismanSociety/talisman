@@ -4,7 +4,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import StatusIcon from "@talisman/components/StatusIcon"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import styled from "styled-components"
 import * as yup from "yup"
@@ -56,12 +56,14 @@ const Unlock = ({ className }: any) => {
   )
 
   // autologin, for developers only
+  const refDone = useRef(false)
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production" && process.env.PASSWORD && !isSubmitting) {
+    if (process.env.NODE_ENV !== "production" && process.env.PASSWORD && !refDone.current) {
+      refDone.current = true // prevent infinite loop if password is incorrect
       setValue("password", process.env.PASSWORD)
       handleSubmit(submit)()
     }
-  }, [handleSubmit, isSubmitting, setValue, submit])
+  }, [errors.password, handleSubmit, setValue, submit])
 
   return (
     <Layout className={className} isThinking={isSubmitting}>
