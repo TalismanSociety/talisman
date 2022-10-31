@@ -48,7 +48,7 @@ const Unlock = ({ className }: any) => {
           if (qs.get("closeOnSuccess") === "true") window.close()
         } else throw new Error("Paraverse access denied")
       } catch (err) {
-        setError("password", { message: (err as Error)?.message ?? "" })
+        setError("password", { message: (err as Error)?.message ?? "Unknown error" })
         setFocus("password", { shouldSelect: true })
       }
     },
@@ -63,7 +63,7 @@ const Unlock = ({ className }: any) => {
       setValue("password", process.env.PASSWORD)
       handleSubmit(submit)()
     }
-  }, [errors.password, handleSubmit, setValue, submit])
+  }, [handleSubmit, setValue, submit])
 
   return (
     <Layout className={className} isThinking={isSubmitting}>
