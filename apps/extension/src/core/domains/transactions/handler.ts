@@ -140,7 +140,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
             tip,
             reapBalance,
             watchExtrinsic
-          )
+          ).catch(reject)
         if (tokenType === "orml")
           return OrmlTokenTransfersRpc.transfer(
             chainId,
@@ -150,7 +150,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
             toAddress,
             tip,
             watchExtrinsic
-          )
+          ).catch(reject)
         if (tokenType === "erc20")
           throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
@@ -161,8 +161,11 @@ export default class AssetTransferHandler extends ExtensionHandler {
     })
 
     if (result.ok) return result.val
-    else result.unwrap() // throws error
-    return
+    // 1010 (Invalid signature) happens often on kusama, simply retrying usually works.
+    // This message should hopefully motivate the user to retry
+    else if ((result.val as any)?.code === 1010) throw new Error("Failed to send transaction")
+    else if (result.val instanceof Error) throw result.val
+    else throw new Error("Failed to send transaction")
   }
 
   private async assetTransferCheckFees({
@@ -191,8 +194,11 @@ export default class AssetTransferHandler extends ExtensionHandler {
       throw new Error(`Unhandled token type ${exhaustiveCheck}`)
     })
     if (result.ok) return result.val
-    else result.unwrap() // throws error
-    return
+    // 1010 (Invalid signature) happens often on kusama, simply retrying usually works.
+    // This message should hopefully motivate the user to retry
+    else if ((result.val as any)?.code === 1010) throw new Error("Failed to send transaction")
+    else if (result.val instanceof Error) throw result.val
+    else throw new Error("Failed to check fees")
   }
 
   private async assetTransferEthHardware({
@@ -292,7 +298,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     }
   }
 
-  private async assetTransferApproveSign({
+  private assetTransferApproveSign({
     id,
     signature,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
@@ -300,14 +306,14 @@ export default class AssetTransferHandler extends ExtensionHandler {
     assert(pendingTx, `No pending transfer with id ${id}`)
     const { data, transfer } = pendingTx
 
-    return await new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const watchExtrinsic = this.getExtrinsicWatch(
         data.chainId,
         data.unsigned.address,
         resolve,
         reject
       )
-      transfer(signature, watchExtrinsic)
+      transfer(signature, watchExtrinsic).catch(reject)
     })
   }
 

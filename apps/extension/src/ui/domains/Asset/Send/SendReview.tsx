@@ -1,3 +1,4 @@
+import { log } from "@core/log"
 import Pill from "@talisman/components/Pill"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import useChain from "@ui/hooks/useChain"
@@ -156,6 +157,7 @@ const SendReview = () => {
     try {
       await send()
     } catch (err) {
+      log.error("Failed to send", { err })
       setError(err instanceof Error ? err.message : "Unknown error")
     }
     setSending(false)
