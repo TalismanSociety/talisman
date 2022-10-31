@@ -2,10 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useLocalStorage } from "react-use"
 import { web3Accounts, web3Enable } from "@polkadot/extension-dapp"
 import {
-  InjectedExtension,
   InjectedAccountWithMeta,
   Web3AccountsOptions,
 } from "@polkadot/extension-inject/types"
+import type { InjectedExtension } from "../../../../extension/src/core/inject/types" // talisman injected type (with encrypt/decrypt funcs)
 import { provideContext } from "../../common/provideContext"
 import { useApi } from "./useApi"
 
