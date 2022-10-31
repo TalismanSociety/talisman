@@ -2,6 +2,12 @@ import { db } from "@core/libs/db"
 import { provideContext } from "@talisman/util/provideContext"
 import { useLiveQuery } from "dexie-react-hooks"
 import { useMemo } from "react"
+import { useSettings } from "./useSettings"
+
+const filterTestnets =
+  (useTestnets: boolean) =>
+  ({ isTestnet }: { isTestnet?: boolean }) =>
+    useTestnets ? true : isTestnet === false
 
 const useDbCacheProvider = () => {
   const allChainsRaw = useLiveQuery(() => db.chains.toArray(), [])
@@ -9,9 +15,20 @@ const useDbCacheProvider = () => {
   const allTokensRaw = useLiveQuery(() => db.tokens.toArray(), [])
   const allBalancesRaw = useLiveQuery(() => db.balances.toArray(), [])
 
-  const allChains = useMemo(() => allChainsRaw ?? [], [allChainsRaw])
-  const allEvmNetworks = useMemo(() => allEvmNetworksRaw ?? [], [allEvmNetworksRaw])
-  const allTokens = useMemo(() => allTokensRaw ?? [], [allTokensRaw])
+  const { useTestnets = false } = useSettings()
+
+  const allChains = useMemo(
+    () => allChainsRaw?.filter(filterTestnets(useTestnets)) ?? [],
+    [allChainsRaw, useTestnets]
+  )
+  const allEvmNetworks = useMemo(
+    () => allEvmNetworksRaw?.filter(filterTestnets(useTestnets)) ?? [],
+    [allEvmNetworksRaw, useTestnets]
+  )
+  const allTokens = useMemo(
+    () => allTokensRaw?.filter(filterTestnets(useTestnets)) ?? [],
+    [allTokensRaw, useTestnets]
+  )
   const allBalances = useMemo(() => allBalancesRaw ?? [], [allBalancesRaw])
 
   const chainsMap = useMemo(
