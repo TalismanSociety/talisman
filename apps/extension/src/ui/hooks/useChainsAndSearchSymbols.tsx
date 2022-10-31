@@ -1,15 +1,16 @@
 import { Chain } from "@core/domains/chains/types"
-import useTokens from "@ui/hooks/useTokens"
 import { useMemo } from "react"
+import { useDbCache } from "./useDbCache"
+import { useDbCacheSubscription } from "./useDbCacheSubscription"
 
 const useChainsAndSearchSymbols = <T extends Chain>(
   chains: T[]
 ): Array<T & { searchSymbols: string[] }> => {
-  const tokens = useTokens()
-  const tokensMap = useMemo(
-    () => Object.fromEntries((tokens || []).map((token) => [token.id, token])),
-    [tokens]
-  )
+  // keep shared db data up to date
+  useDbCacheSubscription("tokens")
+
+  const { tokensMap } = useDbCache()
+
   return useMemo(
     () =>
       (chains || []).map((chain) => ({
