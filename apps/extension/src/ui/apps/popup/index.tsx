@@ -29,7 +29,6 @@ import { NavigationProvider } from "./context/NavigationContext"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import Connect from "./pages/Connect"
-import Loading from "./pages/Loading"
 import Login from "./pages/Login"
 import Metadata from "./pages/Metadata"
 import { Portfolio } from "./pages/Portfolio"
@@ -95,7 +94,7 @@ const Popup = () => {
     [isLoggedIn, isOnboarded]
   )
 
-  if (isLoading) return <Loading />
+  if (isLoading) return null
 
   if (isLoggedIn === "FALSE") return <Login />
 

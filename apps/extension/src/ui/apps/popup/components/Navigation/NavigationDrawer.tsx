@@ -99,7 +99,7 @@ export const NavigationDrawer: FC = () => {
       name: "Interact",
       action: "Lock wallet",
     })
-    await api.lock()
+    api.lock()
     window.close()
   }, [])
 
