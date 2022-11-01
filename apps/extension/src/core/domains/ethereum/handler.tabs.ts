@@ -317,6 +317,8 @@ export class EthTabsHandler extends TabsHandler {
       ? [params[0], ethers.utils.getAddress(params[1])]
       : [params[1], ethers.utils.getAddress(params[0])]
 
+    await this.stores.sites.ensureUrlAuthorized(url, true, from)
+
     // message is either a raw string or a hex string or an object (signTypedData_v1)
     const message =
       typeof uncheckedMessage === "string" ? uncheckedMessage : JSON.stringify(uncheckedMessage)
@@ -439,6 +441,8 @@ export class EthTabsHandler extends TabsHandler {
           )
         }
 
+        await this.stores.sites.ensureUrlAuthorized(url, true, params[0].from)
+
         const req = ethers.providers.JsonRpcProvider.hexlifyTransaction(params[0])
         const provider = await this.getProvider(url)
         const result = await provider.estimateGas(req)
@@ -464,6 +468,8 @@ export class EthTabsHandler extends TabsHandler {
         const {
           params: [txRequest],
         } = request as EthRequestArguments<"eth_sendTransaction">
+
+        await this.stores.sites.ensureUrlAuthorized(url, true, txRequest.from)
 
         const site = await this.getSiteDetails(url)
 

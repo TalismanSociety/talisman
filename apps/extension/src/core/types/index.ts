@@ -7,6 +7,7 @@ import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { TokenMessages } from "@core/domains/tokens/types"
 import { AssetTransferMessages } from "@core/domains/transactions/types"
+import { EncryptMessages } from "@core/domains/encrypt/types"
 import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
 
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
@@ -53,8 +54,8 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   EthMessages &
   MnemonicMessages &
   SigningMessages &
-  TokenMessages
-
+  TokenMessages &
+  EncryptMessages
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
 

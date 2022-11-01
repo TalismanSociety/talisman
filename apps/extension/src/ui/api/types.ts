@@ -40,6 +40,7 @@ import {
   ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
+import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import { EthResponseType } from "@core/injectEth/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
@@ -75,6 +76,13 @@ export default interface MessageTypes {
   subscribeSigningRequests: (cb: (requests: AnySigningRequest[]) => void) => UnsubscribeFn
   approveSign: (id: string) => Promise<boolean>
   approveSignHardware: (id: string, signature: HexString) => Promise<boolean>
+
+  // encrypt messages -------------------------------------------------------
+  subscribeEncryptRequests: (cb: (requests: AnyEncryptRequest[]) => void) => UnsubscribeFn
+  subscribeEncryptRequest: (id: string, cb: (requests: AnyEncryptRequest) => void) => UnsubscribeFn
+  approveEncrypt: (id: string) => Promise<boolean>
+  approveDecrypt: (id: string) => Promise<boolean>
+  cancelEncryptRequest: (id: string) => Promise<boolean>
 
   // app message types -------------------------------------------------------
   modalOpen: (modalType: ModalTypes) => Promise<boolean>
