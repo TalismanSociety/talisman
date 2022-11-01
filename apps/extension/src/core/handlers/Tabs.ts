@@ -34,6 +34,7 @@ import type {
 } from "@polkadot/extension-inject/types"
 import type { KeyringPair } from "@polkadot/keyring/types"
 import { checkIfDenied } from "@polkadot/phishing"
+import * as isEthPhishing from "eth-phishing-detect"
 import type { JsonRpcResponse } from "@polkadot/rpc-provider/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
@@ -195,29 +196,56 @@ export default class Tabs extends TabsHandler {
     return Promise.resolve(true)
   }
 
-  private async rpcUnsubscribe(request: RequestRpcUnsubscribe, port: Port): Promise<boolean> {
+  private rpcUnsubscribe(request: RequestRpcUnsubscribe, port: Port): Promise<boolean> {
     return this.#rpcState.rpcUnsubscribe(request, port)
   }
 
   private redirectPhishingLanding(phishingWebsite: string): void {
-    const encodedWebsite = encodeURIComponent(phishingWebsite)
-    const url = `${Browser.runtime.getURL(
+    const nonFragment = phishingWebsite.split("#")[0]
+    const encodedWebsite = encodeURIComponent(nonFragment)
+    const url = `${chrome.extension.getURL(
       "dashboard.html"
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 
-    Browser.tabs.query({ url: phishingWebsite }).then((tabs) => {
+    chrome.tabs.query({ url: nonFragment }, (tabs) => {
       tabs
         .map(({ id }) => id)
         .filter((id): id is number => isNumber(id))
-        .forEach((id) => Browser.tabs.update(id, { url }))
+
+        .forEach((id) =>
+          Browser.tabs.update(id, { url }).catch((err: Error) => {
+            // eslint-disable-next-line no-console
+            console.error(err)
+            Sentry.captureException(err, { extra: { url } })
+          })
+        )
     })
   }
 
   private async redirectIfPhishing(url: string): Promise<boolean> {
+    //if(tes)
+
     const isInDenyList = await checkIfDenied(url)
+    const isEthereumDenied = isEthPhishing(url)
+    //  console.log("phisning check", url)
+    if (url.startsWith("http://localhost:3000")) {
+      this.redirectPhishingLanding(url)
+      return true
+    }
+    // // console.log("hi", url, isInDenyList)
+    // if (!cache.test) {
+    //   console.log("test", url)
+    //   cache.test = true
+    //   return true
+    // }
+
+    // DEBUG && this.redirectIfPhishing(url)
+    // return true
+
     if (isInDenyList) {
       this.redirectPhishingLanding(url)
 
+      // TODO que fait le forntend ?
       return true
     }
 
