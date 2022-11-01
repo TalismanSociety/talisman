@@ -10,6 +10,8 @@ import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
 import { Keypair } from "@polkadot/util-crypto/types"
 import { AnyEncryptRequest, RequestEncryptCancel } from "./types"
 import { talismanAnalytics } from "@core/libs/Analytics"
+import { log } from "@core/log"
+import * as Sentry from "@sentry/browser"
 
 export default class EncryptHandler extends ExtensionHandler {
   private async encryptApprove({ id }: RequestIdOnly) {
@@ -20,16 +22,13 @@ export default class EncryptHandler extends ExtensionHandler {
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
-      const pw = (await this.stores.password.getPassword()) as string
+      
+      const pw = await this.stores.password.getPassword()
+      assert(pw, "Unable to retreive password from store.")
+
       const pk = getPrivateKey(pair, pw)
       const kp = { publicKey: pair.publicKey, secretKey: u8aToU8a(pk) } as Keypair
 
-      assert(
-        u8aToU8a(payload.recipient).length === 32,
-        "Supplied recipient pubkey is incorrect length."
-      )
-
-      assert(kp.publicKey.length === 32, "Talisman pubkey is incorrect length")
       assert(kp.secretKey.length === 64, "Talisman secretKey is incorrect length")
 
       // get encrypted result as integer array
@@ -48,8 +47,9 @@ export default class EncryptHandler extends ExtensionHandler {
     })
     if (result.ok) return true
     else {
-      if (result.val === "Unauthorised") reject(new Error(result.val))
-      else result.unwrap() // Throws error
+      log.log(result.val)
+      Sentry.captureException(result.val)
+      throw new Error('Unable to encrypt message.')
     }
     return
   }
@@ -62,8 +62,10 @@ export default class EncryptHandler extends ExtensionHandler {
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
+      
+      const pw = await this.stores.password.getPassword()
+      assert(pw, "Unable to retreive password from store.")
 
-      const pw = (await this.stores.password.getPassword()) as string
       const pk = getPrivateKey(pair, pw)
 
       assert(pk.length === 64, "Talisman secretKey is incorrect length")
@@ -80,8 +82,9 @@ export default class EncryptHandler extends ExtensionHandler {
     })
     if (result.ok) return true
     else {
-      if (result.val === "Unauthorised") reject(new Error(result.val))
-      else result.unwrap() // Throws error
+      log.log(result.val)
+      Sentry.captureException(result.val)
+      throw new Error('Unable to decrypt message.')
     }
     return
   }

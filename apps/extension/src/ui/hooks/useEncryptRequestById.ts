@@ -10,18 +10,18 @@ const INITIAL_SUBJECT_VALUE: Record<string, AnyEncryptRequest> = {}
 // public hook
 export const useEncryptRequestById = (id: string): AnyEncryptRequest | undefined => {
   const subscribe = useCallback(
-    (encryptRequests: BehaviorSubject<Record<string, AnyEncryptRequest>>) =>
-      api.subscribeEncryptRequest(id, (v) => encryptRequests.next({ [id]: v })),
+    (reqs: BehaviorSubject<Record<string, AnyEncryptRequest>>) =>
+      api.subscribeEncryptRequest(id, (v) => reqs.next({ [id]: v })),
     [id]
   )
 
   const transform = useCallback(
-    (encryptRequests: Record<string, AnyEncryptRequest>) => encryptRequests[id],
+    (reqs: Record<string, AnyEncryptRequest>) => reqs[id],
     [id]
   )
 
   return useMessageSubscription(
-    `signingRequestsSubscribe(${id})`,
+    `encryptRequestsSubscribe(${id})`,
     INITIAL_SUBJECT_VALUE,
     subscribe,
     transform

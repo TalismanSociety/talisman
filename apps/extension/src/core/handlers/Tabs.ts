@@ -149,7 +149,7 @@ export default class Tabs extends TabsHandler {
   private messageEncrypt(url: string, request: EncryptPayload): Promise<ResponseEncrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
-    return this.state.requestStores.encrypt.encrypt(url, new RequestMessageEncrypt(request), {
+    return this.state.requestStores.encrypt.encrypt(url, new RequestMessageEncrypt(request, "encrypt"), {
       address,
       ...pair.meta,
     })
@@ -159,7 +159,7 @@ export default class Tabs extends TabsHandler {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return this.state.requestStores.encrypt.decrypt(url, new RequestMessageDecrypt(request), {
+    return this.state.requestStores.encrypt.decrypt(url, new RequestMessageDecrypt(request, "decrypt"), {
       address,
       ...pair.meta,
     })

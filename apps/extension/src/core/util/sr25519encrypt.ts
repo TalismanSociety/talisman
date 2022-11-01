@@ -1,4 +1,5 @@
-// TODO-pgp: insert credit for source code
+// Code in this file is heavily derived from the approach outlined in this PR:
+// https://github.com/polkadot-js/common/pull/1331
 
 import type { HexString } from "@polkadot/util/types"
 import { assert, u8aConcat, u8aToU8a } from "@polkadot/util"

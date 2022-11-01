@@ -28,6 +28,9 @@ const TEST_MESSAGE = `First line of the message
 20th line and this has a lot of text a lot of text a lot of text a lot of text a lot of text a lot of text.
 `
 
+
+const DECRYPTER_ADDRESS = "13Dg1mYyNddpzDxZZ2ksZeAQxjDAqAzH24bGmBhzs5dQcmwF"
+
 export const SignMessage = () => {
   const { account, extension } = useWallet()
   const [result, setResult] = useState<SignerResult>()
@@ -43,7 +46,7 @@ export const SignMessage = () => {
       setIsProcessing(true)
       setResult(
         await extension.signer.signRaw({
-          address: account.address,
+          address: DECRYPTER_ADDRESS,
           data: TEST_MESSAGE,
           type: "bytes",
         })

@@ -43,9 +43,9 @@ const SignMessage = ({
 const EncryptApprove = ({ className }: any) => {
   const { popupOpenEvent } = useAnalytics()
   const { id } = useParams() as { id: string }
-  const encryptRequest = useEncryptRequestById(id) as AnyEncryptRequest | undefined
-  const { url, request, approve, reject, status, message, account, isDecrypt } =
-    useEncryptRequest(encryptRequest)
+  const req = useEncryptRequestById(id) as AnyEncryptRequest | undefined
+  const { url, request, approve, reject, status, message, account, type } =
+    useEncryptRequest(req)
 
   useEffect(() => {
     popupOpenEvent("encrypt")
@@ -68,7 +68,7 @@ const EncryptApprove = ({ className }: any) => {
               <SignMessage
                 account={account}
                 request={request?.payload.message as string}
-                isDecrypt={isDecrypt}
+                isDecrypt={(type == "decrypt")}
               />
             </div>
           </>

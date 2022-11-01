@@ -1,6 +1,6 @@
 import { RequestStore, TRespondableRequest } from "@core/libs/RequestStore"
 import { isDecryptRequest } from "@core/util/isDecryptRequest"
-import { assert } from "@polkadot/util"
+import { assert, u8aToU8a } from "@polkadot/util"
 import { AccountJson } from "../accounts/types"
 import { DecryptRequest, EncryptRequest, ResponseDecrypt, ResponseEncrypt } from "./types"
 
@@ -22,6 +22,12 @@ export class EncryptRequestsStore extends RequestStore<
       } as DecryptRequestRespondable
     }
     // default to encrypt request
+    // check length of public key in payload
+    assert(
+      u8aToU8a((request as EncryptRequest).request.payload.recipient).length == 32,
+      "Supplied recipient pubkey is incorrect length."
+    )
+
     return {
       account,
       id,

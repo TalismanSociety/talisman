@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import { AnyEncryptRequest, DecryptRequest } from "@core/domains/encrypt/types"
 import { isDecryptRequest } from "@core/util/isDecryptRequest"
 import useStatus from "@talisman/hooks/useStatus"
@@ -8,9 +9,9 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
   const { status, message, setStatus } = useStatus()
 
   const approve = useCallback(
-    async (...args: any) => {
-      setStatus.processing("Approving request")
+    async () => {
       if (!currentRequest) return
+      setStatus.processing("Approving request")
       try {
         if (isDecryptRequest(currentRequest)) {
           await api.approveDecrypt(currentRequest.id)
@@ -21,7 +22,7 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
         }
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error(err)
+        DEBUG && console.error(err)
         if (isDecryptRequest(currentRequest)) {
           setStatus.error("Failed to approve decrypt request")
         } else {
@@ -49,11 +50,11 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
     account: currentRequest?.account,
     url: currentRequest?.url,
     request: currentRequest?.request,
+    type: currentRequest?.request.type,
     status,
     setStatus,
     message,
     approve,
     reject,
-    isDecrypt: (currentRequest as DecryptRequest)?.request?.payload?.sender !== undefined, // bit hacky, should really use isDecryptRequest from utils
   }
 }
