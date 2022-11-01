@@ -55,6 +55,20 @@ export const api: MessageTypes = {
       signature,
     }),
 
+  // encrypt messages -------------------------------------------------------
+  subscribeEncryptRequests: (cb) => messageService.subscribe("pri(encrypt.requests)", null, cb),
+  subscribeEncryptRequest: (id: string, cb) =>
+    messageService.subscribe("pri(encrypt.byid.subscribe)", { id }, cb),
+  approveEncrypt: (id) =>
+    messageService.sendMessage("pri(encrypt.approveEncrypt)", {
+      id,
+    }),
+  approveDecrypt: (id) =>
+    messageService.sendMessage("pri(encrypt.approveDecrypt)", {
+      id,
+    }),
+  cancelEncryptRequest: (id) => messageService.sendMessage("pri(encrypt.cancel)", { id }),
+
   // mnemonic messages -------------------------------------------------------
   mnemonicUnlock: (pass) => messageService.sendMessage("pri(mnemonic.unlock)", pass),
   mnemonicConfirm: (confirmed: boolean) =>

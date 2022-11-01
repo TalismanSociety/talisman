@@ -5,6 +5,7 @@ import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
 import EthereumNetworksRequestsStore from "@core/domains/ethereum/requestsStore.networks"
 import { MetadataRequestsStore } from "@core/domains/metadata"
+import { EncryptRequestsStore } from "@core/domains/encrypt"
 import { SigningRequestsStore } from "@core/domains/signing"
 import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
@@ -61,6 +62,9 @@ export default class State {
     evmAssets: new EvmWatchAssetRequestsStore((req) =>
       this.popupOpen(req && `?customAsset=${req.id}`)
     ),
+    encrypt: new EncryptRequestsStore((encryptRequest) => {
+      return this.popupOpen(encryptRequest && `?encrypt=${encryptRequest.id}`)
+    }),
   }
 
   #windows: number[] = []

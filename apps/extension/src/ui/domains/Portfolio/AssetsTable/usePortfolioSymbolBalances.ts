@@ -39,7 +39,7 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
   // if specific account we have 2 rows minimum, if all accounts we have 4
   const skeletons = useMemo(() => {
     // in this case we don't know the number of min rows, balances should be already loaded anyway
-    if (networkFilter) return 1
+    if (networkFilter) return symbolBalances.length ? 0 : 1
 
     // If no accounts then it means "all accounts", expect all default tokens (substrate + eth)
     // if account has a genesis hash then we expect only 1 chain

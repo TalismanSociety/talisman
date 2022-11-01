@@ -4,6 +4,7 @@ import { Balance } from "./Balance"
 import { Identity } from "./Identity"
 import { Network } from "./Network"
 import { SignMessage } from "./SignMessage"
+import { Sumi } from "./Sumi"
 import { ApiProvider } from "./useApi"
 import { NetworkProvider } from "./useNetwork"
 import { WalletConfig, WalletProvider } from "./useWallet"
@@ -26,6 +27,7 @@ export const Substrate = () => {
             <Balance />
             <SignMessage />
             <Identity />
+            <Sumi />
           </TestLayout>
         </WalletProvider>
       </ApiProvider>

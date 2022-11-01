@@ -3,10 +3,7 @@ export const PORT_CONTENT = "talisman-content"
 export const DEBUG = process.env.BUILD !== "production"
 export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
 
-export const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
-  "polkadot-native-dot-polkadot",
-  "kusama-native-ksm",
-]
+export const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = ["polkadot-native-dot", "kusama-native-ksm"]
 export const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [
   "1-native-eth",
   "moonbeam-native-glmr",

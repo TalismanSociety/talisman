@@ -5,7 +5,9 @@
 Talisman extension uses a library called `@polkadot/wasm-crypto-wasm` to provide cryptographic signing and verification functionality. The library contains compiled web assembly code, which will appear in the build files for this extension as something like:
 
 ```js
-{ e.exports={bytes:"eNqkvQ2UXUd153vOuZ99u1t9...."}}
+{
+  e.exports = { bytes: "eNqkvQ2UXUd153vOuZ99u1t9...." }
+}
 ```
 
 You can see the source of this web assembly module here (https://github.com/polkadot-js/wasm/tree/8db05486c0cacb08b4a9cc37864b3dc6dcfd2c1f/packages/wasm-crypto-wasm) and build it to verify its authenticity using the following steps:
