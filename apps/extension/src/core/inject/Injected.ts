@@ -12,7 +12,7 @@ import {
 let sendRequest: SendRequest
 export class TalismanSigner extends Signer {
   constructor(_sendRequest: SendRequest) {
-    super(sendRequest)
+    super(_sendRequest)
     sendRequest = _sendRequest
   }
 
