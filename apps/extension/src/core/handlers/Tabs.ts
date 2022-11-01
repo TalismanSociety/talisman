@@ -300,9 +300,11 @@ export default class Tabs extends TabsHandler {
         return this.accountsSubscribe(url, id, port)
 
       case "pub(bytes.sign)":
+        await this.stores.sites.ensureUrlAuthorized(url, false, (request as SignerPayloadRaw).address)
         return this.bytesSign(url, request as SignerPayloadRaw)
 
       case "pub(extrinsic.sign)":
+        await this.stores.sites.ensureUrlAuthorized(url, false, (request as SignerPayloadJSON).address)
         return this.extrinsicSign(url, request as SignerPayloadJSON)
 
       case "pub(metadata.list)":
@@ -329,11 +331,12 @@ export default class Tabs extends TabsHandler {
       case "pub(rpc.unsubscribe)":
         return this.rpcUnsubscribe(request as RequestRpcUnsubscribe, port)
 
-      case "pub(encrypt.encrypt)": {
+      case "pub(encrypt.encrypt)":
+        await this.stores.sites.ensureUrlAuthorized(url, false, (request as EncryptPayload).address)
         return this.messageEncrypt(url, request as EncryptPayload)
-      }
 
       case "pub(encrypt.decrypt)":
+        await this.stores.sites.ensureUrlAuthorized(url, false, (request as DecryptPayload).address)
         return this.messageDecrypt(url, request as DecryptPayload)
 
       default:
