@@ -1,8 +1,6 @@
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
-import RequestMessageDecrypt from "@core/domains/encrypt/RequestMessageDecrypt"
-import RequestMessageEncrypt from "@core/domains/encrypt/RequestMessageEncrypt"
 import {
   DecryptPayload,
   EncryptPayload,
@@ -149,7 +147,7 @@ export default class Tabs extends TabsHandler {
   private messageEncrypt(url: string, request: EncryptPayload): Promise<ResponseEncrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
-    return this.state.requestStores.encrypt.encrypt(url, new RequestMessageEncrypt(request, "encrypt"), {
+    return this.state.requestStores.encrypt.encrypt(url, request, {
       address,
       ...pair.meta,
     })
@@ -159,7 +157,7 @@ export default class Tabs extends TabsHandler {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return this.state.requestStores.encrypt.decrypt(url, new RequestMessageDecrypt(request, "decrypt"), {
+    return this.state.requestStores.encrypt.decrypt(url, request, {
       address,
       ...pair.meta,
     })
@@ -300,11 +298,19 @@ export default class Tabs extends TabsHandler {
         return this.accountsSubscribe(url, id, port)
 
       case "pub(bytes.sign)":
-        await this.stores.sites.ensureUrlAuthorized(url, false, (request as SignerPayloadRaw).address)
+        await this.stores.sites.ensureUrlAuthorized(
+          url,
+          false,
+          (request as SignerPayloadRaw).address
+        )
         return this.bytesSign(url, request as SignerPayloadRaw)
 
       case "pub(extrinsic.sign)":
-        await this.stores.sites.ensureUrlAuthorized(url, false, (request as SignerPayloadJSON).address)
+        await this.stores.sites.ensureUrlAuthorized(
+          url,
+          false,
+          (request as SignerPayloadJSON).address
+        )
         return this.extrinsicSign(url, request as SignerPayloadJSON)
 
       case "pub(metadata.list)":

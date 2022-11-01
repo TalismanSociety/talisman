@@ -50,24 +50,24 @@ export class EncryptRequestsStore extends RequestStore<
 
   public encrypt(
     url: string,
-    request: EncryptRequest["request"],
+    payload: EncryptRequest["request"]["payload"],
     account: AccountJson
   ): Promise<ResponseEncrypt> {
     return this.createRequest({
       url,
-      request,
+      request: { payload, type: "encrypt" },
       account,
     } as EncryptRequest) as Promise<ResponseEncrypt>
   }
 
   public decrypt(
     url: string,
-    request: DecryptRequest["request"],
+    payload: DecryptRequest["request"]["payload"],
     account: AccountJson
   ): Promise<ResponseDecrypt> {
     return this.createRequest({
       url,
-      request,
+      request: { payload, type: "decrypt" },
       account,
     } as DecryptRequest) as Promise<ResponseDecrypt>
   }

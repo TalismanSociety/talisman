@@ -58,12 +58,12 @@ export interface DecryptResult {
 
 export interface RequestEncrypt {
   readonly payload: EncryptPayload
-  type: string
+  type: "encrypt"
 }
 
 export interface RequestDecrypt {
   readonly payload: DecryptPayload
-  type: string
+  type: "decrypt"
 }
 
 export type AnyEncryptRequest = EncryptRequest | DecryptRequest

@@ -18,11 +18,11 @@ export default class EncryptHandler extends ExtensionHandler {
     const queued = this.state.requestStores.encrypt.getEncryptRequest(id)
     assert(queued, "Unable to find request")
 
-    const { reject, request, resolve } = queued
+    const { request, resolve } = queued
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
-      
+
       const pw = await this.stores.password.getPassword()
       assert(pw, "Unable to retreive password from store.")
 
@@ -45,24 +45,23 @@ export default class EncryptHandler extends ExtensionHandler {
         result: u8aToHex(encryptResult),
       })
     })
+
     if (result.ok) return true
-    else {
-      log.log(result.val)
-      Sentry.captureException(result.val)
-      throw new Error('Unable to encrypt message.')
-    }
-    return
+
+    log.log(result.val)
+    Sentry.captureException(result.val)
+    throw new Error("Unable to encrypt message.")
   }
 
   private async decryptApprove({ id }: RequestIdOnly) {
     const queued = this.state.requestStores.encrypt.getDecryptRequest(id)
     assert(queued, "Unable to find request")
 
-    const { reject, request, resolve } = queued
+    const { request, resolve } = queued
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
-      
+
       const pw = await this.stores.password.getPassword()
       assert(pw, "Unable to retreive password from store.")
 
@@ -80,13 +79,12 @@ export default class EncryptHandler extends ExtensionHandler {
         result: u8aToHex(decryptResult),
       })
     })
+
     if (result.ok) return true
-    else {
-      log.log(result.val)
-      Sentry.captureException(result.val)
-      throw new Error('Unable to decrypt message.')
-    }
-    return
+
+    log.log(result.val)
+    Sentry.captureException(result.val)
+    throw new Error("Unable to decrypt message.")
   }
 
   private encryptCancel({ id }: RequestEncryptCancel): boolean {
@@ -134,7 +132,7 @@ export default class EncryptHandler extends ExtensionHandler {
         return await this.decryptApprove(request as RequestIdOnly)
 
       case "pri(encrypt.cancel)":
-        return await this.encryptCancel(request as RequestEncryptCancel)
+        return this.encryptCancel(request as RequestEncryptCancel)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)
