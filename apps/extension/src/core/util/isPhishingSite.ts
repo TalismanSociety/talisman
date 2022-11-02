@@ -14,8 +14,6 @@ export const isPhishingSite = async (url: string) => {
     if (isPolkadotDenied) log.log("Found on Polkadot phishing list", url)
     if (isEthereumDenied) log.log("Found on Ethereum phishing list", url)
 
-    if (domain === "localhost") return true
-
     return isPolkadotDenied || isEthereumDenied
   } catch (err) {
     // if an error occurs, assume it's because of our check, don't block user
