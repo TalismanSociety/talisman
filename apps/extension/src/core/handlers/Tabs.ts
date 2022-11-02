@@ -39,8 +39,6 @@ import type {
   ProviderMeta,
 } from "@polkadot/extension-inject/types"
 import type { KeyringPair } from "@polkadot/keyring/types"
-import { checkIfDenied } from "@polkadot/phishing"
-import * as isEthPhishing from "eth-phishing-detect"
 import type { JsonRpcResponse } from "@polkadot/rpc-provider/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
@@ -51,6 +49,7 @@ import Browser from "webextension-polyfill"
 
 import RpcState from "./RpcState"
 import { createSubscription, genericAsyncSubscription, unsubscribe } from "./subscriptions"
+import { isPhishingSite } from "@core/util/isPhishingSite"
 
 export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()
@@ -248,29 +247,11 @@ export default class Tabs extends TabsHandler {
   }
 
   private async redirectIfPhishing(url: string): Promise<boolean> {
-    //if(tes)
-
-    const isInDenyList = await checkIfDenied(url)
-    const isEthereumDenied = isEthPhishing(url)
-    //  console.log("phisning check", url)
-    if (url.startsWith("http://localhost:3000")) {
-      this.redirectPhishingLanding(url)
-      return true
-    }
-    // // console.log("hi", url, isInDenyList)
-    // if (!cache.test) {
-    //   console.log("test", url)
-    //   cache.test = true
-    //   return true
-    // }
-
-    // DEBUG && this.redirectIfPhishing(url)
-    // return true
+    const isInDenyList = await isPhishingSite(url)
 
     if (isInDenyList) {
       this.redirectPhishingLanding(url)
 
-      // TODO que fait le forntend ?
       return true
     }
 
