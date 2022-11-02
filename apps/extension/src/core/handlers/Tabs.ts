@@ -231,15 +231,14 @@ export default class Tabs extends TabsHandler {
       "dashboard.html"
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 
-    chrome.tabs.query({ url: nonFragment }, (tabs) => {
+    Browser.tabs.query({ url: nonFragment }).then((tabs) => {
       tabs
         .map(({ id }) => id)
         .filter((id): id is number => isNumber(id))
-
         .forEach((id) =>
           Browser.tabs.update(id, { url }).catch((err: Error) => {
             // eslint-disable-next-line no-console
-            console.error(err)
+            console.error("Failed to redirect tab to phishing page", { err })
             Sentry.captureException(err, { extra: { url } })
           })
         )

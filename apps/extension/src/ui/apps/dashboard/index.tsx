@@ -13,8 +13,8 @@ import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountCo
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
-import { Suspense, lazy, useEffect, useRef, ReactNode } from "react"
-import { Navigate, Route, Routes, useLocation, useMatch, useRoutes } from "react-router-dom"
+import { Suspense, lazy, useEffect, useRef, FC, PropsWithChildren } from "react"
+import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import Layout from "./layout"
 import About from "./routes/About"
@@ -103,7 +103,7 @@ const DashboardInner = () => {
   )
 }
 
-const PreventPhishing = ({ children }: { children?: ReactNode }) => {
+const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
   const match = useMatch(`${PHISHING_PAGE_REDIRECT}/:url`)
 
   if (match?.params?.url) return <PhishingPage url={match.params.url} />

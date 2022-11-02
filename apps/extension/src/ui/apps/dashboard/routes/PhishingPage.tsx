@@ -10,7 +10,7 @@ type PhishingPageProps = {
 export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
   const domain = urlToDomain(url)
   return (
-    <div className="bg-black-tertiary flex h-screen flex-col justify-center">
+    <div className="bg-black-tertiary scrollable scrollable-700 flex h-screen max-h-screen flex-col justify-center overflow-auto">
       <div className="bg-black-primary text-body-secondary flex max-w-3xl flex-col gap-24 self-center rounded-lg p-20 text-center">
         <h1 className="text-bold m-0 text-lg text-white">Talisman Warning</h1>
         <div className="text-alert-warn text-lg font-light">
