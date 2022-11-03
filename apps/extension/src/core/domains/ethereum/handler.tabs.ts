@@ -8,6 +8,12 @@ import { CustomErc20Token } from "@core/domains/tokens/types"
 import { urlToDomain } from "@core/util/urlToDomain"
 import {
   AnyEthRequest,
+  EthProviderMessage,
+  EthRequestArguments,
+  EthRequestSignArguments,
+  EthRequestSignatures,
+} from "@core/injectEth/types"
+import {
   ETH_ERROR_EIP1474_INVALID_INPUT,
   ETH_ERROR_EIP1474_INVALID_PARAMS,
   ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
@@ -15,12 +21,7 @@ import {
   ETH_ERROR_EIP1993_UNAUTHORIZED,
   ETH_ERROR_EIP1993_USER_REJECTED,
   ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
-  EthProviderMessage,
-  EthProviderRpcError,
-  EthRequestArguments,
-  EthRequestSignArguments,
-  EthRequestSignatures,
-} from "@core/injectEth/types"
+} from "@core/injectEth/EthProviderRpcError"
 import { db } from "@core/libs/db"
 import { TabsHandler } from "@core/libs/Handler"
 import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
@@ -36,6 +37,7 @@ import { ethers, providers } from "ethers"
 import { filterAccountsByAddresses } from "../accounts/helpers"
 import { getErc20TokenId } from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
+import { EthProviderRpcError } from "@core/injectEth/EthProviderRpcError"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
