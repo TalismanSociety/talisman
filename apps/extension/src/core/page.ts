@@ -9,9 +9,16 @@ import TalismanInjected from "./inject/Injected"
 import { injectExtension } from "./inject/injectExtension"
 import { Injected } from "./inject/types"
 import { TalismanEthProvider } from "./injectEth/TalismanEthProvider"
-import { TalismanWindow } from "./injectEth/types"
 import MessageService from "./libs/MessageService"
+import { log } from "./log"
 import { logProxy } from "./log/logProxy"
+
+declare global {
+  interface Window {
+    ethereum: any
+    talismanEth: any
+  }
+}
 
 const messageService = new MessageService({
   origin: "talisman-page",
@@ -52,17 +59,20 @@ function inject() {
 
   // inject ethereum wallet provider
   const provider = new TalismanEthProvider(messageService.sendMessage)
-  const evmInjected = DEBUG && process.env.EVM_LOGPROXY === "true" ? logProxy(provider) : provider
 
-  const talismanWindow = window as TalismanWindow
-  talismanWindow.talismanEth = evmInjected
+  window.talismanEth = provider
 
-  // inject on window.ethereum if it is not defined
-  // this allows users to just disable metamask to use Talisman instead
-  if (typeof talismanWindow.ethereum === "undefined") {
+  // also inject on window.ethereum if it is not defined
+  // this allows users to just disable metamask if they want to use Talisman instead
+  if (typeof window.ethereum === "undefined") {
     // eslint-disable-next-line no-console
     console.debug("Injecting talismanEth in window.ethereum")
-    talismanWindow.ethereum = evmInjected
+    window.ethereum = provider
+  }
+
+  if (process.env.EVM_LOGPROXY === "true") {
+    log.log("wrapping %s in logProxy", window.ethereum.isTalisman ? "Talisman" : "MetaMask")
+    window.ethereum = logProxy(window.ethereum)
   }
 }
 
