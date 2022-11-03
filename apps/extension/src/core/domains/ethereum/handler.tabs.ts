@@ -21,6 +21,7 @@ import {
   ETH_ERROR_EIP1993_UNAUTHORIZED,
   ETH_ERROR_EIP1993_USER_REJECTED,
   ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
+  EthProviderRpcError,
 } from "@core/injectEth/EthProviderRpcError"
 import { db } from "@core/libs/db"
 import { TabsHandler } from "@core/libs/Handler"
@@ -37,7 +38,6 @@ import { ethers, providers } from "ethers"
 import { filterAccountsByAddresses } from "../accounts/helpers"
 import { getErc20TokenId } from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
-import { EthProviderRpcError } from "@core/injectEth/EthProviderRpcError"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number

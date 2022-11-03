@@ -34,5 +34,6 @@ script.onload = () => {
   if (script.parentNode) script.parentNode.removeChild(script)
 }
 
-const parent = document.head || document.documentElement
-parent.appendChild(script)
+// Might want to add more checks at some point, such as doctype to be HTML, and exclude some domains (ex: dropbox.com)
+const parent = document?.head || document?.documentElement
+parent?.appendChild(script)
