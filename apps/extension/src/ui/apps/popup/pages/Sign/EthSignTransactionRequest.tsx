@@ -1,6 +1,7 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { AppPill } from "@talisman/components/AppPill"
+import { FadeIn } from "@talisman/components/FadeIn"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
@@ -12,11 +13,14 @@ import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import useToken from "@ui/hooks/useToken"
 import { BigNumberish } from "ethers"
 import { formatEther } from "ethers/lib/utils"
-import { useEffect, useMemo } from "react"
+import { lazy, Suspense, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
+import { Button } from "talisman-ui"
 import { formatDecimals } from "talisman-utils"
 
 import { Container } from "./common"
+
+const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 const SignContainer = styled(Container)`
   .layout-content .children h2 {
@@ -141,6 +145,9 @@ export const EthSignTransactionRequest = () => {
     network,
     isLoading,
     transaction,
+    approveHardware,
+    isPayloadLocked,
+    setIsPayloadLocked,
   } = useEthSignTransactionRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -156,6 +163,11 @@ export const EthSignTransactionRequest = () => {
   }, [status])
 
   const nativeToken = useToken(network?.nativeToken?.id)
+
+  // gas settings must be locked as soon as payload is sent to ledger
+  const handleSendToLedger = useCallback(() => {
+    setIsPayloadLocked(true)
+  }, [setIsPayloadLocked])
 
   return (
     <SignContainer>
@@ -174,47 +186,65 @@ export const EthSignTransactionRequest = () => {
         )}
       </Content>
       <Footer>
-        {nativeToken && transaction && txDetails ? (
-          <>
-            <div className="center">
-              <ViewDetailsEth />
-            </div>
-            <div className="gasInfo">
-              <div>
-                <div>Estimated Fee</div>
-                <div>{transaction?.type === 2 && "Priority"}</div>
+        <Suspense fallback={null}>
+          {nativeToken && transaction && txDetails ? (
+            <>
+              <div className="center">
+                <ViewDetailsEth />
               </div>
-              <div>
+              <div className="gasInfo">
                 <div>
-                  {formatEtherValue(
-                    txDetails.estimatedFee,
-                    nativeToken?.decimals,
-                    nativeToken?.symbol
-                  )}
+                  <div>Estimated Fee</div>
+                  <div>{transaction?.type === 2 && "Priority"}</div>
                 </div>
                 <div>
-                  <EthFeeSelect
-                    transaction={transaction}
-                    txDetails={txDetails}
-                    priority={priority ?? "low"}
-                    onChange={setPriority}
-                    decimals={nativeToken?.decimals}
-                    symbol={nativeToken?.symbol}
-                  />
+                  <div>
+                    {formatEtherValue(
+                      txDetails.estimatedFee,
+                      nativeToken?.decimals,
+                      nativeToken?.symbol
+                    )}
+                  </div>
+                  <div>
+                    <EthFeeSelect
+                      disabled={isPayloadLocked}
+                      transaction={transaction}
+                      txDetails={txDetails}
+                      priority={priority}
+                      onChange={setPriority}
+                      decimals={nativeToken?.decimals}
+                      symbol={nativeToken?.symbol}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </>
-        ) : null}
-        {errorMessage && <p className="error">{errorMessage}</p>}
-        {account && request && (
-          <>
+            </>
+          ) : null}
+          {errorMessage && <p className="error">{errorMessage}</p>}
+          {account && request && account.isHardware ? (
+            transaction ? (
+              <LedgerEthereum
+                manualSend
+                className="mt-6"
+                method="transaction"
+                payload={transaction}
+                account={account as AccountJsonHardwareEthereum}
+                onSignature={approveHardware}
+                onReject={reject}
+                onSendToLedger={handleSendToLedger}
+              />
+            ) : (
+              <Button className="w-full" onClick={reject}>
+                Cancel
+              </Button>
+            )
+          ) : (
             <Grid>
               <SimpleButton disabled={processing} onClick={reject}>
                 Cancel
               </SimpleButton>
               <SimpleButton
-                disabled={processing || isLoading}
+                disabled={!transaction || processing || isLoading}
                 processing={processing}
                 primary
                 onClick={approve}
@@ -222,8 +252,8 @@ export const EthSignTransactionRequest = () => {
                 Approve
               </SimpleButton>
             </Grid>
-          </>
-        )}
+          )}
+        </Suspense>
       </Footer>
     </SignContainer>
   )

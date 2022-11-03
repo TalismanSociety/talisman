@@ -3,6 +3,7 @@ import { urlToDomain } from "@core/util/urlToDomain"
 import { SubscribableByIdStorageProvider } from "@core/libs/Store"
 import { assert } from "@polkadot/util"
 import Browser from "webextension-polyfill"
+import { convertAddress } from "@talisman/util/convertAddress"
 
 const OLD_AUTH_URLS_KEY = "authUrls"
 
@@ -39,11 +40,14 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
     return await this.get(val)
   }
 
-  public async ensureUrlAuthorized(url: string, ethereum: boolean): Promise<boolean> {
+  public async ensureUrlAuthorized(url: string, ethereum: boolean, address?: string): Promise<boolean> {
     const entry = await this.getSiteFromUrl(url)
     const addresses = ethereum ? entry?.ethAddresses : entry?.addresses
     assert(addresses, `The source ${url} has not been enabled yet`)
     assert(addresses.length, `The source ${url} is not allowed to interact with this extension`)
+
+    // check the supplied address is authorised to interact with this URL
+    if (address) assert(addresses.includes(convertAddress(address, null)), `The source ${url} is not allowed to intract with this account.`)
     return true
   }
 

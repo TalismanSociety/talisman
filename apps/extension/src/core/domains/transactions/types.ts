@@ -23,6 +23,12 @@ export interface RequestAssetTransferEth {
   amount: string
   gasSettings: EthGasSettings
 }
+export interface RequestAssetTransferEthHardware {
+  evmNetworkId: EvmNetworkId
+  tokenId: TokenId
+  amount: string
+  signedTransaction: string
+}
 
 export interface RequestAssetTransferApproveSign {
   id: string
@@ -67,6 +73,7 @@ export interface AssetTransferMessages {
   // asset transfer signatures
   "pri(assets.transfer)": [RequestAssetTransfer, ResponseAssetTransfer]
   "pri(assets.transferEth)": [RequestAssetTransferEth, ResponseAssetTransferEth]
+  "pri(assets.transferEthHardware)": [RequestAssetTransferEthHardware, ResponseAssetTransferEth]
   "pri(assets.transfer.checkFees)": [RequestAssetTransfer, ResponseAssetTransferFeeQuery]
   "pri(assets.transfer.approveSign)": [RequestAssetTransferApproveSign, ResponseAssetTransfer]
 

@@ -1,11 +1,13 @@
 import { rebuildTransactionRequestNumbers } from "@core/domains/ethereum/helpers"
 import { EthSignAndSendRequest } from "@core/domains/signing/types"
+import { log } from "@core/log"
+import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useSigningRequestById from "@ui/hooks/useSigningRequestById"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
@@ -18,9 +20,13 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
     [signingRequest]
   )
 
+  // once the payload is sent to ledger, we must freeze it
+  const [isPayloadLocked, setIsPayloadLocked] = useState(false)
+
   const { transaction, txDetails, priority, setPriority, isLoading, error } = useEthTransaction(
     transactionRequest,
-    "low"
+    "low",
+    isPayloadLocked
   )
 
   const baseRequest = useAnySigningRequest<EthSignAndSendRequest>({
@@ -33,16 +39,34 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
     return baseRequest.approve(transaction)
   }, [baseRequest, transaction])
 
+  const approveHardware = useCallback(
+    async ({ signature }: { signature: HexString }) => {
+      baseRequest.setStatus.processing("Approving request")
+      if (!baseRequest || !baseRequest.id) return
+      try {
+        await api.ethApproveSignAndSendHardware(baseRequest.id, signature)
+        baseRequest.setStatus.success("Approved")
+      } catch (err) {
+        log.error("failed to approve hardware", { err })
+        baseRequest.setStatus.error((err as Error).message)
+      }
+    },
+    [baseRequest]
+  )
+
   return {
     ...baseRequest,
     txDetails,
     priority,
     setPriority,
-    approve,
     isLoading,
     error,
     network,
     transaction,
+    approve,
+    approveHardware,
+    isPayloadLocked,
+    setIsPayloadLocked,
   }
 }
 

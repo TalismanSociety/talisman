@@ -1,8 +1,8 @@
+import { log } from "@core/log"
 import Pill from "@talisman/components/Pill"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import useToken from "@ui/hooks/useToken"
 import { Suspense, lazy, useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
 import { formatDecimals } from "talisman-utils"
@@ -16,10 +16,11 @@ import { SendDialogContainer } from "./SendDialogContainer"
 import { SendForfeitInfo } from "./SendForfeitInfo"
 import { SendReviewAddress } from "./SendReviewAddress"
 import { SendTokensExpectedResult, SendTokensInputs } from "./types"
-import { useTransferableTokenById, useTransferableTokens } from "./useTransferableTokens"
+import { useTransferableTokenById } from "./useTransferableTokens"
 
 const SendAddressConvertInfo = lazy(() => import("./SendAddressConvertInfo"))
-const SendLedgerApproval = lazy(() => import("./SendLedgerApproval"))
+const SendLedgerSubstrate = lazy(() => import("./SendLedgerSubstrate"))
+const SendLedgerEthereum = lazy(() => import("./SendLedgerEthereum"))
 
 const Container = styled(SendDialogContainer)`
   display: flex;
@@ -142,7 +143,7 @@ export const SendReviewHeader = () => {
 }
 
 const SendReview = () => {
-  const { formData, expectedResult, send, showReview } = useSendTokens()
+  const { formData, expectedResult, send, showReview, approvalMode } = useSendTokens()
   const transferableToken = useTransferableTokenById(formData.transferableTokenId)
   const { token } = transferableToken || {}
   const chain = useChain(transferableToken?.chainId)
@@ -156,6 +157,7 @@ const SendReview = () => {
     try {
       await send()
     } catch (err) {
+      log.error("Failed to send", { err })
       setError(err instanceof Error ? err.message : "Unknown error")
     }
     setSending(false)
@@ -227,9 +229,9 @@ const SendReview = () => {
               )}
             </div>
           )}
-          {pendingTransferId ? (
-            <SendLedgerApproval />
-          ) : (
+          {approvalMode === "hwSubstrate" && <SendLedgerSubstrate />}
+          {approvalMode === "hwEthereum" && <SendLedgerEthereum />}
+          {approvalMode === "backend" && (
             <div className="buttons">
               <SimpleButton
                 primary

@@ -4,6 +4,8 @@ import { assert } from "@polkadot/util"
 import { gt } from "semver"
 import Browser from "webextension-polyfill"
 
+import { migratePasswordV2ToV1 } from "./migrations"
+
 type ONBOARDED_TRUE = "TRUE"
 type ONBOARDED_FALSE = "FALSE"
 type ONBOARDED_UNKNOWN = "UNKNOWN"
@@ -19,17 +21,19 @@ export type AppStoreData = {
   hasBraveWarningBeenShown: boolean
   analyticsRequestShown: boolean
   showWalletFunding: boolean
+  hasSpiritKey: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
 
-export const DEFAULT_APP_STATE = {
+export const DEFAULT_APP_STATE: AppStoreData = {
   onboarded: UNKNOWN,
   hideBraveWarning: false,
   hasBraveWarningBeenShown: false,
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
   showWalletFunding: false, // true after onboarding with a newly created account
+  hasSpiritKey: false,
 }
 
 export class AppStore extends SubscribableStorageProvider<
@@ -91,4 +95,6 @@ if (DEBUG) {
       analyticsRequestShown: false,
     })
   }
+  // @ts-ignore
+  window.migratePasswordV2ToV1 = migratePasswordV2ToV1
 }

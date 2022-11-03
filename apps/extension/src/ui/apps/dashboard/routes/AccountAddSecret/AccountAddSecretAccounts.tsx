@@ -4,7 +4,7 @@ import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
-import { DerivedAccountPicker } from "@ui/domains/Account/DerivedAccountPicker"
+import { DerivedFromMnemonicAccountPicker } from "@ui/domains/Account/DerivedFromMnemonicAccountPicker"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Navigate, useNavigate } from "react-router-dom"
@@ -128,7 +128,7 @@ export const AccountAddSecretAccounts = () => {
             text="Please select which account(s) you'd like to import."
           />
           <Spacer />
-          <DerivedAccountPicker
+          <DerivedFromMnemonicAccountPicker
             name={name}
             mnemonic={data.mnemonic}
             type={data.type}

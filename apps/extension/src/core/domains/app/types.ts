@@ -29,6 +29,7 @@ export type FeatureVariants = {
   WALLET_FUNDING?: boolean
   BUY_CRYPTO?: boolean
   POPUP_BOTTOM_NAV_VARIANT?: "WITH_TOOLTIP" | "WITHOUT_TOOLTIP"
+  LEDGER_EVM: boolean
 }
 export type FeatureFlag = keyof FeatureVariants
 
@@ -47,6 +48,10 @@ export type ChangePasswordRequest = {
   newPwConfirm: string
 }
 
+export interface CheckPasswordRequest {
+  password: string
+}
+
 export interface AppMessages {
   "pri(app.onboard)": [RequestOnboard, OnboardedType]
   "pri(app.onboardStatus)": [null, OnboardedType]
@@ -56,6 +61,7 @@ export interface AppMessages {
   "pri(app.authStatus.subscribe)": [null, boolean, LoggedinType]
   "pri(app.lock)": [null, boolean]
   "pri(app.changePassword)": [ChangePasswordRequest, boolean]
+  "pri(app.checkPassword)": [CheckPasswordRequest, boolean]
   "pri(app.dashboardOpen)": [RequestRoute, boolean]
   "pri(app.onboardOpen)": [null, boolean]
   "pri(app.popupOpen)": [null, boolean]

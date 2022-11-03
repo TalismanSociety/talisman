@@ -4,9 +4,25 @@ import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { BigNumber, BigNumberish, ethers } from "ethers"
 
-import { EthGasSettings } from "./types"
+import { EthGasSettings, LedgerEthDerivationPathType } from "./types"
 
-export const getEthDerivationPath = (index = 0) => `/m/44'/60'/0'/0/${index}`
+const DERIVATION_PATHS_PATTERNS = {
+  BIP44: "m/44'/60'/0'/0/INDEX",
+  LedgerLive: "m/44'/60'/INDEX'/0/0",
+  Legacy: "m/44'/60'/0'/INDEX",
+}
+
+const getDerivationPathFromPattern = (index = 0, pattern: string) =>
+  pattern.replace("INDEX", index.toString())
+
+// used a lot around the codebase, expects a slash at the start
+export const getEthDerivationPath = (index = 0) =>
+  `/${getDerivationPathFromPattern(index, DERIVATION_PATHS_PATTERNS.BIP44)}`
+
+// used as arg when creating ledger account, expects no slash at the start
+export const getEthLedgerDerivationPath = (type: LedgerEthDerivationPathType, index = 0) => {
+  return getDerivationPathFromPattern(index, DERIVATION_PATHS_PATTERNS[type])
+}
 
 export const getEthTransferTransactionBase = async (
   evmNetworkId: number,
@@ -140,10 +156,11 @@ export const getEip1559TotalFees = (
 
 export const prepareTransaction = (
   tx: ethers.providers.TransactionRequest,
-  gasSettings: EthGasSettings
+  gasSettings: EthGasSettings,
+  nonce: number
 ) => {
   // keep only known fields except gas related ones
-  const { chainId, data, from, to, value, nonce, accessList, ccipReadEnabled, customData } = tx
+  const { chainId, data, from, to, value, accessList, ccipReadEnabled, customData } = tx
 
   const result: ethers.providers.TransactionRequest = {
     chainId,

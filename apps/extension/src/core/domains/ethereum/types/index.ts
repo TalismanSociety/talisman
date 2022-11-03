@@ -11,9 +11,18 @@ export type { AddEthereumChainParameter, WatchAssetBase }
 export declare type EthApproveSignAndSend = RequestIdOnly & {
   transaction: ethers.providers.TransactionRequest
 }
+export type EthRequestSigningApproveSignature = {
+  id: string
+  signedPayload: `0x${string}`
+}
 
 export interface AnyEthRequestChainId extends AnyEthRequest {
   chainId: number
+}
+
+export type EthNonceRequest = {
+  address: string
+  evmNetworkId: number
 }
 
 export type WatchAssetRequest = {
@@ -66,9 +75,12 @@ export interface EthMessages {
   "pub(eth.mimicMetaMask)": [null, boolean]
   // eth signing message signatures
   "pri(eth.request)": [AnyEthRequestChainId, EthResponseTypes]
+  "pri(eth.transactions.count)": [EthNonceRequest, number]
   "pri(eth.signing.cancel)": [RequestIdOnly, boolean]
   "pri(eth.signing.approveSign)": [RequestIdOnly, boolean]
+  "pri(eth.signing.approveSignHardware)": [EthRequestSigningApproveSignature, boolean]
   "pri(eth.signing.approveSignAndSend)": [EthApproveSignAndSend, boolean]
+  "pri(eth.signing.approveSignAndSendHardware)": [EthRequestSigningApproveSignature, boolean]
   // eth add networks requests management
   // TODO change naming for network add requests, and maybe delete the first one
   "pri(eth.networks.add.requests)": [null, AddEthereumChainRequest[]]
@@ -100,3 +112,5 @@ export type EthGasSettingsEip1559 = {
   maxPriorityFeePerGas: BigNumberish
 }
 export type EthGasSettings = EthGasSettingsLegacy | EthGasSettingsEip1559
+
+export type LedgerEthDerivationPathType = "LedgerLive" | "Legacy" | "BIP44"

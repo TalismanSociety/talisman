@@ -1,3 +1,7 @@
+import {
+  DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
+  DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
+} from "@core/constants"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -8,17 +12,9 @@ const shouldDisplayBalance = (balance: Balance, account?: AccountJsonAny) => {
   return (
     balance.total.planck > 0 ||
     (account?.type !== "ethereum" &&
-      balance.token?.symbol === "KSM" &&
-      balance.chain?.id === "kusama") ||
-    (account?.type !== "ethereum" &&
-      balance.token?.symbol === "DOT" &&
-      balance.chain?.id === "polkadot") ||
-    (account?.type !== "sr25519" &&
-      balance.token?.symbol === "MOVR" &&
-      balance.chain?.id === "moonriver") ||
-    (account?.type !== "sr25519" &&
-      balance.token?.symbol === "GLMR" &&
-      balance.chain?.id === "moonbeam")
+      DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.includes(balance.tokenId)) ||
+    (account?.type !== "sr25519" && DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.includes(balance.tokenId)) ||
+    (account?.genesisHash && account.genesisHash === balance.chain?.genesisHash)
   )
 }
 

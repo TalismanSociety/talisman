@@ -1,6 +1,7 @@
 import { ChainList } from "@core/domains/chains/types"
 import { EvmNetworkList } from "@core/domains/ethereum/types"
 import { TokenList, TokenRateCurrency, TokenRates } from "@core/domains/tokens/types"
+import { log } from "@core/log"
 import { NonFunctionProperties } from "@core/util/FunctionPropertyNames"
 import isArrayOf from "@core/util/isArrayOf"
 import { planckToTokens } from "@core/util/planckToTokens"
@@ -71,7 +72,18 @@ export class Balances {
    */
   toJSON = (): BalancesStorage =>
     Object.fromEntries(
-      Object.entries(this.#balances).map(([id, balance]) => [id, balance.toJSON()])
+      Object.entries(this.#balances)
+        .map(([id, balance]) => {
+          let balanceJson
+          try {
+            balanceJson = balance.toJSON()
+          } catch (error) {
+            log.error(error, { balance, id })
+            return null
+          }
+          return [id, balanceJson]
+        })
+        .filter(Array.isArray)
     );
 
   /**

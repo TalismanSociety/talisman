@@ -1,4 +1,5 @@
 import { AnySigningRequest } from "@core/domains/signing/types"
+import { log } from "@core/log"
 import { isEthereumRequest } from "@core/util/isEthereumRequest"
 import useStatus from "@talisman/hooks/useStatus"
 import { useCallback } from "react"
@@ -24,8 +25,7 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
         await approveSignFn(currentRequest.id, ...args)
         setStatus.success("Approved")
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(err)
+        log.error("failed to approve", { err })
         setStatus.error(
           isEthereumRequest(currentRequest)
             ? (err as Error).message

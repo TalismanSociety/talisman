@@ -5,7 +5,7 @@ import StatusIcon from "@talisman/components/StatusIcon"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect } from "react"
-import { useForm } from "react-hook-form"
+import { SubmitHandler, useForm } from "react-hook-form"
 import styled from "styled-components"
 import * as yup from "yup"
 
@@ -32,20 +32,20 @@ const Unlock = ({ className }: any) => {
     register,
     handleSubmit,
     setError,
+    setValue,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
   })
 
-  const submit = useCallback(
-    async ({ password }: FormData) => {
+  const submit = useCallback<SubmitHandler<FormData>>(
+    async ({ password }) => {
       try {
         if (await api.authenticate(password)) {
           const qs = new URLSearchParams(window.location.search)
           if (qs.get("closeOnSuccess") === "true") window.close()
-        }
-        throw new Error("Paraverse access denied")
+        } else throw new Error("Paraverse access denied")
       } catch (err) {
         setError("password", {
           message: (err as Error)?.message ?? "",
@@ -57,9 +57,11 @@ const Unlock = ({ className }: any) => {
 
   // autologin, for developers only
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production" && process.env.PASSWORD)
-      submit({ password: process.env.PASSWORD })
-  }, [submit])
+    if (process.env.NODE_ENV !== "production" && process.env.PASSWORD && !isSubmitting) {
+      setValue("password", process.env.PASSWORD)
+      handleSubmit(submit)()
+    }
+  }, [handleSubmit, isSubmitting, setValue, submit])
 
   return (
     <Layout className={className} isThinking={isSubmitting}>

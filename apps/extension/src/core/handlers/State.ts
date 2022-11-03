@@ -5,6 +5,7 @@ import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
 import EthereumNetworksRequestsStore from "@core/domains/ethereum/requestsStore.networks"
 import { MetadataRequestsStore } from "@core/domains/metadata"
+import { EncryptRequestsStore } from "@core/domains/encrypt"
 import { SigningRequestsStore } from "@core/domains/signing"
 import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
@@ -23,6 +24,7 @@ const WINDOW_OPTS: Browser.Windows.CreateCreateDataType = {
 export default class State {
   // Prevents opening two onboarding tabs at once
   #onboardingTabOpening = false
+
   // Request stores handle ephemeral data relating to to requests for signing, metadata, and authorisation of sites
   readonly requestStores = {
     signing: new SigningRequestsStore((signingRequest) => {
@@ -60,6 +62,9 @@ export default class State {
     evmAssets: new EvmWatchAssetRequestsStore((req) =>
       this.popupOpen(req && `?customAsset=${req.id}`)
     ),
+    encrypt: new EncryptRequestsStore((encryptRequest) => {
+      return this.popupOpen(encryptRequest && `?encrypt=${encryptRequest.id}`)
+    }),
   }
 
   #windows: number[] = []

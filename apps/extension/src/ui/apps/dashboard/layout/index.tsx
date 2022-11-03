@@ -1,6 +1,7 @@
 import { BackButton } from "@talisman/components/BackButton"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { AnalyticsPage } from "@ui/api/analytics"
+import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
@@ -42,6 +43,7 @@ const UnstyledLayout: FC<LayoutProps> = ({ withBack, backTo, children, className
       <BuyTokensModal />
       <ReceiveTokensModal />
       <AccountRenameModal />
+      <AccountExportModal />
       <AccountRemoveModal />
       <AddressFormatterModal />
       <OnboardingToast />

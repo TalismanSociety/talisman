@@ -9,10 +9,17 @@
     "pg:preview": "vite preview"
   },
   "dependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.1.1",
+    "@metamask/eth-sig-util": "4.0.1",
+    "@talismn/wagmi-connector": "^0.0.4",
+    "ethers": "^5.7.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-hook-form": "^7.37.0",
     "react-router-dom": "6.3.0",
-    "talisman-ui": "*"
+    "react-use": "^17.4.0",
+    "talisman-ui": "*",
+    "wagmi": "^0.6.8"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",

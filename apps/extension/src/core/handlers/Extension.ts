@@ -3,6 +3,7 @@ import { AccountsHandler } from "@core/domains/accounts"
 import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { getBalanceLocks } from "@core/domains/balances/helpers"
+import NativeBalancesEvmRpc from "@core/domains/balances/rpc/EvmBalances"
 import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
 import {
   Balances,
@@ -14,6 +15,7 @@ import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
 import metadataInit from "@core/domains/metadata/_metadataInit"
 import { SigningHandler } from "@core/domains/signing"
+import { EncryptHandler } from "@core/domains/encrypt"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
 import TokensHandler from "@core/domains/tokens/handler"
 import { AssetTransferHandler } from "@core/domains/transactions"
@@ -27,8 +29,16 @@ import { assert } from "@polkadot/util"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
-
 import { createSubscription, unsubscribe } from "./subscriptions"
+import chainsInit from "../libs/init/chains.json"
+import evmNetworksInit from "../libs/init/evmNetworks.json"
+import tokensInit from "../libs/init/tokens.json"
+import { Chain } from "@core/domains/chains/types"
+import { EvmNetwork } from "@core/domains/ethereum/types"
+import { Token } from "@core/domains/tokens/types"
+import { log } from "@core/log"
+import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
+import { talismanAnalytics } from "@core/libs/Analytics"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
@@ -44,6 +54,7 @@ export default class Extension extends ExtensionHandler {
       assets: new AssetTransferHandler(state, stores),
       eth: new EthHandler(state, stores),
       metadata: new MetadataHandler(state, stores),
+      encrypt: new EncryptHandler(state, stores),
       signing: new SigningHandler(state, stores),
       sites: new SitesAuthorisationHandler(state, stores),
       tokens: new TokensHandler(state, stores),
@@ -60,9 +71,12 @@ export default class Extension extends ExtensionHandler {
       stores.password.resetAutoLockTimer(this.#autoLockTimeout)
     })
 
-    this.initDb()
+    // Resets password update notification at extension restart if user has asked to ignore it previously
+    stores.password.set({ ignorePasswordUpdate: false })
 
+    this.initDb()
     this.initWalletFunding()
+    this.checkSpiritKeyOwnership()
   }
 
   private initDb() {
@@ -83,6 +97,11 @@ export default class Extension extends ExtensionHandler {
 
         // add initial metadata
         db.metadata.bulkAdd(metadataInit)
+
+        // init other tables (workaround to wallet beeing installed when subsquid is down)
+        db.chains.bulkAdd(chainsInit as unknown as Chain[])
+        db.evmNetworks.bulkAdd(evmNetworksInit as unknown as EvmNetwork[])
+        db.tokens.bulkAdd(tokensInit as unknown as Token[])
       }
     })
   }
@@ -109,6 +128,23 @@ export default class Extension extends ExtensionHandler {
         }
       })
     })
+  }
+
+  private checkSpiritKeyOwnership() {
+    // wait 10 seconds as this check is low priority
+    // also need to be wait for keyring to be loaded and accounts populated
+    setTimeout(async () => {
+      try {
+        const hasSpiritKey = await fetchHasSpiritKey()
+        this.stores.app.set({ hasSpiritKey })
+        await talismanAnalytics.capture("Spirit Key ownership check", {
+          $set: { hasSpiritKey },
+        })
+      } catch (err) {
+        // ignore, don't update app store nor posthog property
+        log.error("Failed to check Spirit Key ownership", { err })
+      }
+    }, 10_000)
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -184,9 +220,18 @@ export default class Extension extends ExtensionHandler {
         // create subscription callback
         const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
 
+        const { addressesByChain, addressesByEvmNetwork } =
+          request as RequestBalancesByParamsSubscribe
+
         // subscribe to balances by params
-        const unsub = await BalancesRpc.balances(
-          (request as RequestBalancesByParamsSubscribe).addressesByChain,
+        const unsub = await BalancesRpc.balances(addressesByChain, (error, balances) => {
+          if (error) log.error(error)
+          else callback({ type: "upsert", balances: (balances ?? new Balances([])).toJSON() })
+        })
+
+        const unsubEvm = await NativeBalancesEvmRpc.balances(
+          addressesByEvmNetwork?.addresses ?? [],
+          addressesByEvmNetwork?.evmNetworks ?? [],
           (error, balances) => {
             // eslint-disable-next-line no-console
             if (error) DEBUG && console.error(error)
@@ -198,6 +243,7 @@ export default class Extension extends ExtensionHandler {
         port.onDisconnect.addListener((): void => {
           unsubscribe(id)
           unsub()
+          unsubEvm()
         })
 
         // subscription created

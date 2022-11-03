@@ -15,7 +15,10 @@ type AccountAddSecretInputs = {
 
 const DEFAULT_DATA: Partial<AccountAddSecretInputs> = {
   // uncomment to be able to F5 on accounts selection screen when developing
-  mnemonic: DEBUG ? process.env.TEST_MNEMONIC : undefined,
+  // name: DEBUG ? "New derived account" : undefined,
+  // type: DEBUG ? "ethereum" : undefined,
+  // multi: DEBUG,
+  // mnemonic: DEBUG ? process.env.TEST_MNEMONIC : undefined,
 }
 
 const useAccountAddSecretProvider = () => {

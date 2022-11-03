@@ -20,6 +20,35 @@ import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
 
+const getSkeletonOpacity = (index: number) => {
+  // tailwind parses files to find classes that it should include
+  // so we can't dynamically compute the className
+  switch (index) {
+    case 0:
+      return "opacity-100"
+    case 1:
+      return "opacity-90"
+    case 2:
+      return "opacity-80"
+    case 3:
+      return "opacity-70"
+    case 4:
+      return "opacity-60"
+    case 5:
+      return "opacity-50"
+    case 6:
+      return "opacity-40"
+    case 7:
+      return "opacity-30"
+    case 8:
+      return "opacity-20"
+    case 9:
+      return "opacity-10"
+    default:
+      return "opacity-0"
+  }
+}
+
 type AssetRowProps = {
   balances: Balances
   symbol: string
@@ -29,18 +58,6 @@ type AssetRowProps = {
 const FetchingIcon = styled(LoaderIcon)`
   line-height: 1.2rem;
   font-size: 1.2rem;
-`
-
-const Container = styled(Box)`
-  .opacity-1 {
-    opacity: 0.8;
-  }
-  .opacity-2 {
-    opacity: 0.6;
-  }
-  .opacity-3 {
-    opacity: 0.4;
-  }
 `
 
 const AssetButton = styled.button`
@@ -311,13 +328,13 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
 
   return (
     <FadeIn>
-      <Container>
+      <div>
         <BalancesGroup label="Available" fiatAmount={totalAvailable}>
           {available.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} symbol={symbol} />
           ))}
           {[...Array(skeletons).keys()].map((i) => (
-            <AssetRowSkeleton key={i} className={`opacity-${i}`} />
+            <AssetRowSkeleton key={i} className={getSkeletonOpacity(i)} />
           ))}
           {!skeletons && !available.length && (
             <Box
@@ -360,7 +377,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
             </Box>
           )}
         </BalancesGroup>
-      </Container>
+      </div>
     </FadeIn>
   )
 }

@@ -10,7 +10,6 @@ import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { construct, methods } from "@substrate/txwrapper-polkadot"
-
 import { pendingTransfers } from "./PendingTransfers"
 
 type ProviderSendFunction<T = any> = (method: string, params?: unknown[]) => Promise<T>
@@ -51,12 +50,6 @@ export default class AssetTransfersRpc {
       true
     )
 
-    callback(null, {
-      nonce: tx.nonce.toString(),
-      hash: tx.hash.toString(),
-      status: registry.createType<ExtrinsicStatus>("ExtrinsicStatus", { future: true }),
-    })
-
     const unsubscribe = await RpcFactory.subscribe(
       chainId,
       "author_submitAndWatchExtrinsic",
@@ -78,7 +71,7 @@ export default class AssetTransfersRpc {
   }
 
   /**
-   * Calculates an estimated fee for transfering an amount of nativeToken from one account to another.
+   * Calculates an estimated fee for transferring an amount of nativeToken from one account to another.
    *
    * @param chainId - The chain to make the transfer on.
    * @param amount - The amount of `nativeToken` to transfer.

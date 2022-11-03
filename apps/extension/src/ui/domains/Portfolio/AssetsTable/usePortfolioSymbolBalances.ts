@@ -1,3 +1,7 @@
+import {
+  DEFAULT_PORTFOLIO_TOKENS_ETHEREUM,
+  DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE,
+} from "@core/constants"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { useMemo } from "react"
 
@@ -34,13 +38,21 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
 
   // if specific account we have 2 rows minimum, if all accounts we have 4
   const skeletons = useMemo(() => {
-    // in this case we don't know the number of min rows
-    if (networkFilter) return 0
+    // in this case we don't know the number of min rows, balances should be already loaded anyway
+    if (networkFilter) return symbolBalances.length ? 0 : 1
 
-    // If no accounts then it means "all accounts", expect KSM/DOT/MOVR/GLMR (or only KSM/DOT if no eth account)
-    // If account has a genesis hash then we expect only 1 chain
-    // Otherwise we expect 2 chains (KSM+DOT or MOVR+GLMR)
-    const expectedRows = account ? (account.genesisHash ? 1 : 2) : hasEthereumAccount ? 4 : 2
+    // If no accounts then it means "all accounts", expect all default tokens (substrate + eth)
+    // if account has a genesis hash then we expect only 1 chain
+    // otherwise we expect default tokens for account type
+    let expectedRows = 0
+    if (!account)
+      expectedRows =
+        DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.length +
+        (hasEthereumAccount ? DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.length : 0)
+    else if (account.genesisHash) expectedRows = 1
+    else if (account.type === "ethereum") expectedRows = DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.length
+    else expectedRows = DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.length
+
     return symbolBalances.length < expectedRows ? expectedRows - symbolBalances.length : 0
   }, [account, hasEthereumAccount, networkFilter, symbolBalances.length])
 

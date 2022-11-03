@@ -120,7 +120,6 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
 
           for (const { mutation, callback } of mutations) {
             newValue = mutation(newValue)
-
             const valueAfterThisMutation = newValue
             if (callback) callbacks.push(() => callback(valueAfterThisMutation))
           }

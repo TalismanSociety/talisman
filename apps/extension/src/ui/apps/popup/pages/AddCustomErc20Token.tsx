@@ -17,10 +17,12 @@ import Layout, { Content, Footer, Header } from "../Layout"
 const TokenLogo = styled.img`
   width: 5.4rem;
   height: 5.4rem;
+  border-radius: 50%;
 `
 const TokenLogoSmall = styled.img`
   width: 1.6rem;
   height: 1.6rem;
+  border-radius: 50%;
 `
 
 const Container = styled(Layout)`

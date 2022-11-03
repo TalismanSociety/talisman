@@ -100,7 +100,9 @@ export const EthTransactionFees = ({
     [nativeToken, txDetails]
   )
 
-  if (!nativeToken || (isLoading && !txDetails)) return <Loader data-spin />
+  if (!txDetails) return null
+
+  if (!nativeToken || isLoading) return <Loader data-spin />
 
   if (!estimatedFee || !transaction) return null
 

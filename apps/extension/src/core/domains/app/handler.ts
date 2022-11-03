@@ -53,10 +53,10 @@ export default class AppHandler extends ExtensionHandler {
       confirmed = true
     }
 
-    this.stores.password.setPassword(pass)
-    await this.stores.password.set({ isTrimmed: false })
-    const transformedPw = await this.stores.password.getPassword()
-    assert(transformedPw, "Password error")
+    const { password: transformedPw, salt } = await this.stores.password.createPassword(pass)
+    assert(transformedPw, "Password creation failed")
+    this.stores.password.setPassword(transformedPw)
+    await this.stores.password.set({ isTrimmed: false, isHashed: true, salt })
 
     const { pair } = keyring.addUri(mnemonic, transformedPw, {
       name: "My Polkadot Account",
@@ -95,6 +95,7 @@ export default class AppHandler extends ExtensionHandler {
     )
 
     try {
+      const transformedPassword = await this.stores.password.transformPassword(pass)
       // get root account
       const rootAccount = this.getRootAccount()
 
@@ -102,12 +103,12 @@ export default class AppHandler extends ExtensionHandler {
 
       // fetch keyring pair from address
       const pair = keyring.getPair(rootAccount.address)
-
       // attempt unlock the pair
       // a successful unlock means authenticated
-      const password = await this.stores.password.transformPassword(pass)
-      pair.unlock(password)
-      this.stores.password.setPassword(pass)
+      pair.unlock(transformedPassword)
+      pair.lock()
+      await this.stores.password.setPlaintextPassword(pass)
+
       talismanAnalytics.capture("authenticate")
       return true
     } catch (e) {
@@ -160,11 +161,31 @@ export default class AppHandler extends ExtensionHandler {
     // test if the two inputs of the new password are the same
     assert(newPw === newPwConfirm, "New password and new password confirmation must match")
 
-    const result = await changePassword({ currentPw: transformedPw, newPw })
+    const isHashedAlready = await this.stores.password.get("isHashed")
+
+    let hashedNewPw, newSalt
+    if (isHashedAlready) hashedNewPw = await this.stores.password.getHashedPassword(newPw)
+    else {
+      // need to create a new password and salt
+      const { salt, password } = await this.stores.password.createPassword(newPw)
+      hashedNewPw = password
+      newSalt = salt
+    }
+
+    const result = await changePassword({ currentPw: transformedPw, newPw: hashedNewPw })
     if (!result.ok) throw Error(result.val)
-    await this.stores.password.setPassword(newPw)
-    await this.stores.password.set({ isTrimmed: false })
+    const pwStoreData: Record<string, any> = { isTrimmed: false, isHashed: true }
+    if (newSalt) {
+      pwStoreData.salt = newSalt
+    }
+    await this.stores.password.set(pwStoreData)
+    await this.stores.password.setPlaintextPassword(newPw)
     return result.val
+  }
+
+  private async checkPassword({ password }: RequestTypes["pri(app.checkPassword)"]) {
+    await this.stores.password.checkPassword(password)
+    return true
   }
 
   private async dashboardOpen({ route }: RequestRoute): Promise<boolean> {
@@ -241,6 +262,9 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.changePassword)":
         return await this.changePassword(request as RequestTypes["pri(app.changePassword)"])
+
+      case "pri(app.checkPassword)":
+        return await this.checkPassword(request as RequestTypes["pri(app.checkPassword)"])
 
       case "pri(app.dashboardOpen)":
         return await this.dashboardOpen(request as RequestRoute)

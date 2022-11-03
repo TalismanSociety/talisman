@@ -4,6 +4,7 @@ import {
   HTMLAttributes,
   InputHTMLAttributes,
   LabelHTMLAttributes,
+  Ref,
 } from "react"
 import { classNames } from "../utils"
 
@@ -11,6 +12,7 @@ export type CheckboxProps = DetailedHTMLProps<
   InputHTMLAttributes<HTMLInputElement>,
   HTMLInputElement
 > & {
+  inputRef?: Ref<HTMLInputElement>
   containerProps?: DetailedHTMLProps<LabelHTMLAttributes<HTMLLabelElement>, HTMLLabelElement>
   childProps?: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>
 }
@@ -21,6 +23,7 @@ export const Checkbox: FC<CheckboxProps> = ({
   children,
   containerProps = {},
   childProps = {},
+  inputRef,
   ...inputProps
 }) => {
   return (
@@ -28,7 +31,7 @@ export const Checkbox: FC<CheckboxProps> = ({
       className={classNames(
         "inline-flex items-center justify-start gap-[0.5em]",
         !disabled && "cursor-pointer",
-        containerProps?.className
+        containerProps?.className && containerProps.className
       )}
       {...containerProps}
     >
@@ -42,6 +45,7 @@ export const Checkbox: FC<CheckboxProps> = ({
           "disabled:checked:bg-grey-700 disabled:border-body-disabled disabled:cursor-default disabled:bg-transparent disabled:checked:border-transparent",
           className
         )}
+        ref={inputRef}
         disabled={disabled}
         {...inputProps}
       />

@@ -65,15 +65,6 @@ const Table = styled.table`
   .noPadRight {
     padding-right: 0;
   }
-  .opacity-1 {
-    opacity: 0.8;
-  }
-  .opacity-2 {
-    opacity: 0.6;
-  }
-  .opacity-3 {
-    opacity: 0.4;
-  }
 `
 
 const AssetRowSkeleton = ({ className }: { className?: string }) => {
@@ -210,6 +201,35 @@ type AssetsTableProps = {
   balances: Balances
 }
 
+const getSkeletonOpacity = (index: number) => {
+  // tailwind parses files to find classes that it should include in it's bundle
+  // so we can't dynamically compute the className
+  switch (index) {
+    case 0:
+      return "opacity-100"
+    case 1:
+      return "opacity-90"
+    case 2:
+      return "opacity-80"
+    case 3:
+      return "opacity-70"
+    case 4:
+      return "opacity-60"
+    case 5:
+      return "opacity-50"
+    case 6:
+      return "opacity-40"
+    case 7:
+      return "opacity-30"
+    case 8:
+      return "opacity-20"
+    case 9:
+      return "opacity-10"
+    default:
+      return "opacity-0"
+  }
+}
+
 export const DashboardAssetsTable = ({ balances }: AssetsTableProps) => {
   // group by token (symbol)
   const { symbolBalances, skeletons } = usePortfolioSymbolBalances(balances)
@@ -228,7 +248,7 @@ export const DashboardAssetsTable = ({ balances }: AssetsTableProps) => {
           <AssetRow key={symbol} balances={b} symbol={symbol} />
         ))}
         {[...Array(skeletons).keys()].map((i) => (
-          <AssetRowSkeleton key={i} className={`opacity-${i}`} />
+          <AssetRowSkeleton key={i} className={getSkeletonOpacity(i)} />
         ))}
         {/** this row locks column sizes to prevent flickering */}
         <tr>

@@ -1,5 +1,6 @@
 import { flip, offset, shift, useFloating } from "@floating-ui/react-dom"
 import { CSSProperties, ReactNode, useEffect, useMemo } from "react"
+import { createPortal } from "react-dom"
 import styled from "styled-components"
 
 import { useTooltipBoundary } from "./TooltipBoundaryContext"
@@ -76,7 +77,8 @@ export const WithTooltip = ({
       position: strategy,
       top: (y ?? 0) - (boundary?.offsetTop ?? 0),
       left: (x ?? 0) - (boundary?.offsetLeft ?? 0),
-      whiteSpace: noWrap ? "nowrap" : undefined,
+      whiteSpace: noWrap ? "pre" : undefined,
+      lineHeight: 1.2,
     }),
     [boundary?.offsetLeft, boundary?.offsetTop, noWrap, strategy, x, y]
   )
@@ -86,9 +88,12 @@ export const WithTooltip = ({
       <Container ref={reference} className={className}>
         {children}
       </Container>
-      <Tooltip ref={floating} className="tooltip" style={tooltipStyle}>
-        {tooltip}
-      </Tooltip>
+      {createPortal(
+        <Tooltip ref={floating} className="tooltip" style={tooltipStyle}>
+          {tooltip}
+        </Tooltip>,
+        boundary as Element
+      )}
     </>
   )
 }

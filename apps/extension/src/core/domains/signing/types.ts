@@ -1,4 +1,8 @@
-import { AccountJson, AccountJsonHardware } from "@core/domains/accounts/types"
+import {
+  AccountJson,
+  AccountJsonHardwareEthereum,
+  AccountJsonHardwareSubstrate,
+} from "@core/domains/accounts/types"
 import { RequestIdOnly } from "@core/types/base"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import {
@@ -24,12 +28,12 @@ export type { RequestSigningApproveSignature }
 
 export interface SigningRequest extends PolkadotSigningRequest {
   request: PolkadotSigningRequest["request"]
-  account: AccountJson | AccountJsonHardware
+  account: AccountJson | AccountJsonHardwareSubstrate
 }
 
 export interface EthBaseSignRequest extends Omit<SigningRequest, "request" | "account"> {
   ethChainId: number
-  account: AccountJson
+  account: AccountJson | AccountJsonHardwareEthereum
   type: "ethereum"
   method:
     | "personal_sign"
