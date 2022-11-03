@@ -4,8 +4,8 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import StatusIcon from "@talisman/components/StatusIcon"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useCallback, useEffect } from "react"
-import { useForm } from "react-hook-form"
+import { useCallback, useEffect, useRef } from "react"
+import { SubmitHandler, useForm } from "react-hook-form"
 import styled from "styled-components"
 import * as yup from "yup"
 
@@ -17,7 +17,7 @@ type FormData = {
 
 const schema = yup
   .object({
-    password: yup.string().trim().required(""),
+    password: yup.string().required(""),
   })
   .required()
 
@@ -32,34 +32,38 @@ const Unlock = ({ className }: any) => {
     register,
     handleSubmit,
     setError,
+    setValue,
+    setFocus,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
     resolver: yupResolver(schema),
   })
 
-  const submit = useCallback(
-    async ({ password }: FormData) => {
+  const submit = useCallback<SubmitHandler<FormData>>(
+    async ({ password }) => {
       try {
         if (await api.authenticate(password)) {
           const qs = new URLSearchParams(window.location.search)
           if (qs.get("closeOnSuccess") === "true") window.close()
-        }
-        throw new Error("Paraverse access denied")
+        } else throw new Error("Paraverse access denied")
       } catch (err) {
-        setError("password", {
-          message: (err as Error)?.message ?? "",
-        })
+        setError("password", { message: (err as Error)?.message ?? "Unknown error" })
+        setFocus("password", { shouldSelect: true })
       }
     },
-    [setError]
+    [setError, setFocus]
   )
 
   // autologin, for developers only
+  const refDone = useRef(false)
   useEffect(() => {
-    if (process.env.NODE_ENV !== "production" && process.env.PASSWORD)
-      submit({ password: process.env.PASSWORD })
-  }, [submit])
+    if (process.env.NODE_ENV !== "production" && process.env.PASSWORD && !refDone.current) {
+      refDone.current = true // prevent infinite loop if password is incorrect
+      setValue("password", process.env.PASSWORD)
+      handleSubmit(submit)()
+    }
+  }, [handleSubmit, setValue, submit])
 
   return (
     <Layout className={className} isThinking={isSubmitting}>
@@ -87,6 +91,7 @@ const Unlock = ({ className }: any) => {
               type="password"
               placeholder="Enter your password"
               spellCheck={false}
+              autoComplete="off"
               data-lpignore
               autoFocus
             />

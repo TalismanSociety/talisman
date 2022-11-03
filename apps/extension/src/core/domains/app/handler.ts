@@ -16,6 +16,7 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
+import { sleep } from "@core/util/sleep"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { mnemonicGenerate, mnemonicValidate } from "@polkadot/util-crypto"
@@ -23,18 +24,13 @@ import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
 import { AccountTypes } from "../accounts/helpers"
+import { changePassword } from "./helpers"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalTypes>()
 
-  private async onboard({
-    name,
-    pass,
-    passConfirm,
-    mnemonic,
-  }: RequestOnboard): Promise<OnboardedType> {
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    assert(name, "Name cannot be empty")
+  private async onboard({ pass, passConfirm, mnemonic }: RequestOnboard): Promise<OnboardedType> {
+    await sleep(1000)
     assert(pass, "Password cannot be empty")
     assert(passConfirm, "Password confirm cannot be empty")
 
@@ -57,21 +53,25 @@ export default class AppHandler extends ExtensionHandler {
       confirmed = true
     }
 
-    const { pair } = keyring.addUri(mnemonic, pass, {
-      name,
+    const { password: transformedPw, salt } = await this.stores.password.createPassword(pass)
+    assert(transformedPw, "Password creation failed")
+    this.stores.password.setPassword(transformedPw)
+    await this.stores.password.set({ isTrimmed: false, isHashed: true, salt })
+
+    const { pair } = keyring.addUri(mnemonic, transformedPw, {
+      name: "My Polkadot Account",
       origin: AccountTypes.ROOT,
     } as AccountMeta)
-    await this.stores.seedPhrase.add(mnemonic, pair.address, pass, confirmed)
-    this.stores.password.setPassword(pass)
+    await this.stores.seedPhrase.add(mnemonic, pair.address, transformedPw, confirmed)
 
     try {
       // also derive a first ethereum account
       const derivationPath = getEthDerivationPath()
       keyring.addUri(
         `${mnemonic}${derivationPath}`,
-        pass,
+        transformedPw,
         {
-          name: `${name} Ethereum`,
+          name: `My Ethereum Account`,
           origin: AccountTypes.DERIVED,
           parent: pair.address,
           derivationPath,
@@ -84,7 +84,7 @@ export default class AppHandler extends ExtensionHandler {
       console.error(err)
     }
 
-    const result = await this.stores.app.setOnboarded()
+    const result = await this.stores.app.setOnboarded(method === "new")
     talismanAnalytics.capture("onboarded", { method })
     return result
   }
@@ -95,6 +95,7 @@ export default class AppHandler extends ExtensionHandler {
     )
 
     try {
+      const transformedPassword = await this.stores.password.transformPassword(pass)
       // get root account
       const rootAccount = this.getRootAccount()
 
@@ -102,11 +103,12 @@ export default class AppHandler extends ExtensionHandler {
 
       // fetch keyring pair from address
       const pair = keyring.getPair(rootAccount.address)
-
       // attempt unlock the pair
       // a successful unlock means authenticated
-      pair.unlock(pass)
-      this.stores.password.setPassword(pass)
+      pair.unlock(transformedPassword)
+      pair.lock()
+      await this.stores.password.setPlaintextPassword(pass)
+
       talismanAnalytics.capture("authenticate")
       return true
     } catch (e) {
@@ -128,6 +130,64 @@ export default class AppHandler extends ExtensionHandler {
     return this.authStatus()
   }
 
+  private async changePassword({
+    currentPw,
+    newPw,
+    newPwConfirm,
+  }: RequestTypes["pri(app.changePassword)"]) {
+    const rootAccount = this.getRootAccount()
+    assert(rootAccount, "No root account")
+
+    // only allow users who have confirmed backing up their seed phrase to change PW
+    const mnemonicConfirmed = await this.stores.seedPhrase.get("confirmed")
+    assert(
+      mnemonicConfirmed,
+      "Please backup your seed phrase before attempting to change your password."
+    )
+
+    // fetch keyring pair from address
+    const pair = keyring.getPair(rootAccount.address)
+
+    const transformedPw = await this.stores.password.transformPassword(currentPw)
+    assert(transformedPw, "Password error")
+    assert(transformedPw === (await this.stores.password.getPassword()), "Incorrect Password")
+    // attempt to unlock the pair
+    // a successful unlock means password is ok
+    try {
+      pair.unlock(transformedPw)
+    } catch (err) {
+      throw new Error("Incorrect password")
+    }
+    // test if the two inputs of the new password are the same
+    assert(newPw === newPwConfirm, "New password and new password confirmation must match")
+
+    const isHashedAlready = await this.stores.password.get("isHashed")
+
+    let hashedNewPw, newSalt
+    if (isHashedAlready) hashedNewPw = await this.stores.password.getHashedPassword(newPw)
+    else {
+      // need to create a new password and salt
+      const { salt, password } = await this.stores.password.createPassword(newPw)
+      hashedNewPw = password
+      newSalt = salt
+    }
+
+    const result = await changePassword({ currentPw: transformedPw, newPw: hashedNewPw })
+    if (!result.ok) throw Error(result.val)
+    const pwStoreData: Record<string, any> = { isTrimmed: false, isHashed: true }
+    if (newSalt) {
+      pwStoreData.salt = newSalt
+    }
+    await this.stores.password.set(pwStoreData)
+    await this.stores.password.setPlaintextPassword(newPw)
+    return result.val
+  }
+
+  private async checkPassword({ password }: RequestTypes["pri(app.checkPassword)"]) {
+    await this.stores.password.checkPassword(password)
+    return true
+  }
+
   private async dashboardOpen({ route }: RequestRoute): Promise<boolean> {
     if (!(await this.stores.app.getIsOnboarded())) return this.onboardOpen()
     this.state.openDashboard({ route })
@@ -137,7 +197,11 @@ export default class AppHandler extends ExtensionHandler {
   private async openModal({ modalType }: ModalOpenParams): Promise<void> {
     const queryUrl = Browser.runtime.getURL("dashboard.html")
     const [tab] = await Browser.tabs.query({ url: queryUrl })
-    if (!tab) await this.state.openDashboard({ route: "/portfolio" })
+    if (!tab) {
+      await this.state.openDashboard({ route: "/portfolio" })
+      // wait for newly created page to load and subscribe to backend (max 5 seconds)
+      for (let i = 0; i < 50 && !this.#modalOpenRequest.observed; i++) await sleep(100)
+    }
     this.#modalOpenRequest.next(modalType)
   }
 
@@ -195,6 +259,12 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.lock)":
         return this.lock()
+
+      case "pri(app.changePassword)":
+        return await this.changePassword(request as RequestTypes["pri(app.changePassword)"])
+
+      case "pri(app.checkPassword)":
+        return await this.checkPassword(request as RequestTypes["pri(app.checkPassword)"])
 
       case "pri(app.dashboardOpen)":
         return await this.dashboardOpen(request as RequestRoute)

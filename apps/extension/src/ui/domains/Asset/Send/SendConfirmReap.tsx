@@ -82,7 +82,7 @@ export const SendConfirmReap: FC = () => {
   }, [expectedResult])
 
   const { title, description } = useMemo(() => {
-    if (!savedExpectedResult) return { title: "", description: "" }
+    if (savedExpectedResult?.type !== "substrate") return { title: "", description: "" }
 
     const { forfeits } = savedExpectedResult
     const amounts = forfeits

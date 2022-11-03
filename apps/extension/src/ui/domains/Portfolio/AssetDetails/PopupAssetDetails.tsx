@@ -3,18 +3,20 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
-import { useNotification } from "@talisman/components/Notification"
-import { CopyIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
+import { CopyIcon, CreditCardIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { planckToTokens } from "@talismn/util"
-import { encodeAnyAddress } from "@talismn/util"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { encodeAnyAddress, planckToTokens } from "@talismn/util"
+import { api } from "@ui/api"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback, useMemo } from "react"
 import styled from "styled-components"
+import { PillButton } from "talisman-ui"
 
 import StyledAssetLogo from "../../Asset/Logo"
 import { PortfolioAccount } from "./PortfolioAccount"
@@ -29,7 +31,6 @@ const SmallIconButton = styled(IconButton)`
 
 const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) => {
   const { account } = useSelectedAccount()
-  const notification = useNotification()
 
   const address = useMemo(() => {
     if (!account) return null
@@ -39,12 +40,8 @@ const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) =>
 
   const handleClick = useCallback(() => {
     if (!address) return
-    navigator.clipboard.writeText(address)
-    notification.success({
-      title: `Address copied`,
-      subtitle: shortenAddress(address),
-    })
-  }, [address, notification])
+    copyAddress(address)
+  }, [address])
 
   if (!address) return null
 
@@ -62,7 +59,7 @@ const FetchingIndicator = styled(LoaderIcon)`
 `
 
 type AssetRowProps = {
-  chainId: string | number
+  chainId: ChainId | EvmNetworkId
   balances: Balances
   symbol: string
 }
@@ -142,7 +139,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
                 {row.locked ? (
                   <>
                     {" "}
-                    <LockIcon className="lock" />
+                    <LockIcon className="lock inline align-baseline" />
                   </>
                 ) : null}
               </Box>
@@ -161,43 +158,39 @@ type AssetsTableProps = {
   symbol: string
 }
 
-const LinkButton = styled.button`
-  background: none;
-  color: currentColor;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  color: var(--color-foreground-muted);
-  padding: 0;
-  margin: 0;
-  :hover {
-    color: var(--color-foreground);
-  }
-`
 const NoTokens = ({ symbol }: { symbol: string }) => {
   const { account } = useSelectedAccount()
   const { open } = useAddressFormatterModal()
+
+  const handleCopy = useCallback(() => {
+    if (account?.address) open(account.address)
+  }, [account?.address, open])
+
+  const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
+  const handleBuyCryptoClick = useCallback(async () => {
+    await api.modalOpen("buy")
+    window.close()
+  }, [])
+
   return (
     <FadeIn>
-      <Box
-        bg="background-muted"
-        fg="mid"
-        padding={2}
-        borderradius="tiny"
-        fontsize="small"
-        textalign="center"
-        lineheightcustom={"1.2em"}
-      >
+      <div className="bg-field text-body-secondary leading-base rounded-sm p-10 text-center text-sm">
         <div>
-          You don't have any {symbol} {account ? " in this account" : ""}.
+          You don't have any {symbol} {account ? " in this account" : ""}
         </div>
-        {!!account && (
-          <div>
-            <LinkButton onClick={() => open(account.address)}>Copy address</LinkButton> to receive
-            funds.
-          </div>
-        )}
-      </Box>
+        <div className="mt-6 flex justify-center gap-4">
+          {!!account && (
+            <PillButton icon={CopyIcon} onClick={handleCopy}>
+              Copy Address
+            </PillButton>
+          )}
+          {showBuyCrypto && (
+            <PillButton icon={CreditCardIcon} onClick={handleBuyCryptoClick}>
+              Buy Crypto
+            </PillButton>
+          )}
+        </div>
+      </div>
     </FadeIn>
   )
 }

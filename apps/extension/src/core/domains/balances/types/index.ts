@@ -4,7 +4,7 @@ import "@talismn/balances-evm-native"
 import "@talismn/balances-evm-erc20"
 
 import { ChainId } from "@core/domains/chains/types"
-import { EvmNetworkId } from "@core/domains/ethereum/types"
+import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { Address, AddressesByChain } from "@core/types/base"
 import { BalanceJson, BalanceJsonList } from "@talismn/balances"
@@ -25,8 +25,13 @@ export interface RequestBalance {
   address: Address
 }
 
+export type AddressesByEvmNetwork = {
+  evmNetworks: Array<Pick<EvmNetwork, "id" | "nativeToken">>
+  addresses: string[]
+}
 export interface RequestBalancesByParamsSubscribe {
   addressesByChain: AddressesByChain
+  addressesByEvmNetwork: AddressesByEvmNetwork
 }
 
 export type BalanceLockType = "democracy" | "staking" | "vesting" | "dapp-staking" | "other"

@@ -1,5 +1,5 @@
 import type { AnySigningRequest, RequestSigningCancel } from "@core/domains/signing/types"
-import { getUnlockedPairFromAddress } from "@core/handlers/helpers"
+import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
@@ -12,85 +12,100 @@ import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import isJsonPayload from "@core/util/isJsonPayload"
 import { RequestSigningApproveSignature } from "@polkadot/extension-base/background/types"
 import { TypeRegistry } from "@polkadot/types"
+import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 
 export default class SigningHandler extends ExtensionHandler {
-  private async signingApprove({ id }: RequestIdOnly): Promise<boolean> {
+  private async signingApprove({ id }: RequestIdOnly) {
     const queued = this.state.requestStores.signing.getPolkadotRequest(id)
 
     assert(queued, "Unable to find request")
 
     const { reject, request, resolve } = queued
-    try {
-      // eslint-disable-next-line no-var
-      var pair = getUnlockedPairFromAddress(queued.account.address)
-    } catch (error) {
-      this.stores.password.clearPassword()
-      reject(
-        error instanceof Error ? error : new Error(typeof error === "string" ? error : undefined)
-      )
-      return false
-    }
 
-    const { payload } = request
-    const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
+    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
+      const { payload } = request
+      const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
 
-    let registry = new TypeRegistry()
-    if (isJsonPayload(payload)) {
-      const { blockHash, genesisHash, signedExtensions } = payload
+      let registry = new TypeRegistry()
+      if (isJsonPayload(payload)) {
+        const { blockHash, genesisHash, signedExtensions } = payload
 
-      const chain = await db.chains.get({ genesisHash })
-      if (chain) registry = (await getTypeRegistry(chain.id, blockHash)).registry
+        const chain = await db.chains.get({ genesisHash })
+        if (chain) registry = (await getTypeRegistry(chain.id, blockHash)).registry
 
-      // Get the metadata for the genesisHash
-      const currentMetadata = await db.metadata.get(genesisHash)
-      registry.setSignedExtensions(signedExtensions, currentMetadata?.userExtensions)
+        // Get the metadata for the genesisHash
+        const currentMetadata = await db.metadata.get(genesisHash)
+        registry.setSignedExtensions(signedExtensions, currentMetadata?.userExtensions)
 
-      if (currentMetadata) registry.register(currentMetadata.types)
+        if (currentMetadata) registry.register(currentMetadata.types)
 
-      analyticsProperties.chain = currentMetadata?.chain || chain?.chainName
-    }
-
-    const result = request.sign(registry, pair)
-
-    /* temporarily disabled 
-    // notify user about transaction progress
-    if (isJsonPayload(payload) && (await this.stores.settings.get("allowNotifications"))) {
-      const chains = await db.chains.toArray()
-      const chain = chains.find((c) => c.genesisHash === payload.genesisHash)
-      if (chain) {
-        // it's hard to get a reliable hash, we'll use signature to identify the on chain extrinsic
-        // our signature : 0x016c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
-        // on chain signature : 0x6c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
-        // => remove the 01 prefix
-        const signature = `0x${result.signature.slice(4)}`
-        watchSubstrateTransaction(chain, signature)
+        analyticsProperties.chain = currentMetadata?.chain || chain?.chainName
       }
+
+      const signResult = request.sign(registry, pair)
+
+      // notify user about transaction progress
+      if (isJsonPayload(payload) && (await this.stores.settings.get("allowNotifications"))) {
+        const chains = await db.chains.toArray()
+        const chain = chains.find((c) => c.genesisHash === payload.genesisHash)
+        if (chain) {
+          // it's hard to get a reliable hash, we'll use signature to identify the on chain extrinsic
+          // our signature : 0x016c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
+          // on chain signature : 0x6c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
+          // => remove the 01 prefix
+          const signature = `0x${signResult.signature.slice(4)}`
+          watchSubstrateTransaction(chain, signature)
+        }
+      }
+
+      talismanAnalytics.captureDelayed("sign transaction approve", {
+        ...analyticsProperties,
+        networkType: "substrate",
+      })
+
+      resolve({
+        id,
+        ...signResult,
+      })
+    })
+    if (!result.ok) {
+      if (result.val === "Unauthorised") reject(new Error(result.val))
+      else result.unwrap() // Throws error
     }
-    */
-
-    talismanAnalytics.capture("sign transaction approve", {
-      ...analyticsProperties,
-      type: "signature",
-    })
-
-    resolve({
-      id,
-      ...result,
-    })
-
     return true
   }
 
-  private signingApproveHardware({ id, signature }: RequestSigningApproveSignature): boolean {
+  private async signingApproveHardware({
+    id,
+    signature,
+  }: RequestSigningApproveSignature): Promise<boolean> {
     const queued = this.state.requestStores.signing.getPolkadotRequest(id)
-
     assert(queued, "Unable to find request")
 
-    const { resolve } = queued
+    const {
+      request,
+      url,
+      account: { address: accountAddress },
+    } = queued
+    const { payload } = request
 
-    resolve({ id, signature })
-    talismanAnalytics.capture("sign transaction approve", { type: "hardware" })
+    const analyticsProperties: { dapp: string; chain?: string } = { dapp: url }
+    const account = keyring.getAccount(accountAddress)
+
+    if (isJsonPayload(payload)) {
+      const { genesisHash } = payload
+      const chain = await db.chains.get({ genesisHash })
+      analyticsProperties.chain = chain?.chainName
+    }
+
+    queued.resolve({ id, signature })
+
+    talismanAnalytics.captureDelayed("sign transaction approve", {
+      ...analyticsProperties,
+      networkType: "substrate",
+      hardwareType: account?.meta.hardwareType,
+    })
 
     return true
   }
@@ -100,12 +115,12 @@ export default class SigningHandler extends ExtensionHandler {
      * This method used for both Eth and Polkadot requests
      */
     const queued = this.state.requestStores.signing.getRequest(id)
-
     assert(queued, "Unable to find request")
 
-    const { reject } = queued
-    talismanAnalytics.capture("sign transaction reject")
-    reject(new Error("Cancelled"))
+    talismanAnalytics.captureDelayed("sign reject", {
+      networkType: "substrate",
+    })
+    queued.reject(new Error("Cancelled"))
 
     return true
   }
@@ -174,7 +189,7 @@ export default class SigningHandler extends ExtensionHandler {
         return await this.signingApprove(request as RequestIdOnly)
 
       case "pri(signing.approveSign.hardware)":
-        return await this.signingApproveHardware(request as RequestSigningApproveSignature)
+        return this.signingApproveHardware(request as RequestSigningApproveSignature)
 
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestSigningCancel)

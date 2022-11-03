@@ -1,4 +1,9 @@
-import { AccountJson, AccountJsonHardware } from "@core/domains/accounts/types"
+import {
+  AccountJson,
+  AccountJsonHardwareEthereum,
+  AccountJsonHardwareSubstrate,
+} from "@core/domains/accounts/types"
+import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { RequestIdOnly } from "@core/types/base"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import {
@@ -7,7 +12,7 @@ import {
   RequestSigningSubscribe,
 } from "@polkadot/extension-base/background/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
-import { BigNumber } from "ethers"
+import { BigNumber, BigNumberish } from "ethers"
 
 export type { SignerPayloadJSON, SignerPayloadRaw } // Make this available elsewhere also
 
@@ -24,12 +29,12 @@ export type { RequestSigningApproveSignature }
 
 export interface SigningRequest extends PolkadotSigningRequest {
   request: PolkadotSigningRequest["request"]
-  account: AccountJson | AccountJsonHardware
+  account: AccountJson | AccountJsonHardwareSubstrate
 }
 
 export interface EthBaseSignRequest extends Omit<SigningRequest, "request" | "account"> {
-  ethChainId: number
-  account: AccountJson
+  ethChainId: EvmNetworkId
+  account: AccountJson | AccountJsonHardwareEthereum
   type: "ethereum"
   method:
     | "personal_sign"
@@ -84,6 +89,16 @@ export type TransactionDetails = {
 
 export type EthPriorityOptionName = "low" | "medium" | "high"
 export type EthPriorityOptions = Record<EthPriorityOptionName, BigNumber>
+
+export type EthTransactionDetails = {
+  estimatedGas: BigNumberish
+  gasPrice: BigNumberish
+  estimatedFee: BigNumberish
+  maxFee: BigNumberish
+  baseFeePerGas?: BigNumberish
+  gasUsedRatio?: number
+  priorityOptions?: EthPriorityOptions
+}
 
 export interface SigningMessages {
   // signing message signatures

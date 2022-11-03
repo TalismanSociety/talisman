@@ -1,4 +1,5 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { isHexString, stripHexPrefix } from "@ethereumjs/util"
 import * as Sentry from "@sentry/browser"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
@@ -8,78 +9,12 @@ import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { dump as convertToYaml } from "js-yaml"
-import { useEffect, useMemo } from "react"
+import { Suspense, lazy, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
-import { Container } from "./common"
+import { Message, SignContainer } from "./common"
 
-const Message = styled.textarea<{ typed: boolean }>`
-  background-color: var(--color-background-muted-3x);
-  color: var(--color-mid);
-  flex-grow: 1;
-  text-align: left;
-  margin: 0;
-  padding: 1.2rem;
-  border: 0;
-  border-radius: var(--border-radius-small);
-  margin-top: 0.8rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
-  resize: none;
-
-  // if typed data, make text smaller and prevent line returns
-  font-size: ${({ typed }) => (typed ? "1.2rem" : "inherit")};
-  overflow-x: ${({ typed }) => (typed ? "scroll" : "hidden")};
-  overflow-wrap: ${({ typed }) => (typed ? "normal" : "break-word")};
-  white-space: ${({ typed }) => (typed ? "pre" : "pre-wrap")};
-
-  ${scrollbarsStyle("var(--color-background-muted-2x)")}
-`
-
-const SignContainer = styled(Container)`
-  .layout-content .children h2 {
-    text-align: center;
-    padding: 0;
-  }
-
-  .layout-content .children h1.no-margin-top {
-    margin: 0 0 1.6rem 0;
-  }
-
-  .sign-summary {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  strong {
-    color: var(--color-foreground);
-    background: var(--color-background-muted);
-    border-radius: 4.8rem;
-    padding: 0.4rem 0.8rem;
-    white-space: nowrap;
-  }
-
-  ${SimpleButton} {
-    width: auto;
-  }
-
-  .center {
-    text-align: center;
-  }
-
-  ${Grid} {
-    margin-top: 1.6rem;
-  }
-
-  .error {
-    color: var(--color-status-error);
-    max-width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-`
+const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 const SignMessage = ({
   account,
@@ -98,6 +33,12 @@ const SignMessage = ({
         Sentry.captureException(err)
       }
     }
+    if (isHexString(request)) {
+      const stripped = stripHexPrefix(request)
+      const buff = Buffer.from(stripped, "hex")
+      // if 32 bytes display as is, can be tested when approving NFT listings on tofunft.com
+      return buff.length === 32 ? request : buff.toString("utf8")
+    }
     return request
   }, [request, typed])
 
@@ -115,7 +56,7 @@ const SignMessage = ({
 }
 
 export const EthSignMessageRequest = () => {
-  const { url, request, approve, reject, status, message, account, network } =
+  const { url, request, approve, approveHardware, reject, status, message, account, network } =
     useEthSignMessageRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -152,19 +93,36 @@ export const EthSignMessageRequest = () => {
         )}
       </Content>
       <Footer>
-        {errorMessage && <p className="error">{errorMessage}</p>}
-        {account && request && (
-          <>
-            <Grid>
-              <SimpleButton disabled={processing} onClick={reject}>
-                Cancel
-              </SimpleButton>
-              <SimpleButton disabled={processing} processing={processing} primary onClick={approve}>
-                Approve
-              </SimpleButton>
-            </Grid>
-          </>
-        )}
+        <Suspense fallback={null}>
+          {errorMessage && <p className="error">{errorMessage}</p>}
+          {account && request && (
+            <>
+              {account.isHardware ? (
+                <LedgerEthereum
+                  method={request.method}
+                  payload={request.request}
+                  account={account as AccountJsonHardwareEthereum}
+                  onSignature={approveHardware}
+                  onReject={reject}
+                />
+              ) : (
+                <Grid>
+                  <SimpleButton disabled={processing} onClick={reject}>
+                    Cancel
+                  </SimpleButton>
+                  <SimpleButton
+                    disabled={processing}
+                    processing={processing}
+                    primary
+                    onClick={approve}
+                  >
+                    Approve
+                  </SimpleButton>
+                </Grid>
+              )}
+            </>
+          )}
+        </Suspense>
       </Footer>
     </SignContainer>
   )

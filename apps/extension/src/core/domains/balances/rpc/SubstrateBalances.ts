@@ -37,10 +37,16 @@ const AccountInfoCommonOverides = {
     sufficients: "u32",
     data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
   }),
+  refcount: JSON.stringify({
+    nonce: "u32",
+    refcount: "u32",
+    data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
+  }),
 }
 // TODO: Get this from the metadata store if metadata is >= v14
 const AccountInfoOverrides: { [key: ChainId]: string } = {
   "crust": AccountInfoCommonOverides.noSufficients,
+  "edgeware": AccountInfoCommonOverides.refcount,
   "kilt-spiritnet": AccountInfoCommonOverides.u64Nonce,
   "zeitgeist": AccountInfoCommonOverides.u64Nonce,
 }

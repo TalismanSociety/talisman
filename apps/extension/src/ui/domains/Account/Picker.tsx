@@ -1,4 +1,4 @@
-import { AccountJsonHardware } from "@core/domains/accounts/types"
+import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import Field from "@talisman/components/Field/Field"
 import { ReactComponent as EnterIcon } from "@talisman/theme/icons/corner-down-left.svg"
@@ -27,7 +27,6 @@ import styled from "styled-components"
 import { Address } from "./Address"
 
 const Container = styled.div<{ withAddressInput?: boolean }>`
-  // position: relative;
   display: flex;
   margin-left: 1.2rem;
   overflow: hidden;
@@ -62,7 +61,6 @@ const Container = styled.div<{ withAddressInput?: boolean }>`
         max-width: 28rem;
         display: flex;
         flex-direction: column;
-        //gap: 1rem;
         border-radius: 0 0 var(--border-radius) var(--border-radius);
 
         .account-avatar {
@@ -149,6 +147,9 @@ const Button = styled.button<{ hasValue: boolean }>`
   .custom-address > span {
     color: var(--color-mid);
   }
+  .custom-address > .address {
+    font-size: var(--font-size-normal);
+  }
 
   &:hover,
   &:hover .account-name .name,
@@ -172,9 +173,9 @@ const FormattedAddress = ({ address, placeholder = "who?" }: any) => {
   if (localAccount) return <Name withAvatar address={localAccount?.address} />
 
   return address ? (
-    <span className="flex gap custom-address">
+    <span className="gap custom-address flex">
       <Avatar address={address} />
-      <Address address={address} />
+      <Address className="address" address={address} />
     </span>
   ) : (
     placeholder
@@ -327,7 +328,8 @@ const AccountPicker: FC<Props> = ({
         .filter((account) => account?.address !== exclude)
         .filter((account) => !addressType || addressType === getAddressType(account.address))
         .filter(
-          (acc) => !acc.isHardware || (acc as AccountJsonHardware).genesisHash === genesisHash
+          (acc) =>
+            !acc.isHardware || (acc as AccountJsonHardwareSubstrate).genesisHash === genesisHash
         ),
     [accounts, addressType, exclude, genesisHash]
   )
@@ -340,16 +342,15 @@ const AccountPicker: FC<Props> = ({
           a.isHardware &&
           a.address === selectedAddress &&
           genesisHash &&
-          (a as AccountJsonHardware).genesisHash !== genesisHash
+          (a as AccountJsonHardwareSubstrate).genesisHash !== genesisHash
       )
     )
       setSelectedAddress(undefined)
   }, [accounts, genesisHash, selectedAddress])
 
-  const handleChange = useCallback(
-    (item: AccountJson | null) => setSelectedAddress(item?.address as string),
-    []
-  )
+  const handleChange = useCallback((item: AccountJson | null) => {
+    setSelectedAddress(item?.address as string)
+  }, [])
 
   const handlePasteAddress = useCallback(
     (cb: () => void) => (address: string) => {
@@ -359,19 +360,22 @@ const AccountPicker: FC<Props> = ({
     []
   )
 
-  // when addressType changes, remove current value if it doesn't match
+  // clear if not compatible with token type
   useEffect(() => {
     if (
-      addressType &&
+      addressType !== "UNKNOWN" &&
       selectedAddress &&
-      onChange &&
-      addressType !== getAddressType(selectedAddress)
+      getAddressType(selectedAddress) !== addressType
     )
       setSelectedAddress(undefined)
-  }, [addressType, onChange, selectedAddress])
+  }, [addressType, selectedAddress])
 
   return (
-    <Downshift onChange={handleChange} itemToString={handleItemToString}>
+    <Downshift
+      key={`${addressType}-${genesisHash}`} // otherwise downshift may will trigger onChange after items changed and user selects again
+      onChange={handleChange}
+      itemToString={handleItemToString}
+    >
       {({ getItemProps, isOpen, getToggleButtonProps, getMenuProps, getRootProps, closeMenu }) => {
         return (
           <Container withAddressInput={withAddressInput} className={className} {...getRootProps()}>

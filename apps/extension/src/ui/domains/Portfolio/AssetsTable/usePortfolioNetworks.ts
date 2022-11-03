@@ -1,31 +1,13 @@
-import { Chain } from "@core/domains/chains/types"
-import { EvmNetwork } from "@core/domains/ethereum/types"
+import { Chain, ChainId } from "@core/domains/chains/types"
+import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
+import { getNetworkInfo } from "@core/util/getNetworkInfo"
 import sortBy from "lodash/sortBy"
 import { useMemo } from "react"
 
 import { usePortfolio } from "../context"
 
-const getNetworkInfo = ({ chain, evmNetwork }: { chain?: Chain; evmNetwork?: EvmNetwork }) => {
-  if (evmNetwork)
-    return { label: evmNetwork.name, type: evmNetwork.isTestnet ? "EVM Testnet" : "EVM blockchain" }
-
-  if (chain) {
-    if (chain.isTestnet) return { label: chain.name, type: "Testnet" }
-    return {
-      label: chain.name,
-      type: chain.paraId
-        ? "Parachain"
-        : (chain.parathreads || []).length > 0
-        ? "Relay chain"
-        : "Blockchain",
-    }
-  }
-
-  return { label: "", type: "" }
-}
-
 const getNetworkLogoId = (
-  id: string | number,
+  id: ChainId | EvmNetworkId,
   chains: Chain[] | undefined,
   evmNetworks: EvmNetwork[] | undefined
 ) => {
@@ -37,13 +19,17 @@ const getNetworkLogoId = (
 }
 
 export type PortfolioNetwork = {
-  id: string | number
-  logoId?: string | number
+  id: ChainId | EvmNetworkId
+  logoId?: ChainId | EvmNetworkId
   label: string | null
   type: string
 }
 
-const getPortfolioNetwork = (id: string | number, chains?: Chain[], evmNetworks?: EvmNetwork[]) => {
+const getPortfolioNetwork = (
+  id: ChainId | EvmNetworkId,
+  chains?: Chain[],
+  evmNetworks?: EvmNetwork[]
+) => {
   const chain = chains?.find((c) => c.id === id)
   const evmNetwork = evmNetworks?.find((n) => n.id === id)
 
@@ -55,7 +41,7 @@ const getPortfolioNetwork = (id: string | number, chains?: Chain[], evmNetworks?
   return network
 }
 
-export const usePortfolioNetworks = (ids: (string | number)[] | undefined) => {
+export const usePortfolioNetworks = (ids: (ChainId | EvmNetworkId)[] | undefined) => {
   const { chains, evmNetworks } = usePortfolio()
 
   const networks = useMemo(

@@ -5,7 +5,7 @@ import Layout from "@ui/apps/dashboard/layout"
 import { Erc20Logo } from "@ui/domains/Erc20Tokens/Erc20Logo"
 import { useCustomErc20Tokens } from "@ui/hooks/useCustomErc20Tokens"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { sortBy } from "lodash"
+import sortBy from "lodash/sortBy"
 import { useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled, { css } from "styled-components"
@@ -117,7 +117,7 @@ export const CustomTokens = () => {
   if (!sortedTokens) return null
 
   return (
-    <Layout withBack centered>
+    <Layout withBack centered backTo="/settings">
       <HeaderBlock title="Manage custom tokens" text="Add or delete custom ERC20 tokens" />
       <TokensList>
         {sortedTokens.map((token) => (

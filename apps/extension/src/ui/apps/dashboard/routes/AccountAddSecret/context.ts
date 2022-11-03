@@ -1,5 +1,6 @@
 import { DEBUG } from "@core/constants"
 import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
+import { sleep } from "@core/util/sleep"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useCallback, useState } from "react"
@@ -14,7 +15,10 @@ type AccountAddSecretInputs = {
 
 const DEFAULT_DATA: Partial<AccountAddSecretInputs> = {
   // uncomment to be able to F5 on accounts selection screen when developing
-  mnemonic: DEBUG ? process.env.TEST_MNEMONIC : undefined,
+  // name: DEBUG ? "New derived account" : undefined,
+  // type: DEBUG ? "ethereum" : undefined,
+  // multi: DEBUG,
+  // mnemonic: DEBUG ? process.env.TEST_MNEMONIC : undefined,
 }
 
 const useAccountAddSecretProvider = () => {
@@ -35,7 +39,7 @@ const useAccountAddSecretProvider = () => {
     )
 
     // poudre de perlimpinpin
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await sleep(1000)
   }, [])
 
   return { data, updateData, importAccounts }

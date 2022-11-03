@@ -1,6 +1,7 @@
 import { Box } from "@talisman/components/Box"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talisman/util/classNames"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 import styled from "styled-components"
 
@@ -77,7 +78,7 @@ export const NetworksLogoStackMore = ({ networks }: { networks: PortfolioNetwork
   )
 }
 
-type Props = { networkIds?: (string | number)[]; className?: string; max?: number }
+type Props = { networkIds?: (ChainId | EvmNetworkId)[]; className?: string; max?: number }
 
 export const NetworksLogoStack = ({ networkIds, className, max = 4 }: Props) => {
   const { networks } = usePortfolioNetworks(networkIds)

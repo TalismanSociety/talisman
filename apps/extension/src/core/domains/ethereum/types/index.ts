@@ -1,12 +1,8 @@
 import { CustomErc20Token } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { RequestIdOnly } from "@core/types/base"
-import {
-  CustomEvmNetwork,
-  EvmNetwork,
-  EvmNetworkId,
-  EvmNetworkList,
-} from "@talismn/chaindata-provider"
+import { CustomEvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
+import { BigNumberish, ethers } from "ethers"
 
 import { AddEthereumChainParameter, WatchAssetBase } from "./base"
 
@@ -21,11 +17,20 @@ export type {
 export type { AddEthereumChainParameter, WatchAssetBase }
 
 export declare type EthApproveSignAndSend = RequestIdOnly & {
-  maxPriorityFeePerGas: string
-  maxFeePerGas: string
+  transaction: ethers.providers.TransactionRequest
 }
+export type EthRequestSigningApproveSignature = {
+  id: string
+  signedPayload: `0x${string}`
+}
+
 export interface AnyEthRequestChainId extends AnyEthRequest {
-  chainId: number
+  chainId: EvmNetworkId
+}
+
+export type EthNonceRequest = {
+  address: string
+  evmNetworkId: EvmNetworkId
 }
 
 export type WatchAssetRequest = {
@@ -51,9 +56,12 @@ export interface EthMessages {
   "pub(eth.mimicMetaMask)": [null, boolean]
   // eth signing message signatures
   "pri(eth.request)": [AnyEthRequestChainId, EthResponseTypes]
+  "pri(eth.transactions.count)": [EthNonceRequest, number]
   "pri(eth.signing.cancel)": [RequestIdOnly, boolean]
   "pri(eth.signing.approveSign)": [RequestIdOnly, boolean]
+  "pri(eth.signing.approveSignHardware)": [EthRequestSigningApproveSignature, boolean]
   "pri(eth.signing.approveSignAndSend)": [EthApproveSignAndSend, boolean]
+  "pri(eth.signing.approveSignAndSendHardware)": [EthRequestSigningApproveSignature, boolean]
   // eth add networks requests management
   // TODO change naming for network add requests, and maybe delete the first one
   "pri(eth.networks.add.requests)": [null, AddEthereumChainRequest[]]
@@ -72,3 +80,18 @@ export interface EthMessages {
   "pri(eth.networks.removeCustomNetwork)": [RequestIdOnly, boolean]
   "pri(eth.networks.clearCustomNetworks)": [null, boolean]
 }
+
+export type EthGasSettingsLegacy = {
+  type: 0
+  gasLimit: BigNumberish
+  gasPrice: BigNumberish
+}
+export type EthGasSettingsEip1559 = {
+  type: 2
+  gasLimit: BigNumberish
+  maxFeePerGas: BigNumberish
+  maxPriorityFeePerGas: BigNumberish
+}
+export type EthGasSettings = EthGasSettingsLegacy | EthGasSettingsEip1559
+
+export type LedgerEthDerivationPathType = "LedgerLive" | "Legacy" | "BIP44"

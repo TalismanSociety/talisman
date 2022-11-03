@@ -2,6 +2,7 @@ import { Token } from "@core/domains/tokens/types"
 import { Box } from "@talisman/components/Box"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { LockIcon } from "@talisman/theme/icons"
+import { classNames } from "@talisman/util/classNames"
 import { planckToTokens } from "@talismn/util"
 import { ReactNode } from "react"
 
@@ -41,19 +42,25 @@ export const AssetBalanceCellValue = ({
         className={className}
         noWrap
       >
-        <Box fg={locked ? "mid" : "foreground"}>
-          <Tokens
-            amount={planckToTokens(planck.toString(), token.decimals)}
-            symbol={token?.symbol}
-            isBalance
-          />
+        <div
+          className={classNames(
+            "flex items-center justify-end gap-2",
+            locked ? "text-body-secondary" : "text-body"
+          )}
+        >
+          <div>
+            <Tokens
+              amount={planckToTokens(planck.toString(), token.decimals)}
+              symbol={token?.symbol}
+              isBalance
+            />
+          </div>
           {locked ? (
-            <>
-              {" "}
+            <div className="pb-1">
               <LockIcon className="lock" />
-            </>
+            </div>
           ) : null}
-        </Box>
+        </div>
         <div>{fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}</div>
       </Box>
     </WithTooltip>

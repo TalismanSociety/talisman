@@ -1,9 +1,9 @@
 import { DEBUG } from "@core/constants"
 import { settingsStore } from "@core/domains/app/store.settings"
-import Erc20BalancesEvmRpc from "@core/domains/balances/rpc/Erc20Balances"
-import NativeBalancesEvmRpc from "@core/domains/balances/rpc/EvmBalances"
-import OrmlTokenBalancesRpc from "@core/domains/balances/rpc/OrmlTokenBalances"
-import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
+import EvmErc20BalancesRpc from "@core/domains/balances/rpc/Erc20Balances"
+import EvmNativeBalancesRpc from "@core/domains/balances/rpc/EvmBalances"
+import SubstrateOrmlBalancesRpc from "@core/domains/balances/rpc/OrmlTokenBalances"
+import SubstrateNativeBalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
 import { BalanceStorage, Balances, RequestBalance } from "@core/domains/balances/types"
 import { Chain } from "@core/domains/chains/types"
 import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
@@ -123,11 +123,13 @@ export class BalanceStore {
     tokenId,
     address: chainFormattedAddress,
   }: RequestBalance): Promise<BalanceStorage | undefined> {
+    assert(chainId || evmNetworkId, "chainId or evmNetworkId is required")
     const address = encodeAnyAddress(chainFormattedAddress, 42)
 
     // search for existing balance in the store
     const storeBalances = new Balances(await db.balances.toArray())
-    const existing = storeBalances.find({ chainId, evmNetworkId, tokenId, address })
+    const networkFilter = chainId ? { chainId } : { evmNetworkId }
+    const existing = storeBalances.find({ ...networkFilter, tokenId, address })
     if (existing.count > 0) return existing.sorted[0]?.toJSON()
 
     // no existing balance found, fetch it directly via rpc
@@ -138,28 +140,40 @@ export class BalanceStore {
     }
 
     const tokenType = token.type
-    if (["substrate-native", "substrate-orml"].includes(tokenType))
+    if (tokenType === "substrate-native") {
       assert(chainId, "chainId is required for substrate token balances")
 
-    if (tokenType === "substrate-native")
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return (await BalancesRpc.balances({ [chainId!]: [address] }))
+      return (await SubstrateNativeBalancesRpc.balances({ [chainId!]: [address] }))
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()
-    if (tokenType === "evm-native")
+    }
+    if (tokenType === "evm-native") {
+      assert(evmNetworkId, "evmNetworkId is required for evm token balances")
+
+      const evmNetwork = await db.evmNetworks.get(evmNetworkId)
+      assert(evmNetwork, "This token's network could not be found")
+
+      return (await EvmNativeBalancesRpc.balances([address], [evmNetwork]))
+        .find({ evmNetworkId: evmNetworkId, tokenId, address })
+        .sorted[0]?.toJSON()
+    }
+    if (tokenType === "substrate-orml") {
+      assert(chainId, "chainId is required for substrate token balances")
+
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return (await BalancesRpc.balances({ [chainId!]: [address] }))
+      return (await SubstrateOrmlBalancesRpc.tokens({ [chainId!]: [address] }))
         .find({ chainId, tokenId, address })
         .sorted[0]?.toJSON()
-    if (tokenType === "substrate-orml")
+    }
+    if (tokenType === "evm-erc20") {
+      assert(evmNetworkId, "evmNetworkId is required for evm token balances")
+
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return (await OrmlTokenBalancesRpc.tokens({ [chainId!]: [address] }))
-        .find({ chainId, tokenId, address })
+      return (await EvmErc20BalancesRpc.balances([address], { [evmNetworkId!]: [token] }))
+        .find({ evmNetworkId: evmNetworkId, tokenId, address })
         .sorted[0]?.toJSON()
-    if (tokenType === "evm-erc20") throw new Error("Not implemented")
-    // return (await Erc20BalancesEvmRpc.balances())
-    //   .find({ evmNetworkId, tokenId, address })
-    //   .sorted[0]?.toJSON()
+    }
 
     // force compilation error if any token types don't have a case
     const exhaustiveCheck: never = tokenType
@@ -325,7 +339,7 @@ export class BalanceStore {
 
     this.#closeSubscriptionCallbacks = this.#closeSubscriptionCallbacks
       .concat(
-        BalancesRpc.balances(chainAddresses, (error, result) => {
+        SubstrateNativeBalancesRpc.balances(chainAddresses, (error, result) => {
           // ignore old subscriptions which have been told to close but aren't closed yet
           if (this.#subscriptionsGeneration !== generation) return
 
@@ -335,7 +349,7 @@ export class BalanceStore {
         })
       )
       .concat(
-        OrmlTokenBalancesRpc.tokens(chainAddresses, (error, result) => {
+        SubstrateOrmlBalancesRpc.tokens(chainAddresses, (error, result) => {
           // ignore old subscriptions which have been told to close but aren't closed yet
           if (this.#subscriptionsGeneration !== generation) return
 
@@ -345,7 +359,7 @@ export class BalanceStore {
         })
       )
       .concat(
-        NativeBalancesEvmRpc.balances(
+        EvmNativeBalancesRpc.balances(
           Object.keys(this.#addresses).filter(isEthereumAddress),
           this.#evmNetworks.filter(
             // for chains with secp256k1 (ethereum) accounts we fetch the native token balance via their substrate api.
@@ -362,7 +376,7 @@ export class BalanceStore {
         )
       )
       .concat(
-        Erc20BalancesEvmRpc.balances(
+        EvmErc20BalancesRpc.balances(
           Object.keys(this.#addresses).filter(isEthereumAddress),
           Object.fromEntries(this.#evmNetworks.map(({ id, erc20Tokens }) => [id, erc20Tokens])),
           (error, result) => {

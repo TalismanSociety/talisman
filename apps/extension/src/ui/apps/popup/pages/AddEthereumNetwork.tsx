@@ -102,7 +102,7 @@ export const AddEthereumNetwork = () => {
       />
       <Content>
         <div>
-          <GlobeIcon className="globeIcon" />
+          <GlobeIcon className="globeIcon inline-block" />
         </div>
         <h1>Add Network</h1>
         <p>

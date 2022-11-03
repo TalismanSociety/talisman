@@ -120,7 +120,6 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
 
           for (const { mutation, callback } of mutations) {
             newValue = mutation(newValue)
-
             const valueAfterThisMutation = newValue
             if (callback) callbacks.push(() => callback(valueAfterThisMutation))
           }
@@ -150,7 +149,6 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
    */
   #onStorageChanged = (changes: Record<string, Storage.StorageChange>, areaName: string) => {
     if (areaName !== "local") return
-
     const change = changes[this.#prefix]
     if (!change) return
 

@@ -1,8 +1,12 @@
+import { DEBUG } from "@core/constants"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { api } from "@ui/api"
+import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
 import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
+import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
+import { ReceiveTokensModalProvider } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -23,9 +27,12 @@ import { CustomTokens } from "./routes/CustomTokens/CustomTokens"
 import { Portfolio } from "./routes/Portfolio"
 import Settings from "./routes/Settings"
 import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
+import { AutoLockTimer } from "./routes/Settings/AutoLockTimer"
+import ChangePassword from "./routes/Settings/ChangePassword"
 import Options from "./routes/Settings/Options"
 import SecurityPrivacySettings from "./routes/Settings/SecurityPrivacySettings"
 import SitesConnected from "./routes/Settings/SitesConnected"
+import { TestPage } from "./routes/TestPage"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
 const AccountAddLedger = lazy(() => import("./routes/AccountAddLedger"))
@@ -79,12 +86,15 @@ const DashboardInner = () => {
           <Route path="options" element={<Options />} />
           <Route path="about" element={<About />} />
           <Route path="analytics" element={<AnalyticsOptIn />} />
+          <Route path="change-password" element={<ChangePassword />} />
+          <Route path="autolock" element={<AutoLockTimer />} />
         </Route>
         <Route path="tokens">
           <Route path="" element={<CustomTokens />} />
           <Route path="add" element={<CustomTokenAdd />} />
           <Route path=":id" element={<CustomTokenDetails />} />
         </Route>
+        {DEBUG && <Route path="test" element={<TestPage />} />}
         <Route path="*" element={<Navigate to="/portfolio" replace />} />
       </Routes>
     </Suspense>
@@ -95,11 +105,17 @@ const Dashboard = () => (
   <SelectedAccountProvider>
     <AccountRemoveModalProvider>
       <AccountRenameModalProvider>
-        <AddressFormatterModalProvider>
-          <SendTokensModalProvider>
-            <DashboardInner />
-          </SendTokensModalProvider>
-        </AddressFormatterModalProvider>
+        <AccountExportModalProvider>
+          <AddressFormatterModalProvider>
+            <SendTokensModalProvider>
+              <BuyTokensModalProvider>
+                <ReceiveTokensModalProvider>
+                  <DashboardInner />
+                </ReceiveTokensModalProvider>
+              </BuyTokensModalProvider>
+            </SendTokensModalProvider>
+          </AddressFormatterModalProvider>
+        </AccountExportModalProvider>
       </AccountRenameModalProvider>
     </AccountRemoveModalProvider>
   </SelectedAccountProvider>

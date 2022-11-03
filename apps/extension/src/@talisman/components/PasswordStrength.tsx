@@ -1,41 +1,63 @@
-import Circle from "@talisman/components/Circle"
-import { passwordStrength } from "check-password-strength"
+import { Options, passwordStrength } from "check-password-strength"
 import { useMemo } from "react"
 import styled from "styled-components"
 
-const PasswordStrengthCircle = styled(Circle).attrs((props: { strength: number }) => ({
+const getColorFromStrengh = (strength: number) => {
+  switch (strength) {
+    case 1:
+      return "var(--color-status-error)"
+    case 2:
+      return "var(--color-status-concern)"
+    case 3:
+      return "var(--color-status-success)"
+    default:
+      return "transparent"
+  }
+}
+
+const Container = styled.span.attrs((props: { strength: number }) => ({
   strength: props.strength ?? -1,
 }))`
-  .progress {
-    ${({ strength }) => {
-      switch (strength) {
-        case 0:
-          return "stroke: var(--color-status-error);"
-        case 1:
-          return "stroke: var(--color-status-concern);"
-        case 2:
-          return "stroke: yellow;"
-        case 3:
-          return "stroke: var(--color-status-success);"
-        default:
-          return ""
-      }
-    }}
-  }
+  color: ${({ strength }) => getColorFromStrengh(strength)};
 `
 
 type PasswordStrengthProps = {
   password?: string
 }
 
-export const PasswordStrength = ({ password }: PasswordStrengthProps) => {
-  const { strength, progress } = useMemo(() => {
-    const s = password?.length ? passwordStrength(password as string)?.id % 4 : 0
-    return {
-      strength: s,
-      progress: password?.length ? (1 + s) * 25 : 0,
-    }
-  }, [password])
+// defaults changed to be considered weak starting from 1 character and strong after 12
+const STRENGTH_OPTIONS: Options<string> = [
+  {
+    id: 0,
+    value: "Too weak", // never displays
+    minDiversity: 0,
+    minLength: 0,
+  },
+  {
+    id: 1,
+    value: "Weak",
+    minDiversity: 1,
+    minLength: 1,
+  },
+  {
+    id: 2,
+    value: "Medium",
+    minDiversity: 2,
+    minLength: 6,
+  },
+  {
+    id: 3,
+    value: "Strong",
+    minDiversity: 4,
+    minLength: 12,
+  },
+]
 
-  return <PasswordStrengthCircle lineWidth={50} strength={strength} progress={progress} />
+export const PasswordStrength = ({ password }: PasswordStrengthProps) => {
+  const strength = useMemo(() => passwordStrength(password as string, STRENGTH_OPTIONS), [password])
+
+  // Don't show if too weak (empty)
+  if (!strength.id) return null
+
+  return <Container strength={strength.id}>{strength.value}</Container>
 }

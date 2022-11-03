@@ -1,22 +1,22 @@
 import { Chain, ChainId } from "@core/domains/chains/types"
 import RpcFactory from "@core/libs/RpcFactory"
+import { log } from "@core/log"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { Vec } from "@polkadot/types-codec"
 import { EventRecord, Hash } from "@polkadot/types/interfaces"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
+import { Err, Ok, Result } from "ts-results"
 
 import { NotificationType, createNotification } from "./createNotification"
 
 const TX_WATCH_TIMEOUT = 90000
 
-type ExtrinsicResult =
-  | { result: "unknown" }
-  | {
-      result: "error" | "success"
-      blockNumber: string | number
-      extIndex: number
-    }
+type ExtrinsicResult = {
+  result: "error" | "success"
+  blockNumber: string | number
+  extIndex: number
+}
 
 type ExtrinsicStatusChangeHandler = (
   eventType: "included" | "error" | "success",
@@ -32,7 +32,7 @@ const getExtrinsincResult = async (
   blockHash: Hash,
   chainId: ChainId,
   hexSignature: string
-): Promise<ExtrinsicResult> => {
+): Promise<Result<ExtrinsicResult, "Unable to get result">> => {
   try {
     const { registry } = await getTypeRegistry(chainId, blockHash.toHex())
     const blockData = await RpcFactory.send(chainId, "chain_getBlock", [blockHash])
@@ -61,27 +61,31 @@ const getExtrinsincResult = async (
           if (relevantEvent?.event.method === "ExtrinsicSuccess") {
             // we don't need associated data (whether if a fee has been paid or not, and extrinsic weight)
             // const info = relevantEvent?.event.data[0] as DispatchInfo
-            return {
+            return Ok({
               result: "success",
               blockNumber: block.block.header.number.toNumber(),
               extIndex: txIndex,
-            }
+            })
           } else if (relevantEvent?.event.method === "ExtrinsicFailed") {
             // from our tests this DispatchError object doesn't provide any relevant information for a user
             // const error = relevantEvent?.event.data[0] as DispatchError
             // const info = relevantEvent?.event.data[1] as DispatchInfo
-            return {
+            return Ok({
               result: "error",
               blockNumber: block.block.header.number.toNumber(),
               extIndex: txIndex,
-            }
+            })
           }
       }
     }
   } catch (error) {
-    Sentry.captureException(error, { extra: { chainId } })
+    // errors commonly arise here due to misconfigured metadata
+    // this is difficult to debug and may not be solvable at our end, so we are no longer logging them to Sentry
+    // eg https://sentry.io/share/issue/6762fac9d55e4df9be29a25f108f075e/
+    log.error(error)
   }
-  return { result: "unknown" }
+
+  return Err("Unable to get result")
 }
 
 const watchExtrinsicStatus = async (
@@ -116,15 +120,16 @@ const watchExtrinsicStatus = async (
     [],
     async (error, data) => {
       if (error) {
+        log.error(error)
         Sentry.captureException(error, { extra: { chainId } })
         return
       }
 
       try {
-        const blockHead = registry.createType("Header", data)
-        const extResult = await getExtrinsincResult(blockHead.hash, chainId, hexSignature)
+        const { hash } = registry.createType("Header", data)
+        const { val: extResult, err } = await getExtrinsincResult(hash, chainId, hexSignature)
 
-        if (extResult.result === "unknown") return
+        if (err) return
         const { result, blockNumber, extIndex } = extResult
         cb(result, blockNumber, extIndex)
 
@@ -150,14 +155,14 @@ const watchExtrinsicStatus = async (
       }
 
       try {
-        const blockHead = registry.createType("Header", data)
-        const extResult = await getExtrinsincResult(blockHead.hash, chainId, hexSignature)
+        const { hash } = registry.createType("Header", data)
+        const { val: extResult, err } = await getExtrinsincResult(hash, chainId, hexSignature)
 
-        if (extResult.result === "unknown") return
+        if (err) return
 
         const { result, blockNumber, extIndex } = extResult
         if (result === "success") {
-          blockHash = blockHead.hash
+          blockHash = hash
           cb("included", blockNumber, extIndex)
         } else cb(result, blockNumber, extIndex)
 
@@ -178,8 +183,8 @@ const watchExtrinsicStatus = async (
       await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
       // sometimes the finalized is not received, better check explicitely here
       if (blockHash) {
-        const extResult = await getExtrinsincResult(blockHash, chainId, hexSignature)
-        if (extResult.result === "unknown") return
+        const { val: extResult, err } = await getExtrinsincResult(blockHash, chainId, hexSignature)
+        if (err) return
         const { result, blockNumber, extIndex } = extResult
         cb(result, blockNumber, extIndex)
       }

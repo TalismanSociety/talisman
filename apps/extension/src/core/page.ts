@@ -22,8 +22,7 @@ window.addEventListener("message", ({ data, source }: Message): void => {
   // only allow messages from our window, by the loader
   if (source !== window || data.origin !== "talisman-content") return
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (data.id) messageService.handleResponse(data as any)
+  if (data.id) messageService.handleResponse(data)
   // eslint-disable-next-line no-console
   else if (DEBUG) console.error("Missing id for response", { data })
 })

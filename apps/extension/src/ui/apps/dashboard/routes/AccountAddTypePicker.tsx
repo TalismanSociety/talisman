@@ -1,11 +1,12 @@
+import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
+import CtaButton from "@talisman/components/CtaButton"
+import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
-import Grid from "@talisman/components/Grid"
-import CtaButton from "@talisman/components/CtaButton"
-import Layout from "../layout"
 import { KeyIcon, PlusIcon, SeedIcon, UsbIcon } from "@talisman/theme/icons"
 import styled from "styled-components"
-import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
+
+import Layout from "../layout"
 
 // workaround for plus icon's padding
 const LargePlusIcon = styled(PlusIcon)`
@@ -28,7 +29,7 @@ const AccountAddTypePicker = () => {
         />
         <CtaButton
           icon={<SeedIcon />}
-          title="Import via Secret Phrase"
+          title="Import via Recovery Phrase"
           subtitle="Your Polkadot or Ethereum account"
           to={`/accounts/add/secret`}
         />

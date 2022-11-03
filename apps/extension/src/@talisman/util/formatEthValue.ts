@@ -1,7 +1,9 @@
 import { formatDecimals } from "@talismn/util"
-import { BigNumber } from "ethers"
-import { formatEther } from "ethers/lib/utils"
+import { BigNumber, BigNumberish } from "ethers"
+import { formatUnits } from "ethers/lib/utils"
 
-export const formatEtherValue = (value: BigNumber, symbol?: string) => {
-  return `${formatDecimals(formatEther(value))}${symbol ? ` ${symbol}` : ""}`
+export const formatEtherValue = (value: BigNumberish, decimals: number, symbol?: string) => {
+  return `${formatDecimals(formatUnits(BigNumber.from(value), decimals))}${
+    symbol ? ` ${symbol}` : ""
+  }`
 }

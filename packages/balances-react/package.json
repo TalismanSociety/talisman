@@ -35,6 +35,7 @@
     "@talismn/chain-connector-evm": "workspace:^",
     "@talismn/chaindata-provider": "workspace:^",
     "@talismn/chaindata-provider-extension": "workspace:^",
+    "@talismn/token-rates": "workspace:^",
     "anylogger": "^1.0.11",
     "dexie": "^3.2.2",
     "dexie-react-hooks": "^1.1.1",

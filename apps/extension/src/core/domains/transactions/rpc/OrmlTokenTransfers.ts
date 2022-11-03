@@ -78,7 +78,7 @@ export default class OrmlTokenTransfersRpc {
   }
 
   /**
-   * Calculates an estimated fee for transfering an amount of an orml token from one account to another.
+   * Calculates an estimated fee for transferring an amount of an orml token from one account to another.
    *
    * @param chainId - The chain to make the transfer on.
    * @param tokenId - The token id to transfer.
@@ -172,9 +172,15 @@ export default class OrmlTokenTransfersRpc {
     let unsigned: UnsignedTransaction | undefined = undefined
     const errors: Error[] = []
 
+    const hardcodedCurrencyIds: Record<string, any> = {
+      "mangata-orml-mgx": 0,
+      "gm-orml-gm": 1,
+      "gm-orml-gn": 2,
+    }
+
     // different chains use different orml transfer methods
     // we'll try each one in sequence until we get one that doesn't throw an error
-    const currencyId = token.id === "mangata-orml-mgx" ? 0 : { Token: token.symbol.toUpperCase() }
+    const currencyId = hardcodedCurrencyIds[token.id] ?? { Token: token.symbol.toUpperCase() }
     const unsignedMethods = [
       () =>
         defineMethod(

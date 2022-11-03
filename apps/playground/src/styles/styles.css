@@ -1,0 +1,12 @@
+@import "talisman-ui/styles.css";
+
+@layer base {
+  pre,
+  input,
+  textarea {
+    @apply text-body-secondary bg-field resize-none rounded-sm p-4;
+  }
+  pre {
+    @apply max-w-full overflow-auto;
+  }
+}

@@ -1,12 +1,13 @@
 import { db } from "@core/libs/db"
 import * as Sentry from "@sentry/browser"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { nanoid } from "nanoid"
 import urlJoin from "url-join"
 
 import { getProviderForEthereumNetwork } from "../domains/ethereum/rpcProviders"
 import { createNotification } from "./createNotification"
 
-export const watchEthereumTransaction = async (ethChainId: number, txHash: string) => {
+export const watchEthereumTransaction = async (ethChainId: EvmNetworkId, txHash: string) => {
   try {
     // eslint-disable-next-line no-var
     var ethereumNetwork = await db.evmNetworks.get(ethChainId)

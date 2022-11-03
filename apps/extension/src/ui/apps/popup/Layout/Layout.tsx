@@ -1,33 +1,24 @@
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
-import React, { PropsWithChildren, useEffect, useState } from "react"
+import React, { FC, PropsWithChildren, ReactNode, useEffect, useState } from "react"
 import styled from "styled-components"
 
+import { BottomNav } from "../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../components/Navigation/NavigationDrawer"
 
-export interface IProps extends PropsWithChildren<any> {
+type LayoutProps = {
+  children: ReactNode
+  className?: string
+  withBottomNav?: boolean
   isThinking?: boolean
-  className?: any
 }
 
-const Layout = ({ isThinking, className, children }: IProps) => {
-  const [header, setHeader] = useState<any>()
-  const [content, setContent] = useState<any>()
-  const [footer, setFooter] = useState<any>()
-
-  useEffect(() => {
-    const _children = React.Children.toArray(children)
-    setHeader(_children.find(({ type }: any) => type.displayName === "layout-header"))
-    setContent(_children.find(({ type }: any) => type.displayName === "layout-content"))
-    setFooter(_children.find(({ type }: any) => type.displayName === "layout-footer"))
-  }, [children])
-
+const Layout: FC<LayoutProps> = ({ className, withBottomNav, children }) => {
   return (
     <main id="main" className={className}>
       <ErrorBoundary>
-        {header}
-        {content}
-        {footer}
+        {children}
+        {withBottomNav && <BottomNav />}
         <AddressFormatterModal />
         {/* NavigationDrawer here so user can see the drawer close smoothly in case he navigates from one page to another (as long as both page use this Layout) */}
         <NavigationDrawer />

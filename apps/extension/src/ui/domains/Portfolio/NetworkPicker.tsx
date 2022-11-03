@@ -45,10 +45,10 @@ const Container = styled.div<{ isOpen?: boolean; disabled?: boolean }>`
   }
 
   input::placeholder {
-    color: var(--color-mid);
+    opacity: 1;
   }
   input:focus::placeholder {
-    color: rgba(var(--color-mid-raw), 0.5);
+    opacity: 0.5;
   }
 
   button {

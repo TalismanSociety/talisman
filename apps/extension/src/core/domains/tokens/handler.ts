@@ -1,9 +1,11 @@
 import { ChainId } from "@core/domains/chains/types"
+import { getErc20TokenId } from "@core/domains/ethereum/helpers"
 import { CustomErc20Token, CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
+import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 
 export default class TokensHandler extends ExtensionHandler {
@@ -38,10 +40,8 @@ export default class TokensHandler extends ExtensionHandler {
 
       case "pri(tokens.erc20.custom.add)": {
         const token = request as CustomErc20TokenCreate
-        assert(
-          typeof token.chainId === "string" || typeof token.evmNetworkId === "number",
-          "Either a chainId or an evmNetworkId is required"
-        )
+        const networkId = token.chainId || token.evmNetworkId
+        assert(networkId, "A chainId or an evmNetworkId is required")
         const chain = token.chainId ? await db.chains.get(token.chainId) : undefined
         const evmNetwork = token.evmNetworkId
           ? await db.evmNetworks.get(token.evmNetworkId)
@@ -50,14 +50,19 @@ export default class TokensHandler extends ExtensionHandler {
         assert(typeof token.symbol === "string", "A token symbol is required")
         assert(typeof token.decimals === "number", "A number of token decimals is required")
 
+        const tokenId = getErc20TokenId(networkId, token.contractAddress)
+        const existing = await db.tokens.get(tokenId)
+        assert(!existing, "This token already exists")
+
         const { symbol, decimals, coingeckoId, contractAddress, image } = token
 
         const newToken: CustomErc20Token = {
-          id: `${token.chainId || token.evmNetworkId}-erc20-${token.contractAddress}`,
+          id: tokenId,
           type: "evm-erc20",
           isTestnet: (chain || evmNetwork)?.isTestnet || false,
           symbol,
           decimals: Number(decimals), // some dapps (ie moonriver.moonscan.io) may send a string here, which breaks balances
+          logo: image || githubUnknownTokenLogoUrl,
           coingeckoId,
           contractAddress,
           // chain: token.chainId ? { id: token.chainId } : undefined,

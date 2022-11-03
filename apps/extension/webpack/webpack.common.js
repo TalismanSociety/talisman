@@ -72,7 +72,7 @@ const config = (env) => ({
       },
       {
         test: /\.css$/,
-        use: ["style-loader", "css-loader"],
+        use: ["style-loader", "css-loader", "postcss-loader"],
       },
     ],
   },
@@ -90,6 +90,7 @@ const config = (env) => ({
     fallback: {
       stream: false,
       assert: require.resolve("assert"),
+      crypto: require.resolve("crypto-browserify"),
     },
   },
   plugins: [

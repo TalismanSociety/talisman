@@ -1,4 +1,3 @@
-import { getOverflowAncestors } from "@floating-ui/react-dom"
 import { custom, fontSizes } from "@talisman/theme/definitions"
 import { CSSProperties } from "react"
 import styled, { CSSObject, DefaultTheme } from "styled-components"

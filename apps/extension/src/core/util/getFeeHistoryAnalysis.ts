@@ -1,15 +1,15 @@
-import { EthPriorityOptionName, EthPriorityOptions } from "@core/domains/signing/types"
+import { EthPriorityOptions } from "@core/domains/signing/types"
 import * as Sentry from "@sentry/browser"
 import { BigNumber, ethers } from "ethers"
-import { formatUnits, parseUnits } from "ethers/lib/utils"
+import { parseUnits } from "ethers/lib/utils"
 
 const BLOCKS_HISTORY_LENGTH = 4
-const REWARD_PERCENTILES = [10, 30, 60]
+const REWARD_PERCENTILES = [10, 20, 30]
 
-const FALLBACK_OPTIONS: EthPriorityOptions = {
+export const DEFAULT_ETH_PRIORITY_OPTIONS: EthPriorityOptions = {
   low: parseUnits("1", "gwei"),
-  medium: parseUnits("10", "gwei"),
-  high: parseUnits("50", "gwei"),
+  medium: parseUnits("1.5", "gwei"),
+  high: parseUnits("2", "gwei"),
 }
 
 type FeeHistory = {
@@ -19,35 +19,8 @@ type FeeHistory = {
   reward?: BigNumber[][]
 }
 
-const logFeeHistory = (feeHistory: FeeHistory) => {
-  let avgMaxPriorityFeePerGas: string[] | undefined = undefined
-  if (feeHistory.reward?.[0]?.length) {
-    const valuesCount = feeHistory.reward?.[0]?.length
-    const avgs = []
-    for (let i = 0; i < valuesCount; i++) {
-      let sum = BigNumber.from(0)
-      for (let j = 0; j < feeHistory.reward.length; j++)
-        sum = sum.add(BigNumber.from(feeHistory.reward[j][i]))
-      const avg = sum.div(BigNumber.from(feeHistory.reward.length))
-      avgs.push(`${formatUnits(avg, "gwei")} GWEI`)
-    }
-
-    avgMaxPriorityFeePerGas = avgs
-  }
-
-  // eslint-disable-next-line no-console
-  console.debug("FeeHistory", {
-    gasUsed: feeHistory.gasUsedRatio.map((gu) => `${Math.round(gu * 100)}%`),
-    baseFeePerGas: feeHistory.baseFeePerGas.map((bf) => `${formatUnits(bf, "gwei")} GWEI`),
-    rewards: feeHistory.reward?.map((rs) => rs.map((r) => `${formatUnits(r, "gwei")} GWEI`)),
-    avgMaxPriorityFeePerGas,
-  })
-}
-
 export type FeeHistoryAnalysis = {
-  baseFeePerGas: BigNumber
   options: EthPriorityOptions
-  recommended: EthPriorityOptionName
   gasUsedRatio: number
 }
 
@@ -68,7 +41,6 @@ export const getFeeHistoryAnalysis = async (
       gasUsedRatio: rawHistoryFee.gasUsedRatio as number[],
       reward: rawHistoryFee.reward.map((reward: string[]) => reward.map((r) => BigNumber.from(r))),
     }
-    logFeeHistory(feeHistory)
 
     // how busy the network is
     const avgGasUsedRatio =
@@ -76,46 +48,37 @@ export const getFeeHistoryAnalysis = async (
       feeHistory.gasUsedRatio.length
 
     // lookup the max priority fee per gas based on our percentiles options
-    const avgMaxPriorityPerGas: BigNumber[] = []
+    // use a median to exclude extremes, to limits edge cases in low network activity conditions
+    const medMaxPriorityFeePerGas: BigNumber[] = []
     if (feeHistory.reward) {
-      const percentilesCount = feeHistory.reward?.[0]?.length
+      const percentilesCount = REWARD_PERCENTILES.length
       for (let i = 0; i < percentilesCount; i++) {
-        let sum = BigNumber.from(0)
-        for (let j = 0; j < feeHistory.reward.length; j++)
-          sum = sum.add(BigNumber.from(feeHistory.reward[j][i]))
-        const avg = sum.div(BigNumber.from(feeHistory.reward.length))
-        avgMaxPriorityPerGas.push(avg)
+        const values = feeHistory.reward.map((arr) => BigNumber.from(arr[i]))
+        const sorted = values.sort((a, b) => (a.eq(b) ? 0 : a.gt(b) ? 1 : -1))
+        const median = sorted[Math.floor((sorted.length - 1) / 2)]
+        medMaxPriorityFeePerGas.push(median)
       }
     } else
-      avgMaxPriorityPerGas.push(
-        FALLBACK_OPTIONS.low,
-        FALLBACK_OPTIONS.medium,
-        FALLBACK_OPTIONS.high
+      medMaxPriorityFeePerGas.push(
+        DEFAULT_ETH_PRIORITY_OPTIONS.low,
+        DEFAULT_ETH_PRIORITY_OPTIONS.medium,
+        DEFAULT_ETH_PRIORITY_OPTIONS.high
       )
 
-    // select recommended option based on recent network usage
-    let recommended: EthPriorityOptionName = "low"
-    if (avgGasUsedRatio > 0.9) recommended = "high"
-    else if (avgGasUsedRatio > 0.5) recommended = "medium"
-
     return {
-      baseFeePerGas: feeHistory.baseFeePerGas[0],
       options: {
-        low: avgMaxPriorityPerGas[0],
-        medium: avgMaxPriorityPerGas[1],
-        high: avgMaxPriorityPerGas[2],
+        low: medMaxPriorityFeePerGas[0],
+        medium: medMaxPriorityFeePerGas[1],
+        high: medMaxPriorityFeePerGas[2],
       },
-      recommended,
       gasUsedRatio: avgGasUsedRatio,
     }
   } catch (err) {
     Sentry.captureException(err)
     //some networks don't support eth_feeHistory, fallback to default options
     return {
-      baseFeePerGas: FALLBACK_OPTIONS.low,
-      options: FALLBACK_OPTIONS,
-      recommended: "low",
-      gasUsedRatio: -1, // unknown
+      options: DEFAULT_ETH_PRIORITY_OPTIONS,
+      gasUsedRatio: -1,
     }
   }
 }

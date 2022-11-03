@@ -1,7 +1,8 @@
-import styled from "styled-components"
 import globeIcon from "@talisman/theme/icons/globe.white.svg"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { classNames } from "@talisman/util/classNames"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import styled from "styled-components"
 
 const NetworkLogoContainer = styled.picture`
   & {
@@ -20,7 +21,7 @@ const NetworkLogoContainer = styled.picture`
 `
 
 type NetworkLogoProps = {
-  ethChainId?: number
+  ethChainId?: EvmNetworkId
   className?: string
 }
 

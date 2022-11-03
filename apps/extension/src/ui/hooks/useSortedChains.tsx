@@ -7,5 +7,5 @@ const sortChains = (a: Chain, b: Chain) =>
 
 export const useSortedChains = () => {
   const chains = useChains()
-  return useMemo(() => (chains || []).sort(sortChains), [chains])
+  return useMemo(() => chains.sort(sortChains), [chains])
 }

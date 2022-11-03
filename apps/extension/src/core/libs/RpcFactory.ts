@@ -1,6 +1,7 @@
 import { DEBUG } from "@core/constants"
 import { ChainId } from "@core/domains/chains/types"
 import { db } from "@core/libs/db"
+import { sleep } from "@core/util/sleep"
 import { WsProvider } from "@polkadot/api"
 import { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import * as Sentry from "@sentry/browser"
@@ -94,7 +95,7 @@ class RpcFactory {
     // 30 seconds before we riot
     timeout: number | false = 30_000
   ): Promise<void> {
-    const timer = timeout ? new Promise((resolve) => setTimeout(resolve, timeout)) : false
+    const timer = timeout ? sleep(timeout) : false
 
     await Promise.race([ws.isReady, timer].filter(Boolean))
   }

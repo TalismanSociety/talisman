@@ -51,12 +51,6 @@ export default class AssetTransfersRpc {
       true
     )
 
-    callback(null, {
-      nonce: tx.nonce.toString(),
-      hash: tx.hash.toString(),
-      status: registry.createType<ExtrinsicStatus>("ExtrinsicStatus", { future: true }),
-    })
-
     const unsubscribe = await RpcFactory.subscribe(
       chainId,
       "author_submitAndWatchExtrinsic",
@@ -78,7 +72,7 @@ export default class AssetTransfersRpc {
   }
 
   /**
-   * Calculates an estimated fee for transfering an amount of nativeToken from one account to another.
+   * Calculates an estimated fee for transferring an amount of nativeToken from one account to another.
    *
    * @param chainId - The chain to make the transfer on.
    * @param amount - The amount of `nativeToken` to transfer.

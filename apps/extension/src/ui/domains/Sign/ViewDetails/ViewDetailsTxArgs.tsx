@@ -1,7 +1,8 @@
-import { FC, useMemo, useState } from "react"
-import { dump as convertToYaml } from "js-yaml"
-import { classNames } from "@talisman/util/classNames"
 import { CodeBlock } from "@talisman/components/CodeBlock"
+import { classNames } from "@talisman/util/classNames"
+import { dump as convertToYaml } from "js-yaml"
+import { FC, useMemo, useState } from "react"
+
 import { ViewDetailsField } from "./ViewDetailsField"
 
 type ArgsLabelProps = {
@@ -57,7 +58,7 @@ export const ViewDetailsTxArgs: FC<ViewDetailsTxArgsProps> = ({ label, args }) =
         />
       }
     >
-      <CodeBlock code={code} />
+      <CodeBlock className="mt-2" code={code} />
     </ViewDetailsField>
   )
 }

@@ -1,10 +1,10 @@
 import { RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { useNotification } from "@talisman/components/Notification"
+import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
-import { DerivedAccountPicker } from "@ui/domains/Account/DerivedAccountPicker"
+import { DerivedFromMnemonicAccountPicker } from "@ui/domains/Account/DerivedFromMnemonicAccountPicker"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Navigate, useNavigate } from "react-router-dom"
@@ -45,7 +45,6 @@ type FormData = {
 export const AccountAddSecretAccounts = () => {
   const { data, importAccounts } = useAccountAddSecret()
   const navigate = useNavigate()
-  const notification = useNotification()
 
   const name = useMemo(
     () => data.name ?? (data.type === "ethereum" ? "Ethereum Account" : "Polkadot Account"),
@@ -76,27 +75,32 @@ export const AccountAddSecretAccounts = () => {
   const submit = useCallback(
     async ({ accounts }: FormData) => {
       const suffix = accounts?.length > 1 ? "s" : ""
-      notification.processing({
-        title: "Importing account" + suffix,
-        subtitle: "Please wait",
-        timeout: null,
-      })
+      const notificationId = notify(
+        {
+          type: "processing",
+          title: "Importing account" + suffix,
+          subtitle: "Please wait",
+        },
+        { autoClose: false }
+      )
       try {
         await importAccounts(accounts)
 
-        notification.success({
+        notifyUpdate(notificationId, {
+          type: "success",
           title: `Account${suffix} imported`,
           subtitle: null,
         })
         navigate("/")
       } catch (err) {
-        notification.error({
+        notifyUpdate(notificationId, {
+          type: "error",
           title: "Importing account" + suffix,
           subtitle: (err as Error).message,
         })
       }
     },
-    [importAccounts, navigate, notification]
+    [importAccounts, navigate]
   )
 
   const handleAccountsChange = useCallback(
@@ -124,7 +128,7 @@ export const AccountAddSecretAccounts = () => {
             text="Please select which account(s) you'd like to import."
           />
           <Spacer />
-          <DerivedAccountPicker
+          <DerivedFromMnemonicAccountPicker
             name={name}
             mnemonic={data.mnemonic}
             type={data.type}

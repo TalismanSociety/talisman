@@ -1,11 +1,12 @@
-import { appStore } from "@core/domains/app"
-import { Modal } from "@talisman/components/Modal"
+import { appStore } from "@core/domains/app/store.app"
 import { Drawer } from "@talisman/components/Drawer"
+import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useIsBrave } from "@talisman/hooks/useIsBrave"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
+
 import { BraveWarningCard } from "./BraveWarningCard"
 import { BraveWarningModal } from "./BraveWarningModal"
 

@@ -1,53 +1,42 @@
-import { Balances } from "@core/domains/balances/types"
+import { AddressesByEvmNetwork, Balances } from "@core/domains/balances/types"
 import { AddressesByChain } from "@core/types/base"
 import { api } from "@ui/api"
-import { useChains } from "@ui/hooks/useChains"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useMessageSubscription } from "@ui/hooks/useMessageSubscription"
-import { useTokens } from "@ui/hooks/useTokens"
 import md5 from "blueimp-md5"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { useDebounce } from "react-use"
 import { BehaviorSubject } from "rxjs"
 
+import { useBalancesHydrate } from "./useBalancesHydrate"
+
 const INITIAL_VALUE = new Balances({})
 
-export const useBalancesByParams = (addressesByChain: AddressesByChain) => {
-  const _chains = useChains()
-  const _evmNetworks = useEvmNetworks()
-  const _tokens = useTokens()
+const DEFAULT_BY_CHAIN = {}
+const DEFAULT_By_EVM_NETWORK = { addresses: [], evmNetworks: [] }
 
-  const chains = useMemo(
-    () => Object.fromEntries((_chains || []).map((chain) => [chain.id, chain])),
-    [_chains]
-  )
-  const evmNetworks = useMemo(
-    () => Object.fromEntries((_evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])),
-    [_evmNetworks]
-  )
-  const tokens = useMemo(
-    () => Object.fromEntries((_tokens || []).map((token) => [token.id, token])),
-    [_tokens]
-  )
+type BalanceByParamsProps = {
+  addressesByChain?: AddressesByChain
+  addressesByEvmNetwork?: AddressesByEvmNetwork
+}
 
-  const dbRef = useRef({ chains: {}, evmNetworks: {}, tokens: {} })
-  useEffect(() => {
-    dbRef.current.chains = chains
-    dbRef.current.evmNetworks = evmNetworks
-    dbRef.current.tokens = tokens
-  }, [chains, evmNetworks, tokens])
+// This is used to fetch balances from accounts that are not in the keyring
+export const useBalancesByParams = ({
+  addressesByChain = DEFAULT_BY_CHAIN,
+  addressesByEvmNetwork = DEFAULT_By_EVM_NETWORK,
+}: BalanceByParamsProps) => {
+  const hydrate = useBalancesHydrate()
 
   const subscribe = useCallback(
     (subject: BehaviorSubject<Balances>) =>
-      api.balancesByParams(addressesByChain, async (update) => {
+      api.balancesByParams(addressesByChain, addressesByEvmNetwork, async (update) => {
         switch (update.type) {
           case "reset": {
-            const newBalances = new Balances(update.balances, dbRef.current)
+            const newBalances = new Balances(update.balances, hydrate)
             return subject.next(newBalances)
           }
 
           case "upsert": {
-            const newBalances = new Balances(update.balances, dbRef.current)
+            const newBalances = new Balances(update.balances, hydrate)
             return subject.next(subject.value.add(newBalances))
           }
 
@@ -61,16 +50,22 @@ export const useBalancesByParams = (addressesByChain: AddressesByChain) => {
           }
         }
       }),
-    [addressesByChain]
+    [addressesByChain, addressesByEvmNetwork, hydrate]
   )
 
   // subscrition must be reinitialized (using the key) if parameters change
-  const subscriptionKey = useMemo(() => md5(JSON.stringify(addressesByChain)), [addressesByChain])
+  const subscriptionKey = useMemo(
+    () =>
+      `useBalancesByParams-${md5(JSON.stringify(addressesByChain))}-${md5(
+        JSON.stringify(addressesByEvmNetwork)
+      )}`,
+    [addressesByChain, addressesByEvmNetwork]
+  )
 
   const balances = useMessageSubscription(subscriptionKey, INITIAL_VALUE, subscribe)
 
   // debounce every 100ms to prevent hammering UI with updates
-  const [debouncedBalances, setDebouncedBalances] = useState<Balances>(balances)
+  const [debouncedBalances, setDebouncedBalances] = useState<Balances>(() => balances)
   useDebounce(() => setDebouncedBalances(balances), 100, [balances])
 
   return debouncedBalances

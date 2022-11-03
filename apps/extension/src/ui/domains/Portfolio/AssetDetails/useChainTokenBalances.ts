@@ -1,7 +1,9 @@
-import { Balances } from "@core/domains/balances"
+import { Balances } from "@core/domains/balances/types"
 import { BalanceFormatter, BalanceLockType, LockedBalance } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
+import { getNetworkCategory } from "@core/util/getNetworkCategory"
 import { sortBigBy } from "@talisman/util/bigHelper"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
@@ -18,7 +20,7 @@ type DetailRow = {
 }
 
 type ChainTokenBalancesParams = {
-  chainId: string | number
+  chainId: ChainId | EvmNetworkId
   balances: Balances
   symbol: string
 }
@@ -52,7 +54,7 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
 
   // query only locks for addresses that have frozen balance
   const { consolidatedLocks, isLoading, error, balanceLocks } = useBalanceLocks({
-    chainId: chainId as string,
+    chainId: chainId,
     addresses: addressesWithLocks,
   })
 
@@ -151,20 +153,7 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
   ])
 
   const { chain, evmNetwork } = balances.sorted[0]
-  const networkType = useMemo(() => {
-    if (evmNetwork) return evmNetwork.isTestnet ? "EVM Testnet" : "EVM blockchain"
-
-    if (chain) {
-      if (chain.isTestnet) return "Testnet"
-      return chain.paraId
-        ? "Parachain"
-        : (chain.parathreads || []).length > 0
-        ? "Relay chain"
-        : "Blockchain"
-    }
-
-    return null
-  }, [chain, evmNetwork])
+  const networkType = useMemo(() => getNetworkCategory({ chain, evmNetwork }), [chain, evmNetwork])
 
   const isFetching = useMemo(
     () => balances.sorted.some((b) => b.status === "cache") || isLoading,

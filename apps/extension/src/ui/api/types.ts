@@ -9,6 +9,7 @@ import {
   OnboardedType,
 } from "@core/domains/app/types"
 import {
+  AddressesByEvmNetwork,
   BalancesUpdate,
   RequestBalance,
   RequestBalanceLocks,
@@ -16,10 +17,13 @@ import {
 } from "@core/domains/balances/types"
 import { BalanceStorage } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
+import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
   CustomEvmNetwork,
+  EthGasSettings,
+  EvmNetworkId,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
 import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/types"
@@ -34,6 +38,7 @@ import {
 import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
 import {
   ResponseAssetTransfer,
+  ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
 import { EthResponseType } from "@core/injectEth/types"
@@ -42,18 +47,16 @@ import { AddressesByChain } from "@core/types/base"
 import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
+import { ethers } from "ethers"
 
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
   // UNSORTED
-  onboard: (
-    name: string,
-    pass: string,
-    passConfirm: string,
-    mnemonic?: string
-  ) => Promise<OnboardedType>
+  onboard: (pass: string, passConfirm: string, mnemonic?: string) => Promise<OnboardedType>
   authenticate: (pass: string) => Promise<boolean>
   lock: () => Promise<boolean>
+  changePassword: (currentPw: string, newPw: string, newPwConfirm: string) => Promise<boolean>
+  checkPassword: (password: string) => Promise<boolean>
   authStatus: () => Promise<LoggedinType>
   authStatusSubscribe: (cb: (val: LoggedinType) => void) => UnsubscribeFn
   onboardStatus: () => Promise<OnboardedType>
@@ -74,6 +77,13 @@ export default interface MessageTypes {
   approveSign: (id: string) => Promise<boolean>
   approveSignHardware: (id: string, signature: HexString) => Promise<boolean>
 
+  // encrypt messages -------------------------------------------------------
+  subscribeEncryptRequests: (cb: (requests: AnyEncryptRequest[]) => void) => UnsubscribeFn
+  subscribeEncryptRequest: (id: string, cb: (requests: AnyEncryptRequest) => void) => UnsubscribeFn
+  approveEncrypt: (id: string) => Promise<boolean>
+  approveDecrypt: (id: string) => Promise<boolean>
+  cancelEncryptRequest: (id: string) => Promise<boolean>
+
   // app message types -------------------------------------------------------
   modalOpen: (modalType: ModalTypes) => Promise<boolean>
   modalOpenSubscribe: (cb: (val: ModalOpenParams) => void) => UnsubscribeFn
@@ -92,9 +102,14 @@ export default interface MessageTypes {
   accountCreateHardware: (
     request: Omit<RequestAccountCreateHardware, "hardwareType">
   ) => Promise<boolean>
+  accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<boolean>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountForget: (address: string) => Promise<boolean>
-  accountExport: (address: string) => Promise<{ exportedJson: KeyringPair$Json }>
+  accountExport: (
+    address: string,
+    password: string,
+    exportPw: string
+  ) => Promise<{ exportedJson: KeyringPair$Json }>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 
@@ -109,6 +124,7 @@ export default interface MessageTypes {
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
+    addressesByEvmNetwork: AddressesByEvmNetwork,
     cb: (balances: BalancesUpdate) => void
   ) => UnsubscribeFn
 
@@ -145,7 +161,7 @@ export default interface MessageTypes {
   addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
   removeCustomErc20Token: (id: string) => Promise<boolean>
   clearCustomErc20Tokens: (
-    filter: { chainId?: ChainId; evmNetworkId?: number } | undefined
+    filter: { chainId?: ChainId; evmNetworkId?: EvmNetworkId } | undefined
   ) => Promise<boolean>
 
   // ethereum networks message types
@@ -168,6 +184,20 @@ export default interface MessageTypes {
     tip: string,
     reapBalance?: boolean
   ) => Promise<ResponseAssetTransfer>
+  assetTransferEth: (
+    evmNetworkId: EvmNetworkId,
+    tokenId: TokenId,
+    fromAddress: string,
+    toAddress: string,
+    amount: string,
+    gasSettings: EthGasSettings
+  ) => Promise<ResponseAssetTransferEth>
+  assetTransferEthHardware: (
+    evmNetworkId: EvmNetworkId,
+    tokenId: TokenId,
+    amount: string,
+    signedTransaction: HexString
+  ) => Promise<ResponseAssetTransferEth>
   assetTransferCheckFees: (
     chainId: ChainId,
     tokenId: TokenId,
@@ -184,13 +214,15 @@ export default interface MessageTypes {
 
   // eth related messages
   ethApproveSign: (id: string) => Promise<boolean>
+  ethApproveSignHardware: (id: string, signature: HexString) => Promise<boolean>
   ethApproveSignAndSend: (
     id: string,
-    maxFeePerGas: string,
-    maxPriorityFeePerGas: string
+    transaction: ethers.providers.TransactionRequest
   ) => Promise<boolean>
+  ethApproveSignAndSendHardware: (id: string, signedTransaction: HexString) => Promise<boolean>
   ethCancelSign: (id: string) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
+  ethGetTransactionsCount: (address: string, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: string) => Promise<boolean>
   ethNetworkAddCancel: (is: string) => Promise<boolean>

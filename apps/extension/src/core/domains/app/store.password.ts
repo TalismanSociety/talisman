@@ -1,5 +1,9 @@
+import { StorageProvider } from "@core/libs/Store"
+import { assert } from "@polkadot/util"
+import { genSalt, hash } from "bcryptjs"
 import { BehaviorSubject } from "rxjs"
-import Browser from "webextension-polyfill"
+import { Err, Ok, Result } from "ts-results"
+
 /* ----------------------------------------------------------------
 Contains sensitive data.
 Should not be used outside of the Extension handler.
@@ -12,13 +16,37 @@ const TRUE: LOGGEDIN_TRUE = "TRUE"
 const FALSE: LOGGEDIN_FALSE = "FALSE"
 
 export type LoggedInType = LOGGEDIN_TRUE | LOGGEDIN_FALSE | LOGGEDIN_UNKNOWN
-export class PasswordStore {
+
+export type PasswordStoreData = {
+  salt?: string
+  isTrimmed: boolean
+  isHashed: boolean
+  ignorePasswordUpdate: boolean
+}
+
+const initialData = {
+  // passwords from early versions of Talisman were 'trimmed'.
+  isTrimmed: true,
+  isHashed: false,
+  salt: undefined,
+  ignorePasswordUpdate: false,
+}
+
+export class PasswordStore extends StorageProvider<PasswordStoreData> {
   #password?: string = undefined
   isLoggedIn = new BehaviorSubject<LoggedInType>(this.hasPassword ? TRUE : FALSE)
+  #autoLockTimer?: NodeJS.Timeout
 
-  constructor() {
-    // migration to remove password field from local storage for anyone who may have it there.
-    Browser.storage.local.remove("password")
+  public resetAutoLockTimer(seconds: number) {
+    if (this.#autoLockTimer) clearTimeout(this.#autoLockTimer)
+    if (seconds > 0) this.#autoLockTimer = setTimeout(() => this.clearPassword(), seconds * 1000)
+  }
+
+  async createPassword(plaintextPw: string) {
+    const salt = await generateSalt()
+    const pwResult = await getHashedPassword(plaintextPw, salt)
+    if (!pwResult.ok) pwResult.unwrap()
+    return { password: pwResult.val, salt }
   }
 
   setPassword(password: string | undefined) {
@@ -26,20 +54,66 @@ export class PasswordStore {
     this.isLoggedIn.next(password !== undefined ? TRUE : FALSE)
   }
 
-  clearPassword() {
+  public async getHashedPassword(plaintextPw: string) {
+    const salt = await this.get("salt")
+    assert(salt, "Password salt has not been generated yet")
+    const pwResult = await getHashedPassword(plaintextPw, salt)
+    if (!pwResult.ok) pwResult.unwrap()
+    return pwResult.val
+  }
+
+  public async setPlaintextPassword(plaintextPw: string) {
+    const pw = await this.transformPassword(plaintextPw)
+    this.setPassword(pw)
+  }
+
+  public clearPassword() {
     this.setPassword(undefined)
   }
 
+  async transformPassword(password: string) {
+    let result = password
+    const { isTrimmed, isHashed, salt } = await this.get()
+    if (isTrimmed) result = result.trim()
+    if (isHashed) {
+      assert(salt, "Password salt has not been generated yet")
+      const { ok, val: hashedPwVal } = await getHashedPassword(result, salt)
+      if (!ok) throw new Error(hashedPwVal)
+      result = hashedPwVal
+    }
+    return result
+  }
+
+  async checkPassword(password: string) {
+    assert(this.isLoggedIn.value, "Unauthorised")
+    const pw = await this.transformPassword(password)
+    assert(pw === this.getPassword(), "Incorrect password")
+    return pw
+  }
+
   getPassword() {
-    // This is intentionally indirect to reduce possible misuse of password
+    if (!this.#password) return undefined
     return this.#password
   }
 
   get hasPassword() {
-    return !!this.getPassword()
+    return !!this.#password
   }
 }
 
-const passwordStore = new PasswordStore()
+export const generateSalt = () => genSalt(13)
 
+export const getHashedPassword = async (
+  password: string,
+  salt: string
+): Promise<Result<string, string>> => {
+  try {
+    const derivedHash = await hash(password, salt)
+    return Ok(derivedHash)
+  } catch (error) {
+    return Err(error as string)
+  }
+}
+
+const passwordStore = new PasswordStore("password", initialData)
 export default passwordStore

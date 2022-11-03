@@ -3,21 +3,23 @@ import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
 import { FC, ReactNode } from "react"
 import styled from "styled-components"
 
-import Button from "./Button"
+import { SimpleButton } from "./SimpleButton"
 
 const ErrorContainer = styled.section`
   display: flex;
   align-items: center;
   height: 100vh;
   width: 100vw;
+  min-width: 36rem;
+  min-height: 48rem;
   justify-content: center;
   color: var(--color-mid);
   text-align: center;
 
   section {
     padding: 2rem;
-    width: 40rem;
-    height: 60rem;
+    width: 36rem;
+    height: 48rem;
     display: flex;
     flex-direction: column;
 
@@ -28,7 +30,7 @@ const ErrorContainer = styled.section`
       justify-content: center;
 
       h1 {
-        font-size: 5rem;
+        font-size: 4.2rem;
         font-weight: var(--font-weight-bold);
         margin: 0;
       }
@@ -39,12 +41,6 @@ const ErrorContainer = styled.section`
         margin-bottom: 2rem;
       }
     }
-
-    button {
-      margin-top: 2rem;
-      display: inline-flex;
-      width: 100%;
-    }
   }
 `
 
@@ -54,14 +50,14 @@ const ErrorMessage: FC = () => (
       <div className="content">
         <h1>Oops !</h1>
         <div>
-          <img src={STATIC} alt="Talisman Hand logo" />
+          <img className="inline-block" src={STATIC} alt="Talisman Hand logo" />
         </div>
         <p>Sorry, an error occured in Talisman.</p>
       </div>
       <div>
-        <Button primary onClick={() => window.close()}>
+        <SimpleButton className="!w-full" primary onClick={() => window.close()}>
           Close
-        </Button>
+        </SimpleButton>
       </div>
     </section>
   </ErrorContainer>

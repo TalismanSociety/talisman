@@ -1,7 +1,7 @@
 import { db } from "@core/libs/db"
 import { providers } from "ethers"
 
-import { CustomEvmNetwork, EvmNetwork } from "./types"
+import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "./types"
 
 export type GetProviderOptions = {
   /** If true, returns a provider which will batch requests */
@@ -19,15 +19,18 @@ const ethereumNetworkToProvider = (
     return null
 
   const url = ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) => url)[0]
-  const network = { name: ethereumNetwork.name ?? "unknown network", chainId: ethereumNetwork.id }
+  const network = {
+    name: ethereumNetwork.name ?? "unknown network",
+    chainId: parseInt(ethereumNetwork.id, 10),
+  }
 
   return batch === true
     ? new providers.JsonRpcBatchProvider(url, network)
     : new providers.JsonRpcProvider(url, network)
 }
 
-const ethereumNetworkProviders: Record<number, providers.JsonRpcProvider> = {}
-const ethereumNetworkBatchProviders: Record<number, providers.JsonRpcBatchProvider> = {}
+const ethereumNetworkProviders: Record<EvmNetworkId, providers.JsonRpcProvider> = {}
+const ethereumNetworkBatchProviders: Record<EvmNetworkId, providers.JsonRpcBatchProvider> = {}
 
 export const getProviderForEthereumNetwork = (
   ethereumNetwork: EvmNetwork | CustomEvmNetwork,
@@ -45,7 +48,7 @@ export const getProviderForEthereumNetwork = (
 }
 
 export const getProviderForEvmNetworkId = async (
-  evmNetworkId: number,
+  evmNetworkId: EvmNetworkId,
   { batch }: GetProviderOptions = {}
 ): Promise<providers.JsonRpcProvider | null> => {
   const network = await db.evmNetworks.get(evmNetworkId)

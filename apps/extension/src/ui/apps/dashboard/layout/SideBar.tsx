@@ -1,31 +1,34 @@
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import Nav, { NavItemButton, NavItemLink } from "@talisman/components/Nav"
-import { PillButton } from "@talisman/components/PillButton"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { breakpoints } from "@talisman/theme/definitions"
 import {
   CopyIcon,
+  CreditCardIcon,
   ExternalLinkIcon,
   ImageIcon,
   PaperPlaneIcon,
   PlusIcon,
   SettingsIcon,
-  StarIcon,
   UserIcon,
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
+import { useReceiveTokensModal } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
 import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import Build from "@ui/domains/Build"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { MouseEventHandler, ReactNode, useCallback } from "react"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
 import styled from "styled-components"
+import { PillButton } from "talisman-ui"
 
 const PaddedItem = styled.div`
   padding: 2.4rem;
@@ -239,17 +242,19 @@ export const SideBar = () => {
   const { open: openCopyAddressModal } = useAddressFormatterModal()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
+  const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
 
   const handleSendClick = useCallback(() => {
     openSendTokens({ from: account?.address })
     genericEvent("open send funds", { from: "sidebar" })
   }, [account?.address, genericEvent, openSendTokens])
 
+  const { open: openReceiveTokensModal } = useReceiveTokensModal()
   const handleCopyClick = useCallback(() => {
-    if (!account) return
-    openCopyAddressModal(account.address)
+    if (account) openCopyAddressModal(account.address)
+    else openReceiveTokensModal()
     genericEvent("open copy address", { from: "sidebar" })
-  }, [account, genericEvent, openCopyAddressModal])
+  }, [account, genericEvent, openCopyAddressModal, openReceiveTokensModal])
 
   const handlePortfolioClick = useCallback(() => {
     genericEvent("goto portfolio", { from: "sidebar" })
@@ -267,15 +272,21 @@ export const SideBar = () => {
     return false
   }, [genericEvent])
 
-  const handleCrowdloansClick = useCallback(() => {
-    genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
-    window.open("https://app.talisman.xyz/crowdloans", "_blank")
-  }, [genericEvent])
+  // const handleCrowdloansClick = useCallback(() => {
+  //   genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
+  //   window.open("https://app.talisman.xyz/crowdloans", "_blank")
+  // }, [genericEvent])
 
   const handleSettingsClick = useCallback(() => {
     genericEvent("goto settings", { from: "sidebar" })
     navigate("/settings")
   }, [genericEvent, navigate])
+
+  const { open: openBuyModal } = useBuyTokensModal()
+  const handleBuyClick = useCallback(() => {
+    genericEvent("open buy tokens", { from: "sidebar" })
+    openBuyModal()
+  }, [genericEvent, openBuyModal])
 
   return (
     <Container>
@@ -283,14 +294,12 @@ export const SideBar = () => {
         <AccountSelect responsive />
         {/* Pills for large screens */}
         <Pills>
-          <PillButton onClick={handleSendClick}>
-            Send <PaperPlaneIcon />
+          <PillButton icon={PaperPlaneIcon} onClick={handleSendClick}>
+            Send
           </PillButton>
-          {account && (
-            <PillButton onClick={handleCopyClick}>
-              Copy <CopyIcon />
-            </PillButton>
-          )}
+          <PillButton icon={CopyIcon} onClick={handleCopyClick}>
+            Copy
+          </PillButton>
         </Pills>
         {/* Buttons for small screens */}
         <Buttons>
@@ -317,6 +326,28 @@ export const SideBar = () => {
           >
             Portfolio
           </NavItemLink>
+          <NavItemButton
+            onClick={handleNftsClick}
+            icon={
+              <ResponsiveTooltip tooltip="NFTs">
+                <ImageIcon />
+              </ResponsiveTooltip>
+            }
+          >
+            NFTs <ExtLinkIcon />
+          </NavItemButton>
+          {showBuyCryptoButton && (
+            <NavItemButton
+              onClick={handleBuyClick}
+              icon={
+                <ResponsiveTooltip tooltip="Buy Crypto">
+                  <CreditCardIcon />
+                </ResponsiveTooltip>
+              }
+            >
+              Buy Crypto
+            </NavItemButton>
+          )}
           <NavItemLink
             to="/accounts/add"
             onClick={handleAddAccountClick}
@@ -328,17 +359,7 @@ export const SideBar = () => {
           >
             Add Account
           </NavItemLink>
-          <NavItemButton
-            onClick={handleNftsClick}
-            icon={
-              <ResponsiveTooltip tooltip="NFTs">
-                <ImageIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            NFTs <ExtLinkIcon />
-          </NavItemButton>
-          <NavItemButton
+          {/* <NavItemButton
             onClick={handleCrowdloansClick}
             icon={
               <ResponsiveTooltip tooltip="Crowdloans">
@@ -347,7 +368,7 @@ export const SideBar = () => {
             }
           >
             Crowdloans <ExtLinkIcon />
-          </NavItemButton>
+          </NavItemButton> */}
           <NavItemLink
             to="/settings"
             onClick={handleSettingsClick}

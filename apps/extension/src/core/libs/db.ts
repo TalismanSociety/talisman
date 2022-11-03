@@ -1,12 +1,10 @@
 import { BalanceStorage } from "@core/domains/balances/types"
 import { Chain, ChainId } from "@core/domains/chains/types"
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import metadataInit from "@core/domains/metadata/_metadataInit"
 import { Token, TokenId } from "@core/domains/tokens/types"
 import { MetadataDef } from "@core/inject/types"
 import { RuntimeVersion } from "@polkadot/types/interfaces"
 import { Dexie } from "dexie"
-import Browser from "webextension-polyfill"
 
 export class TalismanDatabase extends Dexie {
   chains!: Dexie.Table<Chain, ChainId>
@@ -36,25 +34,7 @@ export class TalismanDatabase extends Dexie {
       chainMetadataRpc: "chainId",
     })
 
-    this.on("ready", async () => {
-      // if store has no metadata yet
-      if ((await this.metadata.count()) < 1) {
-        // delete old localstorage-managed 'db'
-        Browser.storage.local.remove([
-          "chains",
-          "ethereumNetworks",
-          "tokens",
-          "balances",
-          "metadata",
-        ])
-
-        // delete old idb-managed metadata+metadataRpc db
-        indexedDB.deleteDatabase("talisman")
-
-        // add initial metadata
-        this.metadata.bulkAdd(metadataInit)
-      }
-    })
+    // init code moved to Extension.ts to prevent frontend build to have metadataInit
   }
 }
 

@@ -1,16 +1,18 @@
+import { AccountAddressType } from "@core/domains/accounts/types"
 import { Chain } from "@core/domains/chains/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Dropdown, RenderItemFunc } from "@talisman/components/Dropdown"
+import StytledHeaderBlock from "@talisman/components/HeaderBlock"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { classNames } from "@talisman/util/classNames"
-import { LedgerConnectionStatus } from "@ui/domains/Account/LedgerConnectionStatus"
+import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import Asset from "@ui/domains/Asset"
+import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
+import { useAppState } from "@ui/hooks/useAppState"
 import useChain from "@ui/hooks/useChain"
-import { useLedger } from "@ui/hooks/useLedger"
-import { useLedgerChains } from "@ui/hooks/useLedgerChains"
-import useToken from "@ui/hooks/useToken"
-import { useCallback, useMemo } from "react"
+import { useFeatureFlag } from "@ui/hooks/useFeatures"
+import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -18,6 +20,8 @@ import * as yup from "yup"
 
 import Layout from "../../layout"
 import { useAddLedgerAccount } from "./context"
+import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
+import { ConnectLedgerSubstrate } from "./Shared/ConnectLedgerSubstrate"
 
 const Container = styled(Layout)`
   .dropdown {
@@ -85,6 +89,7 @@ const Text = styled.p`
 
 type FormData = {
   chainId: string
+  type: AccountAddressType
 }
 
 const renderOption: RenderItemFunc<Chain> = (chain) => {
@@ -102,6 +107,13 @@ const Highlight = styled.span`
 
 export const AddLedgerSelectNetwork = () => {
   const { data: defaultValues, updateData } = useAddLedgerAccount()
+  const { isEnabled: isLedgerEvmEnabled } = useFeatureFlag("LEDGER_EVM")
+  const { hasSpiritKey } = useAppState()
+
+  const enabledAddressTypes: AccountAddressType[] = useMemo(
+    () => (isLedgerEvmEnabled || hasSpiritKey ? ["sr25519", "ethereum"] : ["sr25519"]),
+    [hasSpiritKey, isLedgerEvmEnabled]
+  )
 
   const navigate = useNavigate()
   const ledgerChains = useLedgerChains()
@@ -111,14 +123,18 @@ export const AddLedgerSelectNetwork = () => {
     () =>
       yup
         .object({
-          chainId: yup
-            .string()
-            .required("")
-            .test(
-              "is-ledger-chain",
-              "Network not supported",
-              (id) => !!ledgerChains.find((c) => c.id === id)
-            ),
+          type: yup.string().oneOf(["sr25519", "ethereum"], ""),
+          chainId: yup.string().when("type", {
+            is: "sr25519",
+            then: yup
+              .string()
+              .required("")
+              .test(
+                "is-ledger-chain",
+                "Network not supported",
+                (id) => !!ledgerChains.find((c) => c.id === id)
+              ),
+          }),
         })
         .required(),
     [ledgerChains]
@@ -135,14 +151,11 @@ export const AddLedgerSelectNetwork = () => {
     resolver: yupResolver(schema),
   })
 
-  const chainId = watch("chainId")
-  const chain = useChain(chainId)
-  const token = useToken(chain?.nativeToken?.id)
-  const ledger = useLedger(chain?.genesisHash)
+  const [accountType, chainId] = watch(["type", "chainId"])
 
   const submit = useCallback(
-    async ({ chainId }: FormData) => {
-      updateData({ chainId })
+    async ({ type, chainId }: FormData) => {
+      updateData({ type, chainId })
       navigate("account")
     },
     [navigate, updateData]
@@ -155,46 +168,76 @@ export const AddLedgerSelectNetwork = () => {
     [setValue]
   )
 
+  const handleTypeChange = useCallback(
+    (type: AccountAddressType) => {
+      if (type === "ethereum") setValue("chainId", "")
+      setValue("type", type, { shouldValidate: true })
+    },
+    [setValue]
+  )
+
+  const [isLedgerReady, setIsLedgerReady] = useState(false)
+
+  const showStep2 = accountType === "ethereum" || (accountType === "sr25519" && chainId)
+
   return (
     <Container withBack centered>
       <form data-button-pull-left onSubmit={handleSubmit(submit)}>
         <div className="grow">
-          <H1>Import from Ledger</H1>
-          <H2>Step 1</H2>
-          <Dropdown
-            key={defaultChain?.id ?? "DEFAULT"}
-            propertyKey="id"
-            items={ledgerChains}
-            defaultSelectedItem={defaultChain}
-            placeholder="Select a network"
-            renderItem={renderOption}
-            onChange={handleNetworkChange}
+          <StytledHeaderBlock
+            title="Import from Ledger"
+            text="What type of account would you like to import ?"
           />
-          <Text>Please note: a Ledger account can only be used on a single network.</Text>
-          <div className={classNames("step2", chainId && "fadeIn")}>
-            <H2>Step 2</H2>
-            <Text>
-              Connect and unlock your Ledger, then open the{" "}
-              <Highlight>
-                {chain?.chainName} {token?.symbol ? `(${token.symbol})` : null}
-              </Highlight>{" "}
-              app on your Ledger.
-            </Text>
-            <Spacer small />
-            <LedgerConnectionStatus {...ledger} />
+          <Spacer small />
+          <AccountTypeSelector
+            defaultType={accountType}
+            onChange={handleTypeChange}
+            enabledAddressTypes={enabledAddressTypes}
+          />
+          {accountType === "sr25519" && (
+            <>
+              <H2>Step 1</H2>
+              <Dropdown
+                key={defaultChain?.id ?? "DEFAULT"}
+                propertyKey="id"
+                items={ledgerChains}
+                defaultSelectedItem={defaultChain}
+                placeholder="Select a network"
+                renderItem={renderOption}
+                onChange={handleNetworkChange}
+              />
+              <Text>Please note: a Ledger account can only be used on a single network.</Text>
+            </>
+          )}
+          <div className={classNames(showStep2 ? "visible" : "invisible")}>
+            {accountType === "sr25519" && (
+              <>
+                <H2>Step 2</H2>
+                <ConnectLedgerSubstrate
+                  className="min-h-[11rem]"
+                  onReadyChanged={setIsLedgerReady}
+                  chainId={chainId}
+                />
+              </>
+            )}
+            {accountType === "ethereum" && (
+              <ConnectLedgerEthereum className="mt-14" onReadyChanged={setIsLedgerReady} />
+            )}
           </div>
           <Spacer />
         </div>
-        <div className="buttons">
-          <SimpleButton
-            type="submit"
-            primary
-            disabled={!ledger.isReady || !isValid}
-            processing={isSubmitting}
-          >
-            Continue
-          </SimpleButton>
-        </div>
+        {!!accountType && (
+          <div className="buttons">
+            <SimpleButton
+              type="submit"
+              primary
+              disabled={!isLedgerReady || !isValid}
+              processing={isSubmitting}
+            >
+              Continue
+            </SimpleButton>
+          </div>
+        )}
       </form>
     </Container>
   )

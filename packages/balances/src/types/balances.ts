@@ -4,6 +4,7 @@ import { BigMath, NonFunctionProperties, isArrayOf, planckToTokens } from "@tali
 import memoize from "lodash/memoize"
 import { Memoize } from "typescript-memoize"
 
+import log from "../log"
 import {
   BalanceJson,
   BalanceJsonList,
@@ -81,7 +82,16 @@ export class Balances {
    */
   toJSON = (): BalanceJsonList =>
     Object.fromEntries(
-      Object.entries(this.#balances).map(([id, balance]) => [id, balance.toJSON()])
+      Object.entries(this.#balances)
+        .map(([id, balance]) => {
+          try {
+            return [id, balance.toJSON()]
+          } catch (error) {
+            log.error("Failed to convert balance to JSON", error, { id, balance })
+            return null
+          }
+        })
+        .filter(Array.isArray)
     );
 
   /**

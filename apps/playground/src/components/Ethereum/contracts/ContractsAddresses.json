@@ -1,0 +1,49 @@
+{
+  "336": {
+    "Greeter": {
+      "address": "0xb832e1FC4cDC6a86411AB1df442c43f879c99447",
+      "owner": "0x3aE3199223732c2745dA671aDd5d0B834b6c3d86"
+    }
+  },
+  "137": {
+    "USDC": {
+      "address": "0x2791bca1f2de4661ed88a30c99a7a9449aa84174"
+    }
+  },
+  "592": {
+    "Greeter": {
+      "address": "0xb832e1FC4cDC6a86411AB1df442c43f879c99447",
+      "owner": "0x3aE3199223732c2745dA671aDd5d0B834b6c3d86"
+    },
+    "USDC": {
+      "address": "0x6a2d262d56735dba19dd70682b39f6be9a931d98"
+    }
+  },
+  "1284": {
+    "Greeter": {
+      "address": "0xb832e1FC4cDC6a86411AB1df442c43f879c99447",
+      "owner": "0x3aE3199223732c2745dA671aDd5d0B834b6c3d86"
+    },
+    "USDC": {
+      "address": "0x8f552a71efe5eefc207bf75485b356a0b3f01ec9"
+    }
+  },
+  "1285": {
+    "Greeter": {
+      "address": "0xb832e1FC4cDC6a86411AB1df442c43f879c99447",
+      "owner": "0x3aE3199223732c2745dA671aDd5d0B834b6c3d86"
+    }
+  },
+  "1287": {
+    "Greeter": {
+      "address": "0xDa2866Bed6b353fDB0112a27031976493e8adAfB",
+      "owner": "0x3aE3199223732c2745dA671aDd5d0B834b6c3d86"
+    }
+  },
+  "31337": {
+    "Greeter": {
+      "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+      "owner": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  }
+}

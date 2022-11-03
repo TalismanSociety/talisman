@@ -1,58 +1,21 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
 import { Balances } from "@core/domains/balances/types"
-import { Chain, ChainList } from "@core/domains/chains/types"
-import { EvmNetwork, EvmNetworkList } from "@core/domains/ethereum/types"
-import { Token, TokenList } from "@core/domains/tokens/types"
+import { Token } from "@core/domains/tokens/types"
 import { provideContext } from "@talisman/util/provideContext"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useBalances from "@ui/hooks/useBalances"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
+import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
-import { ReactNode, useEffect, useMemo, useState } from "react"
-
-const useHydrateBalances = (chains?: Chain[], evmNetworks?: EvmNetwork[], tokens?: Token[]) => {
-  const chainsDb = useMemo(
-    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])) as ChainList,
-    [chains]
-  )
-  const evmNetworksDb = useMemo(
-    () =>
-      Object.fromEntries(
-        (evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])
-      ) as EvmNetworkList,
-    [evmNetworks]
-  )
-  const tokensDb = useMemo(
-    () => Object.fromEntries((tokens || []).map((token) => [token.id, token])) as TokenList,
-    [tokens]
-  )
-  return { chains: chainsDb, evmNetworks: evmNetworksDb, tokens: tokensDb }
-}
-
-const usePortfolioCommonDataProvider = () => {
-  // Keeping these available from a context prevents maintaining separate subscriptions to Dexie.
-  // Dexie's fast but still uses x more resources if x components call these hooks directly
-  const chains = useChains()
-  const evmNetworks = useEvmNetworks()
-  const tokens = useTokens()
-
-  const hydrate = useHydrateBalances(chains, evmNetworks, tokens)
-
-  return { chains, evmNetworks, tokens, hydrate }
-}
-
-// dedicated context so it can be shared between PortfolioProviderSingleAccount and PortfolioProviderAllAccounts
-const [PortfolioCommonDataProvider, usePortfolioCommonData] = provideContext(
-  usePortfolioCommonDataProvider
-)
+import { useEffect, useMemo, useState } from "react"
 
 export type NetworkOption = {
   id: string // here we'll merge all ids together
   name: string
-  chainId?: string
-  evmNetworkId?: number
+  chainId?: ChainId
+  evmNetworkId?: EvmNetworkId
   logoId: string
   symbols?: string[] // use when searching network by token symbol
   sortIndex: number | null
@@ -64,8 +27,8 @@ const getNetworkTokenSymbols = ({
   evmNetworkId,
 }: {
   tokens?: Token[]
-  chainId?: string
-  evmNetworkId?: number
+  chainId?: ChainId
+  evmNetworkId?: EvmNetworkId
 }) => {
   if (!tokens) return []
   const networkTokens = tokens.filter((token) => {
@@ -77,7 +40,9 @@ const getNetworkTokenSymbols = ({
 }
 
 const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balances?: Balances }) => {
-  const { chains, evmNetworks, tokens } = usePortfolioCommonData()
+  const chains = useChains()
+  const tokens = useTokens()
+  const evmNetworks = useEvmNetworks()
   const [safeNetworks, setSafeNetworks] = useState<NetworkOption[]>([])
 
   const networks = useMemo(() => {
@@ -140,9 +105,18 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
 }
 
 // allows sharing the network filter between pages
-const usePortfolioProvider = ({ balances: allBalances }: { balances: Balances }) => {
+const usePortfolioProvider = () => {
   const { account } = useSelectedAccount()
-  const { chains, tokens, evmNetworks, hydrate } = usePortfolioCommonData()
+  const chains = useChains()
+  const tokens = useTokens()
+  const evmNetworks = useEvmNetworks()
+  const hydrate = useBalancesHydrate()
+  const balances = useBalances()
+
+  const allBalances = useMemo(
+    () => (account ? balances.find({ address: account.address }) : balances),
+    [account, balances]
+  )
 
   const accountType = useMemo(() => {
     if (account?.type === "ethereum") return "ethereum"
@@ -180,40 +154,4 @@ const usePortfolioProvider = ({ balances: allBalances }: { balances: Balances })
   }
 }
 
-const [PortfolioInnerProvider, usePortfolioInner] = provideContext(usePortfolioProvider)
-
-const PortfolioSingleAccountProvider = ({
-  address,
-  children,
-}: {
-  address: string
-  children?: ReactNode
-}) => {
-  const balances = useBalancesByAddress(address)
-
-  return <PortfolioInnerProvider balances={balances}>{children}</PortfolioInnerProvider>
-}
-
-const PortfolioAllAccountsProvider = ({ children }: { children?: ReactNode }) => {
-  const balances = useBalances()
-
-  return <PortfolioInnerProvider balances={balances}>{children}</PortfolioInnerProvider>
-}
-
-export const PortfolioProvider = ({ children }: { children: ReactNode }) => {
-  const { account } = useSelectedAccount()
-
-  return (
-    <PortfolioCommonDataProvider>
-      {account ? (
-        <PortfolioSingleAccountProvider address={account.address}>
-          {children}
-        </PortfolioSingleAccountProvider>
-      ) : (
-        <PortfolioAllAccountsProvider>{children}</PortfolioAllAccountsProvider>
-      )}
-    </PortfolioCommonDataProvider>
-  )
-}
-
-export const usePortfolio = usePortfolioInner
+export const [PortfolioProvider, usePortfolio] = provideContext(usePortfolioProvider)

@@ -12,8 +12,8 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
-import { useSelect } from "downshift"
-import { useCallback, useEffect, useMemo } from "react"
+import { UseSelectStateChange, useSelect } from "downshift"
+import { useCallback, useMemo } from "react"
 import styled, { css } from "styled-components"
 
 const Button = styled.button`
@@ -118,6 +118,9 @@ const RESPONSIVE_CONTAINER_STYLE = css`
       align-items: center;
       text-align: center;
     }
+    ${Button} .ao-rows .ao-rowName {
+      justify-content: center;
+    }
 
     &.open > ul {
       border: 0.02rem solid var(--color-background-muted-3x);
@@ -197,6 +200,14 @@ const Container = styled.div<{ responsive?: boolean }>`
     display: none;
   }
 
+  .ao-rows .ao-rowName > div:first-child {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+  }
+
   ${({ responsive }) => (responsive ? RESPONSIVE_CONTAINER_STYLE : "")}
 `
 
@@ -207,9 +218,21 @@ type AccountOptionProps = AnyAccountOptionProps & {
   totalUsd: number
   genesisHash?: string | null
   name?: string
+  isHardware?: boolean
 }
 
-const AccountOption = ({ address, totalUsd, genesisHash, name, withTrack }: AccountOptionProps) => {
+type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & {
+  address: string
+}
+
+const AccountOption = ({
+  address,
+  totalUsd,
+  genesisHash,
+  name,
+  isHardware,
+  withTrack,
+}: AccountOptionProps) => {
   const { genericEvent } = useAnalytics()
   const handleClick = useCallback(() => {
     if (!withTrack) return
@@ -233,7 +256,7 @@ const AccountOption = ({ address, totalUsd, genesisHash, name, withTrack }: Acco
           <Box overflow="hidden" textOverflow="ellipsis" noWrap flex column justify="center">
             {name ?? (address ? shortenAddress(address) : "unknown")}
           </Box>
-          {genesisHash && (
+          {isHardware && (
             <Box fg="primary" flex column justify="center">
               <UsbIcon />
             </Box>
@@ -245,10 +268,6 @@ const AccountOption = ({ address, totalUsd, genesisHash, name, withTrack }: Acco
       </div>
     </AccountOptionContainer>
   )
-}
-
-type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & {
-  address: string
 }
 
 const SingleAccountOption = (props: SingleAccountOptionProps) => {
@@ -265,7 +284,13 @@ const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
   return <AccountOption name="All accounts" totalUsd={total} withTrack={withTrack} />
 }
 
-const OPTION_ALL_ACCOUNTS = { address: undefined } as unknown as AccountJsonAny
+type DropdownItem = {
+  name?: string
+  address?: string
+  genesisHash?: string | null
+  isHardware?: boolean
+}
+const OPTION_ALL_ACCOUNTS: DropdownItem = {}
 
 type AccountSelectProps = {
   responsive?: boolean
@@ -275,19 +300,27 @@ type AccountSelectProps = {
 export const AccountSelect = ({ responsive, className }: AccountSelectProps) => {
   const { account, accounts, select } = useSelectedAccount()
 
-  const items = useMemo<AccountJsonAny[]>(
-    () => [OPTION_ALL_ACCOUNTS, ...accounts].filter((a) => a.address !== account?.address),
+  const items = useMemo<DropdownItem[]>(
+    () =>
+      [OPTION_ALL_ACCOUNTS, ...accounts]
+        .filter((a) => a.address !== account?.address)
+        .map((a) => a as DropdownItem),
     [account?.address, accounts]
   )
-  const { isOpen, selectedItem, getToggleButtonProps, getMenuProps, getItemProps, closeMenu } =
-    useSelect<AccountJsonAny | undefined>({
-      items,
-      defaultSelectedItem: account,
-    })
 
-  useEffect(() => {
-    if (selectedItem) select(selectedItem.address)
-  }, [selectedItem, select])
+  const handleItemChange = useCallback(
+    (changes: UseSelectStateChange<DropdownItem | undefined>) => {
+      select(changes.selectedItem?.address)
+    },
+    [select]
+  )
+  const { isOpen, getToggleButtonProps, getMenuProps, getItemProps, closeMenu } = useSelect<
+    DropdownItem | undefined
+  >({
+    items,
+    selectedItem: undefined, // there should never be a selected item, as we don't display currently selected option in the dropdown itself
+    onSelectedItemChange: handleItemChange,
+  })
 
   return (
     <Container
@@ -308,7 +341,7 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
             {items.map((item, index) => (
               <li key={item.address ?? "all"} {...getItemProps({ item, index })}>
                 {item.address ? (
-                  <SingleAccountOption {...item} withTrack />
+                  <SingleAccountOption {...item} address={item.address} withTrack />
                 ) : (
                   <AllAccountsOption withTrack />
                 )}

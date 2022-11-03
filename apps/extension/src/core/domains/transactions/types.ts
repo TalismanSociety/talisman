@@ -3,6 +3,8 @@ import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { RequestIdOnly } from "@core/types/base"
 
+import { EthGasSettings, EvmNetworkId } from "../ethereum/types"
+
 // Asset Transfer Messages
 export interface RequestAssetTransfer {
   chainId: ChainId
@@ -13,6 +15,20 @@ export interface RequestAssetTransfer {
   tip: string
   reapBalance?: boolean
 }
+export interface RequestAssetTransferEth {
+  evmNetworkId: EvmNetworkId
+  tokenId: TokenId
+  fromAddress: string
+  toAddress: string
+  amount: string
+  gasSettings: EthGasSettings
+}
+export interface RequestAssetTransferEthHardware {
+  evmNetworkId: EvmNetworkId
+  tokenId: TokenId
+  amount: string
+  signedTransaction: string
+}
 
 export interface RequestAssetTransferApproveSign {
   id: string
@@ -21,6 +37,10 @@ export interface RequestAssetTransferApproveSign {
 
 export interface ResponseAssetTransfer {
   id: string
+}
+
+export interface ResponseAssetTransferEth {
+  hash: string
 }
 
 export interface ResponseAssetTransferFeeQuery {
@@ -52,6 +72,8 @@ export type TransactionList = Record<TransactionId, Transaction>
 export interface AssetTransferMessages {
   // asset transfer signatures
   "pri(assets.transfer)": [RequestAssetTransfer, ResponseAssetTransfer]
+  "pri(assets.transferEth)": [RequestAssetTransferEth, ResponseAssetTransferEth]
+  "pri(assets.transferEthHardware)": [RequestAssetTransferEthHardware, ResponseAssetTransferEth]
   "pri(assets.transfer.checkFees)": [RequestAssetTransfer, ResponseAssetTransferFeeQuery]
   "pri(assets.transfer.approveSign)": [RequestAssetTransferApproveSign, ResponseAssetTransfer]
 

@@ -13,10 +13,13 @@ port.onMessage.addListener(messageService.handleResponse)
 export const api: MessageTypes = {
   unsubscribe: (id) => messageService.sendMessage("pri(unsubscribe)", { id }),
   // UNSORTED
-  onboard: (name, pass, passConfirm, mnemonic) =>
-    messageService.sendMessage("pri(app.onboard)", { name, pass, passConfirm, mnemonic }),
+  onboard: (pass, passConfirm, mnemonic) =>
+    messageService.sendMessage("pri(app.onboard)", { pass, passConfirm, mnemonic }),
   authenticate: (pass) => messageService.sendMessage("pri(app.authenticate)", { pass }),
   lock: () => messageService.sendMessage("pri(app.lock)"),
+  changePassword: (currentPw, newPw, newPwConfirm) =>
+    messageService.sendMessage("pri(app.changePassword)", { currentPw, newPw, newPwConfirm }),
+  checkPassword: (password) => messageService.sendMessage("pri(app.checkPassword)", { password }),
   authStatus: () => messageService.sendMessage("pri(app.authStatus)"),
   authStatusSubscribe: (cb) => messageService.subscribe("pri(app.authStatus.subscribe)", null, cb),
   onboardStatus: () => messageService.sendMessage("pri(app.onboardStatus)"),
@@ -52,6 +55,20 @@ export const api: MessageTypes = {
       signature,
     }),
 
+  // encrypt messages -------------------------------------------------------
+  subscribeEncryptRequests: (cb) => messageService.subscribe("pri(encrypt.requests)", null, cb),
+  subscribeEncryptRequest: (id: string, cb) =>
+    messageService.subscribe("pri(encrypt.byid.subscribe)", { id }, cb),
+  approveEncrypt: (id) =>
+    messageService.sendMessage("pri(encrypt.approveEncrypt)", {
+      id,
+    }),
+  approveDecrypt: (id) =>
+    messageService.sendMessage("pri(encrypt.approveDecrypt)", {
+      id,
+    }),
+  cancelEncryptRequest: (id) => messageService.sendMessage("pri(encrypt.cancel)", { id }),
+
   // mnemonic messages -------------------------------------------------------
   mnemonicUnlock: (pass) => messageService.sendMessage("pri(mnemonic.unlock)", pass),
   mnemonicConfirm: (confirmed: boolean) =>
@@ -67,16 +84,23 @@ export const api: MessageTypes = {
   accountCreateFromJson: (json, password) =>
     messageService.sendMessage("pri(accounts.create.json)", { json, password }),
   accountCreateHardware: ({ accountIndex, address, addressOffset, genesisHash, name }) =>
-    messageService.sendMessage("pri(accounts.create.hardware)", {
+    messageService.sendMessage("pri(accounts.create.hardware.substrate)", {
       accountIndex,
       address,
       addressOffset,
       genesisHash,
       name,
     }),
+  accountCreateHardwareEthereum: (name, address, path) =>
+    messageService.sendMessage("pri(accounts.create.hardware.ethereum)", {
+      name,
+      address,
+      path,
+    }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountForget: (address) => messageService.sendMessage("pri(accounts.forget)", { address }),
-  accountExport: (address) => messageService.sendMessage("pri(accounts.export)", { address }),
+  accountExport: (address, password, exportPw) =>
+    messageService.sendMessage("pri(accounts.export)", { address, password, exportPw }),
   accountRename: (address, name) =>
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
   accountValidateMnemonic: (mnemonic) =>
@@ -88,8 +112,12 @@ export const api: MessageTypes = {
   getBalanceLocks: ({ chainId, addresses }) =>
     messageService.sendMessage("pri(balances.locks.get)", { chainId, addresses }),
   balances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
-  balancesByParams: (addressesByChain, cb) =>
-    messageService.subscribe("pri(balances.byparams.subscribe)", { addressesByChain }, cb),
+  balancesByParams: (addressesByChain, addressesByEvmNetwork, cb) =>
+    messageService.subscribe(
+      "pri(balances.byparams.subscribe)",
+      { addressesByChain, addressesByEvmNetwork },
+      cb
+    ),
 
   // authorized sites messages ------------------------------------------
   authorizedSites: () => messageService.sendMessage("pri(sites.list)"),
@@ -140,6 +168,22 @@ export const api: MessageTypes = {
       tip,
       reapBalance,
     }),
+  assetTransferEth: (evmNetworkId, tokenId, fromAddress, toAddress, amount, gasSettings) =>
+    messageService.sendMessage("pri(assets.transferEth)", {
+      evmNetworkId,
+      tokenId,
+      fromAddress,
+      toAddress,
+      amount,
+      gasSettings,
+    }),
+  assetTransferEthHardware: (evmNetworkId, tokenId, amount, signedTransaction) =>
+    messageService.sendMessage("pri(assets.transferEthHardware)", {
+      evmNetworkId,
+      tokenId,
+      amount,
+      signedTransaction,
+    }),
   assetTransferCheckFees: (chainId, tokenId, fromAddress, toAddress, amount, tip, reapBalance) =>
     messageService.sendMessage("pri(assets.transfer.checkFees)", {
       chainId,
@@ -161,17 +205,28 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(eth.signing.approveSign)", {
       id,
     }),
-  ethApproveSignAndSend: (id, maxFeePerGas, maxPriorityFeePerGas) =>
+  ethApproveSignHardware: (id, signedPayload) =>
+    messageService.sendMessage("pri(eth.signing.approveSignHardware)", {
+      id,
+      signedPayload,
+    }),
+  ethApproveSignAndSend: (id, transaction) =>
     messageService.sendMessage("pri(eth.signing.approveSignAndSend)", {
       id,
-      maxFeePerGas,
-      maxPriorityFeePerGas,
+      transaction,
+    }),
+  ethApproveSignAndSendHardware: (id, signedPayload) =>
+    messageService.sendMessage("pri(eth.signing.approveSignAndSendHardware)", {
+      id,
+      signedPayload,
     }),
   ethCancelSign: (id) =>
     messageService.sendMessage("pri(eth.signing.cancel)", {
       id,
     }),
   ethRequest: (request) => messageService.sendMessage("pri(eth.request)", request),
+  ethGetTransactionsCount: (address, evmNetworkId) =>
+    messageService.sendMessage("pri(eth.transactions.count)", { address, evmNetworkId }),
   ethNetworkAddGetRequests: () =>
     messageService.sendMessage("pri(eth.networks.add.requests)", null),
   ethNetworkAddApprove: (id) => messageService.sendMessage("pri(eth.networks.add.approve)", { id }),

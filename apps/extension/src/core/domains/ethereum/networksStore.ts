@@ -62,21 +62,8 @@ export class EvmNetworkStore {
   }
 }
 
-const evmNetworksResponseToEvmNetworkList = (
-  evmNetworks: Array<EvmNetwork & { id: string }>
-): EvmNetworkList =>
-  evmNetworks
-    .map((evmNetwork: EvmNetwork & { id: string }) => ({
-      ...evmNetwork,
-      id: parseInt(evmNetwork.id),
-    }))
-    .reduce(
-      (allEvmNetworks: EvmNetworkList, evmNetwork: EvmNetwork) => ({
-        ...allEvmNetworks,
-        [evmNetwork.id]: evmNetwork,
-      }),
-      {}
-    )
+const evmNetworksResponseToEvmNetworkList = (evmNetworks: Array<EvmNetwork>): EvmNetworkList =>
+  Object.fromEntries(evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork]))
 
 export const evmNetworksQuery = gql`
   {

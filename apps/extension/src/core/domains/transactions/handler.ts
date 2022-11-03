@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import BlocksRpc from "@core/domains/blocks/rpc"
 import { ChainId } from "@core/domains/chains/types"
 import EventsRpc from "@core/domains/events/rpc"
@@ -7,14 +8,17 @@ import { pendingTransfers } from "@core/domains/transactions/rpc/PendingTransfer
 import {
   RequestAssetTransfer,
   RequestAssetTransferApproveSign,
+  RequestAssetTransferEth,
+  RequestAssetTransferEthHardware,
   ResponseAssetTransfer,
-  ResponseAssetTransferFeeQuery,
+  ResponseAssetTransferEth,
   TransactionStatus,
 } from "@core/domains/transactions/types"
-import { getPairFromAddress, getUnlockedPairFromAddress } from "@core/handlers/helpers"
+import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { log } from "@core/log"
 import type {
   RequestSignatures,
   RequestTypes,
@@ -22,11 +26,20 @@ import type {
   SubscriptionCallback,
 } from "@core/types"
 import { Address, Port } from "@core/types/base"
+import { getPrivateKey } from "@core/util/getPrivateKey"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
+import { TransactionRequest } from "@ethersproject/abstract-provider"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
+import * as Sentry from "@sentry/browser"
+import { planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
+import { Wallet, ethers } from "ethers"
+
+import { getEthTransferTransactionBase, rebuildGasSettings } from "../ethereum/helpers"
+import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"
+import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
 
 export default class AssetTransferHandler extends ExtensionHandler {
   private getExtrinsicWatch(
@@ -102,60 +115,61 @@ export default class AssetTransferHandler extends ExtensionHandler {
     amount,
     tip,
     reapBalance = false,
-  }: RequestAssetTransfer): Promise<ResponseAssetTransfer> {
-    try {
-      // eslint-disable-next-line no-var
-      var pair = getUnlockedPairFromAddress(fromAddress)
-    } catch (error) {
-      this.stores.password.clearPassword()
-      throw error
-    }
+  }: RequestAssetTransfer) {
+    const result = await getPairForAddressSafely(fromAddress, async (pair) => {
+      const token = await db.tokens.get(tokenId)
+      if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
-    const token = await db.tokens.get(tokenId)
-    if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+      talismanAnalytics.capture("asset transfer", {
+        chainId,
+        tokenId,
+        amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
+        internal: keyring.getAccount(toAddress) !== undefined,
+      })
 
-    talismanAnalytics.capture("asset transfer", {
-      chainId,
-      tokenId,
-      amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
-      internal: keyring.getAccount(toAddress) !== undefined,
+      return await new Promise<ResponseAssetTransfer>((resolve, reject) => {
+        const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)
+
+        const tokenType = token.type
+        if (tokenType === "substrate-native")
+          return AssetTransfersRpc.transfer(
+            chainId,
+            amount,
+            pair,
+            toAddress,
+            tip,
+            reapBalance,
+            watchExtrinsic
+          ).catch(reject)
+        if (tokenType === "evm-native")
+          throw new Error(
+            "Evm native token transfers are not implemented in this version of Talisman."
+          )
+        if (tokenType === "substrate-orml")
+          return OrmlTokenTransfersRpc.transfer(
+            chainId,
+            tokenId,
+            amount,
+            pair,
+            toAddress,
+            tip,
+            watchExtrinsic
+          ).catch(reject)
+        if (tokenType === "evm-erc20")
+          throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
+
+        // force compilation error if any token types don't have a case
+        const exhaustiveCheck: never = tokenType
+        throw new Error(`Unhandled token type ${exhaustiveCheck}`)
+      })
     })
 
-    return await new Promise((resolve, reject) => {
-      const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)
-
-      const tokenType = token.type
-      if (tokenType === "substrate-native")
-        return AssetTransfersRpc.transfer(
-          chainId,
-          amount,
-          pair,
-          toAddress,
-          tip,
-          reapBalance,
-          watchExtrinsic
-        )
-      if (tokenType === "evm-native")
-        throw new Error(
-          "Evm native token transfers are not implemented in this version of Talisman."
-        )
-      if (tokenType === "substrate-orml")
-        return OrmlTokenTransfersRpc.transfer(
-          chainId,
-          tokenId,
-          amount,
-          pair,
-          toAddress,
-          tip,
-          watchExtrinsic
-        )
-      if (tokenType === "evm-erc20")
-        throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
-
-      // force compilation error if any token types don't have a case
-      const exhaustiveCheck: never = tokenType
-      throw new Error(`Unhandled token type ${exhaustiveCheck}`)
-    })
+    if (result.ok) return result.val
+    // 1010 (Invalid signature) happens often on kusama, simply retrying usually works.
+    // This message should hopefully motivate the user to retry
+    else if ((result.val as any)?.code === 1010) throw new Error("Failed to send transaction")
+    else if (result.val instanceof Error) throw result.val
+    else throw new Error("Failed to send transaction")
   }
 
   private async assetTransferCheckFees({
@@ -166,28 +180,134 @@ export default class AssetTransferHandler extends ExtensionHandler {
     amount,
     tip,
     reapBalance = false,
-  }: RequestAssetTransfer): Promise<ResponseAssetTransferFeeQuery> {
-    const pair = getPairFromAddress(fromAddress)
+  }: RequestAssetTransfer) {
+    const result = await getPairForAddressSafely(fromAddress, async (pair) => {
+      const token = await db.tokens.get(tokenId)
+      if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
-    const token = await db.tokens.get(tokenId)
-    if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+      const tokenType = token.type
+      if (tokenType === "substrate-native")
+        return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, tip, reapBalance)
+      if (tokenType === "evm-native")
+        throw new Error(
+          "Evm native token transfers are not implemented in this version of Talisman."
+        )
+      if (tokenType === "substrate-orml")
+        return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
+      if (tokenType === "evm-erc20")
+        throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
-    const tokenType = token.type
-    if (tokenType === "substrate-native")
-      return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, tip, reapBalance)
-    if (tokenType === "evm-native")
-      throw new Error("Evm native token transfers are not implemented in this version of Talisman.")
-    if (tokenType === "substrate-orml")
-      return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
-    if (tokenType === "evm-erc20")
-      throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
+      // force compilation error if any token types don't have a case
+      const exhaustiveCheck: never = tokenType
+      throw new Error(`Unhandled token type ${exhaustiveCheck}`)
+    })
 
-    // force compilation error if any token types don't have a case
-    const exhaustiveCheck: never = tokenType
-    throw new Error(`Unhandled token type ${exhaustiveCheck}`)
+    if (result.ok) return result.val
+    // 1010 (Invalid signature) happens often on kusama, simply retrying usually works.
+    // This message should hopefully motivate the user to retry
+    else if ((result.val as any)?.code === 1010) throw new Error("Failed to send transaction")
+    else if (result.val instanceof Error) throw result.val
+    else throw new Error("Failed to check fees")
   }
 
-  private async assetTransferApproveSign({
+  private async assetTransferEthHardware({
+    evmNetworkId,
+    tokenId,
+    amount,
+    signedTransaction,
+  }: RequestAssetTransferEthHardware): Promise<ResponseAssetTransferEth> {
+    try {
+      const provider = await getProviderForEvmNetworkId(evmNetworkId)
+      if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
+
+      const token = await db.tokens.get(tokenId)
+      if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+
+      const { from, to, hash, ...otherDetails } = await provider.sendTransaction(signedTransaction)
+
+      log.log("assetTransferEth - sent", { from, to, hash, ...otherDetails })
+
+      talismanAnalytics.capture("asset transfer", {
+        evmNetworkId,
+        tokenId,
+        amount: roundToFirstInteger(Number(planckToTokens(amount, token.decimals))),
+        internal: to && keyring.getAccount(to) !== undefined,
+      })
+
+      incrementTransactionCount(from, evmNetworkId)
+
+      return { hash }
+    } catch (err) {
+      const error = err as Error & { reason?: string; error?: Error }
+      // eslint-disable-next-line no-console
+      DEBUG && console.error(error.message, { err })
+      Sentry.captureException(err, { extra: { tokenId, evmNetworkId } })
+      throw new Error(error?.error?.message ?? error.reason ?? "Failed to send transaction")
+    }
+  }
+
+  private async assetTransferEth({
+    evmNetworkId,
+    tokenId,
+    fromAddress,
+    toAddress,
+    amount,
+    gasSettings,
+  }: RequestAssetTransferEth): Promise<ResponseAssetTransferEth> {
+    const result = await getPairForAddressSafely(fromAddress, async (pair) => {
+      const password = await this.stores.password.getPassword()
+      assert(password, "Unauthorised")
+
+      const token = await db.tokens.get(tokenId)
+      if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+
+      const provider = await getProviderForEvmNetworkId(evmNetworkId)
+      if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
+
+      talismanAnalytics.capture("asset transfer", {
+        evmNetworkId,
+        tokenId,
+        amount: roundToFirstInteger(Number(planckToTokens(amount, token.decimals))),
+        internal: keyring.getAccount(toAddress) !== undefined,
+      })
+
+      const transfer = await getEthTransferTransactionBase(
+        evmNetworkId,
+        ethers.utils.getAddress(fromAddress),
+        ethers.utils.getAddress(toAddress),
+        token,
+        amount
+      )
+
+      const transaction: TransactionRequest = {
+        nonce: await getTransactionCount(fromAddress, evmNetworkId),
+        ...rebuildGasSettings(gasSettings),
+        ...transfer,
+      }
+
+      const privateKey = getPrivateKey(pair, password)
+      const wallet = new Wallet(privateKey, provider)
+
+      const response = await wallet.sendTransaction(transaction)
+
+      const { hash, ...otherDetails } = response
+      log.log("assetTransferEth - sent", { hash, ...otherDetails })
+
+      incrementTransactionCount(fromAddress, evmNetworkId)
+
+      return { hash }
+    })
+
+    if (result.ok) return result.val
+    else {
+      const error = result.val as Error & { reason?: string; error?: Error }
+      log.error("Failed to send transaction", { err: result.val })
+      Sentry.captureException(result.val, { tags: { tokenId, evmNetworkId } })
+      throw new Error(error?.error?.message ?? error.reason ?? "Failed to send transaction")
+    }
+  }
+
+  private assetTransferApproveSign({
     id,
     signature,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
@@ -195,14 +315,14 @@ export default class AssetTransferHandler extends ExtensionHandler {
     assert(pendingTx, `No pending transfer with id ${id}`)
     const { data, transfer } = pendingTx
 
-    return await new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const watchExtrinsic = this.getExtrinsicWatch(
         data.chainId,
         data.unsigned.address,
         resolve,
         reject
       )
-      transfer(signature, watchExtrinsic)
+      transfer(signature, watchExtrinsic).catch(reject)
     })
   }
 
@@ -215,6 +335,12 @@ export default class AssetTransferHandler extends ExtensionHandler {
     switch (type) {
       case "pri(assets.transfer)":
         return this.assetTransfer(request as RequestAssetTransfer)
+
+      case "pri(assets.transferEth)":
+        return this.assetTransferEth(request as RequestAssetTransferEth)
+
+      case "pri(assets.transferEthHardware)":
+        return this.assetTransferEthHardware(request as RequestAssetTransferEthHardware)
 
       case "pri(assets.transfer.checkFees)":
         return this.assetTransferCheckFees(request as RequestAssetTransfer)
