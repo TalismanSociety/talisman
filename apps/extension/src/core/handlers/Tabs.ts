@@ -50,6 +50,7 @@ import Browser from "webextension-polyfill"
 import RpcState from "./RpcState"
 import { createSubscription, genericAsyncSubscription, unsubscribe } from "./subscriptions"
 import { isPhishingSite } from "@core/util/isPhishingSite"
+import { talismanAnalytics } from "@core/libs/Analytics"
 
 export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()
@@ -249,6 +250,11 @@ export default class Tabs extends TabsHandler {
     const isInDenyList = await isPhishingSite(url)
 
     if (isInDenyList) {
+      Sentry.captureEvent({
+        message: "Redirect from phishing site",
+        extra: { url },
+      })
+      talismanAnalytics.capture("Redirect from phishing site", { url })
       this.redirectPhishingLanding(url)
 
       return true
