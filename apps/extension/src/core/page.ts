@@ -45,7 +45,7 @@ function inject() {
   // inject substrate wallet provider
   injectExtension(enable, {
     name: "talisman",
-    version: process.env.VERSION ? process.env.VERSION : "",
+    version: process.env.VERSION ?? "",
   })
 
   injectEthereum(messageService.sendMessage)
