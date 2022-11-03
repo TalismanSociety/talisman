@@ -14118,7 +14118,7 @@ __metadata:
     "@esbuild-plugins/node-globals-polyfill": ^0.1.1
     "@metamask/eth-sig-util": 4.0.1
     "@tailwindcss/forms": ^0.5.3
-    "@talismn/wagmi-connector": 0.1.0
+    "@talismn/wagmi-connector": ^0.0.4
     "@types/react": 18.0.14
     "@types/react-dom": 18.0.5
     "@vitejs/plugin-react": ^2.1.0
