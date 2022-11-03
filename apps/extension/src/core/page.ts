@@ -28,10 +28,7 @@ window.addEventListener("message", ({ data, source }: Message): void => {
 })
 
 // redirect users if this page is considered as phishing, otherwise return false
-const redirectIfPhishing = async (): Promise<boolean> => {
-  const res = await messageService.sendMessage("pub(phishing.redirectIfDenied)")
-  return res
-}
+const redirectIfPhishing = () => messageService.sendMessage("pub(phishing.redirectIfDenied)")
 
 // the enable function, called by the dapp to allow access
 const enable = async (origin: string): Promise<Injected> => {
