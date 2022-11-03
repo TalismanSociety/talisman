@@ -1,4 +1,5 @@
 import { DEBUG } from "@core/constants"
+import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { api } from "@ui/api"
 import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
@@ -12,8 +13,8 @@ import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountCo
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
-import { Suspense, lazy, useEffect, useRef } from "react"
-import { Navigate, Route, Routes } from "react-router-dom"
+import { Suspense, lazy, useEffect, useRef, FC, PropsWithChildren } from "react"
+import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import Layout from "./layout"
 import About from "./routes/About"
@@ -24,6 +25,7 @@ import AccountAddTypePicker from "./routes/AccountAddTypePicker"
 import { CustomTokenAdd } from "./routes/CustomTokens/CustomTokenAdd"
 import { CustomTokenDetails } from "./routes/CustomTokens/CustomTokenDetails"
 import { CustomTokens } from "./routes/CustomTokens/CustomTokens"
+import { PhishingPage } from "./routes/PhishingPage"
 import { Portfolio } from "./routes/Portfolio"
 import Settings from "./routes/Settings"
 import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
@@ -101,24 +103,34 @@ const DashboardInner = () => {
   )
 }
 
+const PreventPhishing: FC<PropsWithChildren> = ({ children }) => {
+  const match = useMatch(`${PHISHING_PAGE_REDIRECT}/:url`)
+
+  if (match?.params?.url) return <PhishingPage url={match.params.url} />
+
+  return <>{children}</>
+}
+
 const Dashboard = () => (
-  <SelectedAccountProvider>
-    <AccountRemoveModalProvider>
-      <AccountRenameModalProvider>
-        <AccountExportModalProvider>
-          <AddressFormatterModalProvider>
-            <SendTokensModalProvider>
-              <BuyTokensModalProvider>
-                <ReceiveTokensModalProvider>
-                  <DashboardInner />
-                </ReceiveTokensModalProvider>
-              </BuyTokensModalProvider>
-            </SendTokensModalProvider>
-          </AddressFormatterModalProvider>
-        </AccountExportModalProvider>
-      </AccountRenameModalProvider>
-    </AccountRemoveModalProvider>
-  </SelectedAccountProvider>
+  <PreventPhishing>
+    <SelectedAccountProvider>
+      <AccountRemoveModalProvider>
+        <AccountRenameModalProvider>
+          <AccountExportModalProvider>
+            <AddressFormatterModalProvider>
+              <SendTokensModalProvider>
+                <BuyTokensModalProvider>
+                  <ReceiveTokensModalProvider>
+                    <DashboardInner />
+                  </ReceiveTokensModalProvider>
+                </BuyTokensModalProvider>
+              </SendTokensModalProvider>
+            </AddressFormatterModalProvider>
+          </AccountExportModalProvider>
+        </AccountRenameModalProvider>
+      </AccountRemoveModalProvider>
+    </SelectedAccountProvider>
+  </PreventPhishing>
 )
 
 export default Dashboard

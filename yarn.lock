@@ -1620,6 +1620,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/runtime@npm:^7.19.0":
+  version: 7.20.1
+  resolution: "@babel/runtime@npm:7.20.1"
+  dependencies:
+    regenerator-runtime: ^0.13.10
+  checksum: 00567a333d3357925742a6f5e39394dcc0af6e6029103fe188158bf7ae8b0b3ee3c6c0f68fccc217f0a6cfa455f6be252298baf56b3f5ff37b34313b170cd9f6
+  languageName: node
+  linkType: hard
+
 "@babel/template@npm:^7.18.10":
   version: 7.18.10
   resolution: "@babel/template@npm:7.18.10"
@@ -3358,6 +3367,18 @@ __metadata:
     "@polkadot/util-crypto": ^9.6.1
     "@polkadot/x-fetch": ^9.6.1
   checksum: 445eaefb3cf2bc9821f1205588742b181d4632b8651ae5d7ace7b0f7dda9d4601f8360afca872b377547a59e386ac8aa8d5965e3d38aaa8fb84a838bbfe2a58e
+  languageName: node
+  linkType: hard
+
+"@polkadot/phishing@npm:latest":
+  version: 0.18.10
+  resolution: "@polkadot/phishing@npm:0.18.10"
+  dependencies:
+    "@babel/runtime": ^7.19.0
+    "@polkadot/util": ^10.1.10
+    "@polkadot/util-crypto": ^10.1.10
+    "@polkadot/x-fetch": ^10.1.10
+  checksum: 76e29e714b762b629815865bab59f0bb037d787d739eca807e6649bdeec711ea4d2071057537d0b5ccca6e11667f57f650625684039e712639b7ea52897c587b
   languageName: node
   linkType: hard
 
@@ -9407,6 +9428,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eth-phishing-detect@npm:latest":
+  version: 1.2.0
+  resolution: "eth-phishing-detect@npm:1.2.0"
+  dependencies:
+    fast-levenshtein: ^2.0.6
+  checksum: 66a6a7c249ec8494e0360663596ce980ca75747cd202c47732eca0bfc7a97c6debbae359842e4f3e4ac7e6c44ab1f7f091c3aa7baa330449d3c1b7cc58608b71
+  languageName: node
+  linkType: hard
+
 "eth-query@npm:^2.1.0, eth-query@npm:^2.1.2":
   version: 2.1.2
   resolution: "eth-query@npm:2.1.2"
@@ -9739,6 +9769,7 @@ __metadata:
     "@polkadot/hw-ledger": "*"
     "@polkadot/keyring": "*"
     "@polkadot/networks": "*"
+    "@polkadot/phishing": latest
     "@polkadot/react-identicon": "*"
     "@polkadot/ui-keyring": "*"
     "@polkadot/ui-settings": "*"
@@ -9800,6 +9831,7 @@ __metadata:
     eslint: ^8.15.0
     eslint-config-talisman: "*"
     eslint-webpack-plugin: ^3.1.1
+    eth-phishing-detect: latest
     ethers: 5.7.1
     fake-indexeddb: ^3.1.7
     file-loader: 6.2.0
@@ -15036,6 +15068,13 @@ __metadata:
   version: 1.4.2
   resolution: "regenerate@npm:1.4.2"
   checksum: 3317a09b2f802da8db09aa276e469b57a6c0dd818347e05b8862959c6193408242f150db5de83c12c3fa99091ad95fb42a6db2c3329bfaa12a0ea4cbbeb30cb0
+  languageName: node
+  linkType: hard
+
+"regenerator-runtime@npm:^0.13.10":
+  version: 0.13.10
+  resolution: "regenerator-runtime@npm:0.13.10"
+  checksum: 09893f5a9e82932642d9a999716b6c626dc53ef2a01307c952ebbf8e011802360163a37c304c18a6c358548be5a72b448e37209954a18696f21e438c81cbb4b9
   languageName: node
   linkType: hard
 
