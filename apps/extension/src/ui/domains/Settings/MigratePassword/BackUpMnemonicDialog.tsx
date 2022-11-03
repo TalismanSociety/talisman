@@ -46,12 +46,12 @@ export const BackUpMnemonicDialog = () => {
     <ModalDialog title="Don't lose access to your wallet">
       <p className="text-body-secondary text-sm">Have you backed up your recovery phrase?</p>
       <p className="text-body-secondary text-sm">
-        Your recovery phrase is used to restore your Talisman accounts if you or forget your
-        password, or lose access to your device.
+        Your recovery phrase is used to restore your Talisman accounts if you forget your password,
+        or lose access to your device.
       </p>
       <p className="text-body-secondary text-sm">
         We strongly encourage you to back up your recovery phrase by writing it down and storing it
-        in a secure location
+        in a secure location.
       </p>
       <div className="mt-20 flex justify-between">
         <Button className="mr-4 px-4" onClick={setMnemonicBackupConfirmed} fullWidth>
