@@ -4,7 +4,7 @@ import imgAnalytics from "@talisman/theme/images/analytics.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
-import { useNavigate } from "react-router-dom"
+import { Navigate, useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 import { OnboardDialog } from "../components/OnboardDialog"
@@ -47,7 +47,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const PrivacyPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const { updateData } = useOnboard()
+  const { updateData, data } = useOnboard()
   const navigate = useNavigate()
 
   const handleClick = useCallback(
@@ -72,6 +72,9 @@ export const PrivacyPage = () => {
     })
   }, [])
 
+  // if user refreshes the page, context data is lost
+  if (!data?.password) return <Navigate to="/" replace />
+
   return (
     <Container
       withBack
@@ -88,6 +91,7 @@ export const PrivacyPage = () => {
           <a
             onClick={handleLearnMoreClick}
             href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+            target="_blank"
           >
             Learn more
           </a>{" "}
