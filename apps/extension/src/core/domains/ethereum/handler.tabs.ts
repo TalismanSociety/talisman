@@ -36,6 +36,7 @@ import { ethers, providers } from "ethers"
 import { filterAccountsByAddresses } from "../accounts/helpers"
 import { getErc20TokenId } from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
+import { convertAddress } from "@talisman/util/convertAddress"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
@@ -43,18 +44,27 @@ interface EthAuthorizedSite extends AuthorizedSite {
 }
 
 export class EthTabsHandler extends TabsHandler {
-  async getSiteDetails(url: string): Promise<EthAuthorizedSite> {
+  private async checkAccountAuthorised(url: string, address?: string) {
+    try {
+      await this.stores.sites.ensureUrlAuthorized(url, true, address)
+    } catch (err) {
+      throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
+    }
+  }
+
+  async getSiteDetails(url: string, authorisedAddress?: string): Promise<EthAuthorizedSite> {
     const site = await this.stores.sites.getSiteFromUrl(url)
-    if (!site || !site.ethChainId || !site.ethAddresses || site.ethAddresses.length === 0)
+    if (
+      !site ||
+      !site.ethChainId ||
+      (authorisedAddress && !site.ethAddresses?.includes(convertAddress(authorisedAddress, null)))
+    )
       throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
     return site as EthAuthorizedSite
   }
 
-  async getProvider(url: string): Promise<providers.JsonRpcProvider> {
-    const site = await this.getSiteDetails(url)
-
-    if (!site?.ethChainId || !site?.ethAddresses.length)
-      throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
+  async getProvider(url: string, authorisedAddress?: string): Promise<providers.JsonRpcProvider> {
+    const site = await this.getSiteDetails(url, authorisedAddress)
 
     const ethereumNetwork = await db.evmNetworks.get(site.ethChainId)
     if (!ethereumNetwork)
@@ -71,12 +81,10 @@ export class EthTabsHandler extends TabsHandler {
   }
 
   private async authoriseEth(url: string, request: RequestAuthorizeTab): Promise<boolean> {
-    // Expected error codes
-    // 4100	Unauthorized	        The requested method and/or account has not been authorized by the user.
     const siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
     if (siteFromUrl?.ethAddresses) {
       if (siteFromUrl.ethAddresses.length) return true //already authorized
-      else throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED) //already rejected
+      else throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED) //already rejected : 4100	Unauthorized
     }
 
     try {
@@ -201,7 +209,7 @@ export class EthTabsHandler extends TabsHandler {
         }
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error("Failed to handle accountsChanged", err)
+        console.error("site subscription callback error", { err })
       }
     })
 
@@ -269,12 +277,12 @@ export class EthTabsHandler extends TabsHandler {
     } = request
     if (!hexChainId)
       throw new EthProviderRpcError("Missing chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
-    const chainId = parseInt(hexChainId, 16)
+    const ethChainId = parseInt(hexChainId, 16)
 
-    if (ethers.utils.hexValue(chainId) !== hexChainId)
+    if (ethers.utils.hexValue(ethChainId) !== hexChainId)
       throw new EthProviderRpcError("Malformed chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    const ethereumNetwork = await db.evmNetworks.get(chainId)
+    const ethereumNetwork = await db.evmNetworks.get(ethChainId)
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
 
@@ -284,7 +292,7 @@ export class EthTabsHandler extends TabsHandler {
 
     const { err, val } = urlToDomain(url)
     if (err) throw new Error(val)
-    this.stores.sites.updateSite(val, { ethChainId: chainId })
+    this.stores.sites.updateSite(val, { ethChainId })
 
     return null
   }
@@ -317,18 +325,12 @@ export class EthTabsHandler extends TabsHandler {
       ? [params[0], ethers.utils.getAddress(params[1])]
       : [params[1], ethers.utils.getAddress(params[0])]
 
-    await this.stores.sites.ensureUrlAuthorized(url, true, from)
-
     // message is either a raw string or a hex string or an object (signTypedData_v1)
     const message =
       typeof uncheckedMessage === "string" ? uncheckedMessage : JSON.stringify(uncheckedMessage)
 
-    const site = await this.getSiteDetails(url)
-    try {
-      await this.getProvider(url)
-    } catch (error) {
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
-    }
+    const site = await this.getSiteDetails(url, from)
+
     const address = site.ethAddresses[0]
     const pair = keyring.getPair(address)
 
@@ -350,10 +352,11 @@ export class EthTabsHandler extends TabsHandler {
     request: EthRequestArguments<"wallet_watchAsset">
   ) => {
     const { symbol, address, decimals, image } = request.params.options
-
     const ethChainId = await this.getChainId(url)
-    const tokenId = getErc20TokenId(ethChainId, address)
+    if (!ethChainId)
+      throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
+    const tokenId = getErc20TokenId(ethChainId, address)
     const existing = await db.tokens.get(tokenId)
     if (existing)
       throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
@@ -390,25 +393,21 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     request: EthRequestArguments<TEthMessageType>
   ): Promise<unknown> {
-    try {
-      // some sites expect eth_accounts to return an empty array if not connected/authorized.
-      // if length === 0 they'll request authorization
-      // so it should not raise an error if not authorized yet
-      if (
-        ![
-          "eth_requestAccounts",
-          "eth_accounts",
-          "eth_chainId",
-          "net_version",
-          "wallet_switchEthereumChain",
-          "wallet_addEthereumChain",
-          "wallet_watchAsset",
-        ].includes(request.method)
-      )
-        await this.stores.sites.ensureUrlAuthorized(url, true)
-    } catch (err) {
-      throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
-    }
+    // some sites expect eth_accounts to return an empty array if not connected/authorized.
+    // if length === 0 they'll request authorization
+    // so it should not raise an error if not authorized yet
+    if (
+      ![
+        "eth_requestAccounts",
+        "eth_accounts",
+        "eth_chainId",
+        "net_version",
+        "wallet_switchEthereumChain",
+        "wallet_addEthereumChain",
+        "wallet_watchAsset",
+      ].includes(request.method)
+    )
+      await this.checkAccountAuthorised(url)
 
     switch (request.method) {
       case "eth_requestAccounts":
@@ -441,7 +440,7 @@ export class EthTabsHandler extends TabsHandler {
           )
         }
 
-        await this.stores.sites.ensureUrlAuthorized(url, true, params[0].from)
+        await this.checkAccountAuthorised(url, params[0].from)
 
         const req = ethers.providers.JsonRpcProvider.hexlifyTransaction(params[0])
         const provider = await this.getProvider(url)
@@ -469,9 +468,7 @@ export class EthTabsHandler extends TabsHandler {
           params: [txRequest],
         } = request as EthRequestArguments<"eth_sendTransaction">
 
-        await this.stores.sites.ensureUrlAuthorized(url, true, txRequest.from)
-
-        const site = await this.getSiteDetails(url)
+        const site = await this.getSiteDetails(url, txRequest.from)
 
         // ensure chainId isn't an hex (ex: Zerion)
         if (typeof txRequest.chainId === "string" && (txRequest.chainId as string).startsWith("0x"))
@@ -482,7 +479,7 @@ export class EthTabsHandler extends TabsHandler {
           throw new EthProviderRpcError("Wrong network", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
         try {
-          await this.getProvider(url)
+          await this.getProvider(url, txRequest.from)
         } catch (error) {
           throw new EthProviderRpcError(
             "Network not supported",
