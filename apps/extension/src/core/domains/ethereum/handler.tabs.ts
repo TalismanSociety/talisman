@@ -388,14 +388,62 @@ export class EthTabsHandler extends TabsHandler {
     return this.state.requestStores.evmAssets.requestWatchAsset(url, request.params, token)
   }
 
+  private async sendTransaction(url: string, request: EthRequestArguments<"eth_sendTransaction">) {
+    const {
+      params: [txRequest],
+    } = request as EthRequestArguments<"eth_sendTransaction">
+
+    const site = await this.getSiteDetails(url, txRequest.from)
+
+    // ensure chainId isn't an hex (ex: Zerion)
+    if (typeof txRequest.chainId === "string" && (txRequest.chainId as string).startsWith("0x"))
+      txRequest.chainId = parseInt(txRequest.chainId, 16)
+
+    // checks that the request targets currently selected network
+    if (txRequest.chainId && site.ethChainId !== txRequest.chainId)
+      throw new EthProviderRpcError("Wrong network", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    try {
+      await this.getProvider(url, txRequest.from)
+    } catch (error) {
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+    }
+
+    const address = site.ethAddresses[0]
+
+    // allow only the currently selected account in "from" field
+    if (txRequest.from?.toLowerCase() !== address.toLowerCase())
+      throw new EthProviderRpcError("Unknown from account", ETH_ERROR_EIP1474_INVALID_INPUT)
+
+    const pair = keyring.getPair(address)
+
+    if (!address || !pair) {
+      throw new EthProviderRpcError(
+        `No account available for ${url}`,
+        ETH_ERROR_EIP1993_UNAUTHORIZED
+      )
+    }
+
+    return this.state.requestStores.signing.signAndSendEth(
+      url,
+      {
+        // locks the chainId in case the dapp's chainId changes after signing request creation
+        chainId: site.ethChainId,
+        ...txRequest,
+      },
+      site.ethChainId,
+      {
+        address,
+        ...pair.meta,
+      }
+    )
+  }
+
   private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
     id: string,
     url: string,
     request: EthRequestArguments<TEthMessageType>
   ): Promise<unknown> {
-    // some sites expect eth_accounts to return an empty array if not connected/authorized.
-    // if length === 0 they'll request authorization
-    // so it should not raise an error if not authorized yet
     if (
       ![
         "eth_requestAccounts",
@@ -463,59 +511,8 @@ export class EthTabsHandler extends TabsHandler {
         return recoverPersonalSignature({ data, signature })
       }
 
-      case "eth_sendTransaction": {
-        const {
-          params: [txRequest],
-        } = request as EthRequestArguments<"eth_sendTransaction">
-
-        const site = await this.getSiteDetails(url, txRequest.from)
-
-        // ensure chainId isn't an hex (ex: Zerion)
-        if (typeof txRequest.chainId === "string" && (txRequest.chainId as string).startsWith("0x"))
-          txRequest.chainId = parseInt(txRequest.chainId, 16)
-
-        // checks that the request targets currently selected network
-        if (txRequest.chainId && site.ethChainId !== txRequest.chainId)
-          throw new EthProviderRpcError("Wrong network", ETH_ERROR_EIP1474_INVALID_PARAMS)
-
-        try {
-          await this.getProvider(url, txRequest.from)
-        } catch (error) {
-          throw new EthProviderRpcError(
-            "Network not supported",
-            ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
-          )
-        }
-
-        const address = site.ethAddresses[0]
-
-        // allow only the currently selected account in "from" field
-        if (txRequest.from?.toLowerCase() !== address.toLowerCase())
-          throw new EthProviderRpcError("Unknown from account", ETH_ERROR_EIP1474_INVALID_INPUT)
-
-        const pair = keyring.getPair(address)
-
-        if (!address || !pair) {
-          throw new EthProviderRpcError(
-            `No account available for ${url}`,
-            ETH_ERROR_EIP1993_UNAUTHORIZED
-          )
-        }
-
-        return this.state.requestStores.signing.signAndSendEth(
-          url,
-          {
-            // locks the chainId in case the dapp's chainId changes after signing request creation
-            chainId: site.ethChainId,
-            ...txRequest,
-          },
-          site.ethChainId,
-          {
-            address,
-            ...pair.meta,
-          }
-        )
-      }
+      case "eth_sendTransaction":
+        return this.sendTransaction(url, request as EthRequestArguments<"eth_sendTransaction">)
 
       case "wallet_watchAsset":
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
