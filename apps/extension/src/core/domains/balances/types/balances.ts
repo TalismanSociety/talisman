@@ -375,8 +375,12 @@ export class BalanceFormatter {
   #decimals: number
   #fiatRatios: TokenRates | null
 
-  constructor(planck: string | bigint, decimals?: number, fiatRatios?: TokenRates) {
-    this.#planck = typeof planck === "bigint" ? planck.toString() : planck
+  constructor(
+    planck: string | bigint | undefined,
+    decimals?: number | undefined,
+    fiatRatios?: TokenRates
+  ) {
+    this.#planck = typeof planck === "bigint" ? planck.toString() : planck ?? "0"
     this.#decimals = decimals || 0
     this.#fiatRatios = fiatRatios || null
 
