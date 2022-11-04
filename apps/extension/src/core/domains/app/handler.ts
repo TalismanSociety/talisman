@@ -3,8 +3,7 @@ import { AppStoreData } from "@core/domains/app/store.app"
 import type {
   AnalyticsCaptureRequest,
   LoggedinType,
-  ModalOpenParams,
-  ModalTypes,
+  ModalOpenRequest,
   OnboardedType,
   RequestLogin,
   RequestOnboard,
@@ -27,7 +26,7 @@ import { AccountTypes } from "../accounts/helpers"
 import { changePassword } from "./helpers"
 
 export default class AppHandler extends ExtensionHandler {
-  #modalOpenRequest = new Subject<ModalTypes>()
+  #modalOpenRequest = new Subject<ModalOpenRequest>()
 
   private async onboard({ pass, passConfirm, mnemonic }: RequestOnboard): Promise<OnboardedType> {
     await sleep(1000)
@@ -194,7 +193,7 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
-  private async openModal({ modalType }: ModalOpenParams): Promise<void> {
+  private async openModal(modalOpenParams: ModalOpenRequest): Promise<void> {
     const queryUrl = Browser.runtime.getURL("dashboard.html")
     const [tab] = await Browser.tabs.query({ url: queryUrl })
     if (!tab) {
@@ -202,7 +201,7 @@ export default class AppHandler extends ExtensionHandler {
       // wait for newly created page to load and subscribe to backend (max 5 seconds)
       for (let i = 0; i < 50 && !this.#modalOpenRequest.observed; i++) await sleep(100)
     }
-    this.#modalOpenRequest.next(modalType)
+    this.#modalOpenRequest.next(modalOpenParams)
   }
 
   private onboardOpen(): boolean {
@@ -279,15 +278,10 @@ export default class AppHandler extends ExtensionHandler {
         return this.promptLogin(request as boolean)
 
       case "pri(app.modalOpen.request)":
-        return this.openModal(request as ModalOpenParams)
+        return this.openModal(request as ModalOpenRequest)
 
       case "pri(app.modalOpen.subscribe)":
-        return genericSubscription<"pri(app.modalOpen.subscribe)">(
-          id,
-          port,
-          this.#modalOpenRequest,
-          (modalType) => ({ modalType })
-        )
+        return genericSubscription<"pri(app.modalOpen.subscribe)">(id, port, this.#modalOpenRequest)
 
       case "pri(app.analyticsCapture)": {
         const { eventName, options } = request as AnalyticsCaptureRequest
