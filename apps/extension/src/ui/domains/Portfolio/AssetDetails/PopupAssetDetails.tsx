@@ -1,28 +1,15 @@
 import { Balances } from "@core/domains/balances/types"
-import { encodeAnyAddress, planckToTokens } from "@core/util"
-import { isEthereumAddress } from "@polkadot/util-crypto"
+import { planckToTokens } from "@core/util"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { IconButton } from "@talisman/components/IconButton"
-import {
-  CopyIcon,
-  CreditCardIcon,
-  LoaderIcon,
-  LockIcon,
-  PaperPlaneIcon,
-} from "@talisman/theme/icons"
+import { CopyIcon, CreditCardIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { api } from "@ui/api"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import useChains from "@ui/hooks/useChains"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import useTokens from "@ui/hooks/useTokens"
-import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback, useMemo } from "react"
 import styled from "styled-components"
 import { PillButton } from "talisman-ui"
