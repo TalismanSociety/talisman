@@ -115,11 +115,16 @@ class RpcFactory {
 
     const autoConnectMs = 1000
     try {
+      // sort healthy rpcs before unhealthy rpcs
       const healthyRpcs = (chain.rpcs || [])
         .filter(({ isHealthy }) => isHealthy)
         .map(({ url }) => url)
-      if (healthyRpcs.length)
-        this.#socketConnections[chainId] = new WsProvider(healthyRpcs, autoConnectMs)
+      const unhealthyRpcs = (chain.rpcs || [])
+        .filter(({ isHealthy }) => !isHealthy)
+        .map(({ url }) => url)
+      const rpcs = [...healthyRpcs, ...unhealthyRpcs]
+
+      if (rpcs.length) this.#socketConnections[chainId] = new WsProvider(rpcs, autoConnectMs)
       else throw new Error(`No healthy RPCs available for chain ${chainId}`)
     } catch (error) {
       // eslint-disable-next-line no-console
