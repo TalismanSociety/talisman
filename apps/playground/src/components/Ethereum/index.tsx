@@ -9,6 +9,7 @@ import { ContractReadWrite } from "./ContractReadWrite"
 import { SendERC20 } from "./SendERC20"
 import { PersonalSignNftListing } from "./PersonalSignNftListing"
 import { PersonalSignReversed } from "./PersonalSignReversed"
+import { AddNetwork } from "./AddNetwork"
 
 export const Ethereum = () => {
   return (
@@ -22,6 +23,7 @@ export const Ethereum = () => {
         <PersonalSignReversed />
         <PersonalSignNftListing />
         <SignTypedData />
+        <AddNetwork />
       </TestLayout>
     </WagmiConfig>
   )
