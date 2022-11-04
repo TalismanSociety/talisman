@@ -28,67 +28,11 @@ import styled from "styled-components"
 import { PillButton } from "talisman-ui"
 
 import StyledAssetLogo from "../../Asset/Logo"
+import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
+import { SendFundsButton } from "./SendFundsIconButton"
 import { useAssetDetails } from "./useAssetDetails"
 import { useChainTokenBalances } from "./useChainTokenBalances"
-
-const SmallIconButton = styled(IconButton)`
-  height: 1.2rem;
-  width: 1.2rem;
-  font-size: var(--font-size-xsmall);
-`
-
-const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) => {
-  const { account } = useSelectedAccount()
-
-  const address = useMemo(() => {
-    if (!account) return null
-    if (isEthereumAddress(account.address)) return account.address
-    return encodeAnyAddress(account.address, prefix ?? undefined)
-  }, [account, prefix])
-
-  const handleClick = useCallback(() => {
-    if (!address) return
-    copyAddress(address)
-  }, [address])
-
-  if (!address) return null
-
-  return (
-    <SmallIconButton onClick={handleClick}>
-      <CopyIcon />
-    </SmallIconButton>
-  )
-}
-
-const SendFundsButton = ({ symbol, networkId }: { symbol: string; networkId: string | number }) => {
-  const { account } = useSelectedAccount()
-  const tokens = useTokens()
-
-  const token = tokens?.find(
-    (t) =>
-      t.symbol === symbol &&
-      (("evmNetwork" in t && Number(t.evmNetwork?.id) === Number(networkId)) ||
-        t.chain?.id === networkId)
-  )
-
-  const handleClick = useCallback(() => {
-    if (!token) return
-    api.modalOpen({
-      modalType: "send",
-      from: account?.address,
-      transferableTokenId: `${token.id}-${networkId}`,
-    })
-  }, [account?.address, networkId, token])
-
-  if (!token) return null
-
-  return (
-    <SmallIconButton onClick={handleClick}>
-      <PaperPlaneIcon />
-    </SmallIconButton>
-  )
-}
 
 const FetchingIndicator = styled(LoaderIcon)`
   font-size: 1em;
