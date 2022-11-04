@@ -32,11 +32,18 @@ import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ethers, providers } from "ethers"
+import { throwAfter } from "talisman-utils"
 
 import { filterAccountsByAddresses } from "../accounts/helpers"
-import { getErc20TokenId } from "./helpers"
+import {
+  getErc20TokenId,
+  isValidAddEthereumRequestParam,
+  isValidWatchAssetRequestParam,
+} from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
 import { convertAddress } from "@talisman/util/convertAddress"
+import { log } from "@core/log"
+import { assert } from "@polkadot/util"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
@@ -252,9 +259,30 @@ export class EthTabsHandler extends TabsHandler {
         params: [{ chainId: network.chainId }],
       })
 
-    // TODO: Check rpc(s) work before sending request to user
-    // TODO: Check that rpc responds with correct chainId before sending request to user
-    // TODO: typecheck network object
+    // type check payload
+    if (!isValidAddEthereumRequestParam(network))
+      throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    // check that the RPC exists and has the correct chain id
+    if (!network.rpcUrls.length)
+      throw new EthProviderRpcError("Missing rpcUrls", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    await Promise.all(
+      network.rpcUrls.map(async (rpcUrl) => {
+        try {
+          const provider = new providers.JsonRpcProvider(rpcUrl)
+          const providerChainId = await Promise.race([
+            provider.send("eth_chainId", []),
+            throwAfter(10_000, "timeout"), // 10 sec timeout
+          ])
+          assert(providerChainId === network.chainId, "chainId mismatch")
+        } catch (err) {
+          log.error({ err })
+          throw new EthProviderRpcError("Invalid rpc " + rpcUrl, ETH_ERROR_EIP1474_INVALID_PARAMS)
+        }
+      })
+    )
+
     await this.state.requestStores.networks.requestAddNetwork(url, network)
 
     // switch automatically to new chain
@@ -351,6 +379,9 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     request: EthRequestArguments<"wallet_watchAsset">
   ) => {
+    if (!isValidWatchAssetRequestParam(request.params))
+      throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
     const { symbol, address, decimals, image } = request.params.options
     const ethChainId = await this.getChainId(url)
     if (!ethChainId)
@@ -461,8 +492,7 @@ export class EthTabsHandler extends TabsHandler {
       case "eth_requestAccounts":
         // error will be thrown by authorizeEth if user rejects
         await this.authoriseEth(url, { origin: "", ethereum: true })
-        // TODO understand why site store isn't up to date already
-        // wait for site store to update
+        // wait for subscription to update accounts list
         await sleep(500)
         return await this.accountsList(url)
 
