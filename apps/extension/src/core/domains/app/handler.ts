@@ -193,7 +193,7 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
-  private async openModal(modalOpenParams: ModalOpenRequest): Promise<void> {
+  private async openModal(request: ModalOpenRequest): Promise<void> {
     const queryUrl = Browser.runtime.getURL("dashboard.html")
     const [tab] = await Browser.tabs.query({ url: queryUrl })
     if (!tab) {
@@ -201,7 +201,7 @@ export default class AppHandler extends ExtensionHandler {
       // wait for newly created page to load and subscribe to backend (max 5 seconds)
       for (let i = 0; i < 50 && !this.#modalOpenRequest.observed; i++) await sleep(100)
     }
-    this.#modalOpenRequest.next(modalOpenParams)
+    this.#modalOpenRequest.next(request)
   }
 
   private onboardOpen(): boolean {

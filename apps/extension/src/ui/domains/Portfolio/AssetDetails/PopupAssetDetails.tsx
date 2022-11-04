@@ -4,14 +4,24 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
-import { CopyIcon, CreditCardIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
+import {
+  CopyIcon,
+  CreditCardIcon,
+  LoaderIcon,
+  LockIcon,
+  PaperPlaneIcon,
+} from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { api } from "@ui/api"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import useChains from "@ui/hooks/useChains"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import useTokens from "@ui/hooks/useTokens"
 import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback, useMemo } from "react"
 import styled from "styled-components"
@@ -47,6 +57,35 @@ const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) =>
   return (
     <SmallIconButton onClick={handleClick}>
       <CopyIcon />
+    </SmallIconButton>
+  )
+}
+
+const SendFundsButton = ({ symbol, networkId }: { symbol: string; networkId: string | number }) => {
+  const { account } = useSelectedAccount()
+  const tokens = useTokens()
+
+  const token = tokens?.find(
+    (t) =>
+      t.symbol === symbol &&
+      (("evmNetwork" in t && Number(t.evmNetwork?.id) === Number(networkId)) ||
+        t.chain?.id === networkId)
+  )
+
+  const handleClick = useCallback(() => {
+    if (!token) return
+    api.modalOpen({
+      modalType: "send",
+      from: account?.address,
+      transferableTokenId: `${token.id}-${networkId}`,
+    })
+  }, [account?.address, networkId, token])
+
+  if (!token) return null
+
+  return (
+    <SmallIconButton onClick={handleClick}>
+      <PaperPlaneIcon />
     </SmallIconButton>
   )
 }
@@ -97,7 +136,8 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
         <Box grow flex column justify="center" gap={0.4} padding="0 1.6rem 0 0">
           <Box flex justify="space-between" bold fg="foreground">
             <Box flex align="center" gap={0.8}>
-              {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />{" "}
+              {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
+              <SendFundsButton symbol={token.symbol} networkId={chainOrNetwork.id} />
               {isFetching && <FetchingIndicator data-spin />}
             </Box>
           </Box>
