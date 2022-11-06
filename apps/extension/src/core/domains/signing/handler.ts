@@ -35,6 +35,7 @@ export default class SigningHandler extends ExtensionHandler {
         // Apply extensions
         const currentMetadata = await db.metadata.get(genesisHash)
         registry.setSignedExtensions(signedExtensions, currentMetadata?.userExtensions)
+        if (currentMetadata?.types) registry.register(currentMetadata.types)
 
         const chain = await db.chains.get({ genesisHash })
         analyticsProperties.chain = currentMetadata?.chain || chain?.chainName
