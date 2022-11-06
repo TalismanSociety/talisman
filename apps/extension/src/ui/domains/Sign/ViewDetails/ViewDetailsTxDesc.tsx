@@ -1,4 +1,4 @@
-import { TransactionDetails, TransactionMethod } from "@core/domains/signing/types"
+import { TransactionMethod } from "@core/domains/signing/types"
 import { FC, useMemo } from "react"
 
 import { ViewDetailsField } from "./ViewDetailsField"

@@ -15,7 +15,7 @@ import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
-import { UnsignedTransaction, construct, defineMethod } from "@substrate/txwrapper-polkadot"
+import { UnsignedTransaction, construct, defineMethod } from "@substrate/txwrapper-core"
 
 import { pendingTransfers } from "./PendingTransfers"
 

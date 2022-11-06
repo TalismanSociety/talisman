@@ -11,7 +11,7 @@ import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
-import { construct, defineMethod } from "@substrate/txwrapper-polkadot"
+import { construct, defineMethod } from "@substrate/txwrapper-core"
 import { assert } from "@polkadot/util"
 import { pendingTransfers } from "./PendingTransfers"
 

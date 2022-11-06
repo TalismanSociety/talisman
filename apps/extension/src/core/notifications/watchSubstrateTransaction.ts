@@ -6,7 +6,7 @@ import { Vec } from "@polkadot/types-codec"
 import { EventRecord, Hash } from "@polkadot/types/interfaces"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
-import { TypeRegistry } from "@substrate/txwrapper-polkadot"
+import { TypeRegistry } from "@substrate/txwrapper-core"
 import { Result, Ok, Err } from "ts-results"
 
 import { NotificationType, createNotification } from "./createNotification"

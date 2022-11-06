@@ -4085,25 +4085,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@substrate/txwrapper-polkadot@npm:3.1.3":
-  version: 3.1.3
-  resolution: "@substrate/txwrapper-polkadot@npm:3.1.3"
-  dependencies:
-    "@substrate/txwrapper-core": ^3.1.3
-    "@substrate/txwrapper-substrate": ^3.1.3
-  checksum: 506c0792655f381788f27c35b4695915866da14483987e49defbee8d68ed61fdb052b467247a491edac4b9544ae997192032ac8ce11c3238b504782a1d4d5d2e
-  languageName: node
-  linkType: hard
-
-"@substrate/txwrapper-substrate@npm:3.1.3":
-  version: 3.1.3
-  resolution: "@substrate/txwrapper-substrate@npm:3.1.3"
-  dependencies:
-    "@substrate/txwrapper-core": ^3.1.3
-  checksum: ef9643352d3c107578466ddad0de2f6e8f74abae4a08d02048c8c43de22d3a73dfb041d1d19063d5692618a56faf9d5afa95825a5280bdd4983adbe36f8bcfa8
-  languageName: node
-  linkType: hard
-
 "@svgr/babel-plugin-add-jsx-attribute@npm:^6.0.0":
   version: 6.0.0
   resolution: "@svgr/babel-plugin-add-jsx-attribute@npm:6.0.0"
@@ -9782,7 +9763,7 @@ __metadata:
     "@sentry/react": ^7.2.0
     "@sentry/tracing": ^7.2.0
     "@sentry/webpack-plugin": ^1.18.8
-    "@substrate/txwrapper-polkadot": "*"
+    "@substrate/txwrapper-core": "*"
     "@svgr/webpack": ^6.2.1
     "@tailwindcss/forms": ^0.5.3
     "@talismn/chaindata-js": ^0.0.7

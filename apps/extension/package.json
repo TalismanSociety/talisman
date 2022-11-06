@@ -32,7 +32,7 @@
     "@sentry/react": "^7.2.0",
     "@sentry/tracing": "^7.2.0",
     "@sentry/webpack-plugin": "^1.18.8",
-    "@substrate/txwrapper-polkadot": "*",
+    "@substrate/txwrapper-core": "*",
     "@svgr/webpack": "^6.2.1",
     "@talismn/chaindata-js": "^0.0.7",
     "@testing-library/dom": "^8.14.0",
