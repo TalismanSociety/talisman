@@ -70,7 +70,7 @@ export default interface MessageTypes {
   subscribeMetadataRequests: (cb: (requests: MetadataRequest[]) => void) => UnsubscribeFn
 
   // signing messages -------------------------------------------------------
-  decodeSignRequest: (id: string) => Promise<TransactionDetails | null>
+  decodeSignRequest: (id: string) => Promise<TransactionDetails>
   cancelSignRequest: (id: string) => Promise<boolean>
   subscribeSigningRequest: (id: string, cb: (requests: AnySigningRequest) => void) => UnsubscribeFn
   subscribeSigningRequests: (cb: (requests: AnySigningRequest[]) => void) => UnsubscribeFn

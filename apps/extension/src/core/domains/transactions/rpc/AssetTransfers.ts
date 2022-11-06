@@ -15,8 +15,6 @@ import { construct, defineMethod } from "@substrate/txwrapper-core"
 import { assert } from "@polkadot/util"
 import { pendingTransfers } from "./PendingTransfers"
 
-type ProviderSendFunction<T = any> = (method: string, params?: unknown[]) => Promise<T>
-
 export default class AssetTransfersRpc {
   /**
    * Transfers an amount of nativeToken from one account to another.

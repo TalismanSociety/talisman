@@ -114,7 +114,7 @@ export interface SigningMessages {
   // signing message signatures
   "pri(signing.approveSign)": [RequestIdOnly, boolean]
   "pri(signing.approveSign.hardware)": [RequestSigningApproveSignature, boolean]
-  "pri(signing.details)": [RequestIdOnly, TransactionDetails | null]
+  "pri(signing.details)": [RequestIdOnly, TransactionDetails]
   "pri(signing.requests)": [RequestSigningSubscribe, boolean, AnySigningRequest[]]
   "pri(signing.byid.subscribe)": [RequestIdOnly, boolean, AnySigningRequest]
 }

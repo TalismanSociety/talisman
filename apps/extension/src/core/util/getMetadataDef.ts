@@ -55,7 +55,6 @@ export const getMetadataDef = async (
   specVersion?: number,
   blockHash?: string
 ): Promise<MetadataDef | undefined> => {
-  // check for exact match in the store. if match and metadataRpc defined, can't do better
   let genesisHash = isHex(chainIdOrHash) ? chainIdOrHash : null
   const chain = await (genesisHash ? db.chains.get({ genesisHash }) : db.chains.get(chainIdOrHash))
   if (!genesisHash) genesisHash = chain?.genesisHash as HexString

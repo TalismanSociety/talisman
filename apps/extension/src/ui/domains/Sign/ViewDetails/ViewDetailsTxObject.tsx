@@ -41,9 +41,8 @@ export const ViewDetailsTxObject: FC<ViewDetailsTxObjectProps> = ({ label, obj }
 
   const code = useMemo(() => {
     if (!obj) return ""
-
     if (displayAsJson) return JSON.stringify(obj, null, 2)
-    else return convertToYaml(obj)
+    return convertToYaml(obj)
   }, [obj, displayAsJson])
 
   if (!code) return null

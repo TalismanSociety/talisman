@@ -8,13 +8,11 @@ import { watchSubstrateTransaction } from "@core/notifications"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { getTransactionDetails } from "@core/util/getTransactionDetails"
-import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import isJsonPayload from "@core/util/isJsonPayload"
 import { RequestSigningApproveSignature } from "@polkadot/extension-base/background/types"
 import { TypeRegistry } from "@polkadot/types"
-import { assert, hexToNumber } from "@polkadot/util"
+import { assert } from "@polkadot/util"
 import keyring from "@polkadot/ui-keyring"
-import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({ id }: RequestIdOnly) {
