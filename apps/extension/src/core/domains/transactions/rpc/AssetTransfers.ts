@@ -138,13 +138,13 @@ export default class AssetTransfersRpc {
     assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
     const { genesisHash } = chain
 
-    const [{ block }, nonce, runtimeVersion] = await Promise.all([
+    const [blockHash, { block }, nonce, runtimeVersion] = await Promise.all([
+      RpcFactory.send(chainId, "chain_getBlockHash", [], false),
       RpcFactory.send(chainId, "chain_getBlock", [], false),
       RpcFactory.send(chainId, "system_accountNextIndex", [from.address]),
       getRuntimeVersion(chainId),
     ])
 
-    const blockHash = block.hash.toHex()
     const { specVersion, transactionVersion } = runtimeVersion
 
     const { registry, metadataRpc } = await getTypeRegistry(chainId, specVersion, blockHash)

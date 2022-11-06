@@ -35,7 +35,7 @@ export const ViewDetailsTxDesc: FC<ViewDetailsTxDescProps> = ({
           <div>Batch steps :</div>
           <ul>
             {steps.map((step, i) => (
-              <li key={i}>-{step}</li>
+              <li key={i}>- {step}</li>
             ))}
           </ul>
         </>

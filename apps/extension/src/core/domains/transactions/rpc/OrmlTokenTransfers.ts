@@ -148,13 +148,13 @@ export default class OrmlTokenTransfersRpc {
     const token = await db.tokens.get(tokenId)
     if (!token) throw new Error(`Token ${tokenId} not found in store`)
 
-    const [{ block }, nonce, runtimeVersion] = await Promise.all([
+    const [blockHash, { block }, nonce, runtimeVersion] = await Promise.all([
+      RpcFactory.send(chainId, "chain_getBlockHash", [], false),
       RpcFactory.send(chainId, "chain_getBlock", [], false),
       RpcFactory.send(chainId, "system_accountNextIndex", [from.address]),
       getRuntimeVersion(chainId),
     ])
 
-    const blockHash = block.hash.toHex()
     const { specVersion, transactionVersion } = runtimeVersion
 
     // this is quick if metadataRpc is already up to date

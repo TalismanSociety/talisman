@@ -115,7 +115,10 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
       ? `${txDetails.method.section} : ${txDetails.method.method}`
       : "unknown"
 
-    const args = txDetails.method?.args ? { ...txDetails.method?.args } : undefined
+    // safe deep copy
+    const args = txDetails.method?.args
+      ? JSON.parse(JSON.stringify(txDetails.method.args))
+      : undefined
     args?.calls?.forEach?.((call: any) => {
       delete call.docs
     })
