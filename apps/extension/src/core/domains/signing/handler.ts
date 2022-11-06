@@ -12,8 +12,9 @@ import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import isJsonPayload from "@core/util/isJsonPayload"
 import { RequestSigningApproveSignature } from "@polkadot/extension-base/background/types"
 import { TypeRegistry } from "@polkadot/types"
-import { assert } from "@polkadot/util"
+import { assert, hexToNumber } from "@polkadot/util"
 import keyring from "@polkadot/ui-keyring"
+import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({ id }: RequestIdOnly) {
@@ -27,19 +28,17 @@ export default class SigningHandler extends ExtensionHandler {
       const { payload } = request
       const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
 
-      let registry = new TypeRegistry()
+      // an empty registry is sufficient, we don't need metadata here
+      const registry = new TypeRegistry()
+
       if (isJsonPayload(payload)) {
-        const { blockHash, genesisHash, signedExtensions } = payload
+        const { genesisHash, signedExtensions } = payload
 
-        const chain = await db.chains.get({ genesisHash })
-        if (chain) registry = (await getTypeRegistry(chain.id, blockHash)).registry
-
-        // Get the metadata for the genesisHash
+        // Apply extensions
         const currentMetadata = await db.metadata.get(genesisHash)
         registry.setSignedExtensions(signedExtensions, currentMetadata?.userExtensions)
 
-        if (currentMetadata) registry.register(currentMetadata.types)
-
+        const chain = await db.chains.get({ genesisHash })
         analyticsProperties.chain = currentMetadata?.chain || chain?.chainName
       }
 
@@ -55,7 +54,9 @@ export default class SigningHandler extends ExtensionHandler {
           // on chain signature : 0x6c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
           // => remove the 01 prefix
           const signature = `0x${signResult.signature.slice(4)}`
-          watchSubstrateTransaction(chain, signature)
+
+          // will resolve when ready, will warn but won't throw if can't watch
+          await watchSubstrateTransaction(chain, signature)
         }
       }
 
@@ -130,17 +131,23 @@ export default class SigningHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
     if (!isJsonPayload(queued.request.payload)) return null
 
-    const { address, nonce, blockHash, genesisHash, signedExtensions } = queued.request.payload
+    const {
+      address,
+      nonce,
+      blockHash,
+      genesisHash,
+      signedExtensions,
+      specVersion: hexSpecVersion,
+    } = queued.request.payload
 
     const chains = await db.chains.toArray()
     const chain = chains.find((c) => c.genesisHash === genesisHash)
     assert(chain, "Unable to find chain")
 
-    const {
-      registry,
-      chainMetadataRpc: { runtimeVersion },
-    } = await getTypeRegistry(chain.id, blockHash)
-    registry.setSignedExtensions(signedExtensions)
+    const [{ registry }, runtimeVersion] = await Promise.all([
+      getTypeRegistry(genesisHash, hexToNumber(hexSpecVersion), blockHash, signedExtensions),
+      getRuntimeVersion(chain.id, blockHash),
+    ])
 
     // convert to extrinsic
     const extrinsic = registry.createType("Extrinsic", queued.request.payload) // payload as UnsignedTransaction
