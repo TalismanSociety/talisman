@@ -1,11 +1,20 @@
-import { TransactionDetails } from "@core/domains/signing/types"
+import {
+  SignerPayloadJSON,
+  TransactionMethod,
+  TransactionDetails,
+  TransactionPayload,
+} from "@core/domains/signing/types"
+import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
-import { InterfaceTypes } from "@polkadot/types/types/registry"
+import { log } from "@core/log"
+import { assert, hexToNumber } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
+import { getRuntimeVersion } from "./getRuntimeVersion"
+import { getTypeRegistry } from "./getTypeRegistry"
 
 import { sleep } from "./sleep"
 
-const tryRpcSend = async (chainId: string, method: string, attempts: number, params: unknown[]) => {
+const tryRpcSend = async (chainId: string, method: string, params: unknown[], attempts: number) => {
   for (let i = 1; i <= attempts; i++) {
     try {
       return await RpcFactory.send(chainId, method, params)
@@ -16,32 +25,68 @@ const tryRpcSend = async (chainId: string, method: string, attempts: number, par
   }
 }
 
-export const getTransactionDetails = async (
-  chainId: string,
-  extrinsic: InterfaceTypes["Extrinsic"],
-  at?: string
-) => {
-  const result = extrinsic.toHuman() as any
-  result.method.meta = extrinsic.meta.toHuman()
-  result.isBatch = ["utility.batch", "utility.batchAll"].includes(
-    `${result.method.section}.${result.method.method}`
+export const getTransactionDetails = async (payload: SignerPayloadJSON) => {
+  const {
+    address,
+    nonce,
+    blockHash,
+    genesisHash,
+    signedExtensions,
+    specVersion: hexSpecVersion,
+  } = payload
+
+  const { registry } = await getTypeRegistry(
+    genesisHash,
+    hexToNumber(hexSpecVersion),
+    blockHash,
+    signedExtensions
   )
 
-  if (result.isBatch) {
-    result.batch = extrinsic.method.args[0].toHuman()
-    const calls = extrinsic.method.args[0] as unknown as Array<InterfaceTypes["Call"]>
+  const result = {} as TransactionDetails
 
-    result.batch = calls.map((call) => ({
-      ...call.toHuman(),
-      meta: call.meta.toHuman(),
-    }))
+  try {
+    const typedPayload = registry.createType("ExtrinsicPayload", payload)
+
+    result.payload = typedPayload.toHuman() as TransactionPayload
+  } catch (err) {
+    log.error("failed to decode payload", { err })
   }
 
   try {
-    // estimate fees (attempt 3 times)
-    result.payment = await tryRpcSend(chainId, "payment_queryInfo", 3, [extrinsic.toHex(), at])
+    // convert to extrinsic
+    const extrinsic = registry.createType("Extrinsic", payload) // payload as UnsignedTransaction
+
+    try {
+      const { method } = extrinsic.toHuman(true) as { method: TransactionMethod }
+      result.method = method
+    } catch (err) {
+      log.error("Failed to decode method", { err })
+    }
+
+    try {
+      const chain = await db.chains.get({ genesisHash })
+      assert(chain, "Unable to find chain")
+
+      const runtimeVersion = await getRuntimeVersion(chain.id, blockHash)
+
+      // fake sign it so fees can be queried
+      extrinsic.signFake(address, { nonce, blockHash, genesisHash, runtimeVersion })
+
+      // estimate fees (attempt 3 times)
+      const payment = await tryRpcSend(
+        chain.id,
+        "payment_queryInfo",
+        [extrinsic.toHex(), blockHash],
+        3
+      )
+
+      result.partialFee = payment.partialFee
+    } catch (err) {
+      log.error("Failed to fetch fee", { err })
+      Sentry.captureException(err)
+    }
   } catch (err) {
-    Sentry.captureException(err)
+    log.error("Invalid payload or metadata", { err })
   }
 
   return result as TransactionDetails

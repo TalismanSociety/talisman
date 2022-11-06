@@ -131,32 +131,8 @@ export default class SigningHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
     if (!isJsonPayload(queued.request.payload)) return null
 
-    const {
-      address,
-      nonce,
-      blockHash,
-      genesisHash,
-      signedExtensions,
-      specVersion: hexSpecVersion,
-    } = queued.request.payload
-
-    const chains = await db.chains.toArray()
-    const chain = chains.find((c) => c.genesisHash === genesisHash)
-    assert(chain, "Unable to find chain")
-
-    const [{ registry }, runtimeVersion] = await Promise.all([
-      getTypeRegistry(genesisHash, hexToNumber(hexSpecVersion), blockHash, signedExtensions),
-      getRuntimeVersion(chain.id, blockHash),
-    ])
-
-    // convert to extrinsic
-    const extrinsic = registry.createType("Extrinsic", queued.request.payload) // payload as UnsignedTransaction
-
-    // fake sign it so fees can be queried
-    extrinsic.signFake(address, { nonce, blockHash, genesisHash, runtimeVersion })
-
     // analyse the call to extract args and docs
-    return await getTransactionDetails(chain.id, extrinsic)
+    return getTransactionDetails(queued.request.payload)
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -201,7 +177,7 @@ export default class SigningHandler extends ExtensionHandler {
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestSigningCancel)
 
-      case "pri(signing.decode)":
+      case "pri(signing.details)":
         return this.decode(request as RequestIdOnly)
 
       default:
