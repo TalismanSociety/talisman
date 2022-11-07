@@ -84,14 +84,14 @@
     "@polkadot/wasm-crypto-wasm": "6.2.3",
     "@polkadot/wasm-crypto": "6.2.3",
     "@polkadot/wasm-util": "6.2.3",
-    "@substrate/txwrapper-core": "3.1.3",
-    "@substrate/txwrapper-dev": "3.1.3",
-    "@substrate/txwrapper-examples": "3.1.3",
-    "@substrate/txwrapper-orml": "3.1.3",
-    "@substrate/txwrapper-polkadot": "3.1.3",
-    "@substrate/txwrapper-registry": "3.1.3",
-    "@substrate/txwrapper-substrate": "3.1.3",
-    "@substrate/txwrapper-template": "3.1.3"
+    "@substrate/txwrapper-core": "4.0.1",
+    "@substrate/txwrapper-dev": "4.0.1",
+    "@substrate/txwrapper-examples": "4.0.1",
+    "@substrate/txwrapper-orml": "4.0.1",
+    "@substrate/txwrapper-polkadot": "4.0.1",
+    "@substrate/txwrapper-registry": "4.0.1",
+    "@substrate/txwrapper-substrate": "4.0.1",
+    "@substrate/txwrapper-template": "4.0.1"
   },
   "engines": {
     "npm": ">=8.0.0",
