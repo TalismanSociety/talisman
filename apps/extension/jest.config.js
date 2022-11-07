@@ -17,7 +17,7 @@ module.exports = {
     "jest-webextension-mock",
     "fake-indexeddb/auto",
     "jest-fetch-mock/setupJest",
-    "<rootDir>/tests/setup",
+    "<rootDir>/tests/setup.js",
   ],
   testEnvironment: "jsdom",
 }

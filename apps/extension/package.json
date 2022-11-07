@@ -51,7 +51,7 @@
     "@types/react-highlight": "^0.12.5",
     "@types/styled-components": "^5.1.24",
     "@types/uuid": "^8.3.4",
-    "@types/webextension-polyfill": "^0.8.0",
+    "@types/webextension-polyfill": "0.9.1",
     "@typescript-eslint/eslint-plugin": "^5.16.0",
     "@typescript-eslint/parser": "^5.16.0",
     "assert": "^2.0.0",

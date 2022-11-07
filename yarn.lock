@@ -5101,7 +5101,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/webextension-polyfill@npm:^0.8.0, @types/webextension-polyfill@npm:^0.8.2":
+"@types/webextension-polyfill@npm:0.9.1":
+  version: 0.9.1
+  resolution: "@types/webextension-polyfill@npm:0.9.1"
+  checksum: 1d2d041f0f8d936649637ea5630fda0b65576d12a3a9de35e52e13d7f042dcf1098e5770252086b0f4f52213880c56f129446b2b4500a3687504269ba4e0231f
+  languageName: node
+  linkType: hard
+
+"@types/webextension-polyfill@npm:^0.8.2":
   version: 0.8.3
   resolution: "@types/webextension-polyfill@npm:0.8.3"
   checksum: 8ec5e5f3ad84b929d4c46010ef136198720ed7f2ee143254368d4040bab8f66aae19e930b36336f70a967dee913a2acd82cd8ad72fe6e264b685e2c9201360b9
@@ -9890,7 +9897,7 @@ __metadata:
     "@types/semver": ^7.3.9
     "@types/styled-components": ^5.1.24
     "@types/uuid": ^8.3.4
-    "@types/webextension-polyfill": ^0.8.0
+    "@types/webextension-polyfill": 0.9.1
     "@typescript-eslint/eslint-plugin": ^5.16.0
     "@typescript-eslint/parser": ^5.16.0
     assert: ^2.0.0
