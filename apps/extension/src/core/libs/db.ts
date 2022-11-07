@@ -32,7 +32,7 @@ export class TalismanDatabase extends Dexie {
       chainMetadataRpc: null, // delete legacy table
     })
 
-    // init code moved to Extension.ts to prevent frontend build to have metadataInit
+    // data provisioning code moved to Extension.ts so only backend can execute it
   }
 }
 

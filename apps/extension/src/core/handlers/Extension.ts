@@ -13,7 +13,6 @@ import {
 } from "@core/domains/balances/types"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
-import metadataInit from "@core/domains/metadata/_metadataInit"
 import { SigningHandler } from "@core/domains/signing"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
@@ -81,8 +80,8 @@ export default class Extension extends ExtensionHandler {
 
   private initDb() {
     db.on("ready", async () => {
-      // if store has no metadata yet
-      if ((await db.metadata.count()) < 1) {
+      // if store has no chains yet, consider it's a fresh install or legacy version
+      if ((await db.chains.count()) < 1) {
         // delete old localstorage-managed 'db'
         Browser.storage.local.remove([
           "chains",
@@ -95,10 +94,7 @@ export default class Extension extends ExtensionHandler {
         // delete old idb-managed metadata+metadataRpc db
         indexedDB.deleteDatabase("talisman")
 
-        // add initial metadata
-        db.metadata.bulkAdd(metadataInit)
-
-        // init other tables (workaround to wallet beeing installed when subsquid is down)
+        // initial data provisioning (workaround to wallet beeing installed when subsquid is down)
         db.chains.bulkAdd(chainsInit as unknown as Chain[])
         db.evmNetworks.bulkAdd(evmNetworksInit as unknown as EvmNetwork[])
         db.tokens.bulkAdd(tokensInit as unknown as Token[])
