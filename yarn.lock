@@ -9931,7 +9931,7 @@ __metadata:
     html-react-parser: 1.4.12
     jest: 27.5.1
     jest-fetch-mock: ^3.0.3
-    jest-webextension-mock: ^3.7.19
+    jest-webextension-mock: 3.7.22
     js-yaml: 4.1.0
     lodash: 4.17.21
     minimist: ^1.2.6
@@ -12327,7 +12327,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-webextension-mock@npm:^3.7.19":
+"jest-webextension-mock@npm:3.7.22":
   version: 3.7.22
   resolution: "jest-webextension-mock@npm:3.7.22"
   checksum: a036eebdd0e194c7a95465dd9a27e615884669c51f5469e8955077b528e83ee3a904a08a81172009929148cb3f9413b6d95ca9601d632b297c62b170f25f3f06
