@@ -73,7 +73,7 @@
     "dotenv-webpack": "^7.1.0",
     "downshift": "^6.1.7",
     "eth-phishing-detect": "latest",
-    "ethers": "5.7.1",
+    "ethers": "5.7.2",
     "file-loader": "6.2.0",
     "fork-ts-checker-notifier-webpack-plugin": "^6.0.0",
     "fork-ts-checker-webpack-plugin": "^7.2.1",
