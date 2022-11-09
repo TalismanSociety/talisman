@@ -13,7 +13,7 @@ type NewRequestCallbackFn<TRequest> = (request?: TRequest) => void
 type CompletedRequestCallbackFn<TRequest, TResponse> = (
   request: TRequest,
   response?: TResponse
-) => void
+) => void | Promise<void>
 
 export abstract class RequestStore<TRequest extends { id: string; [key: string]: any }, TResponse> {
   // `requests` is the primary list of items that need responding to by the user
@@ -71,20 +71,20 @@ export abstract class RequestStore<TRequest extends { id: string; [key: string]:
     resolve: (result: TResponse) => void,
     reject: (error: Error) => void
   ): Resolver<TResponse> => {
-    const complete = (response?: TResponse): void => {
+    const complete = async (response?: TResponse) => {
       const request = this.requests[id]
       delete this.requests[id]
       this.observable.next(this.getAllRequests())
-      this.onRequestCompletedCallback && this.onRequestCompletedCallback(request, response)
+      if (this.onRequestCompletedCallback) await this.onRequestCompletedCallback(request, response)
     }
 
     return {
-      reject: (error: Error): void => {
-        complete()
+      reject: async (error: Error) => {
+        await complete()
         reject(error)
       },
-      resolve: (result: TResponse): void => {
-        complete(result)
+      resolve: async (result: TResponse) => {
+        await complete(result)
         resolve(result)
       },
     }

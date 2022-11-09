@@ -492,9 +492,7 @@ export class EthTabsHandler extends TabsHandler {
       case "eth_requestAccounts":
         // error will be thrown by authorizeEth if user rejects
         await this.authoriseEth(url, { origin: "", ethereum: true })
-        // wait for subscription to update accounts list
-        await sleep(500)
-        return await this.accountsList(url)
+        return this.accountsList(url)
 
       case "eth_accounts":
         // public method, no need to auth (returns empty array if not authorized yet)
