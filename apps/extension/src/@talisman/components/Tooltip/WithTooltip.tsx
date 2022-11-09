@@ -17,7 +17,7 @@ const Tooltip = styled.div`
   z-index: 1;
   background: #000;
   border-radius: 0.4rem;
-  border: 1px solid rgb(63, 63, 63);
+  border: 1px solid rgb(63, 63, 63); // grey-700 from our tailwind palette
   color: var(--color-foreground-muted-2x);
   padding: 0.6rem;
   transition: opacity var(--transition-speed) ease-in-out;

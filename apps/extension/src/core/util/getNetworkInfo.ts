@@ -18,7 +18,9 @@ export const getNetworkInfo = ({
     return {
       label: chain.name,
       type: chain.paraId
-        ? (relay?.chainName ? `${relay?.chainName} ` : "") + "Parachain"
+        ? relay?.chainName
+          ? `${relay?.chainName} Parachain`
+          : "Parachain"
         : (chain.parathreads || []).length > 0
         ? "Relay chain"
         : "Blockchain",

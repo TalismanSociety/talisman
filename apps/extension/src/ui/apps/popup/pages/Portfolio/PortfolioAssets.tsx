@@ -17,7 +17,7 @@ import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import React, { useCallback, useEffect } from "react"
+import React, { useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -53,6 +53,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
     navigate("/portfolio")
   }, [navigate])
 
+  const canAddCustomToken = useMemo(() => isEthereumAddress(account?.address), [account?.address])
   const handleAddCustomToken = useCallback(() => {
     api.dashboardOpen("/tokens/add")
   }, [])
@@ -108,7 +109,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
                 {canRemove && (
                   <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
                 )}
-                {isEthereumAddress(account?.address) && (
+                {canAddCustomToken && (
                   <PopNav.Item onClick={handleAddCustomToken}>Add Custom Token</PopNav.Item>
                 )}
               </PopNav>

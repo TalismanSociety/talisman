@@ -14,11 +14,8 @@ export const getNetworkCategory = ({
 
   if (chain) {
     if (chain.isTestnet) return "Testnet"
-    return chain.paraId
-      ? (relay?.chainName ? `${relay?.chainName} ` : "") + "Parachain"
-      : (chain.parathreads || []).length > 0
-      ? "Relay Chain"
-      : "Blockchain"
+    if (chain.paraId) return relay?.chainName ? `${relay?.chainName} Parachain` : "Parachain"
+    return (chain.parathreads || []).length > 0 ? "Relay Chain" : "Blockchain"
   }
 
   return null
