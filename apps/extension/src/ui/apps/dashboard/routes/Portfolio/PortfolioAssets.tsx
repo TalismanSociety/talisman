@@ -1,8 +1,10 @@
 import { Balances } from "@core/domains/balances/types"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { IconMore } from "@talisman/theme/icons"
+import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
@@ -62,6 +64,10 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
     [account, showWalletFunding, enableWalletFunding]
   )
 
+  const handleAddCustomToken = useCallback(() => {
+    api.dashboardOpen("/tokens/add")
+  }, [])
+
   return (
     <Box flex column fullheight>
       {displayWalletFunding ? (
@@ -93,6 +99,9 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
                   )}
                   {canRemove && (
                     <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
+                  )}
+                  {isEthereumAddress(account?.address) && (
+                    <PopNav.Item onClick={handleAddCustomToken}>Add Custom Token</PopNav.Item>
                   )}
                 </PopNav>
               )}

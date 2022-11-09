@@ -1,4 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
@@ -52,6 +53,10 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
     navigate("/portfolio")
   }, [navigate])
 
+  const handleAddCustomToken = useCallback(() => {
+    api.dashboardOpen("/tokens/add")
+  }, [])
+
   return (
     <>
       <Box flex fullwidth gap={1.6}>
@@ -102,6 +107,9 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
                 )}
                 {canRemove && (
                   <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
+                )}
+                {isEthereumAddress(account?.address) && (
+                  <PopNav.Item onClick={handleAddCustomToken}>Add Custom Token</PopNav.Item>
                 )}
               </PopNav>
             </>
