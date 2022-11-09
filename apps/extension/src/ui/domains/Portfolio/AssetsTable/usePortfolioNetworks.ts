@@ -28,10 +28,11 @@ export type PortfolioNetwork = {
 const getPortfolioNetwork = (id: string | number, chains?: Chain[], evmNetworks?: EvmNetwork[]) => {
   const chain = chains?.find((c) => c.id === id)
   const evmNetwork = evmNetworks?.find((n) => n.id === id)
+  const relay = chains?.find((c) => c.id === chain?.relay?.id)
 
   const network: PortfolioNetwork = {
     id,
-    ...getNetworkInfo({ chain, evmNetwork }),
+    ...getNetworkInfo({ chain, evmNetwork, relay }),
     logoId: getNetworkLogoId(id, chains, evmNetworks),
   }
   return network
