@@ -1,5 +1,5 @@
 import styled from "styled-components"
-import globeIcon from "@talisman/theme/icons/globe.white.svg"
+import globeIcon from "@talisman/theme/icons/globe.white.svg?url"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { classNames } from "@talisman/util/classNames"
 
