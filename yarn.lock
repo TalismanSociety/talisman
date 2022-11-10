@@ -4565,12 +4565,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@talismn/wagmi-connector@npm:^0.0.4":
-  version: 0.0.4
-  resolution: "@talismn/wagmi-connector@npm:0.0.4"
+"@talismn/wagmi-connector@npm:^0.1.0":
+  version: 0.1.0
+  resolution: "@talismn/wagmi-connector@npm:0.1.0"
   peerDependencies:
-    "@wagmi/core": ^0.4.7
-  checksum: a7ef5766966f6d1dee1ae702cd08f024b690acae7d232f5c3666b8ac239d09c6b4a127fd7c5ea8bdec6bd844c14927bb860d36ca0add87f48066fe2de4a332ce
+    "@wagmi/core": "*"
+  peerDependenciesMeta:
+    "@wagmi/core":
+      optional: true
+  checksum: 0c780cb86723522db2915b382830f20ea963c7cc50480d38729a1b5717d96aeeb3adde7729c2feabc9c1adca8f54cdfbac3c9e71aa905e314e7eac80fa0f4c28
   languageName: node
   linkType: hard
 
@@ -14385,7 +14388,7 @@ __metadata:
     "@esbuild-plugins/node-globals-polyfill": ^0.1.1
     "@metamask/eth-sig-util": 4.0.1
     "@tailwindcss/forms": ^0.5.3
-    "@talismn/wagmi-connector": ^0.0.4
+    "@talismn/wagmi-connector": ^0.1.0
     "@types/react": 18.0.14
     "@types/react-dom": 18.0.5
     "@vitejs/plugin-react": ^2.1.0
