@@ -9977,7 +9977,7 @@ __metadata:
     url-join: ^5.0.0
     url-loader: 4.1.1
     uuid: ^8.3.2
-    webextension-polyfill: 0.10.0
+    webextension-polyfill: 0.8.0
     webpack: ^5.74.0
     webpack-bundle-analyzer: ^4.5.0
     webpack-cli: ^4.9.2
@@ -17930,14 +17930,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"webextension-polyfill@npm:0.10.0":
-  version: 0.10.0
-  resolution: "webextension-polyfill@npm:0.10.0"
-  checksum: 4a59036bda571360c2c0b2fb03fe1dc244f233946bcf9a6766f677956c40fd14d270aaa69cdba95e4ac521014afbe4008bfa5959d0ac39f91c990eb206587f91
-  languageName: node
-  linkType: hard
-
-"webextension-polyfill@npm:^0.8.0":
+"webextension-polyfill@npm:0.8.0, webextension-polyfill@npm:^0.8.0":
   version: 0.8.0
   resolution: "webextension-polyfill@npm:0.8.0"
   checksum: 56286e6216e15834fdcdc3dcf611000d96b49c9d925de3d657eb5f1e294074180dd3efe78a0966223eb311ac3a0ac5fdf71d324b836bf05724455ffd6c7c98c3
