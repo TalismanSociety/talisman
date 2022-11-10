@@ -1,3 +1,4 @@
+import { DEBUG } from "@core/constants"
 import { AccountMeta } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
@@ -30,7 +31,7 @@ export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalTypes>()
 
   private async onboard({ pass, passConfirm, mnemonic }: RequestOnboard): Promise<OnboardedType> {
-    await sleep(1000)
+    !DEBUG && (await sleep(1000))
     assert(pass, "Password cannot be empty")
     assert(passConfirm, "Password confirm cannot be empty")
 
