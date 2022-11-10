@@ -74,7 +74,6 @@
     "downshift": "^6.1.7",
     "eth-phishing-detect": "latest",
     "ethers": "5.7.2",
-    "file-loader": "6.2.0",
     "fork-ts-checker-notifier-webpack-plugin": "^6.0.0",
     "fork-ts-checker-webpack-plugin": "^7.2.1",
     "framer-motion": "6.2.8",
