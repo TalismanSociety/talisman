@@ -11,6 +11,10 @@ import {
   EthGasSettingsLegacy,
 } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName, EthTransactionDetails } from "@core/domains/signing/types"
+import {
+  getEthTransactionInfo,
+  TransactionInfo as TransactionType,
+} from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { api } from "@ui/api"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
@@ -187,12 +191,38 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
   }
 }
 
+export const useTransactionInfo = (
+  provider?: ethers.providers.Provider,
+  tx?: ethers.providers.TransactionRequest
+) => {
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error>()
+  const [transactionInfo, setTransactionInfo] = useState<TransactionType>()
+
+  useEffect(() => {
+    setIsLoading(true)
+    getEthTransactionInfo(provider, tx)
+      .then(setTransactionInfo)
+      .catch(setError)
+      .finally(() => setIsLoading(false))
+  }, [provider, tx])
+
+  // TODO remove
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("useTransactionInfo", { tx, isLoading, transactionInfo })
+  }, [isLoading, transactionInfo, tx])
+
+  return { isLoading, transactionInfo, error: error?.message }
+}
+
 export const useEthTransaction = (
   tx?: ethers.providers.TransactionRequest,
   defaultPriority: EthPriorityOptionName = "low",
   lockTransaction = false
 ) => {
   const provider = useEthereumProvider(tx?.chainId)
+  const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(provider, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(provider)
   const { nonce, error: nonceError } = useNonce(tx?.from, tx?.chainId)
   const { estimatedGas, error: estimatedGasError } = useEstimatedGas(provider, tx)
@@ -319,14 +349,23 @@ export const useEthTransaction = (
   ])
 
   const error = useMemo(
-    () => errorEip1559Support ?? estimatedGasError ?? blockFeeDataError ?? nonceError,
-    [blockFeeDataError, errorEip1559Support, estimatedGasError, nonceError]
+    () =>
+      errorEip1559Support ??
+      estimatedGasError ??
+      blockFeeDataError ??
+      nonceError ??
+      errorTransactionInfo,
+    [blockFeeDataError, errorEip1559Support, errorTransactionInfo, estimatedGasError, nonceError]
   )
 
-  const isLoading = useMemo(() => tx && !txDetails && !error, [error, txDetails, tx])
+  const isLoading = useMemo(
+    () => tx && !transactionInfo && !txDetails && !error,
+    [tx, transactionInfo, txDetails, error]
+  )
 
   const result = useMemo(
     () => ({
+      transactionInfo,
       transaction,
       txDetails,
       gasSettings,
@@ -335,7 +374,7 @@ export const useEthTransaction = (
       isLoading,
       error,
     }),
-    [transaction, txDetails, gasSettings, priority, isLoading, error]
+    [transactionInfo, transaction, txDetails, gasSettings, priority, isLoading, error]
   )
 
   return result

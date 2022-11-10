@@ -23,11 +23,8 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
   // once the payload is sent to ledger, we must freeze it
   const [isPayloadLocked, setIsPayloadLocked] = useState(false)
 
-  const { transaction, txDetails, priority, setPriority, isLoading, error } = useEthTransaction(
-    transactionRequest,
-    "low",
-    isPayloadLocked
-  )
+  const { transaction, transactionInfo, txDetails, priority, setPriority, isLoading, error } =
+    useEthTransaction(transactionRequest, "low", isPayloadLocked)
 
   const baseRequest = useAnySigningRequest<EthSignAndSendRequest>({
     currentRequest: signingRequest,
@@ -63,6 +60,7 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
     error,
     network,
     transaction,
+    transactionInfo,
     approve,
     approveHardware,
     isPayloadLocked,

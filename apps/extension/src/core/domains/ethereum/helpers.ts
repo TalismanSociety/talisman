@@ -34,8 +34,8 @@ export const getEthTransferTransactionBase = async (
   assert(evmNetworkId, "evmNetworkId is required")
   assert(token, "token is required")
   assert(planck, "planck is required")
-  assert(isEthereumAddress(from), "toAddress is required")
-  assert(isEthereumAddress(to), "toAddress is required")
+  assert(isEthereumAddress(from), "from address is required")
+  assert(isEthereumAddress(to), "to address is required")
 
   let tx: ethers.providers.TransactionRequest
 

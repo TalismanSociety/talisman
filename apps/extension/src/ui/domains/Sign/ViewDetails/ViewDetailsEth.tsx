@@ -1,16 +1,21 @@
+import { BalanceFormatter } from "@core/domains/balances"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { ExternalLinkIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
+import Fiat from "@ui/domains/Asset/Fiat"
+import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
 import { BigNumber, BigNumberish } from "ethers"
-import { formatEther } from "ethers/lib/utils"
+import { formatEther, formatUnits } from "ethers/lib/utils"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
+import { PillButton } from "talisman-ui"
+import { formatDecimals } from "talisman-utils"
 
 import { useEthSignTransactionRequest } from "../SignRequestContext"
-import { ViewDetailsButton } from "./ViewDetailsButton"
 import { ViewDetailsField } from "./ViewDetailsField"
 
 const ViewDetailsContainer = styled.div`
@@ -53,6 +58,7 @@ const ViewDetailsContainer = styled.div`
 
   a:link,
   a:visited {
+    transition: none;
     color: var(--color-foreground-muted-2x);
   }
   a:hover,
@@ -78,14 +84,27 @@ const Address = ({ address }: AddressProps) => {
 
   return (
     <a href={`${blockExplorerUrl}/address/${address}`} target="_blank" rel="noreferrer">
-      {address}
+      <span>{address}</span>{" "}
+      <span className="inline-flex h-10 flex-col justify-center">
+        <ExternalLinkIcon className="inline-block transition-none" />
+      </span>
     </a>
   )
 }
 
+const formatGwei = (value?: BigNumberish) => {
+  return value ? `${formatDecimals(formatUnits(value, "gwei"))} GWEI` : null
+}
+
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
-  const { request, network, txDetails, priority, transaction } = useEthSignTransactionRequest()
+  const { request, network, txDetails, priority, transaction, transactionInfo } =
+    useEthSignTransactionRequest()
   const { genericEvent } = useAnalytics()
+
+  const txInfo = useMemo(() => {
+    if (transactionInfo && transactionInfo.contractType !== "unknown") return transactionInfo
+    return undefined
+  }, [transactionInfo])
 
   const nativeToken = useToken(network?.nativeToken?.id)
   const formatEthValue = useCallback(
@@ -99,12 +118,27 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     genericEvent("open sign transaction view details", { type: "ethereum" })
   }, [genericEvent])
 
-  if (!transaction || !txDetails) return null
+  const estimatedFee = useMemo(
+    () =>
+      txDetails && nativeToken
+        ? new BalanceFormatter(
+            BigNumber.from(txDetails?.estimatedFee).toString(),
+            nativeToken?.decimals,
+            nativeToken?.rates
+          )
+        : null,
+    [nativeToken, txDetails]
+  )
+
+  if (!transaction || !txDetails || !nativeToken) return null
 
   return (
     <ViewDetailsContainer>
       <div className="grow">
         <div className="title">Details</div>
+        {/* TODO explain what the method does */}
+        <ViewDetailsField label="Contract Type">{txInfo?.contractType ?? "N/A"}</ViewDetailsField>
+        <ViewDetailsField label="Method">{txInfo?.contractCall?.name ?? "N/A"}</ViewDetailsField>
         <ViewDetailsField label="From" breakAll>
           <Address address={request.from} />
         </ViewDetailsField>
@@ -114,38 +148,51 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         <ViewDetailsField label="Value to be transferred" breakAll>
           {formatEthValue(request.value)}
         </ViewDetailsField>
-        <ViewDetailsField label="Network">{network?.name ?? "Unknown"}</ViewDetailsField>
+        <ViewDetailsField label="Network">
+          {network ? `${network.name} (${network.id})` : null}
+        </ViewDetailsField>
         <ViewDetailsField label="Network usage">
           {Math.round((txDetails?.gasUsedRatio ?? 0) * 100)}%
         </ViewDetailsField>
-        <ViewDetailsField label="Estimated gas &amp; price per gas">
-          {BigNumber.from(txDetails.estimatedGas).toNumber() || null} gas at{" "}
-          {formatEthValue(txDetails?.gasPrice)}
+        <ViewDetailsField label="Estimated gas units">
+          {BigNumber.from(txDetails.estimatedGas).toNumber() || "N/A"}
         </ViewDetailsField>
-        <ViewDetailsField label="Gas Limit">
+        {/* <ViewDetailsField label="Gas Limit">
           {BigNumber.from(transaction.gasLimit)?.toNumber() || null} gas
-        </ViewDetailsField>
+        </ViewDetailsField> */}
         {transaction?.type === 2 ? (
           <>
             <ViewDetailsField label="Base fee per gas">
-              {formatEthValue(txDetails.baseFeePerGas)}
+              {txDetails.baseFeePerGas ? formatGwei(txDetails.baseFeePerGas) : "N/A"}
             </ViewDetailsField>
             <ViewDetailsField label={`Max priority fee per gas (${priority} priority)`}>
-              {formatEthValue(transaction.maxPriorityFeePerGas)}
+              {transaction.maxPriorityFeePerGas
+                ? formatGwei(transaction.maxPriorityFeePerGas)
+                : "N/A"}
+            </ViewDetailsField>
+            <ViewDetailsField label={`Max fee per gas`}>
+              {transaction.maxFeePerGas ? formatGwei(transaction.maxFeePerGas) : "N/A"}
             </ViewDetailsField>
           </>
         ) : (
           <>
             <ViewDetailsField label="Gas price">
-              {formatEthValue(transaction.gasPrice)}
+              {transaction.gasPrice ? formatGwei(transaction.gasPrice) : "N/A"}
             </ViewDetailsField>
           </>
         )}
-        <ViewDetailsField label="Estimated transaction cost">
-          {formatEthValue(txDetails.estimatedFee)}
-        </ViewDetailsField>
-        <ViewDetailsField label="Max transaction cost">
-          {formatEthValue(txDetails.maxFee)}
+        <ViewDetailsField label="Total Fee Estimate">
+          <Tokens
+            amount={estimatedFee?.tokens}
+            decimals={nativeToken?.decimals}
+            symbol={nativeToken?.symbol}
+          />
+          {estimatedFee && nativeToken?.rates ? (
+            <>
+              {" "}
+              / <Fiat amount={estimatedFee?.fiat("usd")} noCountUp currency="usd" />
+            </>
+          ) : null}
         </ViewDetailsField>
       </div>
       <Button onClick={onClose}>Close</Button>
@@ -159,7 +206,10 @@ export const ViewDetailsEth = () => {
 
   return (
     <>
-      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={isLoading} hasError={!!error} />
+      <PillButton size="sm" onClick={open}>
+        View Details
+      </PillButton>
+      {/* <ViewDetailsButton hide={isOpen} isAnalysing={isLoading} hasError={!!error} /> */}
       <Drawer anchor="bottom" open={isOpen && !isLoading} onClose={close}>
         <ViewDetailsContent onClose={close} />
       </Drawer>

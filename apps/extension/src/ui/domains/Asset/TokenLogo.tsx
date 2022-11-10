@@ -29,7 +29,7 @@ const getChainLogoUrl = (chainId?: string | number) => {
   return `https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/split-entities/assets/${chainId}/logo.svg`
 }
 
-const getTokenLogoUrl = (token?: Token) => {
+export const getTokenLogoUrl = (token?: Token) => {
   // TODO better typing
   if (token?.type === "erc20") {
     const { isCustom, image } = token as { isCustom?: boolean; image?: string }
@@ -39,6 +39,19 @@ const getTokenLogoUrl = (token?: Token) => {
     return getChainLogoUrl(chain?.id ?? evmNetwork?.id)
   }
   return null
+}
+
+export const TokenImage = ({ src, className }: { src?: string | null; className?: string }) => {
+  const style: CSSProperties = useMemo(() => {
+    return {
+      backgroundImage: [src, genericTokenIconUrl]
+        .filter(Boolean)
+        .map((url) => `url(${url})`)
+        .join(", "),
+    }
+  }, [src])
+
+  return <Logo className={className} style={style} />
 }
 
 // generic token logo component, supports all token types
@@ -73,5 +86,5 @@ export const TokenLogo = ({ tokenId, className }: TokenLogoProps) => {
       : undefined
   }, [imageUrl])
 
-  return <Logo className={className} style={style} />
+  return <TokenImage src={imageUrl} className={className} />
 }
