@@ -45,6 +45,13 @@ const config = (env) => ({
       {
         test: /\.svg$/i,
         issuer: /\.[jt]sx?$/,
+        type: "asset",
+        resourceQuery: /url/, // import with 'import x from *.svg?url'
+      },
+      {
+        test: /\.svg$/i,
+        issuer: /\.[jt]sx?$/,
+        resourceQuery: { not: [/url/] }, // exclude react component if *.svg?url
         use: [
           {
             loader: "@svgr/webpack",
@@ -52,9 +59,6 @@ const config = (env) => ({
               exportType: "named",
               dimensions: false,
             },
-          },
-          {
-            loader: "url-loader",
           },
         ],
       },
