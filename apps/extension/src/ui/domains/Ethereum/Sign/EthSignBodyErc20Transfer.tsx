@@ -10,8 +10,8 @@ import { SignParamAccountButton } from "./shared"
 import { KnownTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignParamTokensButton } from "./shared/SignParamTokensButton"
-import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
+import { EthSignContainer } from "./shared/EthSignContainer"
 
 export const EthSignBodyErc20Transfer: FC = () => {
   const { account, network, transactionInfo } = useEthSignTransactionRequest()
@@ -33,7 +33,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
 
   const tokens = useTokens()
   const token = useMemo(() => {
-    return network //&& !Date.now() // TODO delete this
+    return network
       ? tokens?.find(
           (t) =>
             t.type === "erc20" &&
@@ -44,7 +44,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
   }, [network, tokens, txInfo.targetAddress])
 
   const { image, amount, symbol } = useMemo(() => {
-    const image = erc20Token?.image // TODO prioritize token.logo
+    const image = erc20Token?.image // TODO prioritize token.logo (waiting balance library)
     const symbol = token?.symbol ?? (erc20Token?.symbol as string)
     const amount =
       value && erc20Token
@@ -59,39 +59,33 @@ export const EthSignBodyErc20Transfer: FC = () => {
   if (txInfo.contractCall.name !== "transfer") return <EthSignBodyDefault />
 
   return (
-    <div>
-      <h1 className="!leading-base !my-0 font-sans !text-lg !font-bold">Transfer Request</h1>
-      <div className="flex w-full flex-col">
-        <div className="p-3">You are transferring</div>
-        <div className="p-1">
-          <SignParamTokensButton
-            address={txInfo.targetAddress}
-            network={network}
-            tokens={amount.tokens}
-            image={image}
-            decimals={erc20Token.decimals}
-            symbol={symbol}
-            fiat={amount.fiat("usd")}
-            withIcon
-          />
-        </div>
-        <div className="flex items-start p-1">
-          <div>from</div>
-          <SignParamAccountButton address={account.address} withIcon />
-        </div>
-        <div className="flex items-start p-1">
-          <div>to</div>
-          <SignParamAccountButton explorerUrl={network.explorerUrl} address={recipient} withIcon />
-        </div>
-        <div className="flex items-start gap-3 p-1">
-          <div>on</div>
-          <TokenLogo className="inline-block" tokenId={nativeToken.id} />
-          <div>{network.name}</div>
-        </div>
+    <EthSignContainer title="Transfer Request">
+      <div>You are transferring</div>
+      <div>
+        <SignParamTokensButton
+          address={txInfo.targetAddress}
+          network={network}
+          tokens={amount.tokens}
+          image={image}
+          decimals={erc20Token.decimals}
+          symbol={symbol}
+          fiat={amount.fiat("usd")}
+          withIcon
+        />
       </div>
-      <div className="my-16 text-center">
-        <ViewDetailsEth />
+      <div className="flex">
+        <div>from</div>
+        <SignParamAccountButton address={account.address} withIcon />
       </div>
-    </div>
+      <div className="flex">
+        <div>to</div>
+        <SignParamAccountButton explorerUrl={network.explorerUrl} address={recipient} withIcon />
+      </div>
+      <div className="flex gap-3">
+        <div>on</div>
+        <TokenLogo className="inline-block" tokenId={nativeToken.id} />
+        <div>{network.name}</div>
+      </div>
+    </EthSignContainer>
   )
 }

@@ -39,7 +39,7 @@ export const SignParamAccountButton: FC<SignParamAccountButtonProps> = ({
       {account?.name ? (
         <WithTooltip
           tooltip={address}
-          className="inline-block max-w-xs overflow-hidden overflow-ellipsis whitespace-nowrap"
+          className="inline-block h-[1.2em] max-w-[16rem] overflow-hidden overflow-ellipsis whitespace-nowrap align-baseline"
         >
           {account.name}
         </WithTooltip>

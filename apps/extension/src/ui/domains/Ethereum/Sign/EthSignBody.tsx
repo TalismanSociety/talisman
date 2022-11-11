@@ -25,7 +25,7 @@ export const EthSignBody: FC<EthSignBodyProps> = ({
 
   const { contractType, contractCall } = transactionInfo
 
-  switch (`${contractType}.${contractCall}`) {
+  switch (`${contractType}.${contractCall?.name}`) {
     case "ERC20.transfer":
       return <EthSignBodyErc20Transfer />
     case "ERC20.approve":
