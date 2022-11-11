@@ -6,6 +6,7 @@ import Transport from "@ledgerhq/hw-transport"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 import { getLedgerErrorProps, LedgerStatus } from "./common"
 import { log } from "@core/log"
+import { throwAfter } from "talisman-utils"
 
 export const useLedgerEthereum = (persist = false) => {
   const [isLoading, setIsLoading] = useState(false)
@@ -46,7 +47,7 @@ export const useLedgerEthereum = (persist = false) => {
       // this may hang at this point just after plugging the ledger
       await Promise.race([
         ledger.getAddress(getEthLedgerDerivationPath("LedgerLive")),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000)),
+        throwAfter(5_000, "Timeout"),
       ])
 
       setLedgerError(undefined)
