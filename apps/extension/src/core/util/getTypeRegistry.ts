@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-import { DEBUG } from "@core/constants"
 import {
   getMetadataDef,
   getMetadataFromDef,
@@ -26,9 +24,6 @@ export const getTypeRegistry = async (
   blockHash?: string,
   signedExtensions?: string[]
 ) => {
-  const key = `getTypeRegistry ${specVersion} ${Date.now()}`
-  DEBUG && console.time(key)
-
   const registry = new TypeRegistry()
 
   const numSpecVersion = typeof specVersion === "string" ? hexToNumber(specVersion) : specVersion
@@ -36,19 +31,18 @@ export const getTypeRegistry = async (
   const metadataRpc = metadataDef ? getMetadataRpcFromDef(metadataDef) : undefined
 
   if (metadataDef) {
-    try {
-      const metadata: Metadata = new Metadata(registry, getMetadataFromDef(metadataDef))
-      registry.setMetadata(metadata, signedExtensions, metadataDef.userExtensions)
-      if (metadataDef.types) registry.register(metadataDef.types)
-    } catch (err) {
-      console.error("Invalid metadata for chain %s", chainIdOrHash)
-      Sentry.captureException(err)
+    const metadataValue = getMetadataFromDef(metadataDef)
+    if (metadataValue) {
+      const metadata: Metadata = new Metadata(registry)
+      registry.setMetadata(metadata)
     }
-  } else {
-    console.warn("No metadata for chain %s", chainIdOrHash)
-  }
 
-  DEBUG && console.timeEnd(key)
+    if (signedExtensions || metadataDef.userExtensions)
+      registry.setSignedExtensions(signedExtensions, metadataDef.userExtensions)
+    if (metadataDef.types) registry.register(metadataDef.types)
+  } else {
+    if (signedExtensions) registry.setSignedExtensions(signedExtensions)
+  }
 
   return { registry, metadataRpc }
 }

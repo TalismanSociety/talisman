@@ -7,6 +7,7 @@ import { base64Decode, base64Encode } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"
 import { getRuntimeVersion } from "./getRuntimeVersion"
 import * as Sentry from "@sentry/browser"
+import { log } from "@core/log"
 
 const cache: Record<string, MetadataDef> = {}
 
@@ -70,7 +71,7 @@ export const getMetadataDef = async (
   if (storeMetadata?.metadataRpc && specVersion === storeMetadata.specVersion) return storeMetadata
 
   if (!chain) {
-    console.warn("Metadata for chain %s isn't up to date", storeMetadata?.chain ?? genesisHash)
+    log.warn(`Metadata for chain ${storeMetadata?.chain ?? genesisHash} isn't up to date`)
     return storeMetadata
   }
 
@@ -118,8 +119,8 @@ export const getMetadataDef = async (
     cache[cacheKey] = (await db.metadata.get(genesisHash)) as MetadataDef
     return cache[cacheKey]
   } catch (err) {
-    console.error("Failed to update metadata for chain %s", genesisHash, { err })
-    Sentry.captureException(err)
+    log.error(`Failed to update metadata for chain ${genesisHash}`, { err })
+    Sentry.captureException(err, { extra: { genesisHash } })
   }
 
   return storeMetadata
