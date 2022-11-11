@@ -3,7 +3,10 @@
 
 // Adapted from https://github.com/polkadot-js/extension/
 
-import { ETH_ERROR_EIP1474_INTERNAL_ERROR, EthProviderRpcError } from "@core/injectEth/types"
+import {
+  EthProviderRpcError,
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
+} from "@core/injectEth/EthProviderRpcError"
 import { log } from "@core/log"
 import type {
   MessageTypes,
@@ -18,8 +21,7 @@ import type {
   TransportResponseMessage,
   UnsubscribeFn,
 } from "@core/types"
-import { Port } from "@core/types/base"
-import * as Sentry from "@sentry/browser"
+import type { Port } from "@core/types/base"
 
 export interface Handler {
   resolve: (data?: any) => void
@@ -105,9 +107,7 @@ export default class MessageService {
     // mock the promise resolve/reject methods
     this.handlers[id] = {
       reject: (error) => {
-        Sentry.captureException(new Error(`subscription failed`), {
-          extra: { id, message, error: error.toString() },
-        })
+        log.error("subscription failed", { message, error })
       },
       resolve: () => {},
       subscriber,

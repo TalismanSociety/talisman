@@ -10,11 +10,10 @@ import { CustomNativeToken } from "@core/domains/tokens/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import {
-  ETH_ERROR_EIP1993_USER_REJECTED,
   EthProviderRpcError,
-  EthRequestArguments,
-  EthRequestSignatures,
-} from "@core/injectEth/types"
+  ETH_ERROR_EIP1993_USER_REJECTED,
+} from "@core/injectEth/EthProviderRpcError"
+import { EthRequestArguments, EthRequestSignatures } from "@core/injectEth/types"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
