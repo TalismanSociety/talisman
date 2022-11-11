@@ -6,6 +6,7 @@ import {
   getMetadataRpcFromDef,
 } from "@core/util/getMetadataDef"
 import { Metadata, TypeRegistry } from "@polkadot/types"
+import { hexToNumber } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 
 // metadata may have been added manually to the store, for a chain that Talisman doesn't know about (not in chaindata)
@@ -21,7 +22,7 @@ import * as Sentry from "@sentry/browser"
  */
 export const getTypeRegistry = async (
   chainIdOrHash: string,
-  specVersion?: number,
+  specVersion?: number | string,
   blockHash?: string,
   signedExtensions?: string[]
 ) => {
@@ -30,7 +31,8 @@ export const getTypeRegistry = async (
 
   const registry = new TypeRegistry()
 
-  const metadataDef = await getMetadataDef(chainIdOrHash, specVersion, blockHash)
+  const numSpecVersion = typeof specVersion === "string" ? hexToNumber(specVersion) : specVersion
+  const metadataDef = await getMetadataDef(chainIdOrHash, numSpecVersion, blockHash)
   const metadataRpc = metadataDef ? getMetadataRpcFromDef(metadataDef) : undefined
 
   if (metadataDef) {

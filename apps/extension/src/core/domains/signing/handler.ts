@@ -35,7 +35,7 @@ export default class SigningHandler extends ExtensionHandler {
 
         const { registry: fullRegistry } = await getTypeRegistry(
           genesisHash,
-          hexToNumber(specVersion),
+          specVersion,
           blockHash,
           signedExtensions
         )
