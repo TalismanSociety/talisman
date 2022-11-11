@@ -3,6 +3,7 @@ import { BalanceFormatter, BalanceLockType, LockedBalance } from "@core/domains/
 import { Address } from "@core/types/base"
 import { getNetworkCategory } from "@core/util/getNetworkCategory"
 import { sortBigBy } from "@talisman/util/bigHelper"
+import useChain from "@ui/hooks/useChain"
 import { useMemo } from "react"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
@@ -152,7 +153,11 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
   ])
 
   const { chain, evmNetwork } = balances.sorted[0]
-  const networkType = useMemo(() => getNetworkCategory({ chain, evmNetwork }), [chain, evmNetwork])
+  const relay = useChain(chain?.relay?.id)
+  const networkType = useMemo(
+    () => getNetworkCategory({ chain, evmNetwork, relay }),
+    [chain, evmNetwork, relay]
+  )
 
   const isFetching = useMemo(
     () => balances.sorted.some((b) => b.status === "cache") || isLoading,
