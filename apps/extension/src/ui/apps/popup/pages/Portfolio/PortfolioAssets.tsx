@@ -37,9 +37,9 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const { genericEvent } = useAnalytics()
 
   const sendFunds = useCallback(() => {
-    api.modalOpen("send")
+    api.modalOpen({ modalType: "send", from: account?.address })
     genericEvent("open send funds", { from: "popup portfolio" })
-  }, [genericEvent])
+  }, [account?.address, genericEvent])
 
   const copyAddress = useCallback(() => {
     if (!account) return
