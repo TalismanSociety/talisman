@@ -6,6 +6,7 @@ import { FC } from "react"
 import { EthSignBodyDefault } from "./EthSignBodyDefault"
 import { EthSignBodyErc20Approve } from "./EthSignBodyErc20Approve"
 import { EthSignBodyErc20Transfer } from "./EthSignBodyErc20Transfer"
+import { EthSignBodyErc721ApproveAll } from "./EthSignBodyErc721ApproveAll"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 
 type EthSignBodyProps = {
@@ -30,6 +31,8 @@ export const EthSignBody: FC<EthSignBodyProps> = ({
       return <EthSignBodyErc20Transfer />
     case "ERC20.approve":
       return <EthSignBodyErc20Approve />
+    case "ERC721.setApprovalForAll":
+      return <EthSignBodyErc721ApproveAll />
     default:
       return <EthSignBodyDefault />
   }

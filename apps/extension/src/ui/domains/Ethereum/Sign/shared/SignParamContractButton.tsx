@@ -9,11 +9,13 @@ type SignParamNetworkAddressButtonProps = {
   address: string
   network: EvmNetwork | CustomEvmNetwork
   className?: string
+  name?: string
 }
 
 export const SignParamNetworkAddressButton: FC<SignParamNetworkAddressButtonProps> = ({
   address,
   network,
+  name,
   className,
 }) => {
   const nativeToken = useToken(network.nativeToken?.id)
@@ -26,7 +28,7 @@ export const SignParamNetworkAddressButton: FC<SignParamNetworkAddressButtonProp
       withIcon
       className={className}
     >
-      <Address startCharCount={6} endCharCount={4} address={address} />
+      {name ?? <Address startCharCount={6} endCharCount={4} address={address} />}
     </SignParamButton>
   )
 }
