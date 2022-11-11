@@ -11,8 +11,9 @@ import { getTransactionDetails } from "@core/util/getTransactionDetails"
 import isJsonPayload from "@core/util/isJsonPayload"
 import { RequestSigningApproveSignature } from "@polkadot/extension-base/background/types"
 import { TypeRegistry } from "@polkadot/types"
-import { assert } from "@polkadot/util"
+import { assert, hexToNumber } from "@polkadot/util"
 import keyring from "@polkadot/ui-keyring"
+import { getTypeRegistry } from "@core/util/getTypeRegistry"
 
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({ id }: RequestIdOnly) {
@@ -27,18 +28,22 @@ export default class SigningHandler extends ExtensionHandler {
       const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
 
       // an empty registry is sufficient, we don't need metadata here
-      const registry = new TypeRegistry()
+      let registry = new TypeRegistry()
 
       if (isJsonPayload(payload)) {
-        const { genesisHash, signedExtensions } = payload
+        const { genesisHash, signedExtensions, specVersion, blockHash } = payload
 
-        // Apply extensions
-        const currentMetadata = await db.metadata.get(genesisHash)
-        registry.setSignedExtensions(signedExtensions, currentMetadata?.userExtensions)
-        if (currentMetadata?.types) registry.register(currentMetadata.types)
+        const { registry: fullRegistry } = await getTypeRegistry(
+          genesisHash,
+          hexToNumber(specVersion),
+          blockHash,
+          signedExtensions
+        )
+
+        registry = fullRegistry
 
         const chain = await db.chains.get({ genesisHash })
-        analyticsProperties.chain = currentMetadata?.chain || chain?.chainName
+        analyticsProperties.chain = chain?.chainName ?? genesisHash
       }
 
       const signResult = request.sign(registry, pair)
