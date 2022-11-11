@@ -23,12 +23,14 @@ export const useModalSubscription = () => {
   const { open: openBuyTokensModal } = useBuyTokensModal()
 
   useEffect(() => {
-    const unsubscribe = api.modalOpenSubscribe(async ({ modalType }) => {
-      switch (modalType) {
-        case "send":
+    const unsubscribe = api.modalOpenSubscribe(async (request) => {
+      switch (request.modalType) {
+        case "send": {
+          const { from, transferableTokenId } = request
           await focusCurrentTab()
-          openSendFundsModal()
+          openSendFundsModal({ from, transferableTokenId })
           break
+        }
         case "buy":
           await focusCurrentTab()
           openBuyTokensModal()

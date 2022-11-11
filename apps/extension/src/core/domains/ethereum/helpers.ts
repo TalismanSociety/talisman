@@ -3,6 +3,7 @@ import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { BigNumber, BigNumberish, ethers } from "ethers"
+import * as yup from "yup"
 
 import { EthGasSettings, LedgerEthDerivationPathType } from "./types"
 
@@ -178,3 +179,38 @@ export const prepareTransaction = (
 
   return result
 }
+
+const schemaAddEthereumRequest = yup.object().shape({
+  chainId: yup.string().required(),
+  chainName: yup.string().required(),
+  nativeCurrency: yup
+    .object()
+    .shape({
+      name: yup.string().required(),
+      symbol: yup.string().min(2).max(6).required(),
+      decimals: yup.number().required(),
+    })
+    .required(),
+  rpcUrls: yup.array().of(yup.string()).required(),
+  blockExplorerUrls: yup.array().of(yup.string()),
+  iconUrls: yup.array().of(yup.string()),
+})
+
+export const isValidAddEthereumRequestParam = (obj: unknown) =>
+  schemaAddEthereumRequest.isValidSync(obj)
+
+const schemaWatchAssetRequest = yup.object().shape({
+  type: yup.string().oneOf(["ERC20"]).required(),
+  options: yup
+    .object()
+    .shape({
+      address: yup.string().required(),
+      symbol: yup.string().min(2).max(11),
+      decimals: yup.number(),
+      image: yup.string(),
+    })
+    .required(),
+})
+
+export const isValidWatchAssetRequestParam = (obj: unknown) =>
+  schemaWatchAssetRequest.isValidSync(obj)

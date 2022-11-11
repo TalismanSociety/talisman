@@ -1,9 +1,8 @@
 import {
-  ETH_ERROR_EIP1474_INTERNAL_ERROR,
   EthProviderRpcError,
-  EthRequestSignatures,
-  EthRequestTypes,
-} from "@core/injectEth/types"
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
+} from "@core/injectEth/EthProviderRpcError"
+import { EthRequestSignatures, EthRequestTypes } from "@core/injectEth/types"
 import { log } from "@core/log"
 import { api } from "@ui/api"
 import { ethers } from "ethers"

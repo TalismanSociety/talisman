@@ -119,7 +119,7 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Send Funds button",
     })
-    await api.modalOpen("send")
+    await api.modalOpen({ modalType: "send" })
     window.close()
   }, [])
 
@@ -129,7 +129,7 @@ export const NavigationDrawer: FC = () => {
       name: "Goto",
       action: "Buy Crypto button",
     })
-    await api.modalOpen("buy")
+    await api.modalOpen({ modalType: "buy" })
     window.close()
   }, [])
 

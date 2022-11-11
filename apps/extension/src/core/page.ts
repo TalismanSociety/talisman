@@ -7,11 +7,9 @@ import type { Message } from "@polkadot/extension-base/types"
 import { DEBUG } from "./constants"
 import TalismanInjected from "./inject/Injected"
 import { injectExtension } from "./inject/injectExtension"
-import { Injected } from "./inject/types"
-import { TalismanEthProvider } from "./injectEth/TalismanEthProvider"
-import { TalismanWindow } from "./injectEth/types"
+import type { Injected } from "./inject/types"
+import { injectEthereum } from "./injectEth/injectEthereum"
 import MessageService from "./libs/MessageService"
-import { logProxy } from "./log/logProxy"
 
 const messageService = new MessageService({
   origin: "talisman-page",
@@ -44,23 +42,10 @@ function inject() {
   // inject substrate wallet provider
   injectExtension(enable, {
     name: "talisman",
-    version: process.env.VERSION ? process.env.VERSION : "",
+    version: process.env.VERSION ?? "",
   })
 
-  // inject ethereum wallet provider
-  const provider = new TalismanEthProvider(messageService.sendMessage)
-  const evmInjected = DEBUG && process.env.EVM_LOGPROXY === "true" ? logProxy(provider) : provider
-
-  const talismanWindow = window as TalismanWindow
-  talismanWindow.talismanEth = evmInjected
-
-  // inject on window.ethereum if it is not defined
-  // this allows users to just disable metamask to use Talisman instead
-  if (typeof talismanWindow.ethereum === "undefined") {
-    // eslint-disable-next-line no-console
-    console.debug("Injecting talismanEth in window.ethereum")
-    talismanWindow.ethereum = evmInjected
-  }
+  injectEthereum(messageService.sendMessage)
 }
 
 inject()

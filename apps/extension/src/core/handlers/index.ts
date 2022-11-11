@@ -1,5 +1,6 @@
 import { DEBUG, PORT_EXTENSION } from "@core/constants"
-import { AnyEthRequest, EthProviderRpcError } from "@core/injectEth/types"
+import { EthProviderRpcError } from "@core/injectEth/EthProviderRpcError"
+import { AnyEthRequest } from "@core/injectEth/types"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import type { MessageTypes, TransportRequestMessage } from "core/types"

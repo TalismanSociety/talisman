@@ -27,14 +27,13 @@ window.addEventListener("message", ({ data, source }: Message): void => {
 
 // inject our data injector
 const script = document.createElement("script")
-
 script.src = Browser.runtime.getURL("page.js")
 script.async = false
-
-script.onload = (): void => {
+script.onload = () => {
   // remove the injecting tag when loaded
-  if (script.parentNode) {
-    script.parentNode.removeChild(script)
-  }
+  if (script.parentNode) script.parentNode.removeChild(script)
 }
-;(document.head || document.documentElement).appendChild(script)
+
+// Might want to add more checks at some point, such as doctype to be HTML, and exclude some domains (ex: dropbox.com)
+const parent = document?.head || document?.documentElement
+parent?.appendChild(script)
