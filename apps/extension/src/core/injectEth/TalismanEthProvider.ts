@@ -1,17 +1,16 @@
 import EventEmitter from "events"
 
 import { DEBUG } from "@core/constants"
-import { SendRequest } from "@core/types"
+import type { SendRequest } from "@core/types"
 
-import {
-  ETH_ERROR_EIP1474_INTERNAL_ERROR,
+import type {
   EthProvider,
-  EthProviderRpcError,
   EthRequestArguments,
   EthRequestSignatures,
   EthRequestTypes,
   EthResponseType,
 } from "./types"
+import { EthProviderRpcError, ETH_ERROR_EIP1474_INTERNAL_ERROR } from "./EthProviderRpcError"
 
 interface JsonRpcRequest {
   id: string | undefined
