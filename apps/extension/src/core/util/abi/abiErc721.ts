@@ -1,5 +1,5 @@
 export const abiErc721 = [
-  "function supportsInterface(bytes4 interfaceID) external view returns (bool)",
+  "function supportsInterface(bytes4 interfaceId) external view returns (bool)",
   "function balanceOf(address owner) external view returns (uint256)",
   "function ownerOf(uint256 tokenId) external view returns (address)",
   "function safeTransferFrom(address from, address to, uint256 tokenId, bytes data) external payable",

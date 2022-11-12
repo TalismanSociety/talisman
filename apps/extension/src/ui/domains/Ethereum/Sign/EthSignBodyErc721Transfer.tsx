@@ -34,7 +34,12 @@ export const EthSignBodyErc721Transfer: FC = () => {
     [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, txInfo?.asset?.name]
   )
 
-  if (qMetadata.isLoading || !to || !account || !network) return <EthSignBodyShimmer />
+  const isOnBehalf = useMemo(
+    () => account && from && account.address.toLowerCase() !== from.toLowerCase(),
+    [account, from]
+  )
+
+  if (qMetadata.isLoading || !from || !to || !account || !network) return <EthSignBodyShimmer />
 
   return (
     <EthSignContainer title={<>NFT Transfer Request</>}>

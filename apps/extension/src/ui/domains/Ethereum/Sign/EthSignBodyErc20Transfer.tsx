@@ -1,7 +1,6 @@
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import useToken from "@ui/hooks/useToken"
 import { FC, useMemo } from "react"
-import { EthSignBodyDefault } from "./EthSignBodyDefault"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import useTokens from "@ui/hooks/useTokens"
@@ -25,12 +24,18 @@ export const EthSignBodyErc20Transfer: FC = () => {
     error: errorToken,
   } = useErc20TokenInfo(network?.id, txInfo.targetAddress)
 
-  const { value, recipient } = useMemo(() => {
+  const { from, value, to } = useMemo(() => {
     return {
-      recipient: getContractCallArg<string>(txInfo.contractCall, "_to"),
-      value: getContractCallArg<BigNumber>(txInfo.contractCall, "_value").toString(),
+      from: getContractCallArg<string>(txInfo.contractCall, "from"),
+      to: getContractCallArg<string>(txInfo.contractCall, "to"),
+      value: getContractCallArg<BigNumber>(txInfo.contractCall, "amount"),
     }
   }, [txInfo?.contractCall])
+
+  const isOnBehalf = useMemo(
+    () => account && from && account.address.toLowerCase() !== from.toLowerCase(),
+    [account, from]
+  )
 
   const tokens = useTokens()
   const token = useMemo(() => {
@@ -49,13 +54,14 @@ export const EthSignBodyErc20Transfer: FC = () => {
     const symbol = token?.symbol ?? (erc20Token?.symbol as string)
     const amount =
       value && erc20Token
-        ? new BalanceFormatter(value, erc20Token?.decimals, token?.rates)
+        ? new BalanceFormatter(value.toString(), erc20Token?.decimals, token?.rates)
         : undefined
 
     return { image, amount, symbol }
   }, [erc20Token, token?.rates, token?.symbol, value])
 
-  if (!amount || !erc20Token || !nativeToken || !account || !network) return <EthSignBodyShimmer />
+  if (!amount || !erc20Token || !nativeToken || !account || !network || !to)
+    return <EthSignBodyShimmer />
 
   return (
     <EthSignContainer title="Transfer Request">
@@ -74,12 +80,22 @@ export const EthSignBodyErc20Transfer: FC = () => {
       </div>
       <div className="flex">
         <div>from</div>
-        <SignParamAccountButton address={account.address} withIcon />
+        {isOnBehalf && from ? (
+          <SignParamAccountButton explorerUrl={network.explorerUrl} address={from} withIcon />
+        ) : (
+          <SignParamAccountButton address={account.address} />
+        )}
       </div>
       <div className="flex">
         <div>to</div>
-        <SignParamAccountButton explorerUrl={network.explorerUrl} address={recipient} withIcon />
+        <SignParamAccountButton explorerUrl={network.explorerUrl} address={to} withIcon />
       </div>
+      {isOnBehalf && (
+        <div className="flex">
+          <div>with</div>
+          <SignParamAccountButton address={account.address} withIcon />
+        </div>
+      )}
       <div className="flex gap-3">
         <div>on</div>
         <TokenLogo className="inline-block" tokenId={nativeToken.id} />

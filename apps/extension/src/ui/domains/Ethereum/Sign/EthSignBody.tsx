@@ -1,8 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
-import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
 import { TransactionInfo } from "@core/util/getEthTransactionInfo"
-import { FadeIn } from "@talisman/components/FadeIn"
-import { ethers } from "ethers"
 import { FC } from "react"
 import { EthSignBodyDefault } from "./EthSignBodyDefault"
 import { EthSignBodyErc20Approve } from "./EthSignBodyErc20Approve"
@@ -24,6 +20,7 @@ export const EthSignBody: FC<EthSignBodyProps> = ({ transactionInfo, isReady }) 
 
   switch (`${contractType}.${contractCall?.name}`) {
     case "ERC20.transfer":
+    case "ERC20.transferFrom":
       return <EthSignBodyErc20Transfer />
     case "ERC20.approve":
       return <EthSignBodyErc20Approve />

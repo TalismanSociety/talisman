@@ -1,7 +1,6 @@
 import useToken from "@ui/hooks/useToken"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
-import { EthSignBodyDefault } from "./EthSignBodyDefault"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import useTokens from "@ui/hooks/useTokens"
@@ -34,16 +33,18 @@ export const EthSignBodyErc20Approve: FC = () => {
   const nativeToken = useToken(network?.nativeToken?.id)
 
   const { spender, allowance, isInfinite } = useMemo(() => {
-    const rawAllowance = getContractCallArg<BigNumber>(txInfo.contractCall, "_value")
+    const rawAllowance = getContractCallArg<BigNumber>(txInfo.contractCall, "amount")
 
     return {
-      spender: getContractCallArg<string>(txInfo.contractCall, "_spender"),
-      allowance: new BalanceFormatter(rawAllowance.toString(), txInfo.asset.decimals, token?.rates),
-      isInfinite: rawAllowance.toHexString() === ALLOWANCE_UNLIMITED,
+      spender: getContractCallArg<string>(txInfo.contractCall, "spender"),
+      allowance: rawAllowance
+        ? new BalanceFormatter(rawAllowance.toString(), txInfo.asset.decimals, token?.rates)
+        : undefined,
+      isInfinite: rawAllowance?.toHexString() === ALLOWANCE_UNLIMITED,
     }
   }, [token?.rates, txInfo.asset.decimals, txInfo.contractCall])
 
-  if (!nativeToken || !account || !network) return <EthSignBodyShimmer />
+  if (!nativeToken || !spender || !account || !network) return <EthSignBodyShimmer />
 
   return (
     <EthSignContainer
