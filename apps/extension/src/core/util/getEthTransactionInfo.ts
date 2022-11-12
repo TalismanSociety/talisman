@@ -34,7 +34,7 @@ export type TransactionInfo = {
     symbol: string
     decimals: number
     image?: string
-    tokenId?: string
+    tokenId?: BigNumber
     tokenURI?: string
   }
 }
@@ -79,7 +79,7 @@ export const getEthTransactionInfo = async (
 
           result.asset = { name, symbol, decimals }
         } else if (contractType === "ERC721") {
-          const tokenId = getContractCallArg(contractCall, "tokenId")
+          const tokenId = getContractCallArg<BigNumber>(contractCall, "tokenId")
 
           try {
             const contract = new ethers.Contract(targetAddress, abiErc721Metadata, provider)

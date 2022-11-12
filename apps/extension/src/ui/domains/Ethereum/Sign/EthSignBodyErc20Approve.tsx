@@ -34,18 +34,16 @@ export const EthSignBodyErc20Approve: FC = () => {
   const nativeToken = useToken(network?.nativeToken?.id)
 
   const { spender, allowance, isInfinite } = useMemo(() => {
-    const rawAllowance = getContractCallArg(txInfo.contractCall, "_value") as BigNumber
+    const rawAllowance = getContractCallArg<BigNumber>(txInfo.contractCall, "_value")
 
     return {
-      spender: getContractCallArg(txInfo.contractCall, "_spender"),
+      spender: getContractCallArg<string>(txInfo.contractCall, "_spender"),
       allowance: new BalanceFormatter(rawAllowance.toString(), txInfo.asset.decimals, token?.rates),
       isInfinite: rawAllowance.toHexString() === ALLOWANCE_UNLIMITED,
     }
   }, [token?.rates, txInfo.asset.decimals, txInfo.contractCall])
 
   if (!nativeToken || !account || !network) return <EthSignBodyShimmer />
-
-  if (txInfo.contractCall.name !== "approve") return <EthSignBodyDefault />
 
   return (
     <EthSignContainer

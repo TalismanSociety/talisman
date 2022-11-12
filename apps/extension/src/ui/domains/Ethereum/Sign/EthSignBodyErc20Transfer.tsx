@@ -12,6 +12,7 @@ import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContex
 import { SignParamTokensButton } from "./shared/SignParamTokensButton"
 import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
 import { EthSignContainer } from "./shared/EthSignContainer"
+import { BigNumber } from "ethers"
 
 export const EthSignBodyErc20Transfer: FC = () => {
   const { account, network, transactionInfo } = useEthSignTransactionRequest()
@@ -26,8 +27,8 @@ export const EthSignBodyErc20Transfer: FC = () => {
 
   const { value, recipient } = useMemo(() => {
     return {
-      recipient: getContractCallArg(txInfo.contractCall, "_to"),
-      value: getContractCallArg(txInfo.contractCall, "_value").toString(),
+      recipient: getContractCallArg<string>(txInfo.contractCall, "_to"),
+      value: getContractCallArg<BigNumber>(txInfo.contractCall, "_value").toString(),
     }
   }, [txInfo?.contractCall])
 
@@ -55,8 +56,6 @@ export const EthSignBodyErc20Transfer: FC = () => {
   }, [erc20Token, token?.rates, token?.symbol, value])
 
   if (!amount || !erc20Token || !nativeToken || !account || !network) return <EthSignBodyShimmer />
-
-  if (txInfo.contractCall.name !== "transfer") return <EthSignBodyDefault />
 
   return (
     <EthSignContainer title="Transfer Request">

@@ -1,17 +1,16 @@
 import { FC, useMemo } from "react"
-import { EthSignBodyDefault } from "./EthSignBodyDefault"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { KnownTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { EthSignContainer } from "./shared/EthSignContainer"
-import { BigNumber } from "ethers"
+import { BigNumber, BigNumberish } from "ethers"
 import { useQuery } from "@tanstack/react-query"
 import { UnsafeImage } from "talisman-ui"
 import { getNftMetadata } from "@core/util/getNftMetadata"
 
-export const EthSignBodyErc721Approve: FC = () => {
+export const EthSignBodyErc721Transfer: FC = () => {
   const { account, network, transactionInfo } = useEthSignTransactionRequest()
   const txInfo = transactionInfo as KnownTransactionInfo
   const qMetadata = useQuery({
@@ -19,10 +18,11 @@ export const EthSignBodyErc721Approve: FC = () => {
     queryFn: () => getNftMetadata(txInfo.asset?.tokenURI),
   })
 
-  const { operator, tokenId } = useMemo(() => {
+  const { from, to, tokenId } = useMemo(() => {
     return {
-      operator: getContractCallArg(txInfo.contractCall, "operator"),
-      tokenId: BigNumber.from(getContractCallArg(txInfo.contractCall, "tokenId")),
+      from: getContractCallArg<string>(txInfo.contractCall, "from"),
+      to: getContractCallArg<string>(txInfo.contractCall, "to"),
+      tokenId: BigNumber.from(getContractCallArg<BigNumberish>(txInfo.contractCall, "tokenId")),
     }
   }, [txInfo.contractCall])
 
@@ -34,16 +34,12 @@ export const EthSignBodyErc721Approve: FC = () => {
     [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, txInfo?.asset?.name]
   )
 
-  if (qMetadata.isLoading || !operator || !account || !network) return <EthSignBodyShimmer />
+  if (qMetadata.isLoading || !to || !account || !network) return <EthSignBodyShimmer />
 
   return (
-    <EthSignContainer title={<>NFT Approval Request</>}>
+    <EthSignContainer title={<>NFT Transfer Request</>}>
       <div className="flex">
-        <div>Allow</div>
-        <SignParamNetworkAddressButton network={network} address={operator} />
-      </div>
-      <div className="flex">
-        <div>to transfer</div>
+        <div>transfer</div>
         <SignParamNetworkAddressButton
           address={txInfo.targetAddress}
           network={network}
@@ -51,9 +47,19 @@ export const EthSignBodyErc721Approve: FC = () => {
         />
       </div>
       <div className="flex max-w-full overflow-hidden">
-        <div className="whitespace-nowrap">on behalf of</div>
-        <SignParamAccountButton address={account.address} explorerUrl={network.explorerUrl} />
+        <div className="whitespace-nowrap">from</div>
+        <SignParamAccountButton address={from} />
       </div>
+      <div className="flex">
+        <div>to</div>
+        <SignParamAccountButton address={to} explorerUrl={network.explorerUrl} withIcon />
+      </div>
+      {from.toLowerCase() !== account.address.toLowerCase() && (
+        <div className="flex max-w-full overflow-hidden">
+          <div className="whitespace-nowrap">signing with</div>
+          <SignParamAccountButton address={account.address} withIcon />
+        </div>
+      )}
       {!!image && (
         <div className="mt-12 mb-[-0.8rem] text-center">
           <UnsafeImage

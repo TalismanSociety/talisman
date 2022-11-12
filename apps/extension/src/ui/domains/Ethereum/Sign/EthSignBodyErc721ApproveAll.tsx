@@ -21,8 +21,6 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
 
   if (!operator || !account || !network) return <EthSignBodyShimmer />
 
-  if (txInfo.contractCall.name !== "setApprovalForAll") return <EthSignBodyDefault />
-
   return (
     <EthSignContainer
       title={

@@ -134,25 +134,24 @@ export const EthSignTransactionRequest = () => {
     [nativeToken, txDetails]
   )
 
+  const isReadyToDisplay = useMemo(
+    () => Boolean(transactionInfo && (estimatedFee || errorMessage)),
+    [transactionInfo, estimatedFee, errorMessage]
+  )
+
   return (
     <SignContainer>
       <Header text={<AppPill url={url} />}></Header>
       <Content>
-        <div className="scrollable scrollable-800 max-h-fit overflow-y-auto">
-          <EthSignBody
-            account={account}
-            network={network}
-            request={request}
-            transactionInfo={transactionInfo}
-            isReady={!!estimatedFee}
-          />
+        <div className="scrollable scrollable-800 h-full overflow-y-auto">
+          <EthSignBody transactionInfo={transactionInfo} isReady={isReadyToDisplay} />
         </div>
       </Content>
       <Footer>
-        <Suspense fallback={null}>
-          {errorMessage && <SignAlertMessage type="error">{errorMessage}</SignAlertMessage>}
-          {nativeToken && transaction && txDetails && estimatedFee ? (
-            <>
+        {isReadyToDisplay && (
+          <Suspense fallback={null}>
+            {errorMessage && <SignAlertMessage type="error">{errorMessage}</SignAlertMessage>}
+            {nativeToken && transaction && txDetails && estimatedFee ? (
               <div className="gasInfo">
                 <div>
                   <div>Estimated Fee</div>
@@ -187,41 +186,41 @@ export const EthSignTransactionRequest = () => {
                   </div>
                 </div>
               </div>
-            </>
-          ) : null}
-          {account && request && account.isHardware ? (
-            transaction ? (
-              <LedgerEthereum
-                manualSend
-                className="mt-6"
-                method="transaction"
-                payload={transaction}
-                account={account as AccountJsonHardwareEthereum}
-                onSignature={approveHardware}
-                onReject={reject}
-                onSendToLedger={handleSendToLedger}
-              />
+            ) : null}
+            {account && request && account.isHardware ? (
+              transaction ? (
+                <LedgerEthereum
+                  manualSend
+                  className="mt-6"
+                  method="transaction"
+                  payload={transaction}
+                  account={account as AccountJsonHardwareEthereum}
+                  onSignature={approveHardware}
+                  onReject={reject}
+                  onSendToLedger={handleSendToLedger}
+                />
+              ) : (
+                <Button className="w-full" onClick={reject}>
+                  Cancel
+                </Button>
+              )
             ) : (
-              <Button className="w-full" onClick={reject}>
-                Cancel
-              </Button>
-            )
-          ) : (
-            <Grid>
-              <SimpleButton disabled={processing} onClick={reject}>
-                Cancel
-              </SimpleButton>
-              <SimpleButton
-                disabled={!transaction || processing || isLoading}
-                processing={processing}
-                primary
-                onClick={approve}
-              >
-                Approve
-              </SimpleButton>
-            </Grid>
-          )}
-        </Suspense>
+              <Grid>
+                <SimpleButton disabled={processing} onClick={reject}>
+                  Cancel
+                </SimpleButton>
+                <SimpleButton
+                  disabled={!transaction || processing || isLoading}
+                  processing={processing}
+                  primary
+                  onClick={approve}
+                >
+                  Approve
+                </SimpleButton>
+              </Grid>
+            )}
+          </Suspense>
+        )}
       </Footer>
     </SignContainer>
   )
