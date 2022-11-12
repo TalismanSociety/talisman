@@ -123,7 +123,8 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
 
   // analyse fees on each block
   useEffect(() => {
-    if (!provider) {
+    // check that withFeeOptions is defined to prevent "gas flickering" on initial load
+    if (!provider || withFeeOptions === undefined) {
       setGasPrice(undefined)
       setBaseFeePerGas(undefined)
       setBlockGasLimit(undefined)
@@ -194,11 +195,11 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
   }
 }
 
-export const useTransactionInfo = (
+const useTransactionInfo = (
   provider?: ethers.providers.Provider,
   tx?: ethers.providers.TransactionRequest
 ) => {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error>()
   const [transactionInfo, setTransactionInfo] = useState<TransactionType>()
 
@@ -209,12 +210,6 @@ export const useTransactionInfo = (
       .catch(setError)
       .finally(() => setIsLoading(false))
   }, [provider, tx])
-
-  // TODO remove
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log("useTransactionInfo", { tx, isLoading, transactionInfo })
-  }, [isLoading, transactionInfo, tx])
 
   return { isLoading, transactionInfo, error: error?.message }
 }
@@ -287,18 +282,17 @@ export const useEthTransaction = (
   }, [liveUpdatingTransaction, lockTransaction])
 
   const txDetails: EthTransactionDetails | undefined = useMemo(() => {
-    if (!gasPrice || !estimatedGas) return undefined
+    if (!gasPrice || !estimatedGas || !transaction) return undefined
 
     const priorityOptions = feeHistoryAnalysis?.options
     // EIP1559 transactions
     if (
-      transaction &&
       transaction.type === 2 &&
       transaction.maxPriorityFeePerGas &&
       gasPrice &&
       baseFeePerGas &&
       estimatedGas &&
-      transaction?.gasLimit
+      transaction.gasLimit
     ) {
       const { estimatedFee, maxFee } = getEip1559TotalFees(
         estimatedGas,
@@ -318,13 +312,7 @@ export const useEthTransaction = (
     }
 
     // Legacy transactions
-    if (
-      transaction &&
-      transaction.type === 0 &&
-      transaction.gasPrice &&
-      transaction.gasLimit &&
-      estimatedGas
-    ) {
+    if (transaction.type === 0 && transaction.gasPrice && transaction.gasLimit && estimatedGas) {
       const { estimatedFee, maxFee } = getLegacyTotalFees(
         estimatedGas,
         transaction.gasLimit,
@@ -379,6 +367,8 @@ export const useEthTransaction = (
     }),
     [transactionInfo, transaction, txDetails, gasSettings, priority, isLoading, error]
   )
+
+  // console.log({ tx, result })
 
   return result
 }

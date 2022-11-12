@@ -6,6 +6,7 @@ import { FC } from "react"
 import { EthSignBodyDefault } from "./EthSignBodyDefault"
 import { EthSignBodyErc20Approve } from "./EthSignBodyErc20Approve"
 import { EthSignBodyErc20Transfer } from "./EthSignBodyErc20Transfer"
+import { EthSignBodyErc721Approve } from "./EthSignBodyErc721Approve"
 import { EthSignBodyErc721ApproveAll } from "./EthSignBodyErc721ApproveAll"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 
@@ -14,6 +15,7 @@ type EthSignBodyProps = {
   account?: AccountJsonAny
   request?: ethers.providers.TransactionRequest
   transactionInfo?: TransactionInfo
+  isReady: boolean
 }
 
 export const EthSignBody: FC<EthSignBodyProps> = ({
@@ -21,8 +23,10 @@ export const EthSignBody: FC<EthSignBodyProps> = ({
   account,
   request,
   transactionInfo,
+  isReady,
 }) => {
-  if (!request || !transactionInfo || !network || !account) return <EthSignBodyShimmer />
+  if (!isReady || !request || !transactionInfo || !network || !account)
+    return <EthSignBodyShimmer />
 
   const { contractType, contractCall } = transactionInfo
 
@@ -33,6 +37,8 @@ export const EthSignBody: FC<EthSignBodyProps> = ({
       return <EthSignBodyErc20Approve />
     case "ERC721.setApprovalForAll":
       return <EthSignBodyErc721ApproveAll />
+    case "ERC721.approve":
+      return <EthSignBodyErc721Approve />
     default:
       return <EthSignBodyDefault />
   }

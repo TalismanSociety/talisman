@@ -1,4 +1,5 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { Address } from "@ui/domains/Account/Address"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import useToken from "@ui/hooks/useToken"
@@ -28,7 +29,16 @@ export const SignParamNetworkAddressButton: FC<SignParamNetworkAddressButtonProp
       withIcon
       className={className}
     >
-      {name ?? <Address startCharCount={6} endCharCount={4} address={address} />}
+      {name ? (
+        <WithTooltip
+          tooltip={address}
+          className="inline-block max-w-[18rem] overflow-hidden text-ellipsis whitespace-nowrap"
+        >
+          {name}
+        </WithTooltip>
+      ) : (
+        <Address startCharCount={6} endCharCount={4} address={address} />
+      )}
     </SignParamButton>
   )
 }

@@ -8,6 +8,7 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { EthFeeSelect } from "@ui/domains/Ethereum/EthFeeSelect"
 import { EthSignBody } from "@ui/domains/Ethereum/Sign/EthSignBody"
+import { SignAlertMessage } from "@ui/domains/Ethereum/Sign/shared"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
 import { BigNumber } from "ethers"
@@ -137,15 +138,19 @@ export const EthSignTransactionRequest = () => {
     <SignContainer>
       <Header text={<AppPill url={url} />}></Header>
       <Content>
-        <EthSignBody
-          account={account}
-          network={network}
-          request={request}
-          transactionInfo={transactionInfo}
-        />
+        <div className="scrollable scrollable-800 max-h-fit overflow-y-auto">
+          <EthSignBody
+            account={account}
+            network={network}
+            request={request}
+            transactionInfo={transactionInfo}
+            isReady={!!estimatedFee}
+          />
+        </div>
       </Content>
       <Footer>
         <Suspense fallback={null}>
+          {errorMessage && <SignAlertMessage type="error">{errorMessage}</SignAlertMessage>}
           {nativeToken && transaction && txDetails && estimatedFee ? (
             <>
               <div className="gasInfo">
@@ -184,7 +189,6 @@ export const EthSignTransactionRequest = () => {
               </div>
             </>
           ) : null}
-          {errorMessage && <p className="error">{errorMessage}</p>}
           {account && request && account.isHardware ? (
             transaction ? (
               <LedgerEthereum
