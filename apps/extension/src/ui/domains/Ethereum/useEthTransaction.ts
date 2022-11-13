@@ -62,7 +62,7 @@ const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
       const { baseFeePerGas } = await provider.send("eth_getBlockByNumber", ["latest", false])
       setHasEip1559Support(baseFeePerGas !== undefined)
     } catch (err) {
-      setError("Failed to load block data")
+      setError("Failed to check EIP-1559 support")
     }
     setIsLoading(false)
   }, [provider])
@@ -367,8 +367,6 @@ export const useEthTransaction = (
     }),
     [transactionInfo, transaction, txDetails, gasSettings, priority, isLoading, error]
   )
-
-  // console.log({ tx, result })
 
   return result
 }

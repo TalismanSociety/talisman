@@ -70,6 +70,8 @@ export const getEthTransactionInfo = async (
         result.contractCall = contractCall
 
         if (contractType === "ERC20") {
+          // ERC721 approve function may enter here, but it should throw because of the decimals call
+
           const contract = new ethers.Contract(targetAddress, contractInterface, provider)
           const [name, symbol, decimals] = await Promise.all([
             contract.name(),
@@ -82,6 +84,7 @@ export const getEthTransactionInfo = async (
           const tokenId = getContractCallArg<BigNumber>(contractCall, "tokenId")
 
           try {
+            // TODO use supportInterface to determine if possible to make these calls
             const contract = new ethers.Contract(targetAddress, abiErc721Metadata, provider)
             const [name, symbol, tokenURI] = await Promise.all([
               contract.name(),
@@ -98,7 +101,7 @@ export const getEthTransactionInfo = async (
             }
           } catch (err) {
             // some NFTs don't implement the metadata functions
-            log.error("failed to fetch ERC721 metadata", { err })
+            //log.error("failed to fetch ERC721 metadata", { err })
           }
         }
 

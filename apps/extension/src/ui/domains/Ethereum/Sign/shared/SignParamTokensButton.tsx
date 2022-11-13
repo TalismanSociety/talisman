@@ -11,7 +11,7 @@ type SignParamTokensButtonProps = {
   tokens: string | number | null
   decimals: number
   symbol: string
-  image?: string
+  image?: string | null
   fiat?: number | null
   className?: string
 }
