@@ -44,7 +44,7 @@ export const EthSignBodyErc721Transfer: FC = () => {
   return (
     <EthSignContainer title={<>NFT Transfer Request</>}>
       <div className="flex">
-        <div>transfer</div>
+        <div>Transfer</div>
         <SignParamNetworkAddressButton
           address={txInfo.targetAddress}
           network={network}
@@ -53,16 +53,20 @@ export const EthSignBodyErc721Transfer: FC = () => {
       </div>
       <div className="flex max-w-full overflow-hidden">
         <div className="whitespace-nowrap">from</div>
-        <SignParamAccountButton address={from} />
+        {isOnBehalf ? (
+          <SignParamAccountButton address={from} withIcon explorerUrl={from} />
+        ) : (
+          <SignParamAccountButton address={from} />
+        )}
       </div>
       <div className="flex">
         <div>to</div>
         <SignParamAccountButton address={to} explorerUrl={network.explorerUrl} withIcon />
       </div>
-      {from.toLowerCase() !== account.address.toLowerCase() && (
+      {isOnBehalf && (
         <div className="flex max-w-full overflow-hidden">
-          <div className="whitespace-nowrap">signing with</div>
-          <SignParamAccountButton address={account.address} withIcon />
+          <div className="whitespace-nowrap">with</div>
+          <SignParamAccountButton address={account.address} />
         </div>
       )}
       {!!image && (

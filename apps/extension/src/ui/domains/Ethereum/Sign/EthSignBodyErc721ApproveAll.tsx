@@ -1,5 +1,4 @@
 import { FC, useMemo } from "react"
-import { EthSignBodyDefault } from "./EthSignBodyDefault"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
@@ -14,8 +13,8 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
 
   const { operator, approved } = useMemo(() => {
     return {
-      operator: getContractCallArg(txInfo.contractCall, "operator"),
-      approved: getContractCallArg(txInfo.contractCall, "approved"),
+      operator: getContractCallArg<string>(txInfo.contractCall, "operator"),
+      approved: getContractCallArg<boolean>(txInfo.contractCall, "approved"),
     }
   }, [txInfo.contractCall])
 

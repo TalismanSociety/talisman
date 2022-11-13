@@ -1,7 +1,7 @@
-import { FC, ReactNode, useEffect, useState } from "react"
+import { DetailedHTMLProps, FC, HTMLAttributes, useEffect, useState } from "react"
 import { classNames } from "talisman-ui"
 
-type FadeInProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
+type FadeInProps = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
 
 export const FadeIn: FC<FadeInProps> = ({ className, ...props }) => {
   const [opacity, setOpacity] = useState(0)
