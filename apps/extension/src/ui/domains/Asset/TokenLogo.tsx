@@ -6,7 +6,7 @@ import { CSSProperties, FC, memo, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
 import { getBase64ImageUrl } from "talisman-utils"
 
-const genericTokenIconUrl = getBase64ImageUrl(genericTokenSvgIcon)
+export const GENERIC_TOKEN_LOGO_URL = getBase64ImageUrl(genericTokenSvgIcon)
 
 // cache token logo urls, because some of them (erc20) are base64 that we want to convert to object url only once
 const tokenLogoUrlCache = new Map<string, string | null>()
@@ -14,14 +14,18 @@ const tokenLogoUrlCache = new Map<string, string | null>()
 const getSafeTokenLogoUrl = async (imageUrl?: string | null) => {
   if (imageUrl) {
     try {
-      const blob = await imgSrcToBlob(imageUrl)
+      const blob = await imgSrcToBlob(imageUrl, undefined, "anonymous")
       return URL.createObjectURL(blob)
     } catch (err) {
+      // happens in firefox if there is an svg formatting error.
+      // in such case image can be displayed from url, and most importantly, it exists.
+      if (err instanceof TypeError) return imageUrl
+
       // ignore, there could be many reasons
       // fallback to generic token
     }
   }
-  return genericTokenIconUrl
+  return GENERIC_TOKEN_LOGO_URL
 }
 
 const getUnsafeChainLogoUrl = (chainId?: string | number) => {

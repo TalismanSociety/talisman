@@ -1,13 +1,10 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
 import { Erc20Token } from "@core/domains/tokens/types"
-import { TokenImage, TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { GENERIC_TOKEN_LOGO_URL, TokenImage, TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import useTokens from "@ui/hooks/useTokens"
 import { FC, useMemo } from "react"
 import { SignParamButton } from "./SignParamButton"
-import genericTokenSvgIcon from "@talisman/theme/icons/custom-token-generic.svg?url"
-import { getBase64ImageUrl } from "talisman-utils"
 import { useErc20TokenImageUrl } from "@ui/hooks/useErc20TokenDisplay"
-const genericTokenIconUrl = getBase64ImageUrl(genericTokenSvgIcon)
 
 type SignParamErc20TokenButtonProps = {
   network: EvmNetwork | CustomEvmNetwork
@@ -51,7 +48,7 @@ export const SignParamErc20TokenButton: FC<SignParamErc20TokenButtonProps> = ({
           <TokenLogo tokenId={token?.id} />
         ) : (
           <TokenImage
-            src={qTokenImageUrl.isLoading ? null : qTokenImageUrl.data ?? genericTokenIconUrl}
+            src={qTokenImageUrl.isLoading ? null : qTokenImageUrl.data ?? GENERIC_TOKEN_LOGO_URL}
           />
         )
       }

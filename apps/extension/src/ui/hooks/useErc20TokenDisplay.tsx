@@ -1,13 +1,10 @@
 import { getCoinGeckoErc20Coin } from "@core/util/getCoinGeckoErc20Coin"
 import { useQuery } from "@tanstack/react-query"
-import { getBase64ImageUrl } from "talisman-utils"
-import genericTokenSvgIcon from "@talisman/theme/icons/custom-token-generic.svg?url"
 import { imgSrcToBlob } from "blob-util"
 import useTokens from "./useTokens"
 import { useMemo } from "react"
-import { CustomErc20Token, Token } from "@core/domains/tokens/types"
-
-const genericTokenIconUrl = getBase64ImageUrl(genericTokenSvgIcon)
+import { CustomErc20Token } from "@core/domains/tokens/types"
+import { GENERIC_TOKEN_LOGO_URL } from "@ui/domains/Asset/TokenLogo"
 
 type ImageSize = "thumb" | "small" | "large"
 
@@ -19,7 +16,7 @@ const getErc20TokenImageUrl = async (
 ) => {
   if (token?.image) {
     try {
-      const blob = await imgSrcToBlob(token.image)
+      const blob = await imgSrcToBlob(token.image, undefined, "anonymous")
       return URL.createObjectURL(blob)
     } catch (err) {
       // ignore, there could be many reasons
@@ -31,7 +28,7 @@ const getErc20TokenImageUrl = async (
 
     if (data) {
       try {
-        const blob = await imgSrcToBlob(data.image[iconSize])
+        const blob = await imgSrcToBlob(data.image[iconSize], undefined, "anonymous")
         return URL.createObjectURL(blob)
       } catch (err) {
         // ignore, there could be many reasons
@@ -39,7 +36,7 @@ const getErc20TokenImageUrl = async (
       }
     }
   }
-  return genericTokenIconUrl
+  return GENERIC_TOKEN_LOGO_URL
 }
 
 export const useErc20TokenImageUrl = (
