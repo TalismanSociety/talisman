@@ -2,7 +2,7 @@ import { CustomErc20Token } from "@core/domains/tokens/types"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { IconChevron, PlusIcon } from "@talisman/theme/icons"
 import Layout from "@ui/apps/dashboard/layout"
-import { Erc20Logo } from "@ui/domains/Erc20Tokens/Erc20Logo"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { useCustomErc20Tokens } from "@ui/hooks/useCustomErc20Tokens"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import sortBy from "lodash/sortBy"
@@ -82,7 +82,7 @@ const TokensList = styled.div`
   margin-top: 3.2rem;
 `
 
-const TokenLogo = styled(Erc20Logo)`
+const TokenLogo = styled(AssetLogo)`
   width: 3.2rem;
   height: 3.2rem;
 `

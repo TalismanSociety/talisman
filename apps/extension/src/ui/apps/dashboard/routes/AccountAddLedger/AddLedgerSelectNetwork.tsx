@@ -95,7 +95,7 @@ type FormData = {
 const renderOption: RenderItemFunc<Chain> = (chain) => {
   return (
     <Flex>
-      <Asset.Logo id={chain.id} />
+      <Asset.ChainLogo id={chain.id} />
       <span className="grow">{chain.name}</span>
     </Flex>
   )

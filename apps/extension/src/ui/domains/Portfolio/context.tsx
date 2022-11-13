@@ -16,7 +16,6 @@ export type NetworkOption = {
   name: string
   chainId?: ChainId
   evmNetworkId?: EvmNetworkId
-  logoId: string
   symbols?: string[] // use when searching network by token symbol
   sortIndex: number | null
 }
@@ -54,7 +53,6 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
           id,
           chainId: id,
           name: name ?? "Unknown chain",
-          logoId: id,
           sortIndex,
         })
       )
@@ -68,7 +66,6 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
             id: String(id),
             name: name ?? "Unknown chain",
             evmNetworkId: id,
-            logoId: substrateChain?.id ?? String(id),
             chainId: substrateChain?.id,
             sortIndex,
           })

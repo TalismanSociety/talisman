@@ -4,12 +4,11 @@ import { isEthereumAddress } from "@polkadot/util-crypto/ethereum"
 import { TalismanOrb } from "@talisman/components/TalismanOrb"
 import ethIcon from "@talisman/theme/logos/eth-diamond-glyph-white.png"
 import { classNames } from "@talisman/util/classNames"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import useChains from "@ui/hooks/useChains"
 import { useSettings } from "@ui/hooks/useSettings"
 import { Suspense, lazy, useMemo } from "react"
 import styled from "styled-components"
-
-import ChainLogo from "../Asset/Logo"
 
 const IdentIcon = lazy(() => import("@polkadot/react-identicon"))
 

@@ -38,7 +38,11 @@ const getBalanceLockTypeTitle = (input: BalanceLockType, allLocks: LockedBalance
 
 export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenBalancesParams) => {
   const { account } = useSelectedAccount()
-  const { token, summary, tokenBalances } = useTokenBalancesSummary(balances, symbol)
+  const { token, summary, tokenBalances, tokenBalanceRates } = useTokenBalancesSummary(
+    balances,
+    symbol
+  )
+  const tokenRates = token && tokenBalanceRates[token.id]
 
   const addressesWithLocks = useMemo(
     () => [
@@ -90,8 +94,8 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
                   key: type,
                   title: getBalanceLockTypeTitle(type, consolidatedLocks),
                   tokens: BigInt(amount),
-                  fiat: token?.rates
-                    ? new BalanceFormatter(amount, token?.decimals, token.rates).fiat("usd")
+                  fiat: tokenRates
+                    ? new BalanceFormatter(amount, token?.decimals, tokenRates).fiat("usd")
                     : null,
                   locked: true,
                 }))
@@ -102,8 +106,8 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
                     key: type + address,
                     title: getBalanceLockTypeTitle(type, consolidatedLocks),
                     tokens: BigInt(amount),
-                    fiat: token?.rates
-                      ? new BalanceFormatter(amount, token?.decimals, token.rates).fiat("usd")
+                    fiat: tokenRates
+                      ? new BalanceFormatter(amount, token?.decimals, tokenRates).fiat("usd")
                       : null,
                     locked: true,
                     address,
@@ -148,7 +152,7 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
     error,
     summary,
     token?.decimals,
-    token?.rates,
+    tokenRates,
     tokenBalances,
   ])
 

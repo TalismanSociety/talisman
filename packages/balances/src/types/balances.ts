@@ -326,6 +326,9 @@ export class Balance {
   get decimals() {
     return this.token?.decimals || null
   }
+  get rates() {
+    return (this.#db?.tokenRates && this.#db.tokenRates[this.tokenId]) || null
+  }
 
   /**
    * The total balance of this token.

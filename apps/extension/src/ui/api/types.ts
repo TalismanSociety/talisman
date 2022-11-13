@@ -10,12 +10,12 @@ import {
 } from "@core/domains/app/types"
 import {
   AddressesByEvmNetwork,
+  BalanceJson,
   BalancesUpdate,
   RequestBalance,
   RequestBalanceLocks,
   ResponseBalanceLocks,
 } from "@core/domains/balances/types"
-import { BalanceStorage } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
 import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import {
@@ -114,12 +114,7 @@ export default interface MessageTypes {
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
-  getBalance: ({
-    chainId,
-    evmNetworkId,
-    tokenId,
-    address,
-  }: RequestBalance) => Promise<BalanceStorage>
+  getBalance: ({ chainId, evmNetworkId, tokenId, address }: RequestBalance) => Promise<BalanceJson>
   getBalanceLocks: ({ chainId, addresses }: RequestBalanceLocks) => Promise<ResponseBalanceLocks>
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
@@ -154,6 +149,9 @@ export default interface MessageTypes {
 
   // token message types
   tokens: (cb: () => void) => UnsubscribeFn
+
+  // tokenRates message types
+  tokenRates: (cb: () => void) => UnsubscribeFn
 
   // custom erc20 token management
   customErc20Tokens: () => Promise<Record<CustomErc20Token["id"], CustomErc20Token>>

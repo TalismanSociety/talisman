@@ -41,8 +41,17 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       {}
     )
   }
-  async getChain(chainId: ChainId): Promise<Chain | null> {
-    return (await this.#db.chains.get(chainId)) || null
+  async getChain(chainIdOrQuery: ChainId | Partial<Chain>): Promise<Chain | CustomChain | null> {
+    const [chainId, chainQuery] =
+      typeof chainIdOrQuery === "string"
+        ? // chainId (ChainId)
+          [chainIdOrQuery, undefined]
+        : // chainQuery (Partial<Chain>)
+          [undefined, chainIdOrQuery]
+
+    return chainId !== undefined
+      ? (await this.#db.chains.get(chainId)) || null
+      : (await this.#db.chains.get(chainQuery)) || null
   }
 
   async evmNetworkIds(): Promise<EvmNetworkId[]> {
@@ -54,8 +63,19 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       {}
     )
   }
-  async getEvmNetwork(evmNetworkId: EvmNetworkId): Promise<EvmNetwork | null> {
-    return (await this.#db.evmNetworks.get(evmNetworkId)) || null
+  async getEvmNetwork(
+    evmNetworkIdOrQuery: EvmNetworkId | Partial<EvmNetwork>
+  ): Promise<EvmNetwork | CustomEvmNetwork | null> {
+    const [evmNetworkId, evmNetworkQuery] =
+      typeof evmNetworkIdOrQuery === "string"
+        ? // evmNetworkId (EvmNetworkId)
+          [evmNetworkIdOrQuery, undefined]
+        : // evmNetworkQuery (Partial<EvmNetwork>)
+          [undefined, evmNetworkIdOrQuery]
+
+    return evmNetworkId !== undefined
+      ? (await this.#db.evmNetworks.get(evmNetworkId)) || null
+      : (await this.#db.evmNetworks.get(evmNetworkQuery)) || null
   }
 
   async tokenIds(): Promise<TokenId[]> {
@@ -67,13 +87,31 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       {}
     )
   }
-  async getToken(tokenId: TokenId): Promise<Token | null> {
-    return (await this.#db.tokens.get(tokenId)) || null
+  async getToken(tokenIdOrQuery: TokenId | Partial<Token>): Promise<Token | null> {
+    const [tokenId, tokenQuery] =
+      typeof tokenIdOrQuery === "string"
+        ? // tokenId (TokenId)
+          [tokenIdOrQuery, undefined]
+        : // tokenQuery (Partial<Token>)
+          [undefined, tokenIdOrQuery]
+
+    return tokenId !== undefined
+      ? (await this.#db.tokens.get(tokenId)) || null
+      : (await this.#db.tokens.get(tokenQuery)) || null
   }
 
   async addCustomChain(customChain: CustomChain) {
     if (!("isCustom" in customChain)) return
     this.#db.chains.put(customChain)
+  }
+  async removeCustomChain(chainId: ChainId) {
+    this.#db.chains
+      // only affect custom chains
+      .filter((chain) => "isCustom" in chain && chain.isCustom === true)
+      // only affect the provided chainId
+      .filter((chain) => chain.id === chainId)
+      // delete the chain (if exists)
+      .delete()
   }
   async clearCustomChains() {
     this.#db.transaction("rw", this.#db.chains, () => {
@@ -84,6 +122,15 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   async addCustomEvmNetwork(customEvmNetwork: CustomEvmNetwork) {
     if (!("isCustom" in customEvmNetwork)) return
     this.#db.evmNetworks.put(customEvmNetwork)
+  }
+  async removeCustomEvmNetwork(evmNetworkId: EvmNetworkId) {
+    this.#db.evmNetworks
+      // only affect custom evmNetworks
+      .filter((network) => "isCustom" in network && network.isCustom === true)
+      // only affect the provided evmNetworkId
+      .filter((network) => network.id === evmNetworkId)
+      // delete the evmNetwork (if exists)
+      .delete()
   }
   async clearCustomEvmNetworks() {
     this.#db.transaction("rw", this.#db.evmNetworks, () => {
@@ -96,6 +143,15 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   async addCustomToken(customToken: Token) {
     if (!("isCustom" in customToken)) return
     this.#db.tokens.put(customToken)
+  }
+  async removeCustomToken(tokenId: TokenId) {
+    this.#db.tokens
+      // only affect custom tokens
+      .filter((token) => "isCustom" in token && (token as any).isCustom === true)
+      // only affect the provided token
+      .filter((token) => token.id === tokenId)
+      // delete the token (if exists)
+      .delete()
   }
   async clearCustomTokens() {
     await this.#db.transaction("rw", this.#db.tokens, () => {
@@ -146,7 +202,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       if (chains.length <= 0) throw new Error("Ignoring empty chaindata chains response")
 
       await this.#db.transaction("rw", this.#db.chains, () => {
-        this.#db.chains.clear()
+        this.#db.chains.filter((chain) => !("isCustom" in chain)).delete()
         this.#db.chains.bulkPut(chains)
       })
       this.#lastHydratedChainsAt = now

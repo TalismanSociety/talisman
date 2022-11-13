@@ -6,21 +6,8 @@ import { useMemo } from "react"
 
 import { usePortfolio } from "../context"
 
-const getNetworkLogoId = (
-  id: ChainId | EvmNetworkId,
-  chains: Chain[] | undefined,
-  evmNetworks: EvmNetwork[] | undefined
-) => {
-  const chain = chains?.find((c) => c.id === id)
-  if (chain) return chain.id
-  const evmNetwork = evmNetworks?.find((n) => n.id === id)
-  if (evmNetwork) return evmNetwork.substrateChain?.id ?? evmNetwork.id
-  return undefined
-}
-
 export type PortfolioNetwork = {
   id: ChainId | EvmNetworkId
-  logoId?: ChainId | EvmNetworkId
   label: string | null
   type: string
 }
@@ -36,7 +23,6 @@ const getPortfolioNetwork = (
   const network: PortfolioNetwork = {
     id,
     ...getNetworkInfo({ chain, evmNetwork }),
-    logoId: getNetworkLogoId(id, chains, evmNetworks),
   }
   return network
 }

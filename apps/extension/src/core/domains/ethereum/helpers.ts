@@ -1,4 +1,3 @@
-import { erc20Abi } from "@core/domains/balances/rpc/abis"
 import { ChainId } from "@core/domains/chains/types"
 import {
   EthGasSettings,
@@ -8,6 +7,7 @@ import {
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import erc20Abi from "@talismn/balances-evm-erc20/dist/erc20.json"
 import { BigNumber, BigNumberish, ethers } from "ethers"
 
 const DERIVATION_PATHS_PATTERNS = {

@@ -11,6 +11,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { encodeAnyAddress } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
+import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
 import { FC, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
@@ -78,6 +79,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   const { genericEvent } = useAnalytics()
   const { request, account, chain } = usePolkadotSigningRequest(signingRequest)
   const nativeToken = useToken(chain?.nativeToken?.id)
+  const rates = useTokenRatesForTokens(useMemo(() => [nativeToken], [nativeToken]))
+  const nativeTokenRates = nativeToken && rates[nativeToken.id]
 
   const { data, type } = (request?.payload || {}) as SignerPayloadRaw
   const { tip: tipRaw } = (request?.payload || {}) as SignerPayloadJSON
@@ -88,11 +91,11 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
     const fees = new BalanceFormatter(
       txDetails.payment?.partialFee ?? 0,
       nativeToken?.decimals,
-      nativeToken?.rates
+      nativeTokenRates
     )
     const feesError = txDetails.payment ? "" : "Failed to compute fees."
 
-    const tip = new BalanceFormatter(tipRaw ?? "0", nativeToken?.decimals, nativeToken?.rates)
+    const tip = new BalanceFormatter(tipRaw ?? "0", nativeToken?.decimals, nativeTokenRates)
 
     const accountAddress = `${encodeAnyAddress(account.address, chain.prefix ?? undefined)} (${
       account.name
@@ -107,7 +110,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
       tip,
       methodName,
     }
-  }, [account, chain, nativeToken, tipRaw, txDetails])
+  }, [account, chain, nativeToken?.decimals, nativeTokenRates, tipRaw, txDetails])
 
   useEffect(() => {
     genericEvent("open sign transaction view details", { type: "substrate" })

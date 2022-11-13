@@ -7,12 +7,12 @@ import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { copyAddress } from "@ui/util/copyAddress"
 import { Fragment, useCallback, useMemo } from "react"
 import styled from "styled-components"
 
-import StyledAssetLogo from "../../Asset/Logo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { NoTokensMessage } from "../NoTokensMessage"
 import { PortfolioAccount } from "./PortfolioAccount"
@@ -147,7 +147,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
         <td className="topLeftCell" valign="top">
           <Box fullheight flex>
             <Box padding="1.6rem" fontsize="xlarge">
-              <StyledAssetLogo id={evmNetwork?.substrateChain?.id ?? chainOrNetwork.id} />
+              <ChainLogo id={chainOrNetwork.id} />
             </Box>
             <Box grow flex column justify="center" gap={0.4} noWrap>
               <Box fontsize="normal" bold fg="foreground" flex align="center" gap={0.8}>

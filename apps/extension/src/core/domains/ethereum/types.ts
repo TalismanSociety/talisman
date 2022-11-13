@@ -4,8 +4,6 @@ import { RequestIdOnly } from "@core/types/base"
 import { CustomEvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
 import { BigNumberish, ethers } from "ethers"
 
-import { AddEthereumChainParameter, WatchAssetBase } from "./base"
-
 export type {
   EvmNetwork,
   CustomEvmNetwork,
@@ -14,7 +12,31 @@ export type {
   EthereumRpc,
 } from "@talismn/chaindata-provider"
 
-export type { AddEthereumChainParameter, WatchAssetBase }
+export type AddEthereumChainParameter = {
+  /** A 0x-prefixed hexadecimal string */
+  chainId: string
+  chainName: string
+  nativeCurrency: {
+    name: string
+    /** 2-6 characters long */
+    symbol: string
+    decimals: 18
+  }
+  rpcUrls: string[]
+  blockExplorerUrls?: string[]
+  /** Currently ignored by metamask */
+  iconUrls?: string[]
+}
+
+export type WatchAssetBase = {
+  type: "ERC20"
+  options: {
+    address: string // The hexadecimal Ethereum address of the token contract
+    symbol?: string // A ticker symbol or shorthand, up to 5 alphanumerical characters
+    decimals?: number // The number of asset decimals
+    image?: string // A string url of the token logo
+  }
+}
 
 export declare type EthApproveSignAndSend = RequestIdOnly & {
   transaction: ethers.providers.TransactionRequest

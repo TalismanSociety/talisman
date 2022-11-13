@@ -1,21 +1,13 @@
-import "@talismn/balances-substrate-native"
-import "@talismn/balances-substrate-orml"
-import "@talismn/balances-evm-native"
-import "@talismn/balances-evm-erc20"
-
-import { ChainId } from "@core/domains/chains/types"
-import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import { TokenId } from "@core/domains/tokens/types"
 import { Address, AddressesByChain } from "@core/types/base"
 import { BalanceJson, BalanceJsonList } from "@talismn/balances"
+import { ChainId, EvmNetwork, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 
 export { Balances, Balance, BalanceFormatter } from "@talismn/balances"
-export type BalanceStorage = BalanceJson
-export type BalancesStorage = BalanceJsonList
+export type { BalanceJson, BalanceJsonList } from "@talismn/balances"
 
 export type BalancesUpdate = BalancesUpdateReset | BalancesUpdateUpsert | BalancesUpdateDelete
-export type BalancesUpdateReset = { type: "reset"; balances: BalancesStorage }
-export type BalancesUpdateUpsert = { type: "upsert"; balances: BalancesStorage }
+export type BalancesUpdateReset = { type: "reset"; balances: BalanceJsonList }
+export type BalancesUpdateUpsert = { type: "upsert"; balances: BalanceJsonList }
 export type BalancesUpdateDelete = { type: "delete"; balances: string[] }
 
 export interface RequestBalance {

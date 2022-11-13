@@ -1,16 +1,11 @@
-import { BalanceStorage } from "@core/domains/balances/types"
-import { Chain, ChainId } from "@core/domains/chains/types"
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import { Token, TokenId } from "@core/domains/tokens/types"
 import { MetadataDef } from "@core/inject/types"
 import { RuntimeVersion } from "@polkadot/types/interfaces"
+import { TokenId } from "@talismn/chaindata-provider"
+import { TokenRates } from "@talismn/token-rates"
 import { Dexie } from "dexie"
 
 export class TalismanDatabase extends Dexie {
-  chains!: Dexie.Table<Chain, ChainId>
-  evmNetworks!: Dexie.Table<EvmNetwork | CustomEvmNetwork, EvmNetworkId>
-  tokens!: Dexie.Table<Token, TokenId>
-  balances!: Dexie.Table<BalanceStorage, string>
+  tokenRates!: Dexie.Table<DbTokenRates, string>
   metadata!: Dexie.Table<MetadataDef, string>
   chainMetadataRpc!: Dexie.Table<ChainMetadataRpc, string>
 
@@ -18,17 +13,18 @@ export class TalismanDatabase extends Dexie {
     super("Talisman")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
-    this.version(3).stores({
+    this.version(5).stores({
       // You only need to specify properties that you wish to index.
       // The object store will allow any properties on your stored objects but you can only query them by indexed properties
       // https://dexie.org/docs/API-Reference#declare-database
       //
       // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
       // https://dexie.org/docs/Version/Version.stores()#warning
-      chains: "id, genesisHash, name, nativeToken, tokens, evmNetworks",
-      evmNetworks: "id, name, nativeToken, tokens, substrateChain",
-      tokens: "id, type, symbol, coingeckoId, contractAddress, chain, evmNetwork",
-      balances: "id, source, address, chainId, evmNetworkId, tokenId",
+      chains: null,
+      evmNetworks: null,
+      tokens: null,
+      tokenRates: "tokenId",
+      balances: null,
       metadata: "genesisHash",
       metadataRpc: null,
       chainMetadataRpc: "chainId",
@@ -43,6 +39,11 @@ export type ChainMetadataRpc = {
   cacheKey: string
   metadataRpc: `0x${string}`
   runtimeVersion: RuntimeVersion
+}
+
+export type DbTokenRates = {
+  tokenId: TokenId
+  rates: TokenRates
 }
 
 export const db = new TalismanDatabase()

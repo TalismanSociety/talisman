@@ -6,6 +6,7 @@ import { ReactComponent as IconCheck } from "@talisman/theme/icons/check.svg"
 import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
 import { ReactComponent as IconSearch } from "@talisman/theme/icons/search.svg"
 import { encodeAnyAddress } from "@talismn/util"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useAccountChainsFilter } from "@ui/hooks/useAccountChainsFilter"
 import useAddressTypeChainsFilter from "@ui/hooks/useAddressTypeChainsFilter"
 import useChainsAndSearchSymbols from "@ui/hooks/useChainsAndSearchSymbols"
@@ -15,7 +16,6 @@ import { copyAddress } from "@ui/util/copyAddress"
 import { PropsWithChildren, useCallback, useState } from "react"
 import styled from "styled-components"
 
-import Logo from "../Asset/Logo"
 import { Address } from "./Address"
 
 type AddressFormatProps = {
@@ -32,7 +32,7 @@ const AddressFormat = styled(
     return (
       <div onClick={onClick} className={`${className} gap flex`}>
         <span className="gap flex min-w-0">
-          <Logo id={id} />
+          <ChainLogo id={id} />
           <span className="min-w-0">
             <div className="color-text truncate">{name}</div>
             <Address as="div" className="subtext" address={address} />

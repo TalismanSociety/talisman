@@ -1,4 +1,5 @@
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
+import { ChaindataEvmNetworkProvider } from "@talismn/chaindata-provider"
 import { providers } from "ethers"
 
 export type GetProviderOptions = {
@@ -7,8 +8,24 @@ export type GetProviderOptions = {
 }
 
 export class ChainConnectorEvm {
+  #chaindataEvmNetworkProvider: ChaindataEvmNetworkProvider
+
   #evmNetworkProviders: Record<EvmNetworkId, providers.JsonRpcProvider> = {}
   #evmNetworkBatchProviders: Record<EvmNetworkId, providers.JsonRpcBatchProvider> = {}
+
+  constructor(chaindataEvmNetworkProvider: ChaindataEvmNetworkProvider) {
+    this.#chaindataEvmNetworkProvider = chaindataEvmNetworkProvider
+  }
+
+  async getProviderForEvmNetworkId(
+    evmNetworkId: EvmNetworkId,
+    { batch }: GetProviderOptions = {}
+  ): Promise<providers.JsonRpcProvider | null> {
+    const network = await this.#chaindataEvmNetworkProvider.getEvmNetwork(evmNetworkId)
+    if (!network) return null
+
+    return this.getProviderForEvmNetwork(network, { batch })
+  }
 
   getProviderForEvmNetwork(
     evmNetwork: EvmNetwork | CustomEvmNetwork,
@@ -37,7 +54,10 @@ export class ChainConnectorEvm {
       return null
 
     const url = evmNetwork.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) => url)[0]
-    const network = { name: evmNetwork.name ?? "unknown network", chainId: parseInt(evmNetwork.id) }
+    const network = {
+      name: evmNetwork.name ?? "unknown network",
+      chainId: parseInt(evmNetwork.id, 10),
+    }
 
     return batch === true
       ? new providers.JsonRpcBatchProvider(url, network)

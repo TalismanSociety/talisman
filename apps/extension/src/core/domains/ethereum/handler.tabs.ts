@@ -1,4 +1,6 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
+import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
+import { chaindataProvider } from "@core/domains/chaindata"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
@@ -20,7 +22,6 @@ import {
   EthRequestSignArguments,
   EthRequestSignatures,
 } from "@core/injectEth/types"
-import { db } from "@core/libs/db"
 import { TabsHandler } from "@core/libs/Handler"
 import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
@@ -34,7 +35,6 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { ethers, providers } from "ethers"
 
-import { filterAccountsByAddresses } from "../accounts/helpers"
 import { getErc20TokenId } from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
 
@@ -57,7 +57,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!site?.ethChainId || !site?.ethAddresses.length)
       throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED)
 
-    const ethereumNetwork = await db.evmNetworks.get(site.ethChainId.toString())
+    const ethereumNetwork = await chaindataProvider.getEvmNetwork(site.ethChainId.toString())
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
@@ -236,7 +236,7 @@ export class EthTabsHandler extends TabsHandler {
     } = request
 
     const chainId = parseInt(network.chainId, 16)
-    const existing = await db.evmNetworks.get(chainId.toString())
+    const existing = await chaindataProvider.getEvmNetwork(chainId.toString())
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
     if (existing)
@@ -251,7 +251,7 @@ export class EthTabsHandler extends TabsHandler {
     await this.state.requestStores.networks.requestAddNetwork(url, network)
 
     // switch automatically to new chain
-    const ethereumNetwork = await db.evmNetworks.get(chainId.toString())
+    const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
     if (ethereumNetwork) {
       const { err, val } = urlToDomain(url)
       if (err) throw new Error(val)
@@ -275,7 +275,7 @@ export class EthTabsHandler extends TabsHandler {
     if (ethers.utils.hexValue(chainId) !== hexChainId)
       throw new EthProviderRpcError("Malformed chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    const ethereumNetwork = await db.evmNetworks.get(chainId.toString())
+    const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
 
@@ -361,7 +361,7 @@ export class EthTabsHandler extends TabsHandler {
     const ethChainId = await this.getChainId(url)
     const tokenId = getErc20TokenId(ethChainId.toString(), address)
 
-    const existing = await db.tokens.get(tokenId)
+    const existing = await chaindataProvider.getToken(tokenId)
     if (existing)
       throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 

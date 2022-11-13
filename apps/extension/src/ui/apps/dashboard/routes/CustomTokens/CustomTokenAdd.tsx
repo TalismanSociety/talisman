@@ -46,10 +46,10 @@ export const CustomTokenAdd = () => {
       yup
         .object({
           evmNetworkId: yup
-            .number()
+            .string()
             .required()
             .oneOf(
-              networks.map(({ id }) => parseInt(id, 10)),
+              networks.map(({ id }) => id),
               "Invalid network"
             ),
           contractAddress: yup

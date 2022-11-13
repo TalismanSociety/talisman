@@ -12718,6 +12718,7 @@ __metadata:
     "@talismn/balances": "workspace:^"
     "@talismn/balances-evm-erc20": "workspace:^"
     "@talismn/balances-evm-native": "workspace:^"
+    "@talismn/balances-react": "workspace:^"
     "@talismn/balances-substrate-native": "workspace:^"
     "@talismn/balances-substrate-orml": "workspace:^"
     "@talismn/chaindata-js": ^0.0.7

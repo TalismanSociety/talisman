@@ -1,8 +1,8 @@
-import { TokenList } from "@talismn/chaindata-provider"
+import { IToken, TokenId } from "@talismn/chaindata-provider"
 import { TokenRatesList, fetchTokenRates } from "@talismn/token-rates"
 import { useEffect, useRef, useState } from "react"
 
-export function useTokenRates(tokens?: TokenList): TokenRatesList {
+export function useTokenRates(tokens?: Record<TokenId, IToken>): TokenRatesList {
   const generation = useRef(0)
 
   const [tokenRates, setTokenRates] = useState<TokenRatesList>()

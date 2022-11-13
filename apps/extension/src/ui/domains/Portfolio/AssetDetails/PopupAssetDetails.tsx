@@ -9,6 +9,7 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { encodeAnyAddress, planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -18,7 +19,6 @@ import { useCallback, useMemo } from "react"
 import styled from "styled-components"
 import { PillButton } from "talisman-ui"
 
-import StyledAssetLogo from "../../Asset/Logo"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { useAssetDetails } from "./useAssetDetails"
 import { useChainTokenBalances } from "./useChainTokenBalances"
@@ -93,7 +93,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
         padding="1.2rem 1.4rem"
       >
         <Box fontsize="xlarge">
-          <StyledAssetLogo id={evmNetwork?.substrateChain?.id ?? chainOrNetwork.id} />
+          <ChainLogo id={chainOrNetwork.id} />
         </Box>
         <Box grow flex column justify="center" gap={0.4} padding="0 1.6rem 0 0">
           <Box flex justify="space-between" bold fg="foreground">

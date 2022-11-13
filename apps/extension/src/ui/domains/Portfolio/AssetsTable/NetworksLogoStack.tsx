@@ -2,10 +2,10 @@ import { Box } from "@talisman/components/Box"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talisman/util/classNames"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { useMemo } from "react"
 import styled from "styled-components"
 
-import StyledAssetLogo from "../../Asset/Logo"
 import { PortfolioNetwork, usePortfolioNetworks } from "./usePortfolioNetworks"
 
 export const Container = styled.div`
@@ -31,7 +31,7 @@ export const NetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork 
   return (
     <Box inlineBlock w="1em" h="1em" className="item" overflow="hidden">
       <WithTooltip tooltip={tooltip}>
-        <StyledAssetLogo key={network.id} id={network.logoId} className="logo-circle" />
+        <ChainLogo key={network.id} id={network.id} className="logo-circle" />
       </WithTooltip>
     </Box>
   )

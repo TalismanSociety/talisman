@@ -1,4 +1,5 @@
 import { DEBUG } from "@core/constants"
+import { chaindataProvider } from "@core/domains/chaindata"
 import {
   AnyEthRequestChainId,
   CustomEvmNetwork,
@@ -16,7 +17,6 @@ import {
   EthRequestSignatures,
 } from "@core/injectEth/types"
 import { talismanAnalytics } from "@core/libs/Analytics"
-import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { watchEthereumTransaction } from "@core/notifications"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -319,10 +319,8 @@ export class EthHandler extends ExtensionHandler {
       iconUrls: network.iconUrls || [],
     }
 
-    await db.transaction("rw", db.evmNetworks, db.tokens, async () => {
-      await db.evmNetworks.put(newNetwork)
-      if (newToken) await db.tokens.put(newToken)
-    })
+    await chaindataProvider.addCustomEvmNetwork(newNetwork)
+    if (newToken) await chaindataProvider.addCustomToken(newToken)
 
     talismanAnalytics.captureDelayed("add network evm", {
       network: network.chainName,
@@ -358,7 +356,7 @@ export class EthHandler extends ExtensionHandler {
       decimals: Number(token.decimals),
     }
 
-    await db.tokens.put(safeToken)
+    await chaindataProvider.addCustomToken(safeToken)
     talismanAnalytics.captureDelayed("add asset evm", {
       contractAddress: token.contractAddress,
       symbol: token.symbol,
@@ -467,13 +465,14 @@ export class EthHandler extends ExtensionHandler {
       case "pri(eth.networks.add.custom)": {
         const newNetwork = request as RequestTypes["pri(eth.networks.add.custom)"]
 
-        const existing = await db.evmNetworks.get(newNetwork.id)
+        // TODO: Move this check into chaindataProvider?
+        const existing = await chaindataProvider.getEvmNetwork(newNetwork.id)
         if (existing && !("isCustom" in existing && existing.isCustom === true)) {
           throw new Error(`Failed to override built-in Talisman network`)
         }
 
         newNetwork.isCustom = true
-        await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.put(newNetwork))
+        await chaindataProvider.addCustomEvmNetwork(newNetwork)
         talismanAnalytics.captureDelayed("add network evm", {
           network: newNetwork.name,
           isCustom: true,
@@ -489,7 +488,7 @@ export class EthHandler extends ExtensionHandler {
       case "pri(eth.networks.removeCustomNetwork)": {
         const id = (request as RequestTypes["pri(eth.networks.removeCustomNetwork)"]).id
 
-        await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.delete(id))
+        await chaindataProvider.removeCustomEvmNetwork(id)
 
         return true
       }

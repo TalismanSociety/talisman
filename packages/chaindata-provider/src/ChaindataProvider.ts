@@ -2,6 +2,8 @@ import {
   Chain,
   ChainId,
   ChainList,
+  CustomChain,
+  CustomEvmNetwork,
   EvmNetwork,
   EvmNetworkId,
   EvmNetworkList,
@@ -13,19 +15,21 @@ import {
 export interface ChaindataChainProvider {
   chainIds(): Promise<ChainId[]>
   chains(): Promise<ChainList>
-  getChain(chainId: ChainId): Promise<Chain | null>
+  getChain(chainIdOrQuery: ChainId | Partial<Chain>): Promise<Chain | CustomChain | null>
 }
 
 export interface ChaindataEvmNetworkProvider {
   evmNetworkIds(): Promise<EvmNetworkId[]>
   evmNetworks(): Promise<EvmNetworkList>
-  getEvmNetwork(evmNetworkId: EvmNetworkId): Promise<EvmNetwork | null>
+  getEvmNetwork(
+    evmNetworkIdOrQuery: EvmNetworkId | Partial<EvmNetwork>
+  ): Promise<EvmNetwork | CustomEvmNetwork | null>
 }
 
 export interface ChaindataTokenProvider {
   tokenIds(): Promise<TokenId[]>
   tokens(): Promise<TokenList>
-  getToken(tokenId: TokenId): Promise<Token | null>
+  getToken(tokenIdOrQuery: TokenId | Partial<Token>): Promise<Token | null>
 }
 
 export interface ChaindataProvider

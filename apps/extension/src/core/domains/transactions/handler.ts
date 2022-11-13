@@ -1,6 +1,13 @@
 import { DEBUG } from "@core/constants"
 import BlocksRpc from "@core/domains/blocks/rpc"
+import { chaindataProvider } from "@core/domains/chaindata"
 import { ChainId } from "@core/domains/chains/types"
+import { getEthTransferTransactionBase, rebuildGasSettings } from "@core/domains/ethereum/helpers"
+import { getProviderForEvmNetworkId } from "@core/domains/ethereum/rpcProviders"
+import {
+  getTransactionCount,
+  incrementTransactionCount,
+} from "@core/domains/ethereum/transactionCountManager"
 import EventsRpc from "@core/domains/events/rpc"
 import AssetTransfersRpc from "@core/domains/transactions/rpc/AssetTransfers"
 import OrmlTokenTransfersRpc from "@core/domains/transactions/rpc/OrmlTokenTransfers"
@@ -16,7 +23,6 @@ import {
 } from "@core/domains/transactions/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
-import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
 import type {
@@ -36,10 +42,6 @@ import * as Sentry from "@sentry/browser"
 import { planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
-
-import { getEthTransferTransactionBase, rebuildGasSettings } from "../ethereum/helpers"
-import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"
-import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
 
 export default class AssetTransferHandler extends ExtensionHandler {
   private getExtrinsicWatch(
@@ -117,7 +119,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     reapBalance = false,
   }: RequestAssetTransfer) {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
-      const token = await db.tokens.get(tokenId)
+      const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       talismanAnalytics.capture("asset transfer", {
@@ -182,7 +184,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     reapBalance = false,
   }: RequestAssetTransfer) {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
-      const token = await db.tokens.get(tokenId)
+      const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       const tokenType = token.type
@@ -220,7 +222,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const provider = await getProviderForEvmNetworkId(evmNetworkId)
       if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
 
-      const token = await db.tokens.get(tokenId)
+      const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       const { from, to, hash, ...otherDetails } = await provider.sendTransaction(signedTransaction)
@@ -258,7 +260,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const password = await this.stores.password.getPassword()
       assert(password, "Unauthorised")
 
-      const token = await db.tokens.get(tokenId)
+      const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       const provider = await getProviderForEvmNetworkId(evmNetworkId)

@@ -1,6 +1,6 @@
 import EventEmitter from "events"
 
-import type { AddEthereumChainParameter, WatchAssetBase } from "@core/domains/ethereum/types/base"
+import type { AddEthereumChainParameter, WatchAssetBase } from "@core/domains/ethereum/types"
 import { BlockWithTransactions } from "@ethersproject/abstract-provider"
 import { BigNumberish } from "@ethersproject/bignumber"
 import type {

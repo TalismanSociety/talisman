@@ -1,3 +1,4 @@
+import { chaindataProvider } from "@core/domains/chaindata"
 import type { AnySigningRequest, RequestSigningCancel } from "@core/domains/signing/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
@@ -31,7 +32,7 @@ export default class SigningHandler extends ExtensionHandler {
       if (isJsonPayload(payload)) {
         const { blockHash, genesisHash, signedExtensions } = payload
 
-        const chain = await db.chains.get({ genesisHash })
+        const chain = await chaindataProvider.getChain({ genesisHash })
         if (chain) registry = (await getTypeRegistry(chain.id, blockHash)).registry
 
         // Get the metadata for the genesisHash
@@ -47,7 +48,7 @@ export default class SigningHandler extends ExtensionHandler {
 
       // notify user about transaction progress
       if (isJsonPayload(payload) && (await this.stores.settings.get("allowNotifications"))) {
-        const chains = await db.chains.toArray()
+        const chains = Object.values(await chaindataProvider.chains())
         const chain = chains.find((c) => c.genesisHash === payload.genesisHash)
         if (chain) {
           // it's hard to get a reliable hash, we'll use signature to identify the on chain extrinsic
@@ -95,7 +96,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     if (isJsonPayload(payload)) {
       const { genesisHash } = payload
-      const chain = await db.chains.get({ genesisHash })
+      const chain = await chaindataProvider.getChain({ genesisHash })
       analyticsProperties.chain = chain?.chainName
     }
 
@@ -132,7 +133,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     const { address, nonce, blockHash, genesisHash, signedExtensions } = queued.request.payload
 
-    const chains = await db.chains.toArray()
+    const chains = Object.values(await chaindataProvider.chains())
     const chain = chains.find((c) => c.genesisHash === genesisHash)
     assert(chain, "Unable to find chain")
 

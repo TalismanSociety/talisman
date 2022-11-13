@@ -1,5 +1,7 @@
-import { db } from "@core/libs/db"
-import { providers } from "ethers"
+// TODO: Replace all users of this with an instance of ChainConnectorEvm
+
+import { chainConnectorEvm } from "@core/domains/chain-connector-evm"
+import type { providers } from "ethers"
 
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "./types"
 
@@ -8,50 +10,20 @@ export type GetProviderOptions = {
   batch?: boolean
 }
 
-const ethereumNetworkToProvider = (
-  ethereumNetwork: EvmNetwork | CustomEvmNetwork,
-  { batch }: GetProviderOptions = {}
-): providers.JsonRpcProvider | null => {
-  if (
-    !Array.isArray(ethereumNetwork.rpcs) ||
-    ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).length === 0
-  )
-    return null
-
-  const url = ethereumNetwork.rpcs.filter(({ isHealthy }) => isHealthy).map(({ url }) => url)[0]
-  const network = {
-    name: ethereumNetwork.name ?? "unknown network",
-    chainId: parseInt(ethereumNetwork.id, 10),
-  }
-
-  return batch === true
-    ? new providers.JsonRpcBatchProvider(url, network)
-    : new providers.JsonRpcProvider(url, network)
-}
-
-const ethereumNetworkProviders: Record<EvmNetworkId, providers.JsonRpcProvider> = {}
-const ethereumNetworkBatchProviders: Record<EvmNetworkId, providers.JsonRpcBatchProvider> = {}
-
+// TODO: Refactor any code which uses this function to directly
+//       call methods on `chainConnectorEvm` instead!
 export const getProviderForEthereumNetwork = (
   ethereumNetwork: EvmNetwork | CustomEvmNetwork,
   { batch }: GetProviderOptions = {}
 ): providers.JsonRpcProvider | null => {
-  const providersStore = batch === true ? ethereumNetworkBatchProviders : ethereumNetworkProviders
-
-  if (providersStore[ethereumNetwork.id]) return providersStore[ethereumNetwork.id]
-
-  const provider = ethereumNetworkToProvider(ethereumNetwork, { batch })
-  if (provider === null) return null
-
-  providersStore[ethereumNetwork.id] = provider
-  return providersStore[ethereumNetwork.id]
+  return chainConnectorEvm.getProviderForEvmNetwork(ethereumNetwork, { batch })
 }
 
+// TODO: Refactor any code which uses this function to directly
+//       call methods on `chainConnectorEvm` instead!
 export const getProviderForEvmNetworkId = async (
-  evmNetworkId: EvmNetworkId,
+  ethereumNetworkId: EvmNetworkId,
   { batch }: GetProviderOptions = {}
 ): Promise<providers.JsonRpcProvider | null> => {
-  const network = await db.evmNetworks.get(evmNetworkId)
-  if (network) return getProviderForEthereumNetwork(network, { batch })
-  return null
+  return await chainConnectorEvm.getProviderForEvmNetworkId(ethereumNetworkId, { batch })
 }

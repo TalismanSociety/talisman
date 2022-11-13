@@ -1,7 +1,7 @@
+import { chaindataProvider } from "@core/domains/chaindata"
 import { ChainId } from "@core/domains/chains/types"
 import { getErc20TokenId } from "@core/domains/ethereum/helpers"
 import { CustomErc20Token, CustomErc20TokenCreate } from "@core/domains/tokens/types"
-import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
@@ -27,13 +27,13 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
 
       case "pri(tokens.erc20.custom)":
-        return (await db.tokens.toArray()).filter(
+        return Object.values(await chaindataProvider.tokens()).filter(
           // note : need to check type too because isCustom is also set to true for native tokens of custom networks
           (token) => "isCustom" in token && token.isCustom && token.type === "evm-erc20"
         ) as any
 
       case "pri(tokens.erc20.custom.byid)": {
-        const token = await db.tokens.get((request as RequestIdOnly).id)
+        const token = await chaindataProvider.getToken((request as RequestIdOnly).id)
         if (!token || !("isCustom" in token)) return
         return token
       }
@@ -42,16 +42,16 @@ export default class TokensHandler extends ExtensionHandler {
         const token = request as CustomErc20TokenCreate
         const networkId = token.chainId || token.evmNetworkId
         assert(networkId, "A chainId or an evmNetworkId is required")
-        const chain = token.chainId ? await db.chains.get(token.chainId) : undefined
+        const chain = token.chainId ? await chaindataProvider.getChain(token.chainId) : undefined
         const evmNetwork = token.evmNetworkId
-          ? await db.evmNetworks.get(token.evmNetworkId)
+          ? await chaindataProvider.getEvmNetwork(token.evmNetworkId)
           : undefined
         assert(typeof token.contractAddress === "string", "A contract address is required")
         assert(typeof token.symbol === "string", "A token symbol is required")
         assert(typeof token.decimals === "number", "A number of token decimals is required")
 
         const tokenId = getErc20TokenId(networkId, token.contractAddress)
-        const existing = await db.tokens.get(tokenId)
+        const existing = await chaindataProvider.getToken(tokenId)
         assert(!existing, "This token already exists")
 
         const { symbol, decimals, coingeckoId, contractAddress, image } = token
@@ -71,11 +71,11 @@ export default class TokensHandler extends ExtensionHandler {
           image,
         }
 
-        return await db.tokens.put(newToken)
+        return await chaindataProvider.addCustomToken(newToken)
       }
 
       case "pri(tokens.erc20.custom.remove)":
-        return await db.tokens.delete((request as RequestIdOnly).id)
+        return await chaindataProvider.removeCustomToken((request as RequestIdOnly).id)
 
       case "pri(tokens.erc20.custom.clear)": {
         const filter = request as { chainId?: ChainId; evmNetworkId?: string } | undefined
@@ -92,7 +92,7 @@ export default class TokensHandler extends ExtensionHandler {
             : // don't delete
               false
 
-        const deleteTokens = (await db.tokens.toArray())
+        const deleteTokens = Object.values(await chaindataProvider.tokens())
           .filter((token): token is CustomErc20Token => {
             if (token.type !== "evm-erc20") return false
             if (!("isCustom" in token)) return false
@@ -100,7 +100,9 @@ export default class TokensHandler extends ExtensionHandler {
           })
           .filter(deleteFilterFn)
           .map((token) => token.id)
-        await db.tokens.bulkDelete(deleteTokens)
+        await Promise.all(
+          deleteTokens.map((tokenId) => chaindataProvider.removeCustomToken(tokenId))
+        )
         return
       }
 

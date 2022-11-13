@@ -3,24 +3,24 @@ import { AccountsHandler } from "@core/domains/accounts"
 import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { getBalanceLocks } from "@core/domains/balances/helpers"
-import NativeBalancesEvmRpc from "@core/domains/balances/rpc/EvmBalances"
-import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
+import { balanceModules } from "@core/domains/balances/store"
 import {
   Balances,
   RequestBalance,
   RequestBalanceLocks,
   RequestBalancesByParamsSubscribe,
 } from "@core/domains/balances/types"
-import { Chain } from "@core/domains/chains/types"
+import { chainConnector } from "@core/domains/chain-connector"
+import { chainConnectorEvm } from "@core/domains/chain-connector-evm"
+import { chaindataProvider } from "@core/domains/chaindata"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
-import { EvmNetwork } from "@core/domains/ethereum/types"
 import { MetadataHandler } from "@core/domains/metadata"
 import metadataInit from "@core/domains/metadata/_metadataInit"
 import { SigningHandler } from "@core/domains/signing"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
+import TokenRatesHandler from "@core/domains/tokenRates/handler"
 import TokensHandler from "@core/domains/tokens/handler"
-import { Token } from "@core/domains/tokens/types"
 import { AssetTransferHandler } from "@core/domains/transactions"
 import State from "@core/handlers/State"
 import { ExtensionStore } from "@core/handlers/stores"
@@ -33,12 +33,14 @@ import { Port, RequestIdOnly } from "@core/types/base"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import { assert } from "@polkadot/util"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
+import { AddressesByToken, db as balancesDb } from "@talismn/balances"
+import { Token } from "@talismn/chaindata-provider"
 import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
 
-import chainsInit from "../libs/init/chains.json"
-import evmNetworksInit from "../libs/init/evmNetworks.json"
-import tokensInit from "../libs/init/tokens.json"
+// import chainsInit from "../libs/init/chains.json"
+// import evmNetworksInit from "../libs/init/evmNetworks.json"
+// import tokensInit from "../libs/init/tokens.json"
 import { createSubscription, unsubscribe } from "./subscriptions"
 
 export default class Extension extends ExtensionHandler {
@@ -59,6 +61,7 @@ export default class Extension extends ExtensionHandler {
       signing: new SigningHandler(state, stores),
       sites: new SitesAuthorisationHandler(state, stores),
       tokens: new TokensHandler(state, stores),
+      tokenRates: new TokenRatesHandler(state, stores),
     }
 
     // connect auto lock timeout setting to the password store
@@ -99,10 +102,11 @@ export default class Extension extends ExtensionHandler {
         // add initial metadata
         db.metadata.bulkAdd(metadataInit)
 
-        // init other tables (workaround to wallet beeing installed when subsquid is down)
-        db.chains.bulkAdd(chainsInit as unknown as Chain[])
-        db.evmNetworks.bulkAdd(evmNetworksInit as unknown as EvmNetwork[])
-        db.tokens.bulkAdd(tokensInit as unknown as Token[])
+        // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider-extension lib
+        // // init other tables (workaround to wallet beeing installed when subsquid is down)
+        // db.chains.bulkAdd(chainsInit as unknown as Chain[])
+        // db.evmNetworks.bulkAdd(evmNetworksInit as unknown as EvmNetwork[])
+        // db.tokens.bulkAdd(tokensInit as unknown as Token[])
       }
     })
   }
@@ -119,7 +123,7 @@ export default class Extension extends ExtensionHandler {
 
       // look only for free balance because reserved and frozen properties are not indexed
       const obsHasFunds = liveQuery(
-        async () => await db.balances.filter((b) => b.free !== "0").count()
+        async () => await balancesDb.balances.filter((balance) => balance.free !== "0").count()
       )
       const subBalances = obsHasFunds.subscribe((hasFunds) => {
         if (hasFunds) {
@@ -217,6 +221,9 @@ export default class Extension extends ExtensionHandler {
       case "pri(balances.subscribe)":
         return this.stores.balances.subscribe(id, port)
 
+      // TODO: Replace this call with something internal to the balances store
+      // i.e. refactor the balances store to allow us to subscribe to arbitrary balances here,
+      // instead of being limited to the accounts which are in the wallet's keystore
       case "pri(balances.byparams.subscribe)": {
         // create subscription callback
         const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
@@ -224,27 +231,47 @@ export default class Extension extends ExtensionHandler {
         const { addressesByChain, addressesByEvmNetwork } =
           request as RequestBalancesByParamsSubscribe
 
-        // subscribe to balances by params
-        const unsub = await BalancesRpc.balances(addressesByChain, (error, balances) => {
-          if (error) log.error(error)
-          else callback({ type: "upsert", balances: (balances ?? new Balances([])).toJSON() })
+        const addressesByToken: AddressesByToken<Token> = {}
+        const chains = await chaindataProvider.chains()
+        const evmNetworks = await chaindataProvider.evmNetworks()
+
+        Object.entries(addressesByChain).forEach(([chainId, addresses]) => {
+          if (chains[chainId] === undefined) return
+          const tokenIds = (chains[chainId].tokens || []).map(({ id }) => id)
+          for (const tokenId of tokenIds) {
+            if (addressesByToken[tokenId] === undefined) addressesByToken[tokenId] = []
+            addressesByToken[tokenId] = addressesByToken[tokenId].concat(addresses)
+          }
+        })
+        addressesByEvmNetwork.evmNetworks.forEach(({ id: evmNetworkId }) => {
+          if (evmNetworks[evmNetworkId] === undefined) return
+          const tokenIds = (evmNetworks[evmNetworkId].tokens || []).map(({ id }) => id)
+          for (const tokenId of tokenIds) {
+            if (addressesByToken[tokenId] === undefined) addressesByToken[tokenId] = []
+            addressesByToken[tokenId] = addressesByToken[tokenId].concat(
+              addressesByEvmNetwork.addresses
+            )
+          }
         })
 
-        const unsubEvm = await NativeBalancesEvmRpc.balances(
-          addressesByEvmNetwork?.addresses ?? [],
-          addressesByEvmNetwork?.evmNetworks ?? [],
-          (error, balances) => {
-            // eslint-disable-next-line no-console
-            if (error) DEBUG && console.error(error)
-            else callback({ type: "upsert", balances: (balances ?? new Balances([])).toJSON() })
-          }
+        // subscribe to balances by params
+        const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
+          balanceModule.subscribeBalances(
+            { substrate: chainConnector, evm: chainConnectorEvm },
+            chaindataProvider,
+            addressesByToken,
+            (error, result) => {
+              // eslint-disable-next-line no-console
+              if (error) DEBUG && console.error(error)
+              else callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
+            }
+          )
         )
 
         // unsub on port disconnect
         port.onDisconnect.addListener((): void => {
           unsubscribe(id)
-          unsub()
-          unsubEvm()
+          closeSubscriptionCallbacks.forEach((cb) => cb.then((close) => close()))
         })
 
         // subscription created
@@ -255,10 +282,7 @@ export default class Extension extends ExtensionHandler {
       // chain handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(chains.subscribe)":
-        return Promise.all([
-          this.stores.chains.hydrateStore(),
-          this.stores.chains.updateRpcHealth(),
-        ]).then((results) => results[0] && results[1])
+        return await this.stores.chains.hydrateStore()
 
       // --------------------------------------------------------------------
       // transaction handlers -----------------------------------------------

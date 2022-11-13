@@ -1,4 +1,4 @@
-import { Token, TokenList } from "@talismn/chaindata-provider"
+import { IToken, TokenList } from "@talismn/chaindata-provider"
 import axios from "axios"
 
 import { NewTokenRates, TokenRates, TokenRatesList } from "./types"
@@ -84,6 +84,6 @@ export async function fetchTokenRates(tokens: TokenList) {
 export interface WithCoingeckoId {
   coingeckoId: string
 }
-export function hasCoingeckoId(token: Token): token is Token & WithCoingeckoId {
+export function hasCoingeckoId(token: IToken): token is IToken & WithCoingeckoId {
   return "coingeckoId" in token && typeof token.coingeckoId === "string"
 }

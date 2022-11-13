@@ -11,5 +11,6 @@
 //
 
 export * from "./BalanceModule"
+export * from "./TalismanBalancesDatabase"
 export * from "./helpers"
 export * from "./types"

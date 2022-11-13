@@ -1,78 +1,18 @@
-import { DEBUG } from "@core/constants"
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkList } from "@core/domains/ethereum/types"
-import { db } from "@core/libs/db"
-import { EvmNetworkFragment, graphqlUrl } from "@core/util/graphql"
-import { print } from "graphql"
-import gql from "graphql-tag"
+import { chaindataProvider } from "@core/domains/chaindata"
 
-const minimumHydrationInterval = 43_200_000 // 43_200_000ms = 43_200s = 720m = 12 hours
-
+// TODO: Refactor any code which uses this store to directly
+//       call methods on `chaindataProvider` instead!
+// TODO: Refactor any code which uses the db at:
+//       `import { db } from "@core/libs/db"`
+//       to call methods on `chaindataProvider` instead!
 export class EvmNetworkStore {
-  #lastHydratedAt = 0
-
   async clearCustom(): Promise<void> {
-    db.transaction("rw", db.evmNetworks, () => {
-      db.evmNetworks
-        .filter((network) => "isCustom" in network && network.isCustom === true)
-        .delete()
-    })
+    return await chaindataProvider.clearCustomEvmNetworks()
   }
 
-  async replaceChaindata(evmNetworks: (EvmNetwork | CustomEvmNetwork)[]): Promise<void> {
-    await db.transaction("rw", db.evmNetworks, () => {
-      db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
-      db.evmNetworks.bulkPut(evmNetworks)
-    })
-  }
-
-  /**
-   * Hydrate the store with the latest evmNetworks from subsquid.
-   * Hydration is skipped when the last successful hydration was less than minimumHydrationInterval ms ago.
-   *
-   * @returns A promise which resolves to true if the store has been hydrated, or false if the hydration was skipped.
-   */
   async hydrateStore(): Promise<boolean> {
-    const now = Date.now()
-    if (now - this.#lastHydratedAt < minimumHydrationInterval) return false
-
-    try {
-      const { data } = await (
-        await fetch(graphqlUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: print(evmNetworksQuery) }),
-        })
-      ).json()
-
-      const evmNetworksList = evmNetworksResponseToEvmNetworkList(data?.evmNetworks || [])
-
-      if (Object.keys(evmNetworksList).length <= 0)
-        throw new Error("Ignoring empty chaindata evmNetworks response")
-
-      await this.replaceChaindata(Object.values(evmNetworksList))
-      this.#lastHydratedAt = now
-
-      return true
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      DEBUG && console.error(error)
-
-      return false
-    }
+    return await chaindataProvider.hydrateEvmNetworks()
   }
 }
 
-const evmNetworksResponseToEvmNetworkList = (evmNetworks: Array<EvmNetwork>): EvmNetworkList =>
-  Object.fromEntries(evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork]))
-
-export const evmNetworksQuery = gql`
-  {
-    evmNetworks(orderBy: sortIndex_ASC) {
-      ...EvmNetwork
-    }
-  }
-  ${EvmNetworkFragment}
-`
-
 export const evmNetworkStore = new EvmNetworkStore()
-export default evmNetworkStore

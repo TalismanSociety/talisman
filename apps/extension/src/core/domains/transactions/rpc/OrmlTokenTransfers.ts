@@ -1,10 +1,10 @@
 import { DEBUG } from "@core/constants"
+import { chaindataProvider } from "@core/domains/chaindata"
 import { ChainId } from "@core/domains/chains/types"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { ResponseAssetTransferFeeQuery } from "@core/domains/transactions/types"
 import { isHardwareAccount } from "@core/handlers/helpers"
-import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import { SubscriptionCallback } from "@core/types"
 import { Address } from "@core/types/base"
@@ -141,10 +141,10 @@ export default class OrmlTokenTransfersRpc {
     // - existential deposit
     // - sufficient balance
 
-    const chain = await db.chains.get(chainId)
+    const chain = await chaindataProvider.getChain(chainId)
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
 
-    const token = await db.tokens.get(tokenId)
+    const token = await chaindataProvider.getToken(tokenId)
     if (!token) throw new Error(`Token ${tokenId} not found in store`)
 
     const send: ProviderSendFunction = (method, params = []) =>

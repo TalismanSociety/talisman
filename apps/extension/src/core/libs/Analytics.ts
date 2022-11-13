@@ -3,10 +3,12 @@ import { DEBUG } from "@core/constants"
 import { AccountTypes } from "@core/domains/accounts/helpers"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { Balance, Balances } from "@core/domains/balances/types"
+import { chaindataProvider } from "@core/domains/chaindata"
 import { db } from "@core/libs/db"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
+import { db as balancesDb } from "@talismn/balances"
 import posthog from "posthog-js"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
@@ -109,19 +111,21 @@ class TalismanAnalytics {
       posthog.capture("accounts breakdown", { accountBreakdown })
     }
 
-    // cache chains, evmNetworks and tokens here to prevent lots of fetch calls
-    const chains = Object.fromEntries(
-      ((await db.chains.toArray()) || []).map((chain) => [chain.id, chain])
-    )
-    const evmNetworks = Object.fromEntries(
-      ((await db.evmNetworks.toArray()) || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])
-    )
-    const tokens = Object.fromEntries(
-      ((await db.tokens.toArray()) || []).map((token) => [token.id, token])
+    // cache chains, evmNetworks, tokens and tokenRates here to prevent lots of fetch calls
+    const chains = await chaindataProvider.chains()
+    const evmNetworks = await chaindataProvider.evmNetworks()
+    const tokens = await chaindataProvider.tokens()
+    const tokenRates = Object.fromEntries(
+      ((await db.tokenRates.toArray()) || []).map(({ tokenId, rates }) => [tokenId, rates])
     )
 
     // balances + balances fiat sum estimate
-    const balances = new Balances(await db.balances.toArray(), { chains, evmNetworks, tokens })
+    const balances = new Balances(await balancesDb.balances.toArray(), {
+      chains,
+      evmNetworks,
+      tokens,
+      tokenRates,
+    })
 
     posthog.capture("balances fiat sum", {
       total: roundToFirstInteger(balances.sum.fiat("usd").total),
@@ -143,7 +147,7 @@ class TalismanAnalytics {
     // get fiat sum object for those arrays of Balances
     const fiatSumPerChainToken = await Promise.all(
       Object.values(balancesPerChainToken).map(async (balances) => {
-        const balancesInstance = new Balances(balances, { chains, evmNetworks, tokens })
+        const balancesInstance = new Balances(balances, { chains, evmNetworks, tokens, tokenRates })
         return {
           balance: balancesInstance.sum.fiat("usd").total,
           chainId: balancesInstance.sorted[0].chainId || balancesInstance.sorted[0].evmNetworkId,

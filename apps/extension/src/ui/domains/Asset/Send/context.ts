@@ -2,7 +2,7 @@ import {
   DEFAULT_SEND_FUNDS_TOKEN_ETHEREUM,
   DEFAULT_SEND_FUNDS_TOKEN_SUBSTRATE,
 } from "@core/constants"
-import { Balance, BalanceFormatter, BalanceStorage, Balances } from "@core/domains/balances/types"
+import { Balance, BalanceFormatter, BalanceJson, Balances } from "@core/domains/balances/types"
 import { Chain, ChainId } from "@core/domains/chains/types"
 import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
 import { EvmNetwork } from "@core/domains/ethereum/types"
@@ -145,7 +145,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       const tokenIsNativeToken = token.id === network.nativeToken?.id
 
       // load all balances at once
-      const loadBalance = (promise: Promise<BalanceStorage>) =>
+      const loadBalance = (promise: Promise<BalanceJson>) =>
         promise.then((storage) => new Balance(storage))
 
       const networkFilter = chain ? { chainId } : { evmNetworkId }
@@ -169,14 +169,9 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         decimals: token.decimals,
         existentialDeposit: new BalanceFormatter(
           ("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0",
-          token.decimals,
-          token.rates
+          token.decimals
         ),
-        amount: new BalanceFormatter(
-          tokensToPlanck(amount, token.decimals),
-          token.decimals,
-          token.rates
-        ),
+        amount: new BalanceFormatter(tokensToPlanck(amount, token.decimals), token.decimals),
       }
 
       // check recipient's balance, prevent immediate reaping
@@ -222,18 +217,10 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
             type: "evm",
             transfer,
             fees: {
-              amount: new BalanceFormatter(
-                maxFeeAndGasCost.toBigInt(),
-                nativeToken.decimals,
-                nativeToken.rates
-              ),
+              amount: new BalanceFormatter(maxFeeAndGasCost.toBigInt(), nativeToken.decimals),
               decimals: nativeToken.decimals,
               symbol: nativeToken.symbol,
-              existentialDeposit: new BalanceFormatter(
-                "0",
-                nativeToken.decimals,
-                nativeToken.rates
-              ),
+              existentialDeposit: new BalanceFormatter("0", nativeToken.decimals),
             },
           })
         } catch (err) {
@@ -258,14 +245,9 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         decimals: nativeToken.decimals,
         existentialDeposit: new BalanceFormatter(
           ("existentialDeposit" in nativeToken ? nativeToken.existentialDeposit : "0") ?? "0",
-          nativeToken.decimals,
-          nativeToken.rates
+          nativeToken.decimals
         ),
-        amount: new BalanceFormatter(
-          BigInt(partialFee) + BigInt(tip ?? "0"),
-          nativeToken.decimals,
-          nativeToken.rates
-        ),
+        amount: new BalanceFormatter(BigInt(partialFee) + BigInt(tip ?? "0"), nativeToken.decimals),
       }
 
       // for each currency involved, check if sufficient balance and if it will cause account to be reaped
@@ -286,10 +268,9 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
             decimals: token.decimals,
             existentialDeposit: new BalanceFormatter(
               ("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0",
-              token.decimals,
-              token.rates
+              token.decimals
             ),
-            amount: new BalanceFormatter(remaining, token.decimals, token.rates),
+            amount: new BalanceFormatter(remaining, token.decimals),
           })
       }
 
@@ -305,11 +286,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         testToken(
           token,
           fromBalance,
-          new BalanceFormatter(
-            transfer.amount.planck + fees.amount.planck,
-            token.decimals,
-            token.rates
-          )
+          new BalanceFormatter(transfer.amount.planck + fees.amount.planck, token.decimals)
         )
       } else {
         // fees on nativeToken
