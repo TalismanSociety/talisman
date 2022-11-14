@@ -18,8 +18,6 @@ export const getExtrinsicDispatchInfo = async (
   assert(signedExtrinsic.isSigned, "Extrinsic must be signed (or fakeSigned) in order to query fee")
 
   if (await featuresStore.isFeatureEnabled("FEE_FROM_STATE_CALL")) {
-    // signedExtrinsic.encodedLength : same as payment_queryInfo RPC call
-    // signedExtrinsic.encodedLength + 1 : exact same as pjs's apps and subscan estimate fee. why ?
     const len = signedExtrinsic.registry.createType("u32", signedExtrinsic.encodedLength)
 
     const dispatchInfo = await stateCall(
