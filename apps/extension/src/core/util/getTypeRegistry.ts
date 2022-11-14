@@ -33,7 +33,7 @@ export const getTypeRegistry = async (
   if (metadataDef) {
     const metadataValue = getMetadataFromDef(metadataDef)
     if (metadataValue) {
-      const metadata: Metadata = new Metadata(registry)
+      const metadata: Metadata = new Metadata(registry, metadataValue)
       registry.setMetadata(metadata)
     }
 
