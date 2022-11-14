@@ -79,4 +79,7 @@ export interface AuthorisedSiteMessages {
   "pri(sites.byid.subscribe)": [RequestIdOnly, boolean, AuthorizedSite]
   "pri(sites.forget)": [RequestAuthorizedSiteForget, boolean]
   "pri(sites.update)": [RequestAuthorizedSiteUpdate, boolean]
+
+  // public messages
+  "pub(authorize.tab)": [RequestAuthorizeTab, boolean]
 }

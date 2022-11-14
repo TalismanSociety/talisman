@@ -2,6 +2,7 @@ import { log } from "@core/log"
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
 import { Ledger } from "@polkadot/hw-ledger"
 import { assert } from "@polkadot/util"
+import { throwAfter } from "@talismn/util"
 // Adapted from @polkadot/extension-ui
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
@@ -38,10 +39,7 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
         const ledger = new Ledger("webusb", app.name)
 
         // verify that Ledger connection is ready by querying first address
-        await Promise.race([
-          ledger.getAddress(false),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000)),
-        ])
+        await Promise.race([ledger.getAddress(false), throwAfter(5_000, "Timeout")])
 
         setLedger(ledger)
         setError(undefined)

@@ -1,6 +1,7 @@
 import { WsProvider } from "@polkadot/api"
 import { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { ChainId, ChaindataChainProvider } from "@talismn/chaindata-provider"
+import { sleep } from "@talismn/util"
 
 import log from "./log"
 
@@ -32,6 +33,11 @@ export class ChainConnector {
   ): Promise<T> {
     const [socketUserId, ws] = await this.connectChainSocket(chainId)
 
+    // wait for ws to be ready, but don't wait forever
+    // 15 seconds before we riot
+    const timeout = 15_000
+    await this.waitForWs(ws, timeout)
+
     try {
       // eslint-disable-next-line no-var
       var response = await ws.send(method, params, isCacheable)
@@ -54,10 +60,10 @@ export class ChainConnector {
     params: unknown[],
     callback: ProviderInterfaceCallback
   ): Promise<() => Promise<void>> {
-    // TODO: Fix this function so that caller doesn't have to wait for
-    //      socket to connect before they can call unsubscribe()
-
     const [socketUserId, ws] = await this.connectChainSocket(chainId)
+
+    // wait for ws to be ready, but don't wait forever
+    await this.waitForWs(ws)
 
     try {
       // eslint-disable-next-line no-var
@@ -68,11 +74,33 @@ export class ChainConnector {
     }
 
     const unsubscribe = async () => {
+      // TODO: What about when:
+      //
+      //   1. subscription is created
+      //   2. 10 seconds pass but the subscription isn't set up yet
+      //   3. unsubscribe is called (this method)
+      //   4. the subscription is finally set up
+      //
+      // is this a race condition?
       await ws.unsubscribe(responseMethod, unsubscribeMethod, subscriptionId)
       await this.disconnectChainSocket(chainId, socketUserId)
     }
 
     return unsubscribe
+  }
+
+  /**
+   * Wait for websocket to be ready, but don't wait forever
+   */
+  private async waitForWs(
+    ws: WsProvider,
+
+    // 30 seconds before we riot
+    timeout: number | false = 30_000
+  ): Promise<void> {
+    const timer = timeout ? sleep(timeout) : false
+
+    await Promise.race([ws.isReady, timer].filter(Boolean))
   }
 
   /**
@@ -85,19 +113,24 @@ export class ChainConnector {
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     const socketUserId = this.addSocketUser(chainId)
 
-    if (this.#socketConnections[chainId]) {
-      await this.#socketConnections[chainId].isReady
-      return [socketUserId, this.#socketConnections[chainId]]
-    }
+    if (this.#socketConnections[chainId]) return [socketUserId, this.#socketConnections[chainId]]
 
     const autoConnectMs = 1000
-    const healthyRpcs = (chain.rpcs || [])
-      .filter(({ isHealthy }) => isHealthy)
-      .map(({ url }) => url)
-    if (healthyRpcs.length) {
-      this.#socketConnections[chainId] = new WsProvider(healthyRpcs, autoConnectMs)
-    } else {
-      throw new Error(`No healthy RPCs available for chain ${chainId}`)
+    try {
+      // sort healthy rpcs before unhealthy rpcs
+      const healthyRpcs = (chain.rpcs || [])
+        .filter(({ isHealthy }) => isHealthy)
+        .map(({ url }) => url)
+      const unhealthyRpcs = (chain.rpcs || [])
+        .filter(({ isHealthy }) => !isHealthy)
+        .map(({ url }) => url)
+      const rpcs = [...healthyRpcs, ...unhealthyRpcs]
+
+      if (rpcs.length) this.#socketConnections[chainId] = new WsProvider(rpcs, autoConnectMs)
+      else throw new Error(`No healthy RPCs available for chain ${chainId}`)
+    } catch (error) {
+      log.error(error)
+      throw error
     }
 
     // set up healthcheck (keeps ws open when idle), don't wait for setup to complete
@@ -123,7 +156,6 @@ export class ChainConnector {
       }, intervalMs)
     })()
 
-    await this.#socketConnections[chainId].isReady
     return [socketUserId, this.#socketConnections[chainId]]
   }
 

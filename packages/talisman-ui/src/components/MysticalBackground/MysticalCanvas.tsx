@@ -1,3 +1,4 @@
+import Color from "color"
 import React, { FC, useEffect, useRef } from "react"
 
 import { MysticalPhysics } from "./MysticalPhysics"
@@ -18,15 +19,14 @@ const drawArtifact = (ctx: CanvasRenderingContext2D, artifact: ArtifactCharacter
 
   // gradient background
   const bg = ctx.createRadialGradient(cx, cy, radius / 2, cx, cy, radius)
-  bg.addColorStop(0, color)
+  // setting transparency on the bg color because ctx.globalAlpha doesn't work on some versions of firefox
+  bg.addColorStop(0, Color(color).alpha(opacity).toString())
   bg.addColorStop(1, "transparent")
 
-  ctx.globalAlpha = opacity
   ctx.fillStyle = bg
   ctx.beginPath()
   ctx.arc(cx, cy, radius, 0, 2 * Math.PI)
   ctx.fill()
-  ctx.globalAlpha = 1
 }
 
 const MysticalCanvas: FC<MysticalCanvasProps> = ({ config, size, cx, cy, ...props }) => {
@@ -47,7 +47,7 @@ const MysticalCanvas: FC<MysticalCanvasProps> = ({ config, size, cx, cy, ...prop
     // render on every frame
     const render = () => {
       context.clearRect(0, 0, canvas.width, canvas.height)
-      context.filter = `blur(${config.blur}px)`
+      if (config.blur > 0) context.filter = `blur(${config.blur}px)`
       drawArtifact(context, artifact1)
       drawArtifact(context, artifact2)
       drawArtifact(context, acolyte)

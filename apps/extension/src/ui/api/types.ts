@@ -4,8 +4,7 @@ import { MnemonicSubscriptionResult } from "@core/domains/accounts/types"
 import {
   AnalyticsCaptureRequest,
   LoggedinType,
-  ModalOpenParams,
-  ModalTypes,
+  ModalOpenRequest,
   OnboardedType,
 } from "@core/domains/app/types"
 import {
@@ -85,8 +84,8 @@ export default interface MessageTypes {
   cancelEncryptRequest: (id: string) => Promise<boolean>
 
   // app message types -------------------------------------------------------
-  modalOpen: (modalType: ModalTypes) => Promise<boolean>
-  modalOpenSubscribe: (cb: (val: ModalOpenParams) => void) => UnsubscribeFn
+  modalOpen: (modal: ModalOpenRequest) => Promise<boolean>
+  modalOpenSubscribe: (cb: (val: ModalOpenRequest) => void) => UnsubscribeFn
   analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>
 
   // mnemonic message types -------------------------------------------------------

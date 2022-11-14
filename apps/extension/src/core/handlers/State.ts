@@ -9,7 +9,7 @@ import { MetadataRequestsStore } from "@core/domains/metadata"
 import { SigningRequestsStore } from "@core/domains/signing"
 import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
-import { sleep } from "@core/util/sleep"
+import { sleep } from "@talismn/util"
 import Browser from "webextension-polyfill"
 
 const WINDOW_OPTS: Browser.Windows.CreateCreateDataType = {

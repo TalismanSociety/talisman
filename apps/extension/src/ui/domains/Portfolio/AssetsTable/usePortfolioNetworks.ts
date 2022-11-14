@@ -19,10 +19,11 @@ const getPortfolioNetwork = (
 ) => {
   const chain = chains?.find((c) => c.id === id)
   const evmNetwork = evmNetworks?.find((n) => n.id === id)
+  const relay = chains?.find((c) => c.id === chain?.relay?.id)
 
   const network: PortfolioNetwork = {
     id,
-    ...getNetworkInfo({ chain, evmNetwork }),
+    ...getNetworkInfo({ chain, evmNetwork, relay }),
   }
   return network
 }

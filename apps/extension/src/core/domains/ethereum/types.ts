@@ -32,7 +32,7 @@ export type WatchAssetBase = {
   type: "ERC20"
   options: {
     address: string // The hexadecimal Ethereum address of the token contract
-    symbol?: string // A ticker symbol or shorthand, up to 5 alphanumerical characters
+    symbol?: string // A ticker symbol or shorthand, up to 11 alphanumerical characters
     decimals?: number // The number of asset decimals
     image?: string // A string url of the token logo
   }

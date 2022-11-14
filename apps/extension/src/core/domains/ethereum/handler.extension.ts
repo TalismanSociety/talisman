@@ -13,9 +13,8 @@ import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import {
   ETH_ERROR_EIP1993_USER_REJECTED,
   EthProviderRpcError,
-  EthRequestArguments,
-  EthRequestSignatures,
-} from "@core/injectEth/types"
+} from "@core/injectEth/EthProviderRpcError"
+import { EthRequestArguments, EthRequestSignatures } from "@core/injectEth/types"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { watchEthereumTransaction } from "@core/notifications"

@@ -2,8 +2,7 @@ import { TransactionDetails } from "@core/domains/signing/types"
 import RpcFactory from "@core/libs/RpcFactory"
 import { InterfaceTypes } from "@polkadot/types/types/registry"
 import * as Sentry from "@sentry/browser"
-
-import { sleep } from "./sleep"
+import { sleep } from "@talismn/util"
 
 const tryRpcSend = async (chainId: string, method: string, attempts: number, params: unknown[]) => {
   for (let i = 1; i <= attempts; i++) {

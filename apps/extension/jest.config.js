@@ -5,13 +5,16 @@ const { pathsToModuleNameMapper } = require("ts-jest")
 const { compilerOptions } = require("./tsconfig.json")
 
 module.exports = {
-  preset: "ts-jest/presets/js-with-babel",
   transformIgnorePatterns: [
     "/node_modules/(?!@polkadot|@substrate|@babel/runtime/helpers/esm/|@metamask|url-join)",
   ],
+  transform: {
+    "^.+\\.(t|j)sx?$": ["@swc/jest"],
+  },
   moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
     prefix: "<rootDir>/src",
   }),
+  extraGlobals: ["Math"],
   moduleFileExtensions: [...defaults.moduleFileExtensions, "ts", "tsx"],
   setupFiles: [
     "jest-webextension-mock",

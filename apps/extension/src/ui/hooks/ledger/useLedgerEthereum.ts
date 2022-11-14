@@ -3,6 +3,7 @@ import { log } from "@core/log"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import Transport from "@ledgerhq/hw-transport"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
+import { throwAfter } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { useSetInterval } from "../useSetInterval"
@@ -47,7 +48,7 @@ export const useLedgerEthereum = (persist = false) => {
       // this may hang at this point just after plugging the ledger
       await Promise.race([
         ledger.getAddress(getEthLedgerDerivationPath("LedgerLive")),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000)),
+        throwAfter(5_000, "Timeout"),
       ])
 
       setLedgerError(undefined)

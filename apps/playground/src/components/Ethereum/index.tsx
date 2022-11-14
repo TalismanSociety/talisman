@@ -1,6 +1,7 @@
 import { WagmiConfig } from "wagmi"
 
 import { TestLayout } from "../TestLayout"
+import { AddNetwork } from "./AddNetwork"
 import { Connect } from "./Connect"
 import { wagmiClient } from "./connectors"
 import { ContractReadWrite } from "./ContractReadWrite"
@@ -23,6 +24,7 @@ export const Ethereum = () => {
         <PersonalSignReversed />
         <PersonalSignNftListing />
         <SignTypedData />
+        <AddNetwork />
       </TestLayout>
     </WagmiConfig>
   )

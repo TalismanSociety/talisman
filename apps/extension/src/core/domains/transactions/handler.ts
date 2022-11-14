@@ -142,7 +142,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
             tip,
             reapBalance,
             watchExtrinsic
-          ).catch(reject)
+          ).catch((err) => {
+            log.error("Error sending native substrate transaction: ", { err })
+            reject(err)
+          })
         if (tokenType === "evm-native")
           throw new Error(
             "Evm native token transfers are not implemented in this version of Talisman."
@@ -156,7 +159,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
             toAddress,
             tip,
             watchExtrinsic
-          ).catch(reject)
+          ).catch((err) => {
+            log.error("Error sending orml transaction: ", { err })
+            reject(err)
+          })
         if (tokenType === "evm-erc20")
           throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 

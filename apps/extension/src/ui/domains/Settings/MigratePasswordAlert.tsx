@@ -28,13 +28,12 @@ export const AlertCard = styled(({ className, onAccept, onReject }: Props) => {
       title={
         <div className="flex flex-col p-2">
           <LockIcon className="icon p-1" />
-          <span className="mt-2">Update Your Password</span>
+          <span className="mt-2">Security Upgrade</span>
         </div>
       }
       description={
         <p>
-          We’re upgrading our security measures, including enhanced password encryption. Please
-          update your password to continue.{" "}
+          We’re upgrading our security measures, including enhanced password encryption.{" "}
           <a
             href="https://medium.com/we-are-talisman/talismans-security-model-1e60391694c0"
             target="_blank"
@@ -48,7 +47,7 @@ export const AlertCard = styled(({ className, onAccept, onReject }: Props) => {
       cta={
         <StackedButtonGroup>
           <Button primary onClick={onAccept}>
-            Update Password
+            Continue
           </Button>
           <Button onClick={onReject}>Not for now</Button>
         </StackedButtonGroup>

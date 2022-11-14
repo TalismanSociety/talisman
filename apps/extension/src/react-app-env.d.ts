@@ -59,7 +59,9 @@ declare module "*.svg" {
   export const ReactComponent: React.FunctionComponent<
     React.SVGProps<SVGSVGElement> & { title?: string }
   >
+}
 
+declare module "*.svg?url" {
   const src: string
   export default src
 }
@@ -95,3 +97,8 @@ declare module "*.svg" {
 
 declare module "*.woff"
 declare module "*.woff2"
+
+declare module "eth-phishing-detect" {
+  const isEthPhishingDomain: (url: string) => boolean
+  export default isEthPhishingDomain
+}

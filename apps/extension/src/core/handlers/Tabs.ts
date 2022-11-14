@@ -11,6 +11,7 @@ import type { ResponseSigning } from "@core/domains/signing/types"
 import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
+import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { TabsHandler } from "@core/libs/Handler"
 import type {
@@ -21,6 +22,7 @@ import type {
 } from "@core/types"
 import type { Port } from "@core/types/base"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
+import { isPhishingSite } from "@core/util/isPhishingSite"
 import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import {
@@ -39,7 +41,6 @@ import type {
   ProviderMeta,
 } from "@polkadot/extension-inject/types"
 import type { KeyringPair } from "@polkadot/keyring/types"
-import { checkIfDenied } from "@polkadot/phishing"
 import type { JsonRpcResponse } from "@polkadot/rpc-provider/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
@@ -79,7 +80,6 @@ export default class Tabs extends TabsHandler {
     return await this.state.requestStores.sites.requestAuthorizeUrl(url, request)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async accountsList(
     url: string,
     { anyType }: RequestAccountList
@@ -220,27 +220,40 @@ export default class Tabs extends TabsHandler {
     return Promise.resolve(true)
   }
 
-  private async rpcUnsubscribe(request: RequestRpcUnsubscribe, port: Port): Promise<boolean> {
+  private rpcUnsubscribe(request: RequestRpcUnsubscribe, port: Port): Promise<boolean> {
     return this.#rpcState.rpcUnsubscribe(request, port)
   }
 
   private redirectPhishingLanding(phishingWebsite: string): void {
-    const encodedWebsite = encodeURIComponent(phishingWebsite)
-    const url = `${Browser.runtime.getURL(
+    const nonFragment = phishingWebsite.split("#")[0]
+    const encodedWebsite = encodeURIComponent(nonFragment)
+    const url = `${chrome.extension.getURL(
       "dashboard.html"
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 
-    Browser.tabs.query({ url: phishingWebsite }).then((tabs) => {
+    Browser.tabs.query({ url: nonFragment }).then((tabs) => {
       tabs
         .map(({ id }) => id)
         .filter((id): id is number => isNumber(id))
-        .forEach((id) => Browser.tabs.update(id, { url }))
+        .forEach((id) =>
+          Browser.tabs.update(id, { url }).catch((err: Error) => {
+            // eslint-disable-next-line no-console
+            console.error("Failed to redirect tab to phishing page", { err })
+            Sentry.captureException(err, { extra: { url } })
+          })
+        )
     })
   }
 
   private async redirectIfPhishing(url: string): Promise<boolean> {
-    const isInDenyList = await checkIfDenied(url)
+    const isInDenyList = await isPhishingSite(url)
+
     if (isInDenyList) {
+      Sentry.captureEvent({
+        message: "Redirect from phishing site",
+        extra: { url },
+      })
+      talismanAnalytics.capture("Redirect from phishing site", { url })
       this.redirectPhishingLanding(url)
 
       return true

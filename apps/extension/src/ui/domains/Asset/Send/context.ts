@@ -224,7 +224,13 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
             },
           })
         } catch (err) {
-          Sentry.captureException(err)
+          if (
+            ![
+              "Could not load baseFeePerGas",
+              `Insufficient ${nativeToken.symbol} balance to pay for gas`,
+            ].includes((err as Error).message)
+          )
+            Sentry.captureException(err)
           throw new Error((err as Error).message)
         }
         return

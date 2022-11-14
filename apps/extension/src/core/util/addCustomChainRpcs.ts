@@ -8,10 +8,6 @@ const onfinalityApiKey = "e1b2f3ea-f003-42f5-adf6-d2e6aa3ecfe4"
  */
 const addCustomChainRpcs = (chains: Chain[]): Chain[] =>
   chains.map((chain) => {
-    // only add our custom rpcs when the chain is healthy
-    // the extension won't bother to connect to unhealthy chains
-    if (!chain.isHealthy) return chain
-
     // copy chain instead of mutating
     const chainWithCustomRpcs = { ...chain }
 

@@ -1,12 +1,10 @@
 import { Balances } from "@core/domains/balances/types"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { IconButton } from "@talisman/components/IconButton"
 import { CopyIcon, CreditCardIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
-import { encodeAnyAddress, planckToTokens } from "@talismn/util"
+import { planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -14,43 +12,15 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback, useMemo } from "react"
 import styled from "styled-components"
 import { PillButton } from "talisman-ui"
 
+import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
+import { SendFundsButton } from "./SendFundsIconButton"
 import { useAssetDetails } from "./useAssetDetails"
 import { useChainTokenBalances } from "./useChainTokenBalances"
-
-const SmallIconButton = styled(IconButton)`
-  height: 1.2rem;
-  width: 1.2rem;
-  font-size: var(--font-size-xsmall);
-`
-
-const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) => {
-  const { account } = useSelectedAccount()
-
-  const address = useMemo(() => {
-    if (!account) return null
-    if (isEthereumAddress(account.address)) return account.address
-    return encodeAnyAddress(account.address, prefix ?? undefined)
-  }, [account, prefix])
-
-  const handleClick = useCallback(() => {
-    if (!address) return
-    copyAddress(address)
-  }, [address])
-
-  if (!address) return null
-
-  return (
-    <SmallIconButton onClick={handleClick}>
-      <CopyIcon />
-    </SmallIconButton>
-  )
-}
 
 const FetchingIndicator = styled(LoaderIcon)`
   font-size: 1em;
@@ -98,7 +68,8 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
         <Box grow flex column justify="center" gap={0.4} padding="0 1.6rem 0 0">
           <Box flex justify="space-between" bold fg="foreground">
             <Box flex align="center" gap={0.8}>
-              {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />{" "}
+              {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
+              <SendFundsButton symbol={token.symbol} networkId={chainOrNetwork.id} />
               {isFetching && <FetchingIndicator data-spin />}
             </Box>
           </Box>
@@ -168,7 +139,7 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 
   const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
   const handleBuyCryptoClick = useCallback(async () => {
-    await api.modalOpen("buy")
+    await api.modalOpen({ modalType: "buy" })
     window.close()
   }, [])
 
