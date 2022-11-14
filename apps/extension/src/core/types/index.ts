@@ -43,6 +43,7 @@ type RemovedMessages =
   | "pri(derivation.validate)"
   | "pri(accounts.changePassword)"
   | "pri(seed.validate)"
+  | "pub(authorize.tab)"
 
 type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AuthorisedSiteMessages &
@@ -56,6 +57,7 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   SigningMessages &
   TokenMessages &
   EncryptMessages
+
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
 

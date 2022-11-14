@@ -80,7 +80,6 @@ export default class Tabs extends TabsHandler {
     return await this.state.requestStores.sites.requestAuthorizeUrl(url, request)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async accountsList(
     url: string,
     { anyType }: RequestAccountList

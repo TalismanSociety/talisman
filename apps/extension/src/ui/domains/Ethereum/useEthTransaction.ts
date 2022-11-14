@@ -17,6 +17,9 @@ import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+// gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
+const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
+
 const useNonce = (address?: string, evmNetworkId?: number) => {
   const [nonce, setNonce] = useState<number>()
   const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -135,7 +138,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
           withFeeOptions ? getFeeHistoryAnalysis(provider) : undefined,
         ])
 
-        if (feeOptions) {
+        if (feeOptions && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(provider.network.chainId)) {
           // `gasPrice - baseFee` is equal to the current minimum maxPriorityPerGas value required to make it into next block
           // if smaller than our historical data based value, use it.
           // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.

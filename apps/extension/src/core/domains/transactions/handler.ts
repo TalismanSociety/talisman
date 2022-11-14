@@ -140,7 +140,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
             tip,
             reapBalance,
             watchExtrinsic
-          ).catch(reject)
+          ).catch((err) => {
+            log.error("Error sending native substrate transaction: ", { err })
+            reject(err)
+          })
         if (tokenType === "orml")
           return OrmlTokenTransfersRpc.transfer(
             chainId,
@@ -150,7 +153,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
             toAddress,
             tip,
             watchExtrinsic
-          ).catch(reject)
+          ).catch((err) => {
+            log.error("Error sending orml transaction: ", { err })
+            reject(err)
+          })
         if (tokenType === "erc20")
           throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 

@@ -1,6 +1,6 @@
 import { Token } from "@core/domains/tokens/types"
 import { log } from "@core/log"
-import genericTokenSvgIcon from "@talisman/theme/icons/custom-token-generic.svg"
+import genericTokenSvgIcon from "@talisman/theme/icons/custom-token-generic.svg?url"
 import useToken from "@ui/hooks/useToken"
 import { CSSProperties, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"

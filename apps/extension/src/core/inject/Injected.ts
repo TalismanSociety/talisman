@@ -1,7 +1,7 @@
 import PolkadotInjected from "@polkadot/extension-base/page/Injected"
 import Signer from "@polkadot/extension-base/page/Signer"
 import type { SendRequest } from "@core/types"
-import {
+import type {
   EncryptResult,
   EncryptPayload,
   DecryptPayload,
