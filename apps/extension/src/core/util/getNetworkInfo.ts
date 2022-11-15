@@ -4,9 +4,11 @@ import { EvmNetwork } from "@core/domains/ethereum/types"
 export const getNetworkInfo = ({
   chain,
   evmNetwork,
+  relay,
 }: {
   chain?: Chain | null
   evmNetwork?: EvmNetwork
+  relay?: Chain
 }) => {
   if (evmNetwork)
     return { label: evmNetwork.name, type: evmNetwork.isTestnet ? "EVM Testnet" : "EVM blockchain" }
@@ -16,7 +18,9 @@ export const getNetworkInfo = ({
     return {
       label: chain.name,
       type: chain.paraId
-        ? "Parachain"
+        ? relay?.chainName
+          ? `${relay?.chainName} Parachain`
+          : "Parachain"
         : (chain.parathreads || []).length > 0
         ? "Relay chain"
         : "Blockchain",

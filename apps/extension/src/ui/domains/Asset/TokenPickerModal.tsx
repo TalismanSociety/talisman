@@ -146,7 +146,8 @@ export const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps)
         .map<TokenProps>((token) => {
           const chain = chainsMap[token.chain?.id as string]
           const evmNetwork = evmNetworksMap[String("evmNetwork" in token && token.evmNetwork?.id)]
-          const network = getNetworkInfo({ chain, evmNetwork })
+          const relay = chain?.relay?.id ? chainsMap[chain?.relay?.id] : undefined
+          const network = getNetworkInfo({ chain, evmNetwork, relay })
 
           const balances = new Balances(allBalances.find({ tokenId: token.id }))
 

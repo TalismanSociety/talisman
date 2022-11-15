@@ -1,5 +1,5 @@
-import { DEBUG } from "@core/constants"
 import { ChangePasswordRequest } from "@core/domains/app/types"
+import { log } from "@core/log"
 import { KeyringPair } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
@@ -98,8 +98,7 @@ export const changePassword = async ({
     }
   } catch (error) {
     await restoreBackupKeyring(currentPw)
-    // eslint-disable-next-line no-console
-    DEBUG && console.error("Error migrating password: ", error)
+    log.error("Error migrating password: ", error)
     return Err("Error changing password")
   }
   await Browser.storage.local.remove(TALISMAN_BACKUP_KEYRING_KEY)

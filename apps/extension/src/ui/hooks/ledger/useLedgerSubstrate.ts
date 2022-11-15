@@ -7,6 +7,7 @@ import { useSetInterval } from "../useSetInterval"
 import { getLedgerErrorProps, LedgerStatus } from "./common"
 import { useLedgerSubstrateApp } from "./useLedgerSubstrateApp"
 import { log } from "@core/log"
+import { throwAfter } from "talisman-utils"
 
 export const useLedgerSubstrate = (genesis?: string | null) => {
   const app = useLedgerSubstrateApp(genesis)
@@ -37,10 +38,7 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
         const ledger = new Ledger("webusb", app.name)
 
         // verify that Ledger connection is ready by querying first address
-        await Promise.race([
-          ledger.getAddress(false),
-          new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000)),
-        ])
+        await Promise.race([ledger.getAddress(false), throwAfter(5_000, "Timeout")])
 
         setLedger(ledger)
         setError(undefined)

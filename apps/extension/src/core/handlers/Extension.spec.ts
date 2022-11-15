@@ -23,6 +23,15 @@ import { extensionStores } from "./stores"
 jest.mock("@core/domains/chains/api")
 jest.setTimeout(10000)
 
+// Mock the hasSpiritKey module to return false
+jest.mock("@core/util/hasSpiritKey", () => {
+  return {
+    fetchHasSpiritKey: jest.fn().mockImplementation(async () => {
+      return false
+    }),
+  }
+})
+
 type SenderFunction<TMessageType extends MessageTypes> = (
   messageType: TMessageType,
   request: RequestTypes[TMessageType],
@@ -55,7 +64,6 @@ describe("Extension", () => {
       },
     })
     state = new State()
-    /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 
     return new Extension(state, extensionStores)
   }
