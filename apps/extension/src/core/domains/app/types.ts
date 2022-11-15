@@ -1,3 +1,4 @@
+import { Address } from "@core/types/base"
 import posthog from "posthog-js"
 
 export interface RequestOnboard {
@@ -14,10 +15,15 @@ export interface RequestRoute {
   route: string
 }
 
-export declare type ModalTypes = "send" | "buy"
-export interface ModalOpenParams {
-  modalType: ModalTypes
+export type ModalOpenRequestBuy = {
+  modalType: "buy"
 }
+export type ModalOpenRequestSend = {
+  modalType: "send"
+  from?: Address
+  transferableTokenId?: string
+}
+export type ModalOpenRequest = ModalOpenRequestBuy | ModalOpenRequestSend
 
 export interface AnalyticsCaptureRequest {
   eventName: string
@@ -30,6 +36,7 @@ export type FeatureVariants = {
   BUY_CRYPTO?: boolean
   POPUP_BOTTOM_NAV_VARIANT?: "WITH_TOOLTIP" | "WITHOUT_TOOLTIP"
   LEDGER_EVM: boolean
+  FEE_FROM_STATE_CALL: boolean
 }
 export type FeatureFlag = keyof FeatureVariants
 
@@ -65,8 +72,8 @@ export interface AppMessages {
   "pri(app.dashboardOpen)": [RequestRoute, boolean]
   "pri(app.onboardOpen)": [null, boolean]
   "pri(app.popupOpen)": [null, boolean]
-  "pri(app.modalOpen.request)": [ModalOpenParams, boolean]
-  "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenParams]
+  "pri(app.modalOpen.request)": [ModalOpenRequest, boolean]
+  "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenRequest]
   "pri(app.promptLogin)": [boolean, boolean]
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
 }

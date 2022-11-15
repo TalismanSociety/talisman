@@ -1,6 +1,6 @@
 import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { LoaderIcon } from "@talisman/theme/icons"
-import unknownToken from "@talisman/theme/icons/custom-token-generic.svg"
+import unknownToken from "@talisman/theme/icons/custom-token-generic.svg?url"
 import styled, { css } from "styled-components"
 
 export const commonFormStyle = css`

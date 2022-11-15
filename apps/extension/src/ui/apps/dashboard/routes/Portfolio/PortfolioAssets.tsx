@@ -1,4 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
@@ -19,6 +20,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import React, { useCallback, useEffect, useMemo } from "react"
+import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 const Stats = styled(Statistics)`
@@ -62,6 +64,12 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
     [account, showWalletFunding, enableWalletFunding]
   )
 
+  const canAddCustomToken = useMemo(() => isEthereumAddress(account?.address), [account?.address])
+  const navigate = useNavigate()
+  const handleAddCustomToken = useCallback(() => {
+    navigate("/tokens/add")
+  }, [navigate])
+
   return (
     <Box flex column fullheight>
       {displayWalletFunding ? (
@@ -93,6 +101,9 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
                   )}
                   {canRemove && (
                     <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
+                  )}
+                  {canAddCustomToken && (
+                    <PopNav.Item onClick={handleAddCustomToken}>Add Custom Token</PopNav.Item>
                   )}
                 </PopNav>
               )}

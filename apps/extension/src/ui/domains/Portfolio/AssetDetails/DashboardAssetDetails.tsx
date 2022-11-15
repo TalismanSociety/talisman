@@ -1,20 +1,17 @@
 import { Balances } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
-import { encodeAnyAddress } from "@core/util"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
-import { IconButton } from "@talisman/components/IconButton"
-import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
+import { LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
-import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { copyAddress } from "@ui/util/copyAddress"
-import { Fragment, useCallback, useMemo } from "react"
+import { Fragment } from "react"
 import styled from "styled-components"
 
 import StyledAssetLogo from "../../Asset/Logo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { NoTokensMessage } from "../NoTokensMessage"
+import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
+import { SendFundsButton } from "./SendFundsIconButton"
 import { useAssetDetails } from "./useAssetDetails"
 import { useChainTokenBalances } from "./useChainTokenBalances"
 
@@ -93,35 +90,6 @@ const AssetState = ({
   )
 }
 
-const SmallIconButton = styled(IconButton)`
-  height: 1.2rem;
-  width: 1.2rem;
-  font-size: var(--font-size-xsmall);
-`
-
-const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) => {
-  const { account } = useSelectedAccount()
-
-  const address = useMemo(() => {
-    if (!account) return null
-    if (isEthereumAddress(account.address)) return account.address
-    return encodeAnyAddress(account.address, prefix ?? undefined)
-  }, [account, prefix])
-
-  const handleClick = useCallback(() => {
-    if (!address) return
-    copyAddress(address)
-  }, [address])
-
-  if (!address) return null
-
-  return (
-    <SmallIconButton onClick={handleClick}>
-      <CopyIcon />
-    </SmallIconButton>
-  )
-}
-
 const FetchingIndicator = styled(LoaderIcon)`
   line-height: 1;
   font-size: var(--font-size-normal);
@@ -150,7 +118,8 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
             </Box>
             <Box grow flex column justify="center" gap={0.4} noWrap>
               <Box fontsize="normal" bold fg="foreground" flex align="center" gap={0.8}>
-                {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />{" "}
+                {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
+                <SendFundsButton symbol={token.symbol} networkId={chainOrNetwork.id} />
                 {isFetching && <FetchingIndicator data-spin />}
               </Box>
               <div>{networkType}</div>
