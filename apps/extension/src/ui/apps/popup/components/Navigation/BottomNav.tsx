@@ -3,11 +3,19 @@ import { classNames } from "@talisman/util/classNames"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useFeatureVariantEquals } from "@ui/hooks/useFeatures"
+import { useFeatureFlag, useFeatureVariantEquals } from "@ui/hooks/useFeatures"
+import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { useNavigationContext } from "../../context/NavigationContext"
-import { NavIconExpand, NavIconHome, NavIconMore, NavIconNft } from "./icons"
+import {
+  NavIconExpand,
+  NavIconHistory,
+  NavIconHome,
+  NavIconMore,
+  NavIconNft,
+  NavIconStaking,
+} from "./icons"
 
 type BottomNavButtonProps = DetailedHTMLProps<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -62,6 +70,26 @@ export const BottomNav = () => {
     window.open("https://app.talisman.xyz/nfts")
   }, [])
 
+  const showTxHistory = useFeatureFlag("LINK_TX_HISTORY")
+  const handleTxHistoryClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Tx History button",
+    })
+    window.open(getTransactionHistoryUrl(account?.address), "_blank")
+  }, [account?.address])
+
+  const showStaking = useFeatureFlag("LINK_STAKING")
+  const handleStakingClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Staking button",
+    })
+    window.open("https://app.talisman.xyz/staking", "_blank")
+  }, [])
+
   const handleExpandClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
@@ -84,6 +112,7 @@ export const BottomNav = () => {
     open()
   }, [open])
 
+  const showExpand = !showStaking || !showTxHistory
   const showTooltip = useFeatureVariantEquals("POPUP_BOTTOM_NAV_VARIANT", "WITH_TOOLTIP")
 
   return (
@@ -98,11 +127,27 @@ export const BottomNav = () => {
           <NavIconNft />
         </BottomNavButton>
       </WithTooltip>
-      <WithTooltip as="div" tooltip={showTooltip && "Expand Portfolio View"}>
-        <BottomNavButton onClick={handleExpandClick}>
-          <NavIconExpand />
-        </BottomNavButton>
-      </WithTooltip>
+      {showStaking && (
+        <WithTooltip as="div" tooltip={showTooltip && "Staking"}>
+          <BottomNavButton onClick={handleStakingClick}>
+            <NavIconStaking />
+          </BottomNavButton>
+        </WithTooltip>
+      )}
+      {showTxHistory && (
+        <WithTooltip as="div" tooltip={showTooltip && "Transaction History"}>
+          <BottomNavButton onClick={handleTxHistoryClick}>
+            <NavIconHistory />
+          </BottomNavButton>
+        </WithTooltip>
+      )}
+      {showExpand && (
+        <WithTooltip as="div" tooltip={showTooltip && "Expand Portfolio View"}>
+          <BottomNavButton onClick={handleExpandClick}>
+            <NavIconExpand />
+          </BottomNavButton>
+        </WithTooltip>
+      )}
       <WithTooltip as="div" tooltip={showTooltip && "More Options"}>
         <BottomNavButton onClick={handleMoreClick}>
           <NavIconMore />
