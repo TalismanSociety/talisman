@@ -3,7 +3,7 @@ import { HexString } from "@polkadot/util/types"
 import { Codec } from "@polkadot/types-codec/types"
 import RpcFactory from "@core/libs/RpcFactory"
 
-export const stateCall = async <T extends Codec = Codec, K extends string = string>(
+export const stateCall = async <K extends string = string>(
   chainId: string,
   method: string,
   resultType: K,
@@ -17,5 +17,5 @@ export const stateCall = async <T extends Codec = Codec, K extends string = stri
 
   const result = await RpcFactory.send(chainId, "state_callAt", [method, bytes.toHex(), blockHash])
 
-  return registry.createType<T, K>(resultType, result)
+  return registry.createType(resultType, result)
 }
