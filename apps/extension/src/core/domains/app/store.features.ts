@@ -34,6 +34,7 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     POPUP_BOTTOM_NAV_VARIANT: "WITH_TOOLTIP",
     LEDGER_EVM: true,
     FEE_FROM_STATE_CALL: true,
+    LINK_TX_HISTORY: true,
   }
   featuresStore.set({
     features: Object.keys(DEV_FEATURE_VARIANTS) as FeatureFlag[],
