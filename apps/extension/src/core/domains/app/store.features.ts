@@ -35,6 +35,7 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     LEDGER_EVM: true,
     FEE_FROM_STATE_CALL: true,
     LINK_TX_HISTORY: true,
+    LINK_STAKING: true,
   }
   featuresStore.set({
     features: Object.keys(DEV_FEATURE_VARIANTS) as FeatureFlag[],

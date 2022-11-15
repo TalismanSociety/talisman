@@ -38,6 +38,7 @@ export type FeatureVariants = {
   LEDGER_EVM: boolean
   FEE_FROM_STATE_CALL: boolean
   LINK_TX_HISTORY: boolean
+  LINK_STAKING: boolean
 }
 export type FeatureFlag = keyof FeatureVariants
 
