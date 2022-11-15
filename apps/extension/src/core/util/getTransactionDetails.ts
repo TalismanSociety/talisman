@@ -1,25 +1,13 @@
 import { TransactionDetails } from "@core/domains/signing/types"
-import RpcFactory from "@core/libs/RpcFactory"
 import { InterfaceTypes } from "@polkadot/types/types/registry"
+import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
-
-import { sleep } from "./sleep"
-
-const tryRpcSend = async (chainId: string, method: string, attempts: number, params: unknown[]) => {
-  for (let i = 1; i <= attempts; i++) {
-    try {
-      return await RpcFactory.send(chainId, method, params)
-    } catch (err) {
-      if (i === attempts) throw err
-      await sleep(300)
-    }
-  }
-}
+import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 
 export const getTransactionDetails = async (
   chainId: string,
   extrinsic: InterfaceTypes["Extrinsic"],
-  at?: string
+  at?: HexString
 ) => {
   const result = extrinsic.toHuman() as any
   result.method.meta = extrinsic.meta.toHuman()
@@ -38,8 +26,7 @@ export const getTransactionDetails = async (
   }
 
   try {
-    // estimate fees (attempt 3 times)
-    result.payment = await tryRpcSend(chainId, "payment_queryInfo", 3, [extrinsic.toHex(), at])
+    result.payment = await getExtrinsicDispatchInfo(chainId, extrinsic, at)
   } catch (err) {
     Sentry.captureException(err)
   }
