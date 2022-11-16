@@ -3,7 +3,6 @@ import { Chain, ChainId } from "@core/domains/chains/types"
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { Token, TokenId } from "@core/domains/tokens/types"
 import { MetadataDef } from "@core/inject/types"
-import { RuntimeVersion } from "@polkadot/types/interfaces"
 import { Dexie } from "dexie"
 
 export class TalismanDatabase extends Dexie {
@@ -12,13 +11,12 @@ export class TalismanDatabase extends Dexie {
   tokens!: Dexie.Table<Token, TokenId>
   balances!: Dexie.Table<BalanceStorage, string>
   metadata!: Dexie.Table<MetadataDef, string>
-  chainMetadataRpc!: Dexie.Table<ChainMetadataRpc, string>
 
   constructor() {
     super("Talisman")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
-    this.version(3).stores({
+    this.version(4).stores({
       // You only need to specify properties that you wish to index.
       // The object store will allow any properties on your stored objects but you can only query them by indexed properties
       // https://dexie.org/docs/API-Reference#declare-database
@@ -30,19 +28,12 @@ export class TalismanDatabase extends Dexie {
       tokens: "id, type, symbol, coingeckoId, contractAddress, chain, evmNetwork",
       balances: "id, pallet, address, chainId, evmNetworkId, tokenId",
       metadata: "genesisHash",
-      metadataRpc: null,
-      chainMetadataRpc: "chainId",
+      metadataRpc: null, // delete legacy table
+      chainMetadataRpc: null, // delete legacy table
     })
 
-    // init code moved to Extension.ts to prevent frontend build to have metadataInit
+    // data provisioning code moved to Extension.ts so only backend can execute it
   }
-}
-
-export type ChainMetadataRpc = {
-  chainId: string
-  cacheKey: string
-  metadataRpc: `0x${string}`
-  runtimeVersion: RuntimeVersion
 }
 
 export const db = new TalismanDatabase()

@@ -4117,25 +4117,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@substrate/txwrapper-polkadot@npm:4.0.1":
-  version: 4.0.1
-  resolution: "@substrate/txwrapper-polkadot@npm:4.0.1"
-  dependencies:
-    "@substrate/txwrapper-core": ^4.0.1
-    "@substrate/txwrapper-substrate": ^4.0.1
-  checksum: ee5c36a07af054f4fee1df5a8c0b7f2476cab4632294d3dfb8d291b240453a31633bce6c4ec99a8a3291c1c4af0aed13055a453bbd67784b9d51d2a78d208f0a
-  languageName: node
-  linkType: hard
-
-"@substrate/txwrapper-substrate@npm:4.0.1":
-  version: 4.0.1
-  resolution: "@substrate/txwrapper-substrate@npm:4.0.1"
-  dependencies:
-    "@substrate/txwrapper-core": ^4.0.1
-  checksum: d7f721ba25aacb6f0fa5b7bd1f80e962c4404be1f09d8378709e5c79c432c96a1932e0957d2259f5189899141fe1c0e0d80751c5d035a3e822e9bb22e56b8ad5
-  languageName: node
-  linkType: hard
-
 "@svgr/babel-plugin-add-jsx-attribute@npm:^6.0.0":
   version: 6.0.0
   resolution: "@svgr/babel-plugin-add-jsx-attribute@npm:6.0.0"
@@ -10038,7 +10019,7 @@ __metadata:
     "@sentry/react": ^7.17.4
     "@sentry/tracing": ^7.17.4
     "@sentry/webpack-plugin": ^1.18.8
-    "@substrate/txwrapper-polkadot": "*"
+    "@substrate/txwrapper-core": "*"
     "@svgr/webpack": ^6.2.1
     "@swc/core": ^1.3.14
     "@swc/helpers": ^0.4.12

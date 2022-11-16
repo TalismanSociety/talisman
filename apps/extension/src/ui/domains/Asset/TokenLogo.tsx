@@ -1,4 +1,5 @@
 import { Token } from "@core/domains/tokens/types"
+import { log } from "@core/log"
 import genericTokenSvgIcon from "@talisman/theme/icons/custom-token-generic.svg?url"
 import useToken from "@ui/hooks/useToken"
 import { imgSrcToBlob } from "blob-util"

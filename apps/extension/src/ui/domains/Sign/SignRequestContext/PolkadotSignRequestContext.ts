@@ -10,27 +10,21 @@ import { useAnySigningRequest } from "./AnySignRequestContext"
 export const usePolkadotTransactionDetails = (requestId?: string) => {
   const [analysing, setAnalysing] = useState(!!requestId)
   const [error, setError] = useState<string>()
-  const [txDetails, setTxDetails] = useState<TransactionDetails | null>()
+  const [txDetails, setTxDetails] = useState<TransactionDetails>()
 
   // decode transaction payload
   useEffect(() => {
-    const decode = async () => {
-      setTxDetails(undefined)
-      setError(undefined)
-      if (requestId) {
-        try {
-          setAnalysing(true)
-          const decoded = await api.decodeSignRequest(requestId)
-          setTxDetails(decoded)
-        } catch (err) {
-          // non blocking
-          if (err instanceof Error) setError(err.message)
-        }
-      }
-      setAnalysing(false)
+    setTxDetails(undefined)
+    setError(undefined)
+    setAnalysing(false)
+    if (requestId) {
+      setAnalysing(true)
+      api
+        .decodeSignRequest(requestId)
+        .then(setTxDetails)
+        .catch((err: Error) => setError(err.message))
+        .finally(() => setAnalysing(false))
     }
-
-    decode()
   }, [requestId])
 
   return { analysing, txDetails, error }

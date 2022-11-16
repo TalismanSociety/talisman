@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "private": true,
   "dependencies": {
     "@alectalisman/webpack-ext-reloader": "^1.1.9-a",
@@ -32,7 +32,7 @@
     "@sentry/react": "^7.17.4",
     "@sentry/tracing": "^7.17.4",
     "@sentry/webpack-plugin": "^1.18.8",
-    "@substrate/txwrapper-polkadot": "*",
+    "@substrate/txwrapper-core": "*",
     "@svgr/webpack": "^6.2.1",
     "@talismn/chaindata-js": "^0.0.7",
     "@tanstack/react-query": "^4.14.6",
