@@ -1,3 +1,4 @@
+import { log } from "@core/log"
 import { classNames } from "@talisman/util/classNames"
 import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { TokenId } from "@talismn/chaindata-provider"
@@ -21,12 +22,18 @@ export const AssetLogo = styled(({ id, className }: AssetLogoProps) => {
       ? token.image ?? token.logo
       : token?.logo ?? githubUnknownTokenLogoUrl
 
-  const url =
-    id && logo.startsWith("data:")
-      ? tokenLogoUrlCache.has(id)
-        ? tokenLogoUrlCache.get(id)
-        : tokenLogoUrlCache.set(id, getBase64ImageUrl(logo)).get(id)
-      : logo
+  let url
+  try {
+    url =
+      id && logo.startsWith("data:")
+        ? tokenLogoUrlCache.has(id)
+          ? tokenLogoUrlCache.get(id)
+          : tokenLogoUrlCache.set(id, getBase64ImageUrl(logo)).get(id)
+        : logo
+  } catch (error) {
+    log.warn("Failed to load token for %s", id)
+    url = githubUnknownTokenLogoUrl
+  }
 
   const [error, setError] = useState(false)
 

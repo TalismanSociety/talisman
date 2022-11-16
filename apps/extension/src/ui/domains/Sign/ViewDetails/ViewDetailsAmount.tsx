@@ -13,12 +13,14 @@ type ViewDetailsAmountProps = ViewDetailsFieldProps & {
 
 export const ViewDetailsAmount: FC<ViewDetailsAmountProps> = ({ amount, token, ...fieldProps }) => (
   <ViewDetailsField {...fieldProps}>
-    {`${formatDecimals(amount?.tokens ?? 0, token?.decimals)} ${token?.symbol}`}
-    {amount?.fiat("usd") !== null && (
+    {amount?.tokens
+      ? `${formatDecimals(amount?.tokens ?? 0, token?.decimals)} ${token?.symbol ?? ""}`
+      : "Unknown"}
+    {amount?.fiat("usd") ? (
       <>
         {" / "}
-        <Fiat noCountUp amount={amount?.fiat("usd")} currency="usd" />
+        <Fiat noCountUp amount={amount.fiat("usd")} currency="usd" />
       </>
-    )}
+    ) : null}
   </ViewDetailsField>
 )

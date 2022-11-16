@@ -1,7 +1,9 @@
-import type { TalismanSigner as TalismanInjectedSigner } from "./Injected"
 import type { ProviderInterface } from "@polkadot/rpc-provider/types"
 import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import type { KeypairType } from "@polkadot/util-crypto/types"
+
+import type { TalismanSigner as TalismanInjectedSigner } from "./Injected"
+
 declare type This = typeof globalThis
 export declare type Unsubcall = () => void
 export interface InjectedAccount {
@@ -47,6 +49,7 @@ export interface MetadataDef extends MetadataDefBase {
   tokenSymbol: string
   types: Record<string, Record<string, string> | string>
   metaCalls?: string
+  metadataRpc?: string
   userExtensions?: ExtDef
 }
 export interface InjectedMetadataKnown {

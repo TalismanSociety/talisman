@@ -3,7 +3,6 @@ import type { AnySigningRequest, RequestSigningCancel } from "@core/domains/sign
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
-import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { watchSubstrateTransaction } from "@core/notifications"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -28,20 +27,23 @@ export default class SigningHandler extends ExtensionHandler {
       const { payload } = request
       const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
 
+      // an empty registry is sufficient, we don't need metadata here
       let registry = new TypeRegistry()
+
       if (isJsonPayload(payload)) {
-        const { blockHash, genesisHash, signedExtensions } = payload
+        const { genesisHash, signedExtensions, specVersion, blockHash } = payload
+
+        const { registry: fullRegistry } = await getTypeRegistry(
+          genesisHash,
+          specVersion,
+          blockHash,
+          signedExtensions
+        )
+
+        registry = fullRegistry
 
         const chain = await chaindataProvider.getChain({ genesisHash })
-        if (chain) registry = (await getTypeRegistry(chain.id, blockHash)).registry
-
-        // Get the metadata for the genesisHash
-        const currentMetadata = await db.metadata.get(genesisHash)
-        registry.setSignedExtensions(signedExtensions, currentMetadata?.userExtensions)
-
-        if (currentMetadata) registry.register(currentMetadata.types)
-
-        analyticsProperties.chain = currentMetadata?.chain || chain?.chainName
+        analyticsProperties.chain = chain?.chainName ?? genesisHash
       }
 
       const signResult = request.sign(registry, pair)
@@ -56,7 +58,9 @@ export default class SigningHandler extends ExtensionHandler {
           // on chain signature : 0x6c175dd8818d0317d3048f9e3ff4c8a0d58888fb00663c5abdb0b4b7d0082e3cf3aef82e893f5ac9490ed7492fda20010485f205dbba6006a0ba033409198987
           // => remove the 01 prefix
           const signature = `0x${signResult.signature.slice(4)}`
-          watchSubstrateTransaction(chain, signature)
+
+          // will resolve when ready, will warn but won't throw if can't watch
+          await watchSubstrateTransaction(chain, signature)
         }
       }
 
@@ -131,26 +135,8 @@ export default class SigningHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
     if (!isJsonPayload(queued.request.payload)) return null
 
-    const { address, nonce, blockHash, genesisHash, signedExtensions } = queued.request.payload
-
-    const chains = Object.values(await chaindataProvider.chains())
-    const chain = chains.find((c) => c.genesisHash === genesisHash)
-    assert(chain, "Unable to find chain")
-
-    const {
-      registry,
-      chainMetadataRpc: { runtimeVersion },
-    } = await getTypeRegistry(chain.id, blockHash)
-    registry.setSignedExtensions(signedExtensions)
-
-    // convert to extrinsic
-    const extrinsic = registry.createType("Extrinsic", queued.request.payload) // payload as UnsignedTransaction
-
-    // fake sign it so fees can be queried
-    extrinsic.signFake(address, { nonce, blockHash, genesisHash, runtimeVersion })
-
     // analyse the call to extract args and docs
-    return await getTransactionDetails(chain.id, extrinsic)
+    return getTransactionDetails(queued.request.payload)
   }
 
   public async handle<TMessageType extends MessageTypes>(
@@ -195,7 +181,7 @@ export default class SigningHandler extends ExtensionHandler {
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestSigningCancel)
 
-      case "pri(signing.decode)":
+      case "pri(signing.details)":
         return this.decode(request as RequestIdOnly)
 
       default:

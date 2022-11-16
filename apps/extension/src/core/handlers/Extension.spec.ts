@@ -310,7 +310,7 @@ describe("Extension", () => {
         userExtensions,
       }
 
-      db.metadata.put(meta)
+      await db.metadata.put(meta)
 
       const registry = new TypeRegistry()
 

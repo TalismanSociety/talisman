@@ -5,13 +5,13 @@ import { FC, useMemo, useState } from "react"
 
 import { ViewDetailsField } from "./ViewDetailsField"
 
-type ArgsLabelProps = {
+type ObjectLabelProps = {
   label: string
   displayAsJson: boolean
   setDisplayAsJson: (json: boolean) => void
 }
 
-const ArgsLabel: FC<ArgsLabelProps> = ({ label, displayAsJson, setDisplayAsJson }) => {
+const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJson }) => {
   return (
     <div>
       {label} as :{" "}
@@ -32,26 +32,26 @@ const ArgsLabel: FC<ArgsLabelProps> = ({ label, displayAsJson, setDisplayAsJson 
   )
 }
 
-type ViewDetailsTxArgsProps = {
+type ViewDetailsTxObjectProps = {
   label: string
-  args?: any
+  obj?: any
 }
 
-export const ViewDetailsTxArgs: FC<ViewDetailsTxArgsProps> = ({ label, args }) => {
+export const ViewDetailsTxObject: FC<ViewDetailsTxObjectProps> = ({ label, obj }) => {
   const [displayAsJson, setDisplayAsJson] = useState(false)
 
   const code = useMemo(() => {
-    if (!args) return ""
-    if (displayAsJson) return JSON.stringify(args, null, 2)
-    else return convertToYaml(args)
-  }, [args, displayAsJson])
+    if (!obj) return ""
+    if (displayAsJson) return JSON.stringify(obj, null, 2)
+    return convertToYaml(obj)
+  }, [obj, displayAsJson])
 
   if (!code) return null
 
   return (
     <ViewDetailsField
       label={
-        <ArgsLabel
+        <ObjectLabel
           label={label}
           displayAsJson={displayAsJson}
           setDisplayAsJson={setDisplayAsJson}

@@ -16,7 +16,6 @@ import { chaindataProvider } from "@core/domains/chaindata"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
-import metadataInit from "@core/domains/metadata/_metadataInit"
 import { SigningHandler } from "@core/domains/signing"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
 import TokenRatesHandler from "@core/domains/tokenRates/handler"
@@ -85,29 +84,28 @@ export default class Extension extends ExtensionHandler {
 
   private initDb() {
     db.on("ready", async () => {
-      // if store has no metadata yet
-      if ((await db.metadata.count()) < 1) {
-        // delete old localstorage-managed 'db'
-        Browser.storage.local.remove([
-          "chains",
-          "ethereumNetworks",
-          "tokens",
-          "balances",
-          "metadata",
-        ])
-
-        // delete old idb-managed metadata+metadataRpc db
-        indexedDB.deleteDatabase("talisman")
-
-        // add initial metadata
-        db.metadata.bulkAdd(metadataInit)
-
-        // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider-extension lib
-        // // init other tables (workaround to wallet beeing installed when subsquid is down)
-        // db.chains.bulkAdd(chainsInit as unknown as Chain[])
-        // db.evmNetworks.bulkAdd(evmNetworksInit as unknown as EvmNetwork[])
-        // db.tokens.bulkAdd(tokensInit as unknown as Token[])
-      }
+      // TODO: Add back this migration logic to delete old data from localStorage/old idb-managed db
+      // (We don't store metadata OR chains in here anymore, so we have no idea whether or not its has already been initialised)
+      // // if store has no chains yet, consider it's a fresh install or legacy version
+      // if ((await db.chains.count()) < 1) {
+      //   // delete old localstorage-managed 'db'
+      //   Browser.storage.local.remove([
+      //     "chains",
+      //     "ethereumNetworks",
+      //     "tokens",
+      //     "balances",
+      //     "metadata",
+      //   ])
+      //
+      //   // delete old idb-managed metadata+metadataRpc db
+      //   indexedDB.deleteDatabase("talisman")
+      //
+      //   // TODO: Add this back again, but as an internal part of the @talismn/chaindata-provider-extension lib
+      //   // // initial data provisioning (workaround to wallet beeing installed when subsquid is down)
+      //   // db.chains.bulkAdd(chainsInit as unknown as Chain[])
+      //   // db.evmNetworks.bulkAdd(evmNetworksInit as unknown as EvmNetwork[])
+      //   // db.tokens.bulkAdd(tokensInit as unknown as Token[])
+      // }
     })
   }
 

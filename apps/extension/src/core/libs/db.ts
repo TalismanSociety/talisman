@@ -1,5 +1,4 @@
 import { MetadataDef } from "@core/inject/types"
-import { RuntimeVersion } from "@polkadot/types/interfaces"
 import { TokenId } from "@talismn/chaindata-provider"
 import { TokenRates } from "@talismn/token-rates"
 import { Dexie } from "dexie"
@@ -7,7 +6,6 @@ import { Dexie } from "dexie"
 export class TalismanDatabase extends Dexie {
   tokenRates!: Dexie.Table<DbTokenRates, string>
   metadata!: Dexie.Table<MetadataDef, string>
-  chainMetadataRpc!: Dexie.Table<ChainMetadataRpc, string>
 
   constructor() {
     super("Talisman")
@@ -20,25 +18,18 @@ export class TalismanDatabase extends Dexie {
       //
       // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
       // https://dexie.org/docs/Version/Version.stores()#warning
-      chains: null,
-      evmNetworks: null,
-      tokens: null,
+      chains: null, // delete legacy table
+      evmNetworks: null, // delete legacy table
+      tokens: null, // delete legacy table
       tokenRates: "tokenId",
-      balances: null,
+      balances: null, // delete legacy table
       metadata: "genesisHash",
-      metadataRpc: null,
-      chainMetadataRpc: "chainId",
+      metadataRpc: null, // delete legacy table
+      chainMetadataRpc: null, // delete legacy table
     })
 
-    // init code moved to Extension.ts to prevent frontend build to have metadataInit
+    // data provisioning code moved to Extension.ts so only backend can execute it
   }
-}
-
-export type ChainMetadataRpc = {
-  chainId: string
-  cacheKey: string
-  metadataRpc: `0x${string}`
-  runtimeVersion: RuntimeVersion
 }
 
 export type DbTokenRates = {
