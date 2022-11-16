@@ -1,9 +1,16 @@
 import RpcFactory from "@core/libs/RpcFactory"
-import { RuntimeVersion } from "@polkadot/types/interfaces"
+import type { IRuntimeVersionBase } from "@polkadot/types/types/interfaces"
+
+// properly typed on the few fields that matter to us
+type IRuntimeVersion = IRuntimeVersionBase & {
+  specName: string
+  specVersion: number
+  transactionVersion: number
+}
 
 // key = `${chainId}-${blockHash}`
 // very small object, it shouldn't be an issue to cache them until browser closes
-const cache: Record<string, RuntimeVersion> = {}
+const cache: Record<string, IRuntimeVersion> = {}
 
 export const getRuntimeVersion = async (chainId: string, blockHash?: string) => {
   // only cache if blockHash is specified
@@ -15,7 +22,7 @@ export const getRuntimeVersion = async (chainId: string, blockHash?: string) => 
   // fetch from chain
   const method = "state_getRuntimeVersion"
   const params = [blockHash]
-  const result = await RpcFactory.send<RuntimeVersion>(chainId, method, params)
+  const result = await RpcFactory.send<IRuntimeVersion>(chainId, method, params, true)
 
   // store in cache
   if (cacheKey) cache[cacheKey] = result
