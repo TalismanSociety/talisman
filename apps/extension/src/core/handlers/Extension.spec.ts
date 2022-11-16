@@ -20,7 +20,6 @@ import Extension from "./Extension"
 import State from "./State"
 import { extensionStores } from "./stores"
 
-jest.mock("@core/domains/chains/api")
 jest.setTimeout(10000)
 
 // Mock the hasSpiritKey module to return false
