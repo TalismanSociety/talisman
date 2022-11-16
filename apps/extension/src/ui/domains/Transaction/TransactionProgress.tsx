@@ -1,12 +1,10 @@
 import { TransactionStatus } from "@core/domains/transactions/types"
-import Button from "@talisman/components/Button"
 import Link from "@ui/domains/Transaction/Link"
-import Status from "@ui/domains/Transaction/Status"
 import useChain from "@ui/hooks/useChain"
 import { useEvmTransactionWatch } from "@ui/hooks/useEvmTransactionWatch"
 import useTransactionById from "@ui/hooks/useTransactionById"
-import { useMemo } from "react"
-import styled from "styled-components"
+import { FC, useCallback, useMemo } from "react"
+import { Button, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 
 type DetailsDisplayProps = {
   className?: string
@@ -18,7 +16,37 @@ type DetailsDisplayProps = {
   href?: string
 }
 
-const UnstyledDetailDisplay = ({
+type StatusDetails = {
+  title: string
+  subtitle: string
+  animStatus: ProcessAnimationStatus
+}
+
+const getStatusDetails = (status: TransactionStatus): StatusDetails => {
+  switch (status) {
+    case "ERROR":
+      return {
+        title: "Failure",
+        subtitle: "Transaction was not found",
+        animStatus: "failure",
+      }
+    case "SUCCESS":
+      return {
+        title: "Success",
+        subtitle: "Your transaction was successful",
+        animStatus: "success",
+      }
+    case "PENDING":
+    default:
+      return {
+        title: "Transaction in progress",
+        subtitle: "This may take a few minutes",
+        animStatus: "processing",
+      }
+  }
+}
+
+export const DetailDisplay = ({
   status,
   message,
   blockHash,
@@ -26,63 +54,43 @@ const UnstyledDetailDisplay = ({
   href,
   handleClose,
   className,
-}: DetailsDisplayProps) => (
-  <section className={className}>
-    <article>
-      <Status status={status} message={message} />
-    </article>
-    <footer>
-      {blockHash ? (
-        <Link
-          prefix="Included in block"
-          blockHash={blockHash}
-          blockNumber={blockNumber}
-          href={href}
-        />
-      ) : (
-        <span className="wait">"Awaiting confirmation..."</span>
-      )}
-      <Button onClick={handleClose}>Close</Button>
-    </footer>
-  </section>
-)
+}: DetailsDisplayProps) => {
+  const { title, subtitle, animStatus } = useMemo(() => getStatusDetails(status), [status])
 
-const DetailDisplay = styled(UnstyledDetailDisplay)`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  const handleViewTx = useCallback(() => {
+    window.open(href, "_blank")
+    handleClose?.()
+  }, [handleClose, href])
 
-  article {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    margin: 0 0 4vw 0;
-  }
+  const showLink = status === "PENDING" && blockHash
+  const showViewTx = status === "SUCCESS" && href
+  const showClose = status !== "PENDING" && !showViewTx
 
-  footer {
-    .transaction-link {
-      font-size: var(--font-size-small);
-      color: var(--color-background-muted-2x);
-      margin-bottom: 1em;
-      display: block;
-      text-align: center;
-      line-height: 1em;
-    }
-
-    .wait {
-      //just a placeholder to prevent flickering
-      visibility: hidden;
-    }
-
-    .button {
-      display: block;
-      width: 100%;
-    }
-  }
-`
+  return (
+    <div className=" flex h-full w-full flex-col">
+      <div className="text-body my-12 text-lg font-bold">{title}</div>
+      <div className="text-body-secondary text-base font-light">{subtitle}</div>
+      <div className="flex grow flex-col justify-center">
+        <ProcessAnimation status={animStatus} className="h-[14.5rem]" />
+      </div>
+      <div className="flex h-28 w-full flex-col justify-center">
+        {showLink && (
+          <Link prefix="Included in" blockHash={blockHash} blockNumber={blockNumber} href={href} />
+        )}
+        {showViewTx && (
+          <Button fullWidth onClick={handleViewTx}>
+            View Transaction
+          </Button>
+        )}
+        {showClose && (
+          <Button fullWidth onClick={handleClose}>
+            Close
+          </Button>
+        )}
+      </div>
+    </div>
+  )
+}
 
 type DetailSubstrateProps = {
   substrateTxId: string
@@ -139,7 +147,7 @@ const DetailEvm = (props: DetailEvmProps) => {
   )
 }
 
-type DetailProps = {
+type TransactionProgressProps = {
   substrateTxId?: string
   evmNetworkId?: number
   evmTxHash?: string
@@ -147,13 +155,13 @@ type DetailProps = {
   className?: string
 }
 
-const Detail = ({
+export const TransactionProgress: FC<TransactionProgressProps> = ({
   substrateTxId,
   evmNetworkId,
   evmTxHash,
   handleClose,
   className,
-}: DetailProps) => {
+}) => {
   if (substrateTxId)
     return (
       <DetailSubstrate
@@ -175,5 +183,3 @@ const Detail = ({
 
   return null
 }
-
-export default Detail
