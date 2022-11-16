@@ -3,7 +3,7 @@ import { classNames } from "@talisman/util/classNames"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useFeatureFlag, useFeatureVariantEquals } from "@ui/hooks/useFeatures"
+import { useFeatureVariantEquals, useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -64,7 +64,7 @@ export const BottomNav = () => {
     window.close()
   }, [])
 
-  const showTxHistory = useFeatureFlag("LINK_TX_HISTORY")
+  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
   const handleTxHistoryClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,

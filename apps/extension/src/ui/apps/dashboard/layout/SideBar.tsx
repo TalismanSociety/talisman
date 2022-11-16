@@ -25,7 +25,7 @@ import Build from "@ui/domains/Build"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useFeatureFlag, useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
@@ -274,7 +274,7 @@ export const SideBar = () => {
     return false
   }, [genericEvent])
 
-  const showTxHistory = useFeatureFlag("LINK_TX_HISTORY")
+  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
   const handleTxHistoryClick = useCallback(() => {
     genericEvent("open web app tx history", { from: "sidebar" })
     window.open(getTransactionHistoryUrl(account?.address), "_blank")

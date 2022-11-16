@@ -17,7 +17,7 @@ import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useFeatureFlag } from "@ui/hooks/useFeatures"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import React, { useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
@@ -50,7 +50,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
     genericEvent("open copy address", { from: "popup portfolio" })
   }, [account, genericEvent, openAddressFormatterModal])
 
-  const showTxHistory = useFeatureFlag("LINK_TX_HISTORY")
+  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
   const browseTxHistory = useCallback(() => {
     genericEvent("open web app tx history", { from: "popup portfolio" })
     window.open(getTransactionHistoryUrl(account?.address), "_blank")
