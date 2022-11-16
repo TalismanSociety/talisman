@@ -3,11 +3,11 @@ import { FC, useMemo } from "react"
 import { dump as convertToYaml } from "js-yaml"
 import { isHexString, stripHexPrefix } from "@ethereumjs/util"
 import * as Sentry from "@sentry/browser"
-import { Message } from "@ui/apps/popup/pages/Sign/common"
 import { EthSignRequest } from "@core/domains/signing/types"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { log } from "@core/log"
+import { Message } from "@ui/domains/Sign/Message"
 
 const useEthSignMessage = (request: EthSignRequest) => {
   const { isTypedData, typedMessage, verifyingAddress, chainId } = useMemo(() => {
@@ -76,7 +76,7 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
           </div>
         )}
       </div>
-      <Message className="w-full grow" readOnly defaultValue={text} typed={isTypedData} />
+      <Message className="w-full grow" readOnly defaultValue={text} smallText={isTypedData} />
     </div>
   )
 }

@@ -106,7 +106,6 @@ export type EthTransactionDetails = {
   estimatedFee: BigNumberish
   maxFee: BigNumberish
   baseFeePerGas?: BigNumberish
-  gasUsedRatio?: number
   priorityOptions?: EthPriorityOptions
 }
 

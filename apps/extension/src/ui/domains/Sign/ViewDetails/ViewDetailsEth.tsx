@@ -14,6 +14,7 @@ import { FC, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { PillButton } from "talisman-ui"
 import { formatDecimals } from "talisman-utils"
+import { Message } from "../Message"
 
 import { useEthSignTransactionRequest } from "../SignRequestContext"
 import { ViewDetailsField } from "./ViewDetailsField"
@@ -97,8 +98,16 @@ const formatGwei = (value?: BigNumberish) => {
 }
 
 const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
-  const { request, network, txDetails, priority, transaction, transactionInfo } =
-    useEthSignTransactionRequest()
+  const {
+    request,
+    network,
+    networkUsage,
+    txDetails,
+    priority,
+    transaction,
+    transactionInfo,
+    error,
+  } = useEthSignTransactionRequest()
   const { genericEvent } = useAnalytics()
 
   const txInfo = useMemo(() => {
@@ -130,13 +139,14 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     [nativeToken, txDetails]
   )
 
-  if (!transaction || !txDetails || !nativeToken) return null
-
   return (
     <ViewDetailsContainer>
       <div className="grow">
         <div className="title">Details</div>
         {/* TODO explain what the method does */}
+        <ViewDetailsField label="Network">
+          {network ? `${network.name} (${network.id})` : null}
+        </ViewDetailsField>
         <ViewDetailsField label="Contract Type">{txInfo?.contractType ?? "N/A"}</ViewDetailsField>
         <ViewDetailsField label="Method">{txInfo?.contractCall?.name ?? "N/A"}</ViewDetailsField>
         <ViewDetailsField label="From" breakAll>
@@ -148,22 +158,20 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         <ViewDetailsField label="Value to be transferred" breakAll>
           {formatEthValue(request.value)}
         </ViewDetailsField>
-        <ViewDetailsField label="Network">
-          {network ? `${network.name} (${network.id})` : null}
-        </ViewDetailsField>
+
         <ViewDetailsField label="Network usage">
-          {Math.round((txDetails?.gasUsedRatio ?? 0) * 100)}%
+          {networkUsage ? `${Math.round(networkUsage * 100)}%` : "N/A"}
         </ViewDetailsField>
         <ViewDetailsField label="Estimated gas units">
-          {BigNumber.from(txDetails.estimatedGas).toNumber() || "N/A"}
+          {txDetails?.estimatedGas ? BigNumber.from(txDetails?.estimatedGas).toNumber() : "N/A"}
         </ViewDetailsField>
-        {/* <ViewDetailsField label="Gas Limit">
-          {BigNumber.from(transaction.gasLimit)?.toNumber() || null} gas
-        </ViewDetailsField> */}
+        <ViewDetailsField label="Gas Limit">
+          {transaction?.gasLimit ? BigNumber.from(transaction.gasLimit)?.toNumber() : "N/A" || null}
+        </ViewDetailsField>
         {transaction?.type === 2 ? (
           <>
             <ViewDetailsField label="Base fee per gas">
-              {txDetails.baseFeePerGas ? formatGwei(txDetails.baseFeePerGas) : "N/A"}
+              {txDetails?.baseFeePerGas ? formatGwei(txDetails.baseFeePerGas) : "N/A"}
             </ViewDetailsField>
             <ViewDetailsField label={`Max priority fee per gas (${priority} priority)`}>
               {transaction.maxPriorityFeePerGas
@@ -177,16 +185,20 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         ) : (
           <>
             <ViewDetailsField label="Gas price">
-              {transaction.gasPrice ? formatGwei(transaction.gasPrice) : "N/A"}
+              {transaction?.gasPrice ? formatGwei(transaction.gasPrice) : "N/A"}
             </ViewDetailsField>
           </>
         )}
         <ViewDetailsField label="Total Fee Estimate">
-          <Tokens
-            amount={estimatedFee?.tokens}
-            decimals={nativeToken?.decimals}
-            symbol={nativeToken?.symbol}
-          />
+          {estimatedFee?.tokens ? (
+            <Tokens
+              amount={estimatedFee?.tokens}
+              decimals={nativeToken?.decimals}
+              symbol={nativeToken?.symbol}
+            />
+          ) : (
+            "N/A"
+          )}
           {estimatedFee && nativeToken?.rates ? (
             <>
               {" "}
@@ -194,6 +206,17 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
             </>
           ) : null}
         </ViewDetailsField>
+        <ViewDetailsField label="Error" error={error} />
+        {request.data && (
+          <ViewDetailsField label="Byte code">
+            <Message
+              readOnly
+              rows={6}
+              className="w-full rounded-sm"
+              value={request.data?.toString()}
+            />
+          </ViewDetailsField>
+        )}
       </div>
       <Button onClick={onClose}>Close</Button>
     </ViewDetailsContainer>
@@ -202,14 +225,13 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
 
 export const ViewDetailsEth = () => {
   const { isOpen, open, close } = useOpenClose()
-  const { error, isLoading } = useEthSignTransactionRequest()
+  const { isLoading } = useEthSignTransactionRequest()
 
   return (
     <>
       <PillButton size="sm" onClick={open}>
         View Details
       </PillButton>
-      {/* <ViewDetailsButton hide={isOpen} isAnalysing={isLoading} hasError={!!error} /> */}
       <Drawer anchor="bottom" open={isOpen && !isLoading} onClose={close}>
         <ViewDetailsContent onClose={close} />
       </Drawer>

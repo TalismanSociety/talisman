@@ -227,7 +227,7 @@ export const useEthTransaction = (
 
   const {
     gasPrice,
-    gasUsedRatio,
+    gasUsedRatio: networkUsage,
     baseFeePerGas,
     blockGasLimit,
     feeHistoryAnalysis,
@@ -306,7 +306,6 @@ export const useEthTransaction = (
         baseFeePerGas,
         estimatedFee,
         maxFee,
-        gasUsedRatio,
         priorityOptions,
       }
     }
@@ -324,20 +323,12 @@ export const useEthTransaction = (
         baseFeePerGas: baseFeePerGas ?? undefined,
         estimatedFee,
         maxFee,
-        gasUsedRatio,
         priorityOptions,
       }
     }
 
     return undefined
-  }, [
-    baseFeePerGas,
-    estimatedGas,
-    feeHistoryAnalysis?.options,
-    gasPrice,
-    gasUsedRatio,
-    transaction,
-  ])
+  }, [baseFeePerGas, estimatedGas, feeHistoryAnalysis?.options, gasPrice, transaction])
 
   const error = useMemo(
     () =>
@@ -354,19 +345,15 @@ export const useEthTransaction = (
     [tx, transactionInfo, txDetails, error]
   )
 
-  const result = useMemo(
-    () => ({
-      transactionInfo,
-      transaction,
-      txDetails,
-      gasSettings,
-      priority,
-      setPriority,
-      isLoading,
-      error,
-    }),
-    [transactionInfo, transaction, txDetails, gasSettings, priority, isLoading, error]
-  )
-
-  return result
+  return {
+    transactionInfo,
+    transaction,
+    txDetails,
+    gasSettings,
+    priority,
+    setPriority,
+    isLoading,
+    error,
+    networkUsage,
+  }
 }

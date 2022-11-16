@@ -2,13 +2,14 @@ import { BalanceFormatter } from "@core/domains/balances"
 import { getTokenLogoUrl } from "@ui/domains/Asset/TokenLogo"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
+import { ethers } from "ethers"
 import { FC, useMemo } from "react"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { EthSignContainer } from "./shared/EthSignContainer"
 import { SignParamTokensDisplay } from "./shared/SignParamTokensDisplay"
 
 export const EthSignBodyDefault: FC = () => {
-  const { network, transaction, transactionInfo } = useEthSignTransactionRequest()
+  const { network, transactionInfo, txDetails, request } = useEthSignTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
 
@@ -22,13 +23,14 @@ export const EthSignBodyDefault: FC = () => {
       : null
   }, [nativeToken, transactionInfo?.value])
 
-  if (!transactionInfo) return null
+  const { from, to } = useMemo(
+    () => request as Required<ethers.providers.TransactionRequest>,
+    [request]
+  )
 
-  // TODO : assert the ones below ?
+  if (!transactionInfo) return null
   if (!network) return null
   if (!nativeToken) return null
-  if (!transaction?.from) return null
-  if (!transaction?.to) return null
 
   return (
     <EthSignContainer title="Transaction Request">
@@ -47,18 +49,14 @@ export const EthSignBodyDefault: FC = () => {
           </div>
           <div className="flex">
             <span>from </span>
-            <SignParamAccountButton address={transaction.from} withIcon />
+            <SignParamAccountButton address={from} withIcon />
           </div>
           <div className="flex">
             <span>to {transactionInfo.isContractCall ? "contract" : "account"} </span>
             {transactionInfo.isContractCall ? (
-              <SignParamNetworkAddressButton network={network} address={transaction.to} />
+              <SignParamNetworkAddressButton network={network} address={to} />
             ) : (
-              <SignParamAccountButton
-                explorerUrl={network.explorerUrl}
-                address={transaction.to}
-                withIcon
-              />
+              <SignParamAccountButton explorerUrl={network.explorerUrl} address={to} withIcon />
             )}
           </div>
         </>
@@ -67,11 +65,11 @@ export const EthSignBodyDefault: FC = () => {
           <div>You are submitting a transaction</div>
           <div className="flex">
             <span>with</span>
-            <SignParamAccountButton address={transaction.from} withIcon />
+            <SignParamAccountButton address={from} withIcon />
           </div>
           <div className="flex">
             <span>on contract</span>
-            <SignParamNetworkAddressButton network={network} address={transaction.to} />
+            <SignParamNetworkAddressButton network={network} address={to} />
           </div>
         </>
       )}

@@ -1,5 +1,4 @@
 import { FC, useMemo } from "react"
-import { EthSignBodyDefault } from "./EthSignBodyDefault"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
