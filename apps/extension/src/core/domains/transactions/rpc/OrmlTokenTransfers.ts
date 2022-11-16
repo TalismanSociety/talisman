@@ -9,6 +9,7 @@ import RpcFactory from "@core/libs/RpcFactory"
 import { SubscriptionCallback } from "@core/types"
 import { Address } from "@core/types/base"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
+import { getExtrinsicDispatchInfo } from "@core/util/getExtrinsicDispatchInfo"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
@@ -105,7 +106,7 @@ export default class OrmlTokenTransfersRpc {
       false
     )
 
-    const { partialFee } = await RpcFactory.send(chainId, "payment_queryInfo", [tx.toHex()])
+    const { partialFee } = await getExtrinsicDispatchInfo(chainId, tx)
 
     return { partialFee, pendingTransferId, unsigned }
   }

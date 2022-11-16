@@ -9,6 +9,7 @@ import RpcFactory from "@core/libs/RpcFactory"
 import { log } from "@core/log"
 import { assert, hexToNumber } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
+import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 import { getRuntimeVersion } from "./getRuntimeVersion"
 import { getTypeRegistry } from "./getTypeRegistry"
 
@@ -80,7 +81,9 @@ export const getTransactionDetails = async (payload: SignerPayloadJSON) => {
         3
       )
 
-      result.partialFee = payment.partialFee
+      const { partialFee } = await getExtrinsicDispatchInfo(chain.id, extrinsic)
+
+      result.partialFee = partialFee
     } catch (err) {
       log.error("Failed to fetch fee", { err })
       Sentry.captureException(err)
