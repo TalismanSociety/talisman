@@ -18,7 +18,6 @@ export type AuthRequestAddresses = AuthRequestAddress[]
 export type AuthRequestApprove = {
   id: string
   addresses: AuthRequestAddresses
-  ethChainId?: number
 }
 
 export interface AuthRequestBase {
@@ -28,7 +27,7 @@ export interface AuthRequestBase {
   url: string
 }
 
-export type AuthRequestResponse = { addresses: AuthRequestAddresses; ethChainId?: number }
+export type AuthRequestResponse = { addresses: AuthRequestAddresses }
 export type AuthRequest = Resolver<AuthRequestResponse> & AuthRequestBase
 
 // authorized site types ----------------------------------

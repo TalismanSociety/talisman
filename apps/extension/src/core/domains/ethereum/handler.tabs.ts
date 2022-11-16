@@ -572,7 +572,6 @@ export class EthTabsHandler extends TabsHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pub(eth.subscribe)":
-        // TODO unsubscribe
         return this.ethSubscribe(id, url, port)
 
       case "pub(eth.request)":

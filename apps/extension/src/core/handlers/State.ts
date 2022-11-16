@@ -11,6 +11,7 @@ import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sites
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
 import { sleep } from "@core/util/sleep"
 import Browser from "webextension-polyfill"
+import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 
 const WINDOW_OPTS: Browser.Windows.CreateCreateDataType = {
   // This is not allowed on FF, only on Chrome - disable completely
@@ -35,7 +36,7 @@ export default class State {
       () => this.popupOpen(),
       async (request, response) => {
         if (!response) return
-        const { addresses = [], ethChainId } = response
+        const { addresses = [] } = response
         const {
           idStr,
           request: { origin, ethereum },
@@ -50,7 +51,10 @@ export default class State {
 
         if (ethereum) {
           siteAuth.ethAddresses = addresses
-          siteAuth.ethChainId = ethChainId
+
+          // set a default value for ethChainId only if empty
+          // some sites switch the network before requesting auth, ex nova.arbiscan.io
+          if (!siteAuth.ethChainId) siteAuth.ethChainId = DEFAULT_ETH_CHAIN_ID
         } else siteAuth.addresses = addresses
 
         await sitesAuthorisationStore.set({
