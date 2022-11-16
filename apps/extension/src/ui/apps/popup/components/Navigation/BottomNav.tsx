@@ -123,7 +123,7 @@ export const BottomNav = () => {
           <NavIconExpand />
         </BottomNavButton>
       </WithTooltip>
-      <WithTooltip as="div" tooltip={showTooltip && "More Options"}>
+      <WithTooltip as="div" tooltip={showTooltip && "More Options"} noWrap>
         <BottomNavButton onClick={handleMoreClick}>
           <NavIconMore />
         </BottomNavButton>
