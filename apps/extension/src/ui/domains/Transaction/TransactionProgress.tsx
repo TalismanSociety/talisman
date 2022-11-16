@@ -1,73 +1,106 @@
 import { TransactionStatus } from "@core/domains/transactions/types"
+import { IconButton } from "@talisman/components/IconButton"
+import { XIcon } from "@talisman/theme/icons"
 import Link from "@ui/domains/Transaction/Link"
 import useChain from "@ui/hooks/useChain"
 import { useEvmTransactionWatch } from "@ui/hooks/useEvmTransactionWatch"
 import useTransactionById from "@ui/hooks/useTransactionById"
 import { FC, useCallback, useMemo } from "react"
-import { Button, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
+import { Button, classNames, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 
-type DetailsDisplayProps = {
-  className?: string
-  blockHash?: string
-  blockNumber?: string
-  status: TransactionStatus
-  message?: string
-  handleClose?: () => void
-  href?: string
-}
-
-type StatusDetails = {
-  title: string
-  subtitle: string
-  animStatus: ProcessAnimationStatus
-}
-
-const getStatusDetails = (status: TransactionStatus): StatusDetails => {
+const getAnimStatus = (status: TransactionStatus): ProcessAnimationStatus => {
   switch (status) {
     case "ERROR":
-      return {
-        title: "Failure",
-        subtitle: "Transaction was not found",
-        animStatus: "failure",
-      }
+      return "failure"
     case "SUCCESS":
-      return {
-        title: "Success",
-        subtitle: "Your transaction was successful",
-        animStatus: "success",
-      }
+      return "success"
     case "PENDING":
-    default:
-      return {
-        title: "Transaction in progress",
-        subtitle: "This may take a few minutes",
-        animStatus: "processing",
-      }
+      return "processing"
   }
 }
 
-export const DetailDisplay = ({
-  status,
-  message,
-  blockHash,
-  blockNumber,
-  href,
-  handleClose,
-  className,
-}: DetailsDisplayProps) => {
-  const { title, subtitle, animStatus } = useMemo(() => getStatusDetails(status), [status])
-
+const useStatusDetails = (
+  status: TransactionStatus,
+  blockHash?: string,
+  href?: string,
+  handleClose?: () => void
+) => {
   const handleViewTx = useCallback(() => {
     window.open(href, "_blank")
     handleClose?.()
   }, [handleClose, href])
 
-  const showLink = status === "PENDING" && blockHash
-  const showViewTx = status === "SUCCESS" && href
-  const showClose = status !== "PENDING" && !showViewTx
+  const { title, subtitle } = useMemo(() => {
+    switch (status) {
+      case "ERROR":
+        return {
+          title: "Failure",
+          subtitle: "Transaction was not found",
+        }
+      case "SUCCESS":
+        return {
+          title: "Success",
+          subtitle: "Your transaction was successful",
+        }
+      case "PENDING":
+      default:
+        return {
+          title: "Transaction in progress",
+          subtitle: "This may take a few minutes",
+        }
+    }
+  }, [status])
+
+  const { canClose, animStatus, showLink, showClose, showViewTx } = useMemo(() => {
+    const canClose = status !== "PENDING"
+    const showViewTx = status === "SUCCESS" && !!href
+    return {
+      canClose,
+      animStatus: getAnimStatus(status),
+      showLink: status === "PENDING" && !!blockHash,
+      showClose: canClose && !showViewTx,
+      showViewTx,
+    }
+  }, [blockHash, href, status])
+
+  return {
+    title,
+    subtitle,
+    animStatus,
+    handleViewTx,
+    showLink,
+    showViewTx,
+    canClose,
+    showClose,
+  }
+}
+
+type TransactionProgressBaseProps = {
+  className?: string
+  blockHash?: string
+  blockNumber?: string
+  status: TransactionStatus
+  handleClose?: () => void
+  href?: string
+}
+
+const TransactionProgressBase: FC<TransactionProgressBaseProps> = ({
+  status,
+  blockHash,
+  blockNumber,
+  href,
+  handleClose,
+}) => {
+  const { title, subtitle, animStatus, canClose, showClose, showLink, showViewTx, handleViewTx } =
+    useStatusDetails(status, blockHash, href, handleClose)
 
   return (
-    <div className=" flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col">
+      <div className={classNames("flex w-full justify-end", canClose ? "visible" : "invisible")}>
+        <IconButton onClick={handleClose}>
+          <XIcon />
+        </IconButton>
+      </div>
       <div className="text-body my-12 text-lg font-bold">{title}</div>
       <div className="text-body-secondary text-base font-light">{subtitle}</div>
       <div className="flex grow flex-col justify-center">
@@ -92,14 +125,14 @@ export const DetailDisplay = ({
   )
 }
 
-type DetailSubstrateProps = {
+type TransactionProgressSubstrateProps = {
   substrateTxId: string
   handleClose?: () => void
   className?: string
 }
 
-const DetailSubstrate = (props: DetailSubstrateProps) => {
-  const { chainId, blockHash, blockNumber, extrinsicIndex, message, status } = useTransactionById(
+const TransactionProgressSubstrate: FC<TransactionProgressSubstrateProps> = (props) => {
+  const { chainId, blockHash, blockNumber, extrinsicIndex, status } = useTransactionById(
     props.substrateTxId
   )
   const { subscanUrl } = useChain(chainId) || {}
@@ -111,10 +144,9 @@ const DetailSubstrate = (props: DetailSubstrateProps) => {
   }, [blockHash, blockNumber, extrinsicIndex, subscanUrl])
 
   return (
-    <DetailDisplay
+    <TransactionProgressBase
       {...props}
       status={status}
-      message={message}
       blockHash={blockHash}
       blockNumber={blockNumber}
       href={href}
@@ -122,24 +154,23 @@ const DetailSubstrate = (props: DetailSubstrateProps) => {
   )
 }
 
-type DetailEvmProps = {
+type TransactionProgressEvmProps = {
   evmNetworkId: number
   evmTxHash: string
   handleClose?: () => void
   className?: string
 }
 
-const DetailEvm = (props: DetailEvmProps) => {
-  const { blockHash, blockNumber, message, status, href } = useEvmTransactionWatch(
+const TransactionProgressEvm: FC<TransactionProgressEvmProps> = (props) => {
+  const { blockHash, blockNumber, status, href } = useEvmTransactionWatch(
     props.evmNetworkId,
     props.evmTxHash
   )
 
   return (
-    <DetailDisplay
+    <TransactionProgressBase
       {...props}
       status={status}
-      message={message}
       blockHash={blockHash}
       blockNumber={blockNumber}
       href={href}
@@ -164,7 +195,7 @@ export const TransactionProgress: FC<TransactionProgressProps> = ({
 }) => {
   if (substrateTxId)
     return (
-      <DetailSubstrate
+      <TransactionProgressSubstrate
         substrateTxId={substrateTxId}
         handleClose={handleClose}
         className={className}
@@ -173,7 +204,7 @@ export const TransactionProgress: FC<TransactionProgressProps> = ({
 
   if (evmNetworkId && evmTxHash)
     return (
-      <DetailEvm
+      <TransactionProgressEvm
         evmNetworkId={evmNetworkId}
         evmTxHash={evmTxHash}
         handleClose={handleClose}

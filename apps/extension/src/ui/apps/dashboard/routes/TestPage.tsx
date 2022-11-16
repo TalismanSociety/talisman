@@ -1,11 +1,9 @@
-import StytledHeaderBlock from "@talisman/components/HeaderBlock"
+import HeaderBlock from "@talisman/components/HeaderBlock"
 import { classNames } from "@talisman/util/classNames"
 import Color from "color"
 import { useEffect, useMemo, useRef, useState } from "react"
 import Layout from "../layout"
 import { Button, Checkbox } from "talisman-ui"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 
 const ColorTile = ({ className }: { className?: string }) => {
   const [color, setColor] = useState<Color>()
@@ -126,13 +124,8 @@ const Colors = () => (
 export const TestPage = () => {
   return (
     <Layout withBack backTo="/">
-      <StytledHeaderBlock title="Test page" />
+      <HeaderBlock title="Test page" />
       {/* <Colors /> */}
-      {/* <Modal open>
-        <ModalDialog>
-          <DetailDisplay status="PENDING" />
-        </ModalDialog>
-      </Modal> */}
     </Layout>
   )
 }
