@@ -89,7 +89,7 @@ export const getMetadataDef = async (
     // fetch the metadata from the chain
     const [metadataRpc, chainProperties] = await Promise.all([
       RpcFactory.send<HexString>(chain.id, "state_getMetadata", [blockHash], !!blockHash),
-      RpcFactory.send(chain.id, "system_properties", [blockHash], !!blockHash),
+      RpcFactory.send(chain.id, "system_properties", [], true),
     ])
 
     assert(!specVersion || specVersion === runtimeSpecVersion, "specVersion mismatch")
