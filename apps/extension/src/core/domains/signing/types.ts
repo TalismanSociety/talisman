@@ -65,23 +65,34 @@ export type AnySigningRequest = SigningRequest | AnyEthSigningRequest
 
 export type EthResponseSign = string
 
-export type TransactionMethodDetails = {
+export type TransactionMethod = {
   section: string
   method: string
-  args: Record<string, any>
-  meta: {
-    name: string
-    fields: any[]
-    index: string
-    docs: string[]
-    args: any[]
+  docs: string[]
+  args: any
+}
+
+export type TransactionPayload = {
+  blockHash: string
+  era: {
+    MortalEra?: {
+      period: string
+      phase: string
+    }
+    ImmortalEra?: any
   }
+  genesisHash: string
+  method: string
+  nonce: string
+  specVersion: string
+  tip: string
+  transactionVersion?: string
 }
 
 export type TransactionDetails = {
-  method: TransactionMethodDetails
-  batch?: TransactionMethodDetails[]
-  payment: { class: string; partialFee: string; weight: number }
+  payload?: TransactionPayload
+  method?: TransactionMethod
+  partialFee?: string
 }
 
 // eth fees types ----------------------------------
@@ -103,7 +114,7 @@ export interface SigningMessages {
   // signing message signatures
   "pri(signing.approveSign)": [RequestIdOnly, boolean]
   "pri(signing.approveSign.hardware)": [RequestSigningApproveSignature, boolean]
-  "pri(signing.decode)": [RequestIdOnly, TransactionDetails | null]
+  "pri(signing.details)": [RequestIdOnly, TransactionDetails]
   "pri(signing.requests)": [RequestSigningSubscribe, boolean, AnySigningRequest[]]
   "pri(signing.byid.subscribe)": [RequestIdOnly, boolean, AnySigningRequest]
 }

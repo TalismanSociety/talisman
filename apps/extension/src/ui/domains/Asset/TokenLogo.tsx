@@ -1,4 +1,5 @@
 import { Token } from "@core/domains/tokens/types"
+import { log } from "@core/log"
 import genericTokenSvgIcon from "@talisman/theme/icons/custom-token-generic.svg?url"
 import useToken from "@ui/hooks/useToken"
 import { CSSProperties, useEffect, useMemo, useState } from "react"
@@ -30,7 +31,6 @@ const getChainLogoUrl = (chainId?: string | number) => {
 }
 
 const getTokenLogoUrl = (token?: Token) => {
-  // TODO better typing
   if (token?.type === "erc20") {
     const { isCustom, image } = token as { isCustom?: boolean; image?: string }
     return image ?? (isCustom ? null : getChainLogoUrl(token?.evmNetwork?.id))
@@ -54,8 +54,15 @@ export const TokenLogo = ({ tokenId, className }: TokenLogoProps) => {
 
     if (!tokenLogoUrlCache.has(token.id)) {
       const tokenLogoUrl = getTokenLogoUrl(token)
-      const url = tokenLogoUrl?.startsWith("data:") ? getBase64ImageUrl(tokenLogoUrl) : tokenLogoUrl
-      tokenLogoUrlCache.set(token.id, url)
+      try {
+        const url = tokenLogoUrl?.startsWith("data:")
+          ? getBase64ImageUrl(tokenLogoUrl)
+          : tokenLogoUrl
+        tokenLogoUrlCache.set(token.id, url)
+      } catch (err) {
+        tokenLogoUrlCache.set(token.id, genericTokenIconUrl)
+        log.log("Failed to load token for %s", token.id)
+      }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

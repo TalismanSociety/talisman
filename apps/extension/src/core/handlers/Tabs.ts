@@ -300,12 +300,12 @@ export default class Tabs extends TabsHandler {
     if (type !== "pub(authorize.tab)") {
       await this.stores.sites.ensureUrlAuthorized(url, false)
     } else {
-      return await this.authorize(url, request as RequestAuthorizeTab)
+      return this.authorize(url, request as RequestAuthorizeTab)
     }
 
     switch (type) {
       case "pub(accounts.list)":
-        return await this.accountsList(url, request as RequestAccountList)
+        return this.accountsList(url, request as RequestAccountList)
 
       case "pub(accounts.subscribe)":
         return this.accountsSubscribe(url, id, port)
@@ -327,7 +327,7 @@ export default class Tabs extends TabsHandler {
         return this.extrinsicSign(url, request as SignerPayloadJSON)
 
       case "pub(metadata.list)":
-        return await this.metadataList()
+        return this.metadataList()
 
       case "pub(metadata.provide)":
         return this.metadataProvide(url, request as MetadataDef)

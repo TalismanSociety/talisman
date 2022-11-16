@@ -6,6 +6,7 @@ import {
   TransactionDetails,
 } from "@core/domains/signing/types"
 import { encodeAnyAddress } from "@core/util"
+import isJsonPayload from "@core/util/isJsonPayload"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -18,7 +19,7 @@ import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAmount } from "./ViewDetailsAmount"
 import { ViewDetailsButton } from "./ViewDetailsButton"
 import { ViewDetailsField } from "./ViewDetailsField"
-import { ViewDetailsTxArgs } from "./ViewDetailsTxArgs"
+import { ViewDetailsTxObject } from "./ViewDetailsTxObject"
 import { ViewDetailsTxDesc } from "./ViewDetailsTxDesc"
 
 const ViewDetailsContainer = styled.div`
@@ -79,35 +80,51 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   const { request, account, chain } = usePolkadotSigningRequest(signingRequest)
   const nativeToken = useToken(chain?.nativeToken?.id)
 
+  const isTransaction = isJsonPayload(request?.payload)
+
   const { data, type } = (request?.payload || {}) as SignerPayloadRaw
   const { tip: tipRaw } = (request?.payload || {}) as SignerPayloadJSON
 
-  const { accountAddress, fees, feesError, tip, methodName } = useMemo(() => {
-    if (!txDetails || !chain || !account) return {}
+  const tip = useMemo(
+    () =>
+      nativeToken && tipRaw
+        ? new BalanceFormatter(tipRaw, nativeToken?.decimals, nativeToken?.rates)
+        : undefined,
+    [nativeToken, tipRaw]
+  )
 
-    const fees = new BalanceFormatter(
-      txDetails.payment?.partialFee ?? 0,
-      nativeToken?.decimals,
-      nativeToken?.rates
-    )
-    const feesError = txDetails.payment ? "" : "Failed to compute fees."
+  const accountAddress = useMemo(
+    () =>
+      account
+        ? `${encodeAnyAddress(account.address, chain?.prefix ?? undefined)} (${account.name})`
+        : undefined,
+    [account, chain?.prefix]
+  )
 
-    const tip = new BalanceFormatter(tipRaw ?? "0", nativeToken?.decimals, nativeToken?.rates)
+  const { fee, feeError, decodeError, methodName, args } = useMemo(() => {
+    if (!txDetails) return {}
 
-    const accountAddress = `${encodeAnyAddress(account.address, chain.prefix ?? undefined)} (${
-      account.name
-    })`
+    const feeError = txDetails.partialFee ? "" : "Failed to compute fee."
+    const decodeError = txDetails.method ? "" : "Failed to decode method."
 
-    const methodName = `${txDetails.method.section} : ${txDetails.method.method}`
+    const fee = txDetails.partialFee
+      ? new BalanceFormatter(txDetails.partialFee, nativeToken?.decimals, nativeToken?.rates)
+      : undefined
 
-    return {
-      accountAddress,
-      fees,
-      feesError,
-      tip,
-      methodName,
-    }
-  }, [account, chain, nativeToken, tipRaw, txDetails])
+    const methodName = txDetails.method
+      ? `${txDetails.method.section} : ${txDetails.method.method}`
+      : "unknown"
+
+    // safe deep copy
+    const args = txDetails.method?.args
+      ? JSON.parse(JSON.stringify(txDetails.method.args))
+      : undefined
+    args?.calls?.forEach?.((call: any) => {
+      delete call.docs
+    })
+
+    return { fee, feeError, decodeError, methodName, args }
+  }, [nativeToken?.decimals, nativeToken?.rates, txDetails])
 
   useEffect(() => {
     genericEvent("open sign transaction view details", { type: "substrate" })
@@ -120,25 +137,32 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
         <ViewDetailsField label="From" breakAll>
           {accountAddress}
         </ViewDetailsField>
-        <ViewDetailsField label="Network">{chain?.name}</ViewDetailsField>
-        <ViewDetailsAmount label="Fees" error={feesError} amount={fees} token={nativeToken} />
-        <ViewDetailsAmount label="Tip" amount={tip} token={nativeToken} />
-        <ViewDetailsField label="Method">{methodName}</ViewDetailsField>
-        <ViewDetailsTxDesc label="Description" tx={txDetails} />
-        <ViewDetailsTxArgs label="Arguments" args={txDetails?.method.args} />
-        <ViewDetailsField label="Type">{type}</ViewDetailsField>
-        <ViewDetailsField label="Data">
-          {data && (
-            <div className="mt-2 pr-2">
-              <pre className="text-body-secondary scrollable scrollable-700 bg-black-secondary rounded-xs w-full overflow-x-auto p-4">
-                {data}
-              </pre>
-            </div>
-          )}
-        </ViewDetailsField>
-        <ViewDetailsField label="Decoding error">
-          {txDetailsError && <span className="error">{txDetailsError}</span>}
-        </ViewDetailsField>
+
+        {isTransaction ? (
+          <>
+            <ViewDetailsField label="Network">{chain?.name ?? "Unknown"}</ViewDetailsField>
+            <ViewDetailsAmount label="Fees" error={feeError} amount={fee} token={nativeToken} />
+            <ViewDetailsAmount label="Tip" amount={tip} token={nativeToken} />
+            <ViewDetailsField label="Decoding error" error={txDetailsError ?? decodeError} />
+            <ViewDetailsField label="Method">{methodName}</ViewDetailsField>
+            <ViewDetailsTxDesc label="Description" method={txDetails?.method} />
+            <ViewDetailsTxObject label="Arguments" obj={args} />
+            <ViewDetailsTxObject label="Payload" obj={txDetails?.payload} />
+          </>
+        ) : (
+          <>
+            <ViewDetailsField label="Type">{type}</ViewDetailsField>
+            <ViewDetailsField label="Data">
+              {data && (
+                <div className="mt-2 pr-2">
+                  <pre className="text-body-secondary scrollable scrollable-700 bg-black-secondary rounded-xs w-full overflow-x-auto p-4">
+                    {data}
+                  </pre>
+                </div>
+              )}
+            </ViewDetailsField>
+          </>
+        )}
       </div>
       <Button onClick={onClose}>Close</Button>
     </ViewDetailsContainer>

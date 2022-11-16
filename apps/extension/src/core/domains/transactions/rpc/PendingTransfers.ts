@@ -3,7 +3,7 @@ import RpcFactory from "@core/libs/RpcFactory"
 import { SubscriptionCallback } from "@core/types"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import type { ExtrinsicStatus } from "@polkadot/types/interfaces"
-import { UnsignedTransaction } from "@substrate/txwrapper-polkadot"
+import { UnsignedTransaction } from "@substrate/txwrapper-core"
 
 type PendingTransferInfo = {
   chainId: ChainId
