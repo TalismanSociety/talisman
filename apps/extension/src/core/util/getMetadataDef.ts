@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { chaindataProvider } from "@core/domains/chaindata"
 import { MetadataDef } from "@core/inject/types"
 import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
@@ -58,7 +59,9 @@ export const getMetadataDef = async (
   blockHash?: string
 ): Promise<MetadataDef | undefined> => {
   let genesisHash = isHex(chainIdOrHash) ? chainIdOrHash : null
-  const chain = await (genesisHash ? db.chains.get({ genesisHash }) : db.chains.get(chainIdOrHash))
+  const chain = await (genesisHash
+    ? chaindataProvider.getChain({ genesisHash })
+    : chaindataProvider.getChain(chainIdOrHash))
   if (!genesisHash) genesisHash = chain?.genesisHash as HexString
 
   // throw if neither a known chainId or genesisHash
