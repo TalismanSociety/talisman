@@ -138,6 +138,17 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         : null,
     [nativeToken, txDetails]
   )
+  const maximumFee = useMemo(
+    () =>
+      txDetails && nativeToken
+        ? new BalanceFormatter(
+            BigNumber.from(txDetails?.maxFee).toString(),
+            nativeToken?.decimals,
+            nativeToken?.rates
+          )
+        : null,
+    [nativeToken, txDetails]
+  )
 
   return (
     <ViewDetailsContainer>
@@ -147,8 +158,11 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         <ViewDetailsField label="Network">
           {network ? `${network.name} (${network.id})` : null}
         </ViewDetailsField>
-        <ViewDetailsField label="Contract Type">{txInfo?.contractType ?? "N/A"}</ViewDetailsField>
-        <ViewDetailsField label="Method">{txInfo?.contractCall?.name ?? "N/A"}</ViewDetailsField>
+        <ViewDetailsField label="Contract type and method">
+          {txInfo?.contractType
+            ? `${txInfo?.contractType} : ${txInfo?.contractCall?.name ?? "N/A"}`
+            : "N/A"}
+        </ViewDetailsField>
         <ViewDetailsField label="From" breakAll>
           <Address address={request.from} />
         </ViewDetailsField>
@@ -158,53 +172,90 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         <ViewDetailsField label="Value to be transferred" breakAll>
           {formatEthValue(request.value)}
         </ViewDetailsField>
-
         <ViewDetailsField label="Network usage">
           {networkUsage ? `${Math.round(networkUsage * 100)}%` : "N/A"}
         </ViewDetailsField>
-        <ViewDetailsField label="Estimated gas units">
+        <ViewDetailsField label="Estimated gas">
           {txDetails?.estimatedGas ? BigNumber.from(txDetails?.estimatedGas).toNumber() : "N/A"}
         </ViewDetailsField>
-        <ViewDetailsField label="Gas Limit">
-          {transaction?.gasLimit ? BigNumber.from(transaction.gasLimit)?.toNumber() : "N/A" || null}
-        </ViewDetailsField>
-        {transaction?.type === 2 ? (
-          <>
-            <ViewDetailsField label="Base fee per gas">
-              {txDetails?.baseFeePerGas ? formatGwei(txDetails.baseFeePerGas) : "N/A"}
-            </ViewDetailsField>
-            <ViewDetailsField label={`Max priority fee per gas (${priority} priority)`}>
-              {transaction.maxPriorityFeePerGas
-                ? formatGwei(transaction.maxPriorityFeePerGas)
-                : "N/A"}
-            </ViewDetailsField>
-            <ViewDetailsField label={`Max fee per gas`}>
-              {transaction.maxFeePerGas ? formatGwei(transaction.maxFeePerGas) : "N/A"}
-            </ViewDetailsField>
-          </>
-        ) : (
-          <>
-            <ViewDetailsField label="Gas price">
-              {transaction?.gasPrice ? formatGwei(transaction.gasPrice) : "N/A"}
-            </ViewDetailsField>
-          </>
-        )}
-        <ViewDetailsField label="Total Fee Estimate">
-          {estimatedFee?.tokens ? (
-            <Tokens
-              amount={estimatedFee?.tokens}
-              decimals={nativeToken?.decimals}
-              symbol={nativeToken?.symbol}
-            />
+        <ViewDetailsField label="Gas settings">
+          {transaction ? (
+            <div className="grid-cols-keyvalue grid gap-x-8 whitespace-nowrap">
+              <div>Gas limit</div>
+              <div>
+                {transaction?.gasLimit ? BigNumber.from(transaction.gasLimit)?.toNumber() : "N/A"}
+              </div>
+              {transaction?.type === 2 ? (
+                <>
+                  <div>Base fee per gas</div>
+                  <div>
+                    {txDetails?.baseFeePerGas ? formatGwei(txDetails.baseFeePerGas) : "N/A"}
+                  </div>
+                  <div>Max priority fee per gas</div>
+                  <div>
+                    {transaction.maxPriorityFeePerGas
+                      ? formatGwei(transaction.maxPriorityFeePerGas)
+                      : "N/A"}
+                  </div>
+                  <div>Max fee per gas</div>
+                  <div>
+                    {transaction.maxFeePerGas ? formatGwei(transaction.maxFeePerGas) : "N/A"}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div>Gas price</div>
+                  <div>{transaction?.gasPrice ? formatGwei(transaction.gasPrice) : "N/A"}</div>
+                </>
+              )}
+            </div>
           ) : (
             "N/A"
           )}
-          {estimatedFee && nativeToken?.rates ? (
-            <>
-              {" "}
-              / <Fiat amount={estimatedFee?.fiat("usd")} noCountUp currency="usd" />
-            </>
-          ) : null}
+        </ViewDetailsField>
+        <ViewDetailsField label="Total Fee">
+          {transaction ? (
+            <div className="grid-cols-keyvalue grid gap-x-8 whitespace-nowrap">
+              <div>Estimated</div>
+              <div>
+                {estimatedFee?.tokens ? (
+                  <Tokens
+                    amount={estimatedFee?.tokens}
+                    decimals={nativeToken?.decimals}
+                    symbol={nativeToken?.symbol}
+                  />
+                ) : (
+                  "N/A"
+                )}
+                {estimatedFee && nativeToken?.rates ? (
+                  <>
+                    {" "}
+                    / <Fiat amount={estimatedFee?.fiat("usd")} noCountUp currency="usd" />
+                  </>
+                ) : null}
+              </div>
+              <div>Maximum</div>
+              <div>
+                {maximumFee?.tokens ? (
+                  <Tokens
+                    amount={maximumFee?.tokens}
+                    decimals={nativeToken?.decimals}
+                    symbol={nativeToken?.symbol}
+                  />
+                ) : (
+                  "N/A"
+                )}
+                {maximumFee && nativeToken?.rates ? (
+                  <>
+                    {" "}
+                    / <Fiat amount={maximumFee?.fiat("usd")} noCountUp currency="usd" />
+                  </>
+                ) : null}
+              </div>
+            </div>
+          ) : (
+            "N/A"
+          )}
         </ViewDetailsField>
         <ViewDetailsField label="Error" error={error} />
         {request.data && (
