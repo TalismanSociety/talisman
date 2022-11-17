@@ -127,26 +127,22 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     genericEvent("open sign transaction view details", { type: "ethereum" })
   }, [genericEvent])
 
-  const estimatedFee = useMemo(
+  const [estimatedFee, maximumFee] = useMemo(
     () =>
       txDetails && nativeToken
-        ? new BalanceFormatter(
-            BigNumber.from(txDetails?.estimatedFee).toString(),
-            nativeToken?.decimals,
-            nativeToken?.rates
-          )
-        : null,
-    [nativeToken, txDetails]
-  )
-  const maximumFee = useMemo(
-    () =>
-      txDetails && nativeToken
-        ? new BalanceFormatter(
-            BigNumber.from(txDetails?.maxFee).toString(),
-            nativeToken?.decimals,
-            nativeToken?.rates
-          )
-        : null,
+        ? [
+            new BalanceFormatter(
+              BigNumber.from(txDetails?.estimatedFee).toString(),
+              nativeToken?.decimals,
+              nativeToken?.rates
+            ),
+            new BalanceFormatter(
+              BigNumber.from(txDetails?.maxFee).toString(),
+              nativeToken?.decimals,
+              nativeToken?.rates
+            ),
+          ]
+        : [null, null],
     [nativeToken, txDetails]
   )
 
@@ -178,7 +174,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         <ViewDetailsField label="Estimated gas">
           {txDetails?.estimatedGas ? BigNumber.from(txDetails?.estimatedGas).toNumber() : "N/A"}
         </ViewDetailsField>
-        <ViewDetailsField label="Gas settings">
+        <ViewDetailsField label={"Gas settings"}>
           {transaction ? (
             <div className="grid-cols-keyvalue grid gap-x-8 whitespace-nowrap">
               <div>Gas limit</div>
@@ -191,6 +187,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                   <div>
                     {txDetails?.baseFeePerGas ? formatGwei(txDetails.baseFeePerGas) : "N/A"}
                   </div>
+                  <div>Priority</div>
+                  <div>{priority}</div>
                   <div>Max priority fee per gas</div>
                   <div>
                     {transaction.maxPriorityFeePerGas
