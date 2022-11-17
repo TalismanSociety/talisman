@@ -15,7 +15,7 @@ export const EthSignBodyErc721Approve: FC = () => {
   const txInfo = transactionInfo as KnownTransactionInfo
   const qMetadata = useQuery({
     queryKey: [txInfo.asset?.tokenURI],
-    queryFn: () => getNftMetadata(txInfo.asset?.tokenURI),
+    queryFn: () => getNftMetadata(txInfo.asset?.tokenURI, 96, 96),
   })
 
   const { operator, tokenId } = useMemo(() => {
@@ -56,7 +56,7 @@ export const EthSignBodyErc721Approve: FC = () => {
       {!!image && (
         <div className="mt-12 mb-[-0.8rem] text-center">
           <UnsafeImage
-            className="bg-grey-800 inline-block h-48 w-auto rounded"
+            className="bg-grey-800 inline-block h-48 w-48 rounded"
             src={image}
             alt={name}
           />
