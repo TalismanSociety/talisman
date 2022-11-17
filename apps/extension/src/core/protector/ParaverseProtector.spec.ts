@@ -1,0 +1,34 @@
+import ParaverseProtector from "./ParaverseProtector"
+
+const mockGetCommitSha = jest.fn(async () => "newCommit")
+const mockGetPolkadotData = jest.fn(async () => ({
+  deny: ["badsite.com", "an.other-badsite.io"],
+  allow: ["goodsite.com", "polkadot.js.org"],
+}))
+const mockGetMetamaskData = jest.fn(() => require("eth-phishing-detect/src/config.json"))
+
+jest.spyOn(ParaverseProtector.prototype, "getCommitSha").mockImplementation(mockGetCommitSha)
+jest.spyOn(ParaverseProtector.prototype, "getPolkadotData").mockImplementation(mockGetPolkadotData)
+jest.spyOn(ParaverseProtector.prototype, "getMetamaskData").mockImplementation(mockGetMetamaskData)
+
+const protector = new ParaverseProtector()
+
+it("Paraverse Protector", () => {
+  expect(mockGetCommitSha).toHaveBeenCalledTimes(1) // only once on init
+  expect(mockGetPolkadotData).toHaveBeenCalled()
+  // in allow lists
+  expect(protector.isPhishingSite("https://www.goodsite.com")).toBeFalsy()
+  expect(protector.isPhishingSite("https://app.talisman.xyz")).toBeFalsy()
+  // unlisted subdomain of domain in allow list
+  expect(protector.isPhishingSite("https://fake.talisman.xyz")).toBeFalsy()
+  // not listed at all
+  expect(protector.isPhishingSite("https://something.else")).toBeFalsy()
+  // in deny list
+  expect(protector.isPhishingSite("https://badsite.com"))
+  expect(protector.isPhishingSite("ws://badsite.com"))
+  expect(protector.isPhishingSite("https://an.other-badsite.io"))
+  // unlisted subdomain of domain with another subdomain in deny list
+  expect(protector.isPhishingSite("https://safe.other-badsite.io")).toBeFalsy()
+  // unlisted subdomain of domain in deny list
+  expect(protector.isPhishingSite("https://not-in-list.badsite.io"))
+})
