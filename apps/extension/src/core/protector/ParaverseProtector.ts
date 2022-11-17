@@ -1,6 +1,7 @@
 import { checkHost } from "@polkadot/phishing"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
+import { log } from "@core/log"
 
 const METAMASK_REPO = "https://api.github.com/repos/MetaMask/eth-phishing-detect"
 const METAMASK_CONTENT_URL = `${METAMASK_REPO}/contents/src/config.json`
@@ -83,15 +84,20 @@ export default class ParaverseProtector {
   }
 
   isPhishingSite(url: string) {
-    const host = new URL(url).hostname
+    try {
+      const host = new URL(url).hostname
 
-    // first check our lists
-    if (this.lists.talisman.allow.includes(host)) return false
-    if (this.lists.talisman.deny.includes(host)) return true
+      // first check our lists
+      if (this.lists.talisman.allow.includes(host)) return false
+      if (this.lists.talisman.deny.includes(host)) return true
 
-    // then check polkadot and metamask lists
-    const pdResult = checkHost(this.lists.polkadot.deny, host)
-    const { result: mmResult } = this.#metamaskDetector.check(host)
-    return pdResult || mmResult
+      // then check polkadot and metamask lists
+      const pdResult = checkHost(this.lists.polkadot.deny, host)
+      const { result: mmResult } = this.#metamaskDetector.check(host)
+      return pdResult || mmResult
+    } catch (error) {
+      log.error(error)
+    }
+    return false
   }
 }

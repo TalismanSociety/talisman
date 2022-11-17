@@ -31,4 +31,7 @@ it("Paraverse Protector", () => {
   expect(protector.isPhishingSite("https://safe.other-badsite.io")).toBeFalsy()
   // unlisted subdomain of domain in deny list
   expect(protector.isPhishingSite("https://not-in-list.badsite.io"))
+
+  // not a url
+  expect(protector.isPhishingSite("some garbage")).toBeFalsy()
 })
