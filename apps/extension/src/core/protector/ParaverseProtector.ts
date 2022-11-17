@@ -63,7 +63,6 @@ export default class ParaverseProtector {
 
   async getPolkadotCommit() {
     const sha = await this.getCommitSha(`${POLKADOT_REPO}${COMMIT_PATH}`)
-
     if (sha !== this.#polkadotCommit) {
       this.#polkadotCommit = sha
       this.lists.polkadot = await this.getPolkadotData()
