@@ -24,7 +24,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     return true
   }
 
-  private authorizeApprove({ id, addresses = [], ethChainId }: AuthRequestApprove): boolean {
+  private authorizeApprove({ id, addresses = [] }: AuthRequestApprove): boolean {
     const queued = this.state.requestStores.sites.getRequest(id)
     assert(queued, "Unable to find request")
 
@@ -34,7 +34,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
       withEthAccounts: queued.request.ethereum ? undefined : addresses.some(isEthereumAddress),
     })
     const { resolve } = queued
-    resolve({ addresses, ethChainId })
+    resolve({ addresses })
 
     return true
   }

@@ -5,6 +5,7 @@ import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import useAccounts from "./useAccounts"
+import useAuthorisedSiteById from "./useAuthorisedSiteById"
 import { useAuthRequests } from "./useAuthRequests"
 
 interface IProps {
@@ -20,7 +21,6 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
   const { items: connected, toggle, set } = useSet<string>()
   const authRequests = useAuthRequests()
   const ethereum = !!currentRequest?.request.ethereum
-  const [chainId, setChainId] = useState(DEFAULT_ETH_CHAIN_ID) // Default to moonbeam
   const [showEthAccounts, setShowEthAccounts] = useState(false)
 
   const accounts = useMemo(
@@ -45,9 +45,9 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
   }, [authRequests, setCurrentRequest, onError])
 
   const authorise = useCallback(() => {
-    api.authrequestApprove(currentRequest?.id as string, connected, ethereum ? chainId : undefined)
+    api.authrequestApprove(currentRequest?.id as string, connected)
     onSuccess()
-  }, [currentRequest?.id, connected, ethereum, chainId, onSuccess])
+  }, [currentRequest?.id, connected, onSuccess])
 
   const reject = useCallback(() => {
     api.authrequestReject(currentRequest?.id as string)
@@ -71,8 +71,6 @@ const useCurrentAuthorisationRequest = ({ onSuccess, onError, onRejection, onIgn
     authorise,
     reject,
     ignore,
-    chainId,
-    setChainId,
     ethereum,
     isMissingEthAccount,
     showEthAccounts,
