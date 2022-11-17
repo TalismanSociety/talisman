@@ -1,12 +1,12 @@
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
-import { EthTabsHandler } from "@core/domains/ethereum"
 import {
   DecryptPayload,
   EncryptPayload,
   ResponseDecrypt,
   ResponseEncrypt,
 } from "@core/domains/encrypt/types"
+import { EthTabsHandler } from "@core/domains/ethereum"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
@@ -30,8 +30,6 @@ import {
   ResponseRpcListProviders,
 } from "@polkadot/extension-base/background/types"
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
-// Copyright 2019-2021 @polkadot/extension authors & contributors
-// SPDX-License-Identifier: Apache-2.0
 import type {
   InjectedAccount,
   InjectedMetadataKnown,
@@ -47,10 +45,12 @@ import { assert, isNumber } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import Browser from "webextension-polyfill"
 
+import { talismanAnalytics } from "@core/libs/Analytics"
+import { ParaverseProtector } from "@core/protector"
 import RpcState from "./RpcState"
 import { createSubscription, genericAsyncSubscription, unsubscribe } from "./subscriptions"
-import { isPhishingSite } from "@core/util/isPhishingSite"
-import { talismanAnalytics } from "@core/libs/Analytics"
+
+const protector = new ParaverseProtector()
 
 export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()
@@ -227,7 +227,7 @@ export default class Tabs extends TabsHandler {
   private redirectPhishingLanding(phishingWebsite: string): void {
     const nonFragment = phishingWebsite.split("#")[0]
     const encodedWebsite = encodeURIComponent(nonFragment)
-    const url = `${chrome.extension.getURL(
+    const url = `${Browser.runtime.getURL(
       "dashboard.html"
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 
@@ -246,7 +246,7 @@ export default class Tabs extends TabsHandler {
   }
 
   private async redirectIfPhishing(url: string): Promise<boolean> {
-    const isInDenyList = await isPhishingSite(url)
+    const isInDenyList = protector.isPhishingSite(url)
 
     if (isInDenyList) {
       Sentry.captureEvent({
