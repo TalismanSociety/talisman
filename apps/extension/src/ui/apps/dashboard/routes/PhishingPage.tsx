@@ -1,4 +1,3 @@
-import { urlToDomain } from "@core/util/urlToDomain"
 import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
@@ -10,8 +9,6 @@ type PhishingPageProps = {
 }
 
 export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
-  const { val: domain, ok } = urlToDomain(url)
-
   const allowSite = useCallback(async () => {
     await api.allowPhishingSite(url)
     window.location.replace(url)
@@ -29,7 +26,7 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
               </div>
               <h1 className="text-bold text-alert-warn m-0 text-xl">Warning</h1>
               <div className="text-lg font-light text-white">
-                <span className="block">{ok ? domain : url}</span> has been reported as a{" "}
+                <span className="block">{url}</span> has been reported as a{" "}
                 <span className="text-alert-warn">malicious site</span>
               </div>
               <div className="leading-10">
