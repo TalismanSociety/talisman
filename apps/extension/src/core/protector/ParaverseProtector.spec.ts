@@ -35,3 +35,7 @@ it("Paraverse Protector", () => {
   // not a url
   expect(protector.isPhishingSite("some garbage")).toBeFalsy()
 })
+
+afterAll(() => {
+  jest.clearAllMocks()
+})
