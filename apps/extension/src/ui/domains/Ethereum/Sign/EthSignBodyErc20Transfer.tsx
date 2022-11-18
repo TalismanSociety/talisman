@@ -69,7 +69,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
   return (
     <EthSignContainer title="Transfer Request">
       <div>You are transferring</div>
-      <div>
+      <div className="flex">
         <SignParamTokensButton
           address={txInfo.targetAddress}
           network={network}

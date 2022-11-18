@@ -26,7 +26,7 @@ export const SignParamTokensDisplay: FC<SignParamTokensDisplayProps> = ({
   return (
     <span
       className={classNames(
-        "text-body-secondary inline-flex items-start gap-3 px-4 pt-0.5 text-base",
+        "text-body-secondary inline-flex gap-3 px-4 pt-0.5 text-base",
         className
       )}
     >

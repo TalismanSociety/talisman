@@ -32,10 +32,8 @@ export const SignParamTokensButton: FC<SignParamTokensButtonProps> = ({
       explorerUrl={network.explorerUrl}
       address={address}
       withIcon={withIcon}
-      className={classNames(
-        "text-body-secondary inline-flex items-start gap-3 px-4 text-base",
-        className
-      )}
+      contentClassName="leading-none"
+      className={className}
     >
       <SignParamTokensDisplay
         tokens={tokens}
