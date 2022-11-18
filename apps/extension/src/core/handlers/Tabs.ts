@@ -46,11 +46,9 @@ import * as Sentry from "@sentry/browser"
 import Browser from "webextension-polyfill"
 
 import { talismanAnalytics } from "@core/libs/Analytics"
-import { ParaverseProtector } from "@core/protector"
 import RpcState from "./RpcState"
 import { createSubscription, genericAsyncSubscription, unsubscribe } from "./subscriptions"
-
-const protector = new ParaverseProtector()
+import { protector } from "@core/domains/app/protector"
 
 export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()

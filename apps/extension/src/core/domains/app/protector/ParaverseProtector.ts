@@ -2,13 +2,15 @@ import { checkHost } from "@polkadot/phishing"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import { log } from "@core/log"
+import { Err, Ok, Result } from "ts-results"
 
 const METAMASK_REPO = "https://api.github.com/repos/MetaMask/eth-phishing-detect"
 const METAMASK_CONTENT_URL = `${METAMASK_REPO}/contents/src/config.json`
 const POLKADOT_REPO = "https://api.github.com/repos/polkadot-js/phishing"
 const POLKADOT_CONTENT_URL = "https://polkadot.js.org/phishing/all.json"
-
 const COMMIT_PATH = "/commits/master"
+
+const REFRESH_INTERVAL_MIN = 0.2
 
 const DEFAULT_ALLOW = ["talisman.xyz", "app.talisman.xyz"]
 
@@ -38,7 +40,7 @@ export default class ParaverseProtector {
     // polkadot data must be fetched on init, metamask is bundled with package
     this.getPolkadotCommit()
     this.setRefreshTimer = this.setRefreshTimer.bind(this)
-    this.#refreshTimer = setInterval(this.setRefreshTimer, 20 * 60 * 1000) // 20 minutes
+    this.#refreshTimer = setInterval(this.setRefreshTimer, REFRESH_INTERVAL_MIN * 60 * 1000)
   }
 
   async setRefreshTimer() {
@@ -82,21 +84,35 @@ export default class ParaverseProtector {
     return await this.getData(POLKADOT_CONTENT_URL)
   }
 
-  isPhishingSite(url: string) {
+  private getHostName(url: string): Result<string, "Unable to get host from url"> {
     try {
       const host = new URL(url).hostname
-
-      // first check our lists
-      if (this.lists.talisman.allow.includes(host)) return false
-      if (this.lists.talisman.deny.includes(host)) return true
-
-      // then check polkadot and metamask lists
-      const pdResult = checkHost(this.lists.polkadot.deny, host)
-      const { result: mmResult } = this.#metamaskDetector.check(host)
-      return pdResult || mmResult
+      return Ok(host)
     } catch (error) {
-      log.error(error)
+      log.error(url, error)
+      return Err("Unable to get host from url")
     }
-    return false
+  }
+
+  isPhishingSite(url: string) {
+    const { val: host, ok } = this.getHostName(url)
+    if (!ok) return false
+
+    // first check our lists
+    if (this.lists.talisman.allow.includes(host)) return false
+    if (this.lists.talisman.deny.includes(host)) return true
+
+    // then check polkadot and metamask lists
+    const pdResult = checkHost(this.lists.polkadot.deny, host)
+    const { result: mmResult } = this.#metamaskDetector.check(host)
+    return pdResult || mmResult
+  }
+
+  addException(url: string) {
+    const { val: host, ok } = this.getHostName(url)
+    if (!ok) return false
+
+    this.lists.talisman.allow.push(host)
+    return true
   }
 }

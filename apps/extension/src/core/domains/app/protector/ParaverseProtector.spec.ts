@@ -13,7 +13,7 @@ jest.spyOn(ParaverseProtector.prototype, "getMetamaskData").mockImplementation(m
 
 const protector = new ParaverseProtector()
 
-it("Paraverse Protector", () => {
+it("Checks phishing sites", () => {
   expect(mockGetCommitSha).toHaveBeenCalledTimes(1) // only once on init
   expect(mockGetPolkadotData).toHaveBeenCalled()
   // in allow lists
@@ -34,6 +34,13 @@ it("Paraverse Protector", () => {
 
   // not a url
   expect(protector.isPhishingSite("some garbage")).toBeFalsy()
+})
+
+it("Can add an exception to phishing sites", () => {
+  const badsite = "https://badsite.com"
+  expect(protector.isPhishingSite(badsite))
+  protector.addException(badsite)
+  expect(protector.isPhishingSite(badsite)).toBeFalsy()
 })
 
 afterAll(() => {
