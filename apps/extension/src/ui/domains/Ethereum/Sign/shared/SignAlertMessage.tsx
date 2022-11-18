@@ -26,7 +26,7 @@ export const SignAlertMessage: FC<SignAlertMessageProps> = ({
         className={classNames(
           "grow text-left text-xs leading-[140%]",
           // orange text for errors
-          type === "error" && "text-alert-warn"
+          type === "error" ? "text-alert-warn" : "text-body-secondary"
         )}
       >
         {children}

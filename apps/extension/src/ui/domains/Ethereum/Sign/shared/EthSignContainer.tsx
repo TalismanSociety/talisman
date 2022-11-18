@@ -1,20 +1,21 @@
 import { FadeIn } from "@talisman/components/FadeIn"
 import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import { FC, ReactNode } from "react"
+import { createPortal } from "react-dom"
 import { classNames } from "talisman-ui"
 
 type EthSignContainerProps = {
   title: ReactNode
   children: ReactNode
   className?: string
-  bottom?: ReactNode
+  alert?: ReactNode
 }
 
 export const EthSignContainer: FC<EthSignContainerProps> = ({
   title,
   children,
   className,
-  bottom,
+  alert,
 }) => {
   return (
     <FadeIn className={classNames("flex h-full flex-col", className)}>
@@ -23,7 +24,7 @@ export const EthSignContainer: FC<EthSignContainerProps> = ({
       <div className="mt-12 mb-8 grow text-center">
         <ViewDetailsEth />
       </div>
-      {bottom}
+      {alert && createPortal(alert, document.getElementById("sign-alerts-inject") as Element)}
     </FadeIn>
   )
 }

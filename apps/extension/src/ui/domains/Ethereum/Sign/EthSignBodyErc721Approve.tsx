@@ -1,7 +1,7 @@
 import { FC, useMemo } from "react"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
-import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
+import { SignAlertMessage, SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { KnownTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { EthSignContainer } from "./shared/EthSignContainer"
@@ -9,6 +9,8 @@ import { BigNumber } from "ethers"
 import { useQuery } from "@tanstack/react-query"
 import { UnsafeImage } from "talisman-ui"
 import { getNftMetadata } from "@core/util/getNftMetadata"
+
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 export const EthSignBodyErc721Approve: FC = () => {
   const { account, network, transactionInfo } = useEthSignTransactionRequest()
@@ -18,9 +20,11 @@ export const EthSignBodyErc721Approve: FC = () => {
     queryFn: () => getNftMetadata(txInfo.asset?.tokenURI, 96, 96),
   })
 
-  const { operator, tokenId } = useMemo(() => {
+  const { operator, approve, tokenId } = useMemo(() => {
+    const operator = getContractCallArg(txInfo.contractCall, "operator")
     return {
       operator: getContractCallArg(txInfo.contractCall, "operator"),
+      approve: operator !== ZERO_ADDRESS,
       tokenId: BigNumber.from(getContractCallArg(txInfo.contractCall, "tokenId")),
     }
   }, [txInfo.contractCall])
@@ -36,9 +40,24 @@ export const EthSignBodyErc721Approve: FC = () => {
   if (qMetadata.isLoading || !operator || !account || !network) return <EthSignBodyShimmer />
 
   return (
-    <EthSignContainer title={<>NFT Approval Request</>}>
+    <EthSignContainer
+      title={<>{approve ? "NFT Approval Request" : "Revoke NFT Approval Request"}</>}
+      alert={
+        approve ? (
+          <SignAlertMessage>
+            <span className="text-body-secondary">
+              This contract will have permission to transfer this NFT on your behalf until manually
+              revoked.
+            </span>{" "}
+            <a className="text-white" href="https://revoke.cash/faq" target="_blank">
+              Learn more
+            </a>
+          </SignAlertMessage>
+        ) : null
+      }
+    >
       <div className="flex">
-        <div>Allow</div>
+        <div>{approve ? "Allow" : "Disallow"}</div>
         <SignParamNetworkAddressButton network={network} address={operator} />
       </div>
       <div className="flex">

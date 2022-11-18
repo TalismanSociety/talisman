@@ -72,9 +72,12 @@ export const EthSignBodyErc20Approve: FC = () => {
           access your funds
         </>
       }
-      bottom={
+      alert={
         <SignAlertMessage>
-          This contract will have permission to spend tokens on your behalf until manually revoked.{" "}
+          <span className="text-body-secondary">
+            This contract will have permission to spend tokens on your behalf until manually
+            revoked.
+          </span>{" "}
           <a className="text-white" href="https://revoke.cash/faq" target="_blank">
             Learn more
           </a>

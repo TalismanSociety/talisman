@@ -21,6 +21,21 @@ import { Container } from "./common"
 const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 const SignContainer = styled(Container)`
+  .layout-content .children {
+    padding-left: 0;
+    padding-right: 0;
+
+    .scrollable {
+      // can't compute padding-right because scrollbar's width depends on browser
+      // => size
+      padding-left: 2.4rem;
+      & > div {
+        width: 35.2rem;
+        max-width: 35.2rem;
+      }
+    }
+  }
+
   .layout-content .children h2 {
     text-align: center;
     padding: 0;
@@ -148,11 +163,16 @@ export const EthSignTransactionRequest = () => {
         </div>
       </Content>
       <Footer>
+        <div className="space-y-4">
+          <div id="sign-alerts-inject"></div>
+          {isReadyToDisplay && errorMessage && (
+            <SignAlertMessage type="error">{errorMessage}</SignAlertMessage>
+          )}
+        </div>
         {isReadyToDisplay && (
           <Suspense fallback={null}>
-            {errorMessage && <SignAlertMessage type="error">{errorMessage}</SignAlertMessage>}
             {nativeToken && transaction && txDetails && estimatedFee ? (
-              <div className="gasInfo">
+              <div className="gasInfo mt-8">
                 <div>
                   <div>Estimated Fee</div>
                   <div>{transaction?.type === 2 && "Priority"}</div>

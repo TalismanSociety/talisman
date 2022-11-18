@@ -32,7 +32,7 @@ export const SignParamNetworkAddressButton: FC<SignParamNetworkAddressButtonProp
       {name ? (
         <WithTooltip
           tooltip={address}
-          className="inline-block max-w-[18rem] overflow-hidden text-ellipsis whitespace-nowrap"
+          className="inline-block max-w-[16rem] overflow-hidden text-ellipsis whitespace-nowrap"
         >
           {name}
         </WithTooltip>
