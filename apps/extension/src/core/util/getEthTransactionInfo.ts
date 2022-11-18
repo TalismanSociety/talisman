@@ -3,7 +3,7 @@ import { BigNumber, ethers } from "ethers"
 import { abiErc1155, abiErc20, abiErc721, abiErc721Metadata } from "./abi"
 import { isContractAddress } from "./isContractAddress"
 
-export type ContractType = "ERC20" | "ERC721" | "ERC20" | "unknown"
+export type ContractType = "ERC20" | "ERC721" | "ERC1155" | "unknown"
 
 // note : order may be important here as some contracts may inherit from others
 const knownContracts: { contractType: ContractType; abi: any }[] = [
@@ -16,7 +16,7 @@ const knownContracts: { contractType: ContractType; abi: any }[] = [
     abi: abiErc721,
   },
   {
-    contractType: "ERC20",
+    contractType: "ERC1155",
     abi: abiErc1155,
   },
 ]
