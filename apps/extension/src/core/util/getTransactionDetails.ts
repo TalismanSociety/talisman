@@ -19,7 +19,7 @@ export const getTransactionDetails = async (payload: SignerPayloadJSON) => {
   const { registry } = await getTypeRegistry(
     genesisHash,
     hexToNumber(hexSpecVersion),
-    undefined, // dapp may be using an RPC that is a block ahead our provder's RPC, in which case it would throw
+    undefined, // dapp may be using an RPC that is a block ahead our provder's RPC, do not specify payload's blockHash or it could throw
     signedExtensions
   )
 
@@ -35,7 +35,7 @@ export const getTransactionDetails = async (payload: SignerPayloadJSON) => {
 
   try {
     // convert to extrinsic
-    const extrinsic = registry.createType("Extrinsic", payload) // payload as UnsignedTransaction
+    const extrinsic = registry.createType("Extrinsic", payload)
 
     try {
       const { method } = extrinsic.toHuman(true) as { method: TransactionMethod }
