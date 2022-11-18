@@ -9,7 +9,7 @@ import { EthSignContainer } from "./shared/EthSignContainer"
 import { SignParamTokensDisplay } from "./shared/SignParamTokensDisplay"
 
 export const EthSignBodyDefault: FC = () => {
-  const { network, transactionInfo, txDetails, request } = useEthSignTransactionRequest()
+  const { network, transactionInfo, request } = useEthSignTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
 
@@ -33,7 +33,7 @@ export const EthSignBodyDefault: FC = () => {
   if (!nativeToken) return null
 
   return (
-    <EthSignContainer title="Transaction Request">
+    <EthSignContainer title={amount ? "Transfer Request" : "Transaction Request"}>
       {amount ? (
         <>
           <div>You are transferring</div>
