@@ -25,15 +25,17 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
     <EthSignContainer
       title={<>{approve ? "NFT Approval Request" : "Revoke NFT Approval Request"}</>}
       alert={
-        <SignAlertMessage>
-          <span className="text-body-secondary">
-            This contract will have permission to transfer all NFTs from this collection on your
-            behalf until manually revoked.
-          </span>{" "}
-          <a className="text-white" href="https://revoke.cash/faq" target="_blank">
-            Learn more
-          </a>
-        </SignAlertMessage>
+        approve && (
+          <SignAlertMessage>
+            <span className="text-body-secondary">
+              This contract will have permission to transfer all NFTs from this collection on your
+              behalf until manually revoked.
+            </span>{" "}
+            <a className="text-white" href="https://revoke.cash/faq" target="_blank">
+              Learn more
+            </a>
+          </SignAlertMessage>
+        )
       }
     >
       <div className="flex">
