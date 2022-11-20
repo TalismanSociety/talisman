@@ -184,7 +184,6 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     <ViewDetailsContainer>
       <div className="grow">
         <div className="title">Details</div>
-        {/* TODO explain what the method does */}
         <ViewDetailsField label="Network">
           {network ? `${network.name} (${network.id})` : null}
         </ViewDetailsField>

@@ -7,7 +7,7 @@ export type UnsafeImageProps = React.DetailedHTMLProps<
 >
 
 // Use for slow loading images, or images that may not load properly such as NFTs from ipfs
-// TODO error fallback image/style
+// TODO error fallback image/style ?
 export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
   const refImg = useRef<HTMLImageElement>(null)
   const [isLoading, setIsLoading] = useState(false)

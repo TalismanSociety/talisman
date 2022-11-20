@@ -26,8 +26,7 @@ const SignContainer = styled(Container)`
     padding-right: 0;
 
     .scrollable {
-      // can't compute padding-right because scrollbar's width depends on browser
-      // => size
+      // padding-right is dynamic and browser-specific so only set padding left and width
       padding-left: 2.4rem;
       & > div {
         width: 35.2rem;

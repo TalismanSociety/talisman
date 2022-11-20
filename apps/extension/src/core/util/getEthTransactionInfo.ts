@@ -80,7 +80,6 @@ export const getEthTransactionInfo = async (
           const tokenId = getContractCallArg<BigNumber>(contractCall, "tokenId")
 
           try {
-            // TODO use supportInterface to determine if possible to make these calls
             const contract = new ethers.Contract(targetAddress, abiErc721Metadata, provider)
             const [name, symbol, tokenURI] = await Promise.all([
               contract.name(),

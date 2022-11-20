@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from "react"
+import { FC, useMemo } from "react"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
@@ -6,7 +6,6 @@ import { KnownTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignAlertMessage } from "./shared/SignAlertMessage"
 import { EthSignContainer } from "./shared/EthSignContainer"
-import { createPortal } from "react-dom"
 
 export const EthSignBodyErc721ApproveAll: FC = () => {
   const { account, network, transactionInfo } = useEthSignTransactionRequest()
@@ -31,7 +30,11 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
               This contract will have permission to transfer all NFTs from this collection on your
               behalf until manually revoked.
             </span>{" "}
-            <a className="text-white" href="https://revoke.cash/faq" target="_blank">
+            <a
+              className="text-white"
+              href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/ethereum-features/token-approvals"
+              target="_blank"
+            >
               Learn more
             </a>
           </SignAlertMessage>

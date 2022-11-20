@@ -1,6 +1,5 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
 import { FC } from "react"
-import { classNames } from "talisman-ui"
 import { SignParamButton } from "./SignParamButton"
 import { SignParamTokensDisplay } from "./SignParamTokensDisplay"
 

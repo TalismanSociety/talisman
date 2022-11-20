@@ -49,7 +49,11 @@ export const EthSignBodyErc721Approve: FC = () => {
               This contract will have permission to transfer this NFT on your behalf until manually
               revoked.
             </span>{" "}
-            <a className="text-white" href="https://revoke.cash/faq" target="_blank">
+            <a
+              className="text-white"
+              href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/ethereum-features/token-approvals"
+              target="_blank"
+            >
               Learn more
             </a>
           </SignAlertMessage>

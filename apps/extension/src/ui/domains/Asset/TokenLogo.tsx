@@ -46,7 +46,6 @@ const Logo = styled.div`
 export const getTokenLogoUrl = (token?: Token) => {
   // TODO better typing
   if (token?.type === "erc20") {
-    // return (token as { image?: string }).image ?? null
     const { isCustom, image } = token as { isCustom?: boolean; image?: string }
     return image ?? (isCustom ? null : getUnsafeChainLogoUrl(token?.evmNetwork?.id))
   } else if (token && ["native", "orml"].includes(token.type)) {
