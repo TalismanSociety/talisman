@@ -3,7 +3,6 @@ import type {
   RequestAuthorizeTab as PolkadotRequestAuthorizeTab,
   RequestAuthorizeSubscribe,
 } from "@polkadot/extension-base/background/types"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
 
 export interface RequestAuthorizeTab extends PolkadotRequestAuthorizeTab {
   name?: string
