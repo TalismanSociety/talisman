@@ -4,6 +4,7 @@ import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import { log } from "@core/log"
 import { Err, Ok, Result } from "ts-results"
 import { db } from "@core/libs/db"
+import { compressToUTF16, decompressFromUTF16 } from "lz-string"
 
 const METAMASK_REPO = "https://api.github.com/repos/MetaMask/eth-phishing-detect"
 const METAMASK_CONTENT_URL = `${METAMASK_REPO}/contents/src/config.json`
@@ -55,18 +56,24 @@ export default class ParaverseProtector {
     this.setRefreshTimer = this.setRefreshTimer.bind(this)
     this.#refreshTimer = setInterval(this.setRefreshTimer, REFRESH_INTERVAL_MIN * 60 * 1000)
     // do the first check once after 30 seconds
-    setTimeout(this.setRefreshTimer, 10_000)
+    setTimeout(this.setRefreshTimer, 30_000)
 
+    // restore persisted data
     db.phishing.bulkGet(["polkadot", "phishfort", "metamask"]).then((persisted) => {
-      ;(persisted.filter(Boolean) as ProtectorStorage[]).forEach(({ source, ...data }) => {
-        this.#commits[source] = data.commitSha
+      ;(persisted.filter(Boolean) as ProtectorStorage[]).forEach(
+        ({ source, compressedHostList, commitSha }) => {
+          const fullData = decompressFromUTF16(compressedHostList)
+          if (!fullData) return
 
-        if (source === "metamask")
-          this.#metamaskDetector = new MetamaskDetector(
-            JSON.parse(data.compressedHostList) as MetaMaskDetectorConfig
-          )
-        else this.lists[source] = JSON.parse(data.compressedHostList)
-      })
+          this.#commits[source] = commitSha
+
+          if (source === "metamask")
+            this.#metamaskDetector = new MetamaskDetector(
+              JSON.parse(fullData) as MetaMaskDetectorConfig
+            )
+          else this.lists[source] = JSON.parse(fullData)
+        }
+      )
     })
   }
 
@@ -76,12 +83,18 @@ export default class ParaverseProtector {
     await this.getPhishFortCommit()
   }
 
+  private persistData(source: "metamask", commitSha: string, data: MetaMaskDetectorConfig): void
+  private persistData(source: "polkadot" | "phishfort", commitSha: string, data: HostList): void
   private persistData(
-    source: ProtectorSources,
+    source: "polkadot" | "phishfort" | "metamask",
     commitSha: string,
     data: HostList | MetaMaskDetectorConfig
-  ) {
-    db.phishing.put({ commitSha, compressedHostList: JSON.stringify(data), source })
+  ): void {
+    db.phishing.put({
+      commitSha,
+      compressedHostList: compressToUTF16(JSON.stringify(data)),
+      source,
+    })
   }
 
   async getCommitSha(url: string) {
