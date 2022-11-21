@@ -178,8 +178,6 @@ export const EvmErc20Module: BalanceModule<
     const evmNetworks = await chaindataProvider.evmNetworks()
     const tokens = await chaindataProvider.tokens()
 
-    chainConnectors.evm?.getProviderForEvmNetwork
-
     const addressesByTokenGroupedByEvmNetwork = groupAddressesByTokenByEvmNetwork(
       addressesByToken,
       tokens
