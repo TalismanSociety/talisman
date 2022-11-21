@@ -27,7 +27,7 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
               <h1 className="text-bold text-alert-warn m-0 text-xl">Warning</h1>
               <div className="text-lg font-light text-white">
                 <span className="block">{url}</span> has been reported as a{" "}
-                <span className="text-alert-warn">malicious site</span>
+                <span className="text-alert-warn block">malicious site</span>
               </div>
               <div className="leading-10">
                 This domain has been reported as a known phishing site on a community maintained

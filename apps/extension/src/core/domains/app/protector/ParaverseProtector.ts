@@ -3,14 +3,18 @@ import MetamaskDetector from "eth-phishing-detect/src/detector"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import { log } from "@core/log"
 import { Err, Ok, Result } from "ts-results"
+import { db } from "@core/libs/db"
 
 const METAMASK_REPO = "https://api.github.com/repos/MetaMask/eth-phishing-detect"
 const METAMASK_CONTENT_URL = `${METAMASK_REPO}/contents/src/config.json`
 const POLKADOT_REPO = "https://api.github.com/repos/polkadot-js/phishing"
 const POLKADOT_CONTENT_URL = "https://polkadot.js.org/phishing/all.json"
+const PHISHFORT_REPO = "https://api.github.com/repos/phishfort/phishfort-lists"
+const PHISHFORT_CONTENT_URL =
+  "https://raw.githubusercontent.com/phishfort/phishfort-lists/master/blacklists/hotlist.json"
 const COMMIT_PATH = "/commits/master"
 
-const REFRESH_INTERVAL_MIN = 0.2
+const REFRESH_INTERVAL_MIN = 20
 
 const DEFAULT_ALLOW = ["talisman.xyz", "app.talisman.xyz"]
 
@@ -24,28 +28,60 @@ type MetaMaskDetectorConfig = {
   whitelist: string[]
 }
 
-type PolkadotConfig = HostList
+export type ProtectorData = Record<"talisman" | "polkadot" | "phishfort", HostList>
+
+export type ProtectorSources = "polkadot" | "phishfort" | "metamask" // don't persist Talisman
+export type ProtectorStorage = {
+  source: ProtectorSources
+  commitSha: string
+  compressedHostList: string
+}
 
 export default class ParaverseProtector {
-  #polkadotCommit = ""
-  #metamaskCommit = ""
-  #refreshTimer?: NodeJS.Timer
-  #metamaskDetector = new MetamaskDetector(metamaskInitialData)
-  lists: Record<"talisman" | "polkadot", HostList> = {
+  #commits = {
+    polkadot: "",
+    metamask: "",
+    phishfort: "",
+  }
+  lists: ProtectorData = {
     talisman: { allow: DEFAULT_ALLOW, deny: [] },
     polkadot: { allow: [], deny: [] },
+    phishfort: { allow: [], deny: [] },
   }
+  #refreshTimer?: NodeJS.Timer
+  #metamaskDetector = new MetamaskDetector(metamaskInitialData)
 
   constructor() {
-    // polkadot data must be fetched on init, metamask is bundled with package
-    this.getPolkadotCommit()
     this.setRefreshTimer = this.setRefreshTimer.bind(this)
     this.#refreshTimer = setInterval(this.setRefreshTimer, REFRESH_INTERVAL_MIN * 60 * 1000)
+    // do the first check once after 30 seconds
+    setTimeout(this.setRefreshTimer, 10_000)
+
+    db.phishing.bulkGet(["polkadot", "phishfort", "metamask"]).then((persisted) => {
+      ;(persisted.filter(Boolean) as ProtectorStorage[]).forEach(({ source, ...data }) => {
+        this.#commits[source] = data.commitSha
+
+        if (source === "metamask")
+          this.#metamaskDetector = new MetamaskDetector(
+            JSON.parse(data.compressedHostList) as MetaMaskDetectorConfig
+          )
+        else this.lists[source] = JSON.parse(data.compressedHostList)
+      })
+    })
   }
 
   async setRefreshTimer() {
     await this.getMetamaskCommit()
     await this.getPolkadotCommit()
+    await this.getPhishFortCommit()
+  }
+
+  private persistData(
+    source: ProtectorSources,
+    commitSha: string,
+    data: HostList | MetaMaskDetectorConfig
+  ) {
+    db.phishing.put({ commitSha, compressedHostList: JSON.stringify(data), source })
   }
 
   async getCommitSha(url: string) {
@@ -57,18 +93,38 @@ export default class ParaverseProtector {
 
   async getMetamaskCommit() {
     const sha = await this.getCommitSha(`${METAMASK_REPO}${COMMIT_PATH}`)
-    if (sha !== this.#metamaskCommit) {
-      this.#metamaskCommit = sha
-      this.#metamaskDetector = new MetamaskDetector(await this.getMetamaskData())
+    if (sha !== this.#commits.metamask) {
+      this.#commits.metamask = sha
+      const mmConfig = await this.getMetamaskData()
+      this.#metamaskDetector = new MetamaskDetector(mmConfig)
+      this.persistData("metamask", sha, mmConfig)
     }
   }
 
   async getPolkadotCommit() {
     const sha = await this.getCommitSha(`${POLKADOT_REPO}${COMMIT_PATH}`)
-    if (sha !== this.#polkadotCommit) {
-      this.#polkadotCommit = sha
+    if (sha !== this.#commits.polkadot) {
+      this.#commits.polkadot = sha
       this.lists.polkadot = await this.getPolkadotData()
+      this.persistData("polkadot", sha, this.lists.polkadot)
     }
+  }
+
+  async getPolkadotData() {
+    return await this.getData(POLKADOT_CONTENT_URL)
+  }
+
+  async getPhishFortCommit() {
+    const sha = await this.getCommitSha(`${PHISHFORT_REPO}${COMMIT_PATH}`)
+    if (sha !== this.#commits.phishfort) {
+      this.#commits.phishfort = sha
+      this.lists.phishfort.deny = await this.getPhishFortData()
+      this.persistData("phishfort", sha, this.lists.phishfort)
+    }
+  }
+
+  async getPhishFortData() {
+    return await this.getData(PHISHFORT_CONTENT_URL)
   }
 
   private async getData(url: string) {
@@ -78,10 +134,6 @@ export default class ParaverseProtector {
   async getMetamaskData(): Promise<MetaMaskDetectorConfig> {
     const json = await this.getData(METAMASK_CONTENT_URL)
     return JSON.parse(Buffer.from(json.content, "base64").toString())
-  }
-
-  async getPolkadotData(): Promise<PolkadotConfig> {
-    return await this.getData(POLKADOT_CONTENT_URL)
   }
 
   private getHostName(url: string): Result<string, "Unable to get host from url"> {
@@ -102,10 +154,14 @@ export default class ParaverseProtector {
     if (this.lists.talisman.allow.includes(host)) return false
     if (this.lists.talisman.deny.includes(host)) return true
 
-    // then check polkadot and metamask lists
+    // then check polkadot, phishFort, and metamask lists
     const pdResult = checkHost(this.lists.polkadot.deny, host)
+    if (pdResult) return true
+    const phishFortResult = this.lists.phishfort.deny.includes(host)
+    if (phishFortResult) return true
     const { result: mmResult } = this.#metamaskDetector.check(host)
-    return pdResult || mmResult
+    if (mmResult) return true
+    return false
   }
 
   addException(url: string) {
