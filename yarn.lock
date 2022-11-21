@@ -5610,7 +5610,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-acala-liquidcrowdloan@workspace:packages/balances-acala-liquidcrowdloan"
   dependencies:
-    "@polkadot/rpc-provider": ^9.1.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5627,7 +5626,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-acala-lptokens@workspace:packages/balances-acala-lptokens"
   dependencies:
-    "@polkadot/rpc-provider": ^9.1.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5644,7 +5642,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-acala-stableassetpooltokens@workspace:packages/balances-acala-stableassetpooltokens"
   dependencies:
-    "@polkadot/rpc-provider": ^9.1.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5661,7 +5658,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-evm-erc20@workspace:packages/balances-evm-erc20"
   dependencies:
-    "@polkadot/rpc-provider": ^9.1.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5679,7 +5675,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-evm-native@workspace:packages/balances-evm-native"
   dependencies:
-    "@polkadot/rpc-provider": ^9.1.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5697,7 +5692,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-example@workspace:packages/balances-example"
   dependencies:
-    "@polkadot/rpc-provider": ^9.1.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5743,7 +5737,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium"
   dependencies:
-    "@polkadot/rpc-provider": ^9.1.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5760,7 +5753,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-native@workspace:packages/balances-substrate-native"
   dependencies:
-    "@polkadot/rpc-provider": ^9.1.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5777,7 +5769,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml"
   dependencies:
-    "@polkadot/rpc-provider": ^9.1.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5832,7 +5823,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/chain-connector@workspace:packages/chain-connector"
   dependencies:
-    "@polkadot/api": ^9.1.1
     "@polkadot/rpc-provider": ^9.1.1
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"

@@ -1,5 +1,5 @@
-import { WsProvider } from "@polkadot/api"
-import { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
+import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
+import { WsProvider } from "@polkadot/rpc-provider/ws"
 import { ChainId, ChaindataChainProvider } from "@talismn/chaindata-provider"
 import { sleep } from "@talismn/util"
 

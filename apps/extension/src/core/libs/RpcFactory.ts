@@ -2,7 +2,7 @@
 
 import { chainConnector } from "@core/domains/chain-connector"
 import { ChainId } from "@core/domains/chains/types"
-import { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
+import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 
 // TODO: Refactor any code which uses this class to directly
 //       call methods on `chainConnector` instead!

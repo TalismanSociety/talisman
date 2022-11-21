@@ -30,7 +30,6 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@polkadot/api": "^9.1.1",
     "@polkadot/rpc-provider": "^9.1.1",
     "@talismn/chaindata-provider": "workspace:^",
     "anylogger": "^1.0.11"
