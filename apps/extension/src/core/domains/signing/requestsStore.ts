@@ -73,7 +73,6 @@ export class SigningRequestsStore extends RequestStore<
     return {
       url,
       type: "ethereum",
-      id: ethChainId,
       ethChainId,
       account,
     }
