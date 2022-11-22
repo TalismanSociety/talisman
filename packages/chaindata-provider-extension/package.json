@@ -29,6 +29,14 @@
     "lint": "eslint . --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
+  "dependencies": {
+    "@talismn/chaindata-provider": "workspace:^",
+    "anylogger": "^1.0.11",
+    "axios": "^0.27.2",
+    "dexie": "^3.2.2",
+    "graphql": "^16.6.0",
+    "graphql-tag": "^2.12.6"
+  },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",
     "@talismn/tsconfig": "workspace:^",
@@ -43,12 +51,5 @@
     "extends": [
       "@talismn/eslint-config"
     ]
-  },
-  "dependencies": {
-    "@talismn/chaindata-provider": "workspace:^",
-    "anylogger": "^1.0.11",
-    "dexie": "^3.2.2",
-    "graphql": "^16.6.0",
-    "graphql-tag": "^2.12.6"
   }
 }

@@ -5852,6 +5852,7 @@ __metadata:
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
+    axios: ^0.27.2
     dexie: ^3.2.2
     eslint: ^8.4.0
     graphql: ^16.6.0
@@ -13010,6 +13011,8 @@ __metadata:
     "@types/webextension-polyfill": 0.9.1
     "@typescript-eslint/eslint-plugin": ^5.16.0
     "@typescript-eslint/parser": ^5.16.0
+    anylogger: ^1.0.11
+    anylogger-loglevel: ^1.0.0
     assert: ^2.0.0
     autoprefixer: ^10.4.12
     babel-eslint: ^10.1.0
@@ -13049,6 +13052,7 @@ __metadata:
     jest-webextension-mock: 3.7.22
     js-yaml: 4.1.0
     lodash: 4.17.21
+    loglevel: ^1.8.1
     minimist: ^1.2.6
     nanoid: 3.3.2
     postcss: ^8.4.16
@@ -17002,6 +17006,13 @@ __metadata:
   version: 1.8.0
   resolution: "loglevel@npm:1.8.0"
   checksum: 41aeea17de24aba8dba68084a31fe9189648bce4f39c1277e021bb276c3c53a75b0d337395919cf271068ad40ecefabad0e4fdeb4a8f11908beee532b898f4a7
+  languageName: node
+  linkType: hard
+
+"loglevel@npm:^1.8.1":
+  version: 1.8.1
+  resolution: "loglevel@npm:1.8.1"
+  checksum: a1a62db40291aaeaef2f612334c49e531bff71cc1d01a2acab689ab80d59e092f852ab164a5aedc1a752fdc46b7b162cb097d8a9eb2cf0b299511106c29af61d
   languageName: node
   linkType: hard
 

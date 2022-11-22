@@ -1,3 +1,5 @@
+import axios from "axios"
+import { print } from "graphql"
 import gql from "graphql-tag"
 
 export const graphqlUrl = "https://app.gc.subsquid.io/beta/chaindata/v3/graphql"
@@ -117,3 +119,23 @@ export const tokensQuery = gql`
   }
   ${TokenFragment}
 `
+
+//
+// Fetchers
+//
+
+export async function fetchChains(): Promise<any> {
+  return await axios
+    .post(graphqlUrl, { query: print(chainsQuery) })
+    .then((response) => response.data)
+}
+export async function fetchEvmNetworks(): Promise<any> {
+  return await axios
+    .post(graphqlUrl, { query: print(evmNetworksQuery) })
+    .then((response) => response.data)
+}
+export async function fetchTokens(): Promise<any> {
+  return await axios
+    .post(graphqlUrl, { query: print(tokensQuery) })
+    .then((response) => response.data)
+}

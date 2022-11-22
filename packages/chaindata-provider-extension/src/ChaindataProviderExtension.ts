@@ -12,10 +12,9 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { print } from "graphql"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
-import { chainsQuery, evmNetworksQuery, graphqlUrl, tokensQuery } from "./graphql"
+import { fetchChains, fetchEvmNetworks, fetchTokens } from "./graphql"
 import log from "./log"
 import { parseTokensResponse } from "./parseTokensResponse"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
@@ -192,11 +191,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     if (now - this.#lastHydratedChainsAt < minimumHydrationInterval) return false
 
     try {
-      const body = await fetch(graphqlUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: print(chainsQuery) }),
-      }).then((response) => response.json())
+      const body = await fetchChains()
 
       const chains = addCustomChainRpcs(body?.data?.chains || [])
       if (chains.length <= 0) throw new Error("Ignoring empty chaindata chains response")
@@ -209,7 +204,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
       return true
     } catch (error) {
-      // eslint-disable-next-line no-console
       log.warn(`Failed to hydrate chains from chaindata`, error)
 
       return false
@@ -227,11 +221,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     if (now - this.#lastHydratedEvmNetworksAt < minimumHydrationInterval) return false
 
     try {
-      const body = await fetch(graphqlUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: print(evmNetworksQuery) }),
-      }).then((response) => response.json())
+      const body = await fetchEvmNetworks()
 
       const evmNetworks = body?.data?.evmNetworks || []
       if (evmNetworks.length <= 0) throw new Error("Ignoring empty chaindata evmNetworks response")
@@ -244,7 +234,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
       return true
     } catch (error) {
-      // eslint-disable-next-line no-console
       log.warn(`Failed to hydrate evmNetworks from chaindata`, error)
 
       return false
@@ -262,11 +251,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     if (now - this.#lastHydratedTokensAt < minimumHydrationInterval) return false
 
     try {
-      const body = await fetch(graphqlUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: print(tokensQuery) }),
-      }).then((response) => response.json())
+      const body = await fetchTokens()
 
       const tokens = parseTokensResponse(body?.data?.tokens || [])
       if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
@@ -279,7 +264,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
       return true
     } catch (error) {
-      // eslint-disable-next-line no-console
       log.warn(`Failed to hydrate tokens from chaindata`, error)
 
       return false
