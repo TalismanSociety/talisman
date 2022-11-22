@@ -5,6 +5,7 @@ import {
   TransactionMethod,
   TransactionPayload,
 } from "@core/domains/signing/types"
+import RpcFactory from "@core/libs/RpcFactory"
 import { log } from "@core/log"
 import { assert, hexToNumber } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
@@ -14,19 +15,12 @@ import { getRuntimeVersion } from "./getRuntimeVersion"
 import { getTypeRegistry } from "./getTypeRegistry"
 
 export const getTransactionDetails = async (payload: SignerPayloadJSON) => {
-  const {
-    address,
-    nonce,
-    blockHash,
-    genesisHash,
-    signedExtensions,
-    specVersion: hexSpecVersion,
-  } = payload
+  const { address, nonce, genesisHash, signedExtensions, specVersion: hexSpecVersion } = payload
 
   const { registry } = await getTypeRegistry(
     genesisHash,
     hexToNumber(hexSpecVersion),
-    blockHash,
+    undefined, // dapp may be using an RPC that is a block ahead our provder's RPC, do not specify payload's blockHash or it could throw
     signedExtensions
   )
 
@@ -42,7 +36,7 @@ export const getTransactionDetails = async (payload: SignerPayloadJSON) => {
 
   try {
     // convert to extrinsic
-    const extrinsic = registry.createType("Extrinsic", payload) // payload as UnsignedTransaction
+    const extrinsic = registry.createType("Extrinsic", payload)
 
     try {
       const { method } = extrinsic.toHuman(true) as { method: TransactionMethod }
@@ -55,7 +49,11 @@ export const getTransactionDetails = async (payload: SignerPayloadJSON) => {
       const chain = await chaindataProvider.getChain({ genesisHash })
       assert(chain, "Unable to find chain")
 
-      const runtimeVersion = await getRuntimeVersion(chain.id, blockHash)
+      // sign based on current block from our RPC
+      const [blockHash, runtimeVersion] = await Promise.all([
+        RpcFactory.send<string>(chain.id, "chain_getBlockHash", [], false),
+        getRuntimeVersion(chain.id),
+      ])
 
       // fake sign it so fees can be queried
       extrinsic.signFake(address, { nonce, blockHash, genesisHash, runtimeVersion })

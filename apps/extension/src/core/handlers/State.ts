@@ -1,3 +1,4 @@
+import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 // Copyright 2019-2021 @polkadot/extension-bg authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/background/handlers/State.ts
@@ -35,7 +36,7 @@ export default class State {
       () => this.popupOpen(),
       async (request, response) => {
         if (!response) return
-        const { addresses = [], ethChainId } = response
+        const { addresses = [] } = response
         const {
           idStr,
           request: { origin, ethereum },
@@ -50,7 +51,10 @@ export default class State {
 
         if (ethereum) {
           siteAuth.ethAddresses = addresses
-          siteAuth.ethChainId = ethChainId
+
+          // set a default value for ethChainId only if empty
+          // some sites switch the network before requesting auth, ex nova.arbiscan.io
+          if (!siteAuth.ethChainId) siteAuth.ethChainId = DEFAULT_ETH_CHAIN_ID
         } else siteAuth.addresses = addresses
 
         await sitesAuthorisationStore.set({

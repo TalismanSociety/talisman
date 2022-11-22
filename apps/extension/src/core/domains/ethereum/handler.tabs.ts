@@ -273,11 +273,13 @@ export class EthTabsHandler extends TabsHandler {
       network.rpcUrls.map(async (rpcUrl) => {
         try {
           const provider = new providers.JsonRpcProvider(rpcUrl)
-          const providerChainId = await Promise.race([
+          const providerChainIdHex: string = await Promise.race([
             provider.send("eth_chainId", []),
             throwAfter(10_000, "timeout"), // 10 sec timeout
           ])
-          assert(providerChainId === network.chainId, "chainId mismatch")
+          const providerChainId = parseInt(providerChainIdHex, 16)
+
+          assert(providerChainId === chainId, "chainId mismatch")
         } catch (err) {
           log.error({ err })
           throw new EthProviderRpcError("Invalid rpc " + rpcUrl, ETH_ERROR_EIP1474_INVALID_PARAMS)
@@ -308,9 +310,6 @@ export class EthTabsHandler extends TabsHandler {
     if (!hexChainId)
       throw new EthProviderRpcError("Missing chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
     const ethChainId = parseInt(hexChainId, 16)
-
-    if (ethers.utils.hexValue(ethChainId) !== hexChainId)
-      throw new EthProviderRpcError("Malformed chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(ethChainId.toString())
     if (!ethereumNetwork)
@@ -580,7 +579,6 @@ export class EthTabsHandler extends TabsHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pub(eth.subscribe)":
-        // TODO unsubscribe
         return this.ethSubscribe(id, url, port)
 
       case "pub(eth.request)":
