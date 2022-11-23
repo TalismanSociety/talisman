@@ -95,7 +95,7 @@ export default class Tabs extends TabsHandler {
     }))
   }
 
-  private accountsSubscribe(url: string, id: string, port: Port): boolean {
+  private accountsSubscribe(url: string, id: string, port: Port) {
     return genericAsyncSubscription<"pub(accounts.subscribe)">(
       id,
       port,
@@ -307,6 +307,10 @@ export default class Tabs extends TabsHandler {
 
       case "pub(accounts.subscribe)":
         return this.accountsSubscribe(url, id, port)
+
+      case "pub(accounts.unsubscribe)":
+        // noop, needed to comply with polkadot.js behaviour
+        return true
 
       case "pub(bytes.sign)":
         await this.stores.sites.ensureUrlAuthorized(
