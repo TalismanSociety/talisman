@@ -1,4 +1,10 @@
-import { Metadata, TypeRegistry, createType, decorateConstants } from "@polkadot/types"
+import {
+  Metadata,
+  TypeRegistry,
+  createType,
+  decorateConstants,
+  expandMetadata,
+} from "@polkadot/types"
 import { u8aToHex } from "@polkadot/util"
 import {
   Amount,
@@ -28,7 +34,7 @@ const storageHash = "b99d880ec681799c0cf30e8886371da9" // util_crypto.xxhashAsHe
 const moduleStorageHash = `${moduleHash}${storageHash}`
 
 // AccountInfo is the state_storage data format for nativeToken balances
-const AccountInfo = JSON.stringify({
+const AccountInfoFallback = JSON.stringify({
   nonce: "u32",
   consumers: "u32",
   providers: "u32",
@@ -42,25 +48,10 @@ const AccountInfoCommonOverides = {
     providers: "u32",
     data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
   }),
-  u64Nonce: JSON.stringify({
-    nonce: "u64",
-    consumers: "u32",
-    providers: "u32",
-    sufficients: "u32",
-    data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
-  }),
-  refcount: JSON.stringify({
-    nonce: "u32",
-    refcount: "u32",
-    data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
-  }),
 }
 // TODO: Get this from the metadata store if metadata is >= v14
 const AccountInfoOverrides: { [key: ChainId]: string } = {
-  "crust": AccountInfoCommonOverides.noSufficients,
-  "edgeware": AccountInfoCommonOverides.refcount,
-  "kilt-spiritnet": AccountInfoCommonOverides.u64Nonce,
-  "zeitgeist": AccountInfoCommonOverides.u64Nonce,
+  crust: AccountInfoCommonOverides.noSufficients,
 }
 
 const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
@@ -70,6 +61,7 @@ export type SubNativeToken = NewTokenType<
   ModuleType,
   {
     existentialDeposit: string
+    accountInfo?: string
     chain: { id: ChainId }
   }
 >
@@ -89,6 +81,7 @@ export type SubNativeChainMeta = {
   symbol: string
   decimals: number
   existentialDeposit: string | null
+  accountInfo: string | null
 }
 
 export type SubNativeBalance = NewBalanceType<
@@ -136,11 +129,22 @@ export const SubNativeModule: BalanceModule<
       ? constants.balances.existentialDeposit.toString()
       : null
 
-    return { isTestnet, symbol, decimals, existentialDeposit }
+    let accountInfo = null
+    if (metadata.version >= 14) {
+      const accountInfoLookupId = expandMetadata(
+        metadata.registry,
+        metadata
+      ).query.system.account.meta.type.asMap.value.toNumber()
+      const typeDef = metadata.asLatest.lookup.getTypeDef(accountInfoLookupId)
+
+      accountInfo = typeDef.type
+    }
+
+    return { isTestnet, symbol, decimals, existentialDeposit, accountInfo }
   },
 
   async fetchSubstrateChainTokens(chainConnector, chaindataProvider, chainId, chainMeta) {
-    const { isTestnet, symbol, decimals, existentialDeposit } = chainMeta
+    const { isTestnet, symbol, decimals, existentialDeposit, accountInfo } = chainMeta
 
     const id = subNativeTokenId(chainId, symbol)
     const nativeToken: SubNativeToken = {
@@ -151,6 +155,7 @@ export const SubNativeModule: BalanceModule<
       decimals,
       logo: githubTokenLogoUrl(id),
       existentialDeposit: existentialDeposit || "0",
+      accountInfo: accountInfo ?? undefined,
       chain: { id: chainId },
     }
 
@@ -176,6 +181,9 @@ export const SubNativeModule: BalanceModule<
         const chainId = token.chain?.id
         if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
 
+        const accountInfo =
+          token.accountInfo ?? AccountInfoOverrides[chainId] ?? AccountInfoFallback
+
         // set up method, return message type and params
         const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
         const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
@@ -194,7 +202,10 @@ export const SubNativeModule: BalanceModule<
           params,
           (error, result) => {
             if (error) return callback(error)
-            callback(null, formatRpcResult(tokenId, chainId, addressReferences, result))
+            callback(
+              null,
+              formatRpcResult(tokenId, chainId, accountInfo, addressReferences, result)
+            )
           }
         )
 
@@ -231,6 +242,9 @@ export const SubNativeModule: BalanceModule<
           const chainId = token.chain?.id
           if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
 
+          const accountInfo =
+            token.accountInfo ?? AccountInfoOverrides[chainId] ?? AccountInfoFallback
+
           // set up method and params
           const method = "state_queryStorageAt" // method we call to fetch
           const params = buildParams(addresses)
@@ -242,7 +256,7 @@ export const SubNativeModule: BalanceModule<
           const response = await chainConnectors.substrate.send(chainId, method, params)
           const result = response[0]
 
-          return formatRpcResult(tokenId, chainId, addressReferences, result)
+          return formatRpcResult(tokenId, chainId, accountInfo, addressReferences, result)
         })
       )
     ).filter((balances): balances is Balances => balances !== false)
@@ -306,6 +320,7 @@ function buildAddressReferences(addresses: string[]): Array<[string, string]> {
 function formatRpcResult(
   tokenId: TokenId,
   chainId: ChainId,
+  accountInfo: string,
   addressReferences: Array<[string, string]>,
   result: unknown
 ): Balances {
@@ -334,7 +349,6 @@ function formatRpcResult(
         return false
       }
 
-      const accountInfo = AccountInfoOverrides[chainId] || AccountInfo
       const balance: any = createType(new TypeRegistry(), accountInfo, change)
 
       let free = (balance.data?.free.toBigInt() || BigInt("0")).toString()
