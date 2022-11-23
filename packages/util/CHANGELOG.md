@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 0.1.4
+
+### Patch Changes
+
+- fix: a variety of improvements from the wallet integration
+
 ## 0.1.3
 
 ### Patch Changes

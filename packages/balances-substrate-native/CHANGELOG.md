@@ -1,5 +1,14 @@
 # @talismn/balances-substrate-native
 
+## 0.1.18
+
+### Patch Changes
+
+- fix: a variety of improvements from the wallet integration
+- Updated dependencies
+  - @talismn/balances@0.1.18
+  - @talismn/chaindata-provider@0.1.10
+
 ## 0.1.17
 
 ### Patch Changes

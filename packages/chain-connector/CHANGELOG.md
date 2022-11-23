@@ -1,5 +1,13 @@
 # @talismn/chain-connector
 
+## 0.1.10
+
+### Patch Changes
+
+- fix: a variety of improvements from the wallet integration
+- Updated dependencies
+  - @talismn/chaindata-provider@0.1.10
+
 ## 0.1.9
 
 ### Patch Changes

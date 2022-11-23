@@ -1,5 +1,13 @@
 # @talismn/balances-acala-lptokens
 
+## 0.1.18
+
+### Patch Changes
+
+- Updated dependencies
+  - @talismn/balances@0.1.18
+  - @talismn/chaindata-provider@0.1.10
+
 ## 0.1.17
 
 ### Patch Changes

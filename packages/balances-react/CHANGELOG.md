@@ -1,5 +1,18 @@
 # @talismn/balances-react
 
+## 0.1.18
+
+### Patch Changes
+
+- fix: a variety of improvements from the wallet integration
+- Updated dependencies
+  - @talismn/balances@0.1.18
+  - @talismn/chain-connector@0.1.10
+  - @talismn/chain-connector-evm@0.1.10
+  - @talismn/chaindata-provider@0.1.10
+  - @talismn/chaindata-provider-extension@0.1.10
+  - @talismn/token-rates@0.1.10
+
 ## 0.1.17
 
 ### Patch Changes

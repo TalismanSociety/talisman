@@ -1,5 +1,11 @@
 # @talismn/chaindata-provider
 
+## 0.1.10
+
+### Patch Changes
+
+- fix: a variety of improvements from the wallet integration
+
 ## 0.1.9
 
 ### Patch Changes
