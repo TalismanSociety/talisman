@@ -1,9 +1,11 @@
 import { DEBUG } from "@core/constants"
 import {
+  AddEthereumChainParameter,
   AnyEthRequestChainId,
   CustomEvmNetwork,
   EthApproveSignAndSend,
   EthRequestSigningApproveSignature,
+  EvmNetwork,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
@@ -21,14 +23,23 @@ import { watchEthereumTransaction } from "@core/notifications"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
+import { EvmNetworkFragment, graphqlUrl } from "@core/util/graphql"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
+import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
+import { isDefined } from "@ui/util/isDefined"
 import { ethers } from "ethers"
+import { print } from "graphql"
+import gql from "graphql-tag"
+import { sumBy } from "lodash"
+import { tokensQuery, tokensResponseToTokenList } from "../tokens/store"
 
 import { rebuildTransactionRequestNumbers } from "./helpers"
+import { evmNetworksQuery } from "./networksStore"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
+import { RequestUpsertCustomEvmNetwork } from "./types/base"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -331,6 +342,146 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
+  private async ethNetworkUpsert(network: RequestUpsertCustomEvmNetwork): Promise<boolean> {
+    // TODO check RPC is healthy and returns the good chain id
+
+    await db.transaction("rw", db.evmNetworks, db.tokens, async (tx) => {
+      const nativeTokenId = `${network.id}-native-${network.tokenSymbol}`.toLowerCase()
+
+      // allow overriding all networks, including talisman-defined ones
+      const existing = await db.evmNetworks.get(network.id)
+
+      //if symbol changed, previous native token must be deleted
+      if (existing?.nativeToken && existing.nativeToken.id !== nativeTokenId)
+        await db.tokens.delete(existing.nativeToken.id)
+
+      // ensure native token exists
+      await db.tokens.put({
+        id: nativeTokenId,
+        type: "native",
+        isTestnet: false,
+        symbol: network.tokenSymbol,
+        decimals: network.tokenDecimals,
+        existentialDeposit: "0",
+        evmNetwork: { id: network.id },
+        isCustom: true,
+      })
+
+      // upsert the network itself
+      await db.evmNetworks.put({
+        id: network.id,
+        isTestnet: network.isTestnet,
+        sortIndex: null,
+        name: network.name,
+        nativeToken: { id: nativeTokenId },
+        tokens: existing?.tokens ?? [],
+        explorerUrl: network.blockExplorerUrl ?? null,
+        rpcs: [{ url: network.rpc, isHealthy: true }],
+        isHealthy: true,
+        substrateChain: existing?.substrateChain ?? null,
+        isCustom: true,
+        explorerUrls: [network.blockExplorerUrl].filter(isDefined),
+      })
+
+      talismanAnalytics.captureDelayed("add network evm", {
+        network: network.name,
+        isCustom: true,
+      })
+    })
+
+    return true
+  }
+
+  private async ethNetworkRemove(request: RequestIdOnly): Promise<boolean> {
+    const id = parseInt(request.id)
+
+    const evmNetwork = await db.evmNetworks.get(id)
+    assert(evmNetwork, "Could not find network " + id)
+    assert(isCustomEvmNetwork(evmNetwork), "Only custom networks may be removed")
+
+    await db.transaction("rw", db.evmNetworks, db.tokens, async () => {
+      await db.tokens.filter((t) => "evmNetwork" in t && t.evmNetwork?.id === id).delete()
+      await db.evmNetworks.delete(id)
+    })
+
+    return true
+  }
+
+  private async ethNetworkReset(request: RequestIdOnly): Promise<boolean> {
+    const id = parseInt(request.id)
+
+    const evmNetwork = await db.evmNetworks.get(id)
+    assert(evmNetwork, "Could not find network " + id)
+    assert(isCustomEvmNetwork(evmNetwork), "Network has not been customized")
+
+    // TODO post balances merge, move this to a function in networks store
+
+    const { data: dataNetworks } = await (
+      await fetch(graphqlUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: print(evmNetworksQuery) }),
+      }).catch(() => {
+        throw new Error("Failed to fetch Talisman networks")
+      })
+    )
+      .json()
+      .catch(() => {
+        throw new Error("Failed to load Talisman networks")
+      })
+
+    const { data: dataTokens } = await (
+      await fetch(graphqlUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: print(tokensQuery) }),
+      })
+    ).json()
+
+    const defaultEvmNetwork = dataNetworks?.evmNetworks?.find(
+      (n: EvmNetwork) => Number(n.id) === id
+    )
+    assert(defaultEvmNetwork, "Could not find network")
+
+    const tokensList = tokensResponseToTokenList(dataTokens?.tokens ?? [])
+    const defaultNativeToken = Object.values(tokensList).find(
+      (t) => t.type === "native" && "evmNetwork" in t && Number(t.evmNetwork?.id) === id
+    )
+    assert(defaultNativeToken, "Could not find native token")
+
+    await db.transaction("rw", db.tokens, db.evmNetworks, async () => {
+      // recreate native token
+      await db.tokens
+        .filter((t) => t.type === "native" && "evmNetwork" in t && Number(t.evmNetwork?.id) === id)
+        .delete()
+      await db.tokens.put(defaultNativeToken)
+
+      // overwrite network
+      await db.evmNetworks.put({
+        ...defaultEvmNetwork,
+        id: Number(defaultEvmNetwork.id),
+      })
+    })
+
+    //if native token was customized changed, previous native token must be deleted
+    // if (existing?.nativeToken && existing.nativeToken.id !== nativeTokenId)
+    //   await db.tokens.delete(existing.nativeToken.id)
+
+    // // ensure native token exists
+    // await db.tokens.put({
+    //   id: nativeTokenId,
+    //   type: "native",
+    //   isTestnet: false,
+    //   symbol: network.tokenSymbol,
+    //   decimals: network.tokenDecimals,
+    //   existentialDeposit: "0",
+    //   evmNetwork: { id: network.id },
+    //   isCustom: true,
+    // })
+
+    return true
+  }
+
   private ethWatchAssetRequestCancel({ id }: RequestIdOnly): boolean {
     const queued = this.state.requestStores.evmAssets.getRequest(id)
 
@@ -461,49 +612,19 @@ export class EthHandler extends ExtensionHandler {
       case "pri(eth.networks.subscribe)":
         return this.stores.evmNetworks.hydrateStore()
 
-      case "pri(eth.networks.add.custom)": {
-        const newNetwork = request as RequestTypes["pri(eth.networks.add.custom)"]
-
-        const existing = await db.evmNetworks.get(newNetwork.id)
-        if (existing && !("isCustom" in existing && existing.isCustom === true)) {
-          throw new Error(`Failed to override built-in Talisman network`)
-        }
-
-        newNetwork.isCustom = true
-        await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.put(newNetwork))
-        talismanAnalytics.captureDelayed("add network evm", {
-          network: newNetwork.name,
-          isCustom: true,
-        })
-        return true
-      }
+      case "pri(eth.networks.upsert)":
+        return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])
 
       case "pri(eth.transactions.count)": {
         const { address, evmNetworkId } = request as RequestTypes["pri(eth.transactions.count)"]
         return getTransactionCount(address, evmNetworkId)
       }
 
-      case "pri(eth.networks.removeCustomNetwork)": {
-        const id = parseInt(
-          (request as RequestTypes["pri(eth.networks.removeCustomNetwork)"]).id,
-          10
-        )
+      case "pri(eth.networks.remove)":
+        return this.ethNetworkRemove(request as RequestTypes["pri(eth.networks.remove)"])
 
-        await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.delete(id))
-
-        return true
-      }
-
-      case "pri(eth.networks.clearCustomNetworks)": {
-        await Promise.all([
-          // TODO: Only clear custom evm network native tokens,
-          // this call will also clear custom erc20 tokens on non-custom evm networks
-          this.stores.evmNetworks.clearCustom(),
-          this.stores.tokens.clearCustom(),
-        ])
-
-        return true
-      }
+      case "pri(eth.networks.reset)":
+        return this.ethNetworkReset(request as RequestTypes["pri(eth.networks.reset)"])
 
       case "pri(eth.request)": {
         const { chainId: ethChainId, ...rest } = request as AnyEthRequestChainId

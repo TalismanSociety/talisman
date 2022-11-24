@@ -47,6 +47,7 @@ import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
 import { ethers } from "ethers"
+import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types/base"
 
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
@@ -159,12 +160,6 @@ export default interface MessageTypes {
     filter: { chainId?: ChainId; evmNetworkId?: number } | undefined
   ) => Promise<boolean>
 
-  // ethereum networks message types
-  ethereumNetworks: (cb: () => void) => UnsubscribeFn
-  addCustomEthereumNetwork: (ethereumNetwork: CustomEvmNetwork) => Promise<boolean>
-  removeCustomEthereumNetwork: (id: string) => Promise<boolean>
-  clearCustomEthereumNetworks: () => Promise<boolean>
-
   // transaction message types
   transactionSubscribe: (id: string, cb: (tx: any) => void) => UnsubscribeFn
   transactionsSubscribe: (cb: (txs: any) => void) => UnsubscribeFn
@@ -218,6 +213,8 @@ export default interface MessageTypes {
   ethCancelSign: (id: string) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
   ethGetTransactionsCount: (address: string, evmNetworkId: number) => Promise<number>
+
+  // ethereum network add request message types
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: string) => Promise<boolean>
   ethNetworkAddCancel: (is: string) => Promise<boolean>
@@ -225,6 +222,13 @@ export default interface MessageTypes {
     cb: (requests: AddEthereumChainRequest[]) => void
   ) => UnsubscribeFn
 
+  // ethereum networks message types
+  ethereumNetworks: (cb: () => void) => UnsubscribeFn
+  ethNetworkUpsert: (network: RequestUpsertCustomEvmNetwork) => Promise<boolean>
+  ethNetworkRemove: (id: string) => Promise<boolean>
+  ethNetworkReset: (id: string) => Promise<boolean>
+
+  // ethereum tokens message types
   ethWatchAssetRequestApprove: (id: string) => Promise<boolean>
   ethWatchAssetRequestCancel: (is: string) => Promise<boolean>
   ethWatchAssetRequestSubscribe: (

@@ -1,3 +1,13 @@
+export type RequestUpsertCustomEvmNetwork = {
+  id: number
+  name: string
+  tokenSymbol: string
+  tokenDecimals: number
+  rpc: string
+  isTestnet: boolean
+  blockExplorerUrl?: string
+}
+
 export type AddEthereumChainParameter = {
   /** A 0x-prefixed hexadecimal string */
   chainId: string

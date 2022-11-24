@@ -59,7 +59,13 @@ const Settings = () => {
         />
         <CtaButton
           icon={<IconList />}
-          title="Manage Custom Tokens"
+          title="Ethereum Networks"
+          subtitle="Manage Ethereum compatible networks"
+          to={`/networks`}
+        />
+        <CtaButton
+          icon={<IconList />}
+          title="Ethereum Tokens"
           subtitle="Add or delete custom ERC20 tokens"
           to={`/tokens`}
         />
