@@ -52,8 +52,8 @@ export const Networks = () => {
       <HeaderBlock title="Ethereum Networks" text="Add or delete custom Ethereum networks" />
       <div className="mt-24 mb-16 flex justify-end gap-4">
         <EnableTestnetPillButton className="h-16" />
-        <PillButton size="xs" className="h-16" onClick={() => navigate("./add")}>
-          <PlusIcon className="inline" /> Add network
+        <PillButton icon={PlusIcon} size="xs" className="h-16" onClick={() => navigate("./add")}>
+          Add network
         </PillButton>
       </div>
       <NetworksList />
