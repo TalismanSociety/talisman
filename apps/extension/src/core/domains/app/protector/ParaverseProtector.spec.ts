@@ -17,32 +17,32 @@ jest.spyOn(ParaverseProtector.prototype, "getMetamaskData").mockImplementation(m
 
 const protector = new ParaverseProtector()
 
-it("Checks phishing sites", () => {
+it("Checks phishing sites", async () => {
   // in allow lists
-  expect(protector.isPhishingSite("https://www.goodsite.com")).toBeFalsy()
-  expect(protector.isPhishingSite("https://app.talisman.xyz")).toBeFalsy()
+  expect(await protector.isPhishingSite("https://www.goodsite.com")).toBeFalsy()
+  expect(await protector.isPhishingSite("https://app.talisman.xyz")).toBeFalsy()
   // unlisted subdomain of domain in allow list
-  expect(protector.isPhishingSite("https://fake.talisman.xyz")).toBeFalsy()
+  expect(await protector.isPhishingSite("https://fake.talisman.xyz")).toBeFalsy()
   // not listed at all
-  expect(protector.isPhishingSite("https://something.else")).toBeFalsy()
+  expect(await protector.isPhishingSite("https://something.else")).toBeFalsy()
   // in deny list
-  expect(protector.isPhishingSite("https://badsite.com"))
-  expect(protector.isPhishingSite("ws://badsite.com"))
-  expect(protector.isPhishingSite("https://an.other-badsite.io"))
+  expect(await protector.isPhishingSite("https://badsite.com"))
+  expect(await protector.isPhishingSite("ws://badsite.com"))
+  expect(await protector.isPhishingSite("https://an.other-badsite.io"))
   // unlisted subdomain of domain with another subdomain in deny list
-  expect(protector.isPhishingSite("https://safe.other-badsite.io")).toBeFalsy()
+  expect(await protector.isPhishingSite("https://safe.other-badsite.io")).toBeFalsy()
   // unlisted subdomain of domain in deny list
-  expect(protector.isPhishingSite("https://not-in-list.badsite.io"))
+  expect(await protector.isPhishingSite("https://not-in-list.badsite.io"))
 
   // not a url
-  expect(protector.isPhishingSite("some garbage")).toBeFalsy()
+  expect(await protector.isPhishingSite("some garbage")).toBeFalsy()
 })
 
-it("Can add an exception to phishing sites", () => {
+it("Can add an exception to phishing sites", async () => {
   const badsite = "https://badsite.com"
-  expect(protector.isPhishingSite(badsite))
+  expect(await protector.isPhishingSite(badsite))
   protector.addException(badsite)
-  expect(protector.isPhishingSite(badsite)).toBeFalsy()
+  expect(await protector.isPhishingSite(badsite)).toBeFalsy()
 })
 
 afterAll(() => {

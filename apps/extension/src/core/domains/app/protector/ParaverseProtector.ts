@@ -39,6 +39,7 @@ export type ProtectorStorage = {
 }
 
 export default class ParaverseProtector {
+  #initialised: Promise<boolean>
   #commits = {
     polkadot: "",
     metamask: "",
@@ -57,24 +58,40 @@ export default class ParaverseProtector {
     this.#refreshTimer = setInterval(this.setRefreshTimer, REFRESH_INTERVAL_MIN * 60 * 1000)
     // do the first check once after 30 seconds
     setTimeout(this.setRefreshTimer, 30_000)
+    this.#initialised = this.initialise()
+  }
 
+  async initialise() {
     // restore persisted data
-    db.phishing.bulkGet(["polkadot", "phishfort", "metamask"]).then((persisted) => {
-      ;(persisted.filter(Boolean) as ProtectorStorage[]).forEach(
-        ({ source, compressedHostList, commitSha }) => {
-          const fullData = decompressFromUTF16(compressedHostList)
-          if (!fullData) return
+    return new Promise<boolean>((resolve) => {
+      db.on("ready", () =>
+        db.phishing.bulkGet(["polkadot", "phishfort", "metamask"]).then((persisted) => {
+          ;(persisted.filter(Boolean) as ProtectorStorage[]).forEach(
+            ({ source, compressedHostList, commitSha }) => {
+              const fullData = decompressFromUTF16(compressedHostList)
+              if (!fullData) return
 
-          this.#commits[source] = commitSha
+              this.#commits[source] = commitSha
 
-          if (source === "metamask")
-            this.#metamaskDetector = new MetamaskDetector(
-              JSON.parse(fullData) as MetaMaskDetectorConfig
-            )
-          else this.lists[source] = JSON.parse(fullData)
-        }
+              if (source === "metamask")
+                this.#metamaskDetector = new MetamaskDetector(
+                  JSON.parse(fullData) as MetaMaskDetectorConfig
+                )
+              else this.lists[source] = JSON.parse(fullData)
+            }
+          )
+          resolve(true)
+        })
       )
+    }).catch((err) => {
+      // in the case of any error, the user should only be unprotected until the first update runs (30 seconds)
+      log.error(err)
+      return true
     })
+  }
+
+  isInitialised() {
+    return this.#initialised
   }
 
   async setRefreshTimer() {
@@ -105,21 +122,29 @@ export default class ParaverseProtector {
   }
 
   async getMetamaskCommit() {
-    const sha = await this.getCommitSha(`${METAMASK_REPO}${COMMIT_PATH}`)
-    if (sha !== this.#commits.metamask) {
-      this.#commits.metamask = sha
-      const mmConfig = await this.getMetamaskData()
-      this.#metamaskDetector = new MetamaskDetector(mmConfig)
-      this.persistData("metamask", sha, mmConfig)
+    try {
+      const sha = await this.getCommitSha(`${METAMASK_REPO}${COMMIT_PATH}`)
+      if (sha !== this.#commits.metamask) {
+        this.#commits.metamask = sha
+        const mmConfig = await this.getMetamaskData()
+        this.#metamaskDetector = new MetamaskDetector(mmConfig)
+        this.persistData("metamask", sha, mmConfig)
+      }
+    } catch (error) {
+      log.error("Error getting metamask phishing commit and data", { error })
     }
   }
 
   async getPolkadotCommit() {
-    const sha = await this.getCommitSha(`${POLKADOT_REPO}${COMMIT_PATH}`)
-    if (sha !== this.#commits.polkadot) {
-      this.#commits.polkadot = sha
-      this.lists.polkadot = await this.getPolkadotData()
-      this.persistData("polkadot", sha, this.lists.polkadot)
+    try {
+      const sha = await this.getCommitSha(`${POLKADOT_REPO}${COMMIT_PATH}`)
+      if (sha !== this.#commits.polkadot) {
+        this.#commits.polkadot = sha
+        this.lists.polkadot = await this.getPolkadotData()
+        this.persistData("polkadot", sha, this.lists.polkadot)
+      }
+    } catch (error) {
+      log.error("Error getting polkadot phishing commit and data", { error })
     }
   }
 
@@ -128,11 +153,15 @@ export default class ParaverseProtector {
   }
 
   async getPhishFortCommit() {
-    const sha = await this.getCommitSha(`${PHISHFORT_REPO}${COMMIT_PATH}`)
-    if (sha !== this.#commits.phishfort) {
-      this.#commits.phishfort = sha
-      this.lists.phishfort.deny = await this.getPhishFortData()
-      this.persistData("phishfort", sha, this.lists.phishfort)
+    try {
+      const sha = await this.getCommitSha(`${PHISHFORT_REPO}${COMMIT_PATH}`)
+      if (sha !== this.#commits.phishfort) {
+        this.#commits.phishfort = sha
+        this.lists.phishfort.deny = await this.getPhishFortData()
+        this.persistData("phishfort", sha, this.lists.phishfort)
+      }
+    } catch (error) {
+      log.error("Error getting phishfort phishing commit and data", { error })
     }
   }
 
@@ -159,7 +188,8 @@ export default class ParaverseProtector {
     }
   }
 
-  isPhishingSite(url: string) {
+  async isPhishingSite(url: string) {
+    await this.isInitialised()
     const { val: host, ok } = this.getHostName(url)
     if (!ok) return false
 

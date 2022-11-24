@@ -244,7 +244,7 @@ export default class Tabs extends TabsHandler {
   }
 
   private async redirectIfPhishing(url: string): Promise<boolean> {
-    const isInDenyList = protector.isPhishingSite(url)
+    const isInDenyList = await protector.isPhishingSite(url)
 
     if (isInDenyList) {
       Sentry.captureEvent({
