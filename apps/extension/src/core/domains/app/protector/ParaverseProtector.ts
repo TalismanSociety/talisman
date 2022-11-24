@@ -64,7 +64,7 @@ export default class ParaverseProtector {
   async initialise() {
     // restore persisted data
     return new Promise<boolean>((resolve) => {
-      db.on("ready", () =>
+      db.on.ready.subscribe(() => {
         db.phishing.bulkGet(["polkadot", "phishfort", "metamask"]).then((persisted) => {
           ;(persisted.filter(Boolean) as ProtectorStorage[]).forEach(
             ({ source, compressedHostList, commitSha }) => {
@@ -82,7 +82,7 @@ export default class ParaverseProtector {
           )
           resolve(true)
         })
-      )
+      }, false)
     }).catch((err) => {
       // in the case of any error, the user should only be unprotected until the first update runs (30 seconds)
       log.error(err)
