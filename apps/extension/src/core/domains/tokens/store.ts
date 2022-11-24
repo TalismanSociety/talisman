@@ -83,7 +83,7 @@ const isTokenType = (type?: string): type is TokensResponseType =>
 /**
  * Helper function to convert tokensQuery response into a `TokenList`.
  */
-const tokensResponseToTokenList = (tokens: unknown[]): TokenList =>
+export const tokensResponseToTokenList = (tokens: unknown[]): TokenList =>
   tokens.reduce(
     // TODO: Fix `token` type after https://github.com/subsquid/squid/issues/41 is merged
     (allTokens: TokenList, token: any) => {

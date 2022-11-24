@@ -2,6 +2,7 @@ import { DEBUG } from "@core/constants"
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkList } from "@core/domains/ethereum/types"
 import { db } from "@core/libs/db"
 import { EvmNetworkFragment, graphqlUrl } from "@core/util/graphql"
+import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { print } from "graphql"
 import gql from "graphql-tag"
 
@@ -19,9 +20,12 @@ export class EvmNetworkStore {
   }
 
   async replaceChaindata(evmNetworks: (EvmNetwork | CustomEvmNetwork)[]): Promise<void> {
-    await db.transaction("rw", db.evmNetworks, () => {
-      db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
-      db.evmNetworks.bulkPut(evmNetworks)
+    await db.transaction("rw", db.evmNetworks, async () => {
+      await db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
+
+      // do not override networks marked as custom (the only ones remaining in the table at this stage)
+      const customNetworksIds = (await db.evmNetworks.toArray()).map((n) => n.id)
+      await db.evmNetworks.bulkPut(evmNetworks.filter((n) => !customNetworksIds.includes(n.id)))
     })
   }
 
@@ -31,9 +35,11 @@ export class EvmNetworkStore {
    *
    * @returns A promise which resolves to true if the store has been hydrated, or false if the hydration was skipped.
    */
-  async hydrateStore(): Promise<boolean> {
+  async hydrateStore(force?: boolean): Promise<boolean> {
     const now = Date.now()
-    if (now - this.#lastHydratedAt < minimumHydrationInterval) return false
+    if (!force) {
+      if (now - this.#lastHydratedAt < minimumHydrationInterval) return false
+    }
 
     try {
       const { data } = await (

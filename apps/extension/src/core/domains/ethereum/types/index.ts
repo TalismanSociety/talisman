@@ -4,7 +4,7 @@ import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injec
 import { RequestIdOnly } from "@core/types/base"
 import { BigNumberish, ethers } from "ethers"
 
-import { AddEthereumChainParameter, WatchAssetBase } from "./base"
+import { AddEthereumChainParameter, RequestUpsertCustomEvmNetwork, WatchAssetBase } from "./base"
 
 export type { AddEthereumChainParameter, WatchAssetBase }
 
@@ -95,9 +95,9 @@ export interface EthMessages {
 
   // ethereum networks message signatures
   "pri(eth.networks.subscribe)": [null, boolean, boolean]
-  "pri(eth.networks.add.custom)": [CustomEvmNetwork, boolean]
-  "pri(eth.networks.removeCustomNetwork)": [RequestIdOnly, boolean]
-  "pri(eth.networks.clearCustomNetworks)": [null, boolean]
+  "pri(eth.networks.remove)": [RequestIdOnly, boolean]
+  "pri(eth.networks.reset)": [RequestIdOnly, boolean]
+  "pri(eth.networks.upsert)": [RequestUpsertCustomEvmNetwork, boolean]
 }
 
 export type EthGasSettingsLegacy = {
