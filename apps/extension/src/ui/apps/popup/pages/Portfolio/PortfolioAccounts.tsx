@@ -9,6 +9,7 @@ import {
   CreditCardIcon,
   PaperPlaneIcon,
   UsbIcon,
+  ZapIcon,
 } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -154,6 +155,7 @@ const TopActions = () => {
     window.close()
   }, [])
 
+  const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
   const handleBuyTokensClick = useCallback(async () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
@@ -164,11 +166,25 @@ const TopActions = () => {
     window.close()
   }, [])
 
-  const canBuy = useIsFeatureEnabled("BUY_CRYPTO")
+  const showStaking = useIsFeatureEnabled("LINK_STAKING")
+  const handleStakingClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Staking button",
+    })
+    window.open("https://app.talisman.xyz/staking", "_blank")
+    close()
+  }, [])
 
   return (
     <div className="mt-8 flex justify-center gap-4">
       <>
+        {showStaking && (
+          <PillButton onClick={handleStakingClick} icon={ZapIcon}>
+            Stake
+          </PillButton>
+        )}
         <PillButton onClick={handleSendFundsClick} icon={PaperPlaneIcon}>
           Send
         </PillButton>

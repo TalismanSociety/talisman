@@ -10054,6 +10054,7 @@ __metadata:
     jest-webextension-mock: 3.7.22
     js-yaml: 4.1.0
     lodash: 4.17.21
+    lottie-react: 2.3.1
     minimist: ^1.2.6
     nanoid: 3.3.2
     postcss: ^8.4.16
@@ -13041,6 +13042,25 @@ __metadata:
   bin:
     loose-envify: cli.js
   checksum: 6517e24e0cad87ec9888f500c5b5947032cdfe6ef65e1c1936a0c48a524b81e65542c9c3edc91c97d5bddc806ee2a985dbc79be89215d613b1de5db6d1cfe6f4
+  languageName: node
+  linkType: hard
+
+"lottie-react@npm:2.3.1":
+  version: 2.3.1
+  resolution: "lottie-react@npm:2.3.1"
+  dependencies:
+    lottie-web: ^5.9.4
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 3f83511eec9ef80c6500658fcb188f757c663c5de49de5cfd55d061d5de72b9242fd0a3b7ec7ce84bbad5acbcd7293468228a0f6cbe28e50e4c44e5b25df1c8d
+  languageName: node
+  linkType: hard
+
+"lottie-web@npm:^5.9.4":
+  version: 5.9.6
+  resolution: "lottie-web@npm:5.9.6"
+  checksum: aed6a1d0c24eefb6c42a42aae18f29737746551cfdc86319f1b9675f5bc276ba26971e8d2b0e1498df880571fe4bfe2fc87885a1d4f8a318d5e4e5b939b7a474
   languageName: node
   linkType: hard
 
@@ -16746,6 +16766,7 @@ __metadata:
     eslint: ^8.15.0
     eslint-config-talisman: "*"
     framer-motion: 6.2.8
+    lottie-react: 2.3.1
     postcss: ^8.4.16
     react: 18.2.0
     react-dom: 18.2.0
@@ -16759,6 +16780,7 @@ __metadata:
     autoprefixer: ">=10.4.12"
     color: ">=4.2.3"
     framer-motion: ">=6.2.8"
+    lottie-react: ">=2.3.1"
     postcss: "*"
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
