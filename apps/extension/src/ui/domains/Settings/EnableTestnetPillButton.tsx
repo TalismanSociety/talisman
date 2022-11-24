@@ -41,11 +41,22 @@ export const EnableTestnetPillButton: FC<EnableTestnetPillButtonProps> = ({ clas
   }, [update, useTestnets])
 
   return (
-    <PillButton onClick={handleClick} size="xs" className={className}>
-      <div className="flex items-center gap-3">
-        <div>{useTestnets ? <Checked /> : <Unchecked />}</div>
-        <div>Enable testnets</div>
-      </div>
+    <PillButton
+      icon={useTestnets ? Checked : Unchecked}
+      onClick={handleClick}
+      size="xs"
+      className={className}
+    >
+      Enable testnets
     </PillButton>
   )
+
+  // return (
+  //   <PillButton onClick={handleClick} size="xs" className={className}>
+  //     <div className="flex items-center gap-3">
+  //       <div>{useTestnets ? <Checked /> : <Unchecked />}</div>
+  //       <div>Enable testnets</div>
+  //     </div>
+  //   </PillButton>
+  // )
 }

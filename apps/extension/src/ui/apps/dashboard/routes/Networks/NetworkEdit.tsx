@@ -24,7 +24,6 @@ import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import StyledDialog from "@talisman/components/Dialog"
 import { sleep } from "@core/util/sleep"
 
 const useIsBuiltInEvmNetwork = (evmNetworkId?: number) => {
@@ -125,15 +124,6 @@ type EvmChainInfo = {
   slip44?: number
 }
 
-// const getEvmChainInfo = async (chainId: number):Promise<EvmChainInfo | null> => {
-//   if (!chainId) return null
-
-//   const fetchChainInfo = await fetch(
-//     `https://raw.githubusercontent.com/ethereum-lists/chains/master/_data/chains/eip155-${chainId}.json`
-//   )
-//   return fetchChainInfo.json()
-// }
-
 const useEvmChainsList = () => {
   const [isLoading, setIsLoading] = useState<boolean>()
   const [error, setError] = useState<Error>()
@@ -150,32 +140,6 @@ const useEvmChainsList = () => {
   }, [])
 
   return { evmChainsList, isLoading, error }
-}
-
-const useEvmChainInfo = (chainId: number) => {
-  const { evmChainsList, isLoading, error } = useEvmChainsList()
-
-  const evmChainInfo = useMemo(
-    () => evmChainsList?.find((c) => c.chainId === chainId),
-    [chainId, evmChainsList]
-  )
-
-  return { evmChainInfo, isLoading, error }
-  // const [isLoading, setIsLoading] = useState<boolean>();
-  // const [error, setError] = useState<Error>()
-  // const [chainInfo, setChainInfo] = useState<EvmChainInfo | null>();
-
-  // useEffect(() => {
-  //   setError(undefined)
-  //   setChainInfo(undefined)
-  //   setIsLoading(true)
-  //   getEvmChainInfo(chainId)
-  //     .then(setChainInfo)
-  //     .catch(setError)
-  //     .finally(() => setIsLoading(false))
-  // }, [chainId])
-
-  // return {chainInfo, isLoading, error}
 }
 
 export const NetworkEdit = () => {
@@ -289,7 +253,6 @@ export const NetworkEdit = () => {
         navigate("/networks")
       } catch (err) {
         setSubmitError((err as Error).message)
-        // setError(`Failed to add the token : ${(err as Error)?.message ?? ""}`)
       }
     },
     [navigate]
@@ -302,7 +265,6 @@ export const NetworkEdit = () => {
 
   const { evmChainsList } = useEvmChainsList()
   // auto fill only once, or it would prevent user from beeing able to clear a field
-  //const refAutofilled = useRef<number>()
   const autoFill = useCallback(
     async (id: number) => {
       const chainInfo = evmChainsList?.find((c) => c.chainId === id)
@@ -320,11 +282,6 @@ export const NetworkEdit = () => {
     [evmChainsList, setValue]
   )
 
-  // useEffect(() => {
-  //   // reset if id changes
-  //   refAutofilled.current = undefined
-  // }, [id])
-
   useEffect(() => {
     // check only if adding a new network
     if (evmNetworkId || !id) return
@@ -335,13 +292,6 @@ export const NetworkEdit = () => {
       autoFill(id)
     }
   }, [autoFill, clearErrors, evmNetworkId, evmNetworks, id, setError])
-
-  // // if chain id is valid, we may auto-fill properties
-  // const { chainInfo } = useEvmChainInfo(errors.id ? id : 0)
-  // useEffect(() => {
-  //   // auto fill only if adding a new network
-  //   if (evmNetworkId || !chainInfo) return
-  // })
 
   const [showRemove, showReset] = useMemo(
     () =>
@@ -393,8 +343,6 @@ export const NetworkEdit = () => {
   // on edit screen, wait for existing network to be loaded
   if (evmNetworkId && !evmNetwork) return null
 
-  // console.log({ evmNetwork, isTestnet, dv: evmNetworkToFormData(evmNetwork), name })
-
   return (
     <Layout withBack centered>
       <HeaderBlock
@@ -407,8 +355,7 @@ export const NetworkEdit = () => {
             type="text"
             autoComplete="off"
             spellCheck={false}
-            // using our domain for the placeholder so nothing bad happens if user actually tries it
-            placeholder="https://ethereum-rpc.talisman.xyz (example only)"
+            placeholder="https://cloudflare-eth.com/"
             className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none"
             {...register("rpc")}
           />
@@ -419,10 +366,8 @@ export const NetworkEdit = () => {
               type="text"
               autoComplete="off"
               spellCheck={false}
-              // using our domain for the placeholder so nothing bad happens if user actually tries it
               placeholder="1"
               className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none read-only:opacity-50"
-              //   TODO remove valueAsNumber when moving to balances v2
               {...register("id", { valueAsNumber: true })}
               readOnly
             />
@@ -448,7 +393,6 @@ export const NetworkEdit = () => {
               type="text"
               autoComplete="off"
               spellCheck={false}
-              // using our domain for the placeholder so nothing bad happens if user actually tries it
               placeholder="ETH"
               className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none"
               {...register("tokenSymbol")}
@@ -459,7 +403,6 @@ export const NetworkEdit = () => {
               type="text"
               autoComplete="off"
               spellCheck={false}
-              // using our domain for the placeholder so nothing bad happens if user actually tries it
               placeholder="18"
               className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none"
               {...register("tokenDecimals", { valueAsNumber: true })}
@@ -471,17 +414,16 @@ export const NetworkEdit = () => {
             type="text"
             autoComplete="off"
             spellCheck={false}
-            // using our domain for the placeholder so nothing bad happens if user actually tries it
             placeholder="https://etherscan.io"
             className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none"
             {...register("blockExplorerUrl")}
           />
         </FormFieldContainer>
-        <FormFieldContainer label="Testnet" error={errors.isTestnet?.message}>
+        <div>
           <Checkbox checked={!!isTestnet} onChange={handleIsTestnetChange}>
-            <span className="text-body-secondary">Consider as test network</span>
+            <span className="text-body-secondary">Testnet</span>
           </Checkbox>
-        </FormFieldContainer>
+        </div>
         <div className="text-alert-warn">{submitError}</div>
         <div className="flex justify-between">
           <div>
