@@ -1,3 +1,4 @@
+import { db } from "@core/libs/db"
 import ParaverseProtector from "./ParaverseProtector"
 
 const mockGetCommitSha = jest.fn(async () => "newCommit")
@@ -14,8 +15,9 @@ jest
   .spyOn(ParaverseProtector.prototype, "getPhishFortData")
   .mockImplementation(mockGetPhishFortData)
 jest.spyOn(ParaverseProtector.prototype, "getMetamaskData").mockImplementation(mockGetMetamaskData)
-
 const protector = new ParaverseProtector()
+// mock fire the ready event on the database
+db.on.ready.fire(db)
 
 it("Checks phishing sites", async () => {
   // in allow lists
