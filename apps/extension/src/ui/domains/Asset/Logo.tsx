@@ -1,8 +1,5 @@
 import styled from "styled-components"
-import CustomTokenGeneric from "@talisman/theme/icons/custom-token-generic.svg?url"
-import { getBase64ImageUrl } from "talisman-utils"
-
-const genericTokenUrl = getBase64ImageUrl(CustomTokenGeneric)
+import { GENERIC_TOKEN_LOGO_URL } from "./TokenLogo"
 
 interface IAssetLogo {
   id?: string | number
@@ -16,7 +13,7 @@ const AssetLogo = ({ id, className }: IAssetLogo) => {
   return (
     <div
       className={`${className} chain-logo`}
-      style={{ backgroundImage: `url(${background(id)}), url(${genericTokenUrl})` }}
+      style={{ backgroundImage: `url(${background(id)}), url(${GENERIC_TOKEN_LOGO_URL})` }}
       data-id={id}
     />
   )

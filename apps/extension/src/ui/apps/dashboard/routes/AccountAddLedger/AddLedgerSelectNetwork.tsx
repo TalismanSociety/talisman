@@ -20,7 +20,7 @@ import Layout from "../../layout"
 import { useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
 import { ConnectLedgerSubstrate } from "./Shared/ConnectLedgerSubstrate"
-import { useFeatureFlag } from "@ui/hooks/useFeatures"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useAppState } from "@ui/hooks/useAppState"
 
 const Container = styled(Layout)`
@@ -107,7 +107,7 @@ const Highlight = styled.span`
 
 export const AddLedgerSelectNetwork = () => {
   const { data: defaultValues, updateData } = useAddLedgerAccount()
-  const { isEnabled: isLedgerEvmEnabled } = useFeatureFlag("LEDGER_EVM")
+  const isLedgerEvmEnabled = useIsFeatureEnabled("LEDGER_EVM")
   const { hasSpiritKey } = useAppState()
 
   const enabledAddressTypes: AccountAddressType[] = useMemo(

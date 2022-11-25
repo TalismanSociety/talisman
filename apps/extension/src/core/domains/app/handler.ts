@@ -25,6 +25,7 @@ import Browser from "webextension-polyfill"
 
 import { AccountTypes } from "../accounts/helpers"
 import { changePassword } from "./helpers"
+import { protector } from "./protector"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
@@ -288,6 +289,12 @@ export default class AppHandler extends ExtensionHandler {
         const { eventName, options } = request as AnalyticsCaptureRequest
         talismanAnalytics.capture(eventName, options)
         return true
+      }
+
+      case "pri(app.phishing.addException)": {
+        return protector.addException(
+          (request as RequestTypes["pri(app.phishing.addException)"]).url
+        )
       }
 
       default:

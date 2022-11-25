@@ -14,6 +14,10 @@ import { FeaturesProvider } from "./hooks/useFeatures"
 import { SettingsProvider } from "./hooks/useSettings"
 import { DbCacheProvider } from "./hooks/useDbCache"
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+
+const queryClient = new QueryClient()
+
 initSentry(Sentry)
 const container = document.getElementById("root")
 
@@ -26,16 +30,18 @@ export const renderTalisman = (app: any) => {
     <React.StrictMode>
       <ThemeProvider>
         <ErrorBoundary>
-          <FeaturesProvider>
-            <SettingsProvider>
-              <AppStateProvider>
-                <DbCacheProvider>
-                  <HashRouter>{app}</HashRouter>
-                </DbCacheProvider>
-              </AppStateProvider>
-            </SettingsProvider>
-          </FeaturesProvider>
-          <NotificationsContainer />
+          <QueryClientProvider client={queryClient}>
+            <FeaturesProvider>
+              <SettingsProvider>
+                <AppStateProvider>
+                  <DbCacheProvider>
+                    <HashRouter>{app}</HashRouter>
+                  </DbCacheProvider>
+                </AppStateProvider>
+              </SettingsProvider>
+            </FeaturesProvider>
+            <NotificationsContainer />
+          </QueryClientProvider>
         </ErrorBoundary>
       </ThemeProvider>
     </React.StrictMode>
