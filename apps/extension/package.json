@@ -84,6 +84,7 @@
     "html-react-parser": "1.4.12",
     "js-yaml": "4.1.0",
     "lodash": "4.17.21",
+    "lottie-react": "2.3.1",
     "lz-string": "^1.4.4",
     "minimist": "^1.2.6",
     "nanoid": "3.3.2",

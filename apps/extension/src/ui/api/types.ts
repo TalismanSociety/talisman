@@ -141,11 +141,7 @@ export default interface MessageTypes {
 
   // authorization requests message types ------------------------------------
   authRequestsSubscribe: (cb: (requests: AuthorizeRequest[]) => void) => UnsubscribeFn
-  authrequestApprove: (
-    id: AuthRequestId,
-    addresses: AuthRequestAddresses,
-    chainId?: number
-  ) => Promise<boolean>
+  authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>
   authrequestReject: (id: AuthRequestId) => Promise<boolean>
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
 

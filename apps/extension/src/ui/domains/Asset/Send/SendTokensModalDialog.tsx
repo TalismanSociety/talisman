@@ -58,10 +58,10 @@ const Content = styled.div<{ withPaddingTop?: boolean }>`
 
 const ShowTokensModalDialogHeader = () => {
   const { close } = useSendTokensModal()
-  const { cancel, showReview, showForm, transactionId } = useSendTokens()
+  const { cancel, showReview, showForm, transactionId, transactionHash } = useSendTokens()
 
   // when transaction is executing, we don't display a header anymore
-  if (transactionId) return null
+  if (transactionId || transactionHash) return null
 
   return (
     <Header>

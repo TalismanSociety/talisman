@@ -1,6 +1,4 @@
 import truncateString from "@talisman/util/truncateString"
-import useChain from "@ui/hooks/useChain"
-import useTransactionById from "@ui/hooks/useTransactionById"
 import { useMemo } from "react"
 import styled from "styled-components"
 
@@ -26,7 +24,7 @@ const TransactionLink = ({ blockHash, blockNumber, href, prefix, className }: IP
           {!!prefix && <span className="prefix">{prefix} </span>}
           {href ? (
             <a className={hashClassName} href={href} target="_blank" rel="noopener noreferrer">
-              {block}
+              block {block}
             </a>
           ) : (
             <span className={hashClassName}>{block}</span>
