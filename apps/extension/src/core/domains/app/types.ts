@@ -61,6 +61,10 @@ export interface CheckPasswordRequest {
   password: string
 }
 
+export interface RequestAllowPhishingSite {
+  url: string
+}
+
 export interface AppMessages {
   "pri(app.onboard)": [RequestOnboard, OnboardedType]
   "pri(app.onboardStatus)": [null, OnboardedType]
@@ -78,4 +82,5 @@ export interface AppMessages {
   "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenRequest]
   "pri(app.promptLogin)": [boolean, boolean]
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
+  "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
 }
