@@ -67,9 +67,10 @@ export default interface MessageTypes {
   approveMetaRequest: (id: string) => Promise<boolean>
   rejectMetaRequest: (id: string) => Promise<boolean>
   subscribeMetadataRequests: (cb: (requests: MetadataRequest[]) => void) => UnsubscribeFn
+  allowPhishingSite: (url: string) => Promise<boolean>
 
   // signing messages -------------------------------------------------------
-  decodeSignRequest: (id: string) => Promise<TransactionDetails | null>
+  decodeSignRequest: (id: string) => Promise<TransactionDetails>
   cancelSignRequest: (id: string) => Promise<boolean>
   subscribeSigningRequest: (id: string, cb: (requests: AnySigningRequest) => void) => UnsubscribeFn
   subscribeSigningRequests: (cb: (requests: AnySigningRequest[]) => void) => UnsubscribeFn
@@ -140,11 +141,7 @@ export default interface MessageTypes {
 
   // authorization requests message types ------------------------------------
   authRequestsSubscribe: (cb: (requests: AuthorizeRequest[]) => void) => UnsubscribeFn
-  authrequestApprove: (
-    id: AuthRequestId,
-    addresses: AuthRequestAddresses,
-    chainId?: number
-  ) => Promise<boolean>
+  authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>
   authrequestReject: (id: AuthRequestId) => Promise<boolean>
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
 

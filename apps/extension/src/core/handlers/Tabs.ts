@@ -1,12 +1,12 @@
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
-import { EthTabsHandler } from "@core/domains/ethereum"
 import {
   DecryptPayload,
   EncryptPayload,
   ResponseDecrypt,
   ResponseEncrypt,
 } from "@core/domains/encrypt/types"
+import { EthTabsHandler } from "@core/domains/ethereum"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
@@ -30,8 +30,6 @@ import {
   ResponseRpcListProviders,
 } from "@polkadot/extension-base/background/types"
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
-// Copyright 2019-2021 @polkadot/extension authors & contributors
-// SPDX-License-Identifier: Apache-2.0
 import type {
   InjectedAccount,
   InjectedMetadataKnown,
@@ -47,10 +45,10 @@ import { assert, isNumber } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import Browser from "webextension-polyfill"
 
+import { talismanAnalytics } from "@core/libs/Analytics"
 import RpcState from "./RpcState"
 import { createSubscription, genericAsyncSubscription, unsubscribe } from "./subscriptions"
-import { isPhishingSite } from "@core/util/isPhishingSite"
-import { talismanAnalytics } from "@core/libs/Analytics"
+import { protector } from "@core/domains/app/protector"
 
 export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()
@@ -97,7 +95,7 @@ export default class Tabs extends TabsHandler {
     }))
   }
 
-  private accountsSubscribe(url: string, id: string, port: Port): boolean {
+  private accountsSubscribe(url: string, id: string, port: Port) {
     return genericAsyncSubscription<"pub(accounts.subscribe)">(
       id,
       port,
@@ -227,7 +225,7 @@ export default class Tabs extends TabsHandler {
   private redirectPhishingLanding(phishingWebsite: string): void {
     const nonFragment = phishingWebsite.split("#")[0]
     const encodedWebsite = encodeURIComponent(nonFragment)
-    const url = `${chrome.extension.getURL(
+    const url = `${Browser.runtime.getURL(
       "dashboard.html"
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 
@@ -246,7 +244,7 @@ export default class Tabs extends TabsHandler {
   }
 
   private async redirectIfPhishing(url: string): Promise<boolean> {
-    const isInDenyList = await isPhishingSite(url)
+    const isInDenyList = await protector.isPhishingSite(url)
 
     if (isInDenyList) {
       Sentry.captureEvent({
@@ -300,15 +298,19 @@ export default class Tabs extends TabsHandler {
     if (type !== "pub(authorize.tab)") {
       await this.stores.sites.ensureUrlAuthorized(url, false)
     } else {
-      return await this.authorize(url, request as RequestAuthorizeTab)
+      return this.authorize(url, request as RequestAuthorizeTab)
     }
 
     switch (type) {
       case "pub(accounts.list)":
-        return await this.accountsList(url, request as RequestAccountList)
+        return this.accountsList(url, request as RequestAccountList)
 
       case "pub(accounts.subscribe)":
         return this.accountsSubscribe(url, id, port)
+
+      case "pub(accounts.unsubscribe)":
+        // noop, needed to comply with polkadot.js behaviour
+        return true
 
       case "pub(bytes.sign)":
         await this.stores.sites.ensureUrlAuthorized(
@@ -327,7 +329,7 @@ export default class Tabs extends TabsHandler {
         return this.extrinsicSign(url, request as SignerPayloadJSON)
 
       case "pub(metadata.list)":
-        return await this.metadataList()
+        return this.metadataList()
 
       case "pub(metadata.provide)":
         return this.metadataProvide(url, request as MetadataDef)

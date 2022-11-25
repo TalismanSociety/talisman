@@ -33,6 +33,7 @@ export const api: MessageTypes = {
   approveMetaRequest: (id) => messageService.sendMessage("pri(metadata.approve)", { id }),
   rejectMetaRequest: (id) => messageService.sendMessage("pri(metadata.reject)", { id }),
   subscribeMetadataRequests: (cb) => messageService.subscribe("pri(metadata.requests)", null, cb),
+  allowPhishingSite: (url) => messageService.sendMessage("pri(app.phishing.addException)", { url }),
 
   // app messages -------------------------------------------------------
   modalOpen: (request) => messageService.sendMessage("pri(app.modalOpen.request)", request),
@@ -41,7 +42,7 @@ export const api: MessageTypes = {
 
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
-  decodeSignRequest: (id) => messageService.sendMessage("pri(signing.decode)", { id }),
+  decodeSignRequest: (id) => messageService.sendMessage("pri(signing.details)", { id }),
   subscribeSigningRequests: (cb) => messageService.subscribe("pri(signing.requests)", null, cb),
   subscribeSigningRequest: (id: string, cb) =>
     messageService.subscribe("pri(signing.byid.subscribe)", { id }, cb),
@@ -132,8 +133,8 @@ export const api: MessageTypes = {
   // authorization requests messages ------------------------------------
   authRequestsSubscribe: (cb) =>
     messageService.subscribe("pri(sites.requests.subscribe)", null, cb),
-  authrequestApprove: (id, addresses, ethChainId) =>
-    messageService.sendMessage("pri(sites.requests.approve)", { id, addresses, ethChainId }),
+  authrequestApprove: (id, addresses) =>
+    messageService.sendMessage("pri(sites.requests.approve)", { id, addresses }),
   authrequestReject: (id) => messageService.sendMessage("pri(sites.requests.reject)", { id }),
   authrequestIgnore: (id) => messageService.sendMessage("pri(sites.requests.ignore)", { id }),
 

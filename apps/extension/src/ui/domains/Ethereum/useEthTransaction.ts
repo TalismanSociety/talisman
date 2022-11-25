@@ -11,6 +11,10 @@ import {
   EthGasSettingsLegacy,
 } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName, EthTransactionDetails } from "@core/domains/signing/types"
+import {
+  getEthTransactionInfo,
+  TransactionInfo as TransactionType,
+} from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { api } from "@ui/api"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
@@ -58,7 +62,7 @@ const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
       const { baseFeePerGas } = await provider.send("eth_getBlockByNumber", ["latest", false])
       setHasEip1559Support(baseFeePerGas !== undefined)
     } catch (err) {
-      setError("Failed to load block data")
+      setError("Failed to check EIP-1559 support")
     }
     setIsLoading(false)
   }, [provider])
@@ -119,7 +123,8 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
 
   // analyse fees on each block
   useEffect(() => {
-    if (!provider) {
+    // check that withFeeOptions is defined to prevent "gas flickering" on initial load
+    if (!provider || withFeeOptions === undefined) {
       setGasPrice(undefined)
       setBaseFeePerGas(undefined)
       setBlockGasLimit(undefined)
@@ -190,19 +195,39 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
   }
 }
 
+const useTransactionInfo = (
+  provider?: ethers.providers.Provider,
+  tx?: ethers.providers.TransactionRequest
+) => {
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<Error>()
+  const [transactionInfo, setTransactionInfo] = useState<TransactionType>()
+
+  useEffect(() => {
+    setIsLoading(true)
+    getEthTransactionInfo(provider, tx)
+      .then(setTransactionInfo)
+      .catch(setError)
+      .finally(() => setIsLoading(false))
+  }, [provider, tx])
+
+  return { isLoading, transactionInfo, error: error?.message }
+}
+
 export const useEthTransaction = (
   tx?: ethers.providers.TransactionRequest,
   defaultPriority: EthPriorityOptionName = "low",
   lockTransaction = false
 ) => {
   const provider = useEthereumProvider(tx?.chainId)
+  const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(provider, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(provider)
   const { nonce, error: nonceError } = useNonce(tx?.from, tx?.chainId)
   const { estimatedGas, error: estimatedGasError } = useEstimatedGas(provider, tx)
 
   const {
     gasPrice,
-    gasUsedRatio,
+    gasUsedRatio: networkUsage,
     baseFeePerGas,
     blockGasLimit,
     feeHistoryAnalysis,
@@ -257,18 +282,17 @@ export const useEthTransaction = (
   }, [liveUpdatingTransaction, lockTransaction])
 
   const txDetails: EthTransactionDetails | undefined = useMemo(() => {
-    if (!gasPrice || !estimatedGas) return undefined
+    if (!gasPrice || !estimatedGas || !transaction) return undefined
 
     const priorityOptions = feeHistoryAnalysis?.options
     // EIP1559 transactions
     if (
-      transaction &&
       transaction.type === 2 &&
       transaction.maxPriorityFeePerGas &&
       gasPrice &&
       baseFeePerGas &&
       estimatedGas &&
-      transaction?.gasLimit
+      transaction.gasLimit
     ) {
       const { estimatedFee, maxFee } = getEip1559TotalFees(
         estimatedGas,
@@ -282,19 +306,12 @@ export const useEthTransaction = (
         baseFeePerGas,
         estimatedFee,
         maxFee,
-        gasUsedRatio,
         priorityOptions,
       }
     }
 
     // Legacy transactions
-    if (
-      transaction &&
-      transaction.type === 0 &&
-      transaction.gasPrice &&
-      transaction.gasLimit &&
-      estimatedGas
-    ) {
+    if (transaction.type === 0 && transaction.gasPrice && transaction.gasLimit && estimatedGas) {
       const { estimatedFee, maxFee } = getLegacyTotalFees(
         estimatedGas,
         transaction.gasLimit,
@@ -306,40 +323,37 @@ export const useEthTransaction = (
         baseFeePerGas: baseFeePerGas ?? undefined,
         estimatedFee,
         maxFee,
-        gasUsedRatio,
         priorityOptions,
       }
     }
 
     return undefined
-  }, [
-    baseFeePerGas,
-    estimatedGas,
-    feeHistoryAnalysis?.options,
-    gasPrice,
-    gasUsedRatio,
-    transaction,
-  ])
+  }, [baseFeePerGas, estimatedGas, feeHistoryAnalysis?.options, gasPrice, transaction])
 
   const error = useMemo(
-    () => errorEip1559Support ?? estimatedGasError ?? blockFeeDataError ?? nonceError,
-    [blockFeeDataError, errorEip1559Support, estimatedGasError, nonceError]
+    () =>
+      errorEip1559Support ??
+      estimatedGasError ??
+      blockFeeDataError ??
+      nonceError ??
+      errorTransactionInfo,
+    [blockFeeDataError, errorEip1559Support, errorTransactionInfo, estimatedGasError, nonceError]
   )
 
-  const isLoading = useMemo(() => tx && !txDetails && !error, [error, txDetails, tx])
-
-  const result = useMemo(
-    () => ({
-      transaction,
-      txDetails,
-      gasSettings,
-      priority,
-      setPriority,
-      isLoading,
-      error,
-    }),
-    [transaction, txDetails, gasSettings, priority, isLoading, error]
+  const isLoading = useMemo(
+    () => tx && !transactionInfo && !txDetails && !error,
+    [tx, transactionInfo, txDetails, error]
   )
 
-  return result
+  return {
+    transactionInfo,
+    transaction,
+    txDetails,
+    gasSettings,
+    priority,
+    setPriority,
+    isLoading,
+    error,
+    networkUsage,
+  }
 }

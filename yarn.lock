@@ -4117,25 +4117,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@substrate/txwrapper-polkadot@npm:4.0.1":
-  version: 4.0.1
-  resolution: "@substrate/txwrapper-polkadot@npm:4.0.1"
-  dependencies:
-    "@substrate/txwrapper-core": ^4.0.1
-    "@substrate/txwrapper-substrate": ^4.0.1
-  checksum: ee5c36a07af054f4fee1df5a8c0b7f2476cab4632294d3dfb8d291b240453a31633bce6c4ec99a8a3291c1c4af0aed13055a453bbd67784b9d51d2a78d208f0a
-  languageName: node
-  linkType: hard
-
-"@substrate/txwrapper-substrate@npm:4.0.1":
-  version: 4.0.1
-  resolution: "@substrate/txwrapper-substrate@npm:4.0.1"
-  dependencies:
-    "@substrate/txwrapper-core": ^4.0.1
-  checksum: d7f721ba25aacb6f0fa5b7bd1f80e962c4404be1f09d8378709e5c79c432c96a1932e0957d2259f5189899141fe1c0e0d80751c5d035a3e822e9bb22e56b8ad5
-  languageName: node
-  linkType: hard
-
 "@svgr/babel-plugin-add-jsx-attribute@npm:^6.0.0":
   version: 6.0.0
   resolution: "@svgr/babel-plugin-add-jsx-attribute@npm:6.0.0"
@@ -4584,6 +4565,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:4.14.5":
+  version: 4.14.5
+  resolution: "@tanstack/query-core@npm:4.14.5"
+  checksum: 25af0f4999668cd66a4a54c2d2d64dd7002f4852fb901d1d1d64908da4ea43d63e53e512b536987a789039713ffc6ae4ffa2d41cfab676b01704f4937be18a04
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-persist-client-core@npm:4.10.1":
   version: 4.10.1
   resolution: "@tanstack/query-persist-client-core@npm:4.10.1"
@@ -4610,6 +4598,25 @@ __metadata:
   peerDependencies:
     "@tanstack/react-query": 4.10.1
   checksum: 9e3f9a9ef9bd9cc586808804eb2c272f73cdff68516855c63163afb9db93501f53076ca5460bf3b39406dc5bfbc8a763865120f8f83d39f77fdcf12807044e36
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query@npm:4.14.6":
+  version: 4.14.6
+  resolution: "@tanstack/react-query@npm:4.14.6"
+  dependencies:
+    "@tanstack/query-core": 4.14.5
+    use-sync-external-store: ^1.2.0
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-native: "*"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+    react-native:
+      optional: true
+  checksum: 38e293616aa04ccfe2fec47315c5b98f0b157ee6548b4dbb6a8ca01c90de113e437f5effbc82884f2d860bde54eeb07335e9ed4e233543c7039f717d9855ab9e
   languageName: node
   linkType: hard
 
@@ -5026,6 +5033,13 @@ __metadata:
   version: 4.14.182
   resolution: "@types/lodash@npm:4.14.182"
   checksum: 7dd137aa9dbabd632408bd37009d984655164fa1ecc3f2b6eb94afe35bf0a5852cbab6183148d883e9c73a958b7fec9a9bcf7c8e45d41195add6a18c34958209
+  languageName: node
+  linkType: hard
+
+"@types/lz-string@npm:^1.3.34":
+  version: 1.3.34
+  resolution: "@types/lz-string@npm:1.3.34"
+  checksum: e5c5ec0b9b9bfb0a64ca883152ce753244f53a6f12d8d3ba1a363262bea07fed1cd04c399a33a5d600a665d15a39a58bf5fd1ad9c52a98bccf7511f7a42e82f7
   languageName: node
   linkType: hard
 
@@ -6911,6 +6925,13 @@ __metadata:
   version: 1.2.1
   resolution: "blakejs@npm:1.2.1"
   checksum: d699ba116cfa21d0b01d12014a03e484dd76d483133e6dc9eb415aa70a119f08beb3bcefb8c71840106a00b542cba77383f8be60cd1f0d4589cb8afb922eefbe
+  languageName: node
+  linkType: hard
+
+"blob-util@npm:2.0.2":
+  version: 2.0.2
+  resolution: "blob-util@npm:2.0.2"
+  checksum: d543e6b92e4ca715ca33c78e89a07a2290d43e5b2bc897d7ec588c5c7bbf59df93e45225ac0c9258aa6ce4320358990f99c9288f1c48280f8ec5d7a2e088d19b
   languageName: node
   linkType: hard
 
@@ -10005,13 +10026,14 @@ __metadata:
     "@sentry/react": ^7.17.4
     "@sentry/tracing": ^7.17.4
     "@sentry/webpack-plugin": ^1.18.8
-    "@substrate/txwrapper-polkadot": "*"
+    "@substrate/txwrapper-core": "*"
     "@svgr/webpack": ^6.2.1
     "@swc/core": ^1.3.14
     "@swc/helpers": ^0.4.12
     "@swc/jest": ^0.2.23
     "@tailwindcss/forms": ^0.5.3
     "@talismn/chaindata-js": ^0.0.7
+    "@tanstack/react-query": 4.14.6
     "@testing-library/dom": ^8.14.0
     "@testing-library/jest-dom": ^5.11.4
     "@testing-library/react": ^13.3.0
@@ -10023,6 +10045,7 @@ __metadata:
     "@types/jest": 27.4.1
     "@types/js-yaml": ^4.0.5
     "@types/lodash": ^4.14.180
+    "@types/lz-string": ^1.3.34
     "@types/node": ^17.0.22
     "@types/react": 18.0.14
     "@types/react-dom": 18.0.5
@@ -10040,6 +10063,7 @@ __metadata:
     babel-plugin-module-extension-resolver: ^1.0.0-rc.2
     bcryptjs: ^2.4.3
     bignumber.js: ^9.0.1
+    blob-util: 2.0.2
     blueimp-md5: 2.19.0
     buffer: ^6.0.3
     case-sensitive-paths-webpack-plugin: ^2.4.0
@@ -10073,6 +10097,8 @@ __metadata:
     jest-webextension-mock: 3.7.22
     js-yaml: 4.1.0
     lodash: 4.17.21
+    lottie-react: 2.3.1
+    lz-string: ^1.4.4
     minimist: ^1.2.6
     nanoid: 3.3.2
     postcss: ^8.4.16
@@ -13060,6 +13086,25 @@ __metadata:
   bin:
     loose-envify: cli.js
   checksum: 6517e24e0cad87ec9888f500c5b5947032cdfe6ef65e1c1936a0c48a524b81e65542c9c3edc91c97d5bddc806ee2a985dbc79be89215d613b1de5db6d1cfe6f4
+  languageName: node
+  linkType: hard
+
+"lottie-react@npm:2.3.1":
+  version: 2.3.1
+  resolution: "lottie-react@npm:2.3.1"
+  dependencies:
+    lottie-web: ^5.9.4
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+  checksum: 3f83511eec9ef80c6500658fcb188f757c663c5de49de5cfd55d061d5de72b9242fd0a3b7ec7ce84bbad5acbcd7293468228a0f6cbe28e50e4c44e5b25df1c8d
+  languageName: node
+  linkType: hard
+
+"lottie-web@npm:^5.9.4":
+  version: 5.9.6
+  resolution: "lottie-web@npm:5.9.6"
+  checksum: aed6a1d0c24eefb6c42a42aae18f29737746551cfdc86319f1b9675f5bc276ba26971e8d2b0e1498df880571fe4bfe2fc87885a1d4f8a318d5e4e5b939b7a474
   languageName: node
   linkType: hard
 
@@ -16765,6 +16810,7 @@ __metadata:
     eslint: ^8.15.0
     eslint-config-talisman: "*"
     framer-motion: 6.2.8
+    lottie-react: 2.3.1
     postcss: ^8.4.16
     react: 18.2.0
     react-dom: 18.2.0
@@ -16778,6 +16824,7 @@ __metadata:
     autoprefixer: ">=10.4.12"
     color: ">=4.2.3"
     framer-motion: ">=6.2.8"
+    lottie-react: ">=2.3.1"
     postcss: "*"
     react: ">=18.2.0"
     react-dom: ">=18.2.0"

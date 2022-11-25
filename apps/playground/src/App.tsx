@@ -7,6 +7,7 @@ import { Checkboxes } from "./components/Chexkboxes"
 import { Ethereum } from "./components/Ethereum"
 import { Substrate } from "./components/Substrate"
 import { Background } from "./components/Background"
+import { TxStatusPage } from "./components/TxStatusPage"
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="button" element={<Buttons />} />
             <Route path="checkbox" element={<Checkboxes />} />
             <Route path="mystical-background" element={<Background />} />
+            <Route path="tx-status" element={<TxStatusPage />} />
           </Routes>
         </BrowserRouter>
       </div>

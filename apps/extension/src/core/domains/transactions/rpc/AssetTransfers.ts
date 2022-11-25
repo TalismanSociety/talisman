@@ -2,18 +2,19 @@ import { ChainId } from "@core/domains/chains/types"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { ResponseAssetTransferFeeQuery } from "@core/domains/transactions/types"
 import { isHardwareAccount } from "@core/handlers/helpers"
+import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import { SubscriptionCallback } from "@core/types"
 import { Address } from "@core/types/base"
+import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getExtrinsicDispatchInfo } from "@core/util/getExtrinsicDispatchInfo"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
-import { construct, methods } from "@substrate/txwrapper-polkadot"
+import { construct, defineMethod } from "@substrate/txwrapper-core"
+import { assert } from "@polkadot/util"
 import { pendingTransfers } from "./PendingTransfers"
-
-type ProviderSendFunction<T = any> = (method: string, params?: unknown[]) => Promise<T>
 
 export default class AssetTransfersRpc {
   /**
@@ -132,37 +133,32 @@ export default class AssetTransfersRpc {
     // TODO: validate
     // - existential deposit
     // - sufficient balance
+    const chain = await db.chains.get(chainId)
+    assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
+    const { genesisHash } = chain
 
-    const send: ProviderSendFunction = (method, params = []) =>
-      RpcFactory.send(chainId, method, params)
-
-    const [
-      { block },
-      blockHash,
-      genesisHash,
-      nonce,
-      {
-        registry,
-        chainMetadataRpc: { metadataRpc, runtimeVersion },
-      },
-    ] = await Promise.all([
-      send("chain_getBlock"),
-      send("chain_getBlockHash"),
-      send("chain_getBlockHash", [0]),
-      send("system_accountNextIndex", [from.address]),
-      getTypeRegistry(chainId),
+    const [blockHash, { block }, nonce, runtimeVersion] = await Promise.all([
+      RpcFactory.send(chainId, "chain_getBlockHash", [], false),
+      RpcFactory.send(chainId, "chain_getBlock", [], false),
+      RpcFactory.send(chainId, "system_accountNextIndex", [from.address]),
+      getRuntimeVersion(chainId),
     ])
 
     const { specVersion, transactionVersion } = runtimeVersion
 
-    const transferMethod = reapBalance ? "transfer" : "transferKeepAlive"
+    const { registry, metadataRpc } = await getTypeRegistry(chainId, specVersion, blockHash)
+    assert(metadataRpc, "Could not fetch metadata")
 
-    const unsigned = methods.balances[transferMethod](
+    const unsigned = defineMethod(
       {
-        value: amount,
-        dest: to,
-      },
-      {
+        method: {
+          pallet: "balances",
+          name: reapBalance ? "transfer" : "transferKeepAlive",
+          args: {
+            value: amount,
+            dest: to,
+          },
+        },
         address: from.address,
         blockHash,
         blockNumber: block.header.number,
@@ -170,9 +166,9 @@ export default class AssetTransfersRpc {
         genesisHash,
         metadataRpc,
         nonce,
-        specVersion: specVersion as unknown as number,
+        specVersion,
         tip: tip ? Number(tip) : 0,
-        transactionVersion: transactionVersion as unknown as number,
+        transactionVersion,
       },
       {
         metadataRpc,

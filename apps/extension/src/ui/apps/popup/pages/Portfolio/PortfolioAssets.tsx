@@ -17,6 +17,8 @@ import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import React, { useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -47,6 +49,12 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
     openAddressFormatterModal(account.address)
     genericEvent("open copy address", { from: "popup portfolio" })
   }, [account, genericEvent, openAddressFormatterModal])
+
+  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
+  const browseTxHistory = useCallback(() => {
+    genericEvent("open web app tx history", { from: "popup portfolio" })
+    window.open(getTransactionHistoryUrl(account?.address), "_blank")
+  }, [account, genericEvent])
 
   const navigate = useNavigate()
   const handleBackBtnClick = useCallback(() => {
@@ -102,6 +110,9 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
                 closeOnMouseOut
               >
                 <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
+                {showTxHistory && (
+                  <PopNav.Item onClick={browseTxHistory}>Transaction History</PopNav.Item>
+                )}
                 {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
                 {canExportAccount && (
                   <PopNav.Item onClick={openExportAccountModal}>Export Private Key</PopNav.Item>

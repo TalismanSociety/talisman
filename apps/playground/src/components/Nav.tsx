@@ -36,6 +36,12 @@ export const Nav = () => {
       >
         Mystical Background
       </Link>
+      <Link
+        to="/tx-status"
+        className={classNames(location.pathname === "/tx-status" && "text-primary-500")}
+      >
+        TxStatus
+      </Link>
     </div>
   )
 }

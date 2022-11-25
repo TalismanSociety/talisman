@@ -1,7 +1,9 @@
-import { ReactNode, useEffect, useState } from "react"
-import { Box } from "./Box"
+import { DetailedHTMLProps, FC, HTMLAttributes, useEffect, useState } from "react"
+import { classNames } from "talisman-ui"
 
-export const FadeIn = ({ children }: { children: ReactNode }) => {
+type FadeInProps = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement>
+
+export const FadeIn: FC<FadeInProps> = ({ className, ...props }) => {
   const [opacity, setOpacity] = useState(0)
 
   useEffect(() => {
@@ -9,8 +11,9 @@ export const FadeIn = ({ children }: { children: ReactNode }) => {
   }, [])
 
   return (
-    <Box transition opacity={opacity}>
-      {children}
-    </Box>
+    <div
+      {...props}
+      className={classNames("transition-opacity", opacity ? "opacity-100" : "opacity-0", className)}
+    />
   )
 }
