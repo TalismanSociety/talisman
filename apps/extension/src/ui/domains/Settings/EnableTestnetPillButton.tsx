@@ -8,9 +8,9 @@ const Checked = () => (
     <path
       d="M9.11114 3.66675L4.83336 7.94453L2.88892 6.00008"
       stroke="#D5FF5C"
-      stroke-width="0.888889"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="0.888889"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 )
@@ -24,7 +24,7 @@ const Unchecked = () => (
       height="11.3333"
       rx="2.33333"
       stroke="currentColor"
-      stroke-width="0.666667"
+      strokeWidth="0.666667"
     />
   </svg>
 )
@@ -50,13 +50,4 @@ export const EnableTestnetPillButton: FC<EnableTestnetPillButtonProps> = ({ clas
       Enable testnets
     </PillButton>
   )
-
-  // return (
-  //   <PillButton onClick={handleClick} size="xs" className={className}>
-  //     <div className="flex items-center gap-3">
-  //       <div>{useTestnets ? <Checked /> : <Unchecked />}</div>
-  //       <div>Enable testnets</div>
-  //     </div>
-  //   </PillButton>
-  // )
 }

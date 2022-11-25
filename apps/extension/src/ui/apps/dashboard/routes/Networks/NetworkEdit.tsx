@@ -4,7 +4,7 @@ import { CustomNativeToken } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { assert } from "@polkadot/util"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { ArrowRightIcon, IconAlert } from "@talisman/theme/icons"
+import { ArrowRightIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
@@ -24,7 +24,8 @@ import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { sleep } from "@core/util/sleep"
+import { useSettings } from "@ui/hooks/useSettings"
+import { useDebounce } from "react-use"
 
 const useIsBuiltInEvmNetwork = (evmNetworkId?: number) => {
   const [isLoading, setIsLoading] = useState<boolean>()
@@ -143,13 +144,15 @@ const useEvmChainsList = () => {
 }
 
 export const NetworkEdit = () => {
-  const { id: evmNetworkId } = useParams<"id">()
   const navigate = useNavigate()
+  const { id: evmNetworkId } = useParams<"id">()
+  const { isBuiltIn } = useIsBuiltInEvmNetwork(evmNetworkId ? Number(evmNetworkId) : undefined)
   const evmNetwork = useEvmNetwork(evmNetworkId ? Number(evmNetworkId) : undefined)
   const nativeToken = useToken(evmNetwork?.nativeToken?.id) as CustomNativeToken | undefined
+  // TODO display it
   const [submitError, setSubmitError] = useState<string>()
   const evmNetworks = useEvmNetworks()
-  const { isBuiltIn } = useIsBuiltInEvmNetwork(evmNetworkId ? Number(evmNetworkId) : undefined)
+  const { useTestnets, update } = useSettings()
 
   const defaultValues = useMemo(
     () => evmNetworkToFormData(evmNetwork, nativeToken),
@@ -225,41 +228,45 @@ export const NetworkEdit = () => {
     resolver: yupResolver(schema),
   })
 
+  // auto fill chain id
+  const submit = useCallback(
+    async (network: RequestUpsertCustomEvmNetwork) => {
+      try {
+        await api.ethNetworkUpsert(network)
+        if (network.isTestnet && !useTestnets) update({ useTestnets: true })
+        navigate("/networks")
+      } catch (err) {
+        setSubmitError((err as Error).message)
+      }
+    },
+    [navigate, update, useTestnets]
+  )
+
   useEffect(() => {
     if (defaultValues) reset(defaultValues)
   }, [defaultValues, reset])
 
   const { isTestnet, rpc, id } = watch()
 
-  useEffect(() => {
-    // in edit mode, do not try to autodetect
-    if (evmNetworkId) return
+  useDebounce(
+    () => {
+      // in edit mode, do not try to autodetect
+      if (evmNetworkId) return
 
-    getRpcChainId(rpc)
-      .then((chainId) => {
-        setValue("id", chainId)
-      })
-      .catch(() => {
-        resetField("id")
-      })
-  }, [evmNetworkId, resetField, rpc, setValue])
-
-  // auto fill chain id
-  const submit = useCallback(
-    async (network: RequestUpsertCustomEvmNetwork) => {
-      try {
-        await api.ethNetworkUpsert(network)
-        await sleep(100) // prevent flickering on networks list screen
-        navigate("/networks")
-      } catch (err) {
-        setSubmitError((err as Error).message)
-      }
+      getRpcChainId(rpc)
+        .then((chainId) => {
+          setValue("id", chainId)
+        })
+        .catch(() => {
+          resetField("id")
+        })
     },
-    [navigate]
+    100,
+    [evmNetworkId, resetField, rpc, setValue]
   )
 
   const handleIsTestnetChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => setValue("isTestnet", e.target.checked),
+    (e) => setValue("isTestnet", e.target.checked, { shouldTouch: true }),
     [setValue]
   )
 
@@ -273,11 +280,11 @@ export const NetworkEdit = () => {
       setValue("name", chainInfo.name)
       setValue("blockExplorerUrl", chainInfo.explorers?.[0]?.url ?? "")
       setValue("tokenDecimals", chainInfo.nativeCurrency.decimals)
-      setValue(
-        "isTestnet",
-        !!chainInfo.faucets?.length ?? chainInfo.name.toLocaleLowerCase().includes("testnet")
-      )
-      setValue("tokenSymbol", chainInfo.nativeCurrency.symbol, { shouldValidate: true })
+      setValue("isTestnet", chainInfo.name.toLocaleLowerCase().includes("testnet"))
+      setValue("tokenSymbol", chainInfo.nativeCurrency.symbol, {
+        shouldValidate: true,
+        shouldTouch: true,
+      })
     },
     [evmChainsList, setValue]
   )
@@ -329,7 +336,6 @@ export const NetworkEdit = () => {
     if (!evmNetworkId) return
     try {
       await api.ethNetworkRemove(evmNetworkId)
-      await sleep(100) // prevent flickering on networks list screen
       navigate("/networks")
     } catch (err) {
       notify({
