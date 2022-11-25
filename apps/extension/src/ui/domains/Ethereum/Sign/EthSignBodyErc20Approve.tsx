@@ -10,21 +10,19 @@ import {
   SignParamNetworkAddressButton,
   SignParamTokensButton,
 } from "./shared"
-import { KnownTransactionInfo } from "@core/util/getEthTransactionInfo"
-import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignParamErc20TokenButton } from "./shared/SignParamErc20TokenButton"
 import { SignAlertMessage } from "./shared/SignAlertMessage"
 import { EthSignContainer } from "./shared/EthSignContainer"
 import { useErc20TokenImageUrl } from "@ui/hooks/useErc20TokenDisplay"
 import { CustomErc20Token } from "@core/domains/tokens/types"
+import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 const ALLOWANCE_UNLIMITED = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
 export const EthSignBodyErc20Approve: FC = () => {
-  const { account, network, transactionInfo } = useEthSignTransactionRequest()
-  const txInfo = transactionInfo as KnownTransactionInfo
+  const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
-  const tokenImageUrl = useErc20TokenImageUrl(network?.id, txInfo.targetAddress)
+  const tokenImageUrl = useErc20TokenImageUrl(network?.id, transactionInfo.targetAddress)
 
   const tokens = useTokens()
   const token = useMemo(() => {
@@ -33,33 +31,37 @@ export const EthSignBodyErc20Approve: FC = () => {
           (t) =>
             t.type === "erc20" &&
             Number(t.evmNetwork?.id) === Number(network.id) &&
-            t.contractAddress === txInfo.targetAddress
+            t.contractAddress === transactionInfo.targetAddress
         ) as CustomErc20Token)
       : null
-  }, [network, tokens, txInfo.targetAddress])
+  }, [network, tokens, transactionInfo.targetAddress])
 
   const { image, symbol } = useMemo(() => {
     const image = token?.image ?? tokenImageUrl.data // TODO prioritize token.logo (waiting balance library)
-    const symbol = token?.symbol ?? (txInfo.asset.symbol as string)
+    const symbol = token?.symbol ?? (transactionInfo.asset.symbol as string)
 
     return { image, symbol }
-  }, [token?.image, token?.symbol, tokenImageUrl.data, txInfo.asset.symbol])
+  }, [token?.image, token?.symbol, tokenImageUrl.data, transactionInfo.asset.symbol])
 
   const nativeToken = useToken(network?.nativeToken?.id)
 
   const { spender, allowance, isInfinite } = useMemo(() => {
-    const rawAllowance = getContractCallArg<BigNumber>(txInfo.contractCall, "amount")
+    const rawAllowance = getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount")
     const isInfinite = rawAllowance?.toHexString() === ALLOWANCE_UNLIMITED
 
     return {
-      spender: getContractCallArg<string>(txInfo.contractCall, "spender"),
+      spender: getContractCallArg<string>(transactionInfo.contractCall, "spender"),
       allowance:
         rawAllowance && !isInfinite
-          ? new BalanceFormatter(rawAllowance.toString(), txInfo.asset.decimals, token?.rates)
+          ? new BalanceFormatter(
+              rawAllowance.toString(),
+              transactionInfo.asset.decimals,
+              token?.rates
+            )
           : undefined,
       isInfinite,
     }
-  }, [token?.rates, txInfo.asset.decimals, txInfo.contractCall])
+  }, [token?.rates, transactionInfo.asset.decimals, transactionInfo.contractCall])
 
   if (!nativeToken || !spender || !account || !network) return <EthSignBodyShimmer />
 
@@ -96,19 +98,19 @@ export const EthSignBodyErc20Approve: FC = () => {
         <div>to spend{isInfinite ? " infinite" : ""}</div>
         {allowance ? (
           <SignParamTokensButton
-            address={txInfo.targetAddress}
+            address={transactionInfo.targetAddress}
             network={network}
             tokens={allowance.tokens}
             image={image}
-            decimals={txInfo.asset.decimals}
+            decimals={transactionInfo.asset.decimals}
             symbol={symbol}
             fiat={allowance.fiat("usd")}
             withIcon
           />
         ) : (
           <SignParamErc20TokenButton
-            address={txInfo.targetAddress}
-            asset={txInfo.asset}
+            address={transactionInfo.targetAddress}
+            asset={transactionInfo.asset}
             network={network}
             withIcon
           />

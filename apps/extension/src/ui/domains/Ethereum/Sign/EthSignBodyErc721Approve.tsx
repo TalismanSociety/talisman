@@ -2,39 +2,38 @@ import { FC, useMemo } from "react"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignAlertMessage, SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
-import { KnownTransactionInfo } from "@core/util/getEthTransactionInfo"
-import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { EthSignContainer } from "./shared/EthSignContainer"
 import { BigNumber } from "ethers"
 import { useQuery } from "@tanstack/react-query"
 import { UnsafeImage } from "talisman-ui"
 import { getNftMetadata } from "@core/util/getNftMetadata"
+import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 export const EthSignBodyErc721Approve: FC = () => {
-  const { account, network, transactionInfo } = useEthSignTransactionRequest()
-  const txInfo = transactionInfo as KnownTransactionInfo
+  const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
+
   const qMetadata = useQuery({
-    queryKey: [txInfo.asset?.tokenURI],
-    queryFn: () => getNftMetadata(txInfo.asset?.tokenURI, 96, 96),
+    queryKey: [transactionInfo.asset?.tokenURI],
+    queryFn: () => getNftMetadata(transactionInfo.asset?.tokenURI, 96, 96),
   })
 
   const { operator, approve, tokenId } = useMemo(() => {
-    const operator = getContractCallArg(txInfo.contractCall, "operator")
+    const operator = getContractCallArg(transactionInfo.contractCall, "operator")
     return {
-      operator: getContractCallArg(txInfo.contractCall, "operator"),
+      operator: getContractCallArg(transactionInfo.contractCall, "operator"),
       approve: operator !== ZERO_ADDRESS,
-      tokenId: BigNumber.from(getContractCallArg(txInfo.contractCall, "tokenId")),
+      tokenId: BigNumber.from(getContractCallArg(transactionInfo.contractCall, "tokenId")),
     }
-  }, [txInfo.contractCall])
+  }, [transactionInfo.contractCall])
 
   const { name, image } = useMemo(
     () => ({
-      name: qMetadata?.data?.name ?? `${txInfo?.asset?.name} #${tokenId.toNumber()}`,
+      name: qMetadata?.data?.name ?? `${transactionInfo?.asset?.name} #${tokenId.toNumber()}`,
       image: qMetadata?.data?.image,
     }),
-    [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, txInfo?.asset?.name]
+    [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, transactionInfo?.asset?.name]
   )
 
   if (qMetadata.isLoading || !operator || !account || !network) return <EthSignBodyShimmer />
@@ -67,7 +66,7 @@ export const EthSignBodyErc721Approve: FC = () => {
       <div className="flex">
         <div>to transfer</div>
         <SignParamNetworkAddressButton
-          address={txInfo.targetAddress}
+          address={transactionInfo.targetAddress}
           network={network}
           name={name}
         />

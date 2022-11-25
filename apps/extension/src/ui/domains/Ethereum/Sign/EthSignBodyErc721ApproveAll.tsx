@@ -2,21 +2,19 @@ import { FC, useMemo } from "react"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
-import { KnownTransactionInfo } from "@core/util/getEthTransactionInfo"
-import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SignAlertMessage } from "./shared/SignAlertMessage"
 import { EthSignContainer } from "./shared/EthSignContainer"
+import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc721ApproveAll: FC = () => {
-  const { account, network, transactionInfo } = useEthSignTransactionRequest()
-  const txInfo = transactionInfo as KnownTransactionInfo
+  const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const { operator, approve } = useMemo(() => {
     return {
-      operator: getContractCallArg<string>(txInfo.contractCall, "operator"),
-      approve: getContractCallArg<boolean>(txInfo.contractCall, "approved"),
+      operator: getContractCallArg<string>(transactionInfo.contractCall, "operator"),
+      approve: getContractCallArg<boolean>(transactionInfo.contractCall, "approved"),
     }
-  }, [txInfo.contractCall])
+  }, [transactionInfo.contractCall])
 
   if (!operator || !account || !network) return <EthSignBodyShimmer />
 
@@ -48,9 +46,9 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
       <div className="flex">
         <div>to transfer all</div>
         <SignParamNetworkAddressButton
-          address={txInfo.targetAddress}
+          address={transactionInfo.targetAddress}
           network={network}
-          name={txInfo.asset?.name}
+          name={transactionInfo.asset?.name}
         />
       </div>
       <div className="flex">
