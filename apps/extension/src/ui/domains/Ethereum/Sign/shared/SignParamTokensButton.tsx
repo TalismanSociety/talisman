@@ -1,5 +1,6 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
 import { FC } from "react"
+import { classNames } from "talisman-ui"
 import { SignParamButton } from "./SignParamButton"
 import { SignParamTokensDisplay } from "./SignParamTokensDisplay"
 
@@ -32,7 +33,7 @@ export const SignParamTokensButton: FC<SignParamTokensButtonProps> = ({
       address={address}
       withIcon={withIcon}
       contentClassName="leading-none"
-      className={className}
+      className={classNames("pt-0.5", className)}
     >
       <SignParamTokensDisplay
         tokens={tokens}
