@@ -1,8 +1,9 @@
 import { useOpenableComponent } from "@talisman/hooks/useOpenableComponent"
 import { classNames } from "@talisman/util/classNames"
-import { FC, ReactNode } from "react"
+import { FC, PropsWithChildren, ReactNode, useRef } from "react"
 import { createPortal } from "react-dom"
 import styled from "styled-components"
+import { TooltipBoundaryProvider } from "./Tooltip"
 
 export type DrawerAnchor = "left" | "right" | "top" | "bottom"
 
@@ -99,6 +100,16 @@ const Container = styled.div`
   }
 `
 
+const DrawerContent: FC<PropsWithChildren> = ({ children }) => {
+  const refContent = useRef<HTMLDivElement>(null)
+
+  return (
+    <div className="drawer-content" ref={refContent}>
+      <TooltipBoundaryProvider refBoundary={refContent}>{children}</TooltipBoundaryProvider>
+    </div>
+  )
+}
+
 export const Drawer: FC<DrawerProps> = ({
   children,
   anchor,
@@ -125,7 +136,7 @@ export const Drawer: FC<DrawerProps> = ({
   const output = (
     <Container className={classes}>
       <div className="drawer-bg" onClick={onClose} />
-      <div className="drawer-content">{children}</div>
+      <DrawerContent>{children}</DrawerContent>
     </Container>
   )
 

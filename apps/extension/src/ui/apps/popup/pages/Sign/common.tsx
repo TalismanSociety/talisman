@@ -93,26 +93,3 @@ export const SignContainer = styled(Container)`
     text-overflow: ellipsis;
   }
 `
-
-export const Message = styled.textarea<{ typed?: boolean }>`
-  background-color: var(--color-background-muted-3x);
-  color: var(--color-mid);
-  flex-grow: 1;
-  text-align: left;
-  margin: 0;
-  padding: 1.2rem;
-  border: 0;
-  border-radius: var(--border-radius-small);
-  margin-top: 0.8rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
-  resize: none;
-
-  // if typed data, make text smaller and prevent line returns
-  font-size: ${({ typed }) => (typed ? "1.2rem" : "inherit")};
-  overflow-x: ${({ typed }) => (typed ? "scroll" : "hidden")};
-  overflow-wrap: ${({ typed }) => (typed ? "normal" : "break-word")};
-  white-space: ${({ typed }) => (typed ? "pre" : "pre-wrap")};
-
-  ${scrollbarsStyle("var(--color-background-muted-2x)")}
-`

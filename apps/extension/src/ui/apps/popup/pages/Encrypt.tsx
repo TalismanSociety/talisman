@@ -10,9 +10,10 @@ import useEncryptRequestById from "@ui/hooks/useEncryptRequestById"
 import { useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
-import { SignContainer, Message } from "./Sign/common"
+import { SignContainer } from "./Sign/common"
 
 import { Content, Footer, Header } from "../Layout"
+import { Message } from "@ui/domains/Sign/Message"
 
 const SignMessage = ({
   account,
@@ -44,8 +45,7 @@ const EncryptApprove = ({ className }: any) => {
   const { popupOpenEvent } = useAnalytics()
   const { id } = useParams() as { id: string }
   const req = useEncryptRequestById(id) as AnyEncryptRequest | undefined
-  const { url, request, approve, reject, status, message, account, type } =
-    useEncryptRequest(req)
+  const { url, request, approve, reject, status, message, account, type } = useEncryptRequest(req)
 
   useEffect(() => {
     popupOpenEvent("encrypt")
@@ -68,7 +68,7 @@ const EncryptApprove = ({ className }: any) => {
               <SignMessage
                 account={account}
                 request={request?.payload.message as string}
-                isDecrypt={(type == "decrypt")}
+                isDecrypt={type == "decrypt"}
               />
             </div>
           </>

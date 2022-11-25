@@ -7,6 +7,7 @@ const TokenLogoImg = styled.img`
   //defaults to font size
   width: 1em;
   height: 1em;
+  border-radius: 50%;
 `
 
 type Erc20LogoProps = {

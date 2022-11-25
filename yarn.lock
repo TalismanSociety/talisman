@@ -4565,6 +4565,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:4.14.5":
+  version: 4.14.5
+  resolution: "@tanstack/query-core@npm:4.14.5"
+  checksum: 25af0f4999668cd66a4a54c2d2d64dd7002f4852fb901d1d1d64908da4ea43d63e53e512b536987a789039713ffc6ae4ffa2d41cfab676b01704f4937be18a04
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-persist-client-core@npm:4.10.1":
   version: 4.10.1
   resolution: "@tanstack/query-persist-client-core@npm:4.10.1"
@@ -4591,6 +4598,25 @@ __metadata:
   peerDependencies:
     "@tanstack/react-query": 4.10.1
   checksum: 9e3f9a9ef9bd9cc586808804eb2c272f73cdff68516855c63163afb9db93501f53076ca5460bf3b39406dc5bfbc8a763865120f8f83d39f77fdcf12807044e36
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-query@npm:4.14.6":
+  version: 4.14.6
+  resolution: "@tanstack/react-query@npm:4.14.6"
+  dependencies:
+    "@tanstack/query-core": 4.14.5
+    use-sync-external-store: ^1.2.0
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-native: "*"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+    react-native:
+      optional: true
+  checksum: 38e293616aa04ccfe2fec47315c5b98f0b157ee6548b4dbb6a8ca01c90de113e437f5effbc82884f2d860bde54eeb07335e9ed4e233543c7039f717d9855ab9e
   languageName: node
   linkType: hard
 
@@ -6892,6 +6918,13 @@ __metadata:
   version: 1.2.1
   resolution: "blakejs@npm:1.2.1"
   checksum: d699ba116cfa21d0b01d12014a03e484dd76d483133e6dc9eb415aa70a119f08beb3bcefb8c71840106a00b542cba77383f8be60cd1f0d4589cb8afb922eefbe
+  languageName: node
+  linkType: hard
+
+"blob-util@npm:2.0.2":
+  version: 2.0.2
+  resolution: "blob-util@npm:2.0.2"
+  checksum: d543e6b92e4ca715ca33c78e89a07a2290d43e5b2bc897d7ec588c5c7bbf59df93e45225ac0c9258aa6ce4320358990f99c9288f1c48280f8ec5d7a2e088d19b
   languageName: node
   linkType: hard
 
@@ -9993,6 +10026,7 @@ __metadata:
     "@swc/jest": ^0.2.23
     "@tailwindcss/forms": ^0.5.3
     "@talismn/chaindata-js": ^0.0.7
+    "@tanstack/react-query": 4.14.6
     "@testing-library/dom": ^8.14.0
     "@testing-library/jest-dom": ^5.11.4
     "@testing-library/react": ^13.3.0
@@ -10021,6 +10055,7 @@ __metadata:
     babel-plugin-module-extension-resolver: ^1.0.0-rc.2
     bcryptjs: ^2.4.3
     bignumber.js: ^9.0.1
+    blob-util: 2.0.2
     blueimp-md5: 2.19.0
     buffer: ^6.0.3
     case-sensitive-paths-webpack-plugin: ^2.4.0
