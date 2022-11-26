@@ -2,7 +2,6 @@ import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
 import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types/base"
 import { CustomNativeToken } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { assert } from "@polkadot/util"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
@@ -11,65 +10,110 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useToken from "@ui/hooks/useToken"
 import { ethers } from "ethers"
-import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
+import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate, useParams } from "react-router-dom"
 import { Button, Checkbox, FormFieldContainer } from "talisman-ui"
 import * as yup from "yup"
-import gql from "graphql-tag"
-import { print } from "graphql"
-import { graphqlUrl } from "@core/util/graphql"
 import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useSettings } from "@ui/hooks/useSettings"
-import { useDebounce } from "react-use"
+import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
+import { useEvmChainsList } from "@ui/hooks/useEvmChainsList"
+import { useQuery } from "@tanstack/react-query"
 
-const useIsBuiltInEvmNetwork = (evmNetworkId?: number) => {
-  const [isLoading, setIsLoading] = useState<boolean>()
-  const [error, setError] = useState<Error>()
-  const [isBuiltIn, setIsBuiltIn] = useState<boolean>()
-
-  useEffect(() => {
-    if (!evmNetworkId) {
-      setError(undefined)
-      setIsLoading(false)
-      setIsBuiltIn(undefined)
-      return
+const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
+  const {
+    isOpen: isOpenConfirmReset,
+    open: openConfirmReset,
+    close: closeConfirmReset,
+  } = useOpenClose()
+  const handleConfirmReset = useCallback(async () => {
+    try {
+      await api.ethNetworkReset(network.id.toString())
+      closeConfirmReset()
+    } catch (err) {
+      notify({
+        title: "Failed to reset",
+        subtitle: (err as Error).message,
+        type: "error",
+      })
     }
+  }, [closeConfirmReset, network.id])
 
-    const query = gql`
-      query {
-        evmNetworkById(id:"${evmNetworkId}") {
-          id
-        }
-      }
-    `
+  return (
+    <>
+      <Button type="button" className="mt-8" onClick={openConfirmReset}>
+        Reset to defaults
+      </Button>
+      <Modal open={isOpenConfirmReset && !!network} onClose={closeConfirmReset}>
+        <ModalDialog title="Reset Network" onClose={closeConfirmReset}>
+          <div className="text-body-secondary mt-4 space-y-16">
+            <div className="text-base">
+              Network <span className="text-body">{network?.name}</span> will be reset to Talisman's
+              built-in settings.
+            </div>
+            <div className="grid grid-cols-2 gap-8">
+              <Button onClick={closeConfirmReset}>Cancel</Button>
+              <Button primary onClick={handleConfirmReset}>
+                Reset
+              </Button>
+            </div>
+          </div>
+        </ModalDialog>
+      </Modal>
+    </>
+  )
+}
 
-    setError(undefined)
-    setIsBuiltIn(undefined)
-    setIsLoading(true)
-    fetch(graphqlUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query: print(query) }),
-    })
-      .then((res) =>
-        res
-          .json()
-          .then((result) => {
-            setIsBuiltIn(!!result?.data?.evmNetworkById?.id)
-          })
-          .catch(setError)
-          .finally(() => setIsLoading(false))
-      )
-      .catch(setError)
-      .finally(() => setIsLoading(false))
-  }, [evmNetworkId])
+const RemoveNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
+  const navigate = useNavigate()
 
-  return { isBuiltIn, isLoading, error }
+  const {
+    isOpen: isOpenConfirmRemove,
+    open: openConfirmRemove,
+    close: closeConfirmRemove,
+  } = useOpenClose()
+  const handleConfirmRemove = useCallback(async () => {
+    if (!network) return
+    try {
+      await api.ethNetworkRemove(network.id.toString())
+      navigate("/networks")
+    } catch (err) {
+      notify({
+        title: "Failed to remove",
+        subtitle: (err as Error).message,
+        type: "error",
+      })
+    }
+  }, [network, navigate])
+
+  return (
+    <>
+      <Button type="button" className="mt-8" onClick={openConfirmRemove}>
+        Remove Network
+      </Button>
+      <Modal open={isOpenConfirmRemove && !!network} onClose={closeConfirmRemove}>
+        <ModalDialog title="Remove Network" onClose={closeConfirmRemove}>
+          <div className="text-body-secondary mt-4 space-y-16">
+            <div className="text-base">
+              Network <span className="text-body">{network?.name}</span> and associated tokens will
+              be removed from Talisman.
+            </div>
+            <div className="grid grid-cols-2 gap-8">
+              <Button onClick={closeConfirmRemove}>Cancel</Button>
+              <Button primary onClick={handleConfirmRemove}>
+                Remove
+              </Button>
+            </div>
+          </div>
+        </ModalDialog>
+      </Modal>
+    </>
+  )
 }
 
 const evmNetworkToFormData = (
@@ -89,67 +133,47 @@ const evmNetworkToFormData = (
   }
 }
 
-// keep test provider object for each url so their built-in cache can be leveraged
-const providersCache: Record<string, ethers.providers.JsonRpcProvider> = {}
+// because of validation the same query is done 3 times minimum per url, make all await same promise
+const rpcChainIdCache = new Map<string, Promise<number | null>>()
 
-const getRpcChainId = async (rpc: string) => {
-  assert(/^https?:\/\/.+$/.test(rpc), "Invalid url")
-  if (!providersCache[rpc]) providersCache[rpc] = new ethers.providers.JsonRpcProvider(rpc)
-  const provider = providersCache[rpc]
-  const hexChainId = await provider.send("eth_chainId", [])
-  return parseInt(hexChainId, 16)
+const getRpcChainId = (rpcUrl: string) => {
+  // check if valid url
+  if (!rpcUrl || !/^https?:\/\/.+$/.test(rpcUrl)) return null
+
+  if (!rpcChainIdCache.has(rpcUrl)) {
+    rpcChainIdCache.set(
+      rpcUrl,
+      new Promise((resolve) => {
+        const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
+        provider
+          .send("eth_chainId", [])
+          .then((hexChainId) => {
+            resolve(parseInt(hexChainId, 16))
+          })
+          .catch(() => resolve(null))
+      })
+    )
+  }
+
+  return rpcChainIdCache.get(rpcUrl) as Promise<number | null>
 }
 
-type EvmChainInfo = {
-  chainId: number
-  networkId: number
-  name: string
-  shortName: string
-  title?: string
-  chain: string // token symbol for the chain ?
-  infoURL: string
-  faucets?: string[]
-  rpc: string[]
-  nativeCurrency: {
-    name: string
-    symbol: string
-    decimals: number
-  }
-  explorers?: { name: string; standard: string; url: string; icon?: string }[]
-  parent?: {
-    type: "L1" | "L2"
-    chain: "string"
-  }
-  icon?: string
-  ens?: { registry: string }[]
-  slip44?: number
-}
-
-const useEvmChainsList = () => {
-  const [isLoading, setIsLoading] = useState<boolean>()
-  const [error, setError] = useState<Error>()
-  const [evmChainsList, setEvmChainsList] = useState<EvmChainInfo[]>()
-
-  useEffect(() => {
-    setError(undefined)
-    setEvmChainsList(undefined)
-    setIsLoading(true)
-    fetch("https://chainid.network/chains.json")
-      .then((res) => res.json().then(setEvmChainsList))
-      .catch(setError)
-      .finally(() => setIsLoading(false))
-  }, [])
-
-  return { evmChainsList, isLoading, error }
+const useRpcChainId = (rpcUrl: string) => {
+  return useQuery({
+    queryKey: ["useRpcChainId", rpcUrl],
+    queryFn: () => (rpcUrl ? getRpcChainId(rpcUrl) : null),
+    refetchInterval: false,
+  })
 }
 
 export const NetworkEdit = () => {
   const navigate = useNavigate()
   const { id: evmNetworkId } = useParams<"id">()
-  const { isBuiltIn } = useIsBuiltInEvmNetwork(evmNetworkId ? Number(evmNetworkId) : undefined)
+  const qIsBuiltInEvmNetwork = useIsBuiltInEvmNetwork(
+    evmNetworkId ? Number(evmNetworkId) : undefined
+  )
   const evmNetwork = useEvmNetwork(evmNetworkId ? Number(evmNetworkId) : undefined)
   const nativeToken = useToken(evmNetwork?.nativeToken?.id) as CustomNativeToken | undefined
-  // TODO display it
   const [submitError, setSubmitError] = useState<string>()
   const evmNetworks = useEvmNetworks()
   const { useTestnets, update } = useSettings()
@@ -163,7 +187,7 @@ export const NetworkEdit = () => {
     () =>
       yup
         .object({
-          //   TODO remove valueAsNumber when moving to balances v2
+          // TODO remove valueAsNumber when moving to balances v2
           id: yup
             .number()
             .typeError("invalid number")
@@ -218,7 +242,6 @@ export const NetworkEdit = () => {
     watch,
     resetField,
     clearErrors,
-    getValues,
     setError,
     reset,
     formState: { errors, isValid, isSubmitting, isDirty },
@@ -228,7 +251,24 @@ export const NetworkEdit = () => {
     resolver: yupResolver(schema),
   })
 
-  // auto fill chain id
+  const { isTestnet, rpc, id } = watch()
+
+  // initialize form with existing values (edit mode)
+  useEffect(() => {
+    if (defaultValues) reset(defaultValues)
+  }, [defaultValues, reset])
+
+  // auto detect chain id based on RPC url (add mode only)
+  const qRpcChainId = useRpcChainId(rpc)
+  useEffect(() => {
+    if (evmNetworkId || !qRpcChainId.isFetched) return
+    if (!!qRpcChainId.data && qRpcChainId.data !== id) {
+      setValue("id", qRpcChainId.data)
+    } else if (!!id && !qRpcChainId.data) {
+      resetField("id")
+    }
+  }, [evmNetworkId, id, qRpcChainId.data, qRpcChainId.isFetched, resetField, setValue])
+
   const submit = useCallback(
     async (network: RequestUpsertCustomEvmNetwork) => {
       try {
@@ -242,39 +282,15 @@ export const NetworkEdit = () => {
     [navigate, update, useTestnets]
   )
 
-  useEffect(() => {
-    if (defaultValues) reset(defaultValues)
-  }, [defaultValues, reset])
-
-  const { isTestnet, rpc, id } = watch()
-
-  useDebounce(
-    () => {
-      // in edit mode, do not try to autodetect
-      if (evmNetworkId) return
-
-      getRpcChainId(rpc)
-        .then((chainId) => {
-          setValue("id", chainId)
-        })
-        .catch(() => {
-          resetField("id")
-        })
-    },
-    100,
-    [evmNetworkId, resetField, rpc, setValue]
-  )
-
   const handleIsTestnetChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => setValue("isTestnet", e.target.checked, { shouldTouch: true }),
     [setValue]
   )
 
-  const { evmChainsList } = useEvmChainsList()
-  // auto fill only once, or it would prevent user from beeing able to clear a field
+  const qEvmChainsList = useEvmChainsList()
   const autoFill = useCallback(
     async (id: number) => {
-      const chainInfo = evmChainsList?.find((c) => c.chainId === id)
+      const chainInfo = qEvmChainsList.data?.find((c) => c.chainId === id)
       if (!chainInfo) return
 
       setValue("name", chainInfo.name)
@@ -286,65 +302,29 @@ export const NetworkEdit = () => {
         shouldTouch: true,
       })
     },
-    [evmChainsList, setValue]
+    [qEvmChainsList.data, setValue]
   )
 
+  // attempt an autofill once chain id is detected
   useEffect(() => {
     // check only if adding a new network
     if (evmNetworkId || !id) return
 
-    if (evmNetworks?.some((n) => n.id === id)) setError("id", { message: "already exists" })
-    else {
-      clearErrors("id")
+    if (evmNetworks?.some((n) => n.id === id)) {
+      if (!errors.id) setError("id", { message: "already exists" })
+    } else {
+      if (errors.id) clearErrors("id")
       autoFill(id)
     }
-  }, [autoFill, clearErrors, evmNetworkId, evmNetworks, id, setError])
+  }, [autoFill, clearErrors, evmNetworkId, evmNetworks, id, setError, errors.id])
 
   const [showRemove, showReset] = useMemo(
     () =>
-      evmNetworkId && isCustomEvmNetwork(evmNetwork) && typeof isBuiltIn === "boolean"
-        ? [!isBuiltIn, !!isBuiltIn]
+      evmNetworkId && isCustomEvmNetwork(evmNetwork) && qIsBuiltInEvmNetwork.isFetched
+        ? [!qIsBuiltInEvmNetwork.data, !!qIsBuiltInEvmNetwork.data]
         : [false, false],
-    [evmNetwork, evmNetworkId, isBuiltIn]
+    [evmNetwork, evmNetworkId, qIsBuiltInEvmNetwork.data, qIsBuiltInEvmNetwork.isFetched]
   )
-
-  const {
-    isOpen: isOpenConfirmReset,
-    open: openConfirmReset,
-    close: closeConfirmReset,
-  } = useOpenClose()
-  const handleConfirmReset = useCallback(async () => {
-    if (!evmNetworkId) return
-    try {
-      await api.ethNetworkReset(evmNetworkId)
-      closeConfirmReset()
-    } catch (err) {
-      notify({
-        title: "Failed to reset",
-        subtitle: (err as Error).message,
-        type: "error",
-      })
-    }
-  }, [closeConfirmReset, evmNetworkId])
-
-  const {
-    isOpen: isOpenConfirmRemove,
-    open: openConfirmRemove,
-    close: closeConfirmRemove,
-  } = useOpenClose()
-  const handleConfirmRemove = useCallback(async () => {
-    if (!evmNetworkId) return
-    try {
-      await api.ethNetworkRemove(evmNetworkId)
-      navigate("/networks")
-    } catch (err) {
-      notify({
-        title: "Failed to remove",
-        subtitle: (err as Error).message,
-        type: "error",
-      })
-    }
-  }, [evmNetworkId, navigate])
 
   // on edit screen, wait for existing network to be loaded
   if (evmNetworkId && !evmNetwork) return null
@@ -361,7 +341,7 @@ export const NetworkEdit = () => {
             type="text"
             autoComplete="off"
             spellCheck={false}
-            placeholder="https://cloudflare-eth.com/"
+            placeholder="https://1rpc.io/eth"
             className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none"
             {...register("rpc")}
           />
@@ -433,15 +413,17 @@ export const NetworkEdit = () => {
         <div className="text-alert-warn">{submitError}</div>
         <div className="flex justify-between">
           <div>
-            {showRemove && (
-              <Button type="button" className="mt-8" onClick={openConfirmRemove}>
-                Remove Network
-              </Button>
+            {showRemove && !!evmNetwork && (
+              <RemoveNetworkButton network={evmNetwork} />
+              // <Button type="button" className="mt-8" onClick={openConfirmRemove}>
+              //   Remove Network
+              // </Button>
             )}
-            {showReset && (
-              <Button type="button" className="mt-8" onClick={openConfirmReset}>
-                Reset to defaults
-              </Button>
+            {showReset && !!evmNetwork && (
+              <ResetNetworkButton network={evmNetwork} />
+              // <Button type="button" className="mt-8" onClick={openConfirmReset}>
+              //   Reset to defaults
+              // </Button>
             )}
           </div>
           <Button
@@ -456,7 +438,7 @@ export const NetworkEdit = () => {
           </Button>
         </div>
       </form>
-      <Modal open={isOpenConfirmRemove && !!evmNetwork} onClose={closeConfirmRemove}>
+      {/* <Modal open={isOpenConfirmRemove && !!evmNetwork} onClose={closeConfirmRemove}>
         <ModalDialog title="Remove Network" onClose={closeConfirmRemove}>
           <div className="text-body-secondary mt-4 space-y-16">
             <div className="text-base">
@@ -485,7 +467,7 @@ export const NetworkEdit = () => {
             </div>
           </div>
         </ModalDialog>
-      </Modal>
+      </Modal> */}
     </Layout>
   )
 }
