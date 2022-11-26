@@ -1,5 +1,4 @@
-import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
-import { CustomErc20Token, Erc20Token, Token } from "@core/domains/tokens/types"
+import { CustomErc20Token, Token } from "@core/domains/tokens/types"
 
 export const isCustomErc20Token = <T extends Token>(
   token?: T | null | CustomErc20Token
