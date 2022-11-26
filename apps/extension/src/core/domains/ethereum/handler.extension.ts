@@ -1,6 +1,5 @@
 import { DEBUG } from "@core/constants"
 import {
-  AddEthereumChainParameter,
   AnyEthRequestChainId,
   CustomEvmNetwork,
   EthApproveSignAndSend,
@@ -23,7 +22,7 @@ import { watchEthereumTransaction } from "@core/notifications"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
-import { EvmNetworkFragment, graphqlUrl } from "@core/util/graphql"
+import { graphqlUrl } from "@core/util/graphql"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
@@ -31,13 +30,11 @@ import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { isDefined } from "@ui/util/isDefined"
 import { ethers } from "ethers"
 import { print } from "graphql"
-import gql from "graphql-tag"
-import { sumBy } from "lodash"
 import { tokensQuery, tokensResponseToTokenList } from "../tokens/store"
 
 import { rebuildTransactionRequestNumbers } from "./helpers"
 import { evmNetworksQuery } from "./networksStore"
-import { getProviderForEvmNetworkId } from "./rpcProviders"
+import { getProviderForEvmNetworkId, clearEvmRpcProviderCache } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 import { RequestUpsertCustomEvmNetwork } from "./types/base"
 
@@ -343,8 +340,6 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private async ethNetworkUpsert(network: RequestUpsertCustomEvmNetwork): Promise<boolean> {
-    // TODO check RPC is healthy and returns the good chain id
-
     await db.transaction("rw", db.evmNetworks, db.tokens, async (tx) => {
       const nativeTokenId = `${network.id}-native-${network.tokenSymbol}`.toLowerCase()
 
@@ -389,6 +384,8 @@ export class EthHandler extends ExtensionHandler {
       })
     })
 
+    clearEvmRpcProviderCache(network.id)
+
     return true
   }
 
@@ -403,6 +400,8 @@ export class EthHandler extends ExtensionHandler {
       await db.tokens.filter((t) => "evmNetwork" in t && t.evmNetwork?.id === id).delete()
       await db.evmNetworks.delete(id)
     })
+
+    clearEvmRpcProviderCache(id)
 
     return true
   }
@@ -463,21 +462,7 @@ export class EthHandler extends ExtensionHandler {
       })
     })
 
-    //if native token was customized changed, previous native token must be deleted
-    // if (existing?.nativeToken && existing.nativeToken.id !== nativeTokenId)
-    //   await db.tokens.delete(existing.nativeToken.id)
-
-    // // ensure native token exists
-    // await db.tokens.put({
-    //   id: nativeTokenId,
-    //   type: "native",
-    //   isTestnet: false,
-    //   symbol: network.tokenSymbol,
-    //   decimals: network.tokenDecimals,
-    //   existentialDeposit: "0",
-    //   evmNetwork: { id: network.id },
-    //   isCustom: true,
-    // })
+    clearEvmRpcProviderCache(id)
 
     return true
   }

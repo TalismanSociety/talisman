@@ -185,3 +185,15 @@ export const getProviderForEvmNetworkId = async (
   if (network) return getProviderForEthereumNetwork(network, { batch })
   return null
 }
+
+export const clearEvmRpcProviderCache = (evmNetworkId: number) => {
+  delete ethereumNetworkProviders[evmNetworkId]
+  delete ethereumNetworkBatchProviders[evmNetworkId]
+}
+
+export const clearEvmRpcProvidersCache = () => {
+  Object.keys(ethereumNetworkProviders).forEach((key) => {
+    delete ethereumNetworkProviders[Number(key)]
+    delete ethereumNetworkBatchProviders[Number(key)]
+  })
+}

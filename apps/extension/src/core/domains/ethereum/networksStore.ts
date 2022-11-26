@@ -2,9 +2,9 @@ import { DEBUG } from "@core/constants"
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkList } from "@core/domains/ethereum/types"
 import { db } from "@core/libs/db"
 import { EvmNetworkFragment, graphqlUrl } from "@core/util/graphql"
-import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { print } from "graphql"
 import gql from "graphql-tag"
+import { clearEvmRpcProvidersCache } from "./rpcProviders"
 
 const minimumHydrationInterval = 43_200_000 // 43_200_000ms = 43_200s = 720m = 12 hours
 
@@ -27,6 +27,9 @@ export class EvmNetworkStore {
       const customNetworksIds = (await db.evmNetworks.toArray()).map((n) => n.id)
       await db.evmNetworks.bulkPut(evmNetworks.filter((n) => !customNetworksIds.includes(n.id)))
     })
+
+    // clear providers cache in case rpcs changed
+    clearEvmRpcProvidersCache()
   }
 
   /**
