@@ -414,6 +414,7 @@ export class EthHandler extends ExtensionHandler {
     assert(isCustomEvmNetwork(evmNetwork), "Network has not been customized")
 
     // TODO post balances merge, move this to a function in networks store
+    // Keeping it here for now so it doesn't get deleted during the merge
 
     const { data: dataNetworks } = await (
       await fetch(graphqlUrl, {
