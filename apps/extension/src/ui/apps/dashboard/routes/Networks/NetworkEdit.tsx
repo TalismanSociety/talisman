@@ -413,18 +413,8 @@ export const NetworkEdit = () => {
         <div className="text-alert-warn">{submitError}</div>
         <div className="flex justify-between">
           <div>
-            {showRemove && !!evmNetwork && (
-              <RemoveNetworkButton network={evmNetwork} />
-              // <Button type="button" className="mt-8" onClick={openConfirmRemove}>
-              //   Remove Network
-              // </Button>
-            )}
-            {showReset && !!evmNetwork && (
-              <ResetNetworkButton network={evmNetwork} />
-              // <Button type="button" className="mt-8" onClick={openConfirmReset}>
-              //   Reset to defaults
-              // </Button>
-            )}
+            {showRemove && !!evmNetwork && <RemoveNetworkButton network={evmNetwork} />}
+            {showReset && !!evmNetwork && <ResetNetworkButton network={evmNetwork} />}
           </div>
           <Button
             type="submit"
@@ -438,36 +428,6 @@ export const NetworkEdit = () => {
           </Button>
         </div>
       </form>
-      {/* <Modal open={isOpenConfirmRemove && !!evmNetwork} onClose={closeConfirmRemove}>
-        <ModalDialog title="Remove Network" onClose={closeConfirmRemove}>
-          <div className="text-body-secondary mt-4 space-y-16">
-            <div className="text-base">
-              Network {evmNetwork?.name} and associated tokens will be removed from Talisman.
-            </div>
-            <div className="grid grid-cols-2 gap-8">
-              <Button onClick={closeConfirmRemove}>Cancel</Button>
-              <Button primary onClick={handleConfirmRemove}>
-                Remove
-              </Button>
-            </div>
-          </div>
-        </ModalDialog>
-      </Modal>
-      <Modal open={isOpenConfirmReset && !!evmNetwork} onClose={closeConfirmReset}>
-        <ModalDialog title="Reset Network" onClose={closeConfirmReset}>
-          <div className="text-body-secondary mt-4 space-y-16">
-            <div className="text-base">
-              Network {evmNetwork?.name} will be reset to Talisman's built-in settings.
-            </div>
-            <div className="grid grid-cols-2 gap-8">
-              <Button onClick={closeConfirmReset}>Cancel</Button>
-              <Button primary onClick={handleConfirmReset}>
-                Reset
-              </Button>
-            </div>
-          </div>
-        </ModalDialog>
-      </Modal> */}
     </Layout>
   )
 }
