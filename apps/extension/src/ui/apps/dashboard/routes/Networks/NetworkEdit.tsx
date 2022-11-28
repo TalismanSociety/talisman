@@ -13,7 +13,7 @@ import { ethers } from "ethers"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate, useParams } from "react-router-dom"
-import { Button, Checkbox, FormFieldContainer } from "talisman-ui"
+import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { notify } from "@talisman/components/Notifications"
@@ -24,6 +24,7 @@ import { useSettings } from "@ui/hooks/useSettings"
 import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
 import { useEvmChainsList } from "@ui/hooks/useEvmChainsList"
 import { useQuery } from "@tanstack/react-query"
+import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
 
 const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
   const {
@@ -54,7 +55,7 @@ const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ ne
           <div className="text-body-secondary mt-4 space-y-16">
             <div className="text-base">
               Network <span className="text-body">{network?.name}</span> will be reset to Talisman's
-              built-in settings.
+              default settings.
             </div>
             <div className="grid grid-cols-2 gap-8">
               <Button onClick={closeConfirmReset}>Cancel</Button>
@@ -246,7 +247,7 @@ export const NetworkEdit = () => {
     reset,
     formState: { errors, isValid, isSubmitting, isDirty },
   } = useForm<RequestUpsertCustomEvmNetwork>({
-    mode: "onTouched",
+    mode: "onChange",
     defaultValues: { isTestnet: false },
     resolver: yupResolver(schema),
   })
@@ -337,25 +338,14 @@ export const NetworkEdit = () => {
       />
       <form className="mt-24 space-y-4" onSubmit={handleSubmit(submit)}>
         <FormFieldContainer label="RPC URL" error={errors.rpc?.message}>
-          <input
-            type="text"
-            autoComplete="off"
-            spellCheck={false}
-            placeholder="https://1rpc.io/eth"
-            className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none"
-            {...register("rpc")}
-          />
+          <FormFieldInputText placeholder="https://1rpc.io/eth" {...register("rpc")} />
         </FormFieldContainer>
         <div className="grid grid-cols-3 gap-12">
           <FormFieldContainer label="Chain ID" error={errors.id?.message}>
-            <input
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder="1"
-              className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none read-only:opacity-50"
-              {...register("id", { valueAsNumber: true })}
+            <FormFieldInputText
               readOnly
+              className="text-body-disabled cursor-not-allowed"
+              {...register("id")}
             />
           </FormFieldContainer>
           <FormFieldContainer
@@ -363,45 +353,29 @@ export const NetworkEdit = () => {
             label="Network Name"
             error={errors.name?.message}
           >
-            <input
-              {...register("name")}
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder="Ethereum"
-              className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none"
-            />
+            <FormFieldInputText placeholder="Ethereum" {...register("name")} />
           </FormFieldContainer>
         </div>
         <div className="grid grid-cols-2 gap-12">
           <FormFieldContainer label="Token symbol" error={errors.tokenSymbol?.message}>
-            <input
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
+            <FormFieldInputText
+              before={
+                <TokenImage src={GENERIC_TOKEN_LOGO_URL} className="min-w-[3rem] text-[3rem]" />
+              }
               placeholder="ETH"
-              className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none"
               {...register("tokenSymbol")}
             />
           </FormFieldContainer>
           <FormFieldContainer label="Token decimals" error={errors.tokenDecimals?.message}>
-            <input
-              type="text"
-              autoComplete="off"
-              spellCheck={false}
+            <FormFieldInputText
               placeholder="18"
-              className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none"
               {...register("tokenDecimals", { valueAsNumber: true })}
             />
           </FormFieldContainer>
         </div>
         <FormFieldContainer label="Block explorer URL" error={errors.blockExplorerUrl?.message}>
-          <input
-            type="text"
-            autoComplete="off"
-            spellCheck={false}
+          <FormFieldInputText
             placeholder="https://etherscan.io"
-            className="placeholder:text-body-disabled text-body-secondary bg-grey-800 text-md h-28 w-full rounded px-12 font-light leading-none"
             {...register("blockExplorerUrl")}
           />
         </FormFieldContainer>

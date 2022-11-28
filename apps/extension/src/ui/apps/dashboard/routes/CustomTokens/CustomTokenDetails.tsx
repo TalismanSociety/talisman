@@ -1,27 +1,20 @@
 import { Erc20Token } from "@core/domains/tokens/types"
 import * as Sentry from "@sentry/browser"
-import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { SimpleButton } from "@talisman/components/SimpleButton"
+import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
+import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import styled from "styled-components"
-import { Button } from "talisman-ui"
-
-import { Footer, Split, SymbolPrefix, commonFormStyle } from "./CustomTokensComponents"
-
-const Form = styled.div`
-  ${commonFormStyle}
-`
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 const ConfirmRemove = ({
   open,
@@ -41,17 +34,19 @@ const ConfirmRemove = ({
   }, [token])
 
   const [confirming, setConfirming] = useState(false)
-  const [error, setError] = useState<string>()
   const handleRemove = useCallback(async () => {
     setConfirming(true)
-    setError(undefined)
     try {
       if (!isCustomErc20Token(token)) throw new Error("Cannot remove built-in tokens")
       await api.removeCustomErc20Token(token.id)
       navigate("/tokens")
     } catch (err) {
       Sentry.captureException(err)
-      setError((err as Error).message ?? "Unknown error")
+      notify({
+        type: "error",
+        title: "Error",
+        subtitle: (err as Error).message ?? "Failed to remove",
+      })
       setConfirming(false)
     }
   }, [navigate, token])
@@ -66,7 +61,7 @@ const ConfirmRemove = ({
           </div>
           <div className="grid grid-cols-2 gap-8">
             <Button onClick={onClose}>Cancel</Button>
-            <Button primary onClick={handleRemove}>
+            <Button primary onClick={handleRemove} processing={confirming}>
               Remove
             </Button>
           </div>
@@ -102,20 +97,21 @@ export const CustomTokenDetails = () => {
         title={`${erc20Token.symbol} on ${network.name}`}
         text={
           isCustomErc20Token(erc20Token)
-            ? "This ERC-20 token is supported by Talisman by default. It can't be removed."
-            : "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
+            ? "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
+            : "This ERC-20 token is supported by Talisman by default. It can't be removed."
         }
       />
-      <Form>
-        <FormField label="Network">
+      <form className="my-20 space-y-4">
+        <FormFieldContainer label="Network">
           <NetworkSelect
             defaultChainId={network.id}
             // disabling network edit because it would create a new token
             disabled={Boolean(id)}
+            className="w-full"
           />
-        </FormField>
-        <FormField label="Contract Address">
-          <input
+        </FormFieldContainer>
+        <FormFieldContainer label="Contract Address">
+          <FormFieldInputText
             type="text"
             value={erc20Token.contractAddress}
             spellCheck={false}
@@ -123,33 +119,50 @@ export const CustomTokenDetails = () => {
             autoComplete="off"
             // a token cannot change address
             disabled
+            small
           />
-        </FormField>
-        <Split>
-          <FormField label="Symbol" prefix={<SymbolPrefix token={erc20Token} />}>
-            <input type="text" value={erc20Token.symbol} autoComplete="off" disabled />
-          </FormField>
-          <FormField label="Decimals">
-            <input
+        </FormFieldContainer>
+        <div className="grid grid-cols-2 gap-12">
+          <FormFieldContainer label="Symbol">
+            <FormFieldInputText
+              type="text"
+              value={erc20Token.symbol}
+              autoComplete="off"
+              disabled
+              small
+              before={
+                token && (
+                  <TokenImage
+                    className="mr-2 ml-[-0.8rem] text-[3rem]"
+                    src={"image" in token ? token.image : GENERIC_TOKEN_LOGO_URL}
+                  />
+                )
+              }
+            />
+          </FormFieldContainer>
+          <FormFieldContainer label="Decimals">
+            <FormFieldInputText
               type="number"
               value={erc20Token.decimals}
               placeholder="0"
               autoComplete="off"
               disabled
+              small
             />
-          </FormField>
-        </Split>
-        <Footer>
-          <SimpleButton
+          </FormFieldContainer>
+        </div>
+        <div className="flex justify-end py-8">
+          <Button
+            className="h-24 w-[24rem] text-base"
             disabled={!isCustomErc20Token(erc20Token)}
             type="button"
             primary
             onClick={open}
           >
             Remove Token
-          </SimpleButton>
-        </Footer>
-      </Form>
+          </Button>
+        </div>
+      </form>
       <ConfirmRemove open={isOpen} onClose={close} token={erc20Token} />
     </Layout>
   )
