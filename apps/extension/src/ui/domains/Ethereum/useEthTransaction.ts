@@ -147,7 +147,13 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
           // `gasPrice - baseFee` is equal to the current minimum maxPriorityPerGas value required to make it into next block
           // if smaller than our historical data based value, use it.
           // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
-          const minimumMaxPriorityFeePerGas = BigNumber.from(gPrice).sub(baseFeePerGas ?? 0)
+          let minimumMaxPriorityFeePerGas = gPrice.sub(baseFeePerGas ?? 0)
+          if (minimumMaxPriorityFeePerGas.lt(0)) {
+            // on a busy network, when there is a sudden lowering of amount of transactions,
+            // it can happen that baseFeePerGas is higher than gPrice
+            minimumMaxPriorityFeePerGas = BigNumber.from("0")
+          }
+
           if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.low))
             feeOptions.options.low = minimumMaxPriorityFeePerGas
           if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.medium))
