@@ -1,33 +1,19 @@
 import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { assert } from "@polkadot/util"
-import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import { PlusIcon } from "@talisman/theme/icons"
+import { LoaderIcon, PlusIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
+import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
+import { Button, classNames, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
-
-import {
-  ErrorDiv,
-  Footer,
-  LoadingSuffix,
-  Split,
-  SymbolPrefix,
-  commonFormStyle,
-} from "./CustomTokensComponents"
-
-const Form = styled.form`
-  ${commonFormStyle}
-`
 
 type FormData = Pick<
   CustomErc20TokenCreate,
@@ -120,46 +106,57 @@ export const CustomTokenAdd = () => {
         title="Add custom token"
         text="Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
       />
-      <Form onSubmit={handleSubmit(submit)}>
-        <FormField label="Network" error={errors.evmNetworkId}>
-          <NetworkSelect placeholder="Select a network" onChange={handleNetworkChange} />
-        </FormField>
-        <FormField
+      <form className="my-20 space-y-4" onSubmit={handleSubmit(submit)}>
+        <FormFieldContainer label="Network" error={errors.evmNetworkId?.message}>
+          <NetworkSelect
+            placeholder="Select a network"
+            onChange={handleNetworkChange}
+            className="w-full"
+          />
+        </FormFieldContainer>
+        <FormFieldContainer
           label="Contract Address"
-          error={
-            errors.contractAddress ??
-            (tokenInfoError && {
-              type: "validate",
-              message: "Invalid address",
-            })
-          }
-          suffix={isLoading && <LoadingSuffix />}
+          error={errors.contractAddress?.message ?? (tokenInfoError && "Invalid address")}
         >
-          <input
+          <FormFieldInputText
             {...register("contractAddress")}
             spellCheck={false}
             data-lpignore
             type="text"
             autoComplete="off"
             placeholder="Paste token address"
+            after={
+              <LoaderIcon
+                className={classNames(
+                  "animate-spin-slow text-lg opacity-50",
+                  isLoading ? "visible" : "invisible"
+                )}
+              />
+            }
+            small
           />
-        </FormField>
-        <Split>
-          <FormField
-            label="Symbol"
-            error={errors.symbol}
-            prefix={tokenInfo && <SymbolPrefix token={tokenInfo} />}
-          >
-            <input
+        </FormFieldContainer>
+        <div className="grid grid-cols-2 gap-12">
+          <FormFieldContainer label="Symbol" error={errors.symbol?.message}>
+            <FormFieldInputText
               {...register("symbol")}
               type="text"
               placeholder="ABC"
               autoComplete="off"
               disabled
+              before={
+                tokenInfo && (
+                  <TokenImage
+                    className="mr-2 ml-[-0.8rem] text-[3rem]"
+                    src={tokenInfo?.image ?? GENERIC_TOKEN_LOGO_URL}
+                  />
+                )
+              }
+              small
             />
-          </FormField>
-          <FormField label="Decimals" error={errors.decimals}>
-            <input
+          </FormFieldContainer>
+          <FormFieldContainer label="Decimals" error={errors.decimals?.message}>
+            <FormFieldInputText
               {...register("decimals", {
                 valueAsNumber: true,
               })}
@@ -167,22 +164,24 @@ export const CustomTokenAdd = () => {
               placeholder="0"
               autoComplete="off"
               disabled
+              small
             />
-          </FormField>
-        </Split>
-        <ErrorDiv>{error}</ErrorDiv>
-        <Footer>
-          <SimpleButton
+          </FormFieldContainer>
+        </div>
+        <div className="text-alert-error">{error}</div>
+        <div className="flex justify-end py-8">
+          <Button
+            className="h-24 w-[24rem] text-base"
+            icon={PlusIcon}
             type="submit"
             primary
             disabled={!isValid || isLoading}
             processing={isSubmitting}
           >
-            <PlusIcon />
             Add Token
-          </SimpleButton>
-        </Footer>
-      </Form>
+          </Button>
+        </div>
+      </form>
     </Layout>
   )
 }
