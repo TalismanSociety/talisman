@@ -11,7 +11,7 @@ import Asset from "@ui/domains/Asset"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
 import { useAppState } from "@ui/hooks/useAppState"
 import useChain from "@ui/hooks/useChain"
-import { useFeatureFlag } from "@ui/hooks/useFeatures"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
@@ -107,7 +107,7 @@ const Highlight = styled.span`
 
 export const AddLedgerSelectNetwork = () => {
   const { data: defaultValues, updateData } = useAddLedgerAccount()
-  const { isEnabled: isLedgerEvmEnabled } = useFeatureFlag("LEDGER_EVM")
+  const isLedgerEvmEnabled = useIsFeatureEnabled("LEDGER_EVM")
   const { hasSpiritKey } = useAppState()
 
   const enabledAddressTypes: AccountAddressType[] = useMemo(

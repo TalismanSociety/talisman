@@ -1,3 +1,4 @@
+import { ProtectorSources, ProtectorStorage } from "@core/domains/app/protector/ParaverseProtector"
 import { MetadataDef } from "@core/inject/types"
 import { TokenId } from "@talismn/chaindata-provider"
 import { TokenRates } from "@talismn/token-rates"
@@ -6,6 +7,7 @@ import { Dexie } from "dexie"
 export class TalismanDatabase extends Dexie {
   tokenRates!: Dexie.Table<DbTokenRates, string>
   metadata!: Dexie.Table<MetadataDef, string>
+  phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
 
   constructor() {
     super("Talisman")
@@ -24,6 +26,7 @@ export class TalismanDatabase extends Dexie {
       tokenRates: "tokenId",
       balances: null, // delete legacy table
       metadata: "genesisHash",
+      phishing: "source, commitSha",
       metadataRpc: null, // delete legacy table
       chainMetadataRpc: null, // delete legacy table
     })

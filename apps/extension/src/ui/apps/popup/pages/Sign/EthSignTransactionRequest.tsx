@@ -1,19 +1,18 @@
-import { AccountJsonAny, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
-import { EvmNetwork } from "@core/domains/ethereum/types"
+import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { BalanceFormatter } from "@core/domains/balances"
 import { AppPill } from "@talisman/components/AppPill"
-import { FadeIn } from "@talisman/components/FadeIn"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
-import { formatEtherValue } from "@talisman/util/formatEthValue"
-import { formatDecimals } from "@talismn/util"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
-import { AccountPill } from "@ui/domains/Account/AccountPill"
+import Fiat from "@ui/domains/Asset/Fiat"
+import Tokens from "@ui/domains/Asset/Tokens"
 import { EthFeeSelect } from "@ui/domains/Ethereum/EthFeeSelect"
+import { EthSignBody } from "@ui/domains/Ethereum/Sign/EthSignBody"
+import { SignAlertMessage } from "@ui/domains/Ethereum/Sign/shared"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
-import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import useToken from "@ui/hooks/useToken"
-import { BigNumberish } from "ethers"
-import { formatEther } from "ethers/lib/utils"
+import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
+import { BigNumber } from "ethers"
 import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
@@ -23,6 +22,20 @@ import { Container } from "./common"
 const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 const SignContainer = styled(Container)`
+  .layout-content .children {
+    padding-left: 0;
+    padding-right: 0;
+
+    .scrollable {
+      // padding-right is dynamic and browser-specific so only set padding left and width
+      padding-left: 2.4rem;
+      & > div {
+        width: 35.2rem;
+        max-width: 35.2rem;
+      }
+    }
+  }
+
   .layout-content .children h2 {
     text-align: center;
     padding: 0;
@@ -57,7 +70,7 @@ const SignContainer = styled(Container)`
   .gasInfo {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 0.4rem;
     font-size: 1.4rem;
     text-align: left;
     justify-content: space-between;
@@ -83,52 +96,6 @@ const SignContainer = styled(Container)`
   }
 `
 
-const SignTxWithValue = ({
-  account,
-  network,
-  value,
-}: {
-  account: AccountJsonAny
-  network?: EvmNetwork
-  value: BigNumberish
-}) => {
-  // TODO pull account balance from network (not chain) and check for sufficient balance ?
-  const nativeToken = useToken(network?.nativeToken?.id)
-
-  return (
-    <>
-      <h1>Transfer Request</h1>
-      <h2>
-        You are transferring{" "}
-        <strong>
-          {formatDecimals(formatEther(value))} {nativeToken?.symbol}
-        </strong>
-        <br />
-        from <AccountPill account={account} />
-        {network ? ` on ${network.name}` : null}
-      </h2>
-    </>
-  )
-}
-
-const SignTxWithoutValue = ({
-  account,
-  network,
-}: {
-  account: AccountJsonAny
-  network: EvmNetwork
-}) => {
-  return (
-    <>
-      <h1>Approve Request</h1>
-      <h2>
-        You are approving a request with <AccountPill account={account} />
-        {network ? ` on ${network.name}` : null}
-      </h2>
-    </>
-  )
-}
-
 export const EthSignTransactionRequest = () => {
   const {
     url,
@@ -148,6 +115,7 @@ export const EthSignTransactionRequest = () => {
     approveHardware,
     isPayloadLocked,
     setIsPayloadLocked,
+    transactionInfo,
   } = useEthSignTransactionRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -163,47 +131,69 @@ export const EthSignTransactionRequest = () => {
   }, [status])
 
   const nativeToken = useToken(network?.nativeToken?.id)
+  const rates = useTokenRatesForTokens(useMemo(() => [nativeToken], [nativeToken]))
+  const nativeTokenRates = nativeToken && rates[nativeToken.id]
 
   // gas settings must be locked as soon as payload is sent to ledger
   const handleSendToLedger = useCallback(() => {
     setIsPayloadLocked(true)
   }, [setIsPayloadLocked])
 
+  const estimatedFee = useMemo(
+    () =>
+      txDetails && nativeToken
+        ? new BalanceFormatter(
+            BigNumber.from(txDetails?.estimatedFee).toString(),
+            nativeToken?.decimals,
+            nativeTokenRates
+          )
+        : null,
+    [nativeToken, nativeTokenRates, txDetails]
+  )
+
+  const isReadyToDisplay = useMemo(
+    () => Boolean(transactionInfo && (estimatedFee || errorMessage)),
+    [transactionInfo, estimatedFee, errorMessage]
+  )
+
   return (
     <SignContainer>
       <Header text={<AppPill url={url} />}></Header>
       <Content>
-        {account && request && network && (
-          <>
-            <div className="sign-summary">
-              {request.value ? (
-                <SignTxWithValue network={network} account={account} value={request.value} />
-              ) : (
-                <SignTxWithoutValue network={network} account={account} />
-              )}
-            </div>
-          </>
-        )}
+        <div className="scrollable scrollable-800 h-full overflow-y-auto">
+          <EthSignBody transactionInfo={transactionInfo} isReady={isReadyToDisplay} />
+        </div>
       </Content>
       <Footer>
-        <Suspense fallback={null}>
-          {nativeToken && transaction && txDetails ? (
-            <>
-              <div className="center">
-                <ViewDetailsEth />
-              </div>
-              <div className="gasInfo">
+        <div className="space-y-4">
+          <div id="sign-alerts-inject"></div>
+          {isReadyToDisplay && errorMessage && (
+            <SignAlertMessage type="error">{errorMessage}</SignAlertMessage>
+          )}
+        </div>
+        {isReadyToDisplay && (
+          <Suspense fallback={null}>
+            {nativeToken && transaction && txDetails && estimatedFee ? (
+              <div className="gasInfo mt-8">
                 <div>
                   <div>Estimated Fee</div>
                   <div>{transaction?.type === 2 && "Priority"}</div>
                 </div>
                 <div>
                   <div>
-                    {formatEtherValue(
-                      txDetails.estimatedFee,
-                      nativeToken?.decimals,
-                      nativeToken?.symbol
-                    )}
+                    <Tokens
+                      amount={estimatedFee.tokens}
+                      decimals={nativeToken.decimals}
+                      symbol={nativeToken.symbol}
+                      noCountUp
+                    />
+                    {estimatedFee && nativeTokenRates ? (
+                      <>
+                        {" "}
+                        (~
+                        <Fiat amount={estimatedFee.fiat("usd")} noCountUp currency="usd" />)
+                      </>
+                    ) : null}
                   </div>
                   <div>
                     <EthFeeSelect
@@ -218,42 +208,41 @@ export const EthSignTransactionRequest = () => {
                   </div>
                 </div>
               </div>
-            </>
-          ) : null}
-          {errorMessage && <p className="error">{errorMessage}</p>}
-          {account && request && account.isHardware ? (
-            transaction ? (
-              <LedgerEthereum
-                manualSend
-                className="mt-6"
-                method="transaction"
-                payload={transaction}
-                account={account as AccountJsonHardwareEthereum}
-                onSignature={approveHardware}
-                onReject={reject}
-                onSendToLedger={handleSendToLedger}
-              />
+            ) : null}
+            {account && request && account.isHardware ? (
+              transaction ? (
+                <LedgerEthereum
+                  manualSend
+                  className="mt-6"
+                  method="transaction"
+                  payload={transaction}
+                  account={account as AccountJsonHardwareEthereum}
+                  onSignature={approveHardware}
+                  onReject={reject}
+                  onSendToLedger={handleSendToLedger}
+                />
+              ) : (
+                <Button className="w-full" onClick={reject}>
+                  Cancel
+                </Button>
+              )
             ) : (
-              <Button className="w-full" onClick={reject}>
-                Cancel
-              </Button>
-            )
-          ) : (
-            <Grid>
-              <SimpleButton disabled={processing} onClick={reject}>
-                Cancel
-              </SimpleButton>
-              <SimpleButton
-                disabled={!transaction || processing || isLoading}
-                processing={processing}
-                primary
-                onClick={approve}
-              >
-                Approve
-              </SimpleButton>
-            </Grid>
-          )}
-        </Suspense>
+              <Grid>
+                <SimpleButton disabled={processing} onClick={reject}>
+                  Cancel
+                </SimpleButton>
+                <SimpleButton
+                  disabled={!transaction || processing || isLoading}
+                  processing={processing}
+                  primary
+                  onClick={approve}
+                >
+                  Approve
+                </SimpleButton>
+              </Grid>
+            )}
+          </Suspense>
+        )}
       </Footer>
     </SignContainer>
   )

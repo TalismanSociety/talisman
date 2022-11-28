@@ -137,7 +137,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       if (!token) throw new Error("Token not found")
 
       const chain = (!!chainId && chainsMap[chainId]) || null
-      const evmNetwork = (!!evmNetworkId && evmNetworksMap[Number(evmNetworkId)]) || null
+      const evmNetwork = (!!evmNetworkId && evmNetworksMap[evmNetworkId]) || null
       if (!chain && !evmNetwork) throw new Error("Network not found")
 
       const network = (chain || evmNetwork) as Chain | EvmNetwork

@@ -5,6 +5,7 @@ import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"
+import { Message } from "@ui/domains/Sign/Message"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useEncryptRequestById from "@ui/hooks/useEncryptRequestById"
 import { useEffect, useMemo } from "react"
@@ -12,7 +13,7 @@ import { useParams } from "react-router-dom"
 import styled from "styled-components"
 
 import { Content, Footer, Header } from "../Layout"
-import { Message, SignContainer } from "./Sign/common"
+import { SignContainer } from "./Sign/common"
 
 const SignMessage = ({
   account,

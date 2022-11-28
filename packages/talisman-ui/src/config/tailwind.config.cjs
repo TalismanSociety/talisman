@@ -147,6 +147,10 @@ module.exports = {
       animation: {
         "spin-slow": "spin 2s linear infinite",
       },
+      gridTemplateColumns: {
+        // 2 columns, 2nd grows
+        keyvalue: "auto 1fr",
+      },
     },
   },
   plugins: [

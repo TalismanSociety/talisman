@@ -3,12 +3,13 @@ import { classNames } from "@talisman/util/classNames"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useFeatureVariantEquals } from "@ui/hooks/useFeatures"
+import { useFeatureVariantEquals, useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 import { useNavigationContext } from "../../context/NavigationContext"
-import { NavIconExpand, NavIconHome, NavIconMore, NavIconNft } from "./icons"
+import { NavIconExpand, NavIconHistory, NavIconHome, NavIconMore, NavIconNft } from "./icons"
 
 type BottomNavButtonProps = DetailedHTMLProps<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -60,8 +61,20 @@ export const BottomNav = () => {
       name: "Goto",
       action: "NFTs button",
     })
-    window.open("https://app.talisman.xyz/nfts")
+    window.open("https://app.talisman.xyz/nfts", "_blank")
+    window.close()
   }, [])
+
+  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
+  const handleTxHistoryClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Tx History button",
+    })
+    window.open(getTransactionHistoryUrl(account?.address), "_blank")
+    window.close()
+  }, [account?.address])
 
   const handleExpandClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -99,12 +112,19 @@ export const BottomNav = () => {
           <NavIconNft />
         </BottomNavButton>
       </WithTooltip>
+      {showTxHistory && (
+        <WithTooltip as="div" tooltip={showTooltip && "Transaction History"}>
+          <BottomNavButton onClick={handleTxHistoryClick}>
+            <NavIconHistory />
+          </BottomNavButton>
+        </WithTooltip>
+      )}
       <WithTooltip as="div" tooltip={showTooltip && "Expand Portfolio View"}>
         <BottomNavButton onClick={handleExpandClick}>
           <NavIconExpand />
         </BottomNavButton>
       </WithTooltip>
-      <WithTooltip as="div" tooltip={showTooltip && "More Options"}>
+      <WithTooltip as="div" tooltip={showTooltip && "More Options"} noWrap>
         <BottomNavButton onClick={handleMoreClick}>
           <NavIconMore />
         </BottomNavButton>

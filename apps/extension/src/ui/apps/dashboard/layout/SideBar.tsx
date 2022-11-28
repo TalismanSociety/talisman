@@ -5,6 +5,7 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { breakpoints } from "@talisman/theme/definitions"
 import {
+  ClockIcon,
   CopyIcon,
   CreditCardIcon,
   ExternalLinkIcon,
@@ -24,6 +25,7 @@ import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
@@ -272,6 +274,13 @@ export const SideBar = () => {
     return false
   }, [genericEvent])
 
+  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
+  const handleTxHistoryClick = useCallback(() => {
+    genericEvent("open web app tx history", { from: "sidebar" })
+    window.open(getTransactionHistoryUrl(account?.address), "_blank")
+    return false
+  }, [account?.address, genericEvent])
+
   // const handleCrowdloansClick = useCallback(() => {
   //   genericEvent("open web app crowdloans", { from: "sidebar", target: "crowdloans" })
   //   window.open("https://app.talisman.xyz/crowdloans", "_blank")
@@ -369,6 +378,18 @@ export const SideBar = () => {
           >
             Crowdloans <ExtLinkIcon />
           </NavItemButton> */}
+          {showTxHistory && (
+            <NavItemButton
+              onClick={handleTxHistoryClick}
+              icon={
+                <ResponsiveTooltip tooltip="Transaction History">
+                  <ClockIcon />
+                </ResponsiveTooltip>
+              }
+            >
+              Transaction History
+            </NavItemButton>
+          )}
           <NavItemLink
             to="/settings"
             onClick={handleSettingsClick}

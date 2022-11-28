@@ -26,8 +26,7 @@ export const SendFundsButton = ({
   const token = tokens?.find(
     (t) =>
       t.symbol === symbol &&
-      (("evmNetwork" in t && Number(t.evmNetwork?.id) === Number(networkId)) ||
-        t.chain?.id === networkId)
+      (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId)
   )
 
   const handleClick = useCallback(() => {

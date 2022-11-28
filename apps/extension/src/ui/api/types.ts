@@ -67,6 +67,7 @@ export default interface MessageTypes {
   approveMetaRequest: (id: string) => Promise<boolean>
   rejectMetaRequest: (id: string) => Promise<boolean>
   subscribeMetadataRequests: (cb: (requests: MetadataRequest[]) => void) => UnsubscribeFn
+  allowPhishingSite: (url: string) => Promise<boolean>
 
   // signing messages -------------------------------------------------------
   decodeSignRequest: (id: string) => Promise<TransactionDetails>

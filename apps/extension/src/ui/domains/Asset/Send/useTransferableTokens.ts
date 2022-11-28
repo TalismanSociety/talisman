@@ -37,7 +37,7 @@ export const useTransferableTokens = () => {
           },
           evmNetwork && {
             id: `${tokenId}-${evmNetwork.id}`,
-            evmNetworkId: Number(evmNetwork.id),
+            evmNetworkId: evmNetwork.id,
             token,
           },
         ].filter(Boolean) as TransferableToken[]

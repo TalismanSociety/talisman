@@ -58,7 +58,7 @@ const AssetPicker: FC<IProps> = ({
   const items: PickerItemProps[] = transferableTokens.map((transferable) => {
     const { id, chainId, evmNetworkId, token } = transferable
     const chain = chains?.find((c) => c.id === chainId)
-    const evmNetwork = evmNetworks?.find((n) => Number(n.id) === Number(evmNetworkId))
+    const evmNetwork = evmNetworks?.find((n) => n.id === evmNetworkId)
     const networkName = chain?.chainName || evmNetwork?.name
     // display type only if chain has an evm network, or vice versa
     const networkType =

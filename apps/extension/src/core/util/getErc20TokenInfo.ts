@@ -1,8 +1,8 @@
 import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
+import { imgSrcToDataURL } from "blob-util"
 import { ethers } from "ethers"
 
-import { getBase64ImageFromUrl } from "./getBase64ImageFromUrl"
 import { getCoinGeckoErc20Coin } from "./getCoinGeckoErc20Coin"
 import { getErc20ContractData } from "./getErc20ContractData"
 
@@ -16,9 +16,15 @@ export const getErc20TokenInfo = async (
     getCoinGeckoErc20Coin(evmNetworkId, contractAddress),
   ])
 
-  const image = coinGeckoData?.image?.large
-    ? await getBase64ImageFromUrl(coinGeckoData.image.large)
-    : undefined
+  let image: string | undefined = undefined
+
+  try {
+    if (coinGeckoData?.image?.small)
+      image = await imgSrcToDataURL(coinGeckoData?.image?.small, undefined, "anonymous")
+  } catch (err) {
+    // image cannot be loaded, might be a CORS issue, but it may exist
+    image = coinGeckoData?.image?.small
+  }
 
   return {
     evmNetworkId,

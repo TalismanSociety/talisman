@@ -1,5 +1,6 @@
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
+import { protector } from "@core/domains/app/protector"
 import {
   DecryptPayload,
   EncryptPayload,
@@ -32,8 +33,6 @@ import {
   ResponseRpcListProviders,
 } from "@polkadot/extension-base/background/types"
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
-// Copyright 2019-2021 @polkadot/extension authors & contributors
-// SPDX-License-Identifier: Apache-2.0
 import type {
   InjectedAccount,
   InjectedMetadataKnown,
@@ -97,7 +96,7 @@ export default class Tabs extends TabsHandler {
     }))
   }
 
-  private accountsSubscribe(url: string, id: string, port: Port): boolean {
+  private accountsSubscribe(url: string, id: string, port: Port) {
     return genericAsyncSubscription<"pub(accounts.subscribe)">(
       id,
       port,
@@ -227,7 +226,7 @@ export default class Tabs extends TabsHandler {
   private redirectPhishingLanding(phishingWebsite: string): void {
     const nonFragment = phishingWebsite.split("#")[0]
     const encodedWebsite = encodeURIComponent(nonFragment)
-    const url = `${chrome.extension.getURL(
+    const url = `${Browser.runtime.getURL(
       "dashboard.html"
     )}#${PHISHING_PAGE_REDIRECT}/${encodedWebsite}`
 
@@ -246,7 +245,7 @@ export default class Tabs extends TabsHandler {
   }
 
   private async redirectIfPhishing(url: string): Promise<boolean> {
-    const isInDenyList = await isPhishingSite(url)
+    const isInDenyList = await protector.isPhishingSite(url)
 
     if (isInDenyList) {
       Sentry.captureEvent({
@@ -309,6 +308,10 @@ export default class Tabs extends TabsHandler {
 
       case "pub(accounts.subscribe)":
         return this.accountsSubscribe(url, id, port)
+
+      case "pub(accounts.unsubscribe)":
+        // noop, needed to comply with polkadot.js behaviour
+        return true
 
       case "pub(bytes.sign)":
         await this.stores.sites.ensureUrlAuthorized(
