@@ -1,5 +1,5 @@
 import { CheckCircleIcon, LoaderIcon, XCircleIcon } from "@talisman/theme/icons"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { LedgerStatus } from "@ui/hooks/ledger/common"
 import { useEffect, useState } from "react"
 import styled from "styled-components"

@@ -1,5 +1,5 @@
 import { urlToDomain } from "@core/util/urlToDomain"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { FC } from "react"
 import styled from "styled-components"

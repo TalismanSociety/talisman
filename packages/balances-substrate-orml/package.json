@@ -12,8 +12,8 @@
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/talismn-balances-substrate-orml.cjs.js",
+  "module": "dist/talismn-balances-substrate-orml.esm.js",
   "files": [
     "/dist"
   ],
@@ -30,8 +30,11 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
+    "@polkadot/types": "9.10.5",
     "@talismn/balances": "workspace:^",
-    "@talismn/chaindata-provider": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:^",
+    "@talismn/util": "workspace:^",
+    "anylogger": "^1.0.11"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",
@@ -45,7 +48,7 @@
   "eslintConfig": {
     "root": true,
     "extends": [
-      "@talismn/eslint-config"
+      "@talismn/eslint-config/base"
     ]
   }
 }

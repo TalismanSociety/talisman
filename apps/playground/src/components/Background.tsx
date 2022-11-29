@@ -1,3 +1,4 @@
+import { classNames } from "@talismn/util"
 import { useCallback, useMemo, useState } from "react"
 import {
   Button,
@@ -5,7 +6,6 @@ import {
   MysticalBackground,
   MysticalBackgroundOld,
   MysticalPhysics,
-  classNames,
 } from "talisman-ui"
 
 import { TestLayout } from "./TestLayout"

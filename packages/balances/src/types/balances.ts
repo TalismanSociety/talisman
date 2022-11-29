@@ -7,6 +7,7 @@ import { Memoize } from "typescript-memoize"
 import { filterMirrorTokens } from "../helpers"
 import log from "../log"
 import {
+  AmountWithLabel,
   BalanceJson,
   BalanceJsonList,
   IBalance,
@@ -348,10 +349,10 @@ export class Balance {
       typeof this.#storage.free === "string"
         ? BigInt(this.#storage.free)
         : Array.isArray(this.#storage.free)
-        ? this.#storage.free
+        ? (this.#storage.free as AmountWithLabel<string>[])
             .map((reserve) => BigInt(reserve.amount))
             .reduce((a, b) => a + b, BigInt("0"))
-        : BigInt(this.#storage.free?.amount || "0")
+        : BigInt((this.#storage.free as AmountWithLabel<string>)?.amount || "0")
     )
   }
   /** The reserved balance of this token. Is included in the total. */

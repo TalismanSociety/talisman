@@ -1,7 +1,7 @@
 import { Box } from "@talisman/components/Box"
 import { ChevronDownIcon, XIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkOption, usePortfolio } from "@ui/domains/Portfolio/context"
 import { UseComboboxState, UseComboboxStateChangeOptions, useCombobox } from "downshift"

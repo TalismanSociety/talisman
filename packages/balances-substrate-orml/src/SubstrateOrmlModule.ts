@@ -40,8 +40,8 @@ export type SubOrmlToken = NewTokenType<
   }
 >
 
-declare module "@talismn/chaindata-provider/plugins" {
-  export interface PluginTokenTypes {
+declare global {
+  export interface TalismanPluginTokenTypes {
     SubOrmlToken: SubOrmlToken
   }
 }
@@ -68,8 +68,8 @@ export type SubOrmlBalance = NewBalanceType<
   }
 >
 
-declare module "@talismn/balances/plugins" {
-  export interface PluginBalanceTypes {
+declare global {
+  export interface TalismanPluginBalanceTypes {
     SubOrmlBalance: SubOrmlBalance
   }
 }
@@ -210,7 +210,10 @@ export const SubOrmlModule: BalanceModule<
 
             return true
           })
-          .map(([, token, addresses]): [SubOrmlToken, string[]] => [token, addresses])
+          .map(([, token, addresses]): [SubOrmlToken, string[]] => [
+            token as SubOrmlToken,
+            addresses,
+          ])
 
         // set up method, return message type and params
         const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
@@ -278,7 +281,10 @@ export const SubOrmlModule: BalanceModule<
 
             return true
           })
-          .map(([, token, addresses]): [SubOrmlToken, string[]] => [token, addresses])
+          .map(([, token, addresses]): [SubOrmlToken, string[]] => [
+            token as SubOrmlToken,
+            addresses,
+          ])
 
         // set up method and params
         const method = "state_queryStorageAt" // method we call to fetch

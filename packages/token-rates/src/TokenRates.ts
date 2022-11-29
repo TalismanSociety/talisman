@@ -1,4 +1,4 @@
-import { IToken, TokenList } from "@talismn/chaindata-provider"
+import { IToken, TokenId } from "@talismn/chaindata-provider"
 import axios from "axios"
 
 import { NewTokenRates, TokenRates, TokenRatesList } from "./types"
@@ -25,7 +25,7 @@ const coingeckoCurrencies: Array<keyof TokenRates> = [
 ]
 
 // export function tokenRates(tokens: WithCoingeckoId[]): TokenRatesList {}
-export async function fetchTokenRates(tokens: TokenList) {
+export async function fetchTokenRates(tokens: Record<TokenId, IToken>) {
   // create a map from `coingeckoId` -> `tokenId` for each token
   const coingeckoIdToTokenIds = Object.values(tokens)
     // ignore testnet tokens

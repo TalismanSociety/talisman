@@ -1,8 +1,8 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { copyAddress } from "@ui/util/copyAddress"
 import { FC, ReactNode, useCallback, useMemo } from "react"
-import { classNames } from "talisman-ui"
 
 export type SignParamButtonProps = {
   iconPrefix?: ReactNode

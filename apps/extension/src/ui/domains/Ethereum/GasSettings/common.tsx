@@ -5,8 +5,8 @@ import imgFeePriorityHigh from "@talisman/theme/images/fee-priority-high.png"
 import imgFeePriorityLow from "@talisman/theme/images/fee-priority-low.png"
 import imgFeePriorityMedium from "@talisman/theme/images/fee-priority-medium.png"
 import imgFeePriorityRecommended from "@talisman/theme/images/fee-priority-recommended.png"
+import { classNames } from "@talismn/util"
 import { FC, PropsWithChildren } from "react"
-import { classNames } from "talisman-ui"
 
 export const FEE_PRIORITY_OPTIONS: Record<EthPriorityOptionName, { icon: string; label: string }> =
   {

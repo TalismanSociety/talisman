@@ -12,8 +12,8 @@
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/talismn-util.cjs.js",
+  "module": "dist/talismn-util.esm.js",
   "files": [
     "/dist"
   ],
@@ -47,7 +47,7 @@
   "eslintConfig": {
     "root": true,
     "extends": [
-      "@talismn/eslint-config"
+      "@talismn/eslint-config/base"
     ]
   }
 }

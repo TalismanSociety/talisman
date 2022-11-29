@@ -1,8 +1,12 @@
 import { ChainId, EvmNetworkId, MultiChainId, TokenId } from "@talismn/chaindata-provider"
 import { BigMath } from "@talismn/util"
 
-import { PluginBalanceTypes } from "../plugins"
+// import { PluginBalanceTypes } from "../plugins"
 import { Address } from "./addresses"
+
+declare global {
+  export interface TalismanPluginBalanceTypes {} // eslint-disable-line @typescript-eslint/no-empty-interface
+}
 
 /**
  * `BalanceTypes` is an automatically determined sub-selection of `PluginBalanceTypes`.
@@ -11,9 +15,9 @@ import { Address } from "./addresses"
  */
 export type BalanceTypes = {
   // Check that each plugin-provided BalanceType is a valid BalanceType (i.e. has all of the IBalance fields)
-  [BalanceType in keyof PluginBalanceTypes]: PluginBalanceTypes[BalanceType] extends IBalance
+  [BalanceType in keyof TalismanPluginBalanceTypes]: TalismanPluginBalanceTypes[BalanceType] extends IBalance
     ? // Include the valid balance type in BalanceTypes
-      PluginBalanceTypes[BalanceType]
+      TalismanPluginBalanceTypes[BalanceType]
     : // Don't include the invalid balance type
       never
 }

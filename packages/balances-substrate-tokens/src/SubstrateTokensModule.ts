@@ -36,8 +36,8 @@ export type SubTokensToken = NewTokenType<
   }
 >
 
-declare module "@talismn/chaindata-provider/plugins" {
-  export interface PluginTokenTypes {
+declare global {
+  export interface TalismanPluginTokenTypes {
     SubTokensToken: SubTokensToken
   }
 }
@@ -69,8 +69,8 @@ export type SubTokensBalance = NewBalanceType<
   }
 >
 
-declare module "@talismn/balances/plugins" {
-  export interface PluginBalanceTypes {
+declare global {
+  export interface TalismanPluginBalanceTypes {
     SubTokensBalance: SubTokensBalance
   }
 }
@@ -360,7 +360,10 @@ async function prepareQueriesByChain(
 
             return true
           })
-          .map(([, token, addresses]): [SubTokensToken, string[]] => [token, addresses])
+          .map(([, token, addresses]): [SubTokensToken, string[]] => [
+            token as SubTokensToken, // TODO: Rewrite the previous filter to declare this in a type-safe way
+            addresses,
+          ])
 
         const registry = new TypeRegistry()
         const chainMeta: SubTokensChainMeta | undefined = (chain.balanceMetadata || []).find(

@@ -1,4 +1,4 @@
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import React from "react"
 import styled from "styled-components"
 

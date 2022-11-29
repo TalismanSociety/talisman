@@ -4,10 +4,11 @@ import { bufferToHex, isHexString, stripHexPrefix } from "@ethereumjs/util"
 import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
 import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
 import { Drawer } from "@talisman/components/Drawer"
+import { classNames } from "@talismn/util"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import { Button, classNames } from "talisman-ui"
+import { Button } from "talisman-ui"
 
 import {
   LedgerConnectionStatus,

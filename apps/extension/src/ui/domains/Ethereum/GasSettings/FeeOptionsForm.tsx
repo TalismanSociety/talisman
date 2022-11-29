@@ -7,10 +7,10 @@ import {
 } from "@core/domains/signing/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { ChevronRightIcon, InfoIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { ethers } from "ethers"
 import { FC, useCallback, useMemo } from "react"
-import { classNames } from "talisman-ui"
 
 import { NetworkUsage } from "../NetworkUsage"
 import { FEE_PRIORITY_OPTIONS } from "./common"

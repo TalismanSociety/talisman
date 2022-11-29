@@ -22,6 +22,8 @@ import isEqual from "lodash/isEqual"
 import erc20Abi from "./erc20.json"
 import log from "./log"
 
+export { erc20Abi }
+
 type ModuleType = "evm-erc20"
 
 export const evmErc20TokenId = (
@@ -41,8 +43,8 @@ export type CustomEvmErc20Token = EvmErc20Token & {
   image?: string
 }
 
-declare module "@talismn/chaindata-provider/plugins" {
-  export interface PluginTokenTypes {
+declare global {
+  export interface TalismanPluginTokenTypes {
     EvmErc20Token: EvmErc20Token
     CustomEvmErc20Token: CustomEvmErc20Token
   }
@@ -70,8 +72,8 @@ export type EvmErc20Balance = NewBalanceType<
   }
 >
 
-declare module "@talismn/balances/plugins" {
-  export interface PluginBalanceTypes {
+declare global {
+  export interface TalismanPluginBalanceTypes {
     EvmErc20Balance: EvmErc20Balance
   }
 }

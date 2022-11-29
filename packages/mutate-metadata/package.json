@@ -12,8 +12,21 @@
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/talismn-mutate-metadata.cjs.js",
+  "module": "dist/talismn-mutate-metadata.esm.js",
+  "browser": {
+    "./dist/talismn-mutate-metadata.esm.js": "./dist/talismn-mutate-metadata.browser.esm.js"
+  },
+  "exports": {
+    ".": {
+      "module": {
+        "browser": "./dist/talismn-mutate-metadata.browser.esm.js",
+        "default": "./dist/talismn-mutate-metadata.esm.js"
+      },
+      "default": "./dist/talismn-mutate-metadata.cjs.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "/dist"
   ],
@@ -21,10 +34,9 @@
     "node": ">=14"
   },
   "scripts": {
-    "copy-files": "cp src/import.cjs dist/import.cjs",
-    "dev": "concurrently \"tsc --watch --declarationMap\" \"chokidar 'dist/import.d.cts' --initial --command 'yarn copy-files'\"",
-    "build": "tsc --declarationMap && yarn copy-files",
-    "build:packages:prod": "rm -rf dist && tsc && yarn copy-files",
+    "dev": "tsc --watch --declarationMap",
+    "build": "tsc --declarationMap",
+    "build:packages:prod": "rm -rf dist && tsc",
     "prepack": "yarn build:packages:prod",
     "test": "jest",
     "lint": "eslint . --max-warnings 0",
@@ -39,17 +51,22 @@
     "@talismn/eslint-config": "workspace:^",
     "@talismn/tsconfig": "workspace:^",
     "@types/jest": "^27.5.1",
-    "chokidar-cli": "^3.0.0",
-    "concurrently": "^7.6.0",
     "eslint": "^8.4.0",
     "jest": "^28.1.0",
     "ts-jest": "^28.0.2",
     "typescript": "^4.6.4"
   },
+  "preconstruct": {
+    "exports": {
+      "envConditions": [
+        "browser"
+      ]
+    }
+  },
   "eslintConfig": {
     "root": true,
     "extends": [
-      "@talismn/eslint-config"
+      "@talismn/eslint-config/base"
     ]
   }
 }
