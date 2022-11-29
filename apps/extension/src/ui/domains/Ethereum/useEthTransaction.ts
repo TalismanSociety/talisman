@@ -210,6 +210,7 @@ const useTransactionInfo = (
   const [transactionInfo, setTransactionInfo] = useState<TransactionType>()
 
   useEffect(() => {
+    if (!provider || !tx) return
     setIsLoading(true)
     getEthTransactionInfo(provider, tx)
       .then(setTransactionInfo)

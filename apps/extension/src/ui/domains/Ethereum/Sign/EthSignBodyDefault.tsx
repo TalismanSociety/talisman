@@ -23,7 +23,7 @@ export const EthSignBodyDefault: FC = () => {
       : null
   }, [nativeToken, transactionInfo?.value])
 
-  const { from, to } = useMemo(
+  const { from } = useMemo(
     () => request as Required<ethers.providers.TransactionRequest>,
     [request]
   )
@@ -33,8 +33,8 @@ export const EthSignBodyDefault: FC = () => {
   if (!nativeToken) return null
 
   return (
-    <EthSignContainer title={amount ? "Transfer Request" : "Transaction Request"}>
-      {amount ? (
+    <EthSignContainer title={amount && request.to ? "Transfer Request" : "Transaction Request"}>
+      {amount && request.to ? (
         <>
           <div>You are transferring</div>
           <div>
@@ -54,9 +54,13 @@ export const EthSignBodyDefault: FC = () => {
           <div className="flex">
             <span>to {transactionInfo.isContractCall ? "contract" : "account"} </span>
             {transactionInfo.isContractCall ? (
-              <SignParamNetworkAddressButton network={network} address={to} />
+              <SignParamNetworkAddressButton network={network} address={request.to} />
             ) : (
-              <SignParamAccountButton explorerUrl={network.explorerUrl} address={to} withIcon />
+              <SignParamAccountButton
+                explorerUrl={network.explorerUrl}
+                address={request.to}
+                withIcon
+              />
             )}
           </div>
         </>
@@ -67,10 +71,12 @@ export const EthSignBodyDefault: FC = () => {
             <span>with</span>
             <SignParamAccountButton address={from} withIcon />
           </div>
-          <div className="flex">
-            <span>on contract</span>
-            <SignParamNetworkAddressButton network={network} address={to} />
-          </div>
+          {request.to ? (
+            <div className="flex">
+              <span>on contract</span>
+              <SignParamNetworkAddressButton network={network} address={request.to} />
+            </div>
+          ) : null}
         </>
       )}
       {transactionInfo.contractCall?.name && (
