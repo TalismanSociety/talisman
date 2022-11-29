@@ -356,9 +356,10 @@ export const SendForm = () => {
   }, [amount, balance, errorMessage, isValid, setError, token, tip])
 
   const handleEvmFeeChange = useCallback(
-    (fees: FeeSettings) => {
+    (fees: FeeSettings, error?: string) => {
       setValue("priority", fees.priority)
       setGasSettings(fees.gasSettings)
+      setErrorMessage(error)
     },
     [setValue]
   )

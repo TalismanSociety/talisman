@@ -93,6 +93,7 @@ const useEstimatedGas = (
       const { gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas, ...rest } = tx
       return provider.estimateGas(rest)
     },
+    refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
   })
 }
 
