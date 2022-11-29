@@ -94,10 +94,13 @@ const useEstimatedGas = (
     setEstimatedGas(undefined)
 
     if (!provider || !tx) return
-
     setIsLoading(true)
+
+    // ignore gas settings set by dapp
+    const { gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas, ...rest } = tx
+
     provider
-      .estimateGas(tx)
+      .estimateGas(rest)
       .then(setEstimatedGas)
       .catch((err) => setError(err.message))
       .finally(() => setIsLoading(false))
