@@ -32,7 +32,6 @@ export class EvmNetworkStore {
    * @returns A promise which resolves to true if the store has been hydrated, or false if the hydration was skipped.
    */
   async hydrateStore(): Promise<boolean> {
-    return false
     const now = Date.now()
     if (now - this.#lastHydratedAt < minimumHydrationInterval) return false
 
