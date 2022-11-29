@@ -1,110 +1,79 @@
-import { yupResolver } from "@hookform/resolvers/yup"
-import { Box } from "@talisman/components/Box"
-import { api } from "@ui/api"
-import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback } from "react"
-import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
-import * as yup from "yup"
-
-import { OnboardButton } from "../components/OnboardButton"
-import { OnboardDialog } from "../components/OnboardDialog"
-import { OnboardFormField } from "../components/OnboardFormField"
-import { useOnboard } from "../context"
+import { FC, useRef } from "react"
 import { Layout } from "../layout"
+import imgHeadPolkadot from "../assets/polkadot-wallet-head.svg?url"
+import imgTokenPolkadot from "../assets/polkadot-token.svg?url"
+import imgTokenEthereum from "../assets/ethereum-token.svg?url"
+import imgHeadEthereum from "../assets/ethereum-wallet-head.svg?url"
+import { useHover, useHoverDirty } from "react-use"
+import { classNames } from "talisman-ui"
 
-type FormData = {
-  mnemonic?: string
+type WalletImportButtonProps = {
+  title: string
+  subtitle: string
+  srcHeader: string
+  srcToken: string
 }
 
-const cleanupMnemonic = (input = "") =>
-  input
-    .trim()
-    .toLowerCase()
-    .split(/[\s\r\n]+/g) //split on whitespace or carriage return
-    .filter(Boolean) //remove empty strings
-    .join(" ")
+const WalletImportButton: FC<WalletImportButtonProps> = ({
+  title,
+  subtitle,
+  srcHeader,
+  srcToken,
+}) => {
+  const refButton = useRef<HTMLButtonElement>(null)
+  const isHovered = useHoverDirty(refButton)
 
-const schema = yup
-  .object({
-    mnemonic: yup
-      .string()
-      .trim()
-      .required("")
-      .transform(cleanupMnemonic)
-      .test("is-valid-mnemonic", "Invalid recovery phrase", (val) =>
-        api.accountValidateMnemonic(val as string)
-      ),
-  })
-  .required()
-
-const ANALYTICS_PAGE: AnalyticsPage = {
-  container: "Fullscreen",
-  feature: "Onboarding",
-  featureVersion: 3,
-  page: "Onboarding - Step 2a - Import wallet",
+  return (
+    <button
+      ref={refButton}
+      type="button"
+      className="text-body hover:text-body-black relative overflow-hidden rounded text-left drop-shadow-xl transition-colors hover:bg-white"
+    >
+      <div
+        className={classNames(
+          "overflow-hidden rounded-t transition-all",
+          isHovered ? "bg-[#F2F2F2]" : "bg-white bg-opacity-[0.15]"
+        )}
+      >
+        <img
+          src={srcHeader}
+          alt=""
+          className={classNames(
+            "hover: overflow-hidden  rounded-t transition-opacity",
+            isHovered ? "opacity-100" : "opacity-50"
+          )}
+        />
+      </div>
+      <img src={srcToken} alt="" className="absolute left-12 top-[130px]" />
+      <div className="flex flex-col gap-12 rounded-b bg-white/5 px-12 pt-24 pb-16">
+        <div className="w-full text-xl">{title}</div>
+        <div className="w-full">{subtitle}</div>
+      </div>
+    </button>
+  )
 }
 
 export const ImportPage = () => {
-  useAnalyticsPageView(ANALYTICS_PAGE)
-
-  const { data, updateData } = useOnboard()
-  const navigate = useNavigate()
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isValid },
-  } = useForm<FormData>({
-    mode: "onChange",
-    defaultValues: data,
-    resolver: yupResolver(schema),
-  })
-
-  const submit = useCallback(
-    async (fields: FormData) => {
-      updateData(fields)
-      sendAnalyticsEvent({
-        ...ANALYTICS_PAGE,
-        name: "Submit",
-        action: "Import wallet",
-      })
-      navigate(`/password`)
-    },
-    [navigate, updateData]
-  )
-
   return (
-    <Layout withBack analytics={ANALYTICS_PAGE}>
-      <Box flex justify="center">
-        <Box w={70.9}>
-          <OnboardDialog title="Import wallet">
-            <p>
-              Please enter your 12 or 24 word recovery phrase, with each word separated by a space.
-              Please ensure no-one can see you entering your recovery phrase.
-            </p>
-            <form onSubmit={handleSubmit(submit)}>
-              <Box margin="4.8rem 0 0 0">
-                <OnboardFormField error={errors.mnemonic}>
-                  <textarea
-                    {...register("mnemonic")}
-                    placeholder="Enter your recovery phrase"
-                    rows={5}
-                    data-lpignore
-                    spellCheck={false}
-                    autoFocus
-                  />
-                </OnboardFormField>
-                <Box h={2.4}></Box>
-                <OnboardButton type="submit" primary disabled={!isValid}>
-                  Import wallet
-                </OnboardButton>
-              </Box>
-            </form>
-          </OnboardDialog>
-        </Box>
-      </Box>
+    <Layout>
+      <div className="mx-0 w-full max-w-[87rem] self-center text-center">
+        <div className="my-[6rem] text-xl">Which type of wallet would you like to import?</div>
+        <div className="flex flex-wrap justify-center gap-12">
+          <WalletImportButton
+            title="Polkadot wallet"
+            subtitle="Polkadot.js, Subwallet, Nova or other"
+            srcHeader={imgHeadPolkadot}
+            srcToken={imgTokenPolkadot}
+          />
+          <WalletImportButton
+            title="Ethereum wallet"
+            subtitle="MetaMask, Coinbase, Rainbow or other"
+            srcHeader={imgHeadEthereum}
+            srcToken={imgTokenEthereum}
+          />
+        </div>
+        <div className="my-24">You can always add another later</div>
+      </div>
     </Layout>
   )
 }

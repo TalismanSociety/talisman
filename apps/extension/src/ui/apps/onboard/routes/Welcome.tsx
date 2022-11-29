@@ -189,7 +189,7 @@ export const WelcomePage = () => {
           <WelcomeCta
             title="Import a wallet"
             icon={<DownloadIcon />}
-            description="Import an existing wallet such as Polkadot.js or Metamask"
+            description="Import existing wallet from MetaMask, Polkadot.js, Nova or any other wallet"
             onClick={handleNextClick(true)}
           />
           <Box fg="mid" fontsize="small" lineheightcustom="2rem">
