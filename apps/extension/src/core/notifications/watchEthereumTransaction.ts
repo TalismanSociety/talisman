@@ -8,14 +8,13 @@ import { createNotification } from "./createNotification"
 
 export const watchEthereumTransaction = async (ethChainId: number, txHash: string) => {
   try {
-    // eslint-disable-next-line no-var
-    var ethereumNetwork = await db.evmNetworks.get(ethChainId)
+    const ethereumNetwork = await db.evmNetworks.get(ethChainId)
     if (!ethereumNetwork) {
       throw new Error(`Could not find ethereum network ${ethChainId}`)
     }
     const networkName = ethereumNetwork.name ?? "unknown network"
 
-    const provider = getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
+    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
     if (!provider) {
       throw new Error(`No provider for network ${ethChainId} (${ethereumNetwork.name})`)
     }
