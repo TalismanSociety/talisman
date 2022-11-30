@@ -1,4 +1,4 @@
-import { FC, useRef } from "react"
+import { FC, useCallback, useRef } from "react"
 import { Layout } from "../layout"
 import imgHeadPolkadot from "../assets/polkadot-wallet-head.svg?url"
 import imgTokenPolkadot from "../assets/polkadot-token.svg?url"
@@ -6,12 +6,16 @@ import imgTokenEthereum from "../assets/ethereum-token.svg?url"
 import imgHeadEthereum from "../assets/ethereum-wallet-head.svg?url"
 import { useHover, useHoverDirty } from "react-use"
 import { classNames } from "talisman-ui"
+import { useOnboard } from "../context"
+import { AccountAddressType } from "@core/domains/accounts/types"
+import { useNavigate } from "react-router-dom"
 
 type WalletImportButtonProps = {
   title: string
   subtitle: string
   srcHeader: string
   srcToken: string
+  onClick?: () => void
 }
 
 const WalletImportButton: FC<WalletImportButtonProps> = ({
@@ -19,6 +23,7 @@ const WalletImportButton: FC<WalletImportButtonProps> = ({
   subtitle,
   srcHeader,
   srcToken,
+  onClick,
 }) => {
   const refButton = useRef<HTMLButtonElement>(null)
   const isHovered = useHoverDirty(refButton)
@@ -26,6 +31,7 @@ const WalletImportButton: FC<WalletImportButtonProps> = ({
   return (
     <button
       ref={refButton}
+      onClick={onClick}
       type="button"
       className="text-body hover:text-body-black relative overflow-hidden rounded text-left drop-shadow-xl transition-colors hover:bg-white"
     >
@@ -54,18 +60,33 @@ const WalletImportButton: FC<WalletImportButtonProps> = ({
 }
 
 export const ImportPage = () => {
+  const { updateData } = useOnboard()
+  const navigate = useNavigate()
+
+  const handleTypeClick = useCallback(
+    (importAccountType: AccountAddressType) => () => {
+      updateData({
+        importAccountType,
+      })
+      navigate("/import-method")
+    },
+    [navigate, updateData]
+  )
+
   return (
     <Layout>
       <div className="mx-0 w-full max-w-[87rem] self-center text-center">
         <div className="my-[6rem] text-xl">Which type of wallet would you like to import?</div>
         <div className="flex flex-wrap justify-center gap-12">
           <WalletImportButton
+            onClick={handleTypeClick("sr25519")}
             title="Polkadot wallet"
             subtitle="Polkadot.js, Subwallet, Nova or other"
             srcHeader={imgHeadPolkadot}
             srcToken={imgTokenPolkadot}
           />
           <WalletImportButton
+            onClick={handleTypeClick("ethereum")}
             title="Ethereum wallet"
             subtitle="MetaMask, Coinbase, Rainbow or other"
             srcHeader={imgHeadEthereum}

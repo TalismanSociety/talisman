@@ -51,7 +51,7 @@ export const OnboardingPage = () => {
     return () => {
       clearTimeout(timeout)
     }
-  }, [onboard, processOnboard])
+  }, [processOnboard])
 
   return (
     <Container analytics={ANALYTICS_PAGE}>
