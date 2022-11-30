@@ -30,7 +30,7 @@ export const ImportMethodPage = () => {
           How would you like to import your{" "}
           {data.importAccountType === "ethereum" ? "Ethereum" : "Polkadot"} wallet?
         </div>
-        <div className="flex flex-wrap justify-center gap-12">
+        <div className="inline-grid grid-cols-2 gap-12">
           <OnboardCta
             onClick={handleClick("mnemonic")}
             icon={MessageCircleIcon}
@@ -38,23 +38,27 @@ export const ImportMethodPage = () => {
             subtitle="Import your seed phrase from any wallet"
           />
           <OnboardCta
-            onClick={handleClick("json")}
-            icon={FileTextIcon}
-            title="JSON file"
-            subtitle="Import your private"
-          />
-          <OnboardCta
-            onClick={handleClick("private-key")}
-            icon={KeyIcon}
-            title="Private key"
-            subtitle="Import your wallet via raw seed"
-          />
-          <OnboardCta
             onClick={handleClick("ledger")}
             icon={UsbIcon}
             title="Ledger"
             subtitle="Connect your Ledger wallet"
           />
+          {data.importAccountType === "sr25519" && (
+            <OnboardCta
+              onClick={handleClick("json")}
+              icon={FileTextIcon}
+              title="JSON file"
+              subtitle="Import your private"
+            />
+          )}
+          {data.importAccountType === "ethereum" && (
+            <OnboardCta
+              onClick={handleClick("private-key")}
+              icon={KeyIcon}
+              title="Private key"
+              subtitle="Import your wallet via raw seed"
+            />
+          )}
         </div>
       </div>
     </Layout>
