@@ -88,8 +88,8 @@ const getEvmNetworkProvider = async (
     // clear cache to force logic going through getHealthyRpc again on next call
     provider.on("error", (...args: unknown[]) => {
       log.error("RPC error %s", cacheKey, args)
-      const networkCacheKey = getProviderByNetworkIdCacheKey(ethereumNetwork.id, batch)
-      PROVIDERS_BY_NETWORK_ID.delete(networkCacheKey)
+      PROVIDERS_BY_NETWORK_ID.delete(getProviderByNetworkIdCacheKey(ethereumNetwork.id, false))
+      PROVIDERS_BY_NETWORK_ID.delete(getProviderByNetworkIdCacheKey(ethereumNetwork.id, true))
     })
 
     PROVIDERS_BY_URL.set(cacheKey, provider)
