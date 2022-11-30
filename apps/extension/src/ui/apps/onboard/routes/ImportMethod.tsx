@@ -35,20 +35,20 @@ export const ImportMethodPage = () => {
             onClick={handleClick("mnemonic")}
             icon={MessageCircleIcon}
             title="Recovery phrase"
-            subtitle="Import your seed phrase from any wallet"
+            subtitle="Restore Talisman or import your seed phrase from any wallet"
           />
           <OnboardCta
             onClick={handleClick("ledger")}
             icon={UsbIcon}
             title="Ledger"
-            subtitle="Connect your Ledger wallet"
+            subtitle="Connect your Ledger account"
           />
           {data.importAccountType === "sr25519" && (
             <OnboardCta
               onClick={handleClick("json")}
               icon={FileTextIcon}
               title="JSON file"
-              subtitle="Import your private"
+              subtitle="Import account from JSON file"
             />
           )}
           {data.importAccountType === "ethereum" && (
@@ -56,7 +56,7 @@ export const ImportMethodPage = () => {
               onClick={handleClick("private-key")}
               icon={KeyIcon}
               title="Private key"
-              subtitle="Import your wallet via raw seed"
+              subtitle="Import an account from a private key"
             />
           )}
         </div>
