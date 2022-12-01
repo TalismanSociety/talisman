@@ -31,7 +31,7 @@ type EthTransactionFeesProps = {
   amount: string
   from: string
   to: string
-  onChange?: (fees: FeeSettings) => void
+  onChange?: (fees: FeeSettings, errorMessage?: string) => void
 }
 
 /**
@@ -66,13 +66,19 @@ export const EthTransactionFees = ({
         .catch((err) => {
           setTx(undefined)
           // eslint-disable-next-line no-console
-          console.error(err)
+          console.error("EthTransactionFees", { err })
         })
     }
   }, [from, to, token, transferableToken?.evmNetworkId, amount])
 
-  const { transaction, priority, setPriority, txDetails, isLoading, gasSettings } =
+  const { transaction, priority, setPriority, txDetails, isLoading, gasSettings, error } =
     useEthTransaction(tx)
+
+  const errorMessage = useMemo(() => {
+    if (error?.startsWith("insufficient funds for intrinsic transaction cost"))
+      return "Insufficient balance"
+    return error ?? null
+  }, [error])
 
   const sendFundsContainer = document.getElementById("send-funds-container")
 
@@ -84,9 +90,9 @@ export const EthTransactionFees = ({
         gasSettings,
       })
     } else {
-      onChange({})
+      onChange({}, errorMessage)
     }
-  }, [gasSettings, onChange, priority])
+  }, [errorMessage, gasSettings, onChange, priority])
 
   const estimatedFee = useMemo(
     () =>
