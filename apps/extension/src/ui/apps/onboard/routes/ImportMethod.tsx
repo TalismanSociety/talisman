@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { Layout } from "../layout"
 import { ImportMethodType, useOnboard } from "../context"
 import { useNavigate } from "react-router-dom"
@@ -6,6 +6,7 @@ import { OnboardCta } from "../components/OnboardCta"
 import { FileTextIcon, KeyIcon, MessageCircleIcon, UsbIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -40,6 +41,8 @@ export const ImportMethodPage = () => {
     [data.importAccountType, navigate, updateData]
   )
 
+  const disableLedger = useMemo(() => !getIsLedgerCapable(), [])
+
   if (!data.importAccountType) return null
 
   return (
@@ -60,7 +63,12 @@ export const ImportMethodPage = () => {
             onClick={handleClick("ledger")}
             icon={UsbIcon}
             title="Ledger"
-            subtitle="Connect your Ledger account"
+            subtitle={
+              disableLedger
+                ? "Ledger is not supported on your browser. Try again with another browser"
+                : "Connect your Ledger account"
+            }
+            disabled={disableLedger}
           />
           {data.importAccountType === "sr25519" && (
             <OnboardCta

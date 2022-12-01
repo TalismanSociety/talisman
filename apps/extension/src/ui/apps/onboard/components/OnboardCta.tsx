@@ -7,6 +7,7 @@ type OnboardCtaProps = {
   icon?: FC<SVGProps<SVGSVGElement>>
   onClick?: () => void
   className?: string
+  disabled?: boolean
 }
 
 export const OnboardCta: FC<OnboardCtaProps> = ({
@@ -14,6 +15,7 @@ export const OnboardCta: FC<OnboardCtaProps> = ({
   title,
   subtitle,
   icon: Icon,
+  disabled,
   onClick,
 }) => {
   return (
@@ -23,8 +25,10 @@ export const OnboardCta: FC<OnboardCtaProps> = ({
       className={classNames(
         "text-body flex h-[18rem] w-[38rem] flex-col justify-between rounded bg-white/5 p-16 backdrop-blur-xl",
         "hover:text-body-black transition-colors hover:bg-white",
+        "disabled:text-body disabled:cursor-not-allowed disabled:bg-white/5 disabled:opacity-50",
         className
       )}
+      disabled={disabled}
     >
       <div className="flex w-full">
         <div className="grow text-left text-xl">{title}</div>
