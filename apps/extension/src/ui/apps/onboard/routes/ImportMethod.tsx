@@ -4,8 +4,18 @@ import { ImportMethodType, useOnboard } from "../context"
 import { useNavigate } from "react-router-dom"
 import { OnboardCta } from "../components/OnboardCta"
 import { FileTextIcon, KeyIcon, MessageCircleIcon, UsbIcon } from "@talisman/theme/icons"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Onboarding",
+  featureVersion: 4,
+  page: "Onboarding - Step 2a - Import method",
+}
 
 export const ImportMethodPage = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const { data, updateData } = useOnboard()
 
@@ -16,9 +26,18 @@ export const ImportMethodPage = () => {
   const handleClick = useCallback(
     (importMethodType: ImportMethodType) => () => {
       updateData({ importMethodType })
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Goto",
+        action: `Import wallet method ${importMethodType}`,
+        properties: {
+          importAccountType: data.importAccountType,
+          importMethodType,
+        },
+      })
       navigate(importMethodType === "mnemonic" ? "/import-seed" : "/password")
     },
-    [navigate, updateData]
+    [data.importAccountType, navigate, updateData]
   )
 
   if (!data.importAccountType) return null

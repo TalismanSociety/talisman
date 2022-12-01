@@ -29,7 +29,7 @@ const ErrorMessage = styled.div`
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
-  featureVersion: 3,
+  featureVersion: 4,
   page: "Onboarding - Step 4 - Creating your wallet spinner",
 }
 

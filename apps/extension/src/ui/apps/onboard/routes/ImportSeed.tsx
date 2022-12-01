@@ -42,8 +42,8 @@ const schema = yup
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
-  featureVersion: 3,
-  page: "Onboarding - Step 2a - Import wallet",
+  featureVersion: 4,
+  page: "Onboarding - Step 2a - Input Seed",
 }
 
 export const ImportSeedPage = () => {
@@ -69,10 +69,14 @@ export const ImportSeedPage = () => {
         ...ANALYTICS_PAGE,
         name: "Submit",
         action: "Import wallet",
+        properties: {
+          importAccountType: data.importAccountType,
+          importMethodType: data.importMethodType,
+        },
       })
       navigate(`/password`)
     },
-    [navigate, updateData]
+    [data.importAccountType, data.importMethodType, navigate, updateData]
   )
 
   return (
