@@ -1,4 +1,4 @@
-import Name from "./Name"
+import Name from "./AccountName"
 import Avatar from "./Avatar"
 import Picker from "./Picker"
 

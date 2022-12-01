@@ -1,4 +1,5 @@
 import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
+import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import Field from "@talisman/components/Field/Field"
 import { ReactComponent as EnterIcon } from "@talisman/theme/icons/corner-down-left.svg"
@@ -8,8 +9,9 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType, getAddressType } from "@talisman/util/getAddressType"
 import { isValidAddress } from "@talisman/util/isValidAddress"
 import Avatar from "@ui/domains/Account/Avatar"
-import Name from "@ui/domains/Account/Name"
+import AccountName from "@ui/domains/Account/AccountName"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useAddressBook } from "@ui/hooks/useAddressBook"
 import Downshift from "downshift"
 import {
   ChangeEventHandler,
@@ -25,6 +27,7 @@ import {
 import styled from "styled-components"
 
 import { Address } from "./Address"
+import NamedAddress from "./NamedAddress"
 
 const Container = styled.div<{ withAddressInput?: boolean }>`
   display: flex;
@@ -160,6 +163,7 @@ const Button = styled.button<{ hasValue: boolean }>`
 
 const FormattedAddress = ({ address, placeholder = "who?" }: any) => {
   const accounts = useAccounts()
+  const { contacts } = useAddressBook()
 
   const localAccount = useMemo(
     () =>
@@ -170,7 +174,18 @@ const FormattedAddress = ({ address, placeholder = "who?" }: any) => {
     [accounts, address]
   )
 
-  if (localAccount) return <Name withAvatar address={localAccount?.address} />
+  const contactAddress = useMemo(
+    () =>
+      contacts.filter(
+        (contact) =>
+          address && convertAddress(contact.address, null) === convertAddress(address, null)
+      )[0],
+    [contacts, address]
+  )
+
+  if (localAccount) return <AccountName withAvatar address={localAccount?.address} />
+  if (contactAddress)
+    return <NamedAddress withAvatar address={contactAddress.address} name={contactAddress.name} />
 
   return address ? (
     <span className="gap custom-address flex">
@@ -291,6 +306,7 @@ type Props = {
   placeholder?: string
   className?: string
   withAddressInput?: boolean
+  withContacts?: boolean
   label?: string
   tabIndex?: number
   addressType?: AccountAddressType
@@ -303,6 +319,7 @@ const AccountPicker: FC<Props> = ({
   onChange,
   placeholder,
   className,
+  withContacts,
   withAddressInput,
   label = "My Accounts",
   tabIndex,
@@ -310,6 +327,7 @@ const AccountPicker: FC<Props> = ({
   genesisHash,
 }: any) => {
   const accounts = useAccounts()
+  const { contacts } = useAddressBook()
   const [selectedAddress, setSelectedAddress] = useState<string | undefined>(defaultValue)
 
   useEffect(() => {
@@ -334,6 +352,16 @@ const AccountPicker: FC<Props> = ({
     [accounts, addressType, exclude, genesisHash]
   )
 
+  const filteredContacts = useMemo(
+    () =>
+      withContacts
+        ? contacts
+            .filter((contact) => contact?.address !== exclude)
+            .filter((contact) => !addressType || addressType === getAddressType(contact.address))
+        : [],
+    [contacts, withContacts, addressType, exclude]
+  )
+
   useEffect(() => {
     //if selected address is a hardware account and is not in the list, clear
     if (
@@ -348,7 +376,7 @@ const AccountPicker: FC<Props> = ({
       setSelectedAddress(undefined)
   }, [accounts, genesisHash, selectedAddress])
 
-  const handleChange = useCallback((item: AccountJson | null) => {
+  const handleChange = useCallback((item: AccountJson | AddressBookContact | null) => {
     setSelectedAddress(item?.address as string)
   }, [])
 
@@ -395,24 +423,48 @@ const AccountPicker: FC<Props> = ({
                     addressType={addressType}
                   />
                 )}
-                {filteredAccounts.length > 0 && (
-                  <div className="accounts-group">
-                    {label && withAddressInput && <span className="group-header">{label}</span>}
-                    <ul>
-                      {filteredAccounts.map((account, index) => (
-                        <li
-                          {...getItemProps({
-                            key: account.address,
-                            item: account,
-                            index,
-                          })}
-                        >
-                          <Name withAvatar address={account?.address} />
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                <div className="accounts-group">
+                  {filteredContacts.length > 0 && (
+                    <>
+                      {withAddressInput && <span className="group-header">Contacts</span>}
+                      <ul>
+                        {filteredContacts.map((contact, index) => (
+                          <li
+                            {...getItemProps({
+                              key: contact.address,
+                              item: contact,
+                              index,
+                            })}
+                          >
+                            <NamedAddress
+                              withAvatar
+                              address={contact.address}
+                              name={contact.name}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  {filteredAccounts.length > 0 && (
+                    <>
+                      {label && withAddressInput && <span className="group-header">{label}</span>}
+                      <ul>
+                        {filteredAccounts.map((account, index) => (
+                          <li
+                            {...getItemProps({
+                              key: account.address,
+                              item: account,
+                              index: index + filteredContacts.length,
+                            })}
+                          >
+                            <AccountName withAvatar address={account?.address} />
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
               </DivWithMount>
             )}
           </Container>

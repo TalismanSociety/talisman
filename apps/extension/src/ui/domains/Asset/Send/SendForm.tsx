@@ -412,6 +412,7 @@ export const SendForm = () => {
               exclude={from}
               onChange={onToChange}
               withAddressInput
+              withContacts
               tabIndex={0}
               addressType={addressType}
               genesisHash={genesisHash}
