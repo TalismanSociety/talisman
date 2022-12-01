@@ -10,6 +10,7 @@ import styled from "styled-components"
 import { styleOnboardTranslucidBackground } from "../components/OnboardStyles"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
+import { ReactComponent as ImportWalletIcons } from "../assets/import-wallet-icons.svg"
 
 const WelcomeCtaContainer = styled.button`
   ${styleOnboardTranslucidBackground}
@@ -189,7 +190,12 @@ export const WelcomePage = () => {
           <WelcomeCta
             title="Import a wallet"
             icon={<DownloadIcon />}
-            description="Import existing wallet from MetaMask, Polkadot.js, Nova or any other wallet"
+            description={
+              <div>
+                <div>Import an existing wallet</div>
+                <ImportWalletIcons className="mt-8 h-12 w-auto" />
+              </div>
+            }
             onClick={handleNextClick(true)}
           />
           <Box fg="mid" fontsize="small" lineheightcustom="2rem">
