@@ -16,6 +16,7 @@ import {
   TransactionInfo as TransactionType,
 } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
+import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { BigNumber, ethers } from "ethers"
@@ -84,32 +85,16 @@ const useEstimatedGas = (
   provider?: ethers.providers.JsonRpcProvider,
   tx?: ethers.providers.TransactionRequest
 ) => {
-  const [estimatedGas, setEstimatedGas] = useState<BigNumber>()
-  const [error, setError] = useState<string>()
-  const [isLoading, setIsLoading] = useState(false)
-
-  useEffect(() => {
-    setIsLoading(false)
-    setError(undefined)
-    setEstimatedGas(undefined)
-
-    if (!provider || !tx) return
-
-    setIsLoading(true)
-    provider
-      .estimateGas(tx)
-      .then(setEstimatedGas)
-      .catch((err) => setError(err.message))
-      .finally(() => setIsLoading(false))
-
-    return () => {
-      setError(undefined)
-      setEstimatedGas(undefined)
-      setIsLoading(false)
-    }
-  }, [provider, tx])
-
-  return { estimatedGas, isLoading, error }
+  return useQuery({
+    queryKey: ["estimateGas", provider?.network?.chainId, tx],
+    queryFn: () => {
+      if (!provider || !tx) return null
+      // ignore gas settings set by dapp
+      const { gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas, ...rest } = tx
+      return provider.estimateGas(rest)
+    },
+    refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
+  })
 }
 
 const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOptions?: boolean) => {
@@ -147,7 +132,13 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
           // `gasPrice - baseFee` is equal to the current minimum maxPriorityPerGas value required to make it into next block
           // if smaller than our historical data based value, use it.
           // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
-          const minimumMaxPriorityFeePerGas = BigNumber.from(gPrice).sub(baseFeePerGas ?? 0)
+          let minimumMaxPriorityFeePerGas = gPrice.sub(baseFeePerGas ?? 0)
+          if (minimumMaxPriorityFeePerGas.lt(0)) {
+            // on a busy network, when there is a sudden lowering of amount of transactions,
+            // it can happen that baseFeePerGas is higher than gPrice
+            minimumMaxPriorityFeePerGas = BigNumber.from("0")
+          }
+
           if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.low))
             feeOptions.options.low = minimumMaxPriorityFeePerGas
           if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.medium))
@@ -204,6 +195,7 @@ const useTransactionInfo = (
   const [transactionInfo, setTransactionInfo] = useState<TransactionType>()
 
   useEffect(() => {
+    if (!provider || !tx) return
     setIsLoading(true)
     getEthTransactionInfo(provider, tx)
       .then(setTransactionInfo)
@@ -223,7 +215,7 @@ export const useEthTransaction = (
   const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(provider, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(provider)
   const { nonce, error: nonceError } = useNonce(tx?.from, tx?.chainId)
-  const { estimatedGas, error: estimatedGasError } = useEstimatedGas(provider, tx)
+  const { data: estimatedGas, error: estimatedGasError } = useEstimatedGas(provider, tx)
 
   const {
     gasPrice,
@@ -333,7 +325,7 @@ export const useEthTransaction = (
   const error = useMemo(
     () =>
       errorEip1559Support ??
-      estimatedGasError ??
+      (estimatedGasError as Error)?.message ??
       blockFeeDataError ??
       nonceError ??
       errorTransactionInfo,
