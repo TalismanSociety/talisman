@@ -134,7 +134,7 @@ const WelcomeCta = ({
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
-  featureVersion: 3,
+  featureVersion: 4,
   page: "Onboarding - Step 1 - Welcome",
 }
 

@@ -9,6 +9,8 @@ import { classNames } from "talisman-ui"
 import { useOnboard } from "../context"
 import { AccountAddressType } from "@core/domains/accounts/types"
 import { useNavigate } from "react-router-dom"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 
 type WalletImportButtonProps = {
   title: string
@@ -59,7 +61,15 @@ const WalletImportButton: FC<WalletImportButtonProps> = ({
   )
 }
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Onboarding",
+  featureVersion: 4,
+  page: "Onboarding - Step 2a - Import type",
+}
+
 export const ImportPage = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
   const { updateData } = useOnboard()
   const navigate = useNavigate()
 
@@ -67,6 +77,14 @@ export const ImportPage = () => {
     (importAccountType: AccountAddressType) => () => {
       updateData({
         importAccountType,
+      })
+      sendAnalyticsEvent({
+        ...ANALYTICS_PAGE,
+        name: "Goto",
+        action: `Import wallet ${importAccountType === "ethereum" ? "Ethereum" : "Polkadot"}`,
+        properties: {
+          importAccountType,
+        },
       })
       navigate("/import-method")
     },
