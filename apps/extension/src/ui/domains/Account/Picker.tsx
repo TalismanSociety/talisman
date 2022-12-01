@@ -8,17 +8,15 @@ import { classNames } from "@talisman/util/classNames"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType, getAddressType } from "@talisman/util/getAddressType"
 import { isValidAddress } from "@talisman/util/isValidAddress"
-import Avatar from "@ui/domains/Account/Avatar"
 import AccountName from "@ui/domains/Account/AccountName"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import Downshift from "downshift"
 import {
   ChangeEventHandler,
-  DetailedHTMLProps,
   FC,
-  KeyboardEventHandler,
   forwardRef,
+  KeyboardEventHandler,
   useCallback,
   useEffect,
   useMemo,
@@ -26,7 +24,7 @@ import {
 } from "react"
 import styled from "styled-components"
 
-import { Address } from "./Address"
+import { FormattedAddress } from "./FormattedAddress"
 import NamedAddress from "./NamedAddress"
 
 const Container = styled.div<{ withAddressInput?: boolean }>`
@@ -161,51 +159,14 @@ const Button = styled.button<{ hasValue: boolean }>`
   }
 `
 
-const FormattedAddress = ({ address, placeholder = "who?" }: any) => {
-  const accounts = useAccounts()
-  const { contacts } = useAddressBook()
-
-  const localAccount = useMemo(
-    () =>
-      accounts.filter(
-        (account) =>
-          address && convertAddress(account.address, null) === convertAddress(address, null)
-      )[0],
-    [accounts, address]
-  )
-
-  const contactAddress = useMemo(
-    () =>
-      contacts.filter(
-        (contact) =>
-          address && convertAddress(contact.address, null) === convertAddress(address, null)
-      )[0],
-    [contacts, address]
-  )
-
-  if (localAccount) return <AccountName withAvatar address={localAccount?.address} />
-  if (contactAddress)
-    return <NamedAddress withAvatar address={contactAddress.address} name={contactAddress.name} />
-
-  return address ? (
-    <span className="gap custom-address flex">
-      <Avatar address={address} />
-      <Address className="address" address={address} />
-    </span>
-  ) : (
-    placeholder
-  )
-}
-
 type PasteAddressProps = {
   onSelected: (address: string) => void
   className?: string
   exclude?: string
   addressType?: AccountAddressType
-  inputProps?: DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
 }
 
-const PasteAddress = ({ onSelected, exclude, addressType, inputProps = {} }: PasteAddressProps) => {
+const PasteAddress = ({ onSelected, exclude, addressType }: PasteAddressProps) => {
   const [pastedAddress, setPastedAddress] = useState<string>()
   const [isInvalid, setIsInvalid] = useState<boolean>(false)
   const [isExcluded, setIsExcluded] = useState<boolean>(false)
@@ -306,7 +267,7 @@ type Props = {
   placeholder?: string
   className?: string
   withAddressInput?: boolean
-  withContacts?: boolean
+  withAddressBook?: boolean
   label?: string
   tabIndex?: number
   addressType?: AccountAddressType
@@ -319,7 +280,7 @@ const AccountPicker: FC<Props> = ({
   onChange,
   placeholder,
   className,
-  withContacts,
+  withAddressBook,
   withAddressInput,
   label = "My Accounts",
   tabIndex,
@@ -354,12 +315,12 @@ const AccountPicker: FC<Props> = ({
 
   const filteredContacts = useMemo(
     () =>
-      withContacts
+      withAddressBook
         ? contacts
             .filter((contact) => contact?.address !== exclude)
             .filter((contact) => !addressType || addressType === getAddressType(contact.address))
         : [],
-    [contacts, withContacts, addressType, exclude]
+    [contacts, withAddressBook, addressType, exclude]
   )
 
   useEffect(() => {
@@ -412,7 +373,8 @@ const AccountPicker: FC<Props> = ({
               tabIndex={tabIndex}
               {...getToggleButtonProps()}
             >
-              <FormattedAddress address={selectedAddress} placeholder={placeholder} />
+              {selectedAddress && <FormattedAddress address={selectedAddress} />}
+              {!selectedAddress && <span>{placeholder || "anything"}</span>}
             </Button>
             {isOpen && (
               <DivWithMount className="accounts-dropdown" {...getMenuProps()}>

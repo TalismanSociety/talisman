@@ -5,7 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { Box } from "@talisman/components/Box"
 import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
 import { SimpleButton } from "@talisman/components/SimpleButton"
-import { LoaderIcon } from "@talisman/theme/icons"
+import { LoaderIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { getChainAddressType } from "@talisman/util/getChainAddressType"
 import { isValidAddress } from "@talisman/util/isValidAddress"
@@ -13,6 +13,7 @@ import Account from "@ui/domains/Account"
 import { useBalance } from "@ui/hooks/useBalance"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { useTip } from "@ui/hooks/useTip"
 import {
   ChangeEventHandler,
@@ -26,6 +27,7 @@ import {
 } from "react"
 import { useForm, FieldError } from "react-hook-form"
 import styled from "styled-components"
+import { PillButton } from "talisman-ui"
 import * as yup from "yup"
 
 import Balance from "../Balance"
@@ -241,6 +243,7 @@ export const SendForm = () => {
   const { formData, check, showForm, transferableTokens } = useSendTokens()
   const [isEvm, setIsEvm] = useState(false)
   const [gasSettings, setGasSettings] = useState<EthGasSettings | undefined>(formData?.gasSettings)
+  const [showAddContact, setShowAddContact] = useState(false)
 
   const schema = useMemo(() => getSchema(isEvm, transferableTokens), [isEvm, transferableTokens])
 
@@ -297,6 +300,15 @@ export const SendForm = () => {
   const { amount, transferableTokenId, from, to } = watch()
   // derived data
   const transferableToken = useTransferableTokenById(transferableTokenId)
+
+  // Detect if 'to' address is one of ours, or pasted in
+  const isKnownRecipient = useIsKnownAddress(to)
+
+  useEffect(() => {
+    if (to && !isKnownRecipient) {
+      setShowAddContact(true)
+    }
+  }, [to, isKnownRecipient])
 
   useEffect(() => {
     setIsEvm(!!transferableToken?.evmNetworkId)
@@ -412,12 +424,20 @@ export const SendForm = () => {
               exclude={from}
               onChange={onToChange}
               withAddressInput
-              withContacts
+              withAddressBook
+              placeholder={"who?"}
               tabIndex={0}
               addressType={addressType}
               genesisHash={genesisHash}
             />
           </div>
+          {to && showAddContact && (
+            <span>
+              <PillButton size="sm" icon={() => <UserPlusIcon stroke="#D5FF5C" />}>
+                Add to address book
+              </PillButton>
+            </span>
+          )}
           {to && token?.chain && (
             <Suspense fallback={null}>
               <SendAddressConvertInfo address={to} chainId={token?.chain?.id} />
