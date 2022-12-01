@@ -43,7 +43,7 @@ export const ImportMethodPage = () => {
   if (!data.importAccountType) return null
 
   return (
-    <Layout>
+    <Layout withBack analytics={ANALYTICS_PAGE}>
       <div className="mx-0 w-full max-w-[87rem] self-center text-center">
         <div className="my-[6rem] text-xl">
           How would you like to import your{" "}
