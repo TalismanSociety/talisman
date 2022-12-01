@@ -6,7 +6,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { BraveIcon } from "@talisman/theme/icons"
 import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarningModal"
 import { useAppState } from "@ui/hooks/useAppState"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 
 import { Notification } from "./Notification"
 

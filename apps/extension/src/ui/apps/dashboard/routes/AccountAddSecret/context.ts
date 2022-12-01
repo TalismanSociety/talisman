@@ -1,4 +1,3 @@
-import { DEBUG } from "@core/constants"
 import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
 import { sleep } from "@core/util/sleep"
 import { provideContext } from "@talisman/util/provideContext"
