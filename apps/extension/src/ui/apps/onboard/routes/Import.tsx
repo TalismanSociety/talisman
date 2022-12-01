@@ -39,7 +39,7 @@ const WalletImportButton: FC<WalletImportButtonProps> = ({
     >
       <div
         className={classNames(
-          "overflow-hidden rounded-t transition-all",
+          "rounded-t transition-all",
           isHovered ? "bg-[#F2F2F2]" : "bg-white bg-opacity-[0.15]"
         )}
       >
@@ -47,7 +47,7 @@ const WalletImportButton: FC<WalletImportButtonProps> = ({
           src={srcHeader}
           alt=""
           className={classNames(
-            "hover: overflow-hidden  rounded-t transition-opacity",
+            "rounded-t  transition-opacity ",
             isHovered ? "opacity-100" : "opacity-50"
           )}
         />
