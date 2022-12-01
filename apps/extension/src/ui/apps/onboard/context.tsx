@@ -1,4 +1,3 @@
-import { DEBUG } from "@core/constants"
 import { AccountAddressType } from "@core/domains/accounts/types"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { provideContext } from "@talisman/util/provideContext"
@@ -18,12 +17,7 @@ export type OnboardingWizardData = {
   importMethodType?: ImportMethodType
 }
 
-// TODO remove debug
-const DEFAULT_DATA: OnboardingWizardData = DEBUG
-  ? {
-      importAccountType: "ethereum",
-    }
-  : {}
+const DEFAULT_DATA: OnboardingWizardData = {}
 
 const useAppOnboardProvider = () => {
   // data used for account creation
