@@ -44,24 +44,27 @@ const isHealthyRpc = async (url: string, chainId: number) => {
 }
 
 const getHealthyRpc = async (rpcUrls: string[], network: providers.Network) => {
-  const unhealthyRpcs: string[] = []
+  for (const rpcUrl of rpcUrls) if (await isHealthyRpc(rpcUrl, network.chainId)) return rpcUrl
 
-  try {
-    for (const rpcUrl of rpcUrls) {
-      if (await isHealthyRpc(rpcUrl, network.chainId)) {
-        return rpcUrl
-      } else {
-        unhealthyRpcs.push(rpcUrl)
-      }
-    }
-  } finally {
-    // TODO persist to db ? only for non-custom networks ? (user should have control over this)
-    // push unhealthy rpcs to the back of the array
-    if (unhealthyRpcs.length > 0 && unhealthyRpcs.length !== rpcUrls.length) {
-      rpcUrls.splice(0, unhealthyRpcs.length)
-      rpcUrls.push(...unhealthyRpcs)
-    }
-  }
+  // TODO update order and persist to database, code ready below
+  // // const unhealthyRpcs: string[] = []
+
+  // // try {
+  // //   for (const rpcUrl of rpcUrls) {
+  // //     if (await isHealthyRpc(rpcUrl, network.chainId)) {
+  // //       return rpcUrl
+  // //     } else {
+  // //       unhealthyRpcs.push(rpcUrl)
+  // //     }
+  // //   }
+  // // } finally {
+  // //   // TODO persist to db ? only for non-custom networks ? (user should have control over this)
+  // //   // push unhealthy rpcs to the back of the array
+  // //   if (unhealthyRpcs.length > 0 && unhealthyRpcs.length !== rpcUrls.length) {
+  // //     rpcUrls.splice(0, unhealthyRpcs.length)
+  // //     rpcUrls.push(...unhealthyRpcs)
+  // //   }
+  // // }
 
   return null
 }
