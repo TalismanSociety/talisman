@@ -92,7 +92,7 @@ export const ImportPage = () => {
   )
 
   return (
-    <Layout>
+    <Layout withBack analytics={ANALYTICS_PAGE}>
       <div className="mx-0 w-full max-w-[87rem] self-center text-center">
         <div className="my-[6rem] text-xl">Which type of wallet would you like to import?</div>
         <div className="flex flex-wrap justify-center gap-12">
