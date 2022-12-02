@@ -1,6 +1,6 @@
 import { db } from "@core/libs/db"
 import { log } from "@core/log"
-import { providers } from "ethers"
+import { ethers } from "ethers"
 
 import { CustomEvmNetwork, EvmNetwork } from "./types"
 
@@ -9,22 +9,59 @@ export type GetProviderOptions = {
   batch?: boolean
 }
 
+const RPC_HEALTHCHECK_TIMEOUT = 10_000
+const RPC_CALL_TIMEOUT = 20_000
+
+const throwAfter = (ms: number, reason: any = "timeout") =>
+  new Promise((_, reject) => setTimeout(() => reject(reason), ms))
+
+const isUnhealthyRpcError = (err: any) => {
+  // expected errors that are not related to RPC health
+  // ex : throw revert on a transaction call that fails
+  if (["processing response error"].includes(err.reason)) return false
+
+  // if unknown, assume RPC is unhealthy
+  return true
+}
+
+class StandardRpcProvider extends ethers.providers.JsonRpcProvider {
+  async send(method: string, params: Array<any>): Promise<any> {
+    try {
+      return await super.send(method, params)
+    } catch (err) {
+      // emit error so rpc manager considers this rpc unhealthy
+      if (isUnhealthyRpcError(err)) this.emit("error", err)
+      throw err
+    }
+  }
+}
+
+class BatchRpcProvider extends ethers.providers.JsonRpcBatchProvider {
+  async send(method: string, params: Array<any>): Promise<any> {
+    try {
+      return await super.send(method, params)
+    } catch (err) {
+      // emit error so rpc manager considers this rpc unhealthy
+      if (isUnhealthyRpcError(err)) this.emit("error", err)
+      throw err
+    }
+  }
+}
+
 // cache for providers per network (will change over time if they get unhealthy)
-const PROVIDERS_BY_NETWORK_ID = new Map<string, Promise<providers.JsonRpcProvider | null>>()
+const PROVIDERS_BY_NETWORK_ID = new Map<string, Promise<ethers.providers.JsonRpcProvider | null>>()
 const getProviderByNetworkIdCacheKey = (evmNetworkId: number, batch?: boolean) =>
   `${evmNetworkId}-${batch ? "batch" : "standard"}`
 
 // cache for providers per url (do not change over time)
-const PROVIDERS_BY_URL = new Map<string, providers.JsonRpcProvider>()
+const PROVIDERS_BY_URL = new Map<string, ethers.providers.JsonRpcProvider>()
 const getProviderByUrlCacheKey = (url: string, batch?: boolean) =>
   `${url}-${batch ? "batch" : "standard"}`
-
-const RPC_HEALTHCHECK_TIMEOUT = 10_000
 
 const isHealthyRpc = async (url: string, chainId: number) => {
   try {
     // StaticJsonRpcProvider is better suited for this as it will not do health check requests on it's own
-    const provider = new providers.StaticJsonRpcProvider(url, {
+    const provider = new ethers.providers.StaticJsonRpcProvider(url, {
       chainId,
       name: `EVM Network ${chainId}`,
     })
@@ -32,18 +69,18 @@ const isHealthyRpc = async (url: string, chainId: number) => {
     // check that RPC responds in time
     const rpcChainId = await Promise.race([
       provider.send("eth_chainId", []),
-      new Promise((_, reject) => setTimeout(() => reject("timeout"), RPC_HEALTHCHECK_TIMEOUT)),
+      throwAfter(RPC_HEALTHCHECK_TIMEOUT),
     ])
 
     // with expected chain id
     return parseInt(rpcChainId, 16) === chainId
   } catch (err) {
-    log.error("isHealthyRpc : unhealthy RPC %s", url, { err })
+    log.error("Unhealthy EVM RPC %s", url, { err })
     return false
   }
 }
 
-const getHealthyRpc = async (rpcUrls: string[], network: providers.Network) => {
+const getHealthyRpc = async (rpcUrls: string[], network: ethers.providers.Network) => {
   for (const rpcUrl of rpcUrls) if (await isHealthyRpc(rpcUrl, network.chainId)) return rpcUrl
 
   // TODO update order and persist to database, code ready below
@@ -72,7 +109,7 @@ const getHealthyRpc = async (rpcUrls: string[], network: providers.Network) => {
 const getEvmNetworkProvider = async (
   ethereumNetwork: EvmNetwork | CustomEvmNetwork,
   { batch }: GetProviderOptions = {}
-): Promise<providers.JsonRpcProvider | null> => {
+): Promise<ethers.providers.JsonRpcProvider | null> => {
   if (!Array.isArray(ethereumNetwork.rpcs)) return null
 
   const urls = ethereumNetwork.rpcs.map(({ url }) => url)
@@ -83,14 +120,25 @@ const getEvmNetworkProvider = async (
 
   const cacheKey = getProviderByUrlCacheKey(url, batch)
   if (!PROVIDERS_BY_URL.has(cacheKey)) {
+    const connection: ethers.utils.ConnectionInfo = {
+      url,
+      errorPassThrough: true,
+      timeout: RPC_CALL_TIMEOUT,
+
+      // number of attempts when a request is throttled (429) : default is 12, minimum is 1
+      // use 1 so we change RPC as soon as we detect a throttling, without trying again
+      throttleLimit: 1,
+    }
     const provider =
       batch === true
-        ? new providers.JsonRpcBatchProvider(url, network)
-        : new providers.JsonRpcProvider(url, network)
+        ? new BatchRpcProvider(connection, network)
+        : new StandardRpcProvider(connection, network)
 
     // clear cache to force logic going through getHealthyRpc again on next call
+    // this error is thrown only on chainId mismatch or blocking errors such as HTTP 429
+    // but it won't trigger if RPC can't be reached anymore
     provider.on("error", (...args: unknown[]) => {
-      log.error("RPC error %s", cacheKey, args)
+      log.error("EVM RPC error %s (%s)", url, batch ? "batch" : "standard", args)
       PROVIDERS_BY_NETWORK_ID.delete(getProviderByNetworkIdCacheKey(ethereumNetwork.id, false))
       PROVIDERS_BY_NETWORK_ID.delete(getProviderByNetworkIdCacheKey(ethereumNetwork.id, true))
     })
@@ -98,7 +146,7 @@ const getEvmNetworkProvider = async (
     PROVIDERS_BY_URL.set(cacheKey, provider)
   }
 
-  return PROVIDERS_BY_URL.get(cacheKey) as providers.JsonRpcProvider
+  return PROVIDERS_BY_URL.get(cacheKey) as ethers.providers.JsonRpcProvider
 }
 
 export const getProviderForEthereumNetwork = (
@@ -111,13 +159,13 @@ export const getProviderForEthereumNetwork = (
   if (!PROVIDERS_BY_NETWORK_ID.has(cacheKey))
     PROVIDERS_BY_NETWORK_ID.set(cacheKey, getEvmNetworkProvider(ethereumNetwork, { batch }))
 
-  return PROVIDERS_BY_NETWORK_ID.get(cacheKey) as Promise<providers.JsonRpcProvider | null>
+  return PROVIDERS_BY_NETWORK_ID.get(cacheKey) as Promise<ethers.providers.JsonRpcProvider | null>
 }
 
 export const getProviderForEvmNetworkId = async (
   evmNetworkId: number,
   { batch }: GetProviderOptions = {}
-): Promise<providers.JsonRpcProvider | null> => {
+): Promise<ethers.providers.JsonRpcProvider | null> => {
   const network = await db.evmNetworks.get(evmNetworkId)
   if (network) return getProviderForEthereumNetwork(network, { batch })
   return null
