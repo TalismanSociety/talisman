@@ -13,7 +13,7 @@ Yarn version >1.2
 
 This README was written and verified with:
 
-- Node v16
+- Node v16.\*
 - Yarn v1.22.18
 
 ### Apps and Packages
