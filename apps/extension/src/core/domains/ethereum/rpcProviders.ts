@@ -1,3 +1,4 @@
+import { API_KEY_ONFINALITY } from "@core/constants"
 import { db } from "@core/libs/db"
 import { log } from "@core/log"
 import { ethers } from "ethers"
@@ -14,6 +15,19 @@ const RPC_CALL_TIMEOUT = 20_000
 
 const throwAfter = (ms: number, reason: any = "timeout") =>
   new Promise((_, reject) => setTimeout(() => reject(reason), ms))
+
+const resolveRpcUrl = (rpcUrl: string) => {
+  // inject api key here because we don't want them in the store (user can modify urls of rpcs)
+  return rpcUrl
+    .replace(
+      /^https:\/\/([A-z-]+)\.api\.onfinality\.io\/public-ws\/?$/,
+      `https://$1.api.onfinality.io/ws?apikey=${API_KEY_ONFINALITY}`
+    )
+    .replace(
+      /^https:\/\/([A-z-]+)\.api\.onfinality\.io\/rpc\/?$/,
+      `https://$1.api.onfinality.io/rpc?apikey=${API_KEY_ONFINALITY}`
+    )
+}
 
 const isUnhealthyRpcError = (err: any) => {
   // expected errors that are not related to RPC health
@@ -112,7 +126,7 @@ const getEvmNetworkProvider = async (
 ): Promise<ethers.providers.JsonRpcProvider | null> => {
   if (!Array.isArray(ethereumNetwork.rpcs)) return null
 
-  const urls = ethereumNetwork.rpcs.map(({ url }) => url)
+  const urls = ethereumNetwork.rpcs.map(({ url }) => url).map(resolveRpcUrl)
   const network = { name: ethereumNetwork.name ?? "unknown network", chainId: ethereumNetwork.id }
 
   const url = await getHealthyRpc(urls, network)
@@ -129,6 +143,7 @@ const getEvmNetworkProvider = async (
       // use 1 so we change RPC as soon as we detect a throttling, without trying again
       throttleLimit: 1,
     }
+
     const provider =
       batch === true
         ? new BatchRpcProvider(connection, network)
