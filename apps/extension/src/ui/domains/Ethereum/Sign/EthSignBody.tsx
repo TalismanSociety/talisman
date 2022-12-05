@@ -1,4 +1,5 @@
 import { TransactionInfo } from "@core/util/getEthTransactionInfo"
+import { ErrorBoundary, FallbackRender } from "@sentry/react"
 import { FC } from "react"
 
 import { EthSignBodyDefault } from "./EthSignBodyDefault"
@@ -14,25 +15,40 @@ type EthSignBodyProps = {
   isReady: boolean
 }
 
-export const EthSignBody: FC<EthSignBodyProps> = ({ transactionInfo, isReady }) => {
-  if (!isReady || !transactionInfo) return <EthSignBodyShimmer />
-
+const getComponentFromKnownContractCall = (transactionInfo: TransactionInfo) => {
   const { contractType, contractCall } = transactionInfo
 
   switch (`${contractType}.${contractCall?.name}`) {
     case "ERC20.transfer":
     case "ERC20.transferFrom":
-      return <EthSignBodyErc20Transfer />
+      return EthSignBodyErc20Transfer
     case "ERC20.approve":
-      return <EthSignBodyErc20Approve />
+      return EthSignBodyErc20Approve
     case "ERC721.setApprovalForAll":
-      return <EthSignBodyErc721ApproveAll />
+      return EthSignBodyErc721ApproveAll
     case "ERC721.approve":
-      return <EthSignBodyErc721Approve />
+      return EthSignBodyErc721Approve
     case "ERC721.transferFrom":
     case "ERC721.safeTransferFrom":
-      return <EthSignBodyErc721Transfer />
+      return EthSignBodyErc721Transfer
     default:
-      return <EthSignBodyDefault />
+      return null
   }
+}
+
+const Fallback: FallbackRender = () => <EthSignBodyDefault />
+
+export const EthSignBody: FC<EthSignBodyProps> = ({ transactionInfo, isReady }) => {
+  if (!isReady || !transactionInfo) return <EthSignBodyShimmer />
+
+  const Component = getComponentFromKnownContractCall(transactionInfo)
+
+  if (Component)
+    return (
+      <ErrorBoundary fallback={Fallback}>
+        <Component />
+      </ErrorBoundary>
+    )
+
+  return <EthSignBodyDefault />
 }

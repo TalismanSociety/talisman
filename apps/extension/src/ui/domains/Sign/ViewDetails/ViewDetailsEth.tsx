@@ -191,16 +191,18 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         <ViewDetailsField label="Network">
           {network ? `${network.name} (${network.id})` : null}
         </ViewDetailsField>
-        <ViewDetailsField label="Contract type and method">
-          {txInfo?.contractType
-            ? `${txInfo?.contractType} : ${txInfo?.contractCall?.name ?? "N/A"}`
-            : "Unknown"}
-        </ViewDetailsField>
+        {!!txInfo?.isContractCall && (
+          <ViewDetailsField label="Contract type and method">
+            {txInfo?.contractType
+              ? `${txInfo?.contractType} : ${txInfo?.contractCall?.name ?? "N/A"}`
+              : "Unknown"}
+          </ViewDetailsField>
+        )}
         <ViewDetailsField label="From" breakAll>
           <ViewDetailsAddress address={request.from} />
         </ViewDetailsField>
         <ViewDetailsField label="To" breakAll>
-          <ViewDetailsAddress address={request.to} />
+          {request.to ? <ViewDetailsAddress address={request.to} /> : "N/A"}
         </ViewDetailsField>
         <ViewDetailsField label="Value to be transferred" breakAll>
           {formatEthValue(request.value)}

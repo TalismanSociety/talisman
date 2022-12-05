@@ -101,7 +101,7 @@ export const EvmErc20Module: BalanceModule<
         const evmNetwork = await chaindataProvider.getEvmNetwork(chainId)
         if (!evmNetwork) return []
 
-        const provider = chainConnector.getProviderForEvmNetwork(evmNetwork)
+        const provider = await chainConnector.getProviderForEvmNetwork(evmNetwork)
         if (!provider) return []
 
         const contract = new ethers.Contract(contractAddress, erc20Abi, provider)
@@ -191,7 +191,7 @@ export const EvmErc20Module: BalanceModule<
           const evmNetwork = evmNetworks[evmNetworkId]
           if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
 
-          const provider = chainConnectors.evm.getProviderForEvmNetwork(evmNetwork, {
+          const provider = await chainConnectors.evm.getProviderForEvmNetwork(evmNetwork, {
             batch: true,
           })
           if (!provider)

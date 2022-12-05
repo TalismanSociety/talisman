@@ -155,7 +155,9 @@ export const EvmNativeModule: BalanceModule<
           const evmNetwork = evmNetworks[evmNetworkId]
           if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
 
-          const provider = chainConnectors.evm.getProviderForEvmNetwork(evmNetwork, { batch: true })
+          const provider = await chainConnectors.evm.getProviderForEvmNetwork(evmNetwork, {
+            batch: true,
+          })
           if (!provider)
             throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
 

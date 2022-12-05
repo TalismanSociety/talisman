@@ -23,7 +23,7 @@ const knownContracts: { contractType: ContractType; abi: any }[] = [
 ]
 
 export type TransactionInfo = {
-  targetAddress: string
+  targetAddress?: string
   isContractCall: boolean
   value?: BigNumber
   contractType?: ContractType
@@ -40,14 +40,13 @@ export type TransactionInfo = {
 export type KnownTransactionInfo = Required<TransactionInfo>
 
 export const getEthTransactionInfo = async (
-  provider?: ethers.providers.Provider,
-  tx?: ethers.providers.TransactionRequest
+  provider: ethers.providers.Provider,
+  tx: ethers.providers.TransactionRequest
 ): Promise<TransactionInfo | undefined> => {
-  if (!provider || !tx?.to) return undefined
+  // transactions that provision a contract have an empty 'to' field
+  const targetAddress = tx.to ? ethers.utils.getAddress(tx.to) : undefined
 
-  const targetAddress = ethers.utils.getAddress(tx.to)
-
-  const isContractCall = await isContractAddress(provider, targetAddress)
+  const isContractCall = targetAddress ? await isContractAddress(provider, targetAddress) : false
 
   const result: TransactionInfo = {
     targetAddress,
@@ -56,7 +55,7 @@ export const getEthTransactionInfo = async (
     value: tx.value ? BigNumber.from(tx.value) : undefined,
   }
 
-  if (tx.data) {
+  if (targetAddress && tx.data) {
     const data = ethers.utils.hexlify(tx.data)
 
     for (const { contractType, abi } of knownContracts) {

@@ -1,21 +1,19 @@
 // TODO: Replace all users of this with an instance of ChainConnectorEvm
 
 import { chainConnectorEvm } from "@core/domains/chain-connector-evm"
-import type { providers } from "ethers"
+import type { GetProviderOptions } from "@talismn/chain-connector-evm"
+import type { ethers } from "ethers"
 
 import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "./types"
 
-export type GetProviderOptions = {
-  /** If true, returns a provider which will batch requests */
-  batch?: boolean
-}
+export type { GetProviderOptions } from "@talismn/chain-connector-evm"
 
 // TODO: Refactor any code which uses this function to directly
 //       call methods on `chainConnectorEvm` instead!
 export const getProviderForEthereumNetwork = (
   ethereumNetwork: EvmNetwork | CustomEvmNetwork,
   { batch }: GetProviderOptions = {}
-): providers.JsonRpcProvider | null => {
+): Promise<ethers.providers.JsonRpcProvider | null> => {
   return chainConnectorEvm.getProviderForEvmNetwork(ethereumNetwork, { batch })
 }
 
@@ -24,6 +22,6 @@ export const getProviderForEthereumNetwork = (
 export const getProviderForEvmNetworkId = async (
   ethereumNetworkId: EvmNetworkId,
   { batch }: GetProviderOptions = {}
-): Promise<providers.JsonRpcProvider | null> => {
+): Promise<ethers.providers.JsonRpcProvider | null> => {
   return await chainConnectorEvm.getProviderForEvmNetworkId(ethereumNetworkId, { batch })
 }

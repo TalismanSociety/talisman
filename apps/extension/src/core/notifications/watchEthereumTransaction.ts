@@ -12,7 +12,7 @@ export const watchEthereumTransaction = async (ethChainId: EvmNetworkId, txHash:
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(ethChainId)
     if (!ethereumNetwork) throw new Error(`Could not find ethereum network ${ethChainId}`)
 
-    const provider = getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
+    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
     if (!provider)
       throw new Error(`No provider for network ${ethChainId} (${ethereumNetwork.name})`)
 

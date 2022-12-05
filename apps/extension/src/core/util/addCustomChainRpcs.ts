@@ -1,7 +1,5 @@
+import { API_KEY_ONFINALITY } from "@core/constants"
 import type { Chain } from "@core/domains/chains/types"
-
-// talisman onfinality api key
-const onfinalityApiKey = "e1b2f3ea-f003-42f5-adf6-d2e6aa3ecfe4"
 
 /**
  * Helper function to add our onfinality RPCs to an array of chains.
@@ -17,7 +15,7 @@ const addCustomChainRpcs = (chains: Chain[]): Chain[] =>
       .map((rpc) => {
         rpc.url = rpc.url.replace(
           /^wss:\/\/([A-z-]+)\.api\.onfinality\.io\/public-ws\/?$/,
-          `wss://$1.api.onfinality.io/ws?apikey=${onfinalityApiKey}`
+          `wss://$1.api.onfinality.io/ws?apikey=${API_KEY_ONFINALITY}`
         )
         return rpc
       })

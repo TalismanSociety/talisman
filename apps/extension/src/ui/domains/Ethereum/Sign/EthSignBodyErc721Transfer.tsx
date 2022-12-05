@@ -30,7 +30,7 @@ export const EthSignBodyErc721Transfer: FC = () => {
 
   const { name, image } = useMemo(
     () => ({
-      name: qMetadata?.data?.name ?? `${transactionInfo?.asset?.name} #${tokenId.toNumber()}`,
+      name: qMetadata?.data?.name ?? `${transactionInfo?.asset?.name} #${tokenId.toString()}`,
       image: qMetadata?.data?.image,
     }),
     [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, transactionInfo?.asset?.name]
