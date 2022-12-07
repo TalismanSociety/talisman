@@ -2,9 +2,9 @@
 // https://github.com/polkadot-js/common/pull/1331
 
 import { assert, u8aCmp, u8aToU8a } from "@polkadot/util"
-import type { HexString } from "@polkadot/util/types"
 import { naclDecrypt } from "@polkadot/util-crypto"
 import type { Keypair } from "@polkadot/util-crypto/types"
+import type { HexString } from "@polkadot/util/types"
 
 import {
   buildSR25519EncryptionKey,

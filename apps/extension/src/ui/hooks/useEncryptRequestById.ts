@@ -15,10 +15,7 @@ export const useEncryptRequestById = (id: string): AnyEncryptRequest | undefined
     [id]
   )
 
-  const transform = useCallback(
-    (reqs: Record<string, AnyEncryptRequest>) => reqs[id],
-    [id]
-  )
+  const transform = useCallback((reqs: Record<string, AnyEncryptRequest>) => reqs[id], [id])
 
   return useMessageSubscription(
     `encryptRequestsSubscribe(${id})`,

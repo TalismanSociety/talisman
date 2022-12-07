@@ -4,6 +4,8 @@
 // Runs in the extension background, handling all keyring access
 // Adapted from https://github.com/polkadot-js/extension/packages/extension/src/background.ts
 
+import "@core/util/enableLogsInDevelopment"
+
 import { initSentry } from "@core/config/sentry"
 import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "@core/constants"
 import { consoleOverride } from "@core/util/logging"

@@ -1,9 +1,8 @@
 import { DEBUG } from "@core/constants"
-import { Balances } from "@core/domains/balances/types"
-import { BalanceSearchQuery } from "@core/domains/balances/types/balances"
-import { Chain } from "@core/domains/chains/types"
-import { EvmNetwork } from "@core/domains/ethereum/types"
+import { Chain, ChainId } from "@core/domains/chains/types"
+import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { TokenId } from "@core/domains/tokens/types"
+import { BalanceSearchQuery, Balances } from "@talismn/balances"
 import useBalances from "@ui/hooks/useBalances"
 import useTokens from "@ui/hooks/useTokens"
 import { useMemo } from "react"
@@ -28,11 +27,7 @@ export const useTransferableTokens = () => {
   const transferableTokens = useMemo(() => {
     return (
       tokens?.flatMap((token) => {
-        const {
-          id: tokenId,
-          chain,
-          evmNetwork,
-        } = token as { id: TokenId; chain?: Chain; evmNetwork?: EvmNetwork } // evmNetwork only exists on some of the subtypes so we need to cast
+        const { id: tokenId, chain, evmNetwork } = token
 
         return [
           chain && {
@@ -42,7 +37,7 @@ export const useTransferableTokens = () => {
           },
           evmNetwork && {
             id: `${tokenId}-${evmNetwork.id}`,
-            evmNetworkId: Number(evmNetwork.id),
+            evmNetworkId: evmNetwork.id,
             token,
           },
         ].filter(Boolean) as TransferableToken[]
@@ -56,13 +51,13 @@ export const useTransferableTokens = () => {
       // INTR, KINT and MGX use orml (native won't work)
 
       const IGNORED_TOKENS = [
-        "acala-orml-aca-acala",
-        "bifrost-kusama-orml-bnc-bifrost-kusama",
-        "bifrost-polkadot-orml-bnc-bifrost-polkadot",
-        "interlay-native-intr-interlay",
-        "karura-orml-kar-karura",
-        "kintsugi-native-kint-kintsugi",
-        "mangata-native-mgx-mangata",
+        "acala-substrate-orml-aca-acala",
+        "bifrost-kusama-substrate-orml-bnc-bifrost-kusama",
+        "bifrost-polkadot-substrate-orml-bnc-bifrost-polkadot",
+        "interlay-substrate-native-intr-interlay",
+        "karura-substrate-orml-kar-karura",
+        "kintsugi-substrate-native-kint-kintsugi",
+        "mangata-substrate-native-mgx-mangata",
       ]
 
       if (DEBUG) {
@@ -104,7 +99,7 @@ export const useSortedTransferableTokens = (withBalanceFirst = false) => {
         ? { tokenId: transferableToken.token.id, chainId: transferableToken.chainId }
         : {
             tokenId: transferableToken.token.id,
-            evmNetworkId: Number(transferableToken.evmNetworkId),
+            evmNetworkId: transferableToken.evmNetworkId,
           }
       return {
         ...transferableToken,
@@ -150,16 +145,15 @@ export const useTransferableTokenId = ({
   chainId,
   evmNetworkId,
 }: {
-  tokenId: string
-  chainId?: string
-  evmNetworkId?: number
+  tokenId: TokenId
+  chainId?: ChainId
+  evmNetworkId?: EvmNetworkId
 }) => {
   const items = useTransferableTokens()
   const result = items.find(
     (tt) =>
       tt.token.id === tokenId &&
-      ((chainId && tt.chainId === chainId) ||
-        (evmNetworkId && Number(tt.evmNetworkId) === Number(evmNetworkId)))
+      ((chainId && tt.chainId === chainId) || (evmNetworkId && tt.evmNetworkId === evmNetworkId))
   )
   return result?.id ?? undefined
 }

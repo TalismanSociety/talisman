@@ -7,6 +7,7 @@ import { useFeatureVariantEquals, useIsFeatureEnabled } from "@ui/hooks/useFeatu
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
+
 import { useNavigationContext } from "../../context/NavigationContext"
 import { NavIconExpand, NavIconHistory, NavIconHome, NavIconMore, NavIconNft } from "./icons"
 

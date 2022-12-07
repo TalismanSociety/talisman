@@ -1,17 +1,19 @@
-import Row from "./Row"
+import { AssetLogo } from "./AssetLogo"
 import Balance from "./Balance"
-import Logo from "./Logo"
-import Tokens from "./Tokens"
+import { ChainLogo } from "./ChainLogo"
 import Fiat from "./Fiat"
+import Row from "./Row"
+import Tokens from "./Tokens"
 
 export type { IAssetRowOptions } from "./Row"
 
 const components = {
-  Row,
+  AssetLogo,
   Balance,
-  Logo,
-  Tokens,
+  ChainLogo,
   Fiat,
+  Row,
+  Tokens,
 }
 
 export default components

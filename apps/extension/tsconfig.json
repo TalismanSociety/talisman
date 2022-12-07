@@ -1,5 +1,5 @@
 {
-  "extends": "tsconfig/es6-react.json",
+  "extends": "@talismn/tsconfig/es6-react.json",
   "compilerOptions": {
     "experimentalDecorators": true,
     "baseUrl": "src",
@@ -12,5 +12,6 @@
       "@ui/*": ["./ui/*"]
     }
   },
-  "include": ["src", "**/*.ts", "**/*.tsx"]
+  "include": ["src", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", ".next", ".turbo", ".dist", "**/*.spec.ts", "**/*.test.ts"]
 }

@@ -1,3 +1,4 @@
+import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { TransactionStatus } from "@core/domains/transactions/types"
 import { IconButton } from "@talisman/components/IconButton"
 import { XIcon } from "@talisman/theme/icons"
@@ -6,7 +7,7 @@ import useChain from "@ui/hooks/useChain"
 import { useEvmTransactionWatch } from "@ui/hooks/useEvmTransactionWatch"
 import useTransactionById from "@ui/hooks/useTransactionById"
 import { FC, useCallback, useMemo } from "react"
-import { Button, classNames, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
+import { Button, ProcessAnimation, ProcessAnimationStatus, classNames } from "talisman-ui"
 
 const getAnimStatus = (status: TransactionStatus): ProcessAnimationStatus => {
   switch (status) {
@@ -155,7 +156,7 @@ const TransactionProgressSubstrate: FC<TransactionProgressSubstrateProps> = (pro
 }
 
 type TransactionProgressEvmProps = {
-  evmNetworkId: number
+  evmNetworkId: EvmNetworkId
   evmTxHash: string
   handleClose?: () => void
   className?: string
@@ -180,7 +181,7 @@ const TransactionProgressEvm: FC<TransactionProgressEvmProps> = (props) => {
 
 type TransactionProgressProps = {
   substrateTxId?: string
-  evmNetworkId?: number
+  evmNetworkId?: EvmNetworkId
   evmTxHash?: string
   handleClose?: () => void
   className?: string

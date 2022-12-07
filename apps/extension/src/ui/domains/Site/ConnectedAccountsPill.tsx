@@ -78,7 +78,7 @@ export const ConnectedAccountsPill: FC = () => {
       >
         <span className="dot"></span>
         <span className="label">{label}</span>
-        {ethChainId && <NetworkLogo ethChainId={ethChainId} />}
+        {typeof ethChainId === "number" && <NetworkLogo ethChainId={ethChainId.toString()} />}
       </Container>
       <Suspense fallback={null}>
         <ConnectedAccountsDrawer

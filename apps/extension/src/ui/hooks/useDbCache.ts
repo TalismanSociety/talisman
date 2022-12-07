@@ -1,7 +1,10 @@
+import { chaindataProvider } from "@core/domains/chaindata"
 import { db } from "@core/libs/db"
 import { provideContext } from "@talisman/util/provideContext"
+import { db as balancesDb } from "@talismn/balances"
 import { useLiveQuery } from "dexie-react-hooks"
 import { useMemo } from "react"
+
 import { useSettings } from "./useSettings"
 
 const filterTestnets =
@@ -10,48 +13,50 @@ const filterTestnets =
     useTestnets ? true : isTestnet === false
 
 const useDbCacheProvider = () => {
-  const allChainsRaw = useLiveQuery(() => db.chains.toArray(), [])
-  const allEvmNetworksRaw = useLiveQuery(() => db.evmNetworks.toArray(), [])
-  const allTokensRaw = useLiveQuery(() => db.tokens.toArray(), [])
-  const allBalancesRaw = useLiveQuery(() => db.balances.toArray(), [])
-
   const { useTestnets = false } = useSettings()
 
-  const allChains = useMemo(
-    () => allChainsRaw?.filter(filterTestnets(useTestnets)) ?? [],
-    [allChainsRaw, useTestnets]
+  const chains = useLiveQuery(
+    async () => Object.values(await chaindataProvider.chains()).filter(filterTestnets(useTestnets)),
+    [useTestnets]
   )
-  const allEvmNetworks = useMemo(
-    () => allEvmNetworksRaw?.filter(filterTestnets(useTestnets)) ?? [],
-    [allEvmNetworksRaw, useTestnets]
+  const evmNetworks = useLiveQuery(
+    async () =>
+      Object.values(await chaindataProvider.evmNetworks()).filter(filterTestnets(useTestnets)),
+    [useTestnets]
   )
-  const allTokens = useMemo(
-    () => allTokensRaw?.filter(filterTestnets(useTestnets)) ?? [],
-    [allTokensRaw, useTestnets]
+  const tokens = useLiveQuery(
+    async () => Object.values(await chaindataProvider.tokens()).filter(filterTestnets(useTestnets)),
+    [useTestnets]
   )
-  const allBalances = useMemo(() => allBalancesRaw ?? [], [allBalancesRaw])
+  const tokenRates = useLiveQuery(async () => await db.tokenRates.toArray(), [])
+  const balances = useLiveQuery(async () => await balancesDb.balances.toArray(), [])
 
   const chainsMap = useMemo(
-    () => Object.fromEntries(allChains.map((chain) => [chain.id, chain])),
-    [allChains]
+    () => Object.fromEntries((chains ?? []).map((chain) => [chain.id, chain])),
+    [chains]
   )
   const evmNetworksMap = useMemo(
-    () => Object.fromEntries(allEvmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])),
-    [allEvmNetworks]
+    () => Object.fromEntries((evmNetworks ?? []).map((evmNetwork) => [evmNetwork.id, evmNetwork])),
+    [evmNetworks]
   )
   const tokensMap = useMemo(
-    () => Object.fromEntries(allTokens.map((token) => [token.id, token])),
-    [allTokens]
+    () => Object.fromEntries((tokens ?? []).map((token) => [token.id, token])),
+    [tokens]
+  )
+  const tokenRatesMap = useMemo(
+    () => Object.fromEntries((tokenRates ?? []).map(({ tokenId, rates }) => [tokenId, rates])),
+    [tokenRates]
   )
 
   return {
-    allChains,
-    allEvmNetworks,
-    allTokens,
-    allBalances,
+    allChains: chains ?? [],
+    allEvmNetworks: evmNetworks ?? [],
+    allTokens: tokens ?? [],
+    allBalances: balances ?? [],
     chainsMap,
     evmNetworksMap,
     tokensMap,
+    tokenRatesMap: tokenRatesMap ?? {},
   }
 }
 

@@ -1,8 +1,9 @@
 import { useCallback, useState } from "react"
 import { Button } from "talisman-ui"
-import { useWallet } from "./useWallet"
-import { Section } from "../Section"
+
 import { DecryptResult, EncryptResult } from "../../../../extension/src/core/domains/encrypt/types"
+import { Section } from "../Section"
+import { useWallet } from "./useWallet"
 
 const DATA_TO_ENCRYPT =
   "data to encrypt yeet yeet yeeeeeet. this is a loooooong message blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"

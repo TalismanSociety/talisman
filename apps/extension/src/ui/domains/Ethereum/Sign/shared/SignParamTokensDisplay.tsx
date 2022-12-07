@@ -1,24 +1,26 @@
+import { AssetLogo, CoingeckoLogoRequest } from "@ui/domains/Asset/AssetLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
-import { TokenImage } from "@ui/domains/Asset/TokenLogo"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { FC } from "react"
 import { classNames } from "talisman-ui"
 
 type SignParamTokensDisplayProps = {
+  tokenId: string | undefined
+  erc20?: CoingeckoLogoRequest
   tokens: string | number | null
   decimals: number
   symbol: string
-  image?: string | null
   fiat?: number | null
   withIcon?: boolean
   className?: string
 }
 
 export const SignParamTokensDisplay: FC<SignParamTokensDisplayProps> = ({
+  tokenId,
+  erc20,
   tokens,
   decimals,
   symbol,
-  image,
   fiat,
   withIcon,
   className,
@@ -32,7 +34,7 @@ export const SignParamTokensDisplay: FC<SignParamTokensDisplayProps> = ({
     >
       {withIcon && (
         <span>
-          <TokenImage src={image} />
+          <AssetLogo id={tokenId} erc20={erc20} />
         </span>
       )}
       <span className="text-white">

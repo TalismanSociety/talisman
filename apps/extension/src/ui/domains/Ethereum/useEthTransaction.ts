@@ -9,11 +9,12 @@ import {
   EthGasSettings,
   EthGasSettingsEip1559,
   EthGasSettingsLegacy,
+  EvmNetworkId,
 } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName, EthTransactionDetails } from "@core/domains/signing/types"
 import {
-  getEthTransactionInfo,
   TransactionInfo as TransactionType,
+  getEthTransactionInfo,
 } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { useQuery } from "@tanstack/react-query"
@@ -25,7 +26,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 
-const useNonce = (address?: string, evmNetworkId?: number) => {
+const useNonce = (address?: string, evmNetworkId?: EvmNetworkId) => {
   const [nonce, setNonce] = useState<number>()
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>()
@@ -211,10 +212,10 @@ export const useEthTransaction = (
   defaultPriority: EthPriorityOptionName = "low",
   lockTransaction = false
 ) => {
-  const provider = useEthereumProvider(tx?.chainId)
+  const provider = useEthereumProvider(tx?.chainId?.toString())
   const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(provider, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(provider)
-  const { nonce, error: nonceError } = useNonce(tx?.from, tx?.chainId)
+  const { nonce, error: nonceError } = useNonce(tx?.from, tx?.chainId?.toString())
   const { data: estimatedGas, error: estimatedGasError } = useEstimatedGas(provider, tx)
 
   const {

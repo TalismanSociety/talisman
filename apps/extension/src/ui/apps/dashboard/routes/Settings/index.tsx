@@ -11,12 +11,11 @@ import { ReactComponent as IconLink } from "@talisman/theme/icons/link.svg"
 import { ReactComponent as IconList } from "@talisman/theme/icons/list.svg"
 import { ReactComponent as IconLock } from "@talisman/theme/icons/lock.svg"
 import Layout from "@ui/apps/dashboard/layout"
+import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
-
-import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 
 const Settings = () => {
   const { isOpen: isOpenMigratePw, open: openMigratePw, close: closeMigratePw } = useOpenClose()

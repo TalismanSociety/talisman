@@ -1,6 +1,7 @@
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import StatusIcon from "@talisman/components/StatusIcon"
 import { Button } from "talisman-ui"
+
 import { useMigratePassword } from "./context"
 
 export const MigratePasswordSuccess = () => {

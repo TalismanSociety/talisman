@@ -1,15 +1,15 @@
 import { DEBUG } from "@core/constants"
+import { chaindataProvider } from "@core/domains/chaindata"
 import { ChainId } from "@core/domains/chains/types"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { ResponseAssetTransferFeeQuery } from "@core/domains/transactions/types"
 import { isHardwareAccount } from "@core/handlers/helpers"
-import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import { SubscriptionCallback } from "@core/types"
 import { Address } from "@core/types/base"
-import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getExtrinsicDispatchInfo } from "@core/util/getExtrinsicDispatchInfo"
+import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
@@ -142,11 +142,11 @@ export default class OrmlTokenTransfersRpc {
     // - existential deposit
     // - sufficient balance
 
-    const chain = await db.chains.get(chainId)
+    const chain = await chaindataProvider.getChain(chainId)
     if (!chain?.genesisHash) throw new Error(`Chain ${chainId} not found in store`)
     const { genesisHash } = chain
 
-    const token = await db.tokens.get(tokenId)
+    const token = await chaindataProvider.getToken(tokenId)
     if (!token) throw new Error(`Token ${tokenId} not found in store`)
 
     const [blockHash, { block }, nonce, runtimeVersion] = await Promise.all([

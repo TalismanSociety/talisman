@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useSetInterval } from "../useSetInterval"
-import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
-import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
-import Transport from "@ledgerhq/hw-transport"
 import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
-import { getLedgerErrorProps, LedgerStatus } from "./common"
 import { log } from "@core/log"
-import { throwAfter } from "talisman-utils"
+import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
+import Transport from "@ledgerhq/hw-transport"
+import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
+import { throwAfter } from "@talismn/util"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+
+import { useSetInterval } from "../useSetInterval"
+import { LedgerStatus, getLedgerErrorProps } from "./common"
 
 export const useLedgerEthereum = (persist = false) => {
   const [isLoading, setIsLoading] = useState(false)

@@ -1,7 +1,6 @@
 import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import Nav, { NavItemButton, NavItemLink } from "@talisman/components/Nav"
-import { PillButton } from "talisman-ui"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { breakpoints } from "@talisman/theme/definitions"
@@ -26,11 +25,12 @@ import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
 import styled from "styled-components"
-import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
+import { PillButton } from "talisman-ui"
 
 const PaddedItem = styled.div`
   padding: 2.4rem;

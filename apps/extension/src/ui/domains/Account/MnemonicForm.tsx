@@ -1,10 +1,10 @@
 import Field from "@talisman/components/Field"
-
 import Spacer from "@talisman/components/Spacer"
 import { api } from "@ui/api"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useEffect, useState } from "react"
 import styled from "styled-components"
+
 import { Mnemonic } from "./Mnemonic"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 

@@ -1,8 +1,9 @@
-import { defineConfig } from "vite"
 import dns from "dns"
-import react from "@vitejs/plugin-react"
-import svgr from "vite-plugin-svgr"
+
 import { NodeGlobalsPolyfillPlugin } from "@esbuild-plugins/node-globals-polyfill"
+import react from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
+import svgr from "vite-plugin-svgr"
 
 // without this dns trick, link provided in terminal will be http://127.0.0.1:3000
 // and wallets won't be injected in the page

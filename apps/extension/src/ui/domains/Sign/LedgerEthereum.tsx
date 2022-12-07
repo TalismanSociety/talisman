@@ -1,18 +1,19 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { log } from "@core/log"
+import { bufferToHex, isHexString, stripHexPrefix } from "@ethereumjs/util"
+import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
+import { SignTypedDataVersion, TypedDataUtils } from "@metamask/eth-sig-util"
 import { Drawer } from "@talisman/components/Drawer"
 import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
+import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { Button, classNames } from "talisman-ui"
+
 import {
   LedgerConnectionStatus,
   LedgerConnectionStatusProps,
 } from "../Account/LedgerConnectionStatus"
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
-import { ethers } from "ethers"
-import LedgerEthereumApp from "@ledgerhq/hw-app-eth"
-import { TypedDataUtils, SignTypedDataVersion } from "@metamask/eth-sig-util"
-import { Button, classNames } from "talisman-ui"
-import { bufferToHex, stripHexPrefix, isHexString } from "@ethereumjs/util"
-import { log } from "@core/log"
 
 export type LedgerEthereumSignMethod =
   | "transaction"

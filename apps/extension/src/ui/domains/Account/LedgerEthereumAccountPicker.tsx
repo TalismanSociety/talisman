@@ -4,14 +4,15 @@ import { getEthLedgerDerivationPath } from "@core/domains/ethereum/helpers"
 import { LedgerEthDerivationPathType } from "@core/domains/ethereum/types"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { LedgerAccountDefEthereum } from "@ui/apps/dashboard/routes/AccountAddLedger/context"
+import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import useAccounts from "@ui/hooks/useAccounts"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useLedgerEthereum } from "@ui/hooks/ledger/useLedgerEthereum"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
+
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 
-const BALANCE_CHECK_EVM_NETWORK_IDS = [1284, 1285, 592, 1]
+const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
 
 const useLedgerEthereumAccounts = (
   name: string,
@@ -79,7 +80,7 @@ const useLedgerEthereumAccounts = (
         .map((acc) => acc?.address)
         .filter(Boolean) as string[],
       evmNetworks: (evmNetworks || [])
-        .filter((chain) => BALANCE_CHECK_EVM_NETWORK_IDS.includes(Number(chain.id)))
+        .filter((chain) => BALANCE_CHECK_EVM_NETWORK_IDS.includes(chain.id))
         .map(({ id, nativeToken }) => ({ id, nativeToken: { id: nativeToken?.id as string } })),
     }
 

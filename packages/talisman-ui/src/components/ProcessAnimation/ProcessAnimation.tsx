@@ -1,8 +1,9 @@
 import Lottie from "lottie-react"
-import animDataSuccess from "./lottie-tx-success.json"
+import { FC, useCallback, useEffect, useState } from "react"
+
 import animDataFailure from "./lottie-tx-failure.json"
 import animDataProcessing from "./lottie-tx-processing.json"
-import { FC, useCallback, useEffect, useState } from "react"
+import animDataSuccess from "./lottie-tx-success.json"
 
 export type ProcessAnimationStatus = "processing" | "success" | "failure"
 

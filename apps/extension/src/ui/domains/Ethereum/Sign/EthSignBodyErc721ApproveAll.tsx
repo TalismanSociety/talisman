@@ -1,9 +1,10 @@
 import { FC, useMemo } from "react"
+
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
-import { SignAlertMessage } from "./shared/SignAlertMessage"
 import { EthSignContainer } from "./shared/EthSignContainer"
+import { SignAlertMessage } from "./shared/SignAlertMessage"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc721ApproveAll: FC = () => {

@@ -1,3 +1,9 @@
+import { BigNumber, ethers, providers } from "ethers"
+import { parseEther, parseUnits, serializeTransaction } from "ethers/lib/utils"
+import { useCallback, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { useLocalStorage } from "react-use"
+import { Button } from "talisman-ui"
 import {
   erc20ABI,
   useAccount,
@@ -10,16 +16,11 @@ import {
   useSigner,
   useWaitForTransaction,
 } from "wagmi"
-import { useForm } from "react-hook-form"
-import { parseEther, parseUnits, serializeTransaction } from "ethers/lib/utils"
+
 import { Section } from "../Section"
-import { Button } from "talisman-ui"
-import { useLocalStorage } from "react-use"
-import { TransactionReceipt } from "./shared/TransactionReceipt"
-import erc20 from "./contracts/erc20.json"
 import { getUSDCAddress } from "./contracts"
-import { useCallback, useMemo } from "react"
-import { BigNumber, ethers, providers } from "ethers"
+import erc20 from "./contracts/erc20.json"
+import { TransactionReceipt } from "./shared/TransactionReceipt"
 
 type FormData = { recipient: string; amount: string }
 

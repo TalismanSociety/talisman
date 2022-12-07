@@ -1,13 +1,14 @@
-// Adapted from @polkadot/extension-ui
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { log } from "@core/log"
+import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
 import { Ledger } from "@polkadot/hw-ledger"
 import { assert } from "@polkadot/util"
-import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
+import { throwAfter } from "@talismn/util"
+// Adapted from @polkadot/extension-ui
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+
 import { useSetInterval } from "../useSetInterval"
-import { getLedgerErrorProps, LedgerStatus } from "./common"
+import { LedgerStatus, getLedgerErrorProps } from "./common"
 import { useLedgerSubstrateApp } from "./useLedgerSubstrateApp"
-import { log } from "@core/log"
-import { throwAfter } from "talisman-utils"
 
 export const useLedgerSubstrate = (genesis?: string | null) => {
   const app = useLedgerSubstrateApp(genesis)

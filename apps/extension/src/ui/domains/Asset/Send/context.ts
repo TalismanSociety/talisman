@@ -2,16 +2,16 @@ import {
   DEFAULT_SEND_FUNDS_TOKEN_ETHEREUM,
   DEFAULT_SEND_FUNDS_TOKEN_SUBSTRATE,
 } from "@core/constants"
-import { Balance, BalanceFormatter, BalanceStorage, Balances } from "@core/domains/balances/types"
+import { Balance, BalanceFormatter, BalanceJson, Balances } from "@core/domains/balances/types"
 import { Chain, ChainId } from "@core/domains/chains/types"
 import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
-import { tokensToPlanck } from "@core/util/tokensToPlanck"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { provideContext } from "@talisman/util/provideContext"
+import { tokensToPlanck } from "@talismn/util"
 import { api } from "@ui/api"
 import { getExtensionEthereumProvider } from "@ui/domains/Ethereum/getExtensionEthereumProvider"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -48,7 +48,7 @@ function chainUsesOrmlForNativeToken(
 ): boolean {
   return (
     nonEmptyBalances
-      .find({ chainId, pallet: "orml-tokens" })
+      .find({ chainId, source: "substrate-orml" })
       .find((balance) => balance.token?.symbol === nativeToken.symbol).count > 0
   )
 }
@@ -119,7 +119,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     setFormData(({ from }) => ({ from, transferableTokenId }))
   }, [formData.from, formData.transferableTokenId, transferableTokens])
 
-  // nonEmptyBalances is needed in order to detect chains who use the orml pallet for their native token
+  // nonEmptyBalances is needed in order to detect chains who use the substrate-orml source for their native token
   const balances = useBalances()
   const nonEmptyBalances = useMemo(
     () =>
@@ -137,7 +137,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       if (!token) throw new Error("Token not found")
 
       const chain = (!!chainId && chainsMap[chainId]) || null
-      const evmNetwork = (!!evmNetworkId && evmNetworksMap[Number(evmNetworkId)]) || null
+      const evmNetwork = (!!evmNetworkId && evmNetworksMap[evmNetworkId]) || null
       if (!chain && !evmNetwork) throw new Error("Network not found")
 
       const network = (chain || evmNetwork) as Chain | EvmNetwork
@@ -145,7 +145,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       const tokenIsNativeToken = token.id === network.nativeToken?.id
 
       // load all balances at once
-      const loadBalance = (promise: Promise<BalanceStorage>) =>
+      const loadBalance = (promise: Promise<BalanceJson>) =>
         promise.then((storage) => new Balance(storage))
 
       const networkFilter = chain ? { chainId } : { evmNetworkId }
@@ -169,14 +169,9 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         decimals: token.decimals,
         existentialDeposit: new BalanceFormatter(
           ("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0",
-          token.decimals,
-          token.rates
+          token.decimals
         ),
-        amount: new BalanceFormatter(
-          tokensToPlanck(amount, token.decimals),
-          token.decimals,
-          token.rates
-        ),
+        amount: new BalanceFormatter(tokensToPlanck(amount, token.decimals), token.decimals),
       }
 
       // check recipient's balance, prevent immediate reaping
@@ -222,18 +217,10 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
             type: "evm",
             transfer,
             fees: {
-              amount: new BalanceFormatter(
-                maxFeeAndGasCost.toBigInt(),
-                nativeToken.decimals,
-                nativeToken.rates
-              ),
+              amount: new BalanceFormatter(maxFeeAndGasCost.toBigInt(), nativeToken.decimals),
               decimals: nativeToken.decimals,
               symbol: nativeToken.symbol,
-              existentialDeposit: new BalanceFormatter(
-                "0",
-                nativeToken.decimals,
-                nativeToken.rates
-              ),
+              existentialDeposit: new BalanceFormatter("0", nativeToken.decimals),
             },
           })
         } catch (err) {
@@ -264,14 +251,9 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         decimals: nativeToken.decimals,
         existentialDeposit: new BalanceFormatter(
           ("existentialDeposit" in nativeToken ? nativeToken.existentialDeposit : "0") ?? "0",
-          nativeToken.decimals,
-          nativeToken.rates
+          nativeToken.decimals
         ),
-        amount: new BalanceFormatter(
-          BigInt(partialFee) + BigInt(tip ?? "0"),
-          nativeToken.decimals,
-          nativeToken.rates
-        ),
+        amount: new BalanceFormatter(BigInt(partialFee) + BigInt(tip ?? "0"), nativeToken.decimals),
       }
 
       // for each currency involved, check if sufficient balance and if it will cause account to be reaped
@@ -292,10 +274,9 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
             decimals: token.decimals,
             existentialDeposit: new BalanceFormatter(
               ("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0",
-              token.decimals,
-              token.rates
+              token.decimals
             ),
-            amount: new BalanceFormatter(remaining, token.decimals, token.rates),
+            amount: new BalanceFormatter(remaining, token.decimals),
           })
       }
 
@@ -311,11 +292,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         testToken(
           token,
           fromBalance,
-          new BalanceFormatter(
-            transfer.amount.planck + fees.amount.planck,
-            token.decimals,
-            token.rates
-          )
+          new BalanceFormatter(transfer.amount.planck + fees.amount.planck, token.decimals)
         )
       } else {
         // fees on nativeToken

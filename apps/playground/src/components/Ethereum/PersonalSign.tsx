@@ -1,9 +1,10 @@
-import { useAccount, useSignMessage } from "wagmi"
-import { useForm } from "react-hook-form"
-import { Section } from "../Section"
-import { Button, classNames } from "talisman-ui"
-import { useCallback, useMemo } from "react"
 import { ethers } from "ethers"
+import { useCallback, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { Button, classNames } from "talisman-ui"
+import { useAccount, useSignMessage } from "wagmi"
+
+import { Section } from "../Section"
 
 type FormData = { message: string }
 

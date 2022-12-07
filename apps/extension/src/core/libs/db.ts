@@ -1,16 +1,11 @@
 import { ProtectorSources, ProtectorStorage } from "@core/domains/app/protector/ParaverseProtector"
-import { BalanceStorage } from "@core/domains/balances/types"
-import { Chain, ChainId } from "@core/domains/chains/types"
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import { Token, TokenId } from "@core/domains/tokens/types"
 import { MetadataDef } from "@core/inject/types"
+import { TokenId } from "@talismn/chaindata-provider"
+import { TokenRates } from "@talismn/token-rates"
 import { Dexie } from "dexie"
 
 export class TalismanDatabase extends Dexie {
-  chains!: Dexie.Table<Chain, ChainId>
-  evmNetworks!: Dexie.Table<EvmNetwork | CustomEvmNetwork, EvmNetworkId>
-  tokens!: Dexie.Table<Token, TokenId>
-  balances!: Dexie.Table<BalanceStorage, string>
+  tokenRates!: Dexie.Table<DbTokenRates, string>
   metadata!: Dexie.Table<MetadataDef, string>
   phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
 
@@ -25,10 +20,11 @@ export class TalismanDatabase extends Dexie {
       //
       // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
       // https://dexie.org/docs/Version/Version.stores()#warning
-      chains: "id, genesisHash, name, nativeToken, tokens, evmNetworks",
-      evmNetworks: "id, name, nativeToken, tokens, substrateChain",
-      tokens: "id, type, symbol, coingeckoId, contractAddress, chain, evmNetwork",
-      balances: "id, pallet, address, chainId, evmNetworkId, tokenId",
+      chains: null, // delete legacy table
+      evmNetworks: null, // delete legacy table
+      tokens: null, // delete legacy table
+      tokenRates: "tokenId",
+      balances: null, // delete legacy table
       metadata: "genesisHash",
       phishing: "source, commitSha",
       metadataRpc: null, // delete legacy table
@@ -37,6 +33,11 @@ export class TalismanDatabase extends Dexie {
 
     // data provisioning code moved to Extension.ts so only backend can execute it
   }
+}
+
+export type DbTokenRates = {
+  tokenId: TokenId
+  rates: TokenRates
 }
 
 export const db = new TalismanDatabase()

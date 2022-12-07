@@ -1,6 +1,7 @@
 import { log } from "@core/log"
 import { logProxy } from "@core/log/logProxy"
 import { SendRequest } from "@core/types"
+
 import { TalismanEthProvider } from "./TalismanEthProvider"
 
 type TalismanWindow = Window &

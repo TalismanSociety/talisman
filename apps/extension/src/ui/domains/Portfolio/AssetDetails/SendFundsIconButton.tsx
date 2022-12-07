@@ -4,6 +4,7 @@ import { api } from "@ui/api"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback } from "react"
 import styled from "styled-components"
+
 import { useSelectedAccount } from "../SelectedAccountContext"
 
 const SmallIconButton = styled(IconButton)`
@@ -25,8 +26,7 @@ export const SendFundsButton = ({
   const token = tokens?.find(
     (t) =>
       t.symbol === symbol &&
-      (("evmNetwork" in t && Number(t.evmNetwork?.id) === Number(networkId)) ||
-        t.chain?.id === networkId)
+      (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId)
   )
 
   const handleClick = useCallback(() => {

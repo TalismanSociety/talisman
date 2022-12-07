@@ -1,14 +1,14 @@
 import { log } from "@core/log"
 import Pill from "@talisman/components/Pill"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { formatDecimals } from "@talismn/util"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { Suspense, lazy, useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
-import { formatDecimals } from "talisman-utils"
 
 import Fiat from "../Fiat"
-import AssetLogo from "../Logo"
 import { TokenLogo } from "../TokenLogo"
 import { Tokens } from "../Tokens"
 import { useSendTokens } from "./context"
@@ -136,7 +136,7 @@ export const SendReviewHeader = () => {
 
   return (
     <NetworkPill>
-      <AssetLogo id={chain.id} />
+      <ChainLogo id={chain.id} />
       <span className="chain-name">{chain.name}</span>
     </NetworkPill>
   )

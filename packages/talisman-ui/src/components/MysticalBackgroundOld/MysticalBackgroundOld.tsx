@@ -1,8 +1,8 @@
 import { useMemo, useRef } from "react"
 import { useMeasure, useMouse } from "react-use"
 import styled from "styled-components"
-import { useWindowHovered } from "../MysticalBackground/useWindowHovered"
 
+import { useWindowHovered } from "../MysticalBackground/useWindowHovered"
 import { CelestialArtifact } from "./CelestialArtifact"
 import { MYSTICAL_PHYSICS } from "./MysticalPhysics"
 

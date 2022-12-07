@@ -19,9 +19,9 @@ This README was written and verified with:
 ### Apps and Packages
 
 - `apps/extension`: the Talisman browser extension (non-custodial wallet)
-- `packages/eslint-config-talisman`: shared `eslint` configurations
+- `packages/eslint-config`: shared `eslint` configurations
 - `packages/tsconfig`: shared `tsconfig.json`s used throughout the monorepo
-- `packages/talisman-utils`: library containing shared non-react code. It is not meant to be npm published.
+- `packages/util`: library containing shared non-react code. It is not meant to be npm published.
 
 All our package and apps are 100% [TypeScript](https://www.typescriptlang.org/).
 
@@ -59,4 +59,28 @@ All our package and apps are 100% [TypeScript](https://www.typescriptlang.org/).
 # builds with docker, outputs in dist folder at the root of the monorepo
 rm -rf dist && DOCKER_BUILDKIT=1 docker build --output type=local,dest=./dist .
 
+```
+
+### Update packages
+
+```bash
+# Make changes, and then run:
+yarn changeset
+# Select the packages which have been modified and write a commit message
+
+
+# Later on, after merging some created changesets:
+yarn changeset version
+# Commit the changed files and then go to the next step, `Publish packages`.
+
+
+```
+
+### Publish packages
+
+```bash
+yarn plugin import workspace-tools
+
+yarn npm login
+yarn workspaces foreach --no-private npm publish --tolerate-republish
 ```

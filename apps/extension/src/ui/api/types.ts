@@ -9,13 +9,14 @@ import {
 } from "@core/domains/app/types"
 import {
   AddressesByEvmNetwork,
+  BalanceJson,
   BalancesUpdate,
   RequestBalance,
   RequestBalanceLocks,
   ResponseBalanceLocks,
 } from "@core/domains/balances/types"
-import { BalanceStorage } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
+import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
@@ -39,7 +40,6 @@ import {
   ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
-import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import { EthResponseType } from "@core/injectEth/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
@@ -114,12 +114,7 @@ export default interface MessageTypes {
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
-  getBalance: ({
-    chainId,
-    evmNetworkId,
-    tokenId,
-    address,
-  }: RequestBalance) => Promise<BalanceStorage>
+  getBalance: ({ chainId, evmNetworkId, tokenId, address }: RequestBalance) => Promise<BalanceJson>
   getBalanceLocks: ({ chainId, addresses }: RequestBalanceLocks) => Promise<ResponseBalanceLocks>
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
@@ -151,13 +146,16 @@ export default interface MessageTypes {
   // token message types
   tokens: (cb: () => void) => UnsubscribeFn
 
+  // tokenRates message types
+  tokenRates: (cb: () => void) => UnsubscribeFn
+
   // custom erc20 token management
   customErc20Tokens: () => Promise<Record<CustomErc20Token["id"], CustomErc20Token>>
   customErc20Token: (id: string) => Promise<CustomErc20Token>
   addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
   removeCustomErc20Token: (id: string) => Promise<boolean>
   clearCustomErc20Tokens: (
-    filter: { chainId?: ChainId; evmNetworkId?: number } | undefined
+    filter: { chainId?: ChainId; evmNetworkId?: EvmNetworkId } | undefined
   ) => Promise<boolean>
 
   // ethereum networks message types
@@ -218,7 +216,7 @@ export default interface MessageTypes {
   ethApproveSignAndSendHardware: (id: string, signedTransaction: HexString) => Promise<boolean>
   ethCancelSign: (id: string) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
-  ethGetTransactionsCount: (address: string, evmNetworkId: number) => Promise<number>
+  ethGetTransactionsCount: (address: string, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: string) => Promise<boolean>
   ethNetworkAddCancel: (is: string) => Promise<boolean>

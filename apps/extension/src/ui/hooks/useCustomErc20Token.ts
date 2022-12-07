@@ -1,14 +1,22 @@
-import { CustomErc20Token } from "@core/domains/tokens/types"
-import { db } from "@core/libs/db"
+import { chaindataProvider } from "@core/domains/chaindata"
+import { TokenId } from "@talismn/chaindata-provider"
 import { useLiveQuery } from "dexie-react-hooks"
 
-export const useCustomErc20Token = (id: string | undefined) => {
-  return useLiveQuery<CustomErc20Token | undefined>(async () => {
-    const token = id !== undefined ? await db.tokens.get(id) : undefined
-    if (token?.type === "erc20" && "isCustom" in token) {
-      const customToken = token as CustomErc20Token
-      if (customToken.isCustom) return token
-    }
-    return undefined
-  }, [])
-}
+export const useCustomErc20Token = (id: TokenId | undefined) =>
+  useLiveQuery(async () => {
+    if (id === undefined) return
+
+    const token = await chaindataProvider.getToken(id)
+
+    // token doesn't exist
+    if (!token) return
+
+    // token is not custom
+    if (!("isCustom" in token)) return
+    if (!token.isCustom) return
+
+    // token is not an evm erc20
+    if (token.type !== "evm-erc20") return
+
+    return token
+  }, [id])

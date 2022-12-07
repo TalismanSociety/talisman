@@ -1,16 +1,17 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
-import { FC, useMemo } from "react"
-import { dump as convertToYaml } from "js-yaml"
+import { EthSignRequest } from "@core/domains/signing/types"
+import { log } from "@core/log"
 import { isHexString, stripHexPrefix } from "@ethereumjs/util"
 import * as Sentry from "@sentry/browser"
-import { EthSignRequest } from "@core/domains/signing/types"
-import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { log } from "@core/log"
 import { Message } from "@ui/domains/Sign/Message"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { dump as convertToYaml } from "js-yaml"
+import { FC, useMemo } from "react"
+
+import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 
 const useEthSignMessage = (request: EthSignRequest) => {
-  const { isTypedData, typedMessage, verifyingAddress, chainId } = useMemo(() => {
+  const { isTypedData, typedMessage, verifyingAddress, chainId, ethChainId } = useMemo(() => {
     try {
       const isTypedData = Boolean(request?.method?.startsWith("eth_signTypedData"))
       const typedMessage = isTypedData ? JSON.parse(request.request) : undefined
@@ -18,12 +19,13 @@ const useEthSignMessage = (request: EthSignRequest) => {
       const chainId = typedMessage?.domain?.chainId
         ? parseInt(typedMessage.domain?.chainId)
         : undefined
-      return { isTypedData, typedMessage, verifyingAddress, chainId }
+      const ethChainId = request.ethChainId
+      return { isTypedData, typedMessage, verifyingAddress, chainId, ethChainId }
     } catch (err) {
       log.error(err)
       return { isTypedData: false }
     }
-  }, [request?.method, request.request])
+  }, [request])
 
   const text = useMemo(() => {
     if (typedMessage) {
@@ -48,7 +50,7 @@ const useEthSignMessage = (request: EthSignRequest) => {
     return request.request
   }, [request.request, typedMessage])
 
-  return { isTypedData, text, verifyingAddress, chainId }
+  return { isTypedData, text, verifyingAddress, chainId, ethChainId }
 }
 
 export type EthSignBodyMessageProps = {
@@ -57,8 +59,8 @@ export type EthSignBodyMessageProps = {
 }
 
 export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, request }) => {
-  const { isTypedData, text, verifyingAddress, chainId } = useEthSignMessage(request)
-  const evmNetwork = useEvmNetwork(chainId)
+  const { isTypedData, text, verifyingAddress, chainId, ethChainId } = useEthSignMessage(request)
+  const evmNetwork = useEvmNetwork(ethChainId)
 
   return (
     <div className="flex h-full w-full flex-col">

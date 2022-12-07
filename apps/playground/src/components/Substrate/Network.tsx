@@ -1,8 +1,9 @@
+import { u32 } from "@polkadot/types-codec"
+import { useEffect, useState } from "react"
+
+import { Section } from "../Section"
 import { useApi } from "./useApi"
 import { useNetwork } from "./useNetwork"
-import { useEffect, useState } from "react"
-import { u32 } from "@polkadot/types-codec"
-import { Section } from "../Section"
 
 const availableNetworks = {
   None: undefined,

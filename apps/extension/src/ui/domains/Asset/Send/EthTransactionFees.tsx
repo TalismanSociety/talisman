@@ -2,12 +2,13 @@ import { BalanceFormatter } from "@core/domains/balances/types"
 import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { EthGasSettings } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
-import { tokensToPlanck } from "@core/util"
 import { Box } from "@talisman/components/Box"
 import { LoaderIcon } from "@talisman/theme/icons"
+import { tokensToPlanck } from "@talismn/util"
 import { EthFeeSelect } from "@ui/domains/Ethereum/EthFeeSelect"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
+import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
 import { ethers } from "ethers"
 import { useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
@@ -49,6 +50,10 @@ export const EthTransactionFees = ({
   const token = useToken(transferableToken?.token?.id)
   const evmNetwork = useEvmNetwork(transferableToken?.evmNetworkId)
   const nativeToken = useToken(evmNetwork?.nativeToken?.id)
+
+  const rates = useTokenRatesForTokens(useMemo(() => [token, nativeToken], [token, nativeToken]))
+  const tokenRates = token && rates[token.id]
+  const nativeTokenRates = nativeToken && rates[nativeToken.id]
 
   const [tx, setTx] = useState<ethers.providers.TransactionRequest>()
 
@@ -100,10 +105,10 @@ export const EthTransactionFees = ({
         ? new BalanceFormatter(
             ethers.utils.formatUnits(txDetails.estimatedFee, 0),
             nativeToken?.decimals,
-            nativeToken?.rates
+            nativeTokenRates
           )
         : null,
-    [nativeToken, txDetails]
+    [nativeToken, nativeTokenRates, txDetails]
   )
 
   if (!txDetails) return null
@@ -136,7 +141,7 @@ export const EthTransactionFees = ({
           decimals={nativeToken?.decimals}
           noCountUp
         />
-        {token?.rates && (
+        {tokenRates && (
           <>
             {" "}
             / <Fiat amount={estimatedFee.fiat("usd")} currency="usd" noCountUp />
