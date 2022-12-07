@@ -1,4 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
 export const usePortfolioNetworkIds = (balances: Balances) => {
@@ -10,7 +11,7 @@ export const usePortfolioNetworkIds = (balances: Balances) => {
             .filter((b) => b.total.planck > 0)
             .map((b) => b.chain?.id ?? b.evmNetwork?.id)
         ),
-      ].filter(Boolean) as (number | string)[],
+      ].filter(Boolean) as (ChainId | EvmNetworkId)[],
     [balances.sorted]
   )
 }

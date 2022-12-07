@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useState } from "react"
-import { Section } from "../Section"
-import { useApi } from "./useApi"
-import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { Option } from "@polkadot/types-codec"
+import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { Registration } from "@polkadot/types/interfaces/identity"
-import { useWallet } from "./useWallet"
+import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Button } from "talisman-ui"
+
+import { Section } from "../Section"
+import { useApi } from "./useApi"
+import { useWallet } from "./useWallet"
 
 const useIdentity = () => {
   const { api } = useApi()

@@ -2,13 +2,14 @@ import { Balance, BalanceFormatter } from "@core/domains/balances/types"
 import { EthGasSettings } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName, SignerPayloadJSON } from "@core/domains/signing/types"
 import { Token } from "@core/domains/tokens/types"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 
 export type TransferableTokenId = string
 
 export type TransferableToken = {
   id: TransferableTokenId
-  chainId?: string
-  evmNetworkId?: number
+  chainId?: ChainId
+  evmNetworkId?: EvmNetworkId
   token: Token
 }
 

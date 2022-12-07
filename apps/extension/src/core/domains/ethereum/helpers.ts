@@ -1,11 +1,15 @@
-import { erc20Abi } from "@core/domains/balances/rpc/abis"
+import { ChainId } from "@core/domains/chains/types"
+import {
+  EthGasSettings,
+  EvmNetworkId,
+  LedgerEthDerivationPathType,
+} from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import erc20Abi from "@talismn/balances-evm-erc20/dist/erc20.json"
 import { BigNumber, BigNumberish, ethers } from "ethers"
 import * as yup from "yup"
-
-import { EthGasSettings, LedgerEthDerivationPathType } from "./types"
 
 const DERIVATION_PATHS_PATTERNS = {
   BIP44: "m/44'/60'/0'/0/INDEX",
@@ -26,7 +30,7 @@ export const getEthLedgerDerivationPath = (type: LedgerEthDerivationPathType, in
 }
 
 export const getEthTransferTransactionBase = async (
-  evmNetworkId: number,
+  evmNetworkId: EvmNetworkId,
   from: string,
   to: string,
   token: Token,
@@ -40,25 +44,27 @@ export const getEthTransferTransactionBase = async (
 
   let tx: ethers.providers.TransactionRequest
 
-  if (token.type === "native") {
+  if (token.type === "evm-native") {
     tx = {
       value: ethers.BigNumber.from(planck),
       to: ethers.utils.getAddress(to),
     }
-  } else if (token.type === "erc20") {
+  } else if (token.type === "evm-erc20") {
     const contract = new ethers.Contract(token.contractAddress, erc20Abi)
     tx = await contract.populateTransaction["transfer"](to, ethers.BigNumber.from(planck))
   } else throw new Error(`Invalid token type ${token.type} - token ${token.id}`)
 
   return {
-    chainId: evmNetworkId,
+    chainId: parseInt(evmNetworkId, 10),
     from,
     ...tx,
   }
 }
 
-export const getErc20TokenId = (chainOrNetworkId: number | string, contractAddress: string) =>
-  `${chainOrNetworkId}-erc20-${contractAddress}`.toLowerCase()
+export const getErc20TokenId = (
+  chainOrNetworkId: ChainId | EvmNetworkId,
+  contractAddress: string
+) => `${chainOrNetworkId}-evm-erc20-${contractAddress}`.toLowerCase()
 
 // BigNumbers need to be reconstructed if they are serialized then deserialized
 export const rebuildTransactionRequestNumbers = (

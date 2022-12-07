@@ -3,6 +3,7 @@ import { BalanceFormatter, BalanceLockType, LockedBalance } from "@core/domains/
 import { Address } from "@core/types/base"
 import { getNetworkCategory } from "@core/util/getNetworkCategory"
 import { sortBigBy } from "@talisman/util/bigHelper"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import useChain from "@ui/hooks/useChain"
 import { useMemo } from "react"
 
@@ -20,7 +21,7 @@ type DetailRow = {
 }
 
 type ChainTokenBalancesParams = {
-  chainId: string | number
+  chainId: ChainId | EvmNetworkId
   balances: Balances
   symbol: string
 }
@@ -38,7 +39,11 @@ const getBalanceLockTypeTitle = (input: BalanceLockType, allLocks: LockedBalance
 
 export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenBalancesParams) => {
   const { account } = useSelectedAccount()
-  const { token, summary, tokenBalances } = useTokenBalancesSummary(balances, symbol)
+  const { token, summary, tokenBalances, tokenBalanceRates } = useTokenBalancesSummary(
+    balances,
+    symbol
+  )
+  const tokenRates = token && tokenBalanceRates[token.id]
 
   const addressesWithLocks = useMemo(
     () => [
@@ -54,7 +59,7 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
 
   // query only locks for addresses that have frozen balance
   const { consolidatedLocks, isLoading, error, balanceLocks } = useBalanceLocks({
-    chainId: chainId as string,
+    chainId: chainId,
     addresses: addressesWithLocks,
   })
 
@@ -90,8 +95,8 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
                   key: type,
                   title: getBalanceLockTypeTitle(type, consolidatedLocks),
                   tokens: BigInt(amount),
-                  fiat: token?.rates
-                    ? new BalanceFormatter(amount, token?.decimals, token.rates).fiat("usd")
+                  fiat: tokenRates
+                    ? new BalanceFormatter(amount, token?.decimals, tokenRates).fiat("usd")
                     : null,
                   locked: true,
                 }))
@@ -102,8 +107,8 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
                     key: type + address,
                     title: getBalanceLockTypeTitle(type, consolidatedLocks),
                     tokens: BigInt(amount),
-                    fiat: token?.rates
-                      ? new BalanceFormatter(amount, token?.decimals, token.rates).fiat("usd")
+                    fiat: tokenRates
+                      ? new BalanceFormatter(amount, token?.decimals, tokenRates).fiat("usd")
                       : null,
                     locked: true,
                     address,
@@ -148,7 +153,7 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
     error,
     summary,
     token?.decimals,
-    token?.rates,
+    tokenRates,
     tokenBalances,
   ])
 

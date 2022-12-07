@@ -1,4 +1,5 @@
 import type { AccountJson } from "@core/domains/accounts/types"
+import { EvmNetworkId } from "@core/domains/ethereum/types"
 import type {
   EthResponseSign,
   EthSignAndSendRequest,
@@ -68,7 +69,7 @@ export class SigningRequestsStore extends RequestStore<
     return request as SignRequestRespondable
   }
 
-  private getBaseEthRequest(url: string, ethChainId: number, account: AccountJson) {
+  private getBaseEthRequest(url: string, ethChainId: EvmNetworkId, account: AccountJson) {
     return {
       url,
       type: "ethereum",
@@ -80,7 +81,7 @@ export class SigningRequestsStore extends RequestStore<
   public signAndSendEth(
     url: string,
     request: TransactionRequest,
-    ethChainId: number,
+    ethChainId: EvmNetworkId,
     account: AccountJson
   ) {
     return this.createRequest({
@@ -99,7 +100,7 @@ export class SigningRequestsStore extends RequestStore<
       | "eth_signTypedData_v3"
       | "eth_signTypedData_v4",
     request: EthSignRequest["request"],
-    ethChainId: number,
+    ethChainId: EvmNetworkId,
     account: AccountJson
   ) {
     return this.createRequest({

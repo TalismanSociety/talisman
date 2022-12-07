@@ -1,19 +1,20 @@
+import { chaindataProvider } from "@core/domains/chaindata"
 import { ChainId } from "@core/domains/chains/types"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { ResponseAssetTransferFeeQuery } from "@core/domains/transactions/types"
 import { isHardwareAccount } from "@core/handlers/helpers"
-import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import { SubscriptionCallback } from "@core/types"
 import { Address } from "@core/types/base"
-import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getExtrinsicDispatchInfo } from "@core/util/getExtrinsicDispatchInfo"
+import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
-import { construct, defineMethod } from "@substrate/txwrapper-core"
 import { assert } from "@polkadot/util"
+import { construct, defineMethod } from "@substrate/txwrapper-core"
+
 import { pendingTransfers } from "./PendingTransfers"
 
 export default class AssetTransfersRpc {
@@ -133,7 +134,7 @@ export default class AssetTransfersRpc {
     // TODO: validate
     // - existential deposit
     // - sufficient balance
-    const chain = await db.chains.get(chainId)
+    const chain = await chaindataProvider.getChain(chainId)
     assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
     const { genesisHash } = chain
 

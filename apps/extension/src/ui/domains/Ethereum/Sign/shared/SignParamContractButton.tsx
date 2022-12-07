@@ -1,9 +1,10 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { Address } from "@ui/domains/Account/Address"
-import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import useToken from "@ui/hooks/useToken"
 import { FC } from "react"
+
 import { SignParamButton } from "./SignParamButton"
 
 type SignParamNetworkAddressButtonProps = {
@@ -25,7 +26,12 @@ export const SignParamNetworkAddressButton: FC<SignParamNetworkAddressButtonProp
     <SignParamButton
       explorerUrl={network.explorerUrl}
       address={address}
-      iconPrefix={<TokenLogo tokenId={nativeToken?.id} />}
+      iconPrefix={
+        <AssetLogo
+          id={nativeToken?.id}
+          erc20={{ evmNetworkId: network.id, contractAddress: address }}
+        />
+      }
       withIcon
       className={className}
     >

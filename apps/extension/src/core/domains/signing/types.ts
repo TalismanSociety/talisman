@@ -3,6 +3,7 @@ import {
   AccountJsonHardwareEthereum,
   AccountJsonHardwareSubstrate,
 } from "@core/domains/accounts/types"
+import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { RequestIdOnly } from "@core/types/base"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import {
@@ -32,7 +33,7 @@ export interface SigningRequest extends PolkadotSigningRequest {
 }
 
 export interface EthBaseSignRequest extends Omit<SigningRequest, "request" | "account"> {
-  ethChainId: number
+  ethChainId: EvmNetworkId
   account: AccountJson | AccountJsonHardwareEthereum
   type: "ethereum"
   method:

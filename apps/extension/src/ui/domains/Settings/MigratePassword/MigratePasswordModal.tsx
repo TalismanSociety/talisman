@@ -1,14 +1,15 @@
 import { Modal as BaseModal } from "@talisman/components/Modal"
-import { useMigratePassword, MigratePasswordProvider } from "./context"
+import { ModalDialog } from "@talisman/components/ModalDialog"
+import StatusIcon from "@talisman/components/StatusIcon"
+import { statusOptions } from "@talisman/hooks/useStatus"
 import styled from "styled-components"
+
 import { BackUpMnemonicDialog } from "./BackUpMnemonicDialog"
+import { MigratePasswordProvider, useMigratePassword } from "./context"
 import { EnterPasswordForm } from "./EnterPassword"
-import { MigratePasswordSuccess } from "./Success"
 import { MigratePasswordError } from "./Error"
 import { NewPasswordForm } from "./NewPasswordForm"
-import { statusOptions } from "@talisman/hooks/useStatus"
-import StatusIcon from "@talisman/components/StatusIcon"
-import { ModalDialog } from "@talisman/components/ModalDialog"
+import { MigratePasswordSuccess } from "./Success"
 
 type MigratePasswordModalProps = {
   open: boolean

@@ -17,7 +17,7 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
 import { v4 } from "uuid"
 import Browser from "webextension-polyfill"
 
-jest.mock("@core/domains/chains/api")
+jest.mock("@talismn/chaindata-provider-extension/dist/graphql")
 jest.setTimeout(20000)
 
 type SenderFunction<TMessageType extends MessageTypes> = (

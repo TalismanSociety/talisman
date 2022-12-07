@@ -1,8 +1,8 @@
+import { urlToDomain } from "@core/util/urlToDomain"
+import { classNames } from "@talisman/util/classNames"
+import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { FC } from "react"
 import styled from "styled-components"
-import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
-import { classNames } from "@talisman/util/classNames"
-import { urlToDomain } from "@core/util/urlToDomain"
 
 const Container = styled.div`
   text-align: center;

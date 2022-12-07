@@ -1,4 +1,5 @@
 import { Err, Ok } from "ts-results"
+
 import { urlToDomain } from "./urlToDomain"
 
 describe("Tests urlToDomain function", () => {

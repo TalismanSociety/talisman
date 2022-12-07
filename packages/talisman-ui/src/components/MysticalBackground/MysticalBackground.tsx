@@ -1,10 +1,10 @@
-import { useWindowHovered } from "./useWindowHovered"
 import { useRef } from "react"
 import { useMeasure, useMouse } from "react-use"
 
-import MysticalCanvas from "./MysticalCanvas"
 import { classNames } from "../../utils"
-import { MysticalPhysics, MYSTICAL_PHYSICS } from "./MysticalPhysics"
+import MysticalCanvas from "./MysticalCanvas"
+import { MYSTICAL_PHYSICS, MysticalPhysics } from "./MysticalPhysics"
+import { useWindowHovered } from "./useWindowHovered"
 
 export const MysticalBackground = ({
   className,

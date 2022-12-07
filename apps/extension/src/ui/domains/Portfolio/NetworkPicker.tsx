@@ -2,12 +2,11 @@ import { Box } from "@talisman/components/Box"
 import { ChevronDownIcon, XIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talisman/util/classNames"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkOption, usePortfolio } from "@ui/domains/Portfolio/context"
 import { UseComboboxState, UseComboboxStateChangeOptions, useCombobox } from "downshift"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import styled, { css } from "styled-components"
-
-import StyledAssetLogo from "../Asset/Logo"
 
 const Container = styled.div<{ isOpen?: boolean; disabled?: boolean }>`
   .network-main,
@@ -243,7 +242,7 @@ export const NetworkPicker = () => {
         <Box h={4.8} flex fullwidth align="center" padding="0 0 0 1.2rem" overflow="hidden">
           {networkFilter ? (
             <Box margin="0 1.2rem 0 0">
-              <StyledAssetLogo id={networkFilter?.logoId} />
+              <ChainLogo id={networkFilter.id} />
             </Box>
           ) : null}
           <input
@@ -285,7 +284,7 @@ export const NetworkPicker = () => {
                   padding="0 1.2rem"
                 >
                   <Box>
-                    <StyledAssetLogo id={item?.logoId} />
+                    <ChainLogo id={item?.id} />
                   </Box>
                   <Box>{item.name}</Box>
                 </Box>

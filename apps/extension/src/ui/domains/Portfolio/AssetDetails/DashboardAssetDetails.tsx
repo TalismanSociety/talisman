@@ -3,10 +3,11 @@ import { Address } from "@core/types/base"
 import { Box } from "@talisman/components/Box"
 import { LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { Fragment } from "react"
 import styled from "styled-components"
 
-import StyledAssetLogo from "../../Asset/Logo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { NoTokensMessage } from "../NoTokensMessage"
 import { CopyAddressButton } from "./CopyAddressIconButton"
@@ -96,7 +97,7 @@ const FetchingIndicator = styled(LoaderIcon)`
 `
 
 type AssetRowProps = {
-  chainId: string | number
+  chainId: ChainId | EvmNetworkId
   balances: Balances
   symbol: string
 }
@@ -114,7 +115,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
         <td className="topLeftCell" valign="top">
           <Box fullheight flex>
             <Box padding="1.6rem" fontsize="xlarge">
-              <StyledAssetLogo id={evmNetwork?.substrateChain?.id ?? chainOrNetwork.id} />
+              <ChainLogo id={chainOrNetwork.id} />
             </Box>
             <Box grow flex column justify="center" gap={0.4} noWrap>
               <Box fontsize="normal" bold fg="foreground" flex align="center" gap={0.8}>

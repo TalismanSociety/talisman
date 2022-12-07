@@ -129,10 +129,10 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
         <>
           <h3>Network</h3>
           <NetworkSelect
-            defaultChainId={ethChainId}
+            defaultChainId={ethChainId.toString()}
             onChange={(chainId) => {
               genericEvent("evm network changed", { chainId, url })
-              setEthChainId(chainId)
+              setEthChainId(parseInt(chainId, 10))
             }}
           />
           <Spacer small />

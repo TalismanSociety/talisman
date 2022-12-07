@@ -1,20 +1,21 @@
+import { BalanceFormatter } from "@core/domains/balances"
+import { CustomErc20Token } from "@core/domains/tokens/types"
 import useToken from "@ui/hooks/useToken"
+import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
+import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
+
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
-import useTokens from "@ui/hooks/useTokens"
-import { BalanceFormatter } from "@core/domains/balances"
 import {
   SignParamAccountButton,
   SignParamNetworkAddressButton,
   SignParamTokensButton,
 } from "./shared"
-import { SignParamErc20TokenButton } from "./shared/SignParamErc20TokenButton"
-import { SignAlertMessage } from "./shared/SignAlertMessage"
 import { EthSignContainer } from "./shared/EthSignContainer"
-import { useErc20TokenImageUrl } from "@ui/hooks/useErc20TokenDisplay"
-import { CustomErc20Token } from "@core/domains/tokens/types"
+import { SignAlertMessage } from "./shared/SignAlertMessage"
+import { SignParamErc20TokenButton } from "./shared/SignParamErc20TokenButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 const ALLOWANCE_UNLIMITED = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
@@ -22,28 +23,28 @@ const ALLOWANCE_UNLIMITED = "0xfffffffffffffffffffffffffffffffffffffffffffffffff
 export const EthSignBodyErc20Approve: FC = () => {
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
-  const tokenImageUrl = useErc20TokenImageUrl(network?.id, transactionInfo.targetAddress)
-
   const tokens = useTokens()
   const token = useMemo(() => {
     return network
       ? (tokens?.find(
           (t) =>
-            t.type === "erc20" &&
-            Number(t.evmNetwork?.id) === Number(network.id) &&
+            t.type === "evm-erc20" &&
+            t.evmNetwork?.id === network.id &&
             t.contractAddress === transactionInfo.targetAddress
         ) as CustomErc20Token)
-      : null
+      : undefined
   }, [network, tokens, transactionInfo.targetAddress])
 
-  const { image, symbol } = useMemo(() => {
-    const image = token?.image ?? tokenImageUrl.data // TODO prioritize token.logo (waiting balance library)
+  const { symbol } = useMemo(() => {
     const symbol = token?.symbol ?? (transactionInfo.asset.symbol as string)
 
-    return { image, symbol }
-  }, [token?.image, token?.symbol, tokenImageUrl.data, transactionInfo.asset.symbol])
+    return { symbol }
+  }, [token?.symbol, transactionInfo.asset.symbol])
 
   const nativeToken = useToken(network?.nativeToken?.id)
+
+  const rates = useTokenRatesForTokens(useMemo(() => [token, nativeToken], [token, nativeToken]))
+  const tokenRates = token && rates[token.id]
 
   const { spender, allowance, isInfinite } = useMemo(() => {
     const rawAllowance = getContractCallArg<BigNumber>(transactionInfo.contractCall, "amount")
@@ -56,12 +57,12 @@ export const EthSignBodyErc20Approve: FC = () => {
           ? new BalanceFormatter(
               rawAllowance.toString(),
               transactionInfo.asset.decimals,
-              token?.rates
+              tokenRates
             )
           : undefined,
       isInfinite,
     }
-  }, [token?.rates, transactionInfo.asset.decimals, transactionInfo.contractCall])
+  }, [tokenRates, transactionInfo.asset.decimals, transactionInfo.contractCall])
 
   if (!nativeToken || !spender || !account || !network) return <EthSignBodyShimmer />
 
@@ -100,8 +101,9 @@ export const EthSignBodyErc20Approve: FC = () => {
           <SignParamTokensButton
             address={transactionInfo.targetAddress}
             network={network}
+            tokenId={token?.id}
+            erc20={{ evmNetworkId: network.id, contractAddress: transactionInfo.targetAddress }}
             tokens={allowance.tokens}
-            image={image}
             decimals={transactionInfo.asset.decimals}
             symbol={symbol}
             fiat={allowance.fiat("usd")}

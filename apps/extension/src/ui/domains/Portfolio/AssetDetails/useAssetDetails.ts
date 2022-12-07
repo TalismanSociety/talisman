@@ -1,4 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
 import { usePortfolio } from "../context"
@@ -24,7 +25,7 @@ export const useAssetDetails = (balances: Balances) => {
           hydrate
         ),
       }),
-      {} as Record<string | number, Balances>
+      {} as Record<ChainId | EvmNetworkId, Balances>
     )
   }, [balances.sorted, chainIds, hydrate])
 

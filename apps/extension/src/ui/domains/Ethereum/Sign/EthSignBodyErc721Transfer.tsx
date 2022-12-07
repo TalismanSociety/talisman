@@ -1,12 +1,13 @@
+import { getNftMetadata } from "@core/util/getNftMetadata"
+import { useQuery } from "@tanstack/react-query"
+import { BigNumber, BigNumberish } from "ethers"
 import { FC, useMemo } from "react"
+import { UnsafeImage } from "talisman-ui"
+
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { EthSignContainer } from "./shared/EthSignContainer"
-import { BigNumber, BigNumberish } from "ethers"
-import { useQuery } from "@tanstack/react-query"
-import { UnsafeImage } from "talisman-ui"
-import { getNftMetadata } from "@core/util/getNftMetadata"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc721Transfer: FC = () => {

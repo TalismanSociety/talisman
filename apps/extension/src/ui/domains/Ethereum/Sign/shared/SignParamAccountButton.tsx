@@ -3,6 +3,7 @@ import { Address } from "@ui/domains/Account/Address"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { FC } from "react"
+
 import { SignParamButton, SignParamButtonProps } from "./SignParamButton"
 
 type SignParamAccountButtonProps = Pick<SignParamButtonProps, "explorerUrl" | "withIcon"> & {

@@ -3,9 +3,9 @@ import {
   AuthRequestResponse,
   RequestAuthorizeTab,
 } from "@core/domains/sitesAuthorised/types"
-import { urlToDomain } from "@core/util/urlToDomain"
 import { RequestStore } from "@core/libs/RequestStore"
 import type { RequestIdOnly } from "@core/types/base"
+import { urlToDomain } from "@core/util/urlToDomain"
 import { assert } from "@polkadot/util"
 
 class AuthError extends Error {}

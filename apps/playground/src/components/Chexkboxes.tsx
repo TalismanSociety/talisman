@@ -1,5 +1,6 @@
 import { ReactNode } from "react"
 import { Checkbox } from "talisman-ui"
+
 import { TestLayout } from "./TestLayout"
 
 const Box = ({ title, children }: { title: ReactNode; children?: ReactNode }) => (

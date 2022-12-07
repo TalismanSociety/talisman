@@ -5,19 +5,20 @@ import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
+import { formatDecimals } from "@talismn/util"
 import { Address } from "@ui/domains/Account/Address"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
+import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
 import { BigNumber, BigNumberish } from "ethers"
 import { formatEther, formatUnits } from "ethers/lib/utils"
 import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { PillButton } from "talisman-ui"
-import { formatDecimals } from "talisman-utils"
-import { Message } from "../Message"
 
+import { Message } from "../Message"
 import { useEthSignTransactionRequest } from "../SignRequestContext"
 import { ViewDetailsField } from "./ViewDetailsField"
 
@@ -138,6 +139,9 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     [nativeToken?.symbol]
   )
 
+  const rates = useTokenRatesForTokens(useMemo(() => [nativeToken], [nativeToken]))
+  const nativeTokenRates = nativeToken && rates[nativeToken.id]
+
   useEffect(() => {
     genericEvent("open sign transaction view details", { type: "ethereum" })
   }, [genericEvent])
@@ -149,16 +153,16 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
             new BalanceFormatter(
               BigNumber.from(txDetails?.estimatedFee).toString(),
               nativeToken?.decimals,
-              nativeToken?.rates
+              nativeTokenRates
             ),
             new BalanceFormatter(
               BigNumber.from(txDetails?.maxFee).toString(),
               nativeToken?.decimals,
-              nativeToken?.rates
+              nativeTokenRates
             ),
           ]
         : [null, null],
-    [nativeToken, txDetails]
+    [nativeToken, nativeTokenRates, txDetails]
   )
 
   const handleCopyByteCode = useCallback(async () => {
@@ -267,7 +271,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                     ) : (
                       "N/A"
                     )}
-                    {estimatedFee && nativeToken?.rates ? (
+                    {estimatedFee && nativeTokenRates ? (
                       <>
                         {" "}
                         / <Fiat amount={estimatedFee?.fiat("usd")} noCountUp currency="usd" />
@@ -289,7 +293,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
                     ) : (
                       "N/A"
                     )}
-                    {maximumFee && nativeToken?.rates ? (
+                    {maximumFee && nativeTokenRates ? (
                       <>
                         {" "}
                         / <Fiat amount={maximumFee?.fiat("usd")} noCountUp currency="usd" />

@@ -1,7 +1,8 @@
-import { useMemo } from "react"
-import { encodeAnyAddress } from "@core/util"
-import useAccounts from "./useAccounts"
 import { AccountJson } from "@polkadot/extension-base/background/types"
+import { encodeAnyAddress } from "@talismn/util"
+import { useMemo } from "react"
+
+import useAccounts from "./useAccounts"
 
 const filterByUnencodedAddress =
   (address: string) =>

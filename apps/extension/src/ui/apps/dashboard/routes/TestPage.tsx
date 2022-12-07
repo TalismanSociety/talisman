@@ -2,8 +2,9 @@ import HeaderBlock from "@talisman/components/HeaderBlock"
 import { classNames } from "@talisman/util/classNames"
 import Color from "color"
 import { useEffect, useMemo, useRef, useState } from "react"
-import Layout from "../layout"
 import { Button, Checkbox } from "talisman-ui"
+
+import Layout from "../layout"
 
 const ColorTile = ({ className }: { className?: string }) => {
   const [color, setColor] = useState<Color>()

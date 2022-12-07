@@ -1,19 +1,19 @@
-import { AnyEncryptRequest } from "@core/domains/encrypt/types"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import Grid from "@talisman/components/Grid"
 import { AccountJson } from "@core/domains/accounts/types"
-import { AccountPill } from "@ui/domains/Account/AccountPill"
+import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import { AppPill } from "@talisman/components/AppPill"
+import Grid from "@talisman/components/Grid"
+import { SimpleButton } from "@talisman/components/SimpleButton"
+import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"
+import { Message } from "@ui/domains/Sign/Message"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useEncryptRequestById from "@ui/hooks/useEncryptRequestById"
 import { useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
-import { SignContainer } from "./Sign/common"
 
 import { Content, Footer, Header } from "../Layout"
-import { Message } from "@ui/domains/Sign/Message"
+import { SignContainer } from "./Sign/common"
 
 const SignMessage = ({
   account,

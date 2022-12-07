@@ -1,1 +1,1 @@
-export { default as tokenStore } from "./store"
+export { tokenStore } from "./store"

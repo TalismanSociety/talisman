@@ -1,4 +1,5 @@
 import { DEBUG } from "@core/constants"
+import { chaindataProvider } from "@core/domains/chaindata"
 import {
   AnyEthRequestChainId,
   CustomEvmNetwork,
@@ -6,16 +7,15 @@ import {
   EthRequestSigningApproveSignature,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
-import { CustomNativeToken } from "@core/domains/tokens/types"
+import { CustomEvmNativeToken } from "@core/domains/tokens/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import {
-  EthProviderRpcError,
   ETH_ERROR_EIP1993_USER_REJECTED,
+  EthProviderRpcError,
 } from "@core/injectEth/EthProviderRpcError"
 import { EthRequestArguments, EthRequestSignatures } from "@core/injectEth/types"
 import { talismanAnalytics } from "@core/libs/Analytics"
-import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { watchEthereumTransaction } from "@core/notifications"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -24,6 +24,7 @@ import { getPrivateKey } from "@core/util/getPrivateKey"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
+import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
 
 import { rebuildTransactionRequestNumbers } from "./helpers"
@@ -88,11 +89,11 @@ export class EthHandler extends ExtensionHandler {
 
       const { chainId, hash, from } = await provider.sendTransaction(signedPayload)
 
-      incrementTransactionCount(from, chainId)
+      incrementTransactionCount(from, chainId.toString())
 
       // notify user about transaction progress
       if (await this.stores.settings.get("allowNotifications"))
-        watchEthereumTransaction(chainId, hash)
+        watchEthereumTransaction(chainId.toString(), hash)
 
       resolve(hash)
 
@@ -136,7 +137,7 @@ export class EthHandler extends ExtensionHandler {
 
       // notify user about transaction progress
       if (await this.stores.settings.get("allowNotifications"))
-        watchEthereumTransaction(chainId, hash)
+        watchEthereumTransaction(chainId.toString(), hash)
 
       resolve(hash)
 
@@ -286,16 +287,16 @@ export class EthHandler extends ExtensionHandler {
     assert(queued, "Unable to find request")
 
     const { network, resolve } = queued
-    const networkId = parseInt(network.chainId, 16)
-    const newToken: CustomNativeToken | null = network.nativeCurrency
+    const networkId = parseInt(network.chainId, 16).toString()
+    const newToken: CustomEvmNativeToken | null = network.nativeCurrency
       ? {
           id: `${networkId}-native-${network.nativeCurrency.symbol}`.toLowerCase(),
-          type: "native",
+          type: "evm-native",
           isTestnet: false,
           symbol: network.nativeCurrency.symbol,
           decimals: network.nativeCurrency.decimals,
-          existentialDeposit: "0",
-          evmNetwork: { id: parseInt(network.chainId, 16) },
+          logo: (network.iconUrls || [])[0] || githubUnknownTokenLogoUrl,
+          evmNetwork: { id: networkId },
           isCustom: true,
         }
       : null
@@ -305,6 +306,7 @@ export class EthHandler extends ExtensionHandler {
       isTestnet: false,
       sortIndex: null,
       name: network.chainName,
+      logo: (network.iconUrls || [])[0] || githubUnknownTokenLogoUrl,
       nativeToken: newToken ? { id: newToken.id } : null,
       tokens: [],
       explorerUrl: (network.blockExplorerUrls || [])[0],
@@ -316,10 +318,8 @@ export class EthHandler extends ExtensionHandler {
       iconUrls: network.iconUrls || [],
     }
 
-    await db.transaction("rw", db.evmNetworks, db.tokens, async () => {
-      await db.evmNetworks.put(newNetwork)
-      if (newToken) await db.tokens.put(newToken)
-    })
+    await chaindataProvider.addCustomEvmNetwork(newNetwork)
+    if (newToken) await chaindataProvider.addCustomToken(newToken)
 
     talismanAnalytics.captureDelayed("add network evm", {
       network: network.chainName,
@@ -355,7 +355,7 @@ export class EthHandler extends ExtensionHandler {
       decimals: Number(token.decimals),
     }
 
-    await db.tokens.put(safeToken)
+    await chaindataProvider.addCustomToken(safeToken)
     talismanAnalytics.captureDelayed("add asset evm", {
       contractAddress: token.contractAddress,
       symbol: token.symbol,
@@ -370,7 +370,7 @@ export class EthHandler extends ExtensionHandler {
 
   private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
     id: string,
-    chainId: number,
+    chainId: string,
     request: EthRequestArguments<TEthMessageType>
   ): Promise<unknown> {
     const provider = await getProviderForEvmNetworkId(chainId)
@@ -464,13 +464,14 @@ export class EthHandler extends ExtensionHandler {
       case "pri(eth.networks.add.custom)": {
         const newNetwork = request as RequestTypes["pri(eth.networks.add.custom)"]
 
-        const existing = await db.evmNetworks.get(newNetwork.id)
+        // TODO: Move this check into chaindataProvider?
+        const existing = await chaindataProvider.getEvmNetwork(newNetwork.id)
         if (existing && !("isCustom" in existing && existing.isCustom === true)) {
           throw new Error(`Failed to override built-in Talisman network`)
         }
 
         newNetwork.isCustom = true
-        await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.put(newNetwork))
+        await chaindataProvider.addCustomEvmNetwork(newNetwork)
         talismanAnalytics.captureDelayed("add network evm", {
           network: newNetwork.name,
           isCustom: true,
@@ -484,12 +485,9 @@ export class EthHandler extends ExtensionHandler {
       }
 
       case "pri(eth.networks.removeCustomNetwork)": {
-        const id = parseInt(
-          (request as RequestTypes["pri(eth.networks.removeCustomNetwork)"]).id,
-          10
-        )
+        const id = (request as RequestTypes["pri(eth.networks.removeCustomNetwork)"]).id
 
-        await db.transaction("rw", db.evmNetworks, async () => await db.evmNetworks.delete(id))
+        await chaindataProvider.removeCustomEvmNetwork(id)
 
         return true
       }

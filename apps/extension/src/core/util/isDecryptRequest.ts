@@ -1,4 +1,4 @@
-import { DecryptRequest, AnyEncryptRequest } from "@core/domains/encrypt/types"
+import { AnyEncryptRequest, DecryptRequest } from "@core/domains/encrypt/types"
 
 export const isDecryptRequest = (request: AnyEncryptRequest): request is DecryptRequest => {
   return (

@@ -9,9 +9,10 @@ import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
+
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 
-const BALANCE_CHECK_EVM_NETWORK_IDS = [1284, 1285, 592, 1]
+const BALANCE_CHECK_EVM_NETWORK_IDS = ["1284", "1285", "592", "1"]
 const BALANCE_CHECK_SUBSTRATE_CHAIN_IDS = ["polkadot", "kusama"]
 
 const getDerivationPath = (type: AccountAddressType, index: number) => {
@@ -109,7 +110,7 @@ const useDerivedAccounts = (
               .map((acc) => acc?.address)
               .filter(Boolean) as string[],
             evmNetworks: (evmNetworks || [])
-              .filter((chain) => evmNetworkIds.includes(Number(chain.id)))
+              .filter((chain) => evmNetworkIds.includes(chain.id))
               .map(({ id, nativeToken }) => ({
                 id,
                 nativeToken: { id: nativeToken?.id as string },

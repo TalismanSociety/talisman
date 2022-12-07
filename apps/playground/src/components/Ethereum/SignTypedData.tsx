@@ -1,9 +1,10 @@
-import { useAccount, useNetwork } from "wagmi"
-import { recoverTypedSignature, SignTypedDataVersion } from "@metamask/eth-sig-util"
-import { Section } from "../Section"
-import { Button, classNames } from "talisman-ui"
-import { useCallback, useMemo, useState } from "react"
+import { SignTypedDataVersion, recoverTypedSignature } from "@metamask/eth-sig-util"
 import { ethers } from "ethers"
+import { useCallback, useMemo, useState } from "react"
+import { Button, classNames } from "talisman-ui"
+import { useAccount, useNetwork } from "wagmi"
+
+import { Section } from "../Section"
 
 // same test messages as MetaMasks's test-dapp
 const TEST_MESSAGES = {

@@ -2,12 +2,13 @@ import { AccountsMessages, MnemonicMessages } from "@core/domains/accounts/types
 import { AppMessages } from "@core/domains/app/types"
 import { BalancesMessages } from "@core/domains/balances/types"
 import { ChainsMessages } from "@core/domains/chains/types"
+import { EncryptMessages } from "@core/domains/encrypt/types"
 import { EthMessages } from "@core/domains/ethereum/types"
 import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
+import { TokenRatesMessages } from "@core/domains/tokenRates/types"
 import { TokenMessages } from "@core/domains/tokens/types"
 import { AssetTransferMessages } from "@core/domains/transactions/types"
-import { EncryptMessages } from "@core/domains/encrypt/types"
 import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
 
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
@@ -56,6 +57,7 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   MnemonicMessages &
   SigningMessages &
   TokenMessages &
+  TokenRatesMessages &
   EncryptMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {

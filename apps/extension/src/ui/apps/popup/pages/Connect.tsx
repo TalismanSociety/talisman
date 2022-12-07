@@ -1,12 +1,11 @@
 import { AppPill } from "@talisman/components/AppPill"
-import { Button } from "talisman-ui"
-import { Checkbox } from "talisman-ui"
 import { Drawer } from "@talisman/components/Drawer"
 import Field from "@talisman/components/Field"
 import Grid from "@talisman/components/Grid"
 import { IconButton } from "@talisman/components/IconButton"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import Panel from "@talisman/components/Panel"
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { InfoIcon, XIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import Account from "@ui/domains/Account"
@@ -14,9 +13,10 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useCurrentAuthorisationRequest from "@ui/hooks/useCurrentAuthorisationRequest"
 import { ChangeEventHandler, useCallback, useEffect } from "react"
 import styled from "styled-components"
+import { Button } from "talisman-ui"
+import { Checkbox } from "talisman-ui"
 
 import Layout, { Content, Footer, Header } from "../Layout"
-import { WithTooltip } from "@talisman/components/Tooltip"
 
 const AccountItem = ({ address, value = 1, onChange, className }: any) => (
   <Panel className={className} onClick={() => onChange(!value)} small>

@@ -1,6 +1,5 @@
 import Color from "color"
-import { animate, AnimationPlaybackControls } from "framer-motion"
-
+import { AnimationPlaybackControls, animate } from "framer-motion"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 
 import { MysticalPhysics } from "./MysticalPhysics"

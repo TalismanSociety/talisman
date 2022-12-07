@@ -1,12 +1,13 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FormField } from "@talisman/components/Field/FormField"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { Button } from "talisman-ui"
+import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
-import { useMigratePassword } from "./context"
+import { Button } from "talisman-ui"
 import * as yup from "yup"
-import { PasswordStrength } from "@talisman/components/PasswordStrength"
+
+import { useMigratePassword } from "./context"
 
 type FormData = {
   newPw: string

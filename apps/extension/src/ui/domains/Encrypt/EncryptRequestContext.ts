@@ -8,30 +8,27 @@ import { useCallback } from "react"
 export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
   const { status, message, setStatus } = useStatus()
 
-  const approve = useCallback(
-    async () => {
-      if (!currentRequest) return
-      setStatus.processing("Approving request")
-      try {
-        if (isDecryptRequest(currentRequest)) {
-          await api.approveDecrypt(currentRequest.id)
-          setStatus.success("Approved")
-        } else {
-          await api.approveEncrypt(currentRequest.id)
-          setStatus.success("Approved")
-        }
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        DEBUG && console.error(err)
-        if (isDecryptRequest(currentRequest)) {
-          setStatus.error("Failed to approve decrypt request")
-        } else {
-          setStatus.error("Failed to approve encrypt request")
-        }
+  const approve = useCallback(async () => {
+    if (!currentRequest) return
+    setStatus.processing("Approving request")
+    try {
+      if (isDecryptRequest(currentRequest)) {
+        await api.approveDecrypt(currentRequest.id)
+        setStatus.success("Approved")
+      } else {
+        await api.approveEncrypt(currentRequest.id)
+        setStatus.success("Approved")
       }
-    },
-    [currentRequest, setStatus]
-  )
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      DEBUG && console.error(err)
+      if (isDecryptRequest(currentRequest)) {
+        setStatus.error("Failed to approve decrypt request")
+      } else {
+        setStatus.error("Failed to approve encrypt request")
+      }
+    }
+  }, [currentRequest, setStatus])
 
   const reject = useCallback(async () => {
     try {

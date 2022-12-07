@@ -1,10 +1,10 @@
-import { checkHost } from "@polkadot/phishing"
-import MetamaskDetector from "eth-phishing-detect/src/detector"
-import metamaskInitialData from "eth-phishing-detect/src/config.json"
-import { log } from "@core/log"
-import { Err, Ok, Result } from "ts-results"
 import { db } from "@core/libs/db"
+import { log } from "@core/log"
+import { checkHost } from "@polkadot/phishing"
+import metamaskInitialData from "eth-phishing-detect/src/config.json"
+import MetamaskDetector from "eth-phishing-detect/src/detector"
 import { compressToUTF16, decompressFromUTF16 } from "lz-string"
+import { Err, Ok, Result } from "ts-results"
 
 const METAMASK_REPO = "https://api.github.com/repos/MetaMask/eth-phishing-detect"
 const METAMASK_CONTENT_URL = `${METAMASK_REPO}/contents/src/config.json`

@@ -1,14 +1,15 @@
 import {
-  EthProviderRpcError,
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
+  EthProviderRpcError,
 } from "@core/injectEth/EthProviderRpcError"
 import { EthRequestSignatures, EthRequestTypes } from "@core/injectEth/types"
 import { log } from "@core/log"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { ethers } from "ethers"
 
 const ethereumRequest =
-  (chainId: number): ethers.providers.JsonRpcFetchFunc =>
+  (chainId: EvmNetworkId): ethers.providers.JsonRpcFetchFunc =>
   async (method: string, params?: any[]) => {
     try {
       return await api.ethRequest({
@@ -23,6 +24,6 @@ const ethereumRequest =
     }
   }
 
-export const getExtensionEthereumProvider = (evmNetworkId: number) => {
+export const getExtensionEthereumProvider = (evmNetworkId: EvmNetworkId) => {
   return new ethers.providers.Web3Provider(ethereumRequest(evmNetworkId))
 }

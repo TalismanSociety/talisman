@@ -5,17 +5,16 @@ import * as Sentry from "@sentry/react"
 import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
 import ThemeProvider from "@talisman/theme"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 
 import { AddressBookProvider } from "./hooks/useAddressBook"
 import { AppStateProvider } from "./hooks/useAppState"
+import { DbCacheProvider } from "./hooks/useDbCache"
 import { FeaturesProvider } from "./hooks/useFeatures"
 import { SettingsProvider } from "./hooks/useSettings"
-import { DbCacheProvider } from "./hooks/useDbCache"
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 
 const queryClient = new QueryClient()
 
