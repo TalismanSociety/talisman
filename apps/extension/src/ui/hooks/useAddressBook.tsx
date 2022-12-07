@@ -12,8 +12,14 @@ export const useAddressBook = () => {
     return await addressBookStore.set({ [address]: { address, ...rest } })
   }, [])
 
+  const deleteContact = useCallback(
+    ({ address }: { address: string }) => addressBookStore.delete(address),
+    []
+  )
+
   return {
     add,
+    deleteContact,
     contacts,
   }
 }
