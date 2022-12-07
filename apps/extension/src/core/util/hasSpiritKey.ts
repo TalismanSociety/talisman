@@ -1,7 +1,7 @@
 import keyring from "@polkadot/ui-keyring"
 import { cryptoIsReady, encodeAddress, isEthereumAddress } from "@polkadot/util-crypto"
-import gql from "graphql-tag"
 import { print } from "graphql"
+import gql from "graphql-tag"
 
 const RMRK_GRAPHQL_URL = "https://gql.rmrk.link/v1/graphql"
 const SPIRIT_KEYS_COLLECTION_ID = "b6e98494bff52d3b1e-SPIRIT"

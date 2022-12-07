@@ -1,1 +1,1 @@
-export { default as chainStore } from "./store"
+export { chainStore } from "./store"

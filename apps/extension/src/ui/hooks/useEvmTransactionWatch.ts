@@ -1,6 +1,7 @@
 import { TransactionStatus } from "@core/domains/transactions/types"
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider"
 import * as Sentry from "@sentry/browser"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import urlJoin from "url-join"
 
@@ -8,7 +9,7 @@ import { useEthereumProvider } from "../domains/Ethereum/useEthereumProvider"
 import { useEvmNetwork } from "./useEvmNetwork"
 
 export const useEvmTransactionWatch = (
-  evmNetworkId: number,
+  evmNetworkId: EvmNetworkId,
   evmTxHash: string,
   confirmations = 1
 ) => {

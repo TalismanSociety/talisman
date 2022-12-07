@@ -1,6 +1,5 @@
 import { EthGasSettings } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
-import { tokensToPlanck } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Box } from "@talisman/components/Box"
 import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
@@ -9,6 +8,7 @@ import { LoaderIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { getChainAddressType } from "@talisman/util/getChainAddressType"
 import { isValidAddress } from "@talisman/util/isValidAddress"
+import { tokensToPlanck } from "@talismn/util"
 import Account from "@ui/domains/Account"
 import { useBalance } from "@ui/hooks/useBalance"
 import useChains from "@ui/hooks/useChains"
@@ -16,15 +16,15 @@ import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useTip } from "@ui/hooks/useTip"
 import {
   ChangeEventHandler,
+  ReactNode,
   Suspense,
   lazy,
   useCallback,
   useEffect,
   useMemo,
   useState,
-  ReactNode,
 } from "react"
-import { useForm, FieldError } from "react-hook-form"
+import { FieldError, useForm } from "react-hook-form"
 import styled from "styled-components"
 import * as yup from "yup"
 
@@ -314,7 +314,7 @@ export const SendForm = () => {
     genesisHash,
   }: { addressType: AccountAddressType; genesisHash?: string | null } = useMemo(() => {
     const chain = chains?.find((c) => c.id === transferableToken?.chainId)
-    const evmNetwork = evmNetworks?.find((c) => c.id === Number(transferableToken?.evmNetworkId))
+    const evmNetwork = evmNetworks?.find((c) => c.id === transferableToken?.evmNetworkId)
 
     return chain
       ? {

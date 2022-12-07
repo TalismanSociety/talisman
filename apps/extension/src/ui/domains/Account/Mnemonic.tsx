@@ -1,7 +1,6 @@
+import { CheckIcon, CopyIcon } from "@talisman/theme/icons"
 import { MouseEventHandler, useState } from "react"
 import styled from "styled-components"
-import { CheckIcon, CopyIcon } from "@talisman/theme/icons"
-
 import { classNames } from "talisman-ui"
 
 const SecretText = styled.div`

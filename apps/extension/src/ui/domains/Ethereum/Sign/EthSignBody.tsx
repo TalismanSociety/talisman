@@ -1,6 +1,7 @@
 import { TransactionInfo } from "@core/util/getEthTransactionInfo"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
-import { FC, useEffect } from "react"
+import { FC } from "react"
+
 import { EthSignBodyDefault } from "./EthSignBodyDefault"
 import { EthSignBodyErc20Approve } from "./EthSignBodyErc20Approve"
 import { EthSignBodyErc20Transfer } from "./EthSignBodyErc20Transfer"

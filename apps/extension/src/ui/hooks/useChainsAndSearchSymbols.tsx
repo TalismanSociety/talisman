@@ -1,5 +1,6 @@
 import { Chain } from "@core/domains/chains/types"
 import { useMemo } from "react"
+
 import { useDbCache } from "./useDbCache"
 import { useDbCacheSubscription } from "./useDbCacheSubscription"
 

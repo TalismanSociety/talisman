@@ -1,23 +1,23 @@
+import { BalanceFormatter } from "@core/domains/balances"
+import { CustomErc20Token } from "@core/domains/tokens/types"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import useToken from "@ui/hooks/useToken"
+import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
+import useTokens from "@ui/hooks/useTokens"
+import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
+
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
-import useTokens from "@ui/hooks/useTokens"
-import { BalanceFormatter } from "@core/domains/balances"
 import { SignParamAccountButton } from "./shared"
-import { SignParamTokensButton } from "./shared/SignParamTokensButton"
 import { EthSignContainer } from "./shared/EthSignContainer"
-import { BigNumber } from "ethers"
-import { CustomErc20Token } from "@core/domains/tokens/types"
-import { useErc20TokenImageUrl } from "@ui/hooks/useErc20TokenDisplay"
+import { SignParamTokensButton } from "./shared/SignParamTokensButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc20Transfer: FC = () => {
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
-  const tokenImageUrl = useErc20TokenImageUrl(network?.id, transactionInfo.targetAddress)
 
   const { from, value, to } = useMemo(() => {
     return {
@@ -37,28 +37,28 @@ export const EthSignBodyErc20Transfer: FC = () => {
     return network
       ? (tokens?.find(
           (t) =>
-            t.type === "erc20" &&
-            Number(t.evmNetwork?.id) === Number(network.id) &&
+            t.type === "evm-erc20" &&
+            t.evmNetwork?.id === network.id &&
             t.contractAddress === transactionInfo.targetAddress
         ) as CustomErc20Token)
-      : null
+      : undefined
   }, [network, tokens, transactionInfo.targetAddress])
 
-  const { image, amount, symbol } = useMemo(() => {
-    const image = token?.image ?? tokenImageUrl.data // TODO prioritize token.logo (waiting balance library)
+  const rates = useTokenRatesForTokens(useMemo(() => [token, nativeToken], [token, nativeToken]))
+  const tokenRates = token && rates[token.id]
+
+  const { amount, symbol } = useMemo(() => {
     const symbol = token?.symbol ?? (transactionInfo.asset.symbol as string)
     const amount = value
-      ? new BalanceFormatter(value.toString(), transactionInfo.asset.decimals, token?.rates)
+      ? new BalanceFormatter(value.toString(), transactionInfo.asset.decimals, tokenRates)
       : undefined
 
-    return { image, amount, symbol }
+    return { amount, symbol }
   }, [
-    token?.image,
-    token?.rates,
+    tokenRates,
     token?.symbol,
-    tokenImageUrl,
     transactionInfo.asset.decimals,
-    transactionInfo.asset?.symbol,
+    transactionInfo.asset.symbol,
     value,
   ])
 
@@ -71,8 +71,9 @@ export const EthSignBodyErc20Transfer: FC = () => {
         <SignParamTokensButton
           address={transactionInfo.targetAddress}
           network={network}
+          tokenId={token?.id}
+          erc20={{ evmNetworkId: network.id, contractAddress: transactionInfo.targetAddress }}
           tokens={amount.tokens}
-          image={image}
           decimals={transactionInfo.asset.decimals}
           symbol={symbol}
           fiat={amount.fiat("usd")}

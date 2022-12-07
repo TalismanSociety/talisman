@@ -2,8 +2,8 @@ import type {
   AddEthereumChainParameter,
   AddEthereumChainRequest,
 } from "@core/domains/ethereum/types"
-import { urlToDomain } from "@core/util/urlToDomain"
 import { RequestStore } from "@core/libs/RequestStore"
+import { urlToDomain } from "@core/util/urlToDomain"
 
 class AddNetworkError extends Error {}
 

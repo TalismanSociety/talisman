@@ -1,8 +1,9 @@
+import { passwordStore } from "@core/domains/app"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useSettings } from "@ui/hooks/useSettings"
-import { useMigratePassword } from "./context"
 import { Button, Checkbox } from "talisman-ui"
-import { passwordStore } from "@core/domains/app"
+
+import { useMigratePassword } from "./context"
 
 export const MigratePasswordError = () => {
   const { statusMessage, onComplete } = useMigratePassword()

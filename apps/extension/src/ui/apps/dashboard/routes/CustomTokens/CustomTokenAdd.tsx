@@ -5,6 +5,7 @@ import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { PlusIcon } from "@talisman/theme/icons"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
@@ -45,7 +46,7 @@ export const CustomTokenAdd = () => {
       yup
         .object({
           evmNetworkId: yup
-            .number()
+            .string()
             .required()
             .oneOf(
               networks.map(({ id }) => id),
@@ -80,7 +81,7 @@ export const CustomTokenAdd = () => {
   } = useErc20TokenInfo(evmNetworkId, contractAddress)
 
   const handleNetworkChange = useCallback(
-    (id: number) => {
+    (id: EvmNetworkId) => {
       setValue("evmNetworkId", id, { shouldValidate: true })
     },
     [setValue]

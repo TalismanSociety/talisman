@@ -1,8 +1,9 @@
-import { assert } from "@polkadot/util"
-import { GenericExtrinsic } from "@polkadot/types"
-import { HexString } from "@polkadot/util/types"
-import RpcFactory from "@core/libs/RpcFactory"
 import { featuresStore } from "@core/domains/app/store.features"
+import RpcFactory from "@core/libs/RpcFactory"
+import { GenericExtrinsic } from "@polkadot/types"
+import { assert } from "@polkadot/util"
+import { HexString } from "@polkadot/util/types"
+
 import { stateCall } from "./stateCall"
 
 // this type structure is compatible with V1 result object

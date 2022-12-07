@@ -1,6 +1,13 @@
 import { DEBUG } from "@core/constants"
 import BlocksRpc from "@core/domains/blocks/rpc"
+import { chaindataProvider } from "@core/domains/chaindata"
 import { ChainId } from "@core/domains/chains/types"
+import { getEthTransferTransactionBase, rebuildGasSettings } from "@core/domains/ethereum/helpers"
+import { getProviderForEvmNetworkId } from "@core/domains/ethereum/rpcProviders"
+import {
+  getTransactionCount,
+  incrementTransactionCount,
+} from "@core/domains/ethereum/transactionCountManager"
 import EventsRpc from "@core/domains/events/rpc"
 import AssetTransfersRpc from "@core/domains/transactions/rpc/AssetTransfers"
 import OrmlTokenTransfersRpc from "@core/domains/transactions/rpc/OrmlTokenTransfers"
@@ -16,7 +23,6 @@ import {
 } from "@core/domains/transactions/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
-import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
 import type {
@@ -26,7 +32,6 @@ import type {
   SubscriptionCallback,
 } from "@core/types"
 import { Address, Port } from "@core/types/base"
-import { planckToTokens } from "@core/util"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { TransactionRequest } from "@ethersproject/abstract-provider"
@@ -34,12 +39,9 @@ import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
+import { planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
-
-import { getEthTransferTransactionBase, rebuildGasSettings } from "../ethereum/helpers"
-import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"
-import { getTransactionCount, incrementTransactionCount } from "../ethereum/transactionCountManager"
 
 export default class AssetTransferHandler extends ExtensionHandler {
   private getExtrinsicWatch(
@@ -117,7 +119,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     reapBalance = false,
   }: RequestAssetTransfer) {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
-      const token = await db.tokens.get(tokenId)
+      const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       talismanAnalytics.capture("asset transfer", {
@@ -131,7 +133,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
         const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)
 
         const tokenType = token.type
-        if (tokenType === "native")
+        if (tokenType === "substrate-native")
           return AssetTransfersRpc.transfer(
             chainId,
             amount,
@@ -144,7 +146,11 @@ export default class AssetTransferHandler extends ExtensionHandler {
             log.error("Error sending native substrate transaction: ", { err })
             reject(err)
           })
-        if (tokenType === "orml")
+        if (tokenType === "evm-native")
+          throw new Error(
+            "Evm native token transfers are not implemented in this version of Talisman."
+          )
+        if (tokenType === "substrate-orml")
           return OrmlTokenTransfersRpc.transfer(
             chainId,
             tokenId,
@@ -157,7 +163,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
             log.error("Error sending orml transaction: ", { err })
             reject(err)
           })
-        if (tokenType === "erc20")
+        if (tokenType === "evm-erc20")
           throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
         // force compilation error if any token types don't have a case
@@ -184,21 +190,26 @@ export default class AssetTransferHandler extends ExtensionHandler {
     reapBalance = false,
   }: RequestAssetTransfer) {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
-      const token = await db.tokens.get(tokenId)
+      const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       const tokenType = token.type
-      if (tokenType === "native")
+      if (tokenType === "substrate-native")
         return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, tip, reapBalance)
-      if (tokenType === "orml")
+      if (tokenType === "evm-native")
+        throw new Error(
+          "Evm native token transfers are not implemented in this version of Talisman."
+        )
+      if (tokenType === "substrate-orml")
         return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
-      if (tokenType === "erc20")
+      if (tokenType === "evm-erc20")
         throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
       // force compilation error if any token types don't have a case
       const exhaustiveCheck: never = tokenType
       throw new Error(`Unhandled token type ${exhaustiveCheck}`)
     })
+
     if (result.ok) return result.val
     // 1010 (Invalid signature) happens often on kusama, simply retrying usually works.
     // This message should hopefully motivate the user to retry
@@ -217,7 +228,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const provider = await getProviderForEvmNetworkId(evmNetworkId)
       if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
 
-      const token = await db.tokens.get(tokenId)
+      const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       const { from, to, hash, ...otherDetails } = await provider.sendTransaction(signedTransaction)
@@ -255,7 +266,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const password = await this.stores.password.getPassword()
       assert(password, "Unauthorised")
 
-      const token = await db.tokens.get(tokenId)
+      const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       const provider = await getProviderForEvmNetworkId(evmNetworkId)

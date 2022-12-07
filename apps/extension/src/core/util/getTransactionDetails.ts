@@ -1,14 +1,15 @@
+import { chaindataProvider } from "@core/domains/chaindata"
 import {
   SignerPayloadJSON,
-  TransactionMethod,
   TransactionDetails,
+  TransactionMethod,
   TransactionPayload,
 } from "@core/domains/signing/types"
-import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import { log } from "@core/log"
 import { assert, hexToNumber } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
+
 import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
 import { getRuntimeVersion } from "./getRuntimeVersion"
 import { getTypeRegistry } from "./getTypeRegistry"
@@ -45,7 +46,7 @@ export const getTransactionDetails = async (payload: SignerPayloadJSON) => {
     }
 
     try {
-      const chain = await db.chains.get({ genesisHash })
+      const chain = await chaindataProvider.getChain({ genesisHash })
       assert(chain, "Unable to find chain")
 
       // sign based on current block from our RPC

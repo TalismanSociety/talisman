@@ -1,7 +1,7 @@
+import ContractsJson from "./ContractsAddresses.json"
 import GreeterJson from "./Greeter.json"
 export * from "./types"
 export * from "./types/common"
-import ContractsJson from "./ContractsAddresses.json"
 
 export const GreeterAbi = GreeterJson
 

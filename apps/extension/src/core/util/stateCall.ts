@@ -1,7 +1,7 @@
+import RpcFactory from "@core/libs/RpcFactory"
+import { Codec } from "@polkadot/types-codec/types"
 import { u8aConcatStrict } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { Codec } from "@polkadot/types-codec/types"
-import RpcFactory from "@core/libs/RpcFactory"
 
 export const stateCall = async <K extends string = string>(
   chainId: string,

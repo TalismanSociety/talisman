@@ -1,7 +1,8 @@
-import { useAccount } from "wagmi"
-import { Section } from "../Section"
-import { Button } from "talisman-ui"
 import { useCallback, useState } from "react"
+import { Button } from "talisman-ui"
+import { useAccount } from "wagmi"
+
+import { Section } from "../Section"
 
 // TODO : use a known message so we could verify signature
 const ENCODED_MESSAGE = "0xed53794e4b58f06f378f94c4c880e5c631d8d959e54a452508f7012dd4cc6769"

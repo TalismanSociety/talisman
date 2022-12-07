@@ -1,10 +1,11 @@
 import { api } from "@ui/api"
 import { useCallback } from "react"
+
 import { useMessageSubscription } from "./useMessageSubscription"
 
 const DO_NOTHING = () => {}
 
-export type DbEntityType = "chains" | "evmNetworks" | "tokens" | "balances"
+export type DbEntityType = "chains" | "evmNetworks" | "tokens" | "tokenRates" | "balances"
 
 // when this hook is called, backend keeps the associated db table in sync with the datasource (blockchain, subsquid, etc.)
 export const useDbCacheSubscription = (subscribeTo: DbEntityType) => {
@@ -16,6 +17,8 @@ export const useDbCacheSubscription = (subscribeTo: DbEntityType) => {
         return api.ethereumNetworks(DO_NOTHING)
       case "tokens":
         return api.tokens(DO_NOTHING)
+      case "tokenRates":
+        return api.tokenRates(DO_NOTHING)
       case "balances":
         return api.balances(DO_NOTHING)
     }

@@ -1,4 +1,5 @@
 import { db } from "@core/libs/db"
+
 import ParaverseProtector from "./ParaverseProtector"
 
 const mockGetCommitSha = jest.fn(async () => "newCommit")

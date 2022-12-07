@@ -2,8 +2,8 @@ import { ErrorBoundary } from "@talisman/components/ErrorBoundary"
 import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import React, { FC, PropsWithChildren, ReactNode, useEffect, useState } from "react"
 import styled from "styled-components"
-import { BottomNav } from "../components/Navigation/BottomNav"
 
+import { BottomNav } from "../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../components/Navigation/NavigationDrawer"
 
 type LayoutProps = {

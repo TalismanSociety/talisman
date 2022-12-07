@@ -11,8 +11,9 @@ import { EthSignBody } from "@ui/domains/Ethereum/Sign/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Ethereum/Sign/shared"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
+import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
 import { BigNumber } from "ethers"
-import { lazy, Suspense, useCallback, useEffect, useMemo } from "react"
+import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
 
@@ -130,6 +131,8 @@ export const EthSignTransactionRequest = () => {
   }, [status])
 
   const nativeToken = useToken(network?.nativeToken?.id)
+  const rates = useTokenRatesForTokens(useMemo(() => [nativeToken], [nativeToken]))
+  const nativeTokenRates = nativeToken && rates[nativeToken.id]
 
   // gas settings must be locked as soon as payload is sent to ledger
   const handleSendToLedger = useCallback(() => {
@@ -142,10 +145,10 @@ export const EthSignTransactionRequest = () => {
         ? new BalanceFormatter(
             BigNumber.from(txDetails?.estimatedFee).toString(),
             nativeToken?.decimals,
-            nativeToken?.rates
+            nativeTokenRates
           )
         : null,
-    [nativeToken, txDetails]
+    [nativeToken, nativeTokenRates, txDetails]
   )
 
   const isReadyToDisplay = useMemo(
@@ -184,7 +187,7 @@ export const EthSignTransactionRequest = () => {
                       symbol={nativeToken.symbol}
                       noCountUp
                     />
-                    {estimatedFee && nativeToken?.rates ? (
+                    {estimatedFee && nativeTokenRates ? (
                       <>
                         {" "}
                         (~

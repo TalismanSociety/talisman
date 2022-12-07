@@ -1,11 +1,14 @@
+import {
+  BalanceLockType,
+  LockedBalance,
+  RequestBalanceLocks,
+  ResponseBalanceLocks,
+} from "@core/domains/balances/types"
 import RpcFactory from "@core/libs/RpcFactory"
-import { decodeAnyAddress } from "@core/util"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
-import blake2Concat from "@talisman/util/blake2Concat"
-
-import { BalanceLockType, LockedBalance, RequestBalanceLocks, ResponseBalanceLocks } from "./types"
+import { blake2Concat, decodeAnyAddress } from "@talismn/util"
 
 const getLockedType = (input: string, chainId: string): BalanceLockType => {
   if (input.includes("vesting")) return "vesting"
@@ -28,7 +31,8 @@ const getLockedType = (input: string, chainId: string): BalanceLockType => {
   return "other"
 }
 
-// TODO integrate in balance store
+// TODO: Create a new balance module `@talismn/substrate-native-locked`
+//       and move this logic into there.
 export const getBalanceLocks = async ({
   chainId,
   addresses,

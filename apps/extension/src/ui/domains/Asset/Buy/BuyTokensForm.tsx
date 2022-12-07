@@ -2,11 +2,12 @@ import { DEBUG } from "@core/constants"
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
-import { encodeAnyAddress } from "@core/util"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Dropdown, RenderItemFunc } from "@talisman/components/Dropdown"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { githubChaindataBaseUrl } from "@talismn/chaindata-provider"
+import { encodeAnyAddress } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import Account from "@ui/domains/Account"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -140,9 +141,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
   useEffect(() => {
     // pull up to date list from github
     // note that there is a 5min cache on github files
-    fetch(
-      "https://raw.githubusercontent.com/TalismanSociety/chaindata/feat/split-entities/tokens-buy.json"
-    )
+    fetch(`${githubChaindataBaseUrl}/tokens-buy.json`)
       .then(async (response) => {
         const tokenIds: string[] = await response.json()
         setSupportedTokenIds(tokenIds)

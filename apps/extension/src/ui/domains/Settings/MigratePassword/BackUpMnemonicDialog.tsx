@@ -1,9 +1,10 @@
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { Button } from "talisman-ui"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { Mnemonic } from "@ui/domains/Account/Mnemonic"
-import { useMigratePassword } from "./context"
 import { useState } from "react"
+import { Button } from "talisman-ui"
+
+import { useMigratePassword } from "./context"
 
 const ShowMnemonic = () => {
   const [hasHovered, setHasHovered] = useState(false)

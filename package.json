@@ -9,10 +9,12 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev --parallel --color",
-    "dev:extension": "yarn workspace extension run dev",
+    "dev:balances-demo": "turbo run dev --parallel --color --scope balances-demo --include-dependencies",
+    "dev:extension": "turbo run dev --parallel --color --scope extension --include-dependencies",
     "build:extension:ci": "turbo run build:extension:ci",
     "build:extension:prod": "turbo run build:extension:prod",
     "build:extension:canary": "turbo run build:extension:canary",
+    "build:packages:prod": "turbo run build:packages:prod",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
     "clean": "turbo run clean --parallel && rm -rf dist && rm -rf node_modules",
@@ -20,14 +22,19 @@
     "test": "turbo run test"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.24.3",
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
+    "@talismn/eslint-config": "workspace:^",
+    "@typescript-eslint/eslint-plugin": "^5.33.0",
+    "@typescript-eslint/parser": "^5.33.0",
     "husky": "^8.0.1",
     "import-sort-style-module": "^6.0.0",
     "lint-staged": "^12.4.1",
     "prettier": "^2.7.1",
     "prettier-plugin-import-sort": "^0.0.7",
     "prettier-plugin-tailwindcss": "^0.1.13",
+    "ts-loader": "9.3.0",
     "turbo": "latest"
   },
   "resolutions": {

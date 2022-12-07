@@ -1,12 +1,14 @@
-import talismanLogo from "./assets/talisman-full-color.svg"
 import "./styles/styles.css"
-import { Buttons } from "./components/Buttons"
-import { Nav } from "./components/Nav"
+
 import { BrowserRouter, Route, Routes } from "react-router-dom"
+
+import talismanLogo from "./assets/talisman-full-color.svg"
+import { Background } from "./components/Background"
+import { Buttons } from "./components/Buttons"
 import { Checkboxes } from "./components/Chexkboxes"
 import { Ethereum } from "./components/Ethereum"
+import { Nav } from "./components/Nav"
 import { Substrate } from "./components/Substrate"
-import { Background } from "./components/Background"
 import { TxStatusPage } from "./components/TxStatusPage"
 
 function App() {

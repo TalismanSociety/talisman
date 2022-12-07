@@ -1,4 +1,4 @@
-import { encodeAnyAddress } from "@core/util"
+import { encodeAnyAddress } from "@talismn/util"
 
 /**
  *

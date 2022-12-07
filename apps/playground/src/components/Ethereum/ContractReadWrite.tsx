@@ -1,3 +1,6 @@
+import { useCallback, useEffect, useMemo } from "react"
+import { useForm } from "react-hook-form"
+import { Button } from "talisman-ui"
 import {
   useAccount,
   useContractRead,
@@ -6,11 +9,9 @@ import {
   usePrepareContractWrite,
   useSignMessage,
 } from "wagmi"
-import { useForm } from "react-hook-form"
+
 import { Section } from "../Section"
-import { Button } from "talisman-ui"
-import { useCallback, useEffect, useMemo } from "react"
-import { getGreeterAddress, GreeterAbi } from "./contracts"
+import { GreeterAbi, getGreeterAddress } from "./contracts"
 import { TransactionReceipt } from "./shared/TransactionReceipt"
 
 type FormData = { message: string }

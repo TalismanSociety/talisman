@@ -1,5 +1,5 @@
-import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import Button from "@talisman/components/Button"
+import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import styled from "styled-components"
 
 const Container = styled.div<{ status?: string }>`

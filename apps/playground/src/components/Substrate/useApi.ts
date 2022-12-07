@@ -1,7 +1,8 @@
-import { provideContext } from "../../common/provideContext"
-import { WsProvider, ApiPromise } from "@polkadot/api"
+import { ApiPromise, WsProvider } from "@polkadot/api"
 import { ApiOptions } from "@polkadot/api/types"
 import { useEffect, useState } from "react"
+
+import { provideContext } from "../../common/provideContext"
 import { useNetwork } from "./useNetwork"
 
 export type ApiConfig = { options?: ApiOptions }

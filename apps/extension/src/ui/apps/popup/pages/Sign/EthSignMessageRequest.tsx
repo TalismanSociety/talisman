@@ -5,7 +5,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { EthSignBodyMessage } from "@ui/domains/Ethereum/Sign/EthSignBodyMessage"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
-import { lazy, Suspense, useEffect, useMemo } from "react"
+import { Suspense, lazy, useEffect, useMemo } from "react"
 
 import { SignContainer } from "./common"
 

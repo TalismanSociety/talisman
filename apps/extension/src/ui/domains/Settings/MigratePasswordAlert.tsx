@@ -6,7 +6,6 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LockIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
-
 import { useCallback, useEffect } from "react"
 import styled from "styled-components"
 

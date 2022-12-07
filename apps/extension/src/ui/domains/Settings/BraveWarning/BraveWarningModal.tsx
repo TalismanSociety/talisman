@@ -1,10 +1,10 @@
+import { appStore } from "@core/domains/app/store.app"
+import Button from "@talisman/components/Button"
+import Field from "@talisman/components/Field"
+import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 import { FC, useEffect, useState } from "react"
 import styled from "styled-components"
-import Field from "@talisman/components/Field"
-import Button from "@talisman/components/Button"
-import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 import Browser from "webextension-polyfill"
-import { appStore } from "@core/domains/app/store.app"
 
 const ModalContainer = styled.div<{ small?: boolean }>`
   display: flex;

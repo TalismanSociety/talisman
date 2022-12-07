@@ -1,5 +1,6 @@
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
+import { protector } from "@core/domains/app/protector"
 import {
   DecryptPayload,
   EncryptPayload,
@@ -11,6 +12,7 @@ import type { ResponseSigning } from "@core/domains/signing/types"
 import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
+import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { TabsHandler } from "@core/libs/Handler"
 import type {
@@ -21,6 +23,7 @@ import type {
 } from "@core/types"
 import type { Port } from "@core/types/base"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
+import { isPhishingSite } from "@core/util/isPhishingSite"
 import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import {
@@ -45,10 +48,8 @@ import { assert, isNumber } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import Browser from "webextension-polyfill"
 
-import { talismanAnalytics } from "@core/libs/Analytics"
 import RpcState from "./RpcState"
 import { createSubscription, genericAsyncSubscription, unsubscribe } from "./subscriptions"
-import { protector } from "@core/domains/app/protector"
 
 export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()

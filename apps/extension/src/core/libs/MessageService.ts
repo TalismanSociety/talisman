@@ -4,8 +4,8 @@
 // Adapted from https://github.com/polkadot-js/extension/
 
 import {
-  EthProviderRpcError,
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
+  EthProviderRpcError,
 } from "@core/injectEth/EthProviderRpcError"
 import { log } from "@core/log"
 import type {
