@@ -5,6 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { Box } from "@talisman/components/Box"
 import InputAutoWidth from "@talisman/components/Field/InputAutoWidth"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LoaderIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { getChainAddressType } from "@talisman/util/getChainAddressType"
@@ -32,6 +33,7 @@ import * as yup from "yup"
 
 import Balance from "../Balance"
 import AssetPicker from "../Picker"
+import { AddToAddressBookDrawer } from "./AddToAddressBookDrawer"
 import { useSendTokens } from "./context"
 import { EthTransactionFees, FeeSettings } from "./EthTransactionFees"
 import { SendDialogContainer } from "./SendDialogContainer"
@@ -243,9 +245,8 @@ export const SendForm = () => {
   const { formData, check, showForm, transferableTokens } = useSendTokens()
   const [isEvm, setIsEvm] = useState(false)
   const [gasSettings, setGasSettings] = useState<EthGasSettings | undefined>(formData?.gasSettings)
-  const [showAddContact, setShowAddContact] = useState(false)
-
   const schema = useMemo(() => getSchema(isEvm, transferableTokens), [isEvm, transferableTokens])
+  const { toggle: toggleAddContact, isOpen: isOpenAddContact } = useOpenClose()
 
   // react-hook-form
   const {
@@ -303,12 +304,6 @@ export const SendForm = () => {
 
   // Detect if 'to' address is one of ours, or pasted in
   const isKnownRecipient = useIsKnownAddress(to)
-
-  useEffect(() => {
-    if (to && !isKnownRecipient) {
-      setShowAddContact(true)
-    }
-  }, [to, isKnownRecipient])
 
   useEffect(() => {
     setIsEvm(!!transferableToken?.evmNetworkId)
@@ -431,9 +426,13 @@ export const SendForm = () => {
               genesisHash={genesisHash}
             />
           </div>
-          {to && showAddContact && (
+          {to && !isKnownRecipient && (
             <span>
-              <PillButton size="sm" icon={() => <UserPlusIcon stroke="#D5FF5C" />}>
+              <PillButton
+                size="sm"
+                icon={() => <UserPlusIcon stroke="#D5FF5C" />}
+                onClick={toggleAddContact}
+              >
                 Add to address book
               </PillButton>
             </span>
@@ -484,6 +483,12 @@ export const SendForm = () => {
           </SimpleButton>
         </footer>
       </form>
+      <AddToAddressBookDrawer
+        isOpen={isOpenAddContact}
+        close={toggleAddContact}
+        address={to}
+        addressType={addressType}
+      />
     </Container>
   )
 }
