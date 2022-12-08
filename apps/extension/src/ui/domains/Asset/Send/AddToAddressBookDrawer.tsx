@@ -10,6 +10,15 @@ import { FormField } from "@talisman/components/Field/FormField"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { Address } from "@ui/domains/Account/Address"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Send Funds",
+  featureVersion: 1,
+  page: "Add to address book",
+}
 
 const Container = styled.div`
   width: 100%;
@@ -65,6 +74,14 @@ export const AddToAddressBookDrawer: FC<{
     async ({ name }: FormValues) => {
       try {
         await add({ addressType, address, name })
+        sendAnalyticsEvent({
+          ...ANALYTICS_PAGE,
+          name: "Interact",
+          action: "Add address book contact",
+          properties: {
+            addressType,
+          },
+        })
         close()
       } catch (err) {
         setError("name", err as Error)
@@ -72,6 +89,8 @@ export const AddToAddressBookDrawer: FC<{
     },
     [add, addressType, address, setError, close]
   )
+
+  useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <Drawer asChild open={isOpen} anchor="bottom" onClose={closeDrawer}>

@@ -8,6 +8,15 @@ import { useMemo, useState } from "react"
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
 import { ContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
+import { AnalyticsPage } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Settings",
+  featureVersion: 1,
+  page: "Address book contact list",
+}
 
 type ContactItemProps = ContactComponentProps & {
   handleDelete: (address: string) => void
@@ -32,6 +41,8 @@ const AddressBook = () => {
   )
   const [toDelete, setToDelete] = useState<string>()
   const [toEdit, setToEdit] = useState<string>()
+
+  useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <>
