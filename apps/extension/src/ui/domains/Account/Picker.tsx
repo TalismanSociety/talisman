@@ -365,9 +365,27 @@ const AccountPicker: FC<Props> = ({
       onChange={handleChange}
       itemToString={handleItemToString}
     >
-      {({ getItemProps, isOpen, getToggleButtonProps, getMenuProps, getRootProps, closeMenu }) => {
+      {({
+        getItemProps,
+        isOpen,
+        getToggleButtonProps,
+        getMenuProps,
+        getRootProps,
+        closeMenu,
+        selectItem,
+      }) => {
         return (
-          <Container withAddressInput={withAddressInput} className={className} {...getRootProps()}>
+          <Container
+            withAddressInput={withAddressInput}
+            className={className}
+            {...getRootProps()}
+            // needed to get around a downshift/Portal bug (still present in downshift 6.1.7)
+            // https://github.com/downshift-js/downshift/issues/287
+            onMouseUp={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+            }}
+          >
             <Button
               hasValue={Boolean(selectedAddress)}
               tabIndex={tabIndex}
@@ -396,6 +414,8 @@ const AccountPicker: FC<Props> = ({
                               key: contact.address,
                               item: contact,
                               index,
+                              // needed to get around downshift/Portal bug
+                              onMouseUp: (e) => selectItem(contact),
                             })}
                           >
                             <NamedAddress
@@ -418,6 +438,8 @@ const AccountPicker: FC<Props> = ({
                               key: account.address,
                               item: account,
                               index: index + filteredContacts.length,
+                              // needed to get around downshift/Portal bug
+                              onMouseUp: (e) => selectItem(account),
                             })}
                           >
                             <AccountName withAvatar address={account?.address} />
