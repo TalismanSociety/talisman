@@ -48,10 +48,7 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
   return (
     <Modal open={isOpen} className="bg-black-secondary">
       <ModalDialog title="Edit contact">
-        <p className="text-body-secondary text-sm">
-          Edit contact with address {<Address className="address" address={contact.address} />}
-        </p>
-        <form onSubmit={handleSubmit(submit)} className="grid gap-4">
+        <form onSubmit={handleSubmit(submit)} className="grid gap-8">
           <FormField error={errors.name} label="Name">
             <input
               type="text"
@@ -61,6 +58,10 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
               spellCheck="false"
             />
           </FormField>
+          <div>
+            <span className="text-body-secondary block">Address</span>
+            <span className="mt-10 block bg-none text-xs text-white">{contact.address}</span>
+          </div>
           <div className="flex items-stretch gap-4 pt-4">
             <Button fullWidth onClick={close}>
               Cancel
