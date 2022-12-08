@@ -1,31 +1,37 @@
-import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import Layout from "@ui/apps/dashboard/layout"
 import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { TrashIcon, EditIcon } from "@talisman/theme/icons"
-import { useState } from "react"
-import { DeleteContactModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
+import { useMemo, useState } from "react"
+import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
+import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
 import { ContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
 
 type ContactItemProps = ContactComponentProps & {
-  handleDelete: (contact: AddressBookContact) => void
+  handleDelete: (address: string) => void
+  handleEdit: (address: string) => void
 }
 
-const AddressBookContactItem = ({ contact, handleDelete }: ContactItemProps) => (
+const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => (
   <div className="bg-black-secondary hover:bg-black-tertiary flex w-full justify-between rounded p-8">
     <FormattedAddress address={contact.address} />
     <div className="text-body-secondary flex gap-4">
-      <EditIcon className="cursor-pointer" />
-      <TrashIcon className="cursor-pointer" onClick={() => handleDelete(contact)} />
+      <EditIcon className="cursor-pointer" onClick={() => handleEdit(contact.address)} />
+      <TrashIcon className="cursor-pointer" onClick={() => handleDelete(contact.address)} />
     </div>
   </div>
 )
 
 const AddressBook = () => {
   const { contacts } = useAddressBook()
-  const [deletingContact, setDeletingContact] = useState<AddressBookContact>()
+  const contactsMap = useMemo(
+    () => Object.fromEntries(contacts.map((c) => [c.address, c])),
+    [contacts]
+  )
+  const [toDelete, setToDelete] = useState<string>()
+  const [toEdit, setToEdit] = useState<string>()
 
   return (
     <>
@@ -37,16 +43,24 @@ const AddressBook = () => {
             <AddressBookContactItem
               contact={contact}
               key={contact.address}
-              handleDelete={setDeletingContact}
+              handleDelete={setToDelete}
+              handleEdit={setToEdit}
             />
           ))}
         </div>
       </Layout>
-      {deletingContact && (
-        <DeleteContactModal
-          isOpen={!!deletingContact}
-          close={() => setDeletingContact(undefined)}
-          contact={deletingContact}
+      {toDelete && contactsMap[toDelete] && (
+        <ContactDeleteModal
+          isOpen={!!toDelete}
+          close={() => setToDelete(undefined)}
+          contact={contactsMap[toDelete]}
+        />
+      )}
+      {toEdit && contactsMap[toEdit] && (
+        <ContactEditModal
+          isOpen={!!toEdit}
+          close={() => setToEdit(undefined)}
+          contact={contactsMap[toEdit]}
         />
       )}
     </>

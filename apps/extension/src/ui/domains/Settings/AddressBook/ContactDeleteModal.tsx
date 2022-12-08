@@ -4,7 +4,7 @@ import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { Button } from "talisman-ui"
 import { ContactModalProps } from "./types"
 
-export const DeleteContactModal = ({ contact, isOpen, close }: ContactModalProps) => {
+export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps) => {
   const { deleteContact } = useAddressBook()
 
   return (

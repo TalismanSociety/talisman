@@ -17,8 +17,18 @@ export const useAddressBook = () => {
     []
   )
 
+  const edit = useCallback(
+    async ({ address, name }: Pick<AddressBookContact, "address" | "name">) => {
+      const existing = await addressBookStore.get(address)
+      if (!existing) throw new Error(`Contact with address ${address} doesn't exist`)
+      return await addressBookStore.set({ [address]: { ...existing, name } })
+    },
+    []
+  )
+
   return {
     add,
+    edit,
     deleteContact,
     contacts,
   }
