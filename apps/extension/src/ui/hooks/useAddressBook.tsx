@@ -1,11 +1,13 @@
 import { addressBookStore, AddressBookContact } from "@core/domains/app/store.addressBook"
+import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useEffect, useState } from "react"
 
-export const useAddressBook = () => {
+export const useAddressBookProvider = () => {
   const [contacts, setContacts] = useState<AddressBookContact[]>([])
 
   useEffect(() => {
-    addressBookStore.observable.subscribe((data) => setContacts(Object.values(data)))
+    const sub = addressBookStore.observable.subscribe((data) => setContacts(Object.values(data)))
+    return () => sub.unsubscribe()
   }, [])
 
   const add = useCallback(async ({ address, ...rest }: AddressBookContact) => {
@@ -33,3 +35,5 @@ export const useAddressBook = () => {
     contacts,
   }
 }
+
+export const [AddressBookProvider, useAddressBook] = provideContext(useAddressBookProvider)

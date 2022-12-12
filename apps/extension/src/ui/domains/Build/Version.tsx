@@ -3,7 +3,7 @@ import { KeyIcon } from "@talisman/theme/icons"
 import { useAppState } from "@ui/hooks/useAppState"
 import styled from "styled-components"
 
-interface IProps {
+export interface IProps {
   className?: string
 }
 
