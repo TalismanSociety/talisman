@@ -2,6 +2,7 @@ import { API_KEY_ONFINALITY } from "@core/constants"
 import { db } from "@core/libs/db"
 import { log } from "@core/log"
 import { ethers } from "ethers"
+import { throwAfter } from "talisman-utils"
 
 import { CustomEvmNetwork, EvmNetwork } from "./types"
 
@@ -12,9 +13,6 @@ export type GetProviderOptions = {
 
 const RPC_HEALTHCHECK_TIMEOUT = 10_000
 const RPC_CALL_TIMEOUT = 20_000
-
-const throwAfter = (ms: number, reason: any = "timeout") =>
-  new Promise((_, reject) => setTimeout(() => reject(reason), ms))
 
 const resolveRpcUrl = (rpcUrl: string) => {
   // inject api key here because we don't want them in the store (user can modify urls of rpcs)
@@ -83,7 +81,7 @@ const isHealthyRpc = async (url: string, chainId: number) => {
     // check that RPC responds in time
     const rpcChainId = await Promise.race([
       provider.send("eth_chainId", []),
-      throwAfter(RPC_HEALTHCHECK_TIMEOUT),
+      throwAfter(RPC_HEALTHCHECK_TIMEOUT, "timeout"),
     ])
 
     // with expected chain id
@@ -187,13 +185,10 @@ export const getProviderForEvmNetworkId = async (
 }
 
 export const clearEvmRpcProviderCache = (evmNetworkId: number) => {
-  delete ethereumNetworkProviders[evmNetworkId]
-  delete ethereumNetworkBatchProviders[evmNetworkId]
+  PROVIDERS_BY_NETWORK_ID.delete(getProviderByNetworkIdCacheKey(evmNetworkId, false))
+  PROVIDERS_BY_NETWORK_ID.delete(getProviderByNetworkIdCacheKey(evmNetworkId, true))
 }
 
 export const clearEvmRpcProvidersCache = () => {
-  Object.keys(ethereumNetworkProviders).forEach((key) => {
-    delete ethereumNetworkProviders[Number(key)]
-    delete ethereumNetworkBatchProviders[Number(key)]
-  })
+  PROVIDERS_BY_NETWORK_ID.clear()
 }
