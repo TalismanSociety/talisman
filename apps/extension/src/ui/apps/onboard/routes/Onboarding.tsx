@@ -1,6 +1,6 @@
 import { Box } from "@talisman/components/Box"
 import { AnalyticsPage } from "@ui/api/analytics"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
 
 import { OnboardDialog } from "../components/OnboardDialog"
@@ -35,7 +35,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 export const OnboardingPage = () => {
   const [error, setError] = useState<string>()
-  const { onboard } = useOnboard()
+  const { data, onboard } = useOnboard()
 
   const processOnboard = useCallback(async () => {
     try {
@@ -53,11 +53,16 @@ export const OnboardingPage = () => {
     }
   }, [processOnboard])
 
+  const title = useMemo(
+    () => (data.importMethodType === "mnemonic" ? "Importing wallet..." : "Setting up Talisman..."),
+    [data]
+  )
+
   return (
     <Container analytics={ANALYTICS_PAGE}>
       <Box flex justify="center">
         <Box w={60}>
-          <Dialog title="Creating your wallet">
+          <Dialog title={title}>
             <OnboardLoader />
             <ErrorMessage>{error}</ErrorMessage>
           </Dialog>
