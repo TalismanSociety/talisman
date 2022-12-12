@@ -87,6 +87,9 @@ export const ImportMethodPage = () => {
             />
           )}
         </div>
+        <div className="text-body-secondary my-24">
+          Talisman will provide you with a Polkadot and Ethereum account by default
+        </div>
       </div>
     </Layout>
   )

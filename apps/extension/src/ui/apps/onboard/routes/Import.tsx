@@ -111,7 +111,7 @@ export const ImportPage = () => {
             srcToken={imgTokenEthereum}
           />
         </div>
-        <div className="my-24">You can always add another later</div>
+        <div className="text-body-secondary my-24">You can always add another later</div>
       </div>
     </Layout>
   )
