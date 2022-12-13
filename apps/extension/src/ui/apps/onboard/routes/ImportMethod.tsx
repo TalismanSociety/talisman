@@ -57,7 +57,7 @@ export const ImportMethodPage = () => {
             onClick={handleClick("mnemonic")}
             icon={MessageCircleIcon}
             title="Recovery phrase"
-            subtitle="Restore Talisman or import your seed phrase from any wallet"
+            subtitle="Import your seed phrase from any wallet"
           />
           <OnboardCta
             onClick={handleClick("ledger")}
