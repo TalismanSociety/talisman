@@ -6,13 +6,8 @@ export type CoinGeckoTokenInfo = {
 }
 
 export const getCoinGeckoTokensList = async (includePlatform?: boolean) => {
-  try {
-    const fetchErc20Coin = await fetch(
-      `https://api.coingecko.com/api/v3/coins/list?include_platform=${!!includePlatform}`
-    )
-    return fetchErc20Coin.json() as Promise<CoinGeckoTokenInfo[]>
-  } catch (err) {
-    // most likely invalid id
-    return null
-  }
+  const fetchErc20Coin = await fetch(
+    `https://api.coingecko.com/api/v3/coins/list?include_platform=${!!includePlatform}`
+  )
+  return fetchErc20Coin.json() as Promise<CoinGeckoTokenInfo[]>
 }

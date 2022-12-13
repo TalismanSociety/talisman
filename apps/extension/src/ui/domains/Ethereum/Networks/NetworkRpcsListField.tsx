@@ -7,7 +7,7 @@ import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 export const NetworkRpcsListField = () => {
   const {
     register,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     getValues,
     watch,
   } = useFormContext<RequestUpsertCustomEvmNetwork>()

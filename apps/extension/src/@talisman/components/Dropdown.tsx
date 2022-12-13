@@ -23,7 +23,7 @@ const Container = styled.div`
     cursor: pointer;
     transition: all 0.2s ease-in-out;
     max-width: 100%;
-    width: 100%;
+    width: 30rem;
 
     .grow {
       flex-grow: 1;

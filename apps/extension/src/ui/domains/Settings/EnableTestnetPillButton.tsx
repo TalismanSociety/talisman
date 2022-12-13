@@ -1,4 +1,3 @@
-import Toggle from "@talisman/components/Field/Toggle"
 import { useSettings } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
 import { PillButton } from "talisman-ui"

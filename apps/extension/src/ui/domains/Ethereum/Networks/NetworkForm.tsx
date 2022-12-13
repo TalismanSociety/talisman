@@ -20,12 +20,10 @@ import { useSettings } from "@ui/hooks/useSettings"
 import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
 import { useEvmChainsList } from "@ui/hooks/useEvmChainsList"
 import { useQuery } from "@tanstack/react-query"
-import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
+import { TokenImage } from "@ui/domains/Asset/TokenLogo"
 import { NetworkRpcsListField } from "./NetworkRpcsListField"
 import { getRpcChainId } from "./helpers"
 import { getNetworkFormSchema } from "./getNetworkFormSchema"
-import { getCoinGeckoToken } from "@core/util/coingecko/getCoinGeckoToken"
-import { getCoinGeckoTokensList } from "@core/util/coingecko/getCoinGeckoTokensList"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
 
 const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
