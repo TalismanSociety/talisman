@@ -25,9 +25,10 @@ const CACHE = {
 
 export const OnboardingToast = () => {
   const [searchParams, setSearchParams] = useSearchParams()
+  const isNotFirefox = navigator.userAgent.indexOf("Firefox") === -1
 
   useEffect(() => {
-    if (!CACHE.notified && searchParams.get("onboarded") !== null) {
+    if (!CACHE.notified && searchParams.get("onboarded") !== null && !isNotFirefox) {
       CACHE.notified = true
       setSearchParams({})
 
@@ -35,7 +36,7 @@ export const OnboardingToast = () => {
         autoClose: false,
       })
     }
-  }, [searchParams, setSearchParams])
+  }, [searchParams, setSearchParams, isNotFirefox])
 
   return null
 }
