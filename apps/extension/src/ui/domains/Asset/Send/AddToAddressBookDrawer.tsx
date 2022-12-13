@@ -33,6 +33,10 @@ const Container = styled.div`
     font-size: 1.4rem;
     line-height: 2rem;
   }
+
+  .account-avatar {
+    font-size: 4rem;
+  }
 `
 
 type FormValues = {
@@ -96,8 +100,8 @@ export const AddToAddressBookDrawer: FC<{
     <Drawer asChild open={isOpen} anchor="bottom" onClose={closeDrawer}>
       <Container className="bg-black-tertiary">
         <form onSubmit={handleSubmit(submit)}>
-          <header className="flex flex-col justify-center gap-6 ">
-            <AccountAvatar address={address} className="text-3xl" />
+          <header className="flex flex-col justify-center gap-6">
+            <AccountAvatar address={address} />
             <span className="font-bold">
               {nameValue ? `${nameValue}` : <Address className="address" address={address} />}
             </span>

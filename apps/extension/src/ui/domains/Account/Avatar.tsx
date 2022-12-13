@@ -15,6 +15,7 @@ const IdentIcon = lazy(() => import("@polkadot/react-identicon"))
 
 const Container = styled.div`
   display: inline-flex;
+  font-size: 3.2rem;
   width: 1em;
   height: 1em;
   position: relative;
@@ -98,7 +99,7 @@ const AccountAvatar = ({ address, className, genesisHash, type }: AccountAvatarP
   const displayType = useMemo(() => type ?? identiconType ?? "talisman-orb", [identiconType, type])
 
   return (
-    <Container className={classNames("account-avatar text-lg", className)}>
+    <Container className={classNames("account-avatar", className)}>
       {displayType === "polkadot-identicon" ? (
         <PolkadotAvatar seed={address} />
       ) : (
