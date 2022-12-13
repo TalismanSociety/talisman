@@ -129,6 +129,7 @@ export const SubNativeModule: BalanceModule<
       ? constants.balances.existentialDeposit.toString()
       : null
 
+    // TODO: Fix error `Unable to resolve type PalletBalancesAccountData, it will fail on construction`
     let accountInfo = null
     if (metadata.version >= 14) {
       const accountInfoLookupId = expandMetadata(

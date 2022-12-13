@@ -18,7 +18,7 @@ import { EvmErc20Module } from "@talismn/balances-evm-erc20"
 import { EvmNativeModule } from "@talismn/balances-evm-native"
 import { SubNativeModule } from "@talismn/balances-substrate-native"
 import { SubOrmlModule } from "@talismn/balances-substrate-orml"
-import { TokenId, TokenList } from "@talismn/chaindata-provider"
+import { Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
@@ -33,6 +33,7 @@ type EvmNetworkIdAndHealth = Pick<
   erc20Tokens: Array<Pick<Erc20Token, "id" | "contractAddress">>
   substrateChainAccountFormat: string | null
 }
+type TokenIdAndType = Pick<Token, "id" | "type">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
 
@@ -52,7 +53,7 @@ export class BalanceStore {
 
   #chains: ChainIdAndHealth[] = []
   #evmNetworks: EvmNetworkIdAndHealth[] = []
-  #tokenIds: ReplaySubject<TokenId[]> = new ReplaySubject(1)
+  #tokens: ReplaySubject<TokenIdAndType[]> = new ReplaySubject(1)
 
   /**
    * A map of accounts to query balances for, in the format:
@@ -217,7 +218,7 @@ export class BalanceStore {
     )
 
     // update tokens
-    this.#tokenIds.next(Object.keys(tokens))
+    this.#tokens.next(Object.values(tokens).map(({ id, type }) => ({ id, type })))
 
     // Delete stored balances for chains and networks which no longer exist
     await this.deleteBalances((balance) => {
@@ -330,7 +331,7 @@ export class BalanceStore {
 
     const generation = this.#subscriptionsGeneration
     const addresses = await firstValueFrom(this.#addresses)
-    const tokenIds = await firstValueFrom(this.#tokenIds)
+    const tokens = await firstValueFrom(this.#tokens)
 
     // For the following TODOs, try and put them inside the relevant balance module when it makes sense.
     // Otherwise fall back to writing the workaround in here (but also then add it to the web app portfolio!)
@@ -341,15 +342,17 @@ export class BalanceStore {
     // TODO: Don't fetch evm balances for ethereum accounts on chains whose native account format is secp256k1 (i.e. moonbeam/river/base)
     //       On these chains we can fetch the balance purely via substrate (and fetching via both evm+substrate will double up the balance)
     //
-    const addressesByToken = Object.fromEntries(
-      tokenIds.map((tokenId) => [tokenId, Object.keys(addresses)])
-    )
+    const addressesByTokenByModule: Record<string, Record<string, string[]>> = {}
+    tokens.forEach((token) => {
+      if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
+      addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
+    })
 
     const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
       balanceModule.subscribeBalances(
         { substrate: chainConnector, evm: chainConnectorEvm },
         chaindataProvider,
-        addressesByToken,
+        addressesByTokenByModule[balanceModule.type],
         (error, result) => {
           // ignore old subscriptions which have been told to close but aren't closed yet
           if (this.#subscriptionsGeneration !== generation) return
