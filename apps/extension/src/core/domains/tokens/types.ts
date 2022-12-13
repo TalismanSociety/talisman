@@ -26,6 +26,7 @@ export type NativeToken = IToken & {
 }
 export type CustomNativeToken = NativeToken & {
   isCustom: true
+  image?: string
 }
 export type OrmlToken = IToken & {
   type: "orml"

@@ -16,7 +16,13 @@ export const NetworkEdit = () => {
     <Layout withBack centered>
       <HeaderBlock
         title={`${evmNetworkId ? "Edit" : "Add"} EVM Network`}
-        text="Only ever add custom EVM compatible networks you trust."
+        text={
+          <>
+            Only ever add custom EVM compatible networks you trust.
+            <br />
+            RPCs will automatically cycle in case of errors, in the order defined here.
+          </>
+        }
       />
       <NetworkForm evmNetworkId={evmNetworkId} onSubmitted={handleSubmitted} />
     </Layout>

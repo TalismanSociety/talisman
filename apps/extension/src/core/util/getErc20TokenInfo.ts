@@ -2,7 +2,7 @@ import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { imgSrcToDataURL } from "blob-util"
 import { ethers } from "ethers"
 
-import { getCoinGeckoErc20Coin } from "./getCoinGeckoErc20Coin"
+import { getCoinGeckoErc20Coin } from "./coingecko/getCoinGeckoErc20Coin"
 import { getErc20ContractData } from "./getErc20ContractData"
 
 export const getErc20TokenInfo = async (

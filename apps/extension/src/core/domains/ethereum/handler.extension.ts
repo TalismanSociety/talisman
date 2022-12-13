@@ -21,6 +21,7 @@ import { ExtensionHandler } from "@core/libs/Handler"
 import { watchEthereumTransaction } from "@core/notifications"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
+import { getCoinGeckoToken } from "@core/util/coingecko/getCoinGeckoToken"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { graphqlUrl } from "@core/util/graphql"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
@@ -340,6 +341,16 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private async ethNetworkUpsert(network: RequestUpsertCustomEvmNetwork): Promise<boolean> {
+    let image: string | undefined = undefined
+    if (network.tokenCoingeckoId) {
+      try {
+        const cgToken = await getCoinGeckoToken(network.tokenCoingeckoId)
+        if (cgToken) image = cgToken?.image.large
+      } catch (err) {
+        // ignore, most likely an invalid token id
+      }
+    }
+
     await db.transaction("rw", db.evmNetworks, db.tokens, async (tx) => {
       const nativeTokenId = `${network.id}-native-${network.tokenSymbol}`.toLowerCase()
 
@@ -357,9 +368,11 @@ export class EthHandler extends ExtensionHandler {
         isTestnet: false,
         symbol: network.tokenSymbol,
         decimals: network.tokenDecimals,
+        coingeckoId: network.tokenCoingeckoId,
         existentialDeposit: "0",
         evmNetwork: { id: network.id },
         isCustom: true,
+        image,
       })
 
       // upsert the network itself

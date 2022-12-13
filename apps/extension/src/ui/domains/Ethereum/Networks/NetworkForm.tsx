@@ -7,12 +7,10 @@ import { api } from "@ui/api"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useToken from "@ui/hooks/useToken"
-import { ethers } from "ethers"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import * as yup from "yup"
 import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
@@ -24,9 +22,11 @@ import { useEvmChainsList } from "@ui/hooks/useEvmChainsList"
 import { useQuery } from "@tanstack/react-query"
 import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
 import { NetworkRpcsListField } from "./NetworkRpcsListField"
-import { log } from "@core/log"
 import { getRpcChainId } from "./helpers"
 import { getNetworkFormSchema } from "./getNetworkFormSchema"
+import { getCoinGeckoToken } from "@core/util/coingecko/getCoinGeckoToken"
+import { getCoinGeckoTokensList } from "@core/util/coingecko/getCoinGeckoTokensList"
+import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
 
 const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
   const {
@@ -185,12 +185,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
     formState: { errors, isValid, isSubmitting, isDirty },
   } = formProps
 
-  const formData = watch()
-  useEffect(() => {
-    log.log("formData", formData)
-  }, [formData])
-
-  const { isTestnet, rpcs, id } = watch()
+  const { isTestnet, rpcs, id, tokenCoingeckoId } = watch()
 
   // initialize form with existing values (edit mode)
   useEffect(() => {
@@ -214,7 +209,6 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
         await api.ethNetworkUpsert(network)
         if (network.isTestnet && !useTestnets) update({ useTestnets: true })
         onSubmitted?.()
-        // navigate("/networks")
       } catch (err) {
         setSubmitError((err as Error).message)
       }
@@ -266,15 +260,19 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
     [evmNetwork, evmNetworkId, qIsBuiltInEvmNetwork.data, qIsBuiltInEvmNetwork.isFetched]
   )
 
+  useEffect(() => {
+    if (!tokenCoingeckoId && nativeToken?.coingeckoId)
+      setValue("tokenCoingeckoId", nativeToken.coingeckoId)
+  }, [nativeToken?.coingeckoId, setValue, tokenCoingeckoId])
+
+  const tokenImageSrc = useCoinGeckoTokenImageUrl(tokenCoingeckoId)
+
   // on edit screen, wait for existing network to be loaded
   if (evmNetworkId && !evmNetwork) return null
 
   return (
     <form className="mt-24 space-y-4" onSubmit={handleSubmit(submit)}>
       <FormProvider {...formProps}>
-        {/* <FormFieldContainer label="RPC URL" error={errors.rpcs?.[0]?.url?.message}>
-            <FormFieldInputText placeholder="https://1rpc.io/eth" {...register("rpc")} />
-          </FormFieldContainer> */}
         <NetworkRpcsListField />
         <div className="grid grid-cols-3 gap-12">
           <FormFieldContainer label="Chain ID" error={errors.id?.message}>
@@ -292,15 +290,21 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
             <FormFieldInputText placeholder="Ethereum" {...register("name")} />
           </FormFieldContainer>
         </div>
-        <div className="grid grid-cols-2 gap-12">
-          <FormFieldContainer label="Token symbol" error={errors.tokenSymbol?.message}>
+        <div className="grid grid-cols-3 gap-12">
+          <FormFieldContainer label="Token Coingecko ID" error={errors.tokenCoingeckoId?.message}>
             <FormFieldInputText
               before={
-                <TokenImage src={GENERIC_TOKEN_LOGO_URL} className="min-w-[3rem] text-[3rem]" />
+                <TokenImage
+                  src={tokenImageSrc}
+                  className="ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]"
+                />
               }
-              placeholder="ETH"
-              {...register("tokenSymbol")}
+              placeholder="(optional)"
+              {...register("tokenCoingeckoId")}
             />
+          </FormFieldContainer>
+          <FormFieldContainer label="Token symbol" error={errors.tokenSymbol?.message}>
+            <FormFieldInputText placeholder="ETH" {...register("tokenSymbol")} />
           </FormFieldContainer>
           <FormFieldContainer label="Token decimals" error={errors.tokenDecimals?.message}>
             <FormFieldInputText
@@ -308,6 +312,18 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
               {...register("tokenDecimals", { valueAsNumber: true })}
             />
           </FormFieldContainer>
+        </div>
+        <div className="text-body-disabled mt-[-1.6rem] pb-8 text-xs">
+          Talisman uses CoinGecko as source for token images. Find the API ID of the native token of
+          this network on{" "}
+          <a
+            className="text-body-secondary hover:text-body"
+            href="https://coingecko.com"
+            target="_blank"
+          >
+            https://coingecko.com
+          </a>{" "}
+          and paste it here.
         </div>
         <FormFieldContainer label="Block explorer URL" error={errors.blockExplorerUrl?.message}>
           <FormFieldInputText

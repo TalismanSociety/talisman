@@ -6,6 +6,7 @@ export type RequestUpsertCustomEvmNetwork = {
   rpcs: { url: string }[]
   isTestnet: boolean
   blockExplorerUrl?: string
+  tokenCoingeckoId?: string
 }
 
 export type AddEthereumChainParameter = {

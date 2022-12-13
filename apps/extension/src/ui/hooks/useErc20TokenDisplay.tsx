@@ -1,4 +1,4 @@
-import { getCoinGeckoErc20Coin } from "@core/util/getCoinGeckoErc20Coin"
+import { getCoinGeckoErc20Coin } from "@core/util/coingecko/getCoinGeckoErc20Coin"
 import { useQuery } from "@tanstack/react-query"
 import { imgSrcToBlob } from "blob-util"
 import useTokens from "./useTokens"
