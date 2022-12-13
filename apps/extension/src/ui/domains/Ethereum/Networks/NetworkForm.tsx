@@ -25,6 +25,8 @@ import { useQuery } from "@tanstack/react-query"
 import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
 import { NetworkRpcsListField } from "./NetworkRpcsListField"
 import { log } from "@core/log"
+import { getRpcChainId } from "./helpers"
+import { getNetworkFormSchema } from "./getNetworkFormSchema"
 
 const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
   const {
@@ -134,31 +136,6 @@ const evmNetworkToFormData = (
   }
 }
 
-// because of validation the same query is done 3 times minimum per url, make all await same promise
-const rpcChainIdCache = new Map<string, Promise<number | null>>()
-
-const getRpcChainId = (rpcUrl: string) => {
-  // check if valid url
-  if (!rpcUrl || !/^https?:\/\/.+$/.test(rpcUrl)) return null
-
-  if (!rpcChainIdCache.has(rpcUrl)) {
-    rpcChainIdCache.set(
-      rpcUrl,
-      new Promise((resolve) => {
-        const provider = new ethers.providers.JsonRpcProvider(rpcUrl)
-        provider
-          .send("eth_chainId", [])
-          .then((hexChainId) => {
-            resolve(parseInt(hexChainId, 16))
-          })
-          .catch(() => resolve(null))
-      })
-    )
-  }
-
-  return rpcChainIdCache.get(rpcUrl) as Promise<number | null>
-}
-
 const useRpcChainId = (rpcUrl: string) => {
   return useQuery({
     queryKey: ["useRpcChainId", rpcUrl],
@@ -173,6 +150,8 @@ type NetworkFormProps = {
 }
 
 export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
+  const schema = useMemo(() => getNetworkFormSchema(evmNetworkId), [evmNetworkId])
+
   const qIsBuiltInEvmNetwork = useIsBuiltInEvmNetwork(
     evmNetworkId ? Number(evmNetworkId) : undefined
   )
@@ -187,62 +166,8 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
     [evmNetwork, nativeToken]
   )
 
-  const schema = useMemo(
-    () =>
-      yup
-        .object({
-          // TODO remove valueAsNumber when moving to balances v2
-          id: yup
-            .number()
-            .typeError("invalid number")
-            .required("required")
-            .integer("invalid number"),
-          name: yup.string().required("required"),
-          rpcs: yup
-            .array()
-            .of(
-              yup.object({
-                url: yup
-                  .string()
-                  .trim()
-                  .required("required")
-                  .url("invalid url")
-                  .test("rpcmatch", "rpcCheck", async function (newRpc) {
-                    if (!evmNetworkId || !newRpc) return true
-                    try {
-                      const chainId = await getRpcChainId(newRpc as string)
-                      if (!chainId) return this.createError({ message: "Failed to connect" }) //new yup.ValidationError("Failed to connect", newRpc, this.)
-                      if (Number(evmNetworkId) !== chainId)
-                        return this.createError({ message: "Chain ID mismatch" })
-                      return true
-                    } catch (err) {
-                      return this.createError({ message: "Failed to connect" })
-                    }
-                  }),
-              })
-            )
-            .required("required")
-            .min(1, "RPC URL required"),
-          tokenSymbol: yup
-            .string()
-            .trim()
-            .required("required")
-            .min(2, "2-6 characters")
-            .max(6, "2-6 characters"),
-          tokenDecimals: yup
-            .number()
-            .typeError("invalid number")
-            .required("required")
-            .integer("invalid number"),
-          blockExplorerUrl: yup.string().url("invalid url"),
-          isTestnet: yup.boolean().required(),
-        })
-        .required(),
-    [evmNetworkId]
-  )
-
+  // because of the RPC checks, validate only on submit
   const formProps = useForm<RequestUpsertCustomEvmNetwork>({
-    // mode: "onChange",
     reValidateMode: "onBlur",
     defaultValues: { isTestnet: false },
     resolver: yupResolver(schema),
