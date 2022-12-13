@@ -371,7 +371,7 @@ export class EthHandler extends ExtensionHandler {
         nativeToken: { id: nativeTokenId },
         tokens: existing?.tokens ?? [],
         explorerUrl: network.blockExplorerUrl ?? null,
-        rpcs: [{ url: network.rpc, isHealthy: true }],
+        rpcs: network.rpcs.map(({ url }) => ({ url, isHealthy: true })),
         isHealthy: true,
         substrateChain: existing?.substrateChain ?? null,
         isCustom: true,

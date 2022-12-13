@@ -3,7 +3,7 @@ export type RequestUpsertCustomEvmNetwork = {
   name: string
   tokenSymbol: string
   tokenDecimals: number
-  rpc: string
+  rpcs: { url: string }[]
   isTestnet: boolean
   blockExplorerUrl?: string
 }
