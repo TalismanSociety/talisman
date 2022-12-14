@@ -43,6 +43,8 @@ import { planckToTokens } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
 
+import { addressBookStore } from "../app/store.addressBook"
+
 export default class AssetTransferHandler extends ExtensionHandler {
   private getExtrinsicWatch(
     chainId: ChainId,
@@ -122,11 +124,14 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
+      const isInternal = keyring.getAccount(toAddress) !== undefined
+      const isContact = isInternal ? false : await addressBookStore.get(toAddress)
       talismanAnalytics.capture("asset transfer", {
         chainId,
         tokenId,
         amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
-        internal: keyring.getAccount(toAddress) !== undefined,
+        internal: isInternal || isContact,
+        recipientType: isInternal ? "ownAccount" : isContact ? "contact" : "external",
       })
 
       return await new Promise<ResponseAssetTransfer>((resolve, reject) => {
