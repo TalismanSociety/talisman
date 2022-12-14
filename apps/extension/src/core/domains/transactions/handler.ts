@@ -36,6 +36,7 @@ import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
+import { addressBookStore } from "../app/store.addressBook"
 
 import { getEthTransferTransactionBase, rebuildGasSettings } from "../ethereum/helpers"
 import { getProviderForEvmNetworkId } from "../ethereum/rpcProviders"
@@ -120,11 +121,14 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const token = await db.tokens.get(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
+      const isInternal = keyring.getAccount(toAddress) !== undefined
+      const isContact = isInternal ? false : await addressBookStore.get(toAddress)
       talismanAnalytics.capture("asset transfer", {
         chainId,
         tokenId,
         amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
-        internal: keyring.getAccount(toAddress) !== undefined,
+        internal: isInternal || isContact,
+        recipientType: isInternal ? "ownAccount" : isContact ? "contact" : "external",
       })
 
       return await new Promise<ResponseAssetTransfer>((resolve, reject) => {

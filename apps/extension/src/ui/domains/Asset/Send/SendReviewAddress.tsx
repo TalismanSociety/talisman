@@ -2,8 +2,9 @@ import { FC } from "react"
 import { usePrefixAddress } from "../../../hooks/usePrefixAddress"
 import useChain from "@ui/hooks/useChain"
 import styled from "styled-components"
-import Account from "@ui/domains/Account"
+
 import { WithTooltip } from "@talisman/components/Tooltip"
+import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
 
 type SendReviewAddressProps = {
   address: string
@@ -27,7 +28,7 @@ export const SendReviewAddress: FC<SendReviewAddressProps> = ({ address, chainId
 
   return (
     <Container tooltip={formattedAddress}>
-      <Account.Name address={address} withAvatar />
+      <FormattedAddress address={address} />
     </Container>
   )
 }
