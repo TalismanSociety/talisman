@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, XIcon } from "@talisman/theme/icons"
-import { FC, ReactNode } from "react"
+import { ReactNode } from "react"
 import styled from "styled-components"
 
 import { useSendTokens } from "./context"

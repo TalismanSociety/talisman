@@ -7,6 +7,7 @@ import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
+import { ReactComponent as ImportWalletIcons } from "../assets/import-wallet-icons.svg"
 import { styleOnboardTranslucidBackground } from "../components/OnboardStyles"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
@@ -133,7 +134,7 @@ const WelcomeCta = ({
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
-  featureVersion: 3,
+  featureVersion: 4,
   page: "Onboarding - Step 1 - Welcome",
 }
 
@@ -189,7 +190,12 @@ export const WelcomePage = () => {
           <WelcomeCta
             title="Import a wallet"
             icon={<DownloadIcon />}
-            description="Import an existing wallet such as Polkadot.js or Metamask"
+            description={
+              <div>
+                <div>Import an existing wallet</div>
+                <ImportWalletIcons className="mt-8 h-12 w-auto" />
+              </div>
+            }
             onClick={handleNextClick(true)}
           />
           <Box fg="mid" fontsize="small" lineheightcustom="2rem">
