@@ -1945,6 +1945,55 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dnd-kit/accessibility@npm:^3.0.0":
+  version: 3.0.1
+  resolution: "@dnd-kit/accessibility@npm:3.0.1"
+  dependencies:
+    tslib: ^2.0.0
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 0afc2c0fce9a1c107453620ca0da1778f182d340e74ffbc6e369ef0ac8943cafb929d3a6c0891d9b915aa23b2b92137ff4fad958f43118466586d8129a3359d5
+  languageName: node
+  linkType: hard
+
+"@dnd-kit/core@npm:6.0.6":
+  version: 6.0.6
+  resolution: "@dnd-kit/core@npm:6.0.6"
+  dependencies:
+    "@dnd-kit/accessibility": ^3.0.0
+    "@dnd-kit/utilities": ^3.2.1
+    tslib: ^2.0.0
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 2945bd5438630748fa3c11390afd9919eb9836cb64bf4c4c3afae0ccb99d32e1df56a387e59cb16800ec0ae047222fb9e40ecb9363ec4cca375c2b81d4e9784d
+  languageName: node
+  linkType: hard
+
+"@dnd-kit/sortable@npm:7.0.1":
+  version: 7.0.1
+  resolution: "@dnd-kit/sortable@npm:7.0.1"
+  dependencies:
+    "@dnd-kit/utilities": ^3.2.0
+    tslib: ^2.0.0
+  peerDependencies:
+    "@dnd-kit/core": ^6.0.4
+    react: ">=16.8.0"
+  checksum: b8b5ae504d57d6afb847c3ac8a865a3623c5915f4f0dd767017a17e6d1d36e144b74f6f90a17c07d5f8ddc83395a2db8bb90c420f017aee15bd88538b6f3f226
+  languageName: node
+  linkType: hard
+
+"@dnd-kit/utilities@npm:^3.2.0, @dnd-kit/utilities@npm:^3.2.1":
+  version: 3.2.1
+  resolution: "@dnd-kit/utilities@npm:3.2.1"
+  dependencies:
+    tslib: ^2.0.0
+  peerDependencies:
+    react: ">=16.8.0"
+  checksum: 038fd5cc1328bf4c9dca17cd48046e5a687bbf9d904c7197f851aab869ab52d9dee2734b2e255256fd6158245acd00063a23deed962c7673c0fadfbf061f04ca
+  languageName: node
+  linkType: hard
+
 "@emotion/is-prop-valid@npm:^0.8.2":
   version: 0.8.8
   resolution: "@emotion/is-prop-valid@npm:0.8.8"
@@ -9999,6 +10048,8 @@ __metadata:
     "@babel/plugin-transform-react-jsx": ^7.14.9
     "@babel/preset-env": ^7.16.11
     "@babel/preset-typescript": ^7.16.7
+    "@dnd-kit/core": 6.0.6
+    "@dnd-kit/sortable": 7.0.1
     "@ethereumjs/util": 8.0.0
     "@floating-ui/react-dom": ^0.6.0
     "@hookform/resolvers": 2.8.8
