@@ -164,8 +164,9 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
     [evmNetwork, nativeToken]
   )
 
-  // because of the RPC checks, validate only on submit
+  // because of the RPC checks, do not validate on each change
   const formProps = useForm<RequestUpsertCustomEvmNetwork>({
+    mode: "onTouched",
     reValidateMode: "onBlur",
     defaultValues: { isTestnet: false },
     resolver: yupResolver(schema),
