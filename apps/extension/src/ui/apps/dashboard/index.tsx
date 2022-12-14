@@ -30,6 +30,7 @@ import { NetworkEdit } from "./routes/Networks/NetworkEdit"
 import { PhishingPage } from "./routes/PhishingPage"
 import { Portfolio } from "./routes/Portfolio"
 import Settings from "./routes/Settings"
+import AddressBook from "./routes/Settings/AddressBook"
 import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
 import { AutoLockTimer } from "./routes/Settings/AutoLockTimer"
 import ChangePassword from "./routes/Settings/ChangePassword"
@@ -86,6 +87,7 @@ const DashboardInner = () => {
         <Route path="settings">
           <Route path="" element={<Settings />} />
           <Route path="connected-sites" element={<SitesConnected />} />
+          <Route path="address-book" element={<AddressBook />} />
           <Route path="security-privacy-settings" element={<SecurityPrivacySettings />} />
           <Route path="options" element={<Options />} />
           <Route path="about" element={<About />} />

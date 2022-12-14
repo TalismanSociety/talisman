@@ -4,7 +4,13 @@ import { api } from "./api"
 
 export type AnalyticsEventName = "Pageview" | "Goto" | "GotoExternal" | "Interact" | "Submit"
 export type AnalyticsContainer = "Fullscreen" | "Popup"
-export type AnalyticsFeature = "Onboarding" | "Account Funding" | "Porfolio" | "Navigation" // | "Settings"
+export type AnalyticsFeature =
+  | "Onboarding"
+  | "Account Funding"
+  | "Porfolio"
+  | "Navigation"
+  | "Send Funds"
+  | "Settings"
 
 export type AnalyticsPage = {
   container: AnalyticsContainer

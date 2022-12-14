@@ -3,7 +3,7 @@ import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { GlobeIcon, ShieldIcon, ToolIcon } from "@talisman/theme/icons"
+import { GlobeIcon, ShieldIcon, ToolIcon, UsersIcon } from "@talisman/theme/icons"
 import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
 import { ReactComponent as IconInfo } from "@talisman/theme/icons/info.svg"
 import { ReactComponent as IconKey } from "@talisman/theme/icons/key.svg"
@@ -56,6 +56,12 @@ const Settings = () => {
           title="Trusted Sites"
           subtitle="Manage the sites that have access to your accounts"
           to={`/settings/connected-sites`}
+        />
+        <CtaButton
+          icon={<UsersIcon />}
+          title="Address Book"
+          subtitle="Manage your saved contacts"
+          to={`/settings/address-book`}
         />
         <CtaButton
           icon={<GlobeIcon />}
