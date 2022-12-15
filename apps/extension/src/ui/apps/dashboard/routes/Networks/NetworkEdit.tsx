@@ -27,7 +27,7 @@ export const NetworkEdit = () => {
   }, [navigate])
 
   return (
-    <Layout withBack centered>
+    <Layout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
         title={`${evmNetworkId ? "Edit" : "Add"} EVM Network`}
         text={

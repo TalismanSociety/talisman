@@ -4,9 +4,11 @@ import { assert } from "@polkadot/util"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { LoaderIcon, PlusIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
+import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
 import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -20,7 +22,15 @@ type FormData = Pick<
   "evmNetworkId" | "contractAddress" | "symbol" | "decimals"
 >
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Settings",
+  featureVersion: 1,
+  page: "Settings - Add Token",
+}
+
 export const CustomTokenAdd = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const networks = useSortedEvmNetworks()
   const [error, setError] = useState<string>()
@@ -101,7 +111,7 @@ export const CustomTokenAdd = () => {
   )
 
   return (
-    <Layout withBack centered>
+    <Layout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
         title="Add custom token"
         text="Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."

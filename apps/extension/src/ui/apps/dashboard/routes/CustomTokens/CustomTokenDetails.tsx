@@ -6,9 +6,11 @@ import { ModalDialog } from "@talisman/components/ModalDialog"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
+import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
 import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
@@ -71,10 +73,19 @@ const ConfirmRemove = ({
   )
 }
 
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Settings",
+  featureVersion: 1,
+  page: "Settings - Token Details",
+}
+
 export const CustomTokenDetails = () => {
   const { id } = useParams<"id">()
   const { isOpen, open, close } = useOpenClose()
   const navigate = useNavigate()
+
+  useAnalyticsPageView(ANALYTICS_PAGE, { id })
 
   const token = useToken(id)
   const erc20Token = useMemo(
@@ -92,7 +103,7 @@ export const CustomTokenDetails = () => {
   if (!erc20Token || !network) return null
 
   return (
-    <Layout withBack centered>
+    <Layout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
         title={`${erc20Token.symbol} on ${network.name}`}
         text={

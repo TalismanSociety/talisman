@@ -1,5 +1,6 @@
 import { ChainId } from "@core/domains/chains/types"
 import { CustomErc20Token, CustomErc20TokenCreate } from "@core/domains/tokens/types"
+import { talismanAnalytics } from "@core/libs/Analytics"
 import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { Port, RequestIdOnly } from "@core/types/base"
@@ -70,7 +71,15 @@ export default class TokensHandler extends ExtensionHandler {
           image,
         }
 
-        return await db.tokens.put(newToken)
+        const res = await db.tokens.put(newToken)
+
+        talismanAnalytics.capture(`${existing ? "update" : "add"} custom ERC20 token`, {
+          evmNetworkId: token.evmNetworkId,
+          symbol: token.symbol,
+          contractAddress,
+        })
+
+        return res
       }
 
       case "pri(tokens.erc20.custom.remove)":
