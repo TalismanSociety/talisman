@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useMemo } from "react"
 import {
   FieldArrayWithId,
   FieldError,
@@ -7,7 +7,7 @@ import {
   UseFormRegister,
 } from "react-hook-form"
 import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types/base"
-import { HamburgerMenuIcon, PlusIcon, TrashIcon } from "@talisman/theme/icons"
+import { DragAltIcon, PlusIcon, TrashIcon } from "@talisman/theme/icons"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import {
   DndContext,
@@ -18,13 +18,7 @@ import {
   useSensors,
   DragEndEvent,
 } from "@dnd-kit/core"
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
-import { rpcDefinitions } from "@polkadot/types"
+import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
@@ -36,6 +30,7 @@ type SortableRpcItemProps = {
     url?: FieldError | undefined
   }[]
   canDelete?: boolean
+  canDrag?: boolean
   onDelete?: () => void
   onChange?: () => void
   index: number
@@ -47,6 +42,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
   errors,
   register,
   canDelete,
+  canDrag,
   onDelete,
   onChange,
 }) => {
@@ -56,6 +52,8 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
     transform: CSS.Transform.toString(transform),
     transition,
   }
+
+  const dragHandleProps = canDrag ? { ...attributes, ...listeners } : {}
 
   return (
     <div ref={setNodeRef} style={style} className="w-full">
@@ -68,10 +66,10 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
           <button
             type="button"
             className="allow-focus text-md ml-[-1.2rem] px-2 opacity-80 outline-none hover:opacity-100 focus:opacity-100 disabled:opacity-50"
-            {...attributes}
-            {...listeners}
+            disabled={!canDrag}
+            {...dragHandleProps}
           >
-            <HamburgerMenuIcon className="rotate-90 transition-none" />
+            <DragAltIcon className="transition-none" />
           </button>
         }
         after={
@@ -110,6 +108,7 @@ export const NetworkRpcsListField = () => {
     name: "rpcs",
   })
 
+  // ensure there is at least 1 entry in the array
   const autoAppend = useCallback(() => {
     const { rpcs } = getValues()
     if (rpcs && !rpcs.length) append({ url: "" })
@@ -145,22 +144,15 @@ export const NetworkRpcsListField = () => {
     })
   )
 
-  // define the order of entries (for drag n drop reordering)
-  // const [rpcIds, setRpcIds] = useState(() => rpcs.map((rpc) => rpc.id))
-  // useEffect(() => {
-  //   setRpcIds(() => rpcs.map((rpc) => rpc.id))
-  // }, [rpcs])
-
+  // order management
   const rpcIds = useMemo(() => rpcs.map(({ id }) => id), [rpcs])
   const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event
-      const indexActive = rpcs.findIndex((rpc) => rpc.id === active.id)
-      const indexOver = rpcs.findIndex((rpc) => rpc.id === over?.id)
-
+    (e: DragEndEvent) => {
+      const indexActive = rpcIds.indexOf(e.active.id as string)
+      const indexOver = rpcIds.indexOf(e.over?.id as string)
       move(indexActive, indexOver)
     },
-    [move, rpcs]
+    [move, rpcIds]
   )
 
   return (
@@ -168,7 +160,7 @@ export const NetworkRpcsListField = () => {
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={rpcIds}>
           <div className="flex w-full flex-col gap-2">
-            {rpcs.map((rpc, index) => (
+            {rpcs.map((rpc, index, arr) => (
               <SortableRpcField
                 key={rpc.id}
                 index={index}
@@ -176,6 +168,7 @@ export const NetworkRpcsListField = () => {
                 rpc={rpc}
                 onChange={autoAppend}
                 canDelete={canDelete}
+                canDrag={arr.length > 1}
                 onDelete={handleRemove(index)}
                 errors={errors.rpcs}
               />
