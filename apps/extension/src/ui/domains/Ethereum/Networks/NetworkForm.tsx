@@ -129,6 +129,7 @@ const evmNetworkToFormData = (
     blockExplorerUrl:
       network.explorerUrl ?? ("explorerUrls" in network ? network.explorerUrls?.[0] : undefined),
     isTestnet: !!network.isTestnet,
+    tokenCoingeckoId: nativeToken.coingeckoId,
     tokenSymbol: nativeToken.symbol,
     tokenDecimals: nativeToken.decimals,
   }
@@ -168,7 +169,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
   const formProps = useForm<RequestUpsertCustomEvmNetwork>({
     mode: "onTouched",
     reValidateMode: "onBlur",
-    defaultValues: { isTestnet: false },
+    defaultValues: defaultValues,
     resolver: yupResolver(schema),
   })
 
@@ -184,7 +185,8 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
     formState: { errors, isValid, isSubmitting, isDirty },
   } = formProps
 
-  const { isTestnet, rpcs, id, tokenCoingeckoId } = watch()
+  const formData = watch()
+  const { isTestnet, rpcs, id, tokenCoingeckoId } = formData
 
   // initialize form with existing values (edit mode)
   useEffect(() => {
@@ -286,7 +288,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
             label="Network Name"
             error={errors.name?.message}
           >
-            <FormFieldInputText placeholder="Ethereum" {...register("name")} />
+            <FormFieldInputText placeholder="Paraverse" {...register("name")} />
           </FormFieldContainer>
         </div>
         <div className="grid grid-cols-3 gap-12">
@@ -303,7 +305,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
             />
           </FormFieldContainer>
           <FormFieldContainer label="Token symbol" error={errors.tokenSymbol?.message}>
-            <FormFieldInputText placeholder="ETH" {...register("tokenSymbol")} />
+            <FormFieldInputText placeholder="ABC" {...register("tokenSymbol")} />
           </FormFieldContainer>
           <FormFieldContainer label="Token decimals" error={errors.tokenDecimals?.message}>
             <FormFieldInputText
@@ -325,10 +327,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
           and paste it here.
         </div>
         <FormFieldContainer label="Block explorer URL" error={errors.blockExplorerUrl?.message}>
-          <FormFieldInputText
-            placeholder="https://etherscan.io"
-            {...register("blockExplorerUrl")}
-          />
+          <FormFieldInputText placeholder="https://" {...register("blockExplorerUrl")} />
         </FormFieldContainer>
         <div>
           <Checkbox checked={!!isTestnet} onChange={handleIsTestnetChange}>

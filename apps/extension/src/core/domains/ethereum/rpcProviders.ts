@@ -1,6 +1,6 @@
-import { API_KEY_ONFINALITY } from "@core/constants"
 import { db } from "@core/libs/db"
 import { log } from "@core/log"
+import { getRpcUrlWithApiKey } from "@ui/util/getRpcUrlWithApiKey"
 import { ethers } from "ethers"
 import { throwAfter } from "talisman-utils"
 
@@ -13,19 +13,6 @@ export type GetProviderOptions = {
 
 const RPC_HEALTHCHECK_TIMEOUT = 10_000
 const RPC_CALL_TIMEOUT = 20_000
-
-const resolveRpcUrl = (rpcUrl: string) => {
-  // inject api key here because we don't want them in the store (user can modify urls of rpcs)
-  return rpcUrl
-    .replace(
-      /^https:\/\/([A-z-]+)\.api\.onfinality\.io\/public-ws\/?$/,
-      `https://$1.api.onfinality.io/ws?apikey=${API_KEY_ONFINALITY}`
-    )
-    .replace(
-      /^https:\/\/([A-z-]+)\.api\.onfinality\.io\/rpc\/?$/,
-      `https://$1.api.onfinality.io/rpc?apikey=${API_KEY_ONFINALITY}`
-    )
-}
 
 const isUnhealthyRpcError = (err: any) => {
   // expected errors that are not related to RPC health
@@ -124,7 +111,7 @@ const getEvmNetworkProvider = async (
 ): Promise<ethers.providers.JsonRpcProvider | null> => {
   if (!Array.isArray(ethereumNetwork.rpcs)) return null
 
-  const urls = ethereumNetwork.rpcs.map(({ url }) => url).map(resolveRpcUrl)
+  const urls = ethereumNetwork.rpcs.map(({ url }) => url).map(getRpcUrlWithApiKey)
   const network = { name: ethereumNetwork.name ?? "unknown network", chainId: ethereumNetwork.id }
 
   const url = await getHealthyRpc(urls, network)

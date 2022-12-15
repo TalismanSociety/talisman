@@ -5,7 +5,7 @@ export const getNetworkFormSchema = (evmNetworkId?: string) => {
   return yup
     .object({
       // TODO remove valueAsNumber when moving to balances v2
-      id: yup.number().typeError("invalid number").required("required").integer("invalid number"),
+      id: yup.number().typeError("").required("").integer(""),
       name: yup.string().required("required"),
       rpcs: yup
         .array()

@@ -58,7 +58,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
   return (
     <div ref={setNodeRef} style={style} className="w-full">
       <FormFieldInputText
-        placeholder="https://1rpc.io/eth"
+        placeholder="https://"
         {...register(`rpcs.${index}.url`, {
           onChange,
         })}
