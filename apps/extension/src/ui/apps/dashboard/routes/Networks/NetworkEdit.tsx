@@ -3,10 +3,24 @@ import Layout from "@ui/apps/dashboard/layout"
 import { useCallback } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { NetworkForm } from "@ui/domains/Ethereum/Networks/NetworkForm"
+import { AnalyticsPage } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Fullscreen",
+  feature: "Settings",
+  featureVersion: 1,
+  page: "Settings - Network",
+}
 
 export const NetworkEdit = () => {
   const navigate = useNavigate()
   const { id: evmNetworkId } = useParams<"id">()
+
+  useAnalyticsPageView(ANALYTICS_PAGE, {
+    id: evmNetworkId,
+    mode: evmNetworkId ? "Edit" : "Add",
+  })
 
   const handleSubmitted = useCallback(() => {
     navigate("/networks")

@@ -391,9 +391,9 @@ export class EthHandler extends ExtensionHandler {
         explorerUrls: [network.blockExplorerUrl].filter(isDefined),
       })
 
-      talismanAnalytics.captureDelayed("add network evm", {
-        network: network.name,
-        isCustom: true,
+      talismanAnalytics.capture(`${existing ? "update" : "create"} custom network`, {
+        networkType: "evm",
+        network: network.id.toString(),
       })
     })
 
@@ -412,6 +412,11 @@ export class EthHandler extends ExtensionHandler {
     await db.transaction("rw", db.evmNetworks, db.tokens, async () => {
       await db.tokens.filter((t) => "evmNetwork" in t && t.evmNetwork?.id === id).delete()
       await db.evmNetworks.delete(id)
+    })
+
+    talismanAnalytics.capture("remove custom network", {
+      networkType: "evm",
+      network: id.toString(),
     })
 
     clearEvmRpcProviderCache(id)
@@ -474,6 +479,11 @@ export class EthHandler extends ExtensionHandler {
         ...defaultEvmNetwork,
         id: Number(defaultEvmNetwork.id),
       })
+    })
+
+    talismanAnalytics.capture("reset custom network", {
+      networkType: "evm",
+      network: id.toString(),
     })
 
     clearEvmRpcProviderCache(id)
