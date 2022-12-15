@@ -40,7 +40,7 @@ const Picture = styled.img`
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
-  featureVersion: 4,
+  featureVersion: 3,
   page: "Onboarding - Step 3 - Manage your privacy",
 }
 

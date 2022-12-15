@@ -3,11 +3,11 @@ import { KeyIcon } from "@talisman/theme/icons"
 import { useAppState } from "@ui/hooks/useAppState"
 import styled from "styled-components"
 
-export interface BuildVersioProps {
+interface IProps {
   className?: string
 }
 
-const BuildVersion = ({ className }: BuildVersioProps) => {
+const BuildVersion = ({ className }: IProps) => {
   const { hasSpiritKey } = useAppState()
 
   return (

@@ -1,9 +1,9 @@
+import { DEBUG } from "@core/constants"
 import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { useCallback, useState } from "react"
-import { useLocation, useParams, useSearchParams } from "react-router-dom"
 
 type AccountAddSecretInputs = {
   name: string
@@ -13,11 +13,16 @@ type AccountAddSecretInputs = {
   accounts: RequestAccountCreateFromSeed[]
 }
 
+const DEFAULT_DATA: Partial<AccountAddSecretInputs> = {
+  // uncomment to be able to F5 on accounts selection screen when developing
+  // name: DEBUG ? "New derived account" : undefined,
+  // type: DEBUG ? "ethereum" : undefined,
+  // multi: DEBUG,
+  // mnemonic: DEBUG ? process.env.TEST_MNEMONIC : undefined,
+}
+
 const useAccountAddSecretProvider = () => {
-  const [params] = useSearchParams()
-  const [data, setData] = useState<Partial<AccountAddSecretInputs>>(() => ({
-    type: params.get("type") as AccountAddressType,
-  }))
+  const [data, setData] = useState<Partial<AccountAddSecretInputs>>(DEFAULT_DATA)
 
   const updateData = useCallback((newData: Partial<AccountAddSecretInputs>) => {
     setData((prev) => ({

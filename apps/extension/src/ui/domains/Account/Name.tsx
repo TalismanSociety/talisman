@@ -5,34 +5,14 @@ import { LinkIcon, UsbIcon } from "@talisman/theme/icons"
 import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
 import { ReactComponent as IconLoader } from "@talisman/theme/icons/loader.svg"
 import Asset from "@ui/domains/Asset"
+import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { FC, useCallback } from "react"
 import styled from "styled-components"
 
 import { useAddressFormatterModal } from "./AddressFormatterModal"
 import Avatar from "./Avatar"
 
-type AccountTypeIconProps = {
-  origin?: AccountJson["origin"] | null
-  className?: string
-}
-
-const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, className }) => {
-  if (["SEED", "JSON"].includes(origin as string))
-    return (
-      <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
-        <LinkIcon />
-      </WithTooltip>
-    )
-  if (origin === "HARDWARE")
-    return (
-      <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
-        <UsbIcon />
-      </WithTooltip>
-    )
-  return null
-}
-
-export interface NamedAddressOptions {
+export interface IAccountNameOptions {
   withAvatar?: boolean
   withBalanceRow?: boolean
   withCopy?: boolean
@@ -40,34 +20,58 @@ export interface NamedAddressOptions {
   withBackupIndicator?: boolean
 }
 
-export interface NamedAddressProps
-  extends NamedAddressOptions,
-    Pick<AccountJson, "address" | "name" | "genesisHash"> {
+type AccountTypeIconProps = {
+  account?: AccountJson | null
+  className?: string
+}
+
+const AccountTypeIcon: FC<AccountTypeIconProps> = ({ account, className }) => {
+  if (["SEED", "JSON"].includes(account?.origin as string))
+    return (
+      <WithTooltip as="div" className={`${className} source`} tooltip={`${account?.origin} Import`}>
+        <LinkIcon />
+      </WithTooltip>
+    )
+  if (account?.origin === "HARDWARE")
+    return (
+      <WithTooltip as="div" className={`${className} source`} tooltip={`${account?.origin} Import`}>
+        <UsbIcon />
+      </WithTooltip>
+    )
+  return null
+}
+
+export interface IAccountName extends IAccountNameOptions {
+  address: string
   balances?: Balances
   className?: string
 }
 
-const NamedAddress = ({
+const AccountName = ({
   address,
-  name,
-  genesisHash,
   balances,
   withAvatar,
   withBalanceRow,
   withCopy,
   withSource,
   className,
-}: NamedAddressProps) => {
+}: IAccountName) => {
+  const account = useAccountByAddress(address)
   const { open } = useAddressFormatterModal()
   const handleCopyClick = useCallback(() => open(address), [address, open])
 
   return (
     <>
       <span className={`${className} account-name`}>
-        {!!withAvatar && <Avatar address={address} genesisHash={genesisHash} />}
+        {!!withAvatar && (
+          <Avatar
+            address={address}
+            genesisHash={account?.isHardware ? account?.genesisHash : undefined}
+          />
+        )}
         <div className={`text${withBalanceRow ? " light" : ""}`}>
           <span className="account-name-row">
-            <span className="name">{name ?? address}</span>
+            <span className="name">{account?.name ?? address}</span>
             <span className="copy">
               {withCopy && (
                 <IconCopy onClick={handleCopyClick} className={`${className} copyIcon`} />
@@ -89,12 +93,12 @@ const NamedAddress = ({
           )}
         </div>
       </span>
-      {!!withSource && <AccountTypeIcon origin={origin} className={className} />}
+      {!!withSource && <AccountTypeIcon account={account} className={className} />}
     </>
   )
 }
 
-const StyledNamedAddress = styled(NamedAddress)`
+const StyledAccountName = styled(AccountName)`
   display: flex;
   align-items: center;
   max-width: 100%;
@@ -182,4 +186,4 @@ const StyledNamedAddress = styled(NamedAddress)`
   }
 `
 
-export default StyledNamedAddress
+export default StyledAccountName

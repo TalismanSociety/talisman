@@ -1,3 +1,4 @@
+import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import posthog from "posthog-js"
 import { useEffect, useRef } from "react"
