@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { ImportPage } from "./Import"
+import { ImportMethodPage } from "./ImportMethod"
+import { ImportSeedPage } from "./ImportSeed"
 import { OnboardingPage } from "./Onboarding"
 import { PasswordPage } from "./Password"
 import { PrivacyPage } from "./Privacy"
@@ -11,6 +13,8 @@ const OnboardingRoutes = () => {
     <Routes>
       <Route path="/" element={<WelcomePage />} />
       <Route path="import" element={<ImportPage />} />
+      <Route path="import-method" element={<ImportMethodPage />} />
+      <Route path="import-seed" element={<ImportSeedPage />} />
       <Route path="password" element={<PasswordPage />} />
       <Route path="privacy" element={<PrivacyPage />} />
       <Route path="onboard" element={<OnboardingPage />} />

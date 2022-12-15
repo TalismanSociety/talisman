@@ -10,6 +10,7 @@ import React from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 
+import { AddressBookProvider } from "./hooks/useAddressBook"
 import { AppStateProvider } from "./hooks/useAppState"
 import { DbCacheProvider } from "./hooks/useDbCache"
 import { FeaturesProvider } from "./hooks/useFeatures"
@@ -32,11 +33,13 @@ export const renderTalisman = (app: any) => {
           <QueryClientProvider client={queryClient}>
             <FeaturesProvider>
               <SettingsProvider>
-                <AppStateProvider>
-                  <DbCacheProvider>
-                    <HashRouter>{app}</HashRouter>
-                  </DbCacheProvider>
-                </AppStateProvider>
+                <AddressBookProvider>
+                  <AppStateProvider>
+                    <DbCacheProvider>
+                      <HashRouter>{app}</HashRouter>
+                    </DbCacheProvider>
+                  </AppStateProvider>
+                </AddressBookProvider>
               </SettingsProvider>
             </FeaturesProvider>
             <NotificationsContainer />
