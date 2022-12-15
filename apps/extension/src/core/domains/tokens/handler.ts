@@ -85,33 +85,6 @@ export default class TokensHandler extends ExtensionHandler {
       case "pri(tokens.erc20.custom.remove)":
         return await db.tokens.delete((request as RequestIdOnly).id)
 
-      case "pri(tokens.erc20.custom.clear)": {
-        const filter = request as { chainId?: ChainId; evmNetworkId?: string } | undefined
-        const deleteFilterFn = (token: CustomErc20Token) =>
-          filter === undefined
-            ? // delete if no filter set
-              true
-            : filter.chainId === token.chain?.id
-            ? // delete if chainId filter set and this token is on the chain
-              true
-            : filter.evmNetworkId === token.evmNetwork?.id
-            ? // delete if evmNetworkId set and this token is on the evmNetwork
-              true
-            : // don't delete
-              false
-
-        const deleteTokens = (await db.tokens.toArray())
-          .filter((token): token is CustomErc20Token => {
-            if (token.type !== "erc20") return false
-            if (!("isCustom" in token)) return false
-            return true
-          })
-          .filter(deleteFilterFn)
-          .map((token) => token.id)
-        await db.tokens.bulkDelete(deleteTokens)
-        return
-      }
-
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

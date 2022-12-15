@@ -150,8 +150,6 @@ export const api: MessageTypes = {
   addCustomErc20Token: (token) => messageService.sendMessage("pri(tokens.erc20.custom.add)", token),
   removeCustomErc20Token: (id) =>
     messageService.sendMessage("pri(tokens.erc20.custom.remove)", { id }),
-  clearCustomErc20Tokens: (filter) =>
-    messageService.sendMessage("pri(tokens.erc20.custom.clear)", filter),
 
   // transaction message types
   transactionSubscribe: (id, cb) =>

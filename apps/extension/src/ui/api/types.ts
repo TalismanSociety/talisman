@@ -157,9 +157,6 @@ export default interface MessageTypes {
   customErc20Token: (id: string) => Promise<CustomErc20Token>
   addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
   removeCustomErc20Token: (id: string) => Promise<boolean>
-  clearCustomErc20Tokens: (
-    filter: { chainId?: ChainId; evmNetworkId?: number } | undefined
-  ) => Promise<boolean>
 
   // transaction message types
   transactionSubscribe: (id: string, cb: (tx: any) => void) => UnsubscribeFn
