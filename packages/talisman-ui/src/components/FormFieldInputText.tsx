@@ -51,7 +51,7 @@ export const FormFieldInputText = forwardRef<HTMLInputElement, FormFieldInputTex
           ref={ref}
           {...props}
           className={classNames(
-            "focus:text-body h-full min-w-0 grow bg-transparent",
+            "focus:text-body disabled:text-body-disabled h-full min-w-0 grow bg-transparent",
             props.className
           )}
         />
