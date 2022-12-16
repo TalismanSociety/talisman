@@ -5120,6 +5120,60 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subsquid/scale-codec@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@subsquid/scale-codec@npm:1.1.0"
+  dependencies:
+    "@subsquid/util-internal-hex": ^0.0.1
+    "@subsquid/util-internal-json": ^0.2.0
+  checksum: a50be2c0f1bdcaa09d277c0782d4cc5878b4b2b88a4d18cae29aca08fbc4f2d36041ccb65b1a8015decc038b5c15d498d750aea52f28fb832011028ce461ea6a
+  languageName: node
+  linkType: hard
+
+"@subsquid/substrate-metadata@npm:^2.1.2":
+  version: 2.1.2
+  resolution: "@subsquid/substrate-metadata@npm:2.1.2"
+  dependencies:
+    "@subsquid/scale-codec": ^1.1.0
+    "@subsquid/util-internal": ^1.0.0
+    "@subsquid/util-naming": ^0.0.1
+  checksum: 002adfb65e263e9d153032f5543a526c578921a9c63377bcbb1c385eb739ab52d7de3c7efd36c67761e7b3d0835d4d353f8a450d989cdf0d3c4ebd0d8e05d5c0
+  languageName: node
+  linkType: hard
+
+"@subsquid/util-internal-hex@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "@subsquid/util-internal-hex@npm:0.0.1"
+  checksum: 1d0d790d9731673bb5983ab2887dac918f36e6958cfd9cd7ee933ce8084ba2faa1f73446b2d833f89843f4d80c3806971bc13508cdf6fe5d886ad1b514f3e10b
+  languageName: node
+  linkType: hard
+
+"@subsquid/util-internal-json@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "@subsquid/util-internal-json@npm:0.2.0"
+  dependencies:
+    "@subsquid/util-internal-hex": ^0.0.1
+  checksum: 49c86c03bbd259a1714c78bb511ec58cc82b5dd9c92cf4836190a65f5fe321b900b99fa1689b1c8690c73f31570f0234786cc902d3d0adceca412e65809effed
+  languageName: node
+  linkType: hard
+
+"@subsquid/util-internal@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@subsquid/util-internal@npm:1.0.0"
+  checksum: c23bde229e75dfdd527ed83cbce9162920acfb805b3c1f3183f5a30a2400806aefbcc2a8d42c373cf5fbf6590a2038d7b30ed3a34d36aca2227ec2c15fe3aeec
+  languageName: node
+  linkType: hard
+
+"@subsquid/util-naming@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "@subsquid/util-naming@npm:0.0.1"
+  dependencies:
+    camelcase: ^6.3.0
+    inflected: ^2.1.0
+  checksum: f2ab5ac6e81d892566321bf1a3ca9bd010bed1e0efbef6f6dd0bd9cb3fcee2f88bf52ba5294420b57acb209643e3bd5c248d2531a855f721431e5ff0e32dea0e
+  languageName: node
+  linkType: hard
+
 "@substrate/connect-extension-protocol@npm:^1.0.1":
   version: 1.0.1
   resolution: "@substrate/connect-extension-protocol@npm:1.0.1"
@@ -5753,6 +5807,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-native@workspace:packages/balances-substrate-native"
   dependencies:
+    "@subsquid/scale-codec": ^1.1.0
+    "@subsquid/substrate-metadata": ^2.1.2
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -9439,7 +9495,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"camelcase@npm:^6.2.0, camelcase@npm:^6.2.1":
+"camelcase@npm:^6.2.0, camelcase@npm:^6.2.1, camelcase@npm:^6.3.0":
   version: 6.3.0
   resolution: "camelcase@npm:6.3.0"
   checksum: 8c96818a9076434998511251dcb2761a94817ea17dbdc37f47ac080bd088fc62c7369429a19e2178b993497132c8cbcf5cc1f44ba963e76782ba469c0474938d
@@ -14784,6 +14840,13 @@ __metadata:
   version: 1.0.4
   resolution: "infer-owner@npm:1.0.4"
   checksum: 181e732764e4a0611576466b4b87dac338972b839920b2a8cde43642e4ed6bd54dc1fb0b40874728f2a2df9a1b097b8ff83b56d5f8f8e3927f837fdcb47d8a89
+  languageName: node
+  linkType: hard
+
+"inflected@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "inflected@npm:2.1.0"
+  checksum: 1e3fb2d24ec6c774977dd5ed884c6097b6525f66edecfdca0845ab4023d35f02af1057de50cd69cdc5829d0bd5ba69fd7fb41d4d8abdf85ee243bf2bbf65995d
   languageName: node
   linkType: hard
 
