@@ -88,6 +88,7 @@ const config = (env) => ({
       stream: false,
       assert: require.resolve("assert"),
       crypto: require.resolve("crypto-browserify"),
+      process: require.resolve("process"),
     },
   },
   plugins: [

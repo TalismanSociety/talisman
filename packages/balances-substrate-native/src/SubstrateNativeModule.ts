@@ -477,21 +477,27 @@ function formatRpcResult(
         return false
       }
 
-      let balance: any
-      try {
-        // TODO: Handle cases where accountInfoTypeDef is not defined (so chain is metadata < 14 and we also don't have an override hardcoded in)
-        // most likely best way to handle this case: log a warning and return an empty balance
-        balance = createType(typeRegistry, accountInfoTypeDef, change)
-      } catch (error) {
-        throw new Error(`Failed to create balance type for token ${tokenId} on chain ${chainId}`, {
-          cause: error as Error,
-        })
+      if (accountInfoTypeDef === undefined) {
+        // accountInfoTypeDef is undefined when chain is metadata < 14 and we also don't have an override hardcoded in
+        // the most likely best way to handle this case: log a warning and return an empty balance
+        log.warn(`Token ${tokenId} on chain ${chainId} has no balance type`)
+        return false
       }
 
-      let free = (balance.data?.free.toBigInt() || BigInt("0")).toString()
-      let reserved = (balance.data?.reserved.toBigInt() || BigInt("0")).toString()
-      let miscFrozen = (balance.data?.miscFrozen.toBigInt() || BigInt("0")).toString()
-      let feeFrozen = (balance.data?.feeFrozen.toBigInt() || BigInt("0")).toString()
+      let balance: any
+      try {
+        balance = createType(typeRegistry, accountInfoTypeDef, change)
+      } catch (error) {
+        log.warn(
+          `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${error?.toString()}`
+        )
+        return false
+      }
+
+      let free = (balance.data?.free?.toBigInt() || BigInt("0")).toString()
+      let reserved = (balance.data?.reserved?.toBigInt() || BigInt("0")).toString()
+      let miscFrozen = (balance.data?.miscFrozen?.toBigInt() || BigInt("0")).toString()
+      let feeFrozen = (balance.data?.feeFrozen?.toBigInt() || BigInt("0")).toString()
 
       // we use the evm-native module to fetch native token balances for ethereum addresses
       if (isEthereumAddress(address)) free = reserved = miscFrozen = feeFrozen = "0"
