@@ -489,7 +489,9 @@ function formatRpcResult(
         balance = createType(typeRegistry, accountInfoTypeDef, change)
       } catch (error) {
         log.warn(
-          `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${error?.toString()}`
+          `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${(
+            error as any
+          )?.toString()}`
         )
         return false
       }
