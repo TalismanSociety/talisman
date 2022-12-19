@@ -18,7 +18,7 @@ import { EvmErc20Module } from "@talismn/balances-evm-erc20"
 import { EvmNativeModule } from "@talismn/balances-evm-native"
 import { SubNativeModule } from "@talismn/balances-substrate-native"
 import { SubOrmlModule } from "@talismn/balances-substrate-orml"
-import { Token, TokenId, TokenList } from "@talismn/chaindata-provider"
+import { Token, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
@@ -63,6 +63,7 @@ export class BalanceStore {
    *     }
    */
   #addresses: ReplaySubject<Addresses> = new ReplaySubject(1)
+  #addressesCleanupTimeout: ReturnType<typeof setTimeout> | null = null
 
   #subscribers: Subject<void> = new Subject()
 
@@ -267,13 +268,25 @@ export class BalanceStore {
     this.#addresses.next(addresses)
 
     // delete stored balances for addresses which no longer exist
-    await this.deleteBalances((balance) => {
-      // remove balance if account doesn't exist
-      if (!balance.address || addresses[balance.address] === undefined) return true
+    //
+    // When initializing, our keyring object doesn't immediately contain all of our accounts.
+    // There will be a few updates where `accounts` is incomplete.
+    // To avoid deleting the balances for accounts which are still in the wallet, but have not yet
+    // been loaded into the keyring, we wait about 10 seconds before running this cleanup job.
+    //
+    // If this job is triggered while a pending cleanup has not run yet, we cancel the pending one
+    // and replace it with the latest one (which will have more accounts loaded).
+    if (this.#addressesCleanupTimeout !== null) clearTimeout(this.#addressesCleanupTimeout)
+    this.#addressesCleanupTimeout = setTimeout(async () => {
+      this.#addressesCleanupTimeout = null
+      await this.deleteBalances((balance) => {
+        // remove balance if account doesn't exist
+        if (!balance.address || addresses[balance.address] === undefined) return true
 
-      // keep balance
-      return false
-    })
+        // keep balance
+        return false
+      })
+    }, 10_000 /* 10_000ms = 10 seconds */)
 
     // update addresses on existing subscriptions
     if (this.#subscribers.observed) {
