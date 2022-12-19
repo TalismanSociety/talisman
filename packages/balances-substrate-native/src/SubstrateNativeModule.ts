@@ -283,7 +283,7 @@ export const SubNativeModule: BalanceModule<
         const accountInfoTypeDef =
           token.accountInfoType !== undefined &&
           token.accountInfoType !== null &&
-          token.metadataVersion <= 14
+          token.metadataVersion >= 14
             ? typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
             : AccountInfoOverrides[chainId]
 
@@ -363,7 +363,7 @@ export const SubNativeModule: BalanceModule<
           const accountInfoTypeDef =
             token.accountInfoType !== undefined &&
             token.accountInfoType !== null &&
-            token.metadataVersion <= 14
+            token.metadataVersion >= 14
               ? typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
               : AccountInfoOverrides[chainId]
 
