@@ -183,82 +183,94 @@ export const EvmErc20Module: BalanceModule<
       tokens
     )
 
-    const balances = await Promise.all(
-      Object.entries(addressesByTokenGroupedByEvmNetwork).map(
-        async ([evmNetworkId, addressesByToken]) => {
-          if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
+    const balances = (
+      await Promise.allSettled(
+        Object.entries(addressesByTokenGroupedByEvmNetwork).map(
+          async ([evmNetworkId, addressesByToken]) => {
+            if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
 
-          const evmNetwork = evmNetworks[evmNetworkId]
-          if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
+            const evmNetwork = evmNetworks[evmNetworkId]
+            if (!evmNetwork) throw new Error(`Evm network ${evmNetworkId} not found`)
 
-          const provider = await chainConnectors.evm.getProviderForEvmNetwork(evmNetwork, {
-            batch: true,
-          })
-          if (!provider)
-            throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
-
-          const tokensAndAddresses = Object.entries(addressesByToken).reduce(
-            (tokensAndAddresses, [tokenId, addresses]) => {
-              const token = tokens[tokenId]
-              if (!token) throw new Error(`Token ${tokenId} not found`)
-
-              // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-              if (token.type !== "evm-erc20") {
-                log.debug(`This module doesn't handle tokens of type ${token.type}`)
-                return tokensAndAddresses
-              }
-
-              const tokenAndAddresses: [EvmErc20Token | CustomEvmErc20Token, string[]] = [
-                token,
-                addresses,
-              ]
-
-              return [...tokensAndAddresses, tokenAndAddresses]
-            },
-            [] as Array<[EvmErc20Token | CustomEvmErc20Token, string[]]>
-          )
-
-          // fetch all balances
-          const balanceRequests = tokensAndAddresses.flatMap(([token, addresses]) => {
-            const contract = new ethers.Contract(token.contractAddress, erc20Abi, provider)
-
-            return addresses.map(
-              async (address) =>
-                new Balance({
-                  source: "evm-erc20",
-
-                  status: "live",
-
-                  address: address,
-                  multiChainId: { evmChainId: evmNetwork.id },
-                  evmNetworkId,
-                  tokenId: token.id,
-
-                  free: await getFreeBalance(contract, address),
-                })
-            )
-          })
-
-          // wait for balance fetches to complete
-          const balanceResults = await Promise.allSettled(balanceRequests)
-
-          // filter out errors
-          const balances = balanceResults
-            .map((result) => {
-              if (result.status === "rejected") {
-                log.error(result.reason)
-                return null
-              }
-
-              return result.value
+            const provider = await chainConnectors.evm.getProviderForEvmNetwork(evmNetwork, {
+              batch: true,
             })
-            .filter((balance): balance is Balance => balance !== null)
+            if (!provider)
+              throw new Error(`Could not get rpc provider for evm network ${evmNetworkId}`)
 
-          // return to caller
-          return new Balances(balances)
-        }
+            const tokensAndAddresses = Object.entries(addressesByToken).reduce(
+              (tokensAndAddresses, [tokenId, addresses]) => {
+                const token = tokens[tokenId]
+                if (!token) {
+                  log.debug(`Token ${tokenId} not found`)
+                  return tokensAndAddresses
+                }
+
+                // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
+                if (token.type !== "evm-erc20") {
+                  log.debug(`This module doesn't handle tokens of type ${token.type}`)
+                  return tokensAndAddresses
+                }
+
+                const tokenAndAddresses: [EvmErc20Token | CustomEvmErc20Token, string[]] = [
+                  token,
+                  addresses,
+                ]
+
+                return [...tokensAndAddresses, tokenAndAddresses]
+              },
+              [] as Array<[EvmErc20Token | CustomEvmErc20Token, string[]]>
+            )
+
+            // fetch all balances
+            const balanceRequests = tokensAndAddresses.flatMap(([token, addresses]) => {
+              const contract = new ethers.Contract(token.contractAddress, erc20Abi, provider)
+
+              return addresses.map(
+                async (address) =>
+                  new Balance({
+                    source: "evm-erc20",
+
+                    status: "live",
+
+                    address: address,
+                    multiChainId: { evmChainId: evmNetwork.id },
+                    evmNetworkId,
+                    tokenId: token.id,
+
+                    free: await getFreeBalance(contract, address),
+                  })
+              )
+            })
+
+            // wait for balance fetches to complete
+            const balanceResults = await Promise.allSettled(balanceRequests)
+
+            // filter out errors
+            const balances = balanceResults
+              .map((result) => {
+                if (result.status === "rejected") {
+                  log.debug(result.reason)
+                  return false
+                }
+                return result.value
+              })
+              .filter((balance): balance is Balance => balance !== false)
+
+            // return to caller
+            return new Balances(balances)
+          }
+        )
       )
     )
+      .map((result) => {
+        if (result.status === "rejected") {
+          log.debug(result.reason)
+          return false
+        }
+        return result.value
+      })
+      .filter((balances): balances is Balances => balances !== false)
 
     return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
   },

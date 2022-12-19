@@ -136,7 +136,7 @@ export const EvmNativeModule: BalanceModule<
     const tokens = await chaindataProvider.tokens()
 
     const balances = (
-      await Promise.all(
+      await Promise.allSettled(
         Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
           if (!chainConnectors.evm) throw new Error(`This module requires an evm chain connector`)
 
@@ -144,10 +144,8 @@ export const EvmNativeModule: BalanceModule<
           if (!token) throw new Error(`Token ${tokenId} not found`)
 
           // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-          if (token.type !== "evm-native") {
-            log.debug(`This module doesn't handle tokens of type ${token.type}`)
-            return false
-          }
+          if (token.type !== "evm-native")
+            throw new Error(`This module doesn't handle tokens of type ${token.type}`)
 
           const evmNetworkId = token.evmNetwork?.id
           if (!evmNetworkId) throw new Error(`Token ${tokenId} has no evm network`)
@@ -185,19 +183,26 @@ export const EvmNativeModule: BalanceModule<
           const balances = balanceResults
             .map((result) => {
               if (result.status === "rejected") {
-                log.error(result.reason)
-                return null
+                log.debug(result.reason)
+                return false
               }
-
               return result.value
             })
-            .filter((balance): balance is Balance => balance !== null)
+            .filter((balance): balance is Balance => balance !== false)
 
           // return to caller
           return new Balances(balances)
         })
       )
-    ).filter((balances): balances is Balances => balances !== false)
+    )
+      .map((result) => {
+        if (result.status === "rejected") {
+          log.debug(result.reason)
+          return false
+        }
+        return result.value
+      })
+      .filter((balances): balances is Balances => balances !== false)
 
     return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
   },
