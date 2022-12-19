@@ -51,6 +51,7 @@ const getHumanReadableErrorMessage = (error: unknown) => {
   if (serverError) {
     const message = serverError?.reason ?? serverError?.message
     return message
+      .replace("VM Exception while processing transaction: reverted with reason string ", "")
       .replace("VM Exception while processing transaction: revert", "")
       .replace("VM Exception while processing transaction:", "")
       .trim()

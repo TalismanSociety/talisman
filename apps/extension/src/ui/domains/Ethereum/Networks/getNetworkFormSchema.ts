@@ -15,7 +15,6 @@ export const getNetworkFormSchema = (evmNetworkId?: string) => {
               .string()
               .trim()
               .required("required")
-              .url("invalid url")
               .test("rpcmatch", "rpcCheck", async function (newRpc) {
                 if (!evmNetworkId || !newRpc) return true
                 try {
