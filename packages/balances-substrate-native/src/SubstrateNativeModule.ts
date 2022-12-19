@@ -125,7 +125,7 @@ export const SubNativeModule: BalanceModule<
       : null
 
     // we do a just-in-time import here so that our frontend bundle of this module doesn't include the nodejs-dependent subsquid libraries
-    const { mutateMetadata } = await import("./metadata")
+    const { mutateMetadata } = await import(/* webpackIgnore: true */ "./metadata")
 
     let accountInfoType = null
     const balanceMetadata = mutateMetadata(metadataRpc, (metadata) => {
