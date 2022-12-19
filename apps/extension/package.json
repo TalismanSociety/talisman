@@ -103,7 +103,6 @@
     "minimist": "^1.2.6",
     "nanoid": "3.3.2",
     "posthog-js": "^1.21.1",
-    "process": "^0.11.10",
     "react": "18.2.0",
     "react-app-polyfill": "3.0.0",
     "react-contenteditable": "3.3.6",

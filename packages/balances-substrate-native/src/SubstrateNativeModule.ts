@@ -19,7 +19,6 @@ import {
 import { blake2Concat, decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 import log from "./log"
-import { mutateMetadata } from "./metadata"
 
 type ModuleType = "substrate-native"
 
@@ -124,6 +123,9 @@ export const SubNativeModule: BalanceModule<
     const existentialDeposit = constants?.balances?.existentialDeposit
       ? constants.balances.existentialDeposit.toString()
       : null
+
+    // we do a just-in-time import here so that our frontend bundle of this module doesn't include the nodejs-dependent subsquid libraries
+    const { mutateMetadata } = await import("./metadata")
 
     let accountInfoType = null
     const balanceMetadata = mutateMetadata(metadataRpc, (metadata) => {
