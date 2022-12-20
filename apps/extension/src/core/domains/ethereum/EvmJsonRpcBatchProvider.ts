@@ -35,14 +35,14 @@ export class EvmJsonRpcBatchProvider extends ethers.providers.JsonRpcProvider {
       .fetchJson(this.connection, JSON.stringify(payload))
       .then((results) => {
         batch.forEach((request, index) => {
-          const result = results[index]
-          if (result.error) {
-            const error = new Error(result.error.message)
-            ;(error as any).code = result.error.code
-            ;(error as any).data = result.error.data
-            request.reject(error)
+          const { result, error } = results[index]
+          if (error) {
+            const err = new Error(error.message)
+            ;(err as any).code = error.code
+            ;(err as any).data = error.data
+            request.reject(err)
           } else {
-            request.resolve(result.result)
+            request.resolve(result)
           }
         })
       })
