@@ -7,6 +7,7 @@ import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address } from "@core/types/base"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
+import md5 from "blueimp-md5"
 import { ethers } from "ethers"
 
 import { erc20Abi } from "./abis"
@@ -36,11 +37,12 @@ export default class Erc20BalancesEvmRpc {
   ): Promise<Balances | UnsubscribeFn> {
     // subscription request
     if (callback !== undefined) {
-      let subscriptionActive = true
+      const subscription = { active: true }
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
+      const cache = new Map<number, string>()
 
       const poll = async () => {
-        if (!subscriptionActive) return
+        if (!subscription.active) return
         try {
           // check each network sequentially to prevent timeouts
           for (const evmNetworkId of Object.keys(tokensByEvmNetwork)
@@ -50,8 +52,12 @@ export default class Erc20BalancesEvmRpc {
               [evmNetworkId]: tokensByEvmNetwork[evmNetworkId],
             })
 
-            // TODO: Don't call callback with balances which have not changed since the last poll.
-            callback(null, balances)
+            // Don't call callback with balances which have not changed since the last poll.
+            const hash = md5(JSON.stringify(balances.toJSON()))
+            if (cache.get(evmNetworkId) !== hash) {
+              cache.set(evmNetworkId, hash)
+              callback(null, balances)
+            }
           }
         } catch (error) {
           callback(error)
@@ -60,11 +66,10 @@ export default class Erc20BalancesEvmRpc {
         }
       }
 
-      // unleash the dragons
-      poll()
+      setTimeout(poll, subscriptionInterval)
 
       return () => {
-        subscriptionActive = false
+        subscription.active = false
       }
     }
 
