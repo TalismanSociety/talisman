@@ -42,26 +42,22 @@ export default class Erc20BalancesEvmRpc {
 
       const poll = async () => {
         if (!subscriptionActive) return
-        //console.time("Erc20BalancesEvmRpc.poll()")
         try {
-          // check each network sequentially to prevent reaching timeouts
-          for (const evmNetworkId of Object.keys(tokensByEvmNetwork).map(Number)) {
-            const logKey = `Erc20BalancesEvmRpc.poll : network ${evmNetworkId} - ${tokensByEvmNetwork[evmNetworkId].length} tokens`
-            //  console.time(logKey)
+          // check each network sequentially to prevent timeouts
+          for (const evmNetworkId of Object.keys(tokensByEvmNetwork)
+            .map(Number)
+            .filter((id) => tokensByEvmNetwork[id])) {
             const balances = await this.fetchErc20Balances(addresses, {
               [evmNetworkId]: tokensByEvmNetwork[evmNetworkId],
             })
-            //console.timeEnd(logKey)
 
             // TODO: Don't call callback with balances which have not changed since the last poll.
             callback(null, balances)
-            await sleep(100) // allow for other HTTP requests to be made, we're not in a hurry here
           }
         } catch (error) {
           callback(error)
         } finally {
           setTimeout(poll, subscriptionInterval)
-          //console.timeEnd("Erc20BalancesEvmRpc.poll()")
         }
       }
 

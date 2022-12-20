@@ -40,24 +40,18 @@ export default class NativeBalancesEvmRpc {
       const poll = async () => {
         if (!subscriptionActive) return
 
-        // console.time("NativeBalancesEvmRpc.poll()")
         try {
+          // check each network sequentially to prevent timeouts
           for (const evmNetwork of evmNetworks) {
-            const logKey = `NativeBalancesEvmRpc.poll : network ${evmNetwork.id} - ${evmNetwork.nativeToken?.id}`
-            //   console.time(logKey)
             const balances = await this.fetchNativeBalances(addresses, [evmNetwork])
-            // console.timeEnd(logKey)
 
             // TODO: Don't call callback with balances which have not changed since the last poll.
             callback(null, balances)
-
-            await sleep(100) // allow for other HTTP requests to be made, we're not in a hurry here
           }
         } catch (error) {
           callback(error)
         } finally {
           setTimeout(poll, subscriptionInterval)
-          //console.timeEnd("NativeBalancesEvmRpc.poll()")
         }
       }
 
