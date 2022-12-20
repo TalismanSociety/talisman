@@ -33,7 +33,7 @@ const resolveRpcUrl = (rpcUrl: string) => {
 const isUnhealthyRpcError = (err: any) => {
   // expected errors that are not related to RPC health
   // ex : throw revert on a transaction call that fails
-  if (!err?.reason && ["processing response error", "BATCH_FAILED"].includes(err.reason.toString()))
+  if (err?.reason && ["processing response error", "BATCH_FAILED"].includes(err.reason.toString()))
     return false
 
   // if unknown, assume RPC is unhealthy
