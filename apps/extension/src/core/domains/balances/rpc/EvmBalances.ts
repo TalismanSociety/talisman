@@ -4,6 +4,7 @@ import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { log } from "@core/log"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address } from "@core/types/base"
+import { sleep } from "@core/util/sleep"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { ethers } from "ethers"
@@ -39,18 +40,28 @@ export default class NativeBalancesEvmRpc {
       const poll = async () => {
         if (!subscriptionActive) return
 
+        // console.time("NativeBalancesEvmRpc.poll()")
         try {
-          const balances = await this.fetchNativeBalances(addresses, evmNetworks)
+          for (const evmNetwork of evmNetworks) {
+            const logKey = `NativeBalancesEvmRpc.poll : network ${evmNetwork.id} - ${evmNetwork.nativeToken?.id}`
+            //   console.time(logKey)
+            const balances = await this.fetchNativeBalances(addresses, [evmNetwork])
+            // console.timeEnd(logKey)
 
-          // TODO: Don't call callback with balances which have not changed since the last poll.
-          callback(null, balances)
+            // TODO: Don't call callback with balances which have not changed since the last poll.
+            callback(null, balances)
+
+            await sleep(100) // allow for other HTTP requests to be made, we're not in a hurry here
+          }
         } catch (error) {
           callback(error)
         } finally {
           setTimeout(poll, subscriptionInterval)
+          //console.timeEnd("NativeBalancesEvmRpc.poll()")
         }
       }
-      setTimeout(poll, subscriptionInterval)
+
+      poll()
 
       return () => {
         subscriptionActive = false
