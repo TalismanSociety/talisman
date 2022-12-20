@@ -290,7 +290,7 @@ export class EthHandler extends ExtensionHandler {
     const networkId = parseInt(network.chainId, 16).toString()
     const newToken: CustomEvmNativeToken | null = network.nativeCurrency
       ? {
-          id: `${networkId}-native-${network.nativeCurrency.symbol}`.toLowerCase(),
+          id: `${networkId}-evm-native-${network.nativeCurrency.symbol}`.toLowerCase(),
           type: "evm-native",
           isTestnet: false,
           symbol: network.nativeCurrency.symbol,

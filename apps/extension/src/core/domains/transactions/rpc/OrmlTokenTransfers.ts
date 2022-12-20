@@ -166,9 +166,9 @@ export default class OrmlTokenTransfersRpc {
     const errors: Error[] = []
 
     const hardcodedCurrencyIds: Record<string, any> = {
-      "mangata-orml-mgx": 0,
-      "gm-orml-gm": 1,
-      "gm-orml-gn": 2,
+      "mangata-substrate-orml-mgx": 0,
+      "gm-substrate-orml-gm": 1,
+      "gm-substrate-orml-gn": 2,
     }
 
     // different chains use different orml transfer methods
