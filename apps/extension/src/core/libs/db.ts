@@ -9,6 +9,13 @@ export class TalismanDatabase extends Dexie {
   metadata!: Dexie.Table<MetadataDef, string>
   phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
 
+  /** Chains aren't stored here anymore, we only have this so that we can migrate user's custom chains to the new chaindata database */
+  chains!: Dexie.Table<unknown, string>
+  /** EvmNetworks aren't stored here anymore, we only have this so that we can migrate user's custom networks to the new chaindata database */
+  evmNetworks!: Dexie.Table<unknown, string>
+  /** Tokens aren't stored here anymore, we only have this so that we can migrate user's custom tokens to the new chaindata database */
+  tokens!: Dexie.Table<unknown, string>
+
   constructor() {
     super("Talisman")
 
@@ -24,9 +31,15 @@ export class TalismanDatabase extends Dexie {
       metadata: "genesisHash",
       phishing: "source, commitSha",
 
-      chains: null, // delete legacy table
-      evmNetworks: null, // delete legacy table
-      tokens: null, // delete legacy table
+      chains: "id", // TODO: Delete later on - for now we keep it so we can migrate custom chains to the new db
+      // chains: null, // delete legacy table
+
+      evmNetworks: "id", // TODO: Delete later on - for now we keep it so we can migrate custom networks to the new db
+      // evmNetworks: null, // delete legacy table
+
+      tokens: "id", // TODO: Delete later on - for now we keep it so we can migrate custom tokens to the new db
+      // tokens: null, // delete legacy table
+
       balances: null, // delete legacy table
       metadataRpc: null, // delete legacy table
       chainMetadataRpc: null, // delete legacy table

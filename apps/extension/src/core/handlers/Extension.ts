@@ -12,7 +12,7 @@ import {
 } from "@core/domains/balances/types"
 import { chainConnector } from "@core/domains/chain-connector"
 import { chainConnectorEvm } from "@core/domains/chain-connector-evm"
-import { chaindataProvider } from "@core/domains/chaindata"
+import { attemptCustomChainsAndTokensMigration, chaindataProvider } from "@core/domains/chaindata"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
@@ -107,6 +107,8 @@ export default class Extension extends ExtensionHandler {
       //   // db.tokens.bulkAdd(tokensInit as unknown as Token[])
       // }
     })
+
+    attemptCustomChainsAndTokensMigration()
   }
 
   private initWalletFunding() {
