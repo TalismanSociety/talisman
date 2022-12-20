@@ -13,20 +13,21 @@ export class TalismanDatabase extends Dexie {
     super("Talisman")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
-    this.version(5).stores({
+    this.version(6).stores({
       // You only need to specify properties that you wish to index.
       // The object store will allow any properties on your stored objects but you can only query them by indexed properties
       // https://dexie.org/docs/API-Reference#declare-database
       //
       // Never index properties containing images, movies or large (huge) strings. Store them in IndexedDB, yes! but just don’t index them!
       // https://dexie.org/docs/Version/Version.stores()#warning
+      tokenRates: "tokenId",
+      metadata: "genesisHash",
+      phishing: "source, commitSha",
+
       chains: null, // delete legacy table
       evmNetworks: null, // delete legacy table
       tokens: null, // delete legacy table
-      tokenRates: "tokenId",
       balances: null, // delete legacy table
-      metadata: "genesisHash",
-      phishing: "source, commitSha",
       metadataRpc: null, // delete legacy table
       chainMetadataRpc: null, // delete legacy table
     })
