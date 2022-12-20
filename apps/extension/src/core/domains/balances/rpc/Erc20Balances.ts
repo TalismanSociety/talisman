@@ -7,7 +7,7 @@ import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address } from "@core/types/base"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
-import md5 from "blueimp-md5"
+import isEqual from "lodash/isEqual"
 import { ethers } from "ethers"
 
 import { erc20Abi } from "./abis"
@@ -39,7 +39,7 @@ export default class Erc20BalancesEvmRpc {
     if (callback !== undefined) {
       const subscription = { active: true }
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
-      const cache = new Map<number, string>()
+      const cache = new Map<number, unknown>()
 
       const poll = async () => {
         if (!subscription.active) return
@@ -53,9 +53,9 @@ export default class Erc20BalancesEvmRpc {
             })
 
             // Don't call callback with balances which have not changed since the last poll.
-            const hash = md5(JSON.stringify(balances.toJSON()))
-            if (cache.get(evmNetworkId) !== hash) {
-              cache.set(evmNetworkId, hash)
+            const json = balances.toJSON()
+            if (!isEqual(cache.get(evmNetworkId), json)) {
+              cache.set(evmNetworkId, json)
               callback(null, balances)
             }
           }
