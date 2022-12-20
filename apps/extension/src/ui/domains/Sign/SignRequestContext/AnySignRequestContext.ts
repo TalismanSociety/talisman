@@ -28,7 +28,7 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
   approveSignFn,
   cancelSignFn,
   currentRequest,
-}: UseAnySigningRequestProps<T>): SignableRequest<T["type"]> | null => {
+}: UseAnySigningRequestProps<T>) => {
   const { status, message, setStatus } = useStatus()
 
   const approve = useCallback(
@@ -65,19 +65,14 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
     setStatus.ready()
   }, [setStatus])
 
-  if (!currentRequest) return null
-
   return {
-    id: currentRequest.id,
-    account: currentRequest.account,
-    url: currentRequest.url,
-    request: currentRequest.request,
-    isEthereumRequest: isEthereumRequest(currentRequest),
+    ...currentRequest,
+    isEthereumRequest: currentRequest && isEthereumRequest(currentRequest),
     status,
     setStatus,
     message,
     approve,
     reject,
     setReady,
-  }
+  } as SignableRequest<T["type"]>
 }

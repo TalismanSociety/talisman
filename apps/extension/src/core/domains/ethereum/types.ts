@@ -44,10 +44,10 @@ export declare type EthApproveSignAndSend = KnownSigningRequestIdOnly<"eth-send"
   transaction: ethers.providers.TransactionRequest
 }
 
-export type EthRequestSigningApproveSignature = {
-  id: string
-  signedPayload: `0x${string}`
-}
+export type EthRequestSigningApproveSignature<T extends "eth-sign" | "eth-send"> =
+  KnownSigningRequestIdOnly<T> & {
+    signedPayload: `0x${string}`
+  }
 
 export interface AnyEthRequestChainId extends AnyEthRequest {
   chainId: EvmNetworkId
@@ -114,8 +114,11 @@ export interface EthMessages {
   "pri(eth.signing.cancel)": [KnownSigningRequestIdOnly<"eth-send" | "eth-sign">, boolean]
   "pri(eth.signing.approveSign)": [KnownSigningRequestIdOnly<"eth-sign">, boolean]
   "pri(eth.signing.approveSignAndSend)": [EthApproveSignAndSend, boolean]
-  "pri(eth.signing.approveSignHardware)": [EthRequestSigningApproveSignature, boolean]
-  "pri(eth.signing.approveSignAndSendHardware)": [EthRequestSigningApproveSignature, boolean]
+  "pri(eth.signing.approveSignHardware)": [EthRequestSigningApproveSignature<"eth-sign">, boolean]
+  "pri(eth.signing.approveSignAndSendHardware)": [
+    EthRequestSigningApproveSignature<"eth-send">,
+    boolean
+  ]
   // eth add networks requests management
   // TODO change naming for network add requests, and maybe delete the first one
   "pri(eth.networks.add.requests)": [null, AddEthereumChainRequest[]]

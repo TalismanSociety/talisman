@@ -5,10 +5,7 @@ import {
   EthRequestSigningApproveSignature,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
-import type {
-  AnySigningRequestIdOnly,
-  KnownSigningRequestIdOnly,
-} from "@core/domains/signing/types"
+import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import { CustomEvmNativeToken } from "@core/domains/tokens/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
@@ -80,7 +77,7 @@ export class EthHandler extends ExtensionHandler {
   private async signAndSendApproveHardware({
     id,
     signedPayload,
-  }: EthRequestSigningApproveSignature): Promise<boolean> {
+  }: EthRequestSigningApproveSignature<"eth-send">): Promise<boolean> {
     try {
       const queued = this.state.requestStores.signing.getRequest(id)
       assert(queued, "Unable to find request")
@@ -121,7 +118,7 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private async signAndSendApprove({ id, transaction }: EthApproveSignAndSend): Promise<boolean> {
-    const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
+    const queued = this.state.requestStores.signing.getRequest(id)
     assert(queued, "Unable to find request")
     const { resolve, reject, ethChainId, account, url } = queued
 
@@ -132,8 +129,8 @@ export class EthHandler extends ExtensionHandler {
     const tx = rebuildTransactionRequestNumbers(transaction)
     tx.nonce = await getTransactionCount(account.address, ethChainId)
 
-    const result = await getPairForAddressSafely(account.address, async (pair) => {
-      const password = await this.stores.password.getPassword()
+    const { val, ok } = await getPairForAddressSafely(account.address, async (pair) => {
+      const password = this.stores.password.getPassword()
       assert(password, "Unauthorised")
       const privateKey = getPrivateKey(pair, password)
       const signer = new ethers.Wallet(privateKey, provider)
@@ -157,20 +154,23 @@ export class EthHandler extends ExtensionHandler {
       return true
     })
 
-    if (result.ok) {
-      return result.val
+    if (ok) {
+      return val
     } else {
-      if (result.val === "Unauthorised") {
-        reject(Error(result.val))
+      if (val === "Unauthorised") {
+        reject(Error(val))
       } else {
-        throw new Error(getHumanReadableErrorMessage(result.val) ?? "Failed to send transaction")
+        throw new Error(getHumanReadableErrorMessage(val) ?? "Failed to send transaction")
       }
       return false
     }
   }
 
-  private signApproveHardware({ id, signedPayload }: EthRequestSigningApproveSignature): boolean {
-    const queued = this.state.requestStores.signing.getEthSignRequest(id)
+  private signApproveHardware({
+    id,
+    signedPayload,
+  }: EthRequestSigningApproveSignature<"eth-sign">): boolean {
+    const queued = this.state.requestStores.signing.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -202,8 +202,8 @@ export class EthHandler extends ExtensionHandler {
 
     const { method, request, reject, resolve } = queued
 
-    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
-      const pw = await this.stores.password.getPassword()
+    const { val, ok } = await getPairForAddressSafely(queued.account.address, async (pair) => {
+      const pw = this.stores.password.getPassword()
       assert(pw, "Unauthorised")
       const privateKey = getPrivateKey(pair, pw)
       let signature: string
@@ -245,17 +245,15 @@ export class EthHandler extends ExtensionHandler {
       return true
     })
 
-    if (result.ok) return result.val
-    else {
-      if (result.val === "Unauthorised") {
-        reject(Error(result.val))
-      } else {
-        const msg = getHumanReadableErrorMessage(result.val)
-        if (msg) throw new Error(msg)
-        else result.unwrap() // throws error
-      }
-      return false
+    if (ok) return val
+    if (val === "Unauthorised") {
+      reject(Error(val))
+    } else {
+      const msg = getHumanReadableErrorMessage(val)
+      if (msg) throw new Error(msg)
+      else throw new Error("Unable to complete transaction")
     }
+    return false
   }
 
   private signingCancel({ id }: KnownSigningRequestIdOnly<"eth-send" | "eth-sign">): boolean {
@@ -485,17 +483,17 @@ export class EthHandler extends ExtensionHandler {
       case "pri(eth.signing.approveSignAndSend)":
         return this.signAndSendApprove(request as EthApproveSignAndSend)
 
-      case "pri(eth.signing.approveSignAndSendHardware)":
-        return this.signAndSendApproveHardware(
-          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"]
-        )
-
       case "pri(eth.signing.approveSign)":
         return this.signApprove(request as KnownSigningRequestIdOnly<"eth-sign">)
 
       case "pri(eth.signing.approveSignHardware)":
         return this.signApproveHardware(
           request as RequestTypes["pri(eth.signing.approveSignHardware)"]
+        )
+
+      case "pri(eth.signing.approveSignAndSendHardware)":
+        return this.signAndSendApproveHardware(
+          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"]
         )
 
       case "pri(eth.signing.cancel)":

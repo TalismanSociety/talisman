@@ -107,7 +107,6 @@ export class EthTabsHandler extends TabsHandler {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async accountsList(url: string): Promise<string[]> {
     const site = await this.stores.sites.getSiteFromUrl(url)
     if (!site) return []

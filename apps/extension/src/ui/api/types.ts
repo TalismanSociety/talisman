@@ -77,7 +77,7 @@ export default interface MessageTypes {
   allowPhishingSite: (url: string) => Promise<boolean>
 
   // signing messages -------------------------------------------------------
-  decodeSignRequest: (id: SigningRequestId<"substrate-sign">) => Promise<TransactionDetails | null>
+  decodeSignRequest: (id: SigningRequestId<"substrate-sign">) => Promise<TransactionDetails>
   cancelSignRequest: (id: SigningRequestId<"substrate-sign">) => Promise<boolean>
   subscribeSigningRequest: (
     id: AnyRequestID,
@@ -216,12 +216,18 @@ export default interface MessageTypes {
 
   // eth related messages
   ethApproveSign: (id: SigningRequestId<"eth-sign">) => Promise<boolean>
-  ethApproveSignHardware: (id: string, signature: HexString) => Promise<boolean>
+  ethApproveSignHardware: (
+    id: SigningRequestId<"eth-sign">,
+    signature: HexString
+  ) => Promise<boolean>
   ethApproveSignAndSend: (
     id: SigningRequestId<"eth-send">,
     transaction: ethers.providers.TransactionRequest
   ) => Promise<boolean>
-  ethApproveSignAndSendHardware: (id: string, signedTransaction: HexString) => Promise<boolean>
+  ethApproveSignAndSendHardware: (
+    id: SigningRequestId<"eth-send">,
+    signedTransaction: HexString
+  ) => Promise<boolean>
   ethCancelSign: (id: SigningRequestId<"eth-sign" | "eth-send">) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
   ethGetTransactionsCount: (address: string, evmNetworkId: EvmNetworkId) => Promise<number>

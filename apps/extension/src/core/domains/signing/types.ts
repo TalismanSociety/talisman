@@ -3,7 +3,11 @@ import {
   AccountJsonHardwareEthereum,
   AccountJsonHardwareSubstrate,
 } from "@core/domains/accounts/types"
-import { EthGasSettingsEip1559, EthGasSettingsLegacy } from "@core/domains/ethereum/types"
+import {
+  EthGasSettingsEip1559,
+  EthGasSettingsLegacy,
+  EvmNetworkId,
+} from "@core/domains/ethereum/types"
 import { BaseRequest } from "@core/types/base"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import {
@@ -55,15 +59,8 @@ export interface SubstrateSigningRequest extends BaseSigningRequest<SUBSTRATE_SI
 
 export interface EthBaseSignRequest<T extends keyof Omit<SigningRequests, "substrate-sign">>
   extends BaseSigningRequest<T> {
-  ethChainId: number
+  ethChainId: EvmNetworkId
   account: AccountJson | AccountJsonHardwareEthereum
-  // method:
-  //   | "personal_sign"
-  //   | "eth_sendTransaction"
-  //   | "eth_signTypedData"
-  //   | "eth_signTypedData_v1"
-  //   | "eth_signTypedData_v3"
-  //   | "eth_signTypedData_v4"
   request: string | EthTransactionRequest
 }
 

@@ -185,6 +185,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     }
   }, [request?.data])
 
+  if (!request) return null
+
   return (
     <ViewDetailsContainer>
       <div className="grow">
