@@ -311,7 +311,7 @@ export const SubNativeModule: BalanceModule<
           try {
             return typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
           } catch (error: any) {
-            log.warn(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
+            log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
             return
           }
         })()
@@ -397,7 +397,7 @@ export const SubNativeModule: BalanceModule<
             try {
               return typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
             } catch (error: any) {
-              log.warn(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
+              log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
               return
             }
           })()
