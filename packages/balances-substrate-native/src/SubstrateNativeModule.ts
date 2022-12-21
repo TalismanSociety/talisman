@@ -31,14 +31,37 @@ const moduleStorageHash = `${moduleHash}${storageHash}`
 // Theory: new chains will be at least on metadata v14, and so we won't need to hardcode their AccountInfo type.
 // But for chains we want to support which aren't on metadata v14, hardcode them here:
 // If the chain upgrades to metadata v14, this override will be ignored :)
+const RegularAccountInfoFallback = JSON.stringify({
+  nonce: "u32",
+  consumers: "u32",
+  providers: "u32",
+  sufficients: "u32",
+  data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
+})
+const NoSufficientsAccountInfoFallback = JSON.stringify({
+  nonce: "u32",
+  consumers: "u32",
+  providers: "u32",
+  data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
+})
 const AccountInfoOverrides: { [key: ChainId]: string } = {
+  // automata is not yet on metadata v14
+  "automata": RegularAccountInfoFallback,
+
+  // crown-sterlin is not yet on metadata v14
+  "crown-sterling": NoSufficientsAccountInfoFallback,
+
+  // crust-parachain is not yet on metadata v14
+  "crust-parachain": NoSufficientsAccountInfoFallback,
+
   // crust is not yet on metadata v14
-  crust: JSON.stringify({
-    nonce: "u32",
-    consumers: "u32",
-    providers: "u32",
-    data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
-  }),
+  "crust": NoSufficientsAccountInfoFallback,
+
+  // kulupu is not yet on metadata v14
+  "kulupu": RegularAccountInfoFallback,
+
+  // nftmart is not yet on metadata v14
+  "nftmart": RegularAccountInfoFallback,
 }
 
 const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
