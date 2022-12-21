@@ -6,21 +6,19 @@ import {
   githubUnknownTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
+import { Transaction } from "dexie"
 
 export const chaindataProvider = new ChaindataProviderExtension()
 
 /**
  *  Migrate custom chains/networks/tokens from the old (v2 / split-entities) database to the new (v3) chaindata database.
  */
-export async function attemptCustomChainsAndTokensMigration() {
-  // wait for db connection to be ready
-  await new Promise((resolve) => db.on("ready", resolve))
-
+export async function migrateExtensionDbV5ToV6(tx: Transaction) {
   // retrieve legacy data
   const [chains, evmNetworks, tokens] = await Promise.all([
-    db.chains.toArray(),
-    db.evmNetworks.toArray(),
-    db.tokens.toArray(),
+    tx.table("chains").toArray(),
+    tx.table("evmNetworks").toArray(),
+    tx.table("tokens").toArray(),
   ])
 
   // don't migrate if no legacy data exists
@@ -112,9 +110,6 @@ export async function attemptCustomChainsAndTokensMigration() {
     chaindataProvider.addCustomToken(token as Token)
     counters.tokens++
   })
-
-  // migration complete, delete entries from the old db
-  await Promise.all([db.chains.clear(), db.evmNetworks.clear(), db.tokens.clear()])
 
   // eslint-disable-next-line no-console
   console.log(
