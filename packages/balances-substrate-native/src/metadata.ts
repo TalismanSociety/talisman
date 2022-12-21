@@ -5,18 +5,25 @@ import { Metadata } from "@subsquid/substrate-metadata/lib/interfaces"
 import * as metadataDefinition from "@subsquid/substrate-metadata/lib/old/definitions/metadata"
 import { OldTypeRegistry } from "@subsquid/substrate-metadata/lib/old/typeRegistry"
 
-// TODO: Take from the subsquid codebase (@subsquid/substrate-metadata/src/codec.ts) the logic required
-// to build a Metadata object, but then note how the Codec used to decode the metadata can also be used
-// to re-encode a bunch of types back into hex.
-//
-// Try to do this, and then add back the Metadata magic number and version (14) and see if
-// you can decode the new metadata _again_ to prove that it was built correctly.
-//
-// After this, write the mutator function which will take a Metadata object, filter down all of its
-// inner fields to only include the ones relevant to the balances, and then send it back to be turned into hex.
-//
-// Finally, try and decode this minimized metadata and see if you can build a bunch of balances on different chains
-// with it!
+/**
+ * A function which allows you to decode, modify and then re-encode the type metadata for a chain.
+ *
+ * All of the encoding/decoding logic depends on the Codec implementation in the subsquid codebase
+ * (@subsquid/substrate-metadata/src/codec.ts).
+ * This subsquid implementation is capable of both decoding a blob of metadata as well as taking the
+ * decoded metadata and re-encoding it back into its on-chain format.
+ *
+ * An example use-case for this function is for decoding balances on many chains.
+ * Loading up the full ~0.5MB metadata blob for each chain just to decode the one balance type has
+ * an unacceptable performance overhead on the frontend, which completely prevents us from doing
+ * multi-chain balances.
+ *
+ * By filtering the full metadata blob down to just the types needed for balance decoding, we can
+ * reduce the overhead by several orders of magnitude, solving the performance limitation.
+ *
+ * What's also neat is that with our filtered down metadata we are still free to use any of the
+ * available SCALE decoding libraries on the frontend, as long as they can load up a metadata blob.
+ */
 export function mutateMetadata(
   metadataRpc: string,
   mutator: (metadata: Metadata) => Metadata | null
