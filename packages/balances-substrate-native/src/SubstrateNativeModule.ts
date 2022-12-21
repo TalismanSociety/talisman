@@ -505,7 +505,9 @@ function formatRpcResult(
       if (accountInfoTypeDef === undefined) {
         // accountInfoTypeDef is undefined when chain is metadata < 14 and we also don't have an override hardcoded in
         // the most likely best way to handle this case: log a warning and return an empty balance
-        log.warn(`Token ${tokenId} on chain ${chainId} has no balance type`)
+        log.debug(
+          `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`
+        )
         return false
       }
 
