@@ -40,7 +40,7 @@ const isUnhealthyRpcError = (err: any) => {
   return true
 }
 
-class StandardRpcProvider extends ethers.providers.JsonRpcProvider {
+class StandardRpcProvider extends ethers.providers.StaticJsonRpcProvider {
   async send(method: string, params: Array<any>): Promise<any> {
     try {
       return await super.send(method, params)

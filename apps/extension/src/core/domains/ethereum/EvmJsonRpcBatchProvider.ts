@@ -1,5 +1,5 @@
 import { ethers } from "ethers"
-import { default as throttle } from "lodash/throttle"
+import { default as debounce } from "lodash/debounce"
 
 type PendingRequest = {
   method: string
@@ -8,12 +8,18 @@ type PendingRequest = {
   reject: (reason?: unknown) => void
 }
 
-const BATCH_SIZE_LIMIT = 50 // requests
-const BATCH_MAX_WAIT = 20 // milliseconds
+type BatchItemResult = {
+  id: number
+  result?: unknown
+  error?: { message: string; code?: unknown; data?: unknown }
+}
 
-export class EvmJsonRpcBatchProvider extends ethers.providers.JsonRpcProvider {
+const BATCH_SIZE_LIMIT = 50 // requests
+const BATCH_MAX_WAIT = 10 // milliseconds
+
+export class EvmJsonRpcBatchProvider extends ethers.providers.StaticJsonRpcProvider {
   private queue: PendingRequest[] = []
-  private processQueue = throttle(this.sendBatch, BATCH_MAX_WAIT)
+  private processQueue = debounce(this.sendBatch, BATCH_MAX_WAIT)
 
   private sendBatch() {
     if (this.queue.length === 0) return
@@ -33,9 +39,10 @@ export class EvmJsonRpcBatchProvider extends ethers.providers.JsonRpcProvider {
 
     ethers.utils
       .fetchJson(this.connection, JSON.stringify(payload))
-      .then((results) => {
-        batch.forEach((request, index) => {
-          const { result, error } = results[index]
+      .then((results: BatchItemResult[]) => {
+        batch.forEach((request) => {
+          // find by id as order is not guaranteed to be the same as the request order
+          const { result, error } = results.find((res) => res.id === request.id) as BatchItemResult
           if (error) {
             const err = new Error(error.message)
             ;(err as any).code = error.code
@@ -71,7 +78,7 @@ export class EvmJsonRpcBatchProvider extends ethers.providers.JsonRpcProvider {
     // force batch to be processed if batch size is reached
     if (this.queue.length >= BATCH_SIZE_LIMIT) this.processQueue.flush()
 
-    // call throttled batch processing anyway in case we're over the batch size limit
+    // call debounced batch processing anyway in case we're over the batch size limit
     this.processQueue()
 
     return result
