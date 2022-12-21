@@ -3,7 +3,14 @@ import { migrateExtensionDbV5ToV6 } from "@core/domains/chaindata"
 import { MetadataDef } from "@core/inject/types"
 import { TokenId } from "@talismn/chaindata-provider"
 import { TokenRates } from "@talismn/token-rates"
-import { Dexie } from "dexie"
+import { Dexie, Transaction, Version } from "dexie"
+import Browser from "webextension-polyfill"
+
+const inBackgroundScript = (cb: Parameters<Version["upgrade"]>[0]) => (tx: Transaction) => {
+  if (Browser.extension.getBackgroundPage() === window) {
+    cb(tx)
+  }
+}
 
 export class TalismanDatabase extends Dexie {
   tokenRates!: Dexie.Table<DbTokenRates, string>
@@ -41,7 +48,7 @@ export class TalismanDatabase extends Dexie {
         metadataRpc: null, // delete legacy table
         chainMetadataRpc: null, // delete legacy table
       })
-      .upgrade(migrateExtensionDbV5ToV6)
+      .upgrade(inBackgroundScript(migrateExtensionDbV5ToV6))
   }
 }
 
