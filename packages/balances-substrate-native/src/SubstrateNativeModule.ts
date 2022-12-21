@@ -303,12 +303,18 @@ export const SubNativeModule: BalanceModule<
         if (token.metadata !== undefined && token.metadata !== null && token.metadataVersion >= 14)
           typeRegistry.setMetadata(new Metadata(typeRegistry, token.metadata))
 
-        const accountInfoTypeDef =
-          token.accountInfoType !== undefined &&
-          token.accountInfoType !== null &&
-          token.metadataVersion >= 14
-            ? typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
-            : AccountInfoOverrides[chainId]
+        const accountInfoTypeDef = (() => {
+          if (token.accountInfoType === undefined) return AccountInfoOverrides[chainId]
+          if (token.accountInfoType === null) return AccountInfoOverrides[chainId]
+          if (!(token.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
+
+          try {
+            return typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
+          } catch (error: any) {
+            log.warn(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
+            return
+          }
+        })()
 
         // set up method, return message type and params
         const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
@@ -383,12 +389,18 @@ export const SubNativeModule: BalanceModule<
           )
             typeRegistry.setMetadata(new Metadata(typeRegistry, token.metadata))
 
-          const accountInfoTypeDef =
-            token.accountInfoType !== undefined &&
-            token.accountInfoType !== null &&
-            token.metadataVersion >= 14
-              ? typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
-              : AccountInfoOverrides[chainId]
+          const accountInfoTypeDef = (() => {
+            if (token.accountInfoType === undefined) return AccountInfoOverrides[chainId]
+            if (token.accountInfoType === null) return AccountInfoOverrides[chainId]
+            if (!(token.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
+
+            try {
+              return typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
+            } catch (error: any) {
+              log.warn(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
+              return
+            }
+          })()
 
           // set up method and params
           const method = "state_queryStorageAt" // method we call to fetch
@@ -472,7 +484,7 @@ function buildAddressReferences(addresses: string[]): Array<[string, string]> {
 function formatRpcResult(
   tokenId: TokenId,
   chainId: ChainId,
-  accountInfoTypeDef: string,
+  accountInfoTypeDef: string | undefined,
   typeRegistry: TypeRegistry,
   addressReferences: Array<[string, string]>,
   result: unknown
