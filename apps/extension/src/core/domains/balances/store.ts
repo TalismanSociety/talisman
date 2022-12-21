@@ -33,7 +33,7 @@ type EvmNetworkIdAndHealth = Pick<
   erc20Tokens: Array<Pick<Erc20Token, "id" | "contractAddress">>
   substrateChainAccountFormat: string | null
 }
-type TokenIdAndType = Pick<Token, "id" | "type">
+type TokenIdAndType = Pick<Token, "id" | "type" | "chain" | "evmNetwork">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
 
@@ -219,7 +219,14 @@ export class BalanceStore {
     )
 
     // update tokens
-    this.#tokens.next(Object.values(tokens).map(({ id, type }) => ({ id, type })))
+    this.#tokens.next(
+      Object.values(tokens).map(({ id, type, chain, evmNetwork }) => ({
+        id,
+        type,
+        chain,
+        evmNetwork,
+      }))
+    )
 
     // Delete stored balances for chains and networks which no longer exist
     await this.deleteBalances((balance) => {
@@ -345,18 +352,29 @@ export class BalanceStore {
     const generation = this.#subscriptionsGeneration
     const addresses = await firstValueFrom(this.#addresses)
     const tokens = await firstValueFrom(this.#tokens)
+    const chainHealthy = Object.fromEntries(
+      this.#chains.map((chain) => [chain.id, chain.isHealthy])
+    )
+    const evmNetworkHealthy = Object.fromEntries(
+      this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork.isHealthy])
+    )
 
     // For the following TODOs, try and put them inside the relevant balance module when it makes sense.
     // Otherwise fall back to writing the workaround in here (but also then add it to the web app portfolio!)
     //
     // TODO: Fix genesisHash filter (only fetch balances on XXX chains for accounts whose filter is not null)
-    // TODO: Don't fetch balances from chains for which isHealthy === false
     // TODO: Don't fetch evm balances for substrate addresses
     // TODO: Don't fetch evm balances for ethereum accounts on chains whose native account format is secp256k1 (i.e. moonbeam/river/base)
     //       On these chains we can fetch the balance purely via substrate (and fetching via both evm+substrate will double up the balance)
     //
     const addressesByTokenByModule: Record<string, Record<string, string[]>> = {}
     tokens.forEach((token) => {
+      // filter out tokens on chains/evmNetworks which aren't healthy
+      const isHealthy =
+        (token.chain?.id && chainHealthy[token.chain.id]) ||
+        (token.evmNetwork?.id && evmNetworkHealthy[token.evmNetwork.id])
+      if (!isHealthy) return
+
       if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
       addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
     })
