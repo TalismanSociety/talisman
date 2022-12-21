@@ -6,6 +6,7 @@ import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { Address } from "@core/types/base"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
+import isEqual from "lodash/isEqual"
 import { ethers } from "ethers"
 
 export default class NativeBalancesEvmRpc {
@@ -33,27 +34,36 @@ export default class NativeBalancesEvmRpc {
   ): Promise<Balances | UnsubscribeFn> {
     // subscription request
     if (callback !== undefined) {
-      let subscriptionActive = true
+      const subscription = { active: true }
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
+      const cache = new Map<number, unknown>()
 
       const poll = async () => {
-        if (!subscriptionActive) return
+        if (!subscription.active) return
 
         try {
-          const balances = await this.fetchNativeBalances(addresses, evmNetworks)
+          // check each network sequentially to prevent timeouts
+          for (const evmNetwork of evmNetworks) {
+            const balances = await this.fetchNativeBalances(addresses, [evmNetwork])
 
-          // TODO: Don't call callback with balances which have not changed since the last poll.
-          callback(null, balances)
+            // Don't call callback with balances which have not changed since the last poll.
+            const json = balances.toJSON()
+            if (!isEqual(cache.get(evmNetwork.id), json)) {
+              cache.set(evmNetwork.id, json)
+              callback(null, balances)
+            }
+          }
         } catch (error) {
           callback(error)
         } finally {
           setTimeout(poll, subscriptionInterval)
         }
       }
+
       setTimeout(poll, subscriptionInterval)
 
       return () => {
-        subscriptionActive = false
+        subscription.active = false
       }
     }
 

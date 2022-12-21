@@ -2,6 +2,7 @@ import { API_KEY_ONFINALITY } from "@core/constants"
 import { db } from "@core/libs/db"
 import { log } from "@core/log"
 import { ethers } from "ethers"
+import { EvmJsonRpcBatchProvider } from "./EvmJsonRpcBatchProvider"
 
 import { CustomEvmNetwork, EvmNetwork } from "./types"
 
@@ -32,13 +33,14 @@ const resolveRpcUrl = (rpcUrl: string) => {
 const isUnhealthyRpcError = (err: any) => {
   // expected errors that are not related to RPC health
   // ex : throw revert on a transaction call that fails
-  if (["processing response error"].includes(err.reason)) return false
+  if (err?.reason && ["processing response error", "BATCH_FAILED"].includes(err.reason.toString()))
+    return false
 
   // if unknown, assume RPC is unhealthy
   return true
 }
 
-class StandardRpcProvider extends ethers.providers.JsonRpcProvider {
+class StandardRpcProvider extends ethers.providers.StaticJsonRpcProvider {
   async send(method: string, params: Array<any>): Promise<any> {
     try {
       return await super.send(method, params)
@@ -50,7 +52,7 @@ class StandardRpcProvider extends ethers.providers.JsonRpcProvider {
   }
 }
 
-class BatchRpcProvider extends ethers.providers.JsonRpcBatchProvider {
+class BatchRpcProvider extends EvmJsonRpcBatchProvider {
   async send(method: string, params: Array<any>): Promise<any> {
     try {
       return await super.send(method, params)
