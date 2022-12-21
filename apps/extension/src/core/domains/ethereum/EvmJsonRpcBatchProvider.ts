@@ -40,9 +40,16 @@ export class EvmJsonRpcBatchProvider extends ethers.providers.StaticJsonRpcProvi
     ethers.utils
       .fetchJson(this.connection, JSON.stringify(payload))
       .then((results: BatchItemResult[]) => {
+        // order is not guaranteed, prepare a map to access items by their id
+        const resultsMap = results.reduce(
+          (map, result) => map.set(result.id, result),
+          new Map<number, BatchItemResult>()
+        )
         batch.forEach((request) => {
-          // find by id as order is not guaranteed to be the same as the request order
-          const { result, error } = results.find((res) => res.id === request.id) as BatchItemResult
+          const batchItem = resultsMap.get(request.id)
+          if (!batchItem) return request.reject(new Error("Missing batch item"))
+
+          const { result, error } = batchItem
           if (error) {
             const err = new Error(error.message)
             ;(err as any).code = error.code
