@@ -83,6 +83,9 @@ export default class Extension extends ExtensionHandler {
   }
 
   private initDb() {
+    // Forces database migrations to run on first start up
+    db.open()
+
     db.on("ready", async () => {
       // TODO: Add back this migration logic to delete old data from localStorage/old idb-managed db
       // (We don't store metadata OR chains in here anymore, so we have no idea whether or not its has already been initialised)
