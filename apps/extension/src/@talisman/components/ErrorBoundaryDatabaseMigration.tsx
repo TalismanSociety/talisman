@@ -1,4 +1,4 @@
-import { MigrationError } from "@core/db"
+import { MIGRATION_ERROR_MSG } from "@core/db"
 import SpinningHand from "@talisman/theme/images/hand_open_spin_animated_dark.gif"
 import { Component, ErrorInfo, FC, ReactNode } from "react"
 import styled from "styled-components"
@@ -38,7 +38,10 @@ const ErrorContainer = styled.section`
       p {
         font-size: 2rem;
         margin-top: 2rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1.2rem;
+      }
+      p.balances-warning {
+        font-size: 1.4rem;
       }
     }
   }
@@ -47,13 +50,17 @@ const ErrorContainer = styled.section`
 const ErrorMessage: FC = () => (
   <ErrorContainer>
     <section>
-      <div className="content">
+      <div className="content text-white">
         <h1>Upgrading</h1>
         <h1>Talisman</h1>
         <div>
           <img className="inline-block" src={SpinningHand} alt="Talisman Spinning Hand logo" />
         </div>
         <p>Please wait</p>
+        <p className="balances-warning text-body-secondary">
+          Don't be alarmed if your balances are empty on initial load after this upgrade. Talisman
+          may need to re-fetch all balances.
+        </p>
       </div>
     </section>
   </ErrorContainer>
@@ -73,7 +80,7 @@ export class ErrorBoundaryDatabaseMigration extends Component<Props, State> {
   }
 
   public static getDerivedStateFromError(error: Error): State {
-    if (error instanceof MigrationError) {
+    if (error.message === `Error ${MIGRATION_ERROR_MSG}`) {
       return { hasError: true }
     }
     return { hasError: false }
