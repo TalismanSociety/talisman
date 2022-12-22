@@ -10,7 +10,7 @@ import { migrateExtensionDbV5ToV6 } from "./migrations/5to6"
 const inBackgroundScript = (cb: Parameters<Version["upgrade"]>[0]) => (tx: Transaction) => {
   if (Browser.extension.getBackgroundPage() === window) {
     cb(tx)
-  }
+  } else throw new Error("Talisman Dexie Migration Error")
 }
 
 export class TalismanDatabase extends Dexie {
