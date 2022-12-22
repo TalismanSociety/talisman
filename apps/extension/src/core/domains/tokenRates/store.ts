@@ -1,6 +1,6 @@
 import { DEBUG } from "@core/constants"
-import { chaindataProvider } from "@core/domains/chaindata"
-import { db } from "@core/libs/db"
+import { db } from "@core/db"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import { fetchTokenRates } from "@talismn/token-rates"
 
 const minimumHydrationInterval = 60_000 // 60_000ms = 60s = 1 minute

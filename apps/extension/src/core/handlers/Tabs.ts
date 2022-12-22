@@ -1,3 +1,4 @@
+import { db } from "@core/db"
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
 import { protector } from "@core/domains/app/protector"
@@ -13,7 +14,6 @@ import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
 import { talismanAnalytics } from "@core/libs/Analytics"
-import { db } from "@core/libs/db"
 import { TabsHandler } from "@core/libs/Handler"
 import type {
   MessageTypes,

@@ -1,14 +1,11 @@
-import { db } from "@core/libs/db"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import {
   CustomChain,
   CustomEvmNetwork,
   Token,
   githubUnknownTokenLogoUrl,
 } from "@talismn/chaindata-provider"
-import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
 import { Transaction } from "dexie"
-
-export const chaindataProvider = new ChaindataProviderExtension()
 
 /**
  *  Migrate custom chains/networks/tokens from the old (v2 / split-entities) database to the new (v3) chaindata database.

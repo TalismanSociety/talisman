@@ -1,6 +1,5 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
-import { chaindataProvider } from "@core/domains/chaindata"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
@@ -26,6 +25,7 @@ import {
 } from "@core/injectEth/types"
 import { TabsHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"

@@ -1,5 +1,4 @@
 import { DEBUG } from "@core/constants"
-import { chaindataProvider } from "@core/domains/chaindata"
 import {
   AnyEthRequestChainId,
   CustomEvmNetwork,
@@ -18,6 +17,7 @@ import { EthRequestArguments, EthRequestSignatures } from "@core/injectEth/types
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { watchEthereumTransaction } from "@core/notifications"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"

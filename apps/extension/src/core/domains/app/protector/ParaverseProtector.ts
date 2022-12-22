@@ -1,4 +1,4 @@
-import { db } from "@core/libs/db"
+import { db } from "@core/db"
 import { log } from "@core/log"
 import { checkHost } from "@polkadot/phishing"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"

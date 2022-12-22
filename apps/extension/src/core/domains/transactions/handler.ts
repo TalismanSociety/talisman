@@ -1,6 +1,5 @@
 import { DEBUG } from "@core/constants"
 import BlocksRpc from "@core/domains/blocks/rpc"
-import { chaindataProvider } from "@core/domains/chaindata"
 import { ChainId } from "@core/domains/chains/types"
 import { getEthTransferTransactionBase, rebuildGasSettings } from "@core/domains/ethereum/helpers"
 import { getProviderForEvmNetworkId } from "@core/domains/ethereum/rpcProviders"
@@ -25,6 +24,7 @@ import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import type {
   RequestSignatures,
   RequestTypes,

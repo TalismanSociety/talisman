@@ -1,10 +1,11 @@
 import { ProtectorSources, ProtectorStorage } from "@core/domains/app/protector/ParaverseProtector"
-import { migrateExtensionDbV5ToV6 } from "@core/domains/chaindata"
 import { MetadataDef } from "@core/inject/types"
 import { TokenId } from "@talismn/chaindata-provider"
 import { TokenRates } from "@talismn/token-rates"
 import { Dexie, Transaction, Version } from "dexie"
 import Browser from "webextension-polyfill"
+
+import { migrateExtensionDbV5ToV6 } from "./migrations/5to6"
 
 const inBackgroundScript = (cb: Parameters<Version["upgrade"]>[0]) => (tx: Transaction) => {
   if (Browser.extension.getBackgroundPage() === window) {
@@ -16,13 +17,6 @@ export class TalismanDatabase extends Dexie {
   tokenRates!: Dexie.Table<DbTokenRates, string>
   metadata!: Dexie.Table<MetadataDef, string>
   phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
-
-  /** Chains aren't stored here anymore, we only have this so that we can migrate user's custom chains to the new chaindata database */
-  chains!: Dexie.Table<unknown, string>
-  /** EvmNetworks aren't stored here anymore, we only have this so that we can migrate user's custom networks to the new chaindata database */
-  evmNetworks!: Dexie.Table<unknown, string>
-  /** Tokens aren't stored here anymore, we only have this so that we can migrate user's custom tokens to the new chaindata database */
-  tokens!: Dexie.Table<unknown, string>
 
   constructor() {
     super("Talisman")

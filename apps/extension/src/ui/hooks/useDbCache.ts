@@ -1,5 +1,5 @@
-import { chaindataProvider } from "@core/domains/chaindata"
-import { db } from "@core/libs/db"
+import { db } from "@core/db"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import { provideContext } from "@talisman/util/provideContext"
 import { db as balancesDb } from "@talismn/balances"
 import { useLiveQuery } from "dexie-react-hooks"
