@@ -1,3 +1,4 @@
+import { MigrationError } from "@core/db"
 import SpinningHand from "@talisman/theme/images/hand_open_spin_animated_dark.gif"
 import { Component, ErrorInfo, FC, ReactNode } from "react"
 import styled from "styled-components"
@@ -72,7 +73,7 @@ export class ErrorBoundaryDatabaseMigration extends Component<Props, State> {
   }
 
   public static getDerivedStateFromError(error: Error): State {
-    if (error.message === "Error Talisman Dexie Migration Error") {
+    if (error instanceof MigrationError) {
       return { hasError: true }
     }
     return { hasError: false }

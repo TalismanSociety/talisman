@@ -7,10 +7,14 @@ import Browser from "webextension-polyfill"
 
 import { migrateExtensionDbV5ToV6 } from "./migrations/5to6"
 
+export class MigrationError extends Error {
+  message = "Talisman Dexie Migration Error"
+}
+
 const inBackgroundScript = (cb: Parameters<Version["upgrade"]>[0]) => (tx: Transaction) => {
   if (Browser.extension.getBackgroundPage() === window) {
     cb(tx)
-  } else throw new Error("Talisman Dexie Migration Error")
+  } else throw new MigrationError()
 }
 
 export class TalismanDatabase extends Dexie {
