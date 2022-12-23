@@ -379,21 +379,24 @@ export class BalanceStore {
       addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
     })
 
-    const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
-      balanceModule.subscribeBalances(
-        { substrate: chainConnector, evm: chainConnectorEvm },
-        chaindataProvider,
-        addressesByTokenByModule[balanceModule.type],
-        (error, result) => {
-          // ignore old subscriptions which have been told to close but aren't closed yet
-          if (this.#subscriptionsGeneration !== generation) return
+    const closeSubscriptionCallbacks = balanceModules
+      // if there are no tokens for a balancemodule type, we should not subscribe to it
+      .filter((balanceModule) => addressesByTokenByModule[balanceModule.type])
+      .map((balanceModule) =>
+        balanceModule.subscribeBalances(
+          { substrate: chainConnector, evm: chainConnectorEvm },
+          chaindataProvider,
+          addressesByTokenByModule[balanceModule.type],
+          (error, result) => {
+            // ignore old subscriptions which have been told to close but aren't closed yet
+            if (this.#subscriptionsGeneration !== generation) return
 
-          // eslint-disable-next-line no-console
-          if (error) DEBUG && console.error(error)
-          else this.upsertBalances(result ?? new Balances([]))
-        }
+            // eslint-disable-next-line no-console
+            if (error) DEBUG && console.error(error)
+            else this.upsertBalances(result ?? new Balances([]))
+          }
+        )
       )
-    )
 
     this.#closeSubscriptionCallbacks = this.#closeSubscriptionCallbacks.concat(
       closeSubscriptionCallbacks
