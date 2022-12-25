@@ -383,7 +383,7 @@ export class BalanceStore {
       balanceModule.subscribeBalances(
         { substrate: chainConnector, evm: chainConnectorEvm },
         chaindataProvider,
-        addressesByTokenByModule[balanceModule.type],
+        addressesByTokenByModule[balanceModule.type] ?? {},
         (error, result) => {
           // ignore old subscriptions which have been told to close but aren't closed yet
           if (this.#subscriptionsGeneration !== generation) return
