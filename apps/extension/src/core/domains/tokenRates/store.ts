@@ -7,10 +7,10 @@ import { TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates } from "@talismn/token-rates"
 import { Subscription, liveQuery } from "dexie"
 import { debounce } from "lodash"
-import { BehaviorSubject, Subject } from "rxjs"
+import { BehaviorSubject } from "rxjs"
 
-const MIN_REFRESH_INTERVAL = 20_000 // 60_000ms = 60s = 1 minute
-const REFRESH_INTERVAL = 60_000 // 5 minutes
+const MIN_REFRESH_INTERVAL = 60_000 // 60_000ms = 60s = 1 minute
+const REFRESH_INTERVAL = 300_000 // 5 minutes
 
 export class TokenRatesStore {
   #lastUpdateTokenIds = ""
