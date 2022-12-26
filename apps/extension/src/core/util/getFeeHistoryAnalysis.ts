@@ -7,9 +7,9 @@ const BLOCKS_HISTORY_LENGTH = 4
 const REWARD_PERCENTILES = [10, 20, 30]
 
 export const DEFAULT_ETH_PRIORITY_OPTIONS: EthPriorityOptions = {
-  low: parseUnits("1", "gwei"),
-  medium: parseUnits("1.5", "gwei"),
-  high: parseUnits("2", "gwei"),
+  low: parseUnits("1.5", "gwei"),
+  medium: parseUnits("1.6", "gwei"),
+  high: parseUnits("1.7", "gwei"),
 }
 
 type FeeHistory = {
@@ -22,6 +22,7 @@ type FeeHistory = {
 export type FeeHistoryAnalysis = {
   options: EthPriorityOptions
   gasUsedRatio: number
+  isValid: boolean
 }
 
 export const getFeeHistoryAnalysis = async (
@@ -72,6 +73,7 @@ export const getFeeHistoryAnalysis = async (
         high: medMaxPriorityFeePerGas[2],
       },
       gasUsedRatio: avgGasUsedRatio,
+      isValid: !feeHistory.gasUsedRatio.includes(0), // if a 0 is found, not all blocks contained a transaction
     }
   } catch (err) {
     Sentry.captureException(err)
@@ -79,6 +81,7 @@ export const getFeeHistoryAnalysis = async (
     return {
       options: DEFAULT_ETH_PRIORITY_OPTIONS,
       gasUsedRatio: -1,
+      isValid: false,
     }
   }
 }
