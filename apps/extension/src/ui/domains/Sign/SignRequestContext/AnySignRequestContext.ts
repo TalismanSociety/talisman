@@ -1,5 +1,5 @@
-import { KnownRespondableRequest } from "@core/domains/signing/BaseRequestStore"
 import { AnySigningRequest, SigningRequests } from "@core/domains/signing/types"
+import { KnownRespondableRequest } from "@core/libs/requests/types"
 import { log } from "@core/log"
 import { isEthereumRequest } from "@core/util/isEthereumRequest"
 import useStatus, { SetStatusFn, StatusOptions } from "@talisman/hooks/useStatus"

@@ -17,6 +17,8 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
 import Browser from "webextension-polyfill"
 
 import { getMessageSenderFn } from "../../../tests/util"
+import { signSubstrate } from "../domains/signing/requests"
+import { requestStore } from "../libs/requests/store"
 import Extension from "./Extension"
 import State from "./State"
 import { extensionStores } from "./stores"
@@ -121,7 +123,7 @@ describe("Extension", () => {
     let address: string, payload: SignerPayloadJSON, pair: KeyringPair
 
     beforeEach(async () => {
-      state.requestStores.signing.clearRequests()
+      requestStore.clearRequests()
       // need to use the pw from the store, because it may need to be trimmed
       address = await getAccount()
       pair = keyring.getPair(address)
@@ -161,18 +163,14 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = state.requestStores.signing.sign(
-        "http://test.com",
-        new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...pair.meta,
-        }
-      )
+      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
+        address,
+        ...pair.meta,
+      })
 
-      expect(state.requestStores.signing.getRequestCount()).toBe(1)
+      expect(requestStore.getRequestCount()).toBe(1)
 
-      const request = state.requestStores.signing.allRequests("substrate-sign")[0]
+      const request = requestStore.allRequests("substrate-sign")[0]
 
       const approveMessage = await messageSender("pri(signing.approveSign)", {
         id: request.id,
@@ -242,18 +240,14 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = state.requestStores.signing.sign(
-        "http://test.com",
-        new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...meta,
-        }
-      )
+      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
+        address,
+        ...meta,
+      })
 
-      expect(state.requestStores.signing.getRequestCount()).toBe(1)
+      expect(requestStore.getRequestCount()).toBe(1)
 
-      const request = state.requestStores.signing.allRequests("substrate-sign")[0]
+      const request = requestStore.allRequests("substrate-sign")[0]
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,
@@ -314,18 +308,14 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = state.requestStores.signing.sign(
-        "http://test.com",
-        new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...meta,
-        }
-      )
+      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
+        address,
+        ...meta,
+      })
 
-      expect(state.requestStores.signing.getRequestCount()).toBe(1)
+      expect(requestStore.getRequestCount()).toBe(1)
 
-      const request = state.requestStores.signing.allRequests("substrate-sign")[0]
+      const request = requestStore.allRequests("substrate-sign")[0]
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,
@@ -406,18 +396,14 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = state.requestStores.signing.sign(
-        "http://test.com",
-        new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...meta,
-        }
-      )
+      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
+        address,
+        ...meta,
+      })
 
-      expect(state.requestStores.signing.getRequestCount()).toBe(1)
+      expect(requestStore.getRequestCount()).toBe(1)
 
-      const request = state.requestStores.signing.allRequests("substrate-sign")[0]
+      const request = requestStore.allRequests("substrate-sign")[0]
       await expect(
         messageSender("pri(signing.approveSign)", {
           id: request.id,

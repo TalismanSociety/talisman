@@ -1,5 +1,6 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 import { filterAccountsByAddresses, getPublicAccounts } from "@core/domains/accounts/helpers"
+import { signAndSendEth, signEth } from "@core/domains/signing/requests"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
@@ -391,16 +392,10 @@ export class EthTabsHandler extends TabsHandler {
       )
     }
 
-    return this.state.requestStores.signing.signEth(
-      url,
-      method,
-      message,
-      site.ethChainId.toString(),
-      {
-        address: ethers.utils.getAddress(address),
-        ...pair.meta,
-      }
-    )
+    return signEth(url, method, message, site.ethChainId.toString(), {
+      address: ethers.utils.getAddress(address),
+      ...pair.meta,
+    })
   }
 
   private addWatchAssetRequest = async (
@@ -484,7 +479,7 @@ export class EthTabsHandler extends TabsHandler {
       )
     }
 
-    return this.state.requestStores.signing.signAndSendEth(
+    return signAndSendEth(
       url,
       {
         // locks the chainId in case the dapp's chainId changes after signing request creation

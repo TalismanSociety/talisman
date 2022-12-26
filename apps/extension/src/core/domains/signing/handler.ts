@@ -1,6 +1,4 @@
 import type {
-  AnySigningRequest,
-  AnySigningRequestIdOnly,
   KnownSigningRequestIdOnly,
   RequestSigningApproveSignature,
 } from "@core/domains/signing/types"
@@ -8,6 +6,7 @@ import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { requestStore } from "@core/libs/requests/store"
 import { watchSubstrateTransaction } from "@core/notifications"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, ResponseType } from "@core/types"
@@ -22,7 +21,7 @@ import { assert } from "@polkadot/util"
 
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
-    const queued = this.state.requestStores.signing.getRequest(id)
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -90,7 +89,7 @@ export default class SigningHandler extends ExtensionHandler {
     id,
     signature,
   }: RequestSigningApproveSignature): Promise<boolean> {
-    const queued = this.state.requestStores.signing.getRequest(id)
+    const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
     const {
@@ -124,7 +123,7 @@ export default class SigningHandler extends ExtensionHandler {
     /*
      * This method used for both Eth and Polkadot requests
      */
-    const queued = this.state.requestStores.signing.getRequest(id)
+    const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
     talismanAnalytics.captureDelayed("sign reject", {
@@ -136,7 +135,7 @@ export default class SigningHandler extends ExtensionHandler {
   }
 
   private async decode({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
-    const queued = this.state.requestStores.signing.getRequest(id)
+    const queued = requestStore.getRequest(id)
     if (!queued) return null
 
     if (!isJsonPayload(queued.request.payload)) return null
@@ -153,11 +152,15 @@ export default class SigningHandler extends ExtensionHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(signing.requests)":
-        return this.state.requestStores.signing.subscribe<"pri(signing.requests)">(id, port)
+        return requestStore.subscribe<"pri(signing.requests)">(id, port, [
+          "eth-sign",
+          "eth-send",
+          "substrate-sign",
+        ])
 
       case "pri(signing.byid.subscribe)": {
         const cb = createSubscription<"pri(signing.byid.subscribe)">(id, port)
-        const subscription = this.state.requestStores.signing.observable.subscribe((reqs) => {
+        const subscription = requestStore.observable.subscribe((reqs) => {
           const signRequest = reqs.find(
             (req) => req.id === (request as MessageRequestTypes["pri(signing.byid.subscribe)"]).id
           )

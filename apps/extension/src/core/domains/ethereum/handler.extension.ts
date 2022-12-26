@@ -16,6 +16,7 @@ import {
 import { EthRequestArguments, EthRequestSignatures } from "@core/injectEth/types"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { requestStore } from "@core/libs/requests/store"
 import { watchEthereumTransaction } from "@core/notifications"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -79,7 +80,7 @@ export class EthHandler extends ExtensionHandler {
     signedPayload,
   }: EthRequestSigningApproveSignature<"eth-send">): Promise<boolean> {
     try {
-      const queued = this.state.requestStores.signing.getRequest(id)
+      const queued = requestStore.getRequest(id)
       assert(queued, "Unable to find request")
       const {
         method,
@@ -118,7 +119,7 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private async signAndSendApprove({ id, transaction }: EthApproveSignAndSend): Promise<boolean> {
-    const queued = this.state.requestStores.signing.getRequest(id)
+    const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
     const { resolve, reject, ethChainId, account, url } = queued
 
@@ -170,7 +171,7 @@ export class EthHandler extends ExtensionHandler {
     id,
     signedPayload,
   }: EthRequestSigningApproveSignature<"eth-sign">): boolean {
-    const queued = this.state.requestStores.signing.getRequest(id)
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -196,7 +197,7 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private async signApprove({ id }: KnownSigningRequestIdOnly<"eth-sign">): Promise<boolean> {
-    const queued = this.state.requestStores.signing.getRequest(id)
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -257,7 +258,7 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private signingCancel({ id }: KnownSigningRequestIdOnly<"eth-send" | "eth-sign">): boolean {
-    const queued = this.state.requestStores.signing.getRequest(id)
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 

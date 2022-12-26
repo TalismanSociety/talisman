@@ -13,6 +13,7 @@ import {
   ResponseEncrypt,
 } from "@core/domains/encrypt/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
+import { signSubstrate } from "@core/domains/signing/requests"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { AuthorizedSites, RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
@@ -130,7 +131,7 @@ export default class Tabs extends TabsHandler {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return this.state.requestStores.signing.sign(url, new RequestBytesSign(request), {
+    return signSubstrate(url, new RequestBytesSign(request), {
       address,
       ...pair.meta,
     })
@@ -140,7 +141,7 @@ export default class Tabs extends TabsHandler {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return this.state.requestStores.signing.sign(url, new RequestExtrinsicSign(request), {
+    return signSubstrate(url, new RequestExtrinsicSign(request), {
       address,
       ...pair.meta,
     })

@@ -7,21 +7,12 @@ import { RequestRoute } from "@core/domains/app/types"
 import { EncryptRequestsStore } from "@core/domains/encrypt"
 import EthereumNetworksRequestsStore from "@core/domains/ethereum/requestsStore.networks"
 import { MetadataRequestsStore } from "@core/domains/metadata"
-import { SigningRequestsStore } from "@core/domains/signing"
 import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
-import { isEthereumRequest } from "@core/util/isEthereumRequest"
+import { requestStore } from "@core/libs/requests/store"
+import { windowManager } from "@core/libs/WindowManager"
 import { sleep } from "@talismn/util"
 import Browser from "webextension-polyfill"
-
-const WINDOW_OPTS: Browser.Windows.CreateCreateDataType = {
-  // This is not allowed on FF, only on Chrome - disable completely
-  // focused: true,
-  height: 630,
-  type: "popup",
-  url: Browser.runtime.getURL("popup.html"),
-  width: 400,
-}
 
 export default class State {
   // Prevents opening two onboarding tabs at once
@@ -29,15 +20,12 @@ export default class State {
 
   // Request stores handle ephemeral data relating to to requests for signing, metadata, and authorisation of sites
   readonly requestStores = {
-    signing: new SigningRequestsStore((req) => {
-      this.popupOpen(isEthereumRequest(req) ? `#/sign/eth/${req.id}` : `#/sign/${req.id}`)
-    }),
     metadata: new MetadataRequestsStore((req) => {
-      this.popupOpen(`#/metadata/${req.id}`)
+      windowManager.popupOpen(`#/metadata/${req.id}`)
     }),
     sites: new SitesRequestsStore(
       (req) => {
-        this.popupOpen(`#/auth/${req.id}`)
+        windowManager.popupOpen(`#/auth/${req.id}`)
       },
       async (request, response) => {
         if (!response) return
@@ -68,71 +56,29 @@ export default class State {
       }
     ),
     networks: new EthereumNetworksRequestsStore((req) => {
-      this.popupOpen(`#/eth-network-add/${req.id}`)
+      windowManager.popupOpen(`#/eth-network-add/${req.id}`)
     }),
     evmAssets: new EvmWatchAssetRequestsStore((req) => {
-      this.popupOpen(`#/eth-watchasset/${req.id}`)
+      windowManager.popupOpen(`#/eth-watchasset/${req.id}`)
     }),
     encrypt: new EncryptRequestsStore((req) => {
-      this.popupOpen(`#/encrypt/${req.id}`)
+      windowManager.popupOpen(`#/encrypt/${req.id}`)
     }),
   }
-
-  #windows: number[] = []
 
   constructor() {
     // update the icon when any of the request stores change
-    Object.values(this.requestStores).forEach((store) => {
-      // @ts-ignore
-      store.observable.subscribe(() => {
-        this.updateIcon(true)
-      })
-    })
+    requestStore.observable.subscribe(() => this.updateIcon(true))
   }
 
   public promptLogin(closeOnSuccess: boolean): void {
-    this.popupOpen(`?closeOnSuccess=${closeOnSuccess}`)
-  }
-
-  private popupClose(): void {
-    this.#windows.forEach(
-      (id: number): void =>
-        // eslint-disable-next-line no-void
-        void Browser.windows.remove(id)
-    )
-    this.#windows = []
-  }
-
-  private async popupOpen(argument?: string) {
-    const currWindow = await Browser.windows.getLastFocused()
-
-    const { left, top } = {
-      top: 100 + (currWindow?.top ?? 0),
-      left:
-        (currWindow?.width ? (currWindow.left ?? 0) + currWindow.width : window.screen.availWidth) -
-        410,
-    }
-
-    const popup = await Browser.windows.create({
-      ...WINDOW_OPTS,
-      top,
-      left,
-      url: Browser.runtime.getURL(`popup.html${argument ? argument : ""}`),
-    })
-
-    if (typeof popup?.id !== "undefined") {
-      this.#windows.push(popup.id || 0)
-      // firefox compatibility (cannot be set at creation)
-      if (popup.left !== left && popup.state !== "fullscreen") {
-        await Browser.windows.update(popup.id, { left, top })
-      }
-    }
+    windowManager.popupOpen(`?closeOnSuccess=${closeOnSuccess}`)
   }
 
   private updateIcon(shouldClose?: boolean): void {
     const sitesAuthCount = this.requestStores.sites.getRequestCount()
     const metaCount = this.requestStores.metadata.getRequestCount()
-    const signCount = this.requestStores.signing.getRequestCount()
+    const signCount = requestStore.getRequestCount()
     const networkAddCount = this.requestStores.networks.getRequestCount()
     const evmAssets = this.requestStores.evmAssets.getRequestCount()
     const text = sitesAuthCount
@@ -150,7 +96,7 @@ export default class State {
     Browser.browserAction.setBadgeText({ text })
 
     if (shouldClose && text === "") {
-      this.popupClose()
+      windowManager.popupClose()
     }
   }
 
