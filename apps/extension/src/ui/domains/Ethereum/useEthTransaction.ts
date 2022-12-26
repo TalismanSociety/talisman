@@ -130,22 +130,24 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
         ])
 
         if (feeOptions && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(provider.network.chainId)) {
-          // `gasPrice - baseFee` is equal to the current minimum maxPriorityPerGas value required to make it into next block
-          // if smaller than our historical data based value, use it.
-          // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
+          // minimum maxPriorityPerGas value required to be considered valid into next block is equal to `gasPrice - baseFee`
           let minimumMaxPriorityFeePerGas = gPrice.sub(baseFeePerGas ?? 0)
           if (minimumMaxPriorityFeePerGas.lt(0)) {
-            // on a busy network, when there is a sudden lowering of amount of transactions,
-            // it can happen that baseFeePerGas is higher than gPrice
+            // on a busy network, when there is a sudden lowering of amount of transactions, it can happen that baseFeePerGas is higher than gPrice
             minimumMaxPriorityFeePerGas = BigNumber.from("0")
           }
 
-          if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.low))
+          // if feeHistory is invalid (network is inactive), use minimumMaxPriorityFeePerGas for all options.
+          // else if feeHistory is valid but network usage below 80% (active but not busy), use it for the low priority option if lower
+          // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
+          if (!feeOptions.isValid) {
             feeOptions.options.low = minimumMaxPriorityFeePerGas
-          if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.medium))
             feeOptions.options.medium = minimumMaxPriorityFeePerGas
-          if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.high))
             feeOptions.options.high = minimumMaxPriorityFeePerGas
+          } else if (feeOptions.gasUsedRatio < 0.8)
+            feeOptions.options.low = minimumMaxPriorityFeePerGas.lt(feeOptions.options.low)
+              ? minimumMaxPriorityFeePerGas
+              : feeOptions.options.low
         }
 
         setGasPrice(gPrice)

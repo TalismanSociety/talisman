@@ -17,6 +17,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty } from "@talismn/util"
 import { ethers } from "ethers"
+import isEqual from "lodash/isEqual"
 
 import erc20Abi from "./erc20.json"
 import log from "./log"
@@ -148,19 +149,54 @@ export const EvmErc20Module: BalanceModule<
   async subscribeBalances(chainConnectors, chaindataProvider, addressesByToken, callback) {
     let subscriptionActive = true
     const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
+    const cache = new Map<EvmNetworkId, unknown>()
 
     const poll = async () => {
       if (!subscriptionActive) return
 
       try {
-        const balances = await this.fetchBalances(
-          chainConnectors,
-          chaindataProvider,
-          addressesByToken
+        const tokens = await chaindataProvider.tokens()
+
+        // regroup tokens by network
+        const addressesByTokenByEvmNetwork = Object.keys(addressesByToken).reduce(
+          (result, tokenId) => {
+            const token = tokens[tokenId]
+            if (!token?.evmNetwork?.id) {
+              log.error("Could not find network for ERC20 token %s", tokenId)
+              return result
+            }
+
+            const evmNetworkId = token.evmNetwork.id
+            if (!result[evmNetworkId]) result[evmNetworkId] = {}
+
+            result[evmNetworkId][tokenId] = addressesByToken[tokenId]
+
+            return result
+          },
+          {} as Record<EvmNetworkId, AddressesByToken<EvmErc20Token | CustomEvmErc20Token>>
         )
 
-        // TODO: Don't call callback with balances which have not changed since the last poll.
-        callback(null, balances)
+        // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)
+        for (const [evmNetworkId, addressesByToken] of Object.entries(
+          addressesByTokenByEvmNetwork
+        )) {
+          try {
+            const balances = await this.fetchBalances(
+              chainConnectors,
+              chaindataProvider,
+              addressesByToken
+            )
+
+            // Don't call callback with balances which have not changed since the last poll.
+            const json = balances.toJSON()
+            if (!isEqual(cache.get(evmNetworkId), json)) {
+              cache.set(evmNetworkId, json)
+              callback(null, balances)
+            }
+          } catch (err) {
+            callback(err)
+          }
+        }
       } catch (error) {
         callback(error)
       } finally {
