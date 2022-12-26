@@ -1,4 +1,5 @@
 import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
+import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import Field from "@talisman/components/Field/Field"
 import { ReactComponent as EnterIcon } from "@talisman/theme/icons/corner-down-left.svg"
@@ -7,13 +8,12 @@ import { classNames } from "@talisman/util/classNames"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType, getAddressType } from "@talisman/util/getAddressType"
 import { isValidAddress } from "@talisman/util/isValidAddress"
-import Avatar from "@ui/domains/Account/Avatar"
-import Name from "@ui/domains/Account/Name"
+import AccountName from "@ui/domains/Account/AccountName"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useAddressBook } from "@ui/hooks/useAddressBook"
 import Downshift from "downshift"
 import {
   ChangeEventHandler,
-  DetailedHTMLProps,
   FC,
   KeyboardEventHandler,
   forwardRef,
@@ -24,7 +24,8 @@ import {
 } from "react"
 import styled from "styled-components"
 
-import { Address } from "./Address"
+import { FormattedAddress } from "./FormattedAddress"
+import NamedAddress from "./NamedAddress"
 
 const Container = styled.div<{ withAddressInput?: boolean }>`
   display: flex;
@@ -158,39 +159,14 @@ const Button = styled.button<{ hasValue: boolean }>`
   }
 `
 
-const FormattedAddress = ({ address, placeholder = "who?" }: any) => {
-  const accounts = useAccounts()
-
-  const localAccount = useMemo(
-    () =>
-      accounts.filter(
-        (account) =>
-          address && convertAddress(account.address, null) === convertAddress(address, null)
-      )[0],
-    [accounts, address]
-  )
-
-  if (localAccount) return <Name withAvatar address={localAccount?.address} />
-
-  return address ? (
-    <span className="gap custom-address flex">
-      <Avatar address={address} />
-      <Address className="address" address={address} />
-    </span>
-  ) : (
-    placeholder
-  )
-}
-
 type PasteAddressProps = {
   onSelected: (address: string) => void
   className?: string
   exclude?: string
   addressType?: AccountAddressType
-  inputProps?: DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>
 }
 
-const PasteAddress = ({ onSelected, exclude, addressType, inputProps = {} }: PasteAddressProps) => {
+const PasteAddress = ({ onSelected, exclude, addressType }: PasteAddressProps) => {
   const [pastedAddress, setPastedAddress] = useState<string>()
   const [isInvalid, setIsInvalid] = useState<boolean>(false)
   const [isExcluded, setIsExcluded] = useState<boolean>(false)
@@ -291,6 +267,7 @@ type Props = {
   placeholder?: string
   className?: string
   withAddressInput?: boolean
+  withAddressBook?: boolean
   label?: string
   tabIndex?: number
   addressType?: AccountAddressType
@@ -303,6 +280,7 @@ const AccountPicker: FC<Props> = ({
   onChange,
   placeholder,
   className,
+  withAddressBook,
   withAddressInput,
   label = "My Accounts",
   tabIndex,
@@ -310,6 +288,7 @@ const AccountPicker: FC<Props> = ({
   genesisHash,
 }: any) => {
   const accounts = useAccounts()
+  const { contacts } = useAddressBook()
   const [selectedAddress, setSelectedAddress] = useState<string | undefined>(defaultValue)
 
   useEffect(() => {
@@ -334,6 +313,16 @@ const AccountPicker: FC<Props> = ({
     [accounts, addressType, exclude, genesisHash]
   )
 
+  const filteredContacts = useMemo(
+    () =>
+      withAddressBook
+        ? contacts
+            .filter((contact) => contact?.address !== exclude)
+            .filter((contact) => !addressType || addressType === getAddressType(contact.address))
+        : [],
+    [contacts, withAddressBook, addressType, exclude]
+  )
+
   useEffect(() => {
     //if selected address is a hardware account and is not in the list, clear
     if (
@@ -348,7 +337,7 @@ const AccountPicker: FC<Props> = ({
       setSelectedAddress(undefined)
   }, [accounts, genesisHash, selectedAddress])
 
-  const handleChange = useCallback((item: AccountJson | null) => {
+  const handleChange = useCallback((item: AccountJson | AddressBookContact | null) => {
     setSelectedAddress(item?.address as string)
   }, [])
 
@@ -376,15 +365,34 @@ const AccountPicker: FC<Props> = ({
       onChange={handleChange}
       itemToString={handleItemToString}
     >
-      {({ getItemProps, isOpen, getToggleButtonProps, getMenuProps, getRootProps, closeMenu }) => {
+      {({
+        getItemProps,
+        isOpen,
+        getToggleButtonProps,
+        getMenuProps,
+        getRootProps,
+        closeMenu,
+        selectItem,
+      }) => {
         return (
-          <Container withAddressInput={withAddressInput} className={className} {...getRootProps()}>
+          <Container
+            withAddressInput={withAddressInput}
+            className={className}
+            {...getRootProps()}
+            // needed to get around a downshift/Portal bug (still present in downshift 6.1.7)
+            // https://github.com/downshift-js/downshift/issues/287
+            onMouseUp={(e) => {
+              e.stopPropagation()
+              e.preventDefault()
+            }}
+          >
             <Button
               hasValue={Boolean(selectedAddress)}
               tabIndex={tabIndex}
               {...getToggleButtonProps()}
             >
-              <FormattedAddress address={selectedAddress} placeholder={placeholder} />
+              {selectedAddress && <FormattedAddress address={selectedAddress} />}
+              {!selectedAddress && <span>{placeholder || "anything"}</span>}
             </Button>
             {isOpen && (
               <DivWithMount className="accounts-dropdown" {...getMenuProps()}>
@@ -395,24 +403,52 @@ const AccountPicker: FC<Props> = ({
                     addressType={addressType}
                   />
                 )}
-                {filteredAccounts.length > 0 && (
-                  <div className="accounts-group">
-                    {label && withAddressInput && <span className="group-header">{label}</span>}
-                    <ul>
-                      {filteredAccounts.map((account, index) => (
-                        <li
-                          {...getItemProps({
-                            key: account.address,
-                            item: account,
-                            index,
-                          })}
-                        >
-                          <Name withAvatar address={account?.address} />
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                <div className="accounts-group">
+                  {filteredContacts.length > 0 && (
+                    <>
+                      {withAddressInput && <span className="group-header">Contacts</span>}
+                      <ul>
+                        {filteredContacts.map((contact, index) => (
+                          <li
+                            {...getItemProps({
+                              key: contact.address,
+                              item: contact,
+                              index,
+                              // needed to get around downshift/Portal bug
+                              onMouseUp: (e) => selectItem(contact),
+                            })}
+                          >
+                            <NamedAddress
+                              withAvatar
+                              address={contact.address}
+                              name={contact.name}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                  {filteredAccounts.length > 0 && (
+                    <>
+                      {label && withAddressInput && <span className="group-header">{label}</span>}
+                      <ul>
+                        {filteredAccounts.map((account, index) => (
+                          <li
+                            {...getItemProps({
+                              key: account.address,
+                              item: account,
+                              index: index + filteredContacts.length,
+                              // needed to get around downshift/Portal bug
+                              onMouseUp: (e) => selectItem(account),
+                            })}
+                          >
+                            <AccountName withAvatar address={account?.address} />
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
               </DivWithMount>
             )}
           </Container>

@@ -66,7 +66,8 @@ export const AutoLockTimer = () => {
         defaultSelectedItem={autoLockTimeout ? OPTIONS[autoLockTimeout] : OPTIONS[0]}
         items={Object.values(OPTIONS)}
         onChange={(val) => {
-          update({ autoLockTimeout: val?.value || 0 })
+          const newVal = val?.value || 0
+          if (newVal !== autoLockTimeout) update({ autoLockTimeout: newVal })
         }}
       />
     </Layout>

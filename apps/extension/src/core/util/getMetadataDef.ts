@@ -117,7 +117,12 @@ export const getMetadataDef = async (
 
     // persist in store
     if (storeMetadata) await db.metadata.update(genesisHash, newData)
-    else await db.metadata.add(newData)
+    else {
+      // could be a race condition caused by multiple calls to this function, in the meantime storeMetadata could be out of date
+      const latestStoreMetadata = await db.metadata.get(genesisHash)
+      if (!latestStoreMetadata || runtimeSpecVersion > latestStoreMetadata.specVersion)
+        await db.metadata.put(newData)
+    }
 
     // save full object in cache
     cache[cacheKey] = (await db.metadata.get(genesisHash)) as MetadataDef

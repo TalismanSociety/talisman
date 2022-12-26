@@ -8,6 +8,7 @@ import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import useChain from "@ui/hooks/useChain"
 import { useCallback, useState } from "react"
+import { useSearchParams } from "react-router-dom"
 
 export type LedgerAccountDefSubstrate = Omit<RequestAccountCreateHardware, "hardwareType">
 export type LedgerAccountDefEthereum = RequestAccountCreateHardwareEthereum
@@ -19,13 +20,11 @@ type LedgerCreationInputs = {
   accounts: LedgerAccountDef[]
 }
 
-const DEFAULT_DATA = {
-  // uncomment to be able to F5 on accounts selection screen when developing
-  // chainId: DEBUG ? "polkadot" : undefined,
-}
-
 const useAddLedgerAccountProvider = () => {
-  const [data, setData] = useState<Partial<LedgerCreationInputs>>(DEFAULT_DATA)
+  const [params] = useSearchParams()
+  const [data, setData] = useState<Partial<LedgerCreationInputs>>(() => ({
+    type: params.get("type") as AccountAddressType,
+  }))
   const chain = useChain(data.chainId as string)
 
   const updateData = useCallback((newData: Partial<LedgerCreationInputs>) => {
