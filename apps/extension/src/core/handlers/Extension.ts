@@ -260,7 +260,7 @@ export default class Extension extends ExtensionHandler {
           balanceModule.subscribeBalances(
             { substrate: chainConnector, evm: chainConnectorEvm },
             chaindataProvider,
-            addressesByToken,
+            addressesByToken ?? {},
             (error, result) => {
               // eslint-disable-next-line no-console
               if (error) DEBUG && console.error(error)
