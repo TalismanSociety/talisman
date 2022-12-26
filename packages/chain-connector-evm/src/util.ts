@@ -1,6 +1,7 @@
 import { ethers } from "ethers"
 
 import { API_KEY_ONFINALITY, RPC_HEALTHCHECK_TIMEOUT } from "./constants"
+import { EvmJsonRpcBatchProvider } from "./EvmJsonRpcBatchProvider"
 import log from "./log"
 
 export const throwAfter = (ms: number, reason: any = "timeout") =>
@@ -70,7 +71,8 @@ export const getHealthyRpc = async (rpcUrls: string[], network: ethers.providers
 export const isUnhealthyRpcError = (err: any) => {
   // expected errors that are not related to RPC health
   // ex : throw revert on a transaction call that fails
-  if (["processing response error"].includes(err.reason)) return false
+  if (err?.reason && ["processing response error", "BATCH_FAILED"].includes(err.reason.toString()))
+    return false
 
   // if unknown, assume RPC is unhealthy
   return true
@@ -88,7 +90,7 @@ export class StandardRpcProvider extends ethers.providers.JsonRpcProvider {
   }
 }
 
-export class BatchRpcProvider extends ethers.providers.JsonRpcBatchProvider {
+export class BatchRpcProvider extends EvmJsonRpcBatchProvider {
   async send(method: string, params: Array<any>): Promise<any> {
     try {
       return await super.send(method, params)
