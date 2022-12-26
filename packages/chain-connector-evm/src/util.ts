@@ -71,8 +71,8 @@ export const getHealthyRpc = async (rpcUrls: string[], network: ethers.providers
 export const isUnhealthyRpcError = (err: any) => {
   // expected errors that are not related to RPC health
   // ex : throw revert on a transaction call that fails
-  if (err?.reason && ["processing response error", "BATCH_FAILED"].includes(err.reason.toString()))
-    return false
+  if (err?.message === "BATCH_FAILED") return false
+  if (err?.reason === "processing response error") return false
 
   // if unknown, assume RPC is unhealthy
   return true

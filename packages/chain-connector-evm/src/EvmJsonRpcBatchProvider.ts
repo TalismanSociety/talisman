@@ -68,7 +68,7 @@ export class EvmJsonRpcBatchProvider extends ethers.providers.StaticJsonRpcProvi
 
         // reject all requests using a custom error message that will prevent more fallback cycling
         batch.forEach((request) => {
-          request.reject(new Error(err.message, { cause: "BATCH_FAILED" }))
+          request.reject(new Error("BATCH_FAILED", { cause: err }))
         })
       })
   }
