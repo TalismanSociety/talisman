@@ -15,6 +15,7 @@ import {
 } from "@talismn/chaindata-provider"
 import { hasOwnProperty } from "@talismn/util"
 import { ethers } from "ethers"
+import isEqual from "lodash/isEqual"
 
 import log from "./log"
 
@@ -105,19 +106,34 @@ export const EvmNativeModule: BalanceModule<
   async subscribeBalances(chainConnectors, chaindataProvider, addressesByToken, callback) {
     let subscriptionActive = true
     const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
+    const cache = new Map<string, unknown>()
 
     const poll = async () => {
       if (!subscriptionActive) return
 
       try {
-        const balances = await this.fetchBalances(
-          chainConnectors,
-          chaindataProvider,
-          addressesByToken
-        )
+        // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)
+        // since these are native tokens (1 per network), we can iterate on tokens
+        for (const tokenId of Object.keys(addressesByToken)) {
+          try {
+            const tokenAddresses = { [tokenId]: addressesByToken[tokenId] }
 
-        // TODO: Don't call callback with balances which have not changed since the last poll.
-        callback(null, balances)
+            const balances = await this.fetchBalances(
+              chainConnectors,
+              chaindataProvider,
+              tokenAddresses
+            )
+
+            // Don't call callback with balances which have not changed since the last poll.
+            const json = balances.toJSON()
+            if (!isEqual(cache.get(tokenId), json)) {
+              cache.set(tokenId, json)
+              callback(null, balances)
+            }
+          } catch (err) {
+            callback(err)
+          }
+        }
       } catch (error) {
         callback(error)
       } finally {
