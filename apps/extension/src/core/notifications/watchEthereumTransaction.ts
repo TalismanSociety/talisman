@@ -1,4 +1,4 @@
-import { chaindataProvider } from "@core/domains/chaindata"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { nanoid } from "nanoid"

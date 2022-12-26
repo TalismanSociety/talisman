@@ -1,10 +1,4 @@
-import {
-  Metadata,
-  TypeRegistry,
-  createType,
-  decorateConstants,
-  expandMetadata,
-} from "@polkadot/types"
+import { Metadata, TypeRegistry, createType, decorateConstants } from "@polkadot/types"
 import { u8aToHex } from "@polkadot/util"
 import {
   Amount,
@@ -34,24 +28,40 @@ const storageHash = "b99d880ec681799c0cf30e8886371da9" // util_crypto.xxhashAsHe
 const moduleStorageHash = `${moduleHash}${storageHash}`
 
 // AccountInfo is the state_storage data format for nativeToken balances
-const AccountInfoFallback = JSON.stringify({
+// Theory: new chains will be at least on metadata v14, and so we won't need to hardcode their AccountInfo type.
+// But for chains we want to support which aren't on metadata v14, hardcode them here:
+// If the chain upgrades to metadata v14, this override will be ignored :)
+const RegularAccountInfoFallback = JSON.stringify({
   nonce: "u32",
   consumers: "u32",
   providers: "u32",
   sufficients: "u32",
   data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
 })
-const AccountInfoCommonOverides = {
-  noSufficients: JSON.stringify({
-    nonce: "u32",
-    consumers: "u32",
-    providers: "u32",
-    data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
-  }),
-}
-// TODO: Get this from the metadata store if metadata is >= v14
+const NoSufficientsAccountInfoFallback = JSON.stringify({
+  nonce: "u32",
+  consumers: "u32",
+  providers: "u32",
+  data: { free: "u128", reserved: "u128", miscFrozen: "u128", feeFrozen: "u128" },
+})
 const AccountInfoOverrides: { [key: ChainId]: string } = {
-  crust: AccountInfoCommonOverides.noSufficients,
+  // automata is not yet on metadata v14
+  "automata": RegularAccountInfoFallback,
+
+  // crown-sterlin is not yet on metadata v14
+  "crown-sterling": NoSufficientsAccountInfoFallback,
+
+  // crust-parachain is not yet on metadata v14
+  "crust-parachain": NoSufficientsAccountInfoFallback,
+
+  // crust is not yet on metadata v14
+  "crust": NoSufficientsAccountInfoFallback,
+
+  // kulupu is not yet on metadata v14
+  "kulupu": RegularAccountInfoFallback,
+
+  // nftmart is not yet on metadata v14
+  "nftmart": RegularAccountInfoFallback,
 }
 
 const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
@@ -61,7 +71,9 @@ export type SubNativeToken = NewTokenType<
   ModuleType,
   {
     existentialDeposit: string
-    accountInfo?: string
+    accountInfoType: number | null // TODO: Instead of storing this on the token, figure out a way to store it on the chain
+    metadata: `0x${string}` | null // TODO: Instead of storing this on the token, figure out a way to store it on the chain
+    metadataVersion: number // TODO: Instead of storing this on the token, figure out a way to store it on the chain
     chain: { id: ChainId }
   }
 >
@@ -81,7 +93,9 @@ export type SubNativeChainMeta = {
   symbol: string
   decimals: number
   existentialDeposit: string | null
-  accountInfo: string | null
+  accountInfoType: number | null
+  metadata: `0x${string}` | null
+  metadataVersion: number
 }
 
 export type SubNativeBalance = NewBalanceType<
@@ -121,30 +135,132 @@ export const SubNativeModule: BalanceModule<
     const symbol: string = (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) || "Unknown"
     const decimals: number = (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) || 0
 
-    const metadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
-    metadata.registry.setMetadata(metadata)
+    const pjsMetadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
+    pjsMetadata.registry.setMetadata(pjsMetadata)
 
-    const constants = decorateConstants(metadata.registry, metadata.asLatest, metadata.version)
+    const constants = decorateConstants(
+      pjsMetadata.registry,
+      pjsMetadata.asLatest,
+      pjsMetadata.version
+    )
     const existentialDeposit = constants?.balances?.existentialDeposit
       ? constants.balances.existentialDeposit.toString()
       : null
 
-    let accountInfo = null
-    if (metadata.version >= 14) {
-      const accountInfoLookupId = expandMetadata(
-        metadata.registry,
-        metadata
-      ).query.system.account.meta.type.asMap.value.toNumber()
-      const typeDef = metadata.asLatest.lookup.getTypeDef(accountInfoLookupId)
+    // we do a just-in-time import here so that our frontend bundle of this module doesn't include the nodejs-dependent subsquid libraries
+    const { mutateMetadata } = await import(/* webpackIgnore: true */ "./metadata")
 
-      accountInfo = typeDef.type
+    let accountInfoType = null
+    const balanceMetadata = mutateMetadata(metadataRpc, (metadata) => {
+      if (
+        metadata.__kind === "V0" ||
+        metadata.__kind === "V1" ||
+        metadata.__kind === "V2" ||
+        metadata.__kind === "V3" ||
+        metadata.__kind === "V4" ||
+        metadata.__kind === "V5" ||
+        metadata.__kind === "V6" ||
+        metadata.__kind === "V7" ||
+        metadata.__kind === "V8" ||
+        metadata.__kind === "V9" ||
+        metadata.__kind === "V10" ||
+        metadata.__kind === "V11" ||
+        metadata.__kind === "V12" ||
+        metadata.__kind === "V13"
+      ) {
+        // we can't parse metadata < v14
+        return null
+      }
+
+      const isSystemPallet = (pallet: any) => pallet.name === "System"
+      const isAccountItem = (item: any) => item.name === "Account"
+
+      metadata.value.pallets = metadata.value.pallets.filter(isSystemPallet)
+
+      const { systemPallet /* systemPallet is not needed anymore 🔥 */, accountItem } = (() => {
+        const systemPallet = metadata.value.pallets.find(isSystemPallet)
+        if (!systemPallet) return { systemPallet, accountItem: undefined }
+        if (!systemPallet.storage) return { systemPallet, accountItem: undefined }
+
+        systemPallet.events = undefined
+        systemPallet.calls = undefined
+        systemPallet.errors = undefined
+        systemPallet.constants = []
+        systemPallet.storage.items = systemPallet.storage.items.filter(isAccountItem)
+
+        const accountItem = (systemPallet.storage?.items || []).find(isAccountItem)
+        if (!accountItem) return { systemPallet, accountItem: undefined }
+
+        accountInfoType = accountItem.type.value
+        return { systemPallet, accountItem }
+      })()
+
+      // this is a set of type ids which we plan to keep in our mutated metadata
+      // anything not in this set will be deleted
+      // we start off with just the types of the state calls we plan to make,
+      // then we run those types through a function (addDependentTypes) which will also include
+      // all of the types which those types depend on - recursively
+      const keepTypes = new Set(
+        [
+          // NOTE: I don't think we need these for the balance state call,
+          //       but I'm leaving them here just in case we have issues later on.
+          // systemPallet?.events?.type,
+          // systemPallet?.calls?.type,
+          // systemPallet?.errors?.type,
+          accountItem?.type.value,
+        ].filter((type): type is number => typeof type === "number")
+      )
+
+      const addDependentTypes = (types: number[]) => {
+        for (const typeIndex of types) {
+          const type = metadata.value.lookup.types[typeIndex]
+          if (!type) {
+            log.warn(`Unable to find type with index ${typeIndex}`)
+            continue
+          }
+
+          keepTypes.add(type.id)
+
+          // TODO: Handle other types
+          // (all chains so far are only using Composite for balances,
+          // but later on for other use cases we'll need to at least also handle 'Variant' types)
+          if (type?.type?.def?.__kind === "Composite") {
+            addDependentTypes(type.type.def.value.fields.map(({ type }) => type))
+          }
+        }
+      }
+
+      // recursively find all the types which our keepTypes depend on and add them to the keepTypes set
+      addDependentTypes([...keepTypes])
+
+      // ditch the types we aren't keeping
+      const isKeepType = (type: any) => keepTypes.has(type.id)
+      metadata.value.lookup.types = metadata.value.lookup.types.filter(isKeepType)
+
+      return metadata
+    })
+
+    return {
+      isTestnet,
+      symbol,
+      decimals,
+      existentialDeposit,
+      accountInfoType,
+      metadata: balanceMetadata,
+      metadataVersion: pjsMetadata.version,
     }
-
-    return { isTestnet, symbol, decimals, existentialDeposit, accountInfo }
   },
 
   async fetchSubstrateChainTokens(chainConnector, chaindataProvider, chainId, chainMeta) {
-    const { isTestnet, symbol, decimals, existentialDeposit, accountInfo } = chainMeta
+    const {
+      isTestnet,
+      symbol,
+      decimals,
+      existentialDeposit,
+      accountInfoType,
+      metadata,
+      metadataVersion,
+    } = chainMeta
 
     const id = subNativeTokenId(chainId, symbol)
     const nativeToken: SubNativeToken = {
@@ -155,7 +271,9 @@ export const SubNativeModule: BalanceModule<
       decimals,
       logo: githubTokenLogoUrl(id),
       existentialDeposit: existentialDeposit || "0",
-      accountInfo: accountInfo ?? undefined,
+      accountInfoType,
+      metadata,
+      metadataVersion,
       chain: { id: chainId },
     }
 
@@ -181,8 +299,22 @@ export const SubNativeModule: BalanceModule<
         const chainId = token.chain?.id
         if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
 
-        const accountInfo =
-          token.accountInfo ?? AccountInfoOverrides[chainId] ?? AccountInfoFallback
+        const typeRegistry = new TypeRegistry()
+        if (token.metadata !== undefined && token.metadata !== null && token.metadataVersion >= 14)
+          typeRegistry.setMetadata(new Metadata(typeRegistry, token.metadata))
+
+        const accountInfoTypeDef = (() => {
+          if (token.accountInfoType === undefined) return AccountInfoOverrides[chainId]
+          if (token.accountInfoType === null) return AccountInfoOverrides[chainId]
+          if (!(token.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
+
+          try {
+            return typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
+          } catch (error: any) {
+            log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
+            return
+          }
+        })()
 
         // set up method, return message type and params
         const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
@@ -204,7 +336,14 @@ export const SubNativeModule: BalanceModule<
             if (error) return callback(error)
             callback(
               null,
-              formatRpcResult(tokenId, chainId, accountInfo, addressReferences, result)
+              formatRpcResult(
+                tokenId,
+                chainId,
+                accountInfoTypeDef,
+                typeRegistry,
+                addressReferences,
+                result
+              )
             )
           }
         )
@@ -242,8 +381,26 @@ export const SubNativeModule: BalanceModule<
           const chainId = token.chain?.id
           if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
 
-          const accountInfo =
-            token.accountInfo ?? AccountInfoOverrides[chainId] ?? AccountInfoFallback
+          const typeRegistry = new TypeRegistry()
+          if (
+            token.metadata !== undefined &&
+            token.metadata !== null &&
+            token.metadataVersion >= 14
+          )
+            typeRegistry.setMetadata(new Metadata(typeRegistry, token.metadata))
+
+          const accountInfoTypeDef = (() => {
+            if (token.accountInfoType === undefined) return AccountInfoOverrides[chainId]
+            if (token.accountInfoType === null) return AccountInfoOverrides[chainId]
+            if (!(token.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
+
+            try {
+              return typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
+            } catch (error: any) {
+              log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
+              return
+            }
+          })()
 
           // set up method and params
           const method = "state_queryStorageAt" // method we call to fetch
@@ -256,7 +413,14 @@ export const SubNativeModule: BalanceModule<
           const response = await chainConnectors.substrate.send(chainId, method, params)
           const result = response[0]
 
-          return formatRpcResult(tokenId, chainId, accountInfo, addressReferences, result)
+          return formatRpcResult(
+            tokenId,
+            chainId,
+            accountInfoTypeDef,
+            typeRegistry,
+            addressReferences,
+            result
+          )
         })
       )
     ).filter((balances): balances is Balances => balances !== false)
@@ -320,7 +484,8 @@ function buildAddressReferences(addresses: string[]): Array<[string, string]> {
 function formatRpcResult(
   tokenId: TokenId,
   chainId: ChainId,
-  accountInfo: string,
+  accountInfoTypeDef: string | undefined,
+  typeRegistry: TypeRegistry,
   addressReferences: Array<[string, string]>,
   result: unknown
 ): Balances {
@@ -349,12 +514,31 @@ function formatRpcResult(
         return false
       }
 
-      const balance: any = createType(new TypeRegistry(), accountInfo, change)
+      if (accountInfoTypeDef === undefined) {
+        // accountInfoTypeDef is undefined when chain is metadata < 14 and we also don't have an override hardcoded in
+        // the most likely best way to handle this case: log a warning and return an empty balance
+        log.debug(
+          `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`
+        )
+        return false
+      }
 
-      let free = (balance.data?.free.toBigInt() || BigInt("0")).toString()
-      let reserved = (balance.data?.reserved.toBigInt() || BigInt("0")).toString()
-      let miscFrozen = (balance.data?.miscFrozen.toBigInt() || BigInt("0")).toString()
-      let feeFrozen = (balance.data?.feeFrozen.toBigInt() || BigInt("0")).toString()
+      let balance: any
+      try {
+        balance = createType(typeRegistry, accountInfoTypeDef, change)
+      } catch (error) {
+        log.warn(
+          `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${(
+            error as any
+          )?.toString()}`
+        )
+        return false
+      }
+
+      let free = (balance.data?.free?.toBigInt() || BigInt("0")).toString()
+      let reserved = (balance.data?.reserved?.toBigInt() || BigInt("0")).toString()
+      let miscFrozen = (balance.data?.miscFrozen?.toBigInt() || BigInt("0")).toString()
+      let feeFrozen = (balance.data?.feeFrozen?.toBigInt() || BigInt("0")).toString()
 
       // we use the evm-native module to fetch native token balances for ethereum addresses
       if (isEthereumAddress(address)) free = reserved = miscFrozen = feeFrozen = "0"

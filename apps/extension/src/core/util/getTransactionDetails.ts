@@ -1,4 +1,3 @@
-import { chaindataProvider } from "@core/domains/chaindata"
 import {
   SignerPayloadJSON,
   TransactionDetails,
@@ -7,6 +6,7 @@ import {
 } from "@core/domains/signing/types"
 import RpcFactory from "@core/libs/RpcFactory"
 import { log } from "@core/log"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import { assert, hexToNumber } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 

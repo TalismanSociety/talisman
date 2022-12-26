@@ -78,9 +78,14 @@ yarn changeset version
 
 ### Publish packages
 
+NOTE: This changeset and manual publish stuff is way too error-prone. We should definitely invest some time in automating the process on github ci.  
+One consideration to keep in mind is how should we handle non-production npm package updates.  
+E.g. we might make some changes to a balances module and want to test it out on subsquid, but not release a new version as it's not yet in a completed state.
+
 ```bash
 yarn plugin import workspace-tools
 
 yarn npm login
+yarn build:packages:prod
 yarn workspaces foreach --no-private npm publish --tolerate-republish
 ```

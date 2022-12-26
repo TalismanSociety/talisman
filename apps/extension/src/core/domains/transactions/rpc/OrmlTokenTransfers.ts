@@ -1,11 +1,11 @@
 import { DEBUG } from "@core/constants"
-import { chaindataProvider } from "@core/domains/chaindata"
 import { ChainId } from "@core/domains/chains/types"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { ResponseAssetTransferFeeQuery } from "@core/domains/transactions/types"
 import { isHardwareAccount } from "@core/handlers/helpers"
 import RpcFactory from "@core/libs/RpcFactory"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import { SubscriptionCallback } from "@core/types"
 import { Address } from "@core/types/base"
 import { getExtrinsicDispatchInfo } from "@core/util/getExtrinsicDispatchInfo"
@@ -166,9 +166,9 @@ export default class OrmlTokenTransfersRpc {
     const errors: Error[] = []
 
     const hardcodedCurrencyIds: Record<string, any> = {
-      "mangata-orml-mgx": 0,
-      "gm-orml-gm": 1,
-      "gm-orml-gn": 2,
+      "mangata-substrate-orml-mgx": 0,
+      "gm-substrate-orml-gm": 1,
+      "gm-substrate-orml-gn": 2,
     }
 
     // different chains use different orml transfer methods

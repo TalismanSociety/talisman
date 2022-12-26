@@ -14,7 +14,7 @@ export default class TokenRatesHandler extends ExtensionHandler {
       // tokenRates handlers ------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(tokenRates.subscribe)":
-        return this.stores.tokenRates.hydrateStore()
+        return this.stores.tokenRates.subscribe(id, port)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

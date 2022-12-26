@@ -1,7 +1,7 @@
 // TODO: Replace all users of this with an instance of ChainConnector
 
-import { chainConnector } from "@core/domains/chain-connector"
 import { ChainId } from "@core/domains/chains/types"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 
 // TODO: Refactor any code which uses this class to directly

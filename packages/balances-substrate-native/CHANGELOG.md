@@ -1,5 +1,12 @@
 # @talismn/balances-substrate-native
 
+## 0.1.19
+
+### Patch Changes
+
+- bcb5f903: fix: balance parsing error (createType)
+  - @talismn/balances@0.1.19
+
 ## 0.1.18
 
 ### Patch Changes

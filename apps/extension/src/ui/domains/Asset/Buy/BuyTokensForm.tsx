@@ -105,13 +105,13 @@ const renderAccountItem: RenderItemFunc<AccountJsonAny> = (account, key) => {
 // list to keep up to date, it's used when github is unreachable
 const DEFAULT_BUY_TOKEN_IDS = [
   // SUB
-  "polkadot-native-dot",
-  "kusama-native-ksm",
-  "astar-native-astr",
+  "polkadot-substrate-native-dot",
+  "kusama-substrate-native-ksm",
+  "astar-substrate-native-astr",
   // ETH
-  "moonbeam-native-glmr",
-  "moonriver-native-movr",
-  "1-native-eth",
+  "moonbeam-substrate-native-glmr",
+  "moonriver-substrate-native-movr",
+  "1-evm-native-eth",
 ]
 
 const BANXA_URL = DEBUG ? "https://talisman.banxa-sandbox.com/" : "https://talisman.banxa.com/"
@@ -141,7 +141,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
   useEffect(() => {
     // pull up to date list from github
     // note that there is a 5min cache on github files
-    fetch(`${githubChaindataBaseUrl}/tokens-buy.json`)
+    fetch(`${githubChaindataBaseUrl}/tokens-buyable.json`)
       .then(async (response) => {
         const tokenIds: string[] = await response.json()
         setSupportedTokenIds(tokenIds)
@@ -163,7 +163,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
       substrateTokenIds:
         supportedTokens
           ?.filter((t) => {
-            if (!["orml", "native"].includes(t.type)) return false
+            if (!["substrate-native", "substrate-orml"].includes(t.type)) return false
             const chain = chains?.find((c) => c.id === t.chain?.id)
             return chain && chain.account !== "secp256k1"
           })
@@ -171,7 +171,7 @@ const useSupportedTokenIds = (chains?: Chain[], tokens?: Token[], address?: stri
       ethereumTokenIds:
         supportedTokens
           ?.filter((t) => {
-            if (!["erc20", "native"].includes(t.type)) return false
+            if (!["substrate-native", "evm-native", "evm-erc20"].includes(t.type)) return false
             const chain = chains?.find((c) => c.id === t.chain?.id)
             return !chain || (chain.account === "secp256k1" && chain.evmNetworks.length > 0)
           })

@@ -1,5 +1,5 @@
+import { db } from "@core/db"
 import { RequestMetadataApprove, RequestMetadataReject } from "@core/domains/metadata/types"
-import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"

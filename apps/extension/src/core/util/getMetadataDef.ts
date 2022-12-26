@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
-import { chaindataProvider } from "@core/domains/chaindata"
+import { db } from "@core/db"
 import { MetadataDef } from "@core/inject/types"
-import { db } from "@core/libs/db"
 import RpcFactory from "@core/libs/RpcFactory"
 import { log } from "@core/log"
+/* eslint-disable no-console */
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import { assert, hexToU8a, isHex, u8aToHex } from "@polkadot/util"
 import { base64Decode, base64Encode } from "@polkadot/util-crypto"
 import { HexString } from "@polkadot/util/types"

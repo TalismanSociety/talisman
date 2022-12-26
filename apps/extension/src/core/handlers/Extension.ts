@@ -1,4 +1,5 @@
 import { DEBUG } from "@core/constants"
+import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
 import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
@@ -10,9 +11,6 @@ import {
   RequestBalanceLocks,
   RequestBalancesByParamsSubscribe,
 } from "@core/domains/balances/types"
-import { chainConnector } from "@core/domains/chain-connector"
-import { chainConnectorEvm } from "@core/domains/chain-connector-evm"
-import { chaindataProvider } from "@core/domains/chaindata"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
@@ -24,9 +22,11 @@ import { AssetTransferHandler } from "@core/domains/transactions"
 import State from "@core/handlers/State"
 import { ExtensionStore } from "@core/handlers/stores"
 import { talismanAnalytics } from "@core/libs/Analytics"
-import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
+import { chainConnector } from "@core/rpcs/chain-connector"
+import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
@@ -83,6 +83,9 @@ export default class Extension extends ExtensionHandler {
   }
 
   private initDb() {
+    // Forces database migrations to run on first start up
+    db.open()
+
     db.on("ready", async () => {
       // TODO: Add back this migration logic to delete old data from localStorage/old idb-managed db
       // (We don't store metadata OR chains in here anymore, so we have no idea whether or not its has already been initialised)
@@ -257,7 +260,7 @@ export default class Extension extends ExtensionHandler {
           balanceModule.subscribeBalances(
             { substrate: chainConnector, evm: chainConnectorEvm },
             chaindataProvider,
-            addressesByToken,
+            addressesByToken ?? {},
             (error, result) => {
               // eslint-disable-next-line no-console
               if (error) DEBUG && console.error(error)

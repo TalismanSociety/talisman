@@ -116,21 +116,18 @@ export class ChainConnector {
     if (this.#socketConnections[chainId]) return [socketUserId, this.#socketConnections[chainId]]
 
     const autoConnectMs = 1000
-    try {
-      // sort healthy rpcs before unhealthy rpcs
-      const healthyRpcs = (chain.rpcs || [])
-        .filter(({ isHealthy }) => isHealthy)
-        .map(({ url }) => url)
-      const unhealthyRpcs = (chain.rpcs || [])
-        .filter(({ isHealthy }) => !isHealthy)
-        .map(({ url }) => url)
-      const rpcs = [...healthyRpcs, ...unhealthyRpcs]
+    // sort healthy rpcs before unhealthy rpcs
+    const healthyRpcs = (chain.rpcs || [])
+      .filter(({ isHealthy }) => isHealthy)
+      .map(({ url }) => url)
+    const unhealthyRpcs = (chain.rpcs || [])
+      .filter(({ isHealthy }) => !isHealthy)
+      .map(({ url }) => url)
+    const rpcs = [...healthyRpcs, ...unhealthyRpcs]
 
-      if (rpcs.length) this.#socketConnections[chainId] = new WsProvider(rpcs, autoConnectMs)
-      else throw new Error(`No healthy RPCs available for chain ${chainId}`)
-    } catch (error) {
-      log.error(error)
-      throw error
+    if (rpcs.length) this.#socketConnections[chainId] = new WsProvider(rpcs, autoConnectMs)
+    else {
+      throw new Error(`No healthy RPCs available for chain ${chainId}`)
     }
 
     // set up healthcheck (keeps ws open when idle), don't wait for setup to complete

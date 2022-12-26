@@ -1,6 +1,6 @@
+import { db } from "@core/db"
 import { passwordStore } from "@core/domains/app"
-import { chaindataProvider } from "@core/domains/chaindata"
-import { db } from "@core/libs/db"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseTypes } from "@core/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 /* eslint-disable no-console */

@@ -1,6 +1,6 @@
 // TODO: Replace all users of this with an instance of ChainConnectorEvm
 
-import { chainConnectorEvm } from "@core/domains/chain-connector-evm"
+import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import type { GetProviderOptions } from "@talismn/chain-connector-evm"
 import type { ethers } from "ethers"
 

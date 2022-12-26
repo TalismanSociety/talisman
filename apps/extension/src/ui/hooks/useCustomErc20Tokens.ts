@@ -1,5 +1,5 @@
-import { chaindataProvider } from "@core/domains/chaindata"
 import { CustomErc20Token } from "@core/domains/tokens/types"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import { useLiveQuery } from "dexie-react-hooks"
 
 export const useCustomErc20Tokens = () =>

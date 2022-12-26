@@ -1,4 +1,4 @@
-import { chaindataProvider } from "@core/domains/chaindata"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import { TokenId } from "@talismn/chaindata-provider"
 import { useLiveQuery } from "dexie-react-hooks"
 
