@@ -21,7 +21,7 @@ export class EvmNetworkStore {
   //   })
 
   //   // clear providers cache in case rpcs changed
-  //   clearEvmRpcProvidersCache()
+  //   chainConnectorEvm.clearCache()
   // }
 
   /**

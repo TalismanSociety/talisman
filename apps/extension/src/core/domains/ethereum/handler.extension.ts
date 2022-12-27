@@ -34,7 +34,7 @@ import { print } from "graphql"
 //import { tokensQuery, tokensResponseToTokenList } from "../tokens/store"
 import { rebuildTransactionRequestNumbers } from "./helpers"
 // import { evmNetworksQuery } from "./networksStore"
-import { clearEvmRpcProviderCache, getProviderForEvmNetworkId } from "./rpcProviders"
+import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 import { RequestUpsertCustomEvmNetwork } from "./types"
 
@@ -436,7 +436,7 @@ export class EthHandler extends ExtensionHandler {
     //   })
     // })
 
-    // clearEvmRpcProviderCache(network.id)
+    // chainConnectorEvm.clearCache(network.id)
 
     // return true
   }
@@ -463,7 +463,7 @@ export class EthHandler extends ExtensionHandler {
     //   network: id.toString(),
     // })
 
-    // clearEvmRpcProviderCache(id)
+    // chainConnectorEvm.clearCache(id)
 
     // return true
   }
@@ -531,7 +531,7 @@ export class EthHandler extends ExtensionHandler {
     //   network: id.toString(),
     // })
 
-    // clearEvmRpcProviderCache(id)
+    // chainConnectorEvm.clearCache(id)
 
     // return true
   }

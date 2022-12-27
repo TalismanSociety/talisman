@@ -63,6 +63,13 @@ export class ChainConnectorEvm {
     return (await this.#providerCache.get(cacheKey)) ?? null
   }
 
+  clearCache(evmNetworkId?: EvmNetworkId) {
+    if (evmNetworkId) {
+      this.#providerCache.delete(getEvmNetworkProviderCacheKey(evmNetworkId, false))
+      this.#providerCache.delete(getEvmNetworkProviderCacheKey(evmNetworkId, true))
+    } else this.#providerCache.clear()
+  }
+
   private async newProviderFromEvmNetwork(
     evmNetwork: EvmNetwork | CustomEvmNetwork,
     { batch }: GetProviderOptions = {}

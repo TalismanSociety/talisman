@@ -25,14 +25,3 @@ export const getProviderForEvmNetworkId = async (
 ): Promise<ethers.providers.JsonRpcProvider | null> => {
   return await chainConnectorEvm.getProviderForEvmNetworkId(ethereumNetworkId, { batch })
 }
-
-export const clearEvmRpcProviderCache = (evmNetworkId: number) => {
-  throw new Error("Not implemented")
-  // PROVIDERS_BY_NETWORK_ID.delete(getProviderByNetworkIdCacheKey(evmNetworkId, false))
-  // PROVIDERS_BY_NETWORK_ID.delete(getProviderByNetworkIdCacheKey(evmNetworkId, true))
-}
-
-export const clearEvmRpcProvidersCache = () => {
-  throw new Error("Not implemented")
-  // PROVIDERS_BY_NETWORK_ID.clear()
-}
