@@ -3,6 +3,7 @@ import HeaderBlock from "@talisman/components/HeaderBlock"
 import { IconChevron, PlusIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -58,7 +59,7 @@ const NetworksList = () => {
     <div className="flex flex-col gap-4">
       {sortedNetworks.map((network) => (
         <ListButton key={network.id} role="button" onClick={handleNetworkClick(network)}>
-          <TokenLogo className="rounded-full text-xl" tokenId={network?.nativeToken?.id} />
+          <ChainLogo className="rounded-full text-xl" id={network.id} />
           <div className="text-body grow">{network.name}</div>
           {network.isTestnet && <TestnetPill />}
           {isCustomEvmNetwork(network) && <CustomPill />}

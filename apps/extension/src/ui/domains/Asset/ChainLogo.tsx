@@ -4,43 +4,40 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { getBase64ImageUrl } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useState } from "react"
+import { FC, useMemo, useState } from "react"
 import styled from "styled-components"
 
-type ChainLogoProps = {
-  className?: string
+const GLOBE_ICON_URL = getBase64ImageUrl(globeIcon)
+
+type ChainLogoBaseProps = {
   id?: ChainId | EvmNetworkId
+  name?: string
+  logo?: string
+  iconUrls?: string[]
+  className?: string
 }
 
-export const ChainLogo = styled(({ id, className }: ChainLogoProps) => {
-  const chain = useChain(id)
-  const evmNetwork = useEvmNetwork(id)
-  const evmNetworkSubstrateChain = useChain(evmNetwork?.substrateChain?.id)
-  const [error, setError] = useState(false)
+export const ChainLogoBase = styled(
+  ({ id, name, logo, iconUrls, className }: ChainLogoBaseProps) => {
+    const [error, setError] = useState(false)
 
-  return (
-    <picture className={classNames("chain-logo", "network-logo", className)}>
-      {error ? (
-        <source srcSet={getBase64ImageUrl(globeIcon) ?? undefined} />
-      ) : (
-        <>
-          {evmNetwork &&
-            "iconUrls" in evmNetwork &&
-            evmNetwork.iconUrls?.map((url, i) => <source key={i} srcSet={url} />)}
-          <source
-            srcSet={chain?.logo ?? evmNetworkSubstrateChain?.logo ?? evmNetwork?.logo ?? undefined}
-          />
-        </>
-      )}
-      <img
-        src={getBase64ImageUrl(globeIcon) ?? ""}
-        alt={chain?.name ?? evmNetworkSubstrateChain?.name ?? evmNetwork?.name ?? undefined}
-        data-id={id}
-        onError={() => setError(true)}
-      />
-    </picture>
-  )
-})`
+    return (
+      <picture className={classNames("chain-logo", "network-logo", className)}>
+        {error ? (
+          <source srcSet={GLOBE_ICON_URL ?? undefined} />
+        ) : (
+          <>
+            {iconUrls?.map((url, i) => (
+              <source key={i} srcSet={url} />
+            ))}
+            <source srcSet={logo} />
+          </>
+        )}
+        <img src={GLOBE_ICON_URL ?? ""} alt={name} data-id={id} onError={() => setError(true)} />
+      </picture>
+    )
+  }
+)`
   display: block;
   position: relative;
   width: 1em;
@@ -55,3 +52,21 @@ export const ChainLogo = styled(({ id, className }: ChainLogoProps) => {
     height: 100%;
   }
 `
+
+type ChainLogoProps = {
+  className?: string
+  id?: ChainId | EvmNetworkId
+}
+
+export const ChainLogo: FC<ChainLogoProps> = ({ id, className }) => {
+  const chain = useChain(id)
+  const evmNetwork = useEvmNetwork(id)
+  const evmNetworkSubstrateChain = useChain(evmNetwork?.substrateChain?.id)
+
+  const props: ChainLogoBaseProps = useMemo(
+    () => chain ?? evmNetworkSubstrateChain ?? evmNetwork ?? {},
+    [chain, evmNetwork, evmNetworkSubstrateChain]
+  )
+
+  return <ChainLogoBase {...props} className={className} />
+}
