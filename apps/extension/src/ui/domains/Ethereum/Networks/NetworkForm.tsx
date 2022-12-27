@@ -1,30 +1,30 @@
-import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
-import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types/base"
+import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
+import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types"
 import { CustomNativeToken } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
+import { Modal } from "@talisman/components/Modal"
+import { ModalDialog } from "@talisman/components/ModalDialog"
+import { notify } from "@talisman/components/Notifications"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ArrowRightIcon } from "@talisman/theme/icons"
+import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
+import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
+import { useEvmChainsList } from "@ui/hooks/useEvmChainsList"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
+import { useSettings } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
+import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
-import { notify } from "@talisman/components/Notifications"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { Modal } from "@talisman/components/Modal"
-import { ModalDialog } from "@talisman/components/ModalDialog"
-import { useSettings } from "@ui/hooks/useSettings"
-import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
-import { useEvmChainsList } from "@ui/hooks/useEvmChainsList"
-import { useQuery } from "@tanstack/react-query"
-import { TokenImage } from "@ui/domains/Asset/TokenLogo"
-import { NetworkRpcsListField } from "./NetworkRpcsListField"
-import { getRpcChainId } from "./helpers"
+
 import { getNetworkFormSchema } from "./getNetworkFormSchema"
-import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
+import { getRpcChainId } from "./helpers"
+import { NetworkRpcsListField } from "./NetworkRpcsListField"
 
 const ResetNetworkButton: FC<{ network: EvmNetwork | CustomEvmNetwork }> = ({ network }) => {
   const {
@@ -144,17 +144,15 @@ const useRpcChainId = (rpcUrl: string) => {
 }
 
 type NetworkFormProps = {
-  evmNetworkId?: string
+  evmNetworkId?: EvmNetworkId
   onSubmitted?: () => void
 }
 
 export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
   const schema = useMemo(() => getNetworkFormSchema(evmNetworkId), [evmNetworkId])
 
-  const qIsBuiltInEvmNetwork = useIsBuiltInEvmNetwork(
-    evmNetworkId ? Number(evmNetworkId) : undefined
-  )
-  const evmNetwork = useEvmNetwork(evmNetworkId ? Number(evmNetworkId) : undefined)
+  const qIsBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
+  const evmNetwork = useEvmNetwork(evmNetworkId)
   const nativeToken = useToken(evmNetwork?.nativeToken?.id) as CustomNativeToken | undefined
   const [submitError, setSubmitError] = useState<string>()
   const evmNetworks = useEvmNetworks()
@@ -224,8 +222,8 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
 
   const qEvmChainsList = useEvmChainsList()
   const autoFill = useCallback(
-    async (id: number) => {
-      const chainInfo = qEvmChainsList.data?.find((c) => c.chainId === id)
+    async (id: EvmNetworkId) => {
+      const chainInfo = qEvmChainsList.data?.find((c) => c.chainId === Number(id))
       if (!chainInfo) return
 
       setValue("name", chainInfo.name)
@@ -295,10 +293,12 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
           <FormFieldContainer label="Token Coingecko ID" error={errors.tokenCoingeckoId?.message}>
             <FormFieldInputText
               before={
-                <TokenImage
-                  src={tokenImageSrc}
-                  className="ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]"
-                />
+                // TODO merge
+                // <TokenImage
+                //   src={tokenImageSrc}
+                //   className="ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]"
+                // />
+                null
               }
               placeholder="(optional)"
               {...register("tokenCoingeckoId")}

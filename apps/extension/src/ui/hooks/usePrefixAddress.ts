@@ -1,6 +1,7 @@
 import { convertAddress } from "@talisman/util/convertAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useMemo } from "react"
+
 import { useAddressBook } from "./useAddressBook"
 
 export const usePrefixAddress = (address: string, chainPrefix: number | null) => {

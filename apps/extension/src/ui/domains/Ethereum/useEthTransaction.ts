@@ -9,11 +9,12 @@ import {
   EthGasSettings,
   EthGasSettingsEip1559,
   EthGasSettingsLegacy,
+  EvmNetworkId,
 } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName, EthTransactionDetails } from "@core/domains/signing/types"
 import {
-  getEthTransactionInfo,
   TransactionInfo as TransactionType,
+  getEthTransactionInfo,
 } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { useQuery } from "@tanstack/react-query"
@@ -25,7 +26,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 
-const useNonce = (address?: string, evmNetworkId?: number) => {
+const useNonce = (address?: string, evmNetworkId?: EvmNetworkId) => {
   const [nonce, setNonce] = useState<number>()
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>()
@@ -129,22 +130,24 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
         ])
 
         if (feeOptions && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(provider.network.chainId)) {
-          // `gasPrice - baseFee` is equal to the current minimum maxPriorityPerGas value required to make it into next block
-          // if smaller than our historical data based value, use it.
-          // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
+          // minimum maxPriorityPerGas value required to be considered valid into next block is equal to `gasPrice - baseFee`
           let minimumMaxPriorityFeePerGas = gPrice.sub(baseFeePerGas ?? 0)
           if (minimumMaxPriorityFeePerGas.lt(0)) {
-            // on a busy network, when there is a sudden lowering of amount of transactions,
-            // it can happen that baseFeePerGas is higher than gPrice
+            // on a busy network, when there is a sudden lowering of amount of transactions, it can happen that baseFeePerGas is higher than gPrice
             minimumMaxPriorityFeePerGas = BigNumber.from("0")
           }
 
-          if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.low))
+          // if feeHistory is invalid (network is inactive), use minimumMaxPriorityFeePerGas for all options.
+          // else if feeHistory is valid but network usage below 80% (active but not busy), use it for the low priority option if lower
+          // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
+          if (!feeOptions.isValid) {
             feeOptions.options.low = minimumMaxPriorityFeePerGas
-          if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.medium))
             feeOptions.options.medium = minimumMaxPriorityFeePerGas
-          if (minimumMaxPriorityFeePerGas.lt(feeOptions.options.high))
             feeOptions.options.high = minimumMaxPriorityFeePerGas
+          } else if (feeOptions.gasUsedRatio < 0.8)
+            feeOptions.options.low = minimumMaxPriorityFeePerGas.lt(feeOptions.options.low)
+              ? minimumMaxPriorityFeePerGas
+              : feeOptions.options.low
         }
 
         setGasPrice(gPrice)
@@ -211,10 +214,10 @@ export const useEthTransaction = (
   defaultPriority: EthPriorityOptionName = "low",
   lockTransaction = false
 ) => {
-  const provider = useEthereumProvider(tx?.chainId)
+  const provider = useEthereumProvider(tx?.chainId?.toString())
   const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(provider, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(provider)
-  const { nonce, error: nonceError } = useNonce(tx?.from, tx?.chainId)
+  const { nonce, error: nonceError } = useNonce(tx?.from, tx?.chainId?.toString())
   const { data: estimatedGas, error: estimatedGasError } = useEstimatedGas(provider, tx)
 
   const {

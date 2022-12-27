@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react"
 import { Button } from "talisman-ui"
 import { useAccount, useConnect, useProvider } from "wagmi"
+
 import { Section } from "../Section"
 
 const NETWORKS = {

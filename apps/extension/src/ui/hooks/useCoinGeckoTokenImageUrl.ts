@@ -1,7 +1,7 @@
 import { getCoinGeckoToken } from "@core/util/coingecko/getCoinGeckoToken"
 import { getCoinGeckoTokensList } from "@core/util/coingecko/getCoinGeckoTokensList"
+import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
-import { GENERIC_TOKEN_LOGO_URL } from "@ui/domains/Asset/TokenLogo"
 import { useMemo } from "react"
 
 export const useCoinGeckoTokenImageUrl = (coingeckoTokenId?: string) => {
@@ -27,7 +27,7 @@ export const useCoinGeckoTokenImageUrl = (coingeckoTokenId?: string) => {
   })
 
   return useMemo(
-    () => qToken.data?.image?.large ?? GENERIC_TOKEN_LOGO_URL,
+    () => qToken.data?.image?.large ?? githubUnknownTokenLogoUrl,
     [qToken.data?.image?.large]
   )
 }

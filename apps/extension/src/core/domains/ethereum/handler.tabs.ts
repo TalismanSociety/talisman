@@ -1,18 +1,11 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
+import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
   RequestAuthorizeTab,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token } from "@core/domains/tokens/types"
-import { urlToDomain } from "@core/util/urlToDomain"
-import {
-  AnyEthRequest,
-  EthProviderMessage,
-  EthRequestArguments,
-  EthRequestSignArguments,
-  EthRequestSignatures,
-} from "@core/injectEth/types"
 import {
   ETH_ERROR_EIP1474_INVALID_INPUT,
   ETH_ERROR_EIP1474_INVALID_PARAMS,
@@ -23,29 +16,36 @@ import {
   ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED,
   EthProviderRpcError,
 } from "@core/injectEth/EthProviderRpcError"
-import { db } from "@core/libs/db"
+import {
+  AnyEthRequest,
+  EthProviderMessage,
+  EthRequestArguments,
+  EthRequestSignArguments,
+  EthRequestSignatures,
+} from "@core/injectEth/types"
 import { TabsHandler } from "@core/libs/Handler"
+import { log } from "@core/log"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getErc20TokenInfo } from "@core/util/getErc20TokenInfo"
-import { sleep } from "@core/util/sleep"
+import { urlToDomain } from "@core/util/urlToDomain"
 import { recoverPersonalSignature } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
+import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { convertAddress } from "@talisman/util/convertAddress"
+import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import { throwAfter } from "@talismn/util"
 import { ethers, providers } from "ethers"
-import { throwAfter } from "talisman-utils"
 
-import { filterAccountsByAddresses } from "../accounts/helpers"
 import {
   getErc20TokenId,
   isValidAddEthereumRequestParam,
   isValidWatchAssetRequestParam,
 } from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
-import { convertAddress } from "@talisman/util/convertAddress"
-import { log } from "@core/log"
-import { assert } from "@polkadot/util"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
@@ -75,7 +75,7 @@ export class EthTabsHandler extends TabsHandler {
   async getProvider(url: string, authorisedAddress?: string): Promise<providers.JsonRpcProvider> {
     const site = await this.getSiteDetails(url, authorisedAddress)
 
-    const ethereumNetwork = await db.evmNetworks.get(site.ethChainId)
+    const ethereumNetwork = await chaindataProvider.getEvmNetwork(site.ethChainId.toString())
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
@@ -252,7 +252,7 @@ export class EthTabsHandler extends TabsHandler {
     } = request
 
     const chainId = parseInt(network.chainId, 16)
-    const existing = await db.evmNetworks.get(chainId)
+    const existing = await chaindataProvider.getEvmNetwork(chainId.toString())
     // some dapps (ex app.solarbeam.io) call this method without attempting to call wallet_switchEthereumChain first
     // in case network is already registered, dapp expects that we switch to it
     if (existing)
@@ -290,7 +290,7 @@ export class EthTabsHandler extends TabsHandler {
     await this.state.requestStores.networks.requestAddNetwork(url, network)
 
     // switch automatically to new chain
-    const ethereumNetwork = await db.evmNetworks.get(chainId)
+    const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
     if (ethereumNetwork) {
       const { err, val } = urlToDomain(url)
       if (err) throw new Error(val)
@@ -311,11 +311,11 @@ export class EthTabsHandler extends TabsHandler {
       throw new EthProviderRpcError("Missing chainId", ETH_ERROR_EIP1474_INVALID_PARAMS)
     const ethChainId = parseInt(hexChainId, 16)
 
-    const ethereumNetwork = await db.evmNetworks.get(ethChainId)
+    const ethereumNetwork = await chaindataProvider.getEvmNetwork(ethChainId.toString())
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
 
-    const provider = getProviderForEthereumNetwork(ethereumNetwork)
+    const provider = await getProviderForEthereumNetwork(ethereumNetwork)
     if (!provider)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
@@ -370,10 +370,16 @@ export class EthTabsHandler extends TabsHandler {
       )
     }
 
-    return this.state.requestStores.signing.signEth(url, method, message, site.ethChainId, {
-      address: ethers.utils.getAddress(address),
-      ...pair.meta,
-    })
+    return this.state.requestStores.signing.signEth(
+      url,
+      method,
+      message,
+      site.ethChainId.toString(),
+      {
+        address: ethers.utils.getAddress(address),
+        ...pair.meta,
+      }
+    )
   }
 
   private addWatchAssetRequest = async (
@@ -385,31 +391,32 @@ export class EthTabsHandler extends TabsHandler {
 
     const { symbol, address, decimals, image } = request.params.options
     const ethChainId = await this.getChainId(url)
-    if (!ethChainId)
+    if (typeof ethChainId !== "number")
       throw new EthProviderRpcError("Not connected", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-    const tokenId = getErc20TokenId(ethChainId, address)
-    const existing = await db.tokens.get(tokenId)
+    const tokenId = getErc20TokenId(ethChainId.toString(), address)
+    const existing = await chaindataProvider.getToken(tokenId)
     if (existing)
       throw new EthProviderRpcError("Asset already exists", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    const provider = await getProviderForEvmNetworkId(ethChainId)
+    const provider = await getProviderForEvmNetworkId(ethChainId.toString())
     if (!provider)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
     try {
       // eslint-disable-next-line no-var
-      var tokenInfo = await getErc20TokenInfo(provider, ethChainId, address)
+      var tokenInfo = await getErc20TokenInfo(provider, ethChainId.toString(), address)
     } catch (err) {
       throw new EthProviderRpcError("Asset not found", ETH_ERROR_EIP1474_INVALID_PARAMS)
     }
 
     const token: CustomErc20Token = {
       id: tokenId,
-      type: "erc20",
+      type: "evm-erc20",
       isTestnet: false,
       symbol: symbol ?? tokenInfo.symbol,
       decimals: decimals ?? tokenInfo.decimals,
+      logo: image ?? tokenInfo.image ?? githubUnknownTokenLogoUrl,
       coingeckoId: tokenInfo.coingeckoId,
       contractAddress: address,
       evmNetwork: tokenInfo.evmNetworkId !== undefined ? { id: tokenInfo.evmNetworkId } : null,
@@ -463,7 +470,7 @@ export class EthTabsHandler extends TabsHandler {
         chainId: site.ethChainId,
         ...txRequest,
       },
-      site.ethChainId,
+      site.ethChainId.toString(),
       {
         address,
         ...pair.meta,

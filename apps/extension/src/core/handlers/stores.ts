@@ -3,19 +3,21 @@ import { SeedPhraseData } from "@core/domains/accounts/store"
 import { SettingsStoreData, appStore, passwordStore, settingsStore } from "@core/domains/app"
 import { AppStoreData } from "@core/domains/app/store.app"
 import { PasswordStoreData } from "@core/domains/app/store.password"
-import { balancesStore } from "@core/domains/balances"
+import { balanceStore } from "@core/domains/balances"
 import { chainStore } from "@core/domains/chains"
 import { evmNetworkStore } from "@core/domains/ethereum"
 import { sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import sitesAuthorisedStore from "@core/domains/sitesAuthorised/store"
 import { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
+import { tokenRatesStore } from "@core/domains/tokenRates"
 import { tokenStore } from "@core/domains/tokens"
 import transactionStore, { TransactionSubject } from "@core/domains/transactions/store"
 
 export type TabStore = {
   chains: typeof chainStore
   tokens: typeof tokenStore
-  balances: typeof balancesStore
+  tokenRates: typeof tokenRatesStore
+  balances: typeof balanceStore
   transactions: typeof transactionStore
   evmNetworks: typeof evmNetworkStore
   app: typeof appStore
@@ -44,7 +46,8 @@ export type GettableStoreData = { [K in GettableStoreKeys]: GettableStores[K][1]
 export const tabStores = {
   chains: chainStore,
   tokens: tokenStore,
-  balances: balancesStore,
+  tokenRates: tokenRatesStore,
+  balances: balanceStore,
   transactions: transactionStore,
   evmNetworks: evmNetworkStore,
   app: appStore,

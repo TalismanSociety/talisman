@@ -1,33 +1,10 @@
-import gql from "graphql-tag"
-import { print } from "graphql"
-import { graphqlUrl } from "@core/util/graphql"
+import { chaindataProvider } from "@core/rpcs/chaindata"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 
-const getIsBuiltInEvmNetwork = async (evmNetworkId?: number) => {
-  if (!evmNetworkId) return null
-
-  const query = gql`
-      query {
-        evmNetworkById(id:"${evmNetworkId}") {
-          id
-        }
-      }
-    `
-
-  const request = await fetch(graphqlUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query: print(query) }),
-  })
-
-  const response = await request.json()
-
-  return !!response?.data?.evmNetworkById?.id
-}
-
-export const useIsBuiltInEvmNetwork = (evmNetworkId?: number) => {
+export const useIsBuiltInEvmNetwork = (evmNetworkId?: EvmNetworkId) => {
   return useQuery({
     queryKey: ["useIsBuiltInEvmNetwork", evmNetworkId],
-    queryFn: () => getIsBuiltInEvmNetwork(evmNetworkId),
+    queryFn: () => (evmNetworkId ? chaindataProvider.getIsBuiltInEvmNetwork(evmNetworkId) : false),
   })
 }

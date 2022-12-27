@@ -2,6 +2,7 @@ import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { useMemo } from "react"
+
 import useAccountByAddress from "./useAccountByAddress"
 import { useAddressBook } from "./useAddressBook"
 

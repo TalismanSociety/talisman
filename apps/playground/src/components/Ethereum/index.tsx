@@ -1,15 +1,16 @@
-import { TestLayout } from "../TestLayout"
 import { WagmiConfig } from "wagmi"
+
+import { TestLayout } from "../TestLayout"
+import { AddNetwork } from "./AddNetwork"
 import { Connect } from "./Connect"
 import { wagmiClient } from "./connectors"
-import { SendTokens } from "./SendTokens"
-import { PersonalSign } from "./PersonalSign"
-import { SignTypedData } from "./SignTypedData"
 import { ContractReadWrite } from "./ContractReadWrite"
-import { SendERC20 } from "./SendERC20"
+import { PersonalSign } from "./PersonalSign"
 import { PersonalSignNftListing } from "./PersonalSignNftListing"
 import { PersonalSignReversed } from "./PersonalSignReversed"
-import { AddNetwork } from "./AddNetwork"
+import { SendERC20 } from "./SendERC20"
+import { SendTokens } from "./SendTokens"
+import { SignTypedData } from "./SignTypedData"
 
 export const Ethereum = () => {
   return (

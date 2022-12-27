@@ -2,11 +2,14 @@ import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { assert } from "@polkadot/util"
 import HeaderBlock from "@talisman/components/HeaderBlock"
+import { SimpleButton } from "@talisman/components/SimpleButton"
 import { LoaderIcon, PlusIcon } from "@talisman/theme/icons"
+//import { PlusIcon } from "@talisman/theme/icons"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
-import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
+//import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useErc20TokenInfo } from "@ui/hooks/useErc20TokenInfo"
@@ -14,7 +17,7 @@ import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
-import { Button, classNames, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText, classNames } from "talisman-ui"
 import * as yup from "yup"
 
 type FormData = Pick<
@@ -41,7 +44,7 @@ export const CustomTokenAdd = () => {
       yup
         .object({
           evmNetworkId: yup
-            .number()
+            .string()
             .required()
             .oneOf(
               networks.map(({ id }) => id),
@@ -76,7 +79,7 @@ export const CustomTokenAdd = () => {
   } = useErc20TokenInfo(evmNetworkId, contractAddress)
 
   const handleNetworkChange = useCallback(
-    (id: number) => {
+    (id: EvmNetworkId) => {
       setValue("evmNetworkId", id, { shouldValidate: true })
     },
     [setValue]
@@ -154,14 +157,15 @@ export const CustomTokenAdd = () => {
               placeholder="ABC"
               autoComplete="off"
               disabled
-              before={
-                tokenInfo && (
-                  <TokenImage
-                    className="mr-2 ml-[-0.8rem] text-[3rem]"
-                    src={tokenInfo?.image ?? GENERIC_TOKEN_LOGO_URL}
-                  />
-                )
-              }
+              // TODO MERGE
+              // before={
+              //   tokenInfo && (
+              //     <TokenImage
+              //       className="mr-2 ml-[-0.8rem] text-[3rem]"
+              //       src={tokenInfo?.image ?? GENERIC_TOKEN_LOGO_URL}
+              //     />
+              //   )
+              // }
               small
             />
           </FormFieldContainer>

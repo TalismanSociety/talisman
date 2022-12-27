@@ -1,27 +1,26 @@
+import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types"
+import {
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core"
+import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
+import { useSortable } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import { DragAltIcon, PlusIcon, TrashIcon } from "@talisman/theme/icons"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import {
   FieldArrayWithId,
   FieldError,
+  UseFormRegister,
   useFieldArray,
   useFormContext,
-  UseFormRegister,
 } from "react-hook-form"
-import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types/base"
-import { DragAltIcon, PlusIcon, TrashIcon } from "@talisman/theme/icons"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core"
-import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
-
-import { useSortable } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
 
 type SortableRpcItemProps = {
   register: UseFormRegister<RequestUpsertCustomEvmNetwork>

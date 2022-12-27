@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Button, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
+
 import { TestLayout } from "./TestLayout"
 
 export const TxStatusPage = () => {

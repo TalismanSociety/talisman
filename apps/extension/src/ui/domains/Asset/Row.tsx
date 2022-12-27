@@ -1,9 +1,8 @@
 import { Balance as BalanceType } from "@core/domains/balances/types"
 import styled from "styled-components"
 
-import { Erc20Logo } from "../Erc20Tokens/Erc20Logo"
+import { AssetLogo } from "./AssetLogo"
 import Balance, { IAssetBalanceOptions } from "./Balance"
-import Logo from "./Logo"
 import Name from "./Name"
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -15,20 +14,9 @@ interface IAssetRowType extends IAssetRowOptions {
   show: boolean
 }
 
-const Erc20tokenLogo = styled(Erc20Logo)`
-  font-size: 3rem;
-  margin-right: 1.2rem;
-`
-
 const AssetRow = ({ className, balance, withFiat, show }: IAssetRowType) => (
   <div className={`${className} chain-balance`} data-show={show}>
-    {balance.token?.type === "erc20" ? (
-      <Erc20tokenLogo id={balance.tokenId} />
-    ) : (
-      <Logo
-        id={balance.chainId || balance.evmNetwork?.substrateChain?.id || balance.evmNetworkId}
-      />
-    )}
+    <AssetLogo id={balance.tokenId} />
     <Name balance={balance} withChain />
     <EmptySpace />
     <Balance balance={balance} withFiat={withFiat} isBalance />
@@ -53,7 +41,7 @@ const StyledAssetRow = styled(AssetRow)`
   transition: var(--transition-speed-slow) ease-in;
   transition-property: opacity, max-height, padding-top, padding-bottom, margin-top;
 
-  .chain-logo {
+  .asset-logo {
     font-size: 3rem;
     margin-right: 1.2rem;
   }

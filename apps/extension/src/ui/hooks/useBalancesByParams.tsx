@@ -6,6 +6,7 @@ import md5 from "blueimp-md5"
 import { useCallback, useMemo, useState } from "react"
 import { useDebounce } from "react-use"
 import { BehaviorSubject } from "rxjs"
+
 import { useBalancesHydrate } from "./useBalancesHydrate"
 
 const INITIAL_VALUE = new Balances({})

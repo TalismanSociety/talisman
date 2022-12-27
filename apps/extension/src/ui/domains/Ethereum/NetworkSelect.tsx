@@ -1,4 +1,4 @@
-import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
+import { CustomEvmNetwork, EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { Dropdown } from "@talisman/components/Dropdown"
 import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useState } from "react"
@@ -13,8 +13,8 @@ const NetworkItem = styled.div`
 
 type NetworkSelectProps = {
   placeholder?: string
-  defaultChainId?: number
-  onChange?: (chainId: number) => void
+  defaultChainId?: EvmNetworkId
+  onChange?: (chainId: EvmNetworkId) => void
   disabled?: boolean
   className?: string
 }

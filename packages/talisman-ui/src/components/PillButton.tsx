@@ -1,4 +1,5 @@
 import { FC, SVGProps } from "react"
+
 import { classNames } from "../utils"
 
 export type PillButtonSize = "tiny" | "xs" | "sm"

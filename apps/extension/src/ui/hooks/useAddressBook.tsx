@@ -1,4 +1,4 @@
-import { addressBookStore, AddressBookContact } from "@core/domains/app/store.addressBook"
+import { AddressBookContact, addressBookStore } from "@core/domains/app/store.addressBook"
 import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useEffect, useState } from "react"
 

@@ -1,15 +1,15 @@
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
+import { EditIcon, TrashIcon } from "@talisman/theme/icons"
+import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
 import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
-import { useAddressBook } from "@ui/hooks/useAddressBook"
-import { TrashIcon, EditIcon } from "@talisman/theme/icons"
-import { useMemo, useState } from "react"
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
 import { ContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
-import { AnalyticsPage } from "@ui/api/analytics"
+import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useMemo, useState } from "react"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",

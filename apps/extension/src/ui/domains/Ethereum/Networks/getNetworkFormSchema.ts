@@ -1,11 +1,11 @@
 import * as yup from "yup"
+
 import { getRpcChainId } from "./helpers"
 
 export const getNetworkFormSchema = (evmNetworkId?: string) => {
   return yup
     .object({
-      // TODO remove valueAsNumber when moving to balances v2
-      id: yup.number().typeError("").required("").integer(""),
+      id: yup.string().required(""),
       name: yup.string().required("required"),
       rpcs: yup
         .array()
@@ -20,7 +20,7 @@ export const getNetworkFormSchema = (evmNetworkId?: string) => {
                 try {
                   const chainId = await getRpcChainId(newRpc as string)
                   if (!chainId) return this.createError({ message: "Failed to connect" })
-                  if (Number(evmNetworkId) !== chainId)
+                  if (evmNetworkId !== chainId)
                     return this.createError({ message: "Chain ID mismatch" })
                   return true
                 } catch (err) {

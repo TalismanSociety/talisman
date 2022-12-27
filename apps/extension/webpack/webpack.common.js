@@ -100,16 +100,19 @@ const config = (env) => ({
       "process.env.SENTRY_AUTH_TOKEN": JSON.stringify(process.env.SENTRY_AUTH_TOKEN || ""),
       "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
 
-      // dev-only passthroughs from the environment
+      // dev stuff, only pass through when env.build is undefined (running a development build)
       "process.env.PASSWORD": JSON.stringify(
-        // only pass through when env.build is undefined (running a development build)
         env.build === undefined ? process.env.PASSWORD || "" : ""
       ),
       "process.env.TEST_MNEMONIC": JSON.stringify(
-        // only pass through when env.build is undefined (running a development build)
         env.build === undefined ? process.env.TEST_MNEMONIC || "" : ""
       ),
-      "process.env.EVM_LOGPROXY": JSON.stringify(process.env.EVM_LOGPROXY || ""),
+      "process.env.EVM_LOGPROXY": JSON.stringify(
+        env.build === undefined ? process.env.EVM_LOGPROXY || "" : ""
+      ),
+      "process.env.ALLOW_REGISTRY_WARNINGS": JSON.stringify(
+        env.build === undefined ? process.env.ALLOW_REGISTRY_WARNINGS || "" : ""
+      ),
 
       // computed values
       "process.env.BUILD": JSON.stringify(env.build),

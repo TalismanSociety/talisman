@@ -1,10 +1,9 @@
-import { createClient, allChains, configureChains, Chain } from "wagmi"
-
-import { publicProvider } from "wagmi/providers/public"
-
+import { TalismanConnector } from "@talismn/wagmi-connector"
+import { Chain, allChains, configureChains, createClient } from "wagmi"
 import { InjectedConnector } from "wagmi/connectors/injected"
 import { MetaMaskConnector } from "wagmi/connectors/metaMask"
-import { TalismanConnector } from "@talismn/wagmi-connector"
+import { publicProvider } from "wagmi/providers/public"
+
 import { talismanChains } from "./talismanChains"
 
 const chainsMap: Record<number, Chain> = {}

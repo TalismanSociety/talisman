@@ -1,9 +1,10 @@
 import { Balances } from "@core/domains/balances/types"
 import { useState } from "react"
 import { useDebounce } from "react-use"
+
+import { useBalancesHydrate } from "./useBalancesHydrate"
 import { useDbCache } from "./useDbCache"
 import { useDbCacheSubscription } from "./useDbCacheSubscription"
-import { useBalancesHydrate } from "./useBalancesHydrate"
 
 export const useBalances = () => {
   // keep db data up to date

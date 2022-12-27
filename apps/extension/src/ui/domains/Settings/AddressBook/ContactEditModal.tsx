@@ -9,6 +9,7 @@ import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { Button } from "talisman-ui"
 import * as yup from "yup"
+
 import { ContactModalProps } from "./types"
 
 type FormValues = {

@@ -8,8 +8,10 @@ import Spacer from "@talisman/components/Spacer"
 import { classNames } from "@talisman/util/classNames"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import Asset from "@ui/domains/Asset"
-import useChain from "@ui/hooks/useChain"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
+import { useAppState } from "@ui/hooks/useAppState"
+import useChain from "@ui/hooks/useChain"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
@@ -20,8 +22,6 @@ import Layout from "../../layout"
 import { useAddLedgerAccount } from "./context"
 import { ConnectLedgerEthereum } from "./Shared/ConnectLedgerEthereum"
 import { ConnectLedgerSubstrate } from "./Shared/ConnectLedgerSubstrate"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { useAppState } from "@ui/hooks/useAppState"
 
 const Container = styled(Layout)`
   .dropdown {
@@ -95,7 +95,7 @@ type FormData = {
 const renderOption: RenderItemFunc<Chain> = (chain) => {
   return (
     <Flex>
-      <Asset.Logo id={chain.id} />
+      <Asset.ChainLogo id={chain.id} />
       <span className="grow">{chain.name}</span>
     </Flex>
   )

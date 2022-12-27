@@ -1,12 +1,13 @@
 import { useCallback, useMemo, useState } from "react"
 import {
   Button,
-  classNames,
+  MYSTICAL_PHYSICS,
   MysticalBackground,
   MysticalBackgroundOld,
   MysticalPhysics,
-  MYSTICAL_PHYSICS,
+  classNames,
 } from "talisman-ui"
+
 import { TestLayout } from "./TestLayout"
 
 export const Background = () => {

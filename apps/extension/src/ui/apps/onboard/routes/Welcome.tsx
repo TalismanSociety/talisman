@@ -7,10 +7,10 @@ import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
+import { ReactComponent as ImportWalletIcons } from "../assets/import-wallet-icons.svg"
 import { styleOnboardTranslucidBackground } from "../components/OnboardStyles"
 import { useOnboard } from "../context"
 import { Layout } from "../layout"
-import { ReactComponent as ImportWalletIcons } from "../assets/import-wallet-icons.svg"
 
 const WelcomeCtaContainer = styled.button`
   ${styleOnboardTranslucidBackground}

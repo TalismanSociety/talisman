@@ -5,13 +5,14 @@ import {
   SigningRequest,
   TransactionDetails,
 } from "@core/domains/signing/types"
-import { encodeAnyAddress } from "@core/util"
 import isJsonPayload from "@core/util/isJsonPayload"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { encodeAnyAddress } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
+import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
 import { FC, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
@@ -19,8 +20,8 @@ import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAmount } from "./ViewDetailsAmount"
 import { ViewDetailsButton } from "./ViewDetailsButton"
 import { ViewDetailsField } from "./ViewDetailsField"
-import { ViewDetailsTxObject } from "./ViewDetailsTxObject"
 import { ViewDetailsTxDesc } from "./ViewDetailsTxDesc"
+import { ViewDetailsTxObject } from "./ViewDetailsTxObject"
 
 const ViewDetailsContainer = styled.div`
   background: var(--color-background);
@@ -79,6 +80,8 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   const { genericEvent } = useAnalytics()
   const { request, account, chain } = usePolkadotSigningRequest(signingRequest)
   const nativeToken = useToken(chain?.nativeToken?.id)
+  const rates = useTokenRatesForTokens(useMemo(() => [nativeToken], [nativeToken]))
+  const nativeTokenRates = nativeToken && rates[nativeToken.id]
 
   const isTransaction = isJsonPayload(request?.payload)
 
@@ -88,9 +91,9 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   const tip = useMemo(
     () =>
       nativeToken && tipRaw
-        ? new BalanceFormatter(tipRaw, nativeToken?.decimals, nativeToken?.rates)
+        ? new BalanceFormatter(tipRaw, nativeToken?.decimals, nativeTokenRates)
         : undefined,
-    [nativeToken, tipRaw]
+    [nativeToken, nativeTokenRates, tipRaw]
   )
 
   const accountAddress = useMemo(
@@ -108,7 +111,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
     const decodeError = txDetails.method ? "" : "Failed to decode method."
 
     const fee = txDetails.partialFee
-      ? new BalanceFormatter(txDetails.partialFee, nativeToken?.decimals, nativeToken?.rates)
+      ? new BalanceFormatter(txDetails.partialFee, nativeToken?.decimals, nativeTokenRates)
       : undefined
 
     const methodName = txDetails.method
@@ -124,7 +127,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
     })
 
     return { fee, feeError, decodeError, methodName, args }
-  }, [nativeToken?.decimals, nativeToken?.rates, txDetails])
+  }, [nativeToken?.decimals, nativeTokenRates, txDetails])
 
   useEffect(() => {
     genericEvent("open sign transaction view details", { type: "substrate" })

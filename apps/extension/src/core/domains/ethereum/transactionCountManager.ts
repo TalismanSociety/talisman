@@ -1,13 +1,15 @@
 import { getProviderForEvmNetworkId } from "./rpcProviders"
+import { EvmNetworkId } from "./types"
 
 const dicTransactionCount = new Map<string, number>()
 
-const getKey = (address: string, evmNetworkId: number) => `${address}-${evmNetworkId}`.toLowerCase()
+const getKey = (address: string, evmNetworkId: EvmNetworkId) =>
+  `${address}-${evmNetworkId}`.toLowerCase()
 
 /*
   To be called to set a valid nonce for a transaction
 */
-export const getTransactionCount = async (address: string, evmNetworkId: number) => {
+export const getTransactionCount = async (address: string, evmNetworkId: EvmNetworkId) => {
   const key = getKey(address, evmNetworkId)
 
   const provider = await getProviderForEvmNetworkId(evmNetworkId)
@@ -30,7 +32,7 @@ export const getTransactionCount = async (address: string, evmNetworkId: number)
 /*
   To be called each time a transaction is submitted to blockchain
 */
-export const incrementTransactionCount = (address: string, evmNetworkId: number) => {
+export const incrementTransactionCount = (address: string, evmNetworkId: EvmNetworkId) => {
   const key = getKey(address, evmNetworkId)
 
   const count = dicTransactionCount.get(key)

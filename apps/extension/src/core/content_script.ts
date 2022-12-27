@@ -3,8 +3,8 @@
 
 // Adapted from https://github.com/polkadot-js/extension/packages/extension/src/content.ts
 
-import type { Message } from "@polkadot/extension-base/types"
 import { PORT_CONTENT } from "@core/constants"
+import type { Message } from "@polkadot/extension-base/types"
 import Browser from "webextension-polyfill"
 
 // connect to the extension

@@ -1,11 +1,11 @@
 import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
+import { HexString } from "@polkadot/util/types"
+import LedgerSubstrate from "@ui/domains/Sign/LedgerSubstrate"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useCallback, useMemo, useState } from "react"
 
 import { useSendTokens } from "./context"
 import { SendTokensInputs } from "./types"
-import LedgerSubstrate from "@ui/domains/Sign/LedgerSubstrate"
-import { HexString } from "@polkadot/util/types"
 
 const SendLedgerSubstrate = () => {
   const { formData, expectedResult, sendWithSignature, cancel } = useSendTokens()

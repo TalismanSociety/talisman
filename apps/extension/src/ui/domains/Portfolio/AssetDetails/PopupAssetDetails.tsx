@@ -1,11 +1,13 @@
 import { Balances } from "@core/domains/balances/types"
-import { planckToTokens } from "@core/util"
 import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { CopyIcon, CreditCardIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -14,7 +16,6 @@ import { useCallback, useMemo } from "react"
 import styled from "styled-components"
 import { PillButton } from "talisman-ui"
 
-import StyledAssetLogo from "../../Asset/Logo"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
@@ -28,7 +29,7 @@ const FetchingIndicator = styled(LoaderIcon)`
 `
 
 type AssetRowProps = {
-  chainId: string | number
+  chainId: ChainId | EvmNetworkId
   balances: Balances
   symbol: string
 }
@@ -62,7 +63,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
         padding="1.2rem 1.4rem"
       >
         <Box fontsize="xlarge">
-          <StyledAssetLogo id={evmNetwork?.substrateChain?.id ?? chainOrNetwork.id} />
+          <ChainLogo id={chainOrNetwork.id} />
         </Box>
         <Box grow flex column justify="center" gap={0.4} padding="0 1.6rem 0 0">
           <Box flex justify="space-between" bold fg="foreground">

@@ -1,17 +1,17 @@
+import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 // Copyright 2019-2021 @polkadot/extension-bg authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/background/handlers/State.ts
 import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
+import { EncryptRequestsStore } from "@core/domains/encrypt"
 import EthereumNetworksRequestsStore from "@core/domains/ethereum/requestsStore.networks"
 import { MetadataRequestsStore } from "@core/domains/metadata"
-import { EncryptRequestsStore } from "@core/domains/encrypt"
 import { SigningRequestsStore } from "@core/domains/signing"
 import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
-import { sleep } from "@core/util/sleep"
+import { sleep } from "@talismn/util"
 import Browser from "webextension-polyfill"
-import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 
 const WINDOW_OPTS: Browser.Windows.CreateCreateDataType = {
   // This is not allowed on FF, only on Chrome - disable completely

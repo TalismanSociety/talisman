@@ -1,6 +1,8 @@
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { log } from "@core/log"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
@@ -8,10 +10,9 @@ import { sr25519Decrypt } from "@core/util/sr25519decrypt"
 import { sr25519Encrypt } from "@core/util/sr25519encrypt"
 import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
 import { Keypair } from "@polkadot/util-crypto/types"
-import { AnyEncryptRequest, RequestEncryptCancel } from "./types"
-import { talismanAnalytics } from "@core/libs/Analytics"
-import { log } from "@core/log"
 import * as Sentry from "@sentry/browser"
+
+import { AnyEncryptRequest, RequestEncryptCancel } from "./types"
 
 export default class EncryptHandler extends ExtensionHandler {
   private async encryptApprove({ id }: RequestIdOnly) {

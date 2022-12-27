@@ -1,9 +1,10 @@
 import { BalanceFormatter } from "@core/domains/balances"
-import { getTokenLogoUrl } from "@ui/domains/Asset/TokenLogo"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
+import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
 import { ethers } from "ethers"
 import { FC, useMemo } from "react"
+
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { EthSignContainer } from "./shared/EthSignContainer"
 import { SignParamTokensDisplay } from "./shared/SignParamTokensDisplay"
@@ -12,16 +13,18 @@ export const EthSignBodyDefault: FC = () => {
   const { network, transactionInfo, request } = useEthSignTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
+  const rates = useTokenRatesForTokens(useMemo(() => [nativeToken], [nativeToken]))
+  const nativeTokenRates = nativeToken && rates[nativeToken.id]
 
   const amount = useMemo(() => {
     return nativeToken && transactionInfo?.value?.gt(0)
       ? new BalanceFormatter(
           transactionInfo.value.toString(),
           nativeToken.decimals,
-          nativeToken.rates
+          nativeTokenRates
         )
       : null
-  }, [nativeToken, transactionInfo?.value])
+  }, [nativeToken, nativeTokenRates, transactionInfo?.value])
 
   const { from } = useMemo(
     () => request as Required<ethers.providers.TransactionRequest>,
@@ -40,11 +43,11 @@ export const EthSignBodyDefault: FC = () => {
           <div>
             <SignParamTokensDisplay
               withIcon
+              tokenId={nativeToken.id}
               tokens={amount.tokens}
               fiat={amount.fiat("usd")}
               decimals={nativeToken.decimals}
               symbol={nativeToken.symbol}
-              image={getTokenLogoUrl(nativeToken)}
             />
           </div>
           <div className="flex">

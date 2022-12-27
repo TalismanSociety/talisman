@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom"
+
 import { ImportPage } from "./Import"
 import { ImportMethodPage } from "./ImportMethod"
 import { ImportSeedPage } from "./ImportSeed"

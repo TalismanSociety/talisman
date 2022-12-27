@@ -1,10 +1,10 @@
-import { FC } from "react"
-import { usePrefixAddress } from "../../../hooks/usePrefixAddress"
-import useChain from "@ui/hooks/useChain"
-import styled from "styled-components"
-
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
+import useChain from "@ui/hooks/useChain"
+import { FC } from "react"
+import styled from "styled-components"
+
+import { usePrefixAddress } from "../../../hooks/usePrefixAddress"
 
 type SendReviewAddressProps = {
   address: string

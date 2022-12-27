@@ -2,18 +2,18 @@ import type { AnySigningRequest, RequestSigningCancel } from "@core/domains/sign
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
-import { db } from "@core/libs/db"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { watchSubstrateTransaction } from "@core/notifications"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { getTransactionDetails } from "@core/util/getTransactionDetails"
+import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import isJsonPayload from "@core/util/isJsonPayload"
 import { RequestSigningApproveSignature } from "@polkadot/extension-base/background/types"
 import { TypeRegistry } from "@polkadot/types"
-import { assert, hexToNumber } from "@polkadot/util"
 import keyring from "@polkadot/ui-keyring"
-import { getTypeRegistry } from "@core/util/getTypeRegistry"
+import { assert } from "@polkadot/util"
 
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({ id }: RequestIdOnly) {
@@ -42,7 +42,7 @@ export default class SigningHandler extends ExtensionHandler {
 
         registry = fullRegistry
 
-        const chain = await db.chains.get({ genesisHash })
+        const chain = await chaindataProvider.getChain({ genesisHash })
         analyticsProperties.chain = chain?.chainName ?? genesisHash
       }
 
@@ -50,7 +50,7 @@ export default class SigningHandler extends ExtensionHandler {
 
       // notify user about transaction progress
       if (isJsonPayload(payload) && (await this.stores.settings.get("allowNotifications"))) {
-        const chains = await db.chains.toArray()
+        const chains = Object.values(await chaindataProvider.chains())
         const chain = chains.find((c) => c.genesisHash === payload.genesisHash)
         if (chain) {
           // it's hard to get a reliable hash, we'll use signature to identify the on chain extrinsic
@@ -100,7 +100,7 @@ export default class SigningHandler extends ExtensionHandler {
 
     if (isJsonPayload(payload)) {
       const { genesisHash } = payload
-      const chain = await db.chains.get({ genesisHash })
+      const chain = await chaindataProvider.getChain({ genesisHash })
       analyticsProperties.chain = chain?.chainName
     }
 

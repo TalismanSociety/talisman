@@ -1,6 +1,6 @@
 import { AccountAddressType, RequestAccountCreateFromSeed } from "@core/domains/accounts/types"
-import { sleep } from "@core/util/sleep"
 import { provideContext } from "@talisman/util/provideContext"
+import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { useCallback, useState } from "react"
 import { useLocation, useParams, useSearchParams } from "react-router-dom"

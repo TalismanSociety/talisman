@@ -8,7 +8,6 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
-import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
@@ -89,7 +88,7 @@ export const CustomTokenDetails = () => {
 
   const token = useToken(id)
   const erc20Token = useMemo(
-    () => (token?.type === "erc20" ? (token as Erc20Token) : undefined),
+    () => (token?.type === "evm-erc20" ? (token as Erc20Token) : undefined),
     [token]
   )
   const network = useEvmNetwork(erc20Token?.evmNetwork?.id)
@@ -142,12 +141,13 @@ export const CustomTokenDetails = () => {
               disabled
               small
               before={
-                token && (
-                  <TokenImage
-                    className="mr-2 ml-[-0.8rem] text-[3rem]"
-                    src={"image" in token ? token.image : GENERIC_TOKEN_LOGO_URL}
-                  />
-                )
+                null //TODO MERGE
+                // token && (
+                //   <TokenImage
+                //     className="mr-2 ml-[-0.8rem] text-[3rem]"
+                //     src={"image" in token ? token.image : GENERIC_TOKEN_LOGO_URL}
+                //   />
+                // )
               }
             />
           </FormFieldContainer>

@@ -2,20 +2,20 @@ import { AccountAddressType } from "@core/domains/accounts/types"
 import { Balances } from "@core/domains/balances/types"
 import { Token } from "@core/domains/tokens/types"
 import { provideContext } from "@talisman/util/provideContext"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useBalances from "@ui/hooks/useBalances"
+import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
 import useTokens from "@ui/hooks/useTokens"
 import { useEffect, useMemo, useState } from "react"
 
 export type NetworkOption = {
   id: string // here we'll merge all ids together
   name: string
-  chainId?: string
-  evmNetworkId?: number
-  logoId: string
+  chainId?: ChainId
+  evmNetworkId?: EvmNetworkId
   symbols?: string[] // use when searching network by token symbol
   sortIndex: number | null
 }
@@ -26,8 +26,8 @@ const getNetworkTokenSymbols = ({
   evmNetworkId,
 }: {
   tokens?: Token[]
-  chainId?: string
-  evmNetworkId?: number
+  chainId?: ChainId
+  evmNetworkId?: EvmNetworkId
 }) => {
   if (!tokens) return []
   const networkTokens = tokens.filter((token) => {
@@ -53,7 +53,6 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
           id,
           chainId: id,
           name: name ?? "Unknown chain",
-          logoId: id,
           sortIndex,
         })
       )
@@ -67,7 +66,6 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
             id: String(id),
             name: name ?? "Unknown chain",
             evmNetworkId: id,
-            logoId: substrateChain?.id ?? String(id),
             chainId: substrateChain?.id,
             sortIndex,
           })

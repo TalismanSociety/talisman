@@ -3,6 +3,7 @@ import { Address } from "@ui/domains/Account/Address"
 import useChain from "@ui/hooks/useChain"
 import { FC } from "react"
 import styled from "styled-components"
+
 import { usePrefixAddress } from "../../../hooks/usePrefixAddress"
 
 const Container = styled.div`

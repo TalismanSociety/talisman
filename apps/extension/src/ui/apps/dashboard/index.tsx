@@ -13,7 +13,7 @@ import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountCo
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
-import { Suspense, lazy, useEffect, useRef, FC, PropsWithChildren } from "react"
+import { FC, PropsWithChildren, Suspense, lazy, useEffect, useRef } from "react"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import Layout from "./layout"

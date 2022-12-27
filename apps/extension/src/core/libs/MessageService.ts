@@ -4,8 +4,8 @@
 // Adapted from https://github.com/polkadot-js/extension/
 
 import {
-  EthProviderRpcError,
   ETH_ERROR_EIP1474_INTERNAL_ERROR,
+  EthProviderRpcError,
 } from "@core/injectEth/EthProviderRpcError"
 import { log } from "@core/log"
 import type {
@@ -137,7 +137,7 @@ export default class MessageService {
 
     if (!handler) {
       const { id, error } = data // don't print all properties, this could log sensitive data
-      log.error("No handler for message: ", { id, error })
+      log.error("No handler for message: ", { id, error, data }) //TODO remove
 
       return
     }

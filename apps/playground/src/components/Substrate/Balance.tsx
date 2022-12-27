@@ -1,9 +1,10 @@
+import { AccountData, AccountInfo } from "@polkadot/types/interfaces"
 import { useCallback, useEffect, useState } from "react"
+import { Button } from "talisman-ui"
+
 import { Section } from "../Section"
 import { useApi } from "./useApi"
-import { AccountData, AccountInfo } from "@polkadot/types/interfaces"
 import { useWallet } from "./useWallet"
-import { Button } from "talisman-ui"
 
 const useBalancesPalletBalance = () => {
   const { api } = useApi()

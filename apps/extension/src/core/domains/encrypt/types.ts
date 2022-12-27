@@ -1,6 +1,7 @@
-import { KeyringPair } from "@polkadot/keyring/types"
-import { AccountJson } from "../accounts/types"
 import { RequestIdOnly } from "@core/types/base"
+import { KeyringPair } from "@polkadot/keyring/types"
+
+import { AccountJson } from "../accounts/types"
 
 export interface EncryptPayloadBase {
   /**

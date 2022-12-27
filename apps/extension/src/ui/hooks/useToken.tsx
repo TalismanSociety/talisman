@@ -1,5 +1,6 @@
 import type { TokenId } from "@core/domains/tokens/types"
 import { useMemo } from "react"
+
 import useTokens from "./useTokens"
 
 const useToken = (id?: TokenId) => {

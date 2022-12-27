@@ -9,19 +9,21 @@ import {
 } from "@core/domains/app/types"
 import {
   AddressesByEvmNetwork,
+  BalanceJson,
   BalancesUpdate,
   RequestBalance,
   RequestBalanceLocks,
   ResponseBalanceLocks,
 } from "@core/domains/balances/types"
-import { BalanceStorage } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
+import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
   CustomEvmNetwork,
   EthGasSettings,
   EvmNetworkId,
+  RequestUpsertCustomEvmNetwork,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
 import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/types"
@@ -39,7 +41,6 @@ import {
   ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
-import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import { EthResponseType } from "@core/injectEth/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
@@ -47,7 +48,6 @@ import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
 import { ethers } from "ethers"
-import { RequestUpsertCustomEvmNetwork } from "@core/domains/ethereum/types/base"
 
 export default interface MessageTypes {
   unsubscribe: (id: string) => Promise<null>
@@ -115,12 +115,7 @@ export default interface MessageTypes {
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
-  getBalance: ({
-    chainId,
-    evmNetworkId,
-    tokenId,
-    address,
-  }: RequestBalance) => Promise<BalanceStorage>
+  getBalance: ({ chainId, evmNetworkId, tokenId, address }: RequestBalance) => Promise<BalanceJson>
   getBalanceLocks: ({ chainId, addresses }: RequestBalanceLocks) => Promise<ResponseBalanceLocks>
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
@@ -152,11 +147,20 @@ export default interface MessageTypes {
   // token message types
   tokens: (cb: () => void) => UnsubscribeFn
 
+  // tokenRates message types
+  tokenRates: (cb: () => void) => UnsubscribeFn
+
   // custom erc20 token management
   customErc20Tokens: () => Promise<Record<CustomErc20Token["id"], CustomErc20Token>>
   customErc20Token: (id: string) => Promise<CustomErc20Token>
   addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
   removeCustomErc20Token: (id: string) => Promise<boolean>
+
+  // ethereum networks message types
+  // ethereumNetworks: (cb: () => void) => UnsubscribeFn
+  // addCustomEthereumNetwork: (ethereumNetwork: CustomEvmNetwork) => Promise<boolean>
+  // removeCustomEthereumNetwork: (id: string) => Promise<boolean>
+  // clearCustomEthereumNetworks: () => Promise<boolean>
 
   // transaction message types
   transactionSubscribe: (id: string, cb: (tx: any) => void) => UnsubscribeFn
@@ -210,9 +214,7 @@ export default interface MessageTypes {
   ethApproveSignAndSendHardware: (id: string, signedTransaction: HexString) => Promise<boolean>
   ethCancelSign: (id: string) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
-  ethGetTransactionsCount: (address: string, evmNetworkId: number) => Promise<number>
-
-  // ethereum network add request message types
+  ethGetTransactionsCount: (address: string, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: string) => Promise<boolean>
   ethNetworkAddCancel: (is: string) => Promise<boolean>
@@ -225,6 +227,11 @@ export default interface MessageTypes {
   ethNetworkUpsert: (network: RequestUpsertCustomEvmNetwork) => Promise<boolean>
   ethNetworkRemove: (id: string) => Promise<boolean>
   ethNetworkReset: (id: string) => Promise<boolean>
+  // old ethereum networks message types
+  // ethereumNetworks: (cb: () => void) => UnsubscribeFn
+  // addCustomEthereumNetwork: (ethereumNetwork: CustomEvmNetwork) => Promise<boolean>
+  // removeCustomEthereumNetwork: (id: string) => Promise<boolean>
+  // clearCustomEthereumNetworks: () => Promise<boolean>
 
   // ethereum tokens message types
   ethWatchAssetRequestApprove: (id: string) => Promise<boolean>

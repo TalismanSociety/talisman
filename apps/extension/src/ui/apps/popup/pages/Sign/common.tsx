@@ -1,8 +1,8 @@
+import Grid from "@talisman/components/Grid"
+import { SimpleButton } from "@talisman/components/SimpleButton"
+import { scrollbarsStyle } from "@talisman/theme/styles"
 import Layout from "@ui/apps/popup/Layout"
 import styled from "styled-components"
-import { scrollbarsStyle } from "@talisman/theme/styles"
-import { SimpleButton } from "@talisman/components/SimpleButton"
-import Grid from "@talisman/components/Grid"
 
 export const Container = styled(Layout)`
   .layout-content .children {

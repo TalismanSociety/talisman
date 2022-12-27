@@ -1,10 +1,11 @@
-import { encodeAnyAddress } from "@core/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { IconButton } from "@talisman/components/IconButton"
 import { CopyIcon } from "@talisman/theme/icons"
+import { encodeAnyAddress } from "@talismn/util"
 import { copyAddress } from "@ui/util/copyAddress"
 import { useCallback, useMemo } from "react"
 import styled from "styled-components"
+
 import { useSelectedAccount } from "../SelectedAccountContext"
 
 const SmallIconButton = styled(IconButton)`

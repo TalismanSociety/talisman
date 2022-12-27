@@ -1,8 +1,10 @@
+import { InjectedAccountWithMeta } from "@polkadot/extension-inject/types"
 import { useCallback } from "react"
 import { Button, classNames } from "talisman-ui"
-import { useWallet } from "./useWallet"
-import { InjectedAccountWithMeta } from "@polkadot/extension-inject/types"
+
 import { Section } from "../Section"
+import { useWallet } from "./useWallet"
+
 export const Account = () => {
   const { isConnected, accounts, connect, disconnect, select, account } = useWallet()
 

@@ -1,13 +1,15 @@
 import { EvmNetwork } from "@core/domains/ethereum/types"
-import { Erc20Token } from "@core/domains/tokens/types"
+import { CustomErc20Token, Erc20Token } from "@core/domains/tokens/types"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { IconChevron, PlusIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
+import { AssetLogo } from "@ui/domains/Asset/AssetLogo"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
-import { Erc20Logo } from "@ui/domains/Erc20Tokens/Erc20Logo"
+//import { Erc20Logo } from "@ui/domains/Erc20Tokens/Erc20Logo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useCustomErc20Tokens } from "@ui/hooks/useCustomErc20Tokens"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import useTokens from "@ui/hooks/useTokens"
@@ -30,7 +32,7 @@ const TokenRow = ({ token }: { token: Erc20Token }) => {
 
   return (
     <ListButton onClick={() => navigate(`./${token.id}`)}>
-      <Erc20Logo id={token.id} className="rounded-full text-xl" />
+      <TokenLogo tokenId={token.id} className="rounded-full text-xl" />
       <div className="flex grow flex-col !items-start justify-center">
         {network && (
           <>
@@ -83,7 +85,7 @@ export const CustomTokens = () => {
       .map((network) => ({
         network,
         tokens: sortBy(
-          erc20Tokens.filter((t) => Number(t.evmNetwork?.id) === network.id),
+          erc20Tokens.filter((t) => t.evmNetwork?.id === network.id),
           "symbol"
         ),
       }))

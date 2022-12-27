@@ -1,5 +1,6 @@
+import { db } from "@core/db"
 import { passwordStore } from "@core/domains/app"
-import { db } from "@core/libs/db"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseTypes } from "@core/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 /* eslint-disable no-console */
@@ -20,7 +21,7 @@ import Extension from "./Extension"
 import State from "./State"
 import { extensionStores } from "./stores"
 
-jest.mock("@core/domains/chains/api")
+jest.mock("@talismn/chaindata-provider-extension/dist/graphql")
 jest.setTimeout(10000)
 
 // Mock the hasSpiritKey module to return false
@@ -437,5 +438,26 @@ describe("Extension", () => {
         })
         .catch((err) => console.log(err))
     })
+  })
+
+  test("hydrates chaindata when requested", async () => {
+    // the un-hydrated chaindata provider should be empty
+    expect((await chaindataProvider.chainIds()).length).toStrictEqual(0)
+    expect((await chaindataProvider.evmNetworkIds()).length).toStrictEqual(0)
+    expect((await chaindataProvider.tokenIds()).length).toStrictEqual(0)
+
+    // submit the hydrate chaindata messages (usually sent by the popup/dashboard frontend to the backend)
+    expect(
+      await Promise.all([
+        messageSender("pri(chains.subscribe)", null),
+        messageSender("pri(eth.networks.subscribe)", null),
+        messageSender("pri(tokens.subscribe)", null),
+      ])
+    ).toStrictEqual([true, true, true])
+
+    // the hydrated chaindata provier should now have chains, evmNetworks and tokens!
+    expect((await chaindataProvider.chainIds()).length).toBeGreaterThan(0)
+    expect((await chaindataProvider.evmNetworkIds()).length).toBeGreaterThan(0)
+    expect((await chaindataProvider.tokenIds()).length).toBeGreaterThan(0)
   })
 })

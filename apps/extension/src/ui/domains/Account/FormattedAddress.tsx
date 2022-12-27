@@ -1,9 +1,9 @@
-import Avatar from "@ui/domains/Account/Avatar"
 import AccountName from "@ui/domains/Account/AccountName"
+import Avatar from "@ui/domains/Account/Avatar"
+import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 
 import { Address } from "./Address"
 import NamedAddress from "./NamedAddress"
-import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 
 export const FormattedAddress = ({ address }: { address: string }) => {
   const isKnown = useIsKnownAddress(address)

@@ -1,16 +1,17 @@
-import { FC, useCallback, useRef } from "react"
-import { Layout } from "../layout"
-import imgHeadPolkadot from "../assets/polkadot-wallet-head.svg?url"
-import imgTokenPolkadot from "../assets/polkadot-token.svg?url"
-import imgTokenEthereum from "../assets/ethereum-token.svg?url"
-import imgHeadEthereum from "../assets/ethereum-wallet-head.svg?url"
-import { useHoverDirty } from "react-use"
-import { classNames } from "talisman-ui"
-import { useOnboard } from "../context"
 import { AccountAddressType } from "@core/domains/accounts/types"
-import { useNavigate } from "react-router-dom"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { FC, useCallback, useRef } from "react"
+import { useNavigate } from "react-router-dom"
+import { useHoverDirty } from "react-use"
+import { classNames } from "talisman-ui"
+
+import imgTokenEthereum from "../assets/ethereum-token.svg?url"
+import imgHeadEthereum from "../assets/ethereum-wallet-head.svg?url"
+import imgTokenPolkadot from "../assets/polkadot-token.svg?url"
+import imgHeadPolkadot from "../assets/polkadot-wallet-head.svg?url"
+import { useOnboard } from "../context"
+import { Layout } from "../layout"
 
 type WalletImportButtonProps = {
   title: string

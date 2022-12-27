@@ -6,6 +6,7 @@ import {
   LabelHTMLAttributes,
   Ref,
 } from "react"
+
 import { classNames } from "../utils"
 
 export type CheckboxProps = DetailedHTMLProps<

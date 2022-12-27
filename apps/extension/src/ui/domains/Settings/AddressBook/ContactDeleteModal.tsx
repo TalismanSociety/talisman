@@ -4,6 +4,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { Button } from "talisman-ui"
+
 import { ContactModalProps } from "./types"
 
 const ANALYTICS_PAGE: AnalyticsPage = {

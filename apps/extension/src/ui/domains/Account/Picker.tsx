@@ -15,8 +15,8 @@ import Downshift from "downshift"
 import {
   ChangeEventHandler,
   FC,
-  forwardRef,
   KeyboardEventHandler,
+  forwardRef,
   useCallback,
   useEffect,
   useMemo,

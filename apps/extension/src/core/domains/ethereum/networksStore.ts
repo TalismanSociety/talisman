@@ -1,36 +1,28 @@
-import { DEBUG } from "@core/constants"
-import { CustomEvmNetwork, EvmNetwork, EvmNetworkList } from "@core/domains/ethereum/types"
-import { db } from "@core/libs/db"
-import { EvmNetworkFragment, graphqlUrl } from "@core/util/graphql"
-import { print } from "graphql"
-import gql from "graphql-tag"
-import { clearEvmRpcProvidersCache } from "./rpcProviders"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 
-const minimumHydrationInterval = 43_200_000 // 43_200_000ms = 43_200s = 720m = 12 hours
-
+// TODO: Refactor any code which uses this store to directly
+//       call methods on `chaindataProvider` instead!
+// TODO: Refactor any code which uses the db at:
+//       `import { db } from "@core/db"`
+//       to call methods on `chaindataProvider` instead!
 export class EvmNetworkStore {
-  #lastHydratedAt = 0
-
   async clearCustom(): Promise<void> {
-    db.transaction("rw", db.evmNetworks, () => {
-      db.evmNetworks
-        .filter((network) => "isCustom" in network && network.isCustom === true)
-        .delete()
-    })
+    return await chaindataProvider.clearCustomEvmNetworks()
   }
 
-  async replaceChaindata(evmNetworks: (EvmNetwork | CustomEvmNetwork)[]): Promise<void> {
-    await db.transaction("rw", db.evmNetworks, async () => {
-      await db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
+  // TODO MERGE remove this method
+  // async replaceChaindata(evmNetworks: (EvmNetwork | CustomEvmNetwork)[]): Promise<void> {
+  //   await db.transaction("rw", db.evmNetworks, async () => {
+  //     await db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
 
-      // do not override networks marked as custom (the only ones remaining in the table at this stage)
-      const customNetworksIds = (await db.evmNetworks.toArray()).map((n) => n.id)
-      await db.evmNetworks.bulkPut(evmNetworks.filter((n) => !customNetworksIds.includes(n.id)))
-    })
+  //     // do not override networks marked as custom (the only ones remaining in the table at this stage)
+  //     const customNetworksIds = (await db.evmNetworks.toArray()).map((n) => n.id)
+  //     await db.evmNetworks.bulkPut(evmNetworks.filter((n) => !customNetworksIds.includes(n.id)))
+  //   })
 
-    // clear providers cache in case rpcs changed
-    clearEvmRpcProvidersCache()
-  }
+  //   // clear providers cache in case rpcs changed
+  //   clearEvmRpcProvidersCache()
+  // }
 
   /**
    * Hydrate the store with the latest evmNetworks from subsquid.
@@ -39,60 +31,8 @@ export class EvmNetworkStore {
    * @returns A promise which resolves to true if the store has been hydrated, or false if the hydration was skipped.
    */
   async hydrateStore(): Promise<boolean> {
-    const now = Date.now()
-    if (now - this.#lastHydratedAt < minimumHydrationInterval) return false
-
-    try {
-      const { data } = await (
-        await fetch(graphqlUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query: print(evmNetworksQuery) }),
-        })
-      ).json()
-
-      const evmNetworksList = evmNetworksResponseToEvmNetworkList(data?.evmNetworks || [])
-
-      if (Object.keys(evmNetworksList).length <= 0)
-        throw new Error("Ignoring empty chaindata evmNetworks response")
-
-      await this.replaceChaindata(Object.values(evmNetworksList))
-      this.#lastHydratedAt = now
-
-      return true
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      DEBUG && console.error(error)
-
-      return false
-    }
+    return await chaindataProvider.hydrateEvmNetworks()
   }
 }
 
-const evmNetworksResponseToEvmNetworkList = (
-  evmNetworks: Array<EvmNetwork & { id: string }>
-): EvmNetworkList =>
-  evmNetworks
-    .map((evmNetwork: EvmNetwork & { id: string }) => ({
-      ...evmNetwork,
-      id: parseInt(evmNetwork.id),
-    }))
-    .reduce(
-      (allEvmNetworks: EvmNetworkList, evmNetwork: EvmNetwork) => ({
-        ...allEvmNetworks,
-        [evmNetwork.id]: evmNetwork,
-      }),
-      {}
-    )
-
-export const evmNetworksQuery = gql`
-  {
-    evmNetworks(orderBy: sortIndex_ASC) {
-      ...EvmNetwork
-    }
-  }
-  ${EvmNetworkFragment}
-`
-
 export const evmNetworkStore = new EvmNetworkStore()
-export default evmNetworkStore

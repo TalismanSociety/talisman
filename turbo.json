@@ -18,11 +18,16 @@
       "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN", "$POSTHOG_AUTH_TOKEN"],
       "outputs": ["dist/**"]
     },
+    "build:packages:prod": {
+      "dependsOn": ["^build:packages:prod"],
+      "outputs": ["dist/**"]
+    },
     "lint": {
       "outputs": [],
       "cache": false
     },
     "dev": {
+      "dependsOn": ["^dev"],
       "cache": false
     },
     "clean": {
@@ -31,6 +36,8 @@
     "test": {
       "dependsOn": ["^build"]
     },
-    "test:watch": {}
+    "test:watch": {
+      "dependsOn": ["^build"]
+    }
   }
 }

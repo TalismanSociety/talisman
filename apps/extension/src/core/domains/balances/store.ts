@@ -1,26 +1,29 @@
 import { DEBUG } from "@core/constants"
 import { settingsStore } from "@core/domains/app/store.settings"
-import Erc20BalancesEvmRpc from "@core/domains/balances/rpc/Erc20Balances"
-import NativeBalancesEvmRpc from "@core/domains/balances/rpc/EvmBalances"
-import BalancesRpc from "@core/domains/balances/rpc/SubstrateBalances"
-import { BalanceStorage, Balances, RequestBalance } from "@core/domains/balances/types"
+import { Balance, BalanceJson, Balances, RequestBalance } from "@core/domains/balances/types"
 import { Chain } from "@core/domains/chains/types"
 import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
-import OrmlTokensRpc from "@core/domains/tokens/rpc/OrmlTokens"
 import { Erc20Token } from "@core/domains/tokens/types"
 import { unsubscribe } from "@core/handlers/subscriptions"
-import { db } from "@core/libs/db"
-import { Addresses, AddressesByChain, Port } from "@core/types/base"
-import { encodeAnyAddress } from "@core/util"
+import { chainConnector } from "@core/rpcs/chain-connector"
+import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
+import { chaindataProvider } from "@core/rpcs/chaindata"
+import { Addresses, Port } from "@core/types/base"
 import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
+import { db as balancesDb } from "@talismn/balances"
+import { EvmErc20Module } from "@talismn/balances-evm-erc20"
+import { EvmNativeModule } from "@talismn/balances-evm-native"
+import { SubNativeModule } from "@talismn/balances-substrate-native"
+import { SubOrmlModule } from "@talismn/balances-substrate-orml"
+import { Token, TokenList } from "@talismn/chaindata-provider"
+import { encodeAnyAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
-import { Subject, combineLatest, firstValueFrom } from "rxjs"
+import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
 
 type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account">
 type EvmNetworkIdAndHealth = Pick<
@@ -30,8 +33,17 @@ type EvmNetworkIdAndHealth = Pick<
   erc20Tokens: Array<Pick<Erc20Token, "id" | "contractAddress">>
   substrateChainAccountFormat: string | null
 }
+type TokenIdAndType = Pick<Token, "id" | "type" | "chain" | "evmNetwork">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
+
+export const balanceModules = [SubNativeModule, SubOrmlModule, EvmNativeModule, EvmErc20Module]
+
+// TODO: Fix this class up
+//       1. It shouldn't need a whole extra copy of addresses+chains+networks separate to the db
+//       2. It shouldn't subscribe to all this data when subscriptions aren't even open
+//       3. It should support one-off subscriptions for accounts which aren't in the wallet
+//       4. It needs to stop trying to connect to broken RPCs after the subscriptions are closed
 
 export class BalanceStore {
   #subscriptionsState: SubscriptionsState = "Closed"
@@ -41,7 +53,17 @@ export class BalanceStore {
 
   #chains: ChainIdAndHealth[] = []
   #evmNetworks: EvmNetworkIdAndHealth[] = []
-  #addresses: Addresses = {}
+  #tokens: ReplaySubject<TokenIdAndType[]> = new ReplaySubject(1)
+
+  /**
+   * A map of accounts to query balances for, in the format:
+   *
+   *     {
+   *       [`account address`]: [`allowed chain genesis hash`, ...] | null // null if account is allowed on all chains
+   *     }
+   */
+  #addresses: ReplaySubject<Addresses> = new ReplaySubject(1)
+  #addressesCleanupTimeout: ReturnType<typeof setTimeout> | null = null
 
   #subscribers: Subject<void> = new Subject()
 
@@ -49,36 +71,23 @@ export class BalanceStore {
    * Initialize the store with a set of addresses and chains.
    */
   constructor() {
-    // get addresses by subscribing to the keyring, and add them to the list here
-    keyring.accounts.subject.subscribe((accounts) => {
-      // ignore empty keyring while wallet is still initializing
-      if (Object.keys(accounts).length < 1) return
-
-      this.setAccounts(accounts)
-    })
+    // subscribe to the account addresseses from the keyring, and add them to list of addresses to query balances for
+    keyring.accounts.subject.subscribe(this.setAccounts.bind(this))
 
     // subscribe to the chainstore and add chains to the list here
     combineLatest(
       // settings
       settingsStore.observable,
       // chains
-      liveQuery(async () =>
-        Object.fromEntries((await db.chains.toArray()).map((chain) => [chain.id, chain]))
-      ),
+      liveQuery(async () => await chaindataProvider.chains()),
       // evmNetworks
-      liveQuery(async () =>
-        Object.fromEntries(
-          (await db.evmNetworks.toArray()).map((evmNetwork) => [evmNetwork.id, evmNetwork])
-        )
-      ),
+      liveQuery(async () => await chaindataProvider.evmNetworks()),
       // tokens
-      liveQuery(async () =>
-        Object.fromEntries((await db.tokens.toArray()).map((token) => [token.id, token]))
-      )
+      liveQuery(async () => await chaindataProvider.tokens())
     ).subscribe({
       next: ([settings, chains, evmNetworks, tokens]) => {
         const erc20TokensByNetwork = Object.values(tokens).reduce((byNetwork, token) => {
-          if (token.type !== "erc20") return byNetwork
+          if (token.type !== "evm-erc20") return byNetwork
 
           const { evmNetwork } = token
           if (!evmNetwork) return byNetwork
@@ -91,16 +100,22 @@ export class BalanceStore {
 
         // TODO: Only connect to chains on which the user has a non-zero balance.
         this.setChains(
+          // substrate chains
           Object.values(chains ?? {})
             .filter((chain) => (settings.useTestnets ? true : !chain.isTestnet))
             .map((chain) => pick(chain, ["id", "isHealthy", "genesisHash", "account"])),
+
+          // evm chains
           Object.values(evmNetworks ?? {})
             .filter((evmNetwork) => (settings.useTestnets ? true : !evmNetwork.isTestnet))
             .map((evmNetwork) => ({
               ...pick(evmNetwork, ["id", "isHealthy", "nativeToken", "substrateChain"]),
               erc20Tokens: erc20TokensByNetwork[evmNetwork.id],
               substrateChainAccountFormat: null,
-            }))
+            })),
+
+          // tokens
+          tokens
         )
       },
       error: (error) => Sentry.captureException(error),
@@ -114,6 +129,7 @@ export class BalanceStore {
    * Gets the balance for an address on a chain, either from the store if the address is in the wallet, or externally from the RPC.
    *
    * @param chainId - The id of the chain for which to query the balance
+   * @param evmNetworkId - The id of the evmNetwork for which to query the balance
    * @param tokenId - The id of the token for which to query the balance
    * @param address - The address to query the balance
    */
@@ -122,54 +138,43 @@ export class BalanceStore {
     evmNetworkId,
     tokenId,
     address: chainFormattedAddress,
-  }: RequestBalance): Promise<BalanceStorage | undefined> {
+  }: RequestBalance): Promise<BalanceJson | undefined> {
     assert(chainId || evmNetworkId, "chainId or evmNetworkId is required")
+
     const address = encodeAnyAddress(chainFormattedAddress, 42)
 
     // search for existing balance in the store
-    const storeBalances = new Balances(await db.balances.toArray())
+    const storeBalances = new Balances(await balancesDb.balances.toArray())
     const networkFilter = chainId ? { chainId } : { evmNetworkId }
     const existing = storeBalances.find({ ...networkFilter, tokenId, address })
     if (existing.count > 0) return existing.sorted[0]?.toJSON()
 
     // no existing balance found, fetch it directly via rpc
-    const token = await db.tokens.get(tokenId)
+    const token = await chaindataProvider.getToken(tokenId)
     if (!token) {
-      Sentry.captureException(new Error(`Failed to fetch balance: invalid tokenId ${tokenId}`))
+      const error = new Error(`Failed to fetch balance: no token with id ${tokenId}`)
+      Sentry.captureException(error)
+      DEBUG && console.error(error) // eslint-disable-line no-console
       return
     }
 
     const tokenType = token.type
-
-    if (tokenType === "native") {
-      if (chainId) {
-        return (await BalancesRpc.balances({ [chainId]: [address] }))
-          .find({ chainId, tokenId, address })
-          .sorted[0]?.toJSON()
-      } else {
-        assert(evmNetworkId, "chainId or evmNetworkId is required")
-        const evmNetwork = await db.evmNetworks.get(evmNetworkId)
-        assert(evmNetwork, "This token's network could not be found")
-        return (await NativeBalancesEvmRpc.balances([address], [evmNetwork]))
-          .find({ tokenId, address, evmNetworkId: Number(evmNetworkId) })
-          .sorted[0]?.toJSON()
-      }
+    const balanceModule = balanceModules.find(({ type }) => type === token.type)
+    if (!balanceModule) {
+      const error = new Error(`Failed to fetch balance: no module with type ${tokenType}`)
+      Sentry.captureException(error)
+      DEBUG && console.error(error) // eslint-disable-line no-console
+      return
     }
-    if (tokenType === "orml") {
-      assert(chainId, "chainId is required for substrate token balances")
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return (await OrmlTokensRpc.tokens({ [chainId!]: [address] }))
-        .find({ chainId, tokenId, address })
-        .sorted[0]?.toJSON()
-    }
-    if (tokenType === "erc20")
-      return (await Erc20BalancesEvmRpc.balances([address], { [Number(evmNetworkId)]: [token] }))
-        .find({ tokenId, address, evmNetworkId: Number(evmNetworkId) })
-        .sorted[0]?.toJSON()
 
-    // force compilation error if any token types don't have a case
-    const exhaustiveCheck: never = tokenType
-    throw new Error(`Unhandled token type ${exhaustiveCheck}`)
+    const addressesByToken = { [tokenId]: [address] }
+    const balances = await balanceModule.fetchBalances(
+      { substrate: chainConnector, evm: chainConnectorEvm },
+      chaindataProvider,
+      addressesByToken
+    )
+
+    return balances.find({ chainId, evmNetworkId, tokenId, address }).sorted[0]?.toJSON()
   }
 
   /**
@@ -181,7 +186,11 @@ export class BalanceStore {
    *                 Chains present in the store but not in this list will be removed.
    *                 Chains with a different health status to what is in the store will be updated.
    */
-  async setChains(newChains: ChainIdAndHealth[], newEvmNetworks: EvmNetworkIdAndHealth[]) {
+  async setChains(
+    newChains: ChainIdAndHealth[],
+    newEvmNetworks: EvmNetworkIdAndHealth[],
+    tokens: TokenList
+  ) {
     // Check for updates
     const existingChainsMap = Object.fromEntries(this.#chains.map((chain) => [chain.id, chain]))
     const noChainChanges =
@@ -208,29 +217,30 @@ export class BalanceStore {
     const evmNetworksMap = Object.fromEntries(
       this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
     )
-    const tokens = Object.fromEntries((await db.tokens.toArray()).map((token) => [token.id, token]))
+
+    // update tokens
+    this.#tokens.next(
+      Object.values(tokens).map(({ id, type, chain, evmNetwork }) => ({
+        id,
+        type,
+        chain,
+        evmNetwork,
+      }))
+    )
 
     // Delete stored balances for chains and networks which no longer exist
-    await db.transaction("rw", db.balances, async () => {
-      const deleteBalances = new Balances(await db.balances.toArray()).sorted
-        .filter((balance) => {
-          // remove balance if chain doesn't exist
-          if (
-            (!balance.chainId && balance.evmNetworkId === undefined) ||
-            (balance.chainId && !chainsMap[balance.chainId]) ||
-            (balance.evmNetworkId !== undefined && !evmNetworksMap[balance.evmNetworkId])
-          )
-            return true
+    await this.deleteBalances((balance) => {
+      // remove balance if chain/evm network doesn't exist
+      if (balance.chainId === undefined && balance.evmNetworkId === undefined) return true
+      if (balance.chainId !== undefined && chainsMap[balance.chainId] === undefined) return true
+      if (balance.evmNetworkId !== undefined && evmNetworksMap[balance.evmNetworkId] === undefined)
+        return true
 
-          // remove balance if token doesn't exist
-          if (!tokens[balance.tokenId]) return true
+      // remove balance if token doesn't exist
+      if (tokens[balance.tokenId] === undefined) return true
 
-          // keep balance
-          return false
-        })
-        .map((balance) => balance.id)
-
-      await db.balances.bulkDelete(deleteBalances)
+      // keep balance
+      return false
     })
 
     // Update chains on existing subscriptions
@@ -246,10 +256,15 @@ export class BalanceStore {
    *
    * @param accounts - The accounts to watch for balances.
    */
-  async setAccounts(accounts: Record<string, SingleAddress>) {
-    this.#addresses = Object.fromEntries(
-      Object.entries(accounts).map(([address, accountDetails]) => {
-        const { isHardware, genesisHash } = accountDetails.json.meta
+  private async setAccounts(accounts: Record<string, SingleAddress>) {
+    // ignore empty keyring while the wallet is still initialising
+    if (Object.keys(accounts).length < 1) return
+
+    // update the list of watched addresses
+    const addresses = Object.fromEntries(
+      Object.entries(accounts).map(([address, details]) => {
+        const { isHardware, genesisHash } = details.json.meta
+
         if (!isHardware) return [address, null]
         if (!genesisHash) return [address, null]
 
@@ -257,27 +272,47 @@ export class BalanceStore {
         return [address, [genesisHash]]
       })
     )
+    this.#addresses.next(addresses)
 
-    // Delete stored balances for accounts which no longer exist
-    await db.transaction("rw", db.balances, async () => {
-      const deleteBalances = new Balances(await db.balances.toArray()).sorted
-        .filter((balance) => {
-          // remove balance if account doesn't exist
-          if (!balance.address || this.#addresses[balance.address] === undefined) return true
+    // delete stored balances for addresses which no longer exist
+    //
+    // When initializing, our keyring object doesn't immediately contain all of our accounts.
+    // There will be a few updates where `accounts` is incomplete.
+    // To avoid deleting the balances for accounts which are still in the wallet, but have not yet
+    // been loaded into the keyring, we wait about 10 seconds before running this cleanup job.
+    //
+    // If this job is triggered while a pending cleanup has not run yet, we cancel the pending one
+    // and replace it with the latest one (which will have more accounts loaded).
+    if (this.#addressesCleanupTimeout !== null) clearTimeout(this.#addressesCleanupTimeout)
+    this.#addressesCleanupTimeout = setTimeout(async () => {
+      this.#addressesCleanupTimeout = null
+      await this.deleteBalances((balance) => {
+        // remove balance if account doesn't exist
+        if (!balance.address || addresses[balance.address] === undefined) return true
 
-          // keep balance
-          return false
-        })
-        .map((balance) => balance.id)
+        // keep balance
+        return false
+      })
+    }, 10_000 /* 10_000ms = 10 seconds */)
 
-      await db.balances.bulkDelete(deleteBalances)
-    })
-
-    // Update addresses on existing subscriptions
+    // update addresses on existing subscriptions
     if (this.#subscribers.observed) {
       await this.closeSubscriptions()
       await this.openSubscriptions()
     }
+  }
+
+  /**
+   * Deletes all balances from the DB for which the balancesFilter function returns `true`
+   */
+  private async deleteBalances(balancesFilter: (balance: Balance) => boolean) {
+    return await balancesDb.transaction("rw", balancesDb.balances, async () => {
+      const deleteBalances = new Balances(await balancesDb.balances.toArray()).sorted
+        .filter(balancesFilter)
+        .map((balance) => balance.id)
+
+      await balancesDb.balances.bulkDelete(deleteBalances)
+    })
   }
 
   /**
@@ -315,72 +350,54 @@ export class BalanceStore {
     this.setSubscriptionsState("Open")
 
     const generation = this.#subscriptionsGeneration
+    const addresses = await firstValueFrom(this.#addresses)
+    const tokens = await firstValueFrom(this.#tokens)
+    const chainHealthy = Object.fromEntries(
+      this.#chains.map((chain) => [chain.id, chain.isHealthy])
+    )
+    const evmNetworkHealthy = Object.fromEntries(
+      this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork.isHealthy])
+    )
 
-    const chainAddresses = this.#chains
-      .filter(({ isHealthy }) => isHealthy)
-      .reduce((result, chain) => {
-        result[chain.id] = Object.entries(this.#addresses)
-          .filter(
-            ([, genesisHashes]) =>
-              genesisHashes === null ||
-              (chain.genesisHash && genesisHashes?.includes(chain.genesisHash))
-          )
-          .map(([address, ,]) => address)
-        return result
-      }, {} as AddressesByChain)
+    // For the following TODOs, try and put them inside the relevant balance module when it makes sense.
+    // Otherwise fall back to writing the workaround in here (but also then add it to the web app portfolio!)
+    //
+    // TODO: Fix genesisHash filter (only fetch balances on XXX chains for accounts whose filter is not null)
+    // TODO: Don't fetch evm balances for substrate addresses
+    // TODO: Don't fetch evm balances for ethereum accounts on chains whose native account format is secp256k1 (i.e. moonbeam/river/base)
+    //       On these chains we can fetch the balance purely via substrate (and fetching via both evm+substrate will double up the balance)
+    //
+    const addressesByTokenByModule: Record<string, Record<string, string[]>> = {}
+    tokens.forEach((token) => {
+      // filter out tokens on chains/evmNetworks which aren't healthy
+      const isHealthy =
+        (token.chain?.id && chainHealthy[token.chain.id]) ||
+        (token.evmNetwork?.id && evmNetworkHealthy[token.evmNetwork.id])
+      if (!isHealthy) return
 
-    this.#closeSubscriptionCallbacks = this.#closeSubscriptionCallbacks
-      .concat(
-        BalancesRpc.balances(chainAddresses, (error, result) => {
+      if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
+      addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
+    })
+
+    const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
+      balanceModule.subscribeBalances(
+        { substrate: chainConnector, evm: chainConnectorEvm },
+        chaindataProvider,
+        addressesByTokenByModule[balanceModule.type] ?? {},
+        (error, result) => {
           // ignore old subscriptions which have been told to close but aren't closed yet
           if (this.#subscriptionsGeneration !== generation) return
 
           // eslint-disable-next-line no-console
           if (error) DEBUG && console.error(error)
           else this.upsertBalances(result ?? new Balances([]))
-        })
+        }
       )
-      .concat(
-        OrmlTokensRpc.tokens(chainAddresses, (error, result) => {
-          // ignore old subscriptions which have been told to close but aren't closed yet
-          if (this.#subscriptionsGeneration !== generation) return
+    )
 
-          // eslint-disable-next-line no-console
-          if (error) DEBUG && console.error(error)
-          else this.upsertBalances(result ?? new Balances([]))
-        })
-      )
-      .concat(
-        NativeBalancesEvmRpc.balances(
-          Object.keys(this.#addresses).filter(isEthereumAddress),
-          this.#evmNetworks.filter(
-            // for chains with secp256k1 (ethereum) accounts we fetch the native token balance via their substrate api.
-            (evmNetwork) => evmNetwork.substrateChainAccountFormat !== "secp256k1"
-          ),
-          (error, result) => {
-            // ignore old subscriptions which have been told to close but aren't closed yet
-            if (this.#subscriptionsGeneration !== generation) return
-
-            // eslint-disable-next-line no-console
-            if (error) DEBUG && console.error(error)
-            else this.upsertBalances(result ?? new Balances([]))
-          }
-        )
-      )
-      .concat(
-        Erc20BalancesEvmRpc.balances(
-          Object.keys(this.#addresses).filter(isEthereumAddress),
-          Object.fromEntries(this.#evmNetworks.map(({ id, erc20Tokens }) => [id, erc20Tokens])),
-          (error, result) => {
-            // ignore old subscriptions which have been told to close but aren't closed yet
-            if (this.#subscriptionsGeneration !== generation) return
-
-            // eslint-disable-next-line no-console
-            if (error) DEBUG && console.error(error)
-            else this.upsertBalances(result ?? new Balances([]))
-          }
-        )
-      )
+    this.#closeSubscriptionCallbacks = this.#closeSubscriptionCallbacks.concat(
+      closeSubscriptionCallbacks
+    )
   }
 
   /**
@@ -393,8 +410,8 @@ export class BalanceStore {
     const updates = balancesUpdates.toJSON()
 
     // update stored balances
-    await db.transaction("rw", db.balances, async () => {
-      await db.balances.bulkPut(
+    await balancesDb.transaction("rw", balancesDb.balances, async () => {
+      await balancesDb.balances.bulkPut(
         Object.entries(updates).map(([id, balance]) => ({ id, ...balance }))
       )
     })
@@ -421,8 +438,8 @@ export class BalanceStore {
 
     // rpcs are no longer connected,
     // update cached balances to 'cache' status
-    await db.transaction("rw", db.balances, async () => {
-      await db.balances.toCollection().modify({ status: "cache" })
+    await balancesDb.transaction("rw", balancesDb.balances, async () => {
+      await balancesDb.balances.toCollection().modify({ status: "cache" })
     })
 
     this.setSubscriptionsState("Closed")
@@ -434,5 +451,4 @@ export class BalanceStore {
   }
 }
 
-const balanceStoreInstance = new BalanceStore()
-export default balanceStoreInstance
+export const balanceStore = new BalanceStore()

@@ -144,6 +144,9 @@ export const api: MessageTypes = {
   // token message types
   tokens: (cb) => messageService.subscribe("pri(tokens.subscribe)", null, cb),
 
+  // tokenRates message types
+  tokenRates: (cb) => messageService.subscribe("pri(tokenRates.subscribe)", null, cb),
+
   // custom erc20 token management
   customErc20Tokens: () => messageService.sendMessage("pri(tokens.erc20.custom)"),
   customErc20Token: (id) => messageService.sendMessage("pri(tokens.erc20.custom.byid)", { id }),

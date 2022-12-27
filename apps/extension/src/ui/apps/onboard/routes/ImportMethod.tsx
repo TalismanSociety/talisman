@@ -1,12 +1,13 @@
-import { useCallback, useEffect, useMemo } from "react"
-import { Layout } from "../layout"
-import { ImportMethodType, useOnboard } from "../context"
-import { useNavigate } from "react-router-dom"
-import { OnboardCta } from "../components/OnboardCta"
+import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
 import { FileTextIcon, KeyIcon, MessageCircleIcon, UsbIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
+import { useCallback, useEffect, useMemo } from "react"
+import { useNavigate } from "react-router-dom"
+
+import { OnboardCta } from "../components/OnboardCta"
+import { ImportMethodType, useOnboard } from "../context"
+import { Layout } from "../layout"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
