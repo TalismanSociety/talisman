@@ -1532,7 +1532,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.18.9, @babel/runtime@npm:^7.19.0, @babel/runtime@npm:^7.19.4":
+"@babel/runtime@npm:^7.18.9, @babel/runtime@npm:^7.19.0":
   version: 7.20.1
   resolution: "@babel/runtime@npm:7.20.1"
   dependencies:
@@ -4040,16 +4040,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/react-identicon@npm:2.9.12":
-  version: 2.9.12
-  resolution: "@polkadot/react-identicon@npm:2.9.12"
+"@polkadot/react-identicon@npm:2.9.14":
+  version: 2.9.14
+  resolution: "@polkadot/react-identicon@npm:2.9.14"
   dependencies:
-    "@babel/runtime": ^7.19.4
-    "@polkadot/keyring": ^10.1.11
-    "@polkadot/ui-settings": 2.9.12
-    "@polkadot/ui-shared": 2.9.12
-    "@polkadot/util": ^10.1.11
-    "@polkadot/util-crypto": ^10.1.11
+    "@babel/runtime": ^7.20.6
+    "@polkadot/keyring": ^10.2.1
+    "@polkadot/ui-settings": 2.9.14
+    "@polkadot/ui-shared": 2.9.14
+    "@polkadot/util": ^10.2.1
+    "@polkadot/util-crypto": ^10.2.1
     color: ^3.2.1
     ethereum-blockies-base64: ^1.0.2
     jdenticon: 3.1.1
@@ -4063,7 +4063,7 @@ __metadata:
     react-dom: "*"
     react-is: "*"
     styled-components: "*"
-  checksum: d79d07fdb2907433ed57f9b10bb29c34fdd8918e58d010d92926064d9ebd608cbcf9195929d325a9084d420c4cd038c46e5372655e71404fde7d24dc53aa8024
+  checksum: 72cf0218699f6f03b301a4ec9147945e87b3639b58ed150ae4a052b930ae66e8ff5dc4b0779a3d4db4cfe4f3b3a704ebc46a979203a209c7547f74806190dbd5
   languageName: node
   linkType: hard
 
@@ -4189,15 +4189,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/ui-keyring@npm:2.9.12":
-  version: 2.9.12
-  resolution: "@polkadot/ui-keyring@npm:2.9.12"
+"@polkadot/ui-keyring@npm:2.9.14":
+  version: 2.9.14
+  resolution: "@polkadot/ui-keyring@npm:2.9.14"
   dependencies:
-    "@babel/runtime": ^7.19.4
-    "@polkadot/keyring": ^10.1.11
-    "@polkadot/ui-settings": 2.9.12
-    "@polkadot/util": ^10.1.11
-    "@polkadot/util-crypto": ^10.1.11
+    "@babel/runtime": ^7.20.6
+    "@polkadot/keyring": ^10.2.1
+    "@polkadot/ui-settings": 2.9.14
+    "@polkadot/util": ^10.2.1
+    "@polkadot/util-crypto": ^10.2.1
     mkdirp: ^1.0.4
     rxjs: ^7.5.7
     store: ^2.0.12
@@ -4205,36 +4205,36 @@ __metadata:
     "@polkadot/keyring": "*"
     "@polkadot/ui-settings": "*"
     "@polkadot/util": "*"
-  checksum: f8cf078874f9f67ca0d1b3b61a57ba6a5914bc1f57997299a5cf52ac954f32644c5fdc5368bf0455a0b6b4404faafc4ea04d70e45411437348ac0ffbb62f71e6
+  checksum: c3fa5e14cbf840a1f7b2714e7ff3d3d0cfe07d967aa241c57b67b0c2a9563a912b5065ee32f3a8d6ed606c8917b2425f476701f2bf194665016d68ee0e267c04
   languageName: node
   linkType: hard
 
-"@polkadot/ui-settings@npm:2.9.12":
-  version: 2.9.12
-  resolution: "@polkadot/ui-settings@npm:2.9.12"
+"@polkadot/ui-settings@npm:2.9.14":
+  version: 2.9.14
+  resolution: "@polkadot/ui-settings@npm:2.9.14"
   dependencies:
-    "@babel/runtime": ^7.19.4
-    "@polkadot/networks": ^10.1.11
-    "@polkadot/util": ^10.1.11
+    "@babel/runtime": ^7.20.6
+    "@polkadot/networks": ^10.2.1
+    "@polkadot/util": ^10.2.1
     eventemitter3: ^4.0.7
     store: ^2.0.12
   peerDependencies:
     "@polkadot/networks": "*"
     "@polkadot/util": "*"
-  checksum: 068a25451059ccae6830840f87307a0b3882f602c6ddb291c13b5eccdd7ef68d73056fc8a9c4aabd1871b5ba6e276298451d12a8526acaa88937c41f12a7e523
+  checksum: 5877dfdda7b2a3fc6274520f9d3ea7c4836dd2b4a58fc75f55fd2b2311f9dafb24882e3e9ae6bf003f0e90dd426e5dce87c4d313b2bf6cde2cc52c47e153af5a
   languageName: node
   linkType: hard
 
-"@polkadot/ui-shared@npm:2.9.12":
-  version: 2.9.12
-  resolution: "@polkadot/ui-shared@npm:2.9.12"
+"@polkadot/ui-shared@npm:2.9.14":
+  version: 2.9.14
+  resolution: "@polkadot/ui-shared@npm:2.9.14"
   dependencies:
-    "@babel/runtime": ^7.19.4
+    "@babel/runtime": ^7.20.6
     color: ^3.2.1
   peerDependencies:
     "@polkadot/util": "*"
     "@polkadot/util-crypto": "*"
-  checksum: 2b6f70860a53d03e8825000a228ecfde3dd0bb3989f754ed8c46dd81b0bb78c80d04ccc35ff6e3c8590bf2c88377483d1d50cbcf959e05f6ed10249c319f1baf
+  checksum: 8c8c340859236c727ae14045216fa4a6e725cac710615f3fc8a53f4d4993b4086cd38e7f419ceb76129b26de23e16ac5b4b3f0eccdbf2dd0583807c0055e0c13
   languageName: node
   linkType: hard
 
