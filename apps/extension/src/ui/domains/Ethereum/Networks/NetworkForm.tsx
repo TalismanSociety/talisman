@@ -9,8 +9,11 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
+import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
+import { ChainLogoBase } from "@ui/domains/Asset/ChainLogo"
 import { useCoinGeckoTokenImageUrl } from "@ui/hooks/useCoinGeckoTokenImageUrl"
-import { useEvmChainsList } from "@ui/hooks/useEvmChainsList"
+import { useEvmChainIcon } from "@ui/hooks/useEvmChainIcon"
+import { useEvmChainInfo } from "@ui/hooks/useEvmChainInfo"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
@@ -202,41 +205,34 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
     }
   }, [evmNetworkId, id, qRpcChainId.data, qRpcChainId.isFetched, resetField, setValue])
 
-  const submit = useCallback(
-    async (network: RequestUpsertCustomEvmNetwork) => {
-      try {
-        await api.ethNetworkUpsert(network)
-        if (network.isTestnet && !useTestnets) update({ useTestnets: true })
-        onSubmitted?.()
-      } catch (err) {
-        setSubmitError((err as Error).message)
-      }
-    },
-    [onSubmitted, update, useTestnets]
+  // fetch token logo's url
+  const coingeckoLogoUrl = useCoinGeckoTokenImageUrl(tokenCoingeckoId)
+  const tokenLogoUrl = useMemo(
+    // existing icon has priority
+    () => nativeToken?.logo ?? coingeckoLogoUrl,
+    [coingeckoLogoUrl, nativeToken?.logo]
   )
 
-  const handleIsTestnetChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => setValue("isTestnet", e.target.checked, { shouldTouch: true }),
-    [setValue]
+  const { chainInfo } = useEvmChainInfo(id)
+  const { url: chainIconUrl } = useEvmChainIcon(chainInfo?.icon)
+  const chainLogoUrl = useMemo(
+    // existing icon has priority
+    () => evmNetwork?.logo ?? chainIconUrl,
+    [chainIconUrl, evmNetwork?.logo]
   )
 
-  const qEvmChainsList = useEvmChainsList()
-  const autoFill = useCallback(
-    async (id: EvmNetworkId) => {
-      const chainInfo = qEvmChainsList.data?.find((c) => c.chainId === Number(id))
-      if (!chainInfo) return
+  const autoFill = useCallback(async () => {
+    if (!chainInfo) return
 
-      setValue("name", chainInfo.name)
-      setValue("blockExplorerUrl", chainInfo.explorers?.[0]?.url ?? "")
-      setValue("tokenDecimals", chainInfo.nativeCurrency.decimals)
-      setValue("isTestnet", chainInfo.name.toLocaleLowerCase().includes("testnet"))
-      setValue("tokenSymbol", chainInfo.nativeCurrency.symbol, {
-        shouldValidate: true,
-        shouldTouch: true,
-      })
-    },
-    [qEvmChainsList.data, setValue]
-  )
+    setValue("name", chainInfo.name)
+    setValue("blockExplorerUrl", chainInfo.explorers?.[0]?.url ?? "")
+    setValue("tokenDecimals", chainInfo.nativeCurrency.decimals)
+    setValue("isTestnet", chainInfo.name.toLocaleLowerCase().includes("testnet"))
+    setValue("tokenSymbol", chainInfo.nativeCurrency.symbol, {
+      shouldValidate: true,
+      shouldTouch: true,
+    })
+  }, [chainInfo, setValue])
 
   // attempt an autofill once chain id is detected
   useEffect(() => {
@@ -247,7 +243,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
       if (!errors.id) setError("id", { message: "already exists" })
     } else {
       if (errors.id) clearErrors("id")
-      autoFill(id)
+      autoFill()
     }
   }, [autoFill, clearErrors, evmNetworkId, evmNetworks, id, setError, errors.id])
 
@@ -264,7 +260,23 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
       setValue("tokenCoingeckoId", nativeToken.coingeckoId)
   }, [nativeToken?.coingeckoId, setValue, tokenCoingeckoId])
 
-  const tokenImageSrc = useCoinGeckoTokenImageUrl(tokenCoingeckoId)
+  const submit = useCallback(
+    async (network: RequestUpsertCustomEvmNetwork) => {
+      try {
+        await api.ethNetworkUpsert({ ...network, tokenLogoUrl, chainLogoUrl })
+        if (network.isTestnet && !useTestnets) update({ useTestnets: true })
+        onSubmitted?.()
+      } catch (err) {
+        setSubmitError((err as Error).message)
+      }
+    },
+    [chainLogoUrl, tokenLogoUrl, onSubmitted, update, useTestnets]
+  )
+
+  const handleIsTestnetChange: ChangeEventHandler<HTMLInputElement> = useCallback(
+    (e) => setValue("isTestnet", e.target.checked, { shouldTouch: true }),
+    [setValue]
+  )
 
   // on edit screen, wait for existing network to be loaded
   if (evmNetworkId && !evmNetwork) return null
@@ -278,6 +290,12 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
             <FormFieldInputText
               readOnly
               className="text-body-disabled cursor-not-allowed"
+              before={
+                <ChainLogoBase
+                  logo={chainLogoUrl}
+                  className="ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]"
+                />
+              }
               {...register("id")}
             />
           </FormFieldContainer>
@@ -293,12 +311,10 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
           <FormFieldContainer label="Token Coingecko ID" error={errors.tokenCoingeckoId?.message}>
             <FormFieldInputText
               before={
-                // TODO merge
-                // <TokenImage
-                //   src={tokenImageSrc}
-                //   className="ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]"
-                // />
-                null
+                <AssetLogoBase
+                  url={tokenLogoUrl}
+                  className="ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]"
+                />
               }
               placeholder="(optional)"
               {...register("tokenCoingeckoId")}
@@ -315,8 +331,10 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
           </FormFieldContainer>
         </div>
         <div className="text-body-disabled mt-[-1.6rem] pb-8 text-xs">
-          Talisman uses CoinGecko as source for token images. Find the API ID of the native token of
-          this network on{" "}
+          Talisman uses CoinGecko as source for fiat rates and token images, but it can't be found
+          automatically.
+          <br />
+          Find the API ID of the native token of this network on{" "}
           <a
             className="text-body-secondary hover:text-body"
             href="https://coingecko.com"

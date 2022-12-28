@@ -26,8 +26,5 @@ export const useCoinGeckoTokenImageUrl = (coingeckoTokenId?: string) => {
         : null,
   })
 
-  return useMemo(
-    () => qToken.data?.image?.large ?? githubUnknownTokenLogoUrl,
-    [qToken.data?.image?.large]
-  )
+  return useMemo(() => qToken.data?.image?.large, [qToken.data?.image?.large])
 }

@@ -357,7 +357,7 @@ export class EthHandler extends ExtensionHandler {
         evmNetwork: { id: network.id },
         isTestnet: network.isTestnet,
         isCustom: true,
-        logo: existingNetwork?.logo ?? "",
+        logo: network.tokenLogoUrl ?? existingNetwork?.logo ?? "",
         chain: existingToken?.chain,
       }
 
@@ -367,7 +367,7 @@ export class EthHandler extends ExtensionHandler {
         name: network.name,
         isTestnet: network.isTestnet,
         sortIndex: existingNetwork?.sortIndex ?? null,
-        logo: existingNetwork?.logo ?? null, // TODO get token image from payload
+        logo: network.chainLogoUrl ?? existingNetwork?.logo ?? null,
         explorerUrl: network.blockExplorerUrl ?? existingNetwork?.explorerUrl ?? null,
         isHealthy: true,
         nativeToken: { id: newToken.id },
@@ -376,7 +376,7 @@ export class EthHandler extends ExtensionHandler {
         substrateChain: existingNetwork?.substrateChain ?? null,
         // CustomEvmNetwork
         isCustom: true,
-        iconUrls: [], // TODO
+        iconUrls: [],
         explorerUrls: network.blockExplorerUrl ? [network.blockExplorerUrl] : [],
       }
 

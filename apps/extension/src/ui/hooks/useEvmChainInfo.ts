@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
 
 type EvmChainInfo = {
   chainId: number
@@ -25,9 +26,23 @@ type EvmChainInfo = {
   slip44?: number
 }
 
-export const useEvmChainsList = () => {
+// source https://github.com/ethereum-lists/chains/blob/gh-pages/chain.json
+const useEvmChainsList = () => {
   return useQuery<EvmChainInfo[]>({
-    queryKey: ["https://chainid.network/chains.json"],
+    queryKey: ["ethereum-lists/chains"],
     queryFn: async () => (await fetch("https://chainid.network/chains.json")).json(),
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   })
+}
+
+export const useEvmChainInfo = (evmNetworkId?: string) => {
+  const qEvmChainsList = useEvmChainsList()
+  const chainInfo = useMemo(
+    () => qEvmChainsList.data?.find((c) => String(c.chainId) === evmNetworkId),
+    [evmNetworkId, qEvmChainsList.data]
+  )
+
+  return { chainInfo, ...qEvmChainsList }
 }

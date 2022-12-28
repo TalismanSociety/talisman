@@ -75,12 +75,14 @@ export type AddEthereumChainRequest = {
 export type RequestUpsertCustomEvmNetwork = {
   id: EvmNetworkId
   name: string
+  chainLogoUrl?: string
+  isTestnet: boolean
+  rpcs: { url: string }[]
+  blockExplorerUrl?: string
   tokenSymbol: string
   tokenDecimals: number
-  rpcs: { url: string }[]
-  isTestnet: boolean
-  blockExplorerUrl?: string
   tokenCoingeckoId?: string
+  tokenLogoUrl?: string
 }
 
 export interface EthMessages {
