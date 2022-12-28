@@ -151,26 +151,35 @@ type NetworkFormProps = {
   onSubmitted?: () => void
 }
 
+const useEditMode = (evmNetworkId?: EvmNetworkId) => {
+  const evmNetwork = useEvmNetwork(evmNetworkId)
+  const nativeToken = useToken(evmNetwork?.nativeToken?.id) as CustomNativeToken | undefined
+  const defaultValues = useMemo(
+    () => (evmNetwork && nativeToken ? evmNetworkToFormData(evmNetwork, nativeToken) : undefined),
+    [evmNetwork, nativeToken]
+  )
+
+  const isCustom = useMemo(() => !!evmNetwork && isCustomEvmNetwork(evmNetwork), [evmNetwork])
+
+  return { defaultValues, isEditMode: !!evmNetworkId, isCustom, evmNetwork, nativeToken }
+}
+
 export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted }) => {
   const schema = useMemo(() => getNetworkFormSchema(evmNetworkId), [evmNetworkId])
 
   const qIsBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
-  const evmNetwork = useEvmNetwork(evmNetworkId)
-  const nativeToken = useToken(evmNetwork?.nativeToken?.id) as CustomNativeToken | undefined
+
   const [submitError, setSubmitError] = useState<string>()
   const evmNetworks = useEvmNetworks()
   const { useTestnets, update } = useSettings()
 
-  const defaultValues = useMemo(
-    () => evmNetworkToFormData(evmNetwork, nativeToken),
-    [evmNetwork, nativeToken]
-  )
+  const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
 
   // because of the RPC checks, do not validate on each change
   const formProps = useForm<RequestUpsertCustomEvmNetwork>({
     mode: "onTouched",
     reValidateMode: "onBlur",
-    defaultValues: defaultValues,
+    defaultValues,
     resolver: yupResolver(schema),
   })
 
@@ -209,16 +218,16 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
   const coingeckoLogoUrl = useCoinGeckoTokenImageUrl(tokenCoingeckoId)
   const tokenLogoUrl = useMemo(
     // existing icon has priority
-    () => nativeToken?.logo ?? coingeckoLogoUrl,
-    [coingeckoLogoUrl, nativeToken?.logo]
+    () => defaultValues?.tokenLogoUrl ?? coingeckoLogoUrl,
+    [coingeckoLogoUrl, defaultValues?.tokenLogoUrl]
   )
 
   const { chainInfo } = useEvmChainInfo(id)
   const { url: chainIconUrl } = useEvmChainIcon(chainInfo?.icon)
   const chainLogoUrl = useMemo(
     // existing icon has priority
-    () => evmNetwork?.logo ?? chainIconUrl,
-    [chainIconUrl, evmNetwork?.logo]
+    () => defaultValues?.chainLogoUrl ?? chainIconUrl,
+    [chainIconUrl, defaultValues?.chainLogoUrl]
   )
 
   const autoFill = useCallback(async () => {
@@ -249,16 +258,16 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
 
   const [showRemove, showReset] = useMemo(
     () =>
-      evmNetworkId && isCustomEvmNetwork(evmNetwork) && qIsBuiltInEvmNetwork.isFetched
+      isCustom && qIsBuiltInEvmNetwork.isFetched
         ? [!qIsBuiltInEvmNetwork.data, !!qIsBuiltInEvmNetwork.data]
         : [false, false],
-    [evmNetwork, evmNetworkId, qIsBuiltInEvmNetwork.data, qIsBuiltInEvmNetwork.isFetched]
+    [isCustom, qIsBuiltInEvmNetwork.data, qIsBuiltInEvmNetwork.isFetched]
   )
 
-  useEffect(() => {
-    if (!tokenCoingeckoId && nativeToken?.coingeckoId)
-      setValue("tokenCoingeckoId", nativeToken.coingeckoId)
-  }, [nativeToken?.coingeckoId, setValue, tokenCoingeckoId])
+  // useEffect(() => {
+  //   if (!tokenCoingeckoId && nativeToken?.coingeckoId)
+  //     setValue("tokenCoingeckoId", nativeToken.coingeckoId)
+  // }, [nativeToken?.coingeckoId, setValue, tokenCoingeckoId])
 
   const submit = useCallback(
     async (network: RequestUpsertCustomEvmNetwork) => {
@@ -278,8 +287,12 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
     [setValue]
   )
 
+  // useEffect(() => {
+  //   console.log({ errors, isValid, isDirty })
+  // }, [errors, isDirty, isValid])
+
   // on edit screen, wait for existing network to be loaded
-  if (evmNetworkId && !evmNetwork) return null
+  if (evmNetworkId && !defaultValues) return null
 
   return (
     <form className="mt-24 space-y-4" onSubmit={handleSubmit(submit)}>
@@ -354,8 +367,8 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
         <div className="text-alert-warn">{submitError}</div>
         <div className="flex justify-between">
           <div>
-            {showRemove && !!evmNetwork && <RemoveNetworkButton network={evmNetwork} />}
-            {showReset && !!evmNetwork && <ResetNetworkButton network={evmNetwork} />}
+            {evmNetwork && showRemove && <RemoveNetworkButton network={evmNetwork} />}
+            {evmNetwork && showReset && <ResetNetworkButton network={evmNetwork} />}
           </div>
           <Button
             type="submit"
@@ -364,7 +377,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
             disabled={!isValid || !isDirty}
             processing={isSubmitting}
           >
-            {evmNetwork ? "Update" : "Add"} Network
+            {isEditMode ? "Update" : "Add"} Network
             <ArrowRightIcon className="ml-4 inline text-lg" />
           </Button>
         </div>

@@ -24,8 +24,8 @@ export const AssetLogoBase = ({ id, symbol, className, url }: AssetLogoBaseProps
   return (
     <picture
       className={classNames(
-        // "asset-logo", // TODO MERGE verify it's not needed
-        "relative inline-block h-[1em] w-[1em] shrink-0",
+        //"asset-logo", // TODO MERGE verify it's not needed
+        "relative block h-[1em] w-[1em] shrink-0",
         className
       )}
     >
