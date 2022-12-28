@@ -361,6 +361,9 @@ export default class Tabs extends TabsHandler {
         await this.stores.sites.ensureUrlAuthorized(url, false, (request as DecryptPayload).address)
         return this.messageDecrypt(url, request as DecryptPayload)
 
+      case "pub(ping)":
+        return Promise.resolve(true)
+
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }
