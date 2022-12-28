@@ -331,8 +331,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
           </FormFieldContainer>
         </div>
         <div className="text-body-disabled mt-[-1.6rem] pb-8 text-xs">
-          Talisman uses CoinGecko as source for fiat rates and token images, but it can't be found
-          automatically.
+          Talisman uses CoinGecko as source for fiat rates and token images.
           <br />
           Find the API ID of the native token of this network on{" "}
           <a
