@@ -12,9 +12,10 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
+import { PromiseExtended, Transaction, TransactionMode } from "dexie"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
-import { fetchChains, fetchEvmNetworks, fetchIsBuiltInEvmNetwork, fetchTokens } from "./graphql"
+import { fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchTokens } from "./graphql"
 import log from "./log"
 import { parseTokensResponse } from "./parseTokensResponse"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
@@ -101,16 +102,18 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async addCustomChain(customChain: CustomChain) {
     if (!("isCustom" in customChain)) return
-    this.#db.chains.put(customChain)
+    return this.#db.chains.put(customChain)
   }
   async removeCustomChain(chainId: ChainId) {
-    this.#db.chains
-      // only affect custom chains
-      .filter((chain) => "isCustom" in chain && chain.isCustom === true)
-      // only affect the provided chainId
-      .filter((chain) => chain.id === chainId)
-      // delete the chain (if exists)
-      .delete()
+    return (
+      this.#db.chains
+        // only affect custom chains
+        .filter((chain) => "isCustom" in chain && chain.isCustom === true)
+        // only affect the provided chainId
+        .filter((chain) => chain.id === chainId)
+        // delete the chain (if exists)
+        .delete()
+    )
   }
   async clearCustomChains() {
     this.#db.transaction("rw", this.#db.chains, () => {
@@ -120,19 +123,28 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async addCustomEvmNetwork(customEvmNetwork: CustomEvmNetwork) {
     if (!("isCustom" in customEvmNetwork)) return
-    this.#db.evmNetworks.put(customEvmNetwork)
+    return this.#db.evmNetworks.put(customEvmNetwork)
   }
   async removeCustomEvmNetwork(evmNetworkId: EvmNetworkId) {
-    this.#db.evmNetworks
-      // only affect custom evmNetworks
-      .filter((network) => "isCustom" in network && network.isCustom === true)
-      // only affect the provided evmNetworkId
-      .filter((network) => network.id === evmNetworkId)
-      // delete the evmNetwork (if exists)
-      .delete()
+    if (await this.getIsBuiltInEvmNetwork(evmNetworkId))
+      throw new Error("Cannot remove built-in EVM network")
+
+    return this.#db.transaction("rw", [this.#db.evmNetworks, this.#db.tokens], async () => {
+      await this.#db.evmNetworks.delete(evmNetworkId)
+      await this.#db.tokens.filter((token) => token.evmNetwork?.id === evmNetworkId).delete()
+    })
+  }
+  async resetEvmNetwork(evmNetworkId: EvmNetworkId) {
+    const builtInEvmNetwork = await fetchEvmNetwork(evmNetworkId)
+    if (!builtInEvmNetwork) throw new Error("Cannot reset non-built-in EVM network")
+
+    return this.#db.transaction("rw", this.#db.evmNetworks, async () => {
+      await this.#db.evmNetworks.delete(evmNetworkId)
+      await this.#db.evmNetworks.put(builtInEvmNetwork)
+    })
   }
   async clearCustomEvmNetworks() {
-    this.#db.transaction("rw", this.#db.evmNetworks, () => {
+    return this.#db.transaction("rw", this.#db.evmNetworks, () => {
       this.#db.evmNetworks
         .filter((network) => "isCustom" in network && network.isCustom === true)
         .delete()
@@ -141,23 +153,28 @@ export class ChaindataProviderExtension implements ChaindataProvider {
 
   async addCustomToken(customToken: Token) {
     if (!("isCustom" in customToken)) return
-    this.#db.tokens.put(customToken)
+    return this.#db.tokens.put(customToken)
   }
   async removeCustomToken(tokenId: TokenId) {
-    this.#db.tokens
-      // only affect custom tokens
-      .filter((token) => "isCustom" in token && (token as any).isCustom === true)
-      // only affect the provided token
-      .filter((token) => token.id === tokenId)
-      // delete the token (if exists)
-      .delete()
+    return (
+      this.#db.tokens
+        // only affect custom tokens
+        .filter((token) => "isCustom" in token && (token as any).isCustom === true)
+        // only affect the provided token
+        .filter((token) => token.id === tokenId)
+        // delete the token (if exists)
+        .delete()
+    )
   }
   async clearCustomTokens() {
-    await this.#db.transaction("rw", this.#db.tokens, () => {
+    return this.#db.transaction("rw", this.#db.tokens, () => {
       this.#db.tokens
         .filter((token) => "isCustom" in token && (token as any).isCustom === true)
         .delete()
     })
+  }
+  removeToken(tokenId: TokenId) {
+    return this.#db.tokens.delete(tokenId)
   }
 
   /**
@@ -223,12 +240,17 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     try {
       const body = await fetchEvmNetworks()
 
-      const evmNetworks = body?.data?.evmNetworks || []
+      const evmNetworks: EvmNetwork[] = body?.data?.evmNetworks || []
       if (evmNetworks.length <= 0) throw new Error("Ignoring empty chaindata evmNetworks response")
 
-      await this.#db.transaction("rw", this.#db.evmNetworks, () => {
-        this.#db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
-        this.#db.evmNetworks.bulkPut(evmNetworks)
+      await this.#db.transaction("rw", this.#db.evmNetworks, async () => {
+        await this.#db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
+        // add all except ones matching custom existing ones (user may customize built-in networks)
+        const customNetworks = await this.#db.evmNetworks.toArray()
+        const newNetworks = evmNetworks.filter((network) =>
+          customNetworks.every((existing) => existing.id !== network.id)
+        )
+        await this.#db.evmNetworks.bulkPut(newNetworks)
       })
       this.#lastHydratedEvmNetworksAt = now
 
@@ -256,9 +278,14 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       const tokens = parseTokensResponse(body?.data?.tokens || [])
       if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
 
-      await this.#db.transaction("rw", this.#db.tokens, () => {
-        this.#db.tokens.filter((token) => !("isCustom" in token)).delete()
-        this.#db.tokens.bulkPut(tokens)
+      await this.#db.transaction("rw", this.#db.tokens, async () => {
+        await this.#db.tokens.filter((token) => !("isCustom" in token)).delete()
+        // add all except ones matching custom existing ones (user may customize built-in tokens)
+        const customTokens = await this.#db.tokens.toArray()
+        const newTokens = tokens.filter((token) =>
+          customTokens.every((existing) => existing.id !== token.id)
+        )
+        await this.#db.tokens.bulkPut(newTokens)
       })
       this.#lastHydratedTokensAt = now
 
@@ -271,6 +298,15 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   async getIsBuiltInEvmNetwork(evmNetworkId: EvmNetworkId) {
-    return fetchIsBuiltInEvmNetwork(evmNetworkId)
+    const evmNetwork = await fetchEvmNetwork(evmNetworkId)
+    return !!evmNetwork
+  }
+
+  transaction<U>(
+    mode: TransactionMode,
+    tables: string[],
+    scope: (trans: Transaction) => PromiseLike<U> | U
+  ): PromiseExtended<U> {
+    return this.#db.transaction(mode, tables, scope)
   }
 }

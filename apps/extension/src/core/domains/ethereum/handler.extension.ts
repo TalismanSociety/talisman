@@ -16,6 +16,7 @@ import { EthRequestArguments, EthRequestSignatures } from "@core/injectEth/types
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { watchEthereumTransaction } from "@core/notifications"
+import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
@@ -25,6 +26,7 @@ import { getPrivateKey } from "@core/util/getPrivateKey"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
+import { evmNativeTokenId } from "@talismn/balances-evm-native"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { isDefined } from "@ui/util/isDefined"
@@ -340,111 +342,78 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private async ethNetworkUpsert(network: RequestUpsertCustomEvmNetwork): Promise<boolean> {
-    // New balances's code
-    //   const newNetwork = request as RequestTypes["pri(eth.networks.add.custom)"]
+    await chaindataProvider.transaction("rw", ["evmNetworks", "tokens"], async () => {
+      const existingNetwork = await chaindataProvider.getEvmNetwork(network.id)
+      const existingToken = existingNetwork?.nativeToken?.id
+        ? await chaindataProvider.getToken(existingNetwork.nativeToken.id)
+        : null
 
-    //   // TODO: Move this check into chaindataProvider?
-    //   const existing = await chaindataProvider.getEvmNetwork(newNetwork.id)
-    //   if (existing && !("isCustom" in existing && existing.isCustom === true)) {
-    //     throw new Error(`Failed to override built-in Talisman network`)
-    //   }
+      const newToken: CustomEvmNativeToken = {
+        id: evmNativeTokenId(network.id, network.tokenSymbol),
+        type: "evm-native",
+        decimals: network.tokenDecimals,
+        symbol: network.tokenSymbol,
+        coingeckoId: network.tokenCoingeckoId,
+        evmNetwork: { id: network.id },
+        isTestnet: network.isTestnet,
+        isCustom: true,
+        logo: existingNetwork?.logo ?? "",
+        chain: existingToken?.chain,
+      }
 
-    //   newNetwork.isCustom = true
-    //   await chaindataProvider.addCustomEvmNetwork(newNetwork)
-    //   talismanAnalytics.captureDelayed("add network evm", {
-    //     network: newNetwork.name,
-    //     isCustom: true,
-    //   })
-    //   return true
+      const newNetwork: CustomEvmNetwork = {
+        // EvmNetwork
+        id: network.id,
+        name: network.name,
+        isTestnet: network.isTestnet,
+        sortIndex: existingNetwork?.sortIndex ?? null,
+        logo: existingNetwork?.logo ?? null, // TODO get token image from payload
+        explorerUrl: network.blockExplorerUrl ?? existingNetwork?.explorerUrl ?? null,
+        isHealthy: true,
+        nativeToken: existingNetwork?.nativeToken ?? null,
+        rpcs: network.rpcs.map(({ url }) => ({ url, isHealthy: true })),
+        tokens: existingNetwork?.tokens ?? [],
+        substrateChain: existingNetwork?.substrateChain ?? null,
+        // CustomEvmNetwork
+        isCustom: true,
+        iconUrls: [], // TODO
+        explorerUrls: network.blockExplorerUrl ? [network.blockExplorerUrl] : [],
+      }
 
-    throw new Error("Not implemented")
-    // let image: string | undefined = undefined
-    // if (network.tokenCoingeckoId) {
-    //   try {
-    //     const cgToken = await getCoinGeckoToken(network.tokenCoingeckoId)
-    //     if (cgToken) image = cgToken?.image.large
-    //   } catch (err) {
-    //     // ignore, most likely an invalid token id
-    //   }
-    // }
+      await chaindataProvider.addCustomToken(newToken)
 
-    // // const existingNetwork = await chaindataProvider.getEvmNetwork(String(network.id)) // TODO typing
-    // // const existingToken = existingNetwork && existingNetwork.nativeToken?.id ? await chaindataProvider.getToken(existingNetwork.nativeToken.id) : null
+      // TODO verify that it will not be re-added automatically
+      // if symbol changed, id is different and previous native token must be deleted
+      // TODO remove the symbol from the token id !!
+      if (existingToken && existingToken.id !== newToken.id)
+        await chaindataProvider.removeToken(existingToken.id)
 
-    // // await chaindataProvider.addCustomEvmNetwork({
-    // //   // EvmNetwork
-    // //   id: String(network.id), // TODO typing
-    // //   name: network.name,
-    // //   isTestnet: network.isTestnet,
-    // //   sortIndex: existingNetwork?.sortIndex ?? null,
-    // //   logo: existingNetwork?.logo ?? null,
-    // //   explorerUrl: network.blockExplorerUrl ?? existingNetwork?.explorerUrl ?? null,
-    // //   isHealthy: true,
-    // //   nativeToken: existingNetwork?.nativeToken ?? null,
-    // //   rpcs: network.rpcs.map(({url}) => ({url, isHealthy:true})),
-    // //   tokens: existingNetwork?.tokens ?? [],
-    // //   substrateChain: existingNetwork?.substrateChain ?? null,
-    // //   // CustomEvmNetwork
-    // //   isCustom: true,
-    // //   iconUrls: [], // TODO
-    // //   explorerUrls: network.blockExplorerUrl ? [network.blockExplorerUrl] : [],
-    // // })
+      await chaindataProvider.addCustomEvmNetwork(newNetwork)
 
-    // await db.transaction("rw", db.evmNetworks, db.tokens, async (tx) => {
-    //   const nativeTokenId = `${network.id}-native-${network.tokenSymbol}`.toLowerCase()
+      // RPCs may have changed, clear cache
+      chainConnectorEvm.clearRpcProvidersCache(network.id)
 
-    //   // allow overriding all networks, including talisman-defined ones
-    //   const existing = await db.evmNetworks.get(network.id)
+      talismanAnalytics.capture(`${existingNetwork ? "update" : "create"} custom network`, {
+        networkType: "evm",
+        network: network.id.toString(),
+      })
+    })
 
-    //   //if symbol changed, previous native token must be deleted
-    //   if (existing?.nativeToken && existing.nativeToken.id !== nativeTokenId)
-    //     await db.tokens.delete(existing.nativeToken.id)
-
-    //   // ensure native token exists
-    //   await db.tokens.put({
-    //     id: nativeTokenId,
-    //     type: "native",
-    //     isTestnet: false,
-    //     symbol: network.tokenSymbol,
-    //     decimals: network.tokenDecimals,
-    //     coingeckoId: network.tokenCoingeckoId,
-    //     existentialDeposit: "0",
-    //     evmNetwork: { id: network.id },
-    //     isCustom: true,
-    //     image,
-    //   })
-
-    //   // upsert the network itself
-    //   await db.evmNetworks.put({
-    //     id: network.id,
-    //     isTestnet: network.isTestnet,
-    //     sortIndex: null,
-    //     name: network.name,
-    //     nativeToken: { id: nativeTokenId },
-    //     tokens: existing?.tokens ?? [],
-    //     explorerUrl: network.blockExplorerUrl ?? null,
-    //     rpcs: network.rpcs.map(({ url }) => ({ url, isHealthy: true })),
-    //     isHealthy: true,
-    //     substrateChain: existing?.substrateChain ?? null,
-    //     isCustom: true,
-    //     explorerUrls: [network.blockExplorerUrl].filter(isDefined),
-    //   })
-
-    //   talismanAnalytics.capture(`${existing ? "update" : "create"} custom network`, {
-    //     networkType: "evm",
-    //     network: network.id.toString(),
-    //   })
-    // })
-
-    // chainConnectorEvm.clearCache(network.id)
-
-    // return true
+    return true
   }
 
   private async ethNetworkRemove(request: RequestIdOnly): Promise<boolean> {
-    throw new Error("Not implemented")
+    // throw new Error("Not implemented")
     // remove token too ?
     await chaindataProvider.removeCustomEvmNetwork(request.id)
+
+    talismanAnalytics.capture("remove custom network", {
+      networkType: "evm",
+      network: request.id,
+    })
+
+    chainConnectorEvm.clearRpcProvidersCache(request.id)
+
     return true
 
     // const id = parseInt(request.id)
@@ -469,7 +438,16 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private async ethNetworkReset(request: RequestIdOnly): Promise<boolean> {
-    throw new Error("Not implemented")
+    await chaindataProvider.resetEvmNetwork(request.id)
+
+    talismanAnalytics.capture("reset custom network", {
+      networkType: "evm",
+      network: request.id,
+    })
+
+    chainConnectorEvm.clearRpcProvidersCache(request.id)
+
+    return true
     // const id = parseInt(request.id)
 
     // const evmNetwork = await db.evmNetworks.get(id)

@@ -63,7 +63,7 @@ export class ChainConnectorEvm {
     return (await this.#providerCache.get(cacheKey)) ?? null
   }
 
-  clearCache(evmNetworkId?: EvmNetworkId) {
+  clearRpcProvidersCache(evmNetworkId?: EvmNetworkId) {
     if (evmNetworkId) {
       this.#providerCache.delete(getEvmNetworkProviderCacheKey(evmNetworkId, false))
       this.#providerCache.delete(getEvmNetworkProviderCacheKey(evmNetworkId, true))

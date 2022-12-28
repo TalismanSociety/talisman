@@ -111,6 +111,15 @@ export const evmNetworksQuery = gql`
   ${EvmNetworkFragment}
 `
 
+export const getEvmNetworkByIdQuery = (evmNetworkId: string) => gql`
+  {
+    evmNetworkById(id:"${evmNetworkId}") {
+      ...EvmNetwork
+    }
+  }
+  ${EvmNetworkFragment}
+`
+
 export const tokensQuery = gql`
   {
     tokens(orderBy: id_ASC) {
@@ -134,26 +143,13 @@ export async function fetchEvmNetworks(): Promise<any> {
     .post(graphqlUrl, { query: print(evmNetworksQuery) })
     .then((response) => response.data)
 }
+export async function fetchEvmNetwork(evmNetworkId: string): Promise<any> {
+  return await axios
+    .post(graphqlUrl, { query: print(getEvmNetworkByIdQuery(evmNetworkId)) })
+    .then((response) => response.data.data.evmNetworkById)
+}
 export async function fetchTokens(): Promise<any> {
   return await axios
     .post(graphqlUrl, { query: print(tokensQuery) })
     .then((response) => response.data)
-}
-
-export const fetchIsBuiltInEvmNetwork = async (evmNetworkId?: string) => {
-  if (!evmNetworkId) return null
-
-  const query = gql`
-      query {
-        evmNetworkById(id:"${evmNetworkId}") {
-          id
-        }
-      }
-    `
-
-  const data = await axios
-    .post(graphqlUrl, { query: print(query) })
-    .then((response) => response.data)
-
-  return !!data?.evmNetworkById?.id
 }
