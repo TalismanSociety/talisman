@@ -11,7 +11,7 @@ const GLOBE_ICON_URL = getBase64ImageUrl(globeIcon)
 type ChainLogoBaseProps = {
   id?: ChainId | EvmNetworkId
   name?: string
-  logo?: string
+  logo?: string | null
   iconUrls?: string[]
   className?: string
 }
@@ -38,7 +38,7 @@ export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, name, logo, iconUrls
           {iconUrls?.map((url, i) => (
             <source key={i} srcSet={url} />
           ))}
-          <source srcSet={logo} />
+          {logo && <source srcSet={logo} />}
         </>
       )}
       <img

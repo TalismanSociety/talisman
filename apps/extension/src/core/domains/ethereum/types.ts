@@ -1,7 +1,7 @@
 import { CustomErc20Token } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { RequestIdOnly } from "@core/types/base"
-import { CustomEvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BigNumberish, ethers } from "ethers"
 
 //import { AddEthereumChainParameter, RequestUpsertCustomEvmNetwork, WatchAssetBase } from "./base"
@@ -75,14 +75,14 @@ export type AddEthereumChainRequest = {
 export type RequestUpsertCustomEvmNetwork = {
   id: EvmNetworkId
   name: string
-  chainLogoUrl?: string
+  chainLogoUrl: string | null
   isTestnet: boolean
   rpcs: { url: string }[]
   blockExplorerUrl?: string
   tokenSymbol: string
   tokenDecimals: number
-  tokenCoingeckoId?: string
-  tokenLogoUrl?: string
+  tokenCoingeckoId: string | null
+  tokenLogoUrl: string | null
 }
 
 export interface EthMessages {

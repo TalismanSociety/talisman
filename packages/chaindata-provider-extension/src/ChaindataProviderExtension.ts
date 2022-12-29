@@ -15,7 +15,7 @@ import {
 import { PromiseExtended, Transaction, TransactionMode } from "dexie"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
-import { fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchTokens } from "./graphql"
+import { fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchToken, fetchTokens } from "./graphql"
 import log from "./log"
 import { parseTokensResponse } from "./parseTokensResponse"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
@@ -137,9 +137,18 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   async resetEvmNetwork(evmNetworkId: EvmNetworkId) {
     const builtInEvmNetwork = await fetchEvmNetwork(evmNetworkId)
     if (!builtInEvmNetwork) throw new Error("Cannot reset non-built-in EVM network")
+    const builtInNativeToken = await fetchToken(builtInEvmNetwork.nativeToken.id)
+    if (!builtInNativeToken) throw new Error("Failed to lookup native token")
 
-    return this.#db.transaction("rw", this.#db.evmNetworks, async () => {
+    return this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
+      // delete network and it's native token
+      const networkToDelete = await this.#db.evmNetworks.get(evmNetworkId)
+      if (networkToDelete?.nativeToken?.id)
+        await this.#db.tokens.delete(networkToDelete.nativeToken.id)
       await this.#db.evmNetworks.delete(evmNetworkId)
+
+      // reprovision them from subsquid data
+      await this.#db.tokens.put(builtInNativeToken)
       await this.#db.evmNetworks.put(builtInEvmNetwork)
     })
   }

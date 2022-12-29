@@ -20,22 +20,15 @@ import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
-import { getCoinGeckoToken } from "@core/util/coingecko/getCoinGeckoToken"
 import { getPrivateKey } from "@core/util/getPrivateKey"
-// import { graphqlUrl } from "@core/util/graphql"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { evmNativeTokenId } from "@talismn/balances-evm-native"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
-import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
-import { isDefined } from "@ui/util/isDefined"
 import { ethers } from "ethers"
-import { print } from "graphql"
 
-//import { tokensQuery, tokensResponseToTokenList } from "../tokens/store"
 import { rebuildTransactionRequestNumbers } from "./helpers"
-// import { evmNetworksQuery } from "./networksStore"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 import { RequestUpsertCustomEvmNetwork } from "./types"
@@ -353,11 +346,11 @@ export class EthHandler extends ExtensionHandler {
         type: "evm-native",
         decimals: network.tokenDecimals,
         symbol: network.tokenSymbol,
-        coingeckoId: network.tokenCoingeckoId,
+        coingeckoId: network.tokenCoingeckoId ?? "",
         evmNetwork: { id: network.id },
         isTestnet: network.isTestnet,
         isCustom: true,
-        logo: network.tokenLogoUrl ?? existingNetwork?.logo ?? "",
+        logo: network.tokenLogoUrl ?? "",
         chain: existingToken?.chain,
       }
 
@@ -367,8 +360,8 @@ export class EthHandler extends ExtensionHandler {
         name: network.name,
         isTestnet: network.isTestnet,
         sortIndex: existingNetwork?.sortIndex ?? null,
-        logo: network.chainLogoUrl ?? existingNetwork?.logo ?? null,
-        explorerUrl: network.blockExplorerUrl ?? existingNetwork?.explorerUrl ?? null,
+        logo: network.chainLogoUrl ?? null,
+        explorerUrl: network.blockExplorerUrl ?? null,
         isHealthy: true,
         nativeToken: { id: newToken.id },
         rpcs: network.rpcs.map(({ url }) => ({ url, isHealthy: true })),

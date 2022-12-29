@@ -129,6 +129,15 @@ export const tokensQuery = gql`
   ${TokenFragment}
 `
 
+export const getTokenByIdQuery = (tokenId: string) => gql`
+  {
+    tokenById(id:"${tokenId}") {
+      ...Token
+    }
+  }
+  ${TokenFragment}
+`
+
 //
 // Fetchers
 //
@@ -152,4 +161,9 @@ export async function fetchTokens(): Promise<any> {
   return await axios
     .post(graphqlUrl, { query: print(tokensQuery) })
     .then((response) => response.data)
+}
+export async function fetchToken(tokenId: string): Promise<any> {
+  return await axios
+    .post(graphqlUrl, { query: print(getTokenByIdQuery(tokenId)) })
+    .then((response) => response.data.data.tokenById.data)
 }

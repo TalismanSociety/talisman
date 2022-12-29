@@ -1,10 +1,9 @@
 import { getCoinGeckoToken } from "@core/util/coingecko/getCoinGeckoToken"
 import { getCoinGeckoTokensList } from "@core/util/coingecko/getCoinGeckoTokensList"
-import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { useMemo } from "react"
 
-export const useCoinGeckoTokenImageUrl = (coingeckoTokenId?: string) => {
+export const useCoinGeckoTokenImageUrl = (coingeckoTokenId: string | null) => {
   // fetch exhaustive list first so we can query details only for valid ids
   // otherwise we could trigger rate limit (429) to easily, it's very sensible without api key.
   const qTokens = useQuery({
@@ -26,5 +25,5 @@ export const useCoinGeckoTokenImageUrl = (coingeckoTokenId?: string) => {
         : null,
   })
 
-  return useMemo(() => qToken.data?.image?.large, [qToken.data?.image?.large])
+  return useMemo(() => qToken.data?.image?.large ?? null, [qToken.data?.image?.large])
 }
