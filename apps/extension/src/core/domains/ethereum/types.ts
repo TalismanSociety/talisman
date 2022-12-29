@@ -4,7 +4,6 @@ import { RequestIdOnly } from "@core/types/base"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BigNumberish, ethers } from "ethers"
 
-//import { AddEthereumChainParameter, RequestUpsertCustomEvmNetwork, WatchAssetBase } from "./base"
 export type {
   EvmNetwork,
   CustomEvmNetwork,

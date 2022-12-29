@@ -9,12 +9,10 @@ import { sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import sitesAuthorisedStore from "@core/domains/sitesAuthorised/store"
 import { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
 import { tokenRatesStore } from "@core/domains/tokenRates"
-import { tokenStore } from "@core/domains/tokens"
 import transactionStore, { TransactionSubject } from "@core/domains/transactions/store"
 
 export type TabStore = {
   chains: typeof chainStore
-  tokens: typeof tokenStore
   tokenRates: typeof tokenRatesStore
   balances: typeof balanceStore
   transactions: typeof transactionStore
@@ -43,7 +41,6 @@ export type GettableStoreData = { [K in GettableStoreKeys]: GettableStores[K][1]
 
 export const tabStores = {
   chains: chainStore,
-  tokens: tokenStore,
   tokenRates: tokenRatesStore,
   balances: balanceStore,
   transactions: transactionStore,
