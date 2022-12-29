@@ -8,6 +8,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
+import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
@@ -141,13 +142,9 @@ export const CustomTokenDetails = () => {
               disabled
               small
               before={
-                null //TODO MERGE
-                // token && (
-                //   <TokenImage
-                //     className="mr-2 ml-[-0.8rem] text-[3rem]"
-                //     src={"image" in token ? token.image : GENERIC_TOKEN_LOGO_URL}
-                //   />
-                // )
+                token && (
+                  <AssetLogoBase className="mr-2 ml-[-0.8rem] text-[3rem]" url={token?.logo} />
+                )
               }
             />
           </FormFieldContainer>

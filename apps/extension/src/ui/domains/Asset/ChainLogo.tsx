@@ -26,7 +26,7 @@ export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, name, logo, iconUrls
   return (
     <picture
       className={classNames(
-        //"chain-logo", "network-logo", // TODO MERGE verify it's not needed
+        //"chain-logo", "network-logo", // TODO verify it's not needed
         "relative block h-[1em] w-[1em] shrink-0",
         className
       )}

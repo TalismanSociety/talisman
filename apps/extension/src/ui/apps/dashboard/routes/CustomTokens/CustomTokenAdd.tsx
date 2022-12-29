@@ -9,6 +9,7 @@ import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
+import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
 //import { GENERIC_TOKEN_LOGO_URL, TokenImage } from "@ui/domains/Asset/TokenLogo"
 import { NetworkSelect } from "@ui/domains/Ethereum/NetworkSelect"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -157,15 +158,11 @@ export const CustomTokenAdd = () => {
               placeholder="ABC"
               autoComplete="off"
               disabled
-              // TODO MERGE
-              // before={
-              //   tokenInfo && (
-              //     <TokenImage
-              //       className="mr-2 ml-[-0.8rem] text-[3rem]"
-              //       src={tokenInfo?.image ?? GENERIC_TOKEN_LOGO_URL}
-              //     />
-              //   )
-              // }
+              before={
+                tokenInfo && (
+                  <AssetLogoBase className="mr-2 ml-[-0.8rem] text-[3rem]" url={tokenInfo?.image} />
+                )
+              }
               small
             />
           </FormFieldContainer>

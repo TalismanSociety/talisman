@@ -298,7 +298,7 @@ export class EthHandler extends ExtensionHandler {
           isTestnet: false,
           symbol: network.nativeCurrency.symbol,
           decimals: network.nativeCurrency.decimals,
-          logo: (network.iconUrls || [])[0] || githubUnknownTokenLogoUrl,
+          logo: (network.iconUrls || [])[0] ?? null,
           evmNetwork: { id: networkId },
           isCustom: true,
         }
@@ -309,7 +309,7 @@ export class EthHandler extends ExtensionHandler {
       isTestnet: false,
       sortIndex: null,
       name: network.chainName,
-      logo: (network.iconUrls || [])[0] || githubUnknownTokenLogoUrl,
+      logo: (network.iconUrls || [])[0] ?? null,
       nativeToken: newToken ? { id: newToken.id } : null,
       tokens: [],
       explorerUrl: (network.blockExplorerUrls || [])[0],
