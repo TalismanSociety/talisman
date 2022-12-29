@@ -22,9 +22,6 @@ import AccountAddDerived from "./routes/AccountAddDerived"
 import AccountAddJson from "./routes/AccountAddJson"
 import { AccountAddSecret } from "./routes/AccountAddSecret"
 import AccountAddTypePicker from "./routes/AccountAddTypePicker"
-import { CustomTokenAdd } from "./routes/CustomTokens/CustomTokenAdd"
-import { CustomTokenDetails } from "./routes/CustomTokens/CustomTokenDetails"
-import { CustomTokens } from "./routes/CustomTokens/CustomTokens"
 import { Networks } from "./routes/Networks"
 import { NetworkEdit } from "./routes/Networks/NetworkEdit"
 import { PhishingPage } from "./routes/PhishingPage"
@@ -38,6 +35,9 @@ import Options from "./routes/Settings/Options"
 import SecurityPrivacySettings from "./routes/Settings/SecurityPrivacySettings"
 import SitesConnected from "./routes/Settings/SitesConnected"
 import { TestPage } from "./routes/TestPage"
+import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
+import { TokenDetailsPage } from "./routes/Tokens/TokenDetailsPage"
+import { TokensPage } from "./routes/Tokens/TokensPage"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
 const AccountAddLedger = lazy(() => import("./routes/AccountAddLedger"))
@@ -96,9 +96,9 @@ const DashboardInner = () => {
           <Route path="autolock" element={<AutoLockTimer />} />
         </Route>
         <Route path="tokens">
-          <Route path="" element={<CustomTokens />} />
-          <Route path="add" element={<CustomTokenAdd />} />
-          <Route path=":id" element={<CustomTokenDetails />} />
+          <Route path="" element={<TokensPage />} />
+          <Route path="add" element={<AddCustomTokenPage />} />
+          <Route path=":id" element={<TokenDetailsPage />} />
         </Route>
         <Route path="networks">
           <Route path="" element={<Networks />} />

@@ -2,9 +2,7 @@ import { CustomErc20TokenCreate } from "@core/domains/tokens/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { assert } from "@polkadot/util"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { LoaderIcon, PlusIcon } from "@talisman/theme/icons"
-//import { PlusIcon } from "@talisman/theme/icons"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
@@ -33,7 +31,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Add Token",
 }
 
-export const CustomTokenAdd = () => {
+export const AddCustomTokenPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const networks = useSortedEvmNetworks()

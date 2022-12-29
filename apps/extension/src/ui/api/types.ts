@@ -20,7 +20,6 @@ import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
-  CustomEvmNetwork,
   EthGasSettings,
   EvmNetworkId,
   RequestUpsertCustomEvmNetwork,

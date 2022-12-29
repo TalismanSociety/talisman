@@ -137,7 +137,7 @@ export default class MessageService {
 
     if (!handler) {
       const { id, error } = data // don't print all properties, this could log sensitive data
-      log.error("No handler for message: ", { id, error, data }) //TODO remove
+      log.error("No handler for message: ", { id, error })
 
       return
     }

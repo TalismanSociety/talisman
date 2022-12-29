@@ -70,7 +70,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Tokens",
 }
 
-export const CustomTokens = () => {
+export const TokensPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 

@@ -80,7 +80,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Settings - Token Details",
 }
 
-export const CustomTokenDetails = () => {
+export const TokenDetailsPage = () => {
   const { id } = useParams<"id">()
   const { isOpen, open, close } = useOpenClose()
   const navigate = useNavigate()
