@@ -11,7 +11,7 @@ import {
 import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
-import { DragAltIcon, PlusIcon, TrashIcon } from "@talisman/theme/icons"
+import { DragIcon, PlusIcon, TrashIcon } from "@talisman/theme/icons"
 import { FC, useCallback, useEffect, useMemo } from "react"
 import {
   FieldArrayWithId,
@@ -68,7 +68,7 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
             disabled={!canDrag}
             {...dragHandleProps}
           >
-            <DragAltIcon className="transition-none" />
+            <DragIcon className="transition-none" />
           </button>
         }
         after={
