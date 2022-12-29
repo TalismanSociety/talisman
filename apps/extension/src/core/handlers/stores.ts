@@ -5,7 +5,6 @@ import { AppStoreData } from "@core/domains/app/store.app"
 import { PasswordStoreData } from "@core/domains/app/store.password"
 import { balanceStore } from "@core/domains/balances"
 import { chainStore } from "@core/domains/chains"
-import { evmNetworkStore } from "@core/domains/ethereum"
 import { sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import sitesAuthorisedStore from "@core/domains/sitesAuthorised/store"
 import { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
@@ -19,7 +18,6 @@ export type TabStore = {
   tokenRates: typeof tokenRatesStore
   balances: typeof balanceStore
   transactions: typeof transactionStore
-  evmNetworks: typeof evmNetworkStore
   app: typeof appStore
   sites: typeof sitesAuthorisationStore
   settings: typeof settingsStore
@@ -49,7 +47,6 @@ export const tabStores = {
   tokenRates: tokenRatesStore,
   balances: balanceStore,
   transactions: transactionStore,
-  evmNetworks: evmNetworkStore,
   app: appStore,
   sites: sitesAuthorisationStore,
   settings: settingsStore,

@@ -547,7 +547,7 @@ export class EthHandler extends ExtensionHandler {
         )
 
       case "pri(eth.networks.subscribe)":
-        return this.stores.evmNetworks.hydrateStore()
+        return await chaindataProvider.hydrateEvmNetworks()
 
       case "pri(eth.networks.upsert)":
         return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])
