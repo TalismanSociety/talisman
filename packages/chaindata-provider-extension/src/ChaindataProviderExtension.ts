@@ -115,11 +115,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         .delete()
     )
   }
-  async clearCustomChains() {
-    this.#db.transaction("rw", this.#db.chains, () => {
-      this.#db.chains.filter((chain) => "isCustom" in chain && chain.isCustom === true).delete()
-    })
-  }
 
   async addCustomEvmNetwork(customEvmNetwork: CustomEvmNetwork) {
     if (!("isCustom" in customEvmNetwork)) return
@@ -152,13 +147,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       await this.#db.evmNetworks.put(builtInEvmNetwork)
     })
   }
-  async clearCustomEvmNetworks() {
-    return this.#db.transaction("rw", this.#db.evmNetworks, () => {
-      this.#db.evmNetworks
-        .filter((network) => "isCustom" in network && network.isCustom === true)
-        .delete()
-    })
-  }
 
   async addCustomToken(customToken: Token) {
     if (!("isCustom" in customToken)) return
@@ -174,13 +162,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         // delete the token (if exists)
         .delete()
     )
-  }
-  async clearCustomTokens() {
-    return this.#db.transaction("rw", this.#db.tokens, () => {
-      this.#db.tokens
-        .filter((token) => "isCustom" in token && (token as any).isCustom === true)
-        .delete()
-    })
   }
   removeToken(tokenId: TokenId) {
     return this.#db.tokens.delete(tokenId)

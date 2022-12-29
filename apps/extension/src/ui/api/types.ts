@@ -156,12 +156,6 @@ export default interface MessageTypes {
   addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
   removeCustomErc20Token: (id: string) => Promise<boolean>
 
-  // ethereum networks message types
-  // ethereumNetworks: (cb: () => void) => UnsubscribeFn
-  // addCustomEthereumNetwork: (ethereumNetwork: CustomEvmNetwork) => Promise<boolean>
-  // removeCustomEthereumNetwork: (id: string) => Promise<boolean>
-  // clearCustomEthereumNetworks: () => Promise<boolean>
-
   // transaction message types
   transactionSubscribe: (id: string, cb: (tx: any) => void) => UnsubscribeFn
   transactionsSubscribe: (cb: (txs: any) => void) => UnsubscribeFn
@@ -227,11 +221,6 @@ export default interface MessageTypes {
   ethNetworkUpsert: (network: RequestUpsertCustomEvmNetwork) => Promise<boolean>
   ethNetworkRemove: (id: string) => Promise<boolean>
   ethNetworkReset: (id: string) => Promise<boolean>
-  // old ethereum networks message types
-  // ethereumNetworks: (cb: () => void) => UnsubscribeFn
-  // addCustomEthereumNetwork: (ethereumNetwork: CustomEvmNetwork) => Promise<boolean>
-  // removeCustomEthereumNetwork: (id: string) => Promise<boolean>
-  // clearCustomEthereumNetworks: () => Promise<boolean>
 
   // ethereum tokens message types
   ethWatchAssetRequestApprove: (id: string) => Promise<boolean>
