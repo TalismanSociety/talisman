@@ -24,13 +24,7 @@ export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, name, logo, iconUrls
   }, [logo])
 
   return (
-    <picture
-      className={classNames(
-        //"chain-logo", "network-logo", // TODO verify it's not needed
-        "relative block h-[1em] w-[1em] shrink-0",
-        className
-      )}
-    >
+    <picture className={classNames("relative block h-[1em] w-[1em] shrink-0", className)}>
       {error ? (
         <source srcSet={GLOBE_ICON_URL ?? undefined} />
       ) : (

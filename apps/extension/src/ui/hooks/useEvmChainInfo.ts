@@ -7,7 +7,7 @@ type EvmChainInfo = {
   name: string
   shortName: string
   title?: string
-  chain: string // token symbol for the chain ?
+  chain: string
   infoURL: string
   faucets?: string[]
   rpc: string[]
