@@ -22,8 +22,8 @@ import AccountAddDerived from "./routes/AccountAddDerived"
 import AccountAddJson from "./routes/AccountAddJson"
 import { AccountAddSecret } from "./routes/AccountAddSecret"
 import AccountAddTypePicker from "./routes/AccountAddTypePicker"
-import { Networks } from "./routes/Networks"
-import { NetworkEdit } from "./routes/Networks/NetworkEdit"
+import { NetworkPage } from "./routes/Networks/NetworkPage"
+import { NetworksPage } from "./routes/Networks/NetworksPage"
 import { PhishingPage } from "./routes/PhishingPage"
 import { Portfolio } from "./routes/Portfolio"
 import Settings from "./routes/Settings"
@@ -36,7 +36,7 @@ import SecurityPrivacySettings from "./routes/Settings/SecurityPrivacySettings"
 import SitesConnected from "./routes/Settings/SitesConnected"
 import { TestPage } from "./routes/TestPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
-import { TokenDetailsPage } from "./routes/Tokens/TokenDetailsPage"
+import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
 
 // lazy load this one to prevent polkadot/hw-ledger to be loaded (slow)
@@ -98,12 +98,12 @@ const DashboardInner = () => {
         <Route path="tokens">
           <Route path="" element={<TokensPage />} />
           <Route path="add" element={<AddCustomTokenPage />} />
-          <Route path=":id" element={<TokenDetailsPage />} />
+          <Route path=":id" element={<TokenPage />} />
         </Route>
         <Route path="networks">
-          <Route path="" element={<Networks />} />
-          <Route path="add" element={<NetworkEdit />} />
-          <Route path=":id" element={<NetworkEdit />} />
+          <Route path="" element={<NetworksPage />} />
+          <Route path="add" element={<NetworkPage />} />
+          <Route path=":id" element={<NetworkPage />} />
         </Route>
         {DEBUG && <Route path="test" element={<TestPage />} />}
         <Route path="*" element={<Navigate to="/portfolio" replace />} />

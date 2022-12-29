@@ -70,7 +70,7 @@ const NetworksList = () => {
   )
 }
 
-export const Networks = () => {
+export const NetworksPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 
