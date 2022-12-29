@@ -298,7 +298,7 @@ export class EthHandler extends ExtensionHandler {
           isTestnet: false,
           symbol: network.nativeCurrency.symbol,
           decimals: network.nativeCurrency.decimals,
-          logo: (network.iconUrls || [])[0] ?? null,
+          logo: (network.iconUrls || [])[0] || githubUnknownTokenLogoUrl,
           evmNetwork: { id: networkId },
           isCustom: true,
         }
@@ -375,9 +375,7 @@ export class EthHandler extends ExtensionHandler {
 
       await chaindataProvider.addCustomToken(newToken)
 
-      // TODO verify that it will not be re-added automatically
       // if symbol changed, id is different and previous native token must be deleted
-      // TODO remove the symbol from the token id !!
       if (existingToken && existingToken.id !== newToken.id)
         await chaindataProvider.removeToken(existingToken.id)
 
@@ -396,8 +394,6 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private async ethNetworkRemove(request: RequestIdOnly): Promise<boolean> {
-    // throw new Error("Not implemented")
-    // remove token too ?
     await chaindataProvider.removeCustomEvmNetwork(request.id)
 
     talismanAnalytics.capture("remove custom network", {
