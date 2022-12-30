@@ -11,6 +11,7 @@ import { api } from "@ui/api"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { Wallet } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -161,6 +162,7 @@ const testValidMnemonic = async (val?: string) => {
 export const AccountAddSecretMnemonic = () => {
   const { data, updateData } = useAccountAddSecret()
   const navigate = useNavigate()
+  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const allAccounts = useAccounts()
   const accountAddresses = useMemo(() => allAccounts.map((a) => a.address), [allAccounts])
@@ -271,13 +273,12 @@ export const AccountAddSecretMnemonic = () => {
         )
         try {
           const uri = await getAccountUri(mnemonic, type)
-          await api.accountCreateFromSeed(name, uri, type)
+          setAddress(await api.accountCreateFromSeed(name, uri, type))
           notifyUpdate(notificationId, {
             type: "success",
             title: "Account imported",
             subtitle: name,
           })
-          navigate("/portfolio")
         } catch (err) {
           notifyUpdate(notificationId, {
             type: "error",
@@ -287,7 +288,7 @@ export const AccountAddSecretMnemonic = () => {
         }
       }
     },
-    [navigate, updateData]
+    [navigate, setAddress, updateData]
   )
 
   const handleTypeChange = useCallback(

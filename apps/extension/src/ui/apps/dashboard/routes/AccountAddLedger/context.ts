@@ -44,9 +44,15 @@ const useAddLedgerAccountProvider = () => {
 
       setData((prev) => ({ ...prev, accounts }))
 
+      const addresses: string[] = []
       for (const account of accounts)
-        if ("genesisHash" in account) await api.accountCreateHardware(account)
-        else await api.accountCreateHardwareEthereum(account.name, account.address, account.path)
+        addresses.push(
+          "genesisHash" in account
+            ? await api.accountCreateHardware(account)
+            : await api.accountCreateHardwareEthereum(account.name, account.address, account.path)
+        )
+
+      return addresses
     },
     [chain?.genesisHash, data.type]
   )
