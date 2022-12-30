@@ -1,11 +1,12 @@
 import {
   DetailedHTMLProps,
   FC,
-  forwardRef,
   HTMLAttributes,
   InputHTMLAttributes,
   ReactNode,
+  forwardRef,
 } from "react"
+
 import { classNames } from "../utils"
 
 type FormFieldInputContainerProps = DetailedHTMLProps<
@@ -15,14 +16,18 @@ type FormFieldInputContainerProps = DetailedHTMLProps<
   small?: boolean
 }
 
-export const FormFieldInputContainer: FC<FormFieldInputContainerProps> = (props) => {
+export const FormFieldInputContainer: FC<FormFieldInputContainerProps> = ({
+  small,
+  className,
+  ...props
+}) => {
   return (
     <div
       {...props}
       className={classNames(
         "placeholder:text-body-disabled text-grey-300 bg-field text-md ring-grey-600 flex w-full items-center gap-4 rounded px-12 font-light leading-none focus-within:ring-1",
-        props.small ? "h-24" : "h-28",
-        props.className
+        small ? "h-24" : "h-28",
+        className
       )}
     />
   )
