@@ -17,7 +17,8 @@ const getLockedType = (input: string, chainId: string): BalanceLockType => {
   if (input.includes("democrac")) return "democracy"
   if (input.includes("phrelect")) return "democracy" // specific to council
   if (input.includes("staking")) return "staking"
-  if (input.includes("stkngdel")) return "staking" // ex: MOVR staking
+  if (input.includes("stkngdel")) return "staking" // staking delegator
+  if (input.includes("stkngcol")) return "staking" // staking collator
   if (input.includes("kiltpstk")) return "staking" // Kilt specific staking
   if (input.includes("dapstake")) return "dapp-staking" // Astar specific
 
