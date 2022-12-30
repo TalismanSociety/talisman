@@ -1,4 +1,3 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FormField } from "@talisman/components/Field/FormField"
 import { Modal } from "@talisman/components/Modal"
@@ -10,7 +9,6 @@ import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
-import styled from "styled-components"
 import { Button } from "talisman-ui"
 import * as yup from "yup"
 
@@ -19,7 +17,7 @@ import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
 const EXPORTABLE_ORIGINS = ["SEED", "JSON", "DERIVED"]
 
-export const useAccountExportModalProvider = () => {
+const useAccountExportModalProvider = () => {
   const { account } = useSelectedAccount()
   const { isOpen, open, close } = useOpenClose()
 
@@ -147,15 +145,11 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   )
 }
 
-const Dialog = styled(ModalDialog)`
-  width: 50.3rem;
-`
-
 export const AccountExportModal = () => {
   const { isOpen, close } = useAccountExportModal()
   return (
-    <Modal open={isOpen} onClose={close}>
-      <Dialog title="Export account JSON" onClose={close}>
+    <Modal open={isOpen} onClose={close} className="w-[50.3rem]">
+      <ModalDialog title="Export account JSON" onClose={close}>
         <PasswordUnlock
           description={
             <div className="text-body-secondary mb-8">
@@ -165,7 +159,7 @@ export const AccountExportModal = () => {
         >
           <ExportAccountForm onSuccess={close} />
         </PasswordUnlock>
-      </Dialog>
+      </ModalDialog>
     </Modal>
   )
 }

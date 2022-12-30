@@ -110,6 +110,7 @@ export default interface MessageTypes {
     password: string,
     exportPw: string
   ) => Promise<{ exportedJson: KeyringPair$Json }>
+  accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 
