@@ -107,22 +107,11 @@ export const NetworkRpcsListField = () => {
     name: "rpcs",
   })
 
-  // ensure there is at least 1 entry in the array
-  const autoAppend = useCallback(() => {
-    const { rpcs } = getValues()
-    if (rpcs && !rpcs.length) append({ url: "" })
-  }, [append, getValues])
-
-  useEffect(() => {
-    autoAppend()
-  }, [autoAppend])
-
   const handleRemove = useCallback(
     (index: number) => () => {
       remove(index)
-      autoAppend()
     },
-    [autoAppend, remove]
+    [remove]
   )
 
   const handleAddRpc = useCallback(() => {
@@ -165,7 +154,6 @@ export const NetworkRpcsListField = () => {
                 index={index}
                 register={register}
                 rpc={rpc}
-                onChange={autoAppend}
                 canDelete={canDelete}
                 canDrag={arr.length > 1}
                 onDelete={handleRemove(index)}

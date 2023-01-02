@@ -23,7 +23,7 @@ import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { Button, Checkbox, FormFieldContainer, FormFieldInputText, classNames } from "talisman-ui"
 
 import { getNetworkFormSchema } from "./getNetworkFormSchema"
 import { getRpcChainId } from "./helpers"
@@ -148,13 +148,17 @@ type NetworkFormProps = {
   onSubmitted?: () => void
 }
 
+const DEFAULT_VALUES: Partial<RequestUpsertCustomEvmNetwork> = {
+  rpcs: [{ url: "" }], // provides one empty row
+}
+
 const useEditMode = (evmNetworkId?: EvmNetworkId) => {
   const evmNetwork = useEvmNetwork(evmNetworkId)
   const nativeToken = useToken(evmNetwork?.nativeToken?.id) as CustomNativeToken | undefined
-  const defaultValues = useMemo(
-    () => (evmNetwork && nativeToken ? evmNetworkToFormData(evmNetwork, nativeToken) : undefined),
-    [evmNetwork, nativeToken]
-  )
+  const defaultValues = useMemo(() => {
+    if (!evmNetworkId) return DEFAULT_VALUES
+    return evmNetwork && nativeToken ? evmNetworkToFormData(evmNetwork, nativeToken) : undefined
+  }, [evmNetwork, evmNetworkId, nativeToken])
 
   const isCustom = useMemo(() => !!evmNetwork && isCustomEvmNetwork(evmNetwork), [evmNetwork])
 
@@ -199,12 +203,12 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
   // initialize form with existing values (edit mode), only once
   const initialized = useRef(false)
   useEffect(() => {
-    if (defaultValues && !initialized.current) {
+    if (evmNetworkId && defaultValues && !initialized.current) {
       reset(defaultValues)
       trigger("rpcs")
       initialized.current = true
     }
-  }, [defaultValues, reset, trigger])
+  }, [defaultValues, evmNetworkId, reset, trigger])
 
   // auto detect chain id based on RPC url (add mode only)
   const qRpcChainId = useRpcChainId(rpcs?.[0]?.url)
@@ -217,8 +221,8 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
     }
   }, [evmNetworkId, id, qRpcChainId.data, qRpcChainId.isFetched, resetField, setValue])
 
-  // fetch token logo's url
-  const coingeckoLogoUrl = useCoinGeckoTokenImageUrl(tokenCoingeckoId)
+  // fetch token logo's url, but only if form has been edited to reduce 429 errors from coingecko
+  const coingeckoLogoUrl = useCoinGeckoTokenImageUrl(isDirty ? tokenCoingeckoId : null)
 
   const tokenLogoUrl = useMemo(
     // existing icon has priority
@@ -304,7 +308,10 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
               before={
                 <ChainLogoBase
                   logo={chainLogoUrl}
-                  className="ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]"
+                  className={classNames(
+                    "ml-[-0.8rem] mr-[0.4rem] min-w-[3rem] text-[3rem]",
+                    !id && "opacity-50"
+                  )}
                 />
               }
               {...register("id")}
