@@ -8,8 +8,6 @@ const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin")
 const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin")
 const ForkTsCheckerNotifierWebpackPlugin = require("fork-ts-checker-notifier-webpack-plugin")
 const EslintWebpackPlugin = require("eslint-webpack-plugin")
-const createStyledComponentsTransformer = require("typescript-plugin-styled-components").default
-const styledComponentsTransformer = createStyledComponentsTransformer()
 
 const { srcDir, coreDir, distDir, getRelease, getGitShortHash } = require("./utils")
 
@@ -36,7 +34,6 @@ const config = (env) => ({
         use: {
           loader: "ts-loader",
           options: {
-            getCustomTransformers: () => ({ before: [styledComponentsTransformer] }),
             // disable type checker - we will use it in fork plugin
             transpileOnly: true,
           },

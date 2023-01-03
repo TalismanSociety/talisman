@@ -13488,7 +13488,6 @@ __metadata:
     ts-results: 3.3.0
     typescript: 4.9.4
     typescript-memoize: ^1.1.0
-    typescript-plugin-styled-components: ~2.0.0
     url-join: ^5.0.0
     uuid: ^8.3.2
     webextension-polyfill: 0.8.0
@@ -23839,15 +23838,6 @@ __metadata:
   version: 1.1.0
   resolution: "typescript-memoize@npm:1.1.0"
   checksum: a7d3357adbf421972619397c5db562664f3d440629a5afbb510c09e23e3a176424f600c3c853addc2234a9b7be3e61dae984771c057a76980fab67fb30c70d64
-  languageName: node
-  linkType: hard
-
-"typescript-plugin-styled-components@npm:~2.0.0":
-  version: 2.0.0
-  resolution: "typescript-plugin-styled-components@npm:2.0.0"
-  peerDependencies:
-    typescript: ^4.0
-  checksum: b4048b45e576ef01e0439f2f7fd6bddd96d83eb6fd91956b0952f56cfcbe952ab2a1330f1c46851b78f5bdf71821f43123145c0be1db6bb578257913a70ddd0b
   languageName: node
   linkType: hard
 
