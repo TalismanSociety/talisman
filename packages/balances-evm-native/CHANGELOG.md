@@ -1,5 +1,16 @@
 # @talismn/balances-evm-native
 
+## 0.2.0
+
+### Minor Changes
+
+- bff217a1: fetch evm balances sequentially one network at a time
+
+### Patch Changes
+
+- bff217a1: bump ethers version
+  - @talismn/balances@0.2.0
+
 ## 0.1.19
 
 ### Patch Changes

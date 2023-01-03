@@ -1,5 +1,15 @@
 # @talismn/chain-connector-evm
 
+## 0.2.0
+
+### Minor Changes
+
+- bff217a1: custom batch rpc provider with batch size limit
+
+### Patch Changes
+
+- bff217a1: bump ethers version
+
 ## 0.1.10
 
 ### Patch Changes

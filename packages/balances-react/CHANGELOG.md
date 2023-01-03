@@ -1,5 +1,14 @@
 # @talismn/balances-react
 
+## 0.2.0
+
+### Patch Changes
+
+- Updated dependencies [bff217a1]
+- Updated dependencies [bff217a1]
+  - @talismn/chain-connector-evm@0.2.0
+  - @talismn/balances@0.2.0
+
 ## 0.1.19
 
 ### Patch Changes
