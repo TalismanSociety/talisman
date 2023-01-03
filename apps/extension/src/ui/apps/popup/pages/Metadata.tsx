@@ -1,42 +1,61 @@
+import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import Button from "@talisman/components/Button"
 import Grid from "@talisman/components/Grid"
+import { notify } from "@talisman/components/Notifications"
+import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useCurrentMetadataRequest from "@ui/hooks/useCurrentMetadataRequest"
-import { useEffect } from "react"
+import { useMetadataRequestById } from "@ui/hooks/useMetadataRequestById"
+import { FC, useCallback, useEffect } from "react"
+import { useParams } from "react-router-dom"
 import styled from "styled-components"
 
 import Layout, { Content, Footer, Header } from "../Layout"
 
-const Container = ({ className }: any) => {
+const UnstyledMetadata: FC<{ className?: string }> = ({ className }) => {
+  const { id } = useParams<{ id: string }>()
+  const metadataRequest = useMetadataRequestById(id)
   const { popupOpenEvent } = useAnalytics()
-
   useEffect(() => {
     popupOpenEvent("metadata")
   }, [popupOpenEvent])
 
-  const { request, url, approve, reject, status } = useCurrentMetadataRequest({
-    onError: () => window.close(),
-    onRejection: () => window.close(),
-    onSuccess: () => window.close(),
-  })
+  const approve = useCallback(async () => {
+    if (!metadataRequest) return
+    try {
+      await api.approveMetaRequest(metadataRequest.id)
+      window.close()
+    } catch (err) {
+      notify({ type: "error", title: "Failed to update", subtitle: (err as Error).message })
+    }
+  }, [metadataRequest])
+
+  const reject = useCallback(() => {
+    if (!metadataRequest) return
+    api.rejectMetaRequest(metadataRequest.id)
+    window.close()
+  }, [metadataRequest])
+
+  if (!metadataRequest) return null
+
+  const { request, url } = metadataRequest
 
   return (
-    <Layout className={className} isThinking={status === "PROCESSING"}>
+    <Layout className={className}>
       <Header text={"Update Metadata"} />
       <Content>
         <div>
           <h1>Your metadata is out of date</h1>
           <h2 className="font-medium">
-            Approving this update will sync your metadata for the <strong>{request?.chain}</strong>{" "}
+            Approving this update will sync your metadata for the <strong>{request.chain}</strong>{" "}
             chain from <strong>{url}</strong>
           </h2>
           <hr className="my-10" />
           <div className="stats space-y-2 text-left">
             <p>
-              <strong>Symbol:</strong> {request?.tokenSymbol}
+              <strong>Symbol:</strong> {request.tokenSymbol}
             </p>
             <p>
-              <strong>Decimals:</strong> {request?.tokenDecimals}
+              <strong>Decimals:</strong> {request.tokenDecimals}
             </p>
           </div>
         </div>
@@ -48,12 +67,12 @@ const Container = ({ className }: any) => {
             Approve
           </Button>
         </Grid>
-      </Footer>
+      </Footer>{" "}
     </Layout>
   )
 }
 
-const StyledContainer = styled(Container)`
+export const Metadata = styled(UnstyledMetadata)`
   .layout-header {
     .pill {
       background: var(--color-background-muted);
@@ -104,9 +123,4 @@ const StyledContainer = styled(Container)`
       }
     }
   }
-
-  .layout-footer {
-  }
 `
-
-export default StyledContainer

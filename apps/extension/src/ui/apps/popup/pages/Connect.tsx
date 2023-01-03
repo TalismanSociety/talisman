@@ -4,14 +4,18 @@ import Field from "@talisman/components/Field"
 import Grid from "@talisman/components/Grid"
 import { IconButton } from "@talisman/components/IconButton"
 import { ModalDialog } from "@talisman/components/ModalDialog"
+import { notify } from "@talisman/components/Notifications"
 import Panel from "@talisman/components/Panel"
 import { WithTooltip } from "@talisman/components/Tooltip"
+import useSet from "@talisman/hooks/useSet"
 import { InfoIcon, XIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import Account from "@ui/domains/Account"
+import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useCurrentAuthorisationRequest from "@ui/hooks/useCurrentAuthorisationRequest"
-import { ChangeEventHandler, useCallback, useEffect } from "react"
+import { useAuthRequestById } from "@ui/hooks/useAuthRequestById"
+import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
+import { useParams } from "react-router-dom"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
 import { Checkbox } from "talisman-ui"
@@ -84,25 +88,59 @@ const NoEthAccountWarning = ({
   </NoEthAccountDrawer>
 )
 
-const Connect = ({ className, onSuccess }: any) => {
-  const {
-    request,
-    accounts,
-    connected,
-    canIgnore,
-    authorise,
-    reject,
-    ignore,
-    ethereum,
-    isMissingEthAccount,
-    setShowEthAccounts,
-  } = useCurrentAuthorisationRequest({
-    onError: (msg) => window.close(),
-    onRejection: (msg) => window.close(),
-    onSuccess: () => window.close(),
-    onIgnore: () => window.close(),
-  })
+const UnstyledConnect = ({ className }: any) => {
+  const { id } = useParams<"id">()
+  const authRequest = useAuthRequestById(id)
   const { popupOpenEvent } = useAnalytics()
+  const allAccounts = useAccounts()
+  const { items: connected, toggle, set } = useSet<string>()
+  const ethereum = !!authRequest?.request?.ethereum
+  const [showEthAccounts, setShowEthAccounts] = useState(false)
+
+  const accounts = useMemo(
+    () =>
+      authRequest && allAccounts
+        ? allAccounts
+            .filter(
+              ({ type }) =>
+                showEthAccounts ||
+                (authRequest.request.ethereum ? type === "ethereum" : type !== "ethereum")
+            )
+            .map((account) => ({
+              ...account,
+              toggle: () => (ethereum ? set([account?.address]) : toggle(account?.address)),
+              approved: connected.includes(account?.address),
+            }))
+        : [],
+    [allAccounts, authRequest, connected, ethereum, set, showEthAccounts, toggle]
+  )
+  const isMissingEthAccount = useMemo(
+    () => ethereum && !!allAccounts.length && !accounts.length,
+    [accounts.length, allAccounts.length, ethereum]
+  )
+  const canIgnore = useMemo(() => !authRequest?.request?.ethereum, [authRequest])
+
+  const authorise = useCallback(async () => {
+    if (!authRequest) return
+    try {
+      await api.authrequestApprove(authRequest.id, connected)
+      window.close()
+    } catch (err) {
+      notify({ type: "error", title: "Failed to connect", subtitle: (err as Error).message })
+    }
+  }, [authRequest, connected])
+
+  const reject = useCallback(() => {
+    if (!authRequest) return
+    api.authrequestReject(authRequest.id)
+    window.close()
+  }, [authRequest])
+
+  const ignore = useCallback(() => {
+    if (!authRequest) return
+    api.authrequestIgnore(authRequest.id as string)
+    window.close()
+  }, [authRequest])
 
   useEffect(() => {
     popupOpenEvent("connect")
@@ -129,10 +167,12 @@ const Connect = ({ className, onSuccess }: any) => {
     [accounts, setShowEthAccounts]
   )
 
+  if (!authRequest) return null
+
   return (
     <Layout className={className}>
       <Header
-        text={<AppPill url={request?.url} />}
+        text={<AppPill url={authRequest.url} />}
         nav={
           <IconButton onClick={canIgnore ? ignore : reject}>
             <XIcon />
@@ -184,7 +224,7 @@ const Connect = ({ className, onSuccess }: any) => {
   )
 }
 
-const StyledConnect = styled(Connect)`
+export const Connect = styled(UnstyledConnect)`
   .layout-content {
     text-align: left;
 
@@ -218,5 +258,3 @@ const StyledConnect = styled(Connect)`
     }
   }
 `
-
-export default StyledConnect

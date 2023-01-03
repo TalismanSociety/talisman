@@ -10,6 +10,8 @@ import { MetadataRequestsStore } from "@core/domains/metadata"
 import { SigningRequestsStore } from "@core/domains/signing"
 import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
+import { isEthereumRequest } from "@core/util/isEthereumRequest"
+import { assert } from "@polkadot/util"
 import { sleep } from "@talismn/util"
 import Browser from "webextension-polyfill"
 
@@ -28,12 +30,19 @@ export default class State {
 
   // Request stores handle ephemeral data relating to to requests for signing, metadata, and authorisation of sites
   readonly requestStores = {
-    signing: new SigningRequestsStore((signingRequest) => {
-      return this.popupOpen(signingRequest && `?signing=${signingRequest.id}`)
+    signing: new SigningRequestsStore((req) => {
+      assert(req, "Request is not defined")
+      return this.popupOpen(isEthereumRequest(req) ? `#/sign/eth/${req.id}` : `#/sign/${req.id}`)
     }),
-    metadata: new MetadataRequestsStore(() => this.popupOpen()),
+    metadata: new MetadataRequestsStore((req) => {
+      assert(req, "Request is not defined")
+      this.popupOpen(`#/metadata/${req.id}`)
+    }),
     sites: new SitesRequestsStore(
-      () => this.popupOpen(),
+      (req) => {
+        assert(req, "Request is not defined")
+        this.popupOpen(`#/auth/${req.id}`)
+      },
       async (request, response) => {
         if (!response) return
         const { addresses = [] } = response
@@ -62,12 +71,17 @@ export default class State {
         })
       }
     ),
-    networks: new EthereumNetworksRequestsStore(() => this.popupOpen()),
-    evmAssets: new EvmWatchAssetRequestsStore((req) =>
-      this.popupOpen(req && `?customAsset=${req.id}`)
-    ),
-    encrypt: new EncryptRequestsStore((encryptRequest) => {
-      return this.popupOpen(encryptRequest && `?encrypt=${encryptRequest.id}`)
+    networks: new EthereumNetworksRequestsStore((req) => {
+      assert(req, "Request is not defined")
+      this.popupOpen(`#/eth-network-add/${req.id}`)
+    }),
+    evmAssets: new EvmWatchAssetRequestsStore((req) => {
+      assert(req, "Request is not defined")
+      this.popupOpen(`#/eth-watchasset/${req.id}`)
+    }),
+    encrypt: new EncryptRequestsStore((req) => {
+      assert(req, "Request is not defined")
+      return this.popupOpen(`#/encrypt/${req.id}`)
     }),
   }
 
