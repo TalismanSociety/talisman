@@ -96,13 +96,13 @@ export default interface MessageTypes {
   addressFromMnemonic: (mnemonic: string, type?: AccountAddressType) => Promise<string>
 
   // account message types ---------------------------------------------------
-  accountCreate: (name: string, type: AccountAddressType) => Promise<boolean>
-  accountCreateFromSeed: (name: string, seed: string, type?: AccountAddressType) => Promise<boolean>
-  accountCreateFromJson: (json: string, password: string) => Promise<boolean>
+  accountCreate: (name: string, type: AccountAddressType) => Promise<string>
+  accountCreateFromSeed: (name: string, seed: string, type?: AccountAddressType) => Promise<string>
+  accountCreateFromJson: (json: string, password: string) => Promise<string>
   accountCreateHardware: (
     request: Omit<RequestAccountCreateHardware, "hardwareType">
-  ) => Promise<boolean>
-  accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<boolean>
+  ) => Promise<string>
+  accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<string>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountForget: (address: string) => Promise<boolean>
   accountExport: (

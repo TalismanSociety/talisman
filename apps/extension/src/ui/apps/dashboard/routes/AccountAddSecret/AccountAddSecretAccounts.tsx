@@ -5,6 +5,7 @@ import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { DerivedFromMnemonicAccountPicker } from "@ui/domains/Account/DerivedFromMnemonicAccountPicker"
+import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Navigate, useNavigate } from "react-router-dom"
@@ -45,6 +46,7 @@ type FormData = {
 export const AccountAddSecretAccounts = () => {
   const { data, importAccounts } = useAccountAddSecret()
   const navigate = useNavigate()
+  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const name = useMemo(
     () => data.name ?? (data.type === "ethereum" ? "Ethereum Account" : "Polkadot Account"),
@@ -84,14 +86,15 @@ export const AccountAddSecretAccounts = () => {
         { autoClose: false }
       )
       try {
-        await importAccounts(accounts)
+        const addresses = await importAccounts(accounts)
 
         notifyUpdate(notificationId, {
           type: "success",
           title: `Account${suffix} imported`,
           subtitle: null,
         })
-        navigate("/")
+
+        setAddress(addresses[0])
       } catch (err) {
         notifyUpdate(notificationId, {
           type: "error",
@@ -100,7 +103,7 @@ export const AccountAddSecretAccounts = () => {
         })
       }
     },
-    [importAccounts, navigate]
+    [importAccounts, setAddress]
   )
 
   const handleAccountsChange = useCallback(
