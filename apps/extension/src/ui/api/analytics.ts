@@ -1,4 +1,4 @@
-import posthog from "posthog-js"
+import { Properties } from "posthog-js"
 
 import { api } from "./api"
 
@@ -24,7 +24,7 @@ export type AnalyticsEvent = AnalyticsPage & {
   name: AnalyticsEventName
   action?: string
   site?: string
-  properties?: posthog.Properties
+  properties?: Properties
 }
 
 export const sendAnalyticsEvent = (event: AnalyticsEvent) => {

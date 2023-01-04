@@ -7,9 +7,10 @@ import Spacer from "@talisman/components/Spacer"
 import { sleep } from "@talismn/util"
 import { LedgerEthereumAccountPicker } from "@ui/domains/Account/LedgerEthereumAccountPicker"
 import { LedgerSubstrateAccountPicker } from "@ui/domains/Account/LedgerSubstrateAccountPicker"
+import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { FC, useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
-import { Navigate, useNavigate } from "react-router-dom"
+import { Navigate } from "react-router-dom"
 import styled from "styled-components"
 import * as yup from "yup"
 
@@ -100,7 +101,7 @@ type FormData = {
 
 export const AddLedgerSelectAccount = () => {
   const { data, importAccounts } = useAddLedgerAccount()
-  const navigate = useNavigate()
+  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const schema = useMemo(
     () =>
@@ -139,13 +140,13 @@ export const AddLedgerSelectAccount = () => {
       await sleep(1000)
 
       try {
-        await importAccounts(accounts)
+        const addresses = await importAccounts(accounts)
         notifyUpdate(notificationId, {
           type: "success",
           title: `Account${suffix} imported`,
           subtitle: null,
         })
-        navigate("/")
+        setAddress(addresses[0])
       } catch (err) {
         notifyUpdate(notificationId, {
           type: "error",
@@ -154,7 +155,7 @@ export const AddLedgerSelectAccount = () => {
         })
       }
     },
-    [importAccounts, navigate]
+    [importAccounts, setAddress]
   )
 
   const handleAccountsChange = useCallback(

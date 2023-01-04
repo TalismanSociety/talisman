@@ -9,7 +9,7 @@ import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
 import { db as balancesDb } from "@talismn/balances"
-import posthog from "posthog-js"
+import posthog, { Properties } from "posthog-js"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
 
@@ -50,7 +50,7 @@ class TalismanAnalytics {
     ensurePosthogPreferences(allowTracking)
   }
 
-  async capture(eventName: string, properties?: posthog.Properties) {
+  async capture(eventName: string, properties?: Properties) {
     if (!this.enabled) return
 
     // have to put this manual check here because posthog is buggy and will not respect our settings
@@ -74,7 +74,7 @@ class TalismanAnalytics {
     }
   }
 
-  async captureDelayed(eventName: string, properties?: posthog.Properties, delaySeconds = 900) {
+  async captureDelayed(eventName: string, properties?: Properties, delaySeconds = 900) {
     setTimeout(() => {
       this.capture(eventName, properties)
     }, delaySeconds * 1000 * Math.random())

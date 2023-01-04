@@ -1,13 +1,13 @@
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import posthog from "posthog-js"
+import { Properties } from "posthog-js"
 import { useEffect, useRef } from "react"
 
-const DEFAULT_PROPERTIES: posthog.Properties = {}
+const DEFAULT_PROPERTIES: Properties = {}
 
 // using this hook prevents multiple page view captures from a given component
 export const useAnalyticsPageView = (
   page: AnalyticsPage,
-  properties: posthog.Properties = DEFAULT_PROPERTIES
+  properties: Properties = DEFAULT_PROPERTIES
 ) => {
   const refCaptured = useRef(false)
 

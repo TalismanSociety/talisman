@@ -29,12 +29,14 @@ const useAccountAddSecretProvider = () => {
   const importAccounts = useCallback(async (accounts: RequestAccountCreateFromSeed[]) => {
     setData((prev) => ({ ...prev, accounts }))
 
-    await Promise.all(
+    const addresses = await Promise.all(
       accounts.map(({ name, seed, type }) => api.accountCreateFromSeed(name, seed, type))
     )
 
     // poudre de perlimpinpin
     await sleep(1000)
+
+    return addresses
   }, [])
 
   return { data, updateData, importAccounts }

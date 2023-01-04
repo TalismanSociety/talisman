@@ -1,5 +1,5 @@
 import { Address } from "@core/types/base"
-import posthog from "posthog-js"
+import { Properties } from "posthog-js"
 
 export interface RequestOnboard {
   pass: string
@@ -27,7 +27,7 @@ export type ModalOpenRequest = ModalOpenRequestBuy | ModalOpenRequestSend
 
 export interface AnalyticsCaptureRequest {
   eventName: string
-  options?: posthog.Properties
+  options?: Properties
 }
 
 // values must match the flags defined in Posthog
