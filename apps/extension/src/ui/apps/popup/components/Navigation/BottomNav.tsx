@@ -3,7 +3,7 @@ import { classNames } from "@talisman/util/classNames"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useFeatureVariantEquals, useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -98,33 +98,31 @@ export const BottomNav = () => {
     open()
   }, [open])
 
-  const showTooltip = useFeatureVariantEquals("POPUP_BOTTOM_NAV_VARIANT", "WITH_TOOLTIP")
-
   return (
     <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] justify-between border-t px-12 text-3xl">
-      <WithTooltip as="div" tooltip={showTooltip && "Portfolio"}>
+      <WithTooltip as="div" tooltip={"Portfolio"}>
         <BottomNavButton onClick={handleHomeClick} current={location.pathname === "/portfolio"}>
           <NavIconHome />
         </BottomNavButton>
       </WithTooltip>
-      <WithTooltip as="div" tooltip={showTooltip && "View NFTs"}>
+      <WithTooltip as="div" tooltip={"View NFTs"}>
         <BottomNavButton onClick={handleNftClick}>
           <NavIconNft />
         </BottomNavButton>
       </WithTooltip>
       {showTxHistory && (
-        <WithTooltip as="div" tooltip={showTooltip && "Transaction History"}>
+        <WithTooltip as="div" tooltip={"Transaction History"}>
           <BottomNavButton onClick={handleTxHistoryClick}>
             <NavIconHistory />
           </BottomNavButton>
         </WithTooltip>
       )}
-      <WithTooltip as="div" tooltip={showTooltip && "Expand Portfolio View"}>
+      <WithTooltip as="div" tooltip={"Expand Portfolio View"}>
         <BottomNavButton onClick={handleExpandClick}>
           <NavIconExpand />
         </BottomNavButton>
       </WithTooltip>
-      <WithTooltip as="div" tooltip={showTooltip && "More Options"} noWrap>
+      <WithTooltip as="div" tooltip={"More Options"} noWrap>
         <BottomNavButton onClick={handleMoreClick}>
           <NavIconMore />
         </BottomNavButton>
