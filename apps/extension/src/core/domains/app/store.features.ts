@@ -32,7 +32,6 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     WALLET_FUNDING: true, // shown when onboarding until wallet has funds
     BUY_CRYPTO: true, // nav buttons + button in fund wallet component
     POPUP_BOTTOM_NAV_VARIANT: "WITH_TOOLTIP",
-    FEE_FROM_STATE_CALL: true,
     LINK_TX_HISTORY: true,
     LINK_STAKING: true,
   }
