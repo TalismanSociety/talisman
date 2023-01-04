@@ -58,6 +58,12 @@ const AddressBook = () => {
               handleEdit={setToEdit}
             />
           ))}
+          {contacts.length === 0 && (
+            <div className="bg-black-secondary flex w-full justify-between rounded p-8">
+              No address book contacts have been saved yet. You can add new contacts when you're
+              sending funds in Talisman.
+            </div>
+          )}
         </div>
       </Layout>
       {toDelete && contactsMap[toDelete] && (
