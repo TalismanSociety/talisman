@@ -23,6 +23,8 @@ import {
 } from "react-hook-form"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
+import { useRegisterFieldWithDebouncedValidation } from "./useRegisterFieldWithDebouncedValidation"
+
 type SortableRpcItemProps = {
   register: UseFormRegister<RequestUpsertCustomEvmNetwork>
   trigger: UseFormTrigger<RequestUpsertCustomEvmNetwork>
@@ -53,19 +55,21 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
     transition,
   }
 
-  const handlePaste = useCallback(() => {
-    // call trigger in next tick or RHF will validate previous value
-    setTimeout(() => trigger("rpcs"), 1)
-  }, [trigger])
-
   const dragHandleProps = canDrag ? { ...attributes, ...listeners } : {}
+
+  // debounced validation to check url as soon as possible
+  const fieldRegistration = useRegisterFieldWithDebouncedValidation(
+    `rpcs.${index}.url`,
+    250,
+    trigger,
+    register
+  )
 
   return (
     <div ref={setNodeRef} style={style} className="w-full">
       <FormFieldInputText
         placeholder="https://"
-        onPaste={handlePaste}
-        {...register(`rpcs.${index}.url`)}
+        {...fieldRegistration}
         before={
           <button
             type="button"

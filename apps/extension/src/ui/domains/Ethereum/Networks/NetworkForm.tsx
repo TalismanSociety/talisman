@@ -23,6 +23,7 @@ import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FormProvider, useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
+import { useDebounce } from "react-use"
 import { Button, Checkbox, FormFieldContainer, FormFieldInputText, classNames } from "talisman-ui"
 
 import { getNetworkFormSchema } from "./getNetworkFormSchema"
@@ -136,10 +137,22 @@ const evmNetworkToFormData = (
 }
 
 const useRpcChainId = (rpcUrl: string) => {
+  const [debouncedRpcUrl, setDebouncedRpcUrl] = useState(rpcUrl)
+  useDebounce(
+    () => {
+      setDebouncedRpcUrl(rpcUrl)
+    },
+    250,
+    [rpcUrl]
+  )
+
   return useQuery({
-    queryKey: ["useRpcChainId", rpcUrl],
-    queryFn: () => (rpcUrl ? getRpcChainId(rpcUrl) : null),
+    queryKey: ["useRpcChainId", debouncedRpcUrl],
+    queryFn: () => (debouncedRpcUrl ? getRpcChainId(debouncedRpcUrl) : null),
     refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -178,8 +191,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
 
   // because of the RPC checks, do not validate on each change
   const formProps = useForm<RequestUpsertCustomEvmNetwork>({
-    mode: "onTouched",
-    reValidateMode: "onBlur",
+    mode: "onBlur",
     defaultValues,
     resolver: yupResolver(schema),
   })
