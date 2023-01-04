@@ -14,11 +14,11 @@ const Dialog = styled(ModalDialog)`
 
 // This control is injected directly in the layout of dashboard
 export const ReceiveTokensModal = () => {
-  const { isOpen, close } = useReceiveTokensModal()
+  const { isOpen, close, title } = useReceiveTokensModal()
 
   return (
     <Modal open={isOpen} onClose={close}>
-      <Dialog title="Receive funds" onClose={close}>
+      <Dialog title={title} onClose={close}>
         <ReceiveTokensForm />
       </Dialog>
     </Modal>
