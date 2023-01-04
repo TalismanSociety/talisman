@@ -11,7 +11,6 @@ import Asset from "@ui/domains/Asset"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
 import { useAppState } from "@ui/hooks/useAppState"
 import useChain from "@ui/hooks/useChain"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
@@ -101,19 +100,13 @@ const renderOption: RenderItemFunc<Chain> = (chain) => {
   )
 }
 
-const Highlight = styled.span`
-  color: var(--color-foreground);
-`
-
 export const AddLedgerSelectNetwork = () => {
   const { data: defaultValues, updateData } = useAddLedgerAccount()
-  const isLedgerEvmEnabled = useIsFeatureEnabled("LEDGER_EVM")
   const { hasSpiritKey } = useAppState()
 
-  const enabledAddressTypes: AccountAddressType[] = useMemo(
-    () => (isLedgerEvmEnabled || hasSpiritKey ? ["sr25519", "ethereum"] : ["sr25519"]),
-    [hasSpiritKey, isLedgerEvmEnabled]
-  )
+  const enabledAddressTypes: AccountAddressType[] = hasSpiritKey
+    ? ["sr25519", "ethereum"]
+    : ["sr25519"]
 
   const navigate = useNavigate()
   const ledgerChains = useLedgerChains()

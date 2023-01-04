@@ -35,7 +35,6 @@ export type FeatureVariants = {
   WALLET_FUNDING?: boolean
   BUY_CRYPTO?: boolean
   POPUP_BOTTOM_NAV_VARIANT?: "WITH_TOOLTIP" | "WITHOUT_TOOLTIP"
-  LEDGER_EVM: boolean
   FEE_FROM_STATE_CALL: boolean
   LINK_TX_HISTORY: boolean
   LINK_STAKING: boolean
