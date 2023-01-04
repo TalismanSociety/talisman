@@ -12,11 +12,12 @@ import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { DragIcon, PlusIcon, TrashIcon } from "@talisman/theme/icons"
-import { FC, useCallback, useEffect, useMemo } from "react"
+import { FC, useCallback, useMemo } from "react"
 import {
   FieldArrayWithId,
   FieldError,
   UseFormRegister,
+  UseFormTrigger,
   useFieldArray,
   useFormContext,
 } from "react-hook-form"
@@ -24,6 +25,7 @@ import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 type SortableRpcItemProps = {
   register: UseFormRegister<RequestUpsertCustomEvmNetwork>
+  trigger: UseFormTrigger<RequestUpsertCustomEvmNetwork>
   rpc: FieldArrayWithId<RequestUpsertCustomEvmNetwork, "rpcs", "id">
   errors?: {
     url?: FieldError | undefined
@@ -31,7 +33,6 @@ type SortableRpcItemProps = {
   canDelete?: boolean
   canDrag?: boolean
   onDelete?: () => void
-  onChange?: () => void
   index: number
 }
 
@@ -40,10 +41,10 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
   index,
   errors,
   register,
+  trigger,
   canDelete,
   canDrag,
   onDelete,
-  onChange,
 }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: rpc.id })
 
@@ -52,15 +53,19 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
     transition,
   }
 
+  const handlePaste = useCallback(() => {
+    // call trigger in next tick or RHF will validate previous value
+    setTimeout(() => trigger("rpcs"), 1)
+  }, [trigger])
+
   const dragHandleProps = canDrag ? { ...attributes, ...listeners } : {}
 
   return (
     <div ref={setNodeRef} style={style} className="w-full">
       <FormFieldInputText
         placeholder="https://"
-        {...register(`rpcs.${index}.url`, {
-          onChange,
-        })}
+        onPaste={handlePaste}
+        {...register(`rpcs.${index}.url`)}
         before={
           <button
             type="button"
@@ -93,8 +98,8 @@ const SortableRpcField: FC<SortableRpcItemProps> = ({
 export const NetworkRpcsListField = () => {
   const {
     register,
+    trigger,
     formState: { errors },
-    getValues,
     watch,
   } = useFormContext<RequestUpsertCustomEvmNetwork>()
 
@@ -153,6 +158,7 @@ export const NetworkRpcsListField = () => {
                 key={rpc.id}
                 index={index}
                 register={register}
+                trigger={trigger}
                 rpc={rpc}
                 canDelete={canDelete}
                 canDrag={arr.length > 1}
