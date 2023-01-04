@@ -13,7 +13,7 @@ export const getRpcChainId = (rpcUrl: string) => {
     rpcChainIdCache.set(
       rpcUrl,
       new Promise((resolve) => {
-        const provider = new ethers.providers.JsonRpcProvider(getRpcUrlWithApiKey(rpcUrl))
+        const provider = new ethers.providers.StaticJsonRpcProvider(getRpcUrlWithApiKey(rpcUrl))
         provider
           .send("eth_chainId", [])
           .then((hexChainId) => {
