@@ -25,20 +25,20 @@ export const Button: FC<ButtonProps> = ({
   ...props
 }) => {
   const colors = useMemo(() => {
-    if (disabled) {
-      return "bg-black-tertiary text-body-disabled border"
-    }
-
     // declare as "className" to get intellisense
     let className = ""
     const enabled = !processing && !disabled
 
     if (primary) {
+      if (disabled) return "bg-black-tertiary text-body-disabled"
+
       className = "bg-primary-500 text-black border border-transparent"
       if (enabled)
         className +=
           " hover:bg-primary-700 focus:bg-primary-500 active:bg-primary-500 focus:ring focus:border-white focus:border focus:ring-white focus:ring-2 active:border-transparent"
     } else {
+      if (disabled) return "bg-black-tertiary text-body-disabled border"
+
       className = "bg-transparent text-white border "
       if (enabled)
         className +=
