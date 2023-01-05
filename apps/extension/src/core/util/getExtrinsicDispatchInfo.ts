@@ -18,22 +18,17 @@ export const getExtrinsicDispatchInfo = async (
 ): Promise<ExtrinsicDispatchInfo> => {
   assert(signedExtrinsic.isSigned, "Extrinsic must be signed (or fakeSigned) in order to query fee")
 
-  if (await featuresStore.isFeatureEnabled("FEE_FROM_STATE_CALL")) {
-    const len = signedExtrinsic.registry.createType("u32", signedExtrinsic.encodedLength)
+  const len = signedExtrinsic.registry.createType("u32", signedExtrinsic.encodedLength)
 
-    const dispatchInfo = await stateCall(
-      chainId,
-      "TransactionPaymentApi_query_info",
-      "RuntimeDispatchInfo",
-      [signedExtrinsic, len],
-      blockHash
-    )
+  const dispatchInfo = await stateCall(
+    chainId,
+    "TransactionPaymentApi_query_info",
+    "RuntimeDispatchInfo",
+    [signedExtrinsic, len],
+    blockHash
+  )
 
-    return {
-      partialFee: dispatchInfo.partialFee.toString(),
-    }
-  } else {
-    // Legacy approach, returns non encoded object
-    return RpcFactory.send(chainId, "payment_queryInfo", [signedExtrinsic.toHex(), blockHash])
+  return {
+    partialFee: dispatchInfo.partialFee.toString(),
   }
 }
