@@ -32,9 +32,10 @@ export const NetworkPage = () => {
         title={`${evmNetworkId ? "Edit" : "Add"} EVM Network`}
         text={
           <>
-            Only ever add custom EVM compatible networks you trust.
+            Only ever add RPCs you trust.
             <br />
-            RPCs will automatically cycle in case of errors, in the order defined here.
+            RPCs will automatically cycle in the order of priority defined here in case of any
+            errors.
           </>
         }
       />
