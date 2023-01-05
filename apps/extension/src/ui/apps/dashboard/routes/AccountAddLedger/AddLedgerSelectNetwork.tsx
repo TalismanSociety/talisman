@@ -102,11 +102,6 @@ const renderOption: RenderItemFunc<Chain> = (chain) => {
 
 export const AddLedgerSelectNetwork = () => {
   const { data: defaultValues, updateData } = useAddLedgerAccount()
-  const { hasSpiritKey } = useAppState()
-
-  const enabledAddressTypes: AccountAddressType[] = hasSpiritKey
-    ? ["sr25519", "ethereum"]
-    : ["sr25519"]
 
   const navigate = useNavigate()
   const ledgerChains = useLedgerChains()
@@ -182,11 +177,7 @@ export const AddLedgerSelectNetwork = () => {
             text="What type of account would you like to import ?"
           />
           <Spacer small />
-          <AccountTypeSelector
-            defaultType={accountType}
-            onChange={handleTypeChange}
-            enabledAddressTypes={enabledAddressTypes}
-          />
+          <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
           {accountType === "sr25519" && (
             <>
               <H2>Step 1</H2>
