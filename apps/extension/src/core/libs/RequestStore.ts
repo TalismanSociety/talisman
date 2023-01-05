@@ -9,7 +9,7 @@ export type TRespondableRequest<TRequest, TResponse> = Resolver<TResponse> &
     id: string
   }
 
-type NewRequestCallbackFn<TRequest> = (request?: TRequest) => void
+type NewRequestCallbackFn<TRequest> = (request: TRequest) => void
 type CompletedRequestCallbackFn<TRequest, TResponse> = (
   request: TRequest,
   response?: TResponse
