@@ -14,13 +14,13 @@ import { useNavigate } from "react-router-dom"
 import { ListButton, PillButton } from "talisman-ui"
 
 const TestnetPill = () => (
-  <div className="bg-alert-warn/10 text-alert-warn inline-block rounded p-4 text-sm font-light">
+  <div className="bg-alert-warn/10 text-alert-warn inline-block rounded p-4 text-xs font-light">
     Testnet
   </div>
 )
 
 const CustomPill = () => (
-  <div className="bg-primary/10 text-primary inline-block rounded p-4 text-sm font-light">
+  <div className="bg-primary/10 text-primary inline-block rounded p-4 text-xs font-light">
     Custom
   </div>
 )
