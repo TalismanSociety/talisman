@@ -25,13 +25,13 @@ export const transferAnalytics = async ({
   tokenId,
   network,
 }: TransferAnalyticsEvmArgs | TransferAnalyticsSubstrateArgs) => {
-  const isInternal = keyring.getAccount(toAddress) !== undefined
-  const isContact = isInternal ? false : await addressBookStore.get(toAddress)
+  const isOwnAccount = keyring.getAccount(toAddress) !== undefined
+  const isContact = isOwnAccount ? false : (await addressBookStore.get(toAddress)) !== undefined
   talismanAnalytics.capture("asset transfer", {
     ...network,
     tokenId,
     amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
-    internal: isInternal || isContact,
-    recipientType: isInternal ? "ownAccount" : isContact ? "contact" : "external",
+    internal: isOwnAccount || isContact,
+    recipientType: isOwnAccount ? "ownAccount" : isContact ? "contact" : "external",
   })
 }

@@ -4,6 +4,7 @@ import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
 import LedgerSubstrate from "@ui/domains/Sign/LedgerSubstrate"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import BigNumber from "bignumber.js"
 import { useCallback, useMemo, useState } from "react"
 
@@ -18,6 +19,7 @@ const SendLedgerSubstrate = () => {
   const transferableToken = useTransferableTokenById(transferableTokenId)
 
   const account = useAccountByAddress(from) as AccountJsonHardwareSubstrate
+  const knownAddress = useIsKnownAddress(to)
 
   const payload = useMemo(() => {
     if (expectedResult?.type !== "substrate") return null
@@ -33,6 +35,11 @@ const SendLedgerSubstrate = () => {
 
         // this analytics call is designed to mirror the shape of the other 'asset transfer' calls
         // it needs to be on the fronted because the ledger signing backend handler doesn't have access to all of the details
+        const recipientTypeMap = {
+          account: "ownAccount",
+          contact: "contact",
+        }
+
         api.analyticsCapture({
           eventName: "asset transfer",
           options: {
@@ -40,13 +47,15 @@ const SendLedgerSubstrate = () => {
             amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
             tokenId: transferableTokenId,
             chainId: transferableToken?.chainId || "unknown",
+            internal: knownAddress,
+            recipientType: knownAddress ? recipientTypeMap[knownAddress.type] : "external",
           },
         })
       } catch (err) {
         setError(err as Error)
       }
     },
-    [amount, sendWithSignature, to, transferableToken?.chainId, transferableTokenId]
+    [amount, knownAddress, sendWithSignature, to, transferableToken?.chainId, transferableTokenId]
   )
 
   const parent = useMemo(() => document.getElementById("send-funds-container"), [])
