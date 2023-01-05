@@ -178,7 +178,7 @@ export const NetworkRpcsListField = () => {
         className="text-body-secondary hover:text-body flex gap-2 self-start text-sm"
         onClick={handleAddRpc}
       >
-        <PlusIcon className="transition-none" /> Add fallback RPC
+        <PlusIcon className="transition-none" /> Add another RPC
       </button>
     </FormFieldContainer>
   )
