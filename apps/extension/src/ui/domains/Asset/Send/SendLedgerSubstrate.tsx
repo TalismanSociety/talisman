@@ -44,7 +44,9 @@ const SendLedgerSubstrate = () => {
           eventName: "asset transfer",
           options: {
             toAddress: to,
-            amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
+            amount: expectedResult
+              ? roundToFirstInteger(Number(expectedResult?.transfer.amount.planck))
+              : "unknown",
             tokenId: transferableTokenId,
             chainId: transferableToken?.chainId || "unknown",
             internal: !!knownAddress,
@@ -56,7 +58,14 @@ const SendLedgerSubstrate = () => {
         setError(err as Error)
       }
     },
-    [amount, knownAddress, sendWithSignature, to, transferableToken?.chainId, transferableTokenId]
+    [
+      knownAddress,
+      sendWithSignature,
+      to,
+      transferableToken?.chainId,
+      expectedResult,
+      transferableTokenId,
+    ]
   )
 
   const parent = useMemo(() => document.getElementById("send-funds-container"), [])
