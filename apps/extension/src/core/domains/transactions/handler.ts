@@ -44,6 +44,7 @@ import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
 
 import { addressBookStore } from "../app/store.addressBook"
+import { transferAnalytics } from "./helpers"
 
 export default class AssetTransferHandler extends ExtensionHandler {
   private getExtrinsicWatch(
@@ -124,15 +125,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
-      const isInternal = keyring.getAccount(toAddress) !== undefined
-      const isContact = isInternal ? false : await addressBookStore.get(toAddress)
-      talismanAnalytics.capture("asset transfer", {
-        chainId,
-        tokenId,
-        amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
-        internal: isInternal || isContact,
-        recipientType: isInternal ? "ownAccount" : isContact ? "contact" : "external",
-      })
+      transferAnalytics({ network: { chainId }, amount, tokenId, toAddress })
 
       return await new Promise<ResponseAssetTransfer>((resolve, reject) => {
         const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)
@@ -240,15 +233,12 @@ export default class AssetTransferHandler extends ExtensionHandler {
       if (!to) throw new Error("Unable to transfer - no recipient address given")
 
       log.log("assetTransferEth - sent", { from, to, hash, ...otherDetails })
-      const isInternal = keyring.getAccount(to) !== undefined
-      const isContact = isInternal ? false : await addressBookStore.get(to)
 
-      talismanAnalytics.capture("asset transfer", {
-        evmNetworkId,
+      transferAnalytics({
+        network: { evmNetworkId },
+        amount: planckToTokens(amount, token.decimals),
         tokenId,
-        amount: roundToFirstInteger(Number(planckToTokens(amount, token.decimals))),
-        internal: isInternal || isContact,
-        recipientType: isInternal ? "ownAccount" : isContact ? "contact" : "external",
+        toAddress: to,
       })
 
       incrementTransactionCount(from, evmNetworkId)
@@ -281,15 +271,11 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const provider = await getProviderForEvmNetworkId(evmNetworkId)
       if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
 
-      const isInternal = keyring.getAccount(toAddress) !== undefined
-      const isContact = isInternal ? false : await addressBookStore.get(toAddress)
-
-      talismanAnalytics.capture("asset transfer", {
-        evmNetworkId,
+      transferAnalytics({
+        network: { evmNetworkId },
+        amount: planckToTokens(amount, token.decimals),
         tokenId,
-        amount: roundToFirstInteger(Number(planckToTokens(amount, token.decimals))),
-        internal: isInternal || isContact,
-        recipientType: isInternal ? "ownAccount" : isContact ? "contact" : "external",
+        toAddress,
       })
 
       const transfer = await getEthTransferTransactionBase(

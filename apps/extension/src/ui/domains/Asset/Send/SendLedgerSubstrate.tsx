@@ -1,16 +1,21 @@
 import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
+import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { HexString } from "@polkadot/util/types"
+import { api } from "@ui/api"
 import LedgerSubstrate from "@ui/domains/Sign/LedgerSubstrate"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import BigNumber from "bignumber.js"
 import { useCallback, useMemo, useState } from "react"
 
 import { useSendTokens } from "./context"
 import { SendTokensInputs } from "./types"
+import { useTransferableTokenById } from "./useTransferableTokens"
 
 const SendLedgerSubstrate = () => {
   const { formData, expectedResult, sendWithSignature, cancel } = useSendTokens()
-  const { from } = formData as SendTokensInputs
+  const { from, to, amount, transferableTokenId } = formData as SendTokensInputs
   const [error, setError] = useState<Error>()
+  const transferableToken = useTransferableTokenById(transferableTokenId)
 
   const account = useAccountByAddress(from) as AccountJsonHardwareSubstrate
 
@@ -25,11 +30,23 @@ const SendLedgerSubstrate = () => {
       try {
         setSigned(true)
         await sendWithSignature(signature)
+
+        // this analytics call is designed to mirror the shape of the other 'asset transfer' calls
+        // it needs to be on the fronted because the ledger signing backend handler doesn't have access to all of the details
+        api.analyticsCapture({
+          eventName: "asset transfer",
+          options: {
+            toAddress: to,
+            amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
+            tokenId: transferableTokenId,
+            chainId: transferableToken?.chainId || "unknown",
+          },
+        })
       } catch (err) {
         setError(err as Error)
       }
     },
-    [sendWithSignature]
+    [amount, sendWithSignature, to, transferableToken?.chainId, transferableTokenId]
   )
 
   const parent = useMemo(() => document.getElementById("send-funds-container"), [])
