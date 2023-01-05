@@ -49,19 +49,20 @@ const PendingRequestRedirect = () => {
 
   // detect any pending requests and redirect to the appropriate page
   useEffect(() => {
-    if (authRequests.length) navigate(`/auth/${authRequests[0].id}`)
-    else if (ethNetworkAddRequests.length)
+    if (authRequests.length) {
+      navigate(`/auth/${authRequests[0].id}`)
+    } else if (ethNetworkAddRequests.length) {
       navigate(`/eth-network-add/${ethNetworkAddRequests[0].id}`)
-    else if (ethWatchAssetRequests.length)
+    } else if (ethWatchAssetRequests.length) {
       navigate(`/eth-watchasset/${ethWatchAssetRequests[0].id}`)
-    else if (metaDataRequests.length) navigate(`/metadata/${metaDataRequests[0].id}`)
-    else if (signingRequests.length) {
-      navigate(
-        isEthereumRequest(signingRequests[0])
-          ? `/sign/eth/${signingRequests[0].id}`
-          : `/sign/${signingRequests[0].id}`
-      )
-    } else if (encryptRequests.length) navigate(`/encrypt/${encryptRequests[0].id}`)
+    } else if (metaDataRequests.length) {
+      navigate(`/metadata/${metaDataRequests[0].id}`)
+    } else if (signingRequests.length) {
+      const req = signingRequests[0]
+      navigate(isEthereumRequest(req) ? `/sign/eth/${req.id}` : `/sign/${req.id}`)
+    } else if (encryptRequests.length) {
+      navigate(`/encrypt/${encryptRequests[0].id}`)
+    }
   }, [
     authRequests,
     encryptRequests,
