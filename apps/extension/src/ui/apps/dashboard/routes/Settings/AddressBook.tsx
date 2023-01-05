@@ -60,8 +60,8 @@ const AddressBook = () => {
           ))}
           {contacts.length === 0 && (
             <div className="bg-black-secondary flex w-full justify-between rounded p-8">
-              No address book contacts have been saved yet. You can add new contacts when you're
-              sending funds in Talisman.
+              You have no saved contacts yet. You can save contacts when sending funds and they'll
+              appear here.
             </div>
           )}
         </div>
