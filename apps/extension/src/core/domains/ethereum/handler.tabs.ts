@@ -43,9 +43,11 @@ import { ethers, providers } from "ethers"
 import {
   getErc20TokenId,
   isValidAddEthereumRequestParam,
+  isValidRequestedPermissions,
   isValidWatchAssetRequestParam,
 } from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
+import { Web3WalletPermission } from "./types"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
@@ -478,6 +480,50 @@ export class EthTabsHandler extends TabsHandler {
     )
   }
 
+  private async getPermissions(url: string): Promise<Web3WalletPermission[]> {
+    const site = await this.stores.sites.getSiteFromUrl(url)
+    return site?.ethPermissions ?? []
+  }
+
+  private async requestPermissions(
+    url: string,
+    request: EthRequestArguments<"wallet_requestPermissions">
+  ): Promise<Web3WalletPermission[]> {
+    if (request.params.length === 1)
+      throw new EthProviderRpcError(
+        "This method expects an array with only 1 entry",
+        ETH_ERROR_EIP1474_INVALID_PARAMS
+      )
+
+    const [permissions] = request.params
+    if (!isValidRequestedPermissions(permissions))
+      throw new EthProviderRpcError("Invalid permissions", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    await this.authoriseEth(url, { origin: "", ethereum: true })
+    const accountsList = await this.accountsList(url)
+    if (accountsList.length) {
+      const site = await this.stores.sites.getSiteFromUrl(url)
+
+      const web3Permissions = Object.keys(permissions).map((method) => ({
+        ...(permissions[method] ?? {}),
+        parentCapability: method,
+        date: Date.now(),
+      }))
+    }
+    // const finalPermissions = [...site.ethPermissions ?? []]
+    // for (const web3Permission of web3Permissions) {
+
+    // }
+
+    // this.stores.sites.updateSite(url, ({
+
+    //    ethPermissions: [...site.ethPermissions ?? [], ...permissions]
+    //  }))
+    // }
+
+    return this.getPermissions(url)
+  }
+
   private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
     id: string,
     url: string,
@@ -563,6 +609,17 @@ export class EthTabsHandler extends TabsHandler {
         return this.switchEthereumChain(
           url,
           request as EthRequestArguments<"wallet_switchEthereumChain">
+        )
+
+      // https://docs.metamask.io/guide/rpc-api.html#wallet-getpermissions
+      case "wallet_getPermissions":
+        return this.getPermissions(url)
+
+      // https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
+      case "wallet_requestPermissions":
+        return this.requestPermissions(
+          url,
+          request as EthRequestArguments<"wallet_requestPermissions">
         )
 
       default:

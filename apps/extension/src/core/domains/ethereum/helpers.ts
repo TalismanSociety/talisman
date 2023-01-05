@@ -220,3 +220,15 @@ const schemaWatchAssetRequest = yup.object().shape({
 
 export const isValidWatchAssetRequestParam = (obj: unknown) =>
   schemaWatchAssetRequest.isValidSync(obj)
+
+// for now, only allow eth_accounts property with an empty object
+const schemaRequestedPermissions = yup
+  .object()
+  .required()
+  .shape({
+    eth_accounts: yup.object().required().shape({}).noUnknown(),
+  })
+  .noUnknown()
+
+export const isValidRequestedPermissions = (obj: unknown) =>
+  schemaRequestedPermissions.isValidSync(obj)
