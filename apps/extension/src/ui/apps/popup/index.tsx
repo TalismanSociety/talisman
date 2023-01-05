@@ -46,41 +46,28 @@ const PendingRequestRedirect = () => {
   const ethNetworkAddRequests = useEthNetworkAddRequests()
   const ethWatchAssetRequests = useEthWatchAssetRequests()
   const navigate = useNavigate()
-  const location = useLocation()
 
   // detect any pending requests and redirect to the appropriate page
   useEffect(() => {
-    if (authRequests.length > 0) navigate("/auth")
-    else if (ethNetworkAddRequests.length > 0)
+    if (authRequests.length) navigate(`/auth/${authRequests[0].id}`)
+    else if (ethNetworkAddRequests.length)
       navigate(`/eth-network-add/${ethNetworkAddRequests[0].id}`)
-    else if (ethWatchAssetRequests.length > 0) {
-      const params = new URL(window.location.href).searchParams
-      const reqId = params.get("customAsset")
-      const request = ethWatchAssetRequests.find((r) => r.id === reqId) ?? ethWatchAssetRequests[0]
-      if (request) navigate(`/eth-watchasset/${request.id}`)
-    } else if (metaDataRequests.length > 0) navigate("/metadata")
-    else if (signingRequests.length > 0) {
-      const params = new URL(window.location.href).searchParams
-      const signingId = params.get("signing")
-      const request = signingRequests.find((r) => r.id === signingId) ?? signingRequests[0]
-      if (request) {
-        if (isEthereumRequest(request)) navigate(`/sign/eth/${request.id}`)
-        else navigate(`/sign/${request.id}`)
-      }
-    } else if (encryptRequests.length > 0) {
-      const params = new URL(window.location.href).searchParams
-      const reqId = params.get("encrypt")
-      const request = encryptRequests.find((r) => r.id === reqId) ?? encryptRequests[0]
-      if (request) navigate(`/encrypt/${request.id}`)
-    }
+    else if (ethWatchAssetRequests.length)
+      navigate(`/eth-watchasset/${ethWatchAssetRequests[0].id}`)
+    else if (metaDataRequests.length) navigate(`/metadata/${metaDataRequests[0].id}`)
+    else if (signingRequests.length) {
+      navigate(
+        isEthereumRequest(signingRequests[0])
+          ? `/sign/eth/${signingRequests[0].id}`
+          : `/sign/${signingRequests[0].id}`
+      )
+    } else if (encryptRequests.length) navigate(`/encrypt/${encryptRequests[0].id}`)
   }, [
-    authRequests.length,
+    authRequests,
     encryptRequests,
     ethNetworkAddRequests,
-    ethNetworkAddRequests.length,
     ethWatchAssetRequests,
-    location.pathname,
-    metaDataRequests.length,
+    metaDataRequests,
     navigate,
     signingRequests,
   ])
