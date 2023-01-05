@@ -239,6 +239,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
         amount: planckToTokens(amount, token.decimals),
         tokenId,
         toAddress: to,
+        hardware: true,
       })
 
       incrementTransactionCount(from, evmNetworkId)

@@ -47,8 +47,9 @@ const SendLedgerSubstrate = () => {
             amount: roundToFirstInteger(new BigNumber(amount).toNumber()),
             tokenId: transferableTokenId,
             chainId: transferableToken?.chainId || "unknown",
-            internal: knownAddress,
+            internal: !!knownAddress,
             recipientType: knownAddress ? recipientTypeMap[knownAddress.type] : "external",
+            hardware: true,
           },
         })
       } catch (err) {
