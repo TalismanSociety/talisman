@@ -31,16 +31,13 @@ export default class State {
   // Request stores handle ephemeral data relating to to requests for signing, metadata, and authorisation of sites
   readonly requestStores = {
     signing: new SigningRequestsStore((req) => {
-      assert(req, "Request is not defined")
-      return this.popupOpen(isEthereumRequest(req) ? `#/sign/eth/${req.id}` : `#/sign/${req.id}`)
+      this.popupOpen(isEthereumRequest(req) ? `#/sign/eth/${req.id}` : `#/sign/${req.id}`)
     }),
     metadata: new MetadataRequestsStore((req) => {
-      assert(req, "Request is not defined")
       this.popupOpen(`#/metadata/${req.id}`)
     }),
     sites: new SitesRequestsStore(
       (req) => {
-        assert(req, "Request is not defined")
         this.popupOpen(`#/auth/${req.id}`)
       },
       async (request, response) => {
@@ -72,16 +69,13 @@ export default class State {
       }
     ),
     networks: new EthereumNetworksRequestsStore((req) => {
-      assert(req, "Request is not defined")
       this.popupOpen(`#/eth-network-add/${req.id}`)
     }),
     evmAssets: new EvmWatchAssetRequestsStore((req) => {
-      assert(req, "Request is not defined")
       this.popupOpen(`#/eth-watchasset/${req.id}`)
     }),
     encrypt: new EncryptRequestsStore((req) => {
-      assert(req, "Request is not defined")
-      return this.popupOpen(`#/encrypt/${req.id}`)
+      this.popupOpen(`#/encrypt/${req.id}`)
     }),
   }
 
