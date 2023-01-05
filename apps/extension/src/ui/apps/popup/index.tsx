@@ -24,7 +24,7 @@ import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useMetadataRequests } from "@ui/hooks/useMetadataRequests"
 import { useSigningRequests } from "@ui/hooks/useSigningRequests"
 import { useEffect, useMemo } from "react"
-import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom"
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom"
 
 import { CurrentSiteProvider } from "./context/CurrentSiteContext"
 import { NavigationProvider } from "./context/NavigationContext"
