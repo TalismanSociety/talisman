@@ -350,7 +350,7 @@ export class EthHandler extends ExtensionHandler {
         evmNetwork: { id: network.id },
         isTestnet: network.isTestnet,
         isCustom: true,
-        logo: network.tokenLogoUrl ?? "",
+        logo: network.tokenLogoUrl ?? githubUnknownTokenLogoUrl,
         chain: existingToken?.chain,
       }
 
