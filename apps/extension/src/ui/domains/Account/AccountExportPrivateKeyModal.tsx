@@ -42,17 +42,17 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
   const { password } = usePasswordUnlock()
 
   // force password check each time this component is rendered
-  const [id] = useState(() => crypto.randomUUID())
   const {
     error,
     data: privateKey,
     isLoading,
   } = useQuery({
-    queryKey: ["accountExportPrivateKey", id, !!password],
+    queryKey: ["accountExportPrivateKey", !!password],
     queryFn: () => (password ? exportAccount(password) : null),
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
+    refetchOnMount: true,
   })
 
   const copyToClipboard = useCallback(async () => {
