@@ -35,6 +35,7 @@ const config = (env) =>
 
               // add a version name key to distinguish in list of installed extensions
               manifest.version_name = getManifestVersionName(env)
+
               // Set the canary title and icon if we're doing a canary build
               if (env.build === "canary") {
                 manifest.name = `${manifest.name} - Canary`
