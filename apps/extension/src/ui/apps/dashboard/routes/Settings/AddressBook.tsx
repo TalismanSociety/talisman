@@ -58,6 +58,12 @@ const AddressBook = () => {
               handleEdit={setToEdit}
             />
           ))}
+          {contacts.length === 0 && (
+            <div className="bg-black-secondary flex w-full justify-between rounded p-8">
+              You have no saved contacts yet. You can save contacts when sending funds and they'll
+              appear here.
+            </div>
+          )}
         </div>
       </Layout>
       {toDelete && contactsMap[toDelete] && (
