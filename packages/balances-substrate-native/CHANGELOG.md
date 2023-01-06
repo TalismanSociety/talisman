@@ -1,5 +1,12 @@
 # @talismn/balances-substrate-native
 
+## 0.2.1
+
+### Patch Changes
+
+- e2f2953: fix: moved console.warn suppression into the balances-substrate-native module
+  - @talismn/balances@0.2.1
+
 ## 0.2.0
 
 ### Patch Changes

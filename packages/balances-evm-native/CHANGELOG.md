@@ -1,5 +1,11 @@
 # @talismn/balances-evm-native
 
+## 0.2.1
+
+### Patch Changes
+
+- @talismn/balances@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes
