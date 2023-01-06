@@ -5,6 +5,7 @@ import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { IconMore } from "@talisman/theme/icons"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
+import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
@@ -33,6 +34,8 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
   const { canExportAccount, open: openAccountExportModal } = useAccountExportModal()
+  const { canExportAccount: canExportAccountPk, open: openAccountExportPkModal } =
+    useAccountExportPrivateKeyModal()
   const { canRemove, open: openAccountRemoveModal } = useAccountRemoveModal()
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openAddressFormatterModal } = useAddressFormatterModal()
@@ -107,7 +110,10 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
                   )}
                   {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
                   {canExportAccount && (
-                    <PopNav.Item onClick={openAccountExportModal}>Export Private Key</PopNav.Item>
+                    <PopNav.Item onClick={openAccountExportModal}>Export as JSON</PopNav.Item>
+                  )}
+                  {canExportAccountPk && (
+                    <PopNav.Item onClick={openAccountExportPkModal}>Export Private Key</PopNav.Item>
                   )}
                   {canRemove && (
                     <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>

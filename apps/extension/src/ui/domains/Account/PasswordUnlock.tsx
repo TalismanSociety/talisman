@@ -61,7 +61,7 @@ const BasePasswordUnlock = ({
   children,
   description,
   buttonText,
-  title,
+  title = "Enter your password",
 }: PasswordUnlockProps) => {
   const {
     register,
@@ -93,8 +93,8 @@ const BasePasswordUnlock = ({
   ) : (
     <div className={className}>
       <form onSubmit={handleSubmit(submit)}>
-        {description && description}
-        <strong>{title || "Enter your password"}</strong>.
+        {description}
+        <div className="font-bold">{title}</div>
         <Spacer small />
         <FormField error={errors.password} prefix={<KeyIcon className="opacity-50" />}>
           <input

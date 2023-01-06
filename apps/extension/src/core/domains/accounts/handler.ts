@@ -6,6 +6,7 @@ import type {
   RequestAccountCreateHardware,
   RequestAccountCreateHardwareEthereum,
   RequestAccountExport,
+  RequestAccountExportPrivateKey,
   RequestAccountForget,
   RequestAccountRename,
   ResponseAccountExport,
@@ -17,6 +18,7 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
+import { getPrivateKey } from "@core/util/getPrivateKey"
 import { createPair } from "@polkadot/keyring"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
@@ -257,7 +259,7 @@ export default class AccountsHandler extends ExtensionHandler {
     await this.stores.password.checkPassword(password)
 
     const { err, val } = await getPairForAddressSafely(address, async (pair) => {
-      talismanAnalytics.capture("account export", { type: pair.type })
+      talismanAnalytics.capture("account export", { type: pair.type, mode: "json" })
 
       const exportedJson = pair.toJson(exportPw)
 
@@ -268,6 +270,28 @@ export default class AccountsHandler extends ExtensionHandler {
         exportedJson,
       }
     })
+    if (err) throw new Error(val as string)
+    return val
+  }
+
+  private async accountExportPrivateKey({
+    address,
+    password,
+  }: RequestAccountExportPrivateKey): Promise<string> {
+    await this.stores.password.checkPassword(password)
+
+    const pw = await this.stores.password.getPassword()
+
+    const { err, val } = await getPairForAddressSafely(address, async (pair) => {
+      assert(pair.type === "ethereum", "Private key cannot be exported for this account type")
+
+      const pk = getPrivateKey(pair, pw as string)
+
+      talismanAnalytics.capture("account export", { type: pair.type, mode: "pk" })
+
+      return pk.toString("hex")
+    })
+
     if (err) throw new Error(val as string)
     return val
   }
@@ -323,6 +347,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountForget(request as RequestAccountForget)
       case "pri(accounts.export)":
         return this.accountExport(request as RequestAccountExport)
+      case "pri(accounts.export.pk)":
+        return this.accountExportPrivateKey(request as RequestAccountExportPrivateKey)
       case "pri(accounts.rename)":
         return this.accountRename(request as RequestAccountRename)
       case "pri(accounts.subscribe)":

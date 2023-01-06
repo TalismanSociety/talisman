@@ -3,6 +3,7 @@ import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { api } from "@ui/api"
 import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
+import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
@@ -126,15 +127,17 @@ const Dashboard = () => (
       <AccountRemoveModalProvider>
         <AccountRenameModalProvider>
           <AccountExportModalProvider>
-            <AddressFormatterModalProvider>
-              <SendTokensModalProvider>
-                <BuyTokensModalProvider>
-                  <ReceiveTokensModalProvider>
-                    <DashboardInner />
-                  </ReceiveTokensModalProvider>
-                </BuyTokensModalProvider>
-              </SendTokensModalProvider>
-            </AddressFormatterModalProvider>
+            <AccountExportPrivateKeyModalProvider>
+              <AddressFormatterModalProvider>
+                <SendTokensModalProvider>
+                  <BuyTokensModalProvider>
+                    <ReceiveTokensModalProvider>
+                      <DashboardInner />
+                    </ReceiveTokensModalProvider>
+                  </BuyTokensModalProvider>
+                </SendTokensModalProvider>
+              </AddressFormatterModalProvider>
+            </AccountExportPrivateKeyModalProvider>
           </AccountExportModalProvider>
         </AccountRenameModalProvider>
       </AccountRemoveModalProvider>
