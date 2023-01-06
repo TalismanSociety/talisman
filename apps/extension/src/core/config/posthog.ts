@@ -1,6 +1,6 @@
 import { DEBUG } from "@core/constants"
 import { FeaturesStoreData, featuresStore } from "@core/domains/app/store.features"
-import posthog from "posthog-js"
+import posthog, { Properties } from "posthog-js"
 
 const REFRESH_FEATURE_FLAGS_INTERVAL = 5 * 60 * 1000 // 5 minutes
 
@@ -50,7 +50,7 @@ export const initPosthog = () => {
         const requiredProperties = Object.keys(properties).reduce((result, key) => {
           if (!unsafeProperties.includes(key)) result[key] = properties[key]
           return result
-        }, {} as posthog.Properties)
+        }, {} as Properties)
         return {
           ...requiredProperties,
           ...talismanProperties,

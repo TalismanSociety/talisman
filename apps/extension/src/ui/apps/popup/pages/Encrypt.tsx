@@ -93,7 +93,7 @@ const EncryptApprove = ({ className }: any) => {
   )
 }
 
-const StyledEncryptApprove = styled(EncryptApprove)`
+export const Encrypt = styled(EncryptApprove)`
   .layout-header {
     .pill {
       background: var(--color-background-muted);
@@ -148,5 +148,3 @@ const StyledEncryptApprove = styled(EncryptApprove)`
   .layout-footer {
   }
 `
-
-export default StyledEncryptApprove

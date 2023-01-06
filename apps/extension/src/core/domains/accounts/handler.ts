@@ -41,7 +41,7 @@ export default class AccountsHandler extends ExtensionHandler {
   //   - derivation path
   //   - account seed (unlocked via password)
 
-  private async accountCreate({ name, type }: RequestAccountCreate): Promise<boolean> {
+  private async accountCreate({ name, type }: RequestAccountCreate): Promise<string> {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
@@ -74,7 +74,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     assert(derivedAddress, "Reached maximum number of derived accounts")
 
-    keyring.addUri(
+    const { pair } = keyring.addUri(
       `${rootSeed}${getDerivationPath(accountIndex)}`,
       password,
       {
@@ -88,14 +88,14 @@ export default class AccountsHandler extends ExtensionHandler {
 
     talismanAnalytics.capture("account create", { type, method: "derived" })
 
-    return true
+    return pair.address
   }
 
   private async accountCreateSeed({
     name,
     seed,
     type,
-  }: RequestAccountCreateFromSeed): Promise<boolean> {
+  }: RequestAccountCreateFromSeed): Promise<string> {
     const password = await this.stores.password.getPassword()
     assert(password, "Not logged in")
 
@@ -114,7 +114,7 @@ export default class AccountsHandler extends ExtensionHandler {
     assert(notExists, "Account already exists")
 
     try {
-      keyring.addUri(
+      const { pair } = keyring.addUri(
         seed,
         password,
         {
@@ -126,7 +126,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
       talismanAnalytics.capture("account create", { type, method: "seed" })
 
-      return true
+      return pair.address
     } catch (error) {
       throw new Error((error as Error).message)
     }
@@ -135,7 +135,7 @@ export default class AccountsHandler extends ExtensionHandler {
   private async accountCreateJson({
     json,
     password: importedAccountPassword,
-  }: RequestAccountCreateFromJson): Promise<boolean> {
+  }: RequestAccountCreateFromJson): Promise<string> {
     await sleep(1000)
 
     const password = await this.stores.password.getPassword()
@@ -169,7 +169,7 @@ export default class AccountsHandler extends ExtensionHandler {
       keyring.encryptAccount(pair, password)
 
       talismanAnalytics.capture("account create", { type: pair.type, method: "json" })
-      return true
+      return pair.address
     } catch (error) {
       throw new Error((error as Error).message)
     }
@@ -179,7 +179,7 @@ export default class AccountsHandler extends ExtensionHandler {
     name,
     address,
     path,
-  }: RequestAccountCreateHardwareEthereum): boolean {
+  }: RequestAccountCreateHardwareEthereum): string {
     assert(isEthereumAddress(address), "Not an Ethereum address")
 
     // ui-keyring's addHardware method only supports substrate accounts, cannot set ethereum type
@@ -209,7 +209,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     talismanAnalytics.capture("account create", { type: "ethereum", method: "hardware" })
 
-    return true
+    return pair.address
   }
 
   private accountsCreateHardware({
@@ -218,8 +218,8 @@ export default class AccountsHandler extends ExtensionHandler {
     addressOffset,
     genesisHash,
     name,
-  }: Omit<RequestAccountCreateHardware, "hardwareType">): boolean {
-    keyring.addHardware(address, "ledger", {
+  }: Omit<RequestAccountCreateHardware, "hardwareType">): string {
+    const { pair } = keyring.addHardware(address, "ledger", {
       accountIndex,
       addressOffset,
       genesisHash,
@@ -229,7 +229,7 @@ export default class AccountsHandler extends ExtensionHandler {
 
     talismanAnalytics.capture("account create", { type: "substrate", method: "hardware" })
 
-    return true
+    return pair.address
   }
 
   private accountForget({ address }: RequestAccountForget): boolean {

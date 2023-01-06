@@ -1,12 +1,14 @@
 import { AppPill } from "@talisman/components/AppPill"
 import StyledGrid from "@talisman/components/Grid"
 import { IconButton } from "@talisman/components/IconButton"
+import { notify } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { GlobeIcon, XIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { NetworksDetailsButton } from "@ui/domains/Ethereum/NetworkDetailsButton"
-import { useEthNetworkAddRequests } from "@ui/hooks/useEthNetworkAddRequests"
-import { useCallback, useMemo } from "react"
+import { useEthNetworkAddRequestById } from "@ui/hooks/useEthNetworkAddRequestById"
+import { useCallback } from "react"
+import { useParams } from "react-router-dom"
 import styled from "styled-components"
 
 import Layout, { Content, Footer, Header } from "../Layout"
@@ -70,30 +72,31 @@ const Container = styled(Layout)`
 `
 
 export const AddEthereumNetwork = () => {
-  const requests = useEthNetworkAddRequests()
-  const { requestId, network, siteUrl } = useMemo(
-    () => ({
-      requestId: requests?.[0]?.id,
-      siteUrl: requests?.[0]?.url,
-      network: requests?.[0]?.network,
-    }),
-    [requests]
-  )
+  const { id } = useParams<"id">()
+  const request = useEthNetworkAddRequestById(id)
 
-  const approve = useCallback(() => {
-    api.ethNetworkAddApprove(requestId)
-    window.close()
-  }, [requestId])
+  const approve = useCallback(async () => {
+    if (!request) return
+    try {
+      await api.ethNetworkAddApprove(request.id)
+      window.close()
+    } catch (err) {
+      notify({ type: "error", title: "Failed to add network", subtitle: (err as Error).message })
+    }
+  }, [request])
 
   const cancel = useCallback(() => {
-    api.ethNetworkAddCancel(requestId)
+    if (!request) return
+    api.ethNetworkAddCancel(request.id)
     window.close()
-  }, [requestId])
+  }, [request])
+
+  if (!request) return null
 
   return (
     <Container>
       <Header
-        text={<AppPill url={siteUrl} />}
+        text={<AppPill url={request.url} />}
         nav={
           <IconButton onClick={cancel}>
             <XIcon />
@@ -106,11 +109,12 @@ export const AddEthereumNetwork = () => {
         </div>
         <h1>Add Network</h1>
         <p>
-          This app wants to connect Talisman to the <strong>{network.chainName}</strong> network.
+          This app wants to connect Talisman to the <strong>{request.network.chainName}</strong>{" "}
+          network.
         </p>
         <div className="grow"></div>
         <div>
-          <NetworksDetailsButton network={network} />
+          <NetworksDetailsButton network={request.network} />
         </div>
       </Content>
       <Footer>

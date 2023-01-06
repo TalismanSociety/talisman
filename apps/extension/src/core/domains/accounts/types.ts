@@ -99,14 +99,14 @@ export interface RequestAccountCreate {
 
 export interface AccountsMessages {
   // account message signatures
-  "pri(accounts.create)": [RequestAccountCreate, boolean]
-  "pri(accounts.create.seed)": [RequestAccountCreateFromSeed, boolean]
-  "pri(accounts.create.json)": [RequestAccountCreateFromJson, boolean]
+  "pri(accounts.create)": [RequestAccountCreate, string]
+  "pri(accounts.create.seed)": [RequestAccountCreateFromSeed, string]
+  "pri(accounts.create.json)": [RequestAccountCreateFromJson, string]
   "pri(accounts.create.hardware.substrate)": [
     Omit<RequestAccountCreateHardware, "hardwareType">,
-    boolean
+    string
   ]
-  "pri(accounts.create.hardware.ethereum)": [RequestAccountCreateHardwareEthereum, boolean]
+  "pri(accounts.create.hardware.ethereum)": [RequestAccountCreateHardwareEthereum, string]
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
   "pri(accounts.export.pk)": [RequestAccountExportPrivateKey, string]

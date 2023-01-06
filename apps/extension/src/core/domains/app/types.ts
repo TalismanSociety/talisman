@@ -1,5 +1,5 @@
 import { Address } from "@core/types/base"
-import posthog from "posthog-js"
+import { Properties } from "posthog-js"
 
 export interface RequestOnboard {
   pass: string
@@ -27,16 +27,13 @@ export type ModalOpenRequest = ModalOpenRequestBuy | ModalOpenRequestSend
 
 export interface AnalyticsCaptureRequest {
   eventName: string
-  options?: posthog.Properties
+  options?: Properties
 }
 
 // values must match the flags defined in Posthog
 export type FeatureVariants = {
   WALLET_FUNDING?: boolean
   BUY_CRYPTO?: boolean
-  POPUP_BOTTOM_NAV_VARIANT?: "WITH_TOOLTIP" | "WITHOUT_TOOLTIP"
-  LEDGER_EVM: boolean
-  FEE_FROM_STATE_CALL: boolean
   LINK_TX_HISTORY: boolean
   LINK_STAKING: boolean
 }

@@ -66,11 +66,11 @@ export default class Tabs extends TabsHandler {
 
   private async authorize(url: string, request: RequestAuthorizeTab): Promise<boolean> {
     const siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
-    if (siteFromUrl?.addresses) {
+    if (siteFromUrl) {
       // this url was seen in the past
       assert(
         siteFromUrl.addresses?.length,
-        `The source ${url} is not allowed to interact with this extension`
+        `No Talisman wallet accounts are authorised to connect to ${url}`
       )
 
       return false
@@ -360,6 +360,9 @@ export default class Tabs extends TabsHandler {
       case "pub(encrypt.decrypt)":
         await this.stores.sites.ensureUrlAuthorized(url, false, (request as DecryptPayload).address)
         return this.messageDecrypt(url, request as DecryptPayload)
+
+      case "pub(ping)":
+        return Promise.resolve(true)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

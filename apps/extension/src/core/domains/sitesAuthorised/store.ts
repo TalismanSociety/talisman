@@ -47,8 +47,8 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
   ): Promise<boolean> {
     const entry = await this.getSiteFromUrl(url)
     const addresses = ethereum ? entry?.ethAddresses : entry?.addresses
-    assert(addresses, `The source ${url} has not been enabled yet`)
-    assert(addresses.length, `The source ${url} is not allowed to interact with this extension`)
+    assert(addresses, `Site ${url} has not been authorised for Talisman yet`)
+    assert(addresses.length, `No Talisman wallet accounts are authorised to connect to ${url}`)
 
     // check the supplied address is authorised to interact with this URL
     if (address)

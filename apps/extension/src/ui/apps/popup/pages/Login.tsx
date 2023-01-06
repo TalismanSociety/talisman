@@ -105,7 +105,7 @@ const Unlock = ({ className }: any) => {
   )
 }
 
-const StyledUnlock = styled(Unlock)`
+export const Login = styled(Unlock)`
   .error {
     color: var(--color-status-warning);
   }
@@ -128,5 +128,3 @@ const StyledUnlock = styled(Unlock)`
     }
   }
 `
-
-export default StyledUnlock

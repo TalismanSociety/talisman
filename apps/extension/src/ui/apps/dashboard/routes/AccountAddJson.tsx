@@ -7,9 +7,9 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
+import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
 import * as yup from "yup"
 
 import Layout from "../layout"
@@ -37,7 +37,7 @@ const getFileContent = (file?: File) =>
   })
 
 const AccountJson = () => {
-  const navigate = useNavigate()
+  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const submit = useCallback(
     async ({ fileContent, password }: FormData) => {
@@ -50,13 +50,12 @@ const AccountJson = () => {
         { autoClose: false }
       )
       try {
-        await api.accountCreateFromJson(fileContent, password)
+        setAddress(await api.accountCreateFromJson(fileContent, password))
         notifyUpdate(notificationId, {
           type: "success",
           title: "Account created",
           subtitle: "",
         })
-        navigate("/portfolio")
       } catch (err) {
         notifyUpdate(notificationId, {
           type: "error",
@@ -65,7 +64,7 @@ const AccountJson = () => {
         })
       }
     },
-    [navigate]
+    [setAddress]
   )
 
   const {

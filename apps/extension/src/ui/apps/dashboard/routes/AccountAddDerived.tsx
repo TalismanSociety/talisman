@@ -10,9 +10,9 @@ import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import * as yup from "yup"
 
@@ -44,9 +44,9 @@ const Spacer = styled.div<{ small?: boolean }>`
 `
 
 const AccountNew = () => {
-  const navigate = useNavigate()
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
+  const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const schema = useMemo(
     () =>
@@ -87,13 +87,13 @@ const AccountNew = () => {
       await sleep(1000)
 
       try {
-        await api.accountCreate(name, type)
+        setAddress(await api.accountCreate(name, type))
+
         notifyUpdate(notificationId, {
           type: "success",
           title: "Account created",
           subtitle: name,
         })
-        navigate("/portfolio")
       } catch (err) {
         notifyUpdate(notificationId, {
           type: "error",
@@ -102,7 +102,7 @@ const AccountNew = () => {
         })
       }
     },
-    [navigate]
+    [setAddress]
   )
 
   const handleTypeChange = useCallback(
