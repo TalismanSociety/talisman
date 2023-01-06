@@ -3,6 +3,7 @@ import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
+  EthWalletPermissions,
   RequestAuthorizeTab,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token } from "@core/domains/tokens/types"
@@ -43,9 +44,11 @@ import { ethers, providers } from "ethers"
 import {
   getErc20TokenId,
   isValidAddEthereumRequestParam,
+  isValidRequestedPermissions,
   isValidWatchAssetRequestParam,
 } from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
+import { Web3WalletPermission, Web3WalletPermissionTarget } from "./types"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
@@ -478,6 +481,65 @@ export class EthTabsHandler extends TabsHandler {
     )
   }
 
+  private async getPermissions(url: string): Promise<Web3WalletPermission[]> {
+    const site = await this.stores.sites.getSiteFromUrl(url)
+
+    return site?.ethPermissions
+      ? Object.entries(site.ethPermissions).reduce<Web3WalletPermission[]>(
+          (permissions, [parentCapability, otherProps]) =>
+            permissions.concat({ parentCapability, ...otherProps } as Web3WalletPermission),
+          []
+        )
+      : []
+  }
+
+  private async requestPermissions(
+    url: string,
+    request: EthRequestArguments<"wallet_requestPermissions">
+  ): Promise<Web3WalletPermission[]> {
+    if (request.params.length !== 1)
+      throw new EthProviderRpcError(
+        "This method expects an array with only 1 entry",
+        ETH_ERROR_EIP1474_INVALID_PARAMS
+      )
+
+    const [requestedPerms] = request.params
+    if (!isValidRequestedPermissions(requestedPerms))
+      throw new EthProviderRpcError("Invalid permissions", ETH_ERROR_EIP1474_INVALID_PARAMS)
+
+    // identify which permissions are currently missing
+    const site = await this.stores.sites.getSiteFromUrl(url)
+    const existingPerms = site?.ethPermissions ?? ({} as EthWalletPermissions)
+    const missingPerms = Object.keys(requestedPerms)
+      .map((perm) => perm as Web3WalletPermissionTarget)
+      .filter((perm) => !existingPerms[perm])
+
+    // request all missing permissions to the user
+    // for now we only support eth_accounts, which we consider granted when user authenticates
+    // @dev: cannot proceed with a loop here as order may have some importance, and we may want to group multiple permissions in a single request
+    const grantedPermissions: Partial<EthWalletPermissions> = {}
+    if (missingPerms.includes("eth_accounts")) {
+      await this.authoriseEth(url, { origin: "", ethereum: true })
+      grantedPermissions.eth_accounts = { date: new Date().getTime() }
+    }
+
+    // if any, store missing permissions
+    if (Object.keys(grantedPermissions).length) {
+      // fetch site again as it might have been created/updated while authenticating (eth_accounts permission)
+      const site = await this.stores.sites.getSiteFromUrl(url)
+      if (!site) throw new EthProviderRpcError("Unauthorised", ETH_ERROR_EIP1993_UNAUTHORIZED)
+
+      const ethPermissions = {
+        ...(site.ethPermissions ?? {}),
+        ...grantedPermissions,
+      } as EthWalletPermissions
+
+      await this.stores.sites.updateSite(site.id, { ethPermissions })
+    }
+
+    return this.getPermissions(url)
+  }
+
   private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
     id: string,
     url: string,
@@ -492,14 +554,17 @@ export class EthTabsHandler extends TabsHandler {
         "wallet_switchEthereumChain",
         "wallet_addEthereumChain",
         "wallet_watchAsset",
+        "wallet_requestPermissions",
       ].includes(request.method)
     )
       await this.checkAccountAuthorised(url)
 
     switch (request.method) {
       case "eth_requestAccounts":
-        // error will be thrown by authorizeEth if user rejects
-        await this.authoriseEth(url, { origin: "", ethereum: true })
+        await this.requestPermissions(url, {
+          method: "wallet_requestPermissions",
+          params: [{ eth_accounts: {} }],
+        })
         return this.accountsList(url)
 
       case "eth_accounts":
@@ -563,6 +628,17 @@ export class EthTabsHandler extends TabsHandler {
         return this.switchEthereumChain(
           url,
           request as EthRequestArguments<"wallet_switchEthereumChain">
+        )
+
+      // https://docs.metamask.io/guide/rpc-api.html#wallet-getpermissions
+      case "wallet_getPermissions":
+        return this.getPermissions(url)
+
+      // https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
+      case "wallet_requestPermissions":
+        return this.requestPermissions(
+          url,
+          request as EthRequestArguments<"wallet_requestPermissions">
         )
 
       default:

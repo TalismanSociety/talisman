@@ -64,13 +64,17 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
     if (type === "polkadot" && site?.ethAddresses)
       await this.updateSite(id, { addresses: undefined })
     else if (type === "ethereum" && site?.addresses)
-      await this.updateSite(id, { ethAddresses: undefined })
+      await this.updateSite(id, {
+        ethAddresses: undefined,
+        ethPermissions: undefined,
+        ethChainId: undefined,
+      })
     else await this.delete(id)
   }
 
   // called after removing an account from keyring, for cleanup purposes
-  forgetAccount(address: string) {
-    this.mutate((sites) => {
+  async forgetAccount(address: string) {
+    await this.mutate((sites) => {
       for (const [key, { addresses, ethAddresses }] of Object.entries(sites)) {
         sites[key].addresses = addresses?.filter((a) => a !== address)
         sites[key].ethAddresses = ethAddresses?.filter((a) => a !== address)
@@ -79,8 +83,8 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
     })
   }
 
-  updateSite(id: string, props: Partial<AuthorizedSite>) {
-    this.mutate((sites) => {
+  async updateSite(id: string, props: Partial<AuthorizedSite>) {
+    await this.mutate((sites) => {
       sites[id] = {
         ...sites[id],
         ...props,

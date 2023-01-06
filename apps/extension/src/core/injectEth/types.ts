@@ -1,6 +1,11 @@
 import EventEmitter from "events"
 
-import type { AddEthereumChainParameter, WatchAssetBase } from "@core/domains/ethereum/types"
+import type {
+  AddEthereumChainParameter,
+  RequestedPermissions,
+  WatchAssetBase,
+  Web3WalletPermission,
+} from "@core/domains/ethereum/types"
 import { BlockWithTransactions } from "@ethersproject/abstract-provider"
 import { BigNumberish } from "@ethersproject/bignumber"
 import type {
@@ -95,6 +100,12 @@ export interface EthRequestSignatures {
   // - the chain id is malformed
   // - the chain with the specified id has not been added to metamask
   wallet_switchEthereumChain: [EthRequestSwitchEthereumChain, null]
+
+  // https://docs.metamask.io/guide/rpc-api.html#wallet-getpermissions
+  wallet_getPermissions: [null, Web3WalletPermission[]]
+
+  // https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
+  wallet_requestPermissions: [[RequestedPermissions], Web3WalletPermission[]]
 }
 
 export type EthRequestTypes = keyof EthRequestSignatures

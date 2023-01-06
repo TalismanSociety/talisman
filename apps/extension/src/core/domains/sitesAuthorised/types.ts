@@ -4,6 +4,8 @@ import type {
   RequestAuthorizeSubscribe,
 } from "@polkadot/extension-base/background/types"
 
+import { Web3WalletPermission, Web3WalletPermissionTarget } from "../ethereum/types"
+
 export interface RequestAuthorizeTab extends PolkadotRequestAuthorizeTab {
   name?: string
   ethereum?: boolean
@@ -39,10 +41,16 @@ export declare type AuthorizedSiteAddresses = AuthorizedSiteAddress[]
 export declare type AuthorizedSites = Record<string, AuthorizedSite>
 export declare type AuthUrls = AuthorizedSites
 
+export type EthWalletPermissions = Record<
+  Web3WalletPermissionTarget,
+  Pick<Web3WalletPermission, "date">
+>
+
 export type AuthorizedSite = {
   id: string
   addresses?: AuthorizedSiteAddresses
   ethAddresses?: AuthorizedSiteAddresses
+  ethPermissions?: EthWalletPermissions
   origin: string
   url: string
   ethChainId?: number

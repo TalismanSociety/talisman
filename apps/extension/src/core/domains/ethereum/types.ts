@@ -71,6 +71,22 @@ export type AddEthereumChainRequest = {
   network: AddEthereumChainParameter
 }
 
+export type Web3WalletPermissionTarget = "eth_accounts" // add more options as needed using |
+
+// from https://docs.metamask.io/guide/rpc-api.html#restricted-methods
+export interface Web3WalletPermission {
+  // The name of the method corresponding to the permission
+  parentCapability: Web3WalletPermissionTarget
+
+  // The date the permission was granted, in UNIX epoch time
+  date?: number
+
+  // more to come...
+}
+
+// from https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
+export type RequestedPermissions = Record<Web3WalletPermissionTarget, unknown>
+
 export type RequestUpsertCustomEvmNetwork = {
   id: EvmNetworkId
   name: string
