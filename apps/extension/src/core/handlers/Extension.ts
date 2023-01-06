@@ -1,16 +1,8 @@
-import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
 import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
-import { getBalanceLocks } from "@core/domains/balances/helpers"
-import { balanceModules } from "@core/domains/balances/store"
-import {
-  Balances,
-  RequestBalance,
-  RequestBalanceLocks,
-  RequestBalancesByParamsSubscribe,
-} from "@core/domains/balances/types"
+import { BalancesHandler } from "@core/domains/balances"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
@@ -21,26 +13,22 @@ import TokensHandler from "@core/domains/tokens/handler"
 import { AssetTransferHandler } from "@core/domains/transactions"
 import State from "@core/handlers/State"
 import { ExtensionStore } from "@core/handlers/stores"
+import { unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
-import { chainConnector } from "@core/rpcs/chain-connector"
-import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
-import { chaindataProvider } from "@core/rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import { assert } from "@polkadot/util"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
-import { AddressesByToken, db as balancesDb } from "@talismn/balances"
-import { Token } from "@talismn/chaindata-provider"
+import { db as balancesDb } from "@talismn/balances"
 import { liveQuery } from "dexie"
 import Browser from "webextension-polyfill"
 
-// import chainsInit from "../libs/init/chains.json"
-// import evmNetworksInit from "../libs/init/evmNetworks.json"
-// import tokensInit from "../libs/init/tokens.json"
-import { createSubscription, unsubscribe } from "./subscriptions"
+// import chainsInit from "@core/libs/init/chains.json"
+// import evmNetworksInit from "@core/libs/init/evmNetworks.json"
+// import tokensInit from "@core/libs/init/tokens.json"
 
 export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
@@ -54,13 +42,14 @@ export default class Extension extends ExtensionHandler {
       accounts: new AccountsHandler(state, stores),
       app: new AppHandler(state, stores),
       assets: new AssetTransferHandler(state, stores),
+      balances: new BalancesHandler(state, stores),
+      encrypt: new EncryptHandler(state, stores),
       eth: new EthHandler(state, stores),
       metadata: new MetadataHandler(state, stores),
-      encrypt: new EncryptHandler(state, stores),
       signing: new SigningHandler(state, stores),
       sites: new SitesAuthorisationHandler(state, stores),
-      tokens: new TokensHandler(state, stores),
       tokenRates: new TokenRatesHandler(state, stores),
+      tokens: new TokensHandler(state, stores),
     }
 
     // connect auto lock timeout setting to the password store
@@ -208,75 +197,6 @@ export default class Extension extends ExtensionHandler {
       case "pri(mnemonic.address)": {
         const { mnemonic, type } = request as RequestAddressFromMnemonic
         return addressFromMnemonic(mnemonic, type)
-      }
-
-      // --------------------------------------------------------------------
-      // balance handlers ---------------------------------------------------
-      // --------------------------------------------------------------------
-      case "pri(balances.get)":
-        return this.stores.balances.getBalance(request as RequestBalance)
-
-      case "pri(balances.locks.get)":
-        return getBalanceLocks(request as RequestBalanceLocks)
-
-      case "pri(balances.subscribe)":
-        return this.stores.balances.subscribe(id, port)
-
-      // TODO: Replace this call with something internal to the balances store
-      // i.e. refactor the balances store to allow us to subscribe to arbitrary balances here,
-      // instead of being limited to the accounts which are in the wallet's keystore
-      case "pri(balances.byparams.subscribe)": {
-        // create subscription callback
-        const callback = createSubscription<"pri(balances.byparams.subscribe)">(id, port)
-
-        const { addressesByChain, addressesByEvmNetwork } =
-          request as RequestBalancesByParamsSubscribe
-
-        const addressesByToken: AddressesByToken<Token> = {}
-        const chains = await chaindataProvider.chains()
-        const evmNetworks = await chaindataProvider.evmNetworks()
-
-        Object.entries(addressesByChain).forEach(([chainId, addresses]) => {
-          if (chains[chainId] === undefined) return
-          const tokenIds = (chains[chainId].tokens || []).map(({ id }) => id)
-          for (const tokenId of tokenIds) {
-            if (addressesByToken[tokenId] === undefined) addressesByToken[tokenId] = []
-            addressesByToken[tokenId] = addressesByToken[tokenId].concat(addresses)
-          }
-        })
-        addressesByEvmNetwork.evmNetworks.forEach(({ id: evmNetworkId }) => {
-          if (evmNetworks[evmNetworkId] === undefined) return
-          const tokenIds = (evmNetworks[evmNetworkId].tokens || []).map(({ id }) => id)
-          for (const tokenId of tokenIds) {
-            if (addressesByToken[tokenId] === undefined) addressesByToken[tokenId] = []
-            addressesByToken[tokenId] = addressesByToken[tokenId].concat(
-              addressesByEvmNetwork.addresses
-            )
-          }
-        })
-
-        // subscribe to balances by params
-        const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
-          balanceModule.subscribeBalances(
-            { substrate: chainConnector, evm: chainConnectorEvm },
-            chaindataProvider,
-            addressesByToken ?? {},
-            (error, result) => {
-              // eslint-disable-next-line no-console
-              if (error) DEBUG && console.error(error)
-              else callback({ type: "upsert", balances: (result ?? new Balances([])).toJSON() })
-            }
-          )
-        )
-
-        // unsub on port disconnect
-        port.onDisconnect.addListener((): void => {
-          unsubscribe(id)
-          closeSubscriptionCallbacks.forEach((cb) => cb.then((close) => close()))
-        })
-
-        // subscription created
-        return true
       }
 
       // --------------------------------------------------------------------

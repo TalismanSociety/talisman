@@ -13,7 +13,7 @@ import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
-import { db as balancesDb } from "@talismn/balances"
+import { AddressesByToken, db as balancesDb } from "@talismn/balances"
 import { EvmErc20Module } from "@talismn/balances-evm-erc20"
 import { EvmNativeModule } from "@talismn/balances-evm-native"
 import { SubNativeModule } from "@talismn/balances-substrate-native"
@@ -367,7 +367,7 @@ export class BalanceStore {
     // TODO: Don't fetch evm balances for ethereum accounts on chains whose native account format is secp256k1 (i.e. moonbeam/river/base)
     //       On these chains we can fetch the balance purely via substrate (and fetching via both evm+substrate will double up the balance)
     //
-    const addressesByTokenByModule: Record<string, Record<string, string[]>> = {}
+    const addressesByTokenByModule: Record<string, AddressesByToken<Token>> = {}
     tokens.forEach((token) => {
       // filter out tokens on chains/evmNetworks which aren't healthy
       const isHealthy =
