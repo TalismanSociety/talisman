@@ -3,6 +3,7 @@ import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
+  EthWalletPermissions,
   RequestAuthorizeTab,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token } from "@core/domains/tokens/types"
@@ -47,7 +48,7 @@ import {
   isValidWatchAssetRequestParam,
 } from "./helpers"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
-import { Web3WalletPermission } from "./types"
+import { Web3WalletPermission, Web3WalletPermissionTarget } from "./types"
 
 interface EthAuthorizedSite extends AuthorizedSite {
   ethChainId: number
@@ -482,14 +483,21 @@ export class EthTabsHandler extends TabsHandler {
 
   private async getPermissions(url: string): Promise<Web3WalletPermission[]> {
     const site = await this.stores.sites.getSiteFromUrl(url)
-    return site?.ethPermissions ?? []
+
+    return site?.ethPermissions
+      ? Object.entries(site.ethPermissions).reduce<Web3WalletPermission[]>(
+          (permissions, [parentCapability, otherProps]) =>
+            permissions.concat({ parentCapability, ...otherProps } as Web3WalletPermission),
+          []
+        )
+      : []
   }
 
   private async requestPermissions(
     url: string,
     request: EthRequestArguments<"wallet_requestPermissions">
   ): Promise<Web3WalletPermission[]> {
-    if (request.params.length === 1)
+    if (request.params.length !== 1)
       throw new EthProviderRpcError(
         "This method expects an array with only 1 entry",
         ETH_ERROR_EIP1474_INVALID_PARAMS
@@ -499,28 +507,30 @@ export class EthTabsHandler extends TabsHandler {
     if (!isValidRequestedPermissions(permissions))
       throw new EthProviderRpcError("Invalid permissions", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    await this.authoriseEth(url, { origin: "", ethereum: true })
-    const accountsList = await this.accountsList(url)
-    if (accountsList.length) {
-      const site = await this.stores.sites.getSiteFromUrl(url)
+    /*
+                           Process all requested permissions
+    */
+    if (permissions["eth_accounts"]) await this.authoriseEth(url, { origin: "", ethereum: true })
 
-      const web3Permissions = Object.keys(permissions).map((method) => ({
-        ...(permissions[method] ?? {}),
-        parentCapability: method,
-        date: Date.now(),
-      }))
-    }
-    // const finalPermissions = [...site.ethPermissions ?? []]
-    // for (const web3Permission of web3Permissions) {
+    /*
+                           Store missing permissions
+    */
+    const site = await this.stores.sites.getSiteFromUrl(url)
 
-    // }
+    const ethPermissions = site?.ethPermissions ?? ({} as EthWalletPermissions)
+    let hasNewPermissions = false
 
-    // this.stores.sites.updateSite(url, ({
+    for (const permission of Object.keys(permissions) as Web3WalletPermissionTarget[])
+      if (!ethPermissions[permission]) {
+        ethPermissions[permission] = { date: new Date().getTime() }
+        hasNewPermissions = true
+      }
 
-    //    ethPermissions: [...site.ethPermissions ?? [], ...permissions]
-    //  }))
-    // }
+    if (hasNewPermissions) await this.stores.sites.updateSite(site.id, { ethPermissions })
 
+    /* 
+                            Return all permissions
+    */
     return this.getPermissions(url)
   }
 
@@ -538,14 +548,17 @@ export class EthTabsHandler extends TabsHandler {
         "wallet_switchEthereumChain",
         "wallet_addEthereumChain",
         "wallet_watchAsset",
+        "wallet_requestPermissions",
       ].includes(request.method)
     )
       await this.checkAccountAuthorised(url)
 
     switch (request.method) {
       case "eth_requestAccounts":
-        // error will be thrown by authorizeEth if user rejects
-        await this.authoriseEth(url, { origin: "", ethereum: true })
+        await this.requestPermissions(url, {
+          method: "wallet_requestPermissions",
+          params: [{ eth_accounts: {} }],
+        })
         return this.accountsList(url)
 
       case "eth_accounts":
