@@ -20,9 +20,9 @@ import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
-  CustomEvmNetwork,
   EthGasSettings,
   EvmNetworkId,
+  RequestUpsertCustomEvmNetwork,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
 import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/types"
@@ -154,15 +154,6 @@ export default interface MessageTypes {
   customErc20Token: (id: string) => Promise<CustomErc20Token>
   addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
   removeCustomErc20Token: (id: string) => Promise<boolean>
-  clearCustomErc20Tokens: (
-    filter: { chainId?: ChainId; evmNetworkId?: EvmNetworkId } | undefined
-  ) => Promise<boolean>
-
-  // ethereum networks message types
-  ethereumNetworks: (cb: () => void) => UnsubscribeFn
-  addCustomEthereumNetwork: (ethereumNetwork: CustomEvmNetwork) => Promise<boolean>
-  removeCustomEthereumNetwork: (id: string) => Promise<boolean>
-  clearCustomEthereumNetworks: () => Promise<boolean>
 
   // transaction message types
   transactionSubscribe: (id: string, cb: (tx: any) => void) => UnsubscribeFn
@@ -224,6 +215,13 @@ export default interface MessageTypes {
     cb: (requests: AddEthereumChainRequest[]) => void
   ) => UnsubscribeFn
 
+  // ethereum networks message types
+  ethereumNetworks: (cb: () => void) => UnsubscribeFn
+  ethNetworkUpsert: (network: RequestUpsertCustomEvmNetwork) => Promise<boolean>
+  ethNetworkRemove: (id: string) => Promise<boolean>
+  ethNetworkReset: (id: string) => Promise<boolean>
+
+  // ethereum tokens message types
   ethWatchAssetRequestApprove: (id: string) => Promise<boolean>
   ethWatchAssetRequestCancel: (is: string) => Promise<boolean>
   ethWatchAssetRequestSubscribe: (

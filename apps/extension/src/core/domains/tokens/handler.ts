@@ -1,6 +1,6 @@
-import { ChainId } from "@core/domains/chains/types"
 import { getErc20TokenId } from "@core/domains/ethereum/helpers"
 import { CustomErc20Token, CustomErc20TokenCreate } from "@core/domains/tokens/types"
+import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Port, RequestIdOnly } from "@core/types/base"
@@ -20,7 +20,7 @@ export default class TokensHandler extends ExtensionHandler {
       // token handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(tokens.subscribe)":
-        return this.stores.tokens.hydrateStore()
+        return chaindataProvider.hydrateTokens()
 
       // --------------------------------------------------------------------
       // ERC20 token handlers -----------------------------------------------------
@@ -65,46 +65,22 @@ export default class TokensHandler extends ExtensionHandler {
           logo: image || githubUnknownTokenLogoUrl,
           coingeckoId,
           contractAddress,
-          // chain: token.chainId ? { id: token.chainId } : undefined,
           evmNetwork: token.evmNetworkId ? { id: token.evmNetworkId } : null,
           isCustom: true,
           image,
         }
 
-        return await chaindataProvider.addCustomToken(newToken)
+        talismanAnalytics.capture(`${existing ? "update" : "add"} custom ERC20 token`, {
+          evmNetworkId: token.evmNetworkId,
+          symbol: token.symbol,
+          contractAddress,
+        })
+
+        return chaindataProvider.addCustomToken(newToken)
       }
 
       case "pri(tokens.erc20.custom.remove)":
-        return await chaindataProvider.removeCustomToken((request as RequestIdOnly).id)
-
-      case "pri(tokens.erc20.custom.clear)": {
-        const filter = request as { chainId?: ChainId; evmNetworkId?: string } | undefined
-        const deleteFilterFn = (token: CustomErc20Token) =>
-          filter === undefined
-            ? // delete if no filter set
-              true
-            : filter.chainId === token.chain?.id
-            ? // delete if chainId filter set and this token is on the chain
-              true
-            : filter.evmNetworkId === token.evmNetwork?.id
-            ? // delete if evmNetworkId set and this token is on the evmNetwork
-              true
-            : // don't delete
-              false
-
-        const deleteTokens = Object.values(await chaindataProvider.tokens())
-          .filter((token): token is CustomErc20Token => {
-            if (token.type !== "evm-erc20") return false
-            if (!("isCustom" in token)) return false
-            return true
-          })
-          .filter(deleteFilterFn)
-          .map((token) => token.id)
-        await Promise.all(
-          deleteTokens.map((tokenId) => chaindataProvider.removeCustomToken(tokenId))
-        )
-        return
-      }
+        return chaindataProvider.removeCustomToken((request as RequestIdOnly).id)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

@@ -43,8 +43,4 @@ export interface TokenMessages {
   "pri(tokens.erc20.custom.byid)": [RequestIdOnly, CustomEvmErc20Token]
   "pri(tokens.erc20.custom.add)": [CustomEvmErc20TokenCreate, boolean]
   "pri(tokens.erc20.custom.remove)": [RequestIdOnly, boolean]
-  "pri(tokens.erc20.custom.clear)": [
-    { chainId?: ChainId; evmNetworkId?: EvmNetworkId } | undefined,
-    boolean
-  ]
 }

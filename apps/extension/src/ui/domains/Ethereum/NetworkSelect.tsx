@@ -16,6 +16,7 @@ type NetworkSelectProps = {
   defaultChainId?: EvmNetworkId
   onChange?: (chainId: EvmNetworkId) => void
   disabled?: boolean
+  className?: string
 }
 
 const renderNetwork = (network: EvmNetwork | CustomEvmNetwork) => {
@@ -32,6 +33,7 @@ export const NetworkSelect = ({
   defaultChainId,
   onChange,
   disabled,
+  className,
 }: NetworkSelectProps) => {
   const networks = useSortedEvmNetworks()
   const [selected, setSelected] = useState<EvmNetwork | CustomEvmNetwork | undefined>(
@@ -67,6 +69,7 @@ export const NetworkSelect = ({
       defaultSelectedItem={selected}
       onChange={handleChange}
       disabled={disabled}
+      className={className}
     />
   )
 }

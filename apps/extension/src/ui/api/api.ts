@@ -153,8 +153,6 @@ export const api: MessageTypes = {
   addCustomErc20Token: (token) => messageService.sendMessage("pri(tokens.erc20.custom.add)", token),
   removeCustomErc20Token: (id) =>
     messageService.sendMessage("pri(tokens.erc20.custom.remove)", { id }),
-  clearCustomErc20Tokens: (filter) =>
-    messageService.sendMessage("pri(tokens.erc20.custom.clear)", filter),
 
   // transaction message types
   transactionSubscribe: (id, cb) =>
@@ -239,12 +237,10 @@ export const api: MessageTypes = {
     messageService.subscribe("pri(eth.networks.add.subscribe)", null, cb),
   // ethereum network message types
   ethereumNetworks: (cb) => messageService.subscribe("pri(eth.networks.subscribe)", null, cb),
-  addCustomEthereumNetwork: (ethereumNetwork) =>
-    messageService.sendMessage("pri(eth.networks.add.custom)", ethereumNetwork),
-  removeCustomEthereumNetwork: (id: string) =>
-    messageService.sendMessage("pri(eth.networks.removeCustomNetwork)", { id }),
-  clearCustomEthereumNetworks: () =>
-    messageService.sendMessage("pri(eth.networks.clearCustomNetworks)"),
+  ethNetworkUpsert: (network) => messageService.sendMessage("pri(eth.networks.upsert)", network),
+  ethNetworkRemove: (id) => messageService.sendMessage("pri(eth.networks.remove)", { id }),
+  ethNetworkReset: (id) => messageService.sendMessage("pri(eth.networks.reset)", { id }),
+
   // ethereum watch assets
   ethWatchAssetRequestApprove: (id) =>
     messageService.sendMessage("pri(eth.watchasset.requests.approve)", { id }),
