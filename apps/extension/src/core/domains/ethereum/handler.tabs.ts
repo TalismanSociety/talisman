@@ -503,34 +503,51 @@ export class EthTabsHandler extends TabsHandler {
         ETH_ERROR_EIP1474_INVALID_PARAMS
       )
 
-    const [permissions] = request.params
-    if (!isValidRequestedPermissions(permissions))
+    const [requestedPerms] = request.params
+    if (!isValidRequestedPermissions(requestedPerms))
       throw new EthProviderRpcError("Invalid permissions", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    /*
-                           Process all requested permissions
-    */
-    if (permissions["eth_accounts"]) await this.authoriseEth(url, { origin: "", ethereum: true })
+    // first check that we support all the requested permissions
+    const SUPPORTED_WEB3_PERMISSIONS = ["eth_accounts"] // TODO move this const out of here
+    const unsupportedRequestedPerms = Object.keys(requestedPerms).filter(
+      (perm) => !SUPPORTED_WEB3_PERMISSIONS.includes(perm)
+    )
+    if (unsupportedRequestedPerms.length)
+      throw new EthProviderRpcError(
+        `Unsupported permission(s) : ${unsupportedRequestedPerms.join(", ")}`,
+        ETH_ERROR_EIP1474_INVALID_PARAMS
+      )
 
-    /*
-                           Store missing permissions
-    */
+    // identify which permissions are currently missing
     const site = await this.stores.sites.getSiteFromUrl(url)
+    const existingPerms = site?.ethPermissions ?? ({} as EthWalletPermissions)
+    const missingPerms = Object.keys(requestedPerms)
+      .map((perm) => perm as Web3WalletPermissionTarget)
+      .filter((perm) => !existingPerms[perm])
 
-    const ethPermissions = site?.ethPermissions ?? ({} as EthWalletPermissions)
-    let hasNewPermissions = false
+    // request all missing permissions to the user
+    // for now we only support eth_accounts, which we consider granted when user authenticates
+    // @dev: cannot proceed with a loop here as order may have some importance, and we may want to group multiple permissions in a single request
+    const grantedPermissions: Partial<EthWalletPermissions> = {}
+    if (missingPerms.includes("eth_accounts")) {
+      await this.authoriseEth(url, { origin: "", ethereum: true })
+      grantedPermissions.eth_accounts = { date: new Date().getTime() }
+    }
 
-    for (const permission of Object.keys(permissions) as Web3WalletPermissionTarget[])
-      if (!ethPermissions[permission]) {
-        ethPermissions[permission] = { date: new Date().getTime() }
-        hasNewPermissions = true
-      }
+    // if any, store missing permissions
+    if (Object.keys(grantedPermissions).length) {
+      // fetch site again as it might have been created/updated while authenticating (eth_accounts permission)
+      const site = await this.stores.sites.getSiteFromUrl(url)
+      if (!site) throw new EthProviderRpcError("Unauthorised", ETH_ERROR_EIP1993_UNAUTHORIZED)
 
-    if (hasNewPermissions) await this.stores.sites.updateSite(site.id, { ethPermissions })
+      const ethPermissions = {
+        ...(site.ethPermissions ?? {}),
+        ...grantedPermissions,
+      } as EthWalletPermissions
 
-    /* 
-                            Return all permissions
-    */
+      await this.stores.sites.updateSite(site.id, { ethPermissions })
+    }
+
     return this.getPermissions(url)
   }
 
