@@ -86,6 +86,8 @@ E.g. we might make some changes to a balances module and want to test it out on 
 yarn plugin import workspace-tools
 
 yarn npm login
+git clean -ffdx packages
+yarn
 yarn build:packages:prod
 yarn workspaces foreach --no-private npm publish --tolerate-republish
 ```
