@@ -21,7 +21,10 @@ const useAccountExportPrivateKeyModalProvider = () => {
     close()
   }, [account, close])
 
-  const canExportAccount = useMemo(() => account?.type === "ethereum", [account])
+  const canExportAccount = useMemo(
+    () => account?.type === "ethereum" && !account.isExternal && !account.isHardware,
+    [account]
+  )
 
   const exportAccount = useCallback(
     (password: string) => {
