@@ -74,7 +74,7 @@ const WrappedMnemonicForm = ({ className }: MnemonicFormProps) => {
     <PasswordUnlock
       buttonText="View Recovery Phrase"
       description={<Description />}
-      title="Enter your password to show your recovery phrase"
+      title="Enter your password to show your recovery phrase."
     >
       <StyledMnemonicForm className={className} />
     </PasswordUnlock>
