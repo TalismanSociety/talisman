@@ -21,3 +21,5 @@ export const DEFAULT_SEND_FUNDS_TOKEN_ETHEREUM = "1-evm-native-eth-1"
 // NOTE: The @talismn/chain-connector-evm also has a copy of this key
 // So if you change it here, you should also change it in packages/chain-connector-evm/src/constants.ts
 export const API_KEY_ONFINALITY = "e1b2f3ea-f003-42f5-adf6-d2e6aa3ecfe4"
+
+export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"

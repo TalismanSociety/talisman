@@ -28,8 +28,21 @@ const config = (env) =>
 
               // Update the version in the manifest file to match the version in package.json
               manifest.version = process.env.npm_package_version
+
               // add a version name key to distinguish in list of installed extensions
               manifest.version_name = getManifestVersionName(env)
+
+              // Set the dev title and icon because we're doing a dev build
+              manifest.name = `${manifest.name} - Dev`
+              manifest.browser_action.default_title = `${manifest.browser_action.default_title} - Dev`
+
+              for (const key in manifest.icons) {
+                const filename = manifest.icons[key]
+                const name = filename.split(".").slice(0, -1).join()
+                const extension = filename.split(".").slice(-1).join()
+
+                manifest.icons[key] = `${name}-dev.${extension}`
+              }
 
               // Return the modified manifest
               return JSON.stringify(manifest, null, 2)

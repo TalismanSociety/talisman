@@ -4,6 +4,7 @@ import { Button, classNames } from "talisman-ui"
 
 import { Section } from "../Section"
 import { useWallet } from "./useWallet"
+
 export const Account = () => {
   const { isConnected, accounts, connect, disconnect, select, account } = useWallet()
 

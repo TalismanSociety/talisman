@@ -1,7 +1,7 @@
 import { CustomErc20Token } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { RequestIdOnly } from "@core/types/base"
-import { CustomEvmNetwork, EvmNetworkId } from "@talismn/chaindata-provider"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BigNumberish, ethers } from "ethers"
 
 export type {
@@ -87,6 +87,19 @@ export interface Web3WalletPermission {
 // from https://docs.metamask.io/guide/rpc-api.html#wallet-requestpermissions
 export type RequestedPermissions = Record<Web3WalletPermissionTarget, unknown>
 
+export type RequestUpsertCustomEvmNetwork = {
+  id: EvmNetworkId
+  name: string
+  chainLogoUrl: string | null
+  isTestnet: boolean
+  rpcs: { url: string }[]
+  blockExplorerUrl?: string
+  tokenSymbol: string
+  tokenDecimals: number
+  tokenCoingeckoId: string | null
+  tokenLogoUrl: string | null
+}
+
 export interface EthMessages {
   // all ethereum calls
   "pub(eth.request)": [AnyEthRequest, EthResponseTypes]
@@ -114,9 +127,9 @@ export interface EthMessages {
 
   // ethereum networks message signatures
   "pri(eth.networks.subscribe)": [null, boolean, boolean]
-  "pri(eth.networks.add.custom)": [CustomEvmNetwork, boolean]
-  "pri(eth.networks.removeCustomNetwork)": [RequestIdOnly, boolean]
-  "pri(eth.networks.clearCustomNetworks)": [null, boolean]
+  "pri(eth.networks.remove)": [RequestIdOnly, boolean]
+  "pri(eth.networks.reset)": [RequestIdOnly, boolean]
+  "pri(eth.networks.upsert)": [RequestUpsertCustomEvmNetwork, boolean]
 }
 
 export type EthGasSettingsLegacy = {

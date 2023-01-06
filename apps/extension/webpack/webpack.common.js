@@ -92,7 +92,7 @@ const config = (env) => ({
     new webpack.DefinePlugin({
       // passthroughs from the environment
       "process.env.EXTENSION_PREFIX": JSON.stringify(""), // this env var MUST be set, however if it has a value the keyring will break
-      "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || ""),
+      "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
       "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
       "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN || ""),
       "process.env.SENTRY_AUTH_TOKEN": JSON.stringify(process.env.SENTRY_AUTH_TOKEN || ""),

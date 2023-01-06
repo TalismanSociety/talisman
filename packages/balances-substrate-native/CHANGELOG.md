@@ -1,5 +1,12 @@
 # @talismn/balances-substrate-native
 
+## 0.2.0
+
+### Patch Changes
+
+- fix: don't include the @subsquid packages in the wallet frontend bundle
+  - @talismn/balances@0.2.0
+
 ## 0.1.19
 
 ### Patch Changes

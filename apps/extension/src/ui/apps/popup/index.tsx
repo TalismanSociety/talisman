@@ -6,6 +6,10 @@ import {
   AccountExportModalProvider,
 } from "@ui/domains/Account/AccountExportModal"
 import {
+  AccountExportPrivateKeyModal,
+  AccountExportPrivateKeyModalProvider,
+} from "@ui/domains/Account/AccountExportPrivateKeyModal"
+import {
   AccountRemoveModal,
   AccountRemoveModalProvider,
 } from "@ui/domains/Account/AccountRemoveModal"
@@ -112,28 +116,31 @@ const Popup = () => {
       <SelectedAccountProvider isPopup>
         <AccountRemoveModalProvider>
           <AccountRenameModalProvider>
-            <AccountExportModalProvider>
-              <CurrentSiteProvider>
-                <NavigationProvider>
-                  <AddressFormatterModalProvider>
-                    <Routes>
-                      <Route path="portfolio/*" element={<Portfolio />}></Route>
-                      <Route path="auth/:id" element={<Connect />}></Route>
-                      <Route path="sign/eth/:id" element={<EthereumSignRequest />}></Route>
-                      <Route path="sign/:id" element={<SubstrateSignRequest />}></Route>
-                      <Route path="metadata/:id" element={<Metadata />}></Route>
-                      <Route path="encrypt/:id" element={<Encrypt />}></Route>
-                      <Route path="eth-network-add/:id" element={<AddEthereumNetwork />}></Route>
-                      <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
-                      <Route path="*" element={<Navigate to="/portfolio" replace />} />
-                    </Routes>
-                    <AccountRenameModal />
-                    <AccountRemoveModal />
-                    <AccountExportModal />
-                  </AddressFormatterModalProvider>
-                </NavigationProvider>
-              </CurrentSiteProvider>
-            </AccountExportModalProvider>
+            <AccountExportPrivateKeyModalProvider>
+              <AccountExportModalProvider>
+                <CurrentSiteProvider>
+                  <NavigationProvider>
+                    <AddressFormatterModalProvider>
+                      <Routes>
+                        <Route path="portfolio/*" element={<Portfolio />}></Route>
+                        <Route path="auth/:id" element={<Connect />}></Route>
+                        <Route path="sign/eth/:id" element={<EthereumSignRequest />}></Route>
+                        <Route path="sign/:id" element={<SubstrateSignRequest />}></Route>
+                        <Route path="metadata/:id" element={<Metadata />}></Route>
+                        <Route path="encrypt/:id" element={<Encrypt />}></Route>
+                        <Route path="eth-network-add/:id" element={<AddEthereumNetwork />}></Route>
+                        <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
+                        <Route path="*" element={<Navigate to="/portfolio" replace />} />
+                      </Routes>
+                      <AccountRenameModal />
+                      <AccountRemoveModal />
+                      <AccountExportModal />
+                      <AccountExportPrivateKeyModal />
+                    </AddressFormatterModalProvider>
+                  </NavigationProvider>
+                </CurrentSiteProvider>
+              </AccountExportModalProvider>
+            </AccountExportPrivateKeyModalProvider>
           </AccountRenameModalProvider>
         </AccountRemoveModalProvider>
       </SelectedAccountProvider>

@@ -1,5 +1,3 @@
-/* eslint-disable */
-
 // Because both of these prettier plugins hijack the typescript parser,
 // we can only use one of them at a time!
 //
@@ -14,7 +12,8 @@ const pluginTailwindcss = require("prettier-plugin-tailwindcss")
 /** @type {import("prettier").Parser}  */
 const myParser = {
   ...pluginImportSort.parsers.typescript,
-  parse: pluginTailwindcss.parsers.typescript.parse,
+  parse:
+    pluginTailwindcss.parsers.typescript.parse,
 }
 
 /** @type {import("prettier").Plugin}  */

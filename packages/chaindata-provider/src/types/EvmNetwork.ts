@@ -13,6 +13,7 @@ export type EvmNetwork = {
   // TODO: Create ethereum tokens store (and reference here by id).
   //       Or extend substrate tokens store to support both substrate and ethereum tokens.
   nativeToken: { id: TokenId } | null
+  // TODO remove tokens property, as tokens already reference their network
   tokens: Array<{ id: TokenId }> | null
   explorerUrl: string | null
   rpcs: Array<EthereumRpc> | null

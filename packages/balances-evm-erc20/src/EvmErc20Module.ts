@@ -158,22 +158,9 @@ export const EvmErc20Module: BalanceModule<
         const tokens = await chaindataProvider.tokens()
 
         // regroup tokens by network
-        const addressesByTokenByEvmNetwork = Object.keys(addressesByToken).reduce(
-          (result, tokenId) => {
-            const token = tokens[tokenId]
-            if (!token?.evmNetwork?.id) {
-              log.error("Could not find network for ERC20 token %s", tokenId)
-              return result
-            }
-
-            const evmNetworkId = token.evmNetwork.id
-            if (!result[evmNetworkId]) result[evmNetworkId] = {}
-
-            result[evmNetworkId][tokenId] = addressesByToken[tokenId]
-
-            return result
-          },
-          {} as Record<EvmNetworkId, AddressesByToken<EvmErc20Token | CustomEvmErc20Token>>
+        const addressesByTokenByEvmNetwork = groupAddressesByTokenByEvmNetwork(
+          addressesByToken,
+          tokens
         )
 
         // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)

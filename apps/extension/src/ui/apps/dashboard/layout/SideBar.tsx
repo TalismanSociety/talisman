@@ -254,7 +254,7 @@ export const SideBar = () => {
   const { open: openReceiveTokensModal } = useReceiveTokensModal()
   const handleCopyClick = useCallback(() => {
     if (account) openCopyAddressModal(account.address)
-    else openReceiveTokensModal()
+    else openReceiveTokensModal("Select address to copy")
     genericEvent("open copy address", { from: "sidebar" })
   }, [account, genericEvent, openCopyAddressModal, openReceiveTokensModal])
 

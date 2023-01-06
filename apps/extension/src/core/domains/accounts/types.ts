@@ -83,6 +83,11 @@ export interface RequestAccountExport {
   exportPw: string
 }
 
+export interface RequestAccountExportPrivateKey {
+  address: string
+  password: string
+}
+
 export interface RequestAccountRename {
   address: string
   name: string
@@ -104,6 +109,7 @@ export interface AccountsMessages {
   "pri(accounts.create.hardware.ethereum)": [RequestAccountCreateHardwareEthereum, string]
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
+  "pri(accounts.export.pk)": [RequestAccountExportPrivateKey, string]
   "pri(accounts.rename)": [RequestAccountRename, boolean]
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
   "pri(accounts.validateMnemonic)": [string, boolean]

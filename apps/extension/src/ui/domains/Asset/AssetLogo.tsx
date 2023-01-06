@@ -1,12 +1,43 @@
 import { log } from "@core/log"
-import { getCoinGeckoErc20Coin } from "@core/util/getCoinGeckoErc20Coin"
+import { getCoinGeckoErc20Coin } from "@core/util/coingecko/getCoinGeckoErc20Coin"
 import { classNames } from "@talisman/util/classNames"
 import { EvmNetworkId, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { TokenId } from "@talismn/chaindata-provider"
 import useToken from "@ui/hooks/useToken"
 import { imgSrcToBlob } from "blob-util"
-import { useEffect, useState } from "react"
-import styled from "styled-components"
+import { FC, useEffect, useState } from "react"
+
+type AssetLogoBaseProps = {
+  id?: string
+  className?: string
+  url?: string | null
+  symbol?: string
+}
+
+export const AssetLogoBase = ({ id, symbol, className, url }: AssetLogoBaseProps) => {
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    setError(false)
+  }, [url])
+
+  return (
+    <picture className={classNames("relative block h-[1em] w-[1em] shrink-0", className)}>
+      {!url || error ? (
+        <source srcSet={githubUnknownTokenLogoUrl} />
+      ) : (
+        <source srcSet={url ?? undefined} />
+      )}
+      <img
+        className="absolute top-0 left-0 h-full w-full"
+        src={githubUnknownTokenLogoUrl}
+        alt={symbol ?? ""}
+        data-id={id}
+        onError={() => setError(true)}
+      />
+    </picture>
+  )
+}
 
 type AssetLogoProps = {
   className?: string
@@ -20,7 +51,7 @@ type AssetLogoProps = {
   erc20?: CoingeckoLogoRequest
 }
 
-export const AssetLogo = styled(({ className, id, erc20 }: AssetLogoProps) => {
+export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
   const token = useToken(id)
 
   // extract the token logo url, or use the unknown logo url
@@ -95,35 +126,8 @@ export const AssetLogo = styled(({ className, id, erc20 }: AssetLogoProps) => {
     setUrl(logo)
   }, [erc20, id, logo])
 
-  const [error, setError] = useState(false)
-
-  return (
-    <picture>
-      {error ? <source srcSet={githubUnknownTokenLogoUrl} /> : <source srcSet={url ?? undefined} />}
-      <img
-        className={classNames("asset-logo", className)}
-        src={githubUnknownTokenLogoUrl}
-        alt={token?.symbol}
-        data-id={id}
-        onError={logo === undefined ? undefined : () => setError(true)}
-      />
-    </picture>
-  )
-})`
-  display: block;
-  position: relative;
-  width: 1em;
-  height: 1em;
-  flex-shrink: 0;
-
-  img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-`
+  return <AssetLogoBase className={className} symbol={token?.symbol} url={url} />
+}
 
 //
 // coingecko logo url helpers

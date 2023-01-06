@@ -1,5 +1,11 @@
 # @talismn/balances-acala-stableassetpooltokens
 
+## 0.2.0
+
+### Patch Changes
+
+- @talismn/balances@0.2.0
+
 ## 0.1.19
 
 ### Patch Changes

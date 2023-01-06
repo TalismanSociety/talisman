@@ -194,11 +194,11 @@ const schemaAddEthereumRequest = yup.object().shape({
     .shape({
       name: yup.string().required(),
       symbol: yup.string().min(2).max(6).required(),
-      decimals: yup.number().required(),
+      decimals: yup.number().required().integer(),
     })
     .required(),
-  rpcUrls: yup.array().of(yup.string()).required(),
-  blockExplorerUrls: yup.array().of(yup.string()),
+  rpcUrls: yup.array().of(yup.string().required().url()).required(),
+  blockExplorerUrls: yup.array().of(yup.string().required().url()),
   iconUrls: yup.array().of(yup.string()),
 })
 

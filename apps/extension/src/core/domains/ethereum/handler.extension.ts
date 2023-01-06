@@ -1,7 +1,6 @@
 import { DEBUG } from "@core/constants"
 import {
   AnyEthRequestChainId,
-  CustomEvmNetwork,
   EthApproveSignAndSend,
   EthRequestSigningApproveSignature,
   WatchAssetRequest,
@@ -17,6 +16,7 @@ import { EthRequestArguments, EthRequestSignatures } from "@core/injectEth/types
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { watchEthereumTransaction } from "@core/notifications"
+import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
@@ -24,12 +24,14 @@ import { getPrivateKey } from "@core/util/getPrivateKey"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import { evmNativeTokenId } from "@talismn/balances-evm-native"
+import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
 
 import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
+import { RequestUpsertCustomEvmNetwork } from "./types"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -43,6 +45,7 @@ const getHumanReadableErrorMessage = (error: unknown) => {
   if (serverError) {
     const message = serverError.error?.message ?? serverError.reason ?? serverError.message
     return message
+      .replace("VM Exception while processing transaction: reverted with reason string ", "")
       .replace("VM Exception while processing transaction: revert", "")
       .replace("VM Exception while processing transaction:", "")
       .trim()
@@ -306,7 +309,7 @@ export class EthHandler extends ExtensionHandler {
       isTestnet: false,
       sortIndex: null,
       name: network.chainName,
-      logo: (network.iconUrls || [])[0] || githubUnknownTokenLogoUrl,
+      logo: (network.iconUrls || [])[0] ?? null,
       nativeToken: newToken ? { id: newToken.id } : null,
       tokens: [],
       explorerUrl: (network.blockExplorerUrls || [])[0],
@@ -327,6 +330,91 @@ export class EthHandler extends ExtensionHandler {
     })
 
     resolve(null)
+
+    return true
+  }
+
+  private async ethNetworkUpsert(network: RequestUpsertCustomEvmNetwork): Promise<boolean> {
+    await chaindataProvider.transaction("rw", ["evmNetworks", "tokens"], async () => {
+      const existingNetwork = await chaindataProvider.getEvmNetwork(network.id)
+      const existingToken = existingNetwork?.nativeToken?.id
+        ? await chaindataProvider.getToken(existingNetwork.nativeToken.id)
+        : null
+
+      const newToken: CustomEvmNativeToken = {
+        id: evmNativeTokenId(network.id, network.tokenSymbol),
+        type: "evm-native",
+        decimals: network.tokenDecimals,
+        symbol: network.tokenSymbol,
+        coingeckoId: network.tokenCoingeckoId ?? "",
+        evmNetwork: { id: network.id },
+        isTestnet: network.isTestnet,
+        isCustom: true,
+        logo: network.tokenLogoUrl ?? githubUnknownTokenLogoUrl,
+        chain: existingToken?.chain,
+      }
+
+      const newNetwork: CustomEvmNetwork = {
+        // EvmNetwork
+        id: network.id,
+        name: network.name,
+        isTestnet: network.isTestnet,
+        sortIndex: existingNetwork?.sortIndex ?? null,
+        logo: network.chainLogoUrl ?? null,
+        explorerUrl: network.blockExplorerUrl ?? null,
+        isHealthy: true,
+        nativeToken: { id: newToken.id },
+        rpcs: network.rpcs.map(({ url }) => ({ url, isHealthy: true })),
+        tokens: existingNetwork?.tokens ?? [],
+        substrateChain: existingNetwork?.substrateChain ?? null,
+        // CustomEvmNetwork
+        isCustom: true,
+        iconUrls: [],
+        explorerUrls: network.blockExplorerUrl ? [network.blockExplorerUrl] : [],
+      }
+
+      await chaindataProvider.addCustomToken(newToken)
+
+      // if symbol changed, id is different and previous native token must be deleted
+      if (existingToken && existingToken.id !== newToken.id)
+        await chaindataProvider.removeToken(existingToken.id)
+
+      await chaindataProvider.addCustomEvmNetwork(newNetwork)
+
+      // RPCs may have changed, clear cache
+      chainConnectorEvm.clearRpcProvidersCache(network.id)
+
+      talismanAnalytics.capture(`${existingNetwork ? "update" : "create"} custom network`, {
+        networkType: "evm",
+        network: network.id.toString(),
+      })
+    })
+
+    return true
+  }
+
+  private async ethNetworkRemove(request: RequestIdOnly): Promise<boolean> {
+    await chaindataProvider.removeCustomEvmNetwork(request.id)
+
+    talismanAnalytics.capture("remove custom network", {
+      networkType: "evm",
+      network: request.id,
+    })
+
+    chainConnectorEvm.clearRpcProvidersCache(request.id)
+
+    return true
+  }
+
+  private async ethNetworkReset(request: RequestIdOnly): Promise<boolean> {
+    await chaindataProvider.resetEvmNetwork(request.id)
+
+    talismanAnalytics.capture("reset custom network", {
+      networkType: "evm",
+      network: request.id,
+    })
+
+    chainConnectorEvm.clearRpcProvidersCache(request.id)
 
     return true
   }
@@ -459,49 +547,21 @@ export class EthHandler extends ExtensionHandler {
         )
 
       case "pri(eth.networks.subscribe)":
-        return this.stores.evmNetworks.hydrateStore()
+        return chaindataProvider.hydrateEvmNetworks()
 
-      case "pri(eth.networks.add.custom)": {
-        const newNetwork = request as RequestTypes["pri(eth.networks.add.custom)"]
-
-        // TODO: Move this check into chaindataProvider?
-        const existing = await chaindataProvider.getEvmNetwork(newNetwork.id)
-        if (existing && !("isCustom" in existing && existing.isCustom === true)) {
-          throw new Error(`Failed to override built-in Talisman network`)
-        }
-
-        newNetwork.isCustom = true
-        await chaindataProvider.addCustomEvmNetwork(newNetwork)
-        talismanAnalytics.captureDelayed("add network evm", {
-          network: newNetwork.name,
-          isCustom: true,
-        })
-        return true
-      }
+      case "pri(eth.networks.upsert)":
+        return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])
 
       case "pri(eth.transactions.count)": {
         const { address, evmNetworkId } = request as RequestTypes["pri(eth.transactions.count)"]
         return getTransactionCount(address, evmNetworkId)
       }
 
-      case "pri(eth.networks.removeCustomNetwork)": {
-        const id = (request as RequestTypes["pri(eth.networks.removeCustomNetwork)"]).id
+      case "pri(eth.networks.remove)":
+        return this.ethNetworkRemove(request as RequestTypes["pri(eth.networks.remove)"])
 
-        await chaindataProvider.removeCustomEvmNetwork(id)
-
-        return true
-      }
-
-      case "pri(eth.networks.clearCustomNetworks)": {
-        await Promise.all([
-          // TODO: Only clear custom evm network native tokens,
-          // this call will also clear custom erc20 tokens on non-custom evm networks
-          this.stores.evmNetworks.clearCustom(),
-          this.stores.tokens.clearCustom(),
-        ])
-
-        return true
-      }
+      case "pri(eth.networks.reset)":
+        return this.ethNetworkReset(request as RequestTypes["pri(eth.networks.reset)"])
 
       case "pri(eth.request)": {
         const { chainId: ethChainId, ...rest } = request as AnyEthRequestChainId

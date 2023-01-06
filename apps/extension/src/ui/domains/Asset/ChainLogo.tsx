@@ -4,54 +4,62 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { getBase64ImageUrl } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { useState } from "react"
-import styled from "styled-components"
+import { FC, useEffect, useMemo, useState } from "react"
+
+const GLOBE_ICON_URL = getBase64ImageUrl(globeIcon)
+
+type ChainLogoBaseProps = {
+  id?: ChainId | EvmNetworkId
+  name?: string
+  logo?: string | null
+  iconUrls?: string[]
+  className?: string
+}
+
+export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, name, logo, iconUrls, className }) => {
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    setError(false)
+  }, [logo])
+
+  return (
+    <picture className={classNames("relative block h-[1em] w-[1em] shrink-0", className)}>
+      {error ? (
+        <source srcSet={GLOBE_ICON_URL ?? undefined} />
+      ) : (
+        <>
+          {iconUrls?.map((url, i) => (
+            <source key={i} srcSet={url} />
+          ))}
+          {logo && <source srcSet={logo} />}
+        </>
+      )}
+      <img
+        src={GLOBE_ICON_URL ?? ""}
+        className="absolute top-0 left-0 h-full w-full"
+        alt={name}
+        data-id={id}
+        onError={() => setError(true)}
+      />
+    </picture>
+  )
+}
 
 type ChainLogoProps = {
   className?: string
   id?: ChainId | EvmNetworkId
 }
 
-export const ChainLogo = styled(({ id, className }: ChainLogoProps) => {
+export const ChainLogo: FC<ChainLogoProps> = ({ id, className }) => {
   const chain = useChain(id)
   const evmNetwork = useEvmNetwork(id)
   const evmNetworkSubstrateChain = useChain(evmNetwork?.substrateChain?.id)
-  const [error, setError] = useState(false)
 
-  return (
-    <picture className={classNames("chain-logo", "network-logo", className)}>
-      {error ? (
-        <source srcSet={getBase64ImageUrl(globeIcon) ?? undefined} />
-      ) : (
-        <>
-          {evmNetwork &&
-            "iconUrls" in evmNetwork &&
-            evmNetwork.iconUrls?.map((url, i) => <source key={i} srcSet={url} />)}
-          <source
-            srcSet={chain?.logo ?? evmNetworkSubstrateChain?.logo ?? evmNetwork?.logo ?? undefined}
-          />
-        </>
-      )}
-      <img
-        src={getBase64ImageUrl(globeIcon) ?? ""}
-        alt={chain?.name ?? evmNetworkSubstrateChain?.name ?? evmNetwork?.name ?? undefined}
-        data-id={id}
-        onError={() => setError(true)}
-      />
-    </picture>
+  const props: ChainLogoBaseProps = useMemo(
+    () => chain ?? evmNetworkSubstrateChain ?? evmNetwork ?? {},
+    [chain, evmNetwork, evmNetworkSubstrateChain]
   )
-})`
-  display: block;
-  position: relative;
-  width: 1em;
-  height: 1em;
-  flex-shrink: 0;
 
-  img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-`
+  return <ChainLogoBase {...props} className={className} />
+}
