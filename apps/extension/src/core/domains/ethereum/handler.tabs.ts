@@ -507,17 +507,6 @@ export class EthTabsHandler extends TabsHandler {
     if (!isValidRequestedPermissions(requestedPerms))
       throw new EthProviderRpcError("Invalid permissions", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
-    // first check that we support all the requested permissions
-    const SUPPORTED_WEB3_PERMISSIONS = ["eth_accounts"] // TODO move this const out of here
-    const unsupportedRequestedPerms = Object.keys(requestedPerms).filter(
-      (perm) => !SUPPORTED_WEB3_PERMISSIONS.includes(perm)
-    )
-    if (unsupportedRequestedPerms.length)
-      throw new EthProviderRpcError(
-        `Unsupported permission(s) : ${unsupportedRequestedPerms.join(", ")}`,
-        ETH_ERROR_EIP1474_INVALID_PARAMS
-      )
-
     // identify which permissions are currently missing
     const site = await this.stores.sites.getSiteFromUrl(url)
     const existingPerms = site?.ethPermissions ?? ({} as EthWalletPermissions)
