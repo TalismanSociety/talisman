@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
+import AccountAvatar from "./Avatar"
 import { PasswordUnlock, usePasswordUnlock } from "./PasswordUnlock"
 
 const useAccountExportPrivateKeyModalProvider = () => {
@@ -82,14 +83,19 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
     }
   }, [privateKey])
 
+  if (!account) return null
+
   return (
     <div className="text-body-secondary flex h-full w-full flex-col text-left">
       <div className="w-full text-left">
         This private key can be used to access your account's funds. Don't share it with anyone.
       </div>
       <div className="flex w-full grow flex-col justify-center gap-6 ">
-        <div className="w-full">
-          Private key for account <span className="text-white">{account?.name}</span>
+        <div className="!text-body flex w-full items-center gap-4">
+          <div>
+            <AccountAvatar address={account.address} className="!text-lg" />
+          </div>
+          <div className="overflow-hidden text-ellipsis whitespace-nowrap"> {account.name}</div>
         </div>
         <div className="bg-field flex h-28 w-full items-center gap-6 rounded p-8 leading-none">
           {!!error && <div className="text-alert-error">{(error as Error).message}</div>}
@@ -133,6 +139,7 @@ export const AccountExportPrivateKeyModal = () => {
       <ModalDialog title="Export private key" onClose={close} className="w-[50.3rem]">
         <div className="h-[24.2rem]">
           <PasswordUnlock
+            title=""
             description={
               <div className="text-body-secondary mb-8">
                 Please confirm your password to export your account.
