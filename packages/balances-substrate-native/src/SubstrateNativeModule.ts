@@ -251,6 +251,10 @@ export const SubNativeModule: BalanceModule<
       const isKeepType = (type: any) => keepTypes.has(type.id)
       metadata.value.lookup.types = metadata.value.lookup.types.filter(isKeepType)
 
+      // ditch the chain's signedExtensions, we don't need them for balance lookups
+      // and the polkadot.js TypeRegistry will complain when it can't find the types for them
+      metadata.value.extrinsic.signedExtensions = []
+
       return metadata
     })
 
