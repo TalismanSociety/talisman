@@ -1,5 +1,13 @@
 # @talismn/balances-substrate-native
 
+## 0.2.2
+
+### Patch Changes
+
+- fix: don't break subsquid with balance modules, but keep subsquid libs out of the frontend bundle
+  - @talismn/balances@0.2.2
+  - @talismn/chaindata-provider@0.2.0
+
 ## 0.2.1
 
 ### Patch Changes
