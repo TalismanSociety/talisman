@@ -19,6 +19,7 @@ import {
 import { blake2Concat, decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 import log from "./log"
+import type { mutateMetadata as MutateMetadata } from "./metadata"
 
 type ModuleType = "substrate-native"
 
@@ -148,7 +149,20 @@ export const SubNativeModule: BalanceModule<
       : null
 
     // we do a just-in-time import here so that our frontend bundle of this module doesn't include the nodejs-dependent subsquid libraries
-    const { mutateMetadata } = await import(/* webpackIgnore: true */ "./metadata")
+    //
+    // if we just do `import ('./metadata')` then tsc will convert the import into a commonjs `require`, which means the nodejs-only
+    // subsquid libraries would be included in frontend bundles of this module (and cause havoc!)
+    //
+    // but if we compile to esm instead of commonjs, we can't use this library from our commonjs-based subsquid projects!
+    //
+    // solution: use this workaround to just-in-time import the module in a way that tsc won't convert it into a `require`
+    //
+    // https://stackoverflow.com/a/70192405/3926156
+    // https://github.com/node-fetch/node-fetch/issues/1279#issuecomment-915063354
+    const importDynamic = new Function("modulePath", "return import(modulePath)")
+    const { mutateMetadata }: { mutateMetadata: typeof MutateMetadata } = await importDynamic(
+      "./metadata.js"
+    )
 
     let accountInfoType = null
     const balanceMetadata = mutateMetadata(metadataRpc, (metadata) => {
