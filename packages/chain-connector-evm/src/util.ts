@@ -45,7 +45,7 @@ export const isHealthyRpc = async (url: string, chainId: number) => {
 export const getHealthyRpc = async (rpcUrls: string[], network: ethers.providers.Network) => {
   for (const rpcUrl of rpcUrls) if (await isHealthyRpc(rpcUrl, network.chainId)) return rpcUrl
 
-  log.warn("getHealthyRpc %s (%d) - NO HEALTHY RPC", network.name, network.chainId, rpcUrls.length)
+  log.warn("No healthy RPC for EVM network %s (%d)", network.name, network.chainId)
   return null
 }
 
