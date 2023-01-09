@@ -195,7 +195,7 @@ function useBalancesSubscriptions(
     const unsubAll = () => unsubs.forEach((unsub) => unsub())
 
     return unsubAll
-  }, [addressesByToken, chainConnector, chainConnectorEvm, tokens])
+  }, [addressesByToken, chainConnector, chainConnectorEvm, chaindataProvider, tokens])
 }
 
 // TODO: Allow advanced users of this library to provide their own chain connector
@@ -214,7 +214,7 @@ function useChainConnectorEvm(chaindataProvider: ChaindataProvider | null) {
   useEffect(() => {
     if (chaindataProvider === null) return
     setChainConnectorEvm(new ChainConnectorEvm(chaindataProvider))
-  }, [])
+  }, [chaindataProvider])
 
   return chainConnectorEvm
 }
