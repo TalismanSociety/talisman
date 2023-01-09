@@ -5,6 +5,7 @@ import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useRef } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
 import * as yup from "yup"
@@ -23,6 +24,7 @@ const schema = yup
 
 const Unlock = ({ className }: any) => {
   const { popupOpenEvent } = useAnalytics()
+  const navigate = useNavigate()
 
   useEffect(() => {
     popupOpenEvent("auth")
@@ -99,7 +101,10 @@ const Unlock = ({ className }: any) => {
           <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>
             Unlock
           </Button>
-          <span className="text-body-secondary mt-2 text-sm hover:text-white">
+          <span
+            className="text-body-secondary mt-2 text-sm hover:text-white"
+            onClick={() => navigate("/reset-wallet")}
+          >
             Forgot Password?
           </span>
         </form>
