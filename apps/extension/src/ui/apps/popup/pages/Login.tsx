@@ -1,12 +1,12 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { FormField } from "@talisman/components/Field/FormField"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import StatusIcon from "@talisman/components/StatusIcon"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useRef } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import styled from "styled-components"
+import { Button } from "talisman-ui"
 import * as yup from "yup"
 
 import Layout, { Content, Footer, Header } from "../Layout"
@@ -71,34 +71,37 @@ const Unlock = ({ className }: any) => {
       <Content>
         <StatusIcon
           status={isSubmitting ? "SPINNING" : "STATIC"}
-          title={`Unlock the Talisman`}
+          title={`Unlock Talisman`}
           subtitle={
             isSubmitting ? (
               "Unlocking the paraverse"
             ) : errors.password?.message ? (
               <span className="error">{errors.password?.message}</span>
             ) : (
-              "Explore the paraverse"
+              ""
             )
           }
         />
       </Content>
       <Footer>
-        <form onSubmit={handleSubmit(submit)}>
-          <FormField>
+        <form className="flex flex-col items-center gap-6" onSubmit={handleSubmit(submit)}>
+          <FormField className="w-full">
             <input
               {...register("password")}
               type="password"
-              placeholder="Enter your password"
+              placeholder="Enter password"
               spellCheck={false}
               autoComplete="off"
               data-lpignore
               autoFocus
             />
           </FormField>
-          <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
+          <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>
             Unlock
-          </SimpleButton>
+          </Button>
+          <span className="text-body-secondary mt-2 text-sm hover:text-white">
+            Forgot Password?
+          </span>
         </form>
       </Footer>
     </Layout>
@@ -112,19 +115,5 @@ export const Login = styled(Unlock)`
 
   .layout-header svg {
     visibility: hidden;
-  }
-
-  .layout-content .children > section {
-    margin-top: 50px;
-  }
-
-  .layout-footer {
-    .field {
-      text-align: center;
-    }
-    ${SimpleButton} {
-      width: 100%;
-      margin-top: 1em;
-    }
   }
 `
