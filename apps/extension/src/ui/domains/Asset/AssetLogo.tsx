@@ -1,7 +1,11 @@
 import { log } from "@core/log"
 import { getCoinGeckoErc20Coin } from "@core/util/coingecko/getCoinGeckoErc20Coin"
 import { classNames } from "@talisman/util/classNames"
-import { EvmNetworkId, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import {
+  EvmNetworkId,
+  githubChainLogoUrl,
+  githubUnknownTokenLogoUrl,
+} from "@talismn/chaindata-provider"
 import { TokenId } from "@talismn/chaindata-provider"
 import useToken from "@ui/hooks/useToken"
 import { imgSrcToBlob } from "blob-util"
@@ -48,7 +52,7 @@ type AssetLogoProps = {
 
   // for tokens which are not in our tokens store, we need the networkId
   // and contractAddress in order to fetch their logo from coingecko's api
-  erc20?: CoingeckoLogoRequest
+  erc20?: Erc20CoingeckoLogoRequest
 }
 
 export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
@@ -79,7 +83,7 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
     (() => {
       // `coingecko` token logo urls
       if (erc20) {
-        const cacheId = coingeckoCacheId(erc20)
+        const cacheId = erc20CoingeckoCacheId(erc20)
         return coingeckoLogoUrlCache.has(cacheId) ? coingeckoLogoUrlCache.get(cacheId) : undefined
       }
 
@@ -87,6 +91,22 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
       if (id && logo.startsWith("data:")) {
         const cacheId = id
         return dataLogoUrlCache.has(cacheId) ? dataLogoUrlCache.get(cacheId) : undefined
+      }
+
+      // if the token has a coingeckoId and one of the following is true:
+      // - the logo is unknown
+      // - the logo is using the chain logo, but the token is not the native token for that chain
+      // then try using the coingecko logo
+      const tokenIsNative = token?.type && ["substrate-native", "evm-native"].includes(token.type)
+      const tokenLogoIsChainLogo =
+        token?.coingeckoId && logo === githubChainLogoUrl(token.coingeckoId)
+      const tokenLogoIsUnknown = logo === githubUnknownTokenLogoUrl
+      if (
+        token?.coingeckoId !== undefined &&
+        (tokenLogoIsUnknown || (tokenLogoIsChainLogo && !tokenIsNative))
+      ) {
+        const cacheId = coingeckoCacheId(token.coingeckoId)
+        return coingeckoLogoUrlCache.has(cacheId) ? coingeckoLogoUrlCache.get(cacheId) : undefined
       }
 
       // if not a `coingecko` or `data:` url, we don't need to run any async transforms, just use the logo as-is
@@ -98,11 +118,11 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
   useEffect(() => {
     // `coingecko` token logo urls
     if (erc20) {
-      const cacheId = coingeckoCacheId(erc20)
+      const cacheId = erc20CoingeckoCacheId(erc20)
       if (coingeckoLogoUrlCache.has(cacheId)) return setUrl(coingeckoLogoUrlCache.get(cacheId))
 
       // fetch coingecko url for coingecko token logo
-      getCoingeckoLogoUrl(erc20).then((url) => {
+      getErc20CoingeckoLogoUrl(erc20).then((url) => {
         coingeckoLogoUrlCache.set(cacheId, url)
         setUrl(url)
       })
@@ -122,9 +142,32 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
       return
     }
 
+    // if the token has a coingeckoId and one of the following is true:
+    // - the logo is unknown
+    // - the logo is using the chain logo, but the token is not the native token for that chain
+    // then try using the coingecko logo
+    const tokenIsNative = token?.type && ["substrate-native", "evm-native"].includes(token.type)
+    const tokenLogoIsChainLogo =
+      token?.coingeckoId && logo === githubChainLogoUrl(token.coingeckoId)
+    const tokenLogoIsUnknown = logo === githubUnknownTokenLogoUrl
+    if (
+      token?.coingeckoId !== undefined &&
+      (tokenLogoIsUnknown || (tokenLogoIsChainLogo && !tokenIsNative))
+    ) {
+      const cacheId = coingeckoCacheId(token.coingeckoId)
+      if (coingeckoLogoUrlCache.has(cacheId)) return setUrl(coingeckoLogoUrlCache.get(cacheId))
+
+      // fetch token url for coingeckoId
+      getCoingeckoLogoUrl(token.coingeckoId).then((url) => {
+        coingeckoLogoUrlCache.set(cacheId, url)
+        setUrl(url)
+      })
+      return
+    }
+
     // all other token logo urls
     setUrl(logo)
-  }, [erc20, id, logo])
+  }, [erc20, id, logo, token?.coingeckoId, token?.type])
 
   return <AssetLogoBase className={className} symbol={token?.symbol} url={url} />
 }
@@ -133,36 +176,56 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
 // coingecko logo url helpers
 //
 
-export type CoingeckoLogoRequest = { evmNetworkId: EvmNetworkId; contractAddress: string }
+export type Erc20CoingeckoLogoRequest = { evmNetworkId: EvmNetworkId; contractAddress: string }
 
 // cache coingecko token logo urls
 const coingeckoLogoUrlCache = new Map<string, string>()
-const coingeckoCacheId = (erc20: CoingeckoLogoRequest) =>
+const coingeckoCacheId = (coingeckoId: string) => `coingeckoId-${coingeckoId}`
+const erc20CoingeckoCacheId = (erc20: Erc20CoingeckoLogoRequest) =>
   `${erc20.evmNetworkId}-${erc20.contractAddress}`
 
-// Given a networkId and an erc20 contractAddress, this function will fetch an return a url to that erc20 token's logo
+// Given a coingeckoId, this function will fetch a url to that token's logo
 const getCoingeckoLogoUrl = async (
-  erc20: CoingeckoLogoRequest,
+  coingeckoId: string,
   iconSize: "thumb" | "small" | "large" = "small"
 ) => {
-  if (erc20.evmNetworkId && erc20.contractAddress) {
-    const data = await getCoinGeckoErc20Coin(erc20.evmNetworkId, erc20.contractAddress)
+  if (!coingeckoId) return githubUnknownTokenLogoUrl
 
-    if (data) {
-      try {
-        const blob = await imgSrcToBlob(data.image[iconSize], undefined, "anonymous")
-        return URL.createObjectURL(blob)
-      } catch (error) {
-        // ignore, there could be many reasons
-        // fallback to generic token
-        log.warn(
-          `Failed to create url for token on network ${erc20.evmNetworkId} with address ${erc20.contractAddress}`,
-          error
-        )
-      }
-    }
+  const data = await (await fetch(`https://api.coingecko.com/api/v3/coins/${coingeckoId}`)).json()
+  if (!data) return githubUnknownTokenLogoUrl
+
+  try {
+    return URL.createObjectURL(await imgSrcToBlob(data.image[iconSize], undefined, "anonymous"))
+  } catch (error) {
+    // ignore, there could be many reasons
+    // fallback to generic token
+    log.warn(`Failed to create url for token with coingeckoId ${coingeckoId}`, error)
+    return githubUnknownTokenLogoUrl
   }
-  return githubUnknownTokenLogoUrl
+}
+
+// Given a networkId and an erc20 contractAddress, this function will fetch a url to that erc20 token's logo
+const getErc20CoingeckoLogoUrl = async (
+  erc20: Erc20CoingeckoLogoRequest,
+  iconSize: "thumb" | "small" | "large" = "small"
+) => {
+  if (!erc20.evmNetworkId) return githubUnknownTokenLogoUrl
+  if (!erc20.contractAddress) return githubUnknownTokenLogoUrl
+
+  const data = await getCoinGeckoErc20Coin(erc20.evmNetworkId, erc20.contractAddress)
+  if (!data) return githubUnknownTokenLogoUrl
+
+  try {
+    return URL.createObjectURL(await imgSrcToBlob(data.image[iconSize], undefined, "anonymous"))
+  } catch (error) {
+    // ignore, there could be many reasons
+    // fallback to generic token
+    log.warn(
+      `Failed to create url for token on network ${erc20.evmNetworkId} with address ${erc20.contractAddress}`,
+      error
+    )
+    return githubUnknownTokenLogoUrl
+  }
 }
 
 //

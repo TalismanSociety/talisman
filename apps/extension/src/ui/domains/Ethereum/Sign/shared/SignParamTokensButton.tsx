@@ -1,5 +1,5 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
-import { CoingeckoLogoRequest } from "@ui/domains/Asset/AssetLogo"
+import { Erc20CoingeckoLogoRequest } from "@ui/domains/Asset/AssetLogo"
 import { FC } from "react"
 import { classNames } from "talisman-ui"
 
@@ -11,7 +11,7 @@ type SignParamTokensButtonProps = {
   address: string
   withIcon?: boolean
   tokenId: string | undefined
-  erc20?: CoingeckoLogoRequest
+  erc20?: Erc20CoingeckoLogoRequest
   tokens: string | number | null
   decimals: number
   symbol: string

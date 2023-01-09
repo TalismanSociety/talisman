@@ -1,4 +1,4 @@
-import { AssetLogo, CoingeckoLogoRequest } from "@ui/domains/Asset/AssetLogo"
+import { AssetLogo, Erc20CoingeckoLogoRequest } from "@ui/domains/Asset/AssetLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { FC } from "react"
@@ -6,7 +6,7 @@ import { classNames } from "talisman-ui"
 
 type SignParamTokensDisplayProps = {
   tokenId: string | undefined
-  erc20?: CoingeckoLogoRequest
+  erc20?: Erc20CoingeckoLogoRequest
   tokens: string | number | null
   decimals: number
   symbol: string
