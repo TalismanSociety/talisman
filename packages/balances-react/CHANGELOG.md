@@ -1,5 +1,12 @@
 # @talismn/balances-react
 
+## 0.2.3
+
+### Patch Changes
+
+- 046a670: fix: missing useEffect dep in @talismn/balances-react
+  - @talismn/balances@0.2.3
+
 ## 0.2.2
 
 ### Patch Changes
