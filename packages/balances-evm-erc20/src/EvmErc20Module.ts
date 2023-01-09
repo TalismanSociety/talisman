@@ -335,7 +335,7 @@ async function getFreeBalance(contract: ethers.Contract, address: Address): Prom
     )
     throw new Error(
       `Failed to get balance from contract ${contract.address} for address ${address}`,
-      { cause: error }
+      { cause: error as Error }
     )
   }
 }

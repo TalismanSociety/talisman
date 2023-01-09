@@ -239,7 +239,7 @@ async function getFreeBalance(
     )
     throw new Error(
       `Failed to get balance from chain ${provider.network.chainId} for address ${address}`,
-      { cause: error }
+      { cause: error as Error }
     )
   }
 }
