@@ -333,7 +333,10 @@ async function getFreeBalance(contract: ethers.Contract, address: Address): Prom
     log.warn(
       `Failed to get balance from contract ${contract.address} for address ${address}: ${errorMessage}`
     )
-    return "0"
+    throw new Error(
+      `Failed to get balance from contract ${contract.address} for address ${address}`,
+      { cause: error }
+    )
   }
 }
 
