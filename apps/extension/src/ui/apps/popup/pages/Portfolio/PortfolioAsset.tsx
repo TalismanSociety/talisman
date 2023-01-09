@@ -16,7 +16,7 @@ import { Navigate, useNavigate, useParams } from "react-router-dom"
 const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
-  const { token } = useTokenBalancesSummary(balancesToDisplay, symbol)
+  const { token } = useTokenBalancesSummary(balancesToDisplay)
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
 

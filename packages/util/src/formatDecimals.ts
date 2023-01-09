@@ -13,7 +13,7 @@ export const MAX_DECIMALS_FORMAT = 12
  * @returns the formatted value
  */
 export const formatDecimals = (
-  num?: string | number | null,
+  num?: string | number | null | BigNumber,
   digits = MIN_DIGITS,
   options: Partial<Intl.NumberFormatOptions> = {},
   locale = "en-US"

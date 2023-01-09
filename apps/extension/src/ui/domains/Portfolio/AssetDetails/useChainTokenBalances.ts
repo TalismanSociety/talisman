@@ -3,8 +3,12 @@ import { BalanceFormatter, BalanceLockType, LockedBalance } from "@core/domains/
 import { Address } from "@core/types/base"
 import { getNetworkCategory } from "@core/util/getNetworkCategory"
 import { sortBigBy } from "@talisman/util/bigHelper"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { ChainId, EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { TokenRates } from "@talismn/token-rates"
+import { planckToTokens } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
+import useToken from "@ui/hooks/useToken"
+import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
@@ -14,7 +18,7 @@ import { useBalanceLocks } from "./useBalanceLocks"
 type DetailRow = {
   key: BalanceLockType
   title: string
-  tokens: bigint
+  tokens: BigNumber
   fiat: number | null
   locked: boolean
   address?: Address
@@ -23,7 +27,6 @@ type DetailRow = {
 type ChainTokenBalancesParams = {
   chainId: ChainId | EvmNetworkId
   balances: Balances
-  symbol: string
 }
 
 const getBalanceLockTypeTitle = (input: BalanceLockType, allLocks: LockedBalance[]) => {
@@ -37,13 +40,16 @@ const getBalanceLockTypeTitle = (input: BalanceLockType, allLocks: LockedBalance
   return input.charAt(0).toUpperCase() + input.slice(1)
 }
 
-export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenBalancesParams) => {
+const getFiat = (amount: string, token?: Token, tokenRates?: TokenRates) =>
+  token && tokenRates ? new BalanceFormatter(amount, token.decimals, tokenRates).fiat("usd") : null
+
+export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesParams) => {
+  const chain = useChain(chainId)
+  const nativeToken = useToken(chain?.nativeToken?.id)
+
   const { account } = useSelectedAccount()
-  const { token, summary, tokenBalances, tokenBalanceRates } = useTokenBalancesSummary(
-    balances,
-    symbol
-  )
-  const tokenRates = token && tokenBalanceRates[token.id]
+  const { summary, tokenBalances, tokenBalanceRates, token } = useTokenBalancesSummary(balances)
+  const nativeTokenRates = nativeToken && tokenBalanceRates[nativeToken.id]
 
   const addressesWithLocks = useMemo(
     () => [
@@ -59,7 +65,7 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
 
   // query only locks for addresses that have frozen balance
   const { consolidatedLocks, isLoading, error, balanceLocks } = useBalanceLocks({
-    chainId: chainId,
+    chainId,
     addresses: addressesWithLocks,
   })
 
@@ -82,39 +88,37 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
                 .map((b) => ({
                   key: `${b.id}-available`,
                   title: "Available",
-                  tokens: BigInt(b.transferable.planck),
+                  tokens: BigNumber(b.transferable.tokens),
                   fiat: b.transferable.fiat("usd"),
                   locked: false,
                   address: b.address,
                 }))
                 .sort(sortBigBy("tokens", true))),
           // LOCKED
-          ...(account
-            ? consolidatedLocks
-                .map(({ type, amount }) => ({
-                  key: type,
-                  title: getBalanceLockTypeTitle(type, consolidatedLocks),
-                  tokens: BigInt(amount),
-                  fiat: tokenRates
-                    ? new BalanceFormatter(amount, token?.decimals, tokenRates).fiat("usd")
-                    : null,
-                  locked: true,
-                }))
-                .sort(sortBigBy("tokens", true))
-            : Object.entries(balanceLocks)
-                .flatMap(([address, balances]) =>
-                  balances.map(({ amount, type }) => ({
-                    key: type + address,
+          ...(nativeToken
+            ? account
+              ? consolidatedLocks
+                  .map(({ type, amount }) => ({
+                    key: type,
                     title: getBalanceLockTypeTitle(type, consolidatedLocks),
-                    tokens: BigInt(amount),
-                    fiat: tokenRates
-                      ? new BalanceFormatter(amount, token?.decimals, tokenRates).fiat("usd")
-                      : null,
+                    tokens: BigNumber(planckToTokens(amount, nativeToken.decimals)),
+                    fiat: getFiat(amount, nativeToken, nativeTokenRates),
                     locked: true,
-                    address,
                   }))
-                )
-                .sort(sortBigBy("tokens", true))),
+                  .sort(sortBigBy("tokens", true))
+              : Object.entries(balanceLocks)
+                  .flatMap(([address, balances]) =>
+                    balances.map(({ amount, type }) => ({
+                      key: type + address,
+                      title: getBalanceLockTypeTitle(type, consolidatedLocks),
+                      tokens: BigNumber(planckToTokens(amount, nativeToken.decimals)),
+                      fiat: getFiat(amount, nativeToken, nativeTokenRates),
+                      locked: true,
+                      address,
+                    }))
+                  )
+                  .sort(sortBigBy("tokens", true))
+            : []),
           // LOCKED ERROR FALLBACK
           error && {
             key: "frozen",
@@ -138,26 +142,26 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
                 .map((b) => ({
                   key: `${b.id}-reserved`,
                   title: "Reserved",
-                  tokens: BigInt(b.reserved.planck),
+                  tokens: BigNumber(b.reserved.tokens),
                   fiat: b.reserved.fiat("usd"),
                   locked: true,
                   address: b.address,
                 }))
                 .sort(sortBigBy("tokens", true))),
-        ].filter((row) => row && row.tokens > 0) as DetailRow[])
+        ].filter((row) => row && row.tokens.gt(0)) as DetailRow[])
       : []
   }, [
     account,
     balanceLocks,
     consolidatedLocks,
     error,
+    nativeToken,
+    nativeTokenRates,
     summary,
-    token?.decimals,
-    tokenRates,
     tokenBalances,
   ])
 
-  const { chain, evmNetwork } = balances.sorted[0]
+  const { evmNetwork } = balances.sorted[0]
   const relay = useChain(chain?.relay?.id)
   const networkType = useMemo(
     () => getNetworkCategory({ chain, evmNetwork, relay }),
@@ -171,7 +175,7 @@ export const useChainTokenBalances = ({ chainId, balances, symbol }: ChainTokenB
 
   return {
     summary,
-    token,
+    symbol: token?.symbol,
     detailRows,
     evmNetwork,
     chain,

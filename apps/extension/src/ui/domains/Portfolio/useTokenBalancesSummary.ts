@@ -1,38 +1,41 @@
-import { Balances } from "@core/domains/balances/types"
+import { Balance, Balances } from "@core/domains/balances/types"
 import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
 import { TokenRatesList } from "@talismn/token-rates"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
+import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
 type BalanceSummary = {
-  totalTokens: bigint
+  totalTokens: BigNumber
   totalFiat: number | null
-  lockedTokens: bigint
+  lockedTokens: BigNumber
   lockedFiat: number | null
-  frozenTokens: bigint
+  frozenTokens: BigNumber
   frozenFiat: number | null
-  reservedTokens: bigint
+  reservedTokens: BigNumber
   reservedFiat: number | null
-  availableTokens: bigint
+  availableTokens: BigNumber
   availableFiat: number | null
 }
 
 const DEFAULT_SUMMARY: BalanceSummary = {
-  totalTokens: BigInt(0),
+  totalTokens: BigNumber(0),
   totalFiat: null,
-  lockedTokens: BigInt(0),
+  lockedTokens: BigNumber(0),
   lockedFiat: null,
-  frozenTokens: BigInt(0),
+  frozenTokens: BigNumber(0),
   frozenFiat: null,
-  reservedTokens: BigInt(0),
+  reservedTokens: BigNumber(0),
   reservedFiat: null,
-  availableTokens: BigInt(0),
+  availableTokens: BigNumber(0),
   availableFiat: null,
 }
 
-const getBestTokenForSymbol = (symbol: string, tokens?: Token[], chains?: Chain[]) => {
-  const matches = tokens?.filter((t) => t.symbol === symbol)
+// This assumes that all balances are for the same token (or clones, such as DOT + xcDOT)
+const getBestTokenForSymbol = (balances: Balance[], tokens?: Token[], chains?: Chain[]) => {
+  const tokenIds = balances.map((t) => t.tokenId)
+  const matches = tokens?.filter((t) => tokenIds.includes(t.id))
 
   return (
     // priority to token from a relay chain
@@ -63,18 +66,15 @@ const getBestTokenForSymbol = (symbol: string, tokens?: Token[], chains?: Chain[
   )
 }
 
-export const useTokenBalancesSummary = (balances: Balances, symbol: string) => {
+export const useTokenBalancesSummary = (balances: Balances) => {
+  const tokenBalances = useMemo(() => balances.sorted, [balances.sorted])
   const { tokens, chains } = usePortfolio()
-  // find the most appropriate token for this symbol (for the icon)
+  // find the most appropriate token (for the icon)
   const token = useMemo(
-    () => getBestTokenForSymbol(symbol, tokens, chains),
-    [chains, symbol, tokens]
+    () => getBestTokenForSymbol(tokenBalances, tokens, chains),
+    [chains, tokenBalances, tokens]
   )
 
-  const tokenBalances = useMemo(
-    () => balances.sorted.filter((b) => b.token?.symbol === symbol),
-    [balances, symbol]
-  )
   const tokenBalanceRates = useMemo(
     () =>
       tokenBalances.reduce((tokenBalanceRates, balance) => {
@@ -108,42 +108,42 @@ export const useTokenBalancesSummary = (balances: Balances, symbol: string) => {
         },
         b
       ) => ({
-        totalTokens: totalTokens + b.total.planck,
+        totalTokens: totalTokens.plus(b.total.tokens),
         totalFiat:
           b.token && tokenBalanceRates[b.token.id]
             ? (totalFiat ?? 0) + (b.total.fiat("usd") ?? 0)
             : totalFiat,
-        lockedTokens: lockedTokens + b.frozen.planck + b.reserved.planck,
+        lockedTokens: lockedTokens.plus(b.frozen.tokens).plus(b.reserved.tokens),
         lockedFiat:
           b.token && tokenBalanceRates[b.token.id]
             ? (lockedFiat ?? 0) + (b.frozen.fiat("usd") ?? 0) + (b.reserved.fiat("usd") ?? 0)
             : lockedFiat,
-        reservedTokens: reservedTokens + b.reserved.planck,
+        reservedTokens: reservedTokens.plus(b.reserved.tokens),
         reservedFiat:
           b.token && tokenBalanceRates[b.token.id]
             ? (reservedFiat ?? 0) + (b.reserved.fiat("usd") ?? 0)
             : reservedFiat,
-        frozenTokens: frozenTokens + b.frozen.planck,
+        frozenTokens: frozenTokens.plus(b.frozen.tokens),
         frozenFiat:
           b.token && tokenBalanceRates[b.token.id]
             ? (frozenFiat ?? 0) + (b.frozen.fiat("usd") ?? 0)
             : frozenFiat,
-        availableTokens: availableTokens + b.transferable.planck,
+        availableTokens: availableTokens.plus(b.transferable.tokens),
         availableFiat:
           b.token && tokenBalanceRates[b.token.id]
             ? (availableFiat ?? 0) + (b.transferable.fiat("usd") ?? 0)
             : availableFiat,
       }),
       {
-        totalTokens: BigInt(0),
+        totalTokens: BigNumber(0),
         totalFiat: fiatDefaultValue,
-        lockedTokens: BigInt(0),
+        lockedTokens: BigNumber(0),
         lockedFiat: fiatDefaultValue,
-        reservedTokens: BigInt(0),
+        reservedTokens: BigNumber(0),
         reservedFiat: fiatDefaultValue,
-        frozenTokens: BigInt(0),
+        frozenTokens: BigNumber(0),
         frozenFiat: fiatDefaultValue,
-        availableTokens: BigInt(0),
+        availableTokens: BigNumber(0),
         availableFiat: fiatDefaultValue,
       }
     )

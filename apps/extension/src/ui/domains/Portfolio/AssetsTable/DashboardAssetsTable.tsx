@@ -146,7 +146,7 @@ const AssetRow = ({ balances, symbol }: AssetRowProps) => {
     [balances.sorted]
   )
 
-  const { token, summary } = useTokenBalancesSummary(balances, symbol)
+  const { token, summary } = useTokenBalancesSummary(balances)
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
@@ -178,19 +178,19 @@ const AssetRow = ({ balances, symbol }: AssetRowProps) => {
       <td align="right" valign="top">
         <AssetBalanceCellValue
           locked
-          render={summary.lockedTokens > 0}
-          planck={summary.lockedTokens}
+          render={summary.lockedTokens.gt(0)}
+          tokens={summary.lockedTokens}
           fiat={summary.lockedFiat}
-          token={token}
+          symbol={token.symbol}
           className="noPadRight"
         />
       </td>
       <td align="right" valign="top">
         <AssetBalanceCellValue
           render
-          planck={summary.availableTokens}
+          tokens={summary.availableTokens}
           fiat={summary.availableFiat}
-          token={token}
+          symbol={token.symbol}
         />
       </td>
     </tr>

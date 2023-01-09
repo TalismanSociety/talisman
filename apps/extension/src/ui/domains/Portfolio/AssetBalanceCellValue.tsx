@@ -1,9 +1,8 @@
-import { Token } from "@core/domains/tokens/types"
 import { Box } from "@talisman/components/Box"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
-import { planckToTokens } from "@talismn/util"
+import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
 
 import Fiat from "../Asset/Fiat"
@@ -11,9 +10,9 @@ import Tokens from "../Asset/Tokens"
 
 type Props = {
   locked?: boolean
-  planck: bigint
+  tokens: BigNumber
   fiat: number | null
-  token: Token
+  symbol: string
   render?: boolean
   className?: string
   tooltip?: ReactNode
@@ -21,9 +20,9 @@ type Props = {
 
 export const AssetBalanceCellValue = ({
   locked,
-  planck,
+  tokens,
   fiat,
-  token,
+  symbol,
   render = true,
   className,
   tooltip,
@@ -49,11 +48,7 @@ export const AssetBalanceCellValue = ({
           )}
         >
           <div>
-            <Tokens
-              amount={planckToTokens(planck.toString(), token.decimals)}
-              symbol={token?.symbol}
-              isBalance
-            />
+            <Tokens amount={tokens} symbol={symbol} isBalance />
           </div>
           {locked ? (
             <div className="pb-1">
