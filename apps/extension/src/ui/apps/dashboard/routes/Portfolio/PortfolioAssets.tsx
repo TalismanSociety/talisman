@@ -19,6 +19,7 @@ import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
+import { useBalancesSum } from "@ui/hooks/useBalancesSum"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import React, { useCallback, useEffect, useMemo } from "react"
@@ -47,14 +48,15 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
     genericEvent("open send funds", { from: "dashboard portfolio" })
   }, [account?.address, genericEvent, openSendFundsModal])
 
+  const balancesSum = useBalancesSum(balancesToDisplay)
   const { portfolio, available, locked } = useMemo(() => {
-    const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat("usd")
+    const { total, frozen, reserved, transferable } = balancesSum
     return {
       portfolio: total,
       available: transferable,
       locked: frozen + reserved,
     }
-  }, [balancesToDisplay.sum])
+  }, [balancesSum])
 
   const copyAddress = useCallback(() => {
     if (!account) return

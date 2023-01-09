@@ -3,6 +3,8 @@ import { EyeIcon, EyeOffIcon } from "@talisman/theme/icons"
 import Asset from "@ui/domains/Asset"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
+import { useBalancesSum } from "@ui/hooks/useBalancesSum"
+import { useBalancesWithoutMirrorTokens } from "@ui/hooks/useBalancesWithoutMirrorTokens"
 import { useSettings } from "@ui/hooks/useSettings"
 import { useCallback } from "react"
 import styled from "styled-components"
@@ -79,6 +81,8 @@ const TotalFiat = styled.div`
 
 export const TotalFiatBalance = ({ className }: { className?: string }) => {
   const balances = useBalances()
+  const { total } = useBalancesSum(balances)
+
   const { hideBalances, update } = useSettings()
   const { genericEvent } = useAnalytics()
 
@@ -99,7 +103,7 @@ export const TotalFiatBalance = ({ className }: { className?: string }) => {
         </Side>
       </TitleRow>
       <TotalFiat>
-        <Asset.Fiat amount={balances?.sum.fiat("usd").total} currency="usd" isBalance />
+        <Asset.Fiat amount={total} currency="usd" isBalance />
       </TotalFiat>
     </Container>
   )

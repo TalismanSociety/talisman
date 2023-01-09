@@ -1,4 +1,3 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { breakpoints } from "@talisman/theme/definitions"
@@ -12,6 +11,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
+import { useBalancesSum } from "@ui/hooks/useBalancesSum"
 import { UseSelectStateChange, useSelect } from "downshift"
 import { useCallback, useMemo } from "react"
 import styled, { css } from "styled-components"
@@ -271,15 +271,15 @@ const AccountOption = ({
 }
 
 const SingleAccountOption = (props: SingleAccountOptionProps) => {
-  const { sum } = useBalancesByAddress(props.address)
-  const { total } = useMemo(() => sum.fiat("usd"), [sum])
+  const balances = useBalancesByAddress(props.address)
+  const { total } = useBalancesSum(balances)
 
   return <AccountOption {...props} totalUsd={total} />
 }
 
 const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
-  const { sum } = useBalances()
-  const { total } = useMemo(() => sum.fiat("usd"), [sum])
+  const balances = useBalances()
+  const { total } = useBalancesSum(balances)
 
   return <AccountOption name="All accounts" totalUsd={total} withTrack={withTrack} />
 }

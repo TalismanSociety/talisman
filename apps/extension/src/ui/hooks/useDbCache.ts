@@ -24,10 +24,13 @@ const useDbCacheProvider = () => {
       Object.values(await chaindataProvider.evmNetworks()).filter(filterTestnets(useTestnets)),
     [useTestnets]
   )
-  const tokens = useLiveQuery(
-    async () => Object.values(await chaindataProvider.tokens()).filter(filterTestnets(useTestnets)),
-    [useTestnets]
-  )
+  const tokens = useLiveQuery(async () => {
+    // temp hack to indicate EVM ACA is a mirror of substrate ACA
+    const tokens = await chaindataProvider.tokens()
+    if (tokens["787-evm-native-aca"])
+      (tokens["787-evm-native-aca"] as any).mirrorOf = "acala-substrate-native-aca"
+    return Object.values(tokens).filter(filterTestnets(useTestnets))
+  }, [useTestnets])
   const tokenRates = useLiveQuery(async () => await db.tokenRates.toArray(), [])
   const balances = useLiveQuery(async () => await balancesDb.balances.toArray(), [])
 
