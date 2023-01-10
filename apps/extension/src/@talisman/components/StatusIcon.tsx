@@ -1,9 +1,9 @@
-import styled from "styled-components"
-import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
 import SPINNING from "@talisman/theme/images/hand_open_spin_animated_dark.gif"
-import SUCCESS from "@talisman/theme/images/hand_thumbs_up_animated_dark.gif"
+import STATIC from "@talisman/theme/images/hand_open_static_dark.gif"
 import ERROR from "@talisman/theme/images/hand_thumbs_down_animated_dark.gif"
+import SUCCESS from "@talisman/theme/images/hand_thumbs_up_animated_dark.gif"
 import { ReactNode } from "react"
+import styled from "styled-components"
 
 const iconTypes = {
   STATIC,
@@ -22,22 +22,24 @@ interface IProps {
   className?: string
 }
 
-const StatusIcon = ({ status = "STATIC", title, subtitle, className }: IProps) => (
+export const StatusIcon = ({ status = "STATIC" }: { status?: StatusIconStatus }) => (
+  <img
+    src={iconTypes[status]}
+    alt={`icon todo: ${status.toLowerCase()}`}
+    className="my-0 mx-auto block w-[22rem]"
+  />
+)
+
+const UnstyledStatusIconWithTitle = ({ status = "STATIC", title, subtitle, className }: IProps) => (
   <section className={className}>
-    <img src={iconTypes[status]} alt={`icon todo: ${status.toLowerCase()}`} />
+    <StatusIcon status={status} />
     {title && <h1>{title}</h1>}
     {subtitle && <h2>{subtitle}</h2>}
   </section>
 )
 
-const StyledStatusIcon = styled(StatusIcon)`
+const StatusIconWithTitle = styled(UnstyledStatusIconWithTitle)`
   text-align: center;
-
-  > img {
-    width: 22rem;
-    margin: 0 auto;
-    display: block;
-  }
 
   h1 {
     font-size: var(--font-size-medium);
@@ -53,4 +55,4 @@ const StyledStatusIcon = styled(StatusIcon)`
   }
 `
 
-export default StyledStatusIcon
+export default StatusIconWithTitle

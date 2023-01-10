@@ -1,6 +1,6 @@
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { AlertCircleIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, ChevronLeftIcon } from "@talisman/theme/icons"
 import Terrarium from "@talisman/theme/images/forgot_password_terrarium.png"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -52,6 +52,7 @@ const ConfirmDrawer = ({ isOpen }: { isOpen: boolean }) => {
 export const ResetWallet = () => {
   const { popupOpenEvent } = useAnalytics()
   const { open, isOpen } = useOpenClose()
+  const navigate = useNavigate()
 
   useEffect(() => {
     popupOpenEvent("reset wallet")
@@ -59,7 +60,11 @@ export const ResetWallet = () => {
 
   return (
     <Layout className="p-4">
-      <Content className="mt-24">
+      <div className="text-body-secondary flex h-32 justify-center px-12 pr-[16px] align-middle">
+        <ChevronLeftIcon className="flex-shrink" onClick={() => navigate("/login")} />
+        <span className="flex-grow pr-[16px] text-center text-sm ">Reset Wallet</span>
+      </div>
+      <Content>
         <div className="flex flex-col items-center gap-24">
           <img src={Terrarium} />
           <p className="text-body-secondary text-center">
