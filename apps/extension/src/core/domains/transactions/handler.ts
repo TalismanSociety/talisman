@@ -163,6 +163,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
           })
         if (tokenType === "evm-erc20")
           throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
+        if (tokenType === "substrate-assets")
+          throw new Error(
+            `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
+          )
 
         // force compilation error if any token types don't have a case
         const exhaustiveCheck: never = tokenType
@@ -202,6 +206,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
         return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
       if (tokenType === "evm-erc20")
         throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
+      if (tokenType === "substrate-assets")
+        throw new Error(
+          `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
+        )
 
       // force compilation error if any token types don't have a case
       const exhaustiveCheck: never = tokenType

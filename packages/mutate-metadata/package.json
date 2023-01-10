@@ -1,6 +1,6 @@
 {
-  "name": "@talismn/balances-substrate-native",
-  "version": "0.2.3",
+  "name": "@talismn/mutate-metadata",
+  "version": "0.2.0",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "UNLICENSED",
@@ -8,7 +8,7 @@
     "access": "public"
   },
   "repository": {
-    "directory": "packages/balances-substrate-native",
+    "directory": "packages/mutate-metadata",
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
@@ -30,9 +30,9 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@talismn/balances": "workspace:^",
-    "@talismn/chaindata-provider": "workspace:^",
-    "@talismn/mutate-metadata": "workspace:^"
+    "@subsquid/scale-codec": "^1.1.0",
+    "@subsquid/substrate-metadata": "^2.1.2",
+    "anylogger": "^1.0.11"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",

@@ -22,8 +22,8 @@ import log from "./log"
 type ModuleType = "substrate-orml"
 
 // Tokens.Account is the state_storage key prefix for orml tokens
-const moduleHash = "99971b5749ac43e0235e41b0d3786918" // xxhashAsHex("Tokens", 128).replace("0x", "")
-const storageHash = "8ee7418a6531173d60d1f6a82d8f4d51" // xxhashAsHex("Accounts", 128).replace("0x", "")
+const moduleHash = "99971b5749ac43e0235e41b0d3786918" // xxhashAsHex("Tokens", 128).replace(/^0x/, "")
+const storageHash = "8ee7418a6531173d60d1f6a82d8f4d51" // xxhashAsHex("Accounts", 128).replace(/^0x/, "")
 const moduleStorageHash = `${moduleHash}${storageHash}`
 
 const AccountData = JSON.stringify({ free: "u128", reserved: "u128", frozen: "u128" })
@@ -341,13 +341,13 @@ function buildParams(tokensAndAddresses: Array<[SubOrmlToken, string[]]>): strin
   return [
     tokensAndAddresses
       .map(([token, addresses]): [string, string[]] => [
-        token.stateKey.replace("0x", ""),
+        token.stateKey.replace(/^0x/, ""),
         addresses,
       ])
       .flatMap(([tokenHash, addresses]) =>
         addresses
           .map((address) => decodeAnyAddress(address))
-          .map((addressBytes) => blake2Concat(addressBytes).replace("0x", ""))
+          .map((addressBytes) => blake2Concat(addressBytes).replace(/^0x/, ""))
           .map((addressHash) => `0x${moduleStorageHash}${addressHash}${tokenHash}`)
       ),
   ]
@@ -382,7 +382,7 @@ function buildReferences(
   return tokensAndAddresses
     .map(([token, addresses]): [string, string, string[]] => [
       token.id,
-      token.stateKey.replace("0x", ""),
+      token.stateKey.replace(/^0x/, ""),
       addresses,
     ])
     .flatMap(([tokenId, tokenHash, addresses]) =>
@@ -390,7 +390,7 @@ function buildReferences(
         .map((address): [string, Uint8Array] => [address, decodeAnyAddress(address)])
         .map(([address, addressBytes]): [string, string] => [
           address,
-          blake2Concat(addressBytes).replace("0x", ""),
+          blake2Concat(addressBytes).replace(/^0x/, ""),
         ])
         .map(([address, addressHash]): [string, string, string] => [
           address,

@@ -16,10 +16,10 @@ import {
   TokenId,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
+import { mutateMetadata } from "@talismn/mutate-metadata"
 import { blake2Concat, decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 import log from "./log"
-import type { mutateMetadata as MutateMetadata } from "./metadata"
 
 type ModuleType = "substrate-native"
 
@@ -27,6 +27,8 @@ type ModuleType = "substrate-native"
 const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);
 const storageHash = "b99d880ec681799c0cf30e8886371da9" // util_crypto.xxhashAsHex("Account", 128);
 const moduleStorageHash = `${moduleHash}${storageHash}`
+
+// TODO: Move the fallback configs for each chain into the ChainMeta section of chaindata
 
 // AccountInfo is the state_storage data format for nativeToken balances
 // Theory: new chains will be at least on metadata v14, and so we won't need to hardcode their AccountInfo type.
@@ -148,24 +150,8 @@ export const SubNativeModule: BalanceModule<
       ? constants.balances.existentialDeposit.toString()
       : null
 
-    // we do a just-in-time import here so that our frontend bundle of this module doesn't include the nodejs-dependent subsquid libraries
-    //
-    // if we just do `import ('./metadata')` then tsc will convert the import into a commonjs `require`, which means the nodejs-only
-    // subsquid libraries would be included in frontend bundles of this module (and cause havoc!)
-    //
-    // but if we compile to esm instead of commonjs, we can't use this library from our commonjs-based subsquid projects!
-    //
-    // solution: use this workaround to just-in-time import the module in a way that tsc won't convert it into a `require`
-    //
-    // https://stackoverflow.com/a/70192405/3926156
-    // https://github.com/node-fetch/node-fetch/issues/1279#issuecomment-915063354
-    const importDynamic = new Function("modulePath", "return import(modulePath)")
-    const { mutateMetadata }: { mutateMetadata: typeof MutateMetadata } = await importDynamic(
-      "./metadata.js"
-    )
-
     let accountInfoType = null
-    const balanceMetadata = mutateMetadata(metadataRpc, (metadata) => {
+    const balanceMetadata = await mutateMetadata(metadataRpc, (metadata) => {
       if (
         metadata.__kind === "V0" ||
         metadata.__kind === "V1" ||
@@ -467,7 +453,7 @@ function buildParams(addresses: string[]): string[][] {
   return [
     addresses
       .map((address) => decodeAnyAddress(address))
-      .map((addressBytes) => blake2Concat(addressBytes).replace("0x", ""))
+      .map((addressBytes) => blake2Concat(addressBytes).replace(/^0x/, ""))
       .map((addressHash) => `0x${moduleStorageHash}${addressHash}`),
   ]
 }
@@ -500,6 +486,9 @@ function buildAddressReferences(addresses: string[]): Array<[string, string]> {
     .map((reference, index) => [addresses[index], reference])
 }
 
+// TODO: Make use of polkadot.js to encode/decode these state calls, while avoiding the use of
+// its WsProvider and ApiPromise classes so that we don't pull down and parse the entire metadata
+// blob for each chain.
 /**
  * Formats an RPC result into an instance of `Balances`
  *

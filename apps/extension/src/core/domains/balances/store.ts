@@ -16,6 +16,7 @@ import * as Sentry from "@sentry/browser"
 import { AddressesByToken, db as balancesDb } from "@talismn/balances"
 import { EvmErc20Module } from "@talismn/balances-evm-erc20"
 import { EvmNativeModule } from "@talismn/balances-evm-native"
+import { SubAssetsModule } from "@talismn/balances-substrate-assets"
 import { SubNativeModule } from "@talismn/balances-substrate-native"
 import { SubOrmlModule } from "@talismn/balances-substrate-orml"
 import { Token, TokenList } from "@talismn/chaindata-provider"
@@ -37,7 +38,13 @@ type TokenIdAndType = Pick<Token, "id" | "type" | "chain" | "evmNetwork">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
 
-export const balanceModules = [SubNativeModule, SubOrmlModule, EvmNativeModule, EvmErc20Module]
+export const balanceModules = [
+  SubNativeModule,
+  SubOrmlModule,
+  SubAssetsModule,
+  EvmNativeModule,
+  EvmErc20Module,
+]
 
 // TODO: Fix this class up
 //       1. It shouldn't need a whole extra copy of addresses+chains+networks separate to the db

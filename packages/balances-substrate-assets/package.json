@@ -1,6 +1,6 @@
 {
-  "name": "@talismn/balances-substrate-native",
-  "version": "0.2.3",
+  "name": "@talismn/balances-substrate-assets",
+  "version": "0.2.0",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "UNLICENSED",
@@ -8,7 +8,7 @@
     "access": "public"
   },
   "repository": {
-    "directory": "packages/balances-substrate-native",
+    "directory": "packages/balances-substrate-assets",
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
