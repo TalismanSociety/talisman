@@ -1,5 +1,16 @@
 # @talismn/chaindata-provider-extension
 
+## 0.2.0
+
+### Minor Changes
+
+- 931b6ca: fix: await each transaction instruction
+  add: method to create a transaction
+
+### Patch Changes
+
+- @talismn/chaindata-provider@0.2.0
+
 ## 0.1.10
 
 ### Patch Changes

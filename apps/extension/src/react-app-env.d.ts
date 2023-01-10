@@ -15,7 +15,6 @@ declare namespace NodeJS {
     readonly PASSWORD?: string
     readonly TEST_MNEMONIC?: string
     readonly EVM_LOGPROXY?: string
-    readonly ALLOW_REGISTRY_WARNINGS?: string
   }
 }
 

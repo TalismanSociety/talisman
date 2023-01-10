@@ -108,9 +108,6 @@ const config = (env) => ({
       "process.env.EVM_LOGPROXY": JSON.stringify(
         env.build === undefined ? process.env.EVM_LOGPROXY || "" : ""
       ),
-      "process.env.ALLOW_REGISTRY_WARNINGS": JSON.stringify(
-        env.build === undefined ? process.env.ALLOW_REGISTRY_WARNINGS || "" : ""
-      ),
 
       // computed values
       "process.env.BUILD": JSON.stringify(env.build),

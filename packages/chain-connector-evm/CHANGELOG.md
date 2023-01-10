@@ -1,5 +1,15 @@
 # @talismn/chain-connector-evm
 
+## 0.3.0
+
+### Minor Changes
+
+- 931b6ca: add: method to clear cache
+
+### Patch Changes
+
+- @talismn/chaindata-provider@0.2.0
+
 ## 0.2.0
 
 ### Minor Changes
