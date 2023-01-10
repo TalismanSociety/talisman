@@ -1,6 +1,6 @@
 import { DEBUG } from "@core/constants"
 import { AccountMeta } from "@core/domains/accounts/types"
-import { AppStoreData, appStore } from "@core/domains/app/store.app"
+import { AppStoreData } from "@core/domains/app/store.app"
 import type {
   AnalyticsCaptureRequest,
   LoggedinType,
@@ -16,7 +16,6 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
-import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { mnemonicGenerate, mnemonicValidate } from "@polkadot/util-crypto"
@@ -27,7 +26,6 @@ import Browser from "webextension-polyfill"
 import { AccountTypes } from "../accounts/helpers"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
-import passwordStore from "./store.password"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
@@ -194,8 +192,8 @@ export default class AppHandler extends ExtensionHandler {
   private async resetWallet() {
     // delete all the accounts
     keyring.getAccounts().forEach((acc) => keyring.forgetAccount(acc.address))
-    appStore.set({ onboarded: "FALSE" })
-    await passwordStore.clear()
+    this.stores.app.set({ onboarded: "FALSE" })
+    await this.stores.password.clear()
     await this.state.openOnboarding("/import?resetWallet=true")
     return true
   }
