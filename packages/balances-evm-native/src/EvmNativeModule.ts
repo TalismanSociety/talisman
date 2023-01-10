@@ -237,7 +237,10 @@ async function getFreeBalance(
     log.warn(
       `Failed to get balance from chain ${provider.network.chainId} for address ${address}: ${errorMessage}`
     )
-    return "0"
+    throw new Error(
+      `Failed to get balance from chain ${provider.network.chainId} for address ${address}`,
+      { cause: error as Error }
+    )
   }
 }
 
