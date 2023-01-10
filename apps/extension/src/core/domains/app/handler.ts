@@ -196,7 +196,7 @@ export default class AppHandler extends ExtensionHandler {
     keyring.getAccounts().forEach((acc) => keyring.forgetAccount(acc.address))
     appStore.set({ onboarded: "FALSE" })
     await passwordStore.clear()
-    await this.state.openOnboarding("/import")
+    await this.state.openOnboarding("/import?resetWallet=true")
     return true
   }
 

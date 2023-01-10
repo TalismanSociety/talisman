@@ -221,7 +221,11 @@ export default class State {
 
     const onboarded = await appStore.getIsOnboarded()
 
-    await this.openTabOnce({ url: `${baseUrl}#${route}`, baseUrl, shouldFocus: onboarded })
+    await this.openTabOnce({
+      url: `${baseUrl}${route ? `#${route}` : ""}`,
+      baseUrl,
+      shouldFocus: onboarded,
+    })
     this.#onboardingTabOpening = false
   }
 
