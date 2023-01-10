@@ -88,6 +88,7 @@ export default interface MessageTypes {
   modalOpen: (modal: ModalOpenRequest) => Promise<boolean>
   modalOpenSubscribe: (cb: (val: ModalOpenRequest) => void) => UnsubscribeFn
   analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>
+  resetWallet: () => Promise<boolean>
 
   // mnemonic message types -------------------------------------------------------
   mnemonicUnlock: (pass: string) => Promise<string>

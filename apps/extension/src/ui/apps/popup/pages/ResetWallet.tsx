@@ -2,13 +2,25 @@ import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertCircleIcon } from "@talisman/theme/icons"
 import Terrarium from "@talisman/theme/images/forgot_password_terrarium.png"
+import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
 import Layout, { Content, Footer } from "../Layout"
 
 const ConfirmDrawer = ({ isOpen }: { isOpen: boolean }) => {
+  const navigate = useNavigate()
+  const [resetting, setResetting] = useState(false)
+
+  const handleReset = useCallback(async () => {
+    setResetting(true)
+    await api.resetWallet()
+    setResetting(false)
+    window.close()
+  }, [])
+
   return (
     <Drawer open={isOpen} anchor="bottom">
       <div className="bg-grey-800 items-center rounded-t p-8 pt-12">
@@ -25,10 +37,12 @@ const ConfirmDrawer = ({ isOpen }: { isOpen: boolean }) => {
           imported accounts such as Ledger devices.
         </p>
         <div className="mt-4 flex flex-col gap-4">
-          <Button fullWidth primary>
+          <Button fullWidth onClick={handleReset} primary processing={resetting}>
             Continue
           </Button>
-          <Button fullWidth>Cancel</Button>
+          <Button fullWidth onClick={() => navigate("/login")}>
+            Cancel
+          </Button>
         </div>
       </div>
     </Drawer>
