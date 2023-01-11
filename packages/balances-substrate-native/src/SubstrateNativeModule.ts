@@ -74,10 +74,14 @@ export type SubNativeToken = NewTokenType<
   ModuleType,
   {
     existentialDeposit: string
-    accountInfoType: number | null // TODO: Instead of storing this on the token, figure out a way to store it on the chain
-    metadata: `0x${string}` | null // TODO: Instead of storing this on the token, figure out a way to store it on the chain
-    metadataVersion: number // TODO: Instead of storing this on the token, figure out a way to store it on the chain
     chain: { id: ChainId }
+
+    /** @deprecated - use the ChainMeta.accountInfoType field available on the chain */
+    accountInfoType: number | null // TODO: Delete this
+    /** @deprecated - use the ChainMeta.accountInfoType field available on the chain */
+    metadata: `0x${string}` | null // TODO: Delete this
+    /** @deprecated - use the ChainMeta.accountInfoType field available on the chain */
+    metadataVersion: number // TODO: Delete this
   }
 >
 export type CustomSubNativeToken = SubNativeToken & {
@@ -275,9 +279,9 @@ export const SubNativeModule: BalanceModule<
       decimals,
       logo: githubTokenLogoUrl(id),
       existentialDeposit: existentialDeposit || "0",
-      accountInfoType,
-      metadata,
-      metadataVersion,
+      accountInfoType, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
+      metadata, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
+      metadataVersion, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
       chain: { id: chainId },
     }
 
@@ -308,16 +312,23 @@ export const SubNativeModule: BalanceModule<
         if (!chain) throw new Error(`Chain ${chainId} for token ${tokenId} not found`)
 
         const typeRegistry = new TypeRegistry()
-        if (token.metadata !== undefined && token.metadata !== null && token.metadataVersion >= 14)
-          typeRegistry.setMetadata(new Metadata(typeRegistry, token.metadata))
+        const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
+          ({ moduleType }) => moduleType === "substrate-native"
+        )?.metadata
+        if (
+          chainMeta?.metadata !== undefined &&
+          chainMeta?.metadata !== null &&
+          chainMeta?.metadataVersion >= 14
+        )
+          typeRegistry.setMetadata(new Metadata(typeRegistry, chainMeta.metadata))
 
         const accountInfoTypeDef = (() => {
-          if (token.accountInfoType === undefined) return AccountInfoOverrides[chainId]
-          if (token.accountInfoType === null) return AccountInfoOverrides[chainId]
-          if (!(token.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
+          if (chainMeta?.accountInfoType === undefined) return AccountInfoOverrides[chainId]
+          if (chainMeta?.accountInfoType === null) return AccountInfoOverrides[chainId]
+          if (!(chainMeta?.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
 
           try {
-            return typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
+            return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
           } catch (error: any) {
             log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
             return
@@ -395,20 +406,23 @@ export const SubNativeModule: BalanceModule<
           if (!chain) throw new Error(`Chain ${chainId} for token ${tokenId} not found`)
 
           const typeRegistry = new TypeRegistry()
+          const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
+            ({ moduleType }) => moduleType === "substrate-native"
+          )?.metadata
           if (
-            token.metadata !== undefined &&
-            token.metadata !== null &&
-            token.metadataVersion >= 14
+            chainMeta?.metadata !== undefined &&
+            chainMeta?.metadata !== null &&
+            chainMeta?.metadataVersion >= 14
           )
-            typeRegistry.setMetadata(new Metadata(typeRegistry, token.metadata))
+            typeRegistry.setMetadata(new Metadata(typeRegistry, chainMeta.metadata))
 
           const accountInfoTypeDef = (() => {
-            if (token.accountInfoType === undefined) return AccountInfoOverrides[chainId]
-            if (token.accountInfoType === null) return AccountInfoOverrides[chainId]
-            if (!(token.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
+            if (chainMeta?.accountInfoType === undefined) return AccountInfoOverrides[chainId]
+            if (chainMeta?.accountInfoType === null) return AccountInfoOverrides[chainId]
+            if (!(chainMeta?.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
 
             try {
-              return typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
+              return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
             } catch (error: any) {
               log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
               return

@@ -1,5 +1,4 @@
-import { Metadata, TypeRegistry, createType } from "@polkadot/types"
-import { BN, bnToU8a } from "@polkadot/util"
+import { Metadata, TypeRegistry } from "@polkadot/types"
 import {
   AddressesByToken,
   Amount,
@@ -8,63 +7,22 @@ import {
   Balances,
   DefaultBalanceModule,
   NewBalanceType,
+  StorageHelper,
 } from "@talismn/balances"
 import {
   ChainId,
+  ChaindataProvider,
   NewTokenType,
   SubChainId,
   TokenList,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { mutateMetadata } from "@talismn/mutate-metadata"
-import { blake2Concat, decodeAnyAddress, hasOwnProperty } from "@talismn/util"
+import { decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 import log from "./log"
 
 type ModuleType = "substrate-assets"
-
-// Assets.Account is the state_storage key prefix for the assets pallet token balances
-// Assets.Asset is the state_storage key prefix for the assets pallet token details (minBalance)
-// Assets.Metadata is the state_storage key prefix for the assets pallet token metadata (name, symbol, decimals)
-const moduleHash = "682a59d51ab9e48a8c8cc418ff9708d2" // xxhashAsHex("Assets", 128).replace(/^0x/, "")
-
-const accountStorageHash = "b99d880ec681799c0cf30e8886371da9" // xxhashAsHex("Account", 128).replace(/^0x/, "")
-const assetStorageHash = "d34371a193a751eea5883e9553457b2e" // xxhashAsHex("Asset", 128).replace(/^0x/, "")
-const metadataStorageHash = "b5f3822e35ca2f31ce3526eab1363fd2" // xxhashAsHex("Metadata", 128).replace(/^0x/, "")
-
-// e.g.
-// {
-//   balance: 2,000,000,000
-//   isFrozen: false
-//   reason: Sufficient
-//   extra: null
-// }
-const moduleAccountStorageHash = `${moduleHash}${accountStorageHash}`
-// e.g.
-// {
-//   owner: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-//   issuer: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-//   admin: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-//   freezer: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-//   supply: 99,996,117,733,044,042
-//   deposit: 1,000,000,000,000
-//   minBalance: 100,000
-//   isSufficient: true
-//   accounts: 6,032
-//   sufficients: 1,542
-//   approvals: 1
-//   status: Live
-// }
-const moduleAssetStorageHash = `${moduleHash}${assetStorageHash}`
-// e.g.
-// {
-//   deposit: 6,693,333,000
-//   name: RMRK.app
-//   symbol: RMRK
-//   decimals: 10
-//   isFrozen: false
-// }
-const moduleMetadataStorageHash = `${moduleHash}${metadataStorageHash}`
 
 const subAssetTokenId = (chainId: ChainId, assetId: string, tokenSymbol: string) =>
   `${chainId}-substrate-assets-${assetId}-${tokenSymbol}`.toLowerCase()
@@ -87,9 +45,6 @@ declare module "@talismn/chaindata-provider/plugins" {
 
 export type SubAssetsChainMeta = {
   isTestnet: boolean
-  assetsAccountType: number | null
-  assetsAssetType: number | null
-  assetsMetadataType: number | null
   metadata: `0x${string}` | null
   metadataVersion: number
 }
@@ -134,10 +89,7 @@ export const SubAssetsModule: BalanceModule<
     const pjsMetadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
     pjsMetadata.registry.setMetadata(pjsMetadata)
 
-    let assetsAccountType = null
-    let assetsAssetType = null
-    let assetsMetadataType = null
-    const balanceMetadata = await mutateMetadata(metadataRpc, (metadata) => {
+    const metadata = await mutateMetadata(metadataRpc, (metadata) => {
       if (
         metadata.__kind === "V0" ||
         metadata.__kind === "V1" ||
@@ -190,19 +142,25 @@ export const SubAssetsModule: BalanceModule<
         ]
       })()
 
-      assetsAccountType = accountItem?.type.value
-      assetsAssetType = assetItem?.type.value
-      assetsMetadataType = metadataItem?.type.value
-
       // this is a set of type ids which we plan to keep in our mutated metadata
       // anything not in this set will be deleted
       // we start off with just the types of the state calls we plan to make,
       // then we run those types through a function (addDependentTypes) which will also include
       // all of the types which those types depend on - recursively
       const keepTypes = new Set(
-        [assetsAccountType, assetsAssetType, assetsMetadataType].filter(
-          (type): type is number => typeof type === "number"
-        )
+        [
+          // each type can be either "Plain" or "Map"
+          // if it's "Plain" we only need to get the value type
+          // if it's a "Map" we want to keep both the key AND the value types
+          accountItem?.type.__kind === "Map" && accountItem.type.key,
+          accountItem?.type.value,
+
+          assetItem?.type.__kind === "Map" && assetItem.type.key,
+          assetItem?.type.value,
+
+          metadataItem?.type.__kind === "Map" && metadataItem.type.key,
+          metadataItem?.type.value,
+        ].filter((type): type is number => typeof type === "number")
       )
 
       const addDependentTypes = (types: number[]) => {
@@ -240,10 +198,7 @@ export const SubAssetsModule: BalanceModule<
 
     return {
       isTestnet,
-      assetsAccountType,
-      assetsAssetType,
-      assetsMetadataType,
-      metadata: balanceMetadata,
+      metadata,
       metadataVersion: pjsMetadata.version,
     }
   },
@@ -255,50 +210,58 @@ export const SubAssetsModule: BalanceModule<
     chainMeta,
     moduleConfig
   ) {
-    const {
-      isTestnet,
-      assetsAccountType,
-      assetsAssetType,
-      assetsMetadataType,
-      metadata,
-      metadataVersion,
-    } = chainMeta
+    const { isTestnet, metadata: metadataRpc, metadataVersion } = chainMeta
 
     const tokens: Record<string, SubAssetsToken> = {}
     for (const tokenConfig of moduleConfig?.tokens || []) {
       try {
         const assetId = tokenConfig.assetId
-        const assetIdBn = new BN(assetId)
-        const assetIdHash = blake2Concat(bnToU8a(assetIdBn, { bitLength: 32 })).replace(/^0x/, "")
 
-        const typeRegistry = new TypeRegistry()
-        if (metadata !== null && metadataVersion >= 14)
-          typeRegistry.setMetadata(new Metadata(typeRegistry, metadata))
+        const registry = new TypeRegistry()
+        if (metadataRpc !== null && metadataVersion >= 14)
+          registry.setMetadata(new Metadata(registry, metadataRpc))
 
-        const assetsAssetTypeDef =
-          assetsAssetType !== null && typeRegistry.metadata.lookup.getTypeDef(assetsAssetType).type
-        const assetsMetadataTypeDef =
-          assetsMetadataType !== null &&
-          typeRegistry.metadata.lookup.getTypeDef(assetsMetadataType).type
+        const assetQuery = new StorageHelper(registry, "assets", "asset", tokenConfig.assetId)
+        const metadataQuery = new StorageHelper(registry, "assets", "metadata", tokenConfig.assetId)
 
-        const [assetsAssetEncoded, assetsMetadataEncoded] = await Promise.all([
-          chainConnector.send(chainId, "state_getStorage", [
-            `0x${moduleAssetStorageHash}${assetIdHash}`,
-          ]),
-          chainConnector.send(chainId, "state_getStorage", [
-            `0x${moduleMetadataStorageHash}${assetIdHash}`,
-          ]),
+        const [
+          // e.g.
+          // Option<{
+          //   owner: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
+          //   issuer: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
+          //   admin: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
+          //   freezer: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
+          //   supply: 99,996,117,733,044,042
+          //   deposit: 1,000,000,000,000
+          //   minBalance: 100,000
+          //   isSufficient: true
+          //   accounts: 6,032
+          //   sufficients: 1,542
+          //   approvals: 1
+          //   status: Live
+          // }>
+          assetsAsset,
+
+          // e.g.
+          // {
+          //   deposit: 6,693,333,000
+          //   name: RMRK.app
+          //   symbol: RMRK
+          //   decimals: 10
+          //   isFrozen: false
+          // }
+          assetsMetadata,
+        ] = await Promise.all([
+          chainConnector
+            .send(chainId, "state_getStorage", [assetQuery.stateKey])
+            .then((result) => assetQuery.decode(result)),
+          chainConnector
+            .send(chainId, "state_getStorage", [metadataQuery.stateKey])
+            .then((result) => metadataQuery.decode(result)),
         ])
 
-        const assetsAsset = assetsAssetTypeDef
-          ? typeRegistry.createType(assetsAssetTypeDef, assetsAssetEncoded)
-          : undefined
-        const assetsMetadata = assetsMetadataTypeDef
-          ? typeRegistry.createType(assetsMetadataTypeDef, assetsMetadataEncoded)
-          : undefined
-
         const existentialDeposit =
-          (assetsAsset as any)?.minBalance?.toBigInt?.()?.toString?.() || "0"
+          (assetsAsset as any)?.value?.minBalance?.toBigInt?.()?.toString?.() || "0"
         const symbol =
           tokenConfig.symbol || (assetsMetadata as any)?.symbol?.toHuman?.() || "Unknown"
         // const name = (assetsMetadata as any)?.name?.toHuman?.() || symbol
@@ -337,62 +300,22 @@ export const SubAssetsModule: BalanceModule<
 
   // TODO: Don't create empty subscriptions
   async subscribeBalances(chainConnectors, chaindataProvider, addressesByToken, callback) {
+    const chainConnector = chainConnectors.substrate
+    if (!chainConnector) throw new Error(`This module requires a substrate chain connector`)
+
     const tokens = await chaindataProvider.tokens()
+    const queriesByChain = await prepareQueriesByChain(chaindataProvider, addressesByToken, tokens)
 
-    const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
-
-    const subscriptions = Object.entries(addressesByTokenGroupedByChain)
-      .map(async ([chainId, addressesByToken]) => {
-        if (!chainConnectors.substrate)
-          throw new Error(`This module requires a substrate chain connector`)
-
-        const chain = await chaindataProvider.getChain(chainId)
-        if (!chain) throw new Error(`Failed to get chain ${chainId}`)
-
-        const tokensAndAddresses = Object.entries(addressesByToken)
-          .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
-          .filter(([tokenId, token]) => {
-            if (!token) {
-              log.error(`Token ${tokenId} not found`)
-              return false
-            }
-
-            // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-            if (token.type !== "substrate-assets") {
-              log.debug(`This module doesn't handle tokens of type ${token.type}`)
-              return false
-            }
-
-            return true
-          })
-          .map(([, token, addresses]): [SubAssetsToken, string[]] => [token, addresses])
-
-        const typeRegistry = new TypeRegistry()
-        const balanceMetadata = (chain.balanceMetadata || []).find(
-          ({ moduleType }) => moduleType === "substrate-assets"
-        )
-        if (
-          balanceMetadata?.metadata.metadata !== undefined &&
-          balanceMetadata?.metadata.metadata !== null &&
-          balanceMetadata?.metadata.metadataVersion >= 14
-        )
-          typeRegistry.setMetadata(new Metadata(typeRegistry, balanceMetadata.metadata.metadata))
-
-        const assetsAccountTypeDef = typeRegistry.metadata.lookup.getTypeDef(
-          balanceMetadata?.metadata.assetsAccountType
-        )?.type
-
+    const subscriptions = Object.entries(queriesByChain)
+      .map(async ([chainId, queries]) => {
         // set up method, return message type and params
         const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
         const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
         const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
-        const params = buildParams(tokensAndAddresses)
-
-        // build lookup table of `rpc hex output` -> `input address`
-        const references = buildReferences(tokensAndAddresses)
+        const params = [queries.map((query) => query.stateKey)]
 
         // set up subscription
-        const unsubscribe = await chainConnectors.substrate.subscribe(
+        const unsubscribe = await chainConnector.subscribe(
           chainId,
           subscribeMethod,
           unsubscribeMethod,
@@ -400,17 +323,7 @@ export const SubAssetsModule: BalanceModule<
           params,
           (error, result) => {
             if (error) return callback(error)
-            callback(
-              null,
-              formatRpcResult(
-                chainId,
-                tokens,
-                assetsAccountTypeDef,
-                typeRegistry,
-                references,
-                result
-              )
-            )
+            callback(null, formatRpcResult(chainId, queries, result))
           }
         )
 
@@ -427,70 +340,21 @@ export const SubAssetsModule: BalanceModule<
   },
 
   async fetchBalances(chainConnectors, chaindataProvider, addressesByToken) {
-    const tokens = await chaindataProvider.tokens()
+    const chainConnector = chainConnectors.substrate
+    if (!chainConnector) throw new Error(`This module requires a substrate chain connector`)
 
-    const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
+    const tokens = await chaindataProvider.tokens()
+    const queriesByChain = await prepareQueriesByChain(chaindataProvider, addressesByToken, tokens)
 
     const balances = await Promise.all(
-      Object.entries(addressesByTokenGroupedByChain).map(async ([chainId, addressesByToken]) => {
-        if (!chainConnectors.substrate)
-          throw new Error(`This module requires a substrate chain connector`)
-
-        const chain = await chaindataProvider.getChain(chainId)
-        if (!chain) throw new Error(`Failed to get chain ${chainId}`)
-
-        const tokensAndAddresses = Object.entries(addressesByToken)
-          .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
-          .filter(([tokenId, token]) => {
-            if (!token) {
-              log.error(`Token ${tokenId} not found`)
-              return false
-            }
-
-            // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-            if (token.type !== "substrate-assets") {
-              log.debug(`This module doesn't handle tokens of type ${token.type}`)
-              return false
-            }
-
-            return true
-          })
-          .map(([, token, addresses]): [SubAssetsToken, string[]] => [token, addresses])
-
-        const typeRegistry = new TypeRegistry()
-        const balanceMetadata = (chain.balanceMetadata || []).find(
-          ({ moduleType }) => moduleType === "substrate-assets"
-        )
-        if (
-          balanceMetadata?.metadata.metadata !== undefined &&
-          balanceMetadata?.metadata.metadata !== null &&
-          balanceMetadata?.metadata.metadataVersion >= 14
-        )
-          typeRegistry.setMetadata(new Metadata(typeRegistry, balanceMetadata.metadata.metadata))
-
-        const assetsAccountTypeDef = typeRegistry.metadata.lookup.getTypeDef(
-          balanceMetadata?.metadata.assetsAccountType
-        )?.type
-
+      Object.entries(queriesByChain).map(async ([chainId, queries]) => {
         // set up method and params
         const method = "state_queryStorageAt" // method we call to fetch
-        const params = buildParams(tokensAndAddresses)
-
-        // build lookup table of `rpc hex output` -> `input address`
-        const references = buildReferences(tokensAndAddresses)
+        const params = [queries.map((query) => query.stateKey)]
 
         // query rpc
-        const response = await chainConnectors.substrate.send(chainId, method, params)
-        const result = response[0]
-
-        return formatRpcResult(
-          chainId,
-          tokens,
-          assetsAccountTypeDef,
-          typeRegistry,
-          references,
-          result
-        )
+        const result = await chainConnector.send(chainId, method, params)
+        return formatRpcResult(chainId, queries, result[0])
       })
     )
 
@@ -522,78 +386,68 @@ function groupAddressesByTokenByChain(
   }, {} as Record<string, AddressesByToken<SubAssetsToken>>)
 }
 
-/**
- * Turns an array of addresses into the params argument expected by `state_subscribeStorage` / `state_getStorage` / `state_queryStorageAt`.
- *
- * @param addresses - The addresses to query.
- * @returns The params to be sent to the RPC.
- */
-function buildParams(tokensAndAddresses: Array<[SubAssetsToken, string[]]>): string[][] {
-  return [
-    tokensAndAddresses
-      .map(([token, addresses]): [string, string[]] => [
-        blake2Concat(bnToU8a(new BN(token.assetId), { bitLength: 32 })).replace(/^0x/, ""),
-        addresses,
-      ])
-      .flatMap(([tokenHash, addresses]) =>
-        addresses
-          .map((address) => decodeAnyAddress(address))
-          .map((addressBytes) => blake2Concat(addressBytes).replace(/^0x/, ""))
-          .map((addressHash) => `0x${moduleAccountStorageHash}${tokenHash}${addressHash}`)
-      ),
-  ]
-}
+async function prepareQueriesByChain(
+  chaindataProvider: ChaindataProvider,
+  addressesByToken: AddressesByToken<SubAssetsToken>,
+  tokens: TokenList
+): Promise<Record<string, StorageHelper[]>> {
+  const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
 
-/**
- * Turns an array of addresses into a lookup table of `[address, token, reference]`.
- *
- * This lookup table is used to associate each balance in the RPC response with
- * the account which has that balance.
- *
- * @param addresses - The addresses which will be queried.
- * @returns The lookup table.
- *
- * @example An example of a lookup table returned by this function.
- * ```ts
- * [
- *   [
- *     // The address encoded in ss58 format
- *     "5EHNsSHuWrNMYgx3bPhsRVLG77DX8sS8wZrnbtieJzbtSZr9",
- *     // The token stateKey
- *     "...",
- *     // The address encoded in hexadecimal format
- *     "6222bdf686960b8ee8aeda225d885575c2238f0403003983b392cde500aeb06c"
- *   ]
- * ]
- * ```
- */
-function buildReferences(
-  tokensAndAddresses: Array<[SubAssetsToken, string[]]>
-): Array<[string, string, string]> {
-  return tokensAndAddresses
-    .map(([token, addresses]): [string, string, string[]] => [
-      token.id,
-      blake2Concat(bnToU8a(new BN(token.assetId), { bitLength: 32 })).replace(/^0x/, ""),
-      addresses,
-    ])
-    .flatMap(([tokenId, tokenHash, addresses]) =>
-      addresses
-        .map((address): [string, Uint8Array] => [address, decodeAnyAddress(address)])
-        .map(([address, addressBytes]): [string, string] => [
-          address,
-          blake2Concat(addressBytes).replace(/^0x/, ""),
-        ])
-        .map(([address, addressHash]): [string, string, string] => [
-          address,
-          tokenId,
-          `0x${moduleAccountStorageHash}${tokenHash}${addressHash}`,
-        ])
+  return Object.fromEntries(
+    await Promise.all(
+      Object.entries(addressesByTokenGroupedByChain).map(async ([chainId, addressesByToken]) => {
+        const chain = await chaindataProvider.getChain(chainId)
+        if (!chain) throw new Error(`Failed to get chain ${chainId}`)
+
+        const tokensAndAddresses = Object.entries(addressesByToken)
+          .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
+          .filter(([tokenId, token]) => {
+            if (!token) {
+              log.error(`Token ${tokenId} not found`)
+              return false
+            }
+
+            // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
+            if (token.type !== "substrate-assets") {
+              log.debug(`This module doesn't handle tokens of type ${token.type}`)
+              return false
+            }
+
+            return true
+          })
+          .map(([, token, addresses]): [SubAssetsToken, string[]] => [token, addresses])
+
+        const registry = new TypeRegistry()
+        const chainMeta: SubAssetsChainMeta | undefined = (chain.balanceMetadata || []).find(
+          ({ moduleType }) => moduleType === "substrate-assets"
+        )?.metadata
+        if (
+          chainMeta?.metadata !== undefined &&
+          chainMeta?.metadata !== null &&
+          chainMeta?.metadataVersion >= 14
+        )
+          registry.setMetadata(new Metadata(registry, chainMeta.metadata))
+
+        const queries = tokensAndAddresses
+          .flatMap(([token, addresses]) =>
+            addresses.map((address) =>
+              new StorageHelper(
+                registry,
+                "assets",
+                "account",
+                token.assetId,
+                decodeAnyAddress(address)
+              ).tag({ token, address })
+            )
+          )
+          .filter((query) => query.stateKey !== undefined)
+
+        return [chainId, queries]
+      })
     )
+  )
 }
 
-// TODO: Make use of polkadot.js to encode/decode these state calls, while avoiding the use of
-// its WsProvider and ApiPromise classes so that we don't pull down and parse the entire metadata
-// blob for each chain.
 /**
  * Formats an RPC result into an instance of `Balances`
  *
@@ -603,64 +457,39 @@ function buildReferences(
  * @param result - The result returned by the RPC.
  * @returns A formatted list of balances.
  */
-function formatRpcResult(
-  chainId: ChainId,
-  tokens: TokenList,
-  assetsAccountTypeDef: string | undefined,
-  typeRegistry: TypeRegistry,
-  references: Array<[string, string, string]>,
-  result: unknown
-): Balances {
+function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unknown): Balances {
   if (typeof result !== "object" || result === null) return new Balances([])
   if (!hasOwnProperty(result, "changes") || typeof result.changes !== "object")
     return new Balances([])
   if (!Array.isArray(result.changes)) return new Balances([])
 
   const balances = result.changes
-    .map(([reference, change]: [unknown, unknown]): Balance | false => {
-      if (typeof reference !== "string") {
-        log.warn(`Received non-string reference in RPC result : ${reference}`)
-        return false
-      }
+    .map(([key, change]: [unknown, unknown]) => {
+      if (typeof key !== "string") return
 
-      if (typeof change !== "string" && change !== null) {
-        log.warn(`Received non-string and non-null change in RPC result : ${reference} | ${change}`)
-        return false
-      }
+      const query = queries.find((query) => query.stateKey === key)
+      if (query === undefined) return
 
-      const [address, tokenId] = references.find(([, , hex]) => reference === hex) || []
-      if (address === undefined || tokenId === undefined) {
-        const search = reference
-        const set = references.map(([, , reference]) => reference).join(",\n")
-        log.error(`Failed to find address & tokenId:\n${search} in\n${set}`)
-        return false
-      }
+      if (!(typeof change === "string" || change === null)) return
 
-      const token = tokens[tokenId]
-      if (!token) {
-        log.error(`Failed to find token for chain ${chainId} tokenId ${tokenId}`)
-        return false
-      }
+      // e.g.
+      // Option<{
+      //   balance: 2,000,000,000
+      //   isFrozen: false
+      //   reason: Sufficient
+      //   extra: null
+      // }>
+      const balance = (query.decode(change) as any)?.value
 
-      let balance: any
-      try {
-        if (assetsAccountTypeDef === undefined) throw new Error(`assetsAccountType is undefined`)
-        balance = createType(typeRegistry, assetsAccountTypeDef, change)
-      } catch (error) {
-        log.warn(
-          `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${(
-            error as any
-          )?.toString()}`
-        )
-        return false
-      }
+      const { address, token } = query.tags || {}
+      if (!address || !token || !balance) return
 
       const free =
-        token.isFrozen || balance.isFrozen.toHuman()
+        token.isFrozen || balance?.isFrozen?.toHuman?.()
           ? BigInt("0").toString()
-          : (balance.balance.toBigInt() || BigInt("0")).toString()
+          : (balance?.balance?.toBigInt?.() || BigInt("0")).toString()
       const frozen = token.isFrozen
-        ? (balance.balance.toBigInt() || BigInt("0")).toString()
+        ? (balance?.balance?.toBigInt?.() || BigInt("0")).toString()
         : BigInt("0").toString()
 
       return new Balance({
@@ -671,7 +500,7 @@ function formatRpcResult(
         address,
         multiChainId: { subChainId: chainId },
         chainId,
-        tokenId,
+        tokenId: token.id,
 
         free,
         locks: frozen,
