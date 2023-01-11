@@ -1,6 +1,6 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import { ChaindataProvider } from "@talismn/chaindata-provider"
+import { ChaindataProvider, IToken } from "@talismn/chaindata-provider"
 
 import {
   BalanceModule,
@@ -65,7 +65,7 @@ export async function balances<
 }
 
 export const filterMirrorTokens = (balance: Balance, i: number, balances: Balance[]) => {
-  // TODO implement a mirrorOf property, which should be set from chainData
-  const mirrorOf = (balance.token as any)?.mirrorOf as string
+  // TODO implement a mirrorOf property, which should be set from chaindata
+  const mirrorOf = (balance.token as (IToken & { mirrorOf?: string | null }) | null)?.mirrorOf
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }
