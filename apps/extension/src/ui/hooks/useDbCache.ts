@@ -25,10 +25,25 @@ const useDbCacheProvider = () => {
     [useTestnets]
   )
   const tokens = useLiveQuery(async () => {
-    // temp hack to indicate EVM ACA is a mirror of substrate ACA
+    // BEGIN: temp hack to indicate that
+    //          - EVM GLMR is a mirror of substrate GLMR
+    //          - EVM MOVR is a mirror of substrate MOVR
+    //          - EVM DEV is a mirror of substrate DEV
+    //          - EVM ACA is a mirror of substrate ACA
     const tokens = await chaindataProvider.tokens()
-    if (tokens["787-evm-native-aca"])
-      (tokens["787-evm-native-aca"] as any).mirrorOf = "acala-substrate-native-aca"
+
+    const mirrorTokenIds = {
+      "1284-evm-native-glmr": "moonbeam-substrate-native-glmr",
+      "1285-evm-native-movr": "moonriver-substrate-native-movr",
+      "1287-evm-native-dev": "moonbase-alpha-testnet-substrate-native-dev",
+      "787-evm-native-aca": "acala-substrate-native-aca",
+    }
+
+    Object.entries(mirrorTokenIds)
+      .filter(([mirrorToken]) => tokens[mirrorToken])
+      .forEach(([mirrorToken, mirrorOf]) => ((tokens[mirrorToken] as any).mirrorOf = mirrorOf))
+    // END: temp hack
+
     return Object.values(tokens).filter(filterTestnets(useTestnets))
   }, [useTestnets])
   const tokenRates = useLiveQuery(async () => await db.tokenRates.toArray(), [])
