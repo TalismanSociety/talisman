@@ -45,26 +45,7 @@ export const isHealthyRpc = async (url: string, chainId: number) => {
 export const getHealthyRpc = async (rpcUrls: string[], network: ethers.providers.Network) => {
   for (const rpcUrl of rpcUrls) if (await isHealthyRpc(rpcUrl, network.chainId)) return rpcUrl
 
-  // TODO update order and persist to database, code ready below
-  // // const unhealthyRpcs: string[] = []
-
-  // // try {
-  // //   for (const rpcUrl of rpcUrls) {
-  // //     if (await isHealthyRpc(rpcUrl, network.chainId)) {
-  // //       return rpcUrl
-  // //     } else {
-  // //       unhealthyRpcs.push(rpcUrl)
-  // //     }
-  // //   }
-  // // } finally {
-  // //   // TODO persist to db ? only for non-custom networks ? (user should have control over this)
-  // //   // push unhealthy rpcs to the back of the array
-  // //   if (unhealthyRpcs.length > 0 && unhealthyRpcs.length !== rpcUrls.length) {
-  // //     rpcUrls.splice(0, unhealthyRpcs.length)
-  // //     rpcUrls.push(...unhealthyRpcs)
-  // //   }
-  // // }
-
+  log.warn("No healthy RPC for EVM network %s (%d)", network.name, network.chainId)
   return null
 }
 
