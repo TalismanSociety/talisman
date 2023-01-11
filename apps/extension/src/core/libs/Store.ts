@@ -199,6 +199,14 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
     return await this.mutate(mutation)
   }
 
+  /** Clear all stored data. */
+  async clear(): Promise<boolean> {
+    const mutation = () => ({} as T)
+    return await new Promise((resolve) =>
+      this.#mutationQueue.next({ mutation, callback: () => resolve(true) })
+    )
+  }
+
   /**
    * Push an atomic mutation to the queue.
    *

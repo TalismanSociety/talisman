@@ -193,8 +193,10 @@ export default class AppHandler extends ExtensionHandler {
     // delete all the accounts
     keyring.getAccounts().forEach((acc) => keyring.forgetAccount(acc.address))
     this.stores.app.set({ onboarded: "FALSE" })
-    await this.stores.password.clear()
+    await this.stores.password.reset()
+    await this.stores.seedPhrase.clear()
     await this.state.openOnboarding("/import?resetWallet=true")
+
     return true
   }
 

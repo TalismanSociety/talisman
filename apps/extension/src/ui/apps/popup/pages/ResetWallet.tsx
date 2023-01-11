@@ -16,8 +16,8 @@ const ConfirmDrawer = ({ isOpen }: { isOpen: boolean }) => {
 
   const handleReset = useCallback(async () => {
     setResetting(true)
-    await api.resetWallet()
-    setResetting(false)
+    // don't wait for the response here, or the normal onboarding tab will open
+    api.resetWallet()
     window.close()
   }, [])
 
@@ -61,8 +61,11 @@ export const ResetWallet = () => {
   return (
     <Layout className="p-4">
       <div className="text-body-secondary flex h-32 justify-center px-12 pr-[16px] align-middle">
-        <ChevronLeftIcon className="flex-shrink" onClick={() => navigate("/login")} />
-        <span className="flex-grow pr-[16px] text-center text-sm ">Reset Wallet</span>
+        <ChevronLeftIcon
+          className="flex-shrink cursor-pointer hover:text-white"
+          onClick={() => navigate("/login")}
+        />
+        <span className="flex-grow pr-[16px] text-center text-sm">Reset Wallet</span>
       </div>
       <Content>
         <div className="flex flex-col items-center gap-24">
