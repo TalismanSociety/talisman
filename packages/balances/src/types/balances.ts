@@ -4,6 +4,7 @@ import { BigMath, NonFunctionProperties, isArrayOf, planckToTokens } from "@tali
 import memoize from "lodash/memoize"
 import { Memoize } from "typescript-memoize"
 
+import { filterMirrorTokens } from "../helpers"
 import log from "../log"
 import {
   BalanceJson,
@@ -472,7 +473,7 @@ export class FiatSumBalancesFormatter {
     // a function to add two amounts
     const sum = (a: number, b: number) => a + b
 
-    return [...this.#balances].reduce(
+    return [...this.#balances].filter(filterMirrorTokens).reduce(
       (total, balance) =>
         sum(
           // add the total amount...

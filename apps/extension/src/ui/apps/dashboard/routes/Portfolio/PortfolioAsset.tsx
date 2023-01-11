@@ -42,7 +42,7 @@ const BackButton = styled.button`
 const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
-  const { token, summary } = useTokenBalancesSummary(balancesToDisplay, symbol)
+  const { token, summary } = useTokenBalancesSummary(balancesToDisplay)
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
 

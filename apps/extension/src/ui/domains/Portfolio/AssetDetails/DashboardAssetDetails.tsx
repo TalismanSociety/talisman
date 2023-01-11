@@ -99,15 +99,14 @@ const FetchingIndicator = styled(LoaderIcon)`
 type AssetRowProps = {
   chainId: ChainId | EvmNetworkId
   balances: Balances
-  symbol: string
 }
 
-const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
-  const { chainOrNetwork, summary, token, detailRows, evmNetwork, chain, isFetching, networkType } =
-    useChainTokenBalances({ chainId, balances, symbol })
+const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
+  const { chainOrNetwork, summary, symbol, detailRows, chain, isFetching, networkType } =
+    useChainTokenBalances({ chainId, balances })
 
   // wait for data to load
-  if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
+  if (!chainOrNetwork || !summary || !symbol || balances.count === 0) return null
 
   return (
     <>
@@ -120,7 +119,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
             <Box grow flex column justify="center" gap={0.4} noWrap>
               <Box fontsize="normal" bold fg="foreground" flex align="center" gap={0.8}>
                 {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
-                <SendFundsButton symbol={token.symbol} networkId={chainOrNetwork.id} />
+                <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
                 {isFetching && <FetchingIndicator data-spin />}
               </Box>
               <div>{networkType}</div>
@@ -130,25 +129,25 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
         <td align="right" valign="top">
           <AssetBalanceCellValue
             locked
-            render={summary.lockedTokens > 0}
-            planck={summary.lockedTokens}
+            render={summary.lockedTokens.gt(0)}
+            tokens={summary.lockedTokens}
             fiat={summary.lockedFiat}
-            token={token}
+            symbol={symbol}
             tooltip="Total Locked Balance"
           />
         </td>
         <td align="right" valign="top">
           <AssetBalanceCellValue
             render
-            planck={summary.availableTokens}
+            tokens={summary.availableTokens}
             fiat={summary.availableFiat}
-            token={token}
+            symbol={symbol}
             tooltip="Total Available Balance"
           />
         </td>
       </tr>
       {detailRows
-        .filter((row) => row.tokens > 0)
+        .filter((row) => row.tokens.gt(0))
         .map((row, i, rows) => (
           <tr key={row.key} className={classNames("details", rows.length === i + 1 && "stop-row")}>
             <td className="al-main" valign="top">
@@ -157,10 +156,10 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
             <td align="right" valign="top"></td>
             <td align="right" valign="top">
               <AssetBalanceCellValue
-                render={row.tokens > 0}
-                planck={row.tokens}
+                render={row.tokens.gt(0)}
+                tokens={row.tokens}
                 fiat={row.fiat}
-                token={token}
+                symbol={symbol}
                 locked={row.locked}
               />
             </td>
@@ -186,7 +185,7 @@ export const DashboardAssetDetails = ({ balances, symbol }: AssetsTableProps) =>
       <tbody>
         {rows.map(([chainId, bal], i, rows) => (
           <Fragment key={chainId}>
-            <ChainTokenBalances chainId={chainId} symbol={symbol} balances={bal} />
+            <ChainTokenBalances chainId={chainId} balances={bal} />
             {i < rows.length - 1 && <SpacerRow />}
           </Fragment>
         ))}
