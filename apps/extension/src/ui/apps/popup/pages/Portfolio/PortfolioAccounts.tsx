@@ -20,7 +20,6 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
-import { useBalancesWithoutMirrorTokens } from "@ui/hooks/useBalancesWithoutMirrorTokens"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { MouseEventHandler, memo, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
@@ -213,8 +212,6 @@ const Accounts = memo(({ options }: { options: AccountOption[] }) => (
 
 export const PortfolioAccounts = () => {
   const balances = useBalances()
-  const balancesWithoutMirrorTokens = useBalancesWithoutMirrorTokens(balances)
-
   const accounts = useAccounts()
   const { popupOpenEvent } = useAnalytics()
 
@@ -222,17 +219,17 @@ export const PortfolioAccounts = () => {
     return [
       {
         name: "All Accounts",
-        total: balancesWithoutMirrorTokens.sum.fiat("usd").total,
+        total: balances.sum.fiat("usd").total,
       },
       ...accounts.map(({ address, name, genesisHash, isHardware }) => ({
         address,
         genesisHash,
         name: name ?? "Unknown Account",
         isHardware,
-        total: balancesWithoutMirrorTokens.find({ address }).sum.fiat("usd").total,
+        total: balances.find({ address }).sum.fiat("usd").total,
       })),
     ]
-  }, [accounts, balancesWithoutMirrorTokens])
+  }, [accounts, balances])
 
   useEffect(() => {
     popupOpenEvent("portfolio accounts")

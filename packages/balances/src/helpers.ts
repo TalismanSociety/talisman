@@ -10,7 +10,7 @@ import {
   ExtendableModuleConfig,
   ExtendableTokenType,
 } from "./BalanceModule"
-import { AddressesByToken, Balances, SubscriptionCallback, UnsubscribeFn } from "./types"
+import { AddressesByToken, Balance, Balances, SubscriptionCallback, UnsubscribeFn } from "./types"
 
 /**
  * Wraps a BalanceModule's fetch/subscribe methods with a single `balances` method.
@@ -62,4 +62,10 @@ export async function balances<
 
   // one-off request
   return await balanceModule.fetchBalances(chainConnectors, chaindataProvider, addressesByToken)
+}
+
+export const filterMirrorTokens = (balance: Balance, i: number, balances: Balance[]) => {
+  // TODO implement a mirrorOf property, which should be set from chainData
+  const mirrorOf = (balance.token as any).mirrorOf as string
+  return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }

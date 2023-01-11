@@ -1,7 +1,6 @@
-import { Balance, Balances } from "@core/domains/balances/types"
+import { Balance, Balances, filterMirrorTokens } from "@core/domains/balances/types"
 import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
-import { filterMirrorTokens } from "@talisman/util/filterMirrorBalances"
 import { TokenRatesList } from "@talismn/token-rates"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import BigNumber from "bignumber.js"

@@ -2,7 +2,7 @@ import { Address, AddressesByChain } from "@core/types/base"
 import { BalanceJson, BalanceJsonList } from "@talismn/balances"
 import { ChainId, EvmNetwork, EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 
-export { Balances, Balance, BalanceFormatter } from "@talismn/balances"
+export { Balances, Balance, BalanceFormatter, filterMirrorTokens } from "@talismn/balances"
 export type { BalanceJson, BalanceJsonList } from "@talismn/balances"
 
 export type BalancesUpdate = BalancesUpdateReset | BalancesUpdateUpsert | BalancesUpdateDelete
