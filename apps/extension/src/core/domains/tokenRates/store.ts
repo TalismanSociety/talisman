@@ -6,7 +6,7 @@ import { Port } from "@core/types/base"
 import { TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates } from "@talismn/token-rates"
 import { Subscription, liveQuery } from "dexie"
-import { debounce } from "lodash"
+import { default as debounce } from "lodash/debounce"
 import { BehaviorSubject } from "rxjs"
 
 const MIN_REFRESH_INTERVAL = 60_000 // 60_000ms = 60s = 1 minute
