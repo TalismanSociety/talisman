@@ -3,7 +3,7 @@ import {
   AccountJsonHardwareEthereum,
   AccountJsonHardwareSubstrate,
 } from "@core/domains/accounts/types"
-import { EvmNetworkId } from "@core/domains/ethereum/types"
+import { EthGasSettings, EvmNetworkId } from "@core/domains/ethereum/types"
 import { RequestIdOnly } from "@core/types/base"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import {
@@ -97,17 +97,23 @@ export type TransactionDetails = {
 }
 
 // eth fees types ----------------------------------
-
-export type EthPriorityOptionName = "low" | "medium" | "high"
+export type EthBasePriorityOptionName = "low" | "medium" | "high"
+export type EthBasePriorityOptions = Record<EthBasePriorityOptionName, BigNumber>
+export type EthPriorityOptionName = EthBasePriorityOptionName | "custom"
 export type EthPriorityOptions = Record<EthPriorityOptionName, BigNumber>
+
+export type GasSettingsByPriority = Record<EthPriorityOptionName, EthGasSettings>
+
+export type EthBaseFeeTrend = "idle" | "decreasing" | "increasing" | "toTheMoon"
 
 export type EthTransactionDetails = {
   estimatedGas: BigNumberish
   gasPrice: BigNumberish
   estimatedFee: BigNumberish
-  maxFee: BigNumberish
+  maxFee: BigNumberish // TODO yeet !
   baseFeePerGas?: BigNumberish
-  priorityOptions?: EthPriorityOptions
+  priorityOptions?: EthBasePriorityOptions // TODO yeet !
+  baseFeeTrend?: EthBaseFeeTrend
 }
 
 export interface SigningMessages {

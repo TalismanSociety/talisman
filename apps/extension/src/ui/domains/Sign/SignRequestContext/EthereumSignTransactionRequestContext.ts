@@ -33,6 +33,8 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
     isLoading,
     error,
     networkUsage,
+    gasSettingsByPriority,
+    setCustomSettings,
   } = useEthTransaction(transactionRequest, "low", isPayloadLocked)
 
   const baseRequest = useAnySigningRequest<EthSignAndSendRequest>({
@@ -75,6 +77,8 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
     approveHardware,
     isPayloadLocked,
     setIsPayloadLocked,
+    gasSettingsByPriority,
+    setCustomSettings,
   }
 }
 

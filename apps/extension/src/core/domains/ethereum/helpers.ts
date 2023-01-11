@@ -1,6 +1,7 @@
 import { ChainId } from "@core/domains/chains/types"
 import {
   EthGasSettings,
+  EthGasSettingsEip1559,
   EvmNetworkId,
   LedgerEthDerivationPathType,
 } from "@core/domains/ethereum/types"
@@ -143,6 +144,18 @@ export const getMaxFeePerGas = (
 
   return base.add(maxPriorityFeePerGas)
 }
+
+export const getGasSettingsEip1559 = (
+  baseFee: BigNumber,
+  maxPriorityFeePerGas: BigNumber,
+  gasLimit: BigNumber,
+  maxBlocksWait?: number
+): EthGasSettingsEip1559 => ({
+  type: 2,
+  maxPriorityFeePerGas,
+  maxFeePerGas: getMaxFeePerGas(baseFee, maxPriorityFeePerGas, maxBlocksWait),
+  gasLimit,
+})
 
 export const getEip1559TotalFees = (
   estimatedGas: BigNumberish,

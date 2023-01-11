@@ -76,8 +76,16 @@ export const EthTransactionFees = ({
     }
   }, [from, to, token, transferableToken?.evmNetworkId, amount])
 
-  const { transaction, priority, setPriority, txDetails, isLoading, gasSettings, error } =
-    useEthTransaction(tx)
+  const {
+    transaction,
+    priority,
+    setPriority,
+    txDetails,
+    isLoading,
+    gasSettings,
+    error,
+    gasSettingsByPriority,
+  } = useEthTransaction(tx)
 
   const errorMessage = useMemo(() => {
     if (error?.startsWith("insufficient funds for intrinsic transaction cost"))
@@ -124,11 +132,11 @@ export const EthTransactionFees = ({
           Priority :{" "}
           <EthFeeSelect
             drawerContainer={sendFundsContainer}
+            gasSettingsByPriority={gasSettingsByPriority}
             onChange={setPriority}
             priority={priority}
             decimals={nativeToken?.decimals}
             symbol={nativeToken?.symbol}
-            transaction={transaction}
             txDetails={txDetails}
           />
         </Box>

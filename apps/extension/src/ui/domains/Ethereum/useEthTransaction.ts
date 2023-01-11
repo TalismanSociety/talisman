@@ -1,6 +1,7 @@
 import {
   getEip1559TotalFees,
   getGasLimit,
+  getGasSettingsEip1559,
   getLegacyTotalFees,
   getMaxFeePerGas,
   prepareTransaction,
@@ -11,7 +12,11 @@ import {
   EthGasSettingsLegacy,
   EvmNetworkId,
 } from "@core/domains/ethereum/types"
-import { EthPriorityOptionName, EthTransactionDetails } from "@core/domains/signing/types"
+import {
+  EthPriorityOptionName,
+  EthTransactionDetails,
+  GasSettingsByPriority,
+} from "@core/domains/signing/types"
 import {
   TransactionInfo as TransactionType,
   getEthTransactionInfo,
@@ -120,7 +125,15 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
       return
     }
 
-    const handleBlock = async () => {
+    // local lock used to prevent block data to be fetched sequentially
+    // we may skip blocks, but they won't be overriden with data from previous ones
+    // important on fast L2 networks such as arbitrum and polygon
+    let isBusy = false
+
+    const handleBlock = async (blockNumber?: number) => {
+      if (isBusy) return
+      isBusy = true
+
       setIsLoading(true)
       try {
         const [gPrice, { gasLimit, baseFeePerGas, gasUsed }, feeOptions] = await Promise.all([
@@ -141,13 +154,15 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
           // else if feeHistory is valid but network usage below 80% (active but not busy), use it for the low priority option if lower
           // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
           if (!feeOptions.isValid) {
-            feeOptions.options.low = minimumMaxPriorityFeePerGas
-            feeOptions.options.medium = minimumMaxPriorityFeePerGas
-            feeOptions.options.high = minimumMaxPriorityFeePerGas
-          } else if (feeOptions.gasUsedRatio < 0.8)
-            feeOptions.options.low = minimumMaxPriorityFeePerGas.lt(feeOptions.options.low)
+            feeOptions.maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas
+            feeOptions.maxPriorityPerGasOptions.medium = minimumMaxPriorityFeePerGas
+            feeOptions.maxPriorityPerGasOptions.high = minimumMaxPriorityFeePerGas
+          } else if (feeOptions.avgGasUsedRatio !== null && feeOptions.avgGasUsedRatio < 0.8)
+            feeOptions.maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas.lt(
+              feeOptions.maxPriorityPerGasOptions.low
+            )
               ? minimumMaxPriorityFeePerGas
-              : feeOptions.options.low
+              : feeOptions.maxPriorityPerGasOptions.low
         }
 
         setGasPrice(gPrice)
@@ -160,6 +175,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
         setError((err as Error).message)
       }
       setIsLoading(false)
+      isBusy = false
     }
 
     provider.on("block", handleBlock)
@@ -172,7 +188,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
     }
   }, [provider, withFeeOptions])
 
-  const gasUsedRatio = useMemo(() => {
+  const blockGasUsedRatio = useMemo(() => {
     if (!gasUsed || !blockGasLimit) return undefined
     return gasUsed.mul(100).div(blockGasLimit).toNumber() / 100
   }, [blockGasLimit, gasUsed])
@@ -180,8 +196,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
   return {
     gasPrice,
     baseFeePerGas,
-    gasUsed,
-    gasUsedRatio,
+    blockGasUsedRatio,
     blockGasLimit,
     feeHistoryAnalysis,
     isLoading,
@@ -209,6 +224,138 @@ const useTransactionInfo = (
   return { isLoading, transactionInfo, error: error?.message }
 }
 
+const getEthGasSettingsFromTransaction = (
+  tx?: ethers.providers.TransactionRequest,
+  hasEip1559Support?: boolean,
+  estimatedGas?: BigNumber,
+  blockGasLimit?: BigNumber
+) => {
+  if (!tx || hasEip1559Support === undefined || !blockGasLimit || !estimatedGas) return undefined
+
+  const { gasLimit: suggestedGasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas } = tx
+  const gasLimit = getGasLimit(blockGasLimit, estimatedGas, suggestedGasLimit)
+
+  if (hasEip1559Support && gasLimit && maxFeePerGas && maxPriorityFeePerGas) {
+    return {
+      type: 2,
+      gasLimit,
+      maxFeePerGas,
+      maxPriorityFeePerGas,
+    } as EthGasSettingsEip1559
+  }
+
+  if (!hasEip1559Support && gasLimit && gasPrice) {
+    return {
+      type: 0,
+      gasLimit,
+      gasPrice,
+    } as EthGasSettingsLegacy
+  }
+
+  return undefined
+}
+
+const usePerPriorityGasSettings = ({
+  hasEip1559Support,
+  baseFeePerGas,
+  estimatedGas,
+  gasPrice,
+  blockGasLimit,
+  feeHistoryAnalysis,
+  priority,
+  tx,
+}: {
+  hasEip1559Support?: boolean
+  baseFeePerGas?: BigNumber | null
+  estimatedGas?: BigNumber | null
+  gasPrice?: BigNumber | null
+  blockGasLimit?: BigNumber | null
+  feeHistoryAnalysis?: FeeHistoryAnalysis | null
+  priority: EthPriorityOptionName
+  tx?: ethers.providers.TransactionRequest
+}) => {
+  // TODO init with values from tx (supplied by dapp)
+  const [customSettings, setCustomSettings] = useState<EthGasSettings>()
+
+  const gasSettingsByPriority: GasSettingsByPriority | undefined = useMemo(() => {
+    if (hasEip1559Support === undefined || !estimatedGas || !gasPrice || !blockGasLimit || !tx)
+      return undefined
+
+    const gasLimit = getGasLimit(blockGasLimit, estimatedGas, tx.gasLimit)
+    const suggestedSettings = getEthGasSettingsFromTransaction(
+      tx,
+      hasEip1559Support,
+      estimatedGas,
+      blockGasLimit
+    )
+
+    if (hasEip1559Support) {
+      if (!feeHistoryAnalysis || !baseFeePerGas) return undefined
+
+      const mapMaxPriority = feeHistoryAnalysis.maxPriorityPerGasOptions
+
+      const low = getGasSettingsEip1559(baseFeePerGas, mapMaxPriority.low, gasLimit)
+      const medium = getGasSettingsEip1559(baseFeePerGas, mapMaxPriority.medium, gasLimit)
+      const high = getGasSettingsEip1559(baseFeePerGas, mapMaxPriority.high, gasLimit)
+
+      const custom: EthGasSettingsEip1559 =
+        customSettings?.type === 2
+          ? customSettings
+          : suggestedSettings?.type === 2
+          ? suggestedSettings
+          : low
+
+      return {
+        low,
+        medium,
+        high,
+        custom,
+      }
+    }
+
+    const recommendedSettings: EthGasSettingsLegacy = {
+      type: 0,
+      gasPrice,
+      gasLimit,
+    }
+
+    const custom: EthGasSettingsLegacy =
+      customSettings?.type === 0
+        ? customSettings
+        : suggestedSettings?.type === 0
+        ? suggestedSettings
+        : recommendedSettings
+
+    // TODO ideally would be a different type with just 2 properties, but that's enough complexity for now
+    return {
+      low: recommendedSettings,
+      medium: recommendedSettings,
+      high: recommendedSettings,
+      custom,
+    }
+  }, [
+    baseFeePerGas,
+    blockGasLimit,
+    customSettings,
+    estimatedGas,
+    feeHistoryAnalysis,
+    gasPrice,
+    hasEip1559Support,
+    tx,
+  ])
+
+  const gasSettings = useMemo(
+    () => gasSettingsByPriority?.[priority],
+    [gasSettingsByPriority, priority]
+  )
+
+  return {
+    gasSettingsByPriority,
+    gasSettings,
+    setCustomSettings,
+  }
+}
+
 export const useEthTransaction = (
   tx?: ethers.providers.TransactionRequest,
   defaultPriority: EthPriorityOptionName = "low",
@@ -222,7 +369,7 @@ export const useEthTransaction = (
 
   const {
     gasPrice,
-    gasUsedRatio: networkUsage,
+    blockGasUsedRatio: networkUsage,
     baseFeePerGas,
     blockGasLimit,
     feeHistoryAnalysis,
@@ -231,38 +378,16 @@ export const useEthTransaction = (
 
   const [priority, setPriority] = useState<EthPriorityOptionName>(defaultPriority)
 
-  const gasSettings: EthGasSettings | undefined = useMemo(() => {
-    if (hasEip1559Support === undefined || !estimatedGas || !gasPrice || !blockGasLimit)
-      return undefined
-
-    const gasLimit = getGasLimit(blockGasLimit, estimatedGas, tx?.gasLimit)
-
-    if (hasEip1559Support) {
-      if (!feeHistoryAnalysis || !baseFeePerGas) return undefined
-      const maxPriorityFeePerGas = feeHistoryAnalysis.options[priority]
-      return {
-        type: 2,
-        maxPriorityFeePerGas,
-        maxFeePerGas: getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas),
-        gasLimit,
-      } as EthGasSettingsEip1559
-    }
-
-    return {
-      type: 0,
-      gasPrice,
-      gasLimit,
-    } as EthGasSettingsLegacy
-  }, [
-    baseFeePerGas,
-    blockGasLimit,
-    estimatedGas,
-    feeHistoryAnalysis,
-    gasPrice,
+  const { gasSettings, setCustomSettings, gasSettingsByPriority } = usePerPriorityGasSettings({
     hasEip1559Support,
+    baseFeePerGas,
+    estimatedGas,
+    gasPrice,
+    blockGasLimit,
+    feeHistoryAnalysis,
     priority,
-    tx?.gasLimit,
-  ])
+    tx,
+  })
 
   const liveUpdatingTransaction = useMemo(() => {
     if (!provider || !tx || !gasSettings || nonce === undefined) return undefined
@@ -276,10 +401,11 @@ export const useEthTransaction = (
     if (!lockTransaction) setTransaction(liveUpdatingTransaction)
   }, [liveUpdatingTransaction, lockTransaction])
 
+  // TODO replace this wierd object with something else
   const txDetails: EthTransactionDetails | undefined = useMemo(() => {
     if (!gasPrice || !estimatedGas || !transaction) return undefined
 
-    const priorityOptions = feeHistoryAnalysis?.options
+    const priorityOptions = feeHistoryAnalysis?.maxPriorityPerGasOptions
     // EIP1559 transactions
     if (
       transaction.type === 2 &&
@@ -302,7 +428,8 @@ export const useEthTransaction = (
         estimatedFee,
         maxFee,
         priorityOptions,
-      }
+        baseFeeTrend: feeHistoryAnalysis?.baseFeeTrend,
+      } as EthTransactionDetails
     }
 
     // Legacy transactions
@@ -315,15 +442,15 @@ export const useEthTransaction = (
       return {
         estimatedGas,
         gasPrice,
-        baseFeePerGas: baseFeePerGas ?? undefined,
-        estimatedFee,
-        maxFee,
+        // baseFeePerGas: baseFeePerGas ?? undefined, //TODO check that we can remove this
+        estimatedFee, // yeet
+        maxFee, // yeet
         priorityOptions,
       }
     }
 
     return undefined
-  }, [baseFeePerGas, estimatedGas, feeHistoryAnalysis?.options, gasPrice, transaction])
+  }, [baseFeePerGas, estimatedGas, feeHistoryAnalysis, gasPrice, transaction])
 
   const error = useMemo(
     () =>
@@ -340,7 +467,7 @@ export const useEthTransaction = (
     [tx, transactionInfo, txDetails, error]
   )
 
-  return {
+  const result = {
     transactionInfo,
     transaction,
     txDetails,
@@ -350,5 +477,11 @@ export const useEthTransaction = (
     isLoading,
     error,
     networkUsage,
+    setCustomSettings,
+    gasSettingsByPriority,
   }
+
+  //console.log("useEthTransaction", result)
+
+  return result
 }

@@ -116,6 +116,8 @@ export const EthSignTransactionRequest = () => {
     isPayloadLocked,
     setIsPayloadLocked,
     transactionInfo,
+    gasSettingsByPriority,
+    setCustomSettings,
   } = useEthSignTransactionRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -198,7 +200,7 @@ export const EthSignTransactionRequest = () => {
                   <div>
                     <EthFeeSelect
                       disabled={isPayloadLocked}
-                      transaction={transaction}
+                      gasSettingsByPriority={gasSettingsByPriority}
                       txDetails={txDetails}
                       priority={priority}
                       onChange={setPriority}

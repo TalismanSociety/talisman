@@ -1,113 +1,39 @@
-import { getEip1559TotalFees } from "@core/domains/ethereum/helpers"
-import { EthPriorityOptionName, EthTransactionDetails } from "@core/domains/signing/types"
+import { EthGasSettingsEip1559 } from "@core/domains/ethereum/types"
+import {
+  EthBaseFeeTrend,
+  EthPriorityOptionName,
+  EthTransactionDetails,
+  GasSettingsByPriority,
+} from "@core/domains/signing/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import {
+  NetworkUsageDecreasing,
+  NetworkUsageHigh,
+  NetworkUsageIdle,
+  NetworkUsageIncreasing,
+} from "@talisman/theme/icons"
+import imgFeePriorityCustom from "@talisman/theme/images/fee-priority-custom.png"
+import imgFeePriorityHigh from "@talisman/theme/images/fee-priority-high.png"
+import imgFeePriorityLow from "@talisman/theme/images/fee-priority-low.png"
+import imgFeePriorityMedium from "@talisman/theme/images/fee-priority-medium.png"
 import { classNames } from "@talisman/util/classNames"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { BigNumberish, ethers } from "ethers"
-import { useCallback, useEffect } from "react"
-import styled from "styled-components"
-
-const PillButton = styled.button`
-  background: var(--color-background-muted);
-  padding: 0.6rem 0.8rem;
-  border-radius: 4.8rem;
-  font-weight: var(--font-weight-regular);
-  color: var(--color-mid);
-  outline: none;
-  border: none;
-  cursor: pointer;
-  transition: all var(--transition-speed-fast) ease-in;
-  font-size: var(--font-size-tiny);
-  line-height: var(--font-size-xsmall);
-
-  :not(:disabled):hover {
-    background: var(--color-background-muted-3x);
-    color: var(--color-foreground-muted-3x);
-  }
-
-  :disabled {
-    cursor: default;
-  }
-`
-
-const Container = styled.div`
-  background: var(--color-background-muted-3x);
-  border-radius: 2.4rem;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  font-size: 1.4rem;
-  font-weight: 500;
-  color: var(--color-mid);
-  padding: 2.4rem;
-
-  h3 {
-    color: var(--color-foreground);
-    font-weight: 600;
-    font-size: 1.6rem;
-    line-height: 2.2rem;
-    text-align: center;
-    margin-bottom: 2.4rem;
-  }
-  .subtitles {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    margin-bottom: 1.6rem;
-  }
-`
+import { ethers } from "ethers"
+import { FC, SVGProps, useCallback, useEffect, useMemo } from "react"
+import { PillButton } from "talisman-ui"
 
 const OPTIONS: Record<EthPriorityOptionName, { icon: string; label: string }> = {
-  low: { icon: "🚗", label: "Low" },
-  medium: { icon: "🚅", label: "Medium" },
-  high: { icon: "🚀", label: "High" },
+  low: { icon: imgFeePriorityLow, label: "Low" },
+  medium: { icon: imgFeePriorityMedium, label: "Normal" },
+  high: { icon: imgFeePriorityHigh, label: "Urgent" },
+  custom: { icon: imgFeePriorityCustom, label: "Custom" },
 }
 
-const OptionButton = styled.button`
-  display: flex;
-  width: 100%;
-  border-radius: 0.8rem;
-  padding: 1.2rem;
-  align-items: center;
-  margin-top: 0.8rem;
-  background: #2f2f2f;
-  border: none;
-  outline: none;
-  font-weight: 600;
-  height: 5.6rem;
-  text-align: left;
-  gap: 0.8rem;
-  cursor: pointer;
-  color: var(--color-mid);
-
-  .icon {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
-    width: 3.2rem;
-    height: 3.2rem;
-    line-height: 1.2rem;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    text-align: center;
-  }
-
-  .grow {
-    flex-grow: 1;
-  }
-
-  &.selected,
-  :hover {
-    background: #383838;
-    color: var(--color-foreground);
-  }
-`
-
 type EthFeeButtonProps = {
-  transaction: ethers.providers.TransactionRequest
-  txDetails: EthTransactionDetails
   priority: EthPriorityOptionName
+  gasSettingsByPriority: GasSettingsByPriority
   selected?: boolean
   decimals: number
   symbol?: string
@@ -115,26 +41,33 @@ type EthFeeButtonProps = {
 }
 
 const PriorityOption = ({
-  txDetails,
-  transaction,
   priority,
+  gasSettingsByPriority,
   selected,
   decimals,
   symbol,
   onClick,
 }: EthFeeButtonProps) => {
-  const { estimatedFee } = getEip1559TotalFees(
-    txDetails.estimatedGas,
-    transaction.gasLimit as BigNumberish,
-    txDetails.baseFeePerGas as BigNumberish,
-    txDetails.priorityOptions?.[priority] as BigNumberish
-  )
+  const maxFee = useMemo(() => {
+    const gasSettings = gasSettingsByPriority[priority] as EthGasSettingsEip1559
+    return ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.maxFeePerGas)
+  }, [gasSettingsByPriority, priority])
+
   return (
-    <OptionButton onClick={onClick} type="button" className={classNames(selected && "selected")}>
-      <div className="icon">{OPTIONS[priority].icon}</div>
+    <button
+      onClick={onClick}
+      type="button"
+      className={classNames(
+        "mt-4 flex h-28 w-full cursor-pointer items-center gap-6 rounded-sm border-none px-6 text-left font-semibold outline-none hover:bg-[#383838] hover:text-white",
+        selected ? "bg-[#383838] text-white" : "text-body-secondary bg-[#2F2F2F] bg-gray-800"
+      )}
+    >
+      <div>
+        <img src={OPTIONS[priority].icon} alt="" className="w-16" />
+      </div>
       <div className="grow">{OPTIONS[priority].label}</div>
-      <div>{formatEtherValue(estimatedFee, decimals, symbol)}</div>
-    </OptionButton>
+      <div>{formatEtherValue(maxFee, decimals, symbol)}</div>
+    </button>
   )
 }
 
@@ -148,10 +81,41 @@ const OpenFeeSelectTracker = () => {
   return null
 }
 
+const NetworkUsageBase = ({
+  text,
+  icon: Icon,
+}: {
+  text: string
+  icon: FC<SVGProps<SVGSVGElement>>
+}) => {
+  return (
+    <div className="flex items-start gap-4 text-sm">
+      <div className="leading-none">{text}</div>
+      <Icon className="block h-[1em] w-auto" />
+    </div>
+  )
+}
+
+const NetworkUsage = ({ baseFeeTrend }: { baseFeeTrend?: EthBaseFeeTrend }) => {
+  switch (baseFeeTrend) {
+    case "idle":
+      return <NetworkUsageBase text="Idle" icon={NetworkUsageIdle} />
+    case "increasing":
+      return <NetworkUsageBase text="Increasing" icon={NetworkUsageIncreasing} />
+    case "decreasing":
+      return <NetworkUsageBase text="Decreasing" icon={NetworkUsageDecreasing} />
+    case "toTheMoon":
+      return <NetworkUsageBase text="Very Busy" icon={NetworkUsageHigh} />
+    default:
+      return null
+  }
+}
+
 type EthFeeSelectProps = {
   disabled?: boolean
-  transaction: ethers.providers.TransactionRequest
   txDetails: EthTransactionDetails
+  networkUsage?: number
+  gasSettingsByPriority?: GasSettingsByPriority
   priority: EthPriorityOptionName
   decimals: number
   symbol?: string
@@ -160,11 +124,11 @@ type EthFeeSelectProps = {
 }
 
 export const EthFeeSelect = ({
-  transaction,
   txDetails,
   onChange,
   priority,
   drawerContainer,
+  gasSettingsByPriority,
   disabled,
   ...props
 }: EthFeeSelectProps) => {
@@ -181,46 +145,64 @@ export const EthFeeSelect = ({
   )
 
   // this is only usefull with EIP-1559
-  if (!txDetails.priorityOptions || transaction?.type !== 2) return null
+  if (!gasSettingsByPriority) return null
 
   return (
     <>
-      <PillButton disabled={disabled} type="button" onClick={open}>
-        {OPTIONS[priority].icon} {OPTIONS[priority].label}
+      <PillButton disabled={disabled} type="button" onClick={open} className="h-12 pl-4">
+        <img src={OPTIONS[priority].icon} alt="" className="inline-block w-10" />{" "}
+        {OPTIONS[priority].label}
       </PillButton>
       <Drawer parent={drawerContainer} open={isOpen && !disabled} anchor="bottom" onClose={close}>
-        <Container>
-          <h3>Fee Options</h3>
-          <div className="subtitles">
-            <div>Priority</div>
-            <div>Estimated fee</div>
+        <div className="text-body-secondary bg-black-tertiary flex flex-col gap-12 rounded-t-xl p-12 text-sm">
+          <h3 className="text-body mb-0 text-center text-base font-bold">Fee Options</h3>
+          <div>
+            This network requires a fee to validate your transaction. The fee will vary depending on
+            how busy the network is. You can adjust the fee and priority depending on the urgency of
+            your transaction.
           </div>
-          <PriorityOption
-            transaction={transaction}
-            txDetails={txDetails}
-            {...props}
-            priority={"low"}
-            onClick={handleSelect("low")}
-            selected={priority === "low"}
-          />
-          <PriorityOption
-            transaction={transaction}
-            txDetails={txDetails}
-            {...props}
-            priority={"medium"}
-            onClick={handleSelect("medium")}
-            selected={priority === "medium"}
-          />
-          <PriorityOption
-            transaction={transaction}
-            txDetails={txDetails}
-            {...props}
-            priority={"high"}
-            onClick={handleSelect("high")}
-            selected={priority === "high"}
-          />
+          <div className="w-full">
+            <div className="flex w-full justify-between">
+              <div>Priority</div>
+              <div>Max transaction fee</div>
+            </div>
+            <PriorityOption
+              gasSettingsByPriority={gasSettingsByPriority}
+              {...props}
+              priority={"low"}
+              onClick={handleSelect("low")}
+              selected={priority === "low"}
+            />
+            <PriorityOption
+              gasSettingsByPriority={gasSettingsByPriority}
+              {...props}
+              priority={"medium"}
+              onClick={handleSelect("medium")}
+              selected={priority === "medium"}
+            />
+            <PriorityOption
+              gasSettingsByPriority={gasSettingsByPriority}
+              {...props}
+              priority={"high"}
+              onClick={handleSelect("high")}
+              selected={priority === "high"}
+            />
+            <PriorityOption
+              gasSettingsByPriority={gasSettingsByPriority}
+              {...props}
+              priority={"custom"}
+              onClick={handleSelect("custom")}
+              selected={priority === "custom"}
+            />
+            <div className="mt-8 flex w-full items-center justify-between">
+              <div>Network usage</div>
+              <div>
+                <NetworkUsage baseFeeTrend={txDetails.baseFeeTrend} />
+              </div>
+            </div>
+          </div>
           <OpenFeeSelectTracker />
-        </Container>
+        </div>
       </Drawer>
     </>
   )
