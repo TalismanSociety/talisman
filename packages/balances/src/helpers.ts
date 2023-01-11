@@ -66,6 +66,6 @@ export async function balances<
 
 export const filterMirrorTokens = (balance: Balance, i: number, balances: Balance[]) => {
   // TODO implement a mirrorOf property, which should be set from chainData
-  const mirrorOf = (balance.token as any).mirrorOf as string
+  const mirrorOf = (balance.token as any)?.mirrorOf as string
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }
