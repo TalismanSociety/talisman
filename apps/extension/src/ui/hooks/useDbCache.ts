@@ -32,7 +32,12 @@ const useDbCacheProvider = () => {
     return Object.values(tokens).filter(filterTestnets(useTestnets))
   }, [useTestnets])
   const tokenRates = useLiveQuery(async () => await db.tokenRates.toArray(), [])
-  const balances = useLiveQuery(async () => await balancesDb.balances.toArray(), [])
+  const balances = useLiveQuery(
+    // return balances for which we have a token, this prevents errors when toggling testnets on/off
+    async () =>
+      (await balancesDb.balances.toArray()).filter((b) => tokens?.find((t) => t.id === b.tokenId)),
+    [tokens]
+  )
 
   const chainsMap = useMemo(
     () => Object.fromEntries((chains ?? []).map((chain) => [chain.id, chain])),
