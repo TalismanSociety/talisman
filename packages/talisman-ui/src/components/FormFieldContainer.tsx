@@ -4,7 +4,7 @@ import { classNames } from "../utils"
 
 type FormFieldContainerProps = {
   className?: string
-  label: string
+  label: ReactNode
   children: ReactNode
   error?: string | null
 }

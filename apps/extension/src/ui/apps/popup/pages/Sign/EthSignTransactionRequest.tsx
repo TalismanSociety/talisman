@@ -6,7 +6,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
-import { EthFeeSelect } from "@ui/domains/Ethereum/EthFeeSelect"
+import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { EthSignBody } from "@ui/domains/Ethereum/Sign/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Ethereum/Sign/shared"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
@@ -201,6 +201,7 @@ export const EthSignTransactionRequest = () => {
                     <EthFeeSelect
                       disabled={isPayloadLocked}
                       gasSettingsByPriority={gasSettingsByPriority}
+                      setCustomSettings={setCustomSettings}
                       txDetails={txDetails}
                       priority={priority}
                       onChange={setPriority}

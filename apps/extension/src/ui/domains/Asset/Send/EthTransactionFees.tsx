@@ -5,7 +5,7 @@ import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { Box } from "@talisman/components/Box"
 import { LoaderIcon } from "@talisman/theme/icons"
 import { tokensToPlanck } from "@talismn/util"
-import { EthFeeSelect } from "@ui/domains/Ethereum/EthFeeSelect"
+import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
@@ -85,6 +85,7 @@ export const EthTransactionFees = ({
     gasSettings,
     error,
     gasSettingsByPriority,
+    setCustomSettings,
   } = useEthTransaction(tx)
 
   const errorMessage = useMemo(() => {
@@ -133,6 +134,7 @@ export const EthTransactionFees = ({
           <EthFeeSelect
             drawerContainer={sendFundsContainer}
             gasSettingsByPriority={gasSettingsByPriority}
+            setCustomSettings={setCustomSettings}
             onChange={setPriority}
             priority={priority}
             decimals={nativeToken?.decimals}
