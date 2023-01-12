@@ -5973,6 +5973,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@talismn/balances-default-modules@workspace:^, @talismn/balances-default-modules@workspace:packages/balances-default-modules":
+  version: 0.0.0-use.local
+  resolution: "@talismn/balances-default-modules@workspace:packages/balances-default-modules"
+  dependencies:
+    "@talismn/balances-evm-erc20": "workspace:^"
+    "@talismn/balances-evm-native": "workspace:^"
+    "@talismn/balances-substrate-assets": "workspace:^"
+    "@talismn/balances-substrate-native": "workspace:^"
+    "@talismn/balances-substrate-orml": "workspace:^"
+    "@talismn/eslint-config": "workspace:^"
+    "@talismn/tsconfig": "workspace:^"
+    "@types/jest": ^27.5.1
+    eslint: ^8.4.0
+    jest: ^28.1.0
+    ts-jest: ^28.0.2
+    typescript: ^4.6.4
+  languageName: unknown
+  linkType: soft
+
 "@talismn/balances-evm-erc20@workspace:^, @talismn/balances-evm-erc20@workspace:packages/balances-evm-erc20":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-evm-erc20@workspace:packages/balances-evm-erc20"
@@ -6007,7 +6026,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-example@workspace:^, @talismn/balances-example@workspace:packages/balances-example":
+"@talismn/balances-example@workspace:packages/balances-example":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-example@workspace:packages/balances-example"
   dependencies:
@@ -9216,12 +9235,8 @@ __metadata:
     "@polkadot/api": ^9.1.1
     "@polkadot/extension-dapp": ^0.44.3
     "@talismn/balances": "workspace:^"
-    "@talismn/balances-evm-erc20": "workspace:^"
-    "@talismn/balances-evm-native": "workspace:^"
-    "@talismn/balances-example": "workspace:^"
+    "@talismn/balances-default-modules": "workspace:^"
     "@talismn/balances-react": "workspace:^"
-    "@talismn/balances-substrate-native": "workspace:^"
-    "@talismn/balances-substrate-orml": "workspace:^"
     "@talismn/chaindata-provider-extension": "workspace:^"
     "@testing-library/dom": ^8.16.1
     "@testing-library/jest-dom": ^5.14.1
@@ -13462,12 +13477,8 @@ __metadata:
     "@swc/jest": ^0.2.23
     "@tailwindcss/forms": ^0.5.3
     "@talismn/balances": "workspace:^"
-    "@talismn/balances-evm-erc20": "workspace:^"
-    "@talismn/balances-evm-native": "workspace:^"
+    "@talismn/balances-default-modules": "workspace:^"
     "@talismn/balances-react": "workspace:^"
-    "@talismn/balances-substrate-assets": "workspace:^"
-    "@talismn/balances-substrate-native": "workspace:^"
-    "@talismn/balances-substrate-orml": "workspace:^"
     "@talismn/chaindata-js": ^0.0.7
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
