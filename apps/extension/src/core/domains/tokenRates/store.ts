@@ -83,26 +83,34 @@ export class TokenRatesStore {
     if (now - this.#lastUpdateAt < MIN_REFRESH_INTERVAL && this.#lastUpdateTokenIds === strTokenIds)
       return
 
-    const tokenRates = await fetchTokenRates(tokens)
-
-    await db.transaction("rw", db.tokenRates, async (tx) => {
-      // override all tokenRates
-      await db.tokenRates.bulkPut(
-        Object.entries(tokenRates).map(([tokenId, tokenRates]) => ({
-          tokenId,
-          rates: tokenRates,
-        }))
-      )
-
-      // delete tokenRates for tokens which no longer exist
-      const tokenIds = await db.tokenRates.toCollection().primaryKeys()
-      if (tokenIds.length)
-        await db.tokenRates.bulkDelete(tokenIds.filter((tokenId) => tokens[tokenId] === undefined))
-    })
-
-    // update lastHydratedAt
+    // update lastUpdateAt & lastUpdateTokenIds before fetching to prevent api call bursts
     this.#lastUpdateAt = now
     this.#lastUpdateTokenIds = strTokenIds
+
+    try {
+      const tokenRates = await fetchTokenRates(tokens)
+
+      await db.transaction("rw", db.tokenRates, async (tx) => {
+        // override all tokenRates
+        await db.tokenRates.bulkPut(
+          Object.entries(tokenRates).map(([tokenId, tokenRates]) => ({
+            tokenId,
+            rates: tokenRates,
+          }))
+        )
+
+        // delete tokenRates for tokens which no longer exist
+        const tokenIds = await db.tokenRates.toCollection().primaryKeys()
+        if (tokenIds.length)
+          await db.tokenRates.bulkDelete(
+            tokenIds.filter((tokenId) => tokens[tokenId] === undefined)
+          )
+      })
+    } catch (err) {
+      // reset lastUpdateTokenIds to retry on next call
+      this.#lastUpdateTokenIds = ""
+      throw err
+    }
   }
 
   public subscribe(id: string, port: Port): void {
