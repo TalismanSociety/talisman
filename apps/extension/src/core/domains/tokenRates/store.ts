@@ -102,7 +102,7 @@ export class TokenRatesStore {
 
     // update lastHydratedAt
     this.#lastUpdateAt = now
-    this.#lastUpdateTokenIds === strTokenIds
+    this.#lastUpdateTokenIds = strTokenIds
   }
 
   public subscribe(id: string, port: Port): void {
