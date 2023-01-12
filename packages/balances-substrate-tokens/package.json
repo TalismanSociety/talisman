@@ -1,6 +1,6 @@
 {
-  "name": "@talismn/balances-example",
-  "version": "0.2.3",
+  "name": "@talismn/balances-substrate-tokens",
+  "version": "0.2.0",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "UNLICENSED",
@@ -8,7 +8,7 @@
     "access": "public"
   },
   "repository": {
-    "directory": "packages/balances-example",
+    "directory": "packages/balances-substrate-tokens",
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
@@ -31,7 +31,8 @@
   },
   "dependencies": {
     "@talismn/balances": "workspace:^",
-    "@talismn/chaindata-provider": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:^",
+    "@talismn/mutate-metadata": "workspace:^"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",

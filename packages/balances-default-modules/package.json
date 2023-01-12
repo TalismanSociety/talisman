@@ -34,7 +34,8 @@
     "@talismn/balances-evm-native": "workspace:^",
     "@talismn/balances-substrate-assets": "workspace:^",
     "@talismn/balances-substrate-native": "workspace:^",
-    "@talismn/balances-substrate-orml": "workspace:^"
+    "@talismn/balances-substrate-orml": "workspace:^",
+    "@talismn/balances-substrate-tokens": "workspace:^"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",

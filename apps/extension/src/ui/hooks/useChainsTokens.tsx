@@ -55,10 +55,12 @@ export const useChainsTokens = (chains: Chain[], evmNetworks?: EvmNetwork[]) => 
         }
         if (tokenType === "evm-erc20") return true
         if (tokenType === "substrate-assets") return true
+        if (tokenType === "substrate-tokens") return true
 
         // force compilation error if any token types don't have a case
         const exhaustiveCheck: never = tokenType
-        throw new Error(`Unhandled token type ${exhaustiveCheck}`)
+        console.warn(`Unhandled token type ${exhaustiveCheck}`) // eslint-disable-line no-console
+        return false
       })
       .sort(
         ([aChainId], [bChainId]) =>

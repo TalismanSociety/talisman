@@ -236,6 +236,9 @@ export class BalanceStore {
       // remove balance if token doesn't exist
       if (tokens[balance.tokenId] === undefined) return true
 
+      // remove balance if module doesn't exist
+      if (!balanceModules.find((module) => module.type === balance.source)) return true
+
       // keep balance
       return false
     })

@@ -28,34 +28,8 @@ const moduleStorageHash = `${moduleHash}${storageHash}`
 
 const AccountData = JSON.stringify({ free: "u128", reserved: "u128", frozen: "u128" })
 
-export function tokenSymbolWorkarounds(chainId: string):
-  | {
-      symbols: string[]
-      decimals: number[]
-      stateKeys: { [key: string]: `0x${string}` }
-    }
-  | undefined {
-  return {
-    mangata: {
-      symbols: ["MGX"],
-      decimals: [18],
-      stateKeys: { MGX: twox64Concat(createType(new TypeRegistry(), "u32", "0").toU8a()) },
-    },
-    gm: {
-      symbols: ["FREN", "GM", "GN"],
-      decimals: [12, 0, 0],
-      stateKeys: {
-        // Use native for FREN, not orml
-        // FREN: twox64Concat(createType(new TypeRegistry(), 'u32', '0').toU8a()),
-        GM: twox64Concat(createType(new TypeRegistry(), "u8", "1").toU8a()),
-        GN: twox64Concat(createType(new TypeRegistry(), "u8", "2").toU8a()),
-      },
-    },
-  }[chainId]
-}
-
 const subOrmlTokenId = (chainId: ChainId, tokenSymbol: string) =>
-  `${chainId}-substrate-orml-${tokenSymbol}`.toLowerCase()
+  `${chainId}-substrate-orml-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 export type SubOrmlToken = NewTokenType<
   ModuleType,
@@ -79,6 +53,10 @@ export type SubOrmlChainMeta = {
   stateKeys: Record<string, `0x${string}`>
 }
 
+export type SubOrmlModuleConfig = {
+  disable?: boolean
+}
+
 export type SubOrmlBalance = NewBalanceType<
   ModuleType,
   {
@@ -96,7 +74,12 @@ declare module "@talismn/balances/plugins" {
   }
 }
 
-export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChainMeta> = {
+export const SubOrmlModule: BalanceModule<
+  ModuleType,
+  SubOrmlToken,
+  SubOrmlChainMeta,
+  SubOrmlModuleConfig
+> = {
   ...DefaultBalanceModule("substrate-orml"),
 
   async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId) {
@@ -109,8 +92,8 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
 
     const { tokenSymbol, tokenDecimals } = chainProperties
 
-    let symbols: string[] = Array.isArray(tokenSymbol) ? tokenSymbol : []
-    let decimals: number[] = Array.isArray(tokenDecimals) ? tokenDecimals : []
+    const symbols: string[] = Array.isArray(tokenSymbol) ? tokenSymbol : []
+    const decimals: number[] = Array.isArray(tokenDecimals) ? tokenDecimals : []
 
     const metadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
     metadata.registry.setMetadata(metadata)
@@ -144,9 +127,7 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
         .map(([name, stateKey]) => [name, twox64Concat(stateKey)])
     )
 
-    symbols = tokenSymbolWorkarounds(chainId)?.symbols || symbols
-    decimals = tokenSymbolWorkarounds(chainId)?.decimals || decimals
-    const stateKeys = tokenSymbolWorkarounds(chainId)?.stateKeys || tokenStateKeyLookup
+    const stateKeys = tokenStateKeyLookup
 
     return {
       isTestnet,
@@ -156,8 +137,16 @@ export const SubOrmlModule: BalanceModule<ModuleType, SubOrmlToken, SubOrmlChain
     }
   },
 
-  async fetchSubstrateChainTokens(chainConnector, chaindataProvider, chainId, chainMeta) {
+  async fetchSubstrateChainTokens(
+    chainConnector,
+    chaindataProvider,
+    chainId,
+    chainMeta,
+    moduleConfig
+  ) {
     const { isTestnet, symbols, decimals, stateKeys } = chainMeta
+
+    if (moduleConfig?.disable === true) return {}
 
     const tokens: Record<string, SubOrmlToken> = {}
     for (const index in symbols) {

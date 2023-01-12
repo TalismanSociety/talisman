@@ -1,5 +1,4 @@
 import { Metadata, TypeRegistry } from "@polkadot/types"
-import { BN } from "@polkadot/util"
 import {
   AddressesByToken,
   Amount,
@@ -23,64 +22,66 @@ import { decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 import log from "./log"
 
-type ModuleType = "substrate-assets"
+type ModuleType = "substrate-tokens"
 
-const subAssetTokenId = (chainId: ChainId, assetId: string, tokenSymbol: string) =>
-  `${chainId}-substrate-assets-${assetId}-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
+const subTokensTokenId = (chainId: ChainId, tokenSymbol: string) =>
+  `${chainId}-substrate-tokens-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
-export type SubAssetsToken = NewTokenType<
+export type SubTokensToken = NewTokenType<
   ModuleType,
   {
     existentialDeposit: string
-    assetId: string
-    isFrozen: boolean
+    onChainId: string | number
     chain: { id: ChainId }
   }
 >
 
 declare module "@talismn/chaindata-provider/plugins" {
   export interface PluginTokenTypes {
-    SubAssetsToken: SubAssetsToken
+    SubTokensToken: SubTokensToken
   }
 }
 
-export type SubAssetsChainMeta = {
+export type SubTokensChainMeta = {
   isTestnet: boolean
   metadata: `0x${string}` | null
   metadataVersion: number
 }
 
-export type SubAssetsModuleConfig = {
+export type SubTokensModuleConfig = {
   tokens?: Array<{
-    assetId: string | number
     symbol?: string
+    decimals?: number
+    ed?: string
+    onChainId?: string | number
     coingeckoId?: string
   }>
 }
 
-export type SubAssetsBalance = NewBalanceType<
+export type SubTokensBalance = NewBalanceType<
   ModuleType,
   {
     multiChainId: SubChainId
 
     free: Amount
+    reserves: Amount
     locks: Amount
   }
 >
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    SubAssetsBalance: SubAssetsBalance
+    SubTokensBalance: SubTokensBalance
   }
 }
 
-export const SubAssetsModule: BalanceModule<
+export const SubTokensModule: BalanceModule<
   ModuleType,
-  SubAssetsToken,
-  SubAssetsChainMeta,
-  SubAssetsModuleConfig
+  SubTokensToken,
+  SubTokensChainMeta,
+  SubTokensModuleConfig
 > = {
-  ...DefaultBalanceModule("substrate-assets"),
+  ...DefaultBalanceModule("substrate-tokens"),
 
   async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId) {
     const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
@@ -111,36 +112,23 @@ export const SubAssetsModule: BalanceModule<
         return null
       }
 
-      const isAssetsPallet = (pallet: any) => pallet.name === "Assets"
-      const isAccountItem = (item: any) => item.name === "Account"
-      const isAssetItem = (item: any) => item.name === "Asset"
-      const isMetadataItem = (item: any) => item.name === "Metadata"
+      const isTokensPallet = (pallet: any) => pallet.name === "Tokens"
+      const isAccountsItem = (item: any) => item.name === "Accounts"
 
-      metadata.value.pallets = metadata.value.pallets.filter(isAssetsPallet)
+      metadata.value.pallets = metadata.value.pallets.filter(isTokensPallet)
 
-      const [accountItem, assetItem, metadataItem] = (() => {
-        const systemPallet = metadata.value.pallets.find(isAssetsPallet)
-        if (!systemPallet) return []
-        if (!systemPallet.storage) return []
-
-        const isAccountOrAssetOrMetadataItem = [isAccountItem, isAssetItem, isMetadataItem].reduce(
-          (combinedFilter, filter) =>
-            combinedFilter ? (item: any) => combinedFilter(item) || filter(item) : filter
-        )
+      const accountsItem = (() => {
+        const systemPallet = metadata.value.pallets.find(isTokensPallet)
+        if (!systemPallet) return
+        if (!systemPallet.storage) return
 
         systemPallet.events = undefined
         systemPallet.calls = undefined
         systemPallet.errors = undefined
         systemPallet.constants = []
-        systemPallet.storage.items = systemPallet.storage.items.filter(
-          isAccountOrAssetOrMetadataItem
-        )
+        systemPallet.storage.items = systemPallet.storage.items.filter(isAccountsItem)
 
-        return [
-          (systemPallet.storage?.items || []).find(isAccountItem),
-          (systemPallet.storage?.items || []).find(isAssetItem),
-          (systemPallet.storage?.items || []).find(isMetadataItem),
-        ]
+        return (systemPallet.storage?.items || []).find(isAccountsItem)
       })()
 
       // this is a set of type ids which we plan to keep in our mutated metadata
@@ -153,14 +141,8 @@ export const SubAssetsModule: BalanceModule<
           // each type can be either "Plain" or "Map"
           // if it's "Plain" we only need to get the value type
           // if it's a "Map" we want to keep both the key AND the value types
-          accountItem?.type.__kind === "Map" && accountItem.type.key,
-          accountItem?.type.value,
-
-          assetItem?.type.__kind === "Map" && assetItem.type.key,
-          assetItem?.type.value,
-
-          metadataItem?.type.__kind === "Map" && metadataItem.type.key,
-          metadataItem?.type.value,
+          accountsItem?.type.__kind === "Map" && accountsItem.type.key,
+          accountsItem?.type.value,
         ].filter((type): type is number => typeof type === "number")
       )
 
@@ -218,83 +200,35 @@ export const SubAssetsModule: BalanceModule<
   ) {
     const { isTestnet, metadata: metadataRpc, metadataVersion } = chainMeta
 
-    const registry = new TypeRegistry()
-    if (metadataRpc !== null && metadataVersion >= 14)
-      registry.setMetadata(new Metadata(registry, metadataRpc))
-
-    const tokens: Record<string, SubAssetsToken> = {}
+    const tokens: Record<string, SubTokensToken> = {}
     for (const tokenConfig of moduleConfig?.tokens || []) {
       try {
-        const assetId = new BN(tokenConfig.assetId)
+        const symbol = tokenConfig?.symbol ?? "Unknown"
+        const decimals = tokenConfig?.decimals ?? 0
+        const existentialDeposit = tokenConfig?.ed ?? "0"
+        const onChainId = tokenConfig?.onChainId ?? undefined
+        const coingeckoId = tokenConfig?.coingeckoId ?? undefined
 
-        const assetQuery = new StorageHelper(registry, "assets", "asset", assetId)
-        const metadataQuery = new StorageHelper(registry, "assets", "metadata", assetId)
+        if (onChainId === undefined) continue
 
-        const [
-          // e.g.
-          // Option<{
-          //   owner: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-          //   issuer: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-          //   admin: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-          //   freezer: HKKT5DjFaUE339m7ZWS2yutjecbUpBcDQZHw2EF7SFqSFJH
-          //   supply: 99,996,117,733,044,042
-          //   deposit: 1,000,000,000,000
-          //   minBalance: 100,000
-          //   isSufficient: true
-          //   accounts: 6,032
-          //   sufficients: 1,542
-          //   approvals: 1
-          //   status: Live
-          // }>
-          assetsAsset,
-
-          // e.g.
-          // {
-          //   deposit: 6,693,333,000
-          //   name: RMRK.app
-          //   symbol: RMRK
-          //   decimals: 10
-          //   isFrozen: false
-          // }
-          assetsMetadata,
-        ] = await Promise.all([
-          chainConnector
-            .send(chainId, "state_getStorage", [assetQuery.stateKey])
-            .then((result) => assetQuery.decode(result)),
-          chainConnector
-            .send(chainId, "state_getStorage", [metadataQuery.stateKey])
-            .then((result) => metadataQuery.decode(result)),
-        ])
-
-        const existentialDeposit =
-          (assetsAsset as any)?.value?.minBalance?.toBigInt?.()?.toString?.() || "0"
-        const symbol =
-          tokenConfig.symbol || (assetsMetadata as any)?.symbol?.toHuman?.() || "Unknown"
-        // const name = (assetsMetadata as any)?.name?.toHuman?.() || symbol
-        const decimals = (assetsMetadata as any)?.decimals?.toNumber?.() || 0
-        const isFrozen = (assetsMetadata as any)?.isFrozen?.toHuman?.() || false
-        const coingeckoId =
-          typeof tokenConfig.coingeckoId === "string" ? tokenConfig.coingeckoId : undefined
-
-        const id = subAssetTokenId(chainId, assetId.toString(10), symbol)
-        const token: SubAssetsToken = {
+        const id = subTokensTokenId(chainId, symbol)
+        const token: SubTokensToken = {
           id,
-          type: "substrate-assets",
+          type: "substrate-tokens",
           isTestnet,
           symbol,
           decimals,
           logo: githubTokenLogoUrl(id),
           coingeckoId,
           existentialDeposit,
-          assetId: assetId.toString(10),
-          isFrozen,
+          onChainId,
           chain: { id: chainId },
         }
 
         tokens[token.id] = token
       } catch (error) {
         log.error(
-          `Failed to build substrate-assets token ${tokenConfig.assetId} (${tokenConfig.symbol}) on ${chainId}`,
+          `Failed to build substrate-tokens token ${tokenConfig.onChainId} (${tokenConfig.symbol}) on ${chainId}`,
           error
         )
         continue
@@ -369,9 +303,9 @@ export const SubAssetsModule: BalanceModule<
 }
 
 function groupAddressesByTokenByChain(
-  addressesByToken: AddressesByToken<SubAssetsToken>,
+  addressesByToken: AddressesByToken<SubTokensToken>,
   tokens: TokenList
-): Record<string, AddressesByToken<SubAssetsToken>> {
+): Record<string, AddressesByToken<SubTokensToken>> {
   return Object.entries(addressesByToken).reduce((byChain, [tokenId, addresses]) => {
     const token = tokens[tokenId]
     if (!token) {
@@ -389,12 +323,12 @@ function groupAddressesByTokenByChain(
     byChain[chainId][tokenId] = addresses
 
     return byChain
-  }, {} as Record<string, AddressesByToken<SubAssetsToken>>)
+  }, {} as Record<string, AddressesByToken<SubTokensToken>>)
 }
 
 async function prepareQueriesByChain(
   chaindataProvider: ChaindataProvider,
-  addressesByToken: AddressesByToken<SubAssetsToken>,
+  addressesByToken: AddressesByToken<SubTokensToken>,
   tokens: TokenList
 ): Promise<Record<string, StorageHelper[]>> {
   const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
@@ -414,18 +348,18 @@ async function prepareQueriesByChain(
             }
 
             // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-            if (token.type !== "substrate-assets") {
+            if (token.type !== "substrate-tokens") {
               log.debug(`This module doesn't handle tokens of type ${token.type}`)
               return false
             }
 
             return true
           })
-          .map(([, token, addresses]): [SubAssetsToken, string[]] => [token, addresses])
+          .map(([, token, addresses]): [SubTokensToken, string[]] => [token, addresses])
 
         const registry = new TypeRegistry()
-        const chainMeta: SubAssetsChainMeta | undefined = (chain.balanceMetadata || []).find(
-          ({ moduleType }) => moduleType === "substrate-assets"
+        const chainMeta: SubTokensChainMeta | undefined = (chain.balanceMetadata || []).find(
+          ({ moduleType }) => moduleType === "substrate-tokens"
         )?.metadata
         if (
           chainMeta?.metadata !== undefined &&
@@ -439,10 +373,16 @@ async function prepareQueriesByChain(
             addresses.map((address) =>
               new StorageHelper(
                 registry,
-                "assets",
-                "account",
-                token.assetId,
-                decodeAnyAddress(address)
+                "tokens",
+                "accounts",
+                decodeAnyAddress(address),
+                (() => {
+                  try {
+                    return JSON.parse(token.onChainId as any)
+                  } catch (error) {
+                    return token.onChainId
+                  }
+                })()
               ).tag({ token, address })
             )
           )
@@ -479,27 +419,22 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
       if (!(typeof change === "string" || change === null)) return
 
       // e.g.
-      // Option<{
-      //   balance: 2,000,000,000
-      //   isFrozen: false
-      //   reason: Sufficient
-      //   extra: null
-      // }>
-      const balance = (query.decode(change) as any)?.value
+      // {
+      //   free: 33,765,103,752,560
+      //   reserved: 0
+      //   frozen: 0
+      // }
+      const balance = query.decode(change) as any
 
       const { address, token } = query.tags || {}
       if (!address || !token || !balance) return
 
-      const free =
-        token.isFrozen || balance?.isFrozen?.toHuman?.()
-          ? BigInt("0").toString()
-          : (balance?.balance?.toBigInt?.() || BigInt("0")).toString()
-      const frozen = token.isFrozen
-        ? (balance?.balance?.toBigInt?.() || BigInt("0")).toString()
-        : BigInt("0").toString()
+      const free = (balance?.free?.toBigInt?.() || BigInt("0")).toString()
+      const reserved = (balance?.reserved?.toBigInt?.() || BigInt("0")).toString()
+      const frozen = (balance?.frozen?.toBigInt?.() || BigInt("0")).toString()
 
       return new Balance({
-        source: "substrate-assets",
+        source: "substrate-tokens",
 
         status: "live",
 
@@ -509,6 +444,7 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
         tokenId: token.id,
 
         free,
+        reserves: reserved,
         locks: frozen,
       })
     })

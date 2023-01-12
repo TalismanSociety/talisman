@@ -68,7 +68,7 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
 }
 
 const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
-  `${chainId}-substrate-native-${tokenSymbol}`.toLowerCase()
+  `${chainId}-substrate-native-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 export type SubNativeToken = NewTokenType<
   ModuleType,
@@ -105,6 +105,10 @@ export type SubNativeChainMeta = {
   metadataVersion: number
 }
 
+export type SubNativeModuleConfig = {
+  disable?: boolean
+}
+
 export type SubNativeBalance = NewBalanceType<
   ModuleType,
   {
@@ -125,7 +129,8 @@ declare module "@talismn/balances/plugins" {
 export const SubNativeModule: BalanceModule<
   ModuleType,
   SubNativeToken | CustomSubNativeToken,
-  SubNativeChainMeta
+  SubNativeChainMeta,
+  SubNativeModuleConfig
 > = {
   ...DefaultBalanceModule("substrate-native"),
 
@@ -225,12 +230,17 @@ export const SubNativeModule: BalanceModule<
 
           keepTypes.add(type.id)
 
-          // TODO: Handle other types
-          // (all chains so far are only using Composite for balances,
-          // but later on for other use cases we'll need to at least also handle 'Variant' types)
-          if (type?.type?.def?.__kind === "Composite") {
+          if (type?.type?.def?.__kind === "Array") addDependentTypes([type.type.def.value.type])
+          if (type?.type?.def?.__kind === "Compact") addDependentTypes([type.type.def.value.type])
+          if (type?.type?.def?.__kind === "Composite")
             addDependentTypes(type.type.def.value.fields.map(({ type }) => type))
-          }
+          if (type?.type?.def?.__kind === "Sequence") addDependentTypes([type.type.def.value.type])
+          if (type?.type?.def?.__kind === "Tuple")
+            addDependentTypes(type.type.def.value.map((type) => type))
+          if (type?.type?.def?.__kind === "Variant")
+            addDependentTypes(
+              type.type.def.value.variants.flatMap(({ fields }) => fields.map(({ type }) => type))
+            )
         }
       }
 
@@ -259,7 +269,13 @@ export const SubNativeModule: BalanceModule<
     }
   },
 
-  async fetchSubstrateChainTokens(chainConnector, chaindataProvider, chainId, chainMeta) {
+  async fetchSubstrateChainTokens(
+    chainConnector,
+    chaindataProvider,
+    chainId,
+    chainMeta,
+    moduleConfig
+  ) {
     const {
       isTestnet,
       symbol,
@@ -269,6 +285,8 @@ export const SubNativeModule: BalanceModule<
       metadata,
       metadataVersion,
     } = chainMeta
+
+    if (moduleConfig?.disable === true) return {}
 
     const id = subNativeTokenId(chainId, symbol)
     const nativeToken: SubNativeToken = {
