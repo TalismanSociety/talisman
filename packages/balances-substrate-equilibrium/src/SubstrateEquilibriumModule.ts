@@ -1,4 +1,5 @@
 import { Metadata, TypeRegistry } from "@polkadot/types"
+import { AbstractInt } from "@polkadot/types-codec"
 import {
   AddressesByToken,
   Amount,
@@ -22,69 +23,64 @@ import { decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 import log from "./log"
 
-type ModuleType = "substrate-tokens"
+type ModuleType = "substrate-equilibrium"
 
-const subTokensTokenId = (chainId: ChainId, tokenSymbol: string) =>
-  `${chainId}-substrate-tokens-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
+const subEquilibriumTokenId = (chainId: ChainId, tokenSymbol: string) =>
+  `${chainId}-substrate-equilibrium-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
-export type SubTokensToken = NewTokenType<
+export type SubEquilibriumToken = NewTokenType<
   ModuleType,
   {
     existentialDeposit: string
-    onChainId: string | number
+    assetId: string
     chain: { id: ChainId }
   }
 >
 
 declare module "@talismn/chaindata-provider/plugins" {
   export interface PluginTokenTypes {
-    SubTokensToken: SubTokensToken
+    SubEquilibriumToken: SubEquilibriumToken
   }
 }
 
-export type SubTokensChainMeta = {
+export type SubEquilibriumChainMeta = {
   isTestnet: boolean
   metadata: `0x${string}` | null
   metadataVersion: number
 }
 
-export type SubTokensModuleConfig = {
-  tokens?: Array<{
-    symbol?: string
-    decimals?: number
-    ed?: string
-    onChainId?: string | number
-    coingeckoId?: string
-  }>
+export type SubEquilibriumModuleConfig = {
+  disable?: boolean
 }
 
-export type SubTokensBalance = NewBalanceType<
+export type SubEquilibriumBalance = NewBalanceType<
   ModuleType,
   {
     multiChainId: SubChainId
 
     free: Amount
-    reserves: Amount
-    locks: Amount
   }
 >
 
 declare module "@talismn/balances/plugins" {
   export interface PluginBalanceTypes {
-    SubTokensBalance: SubTokensBalance
+    SubEquilibriumBalance: SubEquilibriumBalance
   }
 }
 
-export const SubTokensModule: BalanceModule<
+export const SubEquilibriumModule: BalanceModule<
   ModuleType,
-  SubTokensToken,
-  SubTokensChainMeta,
-  SubTokensModuleConfig
+  SubEquilibriumToken,
+  SubEquilibriumChainMeta,
+  SubEquilibriumModuleConfig
 > = {
-  ...DefaultBalanceModule("substrate-tokens"),
+  ...DefaultBalanceModule("substrate-equilibrium"),
 
-  async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId) {
+  async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId, moduleConfig) {
     const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
+
+    // default to disabled
+    if (moduleConfig?.disable !== false) return { isTestnet, metadata: null, metadataVersion: 0 }
 
     const metadataRpc = await chainConnector.send(chainId, "state_getMetadata", [])
 
@@ -112,23 +108,39 @@ export const SubTokensModule: BalanceModule<
         return null
       }
 
-      const isTokensPallet = (pallet: any) => pallet.name === "Tokens"
-      const isAccountsItem = (item: any) => item.name === "Accounts"
+      const isEqAssetsPallet = (pallet: any) => pallet.name === "EqAssets"
+      const isAssetsItem = (item: any) => item.name === "Assets"
 
-      metadata.value.pallets = metadata.value.pallets.filter(isTokensPallet)
+      const isSystemPallet = (pallet: any) => pallet.name === "System"
+      const isAccountItem = (item: any) => item.name === "Account"
 
-      const accountsItem = (() => {
-        const systemPallet = metadata.value.pallets.find(isTokensPallet)
-        if (!systemPallet) return
-        if (!systemPallet.storage) return
+      const isSystemOrEqAssetsPallet = (pallet: any) =>
+        isEqAssetsPallet(pallet) || isSystemPallet(pallet)
+
+      metadata.value.pallets = metadata.value.pallets.filter(isSystemOrEqAssetsPallet)
+
+      const [assetsItem, accountItem] = (() => {
+        const eqAssetsPallet = metadata.value.pallets.find(isEqAssetsPallet)
+        const systemPallet = metadata.value.pallets.find(isSystemPallet)
+        if (!eqAssetsPallet || !systemPallet) return []
+        if (!eqAssetsPallet.storage || !systemPallet.storage) return []
+
+        eqAssetsPallet.events = undefined
+        eqAssetsPallet.calls = undefined
+        eqAssetsPallet.errors = undefined
+        eqAssetsPallet.constants = []
+        eqAssetsPallet.storage.items = eqAssetsPallet.storage.items.filter(isAssetsItem)
 
         systemPallet.events = undefined
         systemPallet.calls = undefined
         systemPallet.errors = undefined
         systemPallet.constants = []
-        systemPallet.storage.items = systemPallet.storage.items.filter(isAccountsItem)
+        systemPallet.storage.items = systemPallet.storage.items.filter(isAccountItem)
 
-        return (systemPallet.storage?.items || []).find(isAccountsItem)
+        return [
+          (eqAssetsPallet.storage?.items || []).find(isAssetsItem),
+          (systemPallet.storage?.items || []).find(isAccountItem),
+        ]
       })()
 
       // this is a set of type ids which we plan to keep in our mutated metadata
@@ -141,8 +153,11 @@ export const SubTokensModule: BalanceModule<
           // each type can be either "Plain" or "Map"
           // if it's "Plain" we only need to get the value type
           // if it's a "Map" we want to keep both the key AND the value types
-          accountsItem?.type.__kind === "Map" && accountsItem.type.key,
-          accountsItem?.type.value,
+          assetsItem?.type.__kind === "Map" && assetsItem.type.key,
+          assetsItem?.type.value,
+
+          accountItem?.type.__kind === "Map" && accountItem.type.key,
+          accountItem?.type.value,
         ].filter((type): type is number => typeof type === "number")
       )
 
@@ -198,41 +213,53 @@ export const SubTokensModule: BalanceModule<
     chainMeta,
     moduleConfig
   ) {
+    // default to disabled
+    if (moduleConfig?.disable !== false) return {}
+
     const { isTestnet, metadata: metadataRpc, metadataVersion } = chainMeta
 
-    const tokens: Record<string, SubTokensToken> = {}
-    for (const tokenConfig of moduleConfig?.tokens || []) {
-      try {
-        const symbol = tokenConfig?.symbol ?? "Unknown"
-        const decimals = tokenConfig?.decimals ?? 0
-        const existentialDeposit = tokenConfig?.ed ?? "0"
-        const onChainId = tokenConfig?.onChainId ?? undefined
-        const coingeckoId = tokenConfig?.coingeckoId ?? undefined
+    const registry = new TypeRegistry()
+    if (metadataRpc !== null && metadataVersion >= 14)
+      registry.setMetadata(new Metadata(registry, metadataRpc))
 
-        if (onChainId === undefined) continue
+    const tokens: Record<string, SubEquilibriumToken> = {}
 
-        const id = subTokensTokenId(chainId, symbol)
-        const token: SubTokensToken = {
+    try {
+      const assetsQuery = new StorageHelper(registry, "eqAssets", "assets")
+
+      const assetsResult = await chainConnector
+        .send(chainId, "state_getStorage", [assetsQuery.stateKey])
+        .then((result) => assetsQuery.decode(result))
+
+      ;[...((assetsResult as any)?.value ?? [])].map((asset: any) => {
+        if (!asset) return
+        if (!asset?.id) return
+
+        const assetId = asset.id
+        const symbol = tokenSymbolFromU64Id(assetId)
+        const id = subEquilibriumTokenId(chainId, symbol)
+        const decimals = asset.assetXcmData?.value?.decimals?.toNumber?.() ?? DEFAULT_DECIMALS
+
+        const token: SubEquilibriumToken = {
           id,
-          type: "substrate-tokens",
+          type: "substrate-equilibrium",
           isTestnet,
           symbol,
           decimals,
           logo: githubTokenLogoUrl(id),
-          coingeckoId,
-          existentialDeposit,
-          onChainId,
+          // TODO: Fetch the ED
+          existentialDeposit: "0",
+          assetId: assetId.toString(10),
           chain: { id: chainId },
         }
 
         tokens[token.id] = token
-      } catch (error) {
-        log.error(
-          `Failed to build substrate-tokens token ${tokenConfig.onChainId} (${tokenConfig.symbol}) on ${chainId}`,
-          (error as Error)?.message ?? error
-        )
-        continue
-      }
+      })
+    } catch (error) {
+      log.error(
+        `Failed to build substrate-equilibrium tokens on ${chainId}`,
+        (error as Error)?.message ?? error
+      )
     }
 
     return tokens
@@ -303,9 +330,9 @@ export const SubTokensModule: BalanceModule<
 }
 
 function groupAddressesByTokenByChain(
-  addressesByToken: AddressesByToken<SubTokensToken>,
+  addressesByToken: AddressesByToken<SubEquilibriumToken>,
   tokens: TokenList
-): Record<string, AddressesByToken<SubTokensToken>> {
+): Record<string, AddressesByToken<SubEquilibriumToken>> {
   return Object.entries(addressesByToken).reduce((byChain, [tokenId, addresses]) => {
     const token = tokens[tokenId]
     if (!token) {
@@ -323,12 +350,12 @@ function groupAddressesByTokenByChain(
     byChain[chainId][tokenId] = addresses
 
     return byChain
-  }, {} as Record<string, AddressesByToken<SubTokensToken>>)
+  }, {} as Record<string, AddressesByToken<SubEquilibriumToken>>)
 }
 
 async function prepareQueriesByChain(
   chaindataProvider: ChaindataProvider,
-  addressesByToken: AddressesByToken<SubTokensToken>,
+  addressesByToken: AddressesByToken<SubEquilibriumToken>,
   tokens: TokenList
 ): Promise<Record<string, StorageHelper[]>> {
   const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
@@ -348,18 +375,18 @@ async function prepareQueriesByChain(
             }
 
             // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-            if (token.type !== "substrate-tokens") {
+            if (token.type !== "substrate-equilibrium") {
               log.debug(`This module doesn't handle tokens of type ${token.type}`)
               return false
             }
 
             return true
           })
-          .map(([, token, addresses]): [SubTokensToken, string[]] => [token, addresses])
+          .map(([, token, addresses]): [SubEquilibriumToken, string[]] => [token, addresses])
 
         const registry = new TypeRegistry()
-        const chainMeta: SubTokensChainMeta | undefined = (chain.balanceMetadata || []).find(
-          ({ moduleType }) => moduleType === "substrate-tokens"
+        const chainMeta: SubEquilibriumChainMeta | undefined = (chain.balanceMetadata || []).find(
+          ({ moduleType }) => moduleType === "substrate-equilibrium"
         )?.metadata
         if (
           chainMeta?.metadata !== undefined &&
@@ -368,25 +395,33 @@ async function prepareQueriesByChain(
         )
           registry.setMetadata(new Metadata(registry, chainMeta.metadata))
 
-        const queries = tokensAndAddresses
-          .flatMap(([token, addresses]) =>
-            addresses.map((address) =>
-              new StorageHelper(
+        // equilibrium returns all chain tokens for each address in the one query
+        // so, we only need to make one query per address, rather than one query per token per address
+        // we'll tag each query with the tokens we expect to extract from it later on
+        const addressQueries: Record<string, StorageHelper> = {}
+
+        tokensAndAddresses.forEach(([token, addresses]) =>
+          addresses.forEach((address) => {
+            if (!addressQueries[address])
+              addressQueries[address] = new StorageHelper(
                 registry,
-                "tokens",
-                "accounts",
-                decodeAnyAddress(address),
-                (() => {
-                  try {
-                    return JSON.parse(token.onChainId as any)
-                  } catch (error) {
-                    return token.onChainId
-                  }
-                })()
-              ).tag({ token, address })
+                "system",
+                "account",
+                decodeAnyAddress(address)
+              )
+
+            addressQueries[address].tag(
+              (addressQueries[address].tags ?? []).concat({
+                token,
+                address,
+              })
             )
-          )
-          .filter((query) => query.stateKey !== undefined)
+          })
+        )
+
+        const queries = Object.values(addressQueries).filter(
+          (query) => query.stateKey !== undefined
+        )
 
         return [chainId, queries]
       })
@@ -410,7 +445,7 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
   if (!Array.isArray(result.changes)) return new Balances([])
 
   const balances = result.changes
-    .map(([key, change]: [unknown, unknown]) => {
+    .flatMap(([key, change]: [unknown, unknown]) => {
       if (typeof key !== "string") return
 
       const query = queries.find((query) => query.stateKey === key)
@@ -420,35 +455,92 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
 
       // e.g.
       // {
-      //   free: 33,765,103,752,560
-      //   reserved: 0
-      //   frozen: 0
+      //   nonce: 5
+      //   consumers: 0
+      //   providers: 2
+      //   sufficients: 0
+      //   data: {
+      //     V0: {
+      //       lock: 0
+      //       balance: [
+      //         [
+      //           25,969
+      //           {
+      //             Positive: 499,912,656,271
+      //           }
+      //         ]
+      //         [
+      //           6,582,132
+      //           {
+      //             Positive: 1,973,490,154
+      //           }
+      //         ]
+      //         [
+      //           6,648,164
+      //           {
+      //             Positive: 200,000,000
+      //           }
+      //         ]
+      //         [
+      //           435,694,104,436
+      //           {
+      //             Positive: 828,313,918
+      //           }
+      //         ]
+      //       ]
+      //     }
+      //   }
       // }
-      const balance = query.decode(change) as any
+      const balances: any = query.decode(change)
 
-      const { address, token } = query.tags || {}
-      if (!address || !token || !balance) return
+      const tokenBalances = Object.fromEntries(
+        (balances?.data?.value?.balance || [])
+          .map((balance: any) => ({
+            id: balance?.[0]?.toBigInt?.().toString?.(),
+            free: balance?.[1]?.isPositive
+              ? balance?.[1]?.asPositive?.toBigInt?.().toString()
+              : balance?.[1]?.isNegative
+              ? (balance?.[1]?.asNegative?.toBigInt?.() * -1n).toString()
+              : "0",
+          }))
+          .map(({ id, free }: { id?: string; free?: string }) => [id, free])
+      )
 
-      const free = (balance?.free?.toBigInt?.() || BigInt("0")).toString()
-      const reserved = (balance?.reserved?.toBigInt?.() || BigInt("0")).toString()
-      const frozen = (balance?.frozen?.toBigInt?.() || BigInt("0")).toString()
+      return (query.tags || [])
+        .filter(
+          (tag: any) => typeof tag?.token?.id === "string" && typeof tag?.address === "string"
+        )
+        .map(({ token, address }: { token: SubEquilibriumToken; address: string }) => {
+          if (!address || !token) return
 
-      return new Balance({
-        source: "substrate-tokens",
+          const free = tokenBalances[token.assetId]
+          return new Balance({
+            source: "substrate-equilibrium",
 
-        status: "live",
+            status: "live",
 
-        address,
-        multiChainId: { subChainId: chainId },
-        chainId,
-        tokenId: token.id,
+            address,
+            multiChainId: { subChainId: chainId },
+            chainId,
+            tokenId: token.id,
 
-        free,
-        reserves: reserved,
-        locks: frozen,
-      })
+            free,
+          })
+        })
     })
     .filter((balance): balance is Balance => Boolean(balance))
 
   return new Balances(balances)
+}
+
+const DEFAULT_DECIMALS = 9
+
+const tokenSymbolFromU64Id = (u64: number | bigint | AbstractInt) => {
+  const bytes = []
+  let num = typeof u64 === "number" ? BigInt(u64) : typeof u64 === "bigint" ? u64 : u64.toBigInt()
+  do {
+    bytes.unshift(Number(num % 256n))
+    num = num / 256n
+  } while (num > 0)
+  return Buffer.from(bytes).toString("utf8").toUpperCase()
 }

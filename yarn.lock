@@ -5932,6 +5932,7 @@ __metadata:
     "@talismn/balances-evm-erc20": "workspace:^"
     "@talismn/balances-evm-native": "workspace:^"
     "@talismn/balances-substrate-assets": "workspace:^"
+    "@talismn/balances-substrate-equilibrium": "workspace:^"
     "@talismn/balances-substrate-native": "workspace:^"
     "@talismn/balances-substrate-orml": "workspace:^"
     "@talismn/balances-substrate-tokens": "workspace:^"
@@ -6025,13 +6026,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium":
+"@talismn/balances-substrate-equilibrium@workspace:^, @talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium"
   dependencies:
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
+    "@talismn/mutate-metadata": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
     eslint: ^8.4.0

@@ -267,12 +267,12 @@ export const SubAssetsModule: BalanceModule<
         ])
 
         const existentialDeposit =
-          (assetsAsset as any)?.value?.minBalance?.toBigInt?.()?.toString?.() || "0"
+          (assetsAsset as any)?.value?.minBalance?.toBigInt?.()?.toString?.() ?? "0"
         const symbol =
-          tokenConfig.symbol || (assetsMetadata as any)?.symbol?.toHuman?.() || "Unknown"
-        // const name = (assetsMetadata as any)?.name?.toHuman?.() || symbol
-        const decimals = (assetsMetadata as any)?.decimals?.toNumber?.() || 0
-        const isFrozen = (assetsMetadata as any)?.isFrozen?.toHuman?.() || false
+          tokenConfig.symbol ?? (assetsMetadata as any)?.symbol?.toHuman?.() ?? "Unknown"
+        // const name = (assetsMetadata as any)?.name?.toHuman?.() ?? symbol
+        const decimals = (assetsMetadata as any)?.decimals?.toNumber?.() ?? 0
+        const isFrozen = (assetsMetadata as any)?.isFrozen?.toHuman?.() ?? false
         const coingeckoId =
           typeof tokenConfig.coingeckoId === "string" ? tokenConfig.coingeckoId : undefined
 

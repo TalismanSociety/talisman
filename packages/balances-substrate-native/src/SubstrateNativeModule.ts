@@ -134,8 +134,19 @@ export const SubNativeModule: BalanceModule<
 > = {
   ...DefaultBalanceModule("substrate-native"),
 
-  async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId) {
+  async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId, moduleConfig) {
     const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
+
+    if (moduleConfig?.disable === true)
+      return {
+        isTestnet,
+        symbol: "",
+        decimals: 0,
+        existentialDeposit: null,
+        accountInfoType: null,
+        metadata: null,
+        metadataVersion: 0,
+      }
 
     const [metadataRpc, chainProperties] = await Promise.all([
       chainConnector.send(chainId, "state_getMetadata", []),
@@ -276,6 +287,8 @@ export const SubNativeModule: BalanceModule<
     chainMeta,
     moduleConfig
   ) {
+    if (moduleConfig?.disable === true) return {}
+
     const {
       isTestnet,
       symbol,
@@ -285,8 +298,6 @@ export const SubNativeModule: BalanceModule<
       metadata,
       metadataVersion,
     } = chainMeta
-
-    if (moduleConfig?.disable === true) return {}
 
     const id = subNativeTokenId(chainId, symbol)
     const nativeToken: SubNativeToken = {

@@ -56,6 +56,7 @@ export const useChainsTokens = (chains: Chain[], evmNetworks?: EvmNetwork[]) => 
         if (tokenType === "evm-erc20") return true
         if (tokenType === "substrate-assets") return true
         if (tokenType === "substrate-tokens") return true
+        if (tokenType === "substrate-equilibrium") return true
 
         // force compilation error if any token types don't have a case
         const exhaustiveCheck: never = tokenType

@@ -82,8 +82,11 @@ export const SubOrmlModule: BalanceModule<
 > = {
   ...DefaultBalanceModule("substrate-orml"),
 
-  async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId) {
+  async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId, moduleConfig) {
     const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
+
+    if (moduleConfig?.disable === true)
+      return { isTestnet, symbols: [], decimals: [], stateKeys: {} }
 
     const [metadataRpc, chainProperties] = await Promise.all([
       chainConnector.send(chainId, "state_getMetadata", []),
@@ -144,9 +147,9 @@ export const SubOrmlModule: BalanceModule<
     chainMeta,
     moduleConfig
   ) {
-    const { isTestnet, symbols, decimals, stateKeys } = chainMeta
-
     if (moduleConfig?.disable === true) return {}
+
+    const { isTestnet, symbols, decimals, stateKeys } = chainMeta
 
     const tokens: Record<string, SubOrmlToken> = {}
     for (const index in symbols) {

@@ -171,6 +171,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
           throw new Error(
             `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
           )
+        if (tokenType === "substrate-equilibrium")
+          throw new Error(
+            `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
+          )
 
         // force compilation error if any token types don't have a case
         const exhaustiveCheck: never = tokenType
@@ -215,6 +219,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
           `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
         )
       if (tokenType === "substrate-tokens")
+        throw new Error(
+          `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
+        )
+      if (tokenType === "substrate-equilibrium")
         throw new Error(
           `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
         )

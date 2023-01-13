@@ -31,7 +31,8 @@
   },
   "dependencies": {
     "@talismn/balances": "workspace:^",
-    "@talismn/chaindata-provider": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:^",
+    "@talismn/mutate-metadata": "workspace:^"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",
