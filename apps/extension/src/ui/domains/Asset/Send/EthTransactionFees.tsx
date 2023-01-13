@@ -4,6 +4,7 @@ import { EthGasSettings } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { Box } from "@talisman/components/Box"
 import { LoaderIcon } from "@talisman/theme/icons"
+import { EvmNativeToken } from "@talismn/balances-evm-native"
 import { tokensToPlanck } from "@talismn/util"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
@@ -132,6 +133,7 @@ export const EthTransactionFees = ({
         <Box>
           Priority :{" "}
           <EthFeeSelect
+            nativeToken={nativeToken as EvmNativeToken}
             drawerContainer={sendFundsContainer}
             gasSettingsByPriority={gasSettingsByPriority}
             setCustomSettings={setCustomSettings}

@@ -134,13 +134,14 @@ const FEE_MAX_RAISE_RATIO_PER_BLOCK = 0.125
 export const getMaxFeePerGas = (
   baseFeePerGas: BigNumberish,
   maxPriorityFeePerGas: BigNumberish,
-  maxBlocksWait = 8
+  maxBlocksWait = 8,
+  increase = true
 ) => {
   let base = BigNumber.from(baseFeePerGas)
 
   //baseFeePerGas can augment 12.5% per block
   for (let i = 0; i < maxBlocksWait; i++)
-    base = base.mul((1 + FEE_MAX_RAISE_RATIO_PER_BLOCK) * 1000).div(1000)
+    base = base.mul((1 + (increase ? 1 : -1) * FEE_MAX_RAISE_RATIO_PER_BLOCK) * 1000).div(1000)
 
   return base.add(maxPriorityFeePerGas)
 }

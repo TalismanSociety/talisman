@@ -5,7 +5,14 @@ import {
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { ChevronRightIcon } from "@talisman/theme/icons"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
+import { BalanceFormatter } from "@talismn/balances"
+import { EvmNativeToken } from "@talismn/balances-evm-native"
+import { useTokenRates } from "@talismn/balances-react"
+import Fiat from "@ui/domains/Asset/Fiat"
+import Tokens from "@ui/domains/Asset/Tokens"
+import { useDbCache } from "@ui/hooks/useDbCache"
 import { ethers } from "ethers"
 import { FC, useCallback, useMemo } from "react"
 import { classNames } from "talisman-ui"
@@ -17,8 +24,9 @@ type PriorityOptionProps = {
   priority: EthPriorityOptionName
   gasSettingsByPriority: GasSettingsByPriority
   selected?: boolean
-  decimals: number
-  symbol?: string
+  // decimals: number
+  // symbol?: string
+  nativeToken: EvmNativeToken
   onClick?: () => void
 }
 
@@ -26,14 +34,23 @@ const PriorityOption = ({
   priority,
   gasSettingsByPriority,
   selected,
-  decimals,
-  symbol,
+  nativeToken,
+  // decimals,
+  // symbol,
   onClick,
 }: PriorityOptionProps) => {
+  // const tokenRates = useTokenRates(nativeToken.id)
+  const { tokenRatesMap } = useDbCache() // TODO use useTokenRates
+
   const maxFee = useMemo(() => {
     const gasSettings = gasSettingsByPriority[priority] as EthGasSettingsEip1559
-    return ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.maxFeePerGas)
-  }, [gasSettingsByPriority, priority])
+    const bnMaxFee = ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.maxFeePerGas)
+    return new BalanceFormatter(
+      bnMaxFee.toString(),
+      nativeToken.decimals,
+      tokenRatesMap[nativeToken.id]
+    )
+  }, [gasSettingsByPriority, nativeToken.decimals, nativeToken.id, priority, tokenRatesMap])
 
   return (
     <button
@@ -48,18 +65,35 @@ const PriorityOption = ({
         <img src={FEE_PRIORITY_OPTIONS[priority].icon} alt="" className="w-16" />
       </div>
       <div className="grow">{FEE_PRIORITY_OPTIONS[priority].label}</div>
-      <div>{formatEtherValue(maxFee, decimals, symbol)}</div>
+      {selected || priority !== "custom" ? (
+        <div>
+          <Tokens
+            amount={maxFee.tokens}
+            decimals={nativeToken.decimals}
+            symbol={nativeToken.symbol}
+          />
+          {maxFee.fiat("usd") ? (
+            <>
+              {" "}
+              (<Fiat amount={maxFee.fiat("usd")} currency="usd" />)
+            </>
+          ) : null}
+        </div>
+      ) : (
+        <ChevronRightIcon className="text-lg transition-none" />
+      )}
     </button>
   )
 }
 
 type FeeOptionsSelectProps = {
   txDetails: EthTransactionDetails
+  nativeToken: EvmNativeToken
   networkUsage?: number
   gasSettingsByPriority: GasSettingsByPriority
   priority: EthPriorityOptionName
-  decimals: number
-  symbol?: string
+  // decimals: number
+  // symbol?: string
   onChange?: (priority: EthPriorityOptionName) => void
 }
 
@@ -119,7 +153,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
           selected={priority === "custom"}
         />
         <div className="mt-8 flex w-full items-center justify-between">
-          <div>Network usage</div>
+          <div>Base Fee Trend</div>
           <div>
             <NetworkUsage baseFeeTrend={txDetails.baseFeeTrend} />
           </div>

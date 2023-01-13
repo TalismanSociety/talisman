@@ -8,6 +8,7 @@ import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { classNames } from "@talisman/util/classNames"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
+import { EvmNativeToken } from "@talismn/balances-evm-native"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
@@ -29,6 +30,8 @@ const OpenFeeSelectTracker = () => {
 }
 
 type EthFeeSelectProps = {
+  nativeToken: EvmNativeToken
+
   disabled?: boolean
   txDetails: EthTransactionDetails
   networkUsage?: number
@@ -42,6 +45,7 @@ type EthFeeSelectProps = {
 }
 
 export const EthFeeSelect: FC<EthFeeSelectProps> = ({
+  nativeToken,
   txDetails,
   onChange,
   priority,
@@ -90,10 +94,10 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
     setShowCustomSettings(false)
   }, [])
 
-  useEffect(() => {
-    setShowCustomSettings(true)
-    open()
-  }, [open])
+  // useEffect(() => {
+  //   setShowCustomSettings(true)
+  //   open()
+  // }, [open])
 
   // this is only usefull with EIP-1559
   if (!gasSettingsByPriority) return null
@@ -102,19 +106,22 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
     <>
       <PillButton disabled={disabled} type="button" onClick={open} className="h-12 pl-4">
         <img src={FEE_PRIORITY_OPTIONS[priority].icon} alt="" className="inline-block w-10" />{" "}
-        {FEE_PRIORITY_OPTIONS[priority].label}
+        <span className="align-middle">{FEE_PRIORITY_OPTIONS[priority].label}</span>
       </PillButton>
       <Drawer parent={drawerContainer} open={isOpen && !disabled} anchor="bottom" onClose={close}>
         {showCustomSettings ? (
           <CustomGasSettingsForm
+            nativeToken={nativeToken}
             onCancel={handleCancelCustomSettings}
             onConfirm={handleSetCustomSettings}
             customSettings={gasSettingsByPriority.custom as EthGasSettingsEip1559} // TODO handle other type
             txDetails={txDetails}
+            {...props}
           />
         ) : (
           <FeeOptionsSelectForm
             gasSettingsByPriority={gasSettingsByPriority}
+            nativeToken={nativeToken}
             priority={priority}
             txDetails={txDetails}
             onChange={handleSelect}

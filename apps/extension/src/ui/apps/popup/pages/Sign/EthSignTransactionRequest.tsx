@@ -3,6 +3,7 @@ import { BalanceFormatter } from "@core/domains/balances"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { EvmNativeToken } from "@talismn/balances-evm-native"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
@@ -199,6 +200,7 @@ export const EthSignTransactionRequest = () => {
                   </div>
                   <div>
                     <EthFeeSelect
+                      nativeToken={nativeToken as EvmNativeToken}
                       disabled={isPayloadLocked}
                       gasSettingsByPriority={gasSettingsByPriority}
                       setCustomSettings={setCustomSettings}
