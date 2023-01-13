@@ -5,6 +5,7 @@ import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { IconButton } from "@talisman/components/IconButton"
 import { notify } from "@talisman/components/Notifications"
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertTriangleIcon, ArrowRightIcon, IconAlert, InfoIcon } from "@talisman/theme/icons"
 import { BalanceFormatter } from "@talismn/balances"
 import { EvmNativeToken } from "@talismn/balances-evm-native"
@@ -257,7 +258,13 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
       </div>
       <div className="grid grid-cols-2 gap-8 gap-y-14">
         <Indicator label="Base Fee">
-          {baseFee} GWEI <InfoIcon className="inline align-sub text-base" />
+          {baseFee} GWEI{" "}
+          <WithTooltip
+            className="inline-flex h-[1.5rem] flex-col justify-center align-text-top"
+            tooltip="The base fee is set by the network and changes depending on network usage"
+          >
+            <InfoIcon />
+          </WithTooltip>
         </Indicator>
         <Indicator label="Base Fee Trend">
           <NetworkUsage baseFeeTrend={txDetails.baseFeeTrend} className="w-full justify-between" />
@@ -266,7 +273,10 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
           noErrorRow
           label={
             <span className="text-sm">
-              Max Base Fee <InfoIcon className="inline align-text-top" />
+              Max Base Fee{" "}
+              <WithTooltip tooltip="The maximum base fee you are willing to pay to have this transaction confirmed">
+                <InfoIcon className="inline align-text-top" />
+              </WithTooltip>
             </span>
           }
         >
@@ -282,7 +292,10 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
           noErrorRow
           label={
             <span className="text-sm">
-              Max Priority Fee <InfoIcon className="inline align-text-top" />
+              Max Priority Fee{" "}
+              <WithTooltip tooltip="This fee is paid directly to miners to incentivise them to include your transaction in a block. The higher the Max Priority Fee, the faster your transaction will be confirmed">
+                <InfoIcon className="inline align-text-top" />
+              </WithTooltip>
             </span>
           }
         >
@@ -301,7 +314,10 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
         className="w-full"
         label={
           <span className="text-sm">
-            Gas Limit <InfoIcon className="inline align-text-top" />
+            Gas Limit{" "}
+            <WithTooltip tooltip="The maximum amount of gas this transaction is allowed to consume ">
+              <InfoIcon className="inline align-text-top" />
+            </WithTooltip>
           </span>
         }
       >
@@ -316,7 +332,10 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
 
       <div className="border-grey-700 text-body flex h-[5.2rem] w-full justify-between rounded-sm border px-8 font-bold">
         <div>
-          Total Max Fee <InfoIcon className="inline-block align-text-top" />
+          Total Max Fee{" "}
+          <WithTooltip tooltip="The total maximum gas fee you are willing to pay for this transaction : (Max Base Fee + Max Priority Fee) * Gas Limit">
+            <InfoIcon className="inline-block align-text-top" />
+          </WithTooltip>
         </div>
         <div>
           {totalMaxFee ? (

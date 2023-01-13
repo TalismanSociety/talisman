@@ -4,8 +4,9 @@ import {
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ChevronRightIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon, InfoIcon } from "@talisman/theme/icons"
 import { formatEtherValue } from "@talisman/util/formatEthValue"
 import { BalanceFormatter } from "@talismn/balances"
 import { EvmNativeToken } from "@talismn/balances-evm-native"
@@ -122,7 +123,12 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
       <div className="w-full">
         <div className="flex w-full justify-between">
           <div>Priority</div>
-          <div>Max transaction fee</div>
+          <div>
+            Max Transaction Fee{" "}
+            <WithTooltip tooltip=" This is the absolute maximum fee you could pay for this transaction. You usually pay well below this fee, depending on network usage and stability.">
+              <InfoIcon className="inline align-text-top" />
+            </WithTooltip>
+          </div>
         </div>
         <PriorityOption
           gasSettingsByPriority={gasSettingsByPriority}

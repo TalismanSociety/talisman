@@ -6,7 +6,7 @@ import BigNumber from "bignumber.js"
 import { FC, useMemo } from "react"
 import CountUp from "react-countup"
 
-type TokensProps = {
+export type TokensProps = {
   amount?: string | number | null | BigNumber
   symbol?: string | null
   decimals?: number | null

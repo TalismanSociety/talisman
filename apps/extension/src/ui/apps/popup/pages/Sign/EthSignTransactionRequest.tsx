@@ -1,19 +1,18 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
-import { BalanceFormatter } from "@core/domains/balances"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { InfoIcon } from "@talisman/theme/icons"
 import { EvmNativeToken } from "@talismn/balances-evm-native"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
-import Fiat from "@ui/domains/Asset/Fiat"
-import Tokens from "@ui/domains/Asset/Tokens"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { EthSignBody } from "@ui/domains/Ethereum/Sign/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Ethereum/Sign/shared"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
+import { useBalance } from "@ui/hooks/useBalance"
 import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { BigNumber } from "ethers"
 import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
@@ -97,6 +96,56 @@ const SignContainer = styled(Container)`
   }
 `
 
+const FeeTooltip = ({
+  account,
+  estimatedFee,
+  maxFee,
+  tokenId,
+}: {
+  account?: string
+  estimatedFee?: string | bigint
+  maxFee?: string | bigint
+  tokenId?: string
+}) => {
+  const balance = useBalance(account as string, tokenId as string)
+
+  if (!estimatedFee && !maxFee && !balance) return null
+  return (
+    <div className="flex flex-col gap-2 whitespace-nowrap text-sm">
+      {!!estimatedFee && (
+        <div className="flex w-full justify-between gap-8">
+          <div>Estimated Fee:</div>
+          <div>
+            <TokensAndFiat tokenId={tokenId} planck={estimatedFee} noTooltip noCountUp />
+          </div>
+        </div>
+      )}
+      {!!maxFee && (
+        <div className="flex w-full justify-between gap-8">
+          <div>Max Fee:</div>
+          <div>
+            <TokensAndFiat tokenId={tokenId} planck={maxFee} noTooltip noCountUp />
+          </div>
+        </div>
+      )}
+      {!!balance && (
+        <div className="flex w-full justify-between gap-8">
+          <div>Balance:</div>
+          <div>
+            <TokensAndFiat
+              tokenId={tokenId}
+              planck={balance.free.planck}
+              noTooltip
+              noCountUp
+              isBalance
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export const EthSignTransactionRequest = () => {
   const {
     url,
@@ -134,28 +183,15 @@ export const EthSignTransactionRequest = () => {
   }, [status])
 
   const nativeToken = useToken(network?.nativeToken?.id)
-  const nativeTokenRates = useTokenRates(nativeToken?.id)
 
   // gas settings must be locked as soon as payload is sent to ledger
   const handleSendToLedger = useCallback(() => {
     setIsPayloadLocked(true)
   }, [setIsPayloadLocked])
 
-  const estimatedFee = useMemo(
-    () =>
-      txDetails && nativeToken
-        ? new BalanceFormatter(
-            BigNumber.from(txDetails?.estimatedFee).toString(),
-            nativeToken?.decimals,
-            nativeTokenRates
-          )
-        : null,
-    [nativeToken, nativeTokenRates, txDetails]
-  )
-
   const isReadyToDisplay = useMemo(
-    () => Boolean(transactionInfo && (estimatedFee || errorMessage)),
-    [transactionInfo, estimatedFee, errorMessage]
+    () => Boolean(transactionInfo && (txDetails?.estimatedFee || errorMessage)),
+    [transactionInfo, txDetails?.estimatedFee, errorMessage]
   )
 
   return (
@@ -175,27 +211,32 @@ export const EthSignTransactionRequest = () => {
         </div>
         {isReadyToDisplay && (
           <Suspense fallback={null}>
-            {nativeToken && transaction && txDetails && estimatedFee ? (
+            {nativeToken && transaction && txDetails?.estimatedFee ? (
               <div className="gasInfo mt-8">
                 <div>
-                  <div>Estimated Fee</div>
+                  <div>
+                    Estimated Fee{" "}
+                    <WithTooltip
+                      tooltip={
+                        <FeeTooltip
+                          account={account?.address}
+                          tokenId={network?.nativeToken?.id}
+                          estimatedFee={txDetails.estimatedFee.toString()}
+                          maxFee={txDetails.maxFee.toString()}
+                        />
+                      }
+                    >
+                      <InfoIcon className="inline align-text-top" />
+                    </WithTooltip>
+                  </div>
                   <div>{transaction?.type === 2 && "Priority"}</div>
                 </div>
                 <div>
                   <div>
-                    <Tokens
-                      amount={estimatedFee.tokens}
-                      decimals={nativeToken.decimals}
-                      symbol={nativeToken.symbol}
-                      noCountUp
+                    <TokensAndFiat
+                      tokenId={network?.nativeToken?.id}
+                      planck={txDetails?.estimatedFee?.toString()}
                     />
-                    {estimatedFee && nativeTokenRates ? (
-                      <>
-                        {" "}
-                        (~
-                        <Fiat amount={estimatedFee.fiat("usd")} noCountUp currency="usd" />)
-                      </>
-                    ) : null}
                   </div>
                   <div>
                     <EthFeeSelect
