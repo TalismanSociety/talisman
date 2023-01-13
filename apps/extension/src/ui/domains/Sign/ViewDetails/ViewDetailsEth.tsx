@@ -11,7 +11,7 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
-import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
+import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { BigNumber, BigNumberish } from "ethers"
 import { formatEther, formatUnits } from "ethers/lib/utils"
 import { FC, PropsWithChildren, ReactNode, useCallback, useEffect, useMemo } from "react"
@@ -139,8 +139,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     [nativeToken?.symbol]
   )
 
-  const rates = useTokenRatesForTokens(useMemo(() => [nativeToken], [nativeToken]))
-  const nativeTokenRates = nativeToken && rates[nativeToken.id]
+  const nativeTokenRates = useTokenRates(nativeToken?.id)
 
   useEffect(() => {
     genericEvent("open sign transaction view details", { type: "ethereum" })

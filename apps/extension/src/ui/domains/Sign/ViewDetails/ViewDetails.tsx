@@ -12,7 +12,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { encodeAnyAddress } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
-import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
+import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { FC, useEffect, useMemo } from "react"
 import styled from "styled-components"
 
@@ -80,8 +80,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   const { genericEvent } = useAnalytics()
   const { request, account, chain } = usePolkadotSigningRequest(signingRequest)
   const nativeToken = useToken(chain?.nativeToken?.id)
-  const rates = useTokenRatesForTokens(useMemo(() => [nativeToken], [nativeToken]))
-  const nativeTokenRates = nativeToken && rates[nativeToken.id]
+  const nativeTokenRates = useTokenRates(nativeToken?.id)
 
   const isTransaction = isJsonPayload(request?.payload)
 

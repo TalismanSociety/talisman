@@ -1,7 +1,7 @@
 import { BalanceFormatter } from "@core/domains/balances"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
-import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
+import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { ethers } from "ethers"
 import { FC, useMemo } from "react"
 
@@ -13,8 +13,7 @@ export const EthSignBodyDefault: FC = () => {
   const { network, transactionInfo, request } = useEthSignTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
-  const rates = useTokenRatesForTokens(useMemo(() => [nativeToken], [nativeToken]))
-  const nativeTokenRates = nativeToken && rates[nativeToken.id]
+  const nativeTokenRates = useTokenRates(nativeToken?.id)
 
   const amount = useMemo(() => {
     return nativeToken && transactionInfo?.value?.gt(0)
