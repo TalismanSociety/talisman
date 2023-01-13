@@ -1,4 +1,3 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { breakpoints } from "@talisman/theme/definitions"

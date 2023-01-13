@@ -2,7 +2,7 @@ import { BalanceFormatter } from "@core/domains/balances"
 import { CustomErc20Token } from "@core/domains/tokens/types"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import useToken from "@ui/hooks/useToken"
-import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
+import { useTokenRates } from "@ui/hooks/useTokenRates"
 import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
@@ -44,8 +44,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
       : undefined
   }, [network, tokens, transactionInfo.targetAddress])
 
-  const rates = useTokenRatesForTokens(useMemo(() => [token, nativeToken], [token, nativeToken]))
-  const tokenRates = token && rates[token.id]
+  const tokenRates = useTokenRates(token?.id)
 
   const { amount, symbol } = useMemo(() => {
     const symbol = token?.symbol ?? (transactionInfo.asset.symbol as string)

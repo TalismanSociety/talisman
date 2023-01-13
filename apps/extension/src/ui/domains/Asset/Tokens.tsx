@@ -2,11 +2,12 @@ import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talisman/util/classNames"
 import { MAX_DECIMALS_FORMAT, formatDecimals } from "@talismn/util"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
+import BigNumber from "bignumber.js"
 import { FC, useMemo } from "react"
 import CountUp from "react-countup"
 
 type TokensProps = {
-  amount?: string | number | null
+  amount?: string | number | null | BigNumber
   symbol?: string | null
   decimals?: number | null
   className?: string
@@ -17,13 +18,16 @@ type TokensProps = {
 }
 
 type DisplayValueProps = {
-  amount: string | number
+  amount: string | number | BigNumber
   symbol?: string | null
   noCountUp?: boolean
 }
 
 const DisplayValue: FC<DisplayValueProps> = ({ amount, symbol, noCountUp }) => {
-  const num = Number(amount)
+  const num = useMemo(
+    () => (BigNumber.isBigNumber(amount) ? amount.toNumber() : Number(amount)),
+    [amount]
+  )
 
   const formated = useMemo(() => formatDecimals(num), [num])
 

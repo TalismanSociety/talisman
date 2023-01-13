@@ -5,7 +5,6 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { Skeleton } from "@talisman/components/Skeleton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LoaderIcon, LockIcon } from "@talisman/theme/icons"
-import { planckToTokens } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -51,7 +50,6 @@ const getSkeletonOpacity = (index: number) => {
 
 type AssetRowProps = {
   balances: Balances
-  symbol: string
   locked?: boolean
 }
 
@@ -167,7 +165,7 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
   )
 }
 
-const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
+const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
@@ -176,7 +174,7 @@ const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
     [balances.sorted]
   )
 
-  const { token, summary } = useTokenBalancesSummary(balances, symbol)
+  const { token, summary } = useTokenBalancesSummary(balances)
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
@@ -234,11 +232,7 @@ const AssetRow = ({ balances, symbol, locked }: AssetRowProps) => {
         </Box>
         <Box flex column textalign="right" gap={0.4}>
           <Box fontsize="small" fg={locked ? "mid" : "foreground"} bold noWrap>
-            <Tokens
-              amount={planckToTokens(tokens.toString(), token.decimals)}
-              symbol={token?.symbol}
-              isBalance
-            />
+            <Tokens amount={tokens} symbol={token?.symbol} isBalance />
             {locked ? <RowLockIcon className="lock inline align-baseline" /> : null}
           </Box>
           <Box fg="mid" fontsize="xsmall" lineheight="normal">
@@ -331,7 +325,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
       <div>
         <BalancesGroup label="Available" fiatAmount={totalAvailable}>
           {available.map(([symbol, b]) => (
-            <AssetRow key={symbol} balances={b} symbol={symbol} />
+            <AssetRow key={symbol} balances={b} />
           ))}
           {[...Array(skeletons).keys()].map((i) => (
             <AssetRowSkeleton key={i} className={getSkeletonOpacity(i)} />
@@ -362,7 +356,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
           fiatAmount={totalLocked}
         >
           {locked.map(([symbol, b]) => (
-            <AssetRow key={symbol} balances={b} symbol={symbol} locked />
+            <AssetRow key={symbol} balances={b} locked />
           ))}
           {!locked.length && (
             <Box

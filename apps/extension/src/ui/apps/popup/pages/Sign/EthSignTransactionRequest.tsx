@@ -12,7 +12,7 @@ import { EthSignBody } from "@ui/domains/Ethereum/Sign/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Ethereum/Sign/shared"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
-import { useTokenRatesForTokens } from "@ui/hooks/useTokenRatesForTokens"
+import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { BigNumber } from "ethers"
 import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
@@ -134,8 +134,7 @@ export const EthSignTransactionRequest = () => {
   }, [status])
 
   const nativeToken = useToken(network?.nativeToken?.id)
-  const rates = useTokenRatesForTokens(useMemo(() => [nativeToken], [nativeToken]))
-  const nativeTokenRates = nativeToken && rates[nativeToken.id]
+  const nativeTokenRates = useTokenRates(nativeToken?.id)
 
   // gas settings must be locked as soon as payload is sent to ledger
   const handleSendToLedger = useCallback(() => {

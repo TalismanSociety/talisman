@@ -299,6 +299,7 @@ export const SubNativeModule: BalanceModule<
   },
 
   async subscribeBalances(chainConnectors, chaindataProvider, addressesByToken, callback) {
+    const chains = await chaindataProvider.chains()
     const tokens = await chaindataProvider.tokens()
     const subscriptions = Object.entries(addressesByToken)
       .map(async ([tokenId, addresses]) => {
@@ -316,6 +317,9 @@ export const SubNativeModule: BalanceModule<
 
         const chainId = token.chain?.id
         if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
+
+        const chain = chains[chainId]
+        if (!chain) throw new Error(`Chain ${chainId} for token ${tokenId} not found`)
 
         const typeRegistry = new TypeRegistry()
         if (token.metadata !== undefined && token.metadata !== null && token.metadataVersion >= 14)
@@ -357,6 +361,7 @@ export const SubNativeModule: BalanceModule<
               formatRpcResult(
                 tokenId,
                 chainId,
+                chain.account,
                 accountInfoTypeDef,
                 typeRegistry,
                 addressReferences,
@@ -379,6 +384,7 @@ export const SubNativeModule: BalanceModule<
   },
 
   async fetchBalances(chainConnectors, chaindataProvider, addressesByToken) {
+    const chains = await chaindataProvider.chains()
     const tokens = await chaindataProvider.tokens()
 
     const balances = (
@@ -398,6 +404,9 @@ export const SubNativeModule: BalanceModule<
 
           const chainId = token.chain?.id
           if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
+
+          const chain = chains[chainId]
+          if (!chain) throw new Error(`Chain ${chainId} for token ${tokenId} not found`)
 
           const typeRegistry = new TypeRegistry()
           if (
@@ -434,6 +443,7 @@ export const SubNativeModule: BalanceModule<
           return formatRpcResult(
             tokenId,
             chainId,
+            chain.account,
             accountInfoTypeDef,
             typeRegistry,
             addressReferences,
@@ -502,6 +512,7 @@ function buildAddressReferences(addresses: string[]): Array<[string, string]> {
 function formatRpcResult(
   tokenId: TokenId,
   chainId: ChainId,
+  chainAccountFormat: string | null,
   accountInfoTypeDef: string | undefined,
   typeRegistry: TypeRegistry,
   addressReferences: Array<[string, string]>,
@@ -558,8 +569,11 @@ function formatRpcResult(
       let miscFrozen = (balance.data?.miscFrozen?.toBigInt() || BigInt("0")).toString()
       let feeFrozen = (balance.data?.feeFrozen?.toBigInt() || BigInt("0")).toString()
 
-      // we use the evm-native module to fetch native token balances for ethereum addresses
-      if (isEthereumAddress(address)) free = reserved = miscFrozen = feeFrozen = "0"
+      // we use the evm-native module to fetch native token balances for ethereum addresses on ethereum networks
+      // but on moonbeam, moonriver and other chains which use ethereum addresses instead of substrate addresses,
+      // we use both this module and the evm-native module
+      if (isEthereumAddress(address) && chainAccountFormat !== "secp256k1")
+        free = reserved = miscFrozen = feeFrozen = "0"
 
       return new Balance({
         source: "substrate-native",

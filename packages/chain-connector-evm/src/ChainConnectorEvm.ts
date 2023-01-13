@@ -33,6 +33,12 @@ export class ChainConnectorEvm {
     Promise<ethers.providers.JsonRpcProvider | ethers.providers.JsonRpcBatchProvider | null>
   > = new Map()
 
+  // cache for rpc urls per network
+  //
+  // always initialized with the order defined in the database
+  // when an error is raised, push the current rpc to the back of the list
+  #rpcUrlsCache: Map<EvmNetworkId | string, string[]> = new Map()
+
   constructor(chaindataEvmNetworkProvider: ChaindataEvmNetworkProvider) {
     this.#chaindataEvmNetworkProvider = chaindataEvmNetworkProvider
   }
@@ -63,11 +69,25 @@ export class ChainConnectorEvm {
     return (await this.#providerCache.get(cacheKey)) ?? null
   }
 
-  clearRpcProvidersCache(evmNetworkId?: EvmNetworkId) {
+  clearRpcProvidersCache(evmNetworkId?: EvmNetworkId, clearRpcUrlsCache = true) {
     if (evmNetworkId) {
       this.#providerCache.delete(getEvmNetworkProviderCacheKey(evmNetworkId, false))
       this.#providerCache.delete(getEvmNetworkProviderCacheKey(evmNetworkId, true))
-    } else this.#providerCache.clear()
+      if (clearRpcUrlsCache) this.#rpcUrlsCache.delete(evmNetworkId)
+    } else {
+      this.#providerCache.clear()
+      if (clearRpcUrlsCache) this.#rpcUrlsCache.clear()
+    }
+  }
+
+  private rotateRpcUrls(evmNetworkId: EvmNetworkId) {
+    const prevUrls = this.#rpcUrlsCache.get(evmNetworkId) as string[]
+    if (!prevUrls || prevUrls.length < 2) return prevUrls
+
+    const nextUrls = prevUrls.slice(1).concat(prevUrls[0])
+    this.#rpcUrlsCache.set(evmNetworkId, nextUrls)
+
+    return nextUrls
   }
 
   private async newProviderFromEvmNetwork(
@@ -76,14 +96,23 @@ export class ChainConnectorEvm {
   ): Promise<ethers.providers.JsonRpcProvider | null> {
     if (!Array.isArray(evmNetwork.rpcs)) return null
 
-    const urls = evmNetwork.rpcs.map(({ url }) => url).map(resolveRpcUrl)
     const network = {
       name: evmNetwork.name ?? "unknown network",
       chainId: parseInt(evmNetwork.id, 10),
     }
 
-    const url = await getHealthyRpc(urls, network)
+    // initialize cache for rpc urls if empty
+    if (!this.#rpcUrlsCache.has(evmNetwork.id)) {
+      const rpcUrls = evmNetwork.rpcs.map(({ url }) => url).map(resolveRpcUrl)
+      this.#rpcUrlsCache.set(evmNetwork.id, rpcUrls)
+    }
+    let rpcUrls = this.#rpcUrlsCache.get(evmNetwork.id) as string[]
+
+    const url = await getHealthyRpc(rpcUrls, network)
     if (!url) return null
+
+    // if healthy rpc url isn't the first one, rotate rpc urls cache to reflect that
+    while (rpcUrls.includes(url) && rpcUrls[0] !== url) rpcUrls = this.rotateRpcUrls(evmNetwork.id)
 
     const urlCacheKey = getUrlProviderCacheKey(url, batch)
     if (!this.#providerCache.has(urlCacheKey)) {
@@ -102,13 +131,12 @@ export class ChainConnectorEvm {
           ? new BatchRpcProvider(connection, network)
           : new StandardRpcProvider(connection, network)
 
-      // clear cache to force logic going through getHealthyRpc again on next call
-      // this error is thrown only on chainId mismatch or blocking errors such as HTTP 429
-      // but it won't trigger if RPC can't be reached anymore
+      // in case an error is thrown, rotate rpc urls cache
+      // also clear provider cache to force logic going through getHealthyRpc again on next call
       provider.on("error", (...args: unknown[]) => {
         log.error("EVM RPC error %s (%s)", url, batch ? "batch" : "standard", args)
-        this.#providerCache.delete(getEvmNetworkProviderCacheKey(evmNetwork.id, false))
-        this.#providerCache.delete(getEvmNetworkProviderCacheKey(evmNetwork.id, true))
+        this.rotateRpcUrls(evmNetwork.id)
+        this.clearRpcProvidersCache(evmNetwork.id, false)
       })
 
       this.#providerCache.set(urlCacheKey, Promise.resolve(provider))

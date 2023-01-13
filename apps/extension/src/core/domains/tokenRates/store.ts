@@ -6,7 +6,7 @@ import { Port } from "@core/types/base"
 import { TokenList } from "@talismn/chaindata-provider"
 import { fetchTokenRates } from "@talismn/token-rates"
 import { Subscription, liveQuery } from "dexie"
-import { debounce } from "lodash"
+import { default as debounce } from "lodash/debounce"
 import { BehaviorSubject } from "rxjs"
 
 const MIN_REFRESH_INTERVAL = 60_000 // 60_000ms = 60s = 1 minute
@@ -83,26 +83,34 @@ export class TokenRatesStore {
     if (now - this.#lastUpdateAt < MIN_REFRESH_INTERVAL && this.#lastUpdateTokenIds === strTokenIds)
       return
 
-    const tokenRates = await fetchTokenRates(tokens)
-
-    await db.transaction("rw", db.tokenRates, async (tx) => {
-      // override all tokenRates
-      await db.tokenRates.bulkPut(
-        Object.entries(tokenRates).map(([tokenId, tokenRates]) => ({
-          tokenId,
-          rates: tokenRates,
-        }))
-      )
-
-      // delete tokenRates for tokens which no longer exist
-      const tokenIds = await db.tokenRates.toCollection().primaryKeys()
-      if (tokenIds.length)
-        await db.tokenRates.bulkDelete(tokenIds.filter((tokenId) => tokens[tokenId] === undefined))
-    })
-
-    // update lastHydratedAt
+    // update lastUpdateAt & lastUpdateTokenIds before fetching to prevent api call bursts
     this.#lastUpdateAt = now
-    this.#lastUpdateTokenIds === strTokenIds
+    this.#lastUpdateTokenIds = strTokenIds
+
+    try {
+      const tokenRates = await fetchTokenRates(tokens)
+
+      await db.transaction("rw", db.tokenRates, async (tx) => {
+        // override all tokenRates
+        await db.tokenRates.bulkPut(
+          Object.entries(tokenRates).map(([tokenId, tokenRates]) => ({
+            tokenId,
+            rates: tokenRates,
+          }))
+        )
+
+        // delete tokenRates for tokens which no longer exist
+        const tokenIds = await db.tokenRates.toCollection().primaryKeys()
+        if (tokenIds.length)
+          await db.tokenRates.bulkDelete(
+            tokenIds.filter((tokenId) => tokens[tokenId] === undefined)
+          )
+      })
+    } catch (err) {
+      // reset lastUpdateTokenIds to retry on next call
+      this.#lastUpdateTokenIds = ""
+      throw err
+    }
   }
 
   public subscribe(id: string, port: Port): void {

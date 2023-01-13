@@ -1,15 +1,15 @@
 import { Token } from "@core/domains/tokens/types"
 import { Box } from "@talisman/components/Box"
 import { LockIcon } from "@talisman/theme/icons"
-import { planckToTokens } from "@talismn/util"
-import { ReactNode, useMemo } from "react"
+import BigNumber from "bignumber.js"
+import { ReactNode } from "react"
 
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
 
 type StatisticsProps = {
   title: ReactNode
-  tokens?: bigint
+  tokens?: BigNumber
   fiat: number | null
   className?: string
   token?: Token
@@ -22,7 +22,7 @@ const TokensAndFiat = ({
   fiat,
   token,
 }: {
-  tokenAmount?: string
+  tokenAmount?: BigNumber
   fiat: number | null
   token?: Token
 }) => (
@@ -55,12 +55,6 @@ export const Statistics = ({
   locked,
   showTokens,
 }: StatisticsProps) => {
-  const tokenAmount = useMemo(() => {
-    return token && tokens !== undefined
-      ? planckToTokens(tokens?.toString(), token.decimals)
-      : undefined
-  }, [token, tokens])
-
   return (
     <Box
       flex
@@ -78,7 +72,7 @@ export const Statistics = ({
         {title}
       </Box>
       {showTokens ? (
-        <TokensAndFiat tokenAmount={tokenAmount} fiat={fiat} token={token} />
+        <TokensAndFiat tokenAmount={tokens} fiat={fiat} token={token} />
       ) : (
         <FiatOnly fiat={fiat} />
       )}

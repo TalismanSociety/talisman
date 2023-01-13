@@ -4,7 +4,6 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { CopyIcon, CreditCardIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
-import { planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -31,7 +30,6 @@ const FetchingIndicator = styled(LoaderIcon)`
 type AssetRowProps = {
   chainId: ChainId | EvmNetworkId
   balances: Balances
-  symbol: string
 }
 
 const ChainTokenBlock = styled(Box)`
@@ -45,12 +43,12 @@ const ChainTokenBlock = styled(Box)`
   }
 `
 
-const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
-  const { chainOrNetwork, summary, token, detailRows, evmNetwork, chain, isFetching, networkType } =
-    useChainTokenBalances({ chainId, balances, symbol })
+const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
+  const { chainOrNetwork, summary, symbol, detailRows, chain, isFetching, networkType } =
+    useChainTokenBalances({ chainId, balances })
 
   // wait for data to load
-  if (!chainOrNetwork || !summary || !token || balances.count === 0) return null
+  if (!chainOrNetwork || !summary || !symbol || balances.count === 0) return null
 
   return (
     <ChainTokenBlock borderradius fontsize="small" fg="mid">
@@ -69,7 +67,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
           <Box flex justify="space-between" bold fg="foreground">
             <Box flex align="center" gap={0.8}>
               {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
-              <SendFundsButton symbol={token.symbol} networkId={chainOrNetwork.id} />
+              <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
               {isFetching && <FetchingIndicator data-spin />}
             </Box>
           </Box>
@@ -79,7 +77,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
         </Box>
       </Box>
       {detailRows
-        .filter((row) => row.tokens > 0)
+        .filter((row) => row.tokens.gt(0))
         .map((row, i, rows) => (
           <Box
             flex
@@ -102,11 +100,7 @@ const ChainTokenBalances = ({ chainId, balances, symbol }: AssetRowProps) => {
             </Box>
             <Box flex column justify="center" gap={0.4} textalign="right" noWrap>
               <Box bold fg={row.locked ? "mid" : "foreground"}>
-                <Tokens
-                  amount={planckToTokens(row.tokens.toString(), token.decimals)}
-                  symbol={token?.symbol}
-                  isBalance
-                />
+                <Tokens amount={row.tokens} symbol={symbol} isBalance />
                 {row.locked ? (
                   <>
                     {" "}
@@ -180,7 +174,7 @@ export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
     <FadeIn>
       <Box flex column gap={1.6}>
         {rows.map(([chainId, bal]) => (
-          <ChainTokenBalances key={chainId} chainId={chainId} symbol={symbol} balances={bal} />
+          <ChainTokenBalances key={chainId} chainId={chainId} balances={bal} />
         ))}
       </Box>
     </FadeIn>
