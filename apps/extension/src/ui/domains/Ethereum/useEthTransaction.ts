@@ -1,9 +1,8 @@
 import {
-  getEip1559TotalFees,
   getGasLimit,
   getGasSettingsEip1559,
   getLegacyTotalFees,
-  getMaxFeePerGas,
+  getTotalFeesFromGasSettings,
   prepareTransaction,
 } from "@core/domains/ethereum/helpers"
 import {
@@ -401,9 +400,17 @@ export const useEthTransaction = (
     if (!lockTransaction) setTransaction(liveUpdatingTransaction)
   }, [liveUpdatingTransaction, lockTransaction])
 
-  // TODO replace this wierd object with something else
+  // TODO replace this wierd object name with something else... gasInfo ?
   const txDetails: EthTransactionDetails | undefined = useMemo(() => {
-    if (!gasPrice || !estimatedGas || !transaction) return undefined
+    if (!gasPrice || !estimatedGas || !transaction || !gasSettings) return undefined
+
+    if (gasSettings?.type === 2 && !baseFeePerGas) return undefined
+
+    const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
+      gasSettings,
+      estimatedGas,
+      baseFeePerGas
+    )
 
     const priorityOptions = feeHistoryAnalysis?.maxPriorityPerGasOptions
     // EIP1559 transactions
@@ -414,43 +421,29 @@ export const useEthTransaction = (
       baseFeePerGas &&
       estimatedGas &&
       transaction.gasLimit
-    ) {
-      const { estimatedFee, maxFee } = getEip1559TotalFees(
-        estimatedGas,
-        transaction.gasLimit,
-        baseFeePerGas,
-        transaction.maxPriorityFeePerGas
-      )
+    )
       return {
         estimatedGas,
         gasPrice,
         baseFeePerGas,
-        estimatedFee,
-        maxFee,
-        priorityOptions,
+        estimatedFee, // TODO remove ?
+        maxFee, // TODO remove ?
+        priorityOptions, // TODO remove ?
         baseFeeTrend: feeHistoryAnalysis?.baseFeeTrend,
-      } as EthTransactionDetails
-    }
+      }
 
     // Legacy transactions
-    if (transaction.type === 0 && transaction.gasPrice && transaction.gasLimit && estimatedGas) {
-      const { estimatedFee, maxFee } = getLegacyTotalFees(
-        estimatedGas,
-        transaction.gasLimit,
-        transaction.gasPrice
-      )
+    if (transaction.type === 0 && transaction.gasPrice && transaction.gasLimit && estimatedGas)
       return {
         estimatedGas,
         gasPrice,
-        // baseFeePerGas: baseFeePerGas ?? undefined, //TODO check that we can remove this
         estimatedFee, // yeet
         maxFee, // yeet
         priorityOptions,
       }
-    }
 
     return undefined
-  }, [baseFeePerGas, estimatedGas, feeHistoryAnalysis, gasPrice, transaction])
+  }, [baseFeePerGas, estimatedGas, feeHistoryAnalysis, gasPrice, gasSettings, transaction])
 
   const error = useMemo(
     () =>

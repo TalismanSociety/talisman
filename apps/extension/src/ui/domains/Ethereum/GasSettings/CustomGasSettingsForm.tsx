@@ -1,5 +1,5 @@
-import { getEip1559TotalFees, getMaxFeePerGas } from "@core/domains/ethereum/helpers"
-import { EthGasSettings, EthGasSettingsEip1559 } from "@core/domains/ethereum/types"
+import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
+import { EthGasSettingsEip1559 } from "@core/domains/ethereum/types"
 import { EthTransactionDetails } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"

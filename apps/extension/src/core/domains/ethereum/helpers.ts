@@ -117,6 +117,7 @@ export const getGasLimit = (
   return gasLimit
 }
 
+// TODO delete too
 export const getLegacyTotalFees = (
   estimatedGas: BigNumberish,
   gasLimit: BigNumberish,
@@ -158,6 +159,7 @@ export const getGasSettingsEip1559 = (
   gasLimit,
 })
 
+// TODO delete (just need to replace test to use getTotalFeesFromGasSettings) ?
 export const getEip1559TotalFees = (
   estimatedGas: BigNumberish,
   gasLimit: BigNumberish,
@@ -173,6 +175,30 @@ export const getEip1559TotalFees = (
   const maxFee = BigNumber.from(gasLimit).mul(maxFeePerGas)
 
   return { estimatedFee, maxFee }
+}
+
+export const getTotalFeesFromGasSettings = (
+  gasSettings: EthGasSettings,
+  estimatedGas: BigNumberish,
+  baseFeePerGas?: BigNumberish | null
+) => {
+  if (gasSettings.type === 2) {
+    if (baseFeePerGas === undefined)
+      throw new Error("baseFeePerGas argument is required for type 2 fee computation")
+    return {
+      estimatedFee: BigNumber.from(baseFeePerGas)
+        .add(gasSettings.maxPriorityFeePerGas)
+        .mul(estimatedGas),
+      maxFee: BigNumber.from(gasSettings.maxFeePerGas)
+        .add(gasSettings.maxPriorityFeePerGas)
+        .mul(gasSettings.gasLimit),
+    }
+  } else {
+    return {
+      estimatedFee: BigNumber.from(gasSettings.gasPrice).mul(estimatedGas),
+      maxFee: BigNumber.from(gasSettings.gasPrice).mul(gasSettings.gasLimit),
+    }
+  }
 }
 
 export const prepareTransaction = (
