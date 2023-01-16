@@ -123,8 +123,10 @@ export const getLegacyTotalFees = (
   gasLimit: BigNumberish,
   gasPrice: BigNumberish
 ) => {
-  const estimatedFee = BigNumber.from(estimatedGas).mul(gasPrice)
-  const maxFee = BigNumber.from(gasLimit).mul(gasPrice)
+  const estimatedFee = BigNumber.from(gasPrice).mul(
+    BigNumber.from(estimatedGas).lt(gasLimit) ? estimatedGas : gasLimit
+  )
+  const maxFee = BigNumber.from(gasPrice).mul(gasLimit)
 
   return { estimatedFee, maxFee }
 }
@@ -168,7 +170,9 @@ export const getEip1559TotalFees = (
 ) => {
   // for the estimate, assume gas will stay the same
   const estimatedFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 0)
-  const estimatedFee = BigNumber.from(estimatedGas).mul(estimatedFeePerGas)
+  const estimatedFee = BigNumber.from(
+    BigNumber.from(estimatedGas).lt(gasLimit) ? estimatedGas : gasLimit
+  ).mul(estimatedFeePerGas)
 
   // max cost if transaction waits 8 blocks and consumes the whole gasLimit
   const maxFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 8)
@@ -188,14 +192,20 @@ export const getTotalFeesFromGasSettings = (
     return {
       estimatedFee: BigNumber.from(baseFeePerGas)
         .add(gasSettings.maxPriorityFeePerGas)
-        .mul(estimatedGas),
+        .mul(
+          BigNumber.from(estimatedGas).lt(gasSettings.gasLimit)
+            ? estimatedGas
+            : gasSettings.gasLimit
+        ),
       maxFee: BigNumber.from(gasSettings.maxFeePerGas)
         .add(gasSettings.maxPriorityFeePerGas)
         .mul(gasSettings.gasLimit),
     }
   } else {
     return {
-      estimatedFee: BigNumber.from(gasSettings.gasPrice).mul(estimatedGas),
+      estimatedFee: BigNumber.from(gasSettings.gasPrice).mul(
+        BigNumber.from(estimatedGas).lt(gasSettings.gasLimit) ? estimatedGas : gasSettings.gasLimit
+      ),
       maxFee: BigNumber.from(gasSettings.gasPrice).mul(gasSettings.gasLimit),
     }
   }
