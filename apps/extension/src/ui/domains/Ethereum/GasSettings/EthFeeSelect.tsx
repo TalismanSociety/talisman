@@ -94,6 +94,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
     setShowCustomSettings(false)
   }, [])
 
+  // DEV
   // useEffect(() => {
   //   setShowCustomSettings(true)
   //   open()
@@ -114,7 +115,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
             nativeToken={nativeToken}
             onCancel={handleCancelCustomSettings}
             onConfirm={handleSetCustomSettings}
-            customSettings={gasSettingsByPriority.custom as EthGasSettingsEip1559} // TODO handle other type
+            gasSettingsByPriority={gasSettingsByPriority}
             txDetails={txDetails}
             {...props}
           />

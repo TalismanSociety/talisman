@@ -1,6 +1,6 @@
 import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
 import { EthGasSettingsEip1559 } from "@core/domains/ethereum/types"
-import { EthTransactionDetails } from "@core/domains/signing/types"
+import { EthTransactionDetails, GasSettingsByPriority } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { IconButton } from "@talisman/components/IconButton"
@@ -65,7 +65,7 @@ const MessageRow = ({ type, message }: { type: "error" | "warning"; message: str
 type CustomGasSettingsFormProps = {
   nativeToken: EvmNativeToken
   txDetails: EthTransactionDetails
-  customSettings: EthGasSettingsEip1559
+  gasSettingsByPriority: GasSettingsByPriority
   onConfirm: (gasSettings: EthGasSettingsEip1559) => void
   onCancel: () => void
 }
@@ -90,11 +90,19 @@ const schema = yup
 
 export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
   nativeToken,
-  customSettings,
+  gasSettingsByPriority,
   onCancel,
   txDetails,
   onConfirm,
 }) => {
+  const { customSettings, highSettings } = useMemo(
+    () => ({
+      customSettings: gasSettingsByPriority.custom as EthGasSettingsEip1559,
+      highSettings: gasSettingsByPriority.high as EthGasSettingsEip1559,
+    }),
+    [gasSettingsByPriority]
+  )
+
   const baseFee = useMemo(
     // TODO custom formatDecimals that won't use compact mode
     () => formatDecimals(ethers.utils.formatUnits(txDetails.baseFeePerGas as string, "gwei")),
@@ -194,7 +202,7 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
     else if (
       maxPriorityFee &&
       BigNumber.from(ethers.utils.parseUnits(String(maxPriorityFee), "gwei")).gt(
-        txDetails.priorityOptions?.high ?? 0
+        highSettings?.maxPriorityFeePerGas ?? 0
       )
     )
       warningFee = "Max Priority Fee higher than required"
@@ -213,11 +221,11 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
     errors.maxBaseFee,
     errors.maxPriorityFee,
     gasLimit,
+    highSettings?.maxPriorityFeePerGas,
     maxBaseFee,
     maxPriorityFee,
     txDetails.baseFeePerGas,
     txDetails.estimatedGas,
-    txDetails.priorityOptions?.high,
   ])
 
   const submit = useCallback(

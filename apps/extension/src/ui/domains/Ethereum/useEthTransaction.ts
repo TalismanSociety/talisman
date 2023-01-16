@@ -302,7 +302,11 @@ const usePerPriorityGasSettings = ({
           ? customSettings
           : suggestedSettings?.type === 2
           ? suggestedSettings
-          : low
+          : {
+              ...low,
+              // if network is idle, it makes sense to use baseFee as maxFee
+              maxFeePerGas: feeHistoryAnalysis.isBaseFeeIdle ? baseFeePerGas : low.maxFeePerGas,
+            }
 
       return {
         low,
@@ -404,6 +408,7 @@ export const useEthTransaction = (
   const txDetails: EthTransactionDetails | undefined = useMemo(() => {
     if (!gasPrice || !estimatedGas || !transaction || !gasSettings) return undefined
 
+    // if type 2 transaction, wait for baseFee to be available
     if (gasSettings?.type === 2 && !baseFeePerGas) return undefined
 
     const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
@@ -412,37 +417,14 @@ export const useEthTransaction = (
       baseFeePerGas
     )
 
-    const priorityOptions = feeHistoryAnalysis?.maxPriorityPerGasOptions
-    // EIP1559 transactions
-    if (
-      transaction.type === 2 &&
-      transaction.maxPriorityFeePerGas &&
-      gasPrice &&
-      baseFeePerGas &&
-      estimatedGas &&
-      transaction.gasLimit
-    )
-      return {
-        estimatedGas,
-        gasPrice,
-        baseFeePerGas,
-        estimatedFee, // TODO remove ?
-        maxFee, // TODO remove ?
-        priorityOptions, // TODO remove ?
-        baseFeeTrend: feeHistoryAnalysis?.baseFeeTrend,
-      }
-
-    // Legacy transactions
-    if (transaction.type === 0 && transaction.gasPrice && transaction.gasLimit && estimatedGas)
-      return {
-        estimatedGas,
-        gasPrice,
-        estimatedFee, // yeet
-        maxFee, // yeet
-        priorityOptions,
-      }
-
-    return undefined
+    return {
+      estimatedGas,
+      gasPrice,
+      baseFeePerGas,
+      estimatedFee,
+      maxFee,
+      baseFeeTrend: feeHistoryAnalysis?.baseFeeTrend,
+    }
   }, [baseFeePerGas, estimatedGas, feeHistoryAnalysis, gasPrice, gasSettings, transaction])
 
   const error = useMemo(

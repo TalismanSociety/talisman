@@ -128,7 +128,7 @@ export const EthTransactionFees = ({
 
   return (
     <Box textalign="right" flex column justify="flex-end" gap={0.1}>
-      {txDetails?.priorityOptions && (
+      {txDetails && (
         <Box>
           Priority :{" "}
           <EthFeeSelect
