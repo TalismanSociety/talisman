@@ -17,7 +17,7 @@ import { migrateConnectAllSubstrate } from "./libs/migrations/legacyMigrations"
 initSentry(Sentry)
 
 // eslint-disable-next-line no-void
-void Browser.browserAction.setBadgeBackgroundColor({ color: "#d90000" })
+void Browser.action.setBadgeBackgroundColor({ color: "#d90000" })
 
 // Onboarding and migrations
 Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
