@@ -47,6 +47,10 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
     window.close()
   }, [cancelSignFn, currentRequest])
 
+  const setReady = useCallback(() => {
+    setStatus.ready()
+  }, [setStatus])
+
   return {
     id: currentRequest?.id,
     account: currentRequest?.account,
@@ -58,5 +62,6 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
     message,
     approve,
     reject,
+    setReady,
   }
 }

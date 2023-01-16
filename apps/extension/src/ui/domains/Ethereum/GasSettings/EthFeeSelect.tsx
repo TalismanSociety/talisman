@@ -1,4 +1,4 @@
-import { EthGasSettings, EthGasSettingsEip1559 } from "@core/domains/ethereum/types"
+import { EthGasSettings } from "@core/domains/ethereum/types"
 import {
   EthPriorityOptionName,
   EthTransactionDetails,
@@ -6,15 +6,12 @@ import {
 } from "@core/domains/signing/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { classNames } from "@talisman/util/classNames"
-import { formatEtherValue } from "@talisman/util/formatEthValue"
 import { EvmNativeToken } from "@talismn/balances-evm-native"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { ethers } from "ethers"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useState } from "react"
 import { PillButton } from "talisman-ui"
 
-import { NetworkUsage } from "../NetworkUsage"
 import { FEE_PRIORITY_OPTIONS } from "./common"
 import { CustomGasSettingsForm } from "./CustomGasSettingsForm"
 import { FeeOptionsSelectForm } from "./FeeOptionsForm"
@@ -30,8 +27,8 @@ const OpenFeeSelectTracker = () => {
 }
 
 type EthFeeSelectProps = {
+  tx: ethers.providers.TransactionRequest
   nativeToken: EvmNativeToken
-
   disabled?: boolean
   txDetails: EthTransactionDetails
   networkUsage?: number
@@ -53,6 +50,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
   gasSettingsByPriority,
   disabled,
   setCustomSettings,
+  tx,
   ...props
 }) => {
   const { genericEvent } = useAnalytics()
@@ -117,6 +115,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
             onConfirm={handleSetCustomSettings}
             gasSettingsByPriority={gasSettingsByPriority}
             txDetails={txDetails}
+            tx={tx}
             {...props}
           />
         ) : (

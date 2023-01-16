@@ -8,7 +8,7 @@ import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useSigningRequestById from "@ui/hooks/useSigningRequestById"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
@@ -35,6 +35,7 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
     networkUsage,
     gasSettingsByPriority,
     setCustomSettings,
+    isValid,
   } = useEthTransaction(transactionRequest, "low", isPayloadLocked)
 
   const baseRequest = useAnySigningRequest<EthSignAndSendRequest>({
@@ -79,6 +80,7 @@ const useEthSignTransactionRequestProvider = ({ id }: { id: string }) => {
     setIsPayloadLocked,
     gasSettingsByPriority,
     setCustomSettings,
+    isValid,
   }
 }
 

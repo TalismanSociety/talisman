@@ -128,7 +128,7 @@ export const EthTransactionFees = ({
 
   return (
     <Box textalign="right" flex column justify="flex-end" gap={0.1}>
-      {txDetails && (
+      {tx && txDetails && (
         <Box>
           Priority :{" "}
           <EthFeeSelect
@@ -141,6 +141,7 @@ export const EthTransactionFees = ({
             decimals={nativeToken?.decimals}
             symbol={nativeToken?.symbol}
             txDetails={txDetails}
+            tx={tx}
           />
         </Box>
       )}

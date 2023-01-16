@@ -6,7 +6,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { IconButton } from "@talisman/components/IconButton"
 import { notify } from "@talisman/components/Notifications"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { AlertTriangleIcon, ArrowRightIcon, IconAlert, InfoIcon } from "@talisman/theme/icons"
+import { AlertTriangleIcon, ArrowRightIcon, InfoIcon, LoaderIcon } from "@talisman/theme/icons"
 import { BalanceFormatter } from "@talismn/balances"
 import { EvmNativeToken } from "@talismn/balances-evm-native"
 import { formatDecimals } from "@talismn/util"
@@ -14,12 +14,15 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useDbCache } from "@ui/hooks/useDbCache"
 import { BigNumber, ethers } from "ethers"
-import { FC, PropsWithChildren, useCallback, useEffect, useMemo, useRef } from "react"
+import { FC, PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useDebounce } from "react-use"
 import { Button, FormFieldContainer, FormFieldInputText, classNames } from "talisman-ui"
 import * as yup from "yup"
 
 import { NetworkUsage } from "../NetworkUsage"
+import { useIsValidEthTransaction } from "../Sign/useIsValidEthTransaction"
+import { useEthereumProvider } from "../useEthereumProvider"
 
 type IndicatorProps = PropsWithChildren & {
   className?: string
@@ -63,6 +66,7 @@ const MessageRow = ({ type, message }: { type: "error" | "warning"; message: str
 }
 
 type CustomGasSettingsFormProps = {
+  tx: ethers.providers.TransactionRequest
   nativeToken: EvmNativeToken
   txDetails: EthTransactionDetails
   gasSettingsByPriority: GasSettingsByPriority
@@ -80,15 +84,81 @@ type FormData = {
   gasLimit: number
 }
 
+const gasSettingsFromFormData = (formData: FormData): EthGasSettingsEip1559 => ({
+  type: 2,
+  maxFeePerGas: BigNumber.from(
+    Math.round((formData.maxBaseFee + formData.maxPriorityFee) * Math.pow(10, 9))
+  ),
+  maxPriorityFeePerGas: BigNumber.from(Math.round(formData.maxPriorityFee * Math.pow(10, 9))),
+  gasLimit: formData.gasLimit,
+})
+
 const schema = yup
   .object({
-    maxBaseFee: yup.number().required().min(0),
+    maxBaseFee: yup.number().required().moreThan(0),
     maxPriorityFee: yup.number().required().min(0),
     gasLimit: yup.number().required().integer().min(21000),
   })
   .required()
 
+const useIsValidGasSettings = (
+  tx: ethers.providers.TransactionRequest,
+  maxBaseFee: number,
+  maxPriorityFee: number,
+  gasLimit: number
+) => {
+  const [debouncedFormData, setDebouncedFormData] = useState<FormData>({
+    maxBaseFee,
+    maxPriorityFee,
+    gasLimit,
+  })
+
+  // isLoading buffer for debounce
+  // prevents UI from displaying a new total max fee before it's validated from chain
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    setIsLoading(true)
+  }, [maxBaseFee, maxPriorityFee, gasLimit])
+
+  useDebounce(
+    () => {
+      setDebouncedFormData({ maxBaseFee, maxPriorityFee, gasLimit })
+      setIsLoading(false)
+    },
+    250,
+    [maxBaseFee, maxPriorityFee, gasLimit]
+  )
+
+  const provider = useEthereumProvider(tx.chainId?.toString())
+
+  const txPrepared = useMemo(() => {
+    try {
+      if (!debouncedFormData) return undefined
+      return {
+        ...tx,
+        ...gasSettingsFromFormData(debouncedFormData),
+      } as ethers.providers.TransactionRequest
+    } catch (err) {
+      // any bad input throws here, ignore
+      return undefined
+    }
+  }, [debouncedFormData, tx])
+
+  const { isLoading: isValidationLoading, ...rest } = useIsValidEthTransaction(
+    provider,
+    txPrepared,
+    "custom"
+  )
+
+  return {
+    isLoading: isLoading || isValidationLoading,
+    ...rest,
+  }
+}
+
 export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
+  tx,
   nativeToken,
   gasSettingsByPriority,
   onCancel,
@@ -135,7 +205,7 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
     setValue,
     watch,
     resetField,
-    formState: { errors, isValid, isSubmitting },
+    formState: { errors, isValid: isFormValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
     reValidateMode: "onChange",
@@ -189,7 +259,7 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
         getMaxFeePerGas(txDetails.baseFeePerGas, 0, 20, false)
       )
     )
-      warningFee = "Max Base Fee seems to low for current network conditions"
+      warningFee = "Max Base Fee seems too low for current network conditions"
     // if higher than highest possible fee after 20 blocks
     else if (
       txDetails.baseFeePerGas &&
@@ -198,14 +268,14 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
         getMaxFeePerGas(txDetails.baseFeePerGas, 0, 20)
       )
     )
-      warningFee = "Max Base Fee higher than required"
+      warningFee = "Max Base Fee seems higher than required"
     else if (
       maxPriorityFee &&
       BigNumber.from(ethers.utils.parseUnits(String(maxPriorityFee), "gwei")).gt(
         highSettings?.maxPriorityFeePerGas ?? 0
       )
     )
-      warningFee = "Max Priority Fee higher than required"
+      warningFee = "Max Priority Fee seems higher than required"
 
     if (errors.gasLimit?.type === "min") errorGasLimit = "Gas Limit minimum value is 21000"
     else if (errors.gasLimit) errorGasLimit = "Gas Limit is invalid"
@@ -231,15 +301,8 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
   const submit = useCallback(
     async (formData: FormData) => {
       try {
-        onConfirm({
-          type: 2,
-          maxFeePerGas: ethers.utils.parseUnits(
-            String(formData.maxBaseFee - formData.maxPriorityFee),
-            "gwei"
-          ),
-          maxPriorityFeePerGas: ethers.utils.parseUnits(String(formData.maxPriorityFee), "gwei"),
-          gasLimit: formData.gasLimit,
-        })
+        const gasSettings = gasSettingsFromFormData(formData)
+        onConfirm(gasSettings)
       } catch (err) {
         log.error("Failed to set custom gas settings", { err })
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
@@ -247,6 +310,11 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
     },
     [onConfirm]
   )
+
+  const { isValid: isGasSettingsValid, isLoading: isLoadingGasSettingsValid } =
+    useIsValidGasSettings(tx, maxBaseFee, maxPriorityFee, gasLimit)
+
+  const showMaxFeeTotal = isFormValid && isGasSettingsValid && !isLoadingGasSettingsValid
 
   return (
     <form
@@ -346,7 +414,7 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
           </WithTooltip>
         </div>
         <div>
-          {totalMaxFee ? (
+          {totalMaxFee && showMaxFeeTotal ? (
             <>
               <Tokens
                 amount={totalMaxFee.tokens}
@@ -360,13 +428,20 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
                 </>
               ) : null}
             </>
+          ) : isLoadingGasSettingsValid ? (
+            <LoaderIcon className="animate-spin-slow text-body-secondary inline-block" />
           ) : (
             <span className="text-alert-error">Invalid settings</span>
           )}
         </div>
       </div>
       <div className="mt-10 w-full">
-        <Button type="submit" className="w-full" disabled={!isValid} primary={isValid}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={!showMaxFeeTotal}
+          primary={showMaxFeeTotal}
+        >
           Save
         </Button>
       </div>

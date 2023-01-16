@@ -27,6 +27,8 @@ import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import { useIsValidEthTransaction } from "./Sign/useIsValidEthTransaction"
+
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 
@@ -110,6 +112,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
   const [feeHistoryAnalysis, setFeeHistoryAnalysis] = useState<FeeHistoryAnalysis | null>()
   const [error, setError] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
+  const [blockNumber, setBlockNumber] = useState<number>()
 
   // analyse fees on each block
   useEffect(() => {
@@ -121,6 +124,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
       setGasUsed(undefined)
       setFeeHistoryAnalysis(undefined)
       setError(undefined)
+      setBlockNumber(undefined)
       return
     }
 
@@ -135,11 +139,12 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
 
       setIsLoading(true)
       try {
-        const [gPrice, { gasLimit, baseFeePerGas, gasUsed }, feeOptions] = await Promise.all([
-          provider.getGasPrice(),
-          provider.getBlock("latest"),
-          withFeeOptions ? getFeeHistoryAnalysis(provider) : undefined,
-        ])
+        const [gPrice, { gasLimit, baseFeePerGas, gasUsed, number: blockNumber }, feeOptions] =
+          await Promise.all([
+            provider.getGasPrice(),
+            provider.getBlock("latest"),
+            withFeeOptions ? getFeeHistoryAnalysis(provider) : undefined,
+          ])
 
         if (feeOptions && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(provider.network.chainId)) {
           // minimum maxPriorityPerGas value required to be considered valid into next block is equal to `gasPrice - baseFee`
@@ -169,6 +174,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
         setBlockGasLimit(gasLimit)
         setGasUsed(gasUsed)
         setFeeHistoryAnalysis(feeOptions)
+        setBlockNumber(blockNumber)
         setError(undefined)
       } catch (err) {
         setError((err as Error).message)
@@ -193,6 +199,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
   }, [blockGasLimit, gasUsed])
 
   return {
+    blockNumber,
     gasPrice,
     baseFeePerGas,
     blockGasUsedRatio,
@@ -359,6 +366,22 @@ const usePerPriorityGasSettings = ({
   }
 }
 
+// const useEstimatedGas = (
+//   provider?: ethers.providers.JsonRpcProvider,
+//   tx?: ethers.providers.TransactionRequest
+// ) => {
+//   return useQuery({
+//     queryKey: ["estimateGas", provider?.network?.chainId, tx],
+//     queryFn: () => {
+//       if (!provider || !tx) return null
+//       // ignore gas settings set by dapp
+//       const { gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas, ...rest } = tx
+//       return provider.estimateGas(rest)
+//     },
+//     refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
+//   })
+// }
+
 export const useEthTransaction = (
   tx?: ethers.providers.TransactionRequest,
   defaultPriority: EthPriorityOptionName = "low",
@@ -371,6 +394,7 @@ export const useEthTransaction = (
   const { data: estimatedGas, error: estimatedGasError } = useEstimatedGas(provider, tx)
 
   const {
+    blockNumber,
     gasPrice,
     blockGasUsedRatio: networkUsage,
     baseFeePerGas,
@@ -427,14 +451,35 @@ export const useEthTransaction = (
     }
   }, [baseFeePerGas, estimatedGas, feeHistoryAnalysis, gasPrice, gasSettings, transaction])
 
+  // use staleIsValid to prevent disabling approve button each time there is a new block (triggers gas check)
+  const { staleIsValid: isValid, error: isValidError } = useIsValidEthTransaction(
+    provider,
+    transaction,
+    priority
+  )
+
+  // useEffect(() => {
+  //   if (isValidError) console.log("qCheck validation error", isValidError)
+  //   else if (isValid) console.log("qCheck is valid")
+  //   else console.log("validation check is pending")
+  // }, [isValid, isValidError])
+
   const error = useMemo(
     () =>
       errorEip1559Support ??
       (estimatedGasError as Error)?.message ??
       blockFeeDataError ??
       nonceError ??
+      errorTransactionInfo ??
+      (isValidError as Error)?.message,
+    [
+      blockFeeDataError,
+      isValidError,
+      errorEip1559Support,
       errorTransactionInfo,
-    [blockFeeDataError, errorEip1559Support, errorTransactionInfo, estimatedGasError, nonceError]
+      estimatedGasError,
+      nonceError,
+    ]
   )
 
   const isLoading = useMemo(
@@ -450,6 +495,7 @@ export const useEthTransaction = (
     priority,
     setPriority,
     isLoading,
+    isValid,
     error,
     networkUsage,
     setCustomSettings,

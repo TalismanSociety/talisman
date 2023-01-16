@@ -1,4 +1,5 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
@@ -168,6 +169,8 @@ export const EthSignTransactionRequest = () => {
     transactionInfo,
     gasSettingsByPriority,
     setCustomSettings,
+    setReady,
+    isValid,
   } = useEthSignTransactionRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -192,6 +195,14 @@ export const EthSignTransactionRequest = () => {
   const isReadyToDisplay = useMemo(
     () => Boolean(transactionInfo && (txDetails?.estimatedFee || errorMessage)),
     [transactionInfo, txDetails?.estimatedFee, errorMessage]
+  )
+
+  const handleFeeChange = useCallback(
+    (priority: EthPriorityOptionName) => {
+      setPriority(priority)
+      setReady() // clear error from previous submit attempt
+    },
+    [setPriority, setReady]
   )
 
   return (
@@ -240,13 +251,14 @@ export const EthSignTransactionRequest = () => {
                   </div>
                   <div>
                     <EthFeeSelect
+                      tx={request}
                       nativeToken={nativeToken as EvmNativeToken}
                       disabled={isPayloadLocked}
                       gasSettingsByPriority={gasSettingsByPriority}
                       setCustomSettings={setCustomSettings}
                       txDetails={txDetails}
                       priority={priority}
-                      onChange={setPriority}
+                      onChange={handleFeeChange}
                       decimals={nativeToken?.decimals}
                       symbol={nativeToken?.symbol}
                     />
@@ -277,7 +289,7 @@ export const EthSignTransactionRequest = () => {
                   Cancel
                 </SimpleButton>
                 <SimpleButton
-                  disabled={!transaction || processing || isLoading}
+                  disabled={!transaction || processing || isLoading || !isValid}
                   processing={processing}
                   primary
                   onClick={approve}
