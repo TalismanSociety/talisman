@@ -190,7 +190,11 @@ export const getTotalFeesFromGasSettings = (
     if (baseFeePerGas === undefined)
       throw new Error("baseFeePerGas argument is required for type 2 fee computation")
     return {
-      estimatedFee: BigNumber.from(baseFeePerGas)
+      estimatedFee: BigNumber.from(
+        BigNumber.from(baseFeePerGas).lt(gasSettings.maxFeePerGas)
+          ? baseFeePerGas
+          : gasSettings.maxFeePerGas
+      )
         .add(gasSettings.maxPriorityFeePerGas)
         .mul(
           BigNumber.from(estimatedGas).lt(gasSettings.gasLimit)

@@ -11,7 +11,7 @@ export const useIsValidEthTransaction = (
   // staleIsValid can be used to return previous value, this prevents having flashing approve button in tx form when gas changes on each block
   const [staleIsValid, setStaleIsValid] = useState(false)
 
-  const { data, error, isLoading, isFetching } = useQuery({
+  const { data, error, isLoading } = useQuery({
     queryKey: ["useCheckTransaction", provider?.network?.chainId, transaction, priority],
     queryFn: async () => {
       if (!provider || !transaction) {
