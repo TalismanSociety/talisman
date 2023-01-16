@@ -16,7 +16,7 @@ jobs:
           node-version: 14
           cache: yarn
       - run: yarn --immutable
-      - run: yarn changeset version --snapshot pr${{ github.event.pull_request.number }}.$(git rev-parse --short HEAD)
+      - run: yarn changeset version --snapshot pr${{ github.event.pull_request.number }}
       - run: yarn build:packages:prod
       - run: yarn plugin import workspace-tools
       - run: yarn workspaces foreach --verbose --no-private npm publish --tolerate-republish --tag pr${{ github.event.pull_request.number }}
