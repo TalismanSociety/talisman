@@ -1,10 +1,10 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "author": "Talisman",
   "name": "Talisman - Ethereum and Polkadot Wallet",
   "description": "Talisman is a Ethereum and Polkadot wallet that unlocks a new world of multichain web3 applications.",
   "version": "latest",
-  "browser_action": {
+  "action": {
     "default_title": "Talisman",
     "default_popup": "popup.html?embedded#/portfolio"
   },
@@ -21,11 +21,17 @@
     }
   ],
   "background": {
-    "scripts": ["vendor-background.js", "background.js"],
-    "persistent": true
+    "service_worker": ["vendor-background.js", "background.js"],
+    "type": "module"
   },
-  "web_accessible_resources": ["page.js", "dashboard.js.map"],
-  "content_security_policy": "script-src 'self' blob: 'unsafe-eval' 'wasm-eval'; object-src 'self'",
+  "web_accessible_resources": [
+    {
+      "resources": ["page.js", "dashboard.js.map"]
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' blob: 'wasm-unsafe-eval'; object-src 'self'"
+  },
   "permissions": ["storage", "tabs", "notifications"],
   "icons": {
     "16": "favicon16x16.png",
@@ -40,5 +46,5 @@
       "strict_min_version": "95.0"
     }
   },
-  "minimum_chrome_version": "98"
+  "minimum_chrome_version": "102"
 }
