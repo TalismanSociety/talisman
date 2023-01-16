@@ -272,7 +272,7 @@ export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
     else if (
       maxPriorityFee &&
       BigNumber.from(ethers.utils.parseUnits(String(maxPriorityFee), "gwei")).gt(
-        highSettings?.maxPriorityFeePerGas ?? 0
+        BigNumber.from(2).mul(highSettings?.maxPriorityFeePerGas)
       )
     )
       warningFee = "Max Priority Fee seems higher than required"
