@@ -9,6 +9,8 @@ import { formatDecimals } from "@talismn/util"
 import { Address } from "@ui/domains/Account/Address"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
+import { FEE_PRIORITY_OPTIONS } from "@ui/domains/Ethereum/GasSettings/common"
+import { NetworkUsage } from "@ui/domains/Ethereum/NetworkUsage"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
@@ -187,9 +189,9 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     <ViewDetailsContainer>
       <div className="grow">
         <div className="title">Details</div>
-        <ViewDetailsField label="Network">
+        {/* <ViewDetailsField label="Network">
           {network ? `${network.name} (${network.id})` : null}
-        </ViewDetailsField>
+        </ViewDetailsField> */}
         {!!txInfo?.isContractCall && (
           <ViewDetailsField label="Contract type and method">
             {txInfo?.contractType
@@ -206,54 +208,81 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
         <ViewDetailsField label="Value to be transferred" breakAll>
           {formatEthValue(request.value)}
         </ViewDetailsField>
-        <ViewDetailsField label="Network usage">
-          {typeof networkUsage === "number" ? `${Math.round(networkUsage * 100)}%` : "N/A"}
+        <ViewDetailsField label={"Network"}>
+          <ViewDetailsGrid>
+            <ViewDetailsGridRow
+              left="Name"
+              right={network ? `${network.name} (${network.id})` : null}
+            />
+            <ViewDetailsGridRow
+              left="Usage"
+              right={
+                typeof networkUsage === "number" ? `${Math.round(networkUsage * 100)}%` : "N/A"
+              }
+            />
+            {transaction?.type === 2 && (
+              <>
+                <ViewDetailsGridRow
+                  left="Base fee per gas"
+                  right={txDetails?.baseFeePerGas ? formatGwei(txDetails.baseFeePerGas) : "N/A"}
+                />
+                <ViewDetailsGridRow
+                  left="Base fee trend"
+                  right={
+                    <NetworkUsage
+                      baseFeeTrend={txDetails?.baseFeeTrend}
+                      className="h-10 justify-end"
+                    />
+                  }
+                />
+              </>
+            )}
+          </ViewDetailsGrid>
         </ViewDetailsField>
-        <ViewDetailsField label="Estimated gas">
-          {txDetails?.estimatedGas ? BigNumber.from(txDetails?.estimatedGas).toNumber() : "N/A"}
-        </ViewDetailsField>
-        <ViewDetailsField label={"Gas settings"}>
-          {transaction ? (
-            <ViewDetailsGrid>
-              <ViewDetailsGridRow
-                left="Gas limit"
-                right={
-                  transaction?.gasLimit ? BigNumber.from(transaction.gasLimit)?.toNumber() : "N/A"
-                }
-              />
-              {transaction?.type === 2 ? (
-                <>
-                  <ViewDetailsGridRow
-                    left="Base fee per gas"
-                    right={txDetails?.baseFeePerGas ? formatGwei(txDetails.baseFeePerGas) : "N/A"}
-                  />
-                  <ViewDetailsGridRow left="Priority" right={priority} />
-                  <ViewDetailsGridRow
-                    left="Max priority fee per gas"
-                    right={
-                      transaction.maxPriorityFeePerGas
-                        ? formatGwei(transaction.maxPriorityFeePerGas)
-                        : "N/A"
-                    }
-                  />
-                  <ViewDetailsGridRow
-                    left="Max fee per gas"
-                    right={transaction.maxFeePerGas ? formatGwei(transaction.maxFeePerGas) : "N/A"}
-                  />
-                </>
-              ) : (
-                <>
-                  <ViewDetailsGridRow
-                    left="Gas price"
-                    right={transaction?.gasPrice ? formatGwei(transaction.gasPrice) : "N/A"}
-                  />
-                </>
-              )}
-            </ViewDetailsGrid>
-          ) : (
-            "N/A"
-          )}
-        </ViewDetailsField>
+        {!!priority && (
+          <ViewDetailsField label={`Gas settings (${FEE_PRIORITY_OPTIONS[priority].label})`}>
+            {transaction ? (
+              <ViewDetailsGrid>
+                {transaction?.type === 2 ? (
+                  <>
+                    <ViewDetailsGridRow left="Type" right="EIP-1559" />
+
+                    <ViewDetailsGridRow
+                      left="Max priority fee per gas"
+                      right={
+                        transaction.maxPriorityFeePerGas
+                          ? formatGwei(transaction.maxPriorityFeePerGas)
+                          : "N/A"
+                      }
+                    />
+                    <ViewDetailsGridRow
+                      left="Max fee per gas"
+                      right={
+                        transaction.maxFeePerGas ? formatGwei(transaction.maxFeePerGas) : "N/A"
+                      }
+                    />
+                  </>
+                ) : (
+                  <>
+                    <ViewDetailsGridRow left="Type" right="Legacy" />
+                    <ViewDetailsGridRow
+                      left="Gas price"
+                      right={transaction?.gasPrice ? formatGwei(transaction.gasPrice) : "N/A"}
+                    />
+                  </>
+                )}
+                <ViewDetailsGridRow
+                  left="Gas limit"
+                  right={
+                    transaction?.gasLimit ? BigNumber.from(transaction.gasLimit)?.toNumber() : "N/A"
+                  }
+                />
+              </ViewDetailsGrid>
+            ) : (
+              "N/A"
+            )}
+          </ViewDetailsField>
+        )}
         <ViewDetailsField label="Total Fee">
           {transaction ? (
             <ViewDetailsGrid>
