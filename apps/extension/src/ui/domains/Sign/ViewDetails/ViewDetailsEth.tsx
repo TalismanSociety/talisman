@@ -189,9 +189,6 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     <ViewDetailsContainer>
       <div className="grow">
         <div className="title">Details</div>
-        {/* <ViewDetailsField label="Network">
-          {network ? `${network.name} (${network.id})` : null}
-        </ViewDetailsField> */}
         {!!txInfo?.isContractCall && (
           <ViewDetailsField label="Contract type and method">
             {txInfo?.contractType

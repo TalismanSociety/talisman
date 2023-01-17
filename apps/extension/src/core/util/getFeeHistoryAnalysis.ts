@@ -6,7 +6,6 @@ import { parseUnits } from "ethers/lib/utils"
 const BLOCKS_HISTORY_LENGTH = 4
 const REWARD_PERCENTILES = [10, 20, 30]
 
-// local helper type
 type EthBasePriorityOptionsEip1559 = Record<"low" | "medium" | "high", BigNumber>
 
 export const DEFAULT_ETH_PRIORITY_OPTIONS: EthBasePriorityOptionsEip1559 = {
