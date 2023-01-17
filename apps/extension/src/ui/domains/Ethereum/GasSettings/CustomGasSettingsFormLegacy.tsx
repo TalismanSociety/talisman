@@ -1,84 +1,24 @@
-import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
-import { EthGasSettingsEip1559, EthGasSettingsLegacy } from "@core/domains/ethereum/types"
-import {
-  EthTransactionDetails,
-  GasSettingsByPriority,
-  GasSettingsByPriorityEip1559,
-  GasSettingsByPriorityLegacy,
-} from "@core/domains/signing/types"
+import { EthGasSettingsLegacy } from "@core/domains/ethereum/types"
+import { EthTransactionDetails, GasSettingsByPriorityLegacy } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { IconButton } from "@talisman/components/IconButton"
 import { notify } from "@talisman/components/Notifications"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { AlertTriangleIcon, ArrowRightIcon, InfoIcon, LoaderIcon } from "@talisman/theme/icons"
-import { BalanceFormatter } from "@talismn/balances"
-import { EvmNativeToken } from "@talismn/balances-evm-native"
+import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talisman/theme/icons"
 import { formatDecimals } from "@talismn/util"
-import Fiat from "@ui/domains/Asset/Fiat"
-import Tokens from "@ui/domains/Asset/Tokens"
-import { useDbCache } from "@ui/hooks/useDbCache"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BigNumber, ethers } from "ethers"
-import { FC, PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useDebounce } from "react-use"
-import { Button, FormFieldContainer, FormFieldInputText, classNames } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { NetworkUsage } from "../NetworkUsage"
 import { useIsValidEthTransaction } from "../Sign/useIsValidEthTransaction"
 import { useEthereumProvider } from "../useEthereumProvider"
-
-type IndicatorProps = PropsWithChildren & {
-  className?: string
-  label?: string
-}
-
-const Indicator: FC<IndicatorProps> = ({ children, label, className }) => {
-  return (
-    <div
-      className={classNames(
-        "border-grey-700 text-body-secondary relative flex h-[41px] flex-col justify-center rounded-sm border px-6 text-xs",
-        className
-      )}
-    >
-      {label && (
-        <div className="bg-grey-800 absolute left-5 top-[-0.8rem] px-2 text-[1rem]">{label}</div>
-      )}
-      <div className="w-full text-left align-top leading-[1.7rem]">{children}</div>
-    </div>
-  )
-}
-
-const MessageRow = ({ type, message }: { type: "error" | "warning"; message: string }) => {
-  return (
-    <div
-      className={classNames(
-        "mt-4 mb-6 h-8 w-full text-left text-xs",
-        type === "warning" && "text-alert-warn",
-        type === "error" && "text-alert-error",
-        message ? "visible" : "invisible"
-      )}
-    >
-      {message && (
-        <>
-          {type === "warning" && <InfoIcon className="inline align-top" />}
-          {type === "error" && <AlertTriangleIcon className="inline align-top" />} {message}
-        </>
-      )}
-    </div>
-  )
-}
-
-type CustomGasSettingsLegacyFormProps = {
-  networkUsage?: number
-  tx: ethers.providers.TransactionRequest
-  nativeToken: EvmNativeToken
-  txDetails: EthTransactionDetails
-  gasSettingsByPriority: GasSettingsByPriorityLegacy
-  onConfirm: (gasSettings: EthGasSettingsLegacy) => void
-  onCancel: () => void
-}
+import { Indicator, MessageRow } from "./common"
 
 const INPUT_PROPS = {
   className: "bg-grey-700 px-6 gap-6 h-[5rem]",
@@ -156,28 +96,50 @@ const useIsValidGasSettings = (
   }
 }
 
-export const CustomGasSettingsLegacyForm: FC<CustomGasSettingsLegacyFormProps> = ({
+type CustomGasSettingsFormLegacyProps = {
+  networkUsage?: number
+  tx: ethers.providers.TransactionRequest
+  tokenId: string
+  txDetails: EthTransactionDetails
+  gasSettingsByPriority: GasSettingsByPriorityLegacy
+  onConfirm: (gasSettings: EthGasSettingsLegacy) => void
+  onCancel: () => void
+}
+
+export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> = ({
   tx,
-  nativeToken,
+  tokenId,
   gasSettingsByPriority,
   networkUsage,
   onCancel,
   txDetails,
   onConfirm,
 }) => {
+  const { genericEvent } = useAnalytics()
+
+  useEffect(() => {
+    genericEvent("open custom gas settings", {
+      network: tx.chainId,
+      gasType: gasSettingsByPriority?.type,
+    })
+  }, [gasSettingsByPriority?.type, genericEvent, tx.chainId])
+
   const customSettings = gasSettingsByPriority.custom
 
   const networkGasPrice = useMemo(
-    // TODO custom formatDecimals that won't use compact mode
-    () => formatDecimals(ethers.utils.formatUnits(txDetails.gasPrice as string, "gwei")),
+    () =>
+      formatDecimals(ethers.utils.formatUnits(txDetails.gasPrice as string, "gwei"), undefined, {
+        notation: "standard",
+      }),
     [txDetails.gasPrice]
   )
 
   const defaultValues: FormData = useMemo(
     () => ({
       gasPrice: Number(
-        // TODO custom formatDecimals that won't use compact mode
-        formatDecimals(ethers.utils.formatUnits(customSettings.gasPrice, "gwei"))
+        formatDecimals(ethers.utils.formatUnits(customSettings.gasPrice, "gwei"), undefined, {
+          notation: "standard",
+        })
       ),
       gasLimit: BigNumber.from(customSettings.gasLimit).toNumber(),
     }),
@@ -189,7 +151,6 @@ export const CustomGasSettingsLegacyForm: FC<CustomGasSettingsLegacyFormProps> =
     handleSubmit,
     setValue,
     watch,
-    resetField,
     formState: { errors, isValid: isFormValid, isSubmitting },
   } = useForm<FormData>({
     mode: "onChange",
@@ -209,29 +170,19 @@ export const CustomGasSettingsLegacyForm: FC<CustomGasSettingsLegacyFormProps> =
 
   const { gasPrice, gasLimit } = watch()
 
-  const { tokenRatesMap } = useDbCache() // TODO use useTokenRates
-
   const totalMaxFee = useMemo(() => {
     try {
-      const bnTotalMaxFee = BigNumber.from(ethers.utils.parseUnits(String(gasPrice), "gwei")).mul(
-        gasLimit
-      )
-      return new BalanceFormatter(
-        bnTotalMaxFee.toString(),
-        nativeToken.decimals,
-        tokenRatesMap[nativeToken.id]
-      )
+      return BigNumber.from(ethers.utils.parseUnits(String(gasPrice), "gwei")).mul(gasLimit)
     } catch (err) {
       return null
     }
-  }, [gasLimit, gasPrice, nativeToken.decimals, nativeToken.id, tokenRatesMap])
+  }, [gasLimit, gasPrice])
 
   const { warningFee, errorGasLimit } = useMemo(() => {
     let warningFee = ""
     let errorGasLimit = ""
 
     if (errors.gasPrice) warningFee = "Gas price is invalid"
-    // if lower than network gasPrice
     else if (
       gasPrice &&
       BigNumber.from(ethers.utils.parseUnits(String(gasPrice), "gwei")).lt(txDetails.gasPrice)
@@ -362,19 +313,7 @@ export const CustomGasSettingsLegacyForm: FC<CustomGasSettingsLegacyFormProps> =
         </div>
         <div>
           {totalMaxFee && showMaxFeeTotal ? (
-            <>
-              <Tokens
-                amount={totalMaxFee.tokens}
-                decimals={nativeToken.decimals}
-                symbol={nativeToken.symbol}
-              />
-              {totalMaxFee.fiat("usd") ? (
-                <>
-                  {" "}
-                  (<Fiat amount={totalMaxFee.fiat("usd")} currency="usd" />)
-                </>
-              ) : null}
-            </>
+            <TokensAndFiat planck={totalMaxFee.toString()} tokenId={tokenId} />
           ) : isLoadingGasSettingsValid ? (
             <LoaderIcon className="animate-spin-slow text-body-secondary inline-block" />
           ) : (

@@ -7,11 +7,7 @@ import {
 } from "@core/domains/signing/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { ChevronRightIcon, InfoIcon } from "@talisman/theme/icons"
-import { BalanceFormatter } from "@talismn/balances"
-import { EvmNativeToken } from "@talismn/balances-evm-native"
-import Fiat from "@ui/domains/Asset/Fiat"
-import Tokens from "@ui/domains/Asset/Tokens"
-import { useDbCache } from "@ui/hooks/useDbCache"
+import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { ethers } from "ethers"
 import { FC, useCallback, useMemo } from "react"
 import { classNames } from "talisman-ui"
@@ -23,9 +19,7 @@ type PriorityOptionProps = {
   priority: EthPriorityOptionName
   gasSettingsByPriority: GasSettingsByPriority
   selected?: boolean
-  // decimals: number
-  // symbol?: string
-  nativeToken: EvmNativeToken
+  tokenId: string
   onClick?: () => void
 }
 
@@ -33,38 +27,23 @@ const PriorityOption = ({
   priority,
   gasSettingsByPriority,
   selected,
-  nativeToken,
-  // decimals,
-  // symbol,
+  tokenId,
   onClick,
 }: PriorityOptionProps) => {
-  // const tokenRates = useTokenRates(nativeToken.id)
-  const { tokenRatesMap } = useDbCache() // TODO use useTokenRates
-
-  const maxFee = useMemo(() => {
+  const maxFeePlanck = useMemo(() => {
     switch (gasSettingsByPriority.type) {
       case "eip1559": {
         const gasSettings = gasSettingsByPriority[priority as EthPriorityOptionNameEip1559]
-        const bnMaxFee = ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.maxFeePerGas)
-        return new BalanceFormatter(
-          bnMaxFee.toString(),
-          nativeToken.decimals,
-          tokenRatesMap[nativeToken.id]
-        )
+        return ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.maxFeePerGas)
       }
       case "legacy": {
         const gasSettings = gasSettingsByPriority[priority as EthPriorityOptionNameLegacy]
-        const bnMaxFee = ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.gasPrice)
-        return new BalanceFormatter(
-          bnMaxFee.toString(),
-          nativeToken.decimals,
-          tokenRatesMap[nativeToken.id]
-        )
+        return ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.gasPrice)
       }
       default:
         throw new Error("Unknown gas settings type")
     }
-  }, [gasSettingsByPriority, nativeToken.decimals, nativeToken.id, priority, tokenRatesMap])
+  }, [gasSettingsByPriority, priority])
 
   return (
     <button
@@ -81,17 +60,7 @@ const PriorityOption = ({
       <div className="grow">{FEE_PRIORITY_OPTIONS[priority].label}</div>
       {selected || priority !== "custom" ? (
         <div>
-          <Tokens
-            amount={maxFee.tokens}
-            decimals={nativeToken.decimals}
-            symbol={nativeToken.symbol}
-          />
-          {maxFee.fiat("usd") ? (
-            <>
-              {" "}
-              (<Fiat amount={maxFee.fiat("usd")} currency="usd" />)
-            </>
-          ) : null}
+          <TokensAndFiat tokenId={tokenId} planck={maxFeePlanck.toString()} />
         </div>
       ) : (
         <ChevronRightIcon className="text-lg transition-none" />
@@ -102,12 +71,10 @@ const PriorityOption = ({
 
 type FeeOptionsSelectProps = {
   txDetails: EthTransactionDetails
-  nativeToken: EvmNativeToken
+  tokenId: string
   networkUsage?: number
   gasSettingsByPriority: GasSettingsByPriority
   priority: EthPriorityOptionName
-  // decimals: number
-  // symbol?: string
   onChange?: (priority: EthPriorityOptionName) => void
 }
 
@@ -117,7 +84,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
   priority,
   gasSettingsByPriority,
   networkUsage,
-  ...props
+  tokenId,
 }) => {
   const handleSelect = useCallback(
     (priority: EthPriorityOptionName) => () => {
@@ -151,21 +118,21 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
           <>
             <PriorityOption
               gasSettingsByPriority={gasSettingsByPriority}
-              {...props}
+              tokenId={tokenId}
               priority={"low"}
               onClick={handleSelect("low")}
               selected={priority === "low"}
             />
             <PriorityOption
               gasSettingsByPriority={gasSettingsByPriority}
-              {...props}
+              tokenId={tokenId}
               priority={"medium"}
               onClick={handleSelect("medium")}
               selected={priority === "medium"}
             />
             <PriorityOption
               gasSettingsByPriority={gasSettingsByPriority}
-              {...props}
+              tokenId={tokenId}
               priority={"high"}
               onClick={handleSelect("high")}
               selected={priority === "high"}
@@ -175,7 +142,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
         {gasSettingsByPriority.type === "legacy" && (
           <PriorityOption
             gasSettingsByPriority={gasSettingsByPriority}
-            {...props}
+            tokenId={tokenId}
             priority={"recommended"}
             onClick={handleSelect("recommended")}
             selected={priority === "recommended"}
@@ -183,7 +150,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
         )}
         <PriorityOption
           gasSettingsByPriority={gasSettingsByPriority}
-          {...props}
+          tokenId={tokenId}
           priority={"custom"}
           onClick={handleSelect("custom")}
           selected={priority === "custom"}

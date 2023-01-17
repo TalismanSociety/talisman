@@ -1,21 +1,20 @@
 import { EthGasSettings } from "@core/domains/ethereum/types"
 import {
   EthPriorityOptionName,
-  EthPriorityOptionNameEip1559,
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
+import { TokenId } from "@core/domains/tokens/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { EvmNativeToken } from "@talismn/balances-evm-native"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useState } from "react"
 import { PillButton } from "talisman-ui"
 
 import { FEE_PRIORITY_OPTIONS } from "./common"
-import { CustomGasSettingsEip1559Form } from "./CustomGasSettingsEip1559Form"
-import { CustomGasSettingsLegacyForm } from "./CustomGasSettingsLegacyForm"
+import { CustomGasSettingsFormEip1559 } from "./CustomGasSettingsFormEip1559"
+import { CustomGasSettingsFormLegacy } from "./CustomGasSettingsFormLegacy"
 import { FeeOptionsSelectForm } from "./FeeOptionsForm"
 
 const OpenFeeSelectTracker = () => {
@@ -30,21 +29,19 @@ const OpenFeeSelectTracker = () => {
 
 type EthFeeSelectProps = {
   tx: ethers.providers.TransactionRequest
-  nativeToken: EvmNativeToken
+  tokenId: TokenId
   disabled?: boolean
   txDetails: EthTransactionDetails
   networkUsage?: number
   gasSettingsByPriority?: GasSettingsByPriority
   priority?: EthPriorityOptionName
-  decimals: number
-  symbol?: string
-  onChange?: (priority: EthPriorityOptionName) => void
   drawerContainer?: HTMLElement | null
+  onChange?: (priority: EthPriorityOptionName) => void
   setCustomSettings: (gasSettings: EthGasSettings) => void
 }
 
 export const EthFeeSelect: FC<EthFeeSelectProps> = ({
-  nativeToken,
+  tokenId,
   txDetails,
   onChange,
   priority,
@@ -54,7 +51,6 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
   setCustomSettings,
   tx,
   networkUsage,
-  ...props
 }) => {
   const { genericEvent } = useAnalytics()
 
@@ -95,13 +91,6 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
     setShowCustomSettings(false)
   }, [])
 
-  // DEV
-  // useEffect(() => {
-  //   setShowCustomSettings(true)
-  //   open()
-  // }, [open])
-
-  // this is only usefull with EIP-1559
   if (!gasSettingsByPriority || !priority) return null
 
   return (
@@ -112,37 +101,34 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
       </PillButton>
       <Drawer parent={drawerContainer} open={isOpen && !disabled} anchor="bottom" onClose={close}>
         {showCustomSettings && gasSettingsByPriority.type === "eip1559" && (
-          <CustomGasSettingsEip1559Form
-            nativeToken={nativeToken}
+          <CustomGasSettingsFormEip1559
+            tokenId={tokenId}
             onCancel={handleCancelCustomSettings}
             onConfirm={handleSetCustomSettings}
             gasSettingsByPriority={gasSettingsByPriority}
             txDetails={txDetails}
             tx={tx}
-            {...props}
           />
         )}
         {showCustomSettings && gasSettingsByPriority.type === "legacy" && (
-          <CustomGasSettingsLegacyForm
-            nativeToken={nativeToken}
+          <CustomGasSettingsFormLegacy
+            tokenId={tokenId}
             onCancel={handleCancelCustomSettings}
             onConfirm={handleSetCustomSettings}
             gasSettingsByPriority={gasSettingsByPriority}
             txDetails={txDetails}
             tx={tx}
             networkUsage={networkUsage}
-            {...props}
           />
         )}
         {!showCustomSettings && (
           <FeeOptionsSelectForm
             gasSettingsByPriority={gasSettingsByPriority}
-            nativeToken={nativeToken}
+            tokenId={tokenId}
             priority={priority}
             txDetails={txDetails}
             onChange={handleSelect}
             networkUsage={networkUsage}
-            {...props}
           />
         )}
 

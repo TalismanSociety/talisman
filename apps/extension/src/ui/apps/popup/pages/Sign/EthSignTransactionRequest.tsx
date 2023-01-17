@@ -1,11 +1,10 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
-import { EthPriorityOptionName, EthPriorityOptionNameEip1559 } from "@core/domains/signing/types"
+import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { InfoIcon } from "@talisman/theme/icons"
-import { EvmNativeToken } from "@talismn/balances-evm-native"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
@@ -253,15 +252,13 @@ export const EthSignTransactionRequest = () => {
                   <div>
                     <EthFeeSelect
                       tx={request}
-                      nativeToken={nativeToken as EvmNativeToken}
+                      tokenId={nativeToken.id}
                       disabled={isPayloadLocked}
                       gasSettingsByPriority={gasSettingsByPriority}
                       setCustomSettings={setCustomSettings}
                       txDetails={txDetails}
                       priority={priority}
                       onChange={handleFeeChange}
-                      decimals={nativeToken?.decimals}
-                      symbol={nativeToken?.symbol}
                       networkUsage={networkUsage}
                     />
                   </div>

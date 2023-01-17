@@ -46,7 +46,7 @@ const AddressBook = () => {
 
   return (
     <>
-      <Layout centered withBack backTo="/settings">
+      <Layout centered withBack backTo="/settings" analytics={ANALYTICS_PAGE}>
         <HeaderBlock title="Address Book" text="Manage your saved contacts" />
         <Spacer />
         <div className="flex flex-col gap-3">
