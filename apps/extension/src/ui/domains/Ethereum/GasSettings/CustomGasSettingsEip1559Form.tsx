@@ -1,6 +1,10 @@
 import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
 import { EthGasSettingsEip1559 } from "@core/domains/ethereum/types"
-import { EthTransactionDetails, GasSettingsByPriority } from "@core/domains/signing/types"
+import {
+  EthTransactionDetails,
+  GasSettingsByPriority,
+  GasSettingsByPriorityEip1559,
+} from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { IconButton } from "@talisman/components/IconButton"
@@ -65,11 +69,11 @@ const MessageRow = ({ type, message }: { type: "error" | "warning"; message: str
   )
 }
 
-type CustomGasSettingsFormProps = {
+type CustomGasSettingsEip1559FormProps = {
   tx: ethers.providers.TransactionRequest
   nativeToken: EvmNativeToken
   txDetails: EthTransactionDetails
-  gasSettingsByPriority: GasSettingsByPriority
+  gasSettingsByPriority: GasSettingsByPriorityEip1559
   onConfirm: (gasSettings: EthGasSettingsEip1559) => void
   onCancel: () => void
 }
@@ -157,7 +161,7 @@ const useIsValidGasSettings = (
   }
 }
 
-export const CustomGasSettingsForm: FC<CustomGasSettingsFormProps> = ({
+export const CustomGasSettingsEip1559Form: FC<CustomGasSettingsEip1559FormProps> = ({
   tx,
   nativeToken,
   gasSettingsByPriority,

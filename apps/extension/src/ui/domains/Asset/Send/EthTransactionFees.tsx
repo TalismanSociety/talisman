@@ -1,7 +1,7 @@
 import { BalanceFormatter } from "@core/domains/balances/types"
 import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { EthGasSettings } from "@core/domains/ethereum/types"
-import { EthPriorityOptionName } from "@core/domains/signing/types"
+import { EthPriorityOptionName, EthPriorityOptionNameEip1559 } from "@core/domains/signing/types"
 import { Box } from "@talisman/components/Box"
 import { LoaderIcon } from "@talisman/theme/icons"
 import { EvmNativeToken } from "@talismn/balances-evm-native"
@@ -86,6 +86,7 @@ export const EthTransactionFees = ({
     error,
     gasSettingsByPriority,
     setCustomSettings,
+    networkUsage,
   } = useEthTransaction(tx)
 
   const errorMessage = useMemo(() => {
@@ -128,7 +129,7 @@ export const EthTransactionFees = ({
 
   return (
     <Box textalign="right" flex column justify="flex-end" gap={0.1}>
-      {tx && txDetails && (
+      {tx && txDetails && priority && (
         <Box>
           Priority :{" "}
           <EthFeeSelect
@@ -141,6 +142,7 @@ export const EthTransactionFees = ({
             decimals={nativeToken?.decimals}
             symbol={nativeToken?.symbol}
             txDetails={txDetails}
+            networkUsage={networkUsage}
             tx={tx}
           />
         </Box>

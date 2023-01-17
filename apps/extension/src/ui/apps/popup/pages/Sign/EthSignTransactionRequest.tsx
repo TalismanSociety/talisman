@@ -1,5 +1,5 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
-import { EthPriorityOptionName } from "@core/domains/signing/types"
+import { EthPriorityOptionName, EthPriorityOptionNameEip1559 } from "@core/domains/signing/types"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
@@ -171,6 +171,7 @@ export const EthSignTransactionRequest = () => {
     setCustomSettings,
     setReady,
     isValid,
+    networkUsage,
   } = useEthSignTransactionRequest()
 
   const { processing, errorMessage } = useMemo(() => {
@@ -261,6 +262,7 @@ export const EthSignTransactionRequest = () => {
                       onChange={handleFeeChange}
                       decimals={nativeToken?.decimals}
                       symbol={nativeToken?.symbol}
+                      networkUsage={networkUsage}
                     />
                   </div>
                 </div>

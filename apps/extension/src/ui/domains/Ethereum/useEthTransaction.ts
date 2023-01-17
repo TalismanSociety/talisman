@@ -13,6 +13,8 @@ import {
 } from "@core/domains/ethereum/types"
 import {
   EthPriorityOptionName,
+  EthPriorityOptionNameEip1559,
+  EthPriorityOptionNameLegacy,
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
@@ -94,13 +96,19 @@ const useEstimatedGas = (
 ) => {
   return useQuery({
     queryKey: ["estimateGas", provider?.network?.chainId, tx],
-    queryFn: () => {
+    queryFn: async () => {
       if (!provider || !tx) return null
-      // ignore gas settings set by dapp
-      const { gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas, ...rest } = tx
-      return provider.estimateGas(rest)
+      try {
+        // ignore gas settings set by dapp
+        const { gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas, ...rest } = tx
+        return await provider.estimateGas(rest)
+      } catch (err) {
+        // throw underlying ethers.js error, if available
+        throw (err as any)?.error ?? err
+      }
     },
     refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
+    retry: 0,
   })
 }
 
@@ -277,7 +285,7 @@ const usePerPriorityGasSettings = ({
   gasPrice?: BigNumber | null
   blockGasLimit?: BigNumber | null
   feeHistoryAnalysis?: FeeHistoryAnalysis | null
-  priority: EthPriorityOptionName
+  priority?: EthPriorityOptionName
   tx?: ethers.providers.TransactionRequest
 }) => {
   // TODO init with values from tx (supplied by dapp)
@@ -316,6 +324,7 @@ const usePerPriorityGasSettings = ({
             }
 
       return {
+        type: "eip1559",
         low,
         medium,
         high,
@@ -338,9 +347,8 @@ const usePerPriorityGasSettings = ({
 
     // TODO ideally would be a different type with just 2 properties, but that's enough complexity for now
     return {
-      low: recommendedSettings,
-      medium: recommendedSettings,
-      high: recommendedSettings,
+      type: "legacy",
+      recommended: recommendedSettings,
       custom,
     }
   }, [
@@ -354,10 +362,13 @@ const usePerPriorityGasSettings = ({
     tx,
   ])
 
-  const gasSettings = useMemo(
-    () => gasSettingsByPriority?.[priority],
-    [gasSettingsByPriority, priority]
-  )
+  const gasSettings = useMemo(() => {
+    if (gasSettingsByPriority?.type === "eip1559")
+      return gasSettingsByPriority[priority as EthPriorityOptionNameEip1559]
+    if (gasSettingsByPriority?.type === "legacy")
+      return gasSettingsByPriority[priority as EthPriorityOptionNameLegacy]
+    return undefined
+  }, [gasSettingsByPriority, priority])
 
   return {
     gasSettingsByPriority,
@@ -384,7 +395,6 @@ const usePerPriorityGasSettings = ({
 
 export const useEthTransaction = (
   tx?: ethers.providers.TransactionRequest,
-  defaultPriority: EthPriorityOptionName = "low",
   lockTransaction = false
 ) => {
   const provider = useEthereumProvider(tx?.chainId?.toString())
@@ -403,7 +413,13 @@ export const useEthTransaction = (
     error: blockFeeDataError,
   } = useBlockFeeData(provider, hasEip1559Support)
 
-  const [priority, setPriority] = useState<EthPriorityOptionName>(defaultPriority)
+  const [priority, setPriority] = useState<EthPriorityOptionName>()
+
+  // set default priority based on EIP1559 support
+  useEffect(() => {
+    if (priority !== undefined || hasEip1559Support === undefined) return
+    setPriority(hasEip1559Support ? "low" : "recommended")
+  }, [hasEip1559Support, priority])
 
   const { gasSettings, setCustomSettings, gasSettingsByPriority } = usePerPriorityGasSettings({
     hasEip1559Support,
@@ -501,8 +517,6 @@ export const useEthTransaction = (
     setCustomSettings,
     gasSettingsByPriority,
   }
-
-  //console.log("useEthTransaction", result)
 
   return result
 }

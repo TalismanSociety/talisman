@@ -1,4 +1,4 @@
-import { EthPriorityOptionName } from "@core/domains/signing/types"
+import { EthPriorityOptionName, EthPriorityOptionNameEip1559 } from "@core/domains/signing/types"
 import { useQuery } from "@tanstack/react-query"
 import { ethers } from "ethers"
 import { useEffect, useState } from "react"
@@ -25,12 +25,13 @@ export const useIsValidEthTransaction = (
         return result
       } catch (err) {
         setStaleIsValid(false)
-        throw err
+        // throw underlying ethers.js error if available, for a better error message
+        throw (err as any)?.error ?? err
       }
     },
     refetchInterval: false,
     refetchOnWindowFocus: false,
-    retry: false,
+    retry: 0,
   })
 
   // reset stale value if priority changes

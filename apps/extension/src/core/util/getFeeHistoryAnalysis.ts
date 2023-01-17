@@ -1,4 +1,4 @@
-import { EthBaseFeeTrend, EthBasePriorityOptions } from "@core/domains/signing/types"
+import { EthBaseFeeTrend, EthBasePriorityOptionsEip1559 } from "@core/domains/signing/types"
 import * as Sentry from "@sentry/browser"
 import { BigNumber, ethers } from "ethers"
 import { parseUnits } from "ethers/lib/utils"
@@ -6,7 +6,7 @@ import { parseUnits } from "ethers/lib/utils"
 const BLOCKS_HISTORY_LENGTH = 4
 const REWARD_PERCENTILES = [10, 20, 30]
 
-export const DEFAULT_ETH_PRIORITY_OPTIONS: EthBasePriorityOptions = {
+export const DEFAULT_ETH_PRIORITY_OPTIONS: EthBasePriorityOptionsEip1559 = {
   low: parseUnits("1.5", "gwei"),
   medium: parseUnits("1.6", "gwei"),
   high: parseUnits("1.7", "gwei"),
@@ -20,7 +20,7 @@ type FeeHistory = {
 }
 
 export type FeeHistoryAnalysis = {
-  maxPriorityPerGasOptions: EthBasePriorityOptions
+  maxPriorityPerGasOptions: EthBasePriorityOptionsEip1559
   avgGasUsedRatio: number | null
   isValid: boolean
   avgBaseFeePerGas: BigNumber

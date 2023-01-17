@@ -10,4 +10,5 @@ export const FEE_PRIORITY_OPTIONS: Record<EthPriorityOptionName, { icon: string;
     medium: { icon: imgFeePriorityMedium, label: "Normal" },
     high: { icon: imgFeePriorityHigh, label: "Urgent" },
     custom: { icon: imgFeePriorityCustom, label: "Custom" },
+    recommended: { icon: imgFeePriorityMedium, label: "Recommended" },
   }

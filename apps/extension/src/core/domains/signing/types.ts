@@ -3,7 +3,12 @@ import {
   AccountJsonHardwareEthereum,
   AccountJsonHardwareSubstrate,
 } from "@core/domains/accounts/types"
-import { EthGasSettings, EvmNetworkId } from "@core/domains/ethereum/types"
+import {
+  EthGasSettings,
+  EthGasSettingsEip1559,
+  EthGasSettingsLegacy,
+  EvmNetworkId,
+} from "@core/domains/ethereum/types"
 import { RequestIdOnly } from "@core/types/base"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import {
@@ -97,12 +102,28 @@ export type TransactionDetails = {
 }
 
 // eth fees types ----------------------------------
-export type EthBasePriorityOptionName = "low" | "medium" | "high"
-export type EthBasePriorityOptions = Record<EthBasePriorityOptionName, BigNumber>
-export type EthPriorityOptionName = EthBasePriorityOptionName | "custom"
-export type EthPriorityOptions = Record<EthPriorityOptionName, BigNumber>
+export type EthBasePriorityOptionNameEip1559 = "low" | "medium" | "high"
+export type EthBasePriorityOptionNameLegacy = "recommended"
+export type EthBasePriorityOptionName =
+  | EthBasePriorityOptionNameEip1559
+  | EthBasePriorityOptionNameLegacy
+export type EthBasePriorityOptionsEip1559 = Record<EthBasePriorityOptionNameEip1559, BigNumber>
 
-export type GasSettingsByPriority = Record<EthPriorityOptionName, EthGasSettings>
+export type EthPriorityOptionNameEip1559 = EthBasePriorityOptionNameEip1559 | "custom"
+export type EthPriorityOptionsEip1559 = Record<EthPriorityOptionNameEip1559, BigNumber>
+
+export type EthPriorityOptionNameLegacy = EthBasePriorityOptionNameLegacy | "custom"
+export type EthPriorityOptionName = EthPriorityOptionNameEip1559 | EthPriorityOptionNameLegacy
+
+export type GasSettingsByPriorityEip1559 = { type: "eip1559" } & Record<
+  EthPriorityOptionNameEip1559,
+  EthGasSettingsEip1559
+>
+export type GasSettingsByPriorityLegacy = { type: "legacy" } & Record<
+  EthPriorityOptionNameLegacy,
+  EthGasSettingsLegacy
+>
+export type GasSettingsByPriority = GasSettingsByPriorityEip1559 | GasSettingsByPriorityLegacy
 
 export type EthBaseFeeTrend = "idle" | "decreasing" | "increasing" | "toTheMoon"
 

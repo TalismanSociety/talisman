@@ -1,16 +1,14 @@
-import { EthGasSettings, EthGasSettingsEip1559 } from "@core/domains/ethereum/types"
 import {
   EthPriorityOptionName,
+  EthPriorityOptionNameEip1559,
+  EthPriorityOptionNameLegacy,
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ChevronRightIcon, InfoIcon } from "@talisman/theme/icons"
-import { formatEtherValue } from "@talisman/util/formatEthValue"
 import { BalanceFormatter } from "@talismn/balances"
 import { EvmNativeToken } from "@talismn/balances-evm-native"
-import { useTokenRates } from "@talismn/balances-react"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useDbCache } from "@ui/hooks/useDbCache"
@@ -44,13 +42,28 @@ const PriorityOption = ({
   const { tokenRatesMap } = useDbCache() // TODO use useTokenRates
 
   const maxFee = useMemo(() => {
-    const gasSettings = gasSettingsByPriority[priority] as EthGasSettingsEip1559
-    const bnMaxFee = ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.maxFeePerGas)
-    return new BalanceFormatter(
-      bnMaxFee.toString(),
-      nativeToken.decimals,
-      tokenRatesMap[nativeToken.id]
-    )
+    switch (gasSettingsByPriority.type) {
+      case "eip1559": {
+        const gasSettings = gasSettingsByPriority[priority as EthPriorityOptionNameEip1559]
+        const bnMaxFee = ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.maxFeePerGas)
+        return new BalanceFormatter(
+          bnMaxFee.toString(),
+          nativeToken.decimals,
+          tokenRatesMap[nativeToken.id]
+        )
+      }
+      case "legacy": {
+        const gasSettings = gasSettingsByPriority[priority as EthPriorityOptionNameLegacy]
+        const bnMaxFee = ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.gasPrice)
+        return new BalanceFormatter(
+          bnMaxFee.toString(),
+          nativeToken.decimals,
+          tokenRatesMap[nativeToken.id]
+        )
+      }
+      default:
+        throw new Error("Unknown gas settings type")
+    }
   }, [gasSettingsByPriority, nativeToken.decimals, nativeToken.id, priority, tokenRatesMap])
 
   return (
@@ -103,6 +116,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
   onChange,
   priority,
   gasSettingsByPriority,
+  networkUsage,
   ...props
 }) => {
   const handleSelect = useCallback(
@@ -125,32 +139,48 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
           <div>Priority</div>
           <div>
             Max Transaction Fee{" "}
-            <WithTooltip tooltip=" This is the absolute maximum fee you could pay for this transaction. You usually pay well below this fee, depending on network usage and stability.">
-              <InfoIcon className="inline align-text-top" />
+            <WithTooltip
+              tooltip="This is the absolute maximum fee you could pay for this transaction. You usually
+                  pay well below this fee, depending on network usage and stability."
+            >
+              <InfoIcon className="inline-block align-text-top" />
             </WithTooltip>
           </div>
         </div>
-        <PriorityOption
-          gasSettingsByPriority={gasSettingsByPriority}
-          {...props}
-          priority={"low"}
-          onClick={handleSelect("low")}
-          selected={priority === "low"}
-        />
-        <PriorityOption
-          gasSettingsByPriority={gasSettingsByPriority}
-          {...props}
-          priority={"medium"}
-          onClick={handleSelect("medium")}
-          selected={priority === "medium"}
-        />
-        <PriorityOption
-          gasSettingsByPriority={gasSettingsByPriority}
-          {...props}
-          priority={"high"}
-          onClick={handleSelect("high")}
-          selected={priority === "high"}
-        />
+        {gasSettingsByPriority.type === "eip1559" && (
+          <>
+            <PriorityOption
+              gasSettingsByPriority={gasSettingsByPriority}
+              {...props}
+              priority={"low"}
+              onClick={handleSelect("low")}
+              selected={priority === "low"}
+            />
+            <PriorityOption
+              gasSettingsByPriority={gasSettingsByPriority}
+              {...props}
+              priority={"medium"}
+              onClick={handleSelect("medium")}
+              selected={priority === "medium"}
+            />
+            <PriorityOption
+              gasSettingsByPriority={gasSettingsByPriority}
+              {...props}
+              priority={"high"}
+              onClick={handleSelect("high")}
+              selected={priority === "high"}
+            />
+          </>
+        )}
+        {gasSettingsByPriority.type === "legacy" && (
+          <PriorityOption
+            gasSettingsByPriority={gasSettingsByPriority}
+            {...props}
+            priority={"recommended"}
+            onClick={handleSelect("recommended")}
+            selected={priority === "recommended"}
+          />
+        )}
         <PriorityOption
           gasSettingsByPriority={gasSettingsByPriority}
           {...props}
@@ -158,12 +188,21 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
           onClick={handleSelect("custom")}
           selected={priority === "custom"}
         />
-        <div className="mt-8 flex w-full items-center justify-between">
-          <div>Base Fee Trend</div>
-          <div>
-            <NetworkUsage baseFeeTrend={txDetails.baseFeeTrend} />
+        {txDetails.baseFeeTrend ? (
+          <div className="mt-8 flex w-full items-center justify-between">
+            <div>Base Fee Trend</div>
+            <div>
+              <NetworkUsage baseFeeTrend={txDetails.baseFeeTrend} />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mt-8 flex w-full items-center justify-between">
+            <div>Network Usage</div>
+            <div>
+              {networkUsage === undefined ? "N/A" : <>{Math.round(networkUsage * 100)} %</>}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
