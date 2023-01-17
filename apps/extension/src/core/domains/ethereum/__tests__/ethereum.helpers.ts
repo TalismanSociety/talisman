@@ -1,11 +1,10 @@
 import { ethers } from "ethers"
 
 import {
-  getEip1559TotalFees,
   getEthDerivationPath,
   getEthLedgerDerivationPath,
-  getLegacyTotalFees,
   getMaxFeePerGas,
+  getTotalFeesFromGasSettings,
 } from "../helpers"
 
 const baseFeePerGas = ethers.utils.parseUnits("2", "gwei")
@@ -26,26 +25,53 @@ describe("Test ethereum helpers", () => {
     expect(result).toEqual(expected)
   })
 
-  test("getEip1559TotalFees", () => {
-    const { estimatedFee, maxFee } = getEip1559TotalFees(
+  test("getTotalFeesFromGasSettings - EIP1559 maxFee lower than baseFee", () => {
+    const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
+      {
+        type: 2,
+        maxFeePerGas: ethers.utils.parseUnits("1.5", "gwei"),
+        maxPriorityFeePerGas: ethers.utils.parseUnits("0.5", "gwei"),
+        gasLimit: 22000,
+      },
       21000,
-      22000,
-      baseFeePerGas,
-      maxPriorityFeePerGas
-    )
+      baseFeePerGas
+    ) //
 
-    const expectedEstimatedFee = ethers.utils.parseUnits("210000", "gwei").toString()
-    const expectedMaxFee = ethers.utils.parseUnits("288894518572000", "wei").toString()
+    const expectedEstimatedFee = ethers.utils.parseUnits("42000000000000", "wei").toString()
+    const expectedMaxFee = ethers.utils.parseUnits("44000000000000", "wei").toString()
 
     expect(estimatedFee.toString()).toEqual(expectedEstimatedFee)
     expect(maxFee.toString()).toEqual(expectedMaxFee)
   })
 
-  test("getLegacyTotalFees", () => {
-    const { estimatedFee, maxFee } = getLegacyTotalFees(
+  test("getTotalFeesFromGasSettings - EIP1559 classic", () => {
+    const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
+      {
+        type: 2,
+        maxFeePerGas: ethers.utils.parseUnits("3.5", "gwei"),
+        maxPriorityFeePerGas: ethers.utils.parseUnits("0.5", "gwei"),
+        gasLimit: 22000,
+      },
       21000,
-      22000,
-      baseFeePerGas.add(maxPriorityFeePerGas)
+      baseFeePerGas
+    )
+
+    const expectedEstimatedFee = ethers.utils.parseUnits("52500000000000", "wei").toString()
+    const expectedMaxFee = ethers.utils.parseUnits("88000000000000", "wei").toString()
+
+    expect(estimatedFee.toString()).toEqual(expectedEstimatedFee)
+    expect(maxFee.toString()).toEqual(expectedMaxFee)
+  })
+
+  test("getTotalFeesFromGasSettings - Legacy", () => {
+    const { estimatedFee, maxFee } = getTotalFeesFromGasSettings(
+      {
+        type: 0,
+        gasPrice: baseFeePerGas.add(maxPriorityFeePerGas),
+        gasLimit: 22000,
+      },
+      21000,
+      baseFeePerGas
     )
 
     const expectedEstimatedFee = ethers.utils.parseUnits("210000", "gwei").toString()

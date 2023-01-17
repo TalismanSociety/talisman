@@ -117,20 +117,6 @@ export const getGasLimit = (
   return gasLimit
 }
 
-// TODO delete too
-export const getLegacyTotalFees = (
-  estimatedGas: BigNumberish,
-  gasLimit: BigNumberish,
-  gasPrice: BigNumberish
-) => {
-  const estimatedFee = BigNumber.from(gasPrice).mul(
-    BigNumber.from(estimatedGas).lt(gasLimit) ? estimatedGas : gasLimit
-  )
-  const maxFee = BigNumber.from(gasPrice).mul(gasLimit)
-
-  return { estimatedFee, maxFee }
-}
-
 // Assume this value is the same for all EVM chains, isn't it ?
 const FEE_MAX_RAISE_RATIO_PER_BLOCK = 0.125
 
@@ -160,26 +146,6 @@ export const getGasSettingsEip1559 = (
   maxFeePerGas: getMaxFeePerGas(baseFee, maxPriorityFeePerGas, maxBlocksWait),
   gasLimit,
 })
-
-// TODO delete (just need to replace test to use getTotalFeesFromGasSettings) ?
-export const getEip1559TotalFees = (
-  estimatedGas: BigNumberish,
-  gasLimit: BigNumberish,
-  baseFeePerGas: BigNumberish,
-  maxPriorityFeePerGas: BigNumberish
-) => {
-  // for the estimate, assume gas will stay the same
-  const estimatedFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 0)
-  const estimatedFee = BigNumber.from(
-    BigNumber.from(estimatedGas).lt(gasLimit) ? estimatedGas : gasLimit
-  ).mul(estimatedFeePerGas)
-
-  // max cost if transaction waits 8 blocks and consumes the whole gasLimit
-  const maxFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 8)
-  const maxFee = BigNumber.from(gasLimit).mul(maxFeePerGas)
-
-  return { estimatedFee, maxFee }
-}
 
 export const getTotalFeesFromGasSettings = (
   gasSettings: EthGasSettings,
