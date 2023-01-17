@@ -4,7 +4,6 @@ import {
   AccountJsonHardwareSubstrate,
 } from "@core/domains/accounts/types"
 import {
-  EthGasSettings,
   EthGasSettingsEip1559,
   EthGasSettingsLegacy,
   EvmNetworkId,
@@ -102,17 +101,8 @@ export type TransactionDetails = {
 }
 
 // eth fees types ----------------------------------
-export type EthBasePriorityOptionNameEip1559 = "low" | "medium" | "high"
-export type EthBasePriorityOptionNameLegacy = "recommended"
-export type EthBasePriorityOptionName =
-  | EthBasePriorityOptionNameEip1559
-  | EthBasePriorityOptionNameLegacy
-export type EthBasePriorityOptionsEip1559 = Record<EthBasePriorityOptionNameEip1559, BigNumber>
-
-export type EthPriorityOptionNameEip1559 = EthBasePriorityOptionNameEip1559 | "custom"
-export type EthPriorityOptionsEip1559 = Record<EthPriorityOptionNameEip1559, BigNumber>
-
-export type EthPriorityOptionNameLegacy = EthBasePriorityOptionNameLegacy | "custom"
+export type EthPriorityOptionNameEip1559 = "low" | "medium" | "high" | "custom"
+export type EthPriorityOptionNameLegacy = "recommended" | "custom"
 export type EthPriorityOptionName = EthPriorityOptionNameEip1559 | EthPriorityOptionNameLegacy
 
 export type GasSettingsByPriorityEip1559 = { type: "eip1559" } & Record<

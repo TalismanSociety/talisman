@@ -6,15 +6,15 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { IconButton } from "@talisman/components/IconButton"
 import { notify } from "@talisman/components/Notifications"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { AlertTriangleIcon, ArrowRightIcon, InfoIcon, LoaderIcon } from "@talisman/theme/icons"
+import { ArrowRightIcon, InfoIcon, LoaderIcon } from "@talisman/theme/icons"
 import { formatDecimals } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BigNumber, ethers } from "ethers"
-import { FC, PropsWithChildren, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useDebounce } from "react-use"
-import { Button, FormFieldContainer, FormFieldInputText, classNames } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { NetworkUsage } from "../NetworkUsage"
@@ -26,13 +26,19 @@ const INPUT_PROPS = {
   className: "bg-grey-700 px-6 gap-6 h-[5rem]",
 }
 
+type FormData = {
+  maxBaseFee: number
+  maxPriorityFee: number
+  gasLimit: number
+}
+
 const gasSettingsFromFormData = (formData: FormData): EthGasSettingsEip1559 => ({
   type: 2,
   maxFeePerGas: BigNumber.from(
     Math.round((formData.maxBaseFee + formData.maxPriorityFee) * Math.pow(10, 9))
   ),
   maxPriorityFeePerGas: BigNumber.from(Math.round(formData.maxPriorityFee * Math.pow(10, 9))),
-  gasLimit: formData.gasLimit,
+  gasLimit: BigNumber.from(formData.gasLimit),
 })
 
 const schema = yup
@@ -97,12 +103,6 @@ const useIsValidGasSettings = (
     isLoading: isLoading || isValidationLoading,
     ...rest,
   }
-}
-
-type FormData = {
-  maxBaseFee: number
-  maxPriorityFee: number
-  gasLimit: number
 }
 
 type CustomGasSettingsFormEip1559Props = {

@@ -1,4 +1,4 @@
-import { EthPriorityOptionName, EthPriorityOptionNameEip1559 } from "@core/domains/signing/types"
+import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { useQuery } from "@tanstack/react-query"
 import { ethers } from "ethers"
 import { useEffect, useState } from "react"
@@ -25,7 +25,7 @@ export const useIsValidEthTransaction = (
         return result
       } catch (err) {
         setStaleIsValid(false)
-        // throw underlying ethers.js error if available, for a better error message
+        // if ethers.js error, throw underlying error that has the real error message
         throw (err as any)?.error ?? err
       }
     },

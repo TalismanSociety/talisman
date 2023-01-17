@@ -1,10 +1,13 @@
-import { EthBaseFeeTrend, EthBasePriorityOptionsEip1559 } from "@core/domains/signing/types"
+import { EthBaseFeeTrend } from "@core/domains/signing/types"
 import * as Sentry from "@sentry/browser"
 import { BigNumber, ethers } from "ethers"
 import { parseUnits } from "ethers/lib/utils"
 
 const BLOCKS_HISTORY_LENGTH = 4
 const REWARD_PERCENTILES = [10, 20, 30]
+
+// local helper type
+type EthBasePriorityOptionsEip1559 = Record<"low" | "medium" | "high", BigNumber>
 
 export const DEFAULT_ETH_PRIORITY_OPTIONS: EthBasePriorityOptionsEip1559 = {
   low: parseUnits("1.5", "gwei"),
@@ -15,7 +18,7 @@ export const DEFAULT_ETH_PRIORITY_OPTIONS: EthBasePriorityOptionsEip1559 = {
 type FeeHistory = {
   oldestBlock: number
   baseFeePerGas: BigNumber[]
-  gasUsedRatio: (number | null)[]
+  gasUsedRatio: (number | null)[] // can have null values (ex astar)
   reward?: BigNumber[][] // TODO find network that doesn't return this property, for testing
 }
 
@@ -42,7 +45,7 @@ export const getFeeHistoryAnalysis = async (
     // parse hex values
     const feeHistory: FeeHistory = {
       oldestBlock: parseInt(rawHistoryFee.oldestBlock, 16),
-      baseFeePerGas: rawHistoryFee.baseFeePerGas.map((fee: string) => BigNumber.from(fee)), // can be an array of null (ex astar)
+      baseFeePerGas: rawHistoryFee.baseFeePerGas.map((fee: string) => BigNumber.from(fee)),
       gasUsedRatio: rawHistoryFee.gasUsedRatio as (number | null)[],
       reward: rawHistoryFee.reward.map((reward: string[]) => reward.map((r) => BigNumber.from(r))),
     }
@@ -72,7 +75,7 @@ export const getFeeHistoryAnalysis = async (
         DEFAULT_ETH_PRIORITY_OPTIONS.high
       )
 
-    // last entry of the array is the base fee for next block
+    // last entry of the array is the base fee for next block, exclude it from further averages
     const nextBaseFee = feeHistory.baseFeePerGas.pop() as BigNumber
 
     const isBaseFeeIdle = feeHistory.baseFeePerGas.every((fee) => fee.eq(nextBaseFee))

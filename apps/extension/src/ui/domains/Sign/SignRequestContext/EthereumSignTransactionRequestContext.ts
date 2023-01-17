@@ -1,14 +1,13 @@
 import { rebuildTransactionRequestNumbers } from "@core/domains/ethereum/helpers"
 import { EthSignAndSendRequest } from "@core/domains/signing/types"
 import { log } from "@core/log"
-import { KnownTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useSigningRequestById from "@ui/hooks/useSigningRequestById"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 

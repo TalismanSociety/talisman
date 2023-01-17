@@ -32,7 +32,7 @@ type FormData = {
 const gasSettingsFromFormData = (formData: FormData): EthGasSettingsLegacy => ({
   type: 0,
   gasPrice: BigNumber.from(Math.round(formData.gasPrice * Math.pow(10, 9))),
-  gasLimit: formData.gasLimit,
+  gasLimit: BigNumber.from(formData.gasLimit),
 })
 
 const schema = yup

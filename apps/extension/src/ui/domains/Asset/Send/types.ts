@@ -1,10 +1,6 @@
 import { Balance, BalanceFormatter } from "@core/domains/balances/types"
 import { EthGasSettings } from "@core/domains/ethereum/types"
-import {
-  EthPriorityOptionName,
-  EthPriorityOptionNameEip1559,
-  SignerPayloadJSON,
-} from "@core/domains/signing/types"
+import { EthPriorityOptionName, SignerPayloadJSON } from "@core/domains/signing/types"
 import { Token } from "@core/domains/tokens/types"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 

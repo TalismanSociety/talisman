@@ -12,7 +12,6 @@ import { EthSignBody } from "@ui/domains/Ethereum/Sign/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Ethereum/Sign/shared"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import { useBalance } from "@ui/hooks/useBalance"
-import useToken from "@ui/hooks/useToken"
 import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
@@ -185,8 +184,6 @@ export const EthSignTransactionRequest = () => {
     if (status === "SUCCESS") window.close()
   }, [status])
 
-  const nativeToken = useToken(network?.nativeToken?.id)
-
   // gas settings must be locked as soon as payload is sent to ledger
   const handleSendToLedger = useCallback(() => {
     setIsPayloadLocked(true)
@@ -222,7 +219,7 @@ export const EthSignTransactionRequest = () => {
         </div>
         {isReadyToDisplay && (
           <Suspense fallback={null}>
-            {nativeToken && transaction && txDetails?.estimatedFee ? (
+            {transaction && txDetails && network?.nativeToken ? (
               <div className="gasInfo mt-8">
                 <div>
                   <div>
@@ -231,7 +228,7 @@ export const EthSignTransactionRequest = () => {
                       tooltip={
                         <FeeTooltip
                           account={account?.address}
-                          tokenId={network?.nativeToken?.id}
+                          tokenId={network.nativeToken.id}
                           estimatedFee={txDetails.estimatedFee.toString()}
                           maxFee={txDetails.maxFee.toString()}
                         />
@@ -245,14 +242,14 @@ export const EthSignTransactionRequest = () => {
                 <div>
                   <div>
                     <TokensAndFiat
-                      tokenId={network?.nativeToken?.id}
-                      planck={txDetails?.estimatedFee?.toString()}
+                      tokenId={network.nativeToken.id}
+                      planck={txDetails.estimatedFee.toString()}
                     />
                   </div>
                   <div>
                     <EthFeeSelect
                       tx={request}
-                      tokenId={nativeToken.id}
+                      tokenId={network.nativeToken.id}
                       disabled={isPayloadLocked}
                       gasSettingsByPriority={gasSettingsByPriority}
                       setCustomSettings={setCustomSettings}

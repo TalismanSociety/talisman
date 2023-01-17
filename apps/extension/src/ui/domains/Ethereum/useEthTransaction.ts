@@ -1,7 +1,6 @@
 import {
   getGasLimit,
   getGasSettingsEip1559,
-  getLegacyTotalFees,
   getTotalFeesFromGasSettings,
   prepareTransaction,
 } from "@core/domains/ethereum/helpers"
@@ -103,12 +102,12 @@ const useEstimatedGas = (
         const { gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas, ...rest } = tx
         return await provider.estimateGas(rest)
       } catch (err) {
-        // throw underlying ethers.js error, if available
+        // if ethers.js error, throw underlying error that has the real error message
         throw (err as any)?.error ?? err
       }
     },
     refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
-    retry: 0,
+    retry: false,
   })
 }
 
@@ -136,7 +135,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
       return
     }
 
-    // local lock used to prevent block data to be fetched sequentially
+    // local lock used to force block data to be fetched sequentially
     // we may skip blocks, but they won't be overriden with data from previous ones
     // important on fast L2 networks such as arbitrum and polygon
     let isBusy = false
@@ -377,22 +376,6 @@ const usePerPriorityGasSettings = ({
   }
 }
 
-// const useEstimatedGas = (
-//   provider?: ethers.providers.JsonRpcProvider,
-//   tx?: ethers.providers.TransactionRequest
-// ) => {
-//   return useQuery({
-//     queryKey: ["estimateGas", provider?.network?.chainId, tx],
-//     queryFn: () => {
-//       if (!provider || !tx) return null
-//       // ignore gas settings set by dapp
-//       const { gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas, ...rest } = tx
-//       return provider.estimateGas(rest)
-//     },
-//     refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
-//   })
-// }
-
 export const useEthTransaction = (
   tx?: ethers.providers.TransactionRequest,
   lockTransaction = false
@@ -404,7 +387,6 @@ export const useEthTransaction = (
   const { data: estimatedGas, error: estimatedGasError } = useEstimatedGas(provider, tx)
 
   const {
-    blockNumber,
     gasPrice,
     blockGasUsedRatio: networkUsage,
     baseFeePerGas,
@@ -422,14 +404,14 @@ export const useEthTransaction = (
   }, [hasEip1559Support, priority])
 
   const { gasSettings, setCustomSettings, gasSettingsByPriority } = usePerPriorityGasSettings({
+    tx,
+    priority,
     hasEip1559Support,
     baseFeePerGas,
     estimatedGas,
     gasPrice,
     blockGasLimit,
     feeHistoryAnalysis,
-    priority,
-    tx,
   })
 
   const liveUpdatingTransaction = useMemo(() => {
@@ -473,12 +455,6 @@ export const useEthTransaction = (
     transaction,
     priority
   )
-
-  // useEffect(() => {
-  //   if (isValidError) console.log("qCheck validation error", isValidError)
-  //   else if (isValid) console.log("qCheck is valid")
-  //   else console.log("validation check is pending")
-  // }, [isValid, isValidError])
 
   const error = useMemo(
     () =>
