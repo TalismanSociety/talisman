@@ -3,6 +3,7 @@ import imgFeePriorityCustom from "@talisman/theme/images/fee-priority-custom.png
 import imgFeePriorityHigh from "@talisman/theme/images/fee-priority-high.png"
 import imgFeePriorityLow from "@talisman/theme/images/fee-priority-low.png"
 import imgFeePriorityMedium from "@talisman/theme/images/fee-priority-medium.png"
+import imgFeePriorityRecommended from "@talisman/theme/images/fee-priority-recommended.png"
 
 export const FEE_PRIORITY_OPTIONS: Record<EthPriorityOptionName, { icon: string; label: string }> =
   {
@@ -10,5 +11,5 @@ export const FEE_PRIORITY_OPTIONS: Record<EthPriorityOptionName, { icon: string;
     medium: { icon: imgFeePriorityMedium, label: "Normal" },
     high: { icon: imgFeePriorityHigh, label: "Urgent" },
     custom: { icon: imgFeePriorityCustom, label: "Custom" },
-    recommended: { icon: imgFeePriorityMedium, label: "Recommended" },
+    recommended: { icon: imgFeePriorityRecommended, label: "Recommended" },
   }
