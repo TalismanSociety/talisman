@@ -6,6 +6,7 @@ import {
   LoggedinType,
   ModalOpenRequest,
   OnboardedType,
+  SendFundsOpenRequest,
 } from "@core/domains/app/types"
 import {
   AddressesByEvmNetwork,
@@ -88,6 +89,7 @@ export default interface MessageTypes {
   modalOpen: (modal: ModalOpenRequest) => Promise<boolean>
   modalOpenSubscribe: (cb: (val: ModalOpenRequest) => void) => UnsubscribeFn
   analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>
+  sendFundsOpen: (request?: SendFundsOpenRequest) => Promise<boolean>
 
   // mnemonic message types -------------------------------------------------------
   mnemonicUnlock: (pass: string) => Promise<string>

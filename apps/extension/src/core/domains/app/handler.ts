@@ -9,6 +9,7 @@ import type {
   RequestLogin,
   RequestOnboard,
   RequestRoute,
+  SendFundsOpenRequest,
 } from "@core/domains/app/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
@@ -195,6 +196,14 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
+  private async openSendFunds({ from, tokenId }: SendFundsOpenRequest): Promise<boolean> {
+    const params = new URLSearchParams()
+    if (from) params.append("from", from)
+    if (tokenId) params.append("tokenId", tokenId)
+    await this.state.popupOpen(`#/send?${params.toString()}`)
+    return true
+  }
+
   private async openModal(request: ModalOpenRequest): Promise<void> {
     const queryUrl = Browser.runtime.getURL("dashboard.html")
     const [tab] = await Browser.tabs.query({ url: queryUrl })
@@ -281,6 +290,9 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.modalOpen.request)":
         return this.openModal(request as ModalOpenRequest)
+
+      case "pri(app.sendFunds.open)":
+        return this.openSendFunds(request as RequestTypes["pri(app.sendFunds.open)"])
 
       case "pri(app.modalOpen.subscribe)":
         return genericSubscription<"pri(app.modalOpen.subscribe)">(id, port, this.#modalOpenRequest)

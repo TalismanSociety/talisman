@@ -1,3 +1,4 @@
+import { TokenId } from "@core/domains/tokens/types"
 import { Address } from "@core/types/base"
 import { Properties } from "posthog-js"
 
@@ -24,6 +25,7 @@ export type ModalOpenRequestSend = {
   transferableTokenId?: string
 }
 export type ModalOpenRequest = ModalOpenRequestBuy | ModalOpenRequestSend
+export type SendFundsOpenRequest = { from?: Address; tokenId?: TokenId }
 
 export interface AnalyticsCaptureRequest {
   eventName: string
@@ -76,6 +78,7 @@ export interface AppMessages {
   "pri(app.onboardOpen)": [null, boolean]
   "pri(app.popupOpen)": [null, boolean]
   "pri(app.modalOpen.request)": [ModalOpenRequest, boolean]
+  "pri(app.sendFunds.open)": [SendFundsOpenRequest, boolean]
   "pri(app.modalOpen.subscribe)": [null, boolean, ModalOpenRequest]
   "pri(app.promptLogin)": [boolean, boolean]
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]

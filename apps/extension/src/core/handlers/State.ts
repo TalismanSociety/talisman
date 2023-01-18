@@ -1,7 +1,7 @@
-import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 // Copyright 2019-2021 @polkadot/extension-bg authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/background/handlers/State.ts
+import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
 import { EncryptRequestsStore } from "@core/domains/encrypt"
@@ -11,7 +11,6 @@ import { SigningRequestsStore } from "@core/domains/signing"
 import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
 import { isEthereumRequest } from "@core/util/isEthereumRequest"
-import { assert } from "@polkadot/util"
 import { sleep } from "@talismn/util"
 import Browser from "webextension-polyfill"
 
@@ -104,7 +103,7 @@ export default class State {
     this.#windows = []
   }
 
-  private async popupOpen(argument?: string) {
+  public async popupOpen(argument?: string) {
     const currWindow = await Browser.windows.getLastFocused()
 
     const { left, top } = {
