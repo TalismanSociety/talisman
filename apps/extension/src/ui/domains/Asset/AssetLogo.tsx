@@ -5,16 +5,22 @@ import { EvmNetworkId, githubUnknownTokenLogoUrl } from "@talismn/chaindata-prov
 import { TokenId } from "@talismn/chaindata-provider"
 import useToken from "@ui/hooks/useToken"
 import { imgSrcToBlob } from "blob-util"
-import { FC, useEffect, useState } from "react"
+import { FC, useEffect, useMemo, useState } from "react"
+
+const isTalismanLogo = (url?: string) => {
+  if (!url) return false
+  return /^https:\/\/raw.githubusercontent.com\/TalismanSociety\/chaindata\//i.test(url)
+}
 
 type AssetLogoBaseProps = {
   id?: string
   className?: string
   url?: string | null
   symbol?: string
+  rounded?: boolean
 }
 
-export const AssetLogoBase = ({ id, symbol, className, url }: AssetLogoBaseProps) => {
+export const AssetLogoBase = ({ id, symbol, className, url, rounded }: AssetLogoBaseProps) => {
   const [error, setError] = useState(false)
 
   useEffect(() => {
@@ -29,7 +35,7 @@ export const AssetLogoBase = ({ id, symbol, className, url }: AssetLogoBaseProps
         <source srcSet={url ?? undefined} />
       )}
       <img
-        className="absolute top-0 left-0 h-full w-full"
+        className={classNames("absolute top-0 left-0 h-full w-full", rounded && "rounded-full")}
         src={githubUnknownTokenLogoUrl}
         alt={symbol ?? ""}
         data-id={id}
@@ -126,7 +132,10 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
     setUrl(logo)
   }, [erc20, id, logo])
 
-  return <AssetLogoBase className={className} symbol={token?.symbol} url={url} />
+  // round logos except if they are hosted in Talisman's chaindata repo
+  const rounded = useMemo(() => !isTalismanLogo(logo), [logo])
+
+  return <AssetLogoBase className={className} symbol={token?.symbol} url={url} rounded={rounded} />
 }
 
 //
