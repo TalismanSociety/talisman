@@ -196,6 +196,8 @@ export default class AppHandler extends ExtensionHandler {
     await this.stores.password.reset()
     await this.stores.seedPhrase.clear()
     await this.state.openOnboarding("/import?resetWallet=true")
+    // since all accounts are being wiped, all sites need to be reset - so they may as well be wiped.
+    await this.stores.sites.clear()
 
     return true
   }
