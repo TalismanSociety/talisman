@@ -39,6 +39,7 @@ import { Encrypt } from "./pages/Encrypt"
 import { Login } from "./pages/Login"
 import { Metadata } from "./pages/Metadata"
 import { Portfolio } from "./pages/Portfolio"
+import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 
@@ -130,6 +131,7 @@ const Popup = () => {
                         <Route path="encrypt/:id" element={<Encrypt />}></Route>
                         <Route path="eth-network-add/:id" element={<AddEthereumNetwork />}></Route>
                         <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
+                        <Route path="send/*" element={<SendFundsPage />}></Route>
                         <Route path="*" element={<Navigate to="/portfolio" replace />} />
                       </Routes>
                       <AccountRenameModal />
