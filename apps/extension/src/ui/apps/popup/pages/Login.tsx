@@ -3,7 +3,7 @@ import { FormField } from "@talisman/components/Field/FormField"
 import { StatusIcon } from "@talisman/components/StatusIcon"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
@@ -71,14 +71,14 @@ export const Login = () => {
     <Layout className="pt-32">
       <Content className="text-center">
         <StatusIcon status={isSubmitting ? "SPINNING" : "STATIC"} />
-        <h1 className="mt-2">Unlock Talisman</h1>
+        <h1 className="mt-2 font-sans text-[3.2rem]">Unlock Talisman</h1>
         {errors.password?.message && (
           <div className="text-alert-warn">{errors.password?.message}</div>
         )}
       </Content>
       <Footer>
         <form className="flex flex-col items-center gap-6" onSubmit={handleSubmit(submit)}>
-          <FormField className="w-full">
+          <FormField className="w-full text-center">
             <input
               {...register("password")}
               type="password"
@@ -93,7 +93,7 @@ export const Login = () => {
             Unlock
           </Button>
           <span
-            className="text-body-secondary mt-2 text-sm hover:text-white"
+            className="text-body-secondary mt-2 cursor-pointer text-sm hover:text-white"
             onClick={() => navigate("/reset-wallet")}
           >
             Forgot Password?

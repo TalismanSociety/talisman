@@ -62,10 +62,10 @@ export const ResetWallet = () => {
     <Layout className="p-4">
       <div className="text-body-secondary flex h-32 justify-center px-12 pr-[16px] align-middle">
         <ChevronLeftIcon
-          className="flex-shrink cursor-pointer hover:text-white"
+          className="flex-shrink cursor-pointer text-lg hover:text-white"
           onClick={() => navigate("/login")}
         />
-        <span className="flex-grow pr-[16px] text-center text-sm">Reset Wallet</span>
+        <span className="flex-grow pr-[24px] text-center">Reset Wallet</span>
       </div>
       <Content>
         <div className="flex flex-col items-center gap-24">
