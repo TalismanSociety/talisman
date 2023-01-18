@@ -36,10 +36,9 @@ import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
 import { AddEthereumNetwork } from "./pages/AddEthereumNetwork"
 import { Connect } from "./pages/Connect"
 import { Encrypt } from "./pages/Encrypt"
-import { Login } from "./pages/Login"
+import { LoginViewManager } from "./pages/Login"
 import { Metadata } from "./pages/Metadata"
 import { Portfolio } from "./pages/Portfolio"
-import { ResetWallet } from "./pages/ResetWallet"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 
@@ -105,14 +104,7 @@ const Popup = () => {
 
   if (isLoading) return null
 
-  if (isLoggedIn === "FALSE")
-    return (
-      <Routes>
-        <Route path="/login" element={<Login />}></Route>
-        <Route path="/reset-wallet" element={<ResetWallet />}></Route>
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    )
+  if (isLoggedIn === "FALSE") return <LoginViewManager />
 
   return (
     // TODO implement layout here to prevent container flickering on route change (some routes render null until loaded)

@@ -3,13 +3,13 @@ import { FormField } from "@talisman/components/Field/FormField"
 import { StatusIcon } from "@talisman/components/StatusIcon"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
-import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 import * as yup from "yup"
 
 import Layout, { Content, Footer } from "../Layout"
+import { ResetWallet } from "./ResetWallet"
 
 type FormData = {
   password: string
@@ -21,9 +21,8 @@ const schema = yup
   })
   .required()
 
-export const Login = () => {
+const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
   const { popupOpenEvent } = useAnalytics()
-  const navigate = useNavigate()
 
   useEffect(() => {
     popupOpenEvent("auth")
@@ -94,7 +93,7 @@ export const Login = () => {
           </Button>
           <span
             className="text-body-secondary mt-2 cursor-pointer text-sm hover:text-white"
-            onClick={() => navigate("/reset-wallet")}
+            onClick={setShowResetWallet}
           >
             Forgot Password?
           </span>
@@ -102,4 +101,11 @@ export const Login = () => {
       </Footer>
     </Layout>
   )
+}
+
+export const LoginViewManager = () => {
+  const [showResetWallet, setShowResetWallet] = useState(false)
+
+  if (showResetWallet) return <ResetWallet closeResetWallet={() => setShowResetWallet(false)} />
+  return <Login setShowResetWallet={() => setShowResetWallet(true)} />
 }

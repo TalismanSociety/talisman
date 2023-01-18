@@ -5,13 +5,17 @@ import Terrarium from "@talisman/theme/images/forgot_password_terrarium.png"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
 import { Button } from "talisman-ui"
 
 import Layout, { Content, Footer } from "../Layout"
 
-const ConfirmDrawer = ({ isOpen }: { isOpen: boolean }) => {
-  const navigate = useNavigate()
+const ConfirmDrawer = ({
+  isOpen,
+  closeResetWallet,
+}: {
+  isOpen: boolean
+  closeResetWallet: () => void
+}) => {
   const [resetting, setResetting] = useState(false)
 
   const handleReset = useCallback(async () => {
@@ -40,7 +44,7 @@ const ConfirmDrawer = ({ isOpen }: { isOpen: boolean }) => {
           <Button fullWidth onClick={handleReset} primary processing={resetting}>
             Continue
           </Button>
-          <Button fullWidth onClick={() => navigate("/login")}>
+          <Button fullWidth onClick={closeResetWallet}>
             Cancel
           </Button>
         </div>
@@ -49,10 +53,9 @@ const ConfirmDrawer = ({ isOpen }: { isOpen: boolean }) => {
   )
 }
 
-export const ResetWallet = () => {
+export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void }) => {
   const { popupOpenEvent } = useAnalytics()
   const { open, isOpen } = useOpenClose()
-  const navigate = useNavigate()
 
   useEffect(() => {
     popupOpenEvent("reset wallet")
@@ -63,7 +66,7 @@ export const ResetWallet = () => {
       <div className="text-body-secondary flex h-32 justify-center px-12 pr-[16px] align-middle">
         <ChevronLeftIcon
           className="flex-shrink cursor-pointer text-lg hover:text-white"
-          onClick={() => navigate("/login")}
+          onClick={closeResetWallet}
         />
         <span className="flex-grow pr-[24px] text-center">Reset Wallet</span>
       </div>
@@ -81,7 +84,7 @@ export const ResetWallet = () => {
           Reset wallet
         </Button>
       </Footer>
-      <ConfirmDrawer isOpen={isOpen} />
+      <ConfirmDrawer isOpen={isOpen} closeResetWallet={closeResetWallet} />
     </Layout>
   )
 }
