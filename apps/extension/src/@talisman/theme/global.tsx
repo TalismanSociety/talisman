@@ -31,14 +31,14 @@ const Global = createGlobalStyle`
 
   // if window popup, set borders on HTML element
   html.popup {
-    border: 1px solid var(--color-background-muted-2x);
+    border: 1px solid #3f3f3f;
   }
 
   // if embedded popup (extension button action), set borders on #main element
   html.popup.embedded {
     border:none;    
     #main {
-      border: 1px solid var(--color-background-muted-2x);
+      border: 1px solid #3f3f3f;
 
       // rounded borders for firefox
       @media all and (min--moz-device-pixel-ratio:0) {
