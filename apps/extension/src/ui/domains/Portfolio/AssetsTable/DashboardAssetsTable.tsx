@@ -129,7 +129,6 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
 
 type AssetRowProps = {
   balances: Balances
-  symbol: string
 }
 
 const FetchingIcon = styled(LoaderIcon)`
@@ -137,7 +136,7 @@ const FetchingIcon = styled(LoaderIcon)`
   font-size: 1.8rem;
 `
 
-const AssetRow = ({ balances, symbol }: AssetRowProps) => {
+const AssetRow = ({ balances }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
@@ -245,7 +244,7 @@ export const DashboardAssetsTable = ({ balances }: AssetsTableProps) => {
       </thead>
       <tbody>
         {symbolBalances.map(([symbol, b]) => (
-          <AssetRow key={symbol} balances={b} symbol={symbol} />
+          <AssetRow key={symbol} balances={b} />
         ))}
         {[...Array(skeletons).keys()].map((i) => (
           <AssetRowSkeleton key={i} className={getSkeletonOpacity(i)} />
