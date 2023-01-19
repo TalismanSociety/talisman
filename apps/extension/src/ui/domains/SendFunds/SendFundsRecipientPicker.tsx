@@ -17,7 +17,7 @@ import { SendFundsAccountsList } from "./SendFundsAccountsList"
 import { SendFundsSearchInput } from "./SendFundsSearchInput"
 
 export const SendFundsRecipientPicker = () => {
-  const { from, to, set } = useSendFunds()
+  const { to, set } = useSendFunds()
   const [search, setSearch] = useState("")
 
   const handleSelect = useCallback(
@@ -43,7 +43,7 @@ export const SendFundsRecipientPicker = () => {
         </div>
       </div>
       <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-        <SendFundsAccountsList selected={from} search={search} onSelect={handleSelect} />
+        <SendFundsAccountsList selected={to} search={search} onSelect={handleSelect} />
       </ScrollContainer>
       {/* <div className="bg-black-secondary border-grey-700 scrollable scrollable-800 w-full grow overflow-y-auto border-t">
         <AccountsList />

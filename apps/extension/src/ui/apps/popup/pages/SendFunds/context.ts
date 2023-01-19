@@ -12,7 +12,7 @@ type SendFundsParams = {
   max: boolean
 }
 
-type SendFundsWizardPage = "from" | "to" | "token" | "amount" | "confirm"
+export type SendFundsWizardPage = "from" | "to" | "token" | "amount" | "confirm"
 
 const useSendFundsContext = () => {
   const [searchParams, setSearchParams] = useSearchParams()
