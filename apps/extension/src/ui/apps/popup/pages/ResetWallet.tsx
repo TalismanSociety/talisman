@@ -36,9 +36,9 @@ const ConfirmDrawer = ({
         </div>
 
         <p className="text-body-secondary p-4 text-center text-sm">
-          Your current wallet, accounts and assets will be erased from this wallet. You will need to
-          re-import your account via recovery phrase. Note that you may have to re-add any other
-          imported accounts such as Ledger devices.
+          Your current accounts and assets will be erased from this wallet. You will need to
+          re-import your account via recovery phrase. Note that you will have to re-add any other
+          imported accounts such as Ledger devices if you had added any.
         </p>
         <div className="mt-4 flex flex-col gap-4">
           <Button fullWidth onClick={handleReset} primary processing={resetting}>
@@ -72,7 +72,7 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
       </div>
       <Content>
         <div className="flex flex-col items-center gap-24">
-          <img src={Terrarium} />
+          <img src={Terrarium} className="h-[27.1rem]" />
           <p className="text-body-secondary text-center">
             To reset your wallet you'll need to re-import your account via recovery phrase and set a
             new password.
