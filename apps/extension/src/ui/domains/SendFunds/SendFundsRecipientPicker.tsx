@@ -16,25 +16,13 @@ import Fiat from "../Asset/Fiat"
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 import { SendFundsSearchInput } from "./SendFundsSearchInput"
 
-const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
-  small: true,
-  className: "!px-8 h-[4.6rem] my-1 !bg-black-tertiary",
-}
-
-export const SendFundsAccountPicker = () => {
-  const { from, set } = useSendFunds()
+export const SendFundsRecipientPicker = () => {
+  const { from, to, set } = useSendFunds()
   const [search, setSearch] = useState("")
-
-  // const handleSearchChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-  //   (e) => {
-  //     setSearch(e.target.value)
-  //   },
-  //   [setSearch]
-  // )
 
   const handleSelect = useCallback(
     (address: string) => {
-      set("from", address, true)
+      set("to", address, true)
     },
     [set]
   )
@@ -42,9 +30,9 @@ export const SendFundsAccountPicker = () => {
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-        <div className="font-bold">From</div>
+        <div className="font-bold">To</div>
         <div className="grow">
-          <SendFundsSearchInput onChange={setSearch} placeholder="Search by account name" />
+          <SendFundsSearchInput onChange={setSearch} placeholder="Enter address" />
           {/* <FormFieldInputText
             className="text-base"
             containerProps={INPUT_CONTAINER_PROPS}

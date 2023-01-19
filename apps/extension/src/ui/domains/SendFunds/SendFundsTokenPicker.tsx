@@ -181,6 +181,7 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
     [onSelect]
   )
 
+  // TODO implement virtualization ? that's a LOT of rows
   return (
     <div className="min-h-full">
       {/* <div className="text-body-secondary px-12 font-bold">
