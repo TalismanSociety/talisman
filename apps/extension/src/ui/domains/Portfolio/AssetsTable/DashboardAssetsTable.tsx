@@ -134,7 +134,7 @@ type AssetRowProps = {
 
 const FetchingIcon = styled(LoaderIcon)`
   line-height: 1;
-  font-size: 2rem;
+  font-size: 1.8rem;
 `
 
 const AssetRow = ({ balances, symbol }: AssetRowProps) => {
