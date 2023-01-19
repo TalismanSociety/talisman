@@ -322,7 +322,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
           label={
             <span className="text-sm">
               Max Base Fee{" "}
-              <WithTooltip tooltip="The maximum base fee you are willing to pay to have this transaction confirmed. Selecting a value that's too low could prevent your transaction to ever be included in a block.">
+              <WithTooltip tooltip="The maximum base fee you are willing to pay to have this transaction confirmed. Selecting a value that's too low could prevent your transaction from ever being included in a block.">
                 <InfoIcon className="inline align-text-top" />
               </WithTooltip>
             </span>
