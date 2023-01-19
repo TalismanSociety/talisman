@@ -19,7 +19,7 @@ export type OnboardingWizardData = {
 
 const DEFAULT_DATA: OnboardingWizardData = {}
 
-const useAppOnboardProvider = () => {
+const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWallet?: boolean }) => {
   // data used for account creation
   const [data, setData] = useState<OnboardingWizardData>(DEFAULT_DATA)
 
@@ -40,8 +40,9 @@ const useAppOnboardProvider = () => {
       location.href = `dashboard.html#/accounts/add/ledger?type=${importAccountType}`
     else if (importMethodType === "private-key")
       location.href = `dashboard.html#/accounts/add/secret?type=${importAccountType}`
+    else if (isResettingWallet) location.href = "dashboard.html#/portfolio"
     else location.href = "dashboard.html#/portfolio?onboarded"
-  }, [data])
+  }, [data, isResettingWallet])
 
   const reset = useCallback(() => {
     setData(DEFAULT_DATA)
@@ -62,6 +63,7 @@ const useAppOnboardProvider = () => {
   return {
     onboard,
     reset,
+    isResettingWallet,
     data,
     updateData,
   }
@@ -69,10 +71,15 @@ const useAppOnboardProvider = () => {
 
 const [AppOnboardProvider, useAppOnboardContext] = provideContext(useAppOnboardProvider)
 
-const Provider = ({ children }: { children?: ReactNode }) => {
+const Provider = ({
+  children,
+  resetWallet = false,
+}: {
+  children?: ReactNode
+  resetWallet?: boolean
+}) => {
   const isOnboarded = useIsOnboarded()
   const [checked, setChecked] = useState(false)
-
   // if user is already onboarded when he opens onboarding page, redirect to dashboard page
   // only check once, the last page of the workflow will take care of the redirect
   useEffect(() => {
@@ -86,7 +93,7 @@ const Provider = ({ children }: { children?: ReactNode }) => {
   // Wait until we know if user has already onboarded
   if (isOnboarded === "UNKNOWN") return null
 
-  return <AppOnboardProvider>{children}</AppOnboardProvider>
+  return <AppOnboardProvider isResettingWallet={resetWallet}>{children}</AppOnboardProvider>
 }
 
 export const useOnboard = useAppOnboardContext

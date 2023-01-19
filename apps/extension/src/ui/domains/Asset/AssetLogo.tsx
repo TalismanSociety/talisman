@@ -5,37 +5,46 @@ import { EvmNetworkId, githubUnknownTokenLogoUrl } from "@talismn/chaindata-prov
 import { TokenId } from "@talismn/chaindata-provider"
 import useToken from "@ui/hooks/useToken"
 import { imgSrcToBlob } from "blob-util"
-import { FC, useEffect, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
+
+const isTalismanLogo = (url?: string) => {
+  if (!url) return false
+  return /^https:\/\/raw.githubusercontent.com\/TalismanSociety\/chaindata\//i.test(url)
+}
 
 type AssetLogoBaseProps = {
   id?: string
   className?: string
   url?: string | null
-  symbol?: string
+  rounded?: boolean
 }
 
-export const AssetLogoBase = ({ id, symbol, className, url }: AssetLogoBaseProps) => {
-  const [error, setError] = useState(false)
+export const AssetLogoBase = ({ id, className, url, rounded }: AssetLogoBaseProps) => {
+  const [src, setSrc] = useState(() => url ?? githubUnknownTokenLogoUrl)
 
+  // reset
   useEffect(() => {
-    setError(false)
+    setSrc(url ?? githubUnknownTokenLogoUrl)
   }, [url])
 
+  const handleError = useCallback(() => setSrc(githubUnknownTokenLogoUrl), [])
+
+  const imgClassName = useMemo(
+    () =>
+      classNames("relative block h-[1em] w-[1em] shrink-0", rounded && "rounded-full", className),
+    [className, rounded]
+  )
+
+  // use url as key to reset dom element in case url changes, otherwise onError can't fire again
   return (
-    <picture className={classNames("relative block h-[1em] w-[1em] shrink-0", className)}>
-      {!url || error ? (
-        <source srcSet={githubUnknownTokenLogoUrl} />
-      ) : (
-        <source srcSet={url ?? undefined} />
-      )}
-      <img
-        className="absolute top-0 left-0 h-full w-full"
-        src={githubUnknownTokenLogoUrl}
-        alt={symbol ?? ""}
-        data-id={id}
-        onError={() => setError(true)}
-      />
-    </picture>
+    <img
+      key={url ?? id ?? "EMPTY"}
+      data-id={id}
+      src={src}
+      className={imgClassName}
+      alt=""
+      onError={handleError}
+    />
   )
 }
 
@@ -55,21 +64,24 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
   const token = useToken(id)
 
   // extract the token logo url, or use the unknown logo url
-  const logo =
+  const logo = useMemo(() => {
     //
     // if the token is a custom erc20 token, try the token.image field first
     //
-    (token && token.type === "evm-erc20" && "isCustom" in token && token.isCustom
-      ? token.image
-      : undefined) ??
-    //
-    // next, try the token.logo field
-    //
-    token?.logo ??
-    //
-    // next, use the unknown token logo as a fallback
-    //
-    githubUnknownTokenLogoUrl
+    return (
+      (token && token.type === "evm-erc20" && "isCustom" in token && token.isCustom
+        ? token.image
+        : undefined) ??
+      //
+      // next, try the token.logo field
+      //
+      token?.logo ??
+      //
+      // next, use the unknown token logo as a fallback
+      //
+      githubUnknownTokenLogoUrl
+    )
+  }, [token])
 
   // for coingecko/data token logo urls, run some async transforms on the url
   //
@@ -126,7 +138,10 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
     setUrl(logo)
   }, [erc20, id, logo])
 
-  return <AssetLogoBase className={className} symbol={token?.symbol} url={url} />
+  // round logos except if they are hosted in Talisman's chaindata repo
+  const rounded = useMemo(() => !isTalismanLogo(logo), [logo])
+
+  return <AssetLogoBase className={className} url={url} rounded={rounded} />
 }
 
 //

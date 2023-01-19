@@ -213,14 +213,18 @@ export default class State {
     return tab
   }
 
-  public async openOnboarding() {
+  public async openOnboarding(route?: string) {
     if (this.#onboardingTabOpening) return
     this.#onboardingTabOpening = true
-    const url = Browser.runtime.getURL(`onboarding.html`)
+    const baseUrl = Browser.runtime.getURL(`onboarding.html`)
 
     const onboarded = await appStore.getIsOnboarded()
 
-    await this.openTabOnce({ url, shouldFocus: onboarded })
+    await this.openTabOnce({
+      url: `${baseUrl}${route ? `#${route}` : ""}`,
+      baseUrl,
+      shouldFocus: onboarded,
+    })
     this.#onboardingTabOpening = false
   }
 

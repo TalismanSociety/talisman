@@ -190,6 +190,19 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
+  private async resetWallet() {
+    // delete all the accounts
+    keyring.getAccounts().forEach((acc) => keyring.forgetAccount(acc.address))
+    this.stores.app.set({ onboarded: "FALSE" })
+    await this.stores.password.reset()
+    await this.stores.seedPhrase.clear()
+    await this.state.openOnboarding("/import?resetWallet=true")
+    // since all accounts are being wiped, all sites need to be reset - so they may as well be wiped.
+    await this.stores.sites.clear()
+
+    return true
+  }
+
   private async dashboardOpen({ route }: RequestRoute): Promise<boolean> {
     if (!(await this.stores.app.getIsOnboarded())) return this.onboardOpen()
     this.state.openDashboard({ route })
@@ -308,6 +321,9 @@ export default class AppHandler extends ExtensionHandler {
           (request as RequestTypes["pri(app.phishing.addException)"]).url
         )
       }
+
+      case "pri(app.resetWallet)":
+        return this.resetWallet()
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)
