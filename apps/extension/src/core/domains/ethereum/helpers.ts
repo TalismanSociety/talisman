@@ -1,6 +1,7 @@
 import { ChainId } from "@core/domains/chains/types"
 import {
   EthGasSettings,
+  EthGasSettingsEip1559,
   EvmNetworkId,
   LedgerEthDerivationPathType,
 } from "@core/domains/ethereum/types"
@@ -116,49 +117,68 @@ export const getGasLimit = (
   return gasLimit
 }
 
-export const getLegacyTotalFees = (
-  estimatedGas: BigNumberish,
-  gasLimit: BigNumberish,
-  gasPrice: BigNumberish
-) => {
-  const estimatedFee = BigNumber.from(estimatedGas).mul(gasPrice)
-  const maxFee = BigNumber.from(gasLimit).mul(gasPrice)
-
-  return { estimatedFee, maxFee }
-}
-
 // Assume this value is the same for all EVM chains, isn't it ?
 const FEE_MAX_RAISE_RATIO_PER_BLOCK = 0.125
 
 export const getMaxFeePerGas = (
   baseFeePerGas: BigNumberish,
   maxPriorityFeePerGas: BigNumberish,
-  maxBlocksWait = 8
+  maxBlocksWait = 8,
+  increase = true
 ) => {
   let base = BigNumber.from(baseFeePerGas)
 
   //baseFeePerGas can augment 12.5% per block
   for (let i = 0; i < maxBlocksWait; i++)
-    base = base.mul((1 + FEE_MAX_RAISE_RATIO_PER_BLOCK) * 1000).div(1000)
+    base = base.mul((1 + (increase ? 1 : -1) * FEE_MAX_RAISE_RATIO_PER_BLOCK) * 1000).div(1000)
 
   return base.add(maxPriorityFeePerGas)
 }
 
-export const getEip1559TotalFees = (
+export const getGasSettingsEip1559 = (
+  baseFee: BigNumber,
+  maxPriorityFeePerGas: BigNumber,
+  gasLimit: BigNumber,
+  maxBlocksWait?: number
+): EthGasSettingsEip1559 => ({
+  type: 2,
+  maxPriorityFeePerGas,
+  maxFeePerGas: getMaxFeePerGas(baseFee, maxPriorityFeePerGas, maxBlocksWait),
+  gasLimit,
+})
+
+export const getTotalFeesFromGasSettings = (
+  gasSettings: EthGasSettings,
   estimatedGas: BigNumberish,
-  gasLimit: BigNumberish,
-  baseFeePerGas: BigNumberish,
-  maxPriorityFeePerGas: BigNumberish
+  baseFeePerGas?: BigNumberish | null
 ) => {
-  // for the estimate, assume gas will stay the same
-  const estimatedFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 0)
-  const estimatedFee = BigNumber.from(estimatedGas).mul(estimatedFeePerGas)
-
-  // max cost if transaction waits 8 blocks and consumes the whole gasLimit
-  const maxFeePerGas = getMaxFeePerGas(baseFeePerGas, maxPriorityFeePerGas, 8)
-  const maxFee = BigNumber.from(gasLimit).mul(maxFeePerGas)
-
-  return { estimatedFee, maxFee }
+  if (gasSettings.type === 2) {
+    if (baseFeePerGas === undefined)
+      throw new Error("baseFeePerGas argument is required for type 2 fee computation")
+    return {
+      estimatedFee: BigNumber.from(
+        BigNumber.from(baseFeePerGas).lt(gasSettings.maxFeePerGas)
+          ? baseFeePerGas
+          : gasSettings.maxFeePerGas
+      )
+        .add(gasSettings.maxPriorityFeePerGas)
+        .mul(
+          BigNumber.from(estimatedGas).lt(gasSettings.gasLimit)
+            ? estimatedGas
+            : gasSettings.gasLimit
+        ),
+      maxFee: BigNumber.from(gasSettings.maxFeePerGas)
+        .add(gasSettings.maxPriorityFeePerGas)
+        .mul(gasSettings.gasLimit),
+    }
+  } else {
+    return {
+      estimatedFee: BigNumber.from(gasSettings.gasPrice).mul(
+        BigNumber.from(estimatedGas).lt(gasSettings.gasLimit) ? estimatedGas : gasSettings.gasLimit
+      ),
+      maxFee: BigNumber.from(gasSettings.gasPrice).mul(gasSettings.gasLimit),
+    }
+  }
 }
 
 export const prepareTransaction = (
