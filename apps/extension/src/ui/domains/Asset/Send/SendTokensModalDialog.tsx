@@ -10,12 +10,13 @@ export const Container = styled.div`
   background: var(--color-background);
 
   width: 42.2rem;
-  height: 52rem;
+  height: 60rem;
 
   display: flex;
   flex-direction: column;
   position: relative;
   border-radius: var(--border-radius);
+  overflow: hidden;
 `
 
 const Header = styled.div`

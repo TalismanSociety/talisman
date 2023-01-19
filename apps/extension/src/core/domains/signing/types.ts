@@ -3,7 +3,11 @@ import {
   AccountJsonHardwareEthereum,
   AccountJsonHardwareSubstrate,
 } from "@core/domains/accounts/types"
-import { EvmNetworkId } from "@core/domains/ethereum/types"
+import {
+  EthGasSettingsEip1559,
+  EthGasSettingsLegacy,
+  EvmNetworkId,
+} from "@core/domains/ethereum/types"
 import { RequestIdOnly } from "@core/types/base"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import {
@@ -97,17 +101,29 @@ export type TransactionDetails = {
 }
 
 // eth fees types ----------------------------------
+export type EthPriorityOptionNameEip1559 = "low" | "medium" | "high" | "custom"
+export type EthPriorityOptionNameLegacy = "recommended" | "custom"
+export type EthPriorityOptionName = EthPriorityOptionNameEip1559 | EthPriorityOptionNameLegacy
 
-export type EthPriorityOptionName = "low" | "medium" | "high"
-export type EthPriorityOptions = Record<EthPriorityOptionName, BigNumber>
+export type GasSettingsByPriorityEip1559 = { type: "eip1559" } & Record<
+  EthPriorityOptionNameEip1559,
+  EthGasSettingsEip1559
+>
+export type GasSettingsByPriorityLegacy = { type: "legacy" } & Record<
+  EthPriorityOptionNameLegacy,
+  EthGasSettingsLegacy
+>
+export type GasSettingsByPriority = GasSettingsByPriorityEip1559 | GasSettingsByPriorityLegacy
+
+export type EthBaseFeeTrend = "idle" | "decreasing" | "increasing" | "toTheMoon"
 
 export type EthTransactionDetails = {
   estimatedGas: BigNumberish
   gasPrice: BigNumberish
   estimatedFee: BigNumberish
-  maxFee: BigNumberish
-  baseFeePerGas?: BigNumberish
-  priorityOptions?: EthPriorityOptions
+  maxFee: BigNumberish // TODO yeet !
+  baseFeePerGas?: BigNumberish | null
+  baseFeeTrend?: EthBaseFeeTrend
 }
 
 export interface SigningMessages {

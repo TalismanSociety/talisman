@@ -461,7 +461,7 @@ export class EthHandler extends ExtensionHandler {
     chainId: string,
     request: EthRequestArguments<TEthMessageType>
   ): Promise<unknown> {
-    const provider = await getProviderForEvmNetworkId(chainId)
+    const provider = await getProviderForEvmNetworkId(chainId, { batch: true })
     assert(provider, `No healthy RPCs available for provider for chain ${chainId}`)
     try {
       return await provider.send(request.method, request.params as unknown as any[])
