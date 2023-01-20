@@ -26,11 +26,12 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["page.js", "dashboard.js.map"]
+      "resources": ["page.js"],
+      "matches": ["https://*/*", "http://localhost/*"]
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self' blob: 'wasm-unsafe-eval'; object-src 'self'"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
   },
   "permissions": ["storage", "tabs", "notifications"],
   "icons": {

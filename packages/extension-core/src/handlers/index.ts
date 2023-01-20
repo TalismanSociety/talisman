@@ -45,7 +45,7 @@ const formatFrom = (source: string) => {
 
 const talismanHandler = <TMessageType extends MessageTypes>(
   data: TransportRequestMessage<TMessageType>,
-  port: Runtime.Port,
+  port: chrome.runtime.Port,
   extensionPortName = PORT_EXTENSION
 ): void => {
   const { id, message, request } = data

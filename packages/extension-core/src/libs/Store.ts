@@ -150,12 +150,12 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
    * This method subscribes to `Browser.storage.onChanged` inside the class constructor.
    * It shouldn't be called from anywhere else.
    */
-  #onStorageChanged = (changes: Record<string, Storage.StorageChange>, areaName: string) => {
+  #onStorageChanged = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
     if (areaName !== "local") return
     const change = changes[this.#prefix]
     if (!change) return
 
-    const { newValue }: { oldValue?: T; newValue?: T } = change
+    const { newValue } = change
     if (!newValue) return
 
     this.#subscriptionSubject.next({

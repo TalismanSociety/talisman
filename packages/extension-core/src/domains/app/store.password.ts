@@ -5,6 +5,7 @@ import { BehaviorSubject } from "rxjs"
 import { Err, Ok, Result } from "ts-results"
 
 import { StorageProvider } from "../../libs/Store"
+import { sessionStorage } from "../../util/sessionStorageCompat"
 
 /* ----------------------------------------------------------------
 Contains sensitive data.
@@ -16,6 +17,7 @@ type LOGGEDIN_FALSE = "FALSE"
 type LOGGEDIN_UNKNOWN = "UNKNOWN"
 const TRUE: LOGGEDIN_TRUE = "TRUE"
 const FALSE: LOGGEDIN_FALSE = "FALSE"
+const UNKNOWN: LOGGEDIN_UNKNOWN = "UNKNOWN"
 
 export type LoggedInType = LOGGEDIN_TRUE | LOGGEDIN_FALSE | LOGGEDIN_UNKNOWN
 
@@ -35,9 +37,16 @@ const initialData = {
 }
 
 export class PasswordStore extends StorageProvider<PasswordStoreData> {
-  #password?: string = undefined
-  isLoggedIn = new BehaviorSubject<LoggedInType>(this.hasPassword ? TRUE : FALSE)
+  isLoggedIn = new BehaviorSubject<LoggedInType>(UNKNOWN)
   #autoLockTimer?: NodeJS.Timeout
+
+  constructor(prefix: string, data: Partial<PasswordStoreData> = initialData) {
+    super(prefix, data)
+    // on every instantiation of this store, check to see if logged in
+    this.hasPassword().then((result) => {
+      this.isLoggedIn.next(result ? TRUE : FALSE)
+    })
+  }
 
   public resetAutoLockTimer(seconds: number) {
     if (this.#autoLockTimer) clearTimeout(this.#autoLockTimer)
@@ -96,16 +105,16 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
   }
 
   setPassword(password: string | undefined) {
-    this.#password = password
+    sessionStorage.set({ password })
     this.isLoggedIn.next(password !== undefined ? TRUE : FALSE)
   }
 
   public async getHashedPassword(plaintextPw: string) {
     const salt = await this.get("salt")
     assert(salt, "Password salt has not been generated yet")
-    const pwResult = await getHashedPassword(plaintextPw, salt)
-    if (!pwResult.ok) pwResult.unwrap()
-    return pwResult.val
+    const { err, val } = await getHashedPassword(plaintextPw, salt)
+    if (err) throw new Error(val)
+    return val
   }
 
   public async setPlaintextPassword(plaintextPw: string) {
@@ -133,7 +142,7 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
   async checkPassword(password: string) {
     assert(this.isLoggedIn.value === TRUE, "Unauthorised")
 
-    const hash = this.getPassword()
+    const hash = await this.getPassword()
     assert(hash, "Unauthorised")
 
     const { isTrimmed, isHashed } = await this.get()
@@ -146,13 +155,14 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
   /**
    * Returns the encrypted password if it is set, otherwise undefined
    */
-  getPassword() {
-    if (!this.#password) return undefined
-    return this.#password
+  async getPassword() {
+    const pw = await sessionStorage.get("password")
+    if (!pw) return undefined
+    return pw
   }
 
-  get hasPassword() {
-    return !!this.#password
+  async hasPassword() {
+    return !!(await sessionStorage.get("password"))
   }
 }
 

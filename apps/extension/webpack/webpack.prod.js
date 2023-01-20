@@ -58,7 +58,15 @@ const config = (env) => {
               // Set the canary title and icon if we're doing a canary build
               if (env.build === "canary") {
                 manifest.name = `${manifest.name} - Canary`
-                manifest.browser_action.default_title = `${manifest.browser_action.default_title} - Canary`
+                manifest.action.default_title = `${manifest.action.default_title} - Canary`
+
+                for (const key in manifest.icons) {
+                  const filename = manifest.icons[key]
+                  const name = filename.split(".").slice(0, -1).join()
+                  const extension = filename.split(".").slice(-1).join()
+
+                  manifest.icons[key] = `${name}-canary.${extension}`
+                }
               }
 
               // Return the modified manifest

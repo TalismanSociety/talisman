@@ -5,7 +5,7 @@ const common = require("./webpack.common.js")
 const path = require("path")
 const distDir = path.join(__dirname, "..", "dist")
 const CopyPlugin = require("copy-webpack-plugin")
-const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
+// const ExtensionReloader = require("@alectalisman/webpack-ext-reloader")
 const CircularDependencyPlugin = require("circular-dependency-plugin")
 const { EvalSourceMapDevToolPlugin } = require("webpack")
 const SimpleLocalizeDownloadPlugin = require("./SimpleLocalizeDownloadPlugin")
@@ -50,7 +50,7 @@ const config = (env) =>
 
               // Set the dev title and icon because we're doing a dev build
               manifest.name = `${manifest.name} - Dev`
-              manifest.browser_action.default_title = `${manifest.browser_action.default_title} - Dev`
+              manifest.action.default_title = `${manifest.action.default_title} - Dev`
 
               // Return the modified manifest
               return JSON.stringify(manifest, null, 2)
@@ -74,17 +74,17 @@ const config = (env) =>
           },
         ],
       }),
-      new ExtensionReloader({
-        // avoid reloading every browser tab
-        // extension pages (dashboard.html, popup.html) are always reloaded
-        reloadPage: false,
-        entries: {
-          // The entries used for the content/background scripts
-          contentScript: "content_script", // Use the entry names, not the file name or the path
-          background: "background", // *REQUIRED
-          extensionPage: ["popup", "onboarding", "dashboard"],
-        },
-      }),
+      // new ExtensionReloader({
+      //   // avoid reloading every browser tab
+      //   // extension pages (dashboard.html, popup.html) are always reloaded
+      //   reloadPage: false,
+      //   entries: {
+      //     // The entries used for the content/background scripts
+      //     contentScript: "content_script", // Use the entry names, not the file name or the path
+      //     background: "background", // *REQUIRED
+      //     extensionPage: ["popup", "onboarding", "dashboard"],
+      //   },
+      // }),
       new CircularDependencyPlugin({
         // exclude detection of files based on a RegExp
         exclude: /node_modules/,

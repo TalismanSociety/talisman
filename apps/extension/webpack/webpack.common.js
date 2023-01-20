@@ -40,6 +40,7 @@ const config = (env) => ({
     filename: "[name].js",
     chunkFilename: "[name].chunk.js",
     assetModuleFilename: "assets/[hash][ext]", // removes query string if there are any in our import strings (we use ?url for svgs)
+    globalObject: "self",
   },
 
   module: {

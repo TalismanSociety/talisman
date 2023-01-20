@@ -105,7 +105,7 @@ describe("Extension", () => {
 
   test("exports account from keyring", async () => {
     // need to use the pw from the store, because it may need to be trimmed
-    const pw = passwordStore.getPassword()
+    const pw = await passwordStore.getPassword()
     expect(pw).toBeTruthy()
 
     const {
