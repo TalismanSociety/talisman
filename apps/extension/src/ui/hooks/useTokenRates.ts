@@ -3,7 +3,7 @@ import { useMemo } from "react"
 
 import { useTokenRatesMap } from "./useTokenRatesMap"
 
-export const useTokenRates = (tokenId?: TokenId) => {
+export const useTokenRates = (tokenId?: TokenId | null) => {
   const tokenRatesMap = useTokenRatesMap()
 
   return useMemo(() => (tokenId ? tokenRatesMap[tokenId] : undefined), [tokenId, tokenRatesMap])

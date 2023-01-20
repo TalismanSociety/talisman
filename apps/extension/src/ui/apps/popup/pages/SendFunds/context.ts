@@ -50,6 +50,9 @@ const useSendFundsContext = () => {
 
   const set = useCallback(
     <T extends keyof SendFundsParams>(key: T, value: SendFundsParams[T], goToNextPage = false) => {
+      // reset amount if token changes, as decimals may be totally different
+      if (key === "tokenId" && value !== searchParams.get("tokenId")) searchParams.delete("amount")
+
       // boolean values
       if (key === "max" && value) searchParams.set(key, "")
       else if (key === "max" && !value) searchParams.delete(key)
@@ -73,8 +76,9 @@ const useSendFundsContext = () => {
   const remove = useCallback(
     (key: keyof SendFundsParams) => {
       searchParams.delete(key)
+      setSearchParams(searchParams, { replace: true })
     },
-    [searchParams]
+    [searchParams, setSearchParams]
   )
 
   // TODO before merge : remove useMemo, return directly

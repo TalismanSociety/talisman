@@ -1,12 +1,12 @@
 import type { TokenId } from "@core/domains/tokens/types"
 import { useMemo } from "react"
 
-import useTokens from "./useTokens"
+import useTokensMap from "./useTokensMap"
 
-const useToken = (id?: TokenId) => {
-  const tokens = useTokens()
+const useToken = (id?: TokenId | null) => {
+  const tokens = useTokensMap()
 
-  return useMemo(() => tokens.find((token) => token.id === id), [tokens, id])
+  return useMemo(() => (id ? tokens[id] : undefined), [tokens, id])
 }
 
 export default useToken
