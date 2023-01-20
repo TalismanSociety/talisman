@@ -20,7 +20,7 @@ preloadFonts(FONT_FAMILIES)
 
 const queryClient = new QueryClient()
 
-initSentry(Sentry)
+initSentry(Sentry, true)
 const container = document.getElementById("root")
 
 // render a context dependent app with all providers

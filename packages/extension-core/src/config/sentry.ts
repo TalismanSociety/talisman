@@ -18,7 +18,10 @@ const normalizeUrl = (url: string) => {
 const useErrorTracking = new ReplaySubject<boolean>(1)
 settingsStore.observable.subscribe((settings) => useErrorTracking.next(settings.useErrorTracking))
 
-export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) => {
+export const initSentry = (
+  sentry: typeof SentryBrowser | typeof SentryReact,
+  frontend?: boolean
+) => {
   sentry.init({
     enabled: true,
     environment: process.env.BUILD,
@@ -82,7 +85,8 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
     })
   })
 
-  window.addEventListener("error", (event) => {
-    triggerIndexedDbUnavailablePopup(event.error)
-  })
+  if (frontend && typeof window !== "undefined")
+    window.addEventListener("error", (event) => {
+      triggerIndexedDbUnavailablePopup(event.error)
+    })
 }
