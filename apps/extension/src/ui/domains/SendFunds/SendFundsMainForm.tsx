@@ -1,17 +1,12 @@
-import { LoaderIcon, SwapIcon, XIcon } from "@talisman/theme/icons"
+import { IconAlert, LoaderIcon, SwapIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { BalanceFormatter } from "@talismn/balances"
-import { planckToTokens, tokensToPlanck } from "@talismn/util"
+import { tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFunds } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useInputNumberOnly } from "@ui/hooks/useInputNumberOnly"
 import { useInputAutoSize } from "@ui/hooks/useTextWidth"
 import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
-import BigNumber from "bignumber.js"
-import { remove } from "lodash"
 import {
-  CSSProperties,
   ChangeEventHandler,
   DetailedHTMLProps,
   FC,
@@ -29,6 +24,7 @@ import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
+import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { SendFundsDetailsProvider, useSendFundsDetails } from "./useSendFundsDetails"
 
 type ContainerProps = DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
@@ -175,16 +171,6 @@ const FiatInput = () => {
     [remove, set, token, tokenRates]
   )
 
-  // console.log(text)
-
-  // const refInput = useRef<HTMLInputElement>(null)
-  // //can't measure text from an input[type=number] so we use a input[type=text] and restrict input to numbers
-  // useInputNumberOnly(refInput)
-
-  // const width = useTextWidth(text?.length ? text : FIAT_PLACEHOLDER, refInput)
-
-  // const inputStyle: CSSProperties = useMemo(() => ({ width }), [width])
-
   if (!tokenRates) return null
 
   return (
@@ -197,7 +183,6 @@ const FiatInput = () => {
         autoFocus
         placeholder={FIAT_PLACEHOLDER}
         data-symbol={token?.symbol ?? ""}
-        // style={inputStyle}
         className={classNames(
           "text-body inline-block min-w-0 max-w-[32rem] bg-transparent text-center text-xl"
         )}
@@ -230,6 +215,23 @@ const TokenDisplay = () => {
   )
 }
 
+const ErrorMessage = () => {
+  const { estimateFeeError, hasInsufficientFunds } = useSendFundsDetails()
+
+  const errorMessage = useMemo(() => {
+    if (hasInsufficientFunds) return "Insufficient funds"
+    if (estimateFeeError) return estimateFeeError.message ?? "Failed to estimate fee"
+    return null
+  }, [estimateFeeError, hasInsufficientFunds])
+
+  return errorMessage ? (
+    <div className="inline-flex items-center gap-2">
+      <IconAlert />
+      <span>{errorMessage}</span>
+    </div>
+  ) : null
+}
+
 const AmountEdit = () => {
   const [isTokenEdit, setIsTokenEdit] = useState(true)
   const { tokenRates } = useSendFundsDetails()
@@ -260,6 +262,9 @@ const AmountEdit = () => {
           Max
         </PillButton>
       </div>
+      <div className="text-brand-orange mt-4 text-center text-xs">
+        <ErrorMessage />
+      </div>
     </div>
   )
 }
@@ -268,35 +273,31 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
   const { tokenId } = useSendFunds()
   const { balance, token } = useSendFundsDetails()
 
-  const { total, isLoading } = useMemo(
-    () => ({
-      total: balance.sorted
-        .reduce((prev, curr) => prev.plus(BigNumber(curr.transferable.tokens)), BigNumber("0"))
-        .toString(),
-      isLoading: balance.sorted.find((b) => b.status === "cache"),
-    }),
-    [balance]
-  )
-
   return (
     <Container className="flex w-full justify-between px-6 py-4">
       <div>
         <TokenPillButton tokenId={tokenId} onClick={onEditClick} />
       </div>
-      <div className="text-right ">
-        <div>
-          {isLoading && <LoaderIcon className="animate-spin-slow mr-2 inline" />}
-          <Tokens
-            amount={total}
-            decimals={token?.decimals}
-            symbol={token?.symbol}
-            noCountUp
-            isBalance
-          />
-        </div>
-        <div className="text-body-disabled">
-          <Fiat amount={balance.sum.fiat("usd").transferable} noCountUp isBalance />
-        </div>
+      <div className="text-right">
+        {balance && token && (
+          <>
+            <div>
+              {balance.status === "cache" && (
+                <LoaderIcon className="animate-spin-slow mr-2 inline" />
+              )}
+              <Tokens
+                amount={balance.transferable.tokens}
+                decimals={token?.decimals}
+                symbol={token?.symbol}
+                noCountUp
+                isBalance
+              />
+            </div>
+            <div className="text-body-disabled">
+              <Fiat amount={balance.transferable.fiat("usd")} noCountUp isBalance />
+            </div>
+          </>
+        )}
       </div>
     </Container>
   )
@@ -324,10 +325,16 @@ const NetworkRow = () => {
 }
 
 const EstimatedFeeRow = () => {
+  const { feeToken, estimatedFee, isEstimatingFee, estimateFeeError } = useSendFundsDetails()
+
   return (
-    <Container className="flex w-full justify-between px-8 py-4">
-      <div>Estimated Fee</div>
-      <div>&gt;0.001 DOT</div>
+    <Container className="flex w-full justify-between gap-4 px-8 py-4">
+      <div className="whitespace-nowrap">Estimated Fee</div>
+      <div className="grow overflow-hidden text-ellipsis whitespace-nowrap text-right">
+        {isEstimatingFee && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
+        {estimatedFee && feeToken && <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />}
+        {estimateFeeError && "N/A"}
+      </div>
     </Container>
   )
 }
