@@ -1,5 +1,6 @@
 import {
   AuthRequestApprove,
+  AuthorizedSite,
   RequestAuthorizedSiteForget,
   RequestAuthorizedSiteUpdate,
 } from "@core/domains/sitesAuthorised/types"
@@ -16,8 +17,12 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     return true
   }
 
-  private authorizedUpdate({ id, props }: RequestAuthorizedSiteUpdate): boolean {
-    this.stores.sites.updateSite(id, props)
+  private authorizedUpdate({ id, authorisedSite }: RequestAuthorizedSiteUpdate): boolean {
+    // un-set connectAllSubstrate if the user modifies the addresses for a site
+    const updateConnectAll: Pick<AuthorizedSite, "connectAllSubstrate"> = {}
+    if ("addresses" in authorisedSite || "ethAddresses" in authorisedSite)
+      updateConnectAll["connectAllSubstrate"] = undefined
+    this.stores.sites.updateSite(id, { ...authorisedSite, ...updateConnectAll })
     talismanAnalytics.capture("authorised site update addresses", {
       url: id,
     })

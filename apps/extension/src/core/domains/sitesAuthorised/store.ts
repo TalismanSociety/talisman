@@ -62,12 +62,13 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
   async forgetSite(id: string, type: ProviderType) {
     const site = await this.get(id)
     if (type === "polkadot" && site?.ethAddresses)
-      await this.updateSite(id, { addresses: undefined })
+      await this.updateSite(id, { addresses: undefined, connectAllSubstrate: undefined })
     else if (type === "ethereum" && site?.addresses)
       await this.updateSite(id, {
         ethAddresses: undefined,
         ethPermissions: undefined,
         ethChainId: undefined,
+        connectAllSubstrate: undefined,
       })
     else await this.delete(id)
   }

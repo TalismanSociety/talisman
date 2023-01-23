@@ -59,10 +59,13 @@ export type AuthorizedSite = {
 
 export type ProviderType = "polkadot" | "ethereum"
 
+export declare type AuthorisedSiteUpdate = Omit<Partial<AuthorizedSite>, "id">
+
 export declare type RequestAuthorizedSiteUpdate = {
   id: string
-  props: Omit<Partial<AuthorizedSite>, "id">
+  authorisedSite: AuthorisedSiteUpdate
 }
+
 export declare type RequestAuthorizedSiteForget = { id: string; type: ProviderType }
 
 export interface AuthorizeRequest {

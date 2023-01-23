@@ -130,8 +130,8 @@ export const api: MessageTypes = {
   authorizedSiteSubscribe: (id, cb) =>
     messageService.subscribe("pri(sites.byid.subscribe)", { id }, cb),
   authorizedSiteForget: (id, type) => messageService.sendMessage("pri(sites.forget)", { id, type }),
-  authorizedSiteUpdate: (id, props) =>
-    messageService.sendMessage("pri(sites.update)", { id, props }),
+  authorizedSiteUpdate: (id, authorisedSite) =>
+    messageService.sendMessage("pri(sites.update)", { id, authorisedSite }),
 
   // authorization requests messages ------------------------------------
   authRequestsSubscribe: (cb) =>
