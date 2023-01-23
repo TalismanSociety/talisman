@@ -53,6 +53,7 @@ const TokenRow: FC<TokenRowProps> = ({
   return (
     <button
       type="button"
+      data-id={token.id}
       onClick={onClick}
       tabIndex={1}
       className={classNames(
@@ -138,6 +139,26 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
     () =>
       allTokens
         .filter(filterAccountCompatibleTokens)
+        .filter((t) => {
+          // on substrate, there could be multiple tokens with same symbol on a same chain (ACA, KINT..)
+          // a good fix would be to detect on subsquid side if ANY account has tokens, if not the token shouldn't be included in github tokens file
+          // until then we hardcode an exclusion list here :
+
+          // ACA, BNC and KAR use native (orml won't work)
+          // INTR, KINT and MGX use orml (native won't work)
+
+          const IGNORED_TOKENS = [
+            "acala-substrate-orml-aca",
+            "bifrost-kusama-substrate-orml-bnc",
+            "bifrost-polkadot-substrate-orml-bnc",
+            "interlay-substrate-native-intr",
+            "karura-substrate-orml-kar",
+            "kintsugi-substrate-native-kint",
+            "mangata-substrate-native-mgx",
+          ]
+
+          return !IGNORED_TOKENS.includes(t.id)
+        })
         .map((t) => ({
           id: t.id,
           token: t,
