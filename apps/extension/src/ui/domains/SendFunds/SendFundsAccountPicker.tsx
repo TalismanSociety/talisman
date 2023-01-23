@@ -1,4 +1,6 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
+import { log } from "@core/log"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { CheckCircleIcon, SearchIcon, TalismanHandIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -6,7 +8,9 @@ import { useSendFunds } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
+import useChain from "@ui/hooks/useChain"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
+import useToken from "@ui/hooks/useToken"
 import { default as debounce } from "lodash/debounce"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { FormFieldInputContainerProps, FormFieldInputText, classNames } from "talisman-ui"
@@ -25,14 +29,33 @@ export const SendFundsAccountPicker = () => {
   const { from, set, tokenId } = useSendFunds()
   const [search, setSearch] = useState("")
 
+  const token = useToken(tokenId)
+  const chain = useChain(token?.chain?.id)
+
   // maintain subscription to balances, as a search filter could close subscriptions from account rows
   useBalances()
 
   const allAccounts = useAccounts()
 
   const accounts = useMemo(
-    () => allAccounts.filter((account) => !search || account.name?.toLowerCase().includes(search)),
-    [allAccounts, search]
+    () =>
+      allAccounts
+        .filter((account) => !search || account.name?.toLowerCase().includes(search))
+        .filter((account) => {
+          if (!token) return true
+          switch (token.type) {
+            case "evm-erc20":
+            case "evm-native":
+              return isEthereumAddress(account.address)
+            case "substrate-native":
+            case "substrate-orml":
+              return !isEthereumAddress(account.address)
+          }
+          log.warn("Unsupported token type: %d", (token as any)?.type)
+          return true
+        })
+        .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash),
+    [allAccounts, chain?.genesisHash, search, token]
   )
 
   // const handleSearchChange: ChangeEventHandler<HTMLInputElement> = useCallback(
