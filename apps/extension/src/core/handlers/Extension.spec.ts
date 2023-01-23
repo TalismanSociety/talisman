@@ -2,7 +2,6 @@ import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { db } from "@core/db"
 import { passwordStore } from "@core/domains/app"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -15,9 +14,9 @@ import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
-import { v4 } from "uuid"
 import Browser from "webextension-polyfill"
 
+import { getMessageSenderFn } from "../../../tests/util"
 import Extension from "./Extension"
 import State from "./State"
 import { extensionStores } from "./stores"
@@ -33,15 +32,6 @@ jest.mock("@core/util/hasSpiritKey", () => {
     }),
   }
 })
-
-const getMessageSenderFn =
-  (extension: Extension) =>
-  <M extends MessageTypes>(
-    messageType: M,
-    request: RequestTypes[M],
-    id = v4()
-  ): Promise<ResponseType<M>> =>
-    extension.handle(id, messageType, request, {} as chrome.runtime.Port)
 
 describe("Extension", () => {
   let extension: Extension
