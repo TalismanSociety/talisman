@@ -1,4 +1,4 @@
-import { DEBUG } from "@core/constants"
+import { DEBUG, TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { AccountMeta } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
@@ -41,6 +41,17 @@ export default class AppHandler extends ExtensionHandler {
 
     const account = this.getRootAccount()
     assert(!account, "A root account already exists")
+
+    // Before any accounts are created, we want to add talisman.xyz as an authorised site with connectAllSubstrate
+    this.stores.sites.set({
+      [TALISMAN_WEB_APP_DOMAIN]: {
+        addresses: [],
+        connectAllSubstrate: true,
+        id: TALISMAN_WEB_APP_DOMAIN,
+        origin: "Talisman",
+        url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
+      },
+    })
 
     let confirmed = false
     const method = mnemonic ? "import" : "new"

@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { db } from "@core/db"
 import { passwordStore } from "@core/domains/app"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -460,15 +461,11 @@ describe("Extension", () => {
   })
 
   test("new accounts are added to authorised sites with connectAllSubstrate automatically", async () => {
-    extensionStores.sites.set({
-      "app.talisman.xyz": {
-        addresses: keyring.getAddresses().map(({ address }) => address),
-        id: "app.talisman.xyz",
-        origin: "app.talisman.xyz",
-        url: "https://app.talisman.xyz",
-        connectAllSubstrate: true,
-      },
-    })
+    // app.talisman.xyz should already be in the authorised sites store after onboarding
+    const existingAddress = await getAccount()
+    const talismanSite = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
+    expect(talismanSite && talismanSite.addresses)
+    expect(talismanSite.addresses!.includes(existingAddress))
 
     const newAddress = await messageSender("pri(accounts.create)", {
       name: "AutoAdd",
@@ -476,9 +473,8 @@ describe("Extension", () => {
     })
 
     const sites = await extensionStores.sites.get()
-    const talismanSite = sites["app.talisman.xyz"]
-    expect(talismanSite && talismanSite.addresses)
-    expect(talismanSite.addresses!.includes(newAddress))
+    const talismanSiteAgain = sites[TALISMAN_WEB_APP_DOMAIN]
+    expect(talismanSiteAgain.addresses!.includes(newAddress))
 
     const otherSite = Object.values(sites).find((site) => !site.connectAllSubstrate)
     expect(otherSite)
