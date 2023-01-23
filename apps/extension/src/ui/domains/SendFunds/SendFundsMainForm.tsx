@@ -242,7 +242,7 @@ const AmountEdit = () => {
 
   return (
     <div className="w-full grow">
-      <div className="flex h-[13.1rem] flex-col justify-end text-xl font-bold">
+      <div className="flex h-[12rem] flex-col justify-end text-xl font-bold">
         {isTokenEdit ? <TokenInput /> : <FiatInput />}
       </div>
       <div className="mt-4 flex justify-center gap-6">
