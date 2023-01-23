@@ -54,6 +54,7 @@ export type AuthorizedSite = {
   origin: string
   url: string
   ethChainId?: number
+  connectAllSubstrate?: boolean
 }
 
 export type ProviderType = "polkadot" | "ethereum"
