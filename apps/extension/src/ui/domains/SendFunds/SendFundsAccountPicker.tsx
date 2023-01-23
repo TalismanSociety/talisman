@@ -22,8 +22,18 @@ const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
 }
 
 export const SendFundsAccountPicker = () => {
-  const { from, set } = useSendFunds()
+  const { from, set, tokenId } = useSendFunds()
   const [search, setSearch] = useState("")
+
+  // maintain subscription to balances, as a search filter could close subscriptions from account rows
+  useBalances()
+
+  const allAccounts = useAccounts()
+
+  const accounts = useMemo(
+    () => allAccounts.filter((account) => !search || account.name?.toLowerCase().includes(search)),
+    [allAccounts, search]
+  )
 
   // const handleSearchChange: ChangeEventHandler<HTMLInputElement> = useCallback(
   //   (e) => {
@@ -55,7 +65,14 @@ export const SendFundsAccountPicker = () => {
         </div>
       </div>
       <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-        <SendFundsAccountsList selected={from} search={search} onSelect={handleSelect} />
+        <SendFundsAccountsList
+          accounts={accounts}
+          selected={from}
+          onSelect={handleSelect}
+          showBalances
+          tokenId={tokenId}
+          showIfEmpty
+        />
       </ScrollContainer>
       {/* <div className="bg-black-secondary border-grey-700 scrollable scrollable-800 w-full grow overflow-y-auto border-t">
         <AccountsList />

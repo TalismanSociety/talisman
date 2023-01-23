@@ -63,7 +63,7 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
           <AccountAvatar className="!text-lg" address={address} genesisHash={genesisHash} />
         </div>
         <div className="grow overflow-hidden text-ellipsis whitespace-nowrap">
-          {name ?? shortenAddress(address)}
+          {name ?? shortenAddress(address, 6, 6)}
         </div>
       </div>
     </PillButton>
@@ -129,7 +129,7 @@ const TokenInput = () => {
         type="text"
         value={text}
         placeholder={placeholder}
-        // style={inputStyle}
+        autoFocus
         className="text-body inline-block min-w-0 max-w-[32rem] bg-transparent text-center text-xl"
         onChange={handleChange}
       />
@@ -194,7 +194,7 @@ const FiatInput = () => {
         ref={refInput}
         type="text"
         value={text}
-        //defaultValue={text}
+        autoFocus
         placeholder={FIAT_PLACEHOLDER}
         data-symbol={token?.symbol ?? ""}
         // style={inputStyle}
@@ -323,8 +323,17 @@ const NetworkRow = () => {
   )
 }
 
+const EstimatedFeeRow = () => {
+  return (
+    <Container className="flex w-full justify-between px-8 py-4">
+      <div>Estimated Fee</div>
+      <div>&gt;0.001 DOT</div>
+    </Container>
+  )
+}
+
 export const SendFundsMainForm = () => {
-  const { from, to, tokenId, goto } = useSendFunds()
+  const { from, to, goto } = useSendFunds()
 
   const handleGotoClick = useCallback(
     (page: SendFundsWizardPage) => () => {
@@ -354,10 +363,7 @@ export const SendFundsMainForm = () => {
         <div className="w-full space-y-4 text-xs leading-[140%]">
           <TokenRow onEditClick={handleGotoClick("token")} />
           <NetworkRow />
-          <Container className="flex w-full justify-between px-8 py-4">
-            <div>Estimated Fee</div>
-            <div>&gt;0.001 DOT</div>
-          </Container>
+          <EstimatedFeeRow />
         </div>
         <Button primary className="mt-8 w-full" disabled>
           Review

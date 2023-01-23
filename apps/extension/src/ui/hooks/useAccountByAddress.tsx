@@ -11,7 +11,7 @@ const filterByUnencodedAddress =
 const filterByEncodedAddress = (address: string) =>
   filterByUnencodedAddress(encodeAnyAddress(address, 42))
 
-const useAccountByAddress = (address: string | null) => {
+const useAccountByAddress = (address?: string | null) => {
   const accounts = useAccounts()
 
   const account = useMemo(() => {

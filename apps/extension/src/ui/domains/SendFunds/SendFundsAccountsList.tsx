@@ -1,19 +1,72 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
-import { CheckCircleIcon } from "@talisman/theme/icons"
+import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import useAccounts from "@ui/hooks/useAccounts"
+import { useBalance } from "@ui/hooks/useBalance"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
-import { FC, useCallback, useMemo } from "react"
+import useToken from "@ui/hooks/useToken"
+import { FC, ReactNode, useCallback } from "react"
 import { classNames } from "talisman-ui"
 
 import AccountAvatar from "../Account/Avatar"
 import Fiat from "../Asset/Fiat"
+import Tokens from "../Asset/Tokens"
 
-type AccountRowProps = { account: AccountJsonAny; selected: boolean; onClick?: () => void }
+type SendFundsAccount = {
+  address: string
+  name?: string
+  genesisHash?: string | null
+}
 
-const AccountRow: FC<AccountRowProps> = ({ account, selected, onClick }) => {
-  const balance = useBalancesByAddress(account.address)
+type AccountRowProps = {
+  account: SendFundsAccount
+  selected: boolean
+  showBalances?: boolean
+  tokenId?: string | null
+  onClick?: () => void
+}
 
+const AccountGlobalBalance = ({ address }: { address: string }) => {
+  const balances = useBalancesByAddress(address)
+
+  return (
+    <div className="text-body-secondary whitespace-nowrap">
+      <Fiat amount={balances.sum.fiat("usd").transferable} currency="usd" isBalance />
+    </div>
+  )
+}
+
+const AccountTokenBalance = ({
+  address,
+  tokenId,
+}: {
+  address: string
+  tokenId?: string | null
+}) => {
+  const balance = useBalance(address, tokenId as string)
+  const token = useToken(tokenId)
+
+  if (!balance || !token) return null
+
+  return (
+    <div className="text-body-secondary space-y-2 whitespace-nowrap text-right text-sm">
+      <div>
+        {balance.status === "cache" && (
+          <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />
+        )}
+        <Tokens
+          amount={balance.transferable.tokens}
+          decimals={token.decimals}
+          symbol={token.symbol}
+          isBalance
+        />
+      </div>
+      <div className="text-xs">
+        <Fiat amount={balance.transferable.fiat("usd")} currency="usd" isBalance />
+      </div>
+    </div>
+  )
+}
+
+const AccountRow: FC<AccountRowProps> = ({ account, selected, onClick, showBalances, tokenId }) => {
   return (
     <button
       type="button"
@@ -26,38 +79,38 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected, onClick }) => {
     >
       <AccountAvatar address={account.address} className="!text-lg" />
       <div className="grow overflow-hidden text-ellipsis whitespace-nowrap">
-        {account.name ?? shortenAddress(account.address)}
+        {account.name ?? shortenAddress(account.address, 6, 6)}
         {selected && <CheckCircleIcon className="ml-3 inline" />}
       </div>
-      <div className="text-body-secondary whitespace-nowrap">
-        <Fiat amount={balance.sum.fiat("usd").total} currency="usd" isBalance />
-      </div>
+      {showBalances &&
+        (tokenId ? (
+          <AccountTokenBalance address={account.address} tokenId={tokenId} />
+        ) : (
+          <AccountGlobalBalance address={account.address} />
+        ))}
     </button>
   )
 }
 
 type SendFundsAccountsListProps = {
-  selected: string | null
-  search?: string
-  genesisHash?: string
+  accounts: SendFundsAccount[]
+  selected?: string | null
   onSelect?: (address: string) => void
+  header?: ReactNode
+  showIfEmpty?: boolean
+  showBalances?: boolean
+  tokenId?: string | null
 }
 
 export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
   selected,
-  search,
-  genesisHash,
+  accounts,
   onSelect,
+  header,
+  showIfEmpty,
+  showBalances,
+  tokenId,
 }) => {
-  const allAccounts = useAccounts()
-
-  // TODO if we have a tokenId, filter account types
-  const accounts = useMemo(() => {
-    return allAccounts
-      .filter((account) => !search || account.name?.toLowerCase().includes(search))
-      .filter((account) => !genesisHash || account.genesisHash === genesisHash)
-  }, [allAccounts, genesisHash, search])
-
   const handleAccountClick = useCallback(
     (address: string) => () => {
       onSelect?.(address)
@@ -65,27 +118,26 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
     [onSelect]
   )
 
+  if (!showIfEmpty && !accounts?.length) return null
+
   return (
-    <div className="min-h-full space-y-6">
-      {/* <div className="text-body-secondary px-12 font-bold">
-        <TalismanHandIcon className="mr-2 inline-block" />
-        My Accounts
-      </div> */}
-      <div>
-        {accounts?.map((account) => (
-          <AccountRow
-            selected={account.address === selected}
-            key={account.address}
-            account={account}
-            onClick={handleAccountClick(account.address)}
-          />
-        ))}
-        {!accounts?.length && (
-          <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
-            No account matches your search
-          </div>
-        )}
-      </div>
+    <div>
+      {!!header && <div className="text-body-secondary mt-8 mb-4 px-12 font-bold">{header}</div>}
+      {accounts?.map((account) => (
+        <AccountRow
+          selected={account.address === selected}
+          key={account.address}
+          account={account}
+          onClick={handleAccountClick(account.address)}
+          showBalances={showBalances}
+          tokenId={tokenId}
+        />
+      ))}
+      {!accounts?.length && (
+        <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
+          No account matches your search
+        </div>
+      )}
     </div>
   )
 }

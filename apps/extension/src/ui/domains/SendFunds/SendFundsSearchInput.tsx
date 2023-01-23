@@ -15,12 +15,14 @@ const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
 
 type SendFundsSearchInputProps = {
   className?: string
+  autoFocus?: boolean
   placeholder?: string
   onChange?: (search: string) => void
 }
 
 export const SendFundsSearchInput: FC<SendFundsSearchInputProps> = ({
   className,
+  autoFocus,
   onChange,
   placeholder,
 }) => {
@@ -40,6 +42,7 @@ export const SendFundsSearchInput: FC<SendFundsSearchInputProps> = ({
   return (
     <FormFieldInputText
       className={classNames("text-base", className)}
+      autoFocus={autoFocus}
       containerProps={INPUT_CONTAINER_PROPS}
       before={<SearchIcon className="text-body-disabled" />}
       placeholder={placeholder}

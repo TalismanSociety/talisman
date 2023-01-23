@@ -1,10 +1,12 @@
 import { Balances } from "@core/domains/balances/types"
-import { Token, TokenId } from "@core/domains/tokens/types"
+import { IToken, Token, TokenId } from "@core/domains/tokens/types"
 import { Address } from "@core/types/base"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { planckToTokens } from "@talismn/util"
 import { useSendFunds } from "@ui/apps/popup/pages/SendFunds/context"
+import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useDbCache } from "@ui/hooks/useDbCache"
@@ -121,12 +123,21 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
     [balances, from]
   )
 
+  const filterAccountCompatibleTokens = useCallback(
+    (token: Token) => {
+      if (!from) return true
+      return isEthereumAddress(from) ? !!token.evmNetwork : !!token.chain
+    },
+    [from]
+  )
+
   const { chainsMap, evmNetworksMap } = useDbCache()
 
   // TODO if we have a tokenId, filter account types
   const transferableTokens = useMemo(
     () =>
       allTokens
+        .filter(filterAccountCompatibleTokens)
         .map((t) => ({
           id: t.id,
           token: t,
@@ -145,7 +156,7 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
           chainLogo: chain?.logo ?? evmNetwork?.logo,
         })),
 
-    [allTokens, chainsMap, evmNetworksMap]
+    [allTokens, chainsMap, evmNetworksMap, filterAccountCompatibleTokens]
   )
 
   const transferableTokensWithBalances = useMemo(() => {
@@ -227,7 +238,7 @@ export const SendFundsTokenPicker = () => {
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-        <SendFundsSearchInput onChange={setSearch} placeholder="Search by account name" />
+        <SendFundsSearchInput onChange={setSearch} placeholder="Search by account name" autoFocus />
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         <TokensList from={from} selected={tokenId} search={search} onSelect={handleTokenSelect} />
