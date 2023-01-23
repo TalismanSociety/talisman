@@ -130,7 +130,6 @@ describe("Sites Authorised Handler", () => {
 
     // expect that the site is gone
     const webAppAgain = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
-    console.log(webAppAgain)
     expect(webAppAgain).toBeUndefined()
   })
 })
