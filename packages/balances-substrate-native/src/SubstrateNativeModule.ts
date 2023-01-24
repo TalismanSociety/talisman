@@ -189,6 +189,11 @@ export const SubNativeModule: BalanceModule<
         metadata.__kind === "V13"
       ) {
         // we can't parse metadata < v14
+        //
+        // as of v14 the type information required to interact with a chain is included in the chain metadata
+        // https://github.com/paritytech/substrate/pull/8615
+        //
+        // before this change, the client needed to already know the type information ahead of time
         return null
       }
 
