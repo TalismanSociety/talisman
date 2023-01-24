@@ -1,5 +1,5 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
-import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
+import { filterAccountsByAddresses, getPublicAccounts } from "@core/domains/accounts/helpers"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
@@ -107,7 +107,6 @@ export class EthTabsHandler extends TabsHandler {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async accountsList(url: string): Promise<string[]> {
     const site = await this.stores.sites.getSiteFromUrl(url)
     if (!site) return []
@@ -115,12 +114,12 @@ export class EthTabsHandler extends TabsHandler {
     // case is used for checksum when validating user input addresses : https://eips.ethereum.org/EIPS/eip-55
     // signature checks methods return lowercase addresses too and are compared to addresses returned by provider
     // => we have to return addresses as lowercase too
-    return (
-      filterAccountsByAddresses(accountsObservable.subject.getValue(), site.ethAddresses)
-        .filter(({ type }) => type === "ethereum")
-        // send as
-        .map(({ address }) => ethers.utils.getAddress(address).toLowerCase())
+    return getPublicAccounts(
+      Object.values(accountsObservable.subject.getValue()),
+      filterAccountsByAddresses(site.ethAddresses)
     )
+      .filter(({ type }) => type === "ethereum")
+      .map(({ address }) => ethers.utils.getAddress(address).toLowerCase())
   }
 
   private async ethSubscribe(id: string, url: string, port: Port): Promise<boolean> {

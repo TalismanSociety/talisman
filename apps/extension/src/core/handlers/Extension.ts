@@ -67,22 +67,6 @@ export default class Extension extends ExtensionHandler {
     // Resets password update notification at extension restart if user has asked to ignore it previously
     stores.password.set({ ignorePasswordUpdate: false })
 
-    // Watches keyring to add all new accounts to authorised sites with `connectAllSubstrate` flag
-
-    keyring.accounts.subject.subscribe(async (addresses) => {
-      const sites = await stores.sites.get()
-
-      Object.entries(sites)
-        .filter(([url, site]) => site.connectAllSubstrate)
-        .forEach(async ([url, autoAddSite]) => {
-          if (!autoAddSite.addresses) autoAddSite.addresses = []
-          Object.values(addresses).forEach(({ json: { address } }) => {
-            if (!autoAddSite.addresses?.includes(address)) autoAddSite.addresses?.push(address)
-          })
-          await stores.sites.updateSite(url, autoAddSite)
-        })
-    })
-
     this.initDb()
     this.initWalletFunding()
     this.checkSpiritKeyOwnership()
