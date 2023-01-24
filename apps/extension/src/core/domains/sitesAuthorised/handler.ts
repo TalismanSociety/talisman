@@ -20,8 +20,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
   private async authorizedUpdate({ id, authorisedSite }: RequestAuthorizedSiteUpdate) {
     // un-set connectAllSubstrate if the user modifies the addresses for a site
     const updateConnectAll: Pick<AuthorizedSite, "connectAllSubstrate"> = {}
-    if ("addresses" in authorisedSite || "ethAddresses" in authorisedSite)
-      updateConnectAll["connectAllSubstrate"] = undefined
+    if ("addresses" in authorisedSite) updateConnectAll["connectAllSubstrate"] = undefined
     await this.stores.sites.updateSite(id, { ...authorisedSite, ...updateConnectAll })
     talismanAnalytics.capture("authorised site update addresses", {
       url: id,

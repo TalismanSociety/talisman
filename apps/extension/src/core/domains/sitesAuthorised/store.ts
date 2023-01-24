@@ -68,7 +68,6 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
         ethAddresses: undefined,
         ethPermissions: undefined,
         ethChainId: undefined,
-        connectAllSubstrate: undefined,
       })
     else await this.delete(id)
   }
