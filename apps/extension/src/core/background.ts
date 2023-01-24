@@ -1,13 +1,7 @@
-// Copyright 2019-2021 @polkadot/extension authors & contributors
-// SPDX-License-Identifier: Apache-2.0
-
-// Runs in the extension background, handling all keyring access
-// Adapted from https://github.com/polkadot-js/extension/packages/extension/src/background.ts
-
 import "@core/util/enableLogsInDevelopment"
 
 import { initSentry } from "@core/config/sentry"
-import { DEBUG, PORT_CONTENT, PORT_EXTENSION } from "@core/constants"
+import { DEBUG, PORT_CONTENT, PORT_EXTENSION, TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { consoleOverride } from "@core/util/logging"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
@@ -16,6 +10,7 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import Browser, { Runtime } from "webextension-polyfill"
 
+import sitesAuthorisedStore from "./domains/sitesAuthorised/store"
 import talismanHandler from "./handlers"
 
 initSentry(Sentry)
@@ -27,7 +22,7 @@ void Browser.browserAction.setBadgeBackgroundColor({ color: "#d90000" })
 // check the installed reason
 // if install, we want to check the storage for prev onboarded info
 // if not onboarded, show the onboard screen
-Browser.runtime.onInstalled.addListener(({ reason }) => {
+Browser.runtime.onInstalled.addListener(async ({ reason }) => {
   Browser.storage.local.get(["talismanOnboarded", "app"]).then((data) => {
     // open onboarding when reason === "install" and data?.talismanOnboarded !== true
     // open dashboard data?.talismanOnboarded === true
@@ -38,6 +33,26 @@ Browser.runtime.onInstalled.addListener(({ reason }) => {
       Browser.tabs.create({ url: Browser.runtime.getURL("onboarding.html") })
     }
   })
+
+  if (reason === "update" && process.env.VERSION === "1.14.0") {
+    // once off migration to add `connectAllSubstrate` to the record for the Talisman Web App
+    const site = await sitesAuthorisedStore.get(TALISMAN_WEB_APP_DOMAIN)
+    if (!site)
+      // do this with a small delay so hopefully all present accounts will be loaded from disk
+      setTimeout(
+        () =>
+          sitesAuthorisedStore.set({
+            [TALISMAN_WEB_APP_DOMAIN]: {
+              addresses: keyring.getAccounts().map(({ address }) => address),
+              connectAllSubstrate: true,
+              id: TALISMAN_WEB_APP_DOMAIN,
+              origin: "Talisman",
+              url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
+            },
+          }),
+        2000
+      )
+  }
 })
 
 // listen to all messages and handle appropriately
