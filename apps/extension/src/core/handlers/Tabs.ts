@@ -66,7 +66,8 @@ export default class Tabs extends TabsHandler {
 
   private async authorize(url: string, request: RequestAuthorizeTab): Promise<boolean> {
     const siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
-    if (siteFromUrl) {
+    // site may exist if created during a connection with EVM API
+    if (siteFromUrl?.addresses) {
       // this url was seen in the past
       assert(
         siteFromUrl.addresses?.length,
