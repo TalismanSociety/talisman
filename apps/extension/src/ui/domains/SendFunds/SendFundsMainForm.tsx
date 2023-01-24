@@ -1,4 +1,6 @@
-import { IconAlert, LoaderIcon, SwapIcon } from "@talisman/theme/icons"
+import { Drawer } from "@talisman/components/Drawer"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { IconAlert, InfoIcon, LoaderIcon, SwapIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFunds } from "@ui/apps/popup/pages/SendFunds/context"
@@ -6,6 +8,7 @@ import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useInputNumberOnly } from "@ui/hooks/useInputNumberOnly"
 import { useInputAutoSize } from "@ui/hooks/useTextWidth"
 import useToken from "@ui/hooks/useToken"
+import { isSubToken } from "@ui/util/isSubstrateToken"
 import {
   ChangeEventHandler,
   DetailedHTMLProps,
@@ -216,18 +219,12 @@ const TokenDisplay = () => {
 }
 
 const ErrorMessage = () => {
-  const { estimateFeeError, hasInsufficientFunds } = useSendFundsDetails()
+  const { error } = useSendFundsDetails()
 
-  const errorMessage = useMemo(() => {
-    if (hasInsufficientFunds) return "Insufficient funds"
-    if (estimateFeeError) return estimateFeeError.message ?? "Failed to estimate fee"
-    return null
-  }, [estimateFeeError, hasInsufficientFunds])
-
-  return errorMessage ? (
+  return error ? (
     <div className="inline-flex items-center gap-2">
       <IconAlert />
-      <span>{errorMessage}</span>
+      <span>{error}</span>
     </div>
   ) : null
 }
@@ -325,7 +322,7 @@ const NetworkRow = () => {
 }
 
 const EstimatedFeeRow = () => {
-  const { feeToken, estimatedFee, isEstimatingFee, estimateFeeError } = useSendFundsDetails()
+  const { feeToken, estimatedFee, isEstimatingFee } = useSendFundsDetails()
 
   return (
     <Container className="flex w-full justify-between gap-4 px-8 py-4">
@@ -333,9 +330,78 @@ const EstimatedFeeRow = () => {
       <div className="grow overflow-hidden text-ellipsis whitespace-nowrap text-right">
         {isEstimatingFee && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
         {estimatedFee && feeToken && <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />}
-        {estimateFeeError && "N/A"}
       </div>
     </Container>
+  )
+}
+
+type ForfeitDetailsProps = {
+  tokenId: string
+  planck: string
+}
+const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
+  const token = useToken(tokenId)
+
+  if (!isSubToken(token)) return null
+
+  return (
+    <>
+      This transaction will cause <TokensAndFiat planck={planck} tokenId={tokenId} noCountUp /> to
+      be lost. If your balance falls below the minimum of{" "}
+      <TokensAndFiat planck={token.existentialDeposit} tokenId={tokenId} noCountUp />, any remaining
+      tokens will be forfeit.
+    </>
+  )
+}
+
+const ReviewButton = () => {
+  const { goto, tokenId } = useSendFunds()
+  const { isValid, tokensToBeReaped, token } = useSendFundsDetails()
+  const { open, close, isOpen } = useOpenClose()
+
+  const handleClick = useCallback(() => {
+    if (Object.keys(tokensToBeReaped).length) open()
+    else goto("confirm")
+  }, [goto, open, tokensToBeReaped])
+
+  const handleConfirmReap = useCallback(() => {
+    goto("confirm")
+  }, [goto])
+
+  return (
+    <>
+      <Button primary className="mt-8 w-full" disabled={!isValid} onClick={handleClick}>
+        Reviews
+      </Button>
+      <Drawer anchor="bottom" open={isOpen} onClose={close}>
+        <div className="bg-black-tertiary rounded-t-xl p-12 text-center">
+          <div>
+            <InfoIcon className="text-primary-500 inline-block text-3xl" />
+          </div>
+          <div className="mt-10 font-bold">Confirm forfeit</div>
+          <div className="text-body-secondary mt-5 text-sm">
+            {Object.entries(tokensToBeReaped).map(([tokenId, planck]) => (
+              <ForfeitDetails key={tokenId} tokenId={tokenId} planck={planck.toString()} />
+            ))}
+            <div className="mt-5">
+              <a
+                className="text-white underline"
+                target="_blank"
+                href="https://support.polkadot.network/support/solutions/articles/65000168651-what-is-the-existential-deposit-"
+              >
+                Learn more
+              </a>
+            </div>
+          </div>
+          <div className="mt-10 grid grid-cols-2 gap-4">
+            <Button onClick={close}>Cancel</Button>
+            <Button primary onClick={handleConfirmReap}>
+              Proceed
+            </Button>
+          </div>
+        </div>
+      </Drawer>
+    </>
   )
 }
 
@@ -372,9 +438,7 @@ export const SendFundsMainForm = () => {
           <NetworkRow />
           <EstimatedFeeRow />
         </div>
-        <Button primary className="mt-8 w-full" disabled>
-          Review
-        </Button>
+        <ReviewButton />
       </div>
     </SendFundsDetailsProvider>
   )

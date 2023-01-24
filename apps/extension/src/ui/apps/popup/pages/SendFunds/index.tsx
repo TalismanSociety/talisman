@@ -4,6 +4,7 @@ import { Route, Routes } from "react-router-dom"
 
 import { SendFundsProvider } from "./context"
 import { SendFundsAmount } from "./SendFundsAmount"
+import { SendFundsConfirm } from "./SendFundsConfirm"
 import { SendFundsFrom } from "./SendFundsFrom"
 import { SendFundsLayout } from "./SendFundsLayout"
 import { SendFundsTo } from "./SendFundsTo"
@@ -21,6 +22,7 @@ export const SendFundsPage = () => {
         <Route path="to" element={<SendFundsTo />} />
         <Route path="token" element={<SendFundsToken />} />
         <Route path="amount" element={<SendFundsAmount />} />
+        <Route path="confirm" element={<SendFundsConfirm />} />
         <Route path="*" element={<SendFundsFrom />} />
       </Routes>
     </SendFundsProvider>

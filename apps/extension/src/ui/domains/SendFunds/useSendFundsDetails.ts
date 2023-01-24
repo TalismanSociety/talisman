@@ -1,16 +1,23 @@
 import { log } from "@core/log"
+import { assert } from "@polkadot/util"
 import { provideContext } from "@talisman/util/provideContext"
-import { BalanceFormatter } from "@talismn/balances"
+import { Address, Balance, BalanceFormatter, BalanceJson } from "@talismn/balances"
+import { SubNativeBalance } from "@talismn/balances-substrate-native"
+import { SubOrmlBalance } from "@talismn/balances-substrate-orml"
+import { Token, TokenId } from "@talismn/chaindata-provider"
+import { planckToTokens } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFunds } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useBalance } from "@ui/hooks/useBalance"
+import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
 import useChain from "@ui/hooks/useChain"
+import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import BigNumber from "bignumber.js"
 import { useEffect, useMemo } from "react"
 
 import { getExtensionEthereumProvider } from "../Ethereum/getExtensionEthereumProvider"
@@ -43,10 +50,21 @@ const useEstimateFee = (
 ) => {
   const token = useToken(tokenId)
 
+  const [debouncedAmount, setDebouncedAmount] = useDebouncedState(amount)
+
+  useEffect(() => {
+    setDebouncedAmount(amount)
+  }, [amount, setDebouncedAmount])
+
   return useQuery({
-    queryKey: ["sendFunds", "estimateFee", from, to, token?.id, amount],
+    queryKey: ["sendFunds", "estimateFee", from, to, token?.id, debouncedAmount],
     queryFn: async () => {
-      if (!token || !from || !to || !amount) return null
+      if (!token || !from || !to || !debouncedAmount)
+        return {
+          estimatedFee: null,
+          unsigned: null,
+          pendingTransferId: null,
+        }
       switch (token.type) {
         case "evm-erc20":
         case "evm-native": {
@@ -55,9 +73,13 @@ const useEstimateFee = (
             const provider = getExtensionEthereumProvider(token.evmNetwork.id)
             const [gasPrice, estimatedGas] = await Promise.all([
               provider.getGasPrice(),
-              provider.estimateGas({ from, to, value: amount }),
+              provider.estimateGas({ from, to, value: debouncedAmount }),
             ])
-            return gasPrice.mul(estimatedGas).toString()
+            return {
+              estimatedFee: gasPrice.mul(estimatedGas).toString(),
+              unsigned: null,
+              pendingTransferId: null,
+            }
           } catch (err) {
             if ((err as any)?.code === "INSUFFICIENT_FUNDS") throw new Error("Insufficient funds")
             throw (err as any).error ?? err
@@ -70,20 +92,53 @@ const useEstimateFee = (
             token.id,
             from,
             to,
-            amount,
+            debouncedAmount,
             "0", //TODO tip ?? "0",
             false //TODO allowReap
           )
-          return partialFee
+          return { estimatedFee: partialFee, unsigned, pendingTransferId }
         }
       }
     },
     retry: false,
+    refetchInterval: 10_000,
   })
 }
 
+const useRecipientBalance = (token?: Token, address?: Address | null) => {
+  const hydrate = useBalancesHydrate()
+
+  const { data } = useQuery({
+    queryKey: [token?.id, address],
+    queryFn: async () => {
+      if (!token || !token.chain || !address) return null
+      return api.getBalance({ chainId: token.chain.id, address, tokenId: token.id })
+      // try {
+      //   const balance = (await) as SubNativeBalance | SubOrmlBalance
+      //   console.log("balance", balance.reserves)
+      //   return token.type === "substrate-native" || token.type === "substrate-orml"
+      //     ? new Balance(
+      //       await api.getBalance({ chainId: token.chain.id, address, tokenId: token.id }), hydrate
+
+      //       )
+      //     : null
+      // } catch (err) {
+      //   throw new Error("Failed to check recipient balance")
+      // }
+    },
+    retry: false,
+    refetchInterval: 10_000,
+  })
+
+  const balance = useMemo(() => {
+    return data && hydrate ? new Balance(data, hydrate) : null
+  }, [data, hydrate])
+
+  return balance
+}
+
 const useSendFundsDetailsProvider = () => {
-  const { from, amount, tokenId } = useSendFunds()
+  const { from, to, amount, tokenId } = useSendFunds()
   const fromAccount = useAccountByAddress(from)
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
@@ -96,12 +151,19 @@ const useSendFundsDetailsProvider = () => {
     [amount, token, tokenRates]
   )
 
+  const { requiresTip, tip: tipPlanck } = useTip(token?.chain?.id)
+  const tipToken = useToken(chain?.nativeToken?.id)
+  const tipTokenBalance = useBalance(from as string, tipToken?.id as string)
+
   const feeToken = useFeeToken(tokenId)
   const {
-    data: estimatedFee,
+    data: dataEstimateFee,
     error: estimateFeeError,
     isFetching: isEstimatingFee,
   } = useEstimateFee(from, from, tokenId, amount)
+  const { estimatedFee, unsigned, pendingTransferId } = useMemo(() => {
+    return dataEstimateFee ?? { estimatedFee: null, unsigned: null, pendingTransferId: null }
+  }, [dataEstimateFee])
   const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
 
   const hasInsufficientFunds = useMemo(() => {
@@ -125,6 +187,127 @@ const useSendFundsDetailsProvider = () => {
     return false
   }, [amount, balance, estimatedFee, feeTokenBalance])
 
+  const recipientBalance = useRecipientBalance(token, to)
+
+  const isSendingEnough = useMemo(() => {
+    if (!token || !recipientBalance || !amount) return true
+    switch (token.type) {
+      case "evm-erc20":
+      case "evm-native":
+        return true
+      case "substrate-native":
+      case "substrate-orml": {
+        const transfer = new BalanceFormatter(amount, token.decimals)
+        const existentialDeposit = new BalanceFormatter(
+          token.existentialDeposit ?? "0",
+          token.decimals
+        )
+        // console.log({
+        //   transfer: transfer.tokens,
+        //   recipientBalance: recipientBalance.total.tokens,
+        //   existentialDeposit: existentialDeposit.tokens,
+        // })
+
+        return (
+          transfer.planck === 0n ||
+          recipientBalance.total.planck > 0n ||
+          transfer.planck >= existentialDeposit.planck
+        )
+      }
+    }
+  }, [amount, recipientBalance, token])
+
+  const { isValid, error } = useMemo(() => {
+    if (!from || !to || !amount || !tokenId) return { isValid: false, error: undefined }
+    if (hasInsufficientFunds) return { isValid: false, error: "Insufficient funds" }
+    if (!token || !feeToken) return { isValid: false, error: "Token not found" }
+
+    if (estimateFeeError)
+      return {
+        isValid: false,
+        error: ("Failed to estimate fees : " +
+          ((estimateFeeError as any).reason ?? (estimateFeeError as any).error?.message) ??
+          (estimateFeeError as Error).message) as string,
+      }
+
+    switch (token.type) {
+      case "evm-erc20":
+      case "evm-native":
+        if (!evmNetwork) return { isValid: false, error: "Network not found" }
+        break
+      case "substrate-native":
+      case "substrate-orml":
+        if (!chain) return { isValid: false, error: "Chain not found" }
+        break
+    }
+
+    if (!isSendingEnough)
+      return { isValid: false, error: "Recipient account would be reaped, try sending more tokens" }
+
+    return { isValid: true, error: undefined }
+  }, [
+    amount,
+    chain,
+    estimateFeeError,
+    evmNetwork,
+    feeToken,
+    from,
+    hasInsufficientFunds,
+    isSendingEnough,
+    to,
+    token,
+    tokenId,
+  ])
+
+  const tokensToBeReaped: Record<TokenId, bigint> = useMemo(() => {
+    if (!token || !feeToken || !amount || !estimatedFee) return {}
+
+    // for EVM checking hasInsufficientFunds is enough
+    // for substrate, also check existential deposits on both sender and recipient accounts
+    if (token.type === "substrate-native" || token.type === "substrate-orml") {
+      const transfer = new BalanceFormatter(amount, token.decimals)
+      const fee = new BalanceFormatter(estimatedFee, feeToken.decimals)
+      const tip = new BalanceFormatter(requiresTip ? tipPlanck : "0", tipToken?.decimals)
+      const existentialDeposit = new BalanceFormatter(
+        token.existentialDeposit ?? "0",
+        token.decimals
+      )
+
+      const tokenBalances = {
+        [token.id]: balance,
+        [feeToken.id]: feeTokenBalance,
+      }
+      if (tipToken) tokenBalances[tipToken.id] = tipTokenBalance
+
+      const spend: Record<TokenId, bigint> = {}
+      if (transfer.planck > BigInt("0"))
+        spend[token.id] = (spend[token.id] ?? BigInt("0")) + transfer.planck
+      if (fee.planck > BigInt("0"))
+        spend[feeToken.id] = (spend[feeToken.id] ?? BigInt("0")) + fee.planck
+      if (tipToken && tip.planck > BigInt("0"))
+        spend[tipToken.id] = (spend[tipToken.id] ?? BigInt("0")) + tip.planck
+
+      const result: Record<TokenId, bigint> = {}
+      for (const [tokenId, value] of Object.entries(spend).filter(([id]) => tokenBalances[id]))
+        if (tokenBalances[tokenId].transferable.planck < value + existentialDeposit.planck)
+          result[tokenId] = tokenBalances[tokenId].transferable.planck - value
+      return result
+    }
+
+    return {}
+  }, [
+    amount,
+    balance,
+    estimatedFee,
+    feeToken,
+    feeTokenBalance,
+    requiresTip,
+    tipPlanck,
+    tipToken,
+    tipTokenBalance,
+    token,
+  ])
+
   const ctx = useMemo(
     () => ({
       token,
@@ -136,28 +319,35 @@ const useSendFundsDetailsProvider = () => {
       balance,
       feeToken,
       estimatedFee,
-      estimateFeeError: estimateFeeError as Error,
+      // estimateFeeError:  as Error,
       isEstimatingFee,
       hasInsufficientFunds,
+      isSendingEnough,
+      tokensToBeReaped,
+      isValid,
+      error,
     }),
     [
-      balance,
-      chain,
-      estimateFeeError,
-      estimatedFee,
-      evmNetwork,
-      feeToken,
-      fromAccount,
-      sendAmount,
       token,
       tokenRates,
+      sendAmount,
+      fromAccount,
+      chain,
+      evmNetwork,
+      balance,
+      feeToken,
+      estimatedFee,
       isEstimatingFee,
       hasInsufficientFunds,
+      isSendingEnough,
+      tokensToBeReaped,
+      isValid,
+      error,
     ]
   )
 
   useEffect(() => {
-    log.log("useSendFundsDetailsProvider", ctx)
+    log.log(ctx)
   }, [ctx])
 
   return ctx
