@@ -35,16 +35,31 @@ export interface AccountJsonHardwareEthereum extends AccountJson {
   path: string
 }
 
-export type AccountJsonAny =
+export interface AccountJsonQr extends AccountJson {
+  isQr: true
+}
+
+export type AccountJsonAny = (
   | AccountJsonHardwareEthereum
   | AccountJsonHardwareSubstrate
+  | AccountJsonQr
   | AccountJson
+) & { origin?: keyof typeof AccountTypes | undefined }
 
 export type IdenticonType = "talisman-orb" | "polkadot-identicon"
 
+export const AccountTypes = {
+  ROOT: "ROOT",
+  DERIVED: "DERIVED",
+  SEED: "SEED",
+  JSON: "JSON",
+  QR: "QR",
+  HARDWARE: "HARDWARE",
+}
+
 export interface AccountMeta extends AccountJson {
   name: string
-  origin: "ROOT" | "DERIVED" | "SEED" | "JSON" | "HARDWARE"
+  origin: keyof typeof AccountTypes
 }
 
 export interface Account {
@@ -71,6 +86,12 @@ export interface RequestAccountCreateHardwareEthereum {
   name: string
   address: string
   path: string
+}
+
+export interface RequestAccountCreateQr {
+  name: string
+  address: string
+  genesisHash: string | null
 }
 
 export interface RequestAccountForget {
@@ -107,6 +128,7 @@ export interface AccountsMessages {
     string
   ]
   "pri(accounts.create.hardware.ethereum)": [RequestAccountCreateHardwareEthereum, string]
+  "pri(accounts.create.qr.substrate)": [RequestAccountCreateQr, string]
   "pri(accounts.forget)": [RequestAccountForget, boolean]
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
   "pri(accounts.export.pk)": [RequestAccountExportPrivateKey, string]

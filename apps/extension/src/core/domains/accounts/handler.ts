@@ -1,16 +1,18 @@
-import { AccountTypes, sortAccounts } from "@core/domains/accounts/helpers"
+import { sortAccounts } from "@core/domains/accounts/helpers"
 import type {
   RequestAccountCreate,
   RequestAccountCreateFromJson,
   RequestAccountCreateFromSeed,
   RequestAccountCreateHardware,
   RequestAccountCreateHardwareEthereum,
+  RequestAccountCreateQr,
   RequestAccountExport,
   RequestAccountExportPrivateKey,
   RequestAccountForget,
   RequestAccountRename,
   ResponseAccountExport,
 } from "@core/domains/accounts/types"
+import { AccountTypes } from "@core/domains/accounts/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
@@ -232,6 +234,19 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
+  private accountsCreateQr({ name, address, genesisHash }: RequestAccountCreateQr): string {
+    const { pair } = keyring.addExternal(address, {
+      isQr: true,
+      name,
+      genesisHash,
+      origin: AccountTypes.QR,
+    })
+
+    talismanAnalytics.capture("account create", { type: "substrate", method: "qr" })
+
+    return pair.address
+  }
+
   private accountForget({ address }: RequestAccountForget): boolean {
     const account = keyring.getAccounts().find((acc) => acc.address === address)
     assert(account, "Unable to find account")
@@ -343,6 +358,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCreateHardware(request as RequestAccountCreateHardware)
       case "pri(accounts.create.hardware.ethereum)":
         return this.accountsCreateHardwareEthereum(request as RequestAccountCreateHardwareEthereum)
+      case "pri(accounts.create.qr.substrate)":
+        return this.accountsCreateQr(request as RequestAccountCreateQr)
       case "pri(accounts.forget)":
         return this.accountForget(request as RequestAccountForget)
       case "pri(accounts.export)":

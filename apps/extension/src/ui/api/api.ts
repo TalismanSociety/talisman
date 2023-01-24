@@ -56,6 +56,11 @@ export const api: MessageTypes = {
       id,
       signature,
     }),
+  approveSignQr: (id, signature) =>
+    messageService.sendMessage("pri(signing.approveSign.qr)", {
+      id,
+      signature,
+    }),
 
   // encrypt messages -------------------------------------------------------
   subscribeEncryptRequests: (cb) => messageService.subscribe("pri(encrypt.requests)", null, cb),
@@ -98,6 +103,12 @@ export const api: MessageTypes = {
       name,
       address,
       path,
+    }),
+  accountCreateQr: (name, address, genesisHash) =>
+    messageService.sendMessage("pri(accounts.create.qr.substrate)", {
+      name,
+      address,
+      genesisHash,
     }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountForget: (address) => messageService.sendMessage("pri(accounts.forget)", { address }),

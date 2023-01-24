@@ -77,6 +77,7 @@ export default interface MessageTypes {
   subscribeSigningRequests: (cb: (requests: AnySigningRequest[]) => void) => UnsubscribeFn
   approveSign: (id: string) => Promise<boolean>
   approveSignHardware: (id: string, signature: HexString) => Promise<boolean>
+  approveSignQr: (id: string, signature: HexString) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
   subscribeEncryptRequests: (cb: (requests: AnyEncryptRequest[]) => void) => UnsubscribeFn
@@ -105,6 +106,7 @@ export default interface MessageTypes {
     request: Omit<RequestAccountCreateHardware, "hardwareType">
   ) => Promise<string>
   accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<string>
+  accountCreateQr: (name: string, address: string, genesisHash: string) => Promise<string>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountForget: (address: string) => Promise<boolean>
   accountExport: (

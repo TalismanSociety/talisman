@@ -1,5 +1,11 @@
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
-import { FileTextIcon, KeyIcon, MessageCircleIcon, UsbIcon } from "@talisman/theme/icons"
+import {
+  FileTextIcon,
+  KeyIcon,
+  MessageCircleIcon,
+  ParitySignerIcon,
+  UsbIcon,
+} from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect, useMemo } from "react"
@@ -86,6 +92,14 @@ export const ImportMethodPage = () => {
               icon={KeyIcon}
               title="Private key"
               subtitle="Import an account from a private key"
+            />
+          )}
+          {data.importAccountType === "sr25519" && (
+            <OnboardCta
+              onClick={handleClick("qr")}
+              icon={ParitySignerIcon}
+              title="Parity signer"
+              subtitle="Connect your Parity Signer account"
             />
           )}
         </div>

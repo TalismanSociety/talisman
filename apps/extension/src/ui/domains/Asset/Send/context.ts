@@ -349,12 +349,13 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     } else throw new Error("Network not found")
   }, [formData, hasAcceptedForfeit, transferableTokensMap])
 
-  const approvalMode = useMemo((): "hwSubstrate" | "hwEthereum" | "backend" => {
+  const approvalMode = useMemo((): "hwSubstrate" | "hwEthereum" | "qr" | "backend" => {
     const account = accounts.find((acc) => acc.address === formData.from)
     if (account?.isHardware) {
       if (expectedResult?.type === "substrate") return "hwSubstrate"
       if (expectedResult?.type === "evm") return "hwEthereum"
     }
+    if (account?.isQr) return "qr"
     return "backend"
   }, [accounts, expectedResult?.type, formData.from])
 

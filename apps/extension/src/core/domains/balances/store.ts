@@ -263,12 +263,10 @@ export class BalanceStore {
     // update the list of watched addresses
     const addresses = Object.fromEntries(
       Object.entries(accounts).map(([address, details]) => {
-        const { isHardware, genesisHash } = details.json.meta
-
-        if (!isHardware) return [address, null]
+        const { genesisHash } = details.json.meta
         if (!genesisHash) return [address, null]
 
-        // For hardware accounts, only query balances on chains with the account's genesisHash
+        // For accounts locked to a single chain, only query balances on that chain
         return [address, [genesisHash]]
       })
     )

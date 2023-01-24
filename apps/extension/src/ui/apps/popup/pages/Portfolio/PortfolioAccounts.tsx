@@ -8,6 +8,7 @@ import {
   CopyIcon,
   CreditCardIcon,
   PaperPlaneIcon,
+  ParitySignerIcon,
   UsbIcon,
   ZapIcon,
 } from "@talisman/theme/icons"
@@ -40,7 +41,7 @@ type AccountOption = {
   name: string
   total?: number
   genesisHash?: string | null
-  isHardware?: boolean
+  origin?: string
 }
 
 const Button = styled.article`
@@ -75,7 +76,7 @@ const CopyButton = styled(IconButton)`
   width: 1.4rem;
 `
 
-const AccountButton = ({ address, name, total, genesisHash, isHardware }: AccountOption) => {
+const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOption) => {
   const { open } = useAddressFormatterModal()
   const { select } = useSelectedAccount()
   const navigate = useNavigate()
@@ -110,7 +111,12 @@ const AccountButton = ({ address, name, total, genesisHash, isHardware }: Accoun
       <Box flex column justify="center" align="flex-start" grow gap={0.4} overflow="hidden">
         <div className="text-body flex w-full items-center gap-3 text-base leading-none">
           <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{name}</div>
-          {isHardware && (
+          {origin === "QR" && (
+            <div className="text-primary">
+              <ParitySignerIcon />
+            </div>
+          )}
+          {origin === "HARDWARE" && (
             <div className="text-primary">
               <UsbIcon />
             </div>
@@ -221,11 +227,11 @@ export const PortfolioAccounts = () => {
         name: "All Accounts",
         total: balances.sum.fiat("usd").total,
       },
-      ...accounts.map(({ address, name, genesisHash, isHardware }) => ({
+      ...accounts.map(({ address, name, genesisHash, origin }) => ({
         address,
         genesisHash,
         name: name ?? "Unknown Account",
-        isHardware,
+        origin: typeof origin === "string" ? origin : undefined,
         total: balances.find({ address }).sum.fiat("usd").total,
       })),
     ]

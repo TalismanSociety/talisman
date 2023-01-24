@@ -1,7 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Box } from "@talisman/components/Box"
 import { breakpoints } from "@talisman/theme/definitions"
-import { AllAccountsIcon, ChevronDownIcon, UsbIcon } from "@talisman/theme/icons"
+import { AllAccountsIcon, ChevronDownIcon, ParitySignerIcon, UsbIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames } from "@talismn/util"
@@ -217,7 +217,7 @@ type AccountOptionProps = AnyAccountOptionProps & {
   totalUsd: number
   genesisHash?: string | null
   name?: string
-  isHardware?: boolean
+  origin?: string
 }
 
 type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & {
@@ -229,7 +229,7 @@ const AccountOption = ({
   totalUsd,
   genesisHash,
   name,
-  isHardware,
+  origin,
   withTrack,
 }: AccountOptionProps) => {
   const { genericEvent } = useAnalytics()
@@ -255,9 +255,14 @@ const AccountOption = ({
           <Box overflow="hidden" textOverflow="ellipsis" noWrap flex column justify="center">
             {name ?? (address ? shortenAddress(address) : "unknown")}
           </Box>
-          {isHardware && (
+          {origin === "HARDWARE" && (
             <Box fg="primary" flex column justify="center">
               <UsbIcon />
+            </Box>
+          )}
+          {origin === "QR" && (
+            <Box fg="primary" flex column justify="center">
+              <ParitySignerIcon />
             </Box>
           )}
         </Box>
@@ -287,7 +292,7 @@ type DropdownItem = {
   name?: string
   address?: string
   genesisHash?: string | null
-  isHardware?: boolean
+  origin?: string
 }
 const OPTION_ALL_ACCOUNTS: DropdownItem = {}
 

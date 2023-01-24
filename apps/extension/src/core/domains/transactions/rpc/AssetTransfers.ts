@@ -1,7 +1,7 @@
 import { ChainId } from "@core/domains/chains/types"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { ResponseAssetTransferFeeQuery } from "@core/domains/transactions/types"
-import { isHardwareAccount } from "@core/handlers/helpers"
+import { isHardwareAccount, isQrAccount } from "@core/handlers/helpers"
 import RpcFactory from "@core/libs/RpcFactory"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { SubscriptionCallback } from "@core/types"
@@ -187,9 +187,9 @@ export default class AssetTransfersRpc {
     // create payload and export it in case it has to be signed by hardware device
     const payload = construct.signingPayload(unsigned, { registry })
 
-    // if hardware account, signing has to be done on the device
+    // if hardware or qr account, signing has to be done on the device
     let pendingTransferId
-    if (isHardwareAccount(unsigned.address)) {
+    if (isHardwareAccount(unsigned.address) || isQrAccount(unsigned.address)) {
       // store in pending transactions map
       pendingTransferId = pendingTransfers.add({
         chainId,

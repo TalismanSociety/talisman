@@ -115,6 +115,39 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
+  private async signingApproveQr({
+    id,
+    signature,
+  }: RequestSigningApproveSignature): Promise<boolean> {
+    const queued = this.state.requestStores.signing.getPolkadotRequest(id)
+    assert(queued, "Unable to find request")
+
+    const {
+      request,
+      url,
+      account: { address: accountAddress },
+    } = queued
+    const { payload } = request
+
+    const analyticsProperties: { dapp: string; chain?: string } = { dapp: url }
+
+    if (isJsonPayload(payload)) {
+      const { genesisHash } = payload
+      const chain = await chaindataProvider.getChain({ genesisHash })
+      analyticsProperties.chain = chain?.chainName
+    }
+
+    queued.resolve({ id, signature })
+
+    talismanAnalytics.captureDelayed("sign transaction approve", {
+      ...analyticsProperties,
+      networkType: "substrate",
+      qrType: "parity signer",
+    })
+
+    return true
+  }
+
   private signingCancel({ id }: RequestSigningCancel): boolean {
     /*
      * This method used for both Eth and Polkadot requests
@@ -177,6 +210,9 @@ export default class SigningHandler extends ExtensionHandler {
 
       case "pri(signing.approveSign.hardware)":
         return this.signingApproveHardware(request as RequestSigningApproveSignature)
+
+      case "pri(signing.approveSign.qr)":
+        return this.signingApproveQr(request as RequestSigningApproveSignature)
 
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestSigningCancel)

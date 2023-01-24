@@ -1,5 +1,5 @@
 import { Box } from "@talisman/components/Box"
-import { UsbIcon } from "@talisman/theme/icons"
+import { ParitySignerIcon, UsbIcon } from "@talisman/theme/icons"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import styled from "styled-components"
@@ -27,9 +27,14 @@ export const PortfolioAccount = ({
       <Box overflow="hidden" textOverflow="ellipsis" noWrap>
         {account.name ?? "Unnknown"}
       </Box>
-      {!!account?.isHardware && (
+      {account?.origin === "HARDWARE" && (
         <Box fg="primary">
           <UsbIcon />
+        </Box>
+      )}
+      {account?.origin === "QR" && (
+        <Box fg="primary">
+          <ParitySignerIcon />
         </Box>
       )}
     </Container>

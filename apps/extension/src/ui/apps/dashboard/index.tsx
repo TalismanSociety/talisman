@@ -21,6 +21,7 @@ import Layout from "./layout"
 import About from "./routes/About"
 import AccountAddDerived from "./routes/AccountAddDerived"
 import AccountAddJson from "./routes/AccountAddJson"
+import { AccountAddQr } from "./routes/AccountAddQr"
 import { AccountAddSecret } from "./routes/AccountAddSecret"
 import AccountAddTypePicker from "./routes/AccountAddTypePicker"
 import { NetworkPage } from "./routes/Networks/NetworkPage"
@@ -81,6 +82,7 @@ const DashboardInner = () => {
             <Route path="json" element={<AccountAddJson />} />
             <Route path="secret/*" element={<AccountAddSecret />} />
             <Route path="ledger/*" element={<AccountAddLedger />} />
+            <Route path="qr/*" element={<AccountAddQr />} />
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />
