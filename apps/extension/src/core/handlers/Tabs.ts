@@ -1,9 +1,5 @@
 import { db } from "@core/db"
-import {
-  filterAccountsByAddresses,
-  getPublicAccounts,
-  includeAvatar,
-} from "@core/domains/accounts/helpers"
+import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
 import { protector } from "@core/domains/app/protector"
 import {
@@ -14,7 +10,7 @@ import {
 } from "@core/domains/encrypt/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
 import type { ResponseSigning } from "@core/domains/signing/types"
-import { AuthorizedSites, RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
+import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
 import { talismanAnalytics } from "@core/libs/Analytics"
@@ -26,7 +22,8 @@ import type {
   SubscriptionMessageTypes,
 } from "@core/types"
 import type { Port } from "@core/types/base"
-import { urlToDomain } from "@core/util/urlToDomain"
+import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
+import { isPhishingSite } from "@core/util/isPhishingSite"
 import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import {
@@ -87,18 +84,17 @@ export default class Tabs extends TabsHandler {
     url: string,
     { anyType }: RequestAccountList
   ): Promise<InjectedAccount[]> {
-    const site = await this.stores.sites.getSiteFromUrl(url)
-    const { addresses, connectAllSubstrate } = site
-    if (!addresses || addresses.length === 0) return []
-    const accounts = accountsObservable.subject.getValue()
-
-    const filteredAccounts = getPublicAccounts(
-      Object.values(accounts),
-      !connectAllSubstrate ? filterAccountsByAddresses(addresses, anyType) : undefined
+    const addresses = (await this.stores.sites.getSiteFromUrl(url)).addresses
+    const accounts = filterAccountsByAddresses(
+      accountsObservable.subject.getValue(),
+      addresses,
+      anyType
     )
-
     const iconType = await this.stores.settings.get("identiconType")
-    return filteredAccounts.map(includeAvatar(iconType))
+    return accounts.map((acc) => ({
+      ...acc,
+      avatar: getAccountAvatarDataUri(acc.address, iconType),
+    }))
   }
 
   private accountsSubscribe(url: string, id: string, port: Port) {
@@ -106,22 +102,16 @@ export default class Tabs extends TabsHandler {
       id,
       port,
       this.stores.sites.observable,
-      async (sites: AuthorizedSites) => {
-        const { val: siteId, ok } = urlToDomain(url)
-        if (!ok) return []
-
-        const site = sites[siteId]
-        if (!site || !site.addresses) return []
-        const { addresses, connectAllSubstrate } = site
-
-        const accounts = accountsObservable.subject.getValue()
-        const filteredAccounts = getPublicAccounts(
-          Object.values(accounts),
-          !connectAllSubstrate ? filterAccountsByAddresses(addresses, true) : undefined
-        )
-
+      async () => {
         const iconType = await this.stores.settings.get("identiconType")
-        return filteredAccounts.map(includeAvatar(iconType))
+        const accounts = accountsObservable.subject.getValue()
+        const addresses = (await this.stores.sites.getSiteFromUrl(url))?.addresses
+        if (!addresses) return []
+        const filteredAccounts = await filterAccountsByAddresses(accounts, addresses, true)
+        return filteredAccounts.map((acc) => ({
+          ...acc,
+          avatar: getAccountAvatarDataUri(acc.address, iconType),
+        }))
       }
     )
   }

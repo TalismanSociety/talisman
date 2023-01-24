@@ -37,8 +37,7 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
   id: string,
   port: Port,
   observable: Observable<any>,
-  transformFn: (value: any) => Promise<SubscriptionMessageTypes[TMessageType]> = (value) =>
-    value as SubscriptionMessageTypes[TMessageType]
+  transformFn: (value: any) => Promise<SubscriptionMessageTypes[TMessageType]> = (value) => value
 ): boolean {
   const cb = createSubscription<TMessageType>(id, port)
   const subscription = observable.subscribe((data) => transformFn(data).then(cb))

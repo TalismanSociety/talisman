@@ -1,8 +1,7 @@
-import type { AccountJsonAny, IdenticonType } from "@core/domains/accounts/types"
-import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
+import type { AccountJsonAny } from "@core/domains/accounts/types"
 import { canDerive } from "@polkadot/extension-base/utils"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
-import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
+import type { SubjectInfo } from "@polkadot/ui-keyring/observable/types"
 
 export const AccountTypes = {
   ROOT: "ROOT",
@@ -33,9 +32,9 @@ const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
   })
 }
 
-export const sortAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
+export const filterPublicAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
   const transformedAccounts = Object.values(accounts).map(
-    ({ json: { address, meta }, type }: SingleAddress): AccountJsonAny => ({
+    ({ json: { address, meta }, type }: any): AccountJsonAny => ({
       address,
       ...meta,
       type,
@@ -65,35 +64,27 @@ export const sortAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
   return ordered
 }
 
-export const getInjectedAccount = ({
-  json: {
-    address,
-    meta: { genesisHash, name },
-  },
-  type,
-}: SingleAddress): InjectedAccount => ({
-  address,
-  genesisHash,
-  name,
-  type,
-})
-
-export const filterAccountsByAddresses =
-  (addresses: string[] = [], anyType = false) =>
-  (accounts: SingleAddress[]) =>
-    accounts
-      .filter(({ json: { address } }) => !!addresses.includes(address))
-      .filter(({ type }) => (anyType ? true : canDerive(type)))
-
-export const getPublicAccounts = (
-  accounts: SingleAddress[],
-  filterFn: (accounts: SingleAddress[]) => SingleAddress[] = (accounts) => accounts
-) =>
-  filterFn(accounts)
+export const filterAccountsByAddresses = (
+  accounts: SubjectInfo,
+  addresses: string[] = [],
+  anyType = false
+): InjectedAccount[] => {
+  return Object.values(accounts)
+    .filter(({ json: { address } }) => !!addresses.includes(address))
+    .filter(({ type }) => (anyType ? true : canDerive(type)))
     .sort((a, b) => (a.json.meta.whenCreated || 0) - (b.json.meta.whenCreated || 0))
-    .map(getInjectedAccount)
-
-export const includeAvatar = (iconType: IdenticonType) => (account: InjectedAccount) => ({
-  ...account,
-  avatar: getAccountAvatarDataUri(account.address, iconType),
-})
+    .map(
+      ({
+        json: {
+          address,
+          meta: { genesisHash, name },
+        },
+        type,
+      }): InjectedAccount => ({
+        address,
+        genesisHash,
+        name,
+        type,
+      })
+    )
+}
