@@ -13,7 +13,7 @@ import styled from "styled-components"
 const IdentIcon = lazy(() => import("@polkadot/react-identicon"))
 
 const Container = styled.div`
-  display: inline-flex;
+  display: inline;
   font-size: 3.2rem;
   width: 1em;
   height: 1em;
@@ -53,15 +53,6 @@ const Container = styled.div`
   .identicon-loader {
     background: #eee;
   }
-
-  div.chain-logo {
-    background-color: black;
-    position: absolute;
-    font-size: 0.5em;
-    top: -0.2em;
-    right: -0.2em;
-    background-size: cover;
-  }
 `
 
 const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
@@ -71,7 +62,9 @@ const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
     [chains, genesisHash]
   )
 
-  return chain ? <ChainLogo id={chain.id} /> : null
+  return chain ? (
+    <ChainLogo id={chain.id} className="!absolute top-[-0.2em] right-[-0.2em] text-[0.5em]" />
+  ) : null
 }
 
 const PolkadotAvatar = ({ seed }: { seed: string }) => {
