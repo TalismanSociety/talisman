@@ -1,9 +1,10 @@
+import inclusion from "inclusion"
+
 import type { mutateMetadata as MutateMetadata } from "./metadata"
 import { suppressPortableRegistryConsoleWarnings } from "./suppressPortableRegistryConsoleWarnings"
 
 suppressPortableRegistryConsoleWarnings()
 
-const importDynamic = new Function("modulePath", "return import(modulePath)")
 let importedMutateMetadata: null | typeof MutateMetadata = null
 
 /**
@@ -43,7 +44,7 @@ export const mutateMetadata = async (
     //
     // https://stackoverflow.com/a/70192405/3926156
     // https://github.com/node-fetch/node-fetch/issues/1279#issuecomment-915063354
-    importedMutateMetadata = (await importDynamic("./metadata.js")).mutateMetadata
+    importedMutateMetadata = (await inclusion("./metadata.js")).mutateMetadata
   }
   if (importedMutateMetadata === null) throw new Error("Failed to import mutateMetadata function")
 

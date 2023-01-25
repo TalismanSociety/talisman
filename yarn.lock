@@ -6216,6 +6216,7 @@ __metadata:
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     eslint: ^8.4.0
+    inclusion: ^1.0.1
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
@@ -9850,7 +9851,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"callsites@npm:^3.0.0":
+"callsites@npm:^3.0.0, callsites@npm:^3.1.0":
   version: 3.1.0
   resolution: "callsites@npm:3.1.0"
   checksum: 072d17b6abb459c2ba96598918b55868af677154bec7e73d222ef95a8fdb9bbf7dae96a8421085cdad8cd190d86653b5b6dc55a4484f2e5b2e27d5e0c3fc15b3
@@ -15197,6 +15198,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"inclusion@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "inclusion@npm:1.0.1"
+  dependencies:
+    parent-module: ^2.0.0
+  checksum: 1ee1d829d4f354797b3c7ccca2a5fb669e7d4dafb83aaa96837265bbb6041eb4f7a6cab075730ba77c6b7b78c2918124411ba48092fa1bd13ee18c4b408ef36c
+  languageName: node
+  linkType: hard
+
 "indent-string@npm:^4.0.0":
   version: 4.0.0
   resolution: "indent-string@npm:4.0.0"
@@ -18890,6 +18900,15 @@ __metadata:
   dependencies:
     callsites: ^3.0.0
   checksum: 6ba8b255145cae9470cf5551eb74be2d22281587af787a2626683a6c20fbb464978784661478dd2a3f1dad74d1e802d403e1b03c1a31fab310259eec8ac560ff
+  languageName: node
+  linkType: hard
+
+"parent-module@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "parent-module@npm:2.0.0"
+  dependencies:
+    callsites: ^3.1.0
+  checksum: f131f13d687a938556a01033561fb1b274b39921eb4425c7a691f0d91dcfbe9b19759c2b8d425a3ee7c8a46874e57fa418a690643880c3c7c56827aba12f78dd
   languageName: node
   linkType: hard
 
