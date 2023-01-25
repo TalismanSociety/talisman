@@ -20,7 +20,7 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
-import React, { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -31,7 +31,7 @@ const IconBox = styled(Box)`
 `
 
 // memoise to re-render only if balances object changes
-const PageContent = React.memo(({ balances }: { balances: Balances }) => {
+const PageContent = ({ balances }: { balances: Balances }) => {
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
   const { canExportAccount, open: openExportAccountModal } = useAccountExportModal()
@@ -139,7 +139,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
       </Box>
     </>
   )
-})
+}
 
 export const PortfolioAssets = () => {
   const { networkBalances } = usePortfolio()
