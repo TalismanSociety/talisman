@@ -1,5 +1,9 @@
 import { db } from "@core/db"
-import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
+import {
+  filterAccountsByAddresses,
+  getPublicAccounts,
+  includeAvatar,
+} from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
 import { protector } from "@core/domains/app/protector"
 import {
@@ -10,20 +14,14 @@ import {
 } from "@core/domains/encrypt/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
 import type { ResponseSigning } from "@core/domains/signing/types"
-import { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
+import { AuthorizedSites, RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { TabsHandler } from "@core/libs/Handler"
-import type {
-  MessageTypes,
-  RequestTypes,
-  ResponseTypes,
-  SubscriptionMessageTypes,
-} from "@core/types"
+import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "@core/types"
 import type { Port } from "@core/types/base"
-import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
-import { isPhishingSite } from "@core/util/isPhishingSite"
+import { urlToDomain } from "@core/util/urlToDomain"
 import RequestBytesSign from "@polkadot/extension-base/background/RequestBytesSign"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import {
@@ -84,17 +82,17 @@ export default class Tabs extends TabsHandler {
     url: string,
     { anyType }: RequestAccountList
   ): Promise<InjectedAccount[]> {
-    const addresses = (await this.stores.sites.getSiteFromUrl(url)).addresses
-    const accounts = filterAccountsByAddresses(
-      accountsObservable.subject.getValue(),
-      addresses,
-      anyType
+    const site = await this.stores.sites.getSiteFromUrl(url)
+    const { addresses } = site
+    if (!addresses || addresses.length === 0) return []
+
+    const filteredAccounts = getPublicAccounts(
+      Object.values(accountsObservable.subject.getValue()),
+      filterAccountsByAddresses(site.addresses, anyType)
     )
+
     const iconType = await this.stores.settings.get("identiconType")
-    return accounts.map((acc) => ({
-      ...acc,
-      avatar: getAccountAvatarDataUri(acc.address, iconType),
-    }))
+    return filteredAccounts.map(includeAvatar(iconType))
   }
 
   private accountsSubscribe(url: string, id: string, port: Port) {
@@ -102,16 +100,20 @@ export default class Tabs extends TabsHandler {
       id,
       port,
       this.stores.sites.observable,
-      async () => {
+      async (sites: AuthorizedSites) => {
+        const { val: siteId, ok } = urlToDomain(url)
+        if (!ok) return []
+
+        const site = sites[siteId]
+        if (!site || !site.addresses) return []
+
+        const filteredAccounts = getPublicAccounts(
+          Object.values(accountsObservable.subject.getValue()),
+          filterAccountsByAddresses(site.addresses, true)
+        )
+
         const iconType = await this.stores.settings.get("identiconType")
-        const accounts = accountsObservable.subject.getValue()
-        const addresses = (await this.stores.sites.getSiteFromUrl(url))?.addresses
-        if (!addresses) return []
-        const filteredAccounts = await filterAccountsByAddresses(accounts, addresses, true)
-        return filteredAccounts.map((acc) => ({
-          ...acc,
-          avatar: getAccountAvatarDataUri(acc.address, iconType),
-        }))
+        return filteredAccounts.map(includeAvatar(iconType))
       }
     )
   }
@@ -265,10 +267,10 @@ export default class Tabs extends TabsHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestType<TMessageType>,
     port: Port,
     url: string
-  ): Promise<ResponseTypes[keyof ResponseTypes]> {
+  ): Promise<ResponseType<TMessageType>> {
     if (type === "pub(phishing.redirectIfDenied)") {
       return this.redirectIfPhishing(url)
     }

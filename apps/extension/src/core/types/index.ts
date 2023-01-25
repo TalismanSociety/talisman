@@ -108,6 +108,9 @@ export declare type TransportResponseMessage<TMessageType extends MessageTypes> 
     ? TransportResponseMessageSub<TMessageType>
     : never
 
+export declare type RequestType<TMessageType extends keyof RequestSignatures> =
+  RequestSignatures[TMessageType][0]
+
 export declare type ResponseType<TMessageType extends keyof RequestSignatures> =
   RequestSignatures[TMessageType][1]
 
