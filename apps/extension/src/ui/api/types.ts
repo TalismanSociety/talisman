@@ -117,7 +117,12 @@ export default interface MessageTypes {
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
-  getBalance: ({ chainId, evmNetworkId, tokenId, address }: RequestBalance) => Promise<BalanceJson>
+  getBalance: ({
+    chainId,
+    evmNetworkId,
+    tokenId,
+    address,
+  }: RequestBalance) => Promise<BalanceJson | undefined>
   getBalanceLocks: ({ chainId, addresses }: RequestBalanceLocks) => Promise<ResponseBalanceLocks>
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
