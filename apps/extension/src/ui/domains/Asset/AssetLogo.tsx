@@ -83,7 +83,7 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
       //
       // next, use the unknown token logo as a fallback
       //
-      localUnknownTokenLogoUrl
+      FALLBACK_LOGO_URL
     )
   }, [token])
 
@@ -181,7 +181,7 @@ const getCoingeckoLogoUrl = async (
       }
     }
   }
-  return localUnknownTokenLogoUrl
+  return FALLBACK_LOGO_URL
 }
 
 //
@@ -208,5 +208,5 @@ const getDataLogoUrl = async (tokenId: string, imageUrl: string) => {
       log.warn(`Failed to create url for token ${tokenId}`, error)
     }
   }
-  return localUnknownTokenLogoUrl
+  return FALLBACK_LOGO_URL
 }
