@@ -24,10 +24,10 @@ import { OldTypeRegistry } from "@subsquid/substrate-metadata/lib/old/typeRegist
  * What's also neat is that with our filtered down metadata we are still free to use any of the
  * available SCALE decoding libraries on the frontend, as long as they can load up a metadata blob.
  */
-export function mutateMetadata(
+export async function mutateMetadata(
   metadataRpc: string,
   mutator: (metadata: Metadata) => Metadata | null
-): `0x${string}` | null {
+): Promise<`0x${string}` | null> {
   // decode the metadata
   const metadata = decodeMetadata(metadataRpc)
 
