@@ -198,9 +198,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
           const maxFeeAndGasCost =
             gasSettings.type === 0
               ? bigGasLimit.mul(gasSettings.gasPrice)
-              : bigGasLimit.mul(
-                  getMaxFeePerGas(baseFeePerGas as BigNumber, gasSettings.maxPriorityFeePerGas)
-                )
+              : bigGasLimit.mul(gasSettings.maxFeePerGas)
 
           if (
             maxFeeAndGasCost
