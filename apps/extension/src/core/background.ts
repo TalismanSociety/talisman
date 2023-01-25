@@ -8,6 +8,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
+import satisfies from "semver/functions/satisfies"
 import Browser, { Runtime } from "webextension-polyfill"
 
 import sitesAuthorisedStore from "./domains/sitesAuthorised/store"
@@ -34,7 +35,7 @@ Browser.runtime.onInstalled.addListener(async ({ reason }) => {
     }
   })
 
-  if (reason === "update" && process.env.VERSION === "1.14.0") {
+  if (reason === "update" && satisfies(process.env.VERSION ?? "0", "1.14.x")) {
     // once off migration to add `connectAllSubstrate` to the record for the Talisman Web App
     const site = await sitesAuthorisedStore.get(TALISMAN_WEB_APP_DOMAIN)
     if (!site)
