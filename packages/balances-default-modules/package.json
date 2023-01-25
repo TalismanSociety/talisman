@@ -1,5 +1,5 @@
 {
-  "name": "@talismn/balances-substrate-equilibrium",
+  "name": "@talismn/balances-default-modules",
   "version": "0.2.3",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
@@ -8,7 +8,7 @@
     "access": "public"
   },
   "repository": {
-    "directory": "packages/balances-substrate-equilibrium",
+    "directory": "packages/balances-default-modules",
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
@@ -30,9 +30,13 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@talismn/balances": "workspace:^",
-    "@talismn/chaindata-provider": "workspace:^",
-    "@talismn/mutate-metadata": "workspace:^"
+    "@talismn/balances-evm-erc20": "workspace:^",
+    "@talismn/balances-evm-native": "workspace:^",
+    "@talismn/balances-substrate-assets": "workspace:^",
+    "@talismn/balances-substrate-equilibrium": "workspace:^",
+    "@talismn/balances-substrate-native": "workspace:^",
+    "@talismn/balances-substrate-orml": "workspace:^",
+    "@talismn/balances-substrate-tokens": "workspace:^"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",

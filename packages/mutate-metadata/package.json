@@ -1,6 +1,6 @@
 {
-  "name": "@talismn/balances-substrate-equilibrium",
-  "version": "0.2.3",
+  "name": "@talismn/mutate-metadata",
+  "version": "0.0.1",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "UNLICENSED",
@@ -8,7 +8,7 @@
     "access": "public"
   },
   "repository": {
-    "directory": "packages/balances-substrate-equilibrium",
+    "directory": "packages/mutate-metadata",
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
@@ -22,17 +22,17 @@
   },
   "scripts": {
     "dev": "tsc --watch --declarationMap",
-    "build": "tsc --declarationMap",
-    "build:packages:prod": "rm -rf dist && tsc",
+    "build": "tsc --declarationMap && cp src/import.cjs dist/import.cjs",
+    "build:packages:prod": "rm -rf dist && tsc && cp src/import.cjs dist/import.cjs",
     "prepack": "yarn build:packages:prod",
     "test": "jest",
     "lint": "eslint . --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@talismn/balances": "workspace:^",
-    "@talismn/chaindata-provider": "workspace:^",
-    "@talismn/mutate-metadata": "workspace:^"
+    "@subsquid/scale-codec": "^1.1.0",
+    "@subsquid/substrate-metadata": "^2.1.2",
+    "anylogger": "^1.0.11"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",
