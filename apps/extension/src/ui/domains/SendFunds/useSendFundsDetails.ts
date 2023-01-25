@@ -5,7 +5,7 @@ import { Address, Balance, BalanceFormatter, BalanceJson } from "@talismn/balanc
 import { SubNativeBalance } from "@talismn/balances-substrate-native"
 import { SubOrmlBalance } from "@talismn/balances-substrate-orml"
 import { Token, TokenId } from "@talismn/chaindata-provider"
-import { planckToTokens } from "@talismn/util"
+import { formatDecimals, planckToTokens } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFunds } from "@ui/apps/popup/pages/SendFunds/context"
@@ -18,6 +18,7 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
+import { isSubToken } from "@ui/util/isSubstrateToken"
 import { useEffect, useMemo } from "react"
 
 import { getExtensionEthereumProvider } from "../Ethereum/getExtensionEthereumProvider"
@@ -241,8 +242,13 @@ const useSendFundsDetailsProvider = () => {
         break
     }
 
-    if (!isSendingEnough)
-      return { isValid: false, error: "Recipient account would be reaped, try sending more tokens" }
+    if (!isSendingEnough && isSubToken(token)) {
+      const ed = new BalanceFormatter(token.existentialDeposit, token.decimals)
+      return {
+        isValid: false,
+        error: `Please send a minimum of ${formatDecimals(ed.tokens)} ${token.symbol}`,
+      }
+    }
 
     return { isValid: true, error: undefined }
   }, [

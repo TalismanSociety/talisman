@@ -371,7 +371,7 @@ const ReviewButton = () => {
   return (
     <>
       <Button primary className="mt-8 w-full" disabled={!isValid} onClick={handleClick}>
-        Reviews
+        Review
       </Button>
       <Drawer anchor="bottom" open={isOpen} onClose={close}>
         <div className="bg-black-tertiary rounded-t-xl p-12 text-center">
