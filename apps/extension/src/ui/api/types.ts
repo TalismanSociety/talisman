@@ -106,7 +106,7 @@ export default interface MessageTypes {
     request: Omit<RequestAccountCreateHardware, "hardwareType">
   ) => Promise<string>
   accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<string>
-  accountCreateQr: (name: string, address: string, genesisHash: string) => Promise<string>
+  accountCreateQr: (name: string, address: string, genesisHash: string | null) => Promise<string>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountForget: (address: string) => Promise<boolean>
   accountExport: (
