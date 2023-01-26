@@ -1,4 +1,4 @@
-import { AccountTypes, filterPublicAccounts } from "@core/domains/accounts/helpers"
+import { AccountTypes, sortAccounts } from "@core/domains/accounts/helpers"
 import type {
   RequestAccountCreate,
   RequestAccountCreateFromJson,
@@ -318,7 +318,7 @@ export default class AccountsHandler extends ExtensionHandler {
       id,
       port,
       keyring.accounts.subject,
-      filterPublicAccounts
+      sortAccounts
     )
   }
 

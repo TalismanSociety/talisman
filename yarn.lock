@@ -5925,44 +5925,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@talismn/balances-acala-liquidcrowdloan@workspace:packages/balances-acala-liquidcrowdloan":
+"@talismn/balances-default-modules@workspace:^, @talismn/balances-default-modules@workspace:packages/balances-default-modules":
   version: 0.0.0-use.local
-  resolution: "@talismn/balances-acala-liquidcrowdloan@workspace:packages/balances-acala-liquidcrowdloan"
+  resolution: "@talismn/balances-default-modules@workspace:packages/balances-default-modules"
   dependencies:
-    "@talismn/balances": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@types/jest": ^27.5.1
-    eslint: ^8.4.0
-    jest: ^28.1.0
-    ts-jest: ^28.0.2
-    typescript: ^4.6.4
-  languageName: unknown
-  linkType: soft
-
-"@talismn/balances-acala-lptokens@workspace:packages/balances-acala-lptokens":
-  version: 0.0.0-use.local
-  resolution: "@talismn/balances-acala-lptokens@workspace:packages/balances-acala-lptokens"
-  dependencies:
-    "@talismn/balances": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@types/jest": ^27.5.1
-    eslint: ^8.4.0
-    jest: ^28.1.0
-    ts-jest: ^28.0.2
-    typescript: ^4.6.4
-  languageName: unknown
-  linkType: soft
-
-"@talismn/balances-acala-stableassetpooltokens@workspace:packages/balances-acala-stableassetpooltokens":
-  version: 0.0.0-use.local
-  resolution: "@talismn/balances-acala-stableassetpooltokens@workspace:packages/balances-acala-stableassetpooltokens"
-  dependencies:
-    "@talismn/balances": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
+    "@talismn/balances-evm-erc20": "workspace:^"
+    "@talismn/balances-evm-native": "workspace:^"
+    "@talismn/balances-substrate-assets": "workspace:^"
+    "@talismn/balances-substrate-equilibrium": "workspace:^"
+    "@talismn/balances-substrate-native": "workspace:^"
+    "@talismn/balances-substrate-orml": "workspace:^"
+    "@talismn/balances-substrate-tokens": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
@@ -6007,22 +5980,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-example@workspace:^, @talismn/balances-example@workspace:packages/balances-example":
-  version: 0.0.0-use.local
-  resolution: "@talismn/balances-example@workspace:packages/balances-example"
-  dependencies:
-    "@talismn/balances": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@types/jest": ^27.5.1
-    eslint: ^8.4.0
-    jest: ^28.1.0
-    ts-jest: ^28.0.2
-    typescript: ^4.6.4
-  languageName: unknown
-  linkType: soft
-
 "@talismn/balances-react@workspace:^, @talismn/balances-react@workspace:packages/balances-react":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-react@workspace:packages/balances-react"
@@ -6052,13 +6009,31 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium":
+"@talismn/balances-substrate-assets@workspace:^, @talismn/balances-substrate-assets@workspace:packages/balances-substrate-assets":
+  version: 0.0.0-use.local
+  resolution: "@talismn/balances-substrate-assets@workspace:packages/balances-substrate-assets"
+  dependencies:
+    "@talismn/balances": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:^"
+    "@talismn/eslint-config": "workspace:^"
+    "@talismn/mutate-metadata": "workspace:^"
+    "@talismn/tsconfig": "workspace:^"
+    "@types/jest": ^27.5.1
+    eslint: ^8.4.0
+    jest: ^28.1.0
+    ts-jest: ^28.0.2
+    typescript: ^4.6.4
+  languageName: unknown
+  linkType: soft
+
+"@talismn/balances-substrate-equilibrium@workspace:^, @talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium"
   dependencies:
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
+    "@talismn/mutate-metadata": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
     eslint: ^8.4.0
@@ -6072,11 +6047,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-native@workspace:packages/balances-substrate-native"
   dependencies:
-    "@subsquid/scale-codec": ^1.1.0
-    "@subsquid/substrate-metadata": ^2.1.2
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
+    "@talismn/mutate-metadata": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
     eslint: ^8.4.0
@@ -6093,6 +6067,23 @@ __metadata:
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
+    "@talismn/tsconfig": "workspace:^"
+    "@types/jest": ^27.5.1
+    eslint: ^8.4.0
+    jest: ^28.1.0
+    ts-jest: ^28.0.2
+    typescript: ^4.6.4
+  languageName: unknown
+  linkType: soft
+
+"@talismn/balances-substrate-tokens@workspace:^, @talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens":
+  version: 0.0.0-use.local
+  resolution: "@talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens"
+  dependencies:
+    "@talismn/balances": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:^"
+    "@talismn/eslint-config": "workspace:^"
+    "@talismn/mutate-metadata": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
     eslint: ^8.4.0
@@ -6211,6 +6202,23 @@ __metadata:
     eslint-plugin-react: 7.30.0
     eslint-plugin-react-hooks: ^4.6.0
     eslint-plugin-testing-library: 5.5.1
+  languageName: unknown
+  linkType: soft
+
+"@talismn/mutate-metadata@workspace:^, @talismn/mutate-metadata@workspace:packages/mutate-metadata":
+  version: 0.0.0-use.local
+  resolution: "@talismn/mutate-metadata@workspace:packages/mutate-metadata"
+  dependencies:
+    "@subsquid/scale-codec": ^1.1.0
+    "@subsquid/substrate-metadata": ^2.1.2
+    "@talismn/eslint-config": "workspace:^"
+    "@talismn/tsconfig": "workspace:^"
+    "@types/jest": ^27.5.1
+    anylogger: ^1.0.11
+    eslint: ^8.4.0
+    jest: ^28.1.0
+    ts-jest: ^28.0.2
+    typescript: ^4.6.4
   languageName: unknown
   linkType: soft
 
@@ -9183,12 +9191,8 @@ __metadata:
     "@polkadot/api": ^9.1.1
     "@polkadot/extension-dapp": ^0.44.3
     "@talismn/balances": "workspace:^"
-    "@talismn/balances-evm-erc20": "workspace:^"
-    "@talismn/balances-evm-native": "workspace:^"
-    "@talismn/balances-example": "workspace:^"
+    "@talismn/balances-default-modules": "workspace:^"
     "@talismn/balances-react": "workspace:^"
-    "@talismn/balances-substrate-native": "workspace:^"
-    "@talismn/balances-substrate-orml": "workspace:^"
     "@talismn/chaindata-provider-extension": "workspace:^"
     "@testing-library/dom": ^8.16.1
     "@testing-library/jest-dom": ^5.14.1
@@ -13429,11 +13433,8 @@ __metadata:
     "@swc/jest": ^0.2.23
     "@tailwindcss/forms": ^0.5.3
     "@talismn/balances": "workspace:^"
-    "@talismn/balances-evm-erc20": "workspace:^"
-    "@talismn/balances-evm-native": "workspace:^"
+    "@talismn/balances-default-modules": "workspace:^"
     "@talismn/balances-react": "workspace:^"
-    "@talismn/balances-substrate-native": "workspace:^"
-    "@talismn/balances-substrate-orml": "workspace:^"
     "@talismn/chaindata-js": ^0.0.7
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"

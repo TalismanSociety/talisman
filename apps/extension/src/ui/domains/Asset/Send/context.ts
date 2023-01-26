@@ -145,8 +145,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       const tokenIsNativeToken = token.id === network.nativeToken?.id
 
       // load all balances at once
-      const loadBalance = (promise: Promise<BalanceJson>) =>
-        promise.then((storage) => new Balance(storage))
+      const loadBalance = (promise: Promise<BalanceJson | undefined>) =>
+        promise.then((storage) => (storage ? new Balance(storage) : undefined))
 
       const networkFilter = chain ? { chainId } : { evmNetworkId }
 
@@ -175,7 +175,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       }
 
       // check recipient's balance, prevent immediate reaping
-      if (toBalance.total.planck === BigInt("0")) {
+      if (toBalance?.total.planck ?? BigInt("0") === BigInt("0")) {
         assert(
           transfer.amount.planck >= transfer.existentialDeposit.planck,
           `Please send at least ${transfer.existentialDeposit.tokens} ${transfer.symbol} to ensure the receiving address remains active.`
@@ -205,7 +205,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
           if (
             maxFeeAndGasCost
               .add(tokenIsNativeToken ? transfer.amount.planck : 0)
-              .gt(nativeFromBalance.transferable.planck)
+              .gt(nativeFromBalance?.transferable.planck ?? BigInt("0"))
           )
             throw new Error(`Insufficient ${nativeToken.symbol} balance to pay for gas`)
 
@@ -258,13 +258,13 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
       // for each currency involved, check if sufficient balance and if it will cause account to be reaped
       const forfeits: TokenAmountInfo[] = []
-      const testToken = (token: Token, balance: Balance, cost: BalanceFormatter) => {
+      const testToken = (token: Token, balance: Balance | undefined, cost: BalanceFormatter) => {
         // sufficient balance?
-        if (balance.transferable.planck < cost.planck)
+        if ((balance?.transferable.planck ?? BigInt("0")) < cost.planck)
           throw new Error(`Insufficient balance (${token.symbol})`)
 
         // existential deposit?
-        const remaining = balance.total.planck - cost.planck
+        const remaining = (balance?.total.planck ?? BigInt("0")) - cost.planck
         if (
           remaining <
           BigInt(("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0")

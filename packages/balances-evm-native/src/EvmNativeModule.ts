@@ -22,7 +22,7 @@ import log from "./log"
 type ModuleType = "evm-native"
 
 export const evmNativeTokenId = (chainId: EvmNetworkId, tokenSymbol: string) =>
-  `${chainId}-evm-native-${tokenSymbol}`.toLowerCase()
+  `${chainId}-evm-native-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
 
 export type EvmNativeToken = NewTokenType<
   ModuleType,

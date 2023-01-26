@@ -1,13 +1,13 @@
 import State from "@core/handlers/State"
 import { ExtensionStore, Store, TabStore } from "@core/handlers/stores"
-import type { MessageTypes, RequestSignatures, RequestTypes, ResponseType } from "@core/types"
+import type { MessageTypes, RequestSignatures, RequestType, ResponseType } from "@core/types"
 import type { Port } from "@core/types/base"
 
 interface THandler {
   handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestType<TMessageType>,
     port: Port,
     url?: string
   ): Promise<ResponseType<TMessageType>>
@@ -33,7 +33,7 @@ abstract class BaseHandler<TStore extends Store> implements THandler {
   abstract handle<TMessageType extends keyof RequestSignatures>(
     id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestType<TMessageType>,
     port: Port,
     url?: string
   ): Promise<ResponseType<TMessageType>>
@@ -43,7 +43,7 @@ export abstract class TabsHandler extends BaseHandler<TabStore> {
   abstract handle<TMessageType extends keyof RequestSignatures>(
     id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestType<TMessageType>,
     port: Port,
     url: string
   ): Promise<ResponseType<TMessageType>>
@@ -57,7 +57,7 @@ export abstract class ExtensionHandler extends BaseHandler<ExtensionStore> {
   abstract handle<TMessageType extends keyof RequestSignatures>(
     id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestType<TMessageType>,
     port: Port
   ): Promise<ResponseType<TMessageType>>
 }

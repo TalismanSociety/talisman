@@ -14,16 +14,15 @@ import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import { AddressesByToken, db as balancesDb } from "@talismn/balances"
-import { EvmErc20Module } from "@talismn/balances-evm-erc20"
-import { EvmNativeModule } from "@talismn/balances-evm-native"
-import { SubNativeModule } from "@talismn/balances-substrate-native"
-import { SubOrmlModule } from "@talismn/balances-substrate-orml"
+import { balanceModules as defaultBalanceModules } from "@talismn/balances-default-modules"
 import { Token, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
 import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
+
+export const balanceModules = defaultBalanceModules
 
 type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account">
 type EvmNetworkIdAndHealth = Pick<
@@ -36,8 +35,6 @@ type EvmNetworkIdAndHealth = Pick<
 type TokenIdAndType = Pick<Token, "id" | "type" | "chain" | "evmNetwork">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
-
-export const balanceModules = [SubNativeModule, SubOrmlModule, EvmNativeModule, EvmErc20Module]
 
 // TODO: Fix this class up
 //       1. It shouldn't need a whole extra copy of addresses+chains+networks separate to the db
@@ -238,6 +235,9 @@ export class BalanceStore {
 
       // remove balance if token doesn't exist
       if (tokens[balance.tokenId] === undefined) return true
+
+      // remove balance if module doesn't exist
+      if (!balanceModules.find((module) => module.type === balance.source)) return true
 
       // keep balance
       return false

@@ -1,12 +1,16 @@
 import { log } from "@core/log"
 import { getCoinGeckoErc20Coin } from "@core/util/coingecko/getCoinGeckoErc20Coin"
+import localUnknownTokenLogoUrl from "@talisman/theme/icons/unknown-token.svg?url"
 import { classNames } from "@talisman/util/classNames"
-import { EvmNetworkId, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { TokenId } from "@talismn/chaindata-provider"
+import { getBase64ImageUrl } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { imgSrcToBlob } from "blob-util"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
+
+const FALLBACK_LOGO_URL = getBase64ImageUrl(localUnknownTokenLogoUrl) as string
 
 const isTalismanLogo = (url?: string) => {
   if (!url) return false
@@ -21,14 +25,14 @@ type AssetLogoBaseProps = {
 }
 
 export const AssetLogoBase = ({ id, className, url, rounded }: AssetLogoBaseProps) => {
-  const [src, setSrc] = useState(() => url ?? githubUnknownTokenLogoUrl)
+  const [src, setSrc] = useState(() => url ?? FALLBACK_LOGO_URL)
 
   // reset
   useEffect(() => {
-    setSrc(url ?? githubUnknownTokenLogoUrl)
+    setSrc(url ?? FALLBACK_LOGO_URL)
   }, [url])
 
-  const handleError = useCallback(() => setSrc(githubUnknownTokenLogoUrl), [])
+  const handleError = useCallback(() => setSrc(FALLBACK_LOGO_URL), [])
 
   const imgClassName = useMemo(
     () =>
@@ -78,7 +82,7 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
       //
       // next, use the unknown token logo as a fallback
       //
-      githubUnknownTokenLogoUrl
+      FALLBACK_LOGO_URL
     )
   }, [token])
 
@@ -176,7 +180,7 @@ const getCoingeckoLogoUrl = async (
       }
     }
   }
-  return githubUnknownTokenLogoUrl
+  return FALLBACK_LOGO_URL
 }
 
 //
@@ -203,5 +207,5 @@ const getDataLogoUrl = async (tokenId: string, imageUrl: string) => {
       log.warn(`Failed to create url for token ${tokenId}`, error)
     }
   }
-  return githubUnknownTokenLogoUrl
+  return FALLBACK_LOGO_URL
 }

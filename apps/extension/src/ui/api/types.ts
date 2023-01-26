@@ -30,6 +30,7 @@ import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/typ
 import {
   AuthRequestAddresses,
   AuthRequestId,
+  AuthorisedSiteUpdate,
   AuthorizeRequest,
   AuthorizedSite,
   AuthorizedSites,
@@ -118,7 +119,12 @@ export default interface MessageTypes {
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
-  getBalance: ({ chainId, evmNetworkId, tokenId, address }: RequestBalance) => Promise<BalanceJson>
+  getBalance: ({
+    chainId,
+    evmNetworkId,
+    tokenId,
+    address,
+  }: RequestBalance) => Promise<BalanceJson | undefined>
   getBalanceLocks: ({ chainId, addresses }: RequestBalanceLocks) => Promise<ResponseBalanceLocks>
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
@@ -133,10 +139,7 @@ export default interface MessageTypes {
   authorizedSite: (id: string) => Promise<AuthorizedSite>
   authorizedSiteSubscribe: (id: string, cb: (sites: AuthorizedSite) => void) => UnsubscribeFn
   authorizedSiteForget: (id: string, type: ProviderType) => Promise<boolean>
-  authorizedSiteUpdate: (
-    id: string,
-    properties: Omit<Partial<AuthorizedSite>, "id">
-  ) => Promise<boolean>
+  authorizedSiteUpdate: (id: string, authorisedSite: AuthorisedSiteUpdate) => Promise<boolean>
 
   // authorization requests message types ------------------------------------
   authRequestsSubscribe: (cb: (requests: AuthorizeRequest[]) => void) => UnsubscribeFn
