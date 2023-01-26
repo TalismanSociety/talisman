@@ -36,6 +36,9 @@ const useFeeToken = (tokenId?: string | null) => {
         return evmNetwork?.nativeToken?.id
       case "substrate-native":
       case "substrate-orml":
+      case "substrate-assets":
+      case "substrate-equilibrium":
+      case "substrate-tokens":
         return chain?.nativeToken?.id
     }
   }, [chain?.nativeToken?.id, evmNetwork?.nativeToken?.id, token])
@@ -87,7 +90,10 @@ const useEstimateFee = (
           }
         }
         case "substrate-native":
-        case "substrate-orml": {
+        case "substrate-orml":
+        case "substrate-assets":
+        case "substrate-equilibrium":
+        case "substrate-tokens": {
           const { partialFee, unsigned, pendingTransferId } = await api.assetTransferCheckFees(
             token.chain.id,
             token.id,
@@ -197,7 +203,10 @@ const useSendFundsDetailsProvider = () => {
       case "evm-native":
         return true
       case "substrate-native":
-      case "substrate-orml": {
+      case "substrate-orml":
+      case "substrate-assets":
+      case "substrate-equilibrium":
+      case "substrate-tokens": {
         const transfer = new BalanceFormatter(amount, token.decimals)
         const existentialDeposit = new BalanceFormatter(
           token.existentialDeposit ?? "0",
