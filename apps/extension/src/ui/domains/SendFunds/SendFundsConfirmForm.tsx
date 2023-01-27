@@ -239,7 +239,7 @@ const SendButton = () => {
       <Button
         className="w-full"
         primary
-        disabled={!ready}
+        disabled={!ready || isProcessing}
         onClick={handleConfirmClick}
         processing={isProcessing}
       >
