@@ -5,7 +5,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { planckToTokens } from "@talismn/util"
-import { useSendFunds } from "@ui/apps/popup/pages/SendFunds/context"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
@@ -104,8 +104,8 @@ const TokenRow: FC<TokenRowProps> = ({
 }
 
 type TokensListProps = {
-  from?: Address | null
-  selected: TokenId | null
+  from?: Address
+  selected?: TokenId
   search?: string
   onSelect?: (tokenId: TokenId) => void
 }
@@ -246,7 +246,7 @@ const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
 }
 
 export const SendFundsTokenPicker = () => {
-  const { from, tokenId, set } = useSendFunds()
+  const { from, tokenId, set } = useSendFundsWizard()
   const [search, setSearch] = useState("")
 
   const handleTokenSelect = useCallback(

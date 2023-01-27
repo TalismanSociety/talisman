@@ -8,7 +8,7 @@ import { Token, TokenId } from "@talismn/chaindata-provider"
 import { formatDecimals, planckToTokens } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { useSendFunds } from "@ui/apps/popup/pages/SendFunds/context"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useBalance } from "@ui/hooks/useBalance"
 import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
@@ -18,99 +18,77 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { isSubToken } from "@ui/util/isSubstrateToken"
+import { isSubToken } from "@ui/util/isSubToken"
 import { useEffect, useMemo } from "react"
 
 import { getExtensionEthereumProvider } from "../Ethereum/getExtensionEthereumProvider"
+import { useFeeToken } from "./useFeeToken"
+import { useSendFundsEstimateFee } from "./useSendFundsEstimateFee"
 
-const useFeeToken = (tokenId?: string | null) => {
-  const token = useToken(tokenId)
-  const chain = useChain(token?.chain?.id)
-  const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
+// const useEstimateFee = (
+//   from?: string | null,
+//   to?: string | null,
+//   tokenId?: string | null,
+//   amount?: string | null
+// ) => {
+//   const token = useToken(tokenId)
 
-  const feeTokenId = useMemo(() => {
-    if (!token) return null
-    switch (token.type) {
-      case "evm-erc20":
-      case "evm-native":
-        return evmNetwork?.nativeToken?.id
-      case "substrate-native":
-      case "substrate-orml":
-      case "substrate-assets":
-      case "substrate-equilibrium":
-      case "substrate-tokens":
-        return chain?.nativeToken?.id
-    }
-  }, [chain?.nativeToken?.id, evmNetwork?.nativeToken?.id, token])
+//   const [debouncedAmount, setDebouncedAmount] = useDebouncedState(amount)
 
-  return useToken(feeTokenId)
-}
+//   useEffect(() => {
+//     setDebouncedAmount(amount)
+//   }, [amount, setDebouncedAmount])
 
-const useEstimateFee = (
-  from?: string | null,
-  to?: string | null,
-  tokenId?: string | null,
-  amount?: string | null
-) => {
-  const token = useToken(tokenId)
-
-  const [debouncedAmount, setDebouncedAmount] = useDebouncedState(amount)
-
-  useEffect(() => {
-    setDebouncedAmount(amount)
-  }, [amount, setDebouncedAmount])
-
-  return useQuery({
-    queryKey: ["sendFunds", "estimateFee", from, to, token?.id, debouncedAmount],
-    queryFn: async () => {
-      if (!token || !from || !to || !debouncedAmount)
-        return {
-          estimatedFee: null,
-          unsigned: null,
-          pendingTransferId: null,
-        }
-      switch (token.type) {
-        case "evm-erc20":
-        case "evm-native": {
-          if (!token.evmNetwork) throw new Error("EVM Network not found")
-          try {
-            const provider = getExtensionEthereumProvider(token.evmNetwork.id)
-            const [gasPrice, estimatedGas] = await Promise.all([
-              provider.getGasPrice(),
-              provider.estimateGas({ from, to, value: debouncedAmount }),
-            ])
-            return {
-              estimatedFee: gasPrice.mul(estimatedGas).toString(),
-              unsigned: null,
-              pendingTransferId: null,
-            }
-          } catch (err) {
-            if ((err as any)?.code === "INSUFFICIENT_FUNDS") throw new Error("Insufficient funds")
-            throw (err as any).error ?? err
-          }
-        }
-        case "substrate-native":
-        case "substrate-orml":
-        case "substrate-assets":
-        case "substrate-equilibrium":
-        case "substrate-tokens": {
-          const { partialFee, unsigned, pendingTransferId } = await api.assetTransferCheckFees(
-            token.chain.id,
-            token.id,
-            from,
-            to,
-            debouncedAmount,
-            "0", //TODO tip ?? "0",
-            false //TODO allowReap
-          )
-          return { estimatedFee: partialFee, unsigned, pendingTransferId }
-        }
-      }
-    },
-    retry: false,
-    refetchInterval: 10_000,
-  })
-}
+//   return useQuery({
+//     queryKey: ["sendFunds", "estimateFee", from, to, token?.id, debouncedAmount],
+//     queryFn: async () => {
+//       if (!token || !from || !to || !debouncedAmount)
+//         return {
+//           estimatedFee: null,
+//           unsigned: null,
+//           pendingTransferId: null,
+//         }
+//       switch (token.type) {
+//         case "evm-erc20":
+//         case "evm-native": {
+//           if (!token.evmNetwork) throw new Error("EVM Network not found")
+//           try {
+//             const provider = getExtensionEthereumProvider(token.evmNetwork.id)
+//             const [gasPrice, estimatedGas] = await Promise.all([
+//               provider.getGasPrice(),
+//               provider.estimateGas({ from, to, value: debouncedAmount }),
+//             ])
+//             return {
+//               estimatedFee: gasPrice.mul(estimatedGas).toString(),
+//               unsigned: null,
+//               pendingTransferId: null,
+//             }
+//           } catch (err) {
+//             if ((err as any)?.code === "INSUFFICIENT_FUNDS") throw new Error("Insufficient funds")
+//             throw (err as any).error ?? err
+//           }
+//         }
+//         case "substrate-native":
+//         case "substrate-orml":
+//         case "substrate-assets":
+//         case "substrate-equilibrium":
+//         case "substrate-tokens": {
+//           const { partialFee, unsigned, pendingTransferId } = await api.assetTransferCheckFees(
+//             token.chain.id,
+//             token.id,
+//             from,
+//             to,
+//             debouncedAmount,
+//             "0", //TODO tip ?? "0",
+//             false //TODO allowReap
+//           )
+//           return { estimatedFee: partialFee, unsigned, pendingTransferId }
+//         }
+//       }
+//     },
+//     refetchInterval: 10_000,
+//   })
+// }
 
 const useRecipientBalance = (token?: Token, address?: Address | null) => {
   const hydrate = useBalancesHydrate()
@@ -145,7 +123,7 @@ const useRecipientBalance = (token?: Token, address?: Address | null) => {
 }
 
 const useSendFundsDetailsProvider = () => {
-  const { from, to, amount, tokenId } = useSendFunds()
+  const { from, to, amount, tokenId } = useSendFundsWizard()
   const fromAccount = useAccountByAddress(from)
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
@@ -167,7 +145,7 @@ const useSendFundsDetailsProvider = () => {
     data: dataEstimateFee,
     error: estimateFeeError,
     isFetching: isEstimatingFee,
-  } = useEstimateFee(from, from, tokenId, amount)
+  } = useSendFundsEstimateFee(from, from, tokenId, amount)
   const { estimatedFee, unsigned, pendingTransferId } = useMemo(() => {
     return dataEstimateFee ?? { estimatedFee: null, unsigned: null, pendingTransferId: null }
   }, [dataEstimateFee])

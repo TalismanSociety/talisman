@@ -1,11 +1,11 @@
 import { default as debounce } from "lodash/debounce"
 import { useCallback, useState } from "react"
 
-export const useDebouncedState = <T>(initialValue: T, delay = 200) => {
+export const useDebouncedState = <S>(initialValue: S | (() => S), delay = 200) => {
   const [value, setValue] = useState(initialValue)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setDebouncedValue: React.Dispatch<React.SetStateAction<T>> = useCallback(
+  const setDebouncedValue: React.Dispatch<React.SetStateAction<S>> = useCallback(
     debounce(setValue, delay),
     [delay]
   )

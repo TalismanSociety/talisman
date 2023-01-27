@@ -3,28 +3,34 @@ import { Address } from "@core/types/base"
 import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
+import { string } from "yup/lib/locale"
 
-type SendFundsParams = {
+type SendFundsWizardParams = {
   from: Address
   to: Address
   tokenId: TokenId
   amount: string // planck
-  max: boolean
+  transferAll: boolean
+  allowReap: boolean
 }
+
+const STRING_PROPS = ["from", "to", "tokenId", "amount"]
+const BOOL_PROPS = ["transferAll", "allowReap"]
 
 export type SendFundsWizardPage = "from" | "to" | "token" | "amount" | "confirm"
 
-const useSendFundsContext = () => {
+const useSendFundsWizardProvider = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const { from, to, tokenId, amount, max } = useMemo(
+  const { from, to, tokenId, amount, transferAll, allowReap } = useMemo(
     () => ({
-      from: searchParams.get("from"),
-      to: searchParams.get("to"),
-      tokenId: searchParams.get("tokenId"),
-      amount: searchParams.get("amount"),
-      max: searchParams.get("max") !== null,
+      from: searchParams.get("from") ?? undefined,
+      to: searchParams.get("to") ?? undefined,
+      tokenId: searchParams.get("tokenId") ?? undefined,
+      amount: searchParams.get("amount") ?? undefined,
+      transferAll: searchParams.get("transferAll") !== null,
+      allowReap: searchParams.get("allowReap") !== null,
     }),
     [searchParams]
   )
@@ -49,15 +55,20 @@ const useSendFundsContext = () => {
   // }, [account, goto, to, token])
 
   const set = useCallback(
-    <T extends keyof SendFundsParams>(key: T, value: SendFundsParams[T], goToNextPage = false) => {
+    <T extends keyof SendFundsWizardParams>(
+      key: T,
+      value: SendFundsWizardParams[T],
+      goToNextPage = false
+    ) => {
       // reset amount if token changes, as decimals may be totally different
       if (key === "tokenId" && value !== searchParams.get("tokenId")) searchParams.delete("amount")
 
       // boolean values
-      if (key === "max" && value) searchParams.set(key, "")
-      else if (key === "max" && !value) searchParams.delete(key)
+      if (BOOL_PROPS.includes(key) && value) searchParams.set(key, "")
+      else if (BOOL_PROPS.includes(key) && !value) searchParams.delete(key)
       // string values
-      else searchParams.set(key, value as string)
+      else if (STRING_PROPS.includes(key)) searchParams.set(key, value as string)
+      else throw new Error(`Invalid key ${key}`)
 
       setSearchParams(searchParams, { replace: true })
 
@@ -73,12 +84,46 @@ const useSendFundsContext = () => {
     [navigate, searchParams, setSearchParams]
   )
 
+  const gotoReview = useCallback(
+    (allowReap: boolean) => {
+      if (!from) throw new Error("Sender is not set")
+      if (!to) throw new Error("Recipient is not set")
+      if (!tokenId) throw new Error("Token is not set")
+      if (!amount) throw new Error("Amount is not set")
+
+      if (allowReap) searchParams.set("allowReap", "")
+      else searchParams.delete("allowReap")
+
+      navigate(`/send/confirm?${searchParams.toString()}`)
+    },
+    [amount, from, navigate, searchParams, to, tokenId]
+  )
+
   const remove = useCallback(
-    (key: keyof SendFundsParams) => {
+    (key: keyof SendFundsWizardParams) => {
       searchParams.delete(key)
       setSearchParams(searchParams, { replace: true })
     },
     [searchParams, setSearchParams]
+  )
+
+  const gotoProgress = useCallback(
+    ({
+      evmNetworkId,
+      evmTxHash,
+      substrateTxId,
+    }: {
+      evmNetworkId?: string
+      evmTxHash?: string
+      substrateTxId?: string
+    }) => {
+      const qs = new URLSearchParams()
+      if (evmNetworkId) qs.set("evmNetworkId", evmNetworkId)
+      if (evmTxHash) qs.set("evmTxHash", evmTxHash)
+      if (substrateTxId) qs.set("substrateTxId", substrateTxId)
+      navigate(`/send/submitted?${qs.toString()}`)
+    },
+    [navigate]
   )
 
   // TODO before merge : remove useMemo, return directly
@@ -88,12 +133,15 @@ const useSendFundsContext = () => {
       to,
       tokenId,
       amount,
-      max,
+      transferAll,
+      allowReap,
       set,
       remove,
       goto,
+      gotoReview,
+      gotoProgress,
     }),
-    [amount, from, goto, max, remove, set, to, tokenId]
+    [from, to, tokenId, amount, transferAll, allowReap, set, remove, goto, gotoReview, gotoProgress]
   )
 
   // useEffect(() => {
@@ -104,4 +152,6 @@ const useSendFundsContext = () => {
   return ctx
 }
 
-export const [SendFundsProvider, useSendFunds] = provideContext(useSendFundsContext)
+export const [SendFundsWizardProvider, useSendFundsWizard] = provideContext(
+  useSendFundsWizardProvider
+)

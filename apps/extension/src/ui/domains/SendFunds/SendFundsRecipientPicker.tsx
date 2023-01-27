@@ -6,7 +6,7 @@ import { CheckCircleIcon, SearchIcon, TalismanHandIcon, UserIcon } from "@talism
 import { isValidAddress } from "@talisman/util/isValidAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { BalanceFormatter } from "@talismn/balances"
-import { useSendFunds } from "@ui/apps/popup/pages/SendFunds/context"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useBalances from "@ui/hooks/useBalances"
@@ -25,7 +25,7 @@ import { SendFundsAccountsList } from "./SendFundsAccountsList"
 import { SendFundsSearchInput } from "./SendFundsSearchInput"
 
 export const SendFundsRecipientPicker = () => {
-  const { from, to, set, tokenId } = useSendFunds()
+  const { from, to, set, tokenId } = useSendFundsWizard()
   const [search, setSearch] = useState("")
   const token = useToken()
   const chain = useChain(token?.chain?.id)

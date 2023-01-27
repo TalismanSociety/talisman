@@ -2,11 +2,12 @@ import { IconButton } from "@talisman/components/IconButton"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { Route, Routes } from "react-router-dom"
 
-import { SendFundsProvider } from "./context"
+import { SendFundsWizardProvider } from "./context"
 import { SendFundsAmount } from "./SendFundsAmount"
 import { SendFundsConfirm } from "./SendFundsConfirm"
 import { SendFundsFrom } from "./SendFundsFrom"
 import { SendFundsLayout } from "./SendFundsLayout"
+import { SendFundsSubmitted } from "./SendFundsSubmitted"
 import { SendFundsTo } from "./SendFundsTo"
 import { SendFundsToken } from "./SendFundsToken"
 
@@ -16,16 +17,17 @@ import { SendFundsToken } from "./SendFundsToken"
 
 export const SendFundsPage = () => {
   return (
-    <SendFundsProvider>
+    <SendFundsWizardProvider>
       <Routes>
         <Route path="from" element={<SendFundsFrom />} />
         <Route path="to" element={<SendFundsTo />} />
         <Route path="token" element={<SendFundsToken />} />
         <Route path="amount" element={<SendFundsAmount />} />
         <Route path="confirm" element={<SendFundsConfirm />} />
+        <Route path="submitted" element={<SendFundsSubmitted />} />
         <Route path="*" element={<SendFundsFrom />} />
       </Routes>
-    </SendFundsProvider>
+    </SendFundsWizardProvider>
   )
   //   return (
   //     <div className="flex h-full w-full flex-col">

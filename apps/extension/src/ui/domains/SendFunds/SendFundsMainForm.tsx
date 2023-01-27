@@ -3,12 +3,12 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { IconAlert, InfoIcon, LoaderIcon, SwapIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { tokensToPlanck } from "@talismn/util"
-import { SendFundsWizardPage, useSendFunds } from "@ui/apps/popup/pages/SendFunds/context"
+import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useInputNumberOnly } from "@ui/hooks/useInputNumberOnly"
 import { useInputAutoSize } from "@ui/hooks/useTextWidth"
 import useToken from "@ui/hooks/useToken"
-import { isSubToken } from "@ui/util/isSubstrateToken"
+import { isSubToken } from "@ui/util/isSubToken"
 import {
   ChangeEventHandler,
   DetailedHTMLProps,
@@ -89,7 +89,7 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
 }
 
 const TokenInput = () => {
-  const { set, remove } = useSendFunds()
+  const { set, remove } = useSendFundsWizard()
   const { token, sendAmount } = useSendFundsDetails()
 
   const placeholder = useMemo(() => `0${token ? ` ${token.symbol}` : ""}`, [token])
@@ -140,7 +140,7 @@ const TokenInput = () => {
 const FIAT_PLACEHOLDER = "$0.00"
 
 const FiatInput = () => {
-  const { set, remove } = useSendFunds()
+  const { set, remove } = useSendFundsWizard()
   const { token, sendAmount, tokenRates } = useSendFundsDetails()
 
   const [text, setText] = useState<string>("")
@@ -267,7 +267,7 @@ const AmountEdit = () => {
 }
 
 const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
-  const { tokenId } = useSendFunds()
+  const { tokenId } = useSendFundsWizard()
   const { balance, token } = useSendFundsDetails()
 
   return (
@@ -355,18 +355,18 @@ const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
 }
 
 const ReviewButton = () => {
-  const { goto, tokenId } = useSendFunds()
+  const { gotoReview, tokenId, set } = useSendFundsWizard()
   const { isValid, tokensToBeReaped, token } = useSendFundsDetails()
   const { open, close, isOpen } = useOpenClose()
 
   const handleClick = useCallback(() => {
     if (Object.keys(tokensToBeReaped).length) open()
-    else goto("confirm")
-  }, [goto, open, tokensToBeReaped])
+    else gotoReview(false)
+  }, [gotoReview, open, tokensToBeReaped])
 
   const handleConfirmReap = useCallback(() => {
-    goto("confirm")
-  }, [goto])
+    gotoReview(true)
+  }, [gotoReview])
 
   return (
     <>
@@ -406,7 +406,7 @@ const ReviewButton = () => {
 }
 
 export const SendFundsMainForm = () => {
-  const { from, to, goto } = useSendFunds()
+  const { from, to, goto } = useSendFundsWizard()
 
   const handleGotoClick = useCallback(
     (page: SendFundsWizardPage) => () => {
