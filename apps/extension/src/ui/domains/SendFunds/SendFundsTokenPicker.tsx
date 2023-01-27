@@ -229,10 +229,16 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
     )
 
     return [
-      ...results.filter((t) => t.balances.sorted.find((b) => b.transferable.planck > BigInt(0))),
-      ...results.filter((t) => !t.balances.sorted.find((b) => b.transferable.planck > BigInt(0))),
+      ...results.filter((t) => t.id === selected),
+      ...results.filter(
+        (t) => t.id !== selected && t.balances.sorted.find((b) => b.transferable.planck > BigInt(0))
+      ),
+      ...results.filter(
+        (t) =>
+          t.id !== selected && !t.balances.sorted.find((b) => b.transferable.planck > BigInt(0))
+      ),
     ]
-  }, [accountBalances, transferableTokens])
+  }, [accountBalances, selected, transferableTokens])
 
   // console.log("accountBalances", accountBalances.toJSON())
 
@@ -307,13 +313,10 @@ export const SendFundsTokenPicker = () => {
     [set]
   )
 
-  const [shimmer, setShimmer] = useState(false)
-
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
         <SendFundsSearchInput onChange={setSearch} placeholder="Search by account name" autoFocus />
-        <Checkbox onChange={(e) => setShimmer(e.target.checked)}>jey</Checkbox>
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         <TokensList from={from} selected={tokenId} search={search} onSelect={handleTokenSelect} />

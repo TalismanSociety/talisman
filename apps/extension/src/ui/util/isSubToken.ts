@@ -32,5 +32,5 @@ export const isSubToken = <T extends Token>(
   | SubEquilibriumToken
   | SubTokensToken
   | SubAssetsToken => {
-  return !!token?.type.startsWith("substrate")
+  return !!token?.chain
 }

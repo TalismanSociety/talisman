@@ -303,19 +303,22 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
 const NetworkRow = () => {
   const { chain, evmNetwork } = useSendFundsDetails()
 
-  const chainName = useMemo(
-    () =>
-      chain?.name ??
-      (evmNetwork ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? " (Ethereum)" : ""}` : ""),
-    [chain?.name, evmNetwork]
+  const { networkId, networkName } = useMemo(
+    () => ({
+      networkId: (chain ?? evmNetwork)?.id,
+      networkName:
+        chain?.name ??
+        (evmNetwork ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? " (Ethereum)" : ""}` : ""),
+    }),
+    [chain, evmNetwork]
   )
 
   return (
     <Container className="flex w-full justify-between px-8 py-4 leading-none">
       <div>Network</div>
       <div className="flex items-center gap-2">
-        <ChainLogo id={chain?.id ?? evmNetwork?.id} className="inline-block text-base" />
-        <div>{chainName}</div>
+        <ChainLogo id={networkId} className="inline-block text-base" />
+        <div>{networkName}</div>
       </div>
     </Container>
   )

@@ -269,9 +269,9 @@ const useSendFundsDetailsProvider = () => {
     ]
   )
 
-  useEffect(() => {
-    log.log(ctx)
-  }, [ctx])
+  // useEffect(() => {
+  //   log.log(ctx)
+  // }, [ctx])
 
   return ctx
 }
