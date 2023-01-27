@@ -4,7 +4,7 @@ import { SendFundsLayout } from "./SendFundsLayout"
 
 export const SendFundsFrom = () => {
   return (
-    <SendFundsLayout title="Send from">
+    <SendFundsLayout title="Send from" withBackLink>
       <SendFundsAccountPicker />
     </SendFundsLayout>
   )

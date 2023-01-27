@@ -4,7 +4,7 @@ import { SendFundsLayout } from "./SendFundsLayout"
 
 export const SendFundsToken = () => {
   return (
-    <SendFundsLayout title="Select a token" withBackLink>
+    <SendFundsLayout title="Select a token">
       <SendFundsTokenPicker />
     </SendFundsLayout>
   )

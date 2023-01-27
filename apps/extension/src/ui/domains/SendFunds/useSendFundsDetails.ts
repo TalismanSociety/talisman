@@ -21,105 +21,23 @@ import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { isSubToken } from "@ui/util/isSubToken"
 import { useEffect, useMemo } from "react"
 
-import { getExtensionEthereumProvider } from "../Ethereum/getExtensionEthereumProvider"
 import { useFeeToken } from "./useFeeToken"
 import { useSendFundsEstimateFee } from "./useSendFundsEstimateFee"
-
-// const useEstimateFee = (
-//   from?: string | null,
-//   to?: string | null,
-//   tokenId?: string | null,
-//   amount?: string | null
-// ) => {
-//   const token = useToken(tokenId)
-
-//   const [debouncedAmount, setDebouncedAmount] = useDebouncedState(amount)
-
-//   useEffect(() => {
-//     setDebouncedAmount(amount)
-//   }, [amount, setDebouncedAmount])
-
-//   return useQuery({
-//     queryKey: ["sendFunds", "estimateFee", from, to, token?.id, debouncedAmount],
-//     queryFn: async () => {
-//       if (!token || !from || !to || !debouncedAmount)
-//         return {
-//           estimatedFee: null,
-//           unsigned: null,
-//           pendingTransferId: null,
-//         }
-//       switch (token.type) {
-//         case "evm-erc20":
-//         case "evm-native": {
-//           if (!token.evmNetwork) throw new Error("EVM Network not found")
-//           try {
-//             const provider = getExtensionEthereumProvider(token.evmNetwork.id)
-//             const [gasPrice, estimatedGas] = await Promise.all([
-//               provider.getGasPrice(),
-//               provider.estimateGas({ from, to, value: debouncedAmount }),
-//             ])
-//             return {
-//               estimatedFee: gasPrice.mul(estimatedGas).toString(),
-//               unsigned: null,
-//               pendingTransferId: null,
-//             }
-//           } catch (err) {
-//             if ((err as any)?.code === "INSUFFICIENT_FUNDS") throw new Error("Insufficient funds")
-//             throw (err as any).error ?? err
-//           }
-//         }
-//         case "substrate-native":
-//         case "substrate-orml":
-//         case "substrate-assets":
-//         case "substrate-equilibrium":
-//         case "substrate-tokens": {
-//           const { partialFee, unsigned, pendingTransferId } = await api.assetTransferCheckFees(
-//             token.chain.id,
-//             token.id,
-//             from,
-//             to,
-//             debouncedAmount,
-//             "0", //TODO tip ?? "0",
-//             false //TODO allowReap
-//           )
-//           return { estimatedFee: partialFee, unsigned, pendingTransferId }
-//         }
-//       }
-//     },
-//     refetchInterval: 10_000,
-//   })
-// }
 
 const useRecipientBalance = (token?: Token, address?: Address | null) => {
   const hydrate = useBalancesHydrate()
 
-  const { data } = useQuery({
-    queryKey: [token?.id, address],
+  return useQuery({
+    queryKey: [token?.id, address, hydrate],
     queryFn: async () => {
-      if (!token || !token.chain || !address) return null
-      return api.getBalance({ chainId: token.chain.id, address, tokenId: token.id })
-      // try {
-      //   const balance = (await) as SubNativeBalance | SubOrmlBalance
-      //   console.log("balance", balance.reserves)
-      //   return token.type === "substrate-native" || token.type === "substrate-orml"
-      //     ? new Balance(
-      //       await api.getBalance({ chainId: token.chain.id, address, tokenId: token.id }), hydrate
-
-      //       )
-      //     : null
-      // } catch (err) {
-      //   throw new Error("Failed to check recipient balance")
-      // }
+      if (!token || !token.chain || !address || !hydrate) return null
+      const storage = await api.getBalance({ chainId: token.chain.id, address, tokenId: token.id })
+      if (!storage) throw Error("Could not fetch recipient balance.")
+      return storage ? new Balance(storage, hydrate) : null
     },
     retry: false,
     refetchInterval: 10_000,
   })
-
-  const balance = useMemo(() => {
-    return data && hydrate ? new Balance(data, hydrate) : null
-  }, [data, hydrate])
-
-  return balance
 }
 
 const useSendFundsDetailsProvider = () => {
@@ -172,7 +90,11 @@ const useSendFundsDetailsProvider = () => {
     return false
   }, [amount, balance, estimatedFee, feeTokenBalance])
 
-  const recipientBalance = useRecipientBalance(token, to)
+  const {
+    data: recipientBalance,
+    error: errorRecipientBalance,
+    isFetched: isRecipientBalanceFetched,
+  } = useRecipientBalance(token, to)
 
   const isSendingEnough = useMemo(() => {
     if (!token || !recipientBalance || !amount) return true
@@ -207,6 +129,7 @@ const useSendFundsDetailsProvider = () => {
 
   const { isValid, error } = useMemo(() => {
     if (!from || !to || !amount || !tokenId) return { isValid: false, error: undefined }
+
     if (hasInsufficientFunds) return { isValid: false, error: "Insufficient funds" }
     if (!token || !feeToken) return { isValid: false, error: "Token not found" }
 
@@ -237,10 +160,17 @@ const useSendFundsDetailsProvider = () => {
       }
     }
 
+    if (errorRecipientBalance)
+      return {
+        isValid: true,
+        error: "Could not fetch recipient balance. Proceed at your own risks.",
+      }
+
     return { isValid: true, error: undefined }
   }, [
     amount,
     chain,
+    errorRecipientBalance,
     estimateFeeError,
     evmNetwork,
     feeToken,

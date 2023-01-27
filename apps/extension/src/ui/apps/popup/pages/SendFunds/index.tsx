@@ -19,13 +19,13 @@ export const SendFundsPage = () => {
   return (
     <SendFundsWizardProvider>
       <Routes>
+        <Route path="token" element={<SendFundsToken />} />
         <Route path="from" element={<SendFundsFrom />} />
         <Route path="to" element={<SendFundsTo />} />
-        <Route path="token" element={<SendFundsToken />} />
         <Route path="amount" element={<SendFundsAmount />} />
         <Route path="confirm" element={<SendFundsConfirm />} />
         <Route path="submitted" element={<SendFundsSubmitted />} />
-        <Route path="*" element={<SendFundsFrom />} />
+        <Route path="*" element={<SendFundsToken />} />
       </Routes>
     </SendFundsWizardProvider>
   )

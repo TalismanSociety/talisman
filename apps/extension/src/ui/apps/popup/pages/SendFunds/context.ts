@@ -74,8 +74,8 @@ const useSendFundsWizardProvider = () => {
 
       if (goToNextPage) {
         let page: SendFundsWizardPage = "amount"
-        if (!searchParams.has("from")) page = "from"
-        else if (!searchParams.has("tokenId")) page = "token"
+        if (!searchParams.has("tokenId")) page = "token"
+        else if (!searchParams.has("from")) page = "from"
         else if (!searchParams.has("to")) page = "to"
         const url = `/send/${page}?${searchParams.toString()}`
         navigate(url)
