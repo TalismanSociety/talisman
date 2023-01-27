@@ -48,6 +48,7 @@ export const AssetLogoBase = ({ id, className, url, rounded }: AssetLogoBaseProp
       src={src}
       className={imgClassName}
       alt=""
+      loading="lazy" // defers download, helps performance especially in token pickers
       onError={handleError}
     />
   )

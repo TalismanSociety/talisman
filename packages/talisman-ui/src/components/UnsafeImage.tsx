@@ -53,6 +53,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
         "indent-[-999em] leading-[0]",
         isLoading && "animate-pulse"
       )}
+      loading="lazy"
       onLoadStart={handleLoadStart}
       onLoad={handleLoad}
       onError={handleError}
