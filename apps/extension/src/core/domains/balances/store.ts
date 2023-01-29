@@ -290,6 +290,17 @@ export class BalanceStore {
         // remove balance if account doesn't exist
         if (!balance.address || addresses[balance.address] === undefined) return true
 
+        // delete balances for hardware accounts on chains other than the one they were created on
+        // these aren't fetched anymore but were fetched prior to v1.14.0, so we need to clean them up
+        const chain =
+          (balance.chainId && this.#chains.find((b) => b.id === balance.chainId)) || null
+        if (
+          chain?.genesisHash &&
+          addresses[balance.address] && // first check if account has any genesisHashes
+          !addresses[balance.address]?.includes(chain.genesisHash) // then check if match
+        )
+          return true
+
         // keep balance
         return false
       })
@@ -352,9 +363,10 @@ export class BalanceStore {
     const generation = this.#subscriptionsGeneration
     const addresses = await firstValueFrom(this.#addresses)
     const tokens = await firstValueFrom(this.#tokens)
-    const chainHealthy = Object.fromEntries(
-      this.#chains.map((chain) => [chain.id, chain.isHealthy])
+    const chainDetails = Object.fromEntries(
+      this.#chains.map(({ id, isHealthy, genesisHash }) => [id, { isHealthy, genesisHash }])
     )
+
     const evmNetworkHealthy = Object.fromEntries(
       this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork.isHealthy])
     )
@@ -362,7 +374,6 @@ export class BalanceStore {
     // For the following TODOs, try and put them inside the relevant balance module when it makes sense.
     // Otherwise fall back to writing the workaround in here (but also then add it to the web app portfolio!)
     //
-    // TODO: Fix genesisHash filter (only fetch balances on XXX chains for accounts whose filter is not null)
     // TODO: Don't fetch evm balances for substrate addresses
     // TODO: Don't fetch evm balances for ethereum accounts on chains whose native account format is secp256k1 (i.e. moonbeam/river/base)
     //       On these chains we can fetch the balance purely via substrate (and fetching via both evm+substrate will double up the balance)
@@ -371,12 +382,18 @@ export class BalanceStore {
     tokens.forEach((token) => {
       // filter out tokens on chains/evmNetworks which aren't healthy
       const isHealthy =
-        (token.chain?.id && chainHealthy[token.chain.id]) ||
+        (token.chain?.id && chainDetails[token.chain.id]?.isHealthy) ||
         (token.evmNetwork?.id && evmNetworkHealthy[token.evmNetwork.id])
       if (!isHealthy) return
 
       if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
-      addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
+      // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
+      addressesByTokenByModule[token.type][token.id] = Object.keys(addresses).filter(
+        (address) =>
+          !token.chain ||
+          !addresses[address] ||
+          addresses[address]?.includes(chainDetails[token.chain.id]?.genesisHash ?? "")
+      )
     })
 
     const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
