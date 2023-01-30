@@ -1,15 +1,11 @@
 import { log } from "@core/log"
 import { getCoinGeckoErc20Coin } from "@core/util/coingecko/getCoinGeckoErc20Coin"
-import localUnknownTokenLogoUrl from "@talisman/theme/icons/unknown-token.svg?url"
 import { classNames } from "@talisman/util/classNames"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { EvmNetworkId, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { TokenId } from "@talismn/chaindata-provider"
-import { getBase64ImageUrl } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"
 import { imgSrcToBlob } from "blob-util"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-
-const FALLBACK_LOGO_URL = getBase64ImageUrl(localUnknownTokenLogoUrl) as string
 
 const isTalismanLogo = (url?: string) => {
   if (!url) return false
@@ -24,14 +20,14 @@ type AssetLogoBaseProps = {
 }
 
 export const AssetLogoBase = ({ id, className, url, rounded }: AssetLogoBaseProps) => {
-  const [src, setSrc] = useState(() => url ?? FALLBACK_LOGO_URL)
+  const [src, setSrc] = useState(() => url ?? githubUnknownTokenLogoUrl)
 
   // reset
   useEffect(() => {
-    setSrc(url ?? FALLBACK_LOGO_URL)
+    setSrc(url ?? githubUnknownTokenLogoUrl)
   }, [url])
 
-  const handleError = useCallback(() => setSrc(FALLBACK_LOGO_URL), [])
+  const handleError = useCallback(() => setSrc(githubUnknownTokenLogoUrl), [])
 
   const imgClassName = useMemo(
     () =>
@@ -83,7 +79,7 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
       //
       // next, use the unknown token logo as a fallback
       //
-      FALLBACK_LOGO_URL
+      githubUnknownTokenLogoUrl
     )
   }, [token])
 
@@ -181,7 +177,7 @@ const getCoingeckoLogoUrl = async (
       }
     }
   }
-  return FALLBACK_LOGO_URL
+  return githubUnknownTokenLogoUrl
 }
 
 //
@@ -208,5 +204,5 @@ const getDataLogoUrl = async (tokenId: string, imageUrl: string) => {
       log.warn(`Failed to create url for token ${tokenId}`, error)
     }
   }
-  return FALLBACK_LOGO_URL
+  return githubUnknownTokenLogoUrl
 }

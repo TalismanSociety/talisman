@@ -1,5 +1,5 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
-import { filterAccountsByAddresses, getPublicAccounts } from "@core/domains/accounts/helpers"
+import { filterAccountsByAddresses } from "@core/domains/accounts/helpers"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
@@ -116,10 +116,7 @@ export class EthTabsHandler extends TabsHandler {
     // signature checks methods return lowercase addresses too and are compared to addresses returned by provider
     // => we have to return addresses as lowercase too
     return (
-      getPublicAccounts(
-        Object.values(accountsObservable.subject.getValue()),
-        filterAccountsByAddresses(site.ethAddresses)
-      )
+      filterAccountsByAddresses(accountsObservable.subject.getValue(), site.ethAddresses)
         .filter(({ type }) => type === "ethereum")
         // send as
         .map(({ address }) => ethers.utils.getAddress(address).toLowerCase())

@@ -7,26 +7,36 @@ import {
   getLocalStorage,
   setLocalStorage,
 } from "@core/handlers/stores"
-import { MessageTypes } from "@core/types"
+import { MessageTypes, RequestTypes, ResponseTypes } from "@core/types"
 /* eslint-disable no-console */
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { KeyringPairs$Json } from "@polkadot/ui-keyring/types"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
+import { v4 } from "uuid"
 import Browser from "webextension-polyfill"
-
-import { getMessageSenderFn } from "../../../../../tests/util"
 
 jest.mock("@talismn/chaindata-provider-extension/dist/graphql")
 jest.setTimeout(20000)
+
+type SenderFunction<TMessageType extends MessageTypes> = (
+  messageType: TMessageType,
+  request: RequestTypes[TMessageType],
+  id?: string
+) => Promise<ResponseTypes[TMessageType]>
+
+const getMessageSenderFn =
+  (extension: AppHandler): SenderFunction<MessageTypes> =>
+  (messageType, request, id = v4()) =>
+    extension.handle(id, messageType, request, {} as chrome.runtime.Port)
 
 keyring.loadAll({ store: new AccountsStore() })
 
 describe("App handler when password is not trimmed", () => {
   let extension: AppHandler
   let state: State
-  let messageSender: ReturnType<typeof getMessageSenderFn>
+  let messageSender: SenderFunction<MessageTypes>
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
   let accountsJson: KeyringPairs$Json
@@ -50,6 +60,7 @@ describe("App handler when password is not trimmed", () => {
     messageSender = getMessageSenderFn(extension)
 
     await messageSender("pri(app.onboard)", {
+      name: "My Polkadot Account",
       pass: password,
       passConfirm: password,
     })
@@ -87,7 +98,7 @@ describe("App handler when password is not trimmed", () => {
     )
 
     // logout then log in again
-    await messageSender("pri(app.lock)", null)
+    await messageSender("pri(app.lock)")
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
 
     const loginExtraSpaces = await messageSender("pri(app.authenticate)", {
@@ -164,7 +175,7 @@ describe("App handler when password is not trimmed", () => {
 describe("App handler when password is trimmed", () => {
   let extension: AppHandler
   let state: State
-  let messageSender: ReturnType<typeof getMessageSenderFn>
+  let messageSender: SenderFunction<MessageTypes>
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
   let accountsJson: KeyringPairs$Json
@@ -188,6 +199,7 @@ describe("App handler when password is trimmed", () => {
     messageSender = getMessageSenderFn(extension)
 
     await messageSender("pri(app.onboard)", {
+      name: "My Polkadot Account",
       pass: password.trim(),
       passConfirm: password.trim(),
     })
@@ -219,7 +231,7 @@ describe("App handler when password is trimmed", () => {
   test("can login with password with spaces when isTrimmed is set to true", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
     // logout then log in again
-    await messageSender("pri(app.lock)", null)
+    await messageSender("pri(app.lock)")
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
 
     const login = await messageSender("pri(app.authenticate)", {
@@ -232,7 +244,7 @@ describe("App handler when password is trimmed", () => {
   test("can login with password with additional spaces when isTrimmed is set to true", async () => {
     expect(await extensionStores.password.get("isTrimmed")).toBe(true)
     // logout then log in again
-    await messageSender("pri(app.lock)", null)
+    await messageSender("pri(app.lock)")
     expect(extensionStores.password.isLoggedIn.value).toBe("FALSE")
 
     const loginExtraSpaces = await messageSender("pri(app.authenticate)", {

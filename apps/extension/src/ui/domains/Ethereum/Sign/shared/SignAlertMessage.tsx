@@ -24,7 +24,7 @@ export const SignAlertMessage: FC<SignAlertMessageProps> = ({
       </div>
       <div
         className={classNames(
-          "scrollable scrollable-700 grow overflow-y-auto text-left text-xs leading-[140%]",
+          "grow text-left text-xs leading-[140%]",
           // orange text for errors
           type === "error" ? "text-alert-warn" : "text-body-secondary"
         )}

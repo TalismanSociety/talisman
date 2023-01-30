@@ -38,10 +38,6 @@ export class ErrorBoundaryDatabaseMigration extends Component<Props, State> {
     if (error.message === `Error ${MIGRATION_ERROR_MSG}`) {
       return { hasError: true }
     }
-
-    // bubble up the error to our main ErrorBoundary
-    if (error) throw error
-
     return { hasError: false }
   }
 

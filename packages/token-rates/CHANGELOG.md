@@ -1,13 +1,5 @@
 # @talismn/token-rates
 
-## 0.1.12
-
-### Patch Changes
-
-- 4aa691d: feat: new balance modules
-- Updated dependencies [4aa691d]
-  - @talismn/chaindata-provider@0.2.1
-
 ## 0.1.11
 
 ### Patch Changes

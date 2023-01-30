@@ -1,9 +1,14 @@
 import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
-import { balanceModules } from "@talismn/balances-default-modules"
+import { EvmErc20Module } from "@talismn/balances-evm-erc20"
+import { EvmNativeModule } from "@talismn/balances-evm-native"
 import { useBalances, useChaindata, useTokens } from "@talismn/balances-react"
+import { SubNativeModule } from "@talismn/balances-substrate-native"
+import { SubOrmlModule } from "@talismn/balances-substrate-orml"
 import { Token } from "@talismn/chaindata-provider"
 import { formatDecimals } from "@talismn/util"
 import { useEffect, useMemo, useState } from "react"
+
+const balanceModules = [SubNativeModule, SubOrmlModule, EvmNativeModule, EvmErc20Module]
 
 export function App(): JSX.Element {
   const chaindata = useChaindata()

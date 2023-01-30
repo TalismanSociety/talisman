@@ -49,7 +49,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const PasswordPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const { data, updateData, isResettingWallet } = useOnboard()
+  const { data, updateData } = useOnboard()
   const navigate = useNavigate()
 
   const {
@@ -79,9 +79,9 @@ export const PasswordPage = () => {
         name: "Submit",
         action: "Choose password continue button",
       })
-      navigate(isResettingWallet ? "/onboard" : `/privacy`)
+      navigate(`/privacy`)
     },
-    [navigate, updateData, isResettingWallet]
+    [navigate, updateData]
   )
 
   const [title, description] = useMemo(() => {

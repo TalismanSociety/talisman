@@ -54,18 +54,14 @@ export type AuthorizedSite = {
   origin: string
   url: string
   ethChainId?: number
-  connectAllSubstrate?: boolean
 }
 
 export type ProviderType = "polkadot" | "ethereum"
 
-export declare type AuthorisedSiteUpdate = Omit<Partial<AuthorizedSite>, "id">
-
 export declare type RequestAuthorizedSiteUpdate = {
   id: string
-  authorisedSite: AuthorisedSiteUpdate
+  props: Omit<Partial<AuthorizedSite>, "id">
 }
-
 export declare type RequestAuthorizedSiteForget = { id: string; type: ProviderType }
 
 export interface AuthorizeRequest {

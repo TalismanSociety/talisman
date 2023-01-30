@@ -1,11 +1,5 @@
 # @talismn/chaindata-provider
 
-## 0.2.1
-
-### Patch Changes
-
-- 4aa691d: feat: new balance modules
-
 ## 0.2.0
 
 ## 0.1.10

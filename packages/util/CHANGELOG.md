@@ -1,12 +1,5 @@
 # @talismn/util
 
-## 0.1.5
-
-### Patch Changes
-
-- 4aa691d: feat: new balance modules
-- a63dbb3: feat: formatDecimal allow for BigNumber amount
-
 ## 0.1.4
 
 ### Patch Changes

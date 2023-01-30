@@ -1,27 +1,23 @@
 import {
   AuthRequestApprove,
-  AuthorizedSite,
   RequestAuthorizedSiteForget,
   RequestAuthorizedSiteUpdate,
 } from "@core/domains/sitesAuthorised/types"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
-import type { MessageTypes, RequestType, ResponseType } from "@core/types"
+import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import type { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 
 export default class SitesAuthorisationHandler extends ExtensionHandler {
-  private async authorizedForget({ id, type }: RequestAuthorizedSiteForget) {
-    await this.stores.sites.forgetSite(id, type)
+  private authorizedForget({ id, type }: RequestAuthorizedSiteForget): boolean {
+    this.stores.sites.forgetSite(id, type)
     return true
   }
 
-  private async authorizedUpdate({ id, authorisedSite }: RequestAuthorizedSiteUpdate) {
-    // un-set connectAllSubstrate if the user modifies the addresses for a site
-    const updateConnectAll: Pick<AuthorizedSite, "connectAllSubstrate"> = {}
-    if ("addresses" in authorisedSite) updateConnectAll["connectAllSubstrate"] = undefined
-    await this.stores.sites.updateSite(id, { ...authorisedSite, ...updateConnectAll })
+  private authorizedUpdate({ id, props }: RequestAuthorizedSiteUpdate): boolean {
+    this.stores.sites.updateSite(id, props)
     talismanAnalytics.capture("authorised site update addresses", {
       url: id,
     })
@@ -60,7 +56,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
-    request: RequestType<TMessageType>,
+    request: RequestTypes[TMessageType],
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {

@@ -42,16 +42,6 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     if (seconds > 0) this.#autoLockTimer = setTimeout(() => this.clearPassword(), seconds * 1000)
   }
 
-  async reset() {
-    // use with caution
-    return this.set({
-      isTrimmed: false,
-      isHashed: true,
-      salt: undefined,
-      ignorePasswordUpdate: false,
-    })
-  }
-
   async createPassword(plaintextPw: string) {
     const salt = await generateSalt()
     const pwResult = await getHashedPassword(plaintextPw, salt)

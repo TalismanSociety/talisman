@@ -74,8 +74,7 @@ interface BalanceModuleSubstrate<
   fetchSubstrateChainMeta(
     chainConnector: ChainConnector,
     chaindataProvider: ChaindataProvider,
-    chainId: ChainId,
-    moduleConfig: TModuleConfig | undefined
+    chainId: ChainId
   ): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given substrate chain */
@@ -98,8 +97,7 @@ interface BalanceModuleEvm<
   fetchEvmChainMeta(
     chainConnector: ChainConnectorEvm,
     chaindataProvider: ChaindataProvider,
-    chainId: ChainId,
-    moduleConfig: TModuleConfig | undefined
+    chainId: ChainId
   ): Promise<TChainMeta | null>
 
   /** Detects which tokens are available on a given evm chain */

@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.14.0",
+  "version": "1.13.2",
   "private": true,
   "dependencies": {
     "@alectalisman/webpack-ext-reloader": "^1.1.9-a",
@@ -37,8 +37,11 @@
     "@substrate/txwrapper-core": "*",
     "@svgr/webpack": "^6.5.1",
     "@talismn/balances": "workspace:^",
-    "@talismn/balances-default-modules": "workspace:^",
+    "@talismn/balances-evm-erc20": "workspace:^",
+    "@talismn/balances-evm-native": "workspace:^",
     "@talismn/balances-react": "workspace:^",
+    "@talismn/balances-substrate-native": "workspace:^",
+    "@talismn/balances-substrate-orml": "workspace:^",
     "@talismn/chaindata-js": "^0.0.7",
     "@talismn/chaindata-provider": "workspace:^",
     "@talismn/token-rates": "workspace:^",
@@ -174,8 +177,8 @@
     "build:extension:ci": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=ci",
     "build:extension:canary": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=canary",
     "build:extension:prod": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=production",
-    "test": "PORT_PREFIX=talisman EXTENSION_PREFIX=\"\" jest --maxWorkers=50%",
-    "test:watch": "PORT_PREFIX=talisman EXTENSION_PREFIX=\"\" jest --watch",
+    "test": "jest --maxWorkers=50%",
+    "test:watch": "jest --watch",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "clean": "rm -rf dist && rm -rf .turbo && rm -rf node_modules"

@@ -11,6 +11,7 @@ import { SigningRequestsStore } from "@core/domains/signing"
 import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
 import { isEthereumRequest } from "@core/util/isEthereumRequest"
+import { assert } from "@polkadot/util"
 import { sleep } from "@talismn/util"
 import Browser from "webextension-polyfill"
 
@@ -213,18 +214,14 @@ export default class State {
     return tab
   }
 
-  public async openOnboarding(route?: string) {
+  public async openOnboarding() {
     if (this.#onboardingTabOpening) return
     this.#onboardingTabOpening = true
-    const baseUrl = Browser.runtime.getURL(`onboarding.html`)
+    const url = Browser.runtime.getURL(`onboarding.html`)
 
     const onboarded = await appStore.getIsOnboarded()
 
-    await this.openTabOnce({
-      url: `${baseUrl}${route ? `#${route}` : ""}`,
-      baseUrl,
-      shouldFocus: onboarded,
-    })
+    await this.openTabOnce({ url, shouldFocus: onboarded })
     this.#onboardingTabOpening = false
   }
 

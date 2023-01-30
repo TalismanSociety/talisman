@@ -1,7 +1,7 @@
-import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { db } from "@core/db"
 import { passwordStore } from "@core/domains/app"
 import { chaindataProvider } from "@core/rpcs/chaindata"
+import { MessageTypes, RequestTypes, ResponseTypes } from "@core/types"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
@@ -14,9 +14,9 @@ import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
+import { v4 } from "uuid"
 import Browser from "webextension-polyfill"
 
-import { getMessageSenderFn } from "../../../tests/util"
 import Extension from "./Extension"
 import State from "./State"
 import { extensionStores } from "./stores"
@@ -33,10 +33,21 @@ jest.mock("@core/util/hasSpiritKey", () => {
   }
 })
 
+type SenderFunction<TMessageType extends MessageTypes> = (
+  messageType: TMessageType,
+  request: RequestTypes[TMessageType],
+  id?: string
+) => Promise<ResponseTypes[TMessageType]>
+
+const getMessageSenderFn =
+  (extension: Extension): SenderFunction<MessageTypes> =>
+  (messageType, request, id = v4()) =>
+    extension.handle(id, messageType, request, {} as chrome.runtime.Port)
+
 describe("Extension", () => {
   let extension: Extension
   let state: State
-  let messageSender: ReturnType<typeof getMessageSenderFn>
+  let messageSender: SenderFunction<MessageTypes>
   const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
 
@@ -448,26 +459,5 @@ describe("Extension", () => {
     expect((await chaindataProvider.chainIds()).length).toBeGreaterThan(0)
     expect((await chaindataProvider.evmNetworkIds()).length).toBeGreaterThan(0)
     expect((await chaindataProvider.tokenIds()).length).toBeGreaterThan(0)
-  })
-
-  test("new accounts are added to authorised sites with connectAllSubstrate automatically", async () => {
-    // app.talisman.xyz should already be in the authorised sites store after onboarding
-    const existingAddress = await getAccount()
-    const talismanSite = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
-    expect(talismanSite && talismanSite.addresses)
-    expect(talismanSite.addresses!.includes(existingAddress))
-
-    const newAddress = await messageSender("pri(accounts.create)", {
-      name: "AutoAdd",
-      type: "sr25519",
-    })
-
-    const sites = await extensionStores.sites.get()
-    const talismanSiteAgain = sites[TALISMAN_WEB_APP_DOMAIN]
-    expect(talismanSiteAgain.addresses!.includes(newAddress))
-
-    const otherSite = Object.values(sites).find((site) => !site.connectAllSubstrate)
-    expect(otherSite)
-    expect(otherSite!.addresses?.includes(newAddress)).toBeFalsy()
   })
 })

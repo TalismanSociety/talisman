@@ -1,19 +1,5 @@
 # @talismn/balances-evm-erc20
 
-## 0.3.0
-
-### Minor Changes
-
-- a082a15: fix: throw error when evm balance cannot be fetched
-
-### Patch Changes
-
-- 4aa691d: feat: new balance modules
-- Updated dependencies [4aa691d]
-- Updated dependencies [a63dbb3]
-  - @talismn/chaindata-provider@0.2.1
-  - @talismn/balances@0.3.0
-
 ## 0.2.3
 
 ### Patch Changes

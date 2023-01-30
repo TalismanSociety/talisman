@@ -1,17 +1,5 @@
 # @talismn/chain-connector-evm
 
-## 0.4.0
-
-### Minor Changes
-
-- cd6a684: rotate rpcs on error
-
-### Patch Changes
-
-- 4aa691d: feat: new balance modules
-- Updated dependencies [4aa691d]
-  - @talismn/chaindata-provider@0.2.1
-
 ## 0.3.0
 
 ### Minor Changes

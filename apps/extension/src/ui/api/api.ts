@@ -39,7 +39,6 @@ export const api: MessageTypes = {
   modalOpen: (request) => messageService.sendMessage("pri(app.modalOpen.request)", request),
   modalOpenSubscribe: (cb) => messageService.subscribe("pri(app.modalOpen.subscribe)", null, cb),
   analyticsCapture: (request) => messageService.sendMessage("pri(app.analyticsCapture)", request),
-  resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
 
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
@@ -130,8 +129,8 @@ export const api: MessageTypes = {
   authorizedSiteSubscribe: (id, cb) =>
     messageService.subscribe("pri(sites.byid.subscribe)", { id }, cb),
   authorizedSiteForget: (id, type) => messageService.sendMessage("pri(sites.forget)", { id, type }),
-  authorizedSiteUpdate: (id, authorisedSite) =>
-    messageService.sendMessage("pri(sites.update)", { id, authorisedSite }),
+  authorizedSiteUpdate: (id, props) =>
+    messageService.sendMessage("pri(sites.update)", { id, props }),
 
   // authorization requests messages ------------------------------------
   authRequestsSubscribe: (cb) =>

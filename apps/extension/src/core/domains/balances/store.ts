@@ -14,15 +14,16 @@ import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import { AddressesByToken, db as balancesDb } from "@talismn/balances"
-import { balanceModules as defaultBalanceModules } from "@talismn/balances-default-modules"
+import { EvmErc20Module } from "@talismn/balances-evm-erc20"
+import { EvmNativeModule } from "@talismn/balances-evm-native"
+import { SubNativeModule } from "@talismn/balances-substrate-native"
+import { SubOrmlModule } from "@talismn/balances-substrate-orml"
 import { Token, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
 import { liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
 import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
-
-export const balanceModules = defaultBalanceModules
 
 type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account">
 type EvmNetworkIdAndHealth = Pick<
@@ -35,6 +36,8 @@ type EvmNetworkIdAndHealth = Pick<
 type TokenIdAndType = Pick<Token, "id" | "type" | "chain" | "evmNetwork">
 
 type SubscriptionsState = "Closed" | "Closing" | "Open"
+
+export const balanceModules = [SubNativeModule, SubOrmlModule, EvmNativeModule, EvmErc20Module]
 
 // TODO: Fix this class up
 //       1. It shouldn't need a whole extra copy of addresses+chains+networks separate to the db
@@ -236,9 +239,6 @@ export class BalanceStore {
       // remove balance if token doesn't exist
       if (tokens[balance.tokenId] === undefined) return true
 
-      // remove balance if module doesn't exist
-      if (!balanceModules.find((module) => module.type === balance.source)) return true
-
       // keep balance
       return false
     })
@@ -289,17 +289,6 @@ export class BalanceStore {
       await this.deleteBalances((balance) => {
         // remove balance if account doesn't exist
         if (!balance.address || addresses[balance.address] === undefined) return true
-
-        // delete balances for hardware accounts on chains other than the one they were created on
-        // these aren't fetched anymore but were fetched prior to v1.14.0, so we need to clean them up
-        const chain =
-          (balance.chainId && this.#chains.find((b) => b.id === balance.chainId)) || null
-        if (
-          chain?.genesisHash &&
-          addresses[balance.address] && // first check if account has any genesisHashes
-          !addresses[balance.address]?.includes(chain.genesisHash) // then check if match
-        )
-          return true
 
         // keep balance
         return false
@@ -363,10 +352,9 @@ export class BalanceStore {
     const generation = this.#subscriptionsGeneration
     const addresses = await firstValueFrom(this.#addresses)
     const tokens = await firstValueFrom(this.#tokens)
-    const chainDetails = Object.fromEntries(
-      this.#chains.map(({ id, isHealthy, genesisHash }) => [id, { isHealthy, genesisHash }])
+    const chainHealthy = Object.fromEntries(
+      this.#chains.map((chain) => [chain.id, chain.isHealthy])
     )
-
     const evmNetworkHealthy = Object.fromEntries(
       this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork.isHealthy])
     )
@@ -374,6 +362,7 @@ export class BalanceStore {
     // For the following TODOs, try and put them inside the relevant balance module when it makes sense.
     // Otherwise fall back to writing the workaround in here (but also then add it to the web app portfolio!)
     //
+    // TODO: Fix genesisHash filter (only fetch balances on XXX chains for accounts whose filter is not null)
     // TODO: Don't fetch evm balances for substrate addresses
     // TODO: Don't fetch evm balances for ethereum accounts on chains whose native account format is secp256k1 (i.e. moonbeam/river/base)
     //       On these chains we can fetch the balance purely via substrate (and fetching via both evm+substrate will double up the balance)
@@ -382,18 +371,12 @@ export class BalanceStore {
     tokens.forEach((token) => {
       // filter out tokens on chains/evmNetworks which aren't healthy
       const isHealthy =
-        (token.chain?.id && chainDetails[token.chain.id]?.isHealthy) ||
+        (token.chain?.id && chainHealthy[token.chain.id]) ||
         (token.evmNetwork?.id && evmNetworkHealthy[token.evmNetwork.id])
       if (!isHealthy) return
 
       if (!addressesByTokenByModule[token.type]) addressesByTokenByModule[token.type] = {}
-      // filter out substrate addresses which have a genesis hash that doesn't match the genesisHash of the token's chain
-      addressesByTokenByModule[token.type][token.id] = Object.keys(addresses).filter(
-        (address) =>
-          !token.chain ||
-          !addresses[address] ||
-          addresses[address]?.includes(chainDetails[token.chain.id]?.genesisHash ?? "")
-      )
+      addressesByTokenByModule[token.type][token.id] = Object.keys(addresses)
     })
 
     const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>

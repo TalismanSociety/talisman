@@ -20,7 +20,6 @@ import { log } from "@core/log"
 import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
-import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { db as balancesDb } from "@talismn/balances"
@@ -66,26 +65,6 @@ export default class Extension extends ExtensionHandler {
 
     // Resets password update notification at extension restart if user has asked to ignore it previously
     stores.password.set({ ignorePasswordUpdate: false })
-
-    // Watches keyring to add all new accounts to authorised sites with `connectAllSubstrate` flag
-    // Delayed by 2 sec so that keyring accounts will have loaded
-    setTimeout(
-      () =>
-        keyring.accounts.subject.subscribe(async (addresses) => {
-          const sites = await stores.sites.get()
-
-          Object.entries(sites)
-            .filter(([url, site]) => site.connectAllSubstrate)
-            .forEach(async ([url, autoAddSite]) => {
-              if (!autoAddSite.addresses) autoAddSite.addresses = []
-              Object.values(addresses).forEach(({ json: { address } }) => {
-                if (!autoAddSite.addresses?.includes(address)) autoAddSite.addresses?.push(address)
-              })
-              await stores.sites.updateSite(url, autoAddSite)
-            })
-        }),
-      2000
-    )
 
     this.initDb()
     this.initWalletFunding()

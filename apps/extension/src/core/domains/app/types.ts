@@ -80,5 +80,4 @@ export interface AppMessages {
   "pri(app.promptLogin)": [boolean, boolean]
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
   "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
-  "pri(app.resetWallet)": [null, boolean]
 }

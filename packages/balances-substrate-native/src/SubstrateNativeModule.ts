@@ -16,10 +16,10 @@ import {
   TokenId,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
-import { mutateMetadata } from "@talismn/mutate-metadata"
 import { blake2Concat, decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 import log from "./log"
+import type { mutateMetadata as MutateMetadata } from "./metadata"
 
 type ModuleType = "substrate-native"
 
@@ -27,8 +27,6 @@ type ModuleType = "substrate-native"
 const moduleHash = "26aa394eea5630e07c48ae0c9558cef7" // util_crypto.xxhashAsHex("System", 128);
 const storageHash = "b99d880ec681799c0cf30e8886371da9" // util_crypto.xxhashAsHex("Account", 128);
 const moduleStorageHash = `${moduleHash}${storageHash}`
-
-// TODO: Move the fallback configs for each chain into the ChainMeta section of chaindata
 
 // AccountInfo is the state_storage data format for nativeToken balances
 // Theory: new chains will be at least on metadata v14, and so we won't need to hardcode their AccountInfo type.
@@ -68,20 +66,16 @@ const AccountInfoOverrides: { [key: ChainId]: string } = {
 }
 
 const subNativeTokenId = (chainId: ChainId, tokenSymbol: string) =>
-  `${chainId}-substrate-native-${tokenSymbol}`.toLowerCase().replace(/ /g, "-")
+  `${chainId}-substrate-native-${tokenSymbol}`.toLowerCase()
 
 export type SubNativeToken = NewTokenType<
   ModuleType,
   {
     existentialDeposit: string
+    accountInfoType: number | null // TODO: Instead of storing this on the token, figure out a way to store it on the chain
+    metadata: `0x${string}` | null // TODO: Instead of storing this on the token, figure out a way to store it on the chain
+    metadataVersion: number // TODO: Instead of storing this on the token, figure out a way to store it on the chain
     chain: { id: ChainId }
-
-    /** @deprecated - use the ChainMeta.accountInfoType field available on the chain */
-    accountInfoType: number | null // TODO: Delete this
-    /** @deprecated - use the ChainMeta.accountInfoType field available on the chain */
-    metadata: `0x${string}` | null // TODO: Delete this
-    /** @deprecated - use the ChainMeta.accountInfoType field available on the chain */
-    metadataVersion: number // TODO: Delete this
   }
 >
 export type CustomSubNativeToken = SubNativeToken & {
@@ -105,10 +99,6 @@ export type SubNativeChainMeta = {
   metadataVersion: number
 }
 
-export type SubNativeModuleConfig = {
-  disable?: boolean
-}
-
 export type SubNativeBalance = NewBalanceType<
   ModuleType,
   {
@@ -129,24 +119,12 @@ declare module "@talismn/balances/plugins" {
 export const SubNativeModule: BalanceModule<
   ModuleType,
   SubNativeToken | CustomSubNativeToken,
-  SubNativeChainMeta,
-  SubNativeModuleConfig
+  SubNativeChainMeta
 > = {
   ...DefaultBalanceModule("substrate-native"),
 
-  async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId, moduleConfig) {
+  async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId) {
     const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
-
-    if (moduleConfig?.disable === true)
-      return {
-        isTestnet,
-        symbol: "",
-        decimals: 0,
-        existentialDeposit: null,
-        accountInfoType: null,
-        metadata: null,
-        metadataVersion: 0,
-      }
 
     const [metadataRpc, chainProperties] = await Promise.all([
       chainConnector.send(chainId, "state_getMetadata", []),
@@ -170,8 +148,24 @@ export const SubNativeModule: BalanceModule<
       ? constants.balances.existentialDeposit.toString()
       : null
 
+    // we do a just-in-time import here so that our frontend bundle of this module doesn't include the nodejs-dependent subsquid libraries
+    //
+    // if we just do `import ('./metadata')` then tsc will convert the import into a commonjs `require`, which means the nodejs-only
+    // subsquid libraries would be included in frontend bundles of this module (and cause havoc!)
+    //
+    // but if we compile to esm instead of commonjs, we can't use this library from our commonjs-based subsquid projects!
+    //
+    // solution: use this workaround to just-in-time import the module in a way that tsc won't convert it into a `require`
+    //
+    // https://stackoverflow.com/a/70192405/3926156
+    // https://github.com/node-fetch/node-fetch/issues/1279#issuecomment-915063354
+    const importDynamic = new Function("modulePath", "return import(modulePath)")
+    const { mutateMetadata }: { mutateMetadata: typeof MutateMetadata } = await importDynamic(
+      "./metadata.js"
+    )
+
     let accountInfoType = null
-    const balanceMetadata = await mutateMetadata(metadataRpc, (metadata) => {
+    const balanceMetadata = mutateMetadata(metadataRpc, (metadata) => {
       if (
         metadata.__kind === "V0" ||
         metadata.__kind === "V1" ||
@@ -189,11 +183,6 @@ export const SubNativeModule: BalanceModule<
         metadata.__kind === "V13"
       ) {
         // we can't parse metadata < v14
-        //
-        // as of v14 the type information required to interact with a chain is included in the chain metadata
-        // https://github.com/paritytech/substrate/pull/8615
-        //
-        // before this change, the client needed to already know the type information ahead of time
         return null
       }
 
@@ -246,17 +235,12 @@ export const SubNativeModule: BalanceModule<
 
           keepTypes.add(type.id)
 
-          if (type?.type?.def?.__kind === "Array") addDependentTypes([type.type.def.value.type])
-          if (type?.type?.def?.__kind === "Compact") addDependentTypes([type.type.def.value.type])
-          if (type?.type?.def?.__kind === "Composite")
+          // TODO: Handle other types
+          // (all chains so far are only using Composite for balances,
+          // but later on for other use cases we'll need to at least also handle 'Variant' types)
+          if (type?.type?.def?.__kind === "Composite") {
             addDependentTypes(type.type.def.value.fields.map(({ type }) => type))
-          if (type?.type?.def?.__kind === "Sequence") addDependentTypes([type.type.def.value.type])
-          if (type?.type?.def?.__kind === "Tuple")
-            addDependentTypes(type.type.def.value.map((type) => type))
-          if (type?.type?.def?.__kind === "Variant")
-            addDependentTypes(
-              type.type.def.value.variants.flatMap(({ fields }) => fields.map(({ type }) => type))
-            )
+          }
         }
       }
 
@@ -285,15 +269,7 @@ export const SubNativeModule: BalanceModule<
     }
   },
 
-  async fetchSubstrateChainTokens(
-    chainConnector,
-    chaindataProvider,
-    chainId,
-    chainMeta,
-    moduleConfig
-  ) {
-    if (moduleConfig?.disable === true) return {}
-
+  async fetchSubstrateChainTokens(chainConnector, chaindataProvider, chainId, chainMeta) {
     const {
       isTestnet,
       symbol,
@@ -313,9 +289,9 @@ export const SubNativeModule: BalanceModule<
       decimals,
       logo: githubTokenLogoUrl(id),
       existentialDeposit: existentialDeposit || "0",
-      accountInfoType, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
-      metadata, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
-      metadataVersion, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
+      accountInfoType,
+      metadata,
+      metadataVersion,
       chain: { id: chainId },
     }
 
@@ -346,23 +322,16 @@ export const SubNativeModule: BalanceModule<
         if (!chain) throw new Error(`Chain ${chainId} for token ${tokenId} not found`)
 
         const typeRegistry = new TypeRegistry()
-        const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
-          ({ moduleType }) => moduleType === "substrate-native"
-        )?.metadata
-        if (
-          chainMeta?.metadata !== undefined &&
-          chainMeta?.metadata !== null &&
-          chainMeta?.metadataVersion >= 14
-        )
-          typeRegistry.setMetadata(new Metadata(typeRegistry, chainMeta.metadata))
+        if (token.metadata !== undefined && token.metadata !== null && token.metadataVersion >= 14)
+          typeRegistry.setMetadata(new Metadata(typeRegistry, token.metadata))
 
         const accountInfoTypeDef = (() => {
-          if (chainMeta?.accountInfoType === undefined) return AccountInfoOverrides[chainId]
-          if (chainMeta?.accountInfoType === null) return AccountInfoOverrides[chainId]
-          if (!(chainMeta?.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
+          if (token.accountInfoType === undefined) return AccountInfoOverrides[chainId]
+          if (token.accountInfoType === null) return AccountInfoOverrides[chainId]
+          if (!(token.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
 
           try {
-            return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
+            return typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
           } catch (error: any) {
             log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
             return
@@ -440,23 +409,20 @@ export const SubNativeModule: BalanceModule<
           if (!chain) throw new Error(`Chain ${chainId} for token ${tokenId} not found`)
 
           const typeRegistry = new TypeRegistry()
-          const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
-            ({ moduleType }) => moduleType === "substrate-native"
-          )?.metadata
           if (
-            chainMeta?.metadata !== undefined &&
-            chainMeta?.metadata !== null &&
-            chainMeta?.metadataVersion >= 14
+            token.metadata !== undefined &&
+            token.metadata !== null &&
+            token.metadataVersion >= 14
           )
-            typeRegistry.setMetadata(new Metadata(typeRegistry, chainMeta.metadata))
+            typeRegistry.setMetadata(new Metadata(typeRegistry, token.metadata))
 
           const accountInfoTypeDef = (() => {
-            if (chainMeta?.accountInfoType === undefined) return AccountInfoOverrides[chainId]
-            if (chainMeta?.accountInfoType === null) return AccountInfoOverrides[chainId]
-            if (!(chainMeta?.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
+            if (token.accountInfoType === undefined) return AccountInfoOverrides[chainId]
+            if (token.accountInfoType === null) return AccountInfoOverrides[chainId]
+            if (!(token.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
 
             try {
-              return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
+              return typeRegistry.metadata.lookup.getTypeDef(token.accountInfoType).type
             } catch (error: any) {
               log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
               return
@@ -501,7 +467,7 @@ function buildParams(addresses: string[]): string[][] {
   return [
     addresses
       .map((address) => decodeAnyAddress(address))
-      .map((addressBytes) => blake2Concat(addressBytes).replace(/^0x/, ""))
+      .map((addressBytes) => blake2Concat(addressBytes).replace("0x", ""))
       .map((addressHash) => `0x${moduleStorageHash}${addressHash}`),
   ]
 }
@@ -534,9 +500,6 @@ function buildAddressReferences(addresses: string[]): Array<[string, string]> {
     .map((reference, index) => [addresses[index], reference])
 }
 
-// TODO: Make use of polkadot.js to encode/decode these state calls, while avoiding the use of
-// its WsProvider and ApiPromise classes so that we don't pull down and parse the entire metadata
-// blob for each chain.
 /**
  * Formats an RPC result into an instance of `Balances`
  *

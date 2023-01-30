@@ -19,7 +19,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const ImportMethodPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
-  const { data, updateData, isResettingWallet } = useOnboard()
+  const { data, updateData } = useOnboard()
 
   useEffect(() => {
     if (!data.importAccountType) navigate("/import", { replace: true })
@@ -35,12 +35,11 @@ export const ImportMethodPage = () => {
         properties: {
           importAccountType: data.importAccountType,
           importMethodType,
-          isResettingWallet,
         },
       })
       navigate(importMethodType === "mnemonic" ? "/import-seed" : "/password")
     },
-    [data.importAccountType, navigate, updateData, isResettingWallet]
+    [data.importAccountType, navigate, updateData]
   )
 
   const disableLedger = useMemo(() => !getIsLedgerCapable(), [])
@@ -48,7 +47,7 @@ export const ImportMethodPage = () => {
   if (!data.importAccountType) return null
 
   return (
-    <Layout withBack={!isResettingWallet} analytics={ANALYTICS_PAGE}>
+    <Layout withBack analytics={ANALYTICS_PAGE}>
       <div className="mx-0 w-full max-w-[87rem] self-center text-center">
         <div className="my-[6rem] text-xl">
           How would you like to import your{" "}
