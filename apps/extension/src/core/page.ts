@@ -44,7 +44,7 @@ const injectOptions: InjectedExtensionInfo = {
   version: process.env.VERSION ?? "",
 }
 
-const { val: domain, ok } = urlToDomain(window.location.pathname)
+const { val: domain, ok } = urlToDomain(window.location.origin)
 if (ok && domain === TALISMAN_WEB_APP_DOMAIN) injectOptions.authorised = true
 
 function inject() {

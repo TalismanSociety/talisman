@@ -98,6 +98,7 @@ const config = (env) => ({
       "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN || ""),
       "process.env.SENTRY_AUTH_TOKEN": JSON.stringify(process.env.SENTRY_AUTH_TOKEN || ""),
       "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
+      "process.env.TALISMAN_WEB_APP_DOMAIN": JSON.stringify(process.env.TALISMAN_WEB_APP_DOMAIN),
 
       // dev stuff, only pass through when env.build is undefined (running a development build)
       "process.env.PASSWORD": JSON.stringify(

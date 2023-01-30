@@ -24,4 +24,4 @@ export const API_KEY_ONFINALITY = "e1b2f3ea-f003-42f5-adf6-d2e6aa3ecfe4"
 
 export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 
-export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
+export const TALISMAN_WEB_APP_DOMAIN = process.env.TALISMAN_WEB_APP_DOMAIN || "app.talisman.xyz"

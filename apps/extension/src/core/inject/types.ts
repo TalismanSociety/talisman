@@ -79,6 +79,7 @@ export interface Injected {
 export interface InjectedWindowProvider {
   enable: (origin: string) => Promise<Injected>
   version: string
+  authorised?: boolean
 }
 export interface InjectedWindow extends This {
   injectedWeb3: Record<string, InjectedWindowProvider>
