@@ -1,6 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
-import { useState } from "react"
-import { useDebounce } from "react-use"
+import { useMemo } from "react"
 
 import { useBalancesHydrate } from "./useBalancesHydrate"
 import { useDbCache } from "./useDbCache"
@@ -13,10 +12,7 @@ export const useBalances = () => {
 
   const hydrate = useBalancesHydrate()
 
-  const [balances, setBalances] = useState<Balances>(() => new Balances(allBalances, hydrate))
-
-  // debounce every 100ms to prevent hammering UI with updates
-  useDebounce(() => setBalances(new Balances(allBalances, hydrate)), 100, [allBalances, hydrate])
+  const balances = useMemo(() => new Balances(allBalances, hydrate), [allBalances, hydrate])
 
   return balances
 }
