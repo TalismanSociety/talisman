@@ -21,9 +21,10 @@
     "node": ">=14"
   },
   "scripts": {
-    "dev": "tsc --watch --declarationMap",
-    "build": "tsc --declarationMap && cp src/import.cjs dist/import.cjs",
-    "build:packages:prod": "rm -rf dist && tsc && cp src/import.cjs dist/import.cjs",
+    "copy-files": "cp src/import.cjs dist/import.cjs",
+    "dev": "concurrently \"tsc --watch --declarationMap\" \"chokidar 'dist/import.d.cts' --initial --command 'yarn copy-files'\"",
+    "build": "tsc --declarationMap && yarn copy-files",
+    "build:packages:prod": "rm -rf dist && tsc && yarn copy-files",
     "prepack": "yarn build:packages:prod",
     "test": "jest",
     "lint": "eslint . --max-warnings 0",
@@ -38,6 +39,8 @@
     "@talismn/eslint-config": "workspace:^",
     "@talismn/tsconfig": "workspace:^",
     "@types/jest": "^27.5.1",
+    "chokidar-cli": "^3.0.0",
+    "concurrently": "^7.6.0",
     "eslint": "^8.4.0",
     "jest": "^28.1.0",
     "ts-jest": "^28.0.2",
