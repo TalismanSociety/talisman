@@ -21,15 +21,14 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
-import React, { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 const Stats = styled(Statistics)`
   max-width: 40%;
 `
-// memoise to re-render only if balances object changes
-const PageContent = React.memo(({ balances }: { balances: Balances }) => {
+const PageContent = ({ balances }: { balances: Balances }) => {
   const { showWalletFunding } = useAppState()
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
@@ -135,7 +134,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
       )}
     </Box>
   )
-})
+}
 
 export const PortfolioAssets = () => {
   const { networkBalances } = usePortfolio()

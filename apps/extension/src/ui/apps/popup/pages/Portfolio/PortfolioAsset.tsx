@@ -9,11 +9,10 @@ import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import React, { useCallback, useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 
-// memoise to re-render only if balances object changes
-const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symbol: string }) => {
+const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
   const { token } = useTokenBalancesSummary(balancesToDisplay)
@@ -49,7 +48,7 @@ const PageContent = React.memo(({ balances, symbol }: { balances: Balances; symb
       </Box>
     </>
   )
-})
+}
 
 export const PortfolioAsset = () => {
   const { symbol } = useParams()

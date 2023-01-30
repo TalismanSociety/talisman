@@ -39,5 +39,5 @@ export const useIsValidEthTransaction = (
     setStaleIsValid(false)
   }, [priority])
 
-  return { isValid: !!data, error, staleIsValid, isLoading }
+  return { isValid: !!data, error, staleIsValid: !!data || staleIsValid, isLoading }
 }
