@@ -291,6 +291,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
   // don't bubble up submit event, in case we're in another form (send funds v1)
   const submitWithoutBubbleUp: FormEventHandler<HTMLFormElement> = useCallback(
     (e) => {
+      e.preventDefault()
       handleSubmit(submit)(e)
       e.stopPropagation()
     },
