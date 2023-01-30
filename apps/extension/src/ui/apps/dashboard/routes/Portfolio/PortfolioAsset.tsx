@@ -38,7 +38,6 @@ const BackButton = styled.button`
   }
 `
 
-// memoise to re-render only if balances object changes
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)

@@ -30,7 +30,6 @@ const IconBox = styled(Box)`
   }
 `
 
-// memoise to re-render only if balances object changes
 const PageContent = ({ balances }: { balances: Balances }) => {
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()

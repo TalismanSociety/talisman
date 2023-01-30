@@ -28,7 +28,6 @@ import styled from "styled-components"
 const Stats = styled(Statistics)`
   max-width: 40%;
 `
-// memoise to re-render only if balances object changes
 const PageContent = ({ balances }: { balances: Balances }) => {
   const { showWalletFunding } = useAppState()
   const balancesToDisplay = useDisplayBalances(balances)
