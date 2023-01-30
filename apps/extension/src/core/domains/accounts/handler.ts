@@ -235,6 +235,14 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private accountsCreateQr({ name, address, genesisHash }: RequestAccountCreateQr): string {
+    const password = this.stores.password.getPassword()
+    assert(password, "Not logged in")
+
+    const exists = keyring
+      .getAccounts()
+      .some((account) => encodeAnyAddress(account.address) === encodeAnyAddress(address))
+    assert(!exists, "Account already exists")
+
     const { pair } = keyring.addExternal(address, {
       isQr: true,
       name,

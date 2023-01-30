@@ -51,7 +51,7 @@ export const QrSubstrate = ({
 
   useEffect(() => {
     if (isRawPayload(payload)) {
-      setError("Message signing is not supported for parity signer wallets.")
+      setError("Message signing is not supported for Parity Signer wallets.")
     } else {
       if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
       const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {

@@ -1,68 +1,81 @@
 import { QrScanAddress } from "@polkadot/react-qr"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { decodeAnyAddress, sleep } from "@talismn/util"
+import { SimpleButton } from "@talisman/components/SimpleButton"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { ArrowRightIcon, LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
+import { decodeAnyAddress, formatDecimals, sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
+import { Address } from "@ui/domains/Account/Address"
+import Avatar from "@ui/domains/Account/Avatar"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import Fiat from "@ui/domains/Asset/Fiat"
+import useBalancesByParams from "@ui/hooks/useBalancesByParams"
+import useChains from "@ui/hooks/useChains"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
-import { useCallback, useReducer } from "react"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import { useSettings } from "@ui/hooks/useSettings"
+import { useCallback, useMemo, useReducer } from "react"
+import { Checkbox, FormFieldInputText } from "talisman-ui"
 
 type State =
-  | { SCAN: { enable: boolean; cameraError?: string; scanError?: string } }
+  | { type: "SCAN"; enable: boolean; cameraError?: string; scanError?: string }
   | {
-      CONFIGURE: {
-        name: string
-        address: string
-        genesisHash: string | null
-        lockToNetwork: boolean
-      }
+      type: "CONFIGURE"
+      name: string
+      address: string
+      genesisHash: string | null
+      lockToNetwork: boolean
+      submitting?: true
     }
 
 type Action =
-  | { enableScan: true }
-  | { setCameraError: string }
-  | { onScan: { content: string; genesisHash: string; isAddress: boolean } }
-  | { setName: string }
-  | { setLockToNetwork: boolean }
+  | { method: "enableScan" }
+  | { method: "setCameraError"; error: string }
+  | { method: "onScan"; scanned?: { content: string; genesisHash: string; isAddress: boolean } }
+  | { method: "setName"; name: string }
+  | { method: "setLockToNetwork"; lockToNetwork: boolean }
+  | { method: "setSubmitting" }
+  | { method: "setSubmittingFailed" }
 
-const initialState: State = { SCAN: { enable: false } }
+const initialState: State = { type: "SCAN", enable: false }
 
 const reducer = (state: State, action: Action): State => {
-  if ("SCAN" in state) {
-    if ("enableScan" in action) return { SCAN: { enable: true } }
-    if ("setCameraError" in action)
-      return { SCAN: { enable: false, cameraError: action.setCameraError } }
+  if (state.type === "SCAN") {
+    if (action.method === "enableScan") return { type: "SCAN", enable: true }
+    if (action.method === "setCameraError")
+      return { type: "SCAN", enable: false, cameraError: action.error }
 
-    if ("onScan" in action) {
-      const scanned = action.onScan
+    if (action.method === "onScan") {
+      const scanned = action.scanned
 
       if (!scanned) return state
-      if (!scanned.isAddress) return { SCAN: { enable: true, scanError: "invalid qr code" } }
+      if (!scanned.isAddress) return { type: "SCAN", enable: true, scanError: "invalid qr code" }
 
       const { content: address, genesisHash } = scanned
 
       if (decodeAnyAddress(address).byteLength !== 32)
-        return { SCAN: { enable: true, scanError: "invalid address length" } }
+        return { type: "SCAN", enable: true, scanError: "invalid address length" }
       if (!genesisHash.startsWith("0x"))
-        return { SCAN: { enable: true, scanError: "invalid genesisHash" } }
+        return { type: "SCAN", enable: true, scanError: "invalid genesisHash" }
 
       return {
-        CONFIGURE: { name: "", address, genesisHash, lockToNetwork: false },
+        type: "CONFIGURE",
+        name: "",
+        address,
+        genesisHash,
+        lockToNetwork: false,
       }
     }
   }
 
-  if ("CONFIGURE" in state) {
-    if ("setName" in action) return { CONFIGURE: { ...state.CONFIGURE, name: action.setName } }
-    if ("setLockToNetwork" in action)
-      return {
-        CONFIGURE: {
-          ...state.CONFIGURE,
-          name: state.CONFIGURE.name ?? "My Parity Signer Account",
-          lockToNetwork: action.setLockToNetwork,
-        },
-      }
+  if (state.type === "CONFIGURE") {
+    if (action.method === "setName") return { ...state, type: "CONFIGURE", name: action.name }
+    if (action.method === "setLockToNetwork")
+      return { ...state, type: "CONFIGURE", lockToNetwork: action.lockToNetwork }
+    if (action.method === "setSubmitting") return { ...state, type: "CONFIGURE", submitting: true }
+    if (action.method === "setSubmittingFailed")
+      return { ...state, type: "CONFIGURE", submitting: undefined }
   }
 
   return state
@@ -71,50 +84,106 @@ const reducer = (state: State, action: Action): State => {
 export const AccountAddQr = () => {
   const [state, dispatch] = useReducer(reducer, initialState)
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
-  const submit = useCallback(async () => {
-    if (!("CONFIGURE" in state)) return
+  const submit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
 
-    const notificationId = notify(
-      {
-        type: "processing",
-        title: "Creating account",
-        subtitle: "Please wait",
-      },
-      { autoClose: false }
+      if (state.type !== "CONFIGURE") return
+      if (state.submitting) return
+
+      dispatch({ method: "setSubmitting" })
+
+      const notificationId = notify(
+        {
+          type: "processing",
+          title: "Creating account",
+          subtitle: "Please wait",
+        },
+        { autoClose: false }
+      )
+
+      // pause to prevent double notification
+      await sleep(1000)
+
+      const { name, address, genesisHash, lockToNetwork } = state
+
+      try {
+        setAddress(
+          await api.accountCreateQr(
+            name || "My Parity Signer Account",
+            address,
+            lockToNetwork ? genesisHash : null
+          )
+        )
+
+        notifyUpdate(notificationId, {
+          type: "success",
+          title: "Account created",
+          subtitle: name,
+        })
+      } catch (error) {
+        notifyUpdate(notificationId, {
+          type: "error",
+          title: "Error creating account",
+          subtitle: (error as Error)?.message,
+        })
+        dispatch({ method: "setSubmittingFailed" })
+      }
+    },
+    [setAddress, state]
+  )
+
+  const { useTestnets = false } = useSettings()
+  const { chains } = useChains(useTestnets)
+  const addressesByChain = useMemo(() => {
+    if (state.type !== "CONFIGURE") return
+
+    const { address, genesisHash, lockToNetwork } = state
+    const filteredChains = lockToNetwork
+      ? chains.filter((chain) => chain.genesisHash === genesisHash)
+      : chains
+
+    return Object.fromEntries(filteredChains.map(({ id }) => [id, [address]]))
+  }, [chains, state])
+  const balances = useBalancesByParams({ addressesByChain })
+
+  const isBalanceLoading =
+    !addressesByChain ||
+    balances.sorted.length < 1 ||
+    balances.sorted.some((b) => b.status !== "live")
+  const { balanceDetails, totalUsd } = useMemo(() => {
+    const balanceDetails = balances.sorted
+      .filter((b) => b.total.planck > BigInt("0") && b.total.fiat("usd"))
+      .map(
+        (b) =>
+          `${formatDecimals(b.total.tokens)} ${b.token?.symbol} / ${new Intl.NumberFormat(
+            undefined,
+            {
+              style: "currency",
+              currency: "usd",
+              currencyDisplay: "narrowSymbol",
+            }
+          ).format(b.total.fiat("usd") ?? 0)}`
+      )
+      .join("\n")
+    const totalUsd = balances.sorted.reduce(
+      (prev, curr) => prev + (curr.total ? curr.total.fiat("usd") ?? 0 : 0),
+      0
     )
 
-    // pause to prevent double notification
-    await sleep(1000)
-
-    const { name, address, genesisHash, lockToNetwork } = state.CONFIGURE
-
-    try {
-      setAddress(await api.accountCreateQr(name, address, lockToNetwork ? genesisHash : null))
-
-      notifyUpdate(notificationId, {
-        type: "success",
-        title: "Account created",
-        subtitle: name,
-      })
-    } catch (err) {
-      notifyUpdate(notificationId, {
-        type: "error",
-        title: "Error creating account",
-        subtitle: (err as Error)?.message,
-      })
-    }
-  }, [setAddress, state])
+    return { balanceDetails, totalUsd }
+  }, [balances])
 
   return (
     <Layout withBack centered>
-      {"SCAN" in state && (
+      {state.type === "SCAN" && (
         <>
           <HeaderBlock className="mb-12" title="Import Parity Signer" />
           <div className="grid grid-cols-2 gap-12">
             <div>
               <ol className="flex flex-col gap-12">
                 {[
-                  state.SCAN.cameraError
+                  state.cameraError
                     ? // CAMERA HAS ERROR
                       {
                         title: "Approve camera permissions",
@@ -122,14 +191,14 @@ export const AccountAddQr = () => {
                         extra: (
                           <button
                             className="bg-primary/10 text-primary mt-6 inline-block rounded p-4 text-xs font-light"
-                            onClick={() => dispatch({ enableScan: true })}
+                            onClick={() => dispatch({ method: "enableScan" })}
                           >
                             Retry
                           </button>
                         ),
                         errorIcon: true,
                       }
-                    : state.SCAN.enable
+                    : state.enable
                     ? // ENABLED AND NO ERROR
                       {
                         title: "Approve camera permissions",
@@ -142,7 +211,7 @@ export const AccountAddQr = () => {
                         extra: (
                           <button
                             className="bg-primary/10 text-primary mt-6 inline-block rounded p-4 text-xs font-light"
-                            onClick={() => dispatch({ enableScan: true })}
+                            onClick={() => dispatch({ method: "enableScan" })}
                           >
                             Turn on Camera
                           </button>
@@ -157,7 +226,7 @@ export const AccountAddQr = () => {
                     body: "Bring your QR code in front of your camera. The preview image is blurred for security, but this does not affect the reading.",
                   },
                 ].map(({ title, body, extra, errorIcon }, index) => (
-                  <li className="relative ml-20">
+                  <li className="relative ml-20" key={index}>
                     {errorIcon ? (
                       <div className=" border-alert-error text-alert-error text-tiny absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full border-2 font-bold">
                         !
@@ -173,65 +242,136 @@ export const AccountAddQr = () => {
                   </li>
                 ))}
               </ol>
-              {state.SCAN.scanError && <div>{state.SCAN.scanError}</div>}
+              {state.scanError && <div>{state.scanError}</div>}
             </div>
             <div>
-              {state.SCAN.enable ? (
-                <QrScanAddress
-                  onScan={(scanned) => dispatch({ onScan: scanned })}
-                  onError={(error) =>
-                    dispatch({ setCameraError: error.name ?? error.message ?? "error" })
-                  }
-                  size={200}
+              <div className="bg-grey-900 relative h-[260px] w-[260px] rounded-xl">
+                {state.enable ? (
+                  <QrScanAddress
+                    className="[&>section>section]:rounded-xl [&>section>section>div:first-child]:hidden [&>section>section>video]:bg-transparent [&>section>section>video]:blur-lg"
+                    onScan={(scanned) => dispatch({ method: "onScan", scanned })}
+                    onError={(error) =>
+                      dispatch({
+                        method: "setCameraError",
+                        error: error.name ?? error.message ?? "error",
+                      })
+                    }
+                    size={260}
+                  />
+                ) : null}
+                <CameraMarker
+                  className="absolute top-0 left-0 h-full w-full"
+                  active={state.enable}
+                  error={!!state.cameraError}
                 />
-              ) : null}
+              </div>
             </div>
           </div>
         </>
       )}
-      {"CONFIGURE" in state && (
+      {state.type === "CONFIGURE" && (
         <>
           <HeaderBlock
             className="mb-12"
             title="Name your account"
             text="Help distinguish your account by giving it a name. This would ideally be the same as the name on your Parity Signer device to make it easy to identify when signing."
           />
-          <form className="my-20 space-y-4" onSubmit={submit}>
+          <form className="my-20 space-y-10" onSubmit={submit}>
             <FormFieldInputText
               type="text"
               placeholder="My Parity Signer Account"
               small
-              value={state.CONFIGURE.name}
-              onChange={(event) => dispatch({ setName: event.target.value })}
+              value={state.name}
+              onChange={(event) => dispatch({ method: "setName", name: event.target.value })}
             />
-            <FormFieldContainer label="Address">
-              <FormFieldInputText
-                type="text"
-                autoComplete="off"
-                disabled
-                small
-                value={state.CONFIGURE.address}
-              />
-            </FormFieldContainer>
-            <FormFieldContainer label="">
-              <Checkbox
-                checked={state.CONFIGURE.lockToNetwork}
-                onChange={(event) => dispatch({ setLockToNetwork: event.target.checked })}
-              >
-                <div className="text-body-secondary">
-                  Restrict account to <div className="text-body inline-block">{"{network}"}</div>{" "}
-                  network
+
+            <div className="ring-grey-700 flex w-full items-center gap-8 overflow-hidden rounded-sm p-8 text-left ring-1">
+              <Avatar address={state.address} />
+              <div className="flex flex-col !items-start gap-2 overflow-hidden leading-8">
+                <div className="text-body flex w-full items-center gap-3 text-base leading-none">
+                  <div className="overflow-hidden text-ellipsis whitespace-nowrap text-base leading-8">
+                    {state.name || "My Parity Signer Account"}
+                  </div>
+                  <div className="text-primary">
+                    <ParitySignerIcon />
+                  </div>
                 </div>
-              </Checkbox>
-            </FormFieldContainer>
+                <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap text-sm leading-7">
+                  <Address address={state.address} />
+                </div>
+              </div>
+              <div className="grow" />
+              <div className="flex items-center justify-end gap-2">
+                <div className="flex flex-col justify-center pb-1 leading-none">
+                  {isBalanceLoading && (
+                    <LoaderIcon className="animate-spin-slow inline text-white" />
+                  )}
+                </div>
+                <WithTooltip as="div" className="leading-none" tooltip={balanceDetails} noWrap>
+                  <Fiat className="leading-none" amount={totalUsd} currency="usd" />
+                </WithTooltip>
+              </div>
+            </div>
+
+            <Checkbox
+              checked={state.lockToNetwork}
+              onChange={(event) =>
+                dispatch({ method: "setLockToNetwork", lockToNetwork: event.target.checked })
+              }
+            >
+              <div className="text-body-secondary">
+                Restrict account to{" "}
+                <div className="text-body inline-flex items-baseline gap-2">
+                  <ChainLogo
+                    className="self-center"
+                    id={chains.find((chain) => chain.genesisHash === state.genesisHash)?.id}
+                  />
+                  {chains.find((chain) => chain.genesisHash === state.genesisHash)?.name ??
+                    "Unknown"}
+                </div>{" "}
+                network
+              </div>
+            </Checkbox>
             <div className="flex justify-end py-8">
-              <Button className="h-24 w-[24rem] text-base" type="submit" primary>
-                Add Account
-              </Button>
+              <SimpleButton type="submit" primary processing={state.submitting}>
+                Import <ArrowRightIcon />
+              </SimpleButton>
             </div>
           </form>
         </>
       )}
     </Layout>
+  )
+}
+
+const CameraMarker = ({
+  className,
+  active,
+  error,
+}: {
+  className?: string
+  active: boolean
+  error: boolean
+}) => {
+  const bg = error ? "bg-alert-error" : active ? "bg-white" : "bg-grey-800"
+  const width = (horizontal: boolean) => (horizontal ? "w-2" : "h-2")
+  const length = (horizontal: boolean) => (horizontal ? "h-1/5" : "w-1/5")
+  const horizontal = `${width(true)} ${length(true)}`
+  const vertical = `${width(false)} ${length(false)}`
+
+  return (
+    <div className={className}>
+      <div className={`absolute top-8 left-8 rounded ${horizontal} ${bg}`} />
+      <div className={`absolute top-8 left-8 rounded ${vertical} ${bg}`} />
+
+      <div className={`absolute bottom-8 left-8 rounded ${horizontal} ${bg}`} />
+      <div className={`absolute bottom-8 left-8 rounded ${vertical} ${bg}`} />
+
+      <div className={`absolute right-8 top-8 rounded ${horizontal} ${bg}`} />
+      <div className={`absolute right-8 top-8 rounded ${vertical} ${bg}`} />
+
+      <div className={`absolute bottom-8 right-8 rounded ${horizontal} ${bg}`} />
+      <div className={`absolute bottom-8 right-8 rounded ${vertical} ${bg}`} />
+    </div>
   )
 }
