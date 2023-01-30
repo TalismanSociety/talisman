@@ -39,13 +39,13 @@ const enable = async (origin: string): Promise<Injected> => {
   return new TalismanInjected(messageService.sendMessage) as Injected
 }
 
+const { val: domain, ok } = urlToDomain(window.location.origin)
+
 const injectOptions: InjectedExtensionInfo = {
   name: "talisman",
   version: process.env.VERSION ?? "",
+  authorised: ok && domain === TALISMAN_WEB_APP_DOMAIN,
 }
-
-const { val: domain, ok } = urlToDomain(window.location.origin)
-if (ok && domain === TALISMAN_WEB_APP_DOMAIN) injectOptions.authorised = true
 
 function inject() {
   // inject substrate wallet provider
