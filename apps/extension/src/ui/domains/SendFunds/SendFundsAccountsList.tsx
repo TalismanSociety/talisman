@@ -77,7 +77,11 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected, onClick, showBalan
         selected && "bg-grey-800 text-body-secondary"
       )}
     >
-      <AccountAvatar address={account.address} className="!text-lg" />
+      <AccountAvatar
+        address={account.address}
+        genesisHash={account.genesisHash}
+        className="!text-lg"
+      />
       <div className="grow overflow-hidden text-ellipsis whitespace-nowrap">
         {account.name ?? shortenAddress(account.address, 6, 6)}
         {selected && <CheckCircleIcon className="ml-3 inline" />}

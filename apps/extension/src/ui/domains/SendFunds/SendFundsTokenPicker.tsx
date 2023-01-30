@@ -88,8 +88,7 @@ const TokenRow: FC<TokenRowProps> = ({
       tabIndex={1}
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
-        selected && "bg-grey-800 text-body-secondary",
-        intersection?.isIntersecting ? "animate-fade-in-fast" : "opacity-0"
+        selected && "bg-grey-800 text-body-secondary"
       )}
     >
       {intersection?.isIntersecting && (

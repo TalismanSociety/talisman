@@ -101,6 +101,7 @@ const TokenInput = () => {
   useInputNumberOnly(refInput)
   useInputAutoSize(refInput)
 
+  // init from query string
   const refInitialized = useRef(false)
   useEffect(() => {
     if (!refInitialized.current && sendAmount?.tokens) {
