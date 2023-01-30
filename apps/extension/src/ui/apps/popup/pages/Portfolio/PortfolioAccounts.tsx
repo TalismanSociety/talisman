@@ -21,7 +21,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
-import { MouseEventHandler, memo, useCallback, useEffect, useMemo } from "react"
+import { MouseEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import { PillButton } from "talisman-ui"
@@ -198,7 +198,7 @@ const TopActions = () => {
   )
 }
 
-const Accounts = memo(({ options }: { options: AccountOption[] }) => (
+const Accounts = ({ options }: { options: AccountOption[] }) => (
   <Box flex column fullwidth>
     <TotalFiatBalance />
     <TopActions />
@@ -208,7 +208,7 @@ const Accounts = memo(({ options }: { options: AccountOption[] }) => (
       ))}
     </Box>
   </Box>
-))
+)
 
 export const PortfolioAccounts = () => {
   const balances = useBalances()
