@@ -236,7 +236,7 @@ export default class AppHandler extends ExtensionHandler {
         if (token?.chain) transferableTokenId = `${token.id}-${token.chain.id}`
         else if (token?.evmNetwork) transferableTokenId = `${token.id}-${token.evmNetwork.id}`
       }
-      this.openModal({ modalType: "send", from, transferableTokenId })
+      await this.openModal({ modalType: "send", from, transferableTokenId })
     }
     return true
   }
