@@ -4,12 +4,13 @@
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/page.ts
 import type { Message } from "@polkadot/extension-base/types"
 
-import { DEBUG } from "./constants"
+import { DEBUG, TALISMAN_WEB_APP_DOMAIN } from "./constants"
 import TalismanInjected from "./inject/Injected"
 import { injectExtension } from "./inject/injectExtension"
-import type { Injected } from "./inject/types"
+import type { Injected, InjectedExtensionInfo } from "./inject/types"
 import { injectEthereum } from "./injectEth/injectEthereum"
 import MessageService from "./libs/MessageService"
+import { urlToDomain } from "./util/urlToDomain"
 
 const messageService = new MessageService({
   origin: "talisman-page",
@@ -38,12 +39,17 @@ const enable = async (origin: string): Promise<Injected> => {
   return new TalismanInjected(messageService.sendMessage) as Injected
 }
 
+const injectOptions: InjectedExtensionInfo = {
+  name: "talisman",
+  version: process.env.VERSION ?? "",
+}
+
+const { val: domain, ok } = urlToDomain(window.location.pathname)
+if (ok && domain === TALISMAN_WEB_APP_DOMAIN) injectOptions.authorised = true
+
 function inject() {
   // inject substrate wallet provider
-  injectExtension(enable, {
-    name: "talisman",
-    version: process.env.VERSION ?? "",
-  })
+  injectExtension(enable, injectOptions)
 
   injectEthereum(messageService.sendMessage)
 }

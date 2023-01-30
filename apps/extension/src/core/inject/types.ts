@@ -28,6 +28,7 @@ export interface InjectedAccounts {
 export interface InjectedExtensionInfo {
   name: string
   version: string
+  authorised?: boolean
 }
 export interface ProviderMeta {
   network: string

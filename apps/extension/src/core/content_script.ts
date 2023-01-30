@@ -29,6 +29,7 @@ window.addEventListener("message", ({ data, source }: Message): void => {
 const script = document.createElement("script")
 script.src = Browser.runtime.getURL("page.js")
 script.async = false
+
 script.onload = () => {
   // remove the injecting tag when loaded
   if (script.parentNode) script.parentNode.removeChild(script)
