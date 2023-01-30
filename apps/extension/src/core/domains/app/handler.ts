@@ -29,6 +29,7 @@ import { AccountTypes } from "../accounts/helpers"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
 import { featuresStore } from "./store.features"
+import { settingsStore } from "./store.settings"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
@@ -223,7 +224,10 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async openSendFunds({ from, tokenId }: SendFundsOpenRequest): Promise<boolean> {
-    if (await featuresStore.isFeatureEnabled("SEND_FUNDS_V2")) {
+    if (
+      (await featuresStore.isFeatureEnabled("SEND_FUNDS_V2")) ||
+      (await this.stores.app.get("hasSpiritKey"))
+    ) {
       const params = new URLSearchParams()
       if (from) params.append("from", from)
       if (tokenId) params.append("tokenId", tokenId)
