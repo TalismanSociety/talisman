@@ -1,21 +1,18 @@
-import { BalanceFormatter } from "@core/domains/balances/types"
 import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { EthGasSettings } from "@core/domains/ethereum/types"
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { Box } from "@talisman/components/Box"
 import { LoaderIcon } from "@talisman/theme/icons"
 import { tokensToPlanck } from "@talismn/util"
-import { EthFeeSelect } from "@ui/domains/Ethereum/EthFeeSelect"
+import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { ethers } from "ethers"
 import { useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
 
 import { useEthTransaction } from "../../Ethereum/useEthTransaction"
-import Fiat from "../Fiat"
-import Tokens from "../Tokens"
+import { TokensAndFiat } from "../TokensAndFiat"
 import { useTransferableTokenById } from "./useTransferableTokens"
 
 export const Loader = styled(LoaderIcon)`
@@ -49,10 +46,6 @@ export const EthTransactionFees = ({
   const transferableToken = useTransferableTokenById(transferableTokenId)
   const token = useToken(transferableToken?.token?.id)
   const evmNetwork = useEvmNetwork(transferableToken?.evmNetworkId)
-  const nativeToken = useToken(evmNetwork?.nativeToken?.id)
-
-  const tokenRates = useTokenRates(token?.id)
-  const nativeTokenRates = useTokenRates(nativeToken?.id)
 
   const [tx, setTx] = useState<ethers.providers.TransactionRequest>()
 
@@ -75,8 +68,18 @@ export const EthTransactionFees = ({
     }
   }, [from, to, token, transferableToken?.evmNetworkId, amount])
 
-  const { transaction, priority, setPriority, txDetails, isLoading, gasSettings, error } =
-    useEthTransaction(tx)
+  const {
+    transaction,
+    priority,
+    setPriority,
+    txDetails,
+    isLoading,
+    gasSettings,
+    error,
+    gasSettingsByPriority,
+    setCustomSettings,
+    networkUsage,
+  } = useEthTransaction(tx)
 
   const errorMessage = useMemo(() => {
     if (error?.startsWith("insufficient funds for intrinsic transaction cost"))
@@ -98,54 +101,37 @@ export const EthTransactionFees = ({
     }
   }, [errorMessage, gasSettings, onChange, priority])
 
-  const estimatedFee = useMemo(
-    () =>
-      txDetails
-        ? new BalanceFormatter(
-            ethers.utils.formatUnits(txDetails.estimatedFee, 0),
-            nativeToken?.decimals,
-            nativeTokenRates
-          )
-        : null,
-    [nativeToken, nativeTokenRates, txDetails]
-  )
-
   if (!txDetails) return null
 
-  if (!nativeToken || isLoading) return <Loader data-spin />
+  if (!evmNetwork?.nativeToken || isLoading) return <Loader data-spin />
 
-  if (!estimatedFee || !transaction) return null
+  if (!txDetails.estimatedFee || !transaction) return null
 
   return (
     <Box textalign="right" flex column justify="flex-end" gap={0.1}>
-      {txDetails?.priorityOptions && (
+      {tx && txDetails && priority && (
         <Box>
           Priority :{" "}
           <EthFeeSelect
+            tokenId={evmNetwork?.nativeToken?.id}
             drawerContainer={sendFundsContainer}
+            gasSettingsByPriority={gasSettingsByPriority}
+            setCustomSettings={setCustomSettings}
             onChange={setPriority}
             priority={priority}
-            decimals={nativeToken?.decimals}
-            symbol={nativeToken?.symbol}
-            transaction={transaction}
             txDetails={txDetails}
+            networkUsage={networkUsage}
+            tx={tx}
           />
         </Box>
       )}
       <Box>
         Est. Fee:{" "}
-        <Tokens
-          amount={estimatedFee.tokens}
-          symbol={nativeToken?.symbol}
-          decimals={nativeToken?.decimals}
+        <TokensAndFiat
+          planck={txDetails.estimatedFee.toString()}
+          tokenId={evmNetwork.nativeToken.id}
           noCountUp
         />
-        {tokenRates && (
-          <>
-            {" "}
-            / <Fiat amount={estimatedFee.fiat("usd")} currency="usd" noCountUp />
-          </>
-        )}
       </Box>
     </Box>
   )

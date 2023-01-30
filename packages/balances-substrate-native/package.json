@@ -1,6 +1,6 @@
 {
   "name": "@talismn/balances-substrate-native",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "UNLICENSED",
@@ -30,10 +30,9 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@subsquid/scale-codec": "^1.1.0",
-    "@subsquid/substrate-metadata": "^2.1.2",
     "@talismn/balances": "workspace:^",
-    "@talismn/chaindata-provider": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:^",
+    "@talismn/mutate-metadata": "workspace:^"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",

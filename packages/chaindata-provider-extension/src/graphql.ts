@@ -45,6 +45,10 @@ export const ChainFragment = gql`
     relay {
       id
     }
+    balanceMetadata {
+      moduleType
+      metadata
+    }
   }
 `
 

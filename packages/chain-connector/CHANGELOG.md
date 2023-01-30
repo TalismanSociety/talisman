@@ -1,5 +1,13 @@
 # @talismn/chain-connector
 
+## 0.2.1
+
+### Patch Changes
+
+- 4aa691d: feat: new balance modules
+- Updated dependencies [4aa691d]
+  - @talismn/chaindata-provider@0.2.1
+
 ## 0.2.0
 
 ### Patch Changes

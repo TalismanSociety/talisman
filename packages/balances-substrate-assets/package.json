@@ -1,0 +1,52 @@
+{
+  "name": "@talismn/balances-substrate-assets",
+  "version": "0.3.0",
+  "author": "Talisman",
+  "homepage": "https://talisman.xyz",
+  "license": "UNLICENSED",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "directory": "packages/balances-substrate-assets",
+    "type": "git",
+    "url": "https://github.com/talismansociety/talisman.git"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "dev": "tsc --watch --declarationMap",
+    "build": "tsc --declarationMap",
+    "build:packages:prod": "rm -rf dist && tsc",
+    "prepack": "yarn build:packages:prod",
+    "test": "jest",
+    "lint": "eslint . --max-warnings 0",
+    "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
+  },
+  "dependencies": {
+    "@talismn/balances": "workspace:^",
+    "@talismn/chaindata-provider": "workspace:^",
+    "@talismn/mutate-metadata": "workspace:^"
+  },
+  "devDependencies": {
+    "@talismn/eslint-config": "workspace:^",
+    "@talismn/tsconfig": "workspace:^",
+    "@types/jest": "^27.5.1",
+    "eslint": "^8.4.0",
+    "jest": "^28.1.0",
+    "ts-jest": "^28.0.2",
+    "typescript": "^4.6.4"
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@talismn/eslint-config"
+    ]
+  }
+}
