@@ -43,7 +43,7 @@ const PageContent = React.memo(({ balances }: { balances: Balances }) => {
   const { genericEvent } = useAnalytics()
 
   const sendFunds = useCallback(() => {
-    api.modalOpen({ modalType: "send", from: account?.address })
+    api.sendFundsOpen({ from: account?.address })
     genericEvent("open send funds", { from: "popup portfolio" })
   }, [account?.address, genericEvent])
 

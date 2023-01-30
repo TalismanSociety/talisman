@@ -7,6 +7,7 @@ import { SendFundsAmount } from "./SendFundsAmount"
 import { SendFundsConfirm } from "./SendFundsConfirm"
 import { SendFundsFrom } from "./SendFundsFrom"
 import { SendFundsLayout } from "./SendFundsLayout"
+import { SendFundsRedirect } from "./SendFundsRedirect"
 import { SendFundsSubmitted } from "./SendFundsSubmitted"
 import { SendFundsTo } from "./SendFundsTo"
 import { SendFundsToken } from "./SendFundsToken"
@@ -25,7 +26,7 @@ export const SendFundsPage = () => {
         <Route path="amount" element={<SendFundsAmount />} />
         <Route path="confirm" element={<SendFundsConfirm />} />
         <Route path="submitted" element={<SendFundsSubmitted />} />
-        <Route path="*" element={<SendFundsToken />} />
+        <Route path="*" element={<SendFundsRedirect />} />
       </Routes>
     </SendFundsWizardProvider>
   )

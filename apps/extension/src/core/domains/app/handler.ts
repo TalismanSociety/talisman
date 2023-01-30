@@ -15,6 +15,7 @@ import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import keyring from "@polkadot/ui-keyring"
@@ -27,6 +28,7 @@ import Browser from "webextension-polyfill"
 import { AccountTypes } from "../accounts/helpers"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
+import { featuresStore } from "./store.features"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
@@ -221,10 +223,21 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private async openSendFunds({ from, tokenId }: SendFundsOpenRequest): Promise<boolean> {
-    const params = new URLSearchParams()
-    if (from) params.append("from", from)
-    if (tokenId) params.append("tokenId", tokenId)
-    await this.state.popupOpen(`#/send?${params.toString()}`)
+    if (await featuresStore.isFeatureEnabled("SEND_FUNDS_V2")) {
+      const params = new URLSearchParams()
+      if (from) params.append("from", from)
+      if (tokenId) params.append("tokenId", tokenId)
+      await this.state.popupOpen(`#/send?${params.toString()}`)
+    } else {
+      // TODO : delete as soon as we remove the SEND_FUNDS_V2 feature flag
+      let transferableTokenId: string | undefined = undefined
+      if (tokenId) {
+        const token = await chaindataProvider.getToken(tokenId)
+        if (token?.chain) transferableTokenId = `${token.id}-${token.chain.id}`
+        else if (token?.evmNetwork) transferableTokenId = `${token.id}-${token.evmNetwork.id}`
+      }
+      this.openModal({ modalType: "send", from, transferableTokenId })
+    }
     return true
   }
 

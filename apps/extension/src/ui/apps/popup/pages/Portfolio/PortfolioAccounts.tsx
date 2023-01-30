@@ -151,7 +151,6 @@ const TopActions = () => {
       name: "Goto",
       action: "Send Funds button",
     })
-    // await api.modalOpen({ modalType: "send" })
     await api.sendFundsOpen()
     window.close()
   }, [])

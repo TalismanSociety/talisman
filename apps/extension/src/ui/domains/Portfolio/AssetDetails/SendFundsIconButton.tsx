@@ -31,12 +31,11 @@ export const SendFundsButton = ({
 
   const handleClick = useCallback(() => {
     if (!token) return
-    api.modalOpen({
-      modalType: "send",
+    api.sendFundsOpen({
       from: account?.address,
-      transferableTokenId: `${token.id}-${networkId}`,
+      tokenId: token.id,
     })
-  }, [account?.address, networkId, token])
+  }, [account?.address, token])
 
   if (!token) return null
 

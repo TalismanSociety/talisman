@@ -20,7 +20,7 @@ export const SendFundsLayout: FC<SendFundsLayoutProps> = ({ title, children, wit
     <div className="flex h-full w-full flex-col">
       <div className="flex h-32 min-h-[6.4rem] w-full px-12">
         <div className="w-12">
-          {withBackLink && (
+          {withBackLink && window.history.length > 1 && (
             <IconButton className="text-lg" onClick={handleBackClick}>
               <ChevronLeftIcon />
             </IconButton>

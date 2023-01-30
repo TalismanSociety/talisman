@@ -38,6 +38,7 @@ export type FeatureVariants = {
   BUY_CRYPTO?: boolean
   LINK_TX_HISTORY: boolean
   LINK_STAKING: boolean
+  SEND_FUNDS_V2: boolean
 }
 export type FeatureFlag = keyof FeatureVariants
 
