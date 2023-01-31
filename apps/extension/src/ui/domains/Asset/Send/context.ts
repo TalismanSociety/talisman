@@ -175,7 +175,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       }
 
       // check recipient's balance, prevent immediate reaping
-      if (toBalance?.total.planck ?? BigInt("0") === BigInt("0")) {
+      const recipientBalance = toBalance?.total.planck ?? BigInt(0)
+      if (recipientBalance === BigInt("0")) {
         assert(
           transfer.amount.planck >= transfer.existentialDeposit.planck,
           `Please send at least ${transfer.existentialDeposit.tokens} ${transfer.symbol} to ensure the receiving address remains active.`
