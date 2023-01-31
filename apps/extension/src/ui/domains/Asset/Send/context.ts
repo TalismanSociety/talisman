@@ -111,7 +111,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   }, [formData.from, formData.transferableTokenId, transferableTokens])
 
   // nonEmptyBalances is needed in order to detect chains who use the substrate-orml source for their native token
-  const balances = useBalances(useTestnets)
+  const balances = useBalances()
   const nonEmptyBalances = useMemo(
     () =>
       balances ? balances.find((balance) => balance.free.planck > BigInt("0")) : new Balances([]),

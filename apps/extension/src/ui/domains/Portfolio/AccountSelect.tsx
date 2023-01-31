@@ -11,7 +11,6 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
-import { useSettings } from "@ui/hooks/useSettings"
 import { UseSelectStateChange, useSelect } from "downshift"
 import { useCallback, useMemo } from "react"
 import styled, { css } from "styled-components"
@@ -271,16 +270,14 @@ const AccountOption = ({
 }
 
 const SingleAccountOption = (props: SingleAccountOptionProps) => {
-  const { useTestnets = false } = useSettings()
-  const { sum } = useBalancesByAddress(props.address, useTestnets)
+  const { sum } = useBalancesByAddress(props.address)
   const { total } = useMemo(() => sum.fiat("usd"), [sum])
 
   return <AccountOption {...props} totalUsd={total} />
 }
 
 const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
-  const { useTestnets = false } = useSettings()
-  const { sum } = useBalances(useTestnets)
+  const { sum } = useBalances()
   const { total } = useMemo(() => sum.fiat("usd"), [sum])
 
   return <AccountOption name="All accounts" totalUsd={total} withTrack={withTrack} />

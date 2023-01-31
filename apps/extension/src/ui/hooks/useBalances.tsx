@@ -5,18 +5,13 @@ import { useBalancesHydrate } from "./useBalancesHydrate"
 import { useDbCache } from "./useDbCache"
 import { useDbCacheSubscription } from "./useDbCacheSubscription"
 
-export const useBalances = (withTestnets: boolean) => {
+export const useBalances = () => {
   // keep db data up to date
   useDbCacheSubscription("balances")
-  const { balancesWithTestnets, balancesWithoutTestnets } = useDbCache()
+  const { balances } = useDbCache()
 
   const hydrate = useBalancesHydrate()
 
-  const balances = useMemo(
-    () => new Balances(withTestnets ? balancesWithTestnets : balancesWithoutTestnets, hydrate),
-    [balancesWithTestnets, balancesWithoutTestnets, hydrate, withTestnets]
-  )
-
-  return balances
+  return useMemo(() => new Balances(balances, hydrate), [balances, hydrate])
 }
 export default useBalances

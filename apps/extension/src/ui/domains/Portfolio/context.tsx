@@ -111,7 +111,7 @@ const usePortfolioProvider = () => {
   const { tokens } = useTokens(useTestnets)
   const { evmNetworks } = useEvmNetworks(useTestnets)
   const hydrate = useBalancesHydrate()
-  const balances = useBalances(useTestnets)
+  const balances = useBalances()
 
   const allBalances = useMemo(
     () => (account ? balances.find({ address: account.address }) : balances),

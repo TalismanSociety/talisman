@@ -31,7 +31,7 @@ export const TokensAndFiat: FC<TokensAndFiatProps> = ({
 
   const balance = useMemo(
     () =>
-      token && tokenRates && planck !== undefined
+      token && planck !== undefined
         ? new BalanceFormatter(planck, token.decimals, tokenRates)
         : null,
     [planck, token, tokenRates]

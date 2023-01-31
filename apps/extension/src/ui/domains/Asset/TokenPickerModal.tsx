@@ -120,9 +120,9 @@ const FormContainer = styled(Box)`
 
 export const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
   const { useTestnets = false } = useSettings()
-  const allBalances = useBalances(useTestnets)
   const { chainsMap } = useChains(useTestnets)
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
+  const allBalances = useBalances()
 
   const { tokens: allTokens } = useTokens(useTestnets)
   const allowedTokens = useMemo(

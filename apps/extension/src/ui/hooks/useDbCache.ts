@@ -39,9 +39,7 @@ type DbCache = {
   tokensWithTestnetsMap: Record<TokenId, Token>
   tokensWithoutTestnetsMap: Record<TokenId, Token>
 
-  balancesWithTestnets: BalanceJson[]
-  balancesWithoutTestnets: BalanceJson[]
-
+  balances: BalanceJson[]
   tokenRatesMap: Record<TokenId, TokenRates>
 }
 
@@ -60,8 +58,7 @@ const DEFAULT_VALUE: DbCache = {
   tokensWithTestnetsMap: {},
   tokensWithoutTestnetsMap: {},
 
-  balancesWithTestnets: [],
-  balancesWithoutTestnets: [],
+  balances: [],
 
   tokenRatesMap: {},
 }
@@ -126,8 +123,8 @@ const consolidateDbCache = (
   )
 
   // return only balances for which we have a token
-  const balancesWithTestnets = allBalances.filter((b) => tokensWithTestnetsMap[b.tokenId])
-  const balancesWithoutTestnets = allBalances.filter((b) => tokensWithoutTestnetsMap[b.tokenId])
+  // note that db only contains testnet balances if useTestnets setting is turned on, they are deleted as soon as settings is turned off.
+  const balances = allBalances.filter((b) => tokensWithTestnetsMap[b.tokenId])
 
   const tokenRatesMap = Object.fromEntries(tokenRates.map(({ tokenId, rates }) => [tokenId, rates]))
 
@@ -146,8 +143,7 @@ const consolidateDbCache = (
     tokensWithTestnetsMap,
     tokensWithoutTestnetsMap,
 
-    balancesWithTestnets,
-    balancesWithoutTestnets,
+    balances,
 
     tokenRatesMap,
   }

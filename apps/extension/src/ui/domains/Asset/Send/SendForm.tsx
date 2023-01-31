@@ -310,10 +310,10 @@ export const SendForm = () => {
     setIsEvm(!!transferableToken?.evmNetworkId)
   }, [transferableToken?.evmNetworkId])
 
+  const { useTestnets = false } = useSettings()
   const { token } = transferableToken ?? {}
   const balance = useBalance(from, token?.id as string)
 
-  const { useTestnets = false } = useSettings()
   const { chainsMap } = useChains(useTestnets)
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
 

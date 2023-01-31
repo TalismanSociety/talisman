@@ -78,8 +78,7 @@ const TotalFiat = styled.div`
 `
 
 export const TotalFiatBalance = ({ className }: { className?: string }) => {
-  const { useTestnets = false } = useSettings()
-  const balances = useBalances(useTestnets)
+  const balances = useBalances()
 
   const { hideBalances, update } = useSettings()
   const { genericEvent } = useAnalytics()

@@ -1,6 +1,6 @@
 import { DEBUG } from "@core/constants"
-import { Chain, ChainId } from "@core/domains/chains/types"
-import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
+import { ChainId } from "@core/domains/chains/types"
+import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { BalanceSearchQuery, Balances } from "@talismn/balances"
 import useBalances from "@ui/hooks/useBalances"
@@ -91,8 +91,7 @@ export const useTransferableTokens = () => {
  */
 export const useSortedTransferableTokens = (withBalanceFirst = false) => {
   const transferableTokens = useTransferableTokens()
-  const { useTestnets = false } = useSettings()
-  const balances = useBalances(useTestnets)
+  const balances = useBalances()
 
   const sortable = useMemo(() => {
     return transferableTokens.map((transferableToken) => {

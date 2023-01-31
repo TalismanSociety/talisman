@@ -5,13 +5,15 @@ import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { InfoIcon } from "@talisman/theme/icons"
+import { useQuery } from "@tanstack/react-query"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { EthSignBody } from "@ui/domains/Ethereum/Sign/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Ethereum/Sign/shared"
+import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
-import { useBalance } from "@ui/hooks/useBalance"
+import useToken from "@ui/hooks/useToken"
 import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
@@ -95,9 +97,27 @@ const SignContainer = styled(Container)`
   }
 `
 
+const useEvmBalance = (address?: string, evmNetworkId?: string) => {
+  const provider = useEthereumProvider(evmNetworkId)
+  return useQuery({
+    queryKey: ["evm-balance", provider?.network?.chainId, address],
+    queryFn: async () => {
+      try {
+        if (!provider || !address) return null
+        const balance = await provider.getBalance(address)
+        return balance.toString()
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(err)
+        throw new Error("Failed to fetch balance")
+      }
+    },
+  })
+}
+
 const FeeTooltip = ({
-  account,
   estimatedFee,
+  account,
   maxFee,
   tokenId,
 }: {
@@ -106,41 +126,44 @@ const FeeTooltip = ({
   maxFee?: string | bigint
   tokenId?: string
 }) => {
-  const balance = useBalance(account as string, tokenId as string)
+  // cannot use useBalance because it may not include testnet balances
+  const token = useToken(tokenId)
+  const { data: balance, error } = useEvmBalance(account, token?.evmNetwork?.id)
 
-  if (!estimatedFee && !maxFee && !balance) return null
+  if (!estimatedFee && !maxFee) return null
+
   return (
     <div className="flex flex-col gap-2 whitespace-nowrap text-sm">
-      {!!estimatedFee && (
-        <div className="flex w-full justify-between gap-8">
-          <div>Estimated Fee:</div>
-          <div>
-            <TokensAndFiat tokenId={tokenId} planck={estimatedFee} noTooltip noCountUp />
+      <>
+        {!!estimatedFee && (
+          <div className="flex w-full justify-between gap-8">
+            <div>Estimated Fee:</div>
+            <div>
+              <TokensAndFiat tokenId={tokenId} planck={estimatedFee} noTooltip noCountUp />
+            </div>
           </div>
-        </div>
-      )}
-      {!!maxFee && (
-        <div className="flex w-full justify-between gap-8">
-          <div>Max Fee:</div>
-          <div>
-            <TokensAndFiat tokenId={tokenId} planck={maxFee} noTooltip noCountUp />
+        )}
+        {!!maxFee && (
+          <div className="flex w-full justify-between gap-8">
+            <div>Max Fee:</div>
+            <div>
+              <TokensAndFiat tokenId={tokenId} planck={maxFee} noTooltip noCountUp />
+            </div>
           </div>
-        </div>
-      )}
-      {!!balance && (
-        <div className="flex w-full justify-between gap-8">
-          <div>Balance:</div>
-          <div>
-            <TokensAndFiat
-              tokenId={tokenId}
-              planck={balance.free.planck}
-              noTooltip
-              noCountUp
-              isBalance
-            />
+        )}
+        {(balance || error) && (
+          <div className="flex w-full justify-between gap-8">
+            <div>Balance:</div>
+            {balance ? (
+              <div>
+                <TokensAndFiat tokenId={tokenId} planck={balance} noTooltip noCountUp isBalance />
+              </div>
+            ) : (
+              <div className="text-alert-warn">Failed to fetch balance</div>
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </>
     </div>
   )
 }
