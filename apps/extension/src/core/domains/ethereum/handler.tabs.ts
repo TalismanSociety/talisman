@@ -668,9 +668,6 @@ export class EthTabsHandler extends TabsHandler {
       case "pub(eth.request)":
         return this.ethRequest(id, url, request as AnyEthRequest) as any
 
-      case "pub(eth.mimicMetaMask)":
-        return this.stores.settings.get("shouldMimicMetaMask")
-
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

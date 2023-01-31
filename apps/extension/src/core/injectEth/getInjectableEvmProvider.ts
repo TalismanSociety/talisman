@@ -35,12 +35,12 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     initialized: false,
   }
 
-  // use functional programming pattern to return a provider whose methods aren't bound to the instance
+  // return a provider object with methods that aren't bound to the instance
   // prevents errors on dapps which unbind methods of the object (ex: orbiter.finance)
   // makes it hard to type, but we don't need to as we don't consume it ourselves
   const provider: any = {
     isTalisman: true,
-    isMetaMask: true,
+    isMetaMask: true, // dapps use this to determine if wallet supports adding custom networks and tokens
     _metamask: {
       // MM's experimental methods
       // if this is property is missing, some dapps won't prompt for login
