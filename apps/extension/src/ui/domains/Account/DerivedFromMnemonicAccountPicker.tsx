@@ -69,8 +69,8 @@ const useDerivedAccounts = (
     }
   }, [itemsPerPage, mnemonic, name, pageIndex, type])
 
-  const chains = useChains()
-  const evmNetworks = useEvmNetworks()
+  const { chains } = useChains(false)
+  const { evmNetworks } = useEvmNetworks(false)
 
   const { expectedBalancesCount, addressesByChain, addressesByEvmNetwork } = useMemo(() => {
     const expectedBalancesCount =

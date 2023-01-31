@@ -209,8 +209,8 @@ export const BuyTokensForm = () => {
   })
 
   const [address, tokenId] = watch(["address", "tokenId"])
-  const tokens = useTokens()
-  const chains = useChains()
+  const { tokens, tokensMap } = useTokens(false)
+  const { chains, chainsMap } = useChains(false)
 
   const { ethereumTokenIds, substrateTokenIds, filterTokens } = useSupportedTokenIds(
     chains,
@@ -226,10 +226,10 @@ export const BuyTokensForm = () => {
       const account = accounts.find(({ address }) => address === formData.address)
       if (!account) throw new Error("Account not found")
 
-      const token = tokens?.find(({ id }) => id === formData.tokenId)
+      const token = tokensMap[formData.tokenId]
       if (!token) throw new Error("Token not found")
 
-      const chain = chains?.find(({ id }) => id === (token.chain?.id as string))
+      const chain = token.chain?.id ? chainsMap[token.chain?.id] : undefined
       const isEthereum = isEthereumAddress(account.address)
       if (!isEthereum && !chain) throw new Error("Chain not found")
 
@@ -256,7 +256,7 @@ export const BuyTokensForm = () => {
       const redirectUrl = `${BANXA_URL}?${qs}`
       window.open(redirectUrl, "_blank")
     },
-    [accounts, chains, close, tokens]
+    [accounts, chainsMap, close, tokensMap]
   )
 
   const handleAccountChange = useCallback(

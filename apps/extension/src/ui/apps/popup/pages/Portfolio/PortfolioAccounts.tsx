@@ -21,6 +21,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useSettings } from "@ui/hooks/useSettings"
 import { MouseEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
@@ -211,7 +212,8 @@ const Accounts = ({ options }: { options: AccountOption[] }) => (
 )
 
 export const PortfolioAccounts = () => {
-  const balances = useBalances()
+  const { useTestnets = false } = useSettings()
+  const balances = useBalances(useTestnets)
   const accounts = useAccounts()
   const { popupOpenEvent } = useAnalytics()
 

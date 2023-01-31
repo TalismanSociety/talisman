@@ -11,6 +11,7 @@ import Asset from "@ui/domains/Asset"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
 import { useAppState } from "@ui/hooks/useAppState"
 import useChain from "@ui/hooks/useChain"
+import { useSettings } from "@ui/hooks/useSettings"
 import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
@@ -104,7 +105,8 @@ export const AddLedgerSelectNetwork = () => {
   const { data: defaultValues, updateData } = useAddLedgerAccount()
 
   const navigate = useNavigate()
-  const ledgerChains = useLedgerChains()
+  const { useTestnets } = useSettings()
+  const ledgerChains = useLedgerChains(!!useTestnets)
   const defaultChain = useChain(defaultValues.chainId as string)
 
   const schema = useMemo(

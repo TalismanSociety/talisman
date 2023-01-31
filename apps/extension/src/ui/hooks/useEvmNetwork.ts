@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import { useEvmNetworks } from "./useEvmNetworks"
 
 export const useEvmNetwork = (id?: EvmNetworkId): EvmNetwork | CustomEvmNetwork | undefined => {
-  const evmNetworks = useEvmNetworks()
+  const { evmNetworksMap } = useEvmNetworks(true)
 
-  return useMemo(() => evmNetworks.find((evmNetwork) => evmNetwork.id === id), [evmNetworks, id])
+  return id ? evmNetworksMap[id] : undefined
 }

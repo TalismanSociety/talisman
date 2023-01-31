@@ -4,9 +4,9 @@ import { useMemo } from "react"
 import useTokens from "./useTokens"
 
 const useToken = (id?: TokenId) => {
-  const tokens = useTokens()
+  const { tokensMap } = useTokens(true)
 
-  return useMemo(() => tokens.find((token) => token.id === id), [tokens, id])
+  return id ? tokensMap[id] : undefined
 }
 
 export default useToken

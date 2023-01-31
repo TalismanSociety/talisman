@@ -4,6 +4,7 @@ import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { BalanceSearchQuery, Balances } from "@talismn/balances"
 import useBalances from "@ui/hooks/useBalances"
+import { useSettings } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { useMemo } from "react"
 
@@ -22,7 +23,8 @@ const nonEmptyBalanceFilter = ({ balances }: { balances: Balances }) => {
  * @returns tokens list split by network (ASTR on substrate and ASTR on evm will be 2 distinct entries)
  */
 export const useTransferableTokens = () => {
-  const tokens = useTokens()
+  const { useTestnets = false } = useSettings()
+  const { tokens } = useTokens(useTestnets)
 
   const transferableTokens = useMemo(() => {
     return (
@@ -89,7 +91,8 @@ export const useTransferableTokens = () => {
  */
 export const useSortedTransferableTokens = (withBalanceFirst = false) => {
   const transferableTokens = useTransferableTokens()
-  const balances = useBalances()
+  const { useTestnets = false } = useSettings()
+  const balances = useBalances(useTestnets)
 
   const sortable = useMemo(() => {
     return transferableTokens.map((transferableToken) => {

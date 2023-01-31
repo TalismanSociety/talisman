@@ -4,9 +4,9 @@ import { useMemo } from "react"
 import useChains from "./useChains"
 
 const useChain = (id?: ChainId) => {
-  const chains = useChains()
+  const { chainsMap } = useChains(true)
 
-  return useMemo(() => chains.find((chain) => chain.id === id), [chains, id])
+  return id ? chainsMap[id] : undefined
 }
 
 export default useChain

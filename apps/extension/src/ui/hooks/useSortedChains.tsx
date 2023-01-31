@@ -5,7 +5,7 @@ import { useMemo } from "react"
 const sortChains = (a: Chain, b: Chain) =>
   (a.sortIndex || Number.MAX_SAFE_INTEGER) - (b.sortIndex || Number.MAX_SAFE_INTEGER)
 
-export const useSortedChains = () => {
-  const chains = useChains()
+export const useSortedChains = (withTestnets: boolean) => {
+  const { chains } = useChains(withTestnets)
   return useMemo(() => chains.sort(sortChains), [chains])
 }

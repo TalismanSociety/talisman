@@ -22,42 +22,58 @@ import { useDebounce } from "react-use"
 
 import { useSettings } from "./useSettings"
 
-const filterTestnets =
-  (useTestnets: boolean) =>
-  ({ isTestnet }: { isTestnet?: boolean }) =>
-    useTestnets ? true : isTestnet === false
+const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
 type DbCache = {
-  allChains: (Chain | CustomChain)[]
-  allEvmNetworks: (EvmNetwork | CustomEvmNetwork)[]
-  allTokens: Token[]
-  allBalances: BalanceJson[]
-  chainsMap: Record<ChainId, Chain>
-  evmNetworksMap: Record<EvmNetworkId, EvmNetwork>
-  tokensMap: Record<TokenId, Token>
+  chainsWithTestnets: (Chain | CustomChain)[]
+  chainsWithoutTestnets: (Chain | CustomChain)[]
+  evmNetworksWithTestnets: (EvmNetwork | CustomEvmNetwork)[]
+  evmNetworksWithoutTestnets: (EvmNetwork | CustomEvmNetwork)[]
+  tokensWithTestnets: Token[]
+  tokensWithoutTestnets: Token[]
+
+  chainsWithTestnetsMap: Record<ChainId, Chain>
+  chainsWithoutTestnetsMap: Record<ChainId, Chain>
+  evmNetworksWithTestnetsMap: Record<EvmNetworkId, EvmNetwork>
+  evmNetworksWithoutTestnetsMap: Record<EvmNetworkId, EvmNetwork>
+  tokensWithTestnetsMap: Record<TokenId, Token>
+  tokensWithoutTestnetsMap: Record<TokenId, Token>
+
+  balancesWithTestnets: BalanceJson[]
+  balancesWithoutTestnets: BalanceJson[]
+
   tokenRatesMap: Record<TokenId, TokenRates>
 }
 
 const DEFAULT_VALUE: DbCache = {
-  allChains: [],
-  allEvmNetworks: [],
-  allTokens: [],
-  allBalances: [],
-  chainsMap: {},
-  evmNetworksMap: {},
-  tokensMap: {},
+  chainsWithTestnets: [],
+  chainsWithoutTestnets: [],
+  evmNetworksWithTestnets: [],
+  evmNetworksWithoutTestnets: [],
+  tokensWithTestnets: [],
+  tokensWithoutTestnets: [],
+
+  chainsWithTestnetsMap: {},
+  chainsWithoutTestnetsMap: {},
+  evmNetworksWithTestnetsMap: {},
+  evmNetworksWithoutTestnetsMap: {},
+  tokensWithTestnetsMap: {},
+  tokensWithoutTestnetsMap: {},
+
+  balancesWithTestnets: [],
+  balancesWithoutTestnets: [],
+
   tokenRatesMap: {},
 }
 
 const consolidateDbCache = (
-  chainList?: ChainList,
-  evmNetworkList?: EvmNetworkList,
-  tokenList?: TokenList,
-  rawBalances?: BalanceJson[],
-  tokenRates?: DbTokenRates[],
-  withTestnets = false
+  chainsMap?: ChainList,
+  evmNetworksMap?: EvmNetworkList,
+  tokensMap?: TokenList,
+  allBalances?: BalanceJson[],
+  tokenRates?: DbTokenRates[]
 ): DbCache => {
-  if (!chainList || !evmNetworkList || !tokenList || !rawBalances || !tokenRates)
+  if (!chainsMap || !evmNetworksMap || !tokensMap || !allBalances || !tokenRates)
     return DEFAULT_VALUE
 
   // BEGIN: temp hack to indicate that
@@ -73,30 +89,66 @@ const consolidateDbCache = (
   }
 
   Object.entries(mirrorTokenIds)
-    .filter(([mirrorToken]) => tokenList[mirrorToken])
-    .forEach(([mirrorToken, mirrorOf]) => ((tokenList[mirrorToken] as any).mirrorOf = mirrorOf))
+    .filter(([mirrorToken]) => tokensMap[mirrorToken])
+    .forEach(([mirrorToken, mirrorOf]) => ((tokensMap[mirrorToken] as any).mirrorOf = mirrorOf))
   // END: temp hack
 
-  const allChains = Object.values(chainList).filter(filterTestnets(withTestnets))
-  const allEvmNetworks = Object.values(evmNetworkList).filter(filterTestnets(withTestnets))
-  const allTokens = Object.values(tokenList).filter(filterTestnets(withTestnets))
+  const chainsWithTestnets = Object.values(chainsMap)
+  const chainsWithoutTestnets = chainsWithTestnets.filter(filterNoTestnet)
+  const chainsWithoutTestnetsMap = Object.fromEntries(
+    chainsWithoutTestnets.map((network) => [network.id, network])
+  )
 
-  const chainsMap = Object.fromEntries(allChains.map((chain) => [chain.id, chain]))
-  const evmNetworksMap = Object.fromEntries(allEvmNetworks.map((network) => [network.id, network]))
-  const tokensMap = Object.fromEntries(allTokens.map((token) => [token.id, token]))
+  const evmNetworksWithTestnets = Object.values(evmNetworksMap)
+  const evmNetworksWithoutTestnets = evmNetworksWithTestnets.filter(filterNoTestnet)
+  const evmNetworksWithoutTestnetsMap = Object.fromEntries(
+    evmNetworksWithoutTestnets.map((network) => [network.id, network])
+  )
+
+  // ensure that we have corresponding network for each token
+  const tokensWithTestnets = Object.values(tokensMap).filter(
+    (token) =>
+      (token.chain && chainsMap[token.chain.id]) ||
+      (token.evmNetwork && evmNetworksMap[token.evmNetwork.id])
+  )
+  const tokensWithoutTestnets = tokensWithTestnets
+    .filter(filterNoTestnet)
+    .filter(
+      (token) =>
+        (token.chain && chainsWithoutTestnetsMap[token.chain.id]) ||
+        (token.evmNetwork && evmNetworksWithoutTestnetsMap[token.evmNetwork.id])
+    )
+  const tokensWithTestnetsMap = Object.fromEntries(
+    tokensWithTestnets.map((token) => [token.id, token])
+  )
+  const tokensWithoutTestnetsMap = Object.fromEntries(
+    tokensWithoutTestnets.map((token) => [token.id, token])
+  )
+
+  // return only balances for which we have a token
+  const balancesWithTestnets = allBalances.filter((b) => tokensWithTestnetsMap[b.tokenId])
+  const balancesWithoutTestnets = allBalances.filter((b) => tokensWithoutTestnetsMap[b.tokenId])
+
   const tokenRatesMap = Object.fromEntries(tokenRates.map(({ tokenId, rates }) => [tokenId, rates]))
 
-  // return balances for which we have a token, this prevents errors when toggling testnets on/off
-  const allBalances = rawBalances.filter((b) => tokensMap[b.tokenId])
-
   return {
-    allChains,
-    allEvmNetworks,
-    allTokens,
-    allBalances,
-    chainsMap,
-    evmNetworksMap,
-    tokensMap,
+    chainsWithTestnets,
+    chainsWithoutTestnets,
+    evmNetworksWithTestnets,
+    evmNetworksWithoutTestnets,
+    tokensWithTestnets,
+    tokensWithoutTestnets,
+
+    chainsWithTestnetsMap: chainsMap,
+    chainsWithoutTestnetsMap,
+    evmNetworksWithTestnetsMap: evmNetworksMap,
+    evmNetworksWithoutTestnetsMap,
+    tokensWithTestnetsMap,
+    tokensWithoutTestnetsMap,
+
+    balancesWithTestnets,
+    balancesWithoutTestnets,
+
     tokenRatesMap,
   }
 }
@@ -115,16 +167,7 @@ const useDbCacheProvider = (): DbCache => {
   // debounce every 500ms to prevent hammering UI with updates
   useDebounce(
     () => {
-      setDbData(
-        consolidateDbCache(
-          chainList,
-          evmNetworkList,
-          tokenList,
-          rawBalances,
-          tokenRates,
-          useTestnets
-        )
-      )
+      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, rawBalances, tokenRates))
     },
     500,
     [chainList, evmNetworkList, tokenList, rawBalances, tokenRates, useTestnets]
@@ -142,16 +185,7 @@ const useDbCacheProvider = (): DbCache => {
       rawBalances &&
       tokenRates
     ) {
-      setDbData(
-        consolidateDbCache(
-          chainList,
-          evmNetworkList,
-          tokenList,
-          rawBalances,
-          tokenRates,
-          useTestnets
-        )
-      )
+      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, rawBalances, tokenRates))
       refInitialized.current = true
     }
   }, [chainList, evmNetworkList, rawBalances, tokenList, tokenRates, useTestnets])

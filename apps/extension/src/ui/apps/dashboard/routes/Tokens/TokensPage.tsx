@@ -9,6 +9,7 @@ import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillB
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSettings } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { isErc20Token } from "@ui/util/isErc20Token"
@@ -71,9 +72,10 @@ export const TokensPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 
-  const allNetworks = useEvmNetworks()
-  const allTokens = useTokens()
-  const erc20Tokens = useMemo(() => sortBy(allTokens.filter(isErc20Token), "symbol"), [allTokens])
+  const { useTestnets = false } = useSettings()
+  const { evmNetworks: allNetworks } = useEvmNetworks(useTestnets)
+  const { tokens } = useTokens(useTestnets)
+  const erc20Tokens = useMemo(() => sortBy(tokens.filter(isErc20Token), "symbol"), [tokens])
 
   const groups = useMemo(() => {
     if (!allNetworks || !erc20Tokens) return []

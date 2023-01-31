@@ -33,7 +33,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const AddCustomTokenPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
-  const networks = useSortedEvmNetworks()
+  const networks = useSortedEvmNetworks(true)
   const [error, setError] = useState<string>()
 
   // our only user inputs are chain and contract
@@ -120,6 +120,7 @@ export const AddCustomTokenPage = () => {
       <form className="my-20 space-y-4" onSubmit={handleSubmit(submit)}>
         <FormFieldContainer label="Network" error={errors.evmNetworkId?.message}>
           <NetworkSelect
+            withTestnets
             placeholder="Select a network"
             onChange={handleNetworkChange}
             className="w-full"

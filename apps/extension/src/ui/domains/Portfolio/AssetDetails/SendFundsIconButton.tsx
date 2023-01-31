@@ -1,6 +1,7 @@
 import { IconButton } from "@talisman/components/IconButton"
 import { PaperPlaneIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
+import { useSettings } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback } from "react"
 import styled from "styled-components"
@@ -21,7 +22,8 @@ export const SendFundsButton = ({
   networkId: string | number
 }) => {
   const { account } = useSelectedAccount()
-  const tokens = useTokens()
+  const { useTestnets = false } = useSettings()
+  const { tokens } = useTokens(useTestnets)
 
   const token = tokens?.find(
     (t) =>

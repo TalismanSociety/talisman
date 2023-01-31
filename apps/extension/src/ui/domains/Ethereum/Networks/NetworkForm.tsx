@@ -184,7 +184,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
   const qIsBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
 
   const [submitError, setSubmitError] = useState<string>()
-  const evmNetworks = useEvmNetworks()
+  const { evmNetworks } = useEvmNetworks(true)
   const { useTestnets, update } = useSettings()
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
