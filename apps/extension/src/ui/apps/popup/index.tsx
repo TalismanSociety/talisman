@@ -1,4 +1,4 @@
-import { isEthereumRequest } from "@core/util/isEthereumRequest"
+import { SIGNING_TYPES } from "@core/domains/signing/types"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { api } from "@ui/api"
 import {
@@ -63,7 +63,7 @@ const PendingRequestRedirect = () => {
       navigate(`/metadata/${metaDataRequests[0].id}`)
     } else if (signingRequests.length) {
       const req = signingRequests[0]
-      navigate(isEthereumRequest(req) ? `/sign/eth/${req.id}` : `/sign/${req.id}`)
+      navigate(`/${req.type}/${req.id}`)
     } else if (encryptRequests.length) {
       navigate(`/encrypt/${encryptRequests[0].id}`)
     }
@@ -124,8 +124,14 @@ const Popup = () => {
                       <Routes>
                         <Route path="portfolio/*" element={<Portfolio />}></Route>
                         <Route path="auth/:id" element={<Connect />}></Route>
-                        <Route path="sign/eth/:id" element={<EthereumSignRequest />}></Route>
-                        <Route path="sign/:id" element={<SubstrateSignRequest />}></Route>
+                        <Route
+                          path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
+                          element={<EthereumSignRequest />}
+                        ></Route>
+                        <Route
+                          path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
+                          element={<SubstrateSignRequest />}
+                        ></Route>
                         <Route path="metadata/:id" element={<Metadata />}></Route>
                         <Route path="encrypt/:id" element={<Encrypt />}></Route>
                         <Route path="eth-network-add/:id" element={<AddEthereumNetwork />}></Route>
