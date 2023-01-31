@@ -58,7 +58,7 @@ const Container = styled.div`
 const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
   const { chains } = useChains(true)
   const chain = useMemo(
-    () => genesisHash && (chains || []).find((c) => c.genesisHash === genesisHash),
+    () => genesisHash && chains.find((c) => c.genesisHash === genesisHash),
     [chains, genesisHash]
   )
 

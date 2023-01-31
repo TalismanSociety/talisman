@@ -9,7 +9,6 @@ import { classNames } from "@talisman/util/classNames"
 import { AccountTypeSelector } from "@ui/domains/Account/AccountTypeSelector"
 import Asset from "@ui/domains/Asset"
 import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
-import { useAppState } from "@ui/hooks/useAppState"
 import useChain from "@ui/hooks/useChain"
 import { useSettings } from "@ui/hooks/useSettings"
 import { useCallback, useMemo, useState } from "react"
@@ -105,8 +104,7 @@ export const AddLedgerSelectNetwork = () => {
   const { data: defaultValues, updateData } = useAddLedgerAccount()
 
   const navigate = useNavigate()
-  const { useTestnets } = useSettings()
-  const ledgerChains = useLedgerChains(!!useTestnets)
+  const ledgerChains = useLedgerChains()
   const defaultChain = useChain(defaultValues.chainId as string)
 
   const schema = useMemo(

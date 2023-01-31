@@ -73,14 +73,14 @@ export const TokensPage = () => {
   const navigate = useNavigate()
 
   const { useTestnets = false } = useSettings()
-  const { evmNetworks: allNetworks } = useEvmNetworks(useTestnets)
+  const { evmNetworks } = useEvmNetworks(useTestnets)
   const { tokens } = useTokens(useTestnets)
   const erc20Tokens = useMemo(() => sortBy(tokens.filter(isErc20Token), "symbol"), [tokens])
 
   const groups = useMemo(() => {
-    if (!allNetworks || !erc20Tokens) return []
+    if (!evmNetworks || !erc20Tokens) return []
 
-    return sortBy(allNetworks, "name")
+    return sortBy(evmNetworks, "name")
       .map((network) => ({
         network,
         tokens: sortBy(
@@ -89,7 +89,7 @@ export const TokensPage = () => {
         ),
       }))
       .filter(({ tokens }) => tokens.length)
-  }, [allNetworks, erc20Tokens])
+  }, [evmNetworks, erc20Tokens])
 
   const handleAddToken = useCallback(() => {
     sendAnalyticsEvent({

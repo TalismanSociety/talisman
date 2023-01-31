@@ -3,8 +3,8 @@ import { useMemo } from "react"
 
 import { ledgerNetworks } from "./common"
 
-export const useLedgerChains = (withTestnets: boolean) => {
-  const { chains } = useChains(withTestnets)
+export const useLedgerChains = () => {
+  const { chains } = useChains(true)
 
   const ledgerChains = useMemo(
     () =>

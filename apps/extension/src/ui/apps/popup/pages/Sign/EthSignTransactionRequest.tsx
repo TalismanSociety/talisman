@@ -126,7 +126,7 @@ const FeeTooltip = ({
   maxFee?: string | bigint
   tokenId?: string
 }) => {
-  // cannot use useBalance because it may not include testnet balances
+  // cannot use useBalance because our db may not include testnet balances
   const token = useToken(tokenId)
   const { data: balance, error } = useEvmBalance(account, token?.evmNetwork?.id)
 
