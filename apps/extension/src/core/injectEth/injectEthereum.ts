@@ -10,6 +10,9 @@ type TalismanWindow = Window &
     talismanEth?: any
   }
 
+// checking BUILD instead of NODE_ENV because on some dapps we need to test with production builds
+const WITH_LOG_PROXY = process.env.BUILD !== "production" && process.env.EVM_LOGPROXY === "true"
+
 export const injectEthereum = (sendRequest: SendRequest) => {
   // small helper with the typescript types, just cast window
   const windowInject = window as TalismanWindow
@@ -17,7 +20,7 @@ export const injectEthereum = (sendRequest: SendRequest) => {
   const provider = getInjectableEvmProvider(sendRequest)
 
   log.debug("Injecting talismanEth")
-  windowInject.talismanEth = provider
+  windowInject.talismanEth = WITH_LOG_PROXY ? logProxy(provider) : provider
 
   // also inject on window.ethereum if it is not defined
   // this allows users to just disable metamask if they want to use Talisman instead
@@ -35,11 +38,7 @@ export const injectEthereum = (sendRequest: SendRequest) => {
     })
 
     window.dispatchEvent(new Event("ethereum#initialized"))
-  }
-
-  // checking BUILD instead of NODE_ENV because on some dapps we need to test with production builds
-  if (process.env.BUILD !== "production" && process.env.EVM_LOGPROXY === "true") {
-    log.debug("logProxy", windowInject.ethereum.isTalisman ? "Talisman" : "MetaMask")
+  } else if (WITH_LOG_PROXY) {
     windowInject.ethereum = logProxy(windowInject.ethereum)
   }
 }
