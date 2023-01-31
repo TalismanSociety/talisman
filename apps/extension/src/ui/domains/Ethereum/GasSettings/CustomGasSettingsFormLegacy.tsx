@@ -10,7 +10,7 @@ import { formatDecimals } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BigNumber, ethers } from "ethers"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FC, FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useDebounce } from "react-use"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
@@ -218,13 +218,19 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
     async (formData: FormData) => {
       try {
         const gasSettings = gasSettingsFromFormData(formData)
+
+        genericEvent("set custom gas settings", {
+          network: tx.chainId,
+          gasType: gasSettings.type,
+        })
+
         onConfirm(gasSettings)
       } catch (err) {
         log.error("Failed to set custom gas settings", { err })
         notify({ title: "Error", subtitle: (err as Error).message, type: "error" })
       }
     },
-    [onConfirm]
+    [genericEvent, onConfirm, tx.chainId]
   )
 
   const { isValid: isGasSettingsValid, isLoading: isLoadingGasSettingsValid } =
@@ -232,9 +238,19 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
 
   const showMaxFeeTotal = isFormValid && isGasSettingsValid && !isLoadingGasSettingsValid
 
+  // don't bubble up submit event, in case we're in another form (send funds v1)
+  const submitWithoutBubbleUp: FormEventHandler<HTMLFormElement> = useCallback(
+    (e) => {
+      e.preventDefault()
+      handleSubmit(submit)(e)
+      e.stopPropagation()
+    },
+    [handleSubmit, submit]
+  )
+
   return (
     <form
-      onSubmit={handleSubmit(submit)}
+      onSubmit={submitWithoutBubbleUp}
       className="text-body-secondary bg-black-tertiary flex flex-col rounded-t-xl p-12 text-sm"
     >
       <div className="flex w-full font-bold text-white">
