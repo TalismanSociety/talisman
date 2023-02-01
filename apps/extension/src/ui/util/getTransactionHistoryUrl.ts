@@ -1,4 +1,4 @@
-const TX_HISTORY_PAGE_URL = "https://app.talisman.xyz/history"
+const TX_HISTORY_PAGE_URL = "https://app.talisman.xyz/portfolio/history"
 
 export const getTransactionHistoryUrl = (address?: string) => {
   if (!address) return TX_HISTORY_PAGE_URL
