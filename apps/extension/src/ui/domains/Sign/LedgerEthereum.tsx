@@ -51,7 +51,7 @@ const signWithLedger = async (
   //   return ethers.utils.joinSignature(sig) as `0x${string}`
   // }
 
-  if (method === "eth_signTypedData_v4") {
+  if (["eth_signTypedData", "eth_signTypedData_v4"].includes(method)) {
     const jsonMessage = typeof payload === "string" ? JSON.parse(payload) : payload
 
     // at this time we cannot use ledger.signEIP712Message() (see comments above) without altering the payload (missing salt & wrong time for chainId)
