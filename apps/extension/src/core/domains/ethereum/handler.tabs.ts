@@ -342,6 +342,8 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     request: EthRequestArguments<K>
   ): Promise<unknown> {
+    // obtain the chain id without checking auth.
+    // note: this method is only called if method doesn't require auth, or if auth is already checked
     const chainId = await this.getChainId(url)
 
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
