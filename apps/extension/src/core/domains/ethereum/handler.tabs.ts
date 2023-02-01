@@ -349,7 +349,9 @@ export class EthTabsHandler extends TabsHandler {
   private signMessage = async (url: string, request: EthRequestSignArguments) => {
     const { params, method } = request as EthRequestSignArguments
 
-    let isMessageFirst = ["personal_sign", "eth_signTypedData_v1"].includes(method)
+    let isMessageFirst = ["personal_sign", "eth_signTypedData", "eth_signTypedData_v1"].includes(
+      method
+    )
     // on https://astar.network, params are in reverse order
     if (isMessageFirst && isEthereumAddress(params[0]) && !isEthereumAddress(params[1]))
       isMessageFirst = false
