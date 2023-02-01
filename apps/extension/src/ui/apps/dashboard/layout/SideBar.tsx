@@ -270,7 +270,7 @@ export const SideBar = () => {
 
   const handleNftsClick = useCallback(() => {
     genericEvent("open web app nfts", { from: "sidebar", target: "nfts" })
-    window.open("https://app.talisman.xyz/nfts", "_blank")
+    window.open("https://app.talisman.xyz/portfolio/nfts", "_blank")
     return false
   }, [genericEvent])
 
