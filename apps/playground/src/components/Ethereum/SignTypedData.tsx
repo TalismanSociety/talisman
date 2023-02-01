@@ -8,7 +8,7 @@ import { Section } from "../Section"
 
 // same test messages as MetaMasks's test-dapp
 const TEST_MESSAGES = {
-  eth_signTypedData: () => [
+  eth_signTypedData_v1: () => [
     {
       type: "string",
       name: "Message",
@@ -112,7 +112,7 @@ const TEST_MESSAGES = {
 const getMethod = (version: SignTypedDataVersion) => {
   switch (version) {
     case SignTypedDataVersion.V1:
-      return "eth_signTypedData"
+      return "eth_signTypedData_v1"
     case SignTypedDataVersion.V3:
       return "eth_signTypedData_v3"
     case SignTypedDataVersion.V4:
