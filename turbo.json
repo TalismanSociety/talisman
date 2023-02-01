@@ -4,6 +4,11 @@
     "dev": {
       "cache": false
     },
+    "build": {
+      "dependsOn": ["//#build:packages", "^build"],
+      "outputs": ["dist/**"],
+      "cache": false
+    },
     "//#build:packages": {
       "dependsOn": [],
       "outputs": ["packages/**/dist/**/*"]

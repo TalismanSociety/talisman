@@ -15,6 +15,7 @@
     "dev:balances-demo": "yarn workspace balances-demo dev",
     "dev:extension": "yarn workspace extension dev",
     "dev:playground": "yarn workspace playground dev",
+    "build": "turbo run build",
     "build:packages": "preconstruct build",
     "build:extension:ci": "turbo run build:extension:ci",
     "build:extension:prod": "turbo run build:extension:prod",
