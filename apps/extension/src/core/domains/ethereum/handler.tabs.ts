@@ -342,7 +342,16 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     request: EthRequestArguments<K>
   ): Promise<unknown> {
-    const provider = await this.getProvider(url)
+    const chainId = await this.getChainId(url)
+
+    const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
+    if (!ethereumNetwork)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
+
+    const provider = await getProviderForEthereumNetwork(ethereumNetwork)
+    if (!provider)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+
     return provider.send(request.method, request.params as unknown as any[])
   }
 
@@ -553,6 +562,7 @@ export class EthTabsHandler extends TabsHandler {
         "eth_requestAccounts",
         "eth_accounts",
         "eth_chainId",
+        "eth_blockNumber",
         "net_version",
         "wallet_switchEthereumChain",
         "wallet_addEthereumChain",
