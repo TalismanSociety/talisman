@@ -61,7 +61,7 @@ export const BottomNav = () => {
       name: "Goto",
       action: "NFTs button",
     })
-    window.open("https://app.talisman.xyz/nfts", "_blank")
+    window.open("https://app.talisman.xyz/portfolio/nfts", "_blank")
     window.close()
   }, [])
 
