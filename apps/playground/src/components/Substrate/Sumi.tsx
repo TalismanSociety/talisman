@@ -5,7 +5,7 @@ import { Section } from "../Section"
 import { useWallet } from "./useWallet"
 
 // TODO: Move these to a common package and import them both here and in the extension
-/** BEGIN: Copy-paste from apps/extension/src/core/inject/types.ts **/
+/** BEGIN: Copy-paste from apps/extension/src/core/domains/encrypt/types.ts **/
 export interface EncryptResult {
   id: number
   result: string
@@ -14,7 +14,7 @@ export interface DecryptResult {
   id: number
   result: string
 }
-/** END: Copy-paste from apps/extension/src/core/inject/types.ts **/
+/** END: Copy-paste from apps/extension/src/core/domains/encrypt/types.ts **/
 
 const DATA_TO_ENCRYPT =
   "data to encrypt yeet yeet yeeeeeet. this is a loooooong message blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"
