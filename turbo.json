@@ -48,10 +48,10 @@
       "cache": false
     },
     "test": {
-      "dependsOn": ["//#build:packages"]
+      "dependsOn": []
     },
     "test:watch": {
-      "dependsOn": ["//#build:packages"]
+      "dependsOn": []
     }
   }
 }

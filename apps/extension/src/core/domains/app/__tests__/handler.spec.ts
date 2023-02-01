@@ -18,7 +18,7 @@ import Browser from "webextension-polyfill"
 
 import { getMessageSenderFn } from "../../../../../tests/util"
 
-jest.mock("@talismn/chaindata-provider-extension/dist/graphql")
+jest.mock("@talismn/chaindata-provider-extension/src/graphql")
 jest.setTimeout(20000)
 
 keyring.loadAll({ store: new AccountsStore() })
