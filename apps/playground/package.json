@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host localhost --port 3000",
-    "pg:build": "tsc && vite build",
-    "pg:preview": "vite preview"
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.1.1",

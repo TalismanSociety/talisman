@@ -21,10 +21,6 @@
     "node": ">=14"
   },
   "scripts": {
-    "dev": "tsc --watch --declarationMap",
-    "build": "tsc --declarationMap",
-    "build:packages:prod": "rm -rf dist && tsc",
-    "prepack": "yarn build:packages:prod",
     "test": "jest",
     "lint": "eslint . --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"

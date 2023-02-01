@@ -8,20 +8,19 @@
     "packages/*"
   ],
   "scripts": {
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
     "postinstall": "preconstruct dev",
-    "build": "preconstruct build",
+    "prepare": "husky install",
     "dev": "concurrently --prefix \"{name}\" --prefix-colors auto \"npm:dev:*\"",
     "dev:balances-demo": "yarn workspace balances-demo dev",
     "dev:extension": "yarn workspace extension dev",
     "dev:playground": "yarn workspace playground dev",
+    "build:packages": "preconstruct build",
     "build:extension:ci": "turbo run build:extension:ci",
     "build:extension:prod": "turbo run build:extension:prod",
     "build:extension:canary": "turbo run build:extension:canary",
-    "build:packages:prod": "turbo run build:packages:prod",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
     "clean": "turbo run clean --parallel && rm -rf dist && rm -rf node_modules",
-    "prepare": "husky install",
     "test": "turbo run test"
   },
   "devDependencies": {
