@@ -16,7 +16,7 @@
     "dev:extension": "yarn workspace extension dev",
     "dev:playground": "yarn workspace playground dev",
     "build": "turbo run build",
-    "build:packages": "preconstruct build",
+    "build:packages": "NODE_OPTIONS=--max_old_space_size=8192 preconstruct build",
     "build:extension:ci": "turbo run build:extension:ci",
     "build:extension:prod": "turbo run build:extension:prod",
     "build:extension:canary": "turbo run build:extension:canary",
