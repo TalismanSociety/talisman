@@ -1,4 +1,5 @@
 import { SIGNING_TYPES } from "@core/domains/signing/types"
+import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { api } from "@ui/api"
 import {
@@ -54,7 +55,7 @@ const PendingRequestRedirect = () => {
   // detect any pending requests and redirect to the appropriate page
   useEffect(() => {
     if (authRequests.length) {
-      navigate(`/auth/${authRequests[0].id}`)
+      navigate(`/${AUTH_PREFIX}/${authRequests[0].id}`)
     } else if (ethNetworkAddRequests.length) {
       navigate(`/eth-network-add/${ethNetworkAddRequests[0].id}`)
     } else if (ethWatchAssetRequests.length) {
@@ -123,7 +124,7 @@ const Popup = () => {
                     <AddressFormatterModalProvider>
                       <Routes>
                         <Route path="portfolio/*" element={<Portfolio />}></Route>
-                        <Route path="auth/:id" element={<Connect />}></Route>
+                        <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
                         <Route
                           path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
                           element={<EthereumSignRequest />}

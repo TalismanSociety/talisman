@@ -1,6 +1,6 @@
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { MessageTypesWithSubscriptions } from "@core/types"
-import type { BaseRequest, Port, Resolver } from "@core/types/base"
+import type { Port, Resolver } from "@core/types/base"
 import { ReplaySubject } from "rxjs"
 import { v4 } from "uuid"
 

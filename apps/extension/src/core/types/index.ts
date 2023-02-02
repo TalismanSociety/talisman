@@ -17,6 +17,10 @@ export declare type RequestTypes = {
   [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
 }
 
+export declare type RequestTypesArray = {
+  [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
+}[keyof RequestSignatures]
+
 export declare type ResponseTypes = {
   [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][1]
 }
@@ -47,7 +51,6 @@ type RemovedMessages =
   | "pri(seed.validate)"
   | "pub(authorize.tab)"
 
-<<<<<<< HEAD
 type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   AuthorisedSiteMessages &
   AccountsMessages &
@@ -61,20 +64,6 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   TokenMessages &
   TokenRatesMessages &
   EncryptMessages
-=======
-interface RequestSignaturesBase
-  extends Omit<PolkadotRequestSignatures, RemovedMessages>,
-    AuthorisedSiteMessages,
-    AccountsMessages,
-    AppMessages,
-    AssetTransferMessages,
-    BalancesMessages,
-    ChainsMessages,
-    EthMessages,
-    MnemonicMessages,
-    SigningMessages,
-    TokenMessages {}
->>>>>>> 8cfe9f5a (refactor: wip -attempt to use new request store for signing only)
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
@@ -92,7 +81,7 @@ export interface TransportRequestMessage<TMessageType extends MessageTypes> {
   id: string
   message: TMessageType
   origin: OriginTypes
-  request: RequestTypes[TMessageType]
+  request: RequestType<TMessageType>
 }
 
 export declare type MessageTypesWithSubscriptions = keyof SubscriptionMessageTypes

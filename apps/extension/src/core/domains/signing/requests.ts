@@ -1,10 +1,6 @@
 import type { AccountJson } from "@core/domains/accounts/types"
 import { EvmNetworkId } from "@core/domains/ethereum/types"
-import type {
-  EthSignRequest,
-  ResponseSigning,
-  SubstrateSigningRequest,
-} from "@core/domains/signing/types"
+import type { EthSignRequest, SubstrateSigningRequest } from "@core/domains/signing/types"
 import { requestStore } from "@core/libs/requests/store"
 import type { TransactionRequest } from "@ethersproject/providers"
 
@@ -50,11 +46,11 @@ export const signSubstrate = (
   url: string,
   request: SubstrateSigningRequest["request"],
   account: AccountJson
-): Promise<ResponseSigning> => {
+) => {
   return requestStore.createRequest({
     type: "substrate-sign",
     url,
     request,
     account,
-  }) as Promise<ResponseSigning>
+  })
 }

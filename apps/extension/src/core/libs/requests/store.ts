@@ -44,21 +44,25 @@ export class RequestStore {
     this.observable.next(this.getAllRequests())
   }
 
-  public createRequest<TRequest extends Omit<ValidRequests, "id">>(
+  public createRequest<
+    TRequest extends Omit<ValidRequests, "id">,
+    T extends KnownRequestTypes = TRequest["type"]
+  >(
+    // public createRequest<T extends KnownRequestTypes>(
     requestOptions: TRequest
-  ): Promise<KnownResponse<TRequest["type"]>> {
-    const id = `${requestOptions.type}.${v4()}` as RequestID<TRequest["type"]>
+  ): Promise<KnownResponse<T>> {
+    const id = `${requestOptions.type}.${v4()}` as RequestID<T>
 
     return new Promise((resolve, reject): void => {
       const newRequest = {
         ...requestOptions,
         id,
-      } as KnownRequest<TRequest["type"]>
+      } as unknown as KnownRequest<T>
 
       const completeRequest = {
         ...newRequest,
         ...this.onCompleteRequest(id, resolve, reject),
-      } as AnyRespondableRequest
+      } as KnownRespondableRequest<T>
 
       this.requests[id] = completeRequest
 
@@ -103,14 +107,25 @@ export class RequestStore {
     }
   }
 
-  public getRequestCount(): number {
-    return Object.keys(this.requests).length
+  public getRequestCount(): number
+  public getRequestCount<T extends KnownRequestTypes>(requestTypes: T[]): number
+  public getRequestCount<T extends KnownRequestTypes>(requestTypes?: T[]): number {
+    const allRequests = requestTypes
+      ? requestTypes.flatMap((rType) => this.allRequests(rType))
+      : this.allRequests()
+    return allRequests.length
   }
 
   public getRequest<T extends KnownRequestTypes>(id: RequestID<T>) {
     const request = this.requests[id]
     const requestType = id.split(".")[0] as T
     if (isRequestOfType(request, requestType)) return request as KnownRespondableRequest<T>
+    return
+  }
+
+  public deleteRequest<T extends KnownRequestTypes>(id: RequestID<T>) {
+    delete this.requests[id]
+    this.observable.next(this.getAllRequests())
     return
   }
 

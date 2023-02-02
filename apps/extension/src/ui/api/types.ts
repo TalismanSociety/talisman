@@ -36,10 +36,10 @@ import {
   AuthRequestAddresses,
   AuthRequestId,
   AuthorisedSiteUpdate,
-  AuthorizeRequest,
   AuthorizedSite,
   AuthorizedSites,
   ProviderType,
+  SiteAuthRequest,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
 import {
@@ -152,7 +152,7 @@ export default interface MessageTypes {
   authorizedSiteUpdate: (id: string, authorisedSite: AuthorisedSiteUpdate) => Promise<boolean>
 
   // authorization requests message types ------------------------------------
-  authRequestsSubscribe: (cb: (requests: AuthorizeRequest[]) => void) => UnsubscribeFn
+  authRequestsSubscribe: (cb: (requests: SiteAuthRequest[]) => void) => UnsubscribeFn
   authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>
   authrequestReject: (id: AuthRequestId) => Promise<boolean>
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>

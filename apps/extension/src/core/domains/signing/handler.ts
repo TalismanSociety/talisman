@@ -1,4 +1,5 @@
 import type {
+  AnySigningRequest,
   KnownSigningRequestIdOnly,
   RequestSigningApproveSignature,
 } from "@core/domains/signing/types"
@@ -9,8 +10,7 @@ import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"
 import { watchSubstrateTransaction } from "@core/notifications"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import type { MessageTypes, ResponseType } from "@core/types"
-import type { RequestTypes as MessageRequestTypes } from "@core/types"
+import type { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { getTransactionDetails } from "@core/util/getTransactionDetails"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
@@ -147,7 +147,7 @@ export default class SigningHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
-    request: MessageRequestTypes[TMessageType],
+    request: RequestType<TMessageType>,
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
@@ -162,8 +162,8 @@ export default class SigningHandler extends ExtensionHandler {
         const cb = createSubscription<"pri(signing.byid.subscribe)">(id, port)
         const subscription = requestStore.observable.subscribe((reqs) => {
           const signRequest = reqs.find(
-            (req) => req.id === (request as MessageRequestTypes["pri(signing.byid.subscribe)"]).id
-          )
+            (req) => req.id === (request as RequestType<"pri(signing.byid.subscribe)">).id
+          ) as AnySigningRequest | undefined
           if (signRequest) cb(signRequest)
         })
 
@@ -175,16 +175,16 @@ export default class SigningHandler extends ExtensionHandler {
       }
 
       case "pri(signing.approveSign)":
-        return await this.signingApprove(request as MessageRequestTypes["pri(signing.approveSign)"])
+        return await this.signingApprove(request as RequestType<"pri(signing.approveSign)">)
 
       case "pri(signing.approveSign.hardware)":
         return await this.signingApproveHardware(request as RequestSigningApproveSignature)
 
       case "pri(signing.cancel)":
-        return this.signingCancel(request as MessageRequestTypes["pri(signing.cancel)"])
+        return this.signingCancel(request as RequestType<"pri(signing.cancel)">)
 
       case "pri(signing.decode)":
-        return this.decode(request as MessageRequestTypes["pri(signing.details)"])
+        return this.decode(request as RequestType<"pri(signing.details)">)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

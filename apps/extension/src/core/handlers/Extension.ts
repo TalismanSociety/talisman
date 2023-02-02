@@ -17,7 +17,7 @@ import { unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
-import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
+import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import keyring from "@polkadot/ui-keyring"
@@ -166,7 +166,7 @@ export default class Extension extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestType<TMessageType>,
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     // Reset the auto lock timer on any message, the user is still actively using the extension
@@ -200,7 +200,7 @@ export default class Extension extends ExtensionHandler {
       // --------------------------------------------------------------------
       case "pri(mnemonic.unlock)": {
         const transformedPw = await this.stores.password.transformPassword(
-          request as RequestTypes["pri(mnemonic.unlock)"]
+          request as RequestType<"pri(mnemonic.unlock)">
         )
         assert(transformedPw, "Password error")
 

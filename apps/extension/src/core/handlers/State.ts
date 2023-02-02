@@ -7,7 +7,6 @@ import { RequestRoute } from "@core/domains/app/types"
 import { EncryptRequestsStore } from "@core/domains/encrypt"
 import EthereumNetworksRequestsStore from "@core/domains/ethereum/requestsStore.networks"
 import { MetadataRequestsStore } from "@core/domains/metadata"
-import { SitesRequestsStore, sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
 import { requestStore } from "@core/libs/requests/store"
 import { windowManager } from "@core/libs/WindowManager"
@@ -23,38 +22,6 @@ export default class State {
     metadata: new MetadataRequestsStore((req) => {
       windowManager.popupOpen(`#/metadata/${req.id}`)
     }),
-    sites: new SitesRequestsStore(
-      (req) => {
-        windowManager.popupOpen(`#/auth/${req.id}`)
-      },
-      async (request, response) => {
-        if (!response) return
-        const { addresses = [] } = response
-        const {
-          idStr,
-          request: { origin, ethereum },
-          url,
-        } = request
-
-        const siteAuth = (await sitesAuthorisationStore.getSiteFromUrl(url)) ?? {}
-
-        siteAuth.id = idStr
-        siteAuth.origin = origin
-        siteAuth.url = url
-
-        if (ethereum) {
-          siteAuth.ethAddresses = addresses
-
-          // set a default value for ethChainId only if empty
-          // some sites switch the network before requesting auth, ex nova.arbiscan.io
-          if (!siteAuth.ethChainId) siteAuth.ethChainId = DEFAULT_ETH_CHAIN_ID
-        } else siteAuth.addresses = addresses
-
-        await sitesAuthorisationStore.set({
-          [idStr]: siteAuth,
-        })
-      }
-    ),
     networks: new EthereumNetworksRequestsStore((req) => {
       windowManager.popupOpen(`#/eth-network-add/${req.id}`)
     }),
@@ -76,9 +43,9 @@ export default class State {
   }
 
   private updateIcon(shouldClose?: boolean): void {
-    const sitesAuthCount = this.requestStores.sites.getRequestCount()
+    const sitesAuthCount = requestStore.getRequestCount(["auth"])
     const metaCount = this.requestStores.metadata.getRequestCount()
-    const signCount = requestStore.getRequestCount()
+    const signCount = requestStore.getRequestCount(["eth-send", "eth-sign", "substrate-sign"])
     const networkAddCount = this.requestStores.networks.getRequestCount()
     const evmAssets = this.requestStores.evmAssets.getRequestCount()
     const text = sitesAuthCount

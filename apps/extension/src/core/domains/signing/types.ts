@@ -57,8 +57,7 @@ export interface SubstrateSigningRequest extends BaseSigningRequest<SUBSTRATE_SI
   account: AccountJson | AccountJsonHardwareSubstrate
 }
 
-export interface EthBaseSignRequest<T extends keyof Omit<SigningRequests, "substrate-sign">>
-  extends BaseSigningRequest<T> {
+export interface EthBaseSignRequest<T extends ETH_SIGN | ETH_SEND> extends BaseSigningRequest<T> {
   ethChainId: EvmNetworkId
   account: AccountJson | AccountJsonHardwareEthereum
   request: string | EthTransactionRequest
@@ -77,6 +76,7 @@ export const SIGNING_TYPES = {
 }
 export interface EthSignRequest extends EthBaseSignRequest<ETH_SIGN> {
   request: string
+  ethChainId: EvmNetworkId
   method:
     | "personal_sign"
     | "eth_signTypedData"
@@ -87,6 +87,7 @@ export interface EthSignRequest extends EthBaseSignRequest<ETH_SIGN> {
 
 export interface EthSignAndSendRequest extends EthBaseSignRequest<ETH_SEND> {
   request: EthTransactionRequest
+  ethChainId: EvmNetworkId
   method: "eth_sendTransaction"
 }
 

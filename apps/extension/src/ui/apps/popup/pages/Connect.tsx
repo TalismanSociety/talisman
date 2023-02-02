@@ -138,7 +138,7 @@ const UnstyledConnect = ({ className }: any) => {
 
   const ignore = useCallback(() => {
     if (!authRequest) return
-    api.authrequestIgnore(authRequest.id as string)
+    api.authrequestIgnore(authRequest.id)
     window.close()
   }, [authRequest])
 

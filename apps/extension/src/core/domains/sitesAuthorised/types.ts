@@ -1,4 +1,5 @@
-import { RequestIdOnly, Resolver } from "@core/types/base"
+import { KnownRequestIdOnly } from "@core/libs/requests/types"
+import { BaseRequest, RequestIdOnly, Resolver } from "@core/types/base"
 import type {
   RequestAuthorizeTab as PolkadotRequestAuthorizeTab,
   RequestAuthorizeSubscribe,
@@ -11,26 +12,32 @@ export interface RequestAuthorizeTab extends PolkadotRequestAuthorizeTab {
   ethereum?: boolean
 }
 
-// authorize request types ----------------------------------
-
-export type AuthRequestId = string
-export type AuthRequestAddress = string
-export type AuthRequestAddresses = AuthRequestAddress[]
-
-export type AuthRequestApprove = {
-  id: string
-  addresses: AuthRequestAddresses
-}
-
-export interface AuthRequestBase {
-  id: string
+// new authorise request types
+export type AUTH_PREFIX = "auth"
+export const AUTH_PREFIX: AUTH_PREFIX = "auth"
+export type AuthRequestId = `${AUTH_PREFIX}.${string}`
+export interface SiteAuthRequest extends BaseRequest<AUTH_PREFIX> {
+  id: AuthRequestId
   idStr: string
   request: RequestAuthorizeTab
   url: string
 }
 
+export type SitesAuthRequests = {
+  auth: [SiteAuthRequest, AuthRequestResponse]
+}
+
+// authorize request types ----------------------------------
+
+export type AuthRequestAddress = string
+export type AuthRequestAddresses = AuthRequestAddress[]
+
+export type AuthRequestApprove = {
+  id: AuthRequestId
+  addresses: AuthRequestAddresses
+}
+
 export type AuthRequestResponse = { addresses: AuthRequestAddresses }
-export type AuthRequest = Resolver<AuthRequestResponse> & AuthRequestBase
 
 // authorized site types ----------------------------------
 
@@ -68,16 +75,10 @@ export declare type RequestAuthorizedSiteUpdate = {
 
 export declare type RequestAuthorizedSiteForget = { id: string; type: ProviderType }
 
-export interface AuthorizeRequest {
-  id: string
-  request: RequestAuthorizeTab
-  url: string
-}
-
 // authorized sites message signatures
 export interface AuthorisedSiteMessages {
   // authorization requests message signatures
-  "pri(sites.requests.subscribe)": [RequestAuthorizeSubscribe, boolean, AuthorizeRequest[]]
+  "pri(sites.requests.subscribe)": [RequestAuthorizeSubscribe, boolean, SiteAuthRequest[]]
   "pri(sites.requests.approve)": [AuthRequestApprove, boolean]
   "pri(sites.requests.reject)": [RequestIdOnly, boolean]
   "pri(sites.requests.ignore)": [RequestIdOnly, boolean]

@@ -15,11 +15,13 @@ import {
 import { EthTabsHandler } from "@core/domains/ethereum"
 import { signSubstrate } from "@core/domains/signing/requests"
 import type { ResponseSigning } from "@core/domains/signing/types"
+import { requestAuthoriseSite } from "@core/domains/sitesAuthorised/requests"
 import { AuthorizedSites, RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { TabsHandler } from "@core/libs/Handler"
+import { log } from "@core/log"
 import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "@core/types"
 import type { Port } from "@core/types/base"
 import { urlToDomain } from "@core/util/urlToDomain"
@@ -75,8 +77,13 @@ export default class Tabs extends TabsHandler {
 
       return false
     }
-
-    return await this.state.requestStores.sites.requestAuthorizeUrl(url, request)
+    try {
+      await requestAuthoriseSite(url, request)
+    } catch (err) {
+      log.error(err)
+      return false
+    }
+    return true
   }
 
   private async accountsList(

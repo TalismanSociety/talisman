@@ -1,6 +1,10 @@
 import type { SigningRequests } from "@core/domains/signing/types"
+import type { SitesAuthRequests } from "@core/domains/sitesAuthorised/types"
 
-export type KnownRequests = SigningRequests // all types of requests can go here
+export type KnownRequests = SigningRequests & SitesAuthRequests // all types of requests can go here
+/* KnownRequests types should be objects like: 
+  { [name: string]: [RequestType, ResponseType] }
+*/
 
 export type KnownRequestTypes = keyof KnownRequests
 

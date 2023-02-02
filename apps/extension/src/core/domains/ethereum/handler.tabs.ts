@@ -42,6 +42,7 @@ import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
 import { ethers, providers } from "ethers"
 
+import { requestAuthoriseSite } from "../sitesAuthorised/requests"
 import {
   getErc20TokenId,
   isValidAddEthereumRequestParam,
@@ -101,7 +102,8 @@ export class EthTabsHandler extends TabsHandler {
     }
 
     try {
-      return await this.state.requestStores.sites.requestAuthorizeUrl(url, request)
+      await requestAuthoriseSite(url, request)
+      return true
     } catch (err) {
       // 4001	User Rejected Request	The user rejected the request.
       throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1993_USER_REJECTED)
