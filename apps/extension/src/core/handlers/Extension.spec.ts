@@ -168,7 +168,7 @@ describe("Extension", () => {
         ...pair.meta,
       })
 
-      expect(requestStore.getRequestCount()).toBe(1)
+      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
 
       const request = requestStore.allRequests("substrate-sign")[0]
 
@@ -245,7 +245,7 @@ describe("Extension", () => {
         ...meta,
       })
 
-      expect(requestStore.getRequestCount()).toBe(1)
+      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
 
       const request = requestStore.allRequests("substrate-sign")[0]
       await expect(
@@ -313,7 +313,7 @@ describe("Extension", () => {
         ...meta,
       })
 
-      expect(requestStore.getRequestCount()).toBe(1)
+      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
 
       const request = requestStore.allRequests("substrate-sign")[0]
       await expect(
@@ -401,7 +401,7 @@ describe("Extension", () => {
         ...meta,
       })
 
-      expect(requestStore.getRequestCount()).toBe(1)
+      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
 
       const request = requestStore.allRequests("substrate-sign")[0]
       await expect(

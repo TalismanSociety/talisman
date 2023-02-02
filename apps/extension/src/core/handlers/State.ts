@@ -39,20 +39,24 @@ export default class State {
   }
 
   private updateIcon(shouldClose?: boolean): void {
-    const sitesAuthCount = requestStore.getRequestCount(["auth"])
-    const metaCount = requestStore.getRequestCount(["metadata"])
-    const signCount = requestStore.getRequestCount(["eth-send", "eth-sign", "substrate-sign"])
-    const networkAddCount = this.requestStores.networks.getRequestCount()
-    const evmAssets = this.requestStores.evmAssets.getRequestCount()
-    const text = sitesAuthCount
+    const counts = requestStore.getCounts()
+    const signingCount =
+      counts.get("eth-send") + counts.get("eth-sign") + counts.get("substrate-sign")
+
+    const todo = {
+      networkAddCount: 0,
+      evmAssets: 0,
+    }
+
+    const text = counts.get("auth")
       ? "Sites"
-      : metaCount
+      : counts.get("metadata")
       ? "Meta"
-      : signCount
-      ? `${signCount}`
-      : networkAddCount
+      : signingCount
+      ? `${signingCount}`
+      : todo.networkAddCount
       ? "Network"
-      : evmAssets
+      : todo.evmAssets
       ? "Assets"
       : ""
 

@@ -17,6 +17,28 @@ import type {
 } from "./types"
 import { isRequestOfType } from "./utils"
 
+class RequestCounts {
+  #counts: Record<KnownRequestTypes, number>
+
+  constructor(requests: AnyRespondableRequest[]) {
+    const reqCounts = requests.reduce((counts, request) => {
+      if (!counts[request.type]) counts[request.type] = 0
+      counts[request.type] += 1
+      return counts
+    }, {} as Record<KnownRequestTypes, number>)
+
+    this.#counts = reqCounts
+  }
+  public get(type: KnownRequestTypes) {
+    if (type in this.#counts) return this.#counts[type]
+    else return 0
+  }
+
+  public all() {
+    return Object.values(this.#counts).reduce((sum, each) => sum + each, 0)
+  }
+}
+
 export class RequestStore {
   // `requests` is the primary list of items that need responding to by the user
   protected readonly requests: Record<string, AnyRespondableRequest> = {}
@@ -104,13 +126,8 @@ export class RequestStore {
     }
   }
 
-  public getRequestCount(): number
-  public getRequestCount<T extends KnownRequestTypes>(requestTypes: T[]): number
-  public getRequestCount<T extends KnownRequestTypes>(requestTypes?: T[]): number {
-    const allRequests = requestTypes
-      ? requestTypes.flatMap((rType) => this.allRequests(rType))
-      : this.allRequests()
-    return allRequests.length
+  public getCounts() {
+    return new RequestCounts(this.allRequests())
   }
 
   public getRequest<T extends KnownRequestTypes>(id: RequestID<T>) {

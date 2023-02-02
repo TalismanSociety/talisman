@@ -57,12 +57,12 @@ describe("Signing requests store", () => {
       version: 4,
     }
 
-    expect(requestStore.getRequestCount()).toBe(0)
+    expect(requestStore.getCounts().get("substrate-sign")).toBe(0)
     signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
       address,
       ...meta,
     })
-    expect(requestStore.getRequestCount()).toBe(1)
+    expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
     expect(windowManager.popupOpen).toBeCalled()
   })
 })
