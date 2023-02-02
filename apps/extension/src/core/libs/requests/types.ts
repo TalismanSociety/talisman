@@ -1,8 +1,10 @@
+import type { EthRequests } from "@core/domains/ethereum/types"
 import type { MetadataRequests } from "@core/domains/metadata/types"
 import type { SigningRequests } from "@core/domains/signing/types"
 import type { SitesAuthRequests } from "@core/domains/sitesAuthorised/types"
 
-export type KnownRequests = SigningRequests & SitesAuthRequests & MetadataRequests // all types of requests can go here
+// all types of requests can go here
+export type KnownRequests = SigningRequests & SitesAuthRequests & MetadataRequests & EthRequests
 /* KnownRequests types should be objects like: 
   { [name: string]: [RequestType, ResponseType] }
 */

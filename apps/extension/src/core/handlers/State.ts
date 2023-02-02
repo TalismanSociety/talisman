@@ -5,7 +5,6 @@ import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
 import { EncryptRequestsStore } from "@core/domains/encrypt"
-import EthereumNetworksRequestsStore from "@core/domains/ethereum/requestsStore.networks"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
 import { requestStore } from "@core/libs/requests/store"
 import { windowManager } from "@core/libs/WindowManager"
@@ -18,9 +17,6 @@ export default class State {
 
   // Request stores handle ephemeral data relating to to requests for signing, metadata, and authorisation of sites
   readonly requestStores = {
-    networks: new EthereumNetworksRequestsStore((req) => {
-      windowManager.popupOpen(`#/eth-network-add/${req.id}`)
-    }),
     evmAssets: new EvmWatchAssetRequestsStore((req) => {
       windowManager.popupOpen(`#/eth-watchasset/${req.id}`)
     }),

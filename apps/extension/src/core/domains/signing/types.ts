@@ -63,8 +63,8 @@ export interface EthBaseSignRequest<T extends ETH_SIGN | ETH_SEND> extends BaseS
   request: string | EthTransactionRequest
 }
 
-type ETH_SIGN = "eth-sign"
-type ETH_SEND = "eth-send"
+export type ETH_SIGN = "eth-sign"
+export type ETH_SEND = "eth-send"
 
 const ETH_SIGN: ETH_SIGN = "eth-sign"
 const ETH_SEND: ETH_SEND = "eth-send"

@@ -1,8 +1,7 @@
-import { ChainId } from "@core/domains/chains/types"
-import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
-import { CustomErc20Token, TokenId } from "@core/domains/tokens/types"
+import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "@core/domains/signing/types"
+import { CustomErc20Token } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
-import { RequestIdOnly } from "@core/types/base"
+import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BigNumberish, ethers } from "ethers"
 
@@ -40,11 +39,11 @@ export type WatchAssetBase = {
   }
 }
 
-export declare type EthApproveSignAndSend = KnownSigningRequestIdOnly<"eth-send"> & {
+export declare type EthApproveSignAndSend = KnownSigningRequestIdOnly<ETH_SEND> & {
   transaction: ethers.providers.TransactionRequest
 }
 
-export type EthRequestSigningApproveSignature<T extends "eth-sign" | "eth-send"> =
+export type EthRequestSigningApproveSignature<T extends ETH_SIGN | ETH_SEND> =
   KnownSigningRequestIdOnly<T> & {
     signedPayload: `0x${string}`
   }
@@ -66,13 +65,6 @@ export type WatchAssetRequest = {
 }
 
 // ethereum networks
-
-export type AddEthereumChainRequest = {
-  id: string
-  idStr: string
-  url: string
-  network: AddEthereumChainParameter
-}
 
 export type Web3WalletPermissionTarget = "eth_accounts" // add more options as needed using |
 
@@ -122,8 +114,8 @@ export interface EthMessages {
   // eth add networks requests management
   // TODO change naming for network add requests, and maybe delete the first one
   "pri(eth.networks.add.requests)": [null, AddEthereumChainRequest[]]
-  "pri(eth.networks.add.approve)": [RequestIdOnly, boolean]
-  "pri(eth.networks.add.cancel)": [RequestIdOnly, boolean]
+  "pri(eth.networks.add.approve)": [AddEthereumChainRequestIdOnly, boolean]
+  "pri(eth.networks.add.cancel)": [AddEthereumChainRequestIdOnly, boolean]
   "pri(eth.networks.add.subscribe)": [null, boolean, AddEthereumChainRequest[]]
   // eth watchassets requests  management
   "pri(eth.watchasset.requests.approve)": [RequestIdOnly, boolean]
@@ -152,3 +144,19 @@ export type EthGasSettingsEip1559 = {
 export type EthGasSettings = EthGasSettingsLegacy | EthGasSettingsEip1559
 
 export type LedgerEthDerivationPathType = "LedgerLive" | "Legacy" | "BIP44"
+
+// requests
+export type ETH_NETWORK_ADD_PREFIX = "eth-network-add"
+export const ETH_NETWORK_ADD_PREFIX: ETH_NETWORK_ADD_PREFIX = "eth-network-add"
+export type AddEthereumChainRequestId = BaseRequestId<ETH_NETWORK_ADD_PREFIX>
+export type AddEthereumChainRequestIdOnly = { id: AddEthereumChainRequestId }
+
+export type AddEthereumChainRequest = BaseRequest<ETH_NETWORK_ADD_PREFIX> & {
+  idStr: string
+  url: string
+  network: AddEthereumChainParameter
+}
+
+export type EthRequests = {
+  [ETH_NETWORK_ADD_PREFIX]: [AddEthereumChainRequest, null]
+}

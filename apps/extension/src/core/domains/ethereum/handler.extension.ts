@@ -1,6 +1,8 @@
 import { DEBUG } from "@core/constants"
 import {
+  AddEthereumChainRequestId,
   AnyEthRequestChainId,
+  ETH_NETWORK_ADD_PREFIX,
   EthApproveSignAndSend,
   EthRequestSigningApproveSignature,
   WatchAssetRequest,
@@ -33,7 +35,7 @@ import { ethers } from "ethers"
 import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
-import { RequestUpsertCustomEvmNetwork } from "./types"
+import { AddEthereumChainRequestIdOnly, RequestUpsertCustomEvmNetwork } from "./types"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -275,8 +277,8 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private ethNetworkAddCancel({ id }: RequestIdOnly): boolean {
-    const queued = this.state.requestStores.networks.getRequest(id)
+  private ethNetworkAddCancel({ id }: AddEthereumChainRequestIdOnly): boolean {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -287,8 +289,8 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async ethNetworkAddApprove({ id }: RequestIdOnly): Promise<boolean> {
-    const queued = this.state.requestStores.networks.getRequest(id)
+  private async ethNetworkAddApprove({ id }: AddEthereumChainRequestIdOnly): Promise<boolean> {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -535,19 +537,18 @@ export class EthHandler extends ExtensionHandler {
       // ethereum network handlers ------------------------------------------
       // --------------------------------------------------------------------
       case "pri(eth.networks.add.cancel)":
-        return this.ethNetworkAddCancel(request as RequestIdOnly)
+        return this.ethNetworkAddCancel(request as AddEthereumChainRequestIdOnly)
 
       case "pri(eth.networks.add.approve)":
-        return this.ethNetworkAddApprove(request as RequestIdOnly)
+        return this.ethNetworkAddApprove(request as AddEthereumChainRequestIdOnly)
 
       case "pri(eth.networks.add.requests)":
-        return this.state.requestStores.networks.getAllRequests()
+        return requestStore.getAllRequests(ETH_NETWORK_ADD_PREFIX)
 
       case "pri(eth.networks.add.subscribe)":
-        return this.state.requestStores.networks.subscribe<"pri(eth.networks.add.subscribe)">(
-          id,
-          port
-        )
+        return requestStore.subscribe<"pri(eth.networks.add.subscribe)">(id, port, [
+          ETH_NETWORK_ADD_PREFIX,
+        ])
 
       case "pri(eth.networks.subscribe)":
         return chaindataProvider.hydrateEvmNetworks()

@@ -1,3 +1,5 @@
+import { ETH_NETWORK_ADD_PREFIX } from "@core/domains/ethereum/types"
+import { METADATA_PREFIX } from "@core/domains/metadata/types"
 import { SIGNING_TYPES } from "@core/domains/signing/types"
 import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { FadeIn } from "@talisman/components/FadeIn"
@@ -57,11 +59,11 @@ const PendingRequestRedirect = () => {
     if (authRequests.length) {
       navigate(`/${AUTH_PREFIX}/${authRequests[0].id}`)
     } else if (ethNetworkAddRequests.length) {
-      navigate(`/eth-network-add/${ethNetworkAddRequests[0].id}`)
+      navigate(`/${ETH_NETWORK_ADD_PREFIX}/${ethNetworkAddRequests[0].id}`)
     } else if (ethWatchAssetRequests.length) {
       navigate(`/eth-watchasset/${ethWatchAssetRequests[0].id}`)
     } else if (metaDataRequests.length) {
-      navigate(`/metadata/${metaDataRequests[0].id}`)
+      navigate(`/${METADATA_PREFIX}/${metaDataRequests[0].id}`)
     } else if (signingRequests.length) {
       const req = signingRequests[0]
       navigate(`/${req.type}/${req.id}`)
@@ -133,9 +135,12 @@ const Popup = () => {
                           path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
                           element={<SubstrateSignRequest />}
                         ></Route>
-                        <Route path="metadata/:id" element={<Metadata />}></Route>
+                        <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
                         <Route path="encrypt/:id" element={<Encrypt />}></Route>
-                        <Route path="eth-network-add/:id" element={<AddEthereumNetwork />}></Route>
+                        <Route
+                          path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
+                          element={<AddEthereumNetwork />}
+                        ></Route>
                         <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
                         <Route path="*" element={<Navigate to="/portfolio" replace />} />
                       </Routes>

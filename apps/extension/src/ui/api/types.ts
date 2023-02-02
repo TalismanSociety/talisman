@@ -17,6 +17,7 @@ import {
 } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
 import { AnyEncryptRequest } from "@core/domains/encrypt/types"
+import { AddEthereumChainRequestId } from "@core/domains/ethereum/types"
 import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
@@ -231,8 +232,8 @@ export default interface MessageTypes {
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
   ethGetTransactionsCount: (address: string, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
-  ethNetworkAddApprove: (id: string) => Promise<boolean>
-  ethNetworkAddCancel: (is: string) => Promise<boolean>
+  ethNetworkAddApprove: (id: AddEthereumChainRequestId) => Promise<boolean>
+  ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
   ethNetworkAddSubscribeRequests: (
     cb: (requests: AddEthereumChainRequest[]) => void
   ) => UnsubscribeFn

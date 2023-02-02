@@ -49,6 +49,7 @@ import {
   isValidRequestedPermissions,
   isValidWatchAssetRequestParam,
 } from "./helpers"
+import { requestAddNetwork } from "./requests"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
 import { Web3WalletPermission, Web3WalletPermissionTarget } from "./types"
 
@@ -294,7 +295,7 @@ export class EthTabsHandler extends TabsHandler {
       })
     )
 
-    await this.state.requestStores.networks.requestAddNetwork(url, network)
+    await requestAddNetwork(url, network)
 
     // switch automatically to new chain
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
