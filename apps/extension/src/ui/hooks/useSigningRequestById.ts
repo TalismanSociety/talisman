@@ -1,7 +1,7 @@
 import type {
-  AnyRequestID,
   AnySigningRequest,
-  RequestID,
+  AnySigningRequestID,
+  SigningRequestID,
   SigningRequests,
 } from "@core/domains/signing/types"
 import { api } from "@ui/api"
@@ -10,20 +10,20 @@ import { BehaviorSubject } from "rxjs"
 
 import { useMessageSubscription } from "./useMessageSubscription"
 
-const INITIAL_SUBJECT_VALUE: Record<AnyRequestID, AnySigningRequest> = {}
+const INITIAL_SUBJECT_VALUE: Record<AnySigningRequestID, AnySigningRequest> = {}
 
 // public hook
 export const useSigningRequestById = <T extends keyof SigningRequests>(
-  id: RequestID<T>
+  id: SigningRequestID<T>
 ): SigningRequests[T][0] | undefined => {
   const subscribe = useCallback(
-    (signingRequest: BehaviorSubject<Record<AnyRequestID, AnySigningRequest>>) =>
+    (signingRequest: BehaviorSubject<Record<AnySigningRequestID, AnySigningRequest>>) =>
       api.subscribeSigningRequest(id, (v) => signingRequest.next({ [id]: v })),
     [id]
   )
 
   const transform = useCallback(
-    (signingRequests: Record<AnyRequestID, AnySigningRequest>) => signingRequests[id],
+    (signingRequests: Record<AnySigningRequestID, AnySigningRequest>) => signingRequests[id],
     [id]
   )
 

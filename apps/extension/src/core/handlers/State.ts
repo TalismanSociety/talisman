@@ -6,7 +6,6 @@ import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
 import { EncryptRequestsStore } from "@core/domains/encrypt"
 import EthereumNetworksRequestsStore from "@core/domains/ethereum/requestsStore.networks"
-import { MetadataRequestsStore } from "@core/domains/metadata"
 import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
 import { requestStore } from "@core/libs/requests/store"
 import { windowManager } from "@core/libs/WindowManager"
@@ -19,9 +18,6 @@ export default class State {
 
   // Request stores handle ephemeral data relating to to requests for signing, metadata, and authorisation of sites
   readonly requestStores = {
-    metadata: new MetadataRequestsStore((req) => {
-      windowManager.popupOpen(`#/metadata/${req.id}`)
-    }),
     networks: new EthereumNetworksRequestsStore((req) => {
       windowManager.popupOpen(`#/eth-network-add/${req.id}`)
     }),
@@ -44,7 +40,7 @@ export default class State {
 
   private updateIcon(shouldClose?: boolean): void {
     const sitesAuthCount = requestStore.getRequestCount(["auth"])
-    const metaCount = this.requestStores.metadata.getRequestCount()
+    const metaCount = requestStore.getRequestCount(["metadata"])
     const signCount = requestStore.getRequestCount(["eth-send", "eth-sign", "substrate-sign"])
     const networkAddCount = this.requestStores.networks.getRequestCount()
     const evmAssets = this.requestStores.evmAssets.getRequestCount()

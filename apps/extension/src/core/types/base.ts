@@ -34,8 +34,10 @@ export declare type IdOnlyValues<T> = {
 
 export interface BaseRequest<T extends string> {
   type: T
-  id: string
+  id: BaseRequestId<T>
 }
+
+export type BaseRequestId<T extends string> = `${T}.${string}`
 export interface Resolver<T> {
   reject: (error: Error) => void
   resolve: (result: T) => void

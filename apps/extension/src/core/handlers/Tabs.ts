@@ -13,6 +13,7 @@ import {
   ResponseEncrypt,
 } from "@core/domains/encrypt/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
+import { requestInjectMetadata } from "@core/domains/metadata/requests"
 import { signSubstrate } from "@core/domains/signing/requests"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { requestAuthoriseSite } from "@core/domains/sitesAuthorised/requests"
@@ -174,7 +175,7 @@ export default class Tabs extends TabsHandler {
   }
 
   private metadataProvide(url: string, request: MetadataDef): Promise<boolean> {
-    return this.state.requestStores.metadata.injectMetadata(url, request)
+    return requestInjectMetadata(url, request)
   }
 
   private async metadataList(): Promise<InjectedMetadataKnown[]> {

@@ -8,7 +8,7 @@ import {
   EthGasSettingsLegacy,
   EvmNetworkId,
 } from "@core/domains/ethereum/types"
-import { BaseRequest } from "@core/types/base"
+import { BaseRequest, BaseRequestId } from "@core/types/base"
 import type { TransactionRequest as EthTransactionRequest } from "@ethersproject/abstract-provider"
 import {
   RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
@@ -29,23 +29,23 @@ export type {
   ResponseSigningIsLocked,
 } from "@polkadot/extension-base/background/types"
 
-export type RequestID<T extends keyof SigningRequests> = `${T}.${string}`
-export type AnyRequestID = `${keyof SigningRequests}.${string}`
+export type SigningRequestID<T extends keyof SigningRequests> = BaseRequestId<T>
+export type AnySigningRequestID = `${keyof SigningRequests}.${string}`
 
 export type AnySigningRequestIdOnly = {
-  id: AnyRequestID
+  id: AnySigningRequestID
 }
 
 export type KnownSigningRequestIdOnly<T extends keyof SigningRequests> = {
-  id: RequestID<T>
+  id: SigningRequestID<T>
 }
 
 export type RequestSigningApproveSignature = Omit<PolkadotRequestSigningApproveSignature, "id"> & {
-  id: RequestID<SUBSTRATE_SIGN>
+  id: SigningRequestID<SUBSTRATE_SIGN>
 }
 
 interface BaseSigningRequest<T extends keyof SigningRequests> extends BaseRequest<T> {
-  id: RequestID<T>
+  id: SigningRequestID<T>
   url: string
 }
 

@@ -4,6 +4,7 @@ import { BalancesMessages } from "@core/domains/balances/types"
 import { ChainsMessages } from "@core/domains/chains/types"
 import { EncryptMessages } from "@core/domains/encrypt/types"
 import { EthMessages } from "@core/domains/ethereum/types"
+import { MetadataMessages } from "@core/domains/metadata/types"
 import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { TokenRatesMessages } from "@core/domains/tokenRates/types"
@@ -43,6 +44,11 @@ type RemovedMessages =
   | "pri(accounts.export)"
   | "pri(accounts.forget)"
   | "pri(accounts.subscribe)"
+  | "pri(metadata.requests)"
+  | "pri(metadata.approve)"
+  | "pri(metadata.get)"
+  | "pri(metadata.reject)"
+  | "pri(metadata.list)"
   | "pri(signing.cancel)"
   | "pri(signing.requests)"
   | "pri(derivation.create)"
@@ -63,6 +69,7 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   SigningMessages &
   TokenMessages &
   TokenRatesMessages &
+  MetadataMessages &
   EncryptMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {

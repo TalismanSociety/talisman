@@ -47,10 +47,7 @@ export class RequestStore {
   public createRequest<
     TRequest extends Omit<ValidRequests, "id">,
     T extends KnownRequestTypes = TRequest["type"]
-  >(
-    // public createRequest<T extends KnownRequestTypes>(
-    requestOptions: TRequest
-  ): Promise<KnownResponse<T>> {
+  >(requestOptions: TRequest): Promise<KnownResponse<T>> {
     const id = `${requestOptions.type}.${v4()}` as RequestID<T>
 
     return new Promise((resolve, reject): void => {

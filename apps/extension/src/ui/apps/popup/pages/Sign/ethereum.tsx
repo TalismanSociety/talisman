@@ -1,4 +1,4 @@
-import { RequestID } from "@core/domains/signing/types"
+import { SigningRequestID } from "@core/domains/signing/types"
 import {
   EthSignMessageRequestProvider,
   EthSignTransactionRequestProvider,
@@ -10,7 +10,9 @@ import { EthSignMessageRequest } from "./EthSignMessageRequest"
 import { EthSignTransactionRequest } from "./EthSignTransactionRequest"
 
 export const EthereumSignRequest = () => {
-  const { id } = useParams<"id">() as { id: RequestID<"eth-send"> | RequestID<"eth-sign"> }
+  const { id } = useParams<"id">() as {
+    id: SigningRequestID<"eth-send"> | SigningRequestID<"eth-sign">
+  }
   const signingRequest = useSigningRequestById(id)
   if (!signingRequest) return null
 

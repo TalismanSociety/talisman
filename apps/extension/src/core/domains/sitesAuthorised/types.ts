@@ -1,5 +1,4 @@
-import { KnownRequestIdOnly } from "@core/libs/requests/types"
-import { BaseRequest, RequestIdOnly, Resolver } from "@core/types/base"
+import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
 import type {
   RequestAuthorizeTab as PolkadotRequestAuthorizeTab,
   RequestAuthorizeSubscribe,
@@ -15,7 +14,7 @@ export interface RequestAuthorizeTab extends PolkadotRequestAuthorizeTab {
 // new authorise request types
 export type AUTH_PREFIX = "auth"
 export const AUTH_PREFIX: AUTH_PREFIX = "auth"
-export type AuthRequestId = `${AUTH_PREFIX}.${string}`
+export type AuthRequestId = BaseRequestId<AUTH_PREFIX>
 export interface SiteAuthRequest extends BaseRequest<AUTH_PREFIX> {
   id: AuthRequestId
   idStr: string

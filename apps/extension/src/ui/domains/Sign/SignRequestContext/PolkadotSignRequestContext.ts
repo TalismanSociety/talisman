@@ -1,6 +1,6 @@
 import {
-  RequestID,
   SignerPayloadJSON,
+  SigningRequestID,
   SubstrateSigningRequest,
   TransactionDetails,
 } from "@core/domains/signing/types"
@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
-export const usePolkadotTransactionDetails = (requestId?: RequestID<"substrate-sign">) => {
+export const usePolkadotTransactionDetails = (requestId?: SigningRequestID<"substrate-sign">) => {
   const [analysing, setAnalysing] = useState(!!requestId)
   const [error, setError] = useState<string>()
   const [txDetails, setTxDetails] = useState<TransactionDetails>()

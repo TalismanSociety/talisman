@@ -1,5 +1,4 @@
 import { PORT_EXTENSION } from "@core/constants"
-import { AnyRequestID } from "@core/domains/signing/types"
 import MessageService from "@core/libs/MessageService"
 
 import MessageTypes from "./types"

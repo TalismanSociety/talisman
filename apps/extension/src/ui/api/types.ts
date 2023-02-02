@@ -25,11 +25,11 @@ import {
   RequestUpsertCustomEvmNetwork,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
+import { MetadataRequest, RequestMetadataId } from "@core/domains/metadata/types"
 import {
-  AnyEthSigningRequest,
-  AnyRequestID,
   AnySigningRequest,
-  RequestID as SigningRequestId,
+  AnySigningRequestID,
+  SigningRequestID,
   TransactionDetails,
 } from "@core/domains/signing/types"
 import {
@@ -50,7 +50,6 @@ import {
 import { EthResponseType } from "@core/injectEth/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
-import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
 import { ethers } from "ethers"
@@ -71,22 +70,22 @@ export default interface MessageTypes {
   onboardOpen: () => Promise<boolean>
   popupOpen: () => Promise<boolean>
   promptLogin: (closeOnSuccess?: boolean) => Promise<boolean>
-  approveMetaRequest: (id: string) => Promise<boolean>
-  rejectMetaRequest: (id: string) => Promise<boolean>
+  approveMetaRequest: (id: RequestMetadataId) => Promise<boolean>
+  rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   subscribeMetadataRequests: (cb: (requests: MetadataRequest[]) => void) => UnsubscribeFn
   allowPhishingSite: (url: string) => Promise<boolean>
 
   // signing messages -------------------------------------------------------
-  decodeSignRequest: (id: SigningRequestId<"substrate-sign">) => Promise<TransactionDetails>
-  cancelSignRequest: (id: SigningRequestId<"substrate-sign">) => Promise<boolean>
+  decodeSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<TransactionDetails>
+  cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
   subscribeSigningRequest: (
-    id: AnyRequestID,
+    id: AnySigningRequestID,
     cb: (requests: AnySigningRequest) => void
   ) => UnsubscribeFn
   subscribeSigningRequests: (cb: (requests: AnySigningRequest[]) => void) => UnsubscribeFn
-  approveSign: (id: SigningRequestId<"substrate-sign">) => Promise<boolean>
+  approveSign: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
   approveSignHardware: (
-    id: SigningRequestId<"substrate-sign">,
+    id: SigningRequestID<"substrate-sign">,
     signature: HexString
   ) => Promise<boolean>
 
@@ -215,20 +214,20 @@ export default interface MessageTypes {
   ) => Promise<ResponseAssetTransfer>
 
   // eth related messages
-  ethApproveSign: (id: SigningRequestId<"eth-sign">) => Promise<boolean>
+  ethApproveSign: (id: SigningRequestID<"eth-sign">) => Promise<boolean>
   ethApproveSignHardware: (
-    id: SigningRequestId<"eth-sign">,
+    id: SigningRequestID<"eth-sign">,
     signature: HexString
   ) => Promise<boolean>
   ethApproveSignAndSend: (
-    id: SigningRequestId<"eth-send">,
+    id: SigningRequestID<"eth-send">,
     transaction: ethers.providers.TransactionRequest
   ) => Promise<boolean>
   ethApproveSignAndSendHardware: (
-    id: SigningRequestId<"eth-send">,
+    id: SigningRequestID<"eth-send">,
     signedTransaction: HexString
   ) => Promise<boolean>
-  ethCancelSign: (id: SigningRequestId<"eth-sign" | "eth-send">) => Promise<boolean>
+  ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
   ethGetTransactionsCount: (address: string, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
