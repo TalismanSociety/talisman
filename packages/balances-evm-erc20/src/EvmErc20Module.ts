@@ -43,8 +43,8 @@ export type CustomEvmErc20Token = EvmErc20Token & {
   image?: string
 }
 
-declare global {
-  export interface TalismanPluginTokenTypes {
+declare module "@talismn/chaindata-provider/plugins" {
+  export interface PluginTokenTypes {
     EvmErc20Token: EvmErc20Token
     CustomEvmErc20Token: CustomEvmErc20Token
   }
@@ -72,8 +72,8 @@ export type EvmErc20Balance = NewBalanceType<
   }
 >
 
-declare global {
-  export interface TalismanPluginBalanceTypes {
+declare module "@talismn/balances/plugins" {
+  export interface PluginBalanceTypes {
     EvmErc20Balance: EvmErc20Balance
   }
 }

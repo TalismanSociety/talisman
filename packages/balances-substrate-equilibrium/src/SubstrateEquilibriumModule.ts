@@ -37,8 +37,8 @@ export type SubEquilibriumToken = NewTokenType<
   }
 >
 
-declare global {
-  export interface TalismanPluginTokenTypes {
+declare module "@talismn/chaindata-provider/plugins" {
+  export interface PluginTokenTypes {
     SubEquilibriumToken: SubEquilibriumToken
   }
 }
@@ -62,8 +62,8 @@ export type SubEquilibriumBalance = NewBalanceType<
   }
 >
 
-declare global {
-  export interface TalismanPluginBalanceTypes {
+declare module "@talismn/balances/plugins" {
+  export interface PluginBalanceTypes {
     SubEquilibriumBalance: SubEquilibriumBalance
   }
 }

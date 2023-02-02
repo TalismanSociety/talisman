@@ -1,10 +1,7 @@
-// import { TalismanPluginTokenTypes } from "../plugins"
+import { PluginTokenTypes } from "@talismn/chaindata-provider/plugins"
+
 import { ChainId } from "./Chain"
 import { EvmNetworkId } from "./EvmNetwork"
-
-declare global {
-  export interface TalismanPluginTokenTypes {} // eslint-disable-line @typescript-eslint/no-empty-interface
-}
 
 /**
  * `TokenTypes` is an automatically determined sub-selection of `PluginTokenTypes`.
@@ -13,9 +10,9 @@ declare global {
  */
 export type TokenTypes = {
   // Check that each plugin-provided TokenType is a valid Token (i.e. it has all of the IToken fields)
-  [TokenType in keyof TalismanPluginTokenTypes]: TalismanPluginTokenTypes[TokenType] extends IToken
+  [TokenType in keyof PluginTokenTypes]: PluginTokenTypes[TokenType] extends IToken
     ? // Include the valid token in TokenTypes
-      TalismanPluginTokenTypes[TokenType]
+      PluginTokenTypes[TokenType]
     : // Don't include the invalid token
       never
 }

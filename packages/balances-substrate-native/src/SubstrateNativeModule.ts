@@ -88,8 +88,8 @@ export type CustomSubNativeToken = SubNativeToken & {
   isCustom: true
 }
 
-declare global {
-  export interface TalismanPluginTokenTypes {
+declare module "@talismn/chaindata-provider/plugins" {
+  export interface PluginTokenTypes {
     SubNativeToken: SubNativeToken
     CustomSubNativeToken: CustomSubNativeToken
   }
@@ -120,8 +120,8 @@ export type SubNativeBalance = NewBalanceType<
   }
 >
 
-declare global {
-  export interface TalismanPluginBalanceTypes {
+declare module "@talismn/balances/plugins" {
+  export interface PluginBalanceTypes {
     SubNativeBalance: SubNativeBalance
   }
 }

@@ -36,8 +36,8 @@ export type SubTokensToken = NewTokenType<
   }
 >
 
-declare global {
-  export interface TalismanPluginTokenTypes {
+declare module "@talismn/chaindata-provider/plugins" {
+  export interface PluginTokenTypes {
     SubTokensToken: SubTokensToken
   }
 }
@@ -69,8 +69,8 @@ export type SubTokensBalance = NewBalanceType<
   }
 >
 
-declare global {
-  export interface TalismanPluginBalanceTypes {
+declare module "@talismn/balances/plugins" {
+  export interface PluginBalanceTypes {
     SubTokensBalance: SubTokensBalance
   }
 }

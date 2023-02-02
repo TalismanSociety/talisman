@@ -34,8 +34,8 @@ export type CustomEvmNativeToken = EvmNativeToken & {
   isCustom: true
 }
 
-declare global {
-  export interface TalismanPluginTokenTypes {
+declare module "@talismn/chaindata-provider/plugins" {
+  export interface PluginTokenTypes {
     EvmNativeToken: EvmNativeToken
     CustomEvmNativeToken: CustomEvmNativeToken
   }
@@ -60,8 +60,8 @@ export type EvmNativeBalance = NewBalanceType<
   }
 >
 
-declare global {
-  export interface TalismanPluginBalanceTypes {
+declare module "@talismn/balances/plugins" {
+  export interface PluginBalanceTypes {
     EvmNativeBalance: EvmNativeBalance
   }
 }

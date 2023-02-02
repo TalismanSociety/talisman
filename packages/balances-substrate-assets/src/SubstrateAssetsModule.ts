@@ -38,8 +38,8 @@ export type SubAssetsToken = NewTokenType<
   }
 >
 
-declare global {
-  export interface TalismanPluginTokenTypes {
+declare module "@talismn/chaindata-provider/plugins" {
+  export interface PluginTokenTypes {
     SubAssetsToken: SubAssetsToken
   }
 }
@@ -68,8 +68,8 @@ export type SubAssetsBalance = NewBalanceType<
   }
 >
 
-declare global {
-  export interface TalismanPluginBalanceTypes {
+declare module "@talismn/balances/plugins" {
+  export interface PluginBalanceTypes {
     SubAssetsBalance: SubAssetsBalance
   }
 }
