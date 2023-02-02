@@ -25,6 +25,7 @@ import {
   RequestUpsertCustomEvmNetwork,
   WatchAssetRequest,
 } from "@core/domains/ethereum/types"
+import { MetadataUpdateStatus } from "@core/domains/metadata/types"
 import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/types"
 import {
   AuthRequestAddresses,
@@ -144,6 +145,11 @@ export default interface MessageTypes {
   authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>
   authrequestReject: (id: AuthRequestId) => Promise<boolean>
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
+
+  metadataUpdatesSubscribe: (
+    genesisHash: string,
+    cb: (status: MetadataUpdateStatus) => void
+  ) => UnsubscribeFn
 
   // chain message types
   chains: (cb: () => void) => UnsubscribeFn

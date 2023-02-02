@@ -1,4 +1,6 @@
+import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
+import { metadataUpdatesStore } from "@core/domains/metadata/metadataUpdates"
 import { MetadataDef } from "@core/inject/types"
 import RpcFactory from "@core/libs/RpcFactory"
 import { log } from "@core/log"
@@ -75,7 +77,7 @@ export const getMetadataDef = async (
   if (storeMetadata?.metadataRpc && specVersion === storeMetadata.specVersion) return storeMetadata
 
   if (!chain) {
-    log.warn(`Metadata for chain ${storeMetadata?.chain ?? genesisHash} isn't up to date`)
+    log.warn(`Metadata for unknown isn't up to date`, storeMetadata?.chain ?? genesisHash)
     return storeMetadata
   }
 
@@ -89,6 +91,9 @@ export const getMetadataDef = async (
     // check cache using runtimeSpecVersion
     const cacheKey = getCacheKey(genesisHash, runtimeSpecVersion) as string
     if (cache[cacheKey]) return cache[cacheKey]
+
+    // mark as updating in database (can be picked up by frontend via subscription)
+    metadataUpdatesStore.set(genesisHash, true)
 
     // fetch the metadata from the chain
     const [metadataRpc, chainProperties] = await Promise.all([
@@ -112,6 +117,8 @@ export const getMetadataDef = async (
     // save in cache
     cache[cacheKey] = newData
 
+    metadataUpdatesStore.set(genesisHash, false)
+
     // if requested version is outdated, cache it and return it without updating store
     if (storeMetadata && runtimeSpecVersion < storeMetadata.specVersion) return newData
 
@@ -130,7 +137,18 @@ export const getMetadataDef = async (
   } catch (err) {
     log.error(`Failed to update metadata for chain ${genesisHash}`, { err })
     Sentry.captureException(err, { extra: { genesisHash } })
+    metadataUpdatesStore.set(genesisHash, false)
   }
 
   return storeMetadata
+}
+
+// useful for developer when testing updates
+if (DEBUG) {
+  ;(window as any).clearMetadata = () => {
+    Object.keys(cache).forEach((key) => {
+      delete cache[key]
+    })
+    db.metadata.clear()
+  }
 }
