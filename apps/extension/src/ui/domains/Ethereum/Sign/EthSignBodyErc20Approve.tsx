@@ -6,6 +6,7 @@ import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
+import { SignAlertMessage } from "../../Sign/SignAlertMessage"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import {
@@ -14,7 +15,6 @@ import {
   SignParamTokensButton,
 } from "./shared"
 import { EthSignContainer } from "./shared/EthSignContainer"
-import { SignAlertMessage } from "./shared/SignAlertMessage"
 import { SignParamErc20TokenButton } from "./shared/SignParamErc20TokenButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 

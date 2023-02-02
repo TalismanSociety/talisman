@@ -171,7 +171,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   )
 }
 
-export const ViewDetails: FC<BaseViewDetailsProps & { analysing: boolean }> = ({
+export const ViewDetails: FC<BaseViewDetailsProps & { analysing?: boolean }> = ({
   signingRequest,
   txDetails,
   txDetailsError,

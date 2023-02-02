@@ -2,15 +2,34 @@ import { InfoIcon } from "@talisman/theme/icons"
 import { FC, PropsWithChildren } from "react"
 import { classNames } from "talisman-ui"
 
+type IconSize = "xl" | "lg" | "md" | "base" | "sm"
+
+const getIconSizeClass = (size: IconSize) => {
+  switch (size) {
+    case "base":
+      return "text-base"
+    case "md":
+      return "text-md"
+    case "sm":
+      return "text-sm"
+    case "lg":
+      return "text-lg"
+    case "xl":
+      return "text-xl"
+  }
+}
+
 type SignAlertMessageProps = PropsWithChildren & {
   className?: string
   type?: "warning" | "error"
+  iconSize?: IconSize
 }
 
 export const SignAlertMessage: FC<SignAlertMessageProps> = ({
   children,
   className,
   type = "warning",
+  iconSize = "xl",
 }) => {
   return (
     <div
@@ -19,7 +38,7 @@ export const SignAlertMessage: FC<SignAlertMessageProps> = ({
         className
       )}
     >
-      <div className="text-alert-warn text-xl">
+      <div className={classNames("text-alert-warn", getIconSizeClass(iconSize))}>
         <InfoIcon />
       </div>
       <div
