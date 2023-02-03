@@ -38,6 +38,7 @@ export const PolkadotSignTransactionRequest: FC<PolkadotSignTransactionRequestPr
     approveHardware,
   } = usePolkadotSigningRequest(signingRequest)
   const {
+    isMetadataLoading,
     analysing,
     txDetails,
     error: txDetailsError,
@@ -59,7 +60,7 @@ export const PolkadotSignTransactionRequest: FC<PolkadotSignTransactionRequestPr
     if (status === "SUCCESS") window.close()
   }, [status])
 
-  if (isLoading) return null
+  if (isLoading || isMetadataLoading) return null
 
   const showMetadataStatus =
     (processing && (analysing || isMetadataUpdating)) ||
