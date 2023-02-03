@@ -9,7 +9,6 @@ export interface SettingsStoreData {
   hideBalances: boolean
   allowNotifications: boolean
   selectedAccount?: string // undefined = show all accounts
-  shouldMimicMetaMask: boolean
   autoLockTimeout: 0 | 300 | 1800 | 3600
 }
 
@@ -22,6 +21,5 @@ export const settingsStore = new SettingsStore("settings", {
   useAnalyticsTracking: undefined, // undefined for onboarding
   hideBalances: false,
   allowNotifications: true,
-  shouldMimicMetaMask: true,
   autoLockTimeout: 0,
 })
