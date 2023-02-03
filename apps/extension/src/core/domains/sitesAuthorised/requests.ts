@@ -1,8 +1,7 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
-import type { RequestAuthorizeTab, SiteAuthRequest } from "@core/domains/sitesAuthorised/types"
+import type { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import { requestStore } from "@core/libs/requests/store"
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
-import { RequestIdOnly } from "@core/types/base"
 import { urlToDomain } from "@core/util/urlToDomain"
 import { assert } from "@polkadot/util"
 
