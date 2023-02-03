@@ -1,3 +1,4 @@
+import { WatchAssetRequestIdOnly } from "@core/domains/ethereum/types"
 import { AppPill } from "@talisman/components/AppPill"
 import StyledGrid from "@talisman/components/Grid"
 import { IconButton } from "@talisman/components/IconButton"
@@ -95,7 +96,7 @@ const ErrorMessage = styled.p`
 
 export const AddCustomErc20Token = () => {
   const [error, setError] = useState<string>()
-  const { id } = useParams() as { id: string }
+  const { id } = useParams() as WatchAssetRequestIdOnly
   const request = useEthWatchAssetRequestById(id)
 
   const network = useEvmNetwork(request?.token?.evmNetwork?.id)

@@ -1,5 +1,5 @@
 import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "@core/domains/signing/types"
-import { CustomErc20Token } from "@core/domains/tokens/types"
+import type { CustomErc20Token } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
@@ -29,16 +29,6 @@ export type AddEthereumChainParameter = {
   iconUrls?: string[]
 }
 
-export type WatchAssetBase = {
-  type: "ERC20"
-  options: {
-    address: string // The hexadecimal Ethereum address of the token contract
-    symbol?: string // A ticker symbol or shorthand, up to 11 alphanumerical characters
-    decimals?: number // The number of asset decimals
-    image?: string // A string url of the token logo
-  }
-}
-
 export declare type EthApproveSignAndSend = KnownSigningRequestIdOnly<ETH_SEND> & {
   transaction: ethers.providers.TransactionRequest
 }
@@ -55,13 +45,6 @@ export interface AnyEthRequestChainId extends AnyEthRequest {
 export type EthNonceRequest = {
   address: string
   evmNetworkId: EvmNetworkId
-}
-
-export type WatchAssetRequest = {
-  request: WatchAssetBase
-  token: CustomErc20Token
-  id: string
-  url: string
 }
 
 // ethereum networks
@@ -118,10 +101,14 @@ export interface EthMessages {
   "pri(eth.networks.add.cancel)": [AddEthereumChainRequestIdOnly, boolean]
   "pri(eth.networks.add.subscribe)": [null, boolean, AddEthereumChainRequest[]]
   // eth watchassets requests  management
-  "pri(eth.watchasset.requests.approve)": [RequestIdOnly, boolean]
-  "pri(eth.watchasset.requests.cancel)": [RequestIdOnly, boolean]
+  "pri(eth.watchasset.requests.approve)": [WatchAssetRequestIdOnly, boolean]
+  "pri(eth.watchasset.requests.cancel)": [WatchAssetRequestIdOnly, boolean]
   "pri(eth.watchasset.requests.subscribe)": [null, boolean, WatchAssetRequest[]]
-  "pri(eth.watchasset.requests.subscribe.byid)": [RequestIdOnly, boolean, WatchAssetRequest]
+  "pri(eth.watchasset.requests.subscribe.byid)": [
+    WatchAssetRequestIdOnly,
+    boolean,
+    WatchAssetRequest
+  ]
 
   // ethereum networks message signatures
   "pri(eth.networks.subscribe)": [null, boolean, boolean]
@@ -157,6 +144,27 @@ export type AddEthereumChainRequest = BaseRequest<ETH_NETWORK_ADD_PREFIX> & {
   network: AddEthereumChainParameter
 }
 
+export type WatchAssetBase = {
+  type: "ERC20"
+  options: {
+    address: string // The hexadecimal Ethereum address of the token contract
+    symbol?: string // A ticker symbol or shorthand, up to 11 alphanumerical characters
+    decimals?: number // The number of asset decimals
+    image?: string // A string url of the token logo
+  }
+}
+
+export type WATCH_ASSET_PREFIX = "eth-watchasset"
+export const WATCH_ASSET_PREFIX: WATCH_ASSET_PREFIX = "eth-watchasset"
+export type WatchAssetRequestId = BaseRequestId<WATCH_ASSET_PREFIX>
+export type WatchAssetRequestIdOnly = { id: WatchAssetRequestId }
+export type WatchAssetRequest = BaseRequest<WATCH_ASSET_PREFIX> & {
+  url: string
+  request: WatchAssetBase
+  token: CustomErc20Token
+}
+
 export type EthRequests = {
   [ETH_NETWORK_ADD_PREFIX]: [AddEthereumChainRequest, null]
+  [WATCH_ASSET_PREFIX]: [WatchAssetRequest, boolean]
 }

@@ -49,7 +49,7 @@ import {
   isValidRequestedPermissions,
   isValidWatchAssetRequestParam,
 } from "./helpers"
-import { requestAddNetwork } from "./requests"
+import { requestAddNetwork, requestWatchAsset } from "./requests"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
 import { Web3WalletPermission, Web3WalletPermissionTarget } from "./types"
 
@@ -443,7 +443,7 @@ export class EthTabsHandler extends TabsHandler {
       image: image ?? tokenInfo.image,
     }
 
-    return this.state.requestStores.evmAssets.requestWatchAsset(url, request.params, token)
+    return requestWatchAsset(url, request.params, token)
   }
 
   private async sendTransaction(url: string, request: EthRequestArguments<"eth_sendTransaction">) {

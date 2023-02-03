@@ -1,12 +1,12 @@
 import { DEBUG } from "@core/constants"
-import {
-  AddEthereumChainRequestId,
+import type {
   AnyEthRequestChainId,
-  ETH_NETWORK_ADD_PREFIX,
   EthApproveSignAndSend,
   EthRequestSigningApproveSignature,
   WatchAssetRequest,
+  WatchAssetRequestIdOnly,
 } from "@core/domains/ethereum/types"
+import { ETH_NETWORK_ADD_PREFIX, WATCH_ASSET_PREFIX } from "@core/domains/ethereum/types"
 import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import { CustomEvmNativeToken } from "@core/domains/tokens/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
@@ -424,8 +424,8 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private ethWatchAssetRequestCancel({ id }: RequestIdOnly): boolean {
-    const queued = this.state.requestStores.evmAssets.getRequest(id)
+  private ethWatchAssetRequestCancel({ id }: WatchAssetRequestIdOnly): boolean {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -436,8 +436,8 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async ethWatchAssetRequestApprove({ id }: RequestIdOnly): Promise<boolean> {
-    const queued = this.state.requestStores.evmAssets.getRequest(id)
+  private async ethWatchAssetRequestApprove({ id }: WatchAssetRequestIdOnly): Promise<boolean> {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
     const { resolve, token } = queued
@@ -506,25 +506,25 @@ export class EthHandler extends ExtensionHandler {
       // ethereum watch asset requests handlers -----------------------------
       // --------------------------------------------------------------------
       case "pri(eth.watchasset.requests.cancel)":
-        return this.ethWatchAssetRequestCancel(request as RequestIdOnly)
+        return this.ethWatchAssetRequestCancel(request as WatchAssetRequestIdOnly)
 
       case "pri(eth.watchasset.requests.approve)":
-        return this.ethWatchAssetRequestApprove(request as RequestIdOnly)
+        return this.ethWatchAssetRequestApprove(request as WatchAssetRequestIdOnly)
 
       case "pri(eth.watchasset.requests.subscribe)":
-        return this.state.requestStores.evmAssets.subscribe<"pri(eth.watchasset.requests.subscribe)">(
-          id,
-          port
-        )
+        return requestStore.subscribe<"pri(eth.watchasset.requests.subscribe)">(id, port, [
+          WATCH_ASSET_PREFIX,
+        ])
 
       case "pri(eth.watchasset.requests.subscribe.byid)": {
         const cb = createSubscription<"pri(eth.watchasset.requests.subscribe.byid)">(id, port)
-        const subscription = this.state.requestStores.evmAssets.observable.subscribe(
-          (reqs: WatchAssetRequest[]) => {
-            const watchAssetRequest = reqs.find((req) => req.id === (request as RequestIdOnly).id)
-            if (watchAssetRequest) cb(watchAssetRequest)
-          }
-        )
+        const subscription = requestStore.observable.subscribe((reqs) => {
+          const watchAssetRequest = reqs.find(
+            (req) => req.id === (request as WatchAssetRequestIdOnly).id
+          )
+          if (watchAssetRequest && watchAssetRequest.type === WATCH_ASSET_PREFIX)
+            cb(watchAssetRequest)
+        })
 
         port.onDisconnect.addListener((): void => {
           unsubscribe(id)

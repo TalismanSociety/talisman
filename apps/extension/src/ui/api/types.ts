@@ -25,6 +25,7 @@ import {
   EvmNetworkId,
   RequestUpsertCustomEvmNetwork,
   WatchAssetRequest,
+  WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
 import { MetadataRequest, RequestMetadataId } from "@core/domains/metadata/types"
 import {
@@ -245,10 +246,10 @@ export default interface MessageTypes {
   ethNetworkReset: (id: string) => Promise<boolean>
 
   // ethereum tokens message types
-  ethWatchAssetRequestApprove: (id: string) => Promise<boolean>
-  ethWatchAssetRequestCancel: (is: string) => Promise<boolean>
+  ethWatchAssetRequestApprove: (id: WatchAssetRequestId) => Promise<boolean>
+  ethWatchAssetRequestCancel: (is: WatchAssetRequestId) => Promise<boolean>
   ethWatchAssetRequestSubscribe: (
-    id: string,
+    id: WatchAssetRequestId,
     cb: (requests: WatchAssetRequest) => void
   ) => UnsubscribeFn
   ethWatchAssetRequestsSubscribe: (cb: (requests: WatchAssetRequest[]) => void) => UnsubscribeFn

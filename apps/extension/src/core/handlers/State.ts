@@ -5,7 +5,6 @@ import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
 import { EncryptRequestsStore } from "@core/domains/encrypt"
-import EvmWatchAssetRequestsStore from "@core/domains/tokens/evmWatchAssetRequestsStore"
 import { requestStore } from "@core/libs/requests/store"
 import { windowManager } from "@core/libs/WindowManager"
 import { sleep } from "@talismn/util"
@@ -17,9 +16,6 @@ export default class State {
 
   // Request stores handle ephemeral data relating to to requests for signing, metadata, and authorisation of sites
   readonly requestStores = {
-    evmAssets: new EvmWatchAssetRequestsStore((req) => {
-      windowManager.popupOpen(`#/eth-watchasset/${req.id}`)
-    }),
     encrypt: new EncryptRequestsStore((req) => {
       windowManager.popupOpen(`#/encrypt/${req.id}`)
     }),
@@ -41,7 +37,6 @@ export default class State {
 
     const todo = {
       networkAddCount: 0,
-      evmAssets: 0,
     }
 
     const text = counts.get("auth")
@@ -52,7 +47,7 @@ export default class State {
       ? `${signingCount}`
       : todo.networkAddCount
       ? "Network"
-      : todo.evmAssets
+      : counts.get("eth-watchasset")
       ? "Assets"
       : ""
 
