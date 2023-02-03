@@ -350,9 +350,8 @@ export class EthTabsHandler extends TabsHandler {
     const { params, method } = request as EthRequestSignArguments
 
     // eth_signTypedData requires a non-empty array of parameters, else throw (uniswap will then call v4)
-    if (method === "eth_signTypedData" && typeof params[1] === "string") {
-      const parsed = JSON.parse(params[1])
-      if (!Array.isArray(parsed))
+    if (method === "eth_signTypedData") {
+      if (!Array.isArray(params[0]))
         throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
     }
 
