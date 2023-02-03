@@ -4,7 +4,6 @@ import { QrDisplayPayload } from "@polkadot/react-qr"
 import { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
 import { Drawer } from "@talisman/components/Drawer"
-import { HandRedSmallLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
 import { ScanQr } from "@ui/domains/Sign/ScanQr"
 import { ReactElement, useEffect, useState } from "react"
@@ -89,16 +88,13 @@ export const QrSubstrate = ({
 
       {scanState === "SEND" && unsigned && (
         <>
-          <div className="relative">
-            <QrDisplayPayload
-              className="rounded-xl bg-white p-12"
-              address={account?.address}
-              cmd={CMD_MORTAL}
-              genesisHash={genesisHash ?? "0x"}
-              payload={unsigned}
-            />
-            <HandRedSmallLogo className="absolute top-1/2 left-1/2 h-[5.2rem] w-[5.2rem] -translate-x-1/2 -translate-y-1/2 bg-white p-1" />
-          </div>
+          <QrDisplayPayload
+            className="rounded-xl bg-white p-12"
+            address={account?.address}
+            cmd={CMD_MORTAL}
+            genesisHash={genesisHash ?? "0x"}
+            payload={unsigned}
+          />
 
           <div className="flex w-full gap-12">
             <Button className="w-full" onClick={onReject}>
