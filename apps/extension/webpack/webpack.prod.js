@@ -9,8 +9,15 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPl
 const common = require("./webpack.common.js")
 const { distDir, getArchiveFileName, getSentryPlugin, getManifestVersionName } = require("./utils")
 
-const config = (env) =>
-  merge(common(env), {
+const config = (env) => {
+  if (env.build === "production") {
+    if (!process.env.POSTHOG_AUTH_TOKEN) {
+      console.warn("Missing POSTHOG_AUTH_TOKEN env variable")
+      throw new Error("Missing POSTHOG_AUTH_TOKEN env variable")
+    }
+  }
+
+  return merge(common(env), {
     devtool: "source-map",
     mode: "production",
     plugins: [
@@ -73,5 +80,6 @@ const config = (env) =>
       minimizer: [new TerserPlugin({ terserOptions: { compress: true } })],
     },
   })
+}
 
 module.exports = config
