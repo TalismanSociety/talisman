@@ -1,6 +1,7 @@
 import { TokenId } from "@core/domains/tokens/types"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSettings } from "@ui/hooks/useSettings"
 import { FC } from "react"
 
 import GenericPicker, { PickerItemProps } from "../../../@talisman/components/GenericPicker"
@@ -51,14 +52,15 @@ const AssetPicker: FC<IProps> = ({
   className,
   showChainsWithBalanceFirst,
 }) => {
-  const chains = useChains()
-  const evmNetworks = useEvmNetworks()
+  const { useTestnets = false } = useSettings()
+  const { chainsMap } = useChains(useTestnets)
+  const { evmNetworksMap } = useEvmNetworks(useTestnets)
   const transferableTokens = useSortedTransferableTokens(showChainsWithBalanceFirst)
 
   const items: PickerItemProps[] = transferableTokens.map((transferable) => {
     const { id, chainId, evmNetworkId, token } = transferable
-    const chain = chains?.find((c) => c.id === chainId)
-    const evmNetwork = evmNetworks?.find((n) => n.id === evmNetworkId)
+    const chain = chainId ? chainsMap[chainId] : undefined
+    const evmNetwork = evmNetworkId ? evmNetworksMap[evmNetworkId] : undefined
     const networkName = chain?.chainName || evmNetwork?.name
     // display type only if chain has an evm network, or vice versa
     const networkType =

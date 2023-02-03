@@ -8,12 +8,10 @@ import { useDbCacheSubscription } from "./useDbCacheSubscription"
 export const useBalances = () => {
   // keep db data up to date
   useDbCacheSubscription("balances")
-  const { allBalances } = useDbCache()
+  const { balances } = useDbCache()
 
   const hydrate = useBalancesHydrate()
 
-  const balances = useMemo(() => new Balances(allBalances, hydrate), [allBalances, hydrate])
-
-  return balances
+  return useMemo(() => new Balances(balances, hydrate), [balances, hydrate])
 }
 export default useBalances

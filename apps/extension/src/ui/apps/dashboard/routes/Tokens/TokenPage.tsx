@@ -115,6 +115,7 @@ export const TokenPage = () => {
       <form className="my-20 space-y-4">
         <FormFieldContainer label="Network">
           <NetworkSelect
+            withTestnets
             defaultChainId={network.id}
             // disabling network edit because it would create a new token
             disabled={Boolean(id)}

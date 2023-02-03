@@ -15,6 +15,7 @@ import { useBalance } from "@ui/hooks/useBalance"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
+import { useSettings } from "@ui/hooks/useSettings"
 import { useTip } from "@ui/hooks/useTip"
 import {
   ChangeEventHandler,
@@ -309,19 +310,22 @@ export const SendForm = () => {
     setIsEvm(!!transferableToken?.evmNetworkId)
   }, [transferableToken?.evmNetworkId])
 
+  const { useTestnets = false } = useSettings()
   const { token } = transferableToken ?? {}
   const balance = useBalance(from, token?.id as string)
 
-  const chains = useChains()
-  const evmNetworks = useEvmNetworks()
+  const { chainsMap } = useChains(useTestnets)
+  const { evmNetworksMap } = useEvmNetworks(useTestnets)
 
   // account filters based on selected token
   const {
     addressType,
     genesisHash,
   }: { addressType: AccountAddressType; genesisHash?: string | null } = useMemo(() => {
-    const chain = chains?.find((c) => c.id === transferableToken?.chainId)
-    const evmNetwork = evmNetworks?.find((c) => c.id === transferableToken?.evmNetworkId)
+    const chain = transferableToken?.chainId ? chainsMap[transferableToken.chainId] : undefined
+    const evmNetwork = transferableToken?.evmNetworkId
+      ? evmNetworksMap[transferableToken.evmNetworkId]
+      : undefined
 
     return chain
       ? {
@@ -331,7 +335,7 @@ export const SendForm = () => {
       : {
           addressType: evmNetwork ? "ethereum" : "UNKNOWN",
         }
-  }, [chains, evmNetworks, transferableToken?.chainId, transferableToken?.evmNetworkId])
+  }, [chainsMap, evmNetworksMap, transferableToken?.chainId, transferableToken?.evmNetworkId])
 
   // refresh tip while on edit form, but stop refreshing after review (showForm becomes false)
   const { tip, error: tipError } = useTip(transferableToken?.chainId, showForm)

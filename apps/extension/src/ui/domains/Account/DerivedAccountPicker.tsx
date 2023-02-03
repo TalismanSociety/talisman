@@ -268,7 +268,7 @@ const useDerivedAccounts = (
     setLoading(false)
   }, [itemsPerPage, mnemonic, name, pageIndex, type])
 
-  const chains = useChains()
+  const { chains } = useChains(false)
 
   const balanceParams = useMemo(() => {
     const chainIds = type === "ethereum" ? ["moonbeam", "moonriver"] : ["polkadot", "kusama"]
