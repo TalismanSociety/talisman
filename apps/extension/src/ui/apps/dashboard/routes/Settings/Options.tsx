@@ -15,7 +15,6 @@ const Options = () => {
     useTestnets = false,
     hideBalances = false,
     allowNotifications = true,
-    shouldMimicMetaMask = false,
     update,
   } = useSettings()
 
@@ -56,15 +55,6 @@ const Options = () => {
           <AvatarTypeSelect
             selectedType={identiconType}
             onChange={handleSettingChange("identiconType")}
-          />
-        </Setting>
-        <Setting
-          title="MetaMask Dapp compatibility"
-          subtitle="Allows using Talisman on applications that support MetaMask only. Leave this turned off if you use MetaMask in the same browser as Talisman."
-        >
-          <Field.Toggle
-            value={shouldMimicMetaMask}
-            onChange={handleSettingChange("shouldMimicMetaMask")}
           />
         </Setting>
       </Grid>

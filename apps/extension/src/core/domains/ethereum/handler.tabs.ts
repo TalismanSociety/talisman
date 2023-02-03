@@ -580,6 +580,11 @@ export class EthTabsHandler extends TabsHandler {
         // public method, no need to auth (returns empty array if not authorized yet)
         return this.accountsList(url)
 
+      case "eth_coinbase": {
+        const accounts = await this.accountsList(url)
+        return accounts[0] ?? null
+      }
+
       case "eth_chainId":
         // public method, no need to auth (returns undefined if not authorized yet)
         return ethers.utils.hexValue(await this.getChainId(url))
@@ -668,9 +673,6 @@ export class EthTabsHandler extends TabsHandler {
 
       case "pub(eth.request)":
         return this.ethRequest(id, url, request as AnyEthRequest) as any
-
-      case "pub(eth.mimicMetaMask)":
-        return this.stores.settings.get("shouldMimicMetaMask")
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)
