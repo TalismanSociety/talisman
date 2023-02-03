@@ -1,4 +1,3 @@
-import { QrScanAddress } from "@polkadot/react-qr"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
@@ -11,6 +10,7 @@ import { Address } from "@ui/domains/Account/Address"
 import Avatar from "@ui/domains/Account/Avatar"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
+import { ScanQr } from "@ui/domains/Sign/ScanQr"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
@@ -115,19 +115,18 @@ export const AccountAddQr = () => {
             lockToNetwork ? genesisHash : null
           )
         )
-
         notifyUpdate(notificationId, {
           type: "success",
           title: "Account created",
           subtitle: name,
         })
       } catch (error) {
+        dispatch({ method: "setSubmittingFailed" })
         notifyUpdate(notificationId, {
           type: "error",
           title: "Error creating account",
           subtitle: (error as Error)?.message,
         })
-        dispatch({ method: "setSubmittingFailed" })
       }
     },
     [setAddress, state]
@@ -245,26 +244,18 @@ export const AccountAddQr = () => {
               {state.scanError && <div>{state.scanError}</div>}
             </div>
             <div>
-              <div className="bg-grey-900 relative h-[260px] w-[260px] rounded-xl">
-                {state.enable ? (
-                  <QrScanAddress
-                    className="[&>section>section]:rounded-xl [&>section>section>div:first-child]:hidden [&>section>section>video]:bg-transparent [&>section>section>video]:blur-lg"
-                    onScan={(scanned) => dispatch({ method: "onScan", scanned })}
-                    onError={(error) =>
-                      dispatch({
-                        method: "setCameraError",
-                        error: error.name ?? error.message ?? "error",
-                      })
-                    }
-                    size={260}
-                  />
-                ) : null}
-                <CameraMarker
-                  className="absolute top-0 left-0 h-full w-full"
-                  active={state.enable}
-                  error={!!state.cameraError}
-                />
-              </div>
+              <ScanQr
+                type="address"
+                enable={state.enable}
+                error={!!state.cameraError}
+                onScan={(scanned) => dispatch({ method: "onScan", scanned })}
+                onError={(error) =>
+                  dispatch({
+                    method: "setCameraError",
+                    error: error.name ?? error.message ?? "error",
+                  })
+                }
+              />
             </div>
           </div>
         </>
@@ -341,37 +332,5 @@ export const AccountAddQr = () => {
         </>
       )}
     </Layout>
-  )
-}
-
-const CameraMarker = ({
-  className,
-  active,
-  error,
-}: {
-  className?: string
-  active: boolean
-  error: boolean
-}) => {
-  const bg = error ? "bg-alert-error" : active ? "bg-white" : "bg-grey-800"
-  const width = (horizontal: boolean) => (horizontal ? "w-2" : "h-2")
-  const length = (horizontal: boolean) => (horizontal ? "h-1/5" : "w-1/5")
-  const horizontal = `${width(true)} ${length(true)}`
-  const vertical = `${width(false)} ${length(false)}`
-
-  return (
-    <div className={className}>
-      <div className={`absolute top-8 left-8 rounded ${horizontal} ${bg}`} />
-      <div className={`absolute top-8 left-8 rounded ${vertical} ${bg}`} />
-
-      <div className={`absolute bottom-8 left-8 rounded ${horizontal} ${bg}`} />
-      <div className={`absolute bottom-8 left-8 rounded ${vertical} ${bg}`} />
-
-      <div className={`absolute right-8 top-8 rounded ${horizontal} ${bg}`} />
-      <div className={`absolute right-8 top-8 rounded ${vertical} ${bg}`} />
-
-      <div className={`absolute bottom-8 right-8 rounded ${horizontal} ${bg}`} />
-      <div className={`absolute bottom-8 right-8 rounded ${vertical} ${bg}`} />
-    </div>
   )
 }

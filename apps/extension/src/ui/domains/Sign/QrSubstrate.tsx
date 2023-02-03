@@ -1,10 +1,11 @@
 import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
-import { QrDisplayPayload, QrScanSignature } from "@polkadot/react-qr"
+import { QrDisplayPayload } from "@polkadot/react-qr"
 import { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { classNames } from "@talismn/util"
+import { ScanQr } from "@ui/domains/Sign/ScanQr"
 import { ReactElement, useEffect, useState } from "react"
 import { Button } from "talisman-ui"
 
@@ -88,6 +89,7 @@ export const QrSubstrate = ({
       {scanState === "SEND" && unsigned && (
         <>
           <QrDisplayPayload
+            className="rounded-xl bg-white p-12"
             address={account?.address}
             cmd={CMD_MORTAL}
             genesisHash={genesisHash ?? "0x"}
@@ -107,7 +109,7 @@ export const QrSubstrate = ({
 
       {scanState === "RECEIVE" && onSignature && (
         <>
-          <QrScanSignature onScan={onSignature} />
+          <ScanQr type="signature" onScan={onSignature} size={352} />
 
           <Button className="w-full" onClick={onReject}>
             Cancel
