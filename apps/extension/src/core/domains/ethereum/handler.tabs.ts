@@ -349,6 +349,12 @@ export class EthTabsHandler extends TabsHandler {
   private signMessage = async (url: string, request: EthRequestSignArguments) => {
     const { params, method } = request as EthRequestSignArguments
 
+    // eth_signTypedData requires a non-empty array of parameters, else throw (uniswap will then call v4)
+    if (method === "eth_signTypedData") {
+      if (!Array.isArray(params[0]))
+        throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
+    }
+
     let isMessageFirst = ["personal_sign", "eth_signTypedData", "eth_signTypedData_v1"].includes(
       method
     )

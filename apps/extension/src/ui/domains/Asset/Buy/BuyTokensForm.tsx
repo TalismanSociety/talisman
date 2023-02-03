@@ -114,7 +114,10 @@ const DEFAULT_BUY_TOKEN_IDS = [
   "1-evm-native-eth",
 ]
 
-const BANXA_URL = DEBUG ? "https://talisman.banxa-sandbox.com/" : "https://talisman.banxa.com/"
+// Used for testing the full buying flow
+// The tokens available at this endpoint are not in sync with the production endpoint
+// const BANXA_URL = "https://talisman.banxa-sandbox.com/"
+const BANXA_URL = "https://talisman.banxa.com/"
 
 type FormData = {
   address: string
