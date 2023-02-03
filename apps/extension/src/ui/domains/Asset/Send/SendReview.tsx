@@ -232,6 +232,7 @@ const SendReview = () => {
           )}
           {approvalMode === "hwSubstrate" && <SendLedgerSubstrate />}
           {approvalMode === "hwEthereum" && <SendLedgerEthereum />}
+          {/* TODO: Integrate QR signing into send funds v2 */}
           {approvalMode === "qr" && <SendQr />}
           {approvalMode === "backend" && (
             <div className="buttons">

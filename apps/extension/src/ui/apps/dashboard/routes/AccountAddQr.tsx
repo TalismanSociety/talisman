@@ -218,11 +218,11 @@ export const AccountAddQr = () => {
                       },
                   {
                     title: "Open Parity Signer",
-                    body: "Select ‘Keys’ tab then select your account to reveal the QR code.",
+                    body: "Select ‘Keys’ tab then select your account to reveal the QR code",
                   },
                   {
                     title: "Scan QR code",
-                    body: "Bring your QR code in front of your camera. The preview image is blurred for security, but this does not affect the reading.",
+                    body: "Bring your QR code in front of your camera. The preview image is blurred for security, but this does not affect the reading",
                   },
                 ].map(({ title, body, extra, errorIcon }, index) => (
                   <li className="relative ml-20" key={index}>
