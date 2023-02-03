@@ -5,6 +5,7 @@ import { QrDisplayPayload } from "@polkadot/react-qr"
 import { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
 import { Drawer } from "@talisman/components/Drawer"
+import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { ScanQr } from "@ui/domains/Sign/ScanQr"
 import { ReactElement, useEffect, useState } from "react"
@@ -75,32 +76,48 @@ export const QrSubstrate = ({
     )
   }, [genesisHash, cmd])
 
-  return (
-    <div className={classNames("flex w-full flex-col gap-6", className)}>
-      {scanState === "INIT" && (
-        <>
-          <div className="flex w-full gap-12">
-            <Button className="w-full" onClick={onReject}>
-              Cancel
-            </Button>
-            <Button className="w-full" primary onClick={() => setScanState("SEND")}>
-              Sign with QR
-            </Button>
-          </div>
-          {error && (
-            <Drawer anchor="bottom" open={true} parent={parent}>
-              <LedgerSigningStatus
-                message={error ? error : ""}
-                status={error ? "error" : undefined}
-                confirm={onReject}
-              />
-            </Drawer>
-          )}
-        </>
-      )}
+  if (scanState === "INIT")
+    return (
+      <div className={classNames("flex w-full flex-col gap-6", className)}>
+        <div className="flex w-full gap-12">
+          <Button className="w-full" onClick={onReject}>
+            Cancel
+          </Button>
+          <Button className="w-full" primary onClick={() => setScanState("SEND")}>
+            Sign with QR
+          </Button>
+        </div>
+        {error && (
+          <Drawer anchor="bottom" open={true} parent={parent}>
+            <LedgerSigningStatus
+              message={error ? error : ""}
+              status={error ? "error" : undefined}
+              confirm={onReject}
+            />
+          </Drawer>
+        )}
+      </div>
+    )
 
-      {scanState === "SEND" && unsigned && (
-        <>
+  return (
+    <div
+      className={classNames(
+        "bg-black-primary absolute top-0 left-0 flex h-full w-full flex-col gap-6",
+        className
+      )}
+    >
+      <header className="text-grey-400 grid h-32 w-full grid-cols-3 items-center px-12">
+        <span
+          className="flex h-16 w-16 cursor-pointer items-center p-2"
+          onClick={() => setScanState((scanState) => (scanState === "RECEIVE" ? "SEND" : "INIT"))}
+        >
+          <ChevronLeftIcon className="h-full w-full " />
+        </span>
+        <span className="text-grey-600 text-center text-sm">Scan QR code</span>
+        <span>&nbsp;</span>
+      </header>
+      <section className="grow px-12">
+        {scanState === "SEND" && unsigned && (
           <QrDisplayPayload
             className="rounded-xl bg-white p-12"
             address={account?.address}
@@ -108,25 +125,29 @@ export const QrSubstrate = ({
             genesisHash={genesisHash ?? "0x"}
             payload={unsigned}
           />
-          <div className="flex w-full gap-12">
+        )}
+
+        {scanState === "RECEIVE" && onSignature && (
+          <ScanQr type="signature" onScan={onSignature} size={352} />
+        )}
+      </section>
+      <footer className="flex w-full gap-12 px-12 py-10">
+        {scanState === "SEND" && unsigned && (
+          <>
             <Button className="w-full" onClick={onReject}>
               Cancel
             </Button>
             <Button className="w-full" primary onClick={() => setScanState("RECEIVE")}>
               Next
             </Button>
-          </div>
-        </>
-      )}
-
-      {scanState === "RECEIVE" && onSignature && (
-        <>
-          <ScanQr type="signature" onScan={onSignature} size={352} />
+          </>
+        )}
+        {scanState === "RECEIVE" && onSignature && (
           <Button className="w-full" onClick={onReject}>
             Cancel
           </Button>
-        </>
-      )}
+        )}
+      </footer>
     </div>
   )
 }
