@@ -1,5 +1,6 @@
 import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
+import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { QrDisplayPayload } from "@polkadot/react-qr"
 import { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
@@ -12,6 +13,7 @@ import { Button } from "talisman-ui"
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 
 const CMD_MORTAL = 2
+const CMD_SIGN_MESSAGE = 3
 
 type ScanState =
   // waiting for user to inspect tx and click button
@@ -48,19 +50,30 @@ export const QrSubstrate = ({
 }: Props): ReactElement<Props> => {
   const [scanState, setScanState] = useState<ScanState>("INIT")
   const [error, setError] = useState<string | null>(null)
+  const [cmd, setCmd] = useState<typeof CMD_MORTAL | typeof CMD_SIGN_MESSAGE>(CMD_MORTAL)
   const [unsigned, setUnsigned] = useState<Uint8Array>()
 
   useEffect(() => {
     if (isRawPayload(payload)) {
-      setError("Message signing is not supported for Parity Signer wallets.")
+      setCmd(CMD_SIGN_MESSAGE)
+      setUnsigned(wrapBytes(payload.data))
     } else {
       if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
-      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, {
-        version: payload.version,
-      })
+      const { version } = payload
+      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, { version })
+      setCmd(CMD_MORTAL)
       setUnsigned(extrinsicPayload.toU8a())
     }
   }, [payload])
+
+  useEffect(() => {
+    if (genesisHash) return
+    if (cmd === CMD_MORTAL) return
+
+    setError(
+      "Parity Signer only supports plain message signing for wallets which are locked to a single network."
+    )
+  }, [genesisHash, cmd])
 
   return (
     <div className={classNames("flex w-full flex-col gap-6", className)}>
@@ -91,11 +104,10 @@ export const QrSubstrate = ({
           <QrDisplayPayload
             className="rounded-xl bg-white p-12"
             address={account?.address}
-            cmd={CMD_MORTAL}
+            cmd={cmd ?? CMD_MORTAL}
             genesisHash={genesisHash ?? "0x"}
             payload={unsigned}
           />
-
           <div className="flex w-full gap-12">
             <Button className="w-full" onClick={onReject}>
               Cancel
@@ -110,7 +122,6 @@ export const QrSubstrate = ({
       {scanState === "RECEIVE" && onSignature && (
         <>
           <ScanQr type="signature" onScan={onSignature} size={352} />
-
           <Button className="w-full" onClick={onReject}>
             Cancel
           </Button>
