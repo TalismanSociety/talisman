@@ -6,6 +6,7 @@ import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { TokenId } from "@talismn/chaindata-provider"
 import { getBase64ImageUrl } from "@talismn/util"
 import useToken from "@ui/hooks/useToken"
+import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { imgSrcToBlob } from "blob-util"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
@@ -73,9 +74,7 @@ export const AssetLogo: FC<AssetLogoProps> = ({ className, id, erc20 }) => {
     // if the token is a custom erc20 token, try the token.image field first
     //
     return (
-      (token && token.type === "evm-erc20" && "isCustom" in token && token.isCustom
-        ? token.image
-        : undefined) ??
+      (isCustomErc20Token(token) ? token.image : undefined) ??
       //
       // next, try the token.logo field
       //

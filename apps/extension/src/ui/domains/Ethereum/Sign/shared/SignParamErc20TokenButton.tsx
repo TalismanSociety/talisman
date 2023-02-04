@@ -21,7 +21,7 @@ export const SignParamErc20TokenButton: FC<SignParamErc20TokenButtonProps> = ({
   asset,
   className,
 }) => {
-  const tokens = useTokens()
+  const { tokens } = useTokens(true)
   const token = useMemo(() => {
     return network
       ? (tokens?.find(

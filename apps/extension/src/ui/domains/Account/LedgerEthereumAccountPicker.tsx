@@ -67,7 +67,7 @@ const useLedgerEthereumAccounts = (
     setIsBusy(false)
   }, [derivationPathType, isReady, itemsPerPage, ledger, name, pageIndex])
 
-  const evmNetworks = useEvmNetworks()
+  const { evmNetworks } = useEvmNetworks(false)
 
   // which balances to fetch
   const addressesByEvmNetwork = useMemo(() => {

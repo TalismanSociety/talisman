@@ -1,6 +1,6 @@
 import { TokenId } from "@core/domains/tokens/types"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 
 export const useBalance = (address: string, tokenId: TokenId) => {
   const balances = useBalancesByAddress(address)

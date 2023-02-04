@@ -11,6 +11,7 @@ import { useAccountChainsFilter } from "@ui/hooks/useAccountChainsFilter"
 import useAddressTypeChainsFilter from "@ui/hooks/useAddressTypeChainsFilter"
 import useChainsAndSearchSymbols from "@ui/hooks/useChainsAndSearchSymbols"
 import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
+import { useSettings } from "@ui/hooks/useSettings"
 import { useSortedChains } from "@ui/hooks/useSortedChains"
 import { copyAddress } from "@ui/util/copyAddress"
 import { PropsWithChildren, useCallback, useState } from "react"
@@ -145,7 +146,8 @@ interface IPropsAddressFormatter extends PropsWithChildren<any> {
 }
 
 const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressFormatter) => {
-  const chains = useSortedChains()
+  const { useTestnets } = useSettings()
+  const chains = useSortedChains(!!useTestnets)
   const [copied, setCopied] = useState("")
 
   const accountCompatibleChains = useAccountChainsFilter(chains, address)

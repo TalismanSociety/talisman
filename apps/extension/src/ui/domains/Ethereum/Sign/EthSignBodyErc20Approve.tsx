@@ -23,7 +23,7 @@ const ALLOWANCE_UNLIMITED = "0xfffffffffffffffffffffffffffffffffffffffffffffffff
 export const EthSignBodyErc20Approve: FC = () => {
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
-  const tokens = useTokens()
+  const { tokens } = useTokens(true)
   const token = useMemo(() => {
     return network
       ? (tokens?.find(

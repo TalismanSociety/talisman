@@ -11,9 +11,9 @@ export const useBalancesHydrate = (): HydrateDb => {
   useDbCacheSubscription("tokenRates")
 
   const {
-    chainsMap: chains,
-    evmNetworksMap: evmNetworks,
-    tokensMap: tokens,
+    chainsWithTestnetsMap: chains,
+    evmNetworksWithTestnetsMap: evmNetworks,
+    tokensWithTestnetsMap: tokens,
     tokenRatesMap: tokenRates,
   } = useDbCache()
 

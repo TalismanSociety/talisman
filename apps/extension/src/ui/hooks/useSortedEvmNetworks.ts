@@ -5,7 +5,7 @@ import { useMemo } from "react"
 const sortNetworks = (a: EvmNetwork | CustomEvmNetwork, b: EvmNetwork | CustomEvmNetwork) =>
   (a.name || "").localeCompare(b.name || "")
 
-export const useSortedEvmNetworks = () => {
-  const networks = useEvmNetworks()
-  return useMemo(() => networks.sort(sortNetworks), [networks])
+export const useSortedEvmNetworks = (withTestnets: boolean) => {
+  const { evmNetworks } = useEvmNetworks(withTestnets)
+  return useMemo(() => evmNetworks.sort(sortNetworks), [evmNetworks])
 }

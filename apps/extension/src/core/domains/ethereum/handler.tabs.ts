@@ -342,7 +342,18 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     request: EthRequestArguments<K>
   ): Promise<unknown> {
-    const provider = await this.getProvider(url)
+    // obtain the chain id without checking auth.
+    // note: this method is only called if method doesn't require auth, or if auth is already checked
+    const chainId = await this.getChainId(url)
+
+    const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
+    if (!ethereumNetwork)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
+
+    const provider = await getProviderForEthereumNetwork(ethereumNetwork)
+    if (!provider)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+
     return provider.send(request.method, request.params as unknown as any[])
   }
 
@@ -559,6 +570,7 @@ export class EthTabsHandler extends TabsHandler {
         "eth_requestAccounts",
         "eth_accounts",
         "eth_chainId",
+        "eth_blockNumber",
         "net_version",
         "wallet_switchEthereumChain",
         "wallet_addEthereumChain",
@@ -579,6 +591,11 @@ export class EthTabsHandler extends TabsHandler {
       case "eth_accounts":
         // public method, no need to auth (returns empty array if not authorized yet)
         return this.accountsList(url)
+
+      case "eth_coinbase": {
+        const accounts = await this.accountsList(url)
+        return accounts[0] ?? null
+      }
 
       case "eth_chainId":
         // public method, no need to auth (returns undefined if not authorized yet)
@@ -668,9 +685,6 @@ export class EthTabsHandler extends TabsHandler {
 
       case "pub(eth.request)":
         return this.ethRequest(id, url, request as AnyEthRequest) as any
-
-      case "pub(eth.mimicMetaMask)":
-        return this.stores.settings.get("shouldMimicMetaMask")
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

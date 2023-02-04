@@ -8,6 +8,7 @@ import useBalances from "@ui/hooks/useBalances"
 import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSettings } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { useEffect, useMemo, useState } from "react"
 
@@ -39,9 +40,10 @@ const getNetworkTokenSymbols = ({
 }
 
 const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balances?: Balances }) => {
-  const chains = useChains()
-  const tokens = useTokens()
-  const evmNetworks = useEvmNetworks()
+  const { useTestnets = false } = useSettings()
+  const { chains } = useChains(useTestnets)
+  const { tokens } = useTokens(useTestnets)
+  const { evmNetworks } = useEvmNetworks(useTestnets)
   const [safeNetworks, setSafeNetworks] = useState<NetworkOption[]>([])
 
   const networks = useMemo(() => {
@@ -103,10 +105,11 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
 
 // allows sharing the network filter between pages
 const usePortfolioProvider = () => {
+  const { useTestnets = false } = useSettings()
   const { account } = useSelectedAccount()
-  const chains = useChains()
-  const tokens = useTokens()
-  const evmNetworks = useEvmNetworks()
+  const { chains } = useChains(useTestnets)
+  const { tokens } = useTokens(useTestnets)
+  const { evmNetworks } = useEvmNetworks(useTestnets)
   const hydrate = useBalancesHydrate()
   const balances = useBalances()
 
