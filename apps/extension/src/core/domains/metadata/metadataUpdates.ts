@@ -1,6 +1,6 @@
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { Port } from "@core/types/base"
-import { BehaviorSubject, Subscription } from "rxjs"
+import { BehaviorSubject } from "rxjs"
 
 // chain genesisHash => is updating metadata
 type MetadataUpdates = Record<string, boolean>
@@ -20,13 +20,11 @@ class MetadataUpdatesStore {
   }
 
   subscribe(id: string, port: Port, genesisHash: string) {
-    let subscription: Subscription | undefined = undefined
-
     const cb = createSubscription<"pri(metadata.updates.subscribe)">(id, port)
 
     let value: boolean | undefined = undefined
 
-    subscription = this.metadataUpdates.subscribe((metadataUpdates) => {
+    const subscription = this.metadataUpdates.subscribe((metadataUpdates) => {
       const isUpdating = metadataUpdates[genesisHash]
       if (isUpdating !== value) {
         value = isUpdating
