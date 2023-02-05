@@ -25,15 +25,10 @@ window.addEventListener("message", ({ data, source }: Message): void => {
   port.postMessage(data)
 })
 
-// inject our data injector
+// inject using inline script, to injects providers before page scripts run
 const script = document.createElement("script")
-script.src = Browser.runtime.getURL("page.js")
-script.async = false
-script.onload = () => {
-  // remove the injecting tag when loaded
-  if (script.parentNode) script.parentNode.removeChild(script)
-}
+script.textContent = "#PAGEPROVIDERS#"
 
-// Might want to add more checks at some point, such as doctype to be HTML, and exclude some domains (ex: dropbox.com)
 const parent = document?.head || document?.documentElement
-parent?.appendChild(script)
+parent?.insertBefore(script, parent.children[0])
+parent?.removeChild(script)
