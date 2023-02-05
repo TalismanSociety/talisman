@@ -14,7 +14,6 @@ const copyObject = (target: any) => {
 const handler: ProxyHandler<any> = {
   get: (target, name, receiver) => {
     const obj = copyObject(target)
-
     if (typeof target[name] === "function") {
       safeConsoleDebug(`[Proxy ${target.constructor.name} - Calling Method: ${String(name)}`) //, obj)
       return new Proxy(target[name], {
@@ -45,6 +44,60 @@ const handler: ProxyHandler<any> = {
     })
     return Reflect.set(target, prop, val)
   },
+  apply: (target, thisArg, argumentsList) => {
+    safeConsoleDebug(`[Proxy ${target.constructor.name} - Calling Method: ${String(target.name)}`, {
+      thisArg,
+      argumentsList,
+    })
+    return Reflect.apply(target, thisArg, argumentsList)
+  },
+  construct: (target, argumentsList, newTarget) => {
+    safeConsoleDebug(`[Proxy ${target.constructor.name} - Constructing`, {
+      argumentsList,
+      newTarget,
+    })
+    return Reflect.construct(target, argumentsList, newTarget)
+  },
+  defineProperty: (target, prop, descriptor) => {
+    safeConsoleDebug(`[Proxy ${target.constructor.name} - Defining Property: ${String(prop)}`, {
+      descriptor,
+    })
+    return Reflect.defineProperty(target, prop, descriptor)
+  },
+  deleteProperty: (target, prop) => {
+    safeConsoleDebug(`[Proxy ${target.constructor.name} - Deleting Property: ${String(prop)}`)
+    return Reflect.deleteProperty(target, prop)
+  },
+  getOwnPropertyDescriptor: (target, prop) => {
+    safeConsoleDebug(
+      `[Proxy ${target.constructor.name} - Getting Property Descriptor: ${String(prop)}`
+    )
+    return Reflect.getOwnPropertyDescriptor(target, prop)
+  },
+  getPrototypeOf: (target) => {
+    safeConsoleDebug(`[Proxy ${target.constructor.name} - Getting Prototype`)
+    return Reflect.getPrototypeOf(target)
+  },
+  has: (target, prop) => {
+    safeConsoleDebug(`[Proxy ${target.constructor.name} - Has Property: ${String(prop)}`)
+    return Reflect.has(target, prop)
+  },
+  isExtensible: (target) => {
+    safeConsoleDebug(`[Proxy ${target.constructor.name} - Is Extensible`)
+    return Reflect.isExtensible(target)
+  },
+  ownKeys: (target) => {
+    safeConsoleDebug(`[Proxy ${target.constructor.name} - Own Keys`)
+    return Reflect.ownKeys(target)
+  },
+  preventExtensions: (target) => {
+    safeConsoleDebug(`[Proxy ${target.constructor.name} - Prevent Extensions`)
+    return Reflect.preventExtensions(target)
+  },
+  setPrototypeOf: (target, proto) => {
+    safeConsoleDebug(`[Proxy ${target.constructor.name} - Set Prototype`)
+    return Reflect.setPrototypeOf(target, proto)
+  },
 }
 
 /* 
@@ -52,5 +105,6 @@ const handler: ProxyHandler<any> = {
   Significant performance hit, do not use in production.
 */
 export const logProxy = (sourceObj: any) => {
+  safeConsoleDebug("proxying !")
   return new Proxy(sourceObj, handler)
 }
