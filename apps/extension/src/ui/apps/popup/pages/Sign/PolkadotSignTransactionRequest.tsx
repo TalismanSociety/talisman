@@ -38,6 +38,7 @@ export const PolkadotSignTransactionRequest: FC<PolkadotSignTransactionRequestPr
     approveHardware,
   } = usePolkadotSigningRequest(signingRequest)
   const {
+    isReady,
     isMetadataLoading,
     analysing,
     txDetails,
@@ -48,12 +49,15 @@ export const PolkadotSignTransactionRequest: FC<PolkadotSignTransactionRequestPr
     updateUrl,
   } = usePolkadotTransaction(signingRequest)
 
-  const { processing, errorMessage } = useMemo(() => {
+  const { processing, errorMessage, showMetadataStatus } = useMemo(() => {
     return {
       processing: status === "PROCESSING",
       errorMessage: status === "ERROR" ? message : "",
+      showMetadataStatus:
+        status !== "PROCESSING" &&
+        (isMetadataUpdating || hasMetadataUpdateFailed || requiresMetadataUpdate),
     }
-  }, [status, message])
+  }, [status, message, isMetadataUpdating, hasMetadataUpdateFailed, requiresMetadataUpdate])
 
   useEffect(() => {
     // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
@@ -61,11 +65,6 @@ export const PolkadotSignTransactionRequest: FC<PolkadotSignTransactionRequestPr
   }, [status])
 
   if (isLoading || isMetadataLoading) return null
-
-  const showMetadataStatus =
-    (processing && (analysing || isMetadataUpdating)) ||
-    hasMetadataUpdateFailed ||
-    requiresMetadataUpdate
 
   return (
     <Container>
@@ -81,21 +80,20 @@ export const PolkadotSignTransactionRequest: FC<PolkadotSignTransactionRequestPr
                 <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
                 {chain ? ` on ${chain.name}` : null}
               </h2>
-            </div>
-            {errorMessage && <div className="error">{errorMessage}</div>}
-            {showMetadataStatus ? (
-              <MetadataStatus
-                showUpdating={processing && (analysing || isMetadataUpdating)}
-                showUpdateFailed={hasMetadataUpdateFailed}
-                showUpdateRequired={requiresMetadataUpdate}
-                updateUrl={updateUrl}
-              />
-            ) : (
-              <div className="bottom">
+              <div className="mt-8">
                 {signingRequest && (
                   <ViewDetails {...{ signingRequest, analysing, txDetails, txDetailsError }} />
                 )}
               </div>
+            </div>
+            {errorMessage && <div className="error">{errorMessage}</div>}
+            {showMetadataStatus && (
+              <MetadataStatus
+                showUpdating={isMetadataUpdating}
+                showUpdateFailed={hasMetadataUpdateFailed}
+                showUpdateRequired={requiresMetadataUpdate}
+                updateUrl={updateUrl}
+              />
             )}
           </>
         )}
@@ -109,7 +107,7 @@ export const PolkadotSignTransactionRequest: FC<PolkadotSignTransactionRequestPr
                   Cancel
                 </SimpleButton>
                 <SimpleButton
-                  disabled={processing || requiresMetadataUpdate}
+                  disabled={processing || !isReady}
                   processing={processing}
                   primary
                   onClick={approve}

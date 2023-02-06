@@ -95,6 +95,10 @@ export const getMetadataDef = async (
     // mark as updating in database (can be picked up by frontend via subscription)
     metadataUpdatesStore.set(genesisHash, true)
 
+    // developer helpers to test all states, uncomment as needed
+    // if (DEBUG) await sleep(5_000)
+    // if (DEBUG) throw new Error("Failed to update metadata (debugging)")
+
     // fetch the metadata from the chain
     const [metadataRpc, chainProperties] = await Promise.all([
       RpcFactory.send<HexString>(chain.id, "state_getMetadata", [blockHash], !!blockHash),

@@ -1,4 +1,4 @@
-import { InfoIcon } from "@talisman/theme/icons"
+import { InfoIcon, LoaderIcon } from "@talisman/theme/icons"
 import { FC, PropsWithChildren } from "react"
 import { classNames } from "talisman-ui"
 
@@ -23,6 +23,7 @@ type SignAlertMessageProps = PropsWithChildren & {
   className?: string
   type?: "warning" | "error"
   iconSize?: IconSize
+  processing?: boolean
 }
 
 export const SignAlertMessage: FC<SignAlertMessageProps> = ({
@@ -30,6 +31,7 @@ export const SignAlertMessage: FC<SignAlertMessageProps> = ({
   className,
   type = "warning",
   iconSize = "xl",
+  processing,
 }) => {
   return (
     <div
@@ -38,13 +40,21 @@ export const SignAlertMessage: FC<SignAlertMessageProps> = ({
         className
       )}
     >
-      <div className={classNames("text-alert-warn", getIconSizeClass(iconSize))}>
-        <InfoIcon />
+      <div
+        className={classNames(
+          type === "error" ? "text-alert-warn" : "text-body-secondary",
+          getIconSizeClass(iconSize)
+        )}
+      >
+        {processing ? (
+          <LoaderIcon className="animate-spin-slow transition-none" />
+        ) : (
+          <InfoIcon className="transition-none" />
+        )}
       </div>
       <div
         className={classNames(
           "scrollable scrollable-700 grow overflow-y-auto text-left text-xs leading-[140%]",
-          // orange text for errors
           type === "error" ? "text-alert-warn" : "text-body-secondary"
         )}
       >

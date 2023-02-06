@@ -17,31 +17,32 @@ export const MetadataStatus: FC<MetadataStatusProps> = ({
 }) => {
   if (showUpdating)
     return (
-      <SignAlertMessage className="mt-6" type="warning" iconSize="base">
-        Updating network metadata, please wait or try again.
-      </SignAlertMessage>
-    )
-
-  if (showUpdateRequired)
-    return (
-      <SignAlertMessage className="mt-6" type="error" iconSize="base">
-        This network requires a manual metadata update. Please update and try again.
+      <SignAlertMessage processing className="mt-6" type="warning" iconSize="base">
+        Updating network metadata, please wait.
       </SignAlertMessage>
     )
 
   if (showUpdateFailed)
     return (
       <SignAlertMessage className="mt-6" type="error">
-        Metadata update required. Please update metadata from the
+        Failed to update metadata. Please update metadata manually
         {updateUrl && (
           <>
             {" "}
-            <a href={updateUrl} target="_blank">
+            from the{" "}
+            <a href={updateUrl} target="_blank" className="text-grey-200 hover:text-white">
               Polkadot.js portal
             </a>
           </>
         )}{" "}
-        and try again.
+        or your transaction may fail.
+      </SignAlertMessage>
+    )
+
+  if (showUpdateRequired)
+    return (
+      <SignAlertMessage className="mt-6" type="error" iconSize="base">
+        This network requires a manual metadata update. Please update or your transaction may fail.
       </SignAlertMessage>
     )
 

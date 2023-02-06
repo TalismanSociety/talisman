@@ -7,6 +7,7 @@ import { useDebounce } from "react-use"
 import useChains from "./useChains"
 
 type ChainMetadata = {
+  isReady: boolean
   isLoading: boolean
   isKnownChain: boolean
   hasMetadata: boolean
@@ -17,6 +18,7 @@ type ChainMetadata = {
 }
 
 const DEFAULT_VALUE: ChainMetadata = {
+  isReady: false,
   isLoading: true,
   isKnownChain: false,
   hasMetadata: false,
@@ -66,7 +68,13 @@ export const useChainMetadata = (genesisHash?: string, specVersion?: number) => 
         ? `https://polkadot.js.org/apps/?rpc=${encodeURIComponent(rpcUrl)}#/settings/metadata`
         : undefined
 
+      const isLoading = !chains.length
+
+      // consider ready to sign either if we can't update or if an update has been attempted.
+      const isReady = !isLoading && (!chain || isMetadataUpToDate || hasMetadataUpdated)
+
       setResult({
+        isReady,
         isLoading: !chains.length,
         isKnownChain: !!chain,
         hasMetadata,

@@ -54,6 +54,7 @@ export const usePolkadotTransaction = (signingRequest: SigningRequest) => {
   }, [signingRequest])
 
   const {
+    isReady,
     isLoading: isMetadataLoading,
     isKnownChain,
     isMetadataUpToDate,
@@ -63,6 +64,7 @@ export const usePolkadotTransaction = (signingRequest: SigningRequest) => {
   } = useChainMetadata(genesisHash, specVersion)
 
   return {
+    isReady,
     isMetadataLoading,
     analysing,
     txDetails,
