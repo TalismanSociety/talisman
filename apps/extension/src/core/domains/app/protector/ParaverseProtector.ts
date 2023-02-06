@@ -3,7 +3,7 @@ import { log } from "@core/log"
 import { checkHost } from "@polkadot/phishing"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
-import { compressToUTF16, decompressFromUTF16 } from "lz-string"
+import { decompressFromUTF16 } from "lz-string"
 import { Err, Ok, Result } from "ts-results"
 
 const METAMASK_REPO = "https://api.github.com/repos/MetaMask/eth-phishing-detect"
@@ -32,10 +32,12 @@ type MetaMaskDetectorConfig = {
 export type ProtectorData = Record<"talisman" | "polkadot" | "phishfort", HostList>
 
 export type ProtectorSources = "polkadot" | "phishfort" | "metamask" // don't persist Talisman
+
 export type ProtectorStorage = {
   source: ProtectorSources
   commitSha: string
-  compressedHostList: string
+  compressedHostList?: string
+  hostList?: HostList | MetaMaskDetectorConfig
 }
 
 export default class ParaverseProtector {
@@ -67,17 +69,21 @@ export default class ParaverseProtector {
       db.on.ready.subscribe(() => {
         db.phishing.bulkGet(["polkadot", "phishfort", "metamask"]).then((persisted) => {
           ;(persisted.filter(Boolean) as ProtectorStorage[]).forEach(
-            ({ source, compressedHostList, commitSha }) => {
-              const fullData = decompressFromUTF16(compressedHostList)
+            ({ source, compressedHostList, hostList, commitSha }) => {
+              const fullData = hostList
+                ? hostList
+                : JSON.parse(
+                    // todo remove decompressFromUTF16 in next release
+                    (compressedHostList && decompressFromUTF16(compressedHostList)) || "{}"
+                  )
+
               if (!fullData) return
 
               this.#commits[source] = commitSha
 
-              if (source === "metamask")
-                this.#metamaskDetector = new MetamaskDetector(
-                  JSON.parse(fullData) as MetaMaskDetectorConfig
-                )
-              else this.lists[source] = JSON.parse(fullData)
+              if (source === "metamask") {
+                this.#metamaskDetector = new MetamaskDetector(fullData as MetaMaskDetectorConfig)
+              } else this.lists[source] = fullData
             }
           )
           resolve(true)
@@ -109,7 +115,7 @@ export default class ParaverseProtector {
   ): void {
     db.phishing.put({
       commitSha,
-      compressedHostList: compressToUTF16(JSON.stringify(data)),
+      hostList: data,
       source,
     })
   }
