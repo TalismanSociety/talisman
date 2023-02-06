@@ -82,7 +82,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-    const provider = await getProviderForEthereumNetwork(ethereumNetwork)
+    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
     if (!provider)
       throw new EthProviderRpcError(
         `No provider for network ${ethereumNetwork.id} (${ethereumNetwork.name})`,
@@ -320,7 +320,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
 
-    const provider = await getProviderForEthereumNetwork(ethereumNetwork)
+    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
     if (!provider)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
@@ -349,7 +349,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
 
-    const provider = await getProviderForEthereumNetwork(ethereumNetwork)
+    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
     if (!provider)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
