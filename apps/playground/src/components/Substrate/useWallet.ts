@@ -1,9 +1,12 @@
 import { web3Accounts, web3Enable } from "@polkadot/extension-dapp"
-import { InjectedAccountWithMeta, Web3AccountsOptions } from "@polkadot/extension-inject/types"
+import {
+  InjectedAccountWithMeta,
+  InjectedExtension,
+  Web3AccountsOptions,
+} from "@polkadot/extension-inject/types"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useLocalStorage } from "react-use"
 
-import type { InjectedExtension } from "../../../../extension/src/core/inject/types" // talisman injected type (with encrypt/decrypt funcs)
 import { provideContext } from "../../common/provideContext"
 import { useApi } from "./useApi"
 
@@ -37,7 +40,12 @@ const useWalletProvider = ({ appName, accountOptions, storageKey = "useWallet" }
 
   // all connected extensions
   useEffect(() => {
-    if (data?.connected) web3Enable(appName).then(setExtensions).catch(setError)
+    if (data?.connected)
+      web3Enable(appName)
+        .then((ext) => {
+          setExtensions(ext as InjectedExtension[])
+        })
+        .catch(setError)
     else setExtensions(undefined)
   }, [appName, data?.connected])
 

@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react"
 import { Button } from "talisman-ui"
 
-import { DecryptResult, EncryptResult } from "../../../../extension/src/core/domains/encrypt/types"
 import { Section } from "../Section"
+import { DecryptResult, EncryptResult, TalismanSigner } from "./types"
 import { useWallet } from "./useWallet"
 
 const DATA_TO_ENCRYPT =
@@ -33,7 +33,7 @@ export const Sumi = () => {
       try {
         setIsProcessing(true)
         setEncryptResult(
-          await extension.signer.encryptMessage({
+          await (extension.signer as TalismanSigner).encryptMessage({
             address: ENCRYPTER_ADDRESS,
             recipient: DECRYPTER_PUB_KEY,
             message: data,
@@ -57,7 +57,7 @@ export const Sumi = () => {
       try {
         setIsProcessing(true)
         setDecryptResult(
-          await extension.signer.decryptMessage({
+          await (extension.signer as TalismanSigner).decryptMessage({
             address: DECRYPTER_ADDRESS,
             sender: ENCRYPTER_PUB_KEY,
             message: data,
