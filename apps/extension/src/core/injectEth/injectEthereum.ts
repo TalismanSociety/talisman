@@ -8,6 +8,7 @@ type TalismanWindow = Window &
   typeof globalThis & {
     ethereum: any
     talismanEth?: any
+    web3?: any
   }
 
 // checking BUILD instead of NODE_ENV because on some dapps we need to test with production builds
@@ -19,23 +20,20 @@ export const injectEthereum = (sendRequest: SendRequest) => {
 
   const provider = getInjectableEvmProvider(sendRequest)
 
+  const talismanEth = WITH_LOG_PROXY ? logProxy(provider) : provider
+
   log.debug("Injecting talismanEth")
-  windowInject.talismanEth = WITH_LOG_PROXY ? logProxy(provider) : provider
+  windowInject.talismanEth = talismanEth
 
   // also inject on window.ethereum if it is not defined
   // this allows users to just disable metamask if they want to use Talisman instead
   if (windowInject.ethereum === undefined) {
     log.debug("Injecting talismanEth in window.ethereum")
 
-    windowInject.ethereum = provider
+    windowInject.ethereum = talismanEth
 
     // some dapps (ex moonriver.moonscan.io), still use web3 object send wallet_* messages
-    Object.defineProperty(window, "web3", {
-      value: { currentProvider: provider },
-      enumerable: false,
-      configurable: true,
-      writable: true,
-    })
+    windowInject.web3 = { currentProvider: talismanEth }
 
     window.dispatchEvent(new Event("ethereum#initialized"))
   } else if (WITH_LOG_PROXY) {
