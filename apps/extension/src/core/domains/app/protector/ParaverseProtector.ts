@@ -176,7 +176,11 @@ export default class ParaverseProtector {
   }
 
   private async getData(url: string) {
-    return await (await fetch(url)).json()
+    const response = await fetch(url)
+    if (response.status === 200) {
+      return await response.json()
+    }
+    throw new Error(`Error fetching data from ${url}`)
   }
 
   async getMetamaskData(): Promise<MetaMaskDetectorConfig> {
