@@ -2,32 +2,8 @@ import { useCallback, useState } from "react"
 import { Button } from "talisman-ui"
 
 import { Section } from "../Section"
-import { TalismanSigner } from "./types"
+import { DecryptResult, EncryptResult, TalismanSigner } from "./types"
 import { useWallet } from "./useWallet"
-
-interface DecryptResult {
-  /**
-   * @description The id for this request
-   */
-  id: number
-
-  /**
-   * @description The resulting decrypted message
-   */
-  result: string
-}
-
-interface EncryptResult {
-  /**
-   * @description The id for this request
-   */
-  id: number
-
-  /**
-   * @description The resulting encrypted message, hex encoded
-   */
-  result: string
-}
 
 const DATA_TO_ENCRYPT =
   "data to encrypt yeet yeet yeeeeeet. this is a loooooong message blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"
