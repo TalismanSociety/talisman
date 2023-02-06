@@ -5,20 +5,20 @@ export * from "./types/common"
 
 export const GreeterAbi = GreeterJson
 
-export const getGreeterAddress = (chainId?: number): string | null => {
+export const getGreeterAddress = (chainId?: number): `0x${string}` | undefined => {
   try {
     const key = String(chainId) as keyof typeof ContractsJson
-    return (ContractsJson[key] as any)?.Greeter?.address
+    return (ContractsJson[key] as any)?.Greeter?.address as `0x${string}`
   } catch (err) {
-    return null
+    return undefined
   }
 }
 
-export const getUSDCAddress = (chainId?: number): string | null => {
+export const getUSDCAddress = (chainId?: number): `0x${string}` | undefined => {
   try {
     const key = String(chainId) as keyof typeof ContractsJson
-    return (ContractsJson[key] as any)?.USDC?.address
+    return (ContractsJson[key] as any)?.USDC?.address as `0x${string}`
   } catch (err) {
-    return null
+    return undefined
   }
 }

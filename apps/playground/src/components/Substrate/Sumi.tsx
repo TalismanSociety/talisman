@@ -1,9 +1,33 @@
 import { useCallback, useState } from "react"
 import { Button } from "talisman-ui"
 
-import { DecryptResult, EncryptResult } from "../../../../extension/src/core/domains/encrypt/types"
 import { Section } from "../Section"
+import { TalismanSigner } from "./types"
 import { useWallet } from "./useWallet"
+
+interface DecryptResult {
+  /**
+   * @description The id for this request
+   */
+  id: number
+
+  /**
+   * @description The resulting decrypted message
+   */
+  result: string
+}
+
+interface EncryptResult {
+  /**
+   * @description The id for this request
+   */
+  id: number
+
+  /**
+   * @description The resulting encrypted message, hex encoded
+   */
+  result: string
+}
 
 const DATA_TO_ENCRYPT =
   "data to encrypt yeet yeet yeeeeeet. this is a loooooong message blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"
@@ -33,7 +57,7 @@ export const Sumi = () => {
       try {
         setIsProcessing(true)
         setEncryptResult(
-          await extension.signer.encryptMessage({
+          await (extension.signer as TalismanSigner).encryptMessage({
             address: ENCRYPTER_ADDRESS,
             recipient: DECRYPTER_PUB_KEY,
             message: data,
@@ -57,7 +81,7 @@ export const Sumi = () => {
       try {
         setIsProcessing(true)
         setDecryptResult(
-          await extension.signer.decryptMessage({
+          await (extension.signer as TalismanSigner).decryptMessage({
             address: DECRYPTER_ADDRESS,
             sender: ENCRYPTER_PUB_KEY,
             message: data,
