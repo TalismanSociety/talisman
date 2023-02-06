@@ -18,7 +18,7 @@ export const Connect = () => {
   const { chain } = useNetwork()
   const { data: balance } = useBalance({
     chainId: chain?.id,
-    addressOrName: address,
+    address,
     enabled: !!address && !!chain,
   })
   const { disconnect } = useDisconnect()
@@ -61,7 +61,7 @@ export const Connect = () => {
               <option value="DEFAULT">Select</option>
               {talismanChains.map((chain) => (
                 <option key={chain.id} value={chain.id}>
-                  {chain.name}
+                  {chain.name} ({chain.id})
                 </option>
               ))}
             </select>
