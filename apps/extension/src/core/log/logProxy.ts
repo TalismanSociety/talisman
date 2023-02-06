@@ -105,6 +105,5 @@ const handler: ProxyHandler<any> = {
   Significant performance hit, do not use in production.
 */
 export const logProxy = (sourceObj: any) => {
-  safeConsoleDebug("proxying !")
   return new Proxy(sourceObj, handler)
 }

@@ -41,10 +41,17 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
   const provider: any = {
     isTalisman: true,
     isMetaMask: true, // dapps use this to determine if wallet supports adding custom networks and tokens
-    _metamask: {
-      // MM's experimental methods
-      // if this is property is missing, some dapps won't prompt for login
-    },
+
+    // MM's quick access properties
+    networkVersion: null,
+    chainId: null,
+    selectedAddress: null,
+
+    // MM's experimental methods
+    // if this object is missing, some dapps won't prompt for login
+    _metamask: {},
+
+    // Event Emitter (EIP 1993)
     on: eventEmitter.on.bind(eventEmitter),
     off: eventEmitter.off.bind(eventEmitter),
     removeListener: eventEmitter.removeListener.bind(eventEmitter),
@@ -55,13 +62,25 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
   }
 
   const initialize = async () => {
-    log.debug("TalismanEthProvider : pub(eth.subscribe)")
+    log.debug("Talisman provider initializing")
 
-    // query before init so it doesn't trigger a chainChanged event
-    provider.chainId = (await sendRequest("pub(eth.request)", {
-      method: "eth_chainId",
-      params: null,
-    })) as string
+    const [resChainId, resAccounts] = await Promise.all([
+      sendRequest("pub(eth.request)", {
+        method: "eth_chainId",
+        params: null,
+      }),
+      sendRequest("pub(eth.request)", {
+        method: "eth_accounts",
+        params: null,
+      }),
+    ])
+
+    const chainId = resChainId as string
+    provider.chainId = chainId
+    provider.networkVersion = parseInt(chainId, 16).toString()
+
+    const accounts = (resAccounts as unknown as string[]) ?? []
+    provider.selectedAddress = accounts?.[0] ?? null
 
     // this subscribes to backend's provider events (https://eips.ethereum.org/EIPS/eip-1193)
     await sendRequest("pub(eth.subscribe)", null, (result) => {
@@ -73,8 +92,15 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
         case "disconnect":
         case "chainChanged":
         case "accountsChanged": {
-          // keep chainId field in sync
-          if (result.type === "chainChanged") provider.chainId = result.data as string
+          // keep provider properties in sync
+          if (result.type === "chainChanged") {
+            provider.chainId = result.data as string
+            provider.networkVersion = parseInt(provider.chainId, 16).toString()
+          }
+
+          if (result.type === "accountsChanged") {
+            provider.selectedAddress = (result.data as string[])[0] ?? null
+          }
 
           // broadcast event to dapp
           eventEmitter.emit(result.type, result.data)
@@ -88,17 +114,21 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
           break
       }
     })
+
+    state.initialized = true
+
+    log.debug("Talisman provider initialized")
   }
+
+  const waitReady = initialize()
 
   const request = async <TEthMessageType extends keyof EthRequestSignatures>(
     args: EthRequestArguments<TEthMessageType>
   ): Promise<EthResponseType<TEthMessageType>> => {
     try {
       log.debug("[talismanEth.request] request %s", args.method, args.params)
-      if (!state.initialized) {
-        state.initialized = true
-        await initialize()
-      }
+      await waitReady
+
       const result = await sendRequest("pub(eth.request)", args)
       log.debug("[talismanEth.request] response for %s", args.method, { args, result })
       return result
@@ -122,6 +152,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
 
   const send = (methodOrPayload: any, paramsOrCallback: any) => {
     log.debug("[talismanEth.send]", { methodOrPayload, paramsOrCallback })
+
     if (typeof methodOrPayload === "string")
       return request({
         method: methodOrPayload as keyof EthRequestSignatures,
@@ -150,6 +181,8 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
   }
 
   const enable = () => {
+    log.debug("[talismanEth.enable]")
+
     // some frameworks such as web3modal requires this method to exist
     return request({ method: "eth_requestAccounts", params: null })
   }
