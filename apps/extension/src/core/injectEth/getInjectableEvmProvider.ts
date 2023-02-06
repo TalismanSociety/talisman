@@ -160,5 +160,9 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
   provider.sendAsync = sendAsync
   provider.enable = enable
 
-  return provider
+  return new Proxy(provider, {
+    // prevent old web3 library version from removing sendAsync function
+    // ex : https://polygonscan.com/
+    deleteProperty: () => true,
+  })
 }
