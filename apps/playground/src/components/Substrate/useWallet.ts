@@ -1,9 +1,13 @@
 import Signer from "@polkadot/extension-base/page/Signer"
 import { web3Accounts, web3Enable } from "@polkadot/extension-dapp"
-import { Web3AccountsOptions } from "@polkadot/extension-inject/types"
-import type { ProviderInterface } from "@polkadot/rpc-provider/types"
-import type { ExtDef } from "@polkadot/types/extrinsic/signedExtensions/types"
-import type { KeypairType } from "@polkadot/util-crypto/types"
+import type {
+  InjectedAccountWithMeta,
+  InjectedExtensionInfo,
+  InjectedMetadataKnown,
+  Injected as PjsInjected,
+  MetadataDef as PjsMetadataDef,
+  Web3AccountsOptions,
+} from "@polkadot/extension-inject/types"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useLocalStorage } from "react-use"
 
@@ -11,7 +15,7 @@ import { provideContext } from "../../common/provideContext"
 import { useApi } from "./useApi"
 
 // TODO: Move these to a common package and import them both here and in the extension
-/** BEGIN: Copy-paste from apps/extension/src/core/inject/types.ts **/
+/** BEGIN: Copy-paste from apps/extension/src/core/encrypt/types.ts & apps/extension/src/core/inject/types.ts **/
 interface EncryptPayloadBase {
   message: string
   recipient: string
@@ -38,78 +42,19 @@ interface TalismanInjectedSigner extends Signer {
   encryptMessage(payload: EncryptPayload): Promise<EncryptResult>
   decryptMessage(payload: DecryptPayload): Promise<DecryptResult>
 }
-declare type Unsubcall = () => void
-interface InjectedAccount {
-  address: string
-  genesisHash?: string | null
-  name?: string
-  type?: KeypairType
-}
-interface InjectedAccountWithMeta {
-  address: string
-  meta: {
-    genesisHash?: string | null
-    name?: string
-    source: string
-  }
-  type?: KeypairType
-}
-interface InjectedAccounts {
-  get: (anyType?: boolean) => Promise<InjectedAccount[]>
-  subscribe: (cb: (accounts: InjectedAccount[]) => void | Promise<void>) => Unsubcall
-}
-interface InjectedExtensionInfo {
-  name: string
-  version: string
-}
-interface ProviderMeta {
-  network: string
-  node: "full" | "light"
-  source: string
-  transport: string
-}
-interface MetadataDefBase {
-  chain: string
-  genesisHash: string
-  icon: string
-  ss58Format: number
-  chainType?: "substrate" | "ethereum"
-}
-interface MetadataDef extends MetadataDefBase {
-  color?: string
-  specVersion: number
-  tokenDecimals: number
-  tokenSymbol: string
-  types: Record<string, Record<string, string> | string>
-  metaCalls?: string
+interface MetadataDef extends PjsMetadataDef {
   metadataRpc?: string
-  userExtensions?: ExtDef
-}
-interface InjectedMetadataKnown {
-  genesisHash: string
-  specVersion: number
 }
 interface InjectedMetadata {
   get: () => Promise<InjectedMetadataKnown[]>
   provide: (definition: MetadataDef) => Promise<boolean>
 }
-declare type ProviderList = Record<string, ProviderMeta>
-interface InjectedProvider extends ProviderInterface {
-  listProviders: () => Promise<ProviderList>
-  startProvider: (key: string) => Promise<ProviderMeta>
-}
-interface InjectedProviderWithMeta {
-  provider: InjectedProvider
-  meta: ProviderMeta
-}
-interface Injected {
-  accounts: InjectedAccounts
+interface Injected extends PjsInjected {
   metadata?: InjectedMetadata
-  provider?: InjectedProvider
   signer: TalismanInjectedSigner
 }
-declare type InjectedExtension = InjectedExtensionInfo & Injected
-/** END: Copy-paste from apps/extension/src/core/inject/types.ts **/
+type InjectedExtension = InjectedExtensionInfo & Injected
+/** END: Copy-paste from apps/extension/src/core/encrypt/types.ts & apps/extension/src/core/inject/types.ts **/
 
 export type WalletConfig = {
   appName: string
