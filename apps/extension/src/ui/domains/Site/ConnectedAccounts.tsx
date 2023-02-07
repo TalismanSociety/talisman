@@ -129,6 +129,7 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
         <>
           <h3>Network</h3>
           <NetworkSelect
+            withTestnets
             defaultChainId={ethChainId.toString()}
             onChange={(chainId) => {
               genericEvent("evm network changed", { chainId, url })

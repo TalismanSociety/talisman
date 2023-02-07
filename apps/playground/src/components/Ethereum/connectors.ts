@@ -1,5 +1,5 @@
 import { TalismanConnector } from "@talismn/wagmi-connector"
-import { Chain, allChains, configureChains, createClient } from "wagmi"
+import { Chain, configureChains, createClient } from "wagmi"
 import { InjectedConnector } from "wagmi/connectors/injected"
 import { MetaMaskConnector } from "wagmi/connectors/metaMask"
 import { publicProvider } from "wagmi/providers/public"

@@ -10,7 +10,7 @@ const useChainsAndSearchSymbols = <T extends Chain>(
   // keep shared db data up to date
   useDbCacheSubscription("tokens")
 
-  const { tokensMap } = useDbCache()
+  const { tokensWithTestnetsMap } = useDbCache()
 
   return useMemo(
     () =>
@@ -18,13 +18,13 @@ const useChainsAndSearchSymbols = <T extends Chain>(
         ...chain,
         searchSymbols: [
           // add native token symbol if it exists
-          chain.nativeToken ? tokensMap[chain.nativeToken.id]?.symbol : undefined,
+          chain.nativeToken ? tokensWithTestnetsMap[chain.nativeToken.id]?.symbol : undefined,
 
           // add orml token symbols if they exist
-          ...(chain.tokens ? chain.tokens.map(({ id }) => tokensMap[id]?.symbol) : []),
+          ...(chain.tokens ? chain.tokens.map(({ id }) => tokensWithTestnetsMap[id]?.symbol) : []),
         ].filter((symbol): symbol is string => typeof symbol === "string"),
       })),
-    [chains, tokensMap]
+    [chains, tokensWithTestnetsMap]
   )
 }
 

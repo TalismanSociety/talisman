@@ -13,7 +13,7 @@ const shouldDisplayBalance = (balance: Balance, account?: AccountJsonAny) => {
     balance.total.planck > 0 ||
     (account?.type !== "ethereum" &&
       DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.includes(balance.tokenId)) ||
-    (account?.type !== "sr25519" && DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.includes(balance.tokenId)) ||
+    (account?.type === "ethereum" && DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.includes(balance.tokenId)) ||
     (account?.genesisHash && account.genesisHash === balance.chain?.genesisHash)
   )
 }

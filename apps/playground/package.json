@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@metamask/eth-sig-util": "5.0.2",
-    "@talismn/wagmi-connector": "^0.1.0",
+    "@talismn/wagmi-connector": "^0.2.0",
     "ethers": "^5.7.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
@@ -18,7 +18,7 @@
     "react-router-dom": "6.3.0",
     "react-use": "^17.4.0",
     "talisman-ui": "workspace:^",
-    "wagmi": "^0.6.8"
+    "wagmi": "^0.11.4"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
@@ -30,7 +30,7 @@
     "eslint": "^8.15.0",
     "postcss": "^8.4.20",
     "tailwindcss": "^3.2.4",
-    "typescript": "4.6.4",
+    "typescript": "4.9.4",
     "vite": "^4.0.0",
     "vite-plugin-svgr": "^2.2.1"
   }

@@ -2,6 +2,7 @@ import { useCallback, useState } from "react"
 import { Button } from "talisman-ui"
 
 import { Section } from "../Section"
+import { DecryptResult, EncryptResult, TalismanSigner } from "./types"
 import { useWallet } from "./useWallet"
 
 // TODO: Move these to a common package and import them both here and in the extension
@@ -44,7 +45,7 @@ export const Sumi = () => {
       try {
         setIsProcessing(true)
         setEncryptResult(
-          await extension.signer.encryptMessage({
+          await (extension.signer as TalismanSigner).encryptMessage({
             address: ENCRYPTER_ADDRESS,
             recipient: DECRYPTER_PUB_KEY,
             message: data,
@@ -68,7 +69,7 @@ export const Sumi = () => {
       try {
         setIsProcessing(true)
         setDecryptResult(
-          await extension.signer.decryptMessage({
+          await (extension.signer as TalismanSigner).decryptMessage({
             address: DECRYPTER_ADDRESS,
             sender: ENCRYPTER_PUB_KEY,
             message: data,

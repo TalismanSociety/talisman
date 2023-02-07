@@ -1,8 +1,7 @@
 ---
 name: Bug report
 about: Specify some unwanted behaviour.
-title: "[BUG]"
-labels: ""
+labels: "bug"
 assignees: ""
 ---
 

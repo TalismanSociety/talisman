@@ -18,6 +18,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSettings } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -80,22 +81,12 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   const [transactionHash, setTransactionHash] = useState<string>()
 
   const accounts = useAccounts()
+  const { useTestnets = false } = useSettings()
   const transferableTokens = useTransferableTokens()
-  const evmNetworks = useEvmNetworks()
-  const chains = useChains()
-  const tokens = useTokens()
-  const chainsMap = useMemo(
-    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
-    [chains]
-  )
-  const evmNetworksMap = useMemo(
-    () => Object.fromEntries((evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])),
-    [evmNetworks]
-  )
-  const tokensMap = useMemo(
-    () => Object.fromEntries((tokens || []).map((token) => [token.id, token])),
-    [tokens]
-  )
+  const { evmNetworksMap } = useEvmNetworks(useTestnets)
+  const { chainsMap } = useChains(useTestnets)
+  const { tokensMap } = useTokens(useTestnets)
+
   const transferableTokensMap = useMemo(
     () => Object.fromEntries((transferableTokens || []).map((tt) => [tt.id, tt])),
     [transferableTokens]

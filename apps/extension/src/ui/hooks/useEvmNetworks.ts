@@ -1,11 +1,19 @@
 import { useDbCache } from "./useDbCache"
 import { useDbCacheSubscription } from "./useDbCacheSubscription"
 
-export const useEvmNetworks = () => {
+export const useEvmNetworks = (withTestnets: boolean) => {
   // keep db up to date
   useDbCacheSubscription("evmNetworks")
 
-  const { allEvmNetworks } = useDbCache()
+  const {
+    evmNetworksWithTestnets,
+    evmNetworksWithoutTestnets,
+    evmNetworksWithTestnetsMap,
+    evmNetworksWithoutTestnetsMap,
+  } = useDbCache()
 
-  return allEvmNetworks
+  return {
+    evmNetworks: withTestnets ? evmNetworksWithTestnets : evmNetworksWithoutTestnets,
+    evmNetworksMap: withTestnets ? evmNetworksWithTestnetsMap : evmNetworksWithoutTestnetsMap,
+  }
 }

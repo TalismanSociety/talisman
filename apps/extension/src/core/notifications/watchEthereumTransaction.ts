@@ -27,8 +27,16 @@ export const watchEthereumTransaction = async (ethChainId: EvmNetworkId, txHash:
     try {
       const receipt = await provider.waitForTransaction(txHash)
 
+      // status 0 = error
+      // status 1 = ok
+      // easy to test on busy AMM pools with a 0.05% slippage limit
+
       // success if associated to a block number
-      await createNotification(receipt.blockNumber ? "success" : "error", networkName, txUrl)
+      await createNotification(
+        receipt.blockNumber && receipt.status ? "success" : "error",
+        networkName,
+        txUrl
+      )
     } catch (err) {
       await createNotification("error", networkName, txUrl, err as Error)
     }

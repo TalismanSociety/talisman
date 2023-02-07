@@ -103,7 +103,8 @@
     "@substrate/txwrapper-polkadot": "4.0.3",
     "@substrate/txwrapper-registry": "4.0.3",
     "@substrate/txwrapper-substrate": "4.0.3",
-    "@substrate/txwrapper-template": "4.0.3"
+    "@substrate/txwrapper-template": "4.0.3",
+    "ethereumjs-abi": "0.6.8"
   },
   "engines": {
     "npm": ">=8.0.0",
