@@ -45,5 +45,8 @@
     ".": "./src/index.ts",
     "./styles.css": "./src/styles/styles.css",
     "./tailwind.config.cjs": "./src/config/tailwind.config.cjs"
+  },
+  "dependencies": {
+    "react-router-dom": "6.3.0"
   }
 }

@@ -110,7 +110,7 @@ const Popup = () => {
     // TODO implement layout here to prevent container flickering on route change (some routes render null until loaded)
     // workaround set size here
     // also use a fade-in to reduce flickering from portfolio to request page when opening
-    <FadeIn className="h-[60rem] w-[40rem]">
+    <FadeIn className="mx-auto h-[60rem] w-[40rem]">
       {/* only embedded popup should auto redirect to pending requests */}
       {isEmbeddedPopup && <PendingRequestRedirect />}
       <SelectedAccountProvider isPopup>

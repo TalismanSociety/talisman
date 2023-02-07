@@ -1,7 +1,8 @@
-import styled from "styled-components"
-import Link, { ILinkProps } from "./Link"
-import { classNames } from "@talisman/util/classNames"
 import { ExternalLinkIcon, IconChevron } from "@talisman/theme/icons"
+import { classNames } from "@talisman/util/classNames"
+import styled from "styled-components"
+
+import Link, { ILinkProps } from "./Link"
 
 export interface IProps extends ILinkProps {
   title: string
@@ -85,4 +86,7 @@ export const StyledButton = styled(CtaButton)`
   `}
 `
 
+/**
+ * @deprecated Use CtaButton from talisman-ui instead
+ */
 export default StyledButton

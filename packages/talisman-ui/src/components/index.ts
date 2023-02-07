@@ -1,5 +1,6 @@
 export * from "./Button"
 export * from "./Checkbox"
+export * from "./CtaButton"
 export * from "./ListButton"
 export * from "./PillButton"
 export * from "./MysticalBackground"

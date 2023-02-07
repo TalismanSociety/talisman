@@ -26,12 +26,12 @@ const Global = createGlobalStyle`
   } */
 
   // if window popup, set borders on HTML element
-  html.popup {
+  /* html.popup {
     border: 1px solid var(--color-background-muted-2x);
-  }
+  } */
 
   // if embedded popup (extension button action), set borders on #main element
-  html.popup.embedded {
+  /* html.popup.embedded {
     border:none;    
     #main {
       border: 1px solid var(--color-background-muted-2x);
@@ -42,7 +42,7 @@ const Global = createGlobalStyle`
       }
       
     }
-  }
+  } */
 
   /* body{
     background: rgb(${({ theme }) => theme?.background});
@@ -180,15 +180,6 @@ const Global = createGlobalStyle`
   .hide-scrollbars {
     ${hideScrollbarsStyle}
   }
-/*   
-  .flex {
-    display: flex;
-    align-items: center;
-  }
-  
-  .gap {
-    gap: 1rem;
-  } */
 
   /* hides password reveal in Edge */
   input[type=password]::-ms-reveal {

@@ -42,6 +42,17 @@
   textarea::placeholder {
     @apply text-current opacity-30;
   }
+
+  /* popup borders */
+  html.popup {
+    @apply border-grey-700 border;
+  }
+  html.popup.embedded {
+    @apply border-none;
+  }
+  html.popup.embedded #main {
+    @apply border-grey-700 border;
+  }
 }
 
 /* The components layer is for class-based styles that you want to be able to override with utilities. */

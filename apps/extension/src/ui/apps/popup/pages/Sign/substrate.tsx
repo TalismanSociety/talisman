@@ -79,7 +79,7 @@ export const SubstrateSignRequest = () => {
         {account && request && (
           <>
             {!account.isHardware && (
-              <Box flex fullwidth gap={2.4}>
+              <div className="flex w-full gap-12">
                 <SimpleButton disabled={processing} onClick={reject}>
                   Cancel
                 </SimpleButton>
@@ -91,7 +91,7 @@ export const SubstrateSignRequest = () => {
                 >
                   Approve
                 </SimpleButton>
-              </Box>
+              </div>
             )}
             {account.isHardware && (
               <Suspense fallback={null}>

@@ -1,4 +1,3 @@
-import CtaButton from "@talisman/components/CtaButton"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
@@ -31,54 +30,54 @@ import {
   useEffect,
 } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { classNames } from "talisman-ui"
+import { CtaButton, classNames } from "talisman-ui"
 
-type SettingButtonProps = DetailedHTMLProps<
-  React.ButtonHTMLAttributes<HTMLButtonElement>,
-  HTMLButtonElement
-> & {
-  icon: FC<SVGProps<SVGSVGElement>>
-  title: ReactNode
-  subtitle: ReactNode
-  to?: string
-}
+// type SettingButtonProps = DetailedHTMLProps<
+//   React.ButtonHTMLAttributes<HTMLButtonElement>,
+//   HTMLButtonElement
+// > & {
+//   icon: FC<SVGProps<SVGSVGElement>>
+//   title: ReactNode
+//   subtitle: ReactNode
+//   to?: string
+// }
 
-const SettingButton: FC<SettingButtonProps> = ({
-  icon: Icon,
-  title,
-  subtitle,
-  className,
-  to,
-  onClick,
-  ...props
-}) => {
-  const navigate = useNavigate()
-  const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
-    (e) => {
-      if (to) navigate(to)
-      else if (onClick) onClick(e)
-    },
-    [navigate, onClick, to]
-  )
+// const SettingButton: FC<SettingButtonProps> = ({
+//   icon: Icon,
+//   title,
+//   subtitle,
+//   className,
+//   to,
+//   onClick,
+//   ...props
+// }) => {
+//   const navigate = useNavigate()
+//   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
+//     (e) => {
+//       if (to) navigate(to)
+//       else if (onClick) onClick(e)
+//     },
+//     [navigate, onClick, to]
+//   )
 
-  return (
-    <button
-      {...props}
-      className={classNames(
-        "bg-grey-900 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body flex h-40 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50",
-        className
-      )}
-      onClick={handleClick}
-    >
-      <Icon className="text-body text-lg" />
-      <div className="flex grow flex-col items-start gap-4">
-        <div className="text-body">{title}</div>
-        <div className="text-body-secondary text-sm">{subtitle}</div>
-      </div>
-      <ChevronRightIcon className="text-lg" />
-    </button>
-  )
-}
+//   return (
+//     <button
+//       {...props}
+//       className={classNames(
+//         "bg-grey-900 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body flex h-40 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50",
+//         className
+//       )}
+//       onClick={handleClick}
+//     >
+//       <Icon className="text-body text-lg" />
+//       <div className="flex grow flex-col items-start gap-4">
+//         <div className="text-body">{title}</div>
+//         <div className="text-body-secondary text-sm">{subtitle}</div>
+//       </div>
+//       <ChevronRightIcon className="text-lg" />
+//     </button>
+//   )
+// }
 
 const Settings = () => {
   const { isOpen: isOpenMigratePw, open: openMigratePw, close: closeMigratePw } = useOpenClose()
@@ -106,50 +105,58 @@ const Settings = () => {
     <Layout centered>
       <h2>Settings</h2>
       <div className="mt-20 space-y-4">
-        <SettingButton
-          icon={IconKey}
+        <CtaButton
+          iconLeft={IconKey}
+          iconRight={ChevronRightIcon}
           title="Backup Wallet"
           subtitle="Backup your recovery phrase"
           onClick={openBackupMnemonic}
         />
-        <SettingButton
-          icon={IconLink}
+        <CtaButton
+          iconLeft={IconLink}
+          iconRight={ChevronRightIcon}
           title="Trusted Sites"
           subtitle="Manage the sites that have access to your accounts"
           to={`/settings/connected-sites`}
         />
-        <SettingButton
-          icon={UsersIcon}
+        <CtaButton
+          iconLeft={UsersIcon}
+          iconRight={ChevronRightIcon}
           title="Address Book"
           subtitle="Manage your saved contacts"
           to={`/settings/address-book`}
         />
-        <SettingButton
-          icon={GlobeIcon}
+        <CtaButton
+          iconLeft={GlobeIcon}
+          iconRight={ChevronRightIcon}
           title="Ethereum Networks"
           subtitle="Manage Ethereum compatible networks"
           to={`/networks`}
         />
-        <SettingButton
-          icon={IconList}
+        <CtaButton
+          iconLeft={IconList}
+          iconRight={ChevronRightIcon}
           title="Ethereum Tokens"
           subtitle="Add or delete custom ERC20 tokens"
           to={`/tokens`}
         />
-        <SettingButton
-          icon={ToolIcon}
+        <CtaButton
+          iconLeft={ToolIcon}
+          iconRight={ChevronRightIcon}
           title="Extension Options"
           subtitle="Customise your extension experience"
           to={`/settings/options`}
         />
-        <SettingButton
-          icon={ShieldIcon}
+        <CtaButton
+          iconLeft={ShieldIcon}
+          iconRight={ChevronRightIcon}
           title="Security and Privacy"
           subtitle="Control security and privacy preferences"
           to={`/settings/security-privacy-settings`}
         />
-        <SettingButton
-          icon={IconLock}
+        <CtaButton
+          iconLeft={IconLock}
+          iconRight={ChevronRightIcon}
           title="Change password"
           subtitle={
             isNotConfirmed
@@ -159,14 +166,16 @@ const Settings = () => {
           to={`/settings/change-password`}
           disabled={isNotConfirmed}
         />
-        <SettingButton
-          icon={IconClock}
+        <CtaButton
+          iconLeft={IconClock}
+          iconRight={ChevronRightIcon}
           title="Auto-lock Timer"
           subtitle="Set a timer to automatically lock the Talisman extension"
           to={`/settings/autolock`}
         />
-        <SettingButton
-          icon={IconInfo}
+        <CtaButton
+          iconLeft={IconInfo}
+          iconRight={ChevronRightIcon}
           title="About"
           subtitle="Read our Privacy Policy and Terms of Use"
           to={`/settings/about`}

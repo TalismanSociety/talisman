@@ -99,7 +99,7 @@ export const BottomNav = () => {
   }, [open])
 
   return (
-    <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] justify-between border-t px-12 text-3xl">
+    <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] items-center justify-between border-t px-12 text-3xl">
       <WithTooltip as="div" tooltip={"Portfolio"}>
         <BottomNavButton onClick={handleHomeClick} current={location.pathname === "/portfolio"}>
           <NavIconHome />

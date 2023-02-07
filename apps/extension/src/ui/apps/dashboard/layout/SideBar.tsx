@@ -1,4 +1,3 @@
-import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import Nav, { NavItemButton, NavItemLink } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
@@ -194,9 +193,6 @@ const Container = styled.aside`
     }
 
     nav .link span:last-child,
-    nav .link ${Box} {
-      display: none;
-    }
     nav .link {
       justify-content: center;
       padding-left: 0;

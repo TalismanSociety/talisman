@@ -7,6 +7,9 @@ type ButtonAdditionalProps = {
   processing?: boolean
 }
 
+/**
+ * @deprecated Use Button from talisman-ui instead
+ */
 export const SimpleButton = styled.button.attrs<ButtonAdditionalProps, ButtonAdditionalProps>(
   (props) => ({
     type: props.type || "button",
