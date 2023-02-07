@@ -220,7 +220,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
             <div className="text-body flex items-center gap-2 whitespace-nowrap text-sm font-bold">
               {token.symbol}
               {isFetching && (
-                <FetchingIcon data-spin className="inline align-baseline opacity-100" />
+                <FetchingIcon className="animate-spin-slow inline align-baseline opacity-100" />
               )}
             </div>
             {!!networkIds.length && (

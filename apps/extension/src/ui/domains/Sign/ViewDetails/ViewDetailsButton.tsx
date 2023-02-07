@@ -7,7 +7,7 @@ const Analysing = styled.div.attrs({
   children: (
     <>
       <div>
-        <LoaderIcon data-spin />
+        <LoaderIcon className="animate-spin-slow" />
       </div>
       <div>
         <span>Decoding....</span>

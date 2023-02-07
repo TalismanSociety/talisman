@@ -18,7 +18,7 @@ export const SimpleButton = styled.button.attrs<ButtonAdditionalProps, ButtonAdd
         <span className="btn-content">{props.children}</span>
         {props.processing && (
           <span className="btn-processing">
-            <LoaderIcon data-spin />
+            <LoaderIcon className="animate-spin-slow" />
           </span>
         )}
       </>

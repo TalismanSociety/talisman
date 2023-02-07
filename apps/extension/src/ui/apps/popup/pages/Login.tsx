@@ -5,7 +5,7 @@ import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
-import { Button } from "talisman-ui"
+import { Button, FormFieldInputContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import Layout, { Content, Footer } from "../Layout"
@@ -77,22 +77,21 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
       </Content>
       <Footer>
         <form className="flex flex-col items-center gap-6" onSubmit={handleSubmit(submit)}>
-          <FormField className="w-full text-center">
-            <input
-              {...register("password")}
-              type="password"
-              placeholder="Enter password"
-              spellCheck={false}
-              autoComplete="off"
-              data-lpignore
-              autoFocus
-            />
-          </FormField>
+          <FormFieldInputText
+            {...register("password")}
+            type="password"
+            placeholder="Enter password"
+            spellCheck={false}
+            autoComplete="off"
+            data-lpignore
+            autoFocus
+            className="text-center"
+          />
           <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>
             Unlock
           </Button>
           <span
-            className="text-body-secondary mt-2 cursor-pointer text-sm hover:text-white"
+            className="text-body-disabled mt-2 cursor-pointer text-sm transition-colors hover:text-white"
             onClick={setShowResetWallet}
           >
             Forgot Password?

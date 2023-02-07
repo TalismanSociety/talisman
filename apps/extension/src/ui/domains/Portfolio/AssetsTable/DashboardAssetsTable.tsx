@@ -158,21 +158,24 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   return (
     <tr className={classNames("asset")} onClick={handleClick}>
       <td valign="top">
-        <Box flex>
-          <Box padding="1.6rem" fontsize="xlarge">
+        <div className="flex">
+          <div className="p-8 text-xl">
             <TokenLogo tokenId={token.id} />
-          </Box>
-          <Box grow flex column justify="center" gap={0.4}>
+          </div>
+          <div className="flex grow flex-col justify-center gap-2">
             <Box fontsize="normal" bold fg="foreground" flex inline align="center" gap={0.6}>
-              {token.symbol} {isFetching && <FetchingIcon data-spin />}
+              {token.symbol}{" "}
+              {/* {(Date.now() || isFetching) && (
+                <LoaderIcon className="animate-spin-slow text-body-secondary inline align-text-top" />
+              )} */}
             </Box>
             {!!networkIds.length && (
               <div>
                 <NetworksLogoStack networkIds={networkIds} />
               </div>
             )}
-          </Box>
-        </Box>
+          </div>
+        </div>
       </td>
       <td align="right" valign="top">
         <AssetBalanceCellValue
@@ -181,7 +184,8 @@ const AssetRow = ({ balances }: AssetRowProps) => {
           tokens={summary.lockedTokens}
           fiat={summary.lockedFiat}
           symbol={token.symbol}
-          className="noPadRight"
+          // className="noPadRight"
+          className={classNames("noPadRight", isFetching && "animate-pulse transition-opacity")}
         />
       </td>
       <td align="right" valign="top">
@@ -190,6 +194,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
           tokens={summary.availableTokens}
           fiat={summary.availableFiat}
           symbol={token.symbol}
+          className={classNames(isFetching && "animate-pulse transition-opacity")}
         />
       </td>
     </tr>

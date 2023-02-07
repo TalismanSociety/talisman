@@ -37,7 +37,7 @@ const NotificationIcon = ({ type }: { type: NotificationType }) => {
   if (type === "success") return <SuccessIcon />
   if (type === "warn") return <WarnIcon />
   if (type === "error") return <ErrorIcon />
-  if (type === "processing") return <ProcessingIcon data-spin />
+  if (type === "processing") return <ProcessingIcon className="animate-spin-slow" />
   return null
 }
 

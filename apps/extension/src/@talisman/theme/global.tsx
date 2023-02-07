@@ -4,20 +4,16 @@ import { hideScrollbarsStyle, scrollbarsStyle } from "./styles"
 
 const Global = createGlobalStyle`
 
-  * {
-    // TODO Check to see if this can be moved to html element
-    -webkit-font-smoothing: antialiased; // applies on macOS only
-  }
 
   // default box-sizing to border-box, recommended approach
-  html {
+  /* html {
     box-sizing: border-box;
   }
   *, *:before, *:after {
     box-sizing: inherit;
-  }
+  } */
 
-  body,
+  /* body,
   html{
       font-family: 'Surt', sans-serif;
       padding: 0;
@@ -27,7 +23,7 @@ const Global = createGlobalStyle`
       min-height: 100%;
       font-weight: var(--font-weight-regular);
       overflow: hidden;
-  }
+  } */
 
   // if window popup, set borders on HTML element
   html.popup {
@@ -48,14 +44,14 @@ const Global = createGlobalStyle`
     }
   }
 
-  body{
+  /* body{
     background: rgb(${({ theme }) => theme?.background});
     color: rgb(${({ theme }) => theme?.foreground});
     font-size: var(--font-size-normal);
-  }
+  } */
 
-  h1,
-  h2,
+  
+  /* h2,
   h3,
   h4,
   h5,
@@ -77,14 +73,11 @@ const Global = createGlobalStyle`
       &[data-extended]{
         font-family: 'SurtExpanded', sans-serif;
       }
-  }
+  } */
 
-  h1{
-      font-family: 'SurtExpanded', sans-serif;
-      font-size: var(--font-size-large);
-  }
+  
 
-  h2{
+  /* h2{
       font-size: var(--font-size-medium);
   }
 
@@ -97,25 +90,25 @@ const Global = createGlobalStyle`
   p{
       font-size: var(--font-size-normal);
       line-height: 1.6em;
-  }
+  } */
 
-  a{
+  /* a{
       text-decoration: none;
       transition: all 0.15s;
-  }
+  } */
 
-  hr{
+  /* hr{
       opacity: 0.15;
       height: 0;
       border: none;
       border-bottom: 1px solid currentColor;
-  }
+  } */
 
-  button{
+  /* button{
       font: inherit
-  }
+  } */
 
-  strong{
+  /* strong{
       font-weight: var(--font-weight-bold);
   }
 
@@ -126,18 +119,18 @@ const Global = createGlobalStyle`
     font-family: 'Surt', sans-serif;
     font-size: var(--font-size-medium);
     line-height: 1.6em;
-  }
+  } */
 
-  @keyframes spin {
+  /* @keyframes spin {
       from {
           transform: rotate(0deg);
       }
       to {
           transform: rotate(360deg);
       }
-  }
+  } */
 
-  svg{
+  /* svg{
     width: 1em;
     height: 1em;
     transition: all var(--transition-speed-fast) ease-in-out;
@@ -151,7 +144,7 @@ const Global = createGlobalStyle`
       opacity: 0.4;
       animation: spin linear 3s infinite;
     }
-  }
+  } */
 
   *:not(.allow-focus):focus{
       outline: none;
@@ -187,7 +180,7 @@ const Global = createGlobalStyle`
   .hide-scrollbars {
     ${hideScrollbarsStyle}
   }
-  
+/*   
   .flex {
     display: flex;
     align-items: center;
@@ -195,7 +188,7 @@ const Global = createGlobalStyle`
   
   .gap {
     gap: 1rem;
-  }
+  } */
 
   /* hides password reveal in Edge */
   input[type=password]::-ms-reveal {
