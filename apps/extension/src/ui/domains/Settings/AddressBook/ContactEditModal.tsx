@@ -7,7 +7,7 @@ import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
-import { Button } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { ContactModalProps } from "./types"
@@ -61,18 +61,18 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
-    <Modal open={isOpen} className="bg-black-secondary">
+    <Modal open={isOpen} className="bg-black-secondary" onClose={close}>
       <ModalDialog title="Edit contact">
         <form onSubmit={handleSubmit(submit)} className="grid gap-8">
-          <FormField error={errors.name} label="Name">
-            <input
+          <FormFieldContainer error={errors.name?.message} label="Name">
+            <FormFieldInputText
               type="text"
               {...register("name")}
               placeholder="Contact name"
               autoComplete="off"
               spellCheck="false"
             />
-          </FormField>
+          </FormFieldContainer>
           <div>
             <span className="text-body-secondary block">Address</span>
             <span className="mt-10 block bg-none text-xs text-white">{contact.address}</span>

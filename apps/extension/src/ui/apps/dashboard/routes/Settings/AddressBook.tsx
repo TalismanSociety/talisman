@@ -1,4 +1,5 @@
 import HeaderBlock from "@talisman/components/HeaderBlock"
+import { IconButton } from "@talisman/components/IconButton"
 import Spacer from "@talisman/components/Spacer"
 import { EditIcon, TrashIcon } from "@talisman/theme/icons"
 import { AnalyticsPage } from "@ui/api/analytics"
@@ -24,9 +25,9 @@ type ContactItemProps = ContactComponentProps & {
 }
 
 const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => (
-  <div className="bg-black-secondary hover:bg-black-tertiary flex w-full justify-between rounded p-8">
+  <div className="bg-black-secondary hover:bg-black-tertiary flex w-full items-center justify-between rounded p-8">
     <FormattedAddress address={contact.address} />
-    <div className="text-body-secondary flex gap-4">
+    <div className="text-body-secondary flex gap-6">
       <EditIcon className="cursor-pointer" onClick={() => handleEdit(contact.address)} />
       <TrashIcon className="cursor-pointer" onClick={() => handleDelete(contact.address)} />
     </div>

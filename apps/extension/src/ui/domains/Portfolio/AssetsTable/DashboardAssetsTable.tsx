@@ -163,12 +163,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
             <TokenLogo tokenId={token.id} />
           </div>
           <div className="flex grow flex-col justify-center gap-2">
-            <Box fontsize="normal" bold fg="foreground" flex inline align="center" gap={0.6}>
-              {token.symbol}{" "}
-              {/* {(Date.now() || isFetching) && (
-                <LoaderIcon className="animate-spin-slow text-body-secondary inline align-text-top" />
-              )} */}
-            </Box>
+            <div className="text-body text-base font-bold">{token.symbol} </div>
             {!!networkIds.length && (
               <div>
                 <NetworksLogoStack networkIds={networkIds} />
@@ -184,7 +179,6 @@ const AssetRow = ({ balances }: AssetRowProps) => {
           tokens={summary.lockedTokens}
           fiat={summary.lockedFiat}
           symbol={token.symbol}
-          // className="noPadRight"
           className={classNames("noPadRight", isFetching && "animate-pulse transition-opacity")}
         />
       </td>
