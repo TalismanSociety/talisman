@@ -1,3 +1,4 @@
+import { notify } from "@talisman/components/Notifications"
 import { CheckIcon, CopyIcon } from "@talisman/theme/icons"
 import { MouseEventHandler, useState } from "react"
 import styled from "styled-components"
@@ -50,25 +51,20 @@ export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
         onClick={() => {
           if (hasHovered && !hasCopied) {
             window.navigator.clipboard.writeText(mnemonic)
-            setHasCopied(true)
+            notify({
+              title: "Copied to clipboard",
+              type: "success",
+            })
           }
         }}
       >
-        {!hasCopied && (
-          <span className={classNames(hasHovered ? "text-white" : "text-black", "cursor-pointer")}>
-            <CopyIcon className="mr-2 inline" /> <span>Copy to clipboard</span>
-          </span>
-        )}
-        {hasCopied && (
-          <span className="text-primary">
-            <CheckIcon className="mr-2 inline" />
-            Copied
-          </span>
-        )}
+        <span className={classNames(hasHovered ? "text-white" : "text-black", "cursor-pointer")}>
+          <CopyIcon className="mr-2 inline" /> <span>Copy to clipboard</span>
+        </span>
       </span>
 
       <SecretText
-        className="secret bg-black-secondary rounded p-2"
+        className="secret bg-black-secondary h-72 rounded p-2"
         onMouseEnter={(e) => {
           setHasHovered(true)
           onMouseEnter && onMouseEnter(e)
