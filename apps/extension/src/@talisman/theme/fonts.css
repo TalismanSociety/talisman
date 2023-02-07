@@ -1,27 +1,23 @@
 @font-face {
   font-family: "Surt";
-  font-style: normal;
   font-weight: normal;
   src: url("./fonts/Surt-Regular.woff") format("woff");
 }
 
 @font-face {
-  font-family: "SurtSemiBold";
-  font-style: normal;
-  font-weight: normal;
+  font-family: "Surt";
+  font-weight: bold;
   src: url("./fonts/Surt-SemiBold.woff2") format("woff2");
 }
 
 @font-face {
   font-family: "SurtExpanded";
-  font-style: normal;
   font-weight: normal;
   src: url("./fonts/Surt-SemiBoldExp.woff2") format("woff2");
 }
 
 @font-face {
   font-family: "WhyteInktrapMedium";
-  font-style: normal;
   font-weight: normal;
   src: url("./fonts/Whyte-Inktrap-Medium.woff2") format("woff2");
 }

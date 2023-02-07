@@ -38,10 +38,6 @@
     @apply h-[1em] w-[1em];
   }
 
-  font-semibold {
-    @apply font-surtSemiBold;
-  }
-
   input::placeholder,
   textarea::placeholder {
     @apply text-current opacity-30;
