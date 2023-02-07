@@ -131,9 +131,9 @@ export default class ParaverseProtector {
     try {
       const sha = await this.getCommitSha(`${METAMASK_REPO}${COMMIT_PATH}`)
       if (sha !== this.#commits.metamask) {
-        this.#commits.metamask = sha
         const mmConfig = await this.getMetamaskData()
         this.#metamaskDetector = new MetamaskDetector(mmConfig)
+        this.#commits.metamask = sha
         this.persistData("metamask", sha, mmConfig)
       }
     } catch (error) {
@@ -145,8 +145,8 @@ export default class ParaverseProtector {
     try {
       const sha = await this.getCommitSha(`${POLKADOT_REPO}${COMMIT_PATH}`)
       if (sha !== this.#commits.polkadot) {
-        this.#commits.polkadot = sha
         this.lists.polkadot = await this.getPolkadotData()
+        this.#commits.polkadot = sha
         this.persistData("polkadot", sha, this.lists.polkadot)
       }
     } catch (error) {
@@ -162,8 +162,8 @@ export default class ParaverseProtector {
     try {
       const sha = await this.getCommitSha(`${PHISHFORT_REPO}${COMMIT_PATH}`)
       if (sha !== this.#commits.phishfort) {
-        this.#commits.phishfort = sha
         this.lists.phishfort.deny = await this.getPhishFortData()
+        this.#commits.phishfort = sha
         this.persistData("phishfort", sha, this.lists.phishfort)
       }
     } catch (error) {
