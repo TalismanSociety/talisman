@@ -80,7 +80,7 @@ interface BaseEncryptRequest<T extends ENCRYPT_ENCRYPT_PREFIX | ENCRYPT_DECRYPT_
   account: AccountJson
   url: string
 }
-interface EncryptEncryptRequest extends BaseEncryptRequest<ENCRYPT_ENCRYPT_PREFIX> {
+export interface EncryptEncryptRequest extends BaseEncryptRequest<ENCRYPT_ENCRYPT_PREFIX> {
   request: RequestEncrypt
 }
 export interface EncryptDecryptRequest extends BaseEncryptRequest<ENCRYPT_DECRYPT_PREFIX> {

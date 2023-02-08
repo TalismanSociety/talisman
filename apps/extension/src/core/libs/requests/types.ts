@@ -16,15 +16,15 @@ export type KnownRequests = SigningRequests &
 
 export type KnownRequestTypes = keyof KnownRequests
 
-export type RequestID<T extends KnownRequestTypes> = `${T}.${string}`
-export type AnyRequestID = RequestID<KnownRequestTypes>
+export type KnownRequestId<T extends KnownRequestTypes> = `${T}.${string}`
+export type AnyRequestID = KnownRequestId<KnownRequestTypes>
 
 export type AnyKnownRequestIdOnly = {
   id: AnyRequestID
 }
 
 export type KnownRequestIdOnly<T extends KnownRequestTypes> = {
-  id: RequestID<T>
+  id: KnownRequestId<T>
 }
 
 export type KnownRequest<T extends KnownRequestTypes> = KnownRequests[T][0]

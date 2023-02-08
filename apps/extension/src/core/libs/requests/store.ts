@@ -8,10 +8,10 @@ import { windowManager } from "../WindowManager"
 import type {
   AnyRespondableRequest,
   KnownRequest,
+  KnownRequestId,
   KnownRequestTypes,
   KnownRespondableRequest,
   KnownResponse,
-  RequestID,
   Resolver,
   ValidRequests,
 } from "./types"
@@ -70,7 +70,7 @@ export class RequestStore {
     TRequest extends Omit<ValidRequests, "id">,
     T extends KnownRequestTypes = TRequest["type"]
   >(requestOptions: TRequest): Promise<KnownResponse<T>> {
-    const id = `${requestOptions.type}.${v4()}` as RequestID<T>
+    const id = `${requestOptions.type}.${v4()}` as KnownRequestId<T>
 
     return new Promise((resolve, reject): void => {
       const newRequest = {
@@ -105,7 +105,7 @@ export class RequestStore {
   }
 
   private onCompleteRequest<T extends KnownRequestTypes>(
-    id: RequestID<T>,
+    id: KnownRequestId<T>,
     resolve: Resolver<KnownResponse<T>>["resolve"],
     reject: (error: Error) => void
   ): Resolver<KnownResponse<T>> {
@@ -130,14 +130,14 @@ export class RequestStore {
     return new RequestCounts(this.allRequests())
   }
 
-  public getRequest<T extends KnownRequestTypes>(id: RequestID<T>) {
+  public getRequest<T extends KnownRequestTypes>(id: KnownRequestId<T>) {
     const request = this.requests[id]
     const requestType = id.split(".")[0] as T
     if (isRequestOfType(request, requestType)) return request as KnownRespondableRequest<T>
     return
   }
 
-  public deleteRequest<T extends KnownRequestTypes>(id: RequestID<T>) {
+  public deleteRequest<T extends KnownRequestTypes>(id: KnownRequestId<T>) {
     delete this.requests[id]
     this.observable.next(this.getAllRequests())
     return
