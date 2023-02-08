@@ -31,6 +31,7 @@ type State =
 
 type Action =
   | { method: "enableScan" }
+  | { method: "setScanError"; error: string }
   | { method: "setCameraError"; error: string }
   | { method: "onScan"; scanned?: { content: string; genesisHash: string; isAddress: boolean } }
   | { method: "setName"; name: string }
@@ -43,6 +44,8 @@ const initialState: State = { type: "SCAN", enable: false }
 const reducer = (state: State, action: Action): State => {
   if (state.type === "SCAN") {
     if (action.method === "enableScan") return { type: "SCAN", enable: true }
+    if (action.method === "setScanError")
+      return { type: "SCAN", enable: false, scanError: action.error }
     if (action.method === "setCameraError")
       return { type: "SCAN", enable: false, cameraError: action.error }
 
@@ -50,14 +53,15 @@ const reducer = (state: State, action: Action): State => {
       const scanned = action.scanned
 
       if (!scanned) return state
-      if (!scanned.isAddress) return { type: "SCAN", enable: true, scanError: "invalid qr code" }
+      if (!scanned.isAddress)
+        return { type: "SCAN", enable: true, scanError: "QR code is not valid" }
 
       const { content: address, genesisHash } = scanned
 
       if (decodeAnyAddress(address).byteLength !== 32)
-        return { type: "SCAN", enable: true, scanError: "invalid address length" }
+        return { type: "SCAN", enable: true, scanError: "QR code contains an invalid address" }
       if (!genesisHash.startsWith("0x"))
-        return { type: "SCAN", enable: true, scanError: "invalid genesisHash" }
+        return { type: "SCAN", enable: true, scanError: "QR code contains an invalid genesisHash" }
 
       return {
         type: "CONFIGURE",
@@ -241,7 +245,6 @@ export const AccountAddQr = () => {
                   </li>
                 ))}
               </ol>
-              {state.scanError && <div>{state.scanError}</div>}
             </div>
             <div>
               <ScanQr
@@ -250,12 +253,31 @@ export const AccountAddQr = () => {
                 error={!!state.cameraError}
                 onScan={(scanned) => dispatch({ method: "onScan", scanned })}
                 onError={(error) =>
-                  dispatch({
-                    method: "setCameraError",
-                    error: error.name ?? error.message ?? "error",
-                  })
+                  [
+                    "AbortError",
+                    "NotAllowedError",
+                    "NotFoundError",
+                    "NotReadableError",
+                    "OverconstrainedError",
+                    "SecurityError",
+                  ].includes(error.name)
+                    ? dispatch({
+                        method: "setCameraError",
+                        error: error.name ?? error.message ?? "error",
+                      })
+                    : dispatch({
+                        method: "setScanError",
+                        error: error.message.startsWith("Invalid prefix received")
+                          ? "QR code is not valid"
+                          : error.message ?? "Unknown error",
+                      })
                 }
               />
+              {state.scanError && (
+                <div className="text-alert-error bg-alert-error/10 mt-6 inline-block w-[260px] rounded p-4 text-center text-xs font-light">
+                  {state.scanError}
+                </div>
+              )}
             </div>
           </div>
         </>
