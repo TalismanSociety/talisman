@@ -14,6 +14,7 @@ import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { windowManager } from "@core/libs/WindowManager"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import keyring from "@polkadot/ui-keyring"
@@ -241,7 +242,7 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private promptLogin(closeOnSuccess: boolean): boolean {
-    this.state.promptLogin(closeOnSuccess)
+    windowManager.popupOpen(`?closeOnSuccess=${closeOnSuccess}`)
     return true
   }
 

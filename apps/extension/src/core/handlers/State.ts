@@ -1,50 +1,11 @@
 import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
-import { requestStore } from "@core/libs/requests/store"
-import { windowManager } from "@core/libs/WindowManager"
 import { sleep } from "@talismn/util"
 import Browser from "webextension-polyfill"
 
 export default class State {
   // Prevents opening two onboarding tabs at once
   #onboardingTabOpening = false
-
-  constructor() {
-    // update the icon when any of the request stores change
-    requestStore.observable.subscribe(() => this.updateIcon(true))
-  }
-
-  public promptLogin(closeOnSuccess: boolean): void {
-    windowManager.popupOpen(`?closeOnSuccess=${closeOnSuccess}`)
-  }
-
-  private updateIcon(shouldClose?: boolean): void {
-    const counts = requestStore.getCounts()
-    const signingCount =
-      counts.get("eth-send") + counts.get("eth-sign") + counts.get("substrate-sign")
-
-    const text = counts.get("auth")
-      ? "Sites"
-      : counts.get("metadata")
-      ? "Meta"
-      : signingCount
-      ? `${signingCount}`
-      : counts.get("eth-network-add")
-      ? "Network"
-      : counts.get("eth-watchasset")
-      ? "Assets"
-      : counts.get("encrypt")
-      ? "Encrypt"
-      : counts.get("decrypt")
-      ? "Decrypt"
-      : ""
-
-    Browser.browserAction.setBadgeText({ text })
-
-    if (shouldClose && text === "") {
-      windowManager.popupClose()
-    }
-  }
 
   private waitTabLoaded = (tabId: number): Promise<void> => {
     // wait either page to be loaded or a 3 seconds timeout, first to occur wins
