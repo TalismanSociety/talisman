@@ -1,4 +1,3 @@
-import { Box } from "@talisman/components/Box"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talisman/util/classNames"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
@@ -29,23 +28,23 @@ export const NetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork 
   if (!network) return null
 
   return (
-    <Box inlineBlock w="1em" h="1em" className="item" overflow="hidden">
+    <div className="item inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={tooltip}>
         <ChainLogo key={network.id} id={network.id} className="logo-circle" />
       </WithTooltip>
-    </Box>
+    </div>
   )
 }
 
 const MoreNetworksTooltip = ({ networks }: { networks: PortfolioNetwork[] }) => {
   return (
-    <Box textalign="left">
+    <div className="text-left">
       {networks.map(({ label, type }, i) => (
         <div key={i}>
           {label} ({type})
         </div>
       ))}
-    </Box>
+    </div>
   )
 }
 
@@ -53,28 +52,13 @@ export const NetworksLogoStackMore = ({ networks }: { networks: PortfolioNetwork
   if (!networks.length) return null
 
   return (
-    <Box inlineBlock w="1em" h="1em" className="item" overflow="hidden">
+    <div className="item inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={<MoreNetworksTooltip networks={networks} />}>
-        <Box
-          circle
-          bg="mid"
-          w="1em"
-          h="1em"
-          flex
-          column
-          align="center"
-          justify="center"
-          overflow="hidden"
-          lineheightcustom="1em"
-          fg="background"
-          className="logo-circle"
-        >
-          <Box fontsizecustom="0.5em" h="1em" lineheightcustom="1em" textalign="center" bold>
-            +{networks.length}
-          </Box>
-        </Box>
+        <div className="bg-body-secondary column flex h-[1em] w-[1em] flex-col justify-center overflow-hidden rounded-full text-center text-black">
+          <div className="text-[0.5em] font-bold leading-[1em]">+{networks.length}</div>
+        </div>
       </WithTooltip>
-    </Box>
+    </div>
   )
 }
 

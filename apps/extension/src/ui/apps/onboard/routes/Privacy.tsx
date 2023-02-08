@@ -1,4 +1,3 @@
-import { Box } from "@talisman/components/Box"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import imgAnalytics from "@talisman/theme/images/analytics.png"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -82,7 +81,7 @@ export const PrivacyPage = () => {
       analytics={ANALYTICS_PAGE}
     >
       <Dialog title="Manage your privacy">
-        <Box margin="4.8rem 0" lineheightcustom={2.2}>
+        <div className="my-24 leading-[2.2em]">
           To help improve Talisman we’d like to collect anonymous usage information and send
           anonymized error reports. We respect your data and never record sensitive or identifying
           information. You can always adjust these settings, or opt out completely at any time.
@@ -96,13 +95,13 @@ export const PrivacyPage = () => {
             Learn more
           </a>{" "}
           about what we track and how we use this data.
-        </Box>
-        <Box flex fullwidth gap={1.6}>
+        </div>
+        <div className="flex w-full gap-8">
           <SimpleButtonTransparent onClick={handleClick(false)}>No thanks</SimpleButtonTransparent>
           <SimpleButton onClick={handleClick(true)} primary>
             I agree
           </SimpleButton>
-        </Box>
+        </div>
       </Dialog>
     </Container>
   )

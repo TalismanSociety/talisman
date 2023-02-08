@@ -1,7 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
-import { Box } from "@talisman/components/Box"
-import { LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -78,23 +76,16 @@ const AssetState = ({
 }) => {
   if (!render) return null
   return (
-    <Box h={6.6} padding="1.6rem" flex column justify="center" gap={0.4}>
-      <Box bold fg="foreground">
-        {title}
-      </Box>
+    <div className="flex h-[6.6rem] flex-col justify-center gap-2 p-8">
+      <div className="font-bold text-white">{title}</div>
       {address && (
-        <Box fontsize="small">
+        <div className="text-sm">
           <PortfolioAccount address={address} />
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }
-
-const FetchingIndicator = styled(LoaderIcon)`
-  line-height: 1;
-  font-size: var(--font-size-normal);
-`
 
 type AssetRowProps = {
   chainId: ChainId | EvmNetworkId
@@ -120,7 +111,6 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
               <div className="base text-body flex items-center gap-4 font-bold">
                 {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
                 <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
-                {/* {isFetching && <FetchingIndicator className="animate-spin-slow" />} */}
               </div>
               <div>{networkType}</div>
             </div>

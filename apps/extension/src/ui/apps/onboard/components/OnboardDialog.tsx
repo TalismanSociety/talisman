@@ -1,4 +1,3 @@
-import { Box } from "@talisman/components/Box"
 import { ReactNode } from "react"
 import styled from "styled-components"
 
@@ -19,11 +18,7 @@ type OnboardDialogProps = {
 
 export const OnboardDialog = ({ title, children, className }: OnboardDialogProps) => (
   <Container className={className}>
-    <Box fontsize="xlarge" fg="foreground">
-      {title}
-    </Box>
-    <Box fg="mid" margin="3.2rem 0 0">
-      {children}
-    </Box>
+    <div className="text-xl text-white">{title}</div>
+    <div className="text-body-secondary mt-16">{children}</div>
   </Container>
 )

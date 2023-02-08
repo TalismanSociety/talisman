@@ -1,4 +1,3 @@
-import { Box } from "@talisman/components/Box"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"

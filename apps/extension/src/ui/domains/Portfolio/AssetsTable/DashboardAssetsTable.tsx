@@ -1,7 +1,4 @@
 import { Balances } from "@core/domains/balances/types"
-import { Box } from "@talisman/components/Box"
-import { Skeleton } from "@talisman/components/Skeleton"
-import { LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useMemo } from "react"
@@ -70,58 +67,22 @@ const Table = styled.table`
 const AssetRowSkeleton = ({ className }: { className?: string }) => {
   return (
     <tr className={classNames("asset skeleton", className)}>
-      <td valign="top">
-        <Box h={6.6} flex opacity={0.3}>
-          <Box padding="1.6rem" fontsize="xlarge">
-            <Skeleton
-              baseColor="#5A5A5A"
-              highlightColor="#A5A5A5"
-              width={"3.2rem"}
-              height={"3.2rem"}
-              circle
-            />
-          </Box>
-          <Box grow flex column justify="center" gap={0.4}>
-            <Box fontsize="normal" bold fg="foreground">
-              <Skeleton
-                baseColor="#5A5A5A"
-                highlightColor="#A5A5A5"
-                width={"4rem"}
-                height={"1.6rem"}
-              />
-            </Box>
-          </Box>
-        </Box>
-      </td>
-      <td valign="top"></td>
-      <td valign="top">
-        <Box
-          flex
-          opacity={0.3}
-          h={6.6}
-          column
-          justify="center"
-          gap={0.4}
-          textalign="right"
-          padding="1.6rem"
-        >
-          <Box fg="foreground">
-            <Skeleton
-              baseColor="#5A5A5A"
-              highlightColor="#A5A5A5"
-              width={"10rem"}
-              height={"1.6rem"}
-            />
-          </Box>
-          <div>
-            <Skeleton
-              baseColor="#5A5A5A"
-              highlightColor="#A5A5A5"
-              width={"6rem"}
-              height={"1.6rem"}
-            />
+      <td>
+        <div className="flex h-[6.6rem]">
+          <div className="p-8 text-xl">
+            <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full"></div>
           </div>
-        </Box>
+          <div className="flex grow flex-col justify-center gap-2">
+            <div className="bg-grey-700 rounded-xs h-8 w-20 animate-pulse"></div>
+          </div>
+        </div>
+      </td>
+      <td></td>
+      <td>
+        <div className="flex h-full flex-col items-end justify-center gap-2 px-8">
+          <div className="bg-grey-700 rounded-xs h-8 w-[10rem] animate-pulse"></div>
+          <div className="bg-grey-700 rounded-xs h-8 w-[6rem] animate-pulse"></div>
+        </div>
       </td>
     </tr>
   )
@@ -130,11 +91,6 @@ const AssetRowSkeleton = ({ className }: { className?: string }) => {
 type AssetRowProps = {
   balances: Balances
 }
-
-const FetchingIcon = styled(LoaderIcon)`
-  line-height: 1;
-  font-size: 1.8rem;
-`
 
 const AssetRow = ({ balances }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
@@ -206,22 +162,16 @@ const getSkeletonOpacity = (index: number) => {
     case 0:
       return "opacity-100"
     case 1:
-      return "opacity-90"
-    case 2:
       return "opacity-80"
-    case 3:
-      return "opacity-70"
-    case 4:
+    case 2:
       return "opacity-60"
-    case 5:
-      return "opacity-50"
-    case 6:
+    case 3:
       return "opacity-40"
-    case 7:
+    case 4:
       return "opacity-30"
-    case 8:
+    case 5:
       return "opacity-20"
-    case 9:
+    case 6:
       return "opacity-10"
     default:
       return "opacity-0"

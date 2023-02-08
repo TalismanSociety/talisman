@@ -6,7 +6,6 @@ import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
 import { formatDecimals } from "@talismn/util"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
-import Skeleton from "react-loading-skeleton"
 import styled from "styled-components"
 
 import Fiat from "../Asset/Fiat"
@@ -127,33 +126,15 @@ const Pager = styled.div`
 `
 
 const AccountButtonShimmer = () => (
-  <button type="button" className={classNames("picker-button", "shim")} disabled>
-    <Skeleton
-      baseColor="#5A5A5A"
-      highlightColor="#A5A5A5"
-      width={"3.2rem"}
-      height={"3.2rem"}
-      borderRadius={"50%"}
-    />
-    <div className="vflex grow">
-      <div>
-        <Skeleton baseColor="#5A5A5A" highlightColor="#A5A5A5" width={"13rem"} height={"1.6rem"} />
-      </div>
-      <div className="caption">
-        <Skeleton baseColor="#5A5A5A" highlightColor="#A5A5A5" width={"6.8rem"} height={"1.4rem"} />
-      </div>
+  <div className={"bg-black-secondary flex h-[6.8rem] w-full items-center gap-8 rounded px-8"}>
+    <div className="bg-grey-750 inline-block h-16 w-16 animate-pulse rounded-full"></div>
+    <div className="flex grow flex-col gap-2">
+      <div className="rounded-xs bg-grey-750 h-[1.6rem] w-[13rem] animate-pulse"></div>
+      <div className="rounded-xs bg-grey-750 h-[1.4rem] w-[6.8rem] animate-pulse"></div>
     </div>
-    <div className="caption flex flex-col justify-center ">
-      <Skeleton baseColor="#5A5A5A" highlightColor="#A5A5A5" width={"6.8rem"} height={"1.8rem"} />
-    </div>
-    <Skeleton
-      style={{ paddingRight: "0.8rem" }}
-      baseColor="#5A5A5A"
-      highlightColor="#A5A5A5"
-      width={"2rem"}
-      height={"1.8rem"}
-    />
-  </button>
+    <div className="rounded-xs bg-grey-750 h-[1.8rem] w-[6.8rem] animate-pulse"></div>
+    <div className="rounded-xs bg-grey-750 h-[2rem] w-[2rem] animate-pulse"></div>
+  </div>
 )
 
 const AccountButton: FC<AccountButtonProps> = ({
@@ -264,6 +245,8 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
   return (
     <Container>
       <div className="flex w-full flex-col gap-4">
+        <AccountButtonShimmer />
+        <AccountButtonShimmer />
         {accounts.map((account, i) =>
           account ? (
             <AccountButton

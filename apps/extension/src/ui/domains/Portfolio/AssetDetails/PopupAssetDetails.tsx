@@ -1,5 +1,4 @@
 import { Balances } from "@core/domains/balances/types"
-import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { CopyIcon, CreditCardIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talisman/util/classNames"
@@ -32,7 +31,7 @@ type AssetRowProps = {
   balances: Balances
 }
 
-const ChainTokenBlock = styled(Box)`
+const ChainTokenBlock = styled.div`
   > div:first-child {
     border-top-left-radius: var(--border-radius-tiny);
     border-top-right-radius: var(--border-radius-tiny);
@@ -51,55 +50,53 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
   if (!chainOrNetwork || !summary || !symbol || balances.count === 0) return null
 
   return (
-    <ChainTokenBlock borderradius fontsize="small" fg="mid">
-      <Box
-        flex
-        fullwidth
-        bg="background-muted-3x"
-        border="transparent"
-        gap={1.2}
-        padding="1.2rem 1.4rem"
-      >
-        <Box fontsize="xlarge">
+    <ChainTokenBlock className="text-body-secondary rounded text-sm">
+      <div className="bg-grey-800 flex w-full items-center gap-6 border-transparent py-6 px-7">
+        <div className="text-xl">
           <ChainLogo id={chainOrNetwork.id} />
-        </Box>
-        <Box grow flex column justify="center" gap={0.4} padding="0 1.6rem 0 0">
-          <Box flex justify="space-between" bold fg="foreground">
-            <Box flex align="center" gap={0.8}>
+        </div>
+        <div className="flex grow flex-col justify-center gap-2 pr-8">
+          <div className="flex justify-between font-bold text-white">
+            <div className="flex items-center gap-4">
               {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
               <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
-              {isFetching && <FetchingIndicator className="animate-spin-slow" />}
-            </Box>
-          </Box>
-          <Box flex justify="space-between" fontsize="xsmall" fg="mid">
-            <Box>{networkType}</Box>
-          </Box>
-        </Box>
-      </Box>
+            </div>
+          </div>
+          <div className="text-body-secondary flex justify-between text-xs">
+            <div>{networkType}</div>
+          </div>
+        </div>
+      </div>
       {detailRows
         .filter((row) => row.tokens.gt(0))
         .map((row, i, rows) => (
-          <Box
-            flex
-            align="center"
-            fullwidth
-            bg="background-muted"
+          <div
             key={row.key}
-            className={classNames(rows.length === i + 1 && "stop-row")}
-            padding="1.2rem 1.4rem"
+            className={classNames(
+              "bg-black-secondary flex w-full items-center gap-8 px-7 py-6",
+              rows.length === i + 1 && "stop-row"
+            )}
           >
-            <Box grow flex column justify="center" gap={0.4} overflow="hidden">
-              <Box fg="foreground" bold>
-                {row.title}
-              </Box>
+            <div className="flex grow flex-col justify-center gap-2 overflow-hidden">
+              <div className="font-bold text-white">{row.title}</div>
               {!!row.address && (
-                <Box fontsize="xsmall">
+                <div className="text-xs">
                   <PortfolioAccount address={row.address} />
-                </Box>
+                </div>
               )}
-            </Box>
-            <Box flex column justify="center" gap={0.4} textalign="right" noWrap>
-              <Box bold fg={row.locked ? "mid" : "foreground"}>
+            </div>
+            <div
+              className={classNames(
+                "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
+                isFetching && "animate-pulse transition-opacity"
+              )}
+            >
+              <div
+                className={classNames(
+                  "font-bold",
+                  row.locked ? "text-body-secondary" : "text-white"
+                )}
+              >
                 <Tokens amount={row.tokens} symbol={symbol} isBalance />
                 {row.locked ? (
                   <>
@@ -107,12 +104,12 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                     <LockIcon className="lock inline align-baseline" />
                   </>
                 ) : null}
-              </Box>
-              <Box fontsize="xsmall">
+              </div>
+              <div className="text-xs">
                 {row.fiat === null ? "-" : <Fiat currency="usd" amount={row.fiat} isBalance />}
-              </Box>
-            </Box>
-          </Box>
+              </div>
+            </div>
+          </div>
         ))}
     </ChainTokenBlock>
   )
@@ -172,11 +169,11 @@ export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
 
   return (
     <FadeIn>
-      <Box flex column gap={1.6}>
+      <div className="flex flex-col gap-8">
         {rows.map(([chainId, bal]) => (
           <ChainTokenBalances key={chainId} chainId={chainId} balances={bal} />
         ))}
-      </Box>
+      </div>
     </FadeIn>
   )
 }

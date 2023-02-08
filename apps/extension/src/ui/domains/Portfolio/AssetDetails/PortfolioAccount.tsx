@@ -1,14 +1,7 @@
-import { Box } from "@talisman/components/Box"
 import { UsbIcon } from "@talisman/theme/icons"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
-import styled from "styled-components"
-
-const Container = styled(Box)`
-  .account-avatar {
-    font-size: 1em;
-  }
-`
+import { classNames } from "talisman-ui"
 
 export const PortfolioAccount = ({
   address,
@@ -20,18 +13,22 @@ export const PortfolioAccount = ({
   const account = useAccountByAddress(address)
   if (!account) return null
   return (
-    <Container className={className} flex gap={0.6}>
-      <Box>
-        <AccountAvatar address={address} />
-      </Box>
-      <Box overflow="hidden" textOverflow="ellipsis" noWrap>
+    <div className={classNames("flex gap-3", className)}>
+      <div>
+        <AccountAvatar
+          className="!text-[1em]"
+          address={address}
+          genesisHash={account?.genesisHash}
+        />
+      </div>
+      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
         {account.name ?? "Unnknown"}
-      </Box>
+      </div>
       {!!account?.isHardware && (
-        <Box fg="primary">
+        <div className="text-primary">
           <UsbIcon />
-        </Box>
+        </div>
       )}
-    </Container>
+    </div>
   )
 }

@@ -1,5 +1,4 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Box } from "@talisman/components/Box"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -81,15 +80,15 @@ export const ImportSeedPage = () => {
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
-      <Box flex justify="center">
-        <Box w={70.9}>
+      <div className="flex justify-center">
+        <div className="w-[70.9rem]">
           <OnboardDialog title="Import wallet">
             <p>
               Please enter your 12 or 24 word recovery phrase, with each word separated by a space.
               Please ensure no-one can see you entering your recovery phrase.
             </p>
             <form onSubmit={handleSubmit(submit)}>
-              <Box margin="4.8rem 0 0 0">
+              <div className="mt-24">
                 <OnboardFormField error={errors.mnemonic}>
                   <textarea
                     {...register("mnemonic")}
@@ -100,15 +99,15 @@ export const ImportSeedPage = () => {
                     autoFocus
                   />
                 </OnboardFormField>
-                <Box h={2.4}></Box>
+                <div className="h-12"></div>
                 <OnboardButton type="submit" primary disabled={!isValid}>
                   Import wallet
                 </OnboardButton>
-              </Box>
+              </div>
             </form>
           </OnboardDialog>
-        </Box>
-      </Box>
+        </div>
+      </div>
     </Layout>
   )
 }

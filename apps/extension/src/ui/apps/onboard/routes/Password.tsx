@@ -1,5 +1,4 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Box } from "@talisman/components/Box"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -93,15 +92,15 @@ export const PasswordPage = () => {
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
-      <Box flex justify="center">
-        <Box w={60}>
+      <div className="flex justify-center">
+        <div className="w-[60rem]">
           <OnboardDialog title={title}>
             <p>{description}</p>
             <form onSubmit={handleSubmit(submit)} autoComplete="off">
-              <Box flex column>
-                <Box fontsize="small" margin="3.2rem 0 1.6rem 0">
+              <div className="flex flex-col">
+                <div className="mt-16 mb-8 text-sm">
                   Password strength: <PasswordStrength password={password} />
-                </Box>
+                </div>
                 <OnboardFormField error={errors.password}>
                   <input
                     {...register("password")}
@@ -123,15 +122,15 @@ export const PasswordPage = () => {
                     data-lpignore
                   />
                 </OnboardFormField>
-              </Box>
-              <Box h={1.6} />
+              </div>
+              <div className="h-8" />
               <OnboardButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
                 Continue
               </OnboardButton>
             </form>
           </OnboardDialog>
-        </Box>
-      </Box>
+        </div>
+      </div>
     </Layout>
   )
 }

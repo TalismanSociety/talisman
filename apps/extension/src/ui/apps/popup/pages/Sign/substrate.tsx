@@ -1,6 +1,5 @@
 import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
 import { SignerPayloadRaw, SigningRequest } from "@core/domains/signing/types"
-import { Box } from "@talisman/components/Box"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"

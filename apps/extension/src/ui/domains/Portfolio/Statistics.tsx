@@ -1,8 +1,8 @@
 import { Token } from "@core/domains/tokens/types"
-import { Box } from "@talisman/components/Box"
 import { LockIcon } from "@talisman/theme/icons"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
+import { classNames } from "talisman-ui"
 
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
@@ -26,24 +26,24 @@ const TokensAndFiat = ({
   fiat: number | null
   token?: Token
 }) => (
-  <Box flex column gap={0.4} noWrap>
-    <Box fg="foreground" fontsize="normal">
+  <div className="flex flex-col gap-2 whitespace-nowrap">
+    <div className="textbase text-white">
       <Tokens
         amount={tokenAmount ?? "0"}
         isBalance
         decimals={token?.decimals}
         symbol={token?.symbol}
       />
-    </Box>
-    <Box fg="mid" fontsize="small">
+    </div>
+    <div className="text-body-secondary text-sm">
       {fiat === null ? "-" : <Fiat amount={fiat} currency="usd" isBalance />}
-    </Box>
-  </Box>
+    </div>
+  </div>
 )
 const FiatOnly = ({ fiat }: { fiat: number | null }) => (
-  <Box fg="foreground" fontsize="normal">
+  <div className="textbase text-white">
     {fiat === null ? "-" : <Fiat amount={fiat} currency="usd" isBalance />}
-  </Box>
+  </div>
 )
 
 export const Statistics = ({
@@ -56,26 +56,21 @@ export const Statistics = ({
   showTokens,
 }: StatisticsProps) => {
   return (
-    <Box
-      flex
-      column
-      bg="background-muted"
-      borderradius
-      padding={1.6}
-      w={23.6}
-      h={10}
-      gap={0.8}
-      className={className}
+    <text
+      className={classNames(
+        "bg-black-secondary flex h-[10rem] w-[23.6rem] flex-col gap-4 rounded p-8 ",
+        className
+      )}
     >
-      <Box flex gap={0.4} fg="mid" fontsize="small" align="center">
+      <div className="text-body-secondary flex items-center gap-2 text-sm">
         {locked && <LockIcon />}
         {title}
-      </Box>
+      </div>
       {showTokens ? (
         <TokensAndFiat tokenAmount={tokens} fiat={fiat} token={token} />
       ) : (
         <FiatOnly fiat={fiat} />
       )}
-    </Box>
+    </text>
   )
 }

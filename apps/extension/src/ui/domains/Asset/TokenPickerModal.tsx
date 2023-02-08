@@ -118,7 +118,7 @@ const FormContainer = styled(Box)`
   }
 `
 
-export const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
+const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
   const { useTestnets = false } = useSettings()
   const { chainsMap } = useChains(useTestnets)
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
