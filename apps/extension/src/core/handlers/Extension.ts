@@ -11,7 +11,6 @@ import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
 import TokenRatesHandler from "@core/domains/tokenRates/handler"
 import TokensHandler from "@core/domains/tokens/handler"
 import { AssetTransferHandler } from "@core/domains/transactions"
-import State from "@core/handlers/State"
 import { ExtensionStore } from "@core/handlers/stores"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
@@ -35,22 +34,22 @@ export default class Extension extends ExtensionHandler {
   readonly #routes: Record<string, ExtensionHandler> = {}
   #autoLockTimeout = 0 // cached value so we don't have to get data from the store every time
 
-  constructor(state: State, stores: ExtensionStore) {
-    super(state, stores)
+  constructor(stores: ExtensionStore) {
+    super(stores)
 
     // routing to sub-handlers
     this.#routes = {
-      accounts: new AccountsHandler(state, stores),
-      app: new AppHandler(state, stores),
-      assets: new AssetTransferHandler(state, stores),
-      balances: new BalancesHandler(state, stores),
-      encrypt: new EncryptHandler(state, stores),
-      eth: new EthHandler(state, stores),
-      metadata: new MetadataHandler(state, stores),
-      signing: new SigningHandler(state, stores),
-      sites: new SitesAuthorisationHandler(state, stores),
-      tokenRates: new TokenRatesHandler(state, stores),
-      tokens: new TokensHandler(state, stores),
+      accounts: new AccountsHandler(stores),
+      app: new AppHandler(stores),
+      assets: new AssetTransferHandler(stores),
+      balances: new BalancesHandler(stores),
+      encrypt: new EncryptHandler(stores),
+      eth: new EthHandler(stores),
+      metadata: new MetadataHandler(stores),
+      signing: new SigningHandler(stores),
+      sites: new SitesAuthorisationHandler(stores),
+      tokenRates: new TokenRatesHandler(stores),
+      tokens: new TokensHandler(stores),
     }
 
     // connect auto lock timeout setting to the password store

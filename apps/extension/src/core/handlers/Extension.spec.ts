@@ -20,7 +20,6 @@ import { getMessageSenderFn } from "../../../tests/util"
 import { signSubstrate } from "../domains/signing/requests"
 import { requestStore } from "../libs/requests/store"
 import Extension from "./Extension"
-import State from "./State"
 import { extensionStores } from "./stores"
 
 jest.mock("@talismn/chaindata-provider-extension/src/graphql")
@@ -37,7 +36,6 @@ jest.mock("@core/util/hasSpiritKey", () => {
 
 describe("Extension", () => {
   let extension: Extension
-  let state: State
   let messageSender: ReturnType<typeof getMessageSenderFn>
   const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
@@ -55,9 +53,8 @@ describe("Extension", () => {
         url: "http://localhost:3000",
       },
     })
-    state = new State()
 
-    return new Extension(state, extensionStores)
+    return new Extension(extensionStores)
   }
 
   const getAccount = async (): Promise<string> => {

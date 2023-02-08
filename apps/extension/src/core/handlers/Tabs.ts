@@ -19,7 +19,6 @@ import { signSubstrate } from "@core/domains/signing/requests"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { requestAuthoriseSite } from "@core/domains/sitesAuthorised/requests"
 import { AuthorizedSites, RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
-import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { TabsHandler } from "@core/libs/Handler"
@@ -58,12 +57,12 @@ export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()
   readonly #routes: Record<string, TabsHandler> = {}
 
-  constructor(state: State, stores: TabStore) {
-    super(state, stores)
+  constructor(stores: TabStore) {
+    super(stores)
 
     // routing to sub-handlers
     this.#routes = {
-      eth: new EthTabsHandler(state, stores),
+      eth: new EthTabsHandler(stores),
     }
   }
 

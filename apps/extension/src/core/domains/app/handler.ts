@@ -207,7 +207,7 @@ export default class AppHandler extends ExtensionHandler {
     this.stores.app.set({ onboarded: "FALSE" })
     await this.stores.password.reset()
     await this.stores.seedPhrase.clear()
-    await this.state.openOnboarding("/import?resetWallet=true")
+    await windowManager.openOnboarding("/import?resetWallet=true")
     // since all accounts are being wiped, all sites need to be reset - so they may as well be wiped.
     await this.stores.sites.clear()
 
@@ -216,7 +216,7 @@ export default class AppHandler extends ExtensionHandler {
 
   private async dashboardOpen({ route }: RequestRoute): Promise<boolean> {
     if (!(await this.stores.app.getIsOnboarded())) return this.onboardOpen()
-    this.state.openDashboard({ route })
+    windowManager.openDashboard({ route })
     return true
   }
 
@@ -224,7 +224,7 @@ export default class AppHandler extends ExtensionHandler {
     const queryUrl = Browser.runtime.getURL("dashboard.html")
     const [tab] = await Browser.tabs.query({ url: queryUrl })
     if (!tab) {
-      await this.state.openDashboard({ route: "/portfolio" })
+      await windowManager.openDashboard({ route: "/portfolio" })
       // wait for newly created page to load and subscribe to backend (max 5 seconds)
       for (let i = 0; i < 50 && !this.#modalOpenRequest.observed; i++) await sleep(100)
     }
@@ -232,7 +232,7 @@ export default class AppHandler extends ExtensionHandler {
   }
 
   private onboardOpen(): boolean {
-    this.state.openOnboarding()
+    windowManager.openOnboarding()
     return true
   }
 
