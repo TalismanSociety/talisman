@@ -1,6 +1,6 @@
 import { InfoIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { FC, PropsWithChildren } from "react"
-import { classNames } from "talisman-ui"
 
 type SignAlertMessageProps = PropsWithChildren & {
   className?: string

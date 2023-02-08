@@ -1,6 +1,6 @@
 import { TokenRateCurrency } from "@core/domains/tokens/types"
-import { classNames } from "@talisman/util/classNames"
 import { fiatDecimalSeparator, fiatGroupSeparator, formatFiat } from "@talisman/util/formatFiat"
+import { classNames } from "@talismn/util"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import { FC, useCallback, useMemo } from "react"
 import CountUp from "react-countup"

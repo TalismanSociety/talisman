@@ -1,5 +1,5 @@
 import { ExternalLinkIcon, IconChevron } from "@talisman/theme/icons"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import styled from "styled-components"
 
 import Link, { ILinkProps } from "./Link"

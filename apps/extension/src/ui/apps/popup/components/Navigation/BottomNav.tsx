@@ -1,5 +1,5 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"

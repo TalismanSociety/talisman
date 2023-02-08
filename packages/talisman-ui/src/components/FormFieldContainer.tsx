@@ -1,6 +1,5 @@
+import { classNames } from "@talismn/util"
 import { FC, ReactNode } from "react"
-
-import { classNames } from "../utils"
 
 type FormFieldContainerProps = {
   className?: string

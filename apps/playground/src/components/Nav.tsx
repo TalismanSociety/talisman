@@ -1,5 +1,5 @@
+import { classNames } from "@talismn/util"
 import { Link, useLocation } from "react-router-dom"
-import { classNames } from "talisman-ui"
 
 export const Nav = () => {
   const location = useLocation()

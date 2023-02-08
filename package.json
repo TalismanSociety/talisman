@@ -4,30 +4,35 @@
   "private": true,
   "workspaces": [
     "apps/*",
+    "config/*",
     "packages/*"
   ],
   "scripts": {
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
+    "postinstall": "preconstruct dev",
+    "prepare": "husky install",
+    "dev": "concurrently --prefix \"{name}\" --prefix-colors auto \"npm:dev:*\"",
+    "dev:balances-demo": "yarn workspace balances-demo dev",
+    "dev:extension": "yarn workspace extension dev",
+    "dev:playground": "yarn workspace playground dev",
     "build": "turbo run build",
-    "dev": "turbo run dev --parallel --color",
-    "dev:balances-demo": "turbo run dev --parallel --color --scope balances-demo --include-dependencies",
-    "dev:extension": "turbo run dev --parallel --color --scope extension --include-dependencies",
+    "build:packages": "NODE_OPTIONS=--max_old_space_size=8192 preconstruct build",
     "build:extension:ci": "turbo run build:extension:ci",
     "build:extension:prod": "turbo run build:extension:prod",
     "build:extension:canary": "turbo run build:extension:canary",
-    "build:packages:prod": "turbo run build:packages:prod",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,scss,html,md,json}\"",
     "clean": "turbo run clean --parallel && rm -rf dist && rm -rf node_modules",
-    "prepare": "husky install",
     "test": "turbo run test"
   },
   "devDependencies": {
+    "@alectalisman/preconstruct-cli": "2.3.0-e",
     "@changesets/cli": "^2.26",
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
     "@talismn/eslint-config": "workspace:^",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
+    "concurrently": "^7.6.0",
     "husky": "^8.0.1",
     "import-sort-style-module": "^6.0.0",
     "lint-staged": "^12.4.1",
@@ -109,5 +114,10 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx,css,scss,html,md,json}": "prettier --write",
     "*.{js,ts,jsx,tsx}": "eslint --fix --max-warnings 0"
+  },
+  "preconstruct": {
+    "packages": [
+      "packages/*"
+    ]
   }
 }

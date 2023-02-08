@@ -114,7 +114,7 @@
     "react-toastify": "^9.0.8",
     "react-use": "17.4.0",
     "remove-files-webpack-plugin": "^1.5.0",
-    "rxjs": "7.5.7",
+    "rxjs": "^7.8.0",
     "semver": "^7.3.7",
     "style-loader": "3.3.1",
     "styled-components": "5.3.5",
@@ -188,6 +188,12 @@
     "development": [
       "last 1 chrome version",
       "last 1 firefox version"
+    ]
+  },
+  "eslintConfig": {
+    "root": true,
+    "extends": [
+      "@talismn/eslint-config/react"
     ]
   }
 }

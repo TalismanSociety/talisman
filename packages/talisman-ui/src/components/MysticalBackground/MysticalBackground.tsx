@@ -1,7 +1,7 @@
+import { classNames } from "@talismn/util"
 import { useRef } from "react"
 import { useMeasure, useMouse } from "react-use"
 
-import { classNames } from "../../utils"
 import MysticalCanvas from "./MysticalCanvas"
 import { MYSTICAL_PHYSICS, MysticalPhysics } from "./MysticalPhysics"
 import { useWindowHovered } from "./useWindowHovered"

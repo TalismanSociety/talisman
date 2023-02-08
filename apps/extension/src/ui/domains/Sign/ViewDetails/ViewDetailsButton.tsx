@@ -1,5 +1,5 @@
 import { LoaderIcon } from "@talisman/theme/icons"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { FC, useCallback, useState } from "react"
 import styled from "styled-components"
 

@@ -8,7 +8,7 @@ import {
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import erc20Abi from "@talismn/balances-evm-erc20/dist/erc20.json"
+import { erc20Abi } from "@talismn/balances-evm-erc20"
 import { BigNumber, BigNumberish, ethers } from "ethers"
 import * as yup from "yup"
 

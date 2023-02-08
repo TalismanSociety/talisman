@@ -1,4 +1,5 @@
-import { PluginTokenTypes } from "../plugins"
+import { PluginTokenTypes } from "@talismn/chaindata-provider/plugins"
+
 import { ChainId } from "./Chain"
 import { EvmNetworkId } from "./EvmNetwork"
 

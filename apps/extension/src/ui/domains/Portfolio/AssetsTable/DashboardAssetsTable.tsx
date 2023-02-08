@@ -1,5 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"

@@ -1,5 +1,5 @@
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import Color from "color"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Button, Checkbox } from "talisman-ui"

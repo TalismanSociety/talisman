@@ -1,47 +1,29 @@
-* {
-  box-sizing: border-box;
-}
+@import "talisman-ui/styles.css";
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
-    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-code,
-pre {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
-  white-space: pre-wrap;
-}
-
-html {
-  height: 100%;
-}
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100%;
-  background: #101010;
-  color: #d5d5d5;
-}
-@media (prefers-color-scheme: light) {
-  body {
-    background: #fff;
-    color: #444;
+@layer base {
+  pre,
+  input,
+  textarea {
+    @apply text-body-secondary bg-field resize-none rounded-sm p-4;
+  }
+  pre {
+    @apply max-w-full overflow-auto;
   }
 }
-#root {
-  padding: 2rem;
+
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
 }
-#root :first-child {
-  margin-top: 0;
-}
-#root :last-child {
-  margin-bottom: 0;
-}
-a {
-  text-decoration: none;
+
+@media (prefers-color-scheme: light) {
+  :root {
+    background-color: #fff;
+    color: #213547;
+  }
 }

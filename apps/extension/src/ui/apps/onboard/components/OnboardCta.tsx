@@ -1,5 +1,5 @@
+import { classNames } from "@talismn/util"
 import { FC, ReactNode, SVGProps } from "react"
-import { classNames } from "talisman-ui"
 
 type OnboardCtaProps = {
   title?: ReactNode
