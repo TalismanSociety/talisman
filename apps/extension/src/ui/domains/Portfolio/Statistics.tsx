@@ -56,7 +56,7 @@ export const Statistics = ({
   showTokens,
 }: StatisticsProps) => {
   return (
-    <text
+    <div
       className={classNames(
         "bg-black-secondary flex h-[10rem] w-[23.6rem] flex-col gap-4 rounded p-8 ",
         className
@@ -71,6 +71,6 @@ export const Statistics = ({
       ) : (
         <FiatOnly fiat={fiat} />
       )}
-    </text>
+    </div>
   )
 }
