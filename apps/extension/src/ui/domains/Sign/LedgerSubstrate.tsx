@@ -4,9 +4,10 @@ import { log } from "@core/log"
 import { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
 import { Drawer } from "@talisman/components/Drawer"
+import { classNames } from "@talismn/util"
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { Button, classNames } from "talisman-ui"
+import { Button } from "talisman-ui"
 
 import {
   LedgerConnectionStatus,

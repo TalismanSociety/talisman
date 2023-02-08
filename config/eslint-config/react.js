@@ -6,7 +6,7 @@ module.exports = {
   },
   plugins: ["react", "jest"],
   extends: [
-    "@talismn/eslint-config",
+    "@talismn/eslint-config/base",
     // to add ASAP
     // "plugin:react/recommended",
     "plugin:react-hooks/recommended",

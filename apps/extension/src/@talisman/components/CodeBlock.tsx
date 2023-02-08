@@ -1,5 +1,5 @@
 import { scrollbarsStyle } from "@talisman/theme/styles"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import hljs from "highlight.js/lib/core"
 import json from "highlight.js/lib/languages/json"
 import yaml from "highlight.js/lib/languages/yaml"

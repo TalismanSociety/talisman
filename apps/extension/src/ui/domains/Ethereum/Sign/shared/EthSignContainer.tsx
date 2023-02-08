@@ -1,8 +1,8 @@
 import { FadeIn } from "@talisman/components/FadeIn"
+import { classNames } from "@talismn/util"
 import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import { FC, ReactNode } from "react"
 import { createPortal } from "react-dom"
-import { classNames } from "talisman-ui"
 
 type EthSignContainerProps = {
   title: ReactNode

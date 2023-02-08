@@ -426,7 +426,10 @@ async function prepareQueriesByChain(
 
             return true
           })
-          .map(([, token, addresses]): [SubAssetsToken, string[]] => [token, addresses])
+          .map(([, token, addresses]): [SubAssetsToken, string[]] => [
+            token as SubAssetsToken, // TODO: Rewrite the previous filter to declare this in a type-safe way
+            addresses,
+          ])
 
         const registry = new TypeRegistry()
         const chainMeta: SubAssetsChainMeta | undefined = (chain.balanceMetadata || []).find(

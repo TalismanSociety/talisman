@@ -21,7 +21,7 @@ import Extension from "./Extension"
 import State from "./State"
 import { extensionStores } from "./stores"
 
-jest.mock("@talismn/chaindata-provider-extension/dist/graphql")
+jest.mock("@talismn/chaindata-provider-extension/src/graphql")
 jest.setTimeout(10000)
 
 // Mock the hasSpiritKey module to return false

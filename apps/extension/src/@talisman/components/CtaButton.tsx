@@ -1,7 +1,8 @@
-import styled from "styled-components"
-import Link, { ILinkProps } from "./Link"
-import { classNames } from "@talisman/util/classNames"
 import { ExternalLinkIcon, IconChevron } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
+import styled from "styled-components"
+
+import Link, { ILinkProps } from "./Link"
 
 export interface IProps extends ILinkProps {
   title: string

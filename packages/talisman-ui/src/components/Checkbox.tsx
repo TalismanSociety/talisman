@@ -1,3 +1,4 @@
+import { classNames } from "@talismn/util"
 import {
   DetailedHTMLProps,
   FC,
@@ -6,8 +7,6 @@ import {
   LabelHTMLAttributes,
   Ref,
 } from "react"
-
-import { classNames } from "../utils"
 
 export type CheckboxProps = DetailedHTMLProps<
   InputHTMLAttributes<HTMLInputElement>,

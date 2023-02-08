@@ -210,7 +210,10 @@ export const SubOrmlModule: BalanceModule<
 
             return true
           })
-          .map(([, token, addresses]): [SubOrmlToken, string[]] => [token, addresses])
+          .map(([, token, addresses]): [SubOrmlToken, string[]] => [
+            token as SubOrmlToken,
+            addresses,
+          ])
 
         // set up method, return message type and params
         const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
@@ -278,7 +281,10 @@ export const SubOrmlModule: BalanceModule<
 
             return true
           })
-          .map(([, token, addresses]): [SubOrmlToken, string[]] => [token, addresses])
+          .map(([, token, addresses]): [SubOrmlToken, string[]] => [
+            token as SubOrmlToken,
+            addresses,
+          ])
 
         // set up method and params
         const method = "state_queryStorageAt" // method we call to fetch

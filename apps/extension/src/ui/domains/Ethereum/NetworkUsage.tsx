@@ -5,8 +5,8 @@ import {
   NetworkUsageIdle,
   NetworkUsageIncreasing,
 } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { FC, SVGProps } from "react"
-import { classNames } from "talisman-ui"
 
 const NetworkUsageBase = ({
   text,

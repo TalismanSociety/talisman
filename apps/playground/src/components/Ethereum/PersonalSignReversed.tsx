@@ -1,6 +1,7 @@
+import { classNames } from "@talismn/util"
 import { ethers } from "ethers"
 import { useCallback, useMemo, useState } from "react"
-import { Button, classNames } from "talisman-ui"
+import { Button } from "talisman-ui"
 import { useAccount } from "wagmi"
 
 import { Section } from "../Section"
