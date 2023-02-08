@@ -5,6 +5,7 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
+import { FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { OnboardButton } from "../components/OnboardButton"
@@ -18,6 +19,8 @@ type FormData = {
   passwordConfirm?: string
   agreeToS?: boolean
 }
+
+const INPUT_CONTAINER_PROPS = {}
 
 const TITLE_NEW = "Choose a password"
 const DESC_NEW =
@@ -102,7 +105,7 @@ export const PasswordPage = () => {
                   Password strength: <PasswordStrength password={password} />
                 </div>
                 <OnboardFormField error={errors.password}>
-                  <input
+                  <FormFieldInputText
                     {...register("password")}
                     type="password"
                     placeholder="Enter password"
@@ -110,21 +113,31 @@ export const PasswordPage = () => {
                     spellCheck={false}
                     data-lpignore
                     autoFocus
+                    className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
+                    containerProps={{ className: "!bg-white/5 h-28" }}
                   />
                 </OnboardFormField>
                 <OnboardFormField error={errors.passwordConfirm}>
-                  <input
+                  <FormFieldInputText
                     {...register("passwordConfirm")}
                     type="password"
                     autoComplete="off"
                     placeholder="Re-enter password"
                     spellCheck={false}
                     data-lpignore
+                    className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
+                    containerProps={{ className: "!bg-white/5" }}
                   />
                 </OnboardFormField>
               </div>
               <div className="h-8" />
-              <OnboardButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
+              <OnboardButton
+                className="h-28"
+                type="submit"
+                primary
+                disabled={!isValid}
+                processing={isSubmitting}
+              >
                 Continue
               </OnboardButton>
             </form>

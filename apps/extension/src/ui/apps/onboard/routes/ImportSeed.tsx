@@ -5,6 +5,7 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
+import { FormFieldTextarea } from "talisman-ui"
 import * as yup from "yup"
 
 import { OnboardButton } from "../components/OnboardButton"
@@ -90,17 +91,18 @@ export const ImportSeedPage = () => {
             <form onSubmit={handleSubmit(submit)}>
               <div className="mt-24">
                 <OnboardFormField error={errors.mnemonic}>
-                  <textarea
+                  <FormFieldTextarea
                     {...register("mnemonic")}
                     placeholder="Enter your recovery phrase"
                     rows={5}
                     data-lpignore
                     spellCheck={false}
                     autoFocus
+                    className="placeholder:text-body-secondary/30 ring-grey-600 focus:ring-1"
                   />
                 </OnboardFormField>
                 <div className="h-12"></div>
-                <OnboardButton type="submit" primary disabled={!isValid}>
+                <OnboardButton className="h-28" type="submit" primary disabled={!isValid}>
                   Import wallet
                 </OnboardButton>
               </div>
