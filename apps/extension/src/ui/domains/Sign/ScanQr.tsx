@@ -78,17 +78,17 @@ const CameraMarker = ({
 
   return (
     <div className={className}>
-      <div className={`absolute top-8 left-8 rounded ${horizontal} ${bg}`} />
-      <div className={`absolute top-8 left-8 rounded ${vertical} ${bg}`} />
+      <div className={`absolute top-10 left-10 rounded ${horizontal} ${bg}`} />
+      <div className={`absolute top-10 left-10 rounded ${vertical} ${bg}`} />
 
-      <div className={`absolute bottom-8 left-8 rounded ${horizontal} ${bg}`} />
-      <div className={`absolute bottom-8 left-8 rounded ${vertical} ${bg}`} />
+      <div className={`absolute bottom-10 left-10 rounded ${horizontal} ${bg}`} />
+      <div className={`absolute bottom-10 left-10 rounded ${vertical} ${bg}`} />
 
-      <div className={`absolute right-8 top-8 rounded ${horizontal} ${bg}`} />
-      <div className={`absolute right-8 top-8 rounded ${vertical} ${bg}`} />
+      <div className={`absolute right-10 top-10 rounded ${horizontal} ${bg}`} />
+      <div className={`absolute right-10 top-10 rounded ${vertical} ${bg}`} />
 
-      <div className={`absolute bottom-8 right-8 rounded ${horizontal} ${bg}`} />
-      <div className={`absolute bottom-8 right-8 rounded ${vertical} ${bg}`} />
+      <div className={`absolute bottom-10 right-10 rounded ${horizontal} ${bg}`} />
+      <div className={`absolute bottom-10 right-10 rounded ${vertical} ${bg}`} />
     </div>
   )
 }
