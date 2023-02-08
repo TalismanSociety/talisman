@@ -1,3 +1,4 @@
+import { ENCRYPT_ENCRYPT_PREFIX } from "@core/domains/encrypt/types"
 import { ETH_NETWORK_ADD_PREFIX } from "@core/domains/ethereum/types"
 import { METADATA_PREFIX } from "@core/domains/metadata/types"
 import { SIGNING_TYPES } from "@core/domains/signing/types"
@@ -68,7 +69,7 @@ const PendingRequestRedirect = () => {
       const req = signingRequests[0]
       navigate(`/${req.type}/${req.id}`)
     } else if (encryptRequests.length) {
-      navigate(`/encrypt/${encryptRequests[0].id}`)
+      navigate(`/${ENCRYPT_ENCRYPT_PREFIX}/${encryptRequests[0].id}`)
     }
   }, [
     authRequests,
@@ -136,7 +137,7 @@ const Popup = () => {
                           element={<SubstrateSignRequest />}
                         ></Route>
                         <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
-                        <Route path="encrypt/:id" element={<Encrypt />}></Route>
+                        <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
                         <Route
                           path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
                           element={<AddEthereumNetwork />}

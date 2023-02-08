@@ -183,7 +183,7 @@ export default class SigningHandler extends ExtensionHandler {
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestType<"pri(signing.cancel)">)
 
-      case "pri(signing.decode)":
+      case "pri(signing.details)":
         return this.decode(request as RequestType<"pri(signing.details)">)
 
       default:

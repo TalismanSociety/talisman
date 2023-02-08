@@ -16,7 +16,11 @@ import {
   ResponseBalanceLocks,
 } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
-import { AnyEncryptRequest } from "@core/domains/encrypt/types"
+import type {
+  AnyEncryptRequest,
+  DecryptRequestId,
+  EncryptRequestId,
+} from "@core/domains/encrypt/types"
 import { AddEthereumChainRequestId } from "@core/domains/ethereum/types"
 import {
   AddEthereumChainRequest,
@@ -93,10 +97,13 @@ export default interface MessageTypes {
 
   // encrypt messages -------------------------------------------------------
   subscribeEncryptRequests: (cb: (requests: AnyEncryptRequest[]) => void) => UnsubscribeFn
-  subscribeEncryptRequest: (id: string, cb: (requests: AnyEncryptRequest) => void) => UnsubscribeFn
-  approveEncrypt: (id: string) => Promise<boolean>
-  approveDecrypt: (id: string) => Promise<boolean>
-  cancelEncryptRequest: (id: string) => Promise<boolean>
+  subscribeEncryptRequest: (
+    id: DecryptRequestId | EncryptRequestId,
+    cb: (requests: AnyEncryptRequest) => void
+  ) => UnsubscribeFn
+  approveEncrypt: (id: EncryptRequestId) => Promise<boolean>
+  approveDecrypt: (id: DecryptRequestId) => Promise<boolean>
+  cancelEncryptRequest: (id: DecryptRequestId | EncryptRequestId) => Promise<boolean>
 
   // app message types -------------------------------------------------------
   modalOpen: (modal: ModalOpenRequest) => Promise<boolean>

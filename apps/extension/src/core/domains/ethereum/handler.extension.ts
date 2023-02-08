@@ -3,7 +3,6 @@ import type {
   AnyEthRequestChainId,
   EthApproveSignAndSend,
   EthRequestSigningApproveSignature,
-  WatchAssetRequest,
   WatchAssetRequestIdOnly,
 } from "@core/domains/ethereum/types"
 import { ETH_NETWORK_ADD_PREFIX, WATCH_ASSET_PREFIX } from "@core/domains/ethereum/types"

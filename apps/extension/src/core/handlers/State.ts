@@ -1,10 +1,5 @@
-import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
-// Copyright 2019-2021 @polkadot/extension-bg authors & contributors
-// SPDX-License-Identifier: Apache-2.0
-// Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/background/handlers/State.ts
 import { appStore } from "@core/domains/app"
 import { RequestRoute } from "@core/domains/app/types"
-import { EncryptRequestsStore } from "@core/domains/encrypt"
 import { requestStore } from "@core/libs/requests/store"
 import { windowManager } from "@core/libs/WindowManager"
 import { sleep } from "@talismn/util"
@@ -13,13 +8,6 @@ import Browser from "webextension-polyfill"
 export default class State {
   // Prevents opening two onboarding tabs at once
   #onboardingTabOpening = false
-
-  // Request stores handle ephemeral data relating to to requests for signing, metadata, and authorisation of sites
-  readonly requestStores = {
-    encrypt: new EncryptRequestsStore((req) => {
-      windowManager.popupOpen(`#/encrypt/${req.id}`)
-    }),
-  }
 
   constructor() {
     // update the icon when any of the request stores change
@@ -49,6 +37,10 @@ export default class State {
       ? "Network"
       : counts.get("eth-watchasset")
       ? "Assets"
+      : counts.get("encrypt")
+      ? "Encrypt"
+      : counts.get("decrypt")
+      ? "Decrypt"
       : ""
 
     Browser.browserAction.setBadgeText({ text })

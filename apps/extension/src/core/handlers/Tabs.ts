@@ -6,11 +6,12 @@ import {
 } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
 import { protector } from "@core/domains/app/protector"
+import { requestDecrypt, requestEncrypt } from "@core/domains/encrypt/requests"
 import {
   DecryptPayload,
   EncryptPayload,
-  ResponseDecrypt,
-  ResponseEncrypt,
+  ResponseEncryptDecrypt,
+  ResponseEncryptEncrypt,
 } from "@core/domains/encrypt/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
 import { requestInjectMetadata } from "@core/domains/metadata/requests"
@@ -155,20 +156,20 @@ export default class Tabs extends TabsHandler {
     })
   }
 
-  private messageEncrypt(url: string, request: EncryptPayload): Promise<ResponseEncrypt> {
+  private messageEncrypt(url: string, request: EncryptPayload): Promise<ResponseEncryptEncrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
-    return this.state.requestStores.encrypt.encrypt(url, request, {
+    return requestEncrypt(url, request, {
       address,
       ...pair.meta,
     })
   }
 
-  private messageDecrypt(url: string, request: DecryptPayload): Promise<ResponseDecrypt> {
+  private messageDecrypt(url: string, request: DecryptPayload): Promise<ResponseEncryptDecrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return this.state.requestStores.encrypt.decrypt(url, request, {
+    return requestDecrypt(url, request, {
       address,
       ...pair.meta,
     })
