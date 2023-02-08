@@ -1,4 +1,6 @@
 import styled from "styled-components"
+import { Button } from "talisman-ui"
+
 import { SimpleButton } from "./SimpleButton"
 
 interface IProps {
@@ -39,15 +41,10 @@ const Dialog = ({
       {text && <p>{text}</p>}
       {extra && <div>{extra}</div>}
       <footer>
-        <SimpleButton onClick={onCancel}>{cancelText || "Cancel"}</SimpleButton>
-        <SimpleButton
-          primary
-          onClick={onConfirm}
-          disabled={confirmDisabled}
-          processing={confirming}
-        >
+        <Button onClick={onCancel}>{cancelText || "Cancel"}</Button>
+        <Button primary onClick={onConfirm} disabled={confirmDisabled} processing={confirming}>
           {confirmText || "Confirm"}
-        </SimpleButton>
+        </Button>
       </footer>
     </article>
   )

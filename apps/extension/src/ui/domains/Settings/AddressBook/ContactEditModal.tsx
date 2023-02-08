@@ -1,5 +1,4 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FormField } from "@talisman/components/Field/FormField"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -74,8 +73,8 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
             />
           </FormFieldContainer>
           <div>
-            <span className="text-body-secondary block">Address</span>
-            <span className="mt-10 block bg-none text-xs text-white">{contact.address}</span>
+            <div className="text-body-secondary block text-xs">Address</div>
+            <div className="mt-3 block bg-none text-xs text-white">{contact.address}</div>
           </div>
           <div className="flex items-stretch gap-4 pt-4">
             <Button fullWidth onClick={close}>

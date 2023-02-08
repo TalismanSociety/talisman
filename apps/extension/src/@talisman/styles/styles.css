@@ -40,7 +40,7 @@
 
   input::placeholder,
   textarea::placeholder {
-    @apply text-current opacity-30;
+    @apply text-body-disabled;
   }
 
   /* popup borders */

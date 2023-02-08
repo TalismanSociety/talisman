@@ -245,8 +245,6 @@ export const DerivedAccountPickerBase: FC<DerivedAccountPickerBaseProps> = ({
   return (
     <Container>
       <div className="flex w-full flex-col gap-4">
-        <AccountButtonShimmer />
-        <AccountButtonShimmer />
         {accounts.map((account, i) =>
           account ? (
             <AccountButton

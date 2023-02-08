@@ -16,8 +16,7 @@ type AccountAddSecretInputs = {
 const useAccountAddSecretProvider = () => {
   const [params] = useSearchParams()
   const [data, setData] = useState<Partial<AccountAddSecretInputs>>(() => ({
-    type: (params.get("type") as AccountAddressType) ?? "ethereum", // TODO REMOVE DEF
-    mnemonic: "test test test test test test test test test test test junk", // TODO REMOVE DEF
+    type: params.get("type") as AccountAddressType,
   }))
 
   const updateData = useCallback((newData: Partial<AccountAddSecretInputs>) => {

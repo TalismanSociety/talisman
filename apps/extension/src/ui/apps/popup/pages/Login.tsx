@@ -1,11 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FormField } from "@talisman/components/Field/FormField"
 import { StatusIcon } from "@talisman/components/StatusIcon"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
-import { Button, FormFieldInputContainer, FormFieldInputText } from "talisman-ui"
+import { Button, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import Layout, { Content, Footer } from "../Layout"
