@@ -1,5 +1,5 @@
 import { ENCRYPT_ENCRYPT_PREFIX } from "@core/domains/encrypt/types"
-import { ETH_NETWORK_ADD_PREFIX } from "@core/domains/ethereum/types"
+import { ETH_NETWORK_ADD_PREFIX, WATCH_ASSET_PREFIX } from "@core/domains/ethereum/types"
 import { METADATA_PREFIX } from "@core/domains/metadata/types"
 import { SIGNING_TYPES } from "@core/domains/signing/types"
 import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
@@ -62,7 +62,7 @@ const PendingRequestRedirect = () => {
     } else if (ethNetworkAddRequests.length) {
       navigate(`/${ETH_NETWORK_ADD_PREFIX}/${ethNetworkAddRequests[0].id}`)
     } else if (ethWatchAssetRequests.length) {
-      navigate(`/eth-watchasset/${ethWatchAssetRequests[0].id}`)
+      navigate(`/${WATCH_ASSET_PREFIX}/${ethWatchAssetRequests[0].id}`)
     } else if (metaDataRequests.length) {
       navigate(`/${METADATA_PREFIX}/${metaDataRequests[0].id}`)
     } else if (signingRequests.length) {
@@ -142,7 +142,10 @@ const Popup = () => {
                           path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
                           element={<AddEthereumNetwork />}
                         ></Route>
-                        <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
+                        <Route
+                          path={`${WATCH_ASSET_PREFIX}/:id`}
+                          element={<AddCustomErc20Token />}
+                        ></Route>
                         <Route path="*" element={<Navigate to="/portfolio" replace />} />
                       </Routes>
                       <AccountRenameModal />

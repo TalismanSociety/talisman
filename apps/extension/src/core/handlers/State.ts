@@ -23,17 +23,13 @@ export default class State {
     const signingCount =
       counts.get("eth-send") + counts.get("eth-sign") + counts.get("substrate-sign")
 
-    const todo = {
-      networkAddCount: 0,
-    }
-
     const text = counts.get("auth")
       ? "Sites"
       : counts.get("metadata")
       ? "Meta"
       : signingCount
       ? `${signingCount}`
-      : todo.networkAddCount
+      : counts.get("eth-network-add")
       ? "Network"
       : counts.get("eth-watchasset")
       ? "Assets"
