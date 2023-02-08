@@ -1,8 +1,8 @@
 import { Token } from "@core/domains/tokens/types"
 import { LockIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
-import { classNames } from "talisman-ui"
 
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"

@@ -1,15 +1,5 @@
-import Grid from "@talisman/components/Grid"
-import HeaderBlock from "@talisman/components/HeaderBlock"
-import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import {
-  ArrowRightIcon,
-  ChevronRightIcon,
-  GlobeIcon,
-  ShieldIcon,
-  ToolIcon,
-  UsersIcon,
-} from "@talisman/theme/icons"
+import { ChevronRightIcon, GlobeIcon, ShieldIcon, ToolIcon, UsersIcon } from "@talisman/theme/icons"
 import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
 import { ReactComponent as IconInfo } from "@talisman/theme/icons/info.svg"
 import { ReactComponent as IconKey } from "@talisman/theme/icons/key.svg"
@@ -20,64 +10,9 @@ import Layout from "@ui/apps/dashboard/layout"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import {
-  DetailedHTMLProps,
-  FC,
-  MouseEventHandler,
-  ReactNode,
-  SVGProps,
-  useCallback,
-  useEffect,
-} from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
-import { CtaButton, classNames } from "talisman-ui"
-
-// type SettingButtonProps = DetailedHTMLProps<
-//   React.ButtonHTMLAttributes<HTMLButtonElement>,
-//   HTMLButtonElement
-// > & {
-//   icon: FC<SVGProps<SVGSVGElement>>
-//   title: ReactNode
-//   subtitle: ReactNode
-//   to?: string
-// }
-
-// const SettingButton: FC<SettingButtonProps> = ({
-//   icon: Icon,
-//   title,
-//   subtitle,
-//   className,
-//   to,
-//   onClick,
-//   ...props
-// }) => {
-//   const navigate = useNavigate()
-//   const handleClick: MouseEventHandler<HTMLButtonElement> = useCallback(
-//     (e) => {
-//       if (to) navigate(to)
-//       else if (onClick) onClick(e)
-//     },
-//     [navigate, onClick, to]
-//   )
-
-//   return (
-//     <button
-//       {...props}
-//       className={classNames(
-//         "bg-grey-900 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body flex h-40 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50",
-//         className
-//       )}
-//       onClick={handleClick}
-//     >
-//       <Icon className="text-body text-lg" />
-//       <div className="flex grow flex-col items-start gap-4">
-//         <div className="text-body">{title}</div>
-//         <div className="text-body-secondary text-sm">{subtitle}</div>
-//       </div>
-//       <ChevronRightIcon className="text-lg" />
-//     </button>
-//   )
-// }
+import { useEffect } from "react"
+import { useSearchParams } from "react-router-dom"
+import { CtaButton } from "talisman-ui"
 
 const Settings = () => {
   const { isOpen: isOpenMigratePw, open: openMigratePw, close: closeMigratePw } = useOpenClose()

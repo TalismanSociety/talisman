@@ -1,7 +1,7 @@
 import { UsbIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
-import { classNames } from "talisman-ui"
 
 export const PortfolioAccount = ({
   address,

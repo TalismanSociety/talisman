@@ -1,7 +1,6 @@
+import { classNames } from "@talismn/util"
 import { DetailedHTMLProps, FC, MouseEventHandler, ReactNode, SVGProps, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
-
-import { classNames } from "../utils"
 
 type CtaButton = DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
