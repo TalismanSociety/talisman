@@ -299,7 +299,10 @@ export const AccountAddQr = () => {
             />
 
             <div className="ring-grey-700 flex w-full items-center gap-8 overflow-hidden rounded-sm p-8 text-left ring-1">
-              <Avatar address={state.address} />
+              <Avatar
+                address={state.address}
+                genesisHash={state.lockToNetwork ? state.genesisHash : undefined}
+              />
               <div className="flex flex-col !items-start gap-2 overflow-hidden leading-8">
                 <div className="text-body flex w-full items-center gap-3 text-base leading-none">
                   <div className="overflow-hidden text-ellipsis whitespace-nowrap text-base leading-8">
