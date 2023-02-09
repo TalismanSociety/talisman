@@ -44,6 +44,11 @@
     @apply text-body-disabled;
   }
 
+  /* hides password reveal in Edge */
+  input[type="password"]::-ms-reveal {
+    display: none;
+  }
+
   /* popup borders */
   html.popup {
     @apply border-grey-700 border;

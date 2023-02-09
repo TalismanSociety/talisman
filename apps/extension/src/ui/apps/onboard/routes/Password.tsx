@@ -20,7 +20,7 @@ type FormData = {
   agreeToS?: boolean
 }
 
-const INPUT_CONTAINER_PROPS = {}
+const INPUT_CONTAINER_PROPS_PASSWORD = { className: "!bg-white/5 h-28" }
 
 const TITLE_NEW = "Choose a password"
 const DESC_NEW =
@@ -114,7 +114,7 @@ export const PasswordPage = () => {
                     data-lpignore
                     autoFocus
                     className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
-                    containerProps={{ className: "!bg-white/5 h-28" }}
+                    containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
                   />
                 </OnboardFormField>
                 <OnboardFormField error={errors.passwordConfirm}>
@@ -126,7 +126,7 @@ export const PasswordPage = () => {
                     spellCheck={false}
                     data-lpignore
                     className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
-                    containerProps={{ className: "!bg-white/5" }}
+                    containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
                   />
                 </OnboardFormField>
               </div>

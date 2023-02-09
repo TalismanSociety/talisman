@@ -24,6 +24,8 @@ const schema = yup
   })
   .required()
 
+const INPUT_CONTAINER_PROPS = { className: "bg-white/10" }
+
 const useAccountColors = (): [string, string] | undefined => {
   const [rootAccount] = useAccountAddresses()
   const { bgColor1, bgColor2 } = useTalismanOrb(rootAccount)
@@ -105,7 +107,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             autoComplete="off"
             data-lpignore
             autoFocus
-            containerProps={{ className: "bg-white/10" }}
+            containerProps={INPUT_CONTAINER_PROPS}
           />
           <Button
             type="submit"

@@ -1,5 +1,4 @@
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import { IconButton } from "@talisman/components/IconButton"
 import Spacer from "@talisman/components/Spacer"
 import { EditIcon, TrashIcon } from "@talisman/theme/icons"
 import { AnalyticsPage } from "@ui/api/analytics"

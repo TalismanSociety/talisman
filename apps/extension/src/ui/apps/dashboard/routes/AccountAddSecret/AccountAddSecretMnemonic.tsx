@@ -318,16 +318,7 @@ export const AccountAddSecretMnemonic = () => {
         data-button-pull-left
         onSubmit={handleSubmit(submit)}
       >
-        <FormFieldContainer
-          error={errors.name?.message}
-          // suffix={
-          //   targetAddress ? (
-          //     <div>
-          //       <AccountAvatar address={targetAddress} />
-          //     </div>
-          //   ) : null
-          // }
-        >
+        <FormFieldContainer error={errors.name?.message}>
           <FormFieldInputText
             {...register("name")}
             placeholder="Choose a name"
@@ -344,7 +335,6 @@ export const AccountAddSecretMnemonic = () => {
             }
           />
         </FormFieldContainer>
-        {/* <Spacer small /> extra={`Word count : ${words}`} */}
         <FormFieldTextarea
           {...register("mnemonic")}
           placeholder={`Enter your 12 or 24 word recovery phrase${
@@ -358,7 +348,6 @@ export const AccountAddSecretMnemonic = () => {
           <div className="text-body-secondary">Word count: {words}</div>
           <div className="text-alert-warn text-right">{errors.mnemonic?.message}</div>
         </div>
-        {/* <FormFieldContainer error={errors.mnemonic?.message}></FormFieldContainer> */}
         {/* Waiting for designers validation for this feature, but it's ready ! */}
         {/* <div className="mnemonic-buttons">
             <button type="button" onClick={handleGenerateNew}>

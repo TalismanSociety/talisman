@@ -1,8 +1,6 @@
 import styled from "styled-components"
 import { Button } from "talisman-ui"
 
-import { SimpleButton } from "./SimpleButton"
-
 interface IProps {
   icon?: JSX.Element
   title?: string | JSX.Element
