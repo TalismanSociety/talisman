@@ -1,15 +1,16 @@
 import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
-import { QrDisplayPayload } from "@polkadot/react-qr"
+import { createSignPayload, decodeString } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
 import { Drawer } from "@talisman/components/Drawer"
-import { ParitySignerIcon } from "@talisman/theme/icons"
+import { LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { ScanQr } from "@ui/domains/Sign/ScanQr"
 import useChains from "@ui/hooks/useChains"
+import QrCodeStyling from "qr-code-styling"
 import { ReactElement, useEffect, useState } from "react"
 import { Button } from "talisman-ui"
 
@@ -83,6 +84,45 @@ export const QrSubstrate = ({
     )
   }, [genesisHash, cmd])
 
+  const [qrCode, setQrCode] = useState<string | null>(null)
+  useEffect(() => {
+    if (!unsigned) return
+
+    const data = createSignPayload(
+      account?.address,
+      cmd ?? CMD_MORTAL,
+      unsigned,
+      genesisHash ?? "0x"
+    )
+    if (!data) return
+
+    const talismanRedHandSvg =
+      `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODIiIGhlaWdodD0iODIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTYyLj` +
+      `U3MSA0NS40MjVjLTEuMDMgMS4wMy0yLjgyMi41NjMtMy40MzEtLjc2M2ExLjk4MiAxLjk4MiAwIDAgMS0uMTg1LS44MjlWMjAuOTg5YTUuMDAzIDUuMDAzIDAgMCAwLT` +
+      `EwLjAwNSAwdjExLjU2MmMwIC45OTQtMS4wMTcgMS42NjktMS45NjcgMS4zN2ExLjQ1NCAxLjQ1NCAwIDAgMS0xLjAzMi0xLjM2N1YxMy45ODdhNS4wMDMgNS4wMDMgMC` +
+      `AwIDAtMTAuMDA1IDB2MTguNTY4YTEuNDU0IDEuNDU0IDAgMCAxLTEuMDM0IDEuMzY3Yy0uOTQ5LjMtMS45NjgtLjM3Ni0xLjk2OC0xLjM3MVYyMC45OWE1LjAwMyA1Lj` +
+      `AwMyAwIDAgMC0xMC4wMDUgMHYyMi44NTNjMCAuMjgyLS4wNjQuNTU2LS4xODIuODE0LS41OTYgMS4yOTQtMi4zNDYgMS43NDctMy4zNTUuNzRsLTEuODYxLTEuODYxYT` +
+      `UuMDAyIDUuMDAyIDAgMCAwLTcuMDc1IDcuMDc0bDE0LjcwNiAxNC43MDdhMTkuOTc2IDE5Ljk3NiAwIDAgMCAxNS43NzQgNy42OTdjNi4xNDMgMCAxMS42MzgtMi43Nj` +
+      `cgMTUuMzEtNy4xMjRsMTUuMjgtMTUuMjhhNS4wMDIgNS4wMDIgMCAwIDAtNy4wNzQtNy4wNzR6TTQwLjk0NSA2NS4wMWM4Ljg0IDAgMTYuMDA3LTEwLjAwNSAxNi4wMD` +
+      `ctMTAuMDA1cy03LjE2Ni0xMC4wMDQtMTYuMDA3LTEwLjAwNC0xNi4wMDcgMTAuMDA0LTE2LjAwNyAxMC4wMDRTMzIuMTA1IDY1LjAxIDQwLjk0NSA2NS4wMXoiIGNsaX` +
+      `AtcnVsZT0iZXZlbm9kZCIgZmlsbD0iI2ZkNDg0OCIgZmlsbC1ydWxlPSJldmVub2RkIi8+PHBhdGggZD0iTTQ2Ljk0OSA1NS4wMDVhNi4wMDMgNi4wMDMgMCAxIDEtMT` +
+      `IuMDA2IDAgNi4wMDMgNi4wMDMgMCAwIDEgMTIuMDA2IDB6IiBmaWxsPSIjZmQ0ODQ4Ii8+PC9zdmc+`
+
+    new QrCodeStyling({
+      data: decodeString(data),
+      margin: 0,
+      qrOptions: { mode: "Byte", errorCorrectionLevel: "L" },
+      dotsOptions: { type: "dots" },
+      cornersSquareOptions: { type: "extra-rounded" },
+      cornersDotOptions: { type: "dot" },
+      image: talismanRedHandSvg,
+      imageOptions: { hideBackgroundDots: true, imageSize: 0.7, margin: 5 },
+    })
+      .getRawData("svg")
+      .then((blob) => (blob ? URL.createObjectURL(blob) : blob))
+      .then(setQrCode)
+  }, [account?.address, cmd, genesisHash, unsigned])
+
   if (scanState === "INIT")
     return (
       <div className={classNames("flex w-full flex-col", className)}>
@@ -128,13 +168,13 @@ export const QrSubstrate = ({
       <section className={classNames("grow", "w-full", scanState !== "UPDATE_METADATA" && "px-12")}>
         {["SEND", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
           <div className="flex h-full flex-col justify-between">
-            <QrDisplayPayload
-              className="max-w-md rounded-xl bg-white p-12"
-              address={account?.address}
-              cmd={cmd ?? CMD_MORTAL}
-              genesisHash={genesisHash ?? "0x"}
-              payload={unsigned}
-            />
+            <div className="flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-9">
+              {qrCode ? (
+                <img className="h-full w-full" src={qrCode} />
+              ) : (
+                <LoaderIcon className="animate-spin-slow inline text-black" />
+              )}
+            </div>
 
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
               Scan QR code with the
@@ -189,10 +229,13 @@ export const QrSubstrate = ({
 
         {scanState === "UPDATE_METADATA" && (
           <div className="flex h-full w-full flex-col justify-between">
-            <img
-              className="aspect-square w-full bg-white p-10"
-              src={chain?.latestMetadataQrUrl ?? undefined}
-            />
+            <div className="flex aspect-square w-full items-center justify-center bg-white p-10">
+              {chain?.latestMetadataQrUrl ? (
+                <img className="h-full w-full" src={chain?.latestMetadataQrUrl} />
+              ) : (
+                <LoaderIcon className="animate-spin-slow inline text-black" />
+              )}
+            </div>
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
               Scan the QR video with the Parity Signer app on your phone to update your metadata.
             </div>

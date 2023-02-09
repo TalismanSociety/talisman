@@ -103,6 +103,7 @@
     "minimist": "^1.2.7",
     "nanoid": "3.3.4",
     "posthog-js": "^1.39.0",
+    "qr-code-styling": "^1.6.0-rc.1",
     "react": "18.2.0",
     "react-app-polyfill": "3.0.0",
     "react-contenteditable": "3.3.6",
