@@ -84,6 +84,8 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     <Layout className="pt-32">
       {!!accountColors && (
         <LoginBackground
+          width={400}
+          height={600}
           colors={accountColors}
           className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
         />

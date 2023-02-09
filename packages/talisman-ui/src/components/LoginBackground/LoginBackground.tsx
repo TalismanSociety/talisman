@@ -22,12 +22,20 @@ const LoginArtifact = ({
     refInitialized.current = false
   }, [])
 
+  const [style1, style2] = useMemo(
+    () => [
+      { stopColor: color, stopOpacity: 0.9 },
+      { stopColor: color, stopOpacity: 0 },
+    ],
+    [color]
+  )
+
   return (
     <>
       <defs>
         <radialGradient id={id} cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-          <stop offset="0%" style={{ stopColor: color, stopOpacity: 1 }} />
-          <stop offset="90%" style={{ stopColor: color, stopOpacity: 0 }} />
+          <stop offset="0%" style={style1} />
+          <stop offset="90%" style={style2} />
         </radialGradient>
       </defs>
       <ellipse {...artifact.ellipsis} fill={`url(#${id})`}></ellipse>

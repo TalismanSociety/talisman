@@ -11,13 +11,13 @@ export type LoginPhysics = {
 }
 
 export const LOGIN_PHYSICS: LoginPhysics = {
-  artifacts: 6,
+  artifacts: 4,
   blur: 24,
   opacityMin: 0.3,
   opacityMax: 0.5,
   durationMin: 8000,
   durationMax: 15000,
-  radiusMin: 0.2,
-  radiusMax: 0.5,
+  radiusMin: 0.4,
+  radiusMax: 0.7,
   ellipsisRatio: 0.4,
 }
