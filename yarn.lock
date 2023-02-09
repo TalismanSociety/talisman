@@ -5583,7 +5583,7 @@ __metadata:
     "@types/jest": ^27.5.1
     "@types/react": ^18.0.17
     anylogger: ^1.0.11
-    dexie: ^3.2.2
+    dexie: ^3.2.3
     dexie-react-hooks: ^1.1.1
     eslint: ^8.4.0
     jest: ^28.1.0
@@ -5712,7 +5712,7 @@ __metadata:
     "@talismn/util": "workspace:^"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
-    dexie: ^3.2.2
+    dexie: ^3.2.3
     eslint: ^8.4.0
     jest: ^28.1.0
     lodash: ^4.17.21
@@ -5775,7 +5775,7 @@ __metadata:
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     axios: ^0.27.2
-    dexie: ^3.2.2
+    dexie: ^3.2.3
     eslint: ^8.4.0
     graphql: ^16.6.0
     graphql-tag: ^2.12.6
@@ -5863,7 +5863,7 @@ __metadata:
     "@talismn/eslint-config": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
-    bignumber.js: ^9.1.0
+    bignumber.js: ^9.1.1
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
@@ -6850,29 +6850,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wagmi/chains@npm:0.2.6":
-  version: 0.2.6
-  resolution: "@wagmi/chains@npm:0.2.6"
+"@wagmi/chains@npm:0.2.7":
+  version: 0.2.7
+  resolution: "@wagmi/chains@npm:0.2.7"
   peerDependencies:
     typescript: ">=4.9.4"
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 2c52e7725757ad7b58df522a6db9b6b628ee45d43f75842fe3f7e13eab953cea32808d90a1be37f15874958309fcb78d9d65d564516cccb719099ccb68651002
+  checksum: ce19a1871270a149722c22222fea366905cda3dc8a80f94791a2f1da4a041ad540cc95b02422238e9d2642e68483f52ae5ce974dd35305dd6c9181735a036902
   languageName: node
   linkType: hard
 
-"@wagmi/connectors@npm:0.2.4":
-  version: 0.2.4
-  resolution: "@wagmi/connectors@npm:0.2.4"
+"@wagmi/connectors@npm:0.2.5":
+  version: 0.2.5
+  resolution: "@wagmi/connectors@npm:0.2.5"
   dependencies:
     "@coinbase/wallet-sdk": ^3.5.4
     "@ledgerhq/connect-kit-loader": ^1.0.1
     "@safe-global/safe-apps-provider": ^0.15.2
     "@safe-global/safe-apps-sdk": ^7.9.0
     "@walletconnect/ethereum-provider": ^1.8.0
-    "@walletconnect/universal-provider": ^2.3.3
-    "@web3modal/standalone": ^2.0.0
+    "@walletconnect/universal-provider": 2.3.3
+    "@web3modal/standalone": ^2.1.1
     abitype: ^0.3.0
     eventemitter3: ^4.0.7
   peerDependencies:
@@ -6884,16 +6884,16 @@ __metadata:
       optional: true
     typescript:
       optional: true
-  checksum: 086a02a3e085ac65845c6aac3e3dc1aeea4fdd0fb96cd26a2cbaf194e703818d03631dd02887160a8c7c3dfa7b25bb393b9b689e7133779203a753ec4d64748d
+  checksum: 2a84aab0e2a539f6abc71aa01255cf5adf3d0a37cc289ee8d34960af80cf0d8ac7a28bae909f9098580d53d315fedcef28703fa150a8f427c4eb04119e4fcf72
   languageName: node
   linkType: hard
 
-"@wagmi/core@npm:0.9.4":
-  version: 0.9.4
-  resolution: "@wagmi/core@npm:0.9.4"
+"@wagmi/core@npm:0.9.5":
+  version: 0.9.5
+  resolution: "@wagmi/core@npm:0.9.5"
   dependencies:
-    "@wagmi/chains": 0.2.6
-    "@wagmi/connectors": 0.2.4
+    "@wagmi/chains": 0.2.7
+    "@wagmi/connectors": 0.2.5
     abitype: ^0.3.0
     eventemitter3: ^4.0.7
     zustand: ^4.3.1
@@ -6903,7 +6903,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: cbae5337ebcdeeb1a2bd669452e4816d7f05535556001447a7568aa83e7f0f6322f72237ed5d62c14de3f4eee50fbc72a9c6bd016628f11bace59b2380d5a72b
+  checksum: 9253aa5791a8fcf315c3bfe77b41fdf69fc01c17aab480a756773883085679d1132052df8f64137a85ab2ec2692962429ffe7adced6827ce8b0a185991aae1c3
   languageName: node
   linkType: hard
 
@@ -7279,7 +7279,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@walletconnect/universal-provider@npm:^2.3.3":
+"@walletconnect/universal-provider@npm:2.3.3":
   version: 2.3.3
   resolution: "@walletconnect/universal-provider@npm:2.3.3"
   dependencies:
@@ -7381,7 +7381,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@web3modal/standalone@npm:^2.0.0":
+"@web3modal/standalone@npm:^2.1.1":
   version: 2.1.1
   resolution: "@web3modal/standalone@npm:2.1.1"
   dependencies:
@@ -8450,10 +8450,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"babel-plugin-module-extension-resolver@npm:^1.0.0-rc.2":
-  version: 1.0.0-rc.2
-  resolution: "babel-plugin-module-extension-resolver@npm:1.0.0-rc.2"
-  checksum: a01f8e2abbb5e7e9bf127e6c9e967606587996dbb6034d828ca51ff8fe9b00b9e99eaea3287e5988c043557a67f52779b0e7c6349be106082a4b0537679b713f
+"babel-plugin-module-extension-resolver@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "babel-plugin-module-extension-resolver@npm:1.0.0"
+  checksum: ade0426653bad6d395ee27ffef26b962635d070c78dd9b3a18a631dd9bf8009d76eb0bd26166ad4ab2fb178fb3d439da8d085f973038a122ee42851781570aa4
   languageName: node
   linkType: hard
 
@@ -8669,10 +8669,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.1, bignumber.js@npm:^9.1.0":
+"bignumber.js@npm:^9.1.0":
   version: 9.1.0
   resolution: "bignumber.js@npm:9.1.0"
   checksum: 52ec2bb5a3874d7dc1a1018f28f8f7aff4683515ffd09d6c2d93191343c76567ae0ee32cc45149d53afb2b904bc62ed471a307b35764beea7e9db78e56bef6c6
+  languageName: node
+  linkType: hard
+
+"bignumber.js@npm:^9.1.1":
+  version: 9.1.1
+  resolution: "bignumber.js@npm:9.1.1"
+  checksum: ad243b7e2f9120b112d670bb3d674128f0bd2ca1745b0a6c9df0433bd2c0252c43e6315d944c2ac07b4c639e7496b425e46842773cf89c6a2dcd4f31e5c4b11e
   languageName: node
   linkType: hard
 
@@ -9775,7 +9782,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"core-js@npm:^3.19.2, core-js@npm:^3.4":
+"core-js@npm:^3.19.2":
   version: 3.23.4
   resolution: "core-js@npm:3.23.4"
   checksum: 1317591dbd4a6dc357b68da324dfab52ffecc0193fe577c55bedc058af3ec96a47c7d68dff4dc914badf398ca120c0b58815fca3a162a497abf73166910d834c
@@ -9972,21 +9979,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"css-loader@npm:^6.7.1":
-  version: 6.7.1
-  resolution: "css-loader@npm:6.7.1"
+"css-loader@npm:^6.7.3":
+  version: 6.7.3
+  resolution: "css-loader@npm:6.7.3"
   dependencies:
     icss-utils: ^5.1.0
-    postcss: ^8.4.7
+    postcss: ^8.4.19
     postcss-modules-extract-imports: ^3.0.0
     postcss-modules-local-by-default: ^4.0.0
     postcss-modules-scope: ^3.0.0
     postcss-modules-values: ^4.0.0
     postcss-value-parser: ^4.2.0
-    semver: ^7.3.5
+    semver: ^7.3.8
   peerDependencies:
     webpack: ^5.0.0
-  checksum: 170fdbc630a05a43679ef60fa97694766b568dbde37adccc0faafa964fc675f08b976bc68837bb73b61d60240e8d2cbcbf51540fe94ebc9dafc56e7c46ba5527
+  checksum: 473cc32b6c837c2848e2051ad1ba331c1457449f47442e75a8c480d9891451434ada241f7e3de2347e57de17fcd84610b3bcfc4a9da41102cdaedd1e17902d31
   languageName: node
   linkType: hard
 
@@ -10443,10 +10450,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dexie@npm:^3.2.2":
-  version: 3.2.2
-  resolution: "dexie@npm:3.2.2"
-  checksum: 7a21079f7ab139ebd724a009917f9293f2b01c341e2a3cd51d2455dda4d4e78b9ca7de0373e963108395cf1921ce7f6556cac967c1e957005a3c7c11794ceccf
+"dexie@npm:^3.2.3":
+  version: 3.2.3
+  resolution: "dexie@npm:3.2.3"
+  checksum: 54fd7bc94364ed601dc2d53f8b488e49ac61d4ec532f001a68fde9ffccb4bf3c6a8af310b41d8f52c94c1a99c0e165437d7b223b655df582ceda90b9bfcd60e7
   languageName: node
   linkType: hard
 
@@ -12052,9 +12059,9 @@ __metadata:
     autoprefixer: ^10.4.12
     babel-eslint: ^10.1.0
     babel-jest: 27.5.1
-    babel-plugin-module-extension-resolver: ^1.0.0-rc.2
+    babel-plugin-module-extension-resolver: ^1.0.0
     bcryptjs: ^2.4.3
-    bignumber.js: ^9.0.1
+    bignumber.js: ^9.1.1
     blob-util: 2.0.2
     blueimp-md5: 2.19.0
     buffer: ^6.0.3
@@ -12064,8 +12071,8 @@ __metadata:
     color: 4.2.3
     copy-webpack-plugin: ^10.2.4
     crypto-browserify: ^3.12.0
-    css-loader: ^6.7.1
-    dexie: ^3.2.2
+    css-loader: ^6.7.3
+    dexie: ^3.2.3
     dexie-react-hooks: ^1.1.1
     dotenv: ^16.0.3
     dotenv-webpack: ^7.1.1
@@ -12074,7 +12081,7 @@ __metadata:
     eslint-webpack-plugin: ^3.1.1
     eth-phishing-detect: latest
     ethers: 5.7.2
-    fake-indexeddb: ^3.1.8
+    fake-indexeddb: 4.0.1
     fork-ts-checker-notifier-webpack-plugin: ^6.0.0
     fork-ts-checker-webpack-plugin: ^7.2.14
     framer-motion: 6.2.8
@@ -12168,12 +12175,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fake-indexeddb@npm:^3.1.8":
-  version: 3.1.8
-  resolution: "fake-indexeddb@npm:3.1.8"
+"fake-indexeddb@npm:4.0.1":
+  version: 4.0.1
+  resolution: "fake-indexeddb@npm:4.0.1"
   dependencies:
-    realistic-structured-clone: ^2.0.1
-  checksum: cea9905f5e134952a6471e73c3a69dc79935dc221741a518df7010114a482c900b872c855215e1163e063ce9aab3e8f01a660684cd5c0e8ff11e30bf47892de9
+    realistic-structured-clone: ^3.0.0
+  checksum: dd1c82111e3b97c262a647a29dc012209f8c3bed0fbe7ae9630927772842fe8d3276794ff196d0021a5e60563a25a4323eca622a6a7bc6575b62e074328a0c90
   languageName: node
   linkType: hard
 
@@ -17521,7 +17528,7 @@ __metadata:
     typescript: 4.9.4
     vite: ^4.0.0
     vite-plugin-svgr: ^2.2.1
-    wagmi: ^0.11.4
+    wagmi: ^0.11.5
   languageName: unknown
   linkType: soft
 
@@ -17686,7 +17693,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postcss@npm:^8.4.18, postcss@npm:^8.4.20, postcss@npm:^8.4.7":
+"postcss@npm:^8.4.18, postcss@npm:^8.4.20":
   version: 8.4.20
   resolution: "postcss@npm:8.4.20"
   dependencies:
@@ -17694,6 +17701,17 @@ __metadata:
     picocolors: ^1.0.0
     source-map-js: ^1.0.2
   checksum: 1a5609ea1c1b204f9c2974a0019ae9eef2d99bf645c2c9aac675166c4cb1005be7b5e2ba196160bc771f5d9ac896ed883f236f888c891e835e59d28fff6651aa
+  languageName: node
+  linkType: hard
+
+"postcss@npm:^8.4.19":
+  version: 8.4.21
+  resolution: "postcss@npm:8.4.21"
+  dependencies:
+    nanoid: ^3.3.4
+    picocolors: ^1.0.0
+    source-map-js: ^1.0.2
+  checksum: e39ac60ccd1542d4f9d93d894048aac0d686b3bb38e927d8386005718e6793dbbb46930f0a523fe382f1bbd843c6d980aaea791252bf5e176180e5a4336d9679
   languageName: node
   linkType: hard
 
@@ -18438,15 +18456,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"realistic-structured-clone@npm:^2.0.1":
-  version: 2.0.4
-  resolution: "realistic-structured-clone@npm:2.0.4"
+"realistic-structured-clone@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "realistic-structured-clone@npm:3.0.0"
   dependencies:
-    core-js: ^3.4
     domexception: ^1.0.1
     typeson: ^6.1.0
     typeson-registry: ^1.0.0-alpha.20
-  checksum: 0174efd3a3046bd084b8f459b2ce718750a1d90099a9e502fd6ec88483d92b4e784143cdbb7e7d1b7daef2d2d2ced6eaebf0f54f0f4a143eef9b03e1c4f13982
+  checksum: b4521b299c8dc320a5e3ef44678f80a92b0f1837901a5fbd1c7be06808110fb0b591b417114306ec55b44ef47fd17968aacca079afc9665afbe1c528026295ec
   languageName: node
   linkType: hard
 
@@ -21389,14 +21406,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"wagmi@npm:^0.11.4":
-  version: 0.11.4
-  resolution: "wagmi@npm:0.11.4"
+"wagmi@npm:^0.11.5":
+  version: 0.11.5
+  resolution: "wagmi@npm:0.11.5"
   dependencies:
     "@tanstack/query-sync-storage-persister": ^4.14.5
     "@tanstack/react-query": ^4.14.5
     "@tanstack/react-query-persist-client": ^4.14.5
-    "@wagmi/core": 0.9.4
+    "@wagmi/core": 0.9.5
     abitype: ^0.3.0
     use-sync-external-store: ^1.2.0
   peerDependencies:
@@ -21406,7 +21423,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 23980fd7ced8570712015493d2bc976c22e98378c645e1fc40568a43b5056f48501ffcf824a4ceeefce2fbc2cefae60e7b3245e06b270d36e2cca88feed5e989
+  checksum: fda0aef1fce52a6a8f9f048623629a42237ff768e8a9d8b93548f00baec4693fd2b7a19c49090e857f7bf58e325aada42a341ec0867149e555f4a6cc8d5f1cbf
   languageName: node
   linkType: hard
 
