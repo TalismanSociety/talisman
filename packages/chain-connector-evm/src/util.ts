@@ -7,8 +7,11 @@ import log from "./log"
 export const throwAfter = (ms: number, reason: any = "timeout") =>
   new Promise((_, reject) => setTimeout(() => reject(reason), ms))
 
-export const resolveRpcUrl = (rpcUrl: string, onfinalityApiKey: string) => {
-  if (!onfinalityApiKey) return rpcUrl
+/**
+ * Helper function to add our onfinality api key to a public onfinality RPC url.
+ */
+export const addOnfinalityApiKey = (rpcUrl: string, onfinalityApiKey?: string) => {
+  if (typeof onfinalityApiKey !== "string") return rpcUrl
 
   // inject api key here because we don't want them in the store (user can modify urls of rpcs)
   return rpcUrl

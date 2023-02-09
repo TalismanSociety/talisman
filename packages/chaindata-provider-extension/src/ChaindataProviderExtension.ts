@@ -22,16 +22,20 @@ import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
 
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
+export type ChaindataProviderExtensionOptions = {
+  onfinalityApiKey?: string
+}
+
 export class ChaindataProviderExtension implements ChaindataProvider {
   #db: TalismanChaindataDatabase
   #lastHydratedChainsAt = 0
   #lastHydratedEvmNetworksAt = 0
   #lastHydratedTokensAt = 0
-  #onfinalityApiKey: string
+  #onfinalityApiKey?: string
 
-  constructor(onfinalityApiKey: string) {
+  constructor(options?: ChaindataProviderExtensionOptions) {
     this.#db = new TalismanChaindataDatabase()
-    this.#onfinalityApiKey = onfinalityApiKey
+    this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
   }
 
   async chainIds(): Promise<ChainId[]> {
