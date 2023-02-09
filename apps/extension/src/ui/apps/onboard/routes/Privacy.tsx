@@ -81,7 +81,7 @@ export const PrivacyPage = () => {
       analytics={ANALYTICS_PAGE}
     >
       <Dialog title="Manage your privacy">
-        <div className="my-24 leading-[2.2em]">
+        <p className="mt-16">
           To help improve Talisman we’d like to collect anonymous usage information and send
           anonymized error reports. We respect your data and never record sensitive or identifying
           information. You can always adjust these settings, or opt out completely at any time.
@@ -95,8 +95,8 @@ export const PrivacyPage = () => {
             Learn more
           </a>{" "}
           about what we track and how we use this data.
-        </div>
-        <div className="flex w-full gap-8">
+        </p>
+        <div className="mt-24 flex w-full gap-8">
           <SimpleButtonTransparent onClick={handleClick(false)}>No thanks</SimpleButtonTransparent>
           <SimpleButton onClick={handleClick(true)} primary>
             I agree
