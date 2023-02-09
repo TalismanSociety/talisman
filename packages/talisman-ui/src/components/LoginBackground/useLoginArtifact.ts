@@ -1,5 +1,4 @@
-import { AnimationPlaybackControls, animate } from "framer-motion"
-import { useCallback, useEffect, useMemo, useRef } from "react"
+import { SVGProps, useEffect, useMemo, useRef, useState } from "react"
 
 import { LoginPhysics } from "./LoginPhysics"
 
@@ -9,92 +8,85 @@ export type ParentSize = {
 }
 
 export type ArtifactCharacteristics = {
-  cx: number
-  cy: number
-  radius: number
-  opacity: number
-  color: string
+  ellipsis: SVGProps<SVGEllipseElement>
+  duration: number
 }
 
-type ArtifactAnimations = {
-  cx?: AnimationPlaybackControls
-  cy?: AnimationPlaybackControls
-  radius?: AnimationPlaybackControls
-  opacity?: AnimationPlaybackControls
-  color?: AnimationPlaybackControls
+const roundDecimal = (value: number, decimals: number) => {
+  const mult = Math.pow(10, decimals)
+  return Math.round(mult * value) / mult
 }
 
-const generateCharacteristics = (config: LoginPhysics, parentSize: ParentSize, color: string) => {
-  const radius = (Math.random() * Math.min(parentSize.width, parentSize.height)) / 2
-
-  const opacity =
-    config.minOpacityArtifact +
-    Math.random() * (config.maxOpacityArtifact - config.minOpacityArtifact)
-
-  const characteristics: ArtifactCharacteristics = {
-    cx: Math.random() * parentSize.width,
-    // don't let artifacts touch the bottom of the popup as popup height might be bigger than our canvas
-    cy: Math.random() * parentSize.height * 0.8,
-    radius,
-    opacity,
-    color,
-  }
-  return characteristics
-}
-
-export const useLoginArtifact = (config: LoginPhysics, parentSize: ParentSize, color: string) => {
-  const refAnimations = useRef<ArtifactAnimations>({})
-  const refResult = useRef<ArtifactCharacteristics>(
-    generateCharacteristics(config, parentSize, color)
+const generateCharacteristics = (
+  config: LoginPhysics,
+  parentSize: ParentSize,
+  duration: number,
+  initialized: boolean
+) => {
+  const maxSize = Math.min(parentSize.width, parentSize.height)
+  const rx = roundDecimal(
+    maxSize * (config.radiusMin + Math.random() * (config.radiusMax - config.radiusMin)),
+    2
   )
+  const ry = roundDecimal(rx * (1 - config.ellipsisRatio * Math.random()), 2)
 
-  const transition = useMemo(
-    () => ({
-      duration: config.minDuration + Math.random() * (config.maxDuration - config.minDuration),
-      stiffness: config.stiffnessArtifact,
-    }),
-    [config]
-  )
+  const cx = roundDecimal(Math.random() * parentSize.width, 2)
+  const cy = roundDecimal(Math.random() * parentSize.height - Math.max(rx, ry) / 2, 2)
 
-  const refInitialized = useRef(false)
-
-  const updateCharacteristic = useCallback(
-    <P extends keyof ArtifactCharacteristics>(key: P, value: ArtifactCharacteristics[P]) => {
-      if (refInitialized.current) refAnimations.current[key]?.stop()
-
-      refAnimations.current[key] = animate(refResult.current[key], value, {
-        ...transition,
-        ease: refInitialized.current ? "easeInOut" : "easeOut", // on startup, no easeIn
-        onUpdate: (val) => {
-          refResult.current[key] = val
-        },
-      })
-
-      refInitialized.current = true
+  const ellipsis: SVGProps<SVGEllipseElement> = {
+    cx,
+    cy,
+    rx,
+    ry,
+    style: {
+      transformBox: "fill-box",
+      transformOrigin: "center",
+      transform: `rotate(${Math.round(Math.random() * 360)}deg)`,
+      transitionDuration: `${duration}ms`,
+      transitionProperty: "all",
+      transitionTimingFunction: initialized ? "ease-in-out" : "ease-out",
+      opacity: config.opacityMin + Math.random() * (config.opacityMax - config.opacityMin),
     },
-    [transition]
+  }
+
+  return {
+    ellipsis,
+    duration,
+  }
+}
+
+export const useLoginArtifact = (config: LoginPhysics, parentSize: ParentSize) => {
+  const refInitialized = useRef(false)
+  const duration = useMemo(
+    () =>
+      roundDecimal(
+        config.durationMin + Math.random() * (config.durationMax - config.durationMin),
+        2
+      ),
+    [config.durationMax, config.durationMin]
   )
 
-  // changes all properties with newly generated values
-  const change = useCallback(() => {
-    const target = generateCharacteristics(config, parentSize, color)
+  const [characteristics, setCharacteristics] = useState<ArtifactCharacteristics>(
+    generateCharacteristics(config, parentSize, duration, refInitialized.current)
+  )
 
-    for (const key of Object.keys(target).filter((k) => k !== "color")) {
-      const k = key as keyof ArtifactCharacteristics
-      if (k) updateCharacteristic(k, target[k])
-    }
-  }, [color, config, parentSize, updateCharacteristic])
-
-  // trigger change once in a while
   useEffect(() => {
-    const interval = setInterval(change, transition.duration * 1000)
+    const udpate = () => {
+      setCharacteristics(
+        generateCharacteristics(config, parentSize, duration, refInitialized.current)
+      )
+      refInitialized.current = true
+    }
 
-    change()
+    const interval = setInterval(udpate, duration)
+
+    // change after 100ms to ensure the first render has occured
+    setTimeout(() => udpate(), 100)
 
     return () => {
       clearInterval(interval)
     }
-  }, [change, transition.duration])
+  }, [config, duration, parentSize])
 
-  return refResult.current
+  return characteristics
 }
