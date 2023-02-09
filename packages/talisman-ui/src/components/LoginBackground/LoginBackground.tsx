@@ -58,12 +58,9 @@ export const LoginBackground = ({
       className={classNames(className)}
       style={{ transform: `blur(${config.blur}ptx)` }}
     >
-      <LoginArtifact parentSize={size} config={config} color={colors[0]} />
-      <LoginArtifact parentSize={size} config={config} color={colors[0]} />
-      <LoginArtifact parentSize={size} config={config} color={colors[0]} />
-      <LoginArtifact parentSize={size} config={config} color={colors[1]} />
-      <LoginArtifact parentSize={size} config={config} color={colors[1]} />
-      <LoginArtifact parentSize={size} config={config} color={colors[1]} />
+      {[...Array(config.artifacts).keys()].map((i) => (
+        <LoginArtifact key={i} parentSize={size} config={config} color={colors[i % 2]} />
+      ))}
     </svg>
   )
 }
