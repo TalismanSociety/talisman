@@ -1,22 +1,24 @@
 import { ethers } from "ethers"
 
-import { API_KEY_ONFINALITY, RPC_HEALTHCHECK_TIMEOUT } from "./constants"
+import { RPC_HEALTHCHECK_TIMEOUT } from "./constants"
 import { EvmJsonRpcBatchProvider } from "./EvmJsonRpcBatchProvider"
 import log from "./log"
 
 export const throwAfter = (ms: number, reason: any = "timeout") =>
   new Promise((_, reject) => setTimeout(() => reject(reason), ms))
 
-export const resolveRpcUrl = (rpcUrl: string) => {
+export const resolveRpcUrl = (rpcUrl: string, onfinalityApiKey: string) => {
+  if (!onfinalityApiKey) return rpcUrl
+
   // inject api key here because we don't want them in the store (user can modify urls of rpcs)
   return rpcUrl
     .replace(
       /^https:\/\/([A-z-]+)\.api\.onfinality\.io\/public-ws\/?$/,
-      `https://$1.api.onfinality.io/ws?apikey=${API_KEY_ONFINALITY}`
+      `https://$1.api.onfinality.io/ws?apikey=${onfinalityApiKey}`
     )
     .replace(
       /^https:\/\/([A-z-]+)\.api\.onfinality\.io\/rpc\/?$/,
-      `https://$1.api.onfinality.io/rpc?apikey=${API_KEY_ONFINALITY}`
+      `https://$1.api.onfinality.io/rpc?apikey=${onfinalityApiKey}`
     )
 }
 

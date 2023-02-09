@@ -27,9 +27,11 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   #lastHydratedChainsAt = 0
   #lastHydratedEvmNetworksAt = 0
   #lastHydratedTokensAt = 0
+  #onfinalityApiKey: string
 
-  constructor() {
+  constructor(onfinalityApiKey: string) {
     this.#db = new TalismanChaindataDatabase()
+    this.#onfinalityApiKey = onfinalityApiKey
   }
 
   async chainIds(): Promise<ChainId[]> {
@@ -200,7 +202,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     try {
       const body = await fetchChains()
 
-      const chains = addCustomChainRpcs(body?.data?.chains || [])
+      const chains = addCustomChainRpcs(body?.data?.chains || [], this.#onfinalityApiKey)
       if (chains.length <= 0) throw new Error("Ignoring empty chaindata chains response")
 
       await this.#db.transaction("rw", this.#db.chains, () => {

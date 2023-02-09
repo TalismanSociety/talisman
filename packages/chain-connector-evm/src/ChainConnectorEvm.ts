@@ -18,6 +18,7 @@ const getUrlProviderCacheKey = (url: string, batch?: boolean) =>
 
 export class ChainConnectorEvm {
   #chaindataEvmNetworkProvider: ChaindataEvmNetworkProvider
+  #onfinalityApiKey: string
 
   // cache for providers
   //
@@ -39,8 +40,9 @@ export class ChainConnectorEvm {
   // when an error is raised, push the current rpc to the back of the list
   #rpcUrlsCache: Map<EvmNetworkId | string, string[]> = new Map()
 
-  constructor(chaindataEvmNetworkProvider: ChaindataEvmNetworkProvider) {
+  constructor(chaindataEvmNetworkProvider: ChaindataEvmNetworkProvider, onfinalityApiKey: string) {
     this.#chaindataEvmNetworkProvider = chaindataEvmNetworkProvider
+    this.#onfinalityApiKey = onfinalityApiKey
   }
 
   async getProviderForEvmNetworkId(
@@ -103,7 +105,7 @@ export class ChainConnectorEvm {
 
     // initialize cache for rpc urls if empty
     if (!this.#rpcUrlsCache.has(evmNetwork.id)) {
-      const rpcUrls = evmNetwork.rpcs.map(({ url }) => url).map(resolveRpcUrl)
+      const rpcUrls = evmNetwork.rpcs.map(({ url }) => resolveRpcUrl(url, this.#onfinalityApiKey))
       this.#rpcUrlsCache.set(evmNetwork.id, rpcUrls)
     }
     let rpcUrls = this.#rpcUrlsCache.get(evmNetwork.id) as string[]
