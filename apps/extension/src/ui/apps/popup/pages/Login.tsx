@@ -1,10 +1,14 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { StatusIcon } from "@talisman/components/StatusIcon"
+import { useTalismanOrb } from "@talisman/components/TalismanOrb"
+import { HandMonoLogo } from "@talisman/theme/logos"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
+import useAccountAddresses from "@ui/hooks/useAccountAddresses"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { Button, FormFieldInputText } from "talisman-ui"
+import { LoginBackground } from "talisman-ui"
 import * as yup from "yup"
 
 import Layout, { Content, Footer } from "../Layout"
@@ -19,6 +23,13 @@ const schema = yup
     password: yup.string().required(""),
   })
   .required()
+
+const useAccountColors = (): [string, string] | undefined => {
+  const [rootAccount] = useAccountAddresses()
+  const { bgColor1, bgColor2 } = useTalismanOrb(rootAccount)
+
+  return rootAccount ? [bgColor1, bgColor2] : undefined
+}
 
 const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
   const { popupOpenEvent } = useAnalytics()
@@ -65,16 +76,26 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     }
   }, [handleSubmit, setValue, submit])
 
+  const accountColors = useAccountColors()
+
   return (
     <Layout className="pt-32">
-      <Content className="text-center">
-        <StatusIcon status={isSubmitting ? "SPINNING" : "STATIC"} />
-        <h1 className="mt-2 font-sans text-[3.2rem]">Unlock Talisman</h1>
+      {!!accountColors && (
+        <LoginBackground
+          colors={accountColors}
+          className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
+        />
+      )}
+      <Content className={classNames("z-10 text-center", isSubmitting && "animate-pulse")}>
+        <div className="mt-[60px]">
+          <HandMonoLogo className="inline-block text-[64px]" />
+        </div>
+        <h1 className="font-surtExpanded mt-[34px] text-lg">Unlock the Talisman</h1>
         {errors.password?.message && (
-          <div className="text-alert-warn">{errors.password?.message}</div>
+          <div className="text-alert-warn mt-8">{errors.password?.message}</div>
         )}
       </Content>
-      <Footer>
+      <Footer className="z-10">
         <form className="flex flex-col items-center gap-6" onSubmit={handleSubmit(submit)}>
           <FormFieldInputText
             {...register("password")}
@@ -84,9 +105,16 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             autoComplete="off"
             data-lpignore
             autoFocus
-            className="text-center"
+            containerProps={{ className: "bg-white/10" }}
           />
-          <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>
+          <Button
+            type="submit"
+            fullWidth
+            primary
+            disabled={!isValid}
+            processing={isSubmitting}
+            className={classNames(!isValid && "bg-white/10")}
+          >
             Unlock
           </Button>
           <span
