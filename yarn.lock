@@ -2086,9 +2086,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@dnd-kit/core@npm:6.0.6":
-  version: 6.0.6
-  resolution: "@dnd-kit/core@npm:6.0.6"
+"@dnd-kit/core@npm:6.0.7":
+  version: 6.0.7
+  resolution: "@dnd-kit/core@npm:6.0.7"
   dependencies:
     "@dnd-kit/accessibility": ^3.0.0
     "@dnd-kit/utilities": ^3.2.1
@@ -2096,20 +2096,20 @@ __metadata:
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: 2945bd5438630748fa3c11390afd9919eb9836cb64bf4c4c3afae0ccb99d32e1df56a387e59cb16800ec0ae047222fb9e40ecb9363ec4cca375c2b81d4e9784d
+  checksum: f7abe49519da5d60f69bd36ab632ecdedc0372653763065c00b1899f3ed2c1954b5f6ab0bed14790afe11da636b405f8839dc2cad805ef61a3885141f62f9cb1
   languageName: node
   linkType: hard
 
-"@dnd-kit/sortable@npm:7.0.1":
-  version: 7.0.1
-  resolution: "@dnd-kit/sortable@npm:7.0.1"
+"@dnd-kit/sortable@npm:7.0.2":
+  version: 7.0.2
+  resolution: "@dnd-kit/sortable@npm:7.0.2"
   dependencies:
     "@dnd-kit/utilities": ^3.2.0
     tslib: ^2.0.0
   peerDependencies:
-    "@dnd-kit/core": ^6.0.4
+    "@dnd-kit/core": ^6.0.7
     react: ">=16.8.0"
-  checksum: b8b5ae504d57d6afb847c3ac8a865a3623c5915f4f0dd767017a17e6d1d36e144b74f6f90a17c07d5f8ddc83395a2db8bb90c420f017aee15bd88538b6f3f226
+  checksum: 4ce705aceb15766a0deefe25a9d95a87e9413c3fb9088ea3eb0962e57f844895000117fcec7c0944a0d4ae4e1e889cfa69e3d3778164d4d23115fb1edb218283
   languageName: node
   linkType: hard
 
@@ -2780,32 +2780,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@floating-ui/core@npm:^0.6.2":
-  version: 0.6.2
-  resolution: "@floating-ui/core@npm:0.6.2"
-  checksum: b3e1844da852fe141cfa4163026a7c5ffb4399a96105340dffdd5b76dcafea72c6221a06b4674c2b500bc776adc9d9e4ed39dba55e7d844d9507d994c0af743a
+"@floating-ui/core@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "@floating-ui/core@npm:1.2.0"
+  checksum: 1afde471b0d2ba11e2cf416ef5ca9e6280e3f42542a707d958b66631fe2aa551272c1544a1e8ed4815bf562e4462adedb356ce3f2de5c1738d6aab1568f580f4
   languageName: node
   linkType: hard
 
-"@floating-ui/dom@npm:^0.4.5":
-  version: 0.4.5
-  resolution: "@floating-ui/dom@npm:0.4.5"
+"@floating-ui/dom@npm:^1.1.1":
+  version: 1.2.0
+  resolution: "@floating-ui/dom@npm:1.2.0"
   dependencies:
-    "@floating-ui/core": ^0.6.2
-  checksum: 3024aba55fe7ee78b429a6a5d61f5719a6bb2acc79c8a33304b9d30c443efba3a5288acaf9003402e31ee97a533eda97c30a0f2c97e9e54c697df9b80a23dad8
+    "@floating-ui/core": ^1.2.0
+  checksum: 3f5cf02a784286473f451939b5641454e7256cdc7a6899a0ecc67e084a572b52e5e23a08a7e5b8ba186dca668815eba5ed6d69baec543abaeb5092d6c672f6b2
   languageName: node
   linkType: hard
 
-"@floating-ui/react-dom@npm:^0.6.0":
-  version: 0.6.3
-  resolution: "@floating-ui/react-dom@npm:0.6.3"
+"@floating-ui/react-dom@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@floating-ui/react-dom@npm:1.2.2"
   dependencies:
-    "@floating-ui/dom": ^0.4.5
-    use-isomorphic-layout-effect: ^1.1.1
+    "@floating-ui/dom": ^1.1.1
   peerDependencies:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
-  checksum: 1af930aac4e13ed9a25ea2cf70e629d36363034a70ea407a6f8d8d4bd62979c59d3748b58e1ef31c427fdf21a754f285aabba9f14b9e916ab69eb5212144ef6c
+  checksum: 5cb7879a8fe53ce4ca8361473d93e18806402d6bcde4e935d5aafa2b72032019e62f7d019d7d7145ead1ed829569ac14d6d8c50d7beedcea04cb3d02af661597
   languageName: node
   linkType: hard
 
@@ -2816,12 +2815,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hookform/resolvers@npm:2.8.8":
-  version: 2.8.8
-  resolution: "@hookform/resolvers@npm:2.8.8"
+"@hookform/resolvers@npm:2.9.11":
+  version: 2.9.11
+  resolution: "@hookform/resolvers@npm:2.9.11"
   peerDependencies:
     react-hook-form: ^7.0.0
-  checksum: 3de8b00ba3d085cd29b8d9d41bb17f5e31a483e46dafef98a37d898fbf5f3d19a74729e1cda8d15d7513486b5886ea12fbef0c1aa4ed009e3cf3c804cbe325a2
+  checksum: 977ea038bb94457ac9f6c7ca65438ce8fcd0cf7643b9925d8bc4d66df6faa0f49ad642bee7362f86a4d3ff7ff53d18b7aea0597085993971cae00e86bf6eda73
   languageName: node
   linkType: hard
 
@@ -11982,11 +11981,11 @@ __metadata:
     "@babel/plugin-transform-react-jsx": ^7.20.13
     "@babel/preset-env": ^7.20.2
     "@babel/preset-typescript": ^7.18.6
-    "@dnd-kit/core": 6.0.6
-    "@dnd-kit/sortable": 7.0.1
+    "@dnd-kit/core": 6.0.7
+    "@dnd-kit/sortable": 7.0.2
     "@ethereumjs/util": 8.0.3
-    "@floating-ui/react-dom": ^0.6.0
-    "@hookform/resolvers": 2.8.8
+    "@floating-ui/react-dom": ^1.2.2
+    "@hookform/resolvers": 2.9.11
     "@ledgerhq/hw-app-eth": 6.31.0
     "@ledgerhq/hw-transport-webusb": 6.27.11
     "@metamask/browser-passworder": 3.0.0
@@ -21172,18 +21171,6 @@ __metadata:
     node-gyp: latest
     node-gyp-build: ^4.3.0
   checksum: 665f4be8440c7f723cd2d52b78315d3e0ab6cd87597ac2843c03bf8044cec4988d5c65c47eae96250b657008d6cb835cd558fef3ccb5e91554ae90b6a86e5dd6
-  languageName: node
-  linkType: hard
-
-"use-isomorphic-layout-effect@npm:^1.1.1":
-  version: 1.1.2
-  resolution: "use-isomorphic-layout-effect@npm:1.1.2"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0
-  peerDependenciesMeta:
-    "@types/react":
-      optional: true
-  checksum: a6532f7fc9ae222c3725ff0308aaf1f1ddbd3c00d685ef9eee6714fd0684de5cb9741b432fbf51e61a784e2955424864f7ea9f99734a02f237b17ad3e18ea5cb
   languageName: node
   linkType: hard
 
