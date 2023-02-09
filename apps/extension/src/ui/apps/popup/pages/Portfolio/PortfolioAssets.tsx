@@ -4,7 +4,14 @@ import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { ChevronLeftIcon, CopyIcon, IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
+import {
+  ChevronLeftIcon,
+  CopyIcon,
+  IconMore,
+  PaperPlaneIcon,
+  ParitySignerIcon,
+  UsbIcon,
+} from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -79,9 +86,21 @@ const PageContent = ({ balances }: { balances: Balances }) => {
             <CurrentAccountAvatar />
           </IconBox>
           <Box grow flex column gap={0.4} padding="0 0 0 0.4rem" fontsize="small" overflow="hidden">
-            <Box fg="mid" overflow="hidden" textOverflow="ellipsis" noWrap>
-              {account ? account.name ?? "Unnamed Account" : "All Accounts"}
-            </Box>
+            <div className="flex items-center gap-3">
+              <Box fg="mid" overflow="hidden" textOverflow="ellipsis" noWrap>
+                {account ? account.name ?? "Unnamed Account" : "All Accounts"}
+              </Box>
+              {account?.origin === "HARDWARE" && (
+                <Box fg="primary">
+                  <UsbIcon />
+                </Box>
+              )}
+              {account?.origin === "QR" && (
+                <Box fg="primary">
+                  <ParitySignerIcon />
+                </Box>
+              )}
+            </div>
             <Box fontsize="medium" overflow="hidden" textOverflow="ellipsis" noWrap>
               <Fiat amount={balances.sum.fiat("usd").total} isBalance />
             </Box>

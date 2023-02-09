@@ -145,16 +145,16 @@ export const QrSubstrate = ({
             {typeof chain?.latestMetadataQrUrl === "string" ? (
               <div className="flex flex-col">
                 <button
-                  className="bg-primary/10 text-primary inline-block rounded-full py-4 px-6 text-sm font-light"
-                  onClick={() => setScanState("UPDATE_METADATA_PROMPT")}
+                  className="bg-primary/10 text-primary hover:bg-primary/20 inline-block rounded-full py-4 px-6 text-sm font-light"
+                  onClick={() => setScanState("UPDATE_METADATA")}
                 >
                   Update Metadata
                 </button>
                 <button
-                  className="text-grey-50 p-4 text-xs font-light"
+                  className="text-grey-50 hover:text-grey-300 mt-2 p-4 text-xs font-light"
                   onClick={() => setScanState("UPDATE_METADATA_PROMPT")}
                 >
-                  I'm seeing an error
+                  Seeing a Parity Signer error?
                 </button>
               </div>
             ) : (
@@ -213,21 +213,20 @@ export const QrSubstrate = ({
         )}
       </section>
       <footer className="flex w-full shrink-0 gap-12 px-12 py-10">
-        {["SEND", "UPDATE_METADATA_PROMPT", "UPDATE_METADATA"].includes(scanState) && unsigned && (
+        {["SEND", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
           <>
-            {scanState === "UPDATE_METADATA" ? (
-              <Button key="back" className="w-full" onClick={() => setScanState("SEND")}>
-                Back
-              </Button>
-            ) : (
-              <Button className="w-full" onClick={onReject}>
-                Cancel
-              </Button>
-            )}
+            <Button className="w-full" onClick={onReject}>
+              Cancel
+            </Button>
             <Button className="w-full" primary onClick={() => setScanState("RECEIVE")}>
               Next
             </Button>
           </>
+        )}
+        {scanState === "UPDATE_METADATA" && (
+          <Button className="w-full" primary onClick={() => setScanState("SEND")}>
+            Done
+          </Button>
         )}
         {scanState === "RECEIVE" && onSignature && (
           <Button className="w-full" onClick={onReject}>
