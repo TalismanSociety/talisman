@@ -193,7 +193,7 @@ export const AccountAddQr = () => {
                         body: "It looks like you’ve blocked permissions for Talisman to access your camera",
                         extra: (
                           <button
-                            className="bg-primary/10 text-primary mt-6 inline-block rounded p-4 text-xs font-light"
+                            className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full py-4 px-6 text-xs font-light"
                             onClick={() => dispatch({ method: "enableScan" })}
                           >
                             Retry
@@ -213,7 +213,7 @@ export const AccountAddQr = () => {
                         body: "Allow Talisman to access your camera to scan QR codes",
                         extra: (
                           <button
-                            className="bg-primary/10 text-primary mt-6 inline-block rounded p-4 text-xs font-light"
+                            className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full py-4 px-6 text-xs font-light"
                             onClick={() => dispatch({ method: "enableScan" })}
                           >
                             Turn on Camera
