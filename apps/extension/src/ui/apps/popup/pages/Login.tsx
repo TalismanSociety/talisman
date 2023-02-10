@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useTalismanOrb } from "@talisman/components/TalismanOrb"
-import { HandMonoLogo } from "@talisman/theme/logos"
+import { HandMonoTransparentLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import useAccountAddresses from "@ui/hooks/useAccountAddresses"
@@ -92,7 +92,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
       )}
       <Content className={classNames("z-10 text-center", isSubmitting && "animate-pulse")}>
         <div className="mt-[60px]">
-          <HandMonoLogo className="inline-block text-[64px]" />
+          <HandMonoTransparentLogo className="inline-block text-[64px]" />
         </div>
         <h1 className="font-surtExpanded mt-[34px] text-lg">Unlock the Talisman</h1>
         {errors.password?.message && (
