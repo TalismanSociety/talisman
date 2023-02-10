@@ -5,6 +5,8 @@ import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 
 export const chainConnectorEvm = new ChainConnectorEvm(chaindataProvider)
 
-featuresStore.isFeatureEnabled("USE_ONFINALITY_API_KEY_EVM").then((enabled) => {
-  chainConnectorEvm.setOnfinalityApiKey(enabled ? API_KEY_ONFINALITY : undefined)
+featuresStore.observable.subscribe((store) => {
+  chainConnectorEvm.setOnfinalityApiKey(
+    store.features.includes("USE_ONFINALITY_API_KEY_EVM") ? API_KEY_ONFINALITY : undefined
+  )
 })

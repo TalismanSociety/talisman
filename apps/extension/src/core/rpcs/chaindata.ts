@@ -4,6 +4,8 @@ import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extensio
 
 export const chaindataProvider = new ChaindataProviderExtension()
 
-featuresStore.isFeatureEnabled("USE_ONFINALITY_API_KEY_EVM").then((enabled) => {
-  chaindataProvider.setOnfinalityApiKey(enabled ? API_KEY_ONFINALITY : undefined)
+featuresStore.observable.subscribe((store) => {
+  chaindataProvider.setOnfinalityApiKey(
+    store.features.includes("USE_ONFINALITY_API_KEY_EVM") ? API_KEY_ONFINALITY : undefined
+  )
 })
