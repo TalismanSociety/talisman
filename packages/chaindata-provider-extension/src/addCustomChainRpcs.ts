@@ -1,12 +1,9 @@
 import { Chain } from "@talismn/chaindata-provider"
 
-// talisman onfinality api key
-const onfinalityApiKey = "e1b2f3ea-f003-42f5-adf6-d2e6aa3ecfe4"
-
 /**
- * Helper function to add our onfinality RPCs to an array of chains.
+ * Helper function to add our onfinality api key to any public onfinality RPC urls in an array of chains.
  */
-export const addCustomChainRpcs = (chains: Chain[]): Chain[] =>
+export const addCustomChainRpcs = (chains: Chain[], onfinalityApiKey?: string): Chain[] =>
   chains.map((chain) => {
     // only add our custom rpcs when the chain is healthy
     // the extension won't bother to connect to unhealthy chains
@@ -14,6 +11,8 @@ export const addCustomChainRpcs = (chains: Chain[]): Chain[] =>
 
     // copy chain instead of mutating
     const chainWithCustomRpcs = { ...chain }
+
+    if (typeof onfinalityApiKey !== "string" || !onfinalityApiKey) return chainWithCustomRpcs
 
     // add rpcs
     chainWithCustomRpcs.rpcs = (chainWithCustomRpcs.rpcs || [])

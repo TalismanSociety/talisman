@@ -22,14 +22,24 @@ import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
 
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
 
+export type ChaindataProviderExtensionOptions = {
+  onfinalityApiKey?: string
+}
+
 export class ChaindataProviderExtension implements ChaindataProvider {
   #db: TalismanChaindataDatabase
   #lastHydratedChainsAt = 0
   #lastHydratedEvmNetworksAt = 0
   #lastHydratedTokensAt = 0
+  #onfinalityApiKey?: string
 
-  constructor() {
+  constructor(options?: ChaindataProviderExtensionOptions) {
     this.#db = new TalismanChaindataDatabase()
+    this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
+  }
+
+  setOnfinalityApiKey(apiKey: string | undefined) {
+    this.#onfinalityApiKey = apiKey
   }
 
   async chainIds(): Promise<ChainId[]> {
@@ -200,7 +210,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     try {
       const body = await fetchChains()
 
-      const chains = addCustomChainRpcs(body?.data?.chains || [])
+      const chains = addCustomChainRpcs(body?.data?.chains || [], this.#onfinalityApiKey)
       if (chains.length <= 0) throw new Error("Ignoring empty chaindata chains response")
 
       await this.#db.transaction("rw", this.#db.chains, () => {
