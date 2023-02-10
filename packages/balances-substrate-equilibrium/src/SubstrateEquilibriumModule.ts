@@ -326,7 +326,6 @@ export const SubEquilibriumModule: BalanceModule<
 
         // query rpc
         const result = await chainConnector.send(chainId, method, params)
-        log.log("fetchBalances", result)
         return formatRpcResult(chainId, queries, result[0])
       })
     )
