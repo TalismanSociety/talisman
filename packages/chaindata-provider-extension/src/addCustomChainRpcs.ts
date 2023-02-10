@@ -12,7 +12,7 @@ export const addCustomChainRpcs = (chains: Chain[], onfinalityApiKey?: string): 
     // copy chain instead of mutating
     const chainWithCustomRpcs = { ...chain }
 
-    if (typeof onfinalityApiKey !== "string") return chainWithCustomRpcs
+    if (typeof onfinalityApiKey !== "string" || !onfinalityApiKey) return chainWithCustomRpcs
 
     // add rpcs
     chainWithCustomRpcs.rpcs = (chainWithCustomRpcs.rpcs || [])

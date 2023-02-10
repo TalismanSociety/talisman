@@ -11,7 +11,7 @@ export const throwAfter = (ms: number, reason: any = "timeout") =>
  * Helper function to add our onfinality api key to a public onfinality RPC url.
  */
 export const addOnfinalityApiKey = (rpcUrl: string, onfinalityApiKey?: string) => {
-  if (typeof onfinalityApiKey !== "string") return rpcUrl
+  if (typeof onfinalityApiKey !== "string" || !onfinalityApiKey) return rpcUrl
 
   // inject api key here because we don't want them in the store (user can modify urls of rpcs)
   return rpcUrl
