@@ -38,6 +38,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
   }
 
+  setOnfinalityApiKey(apiKey: string | undefined) {
+    this.#onfinalityApiKey = apiKey
+  }
+
   async chainIds(): Promise<ChainId[]> {
     return await this.#db.chains.toCollection().primaryKeys()
   }

@@ -52,6 +52,11 @@ export class ChainConnectorEvm {
     this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
   }
 
+  setOnfinalityApiKey(apiKey: string | undefined) {
+    this.#onfinalityApiKey = apiKey
+    this.clearRpcProvidersCache()
+  }
+
   async getProviderForEvmNetworkId(
     evmNetworkId: EvmNetworkId,
     { batch }: GetProviderOptions = {}
