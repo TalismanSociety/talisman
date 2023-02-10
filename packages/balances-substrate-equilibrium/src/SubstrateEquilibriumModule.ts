@@ -518,7 +518,7 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
         .map(({ token, address }: { token: SubEquilibriumToken; address: string }) => {
           if (!address || !token) return
 
-          const free = tokenBalances[token.assetId]
+          const free = tokenBalances[token.assetId] ?? "0"
           return new Balance({
             source: "substrate-equilibrium",
 
