@@ -13,8 +13,8 @@ export type LoginPhysics = {
 export const LOGIN_PHYSICS: LoginPhysics = {
   artifacts: 4,
   blur: 24,
-  opacityMin: 0.3,
-  opacityMax: 0.5,
+  opacityMin: 0.2,
+  opacityMax: 0.4,
   durationMin: 8000,
   durationMax: 15000,
   radiusMin: 0.4,

@@ -110,6 +110,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             data-lpignore
             autoFocus
             containerProps={INPUT_CONTAINER_PROPS}
+            className="placeholder:text-grey-500"
           />
           <Button
             type="submit"
