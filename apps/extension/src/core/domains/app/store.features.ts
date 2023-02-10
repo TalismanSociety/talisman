@@ -33,6 +33,8 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     BUY_CRYPTO: true, // nav buttons + button in fund wallet component
     LINK_TX_HISTORY: true,
     LINK_STAKING: true,
+    USE_ONFINALITY_API_KEY_SUBSTRATE: false,
+    USE_ONFINALITY_API_KEY_EVM: false,
   }
   featuresStore.set({
     features: Object.keys(DEV_FEATURE_VARIANTS) as FeatureFlag[],
