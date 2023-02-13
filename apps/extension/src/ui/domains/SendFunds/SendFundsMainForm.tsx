@@ -56,12 +56,12 @@ const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onC
   if (!address) return null
 
   return (
-    <PillButton className={classNames("h-16 max-w-full !py-2 !px-4", className)} onClick={onClick}>
-      <div className="text-body flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base">
+    <PillButton className={classNames("h-16 max-w-full !px-4", className)} onClick={onClick}>
+      <div className="text-body flex h-16 max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
         <div>
           <AccountAvatar className="!text-lg" address={address} genesisHash={genesisHash} />
         </div>
-        <div className="grow overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
           {name ?? shortenAddress(address, 6, 6)}
         </div>
       </div>
@@ -425,14 +425,22 @@ export const SendFundsMainForm = () => {
         <Container className="flex h-[9rem] w-full flex-col justify-center gap-5 px-8">
           <div className="flex w-full justify-between gap-4">
             <div>From</div>
-            <div className="overflow-hidden">
-              <AddressPillButton address={from} onClick={handleGotoClick("from")} />
+            <div>
+              <AddressPillButton
+                className="max-w-[260px]"
+                address={from}
+                onClick={handleGotoClick("from")}
+              />
             </div>
           </div>
           <div className="flex w-full justify-between gap-4">
             <div>To</div>
-            <div className="overflow-hidden">
-              <AddressPillButton address={to} onClick={handleGotoClick("to")} />
+            <div>
+              <AddressPillButton
+                className="max-w-[260px]"
+                address={to}
+                onClick={handleGotoClick("to")}
+              />
             </div>
           </div>
         </Container>

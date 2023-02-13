@@ -31,10 +31,10 @@ export const SendFundsAddressPillButton: FC<SendFundsAddressPillButtonProps> = (
   if (!address) return null
 
   return (
-    <PillButton className={classNames("h-16 max-w-full !py-2 !px-4", className)} onClick={onClick}>
-      <div className="text-body flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base">
+    <PillButton className={classNames("h-16 max-w-full !px-4", className)} onClick={onClick}>
+      <div className="text-body flex max-w-full flex-nowrap items-center gap-4 overflow-x-hidden text-base">
         <AccountAvatar className="!text-lg" address={address} genesisHash={genesisHash} />
-        <div className="leading-base grow overflow-hidden text-ellipsis whitespace-nowrap">
+        <div className="!leading-base grow overflow-x-hidden text-ellipsis whitespace-nowrap">
           {text}
         </div>
       </div>
