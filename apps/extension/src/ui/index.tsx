@@ -28,27 +28,27 @@ export const renderTalisman = (app: any) => {
   if (!container) throw new Error("#root element not found.")
   const root = createRoot(container)
   root.render(
-    // <React.StrictMode>
-    <ThemeProvider>
-      <ErrorBoundary>
-        <ErrorBoundaryDatabaseMigration>
-          <QueryClientProvider client={queryClient}>
-            <FeaturesProvider>
-              <SettingsProvider>
-                <AddressBookProvider>
-                  <AppStateProvider>
-                    <DbCacheProvider>
-                      <HashRouter>{app}</HashRouter>
-                    </DbCacheProvider>
-                  </AppStateProvider>
-                </AddressBookProvider>
-              </SettingsProvider>
-            </FeaturesProvider>
-            <NotificationsContainer />
-          </QueryClientProvider>
-        </ErrorBoundaryDatabaseMigration>
-      </ErrorBoundary>
-    </ThemeProvider>
-    // </React.StrictMode>
+    <React.StrictMode>
+      <ThemeProvider>
+        <ErrorBoundary>
+          <ErrorBoundaryDatabaseMigration>
+            <QueryClientProvider client={queryClient}>
+              <FeaturesProvider>
+                <SettingsProvider>
+                  <AddressBookProvider>
+                    <AppStateProvider>
+                      <DbCacheProvider>
+                        <HashRouter>{app}</HashRouter>
+                      </DbCacheProvider>
+                    </AppStateProvider>
+                  </AddressBookProvider>
+                </SettingsProvider>
+              </FeaturesProvider>
+              <NotificationsContainer />
+            </QueryClientProvider>
+          </ErrorBoundaryDatabaseMigration>
+        </ErrorBoundary>
+      </ThemeProvider>
+    </React.StrictMode>
   )
 }
