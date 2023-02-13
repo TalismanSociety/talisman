@@ -387,7 +387,10 @@ async function prepareQueriesByChain(
 
             return true
           })
-          .map(([, token, addresses]): [SubEquilibriumToken, string[]] => [token, addresses])
+          .map(([, token, addresses]): [SubEquilibriumToken, string[]] => [
+            token as SubEquilibriumToken, // TODO: Rewrite the previous filter to declare this in a type-safe way
+            addresses,
+          ])
 
         const registry = new TypeRegistry()
         const chainMeta: SubEquilibriumChainMeta | undefined = (chain.balanceMetadata || []).find(
@@ -518,7 +521,7 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
         .map(({ token, address }: { token: SubEquilibriumToken; address: string }) => {
           if (!address || !token) return
 
-          const free = tokenBalances[token.assetId]
+          const free = tokenBalances[token.assetId] ?? "0"
           return new Balance({
             source: "substrate-equilibrium",
 

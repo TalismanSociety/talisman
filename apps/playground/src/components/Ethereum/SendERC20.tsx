@@ -45,14 +45,14 @@ export const SendERC20 = () => {
 
   const formData = watch()
 
-  const contractAddress = useMemo(() => getUSDCAddress(chain?.id) as string, [chain?.id])
+  const contractAddress = useMemo(() => getUSDCAddress(chain?.id), [chain?.id])
   const {
     data: balanceOfSelfData,
     isError: balanceOfSelfIsError,
     isLoading: balanceOfSelfIsLoading,
   } = useContractRead({
-    addressOrName: contractAddress,
-    contractInterface: erc20,
+    address: contractAddress,
+    abi: erc20,
     functionName: "balanceOf",
     args: [address],
     enabled: !!contractAddress && !!address,
@@ -62,8 +62,8 @@ export const SendERC20 = () => {
     isError: balanceOfTargetIsError,
     isLoading: balanceOfTargetIsLoading,
   } = useContractRead({
-    addressOrName: contractAddress,
-    contractInterface: erc20,
+    address: contractAddress,
+    abi: erc20,
     functionName: "balanceOf",
     args: [formData.recipient],
     enabled: !!contractAddress && !!formData.recipient,
@@ -74,8 +74,8 @@ export const SendERC20 = () => {
     isSuccess: prepIsSuccess,
     error: prepError,
   } = usePrepareContractWrite({
-    addressOrName: contractAddress,
-    contractInterface: erc20,
+    address: contractAddress,
+    abi: erc20,
     functionName: "transfer",
     enabled: !!contractAddress && !!balanceOfSelfData,
     args: [formData.recipient, parseUnits(formData.amount, 6)],
@@ -87,8 +87,8 @@ export const SendERC20 = () => {
     error: writeError,
     write,
   } = useContractWrite({
-    addressOrName: contractAddress,
-    contractInterface: erc20,
+    address: contractAddress,
+    abi: erc20,
     functionName: "transfer",
     mode: "recklesslyUnprepared",
     args: [formData.recipient, parseUnits(formData.amount, 6)],

@@ -1,5 +1,5 @@
 import { CodeBlock } from "@talisman/components/CodeBlock"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { dump as convertToYaml } from "js-yaml"
 import { FC, useMemo, useState } from "react"
 

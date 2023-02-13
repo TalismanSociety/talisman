@@ -1,6 +1,6 @@
 import { ChevronDownIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { useSelect } from "downshift"
 import { useEffect } from "react"
 import styled from "styled-components"

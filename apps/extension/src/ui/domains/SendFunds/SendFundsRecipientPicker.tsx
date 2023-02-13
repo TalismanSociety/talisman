@@ -17,7 +17,7 @@ import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { default as debounce } from "lodash/debounce"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
-import { FormFieldInputContainerProps, FormFieldInputText, classNames } from "talisman-ui"
+import { FormFieldInputContainerProps, FormFieldInputText } from "talisman-ui"
 
 import AccountAvatar from "../Account/Avatar"
 import Fiat from "../Asset/Fiat"

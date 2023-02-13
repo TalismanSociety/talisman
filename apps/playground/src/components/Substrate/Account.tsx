@@ -1,6 +1,7 @@
 import { InjectedAccountWithMeta } from "@polkadot/extension-inject/types"
+import { classNames } from "@talismn/util"
 import { useCallback } from "react"
-import { Button, classNames } from "talisman-ui"
+import { Button } from "talisman-ui"
 
 import { Section } from "../Section"
 import { useWallet } from "./useWallet"

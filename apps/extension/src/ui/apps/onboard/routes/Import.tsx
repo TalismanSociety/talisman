@@ -1,10 +1,10 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
+import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { FC, useCallback, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useHoverDirty } from "react-use"
-import { classNames } from "talisman-ui"
 
 import imgTokenEthereum from "../assets/ethereum-token.svg?url"
 import imgHeadEthereum from "../assets/ethereum-wallet-head.svg?url"

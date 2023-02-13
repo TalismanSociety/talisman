@@ -5,17 +5,19 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
-import { planckToTokens } from "@talismn/util"
+import { classNames, planckToTokens } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useDbCache } from "@ui/hooks/useDbCache"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSettings } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { sortBy } from "lodash"
 import { CSSProperties, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useIntersection } from "react-use"
-import { Checkbox, FormFieldInputContainerProps, classNames } from "talisman-ui"
+import { Checkbox, FormFieldInputContainerProps } from "talisman-ui"
 
 import { ChainLogoBase } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
@@ -148,11 +150,10 @@ type TokensListProps = {
 }
 
 const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) => {
-  const allTokens = useTokens()
-
-  // TODO remove wen we get a better map hook
-  const chains = useChains()
-  const evmNetworks = useEvmNetwork()
+  const { useTestnets = false } = useSettings()
+  const { chainsMap } = useChains(useTestnets)
+  const { evmNetworksMap } = useEvmNetworks(useTestnets)
+  const { tokens: allTokens } = useTokens(useTestnets)
 
   const balances = useBalances()
 
@@ -169,7 +170,7 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
     [from]
   )
 
-  const { chainsMap, evmNetworksMap } = useDbCache()
+  //const { chainsMap, evmNetworksMap } = useDbCache()
 
   // TODO if we have a tokenId, filter account types
   const transferableTokens = useMemo(

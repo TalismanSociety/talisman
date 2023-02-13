@@ -1,7 +1,7 @@
 import { CheckIcon, CopyIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { MouseEventHandler, useState } from "react"
 import styled from "styled-components"
-import { classNames } from "talisman-ui"
 
 const SecretText = styled.div`
   position: relative;

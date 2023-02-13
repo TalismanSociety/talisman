@@ -1,43 +1,57 @@
 {
   "$schema": "https://turborepo.org/schema.json",
   "pipeline": {
+    "dev": {
+      "cache": false
+    },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["//#build:packages", "^build"],
       "outputs": ["dist/**"],
       "cache": false
     },
+    "//#build:packages": {
+      "dependsOn": [],
+      "outputs": ["packages/**/dist/**/*"]
+    },
     "build:extension:ci": {
-      "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN", "$POSTHOG_AUTH_TOKEN"],
+      "dependsOn": [
+        "//#build:packages",
+        "$SENTRY_DSN",
+        "$SENTRY_AUTH_TOKEN",
+        "$POSTHOG_AUTH_TOKEN"
+      ],
       "outputs": ["dist/**"]
     },
     "build:extension:prod": {
-      "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN", "$POSTHOG_AUTH_TOKEN"],
+      "dependsOn": [
+        "//#build:packages",
+        "$SENTRY_DSN",
+        "$SENTRY_AUTH_TOKEN",
+        "$POSTHOG_AUTH_TOKEN"
+      ],
       "outputs": ["dist/**"]
     },
     "build:extension:canary": {
-      "dependsOn": ["^build", "$SENTRY_DSN", "$SENTRY_AUTH_TOKEN", "$POSTHOG_AUTH_TOKEN"],
-      "outputs": ["dist/**"]
-    },
-    "build:packages:prod": {
-      "dependsOn": ["^build:packages:prod"],
+      "dependsOn": [
+        "//#build:packages",
+        "$SENTRY_DSN",
+        "$SENTRY_AUTH_TOKEN",
+        "$POSTHOG_AUTH_TOKEN"
+      ],
       "outputs": ["dist/**"]
     },
     "lint": {
       "outputs": [],
       "cache": false
     },
-    "dev": {
-      "dependsOn": ["^dev"],
-      "cache": false
-    },
     "clean": {
       "cache": false
     },
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": []
     },
     "test:watch": {
-      "dependsOn": ["^build"]
+      "dependsOn": []
     }
   }
 }

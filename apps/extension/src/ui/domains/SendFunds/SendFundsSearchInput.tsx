@@ -1,12 +1,8 @@
 import { SearchIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { ChangeEventHandler, FC, useCallback, useEffect } from "react"
-import {
-  FormFieldInputContainerProps,
-  FormFieldInputText,
-  FormFieldInputTextProps,
-  classNames,
-} from "talisman-ui"
+import { FormFieldInputContainerProps, FormFieldInputText } from "talisman-ui"
 
 const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
   small: true,

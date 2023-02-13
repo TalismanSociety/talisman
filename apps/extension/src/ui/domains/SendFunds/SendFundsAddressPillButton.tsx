@@ -1,7 +1,8 @@
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { classNames } from "@talismn/util"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { FC, useMemo } from "react"
-import { PillButton, classNames } from "talisman-ui"
+import { PillButton } from "talisman-ui"
 
 import AccountAvatar from "../Account/Avatar"
 

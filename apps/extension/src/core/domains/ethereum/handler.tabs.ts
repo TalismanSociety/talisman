@@ -82,7 +82,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
-    const provider = await getProviderForEthereumNetwork(ethereumNetwork)
+    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
     if (!provider)
       throw new EthProviderRpcError(
         `No provider for network ${ethereumNetwork.id} (${ethereumNetwork.name})`,
@@ -158,10 +158,10 @@ export class EthTabsHandler extends TabsHandler {
               typeof site?.ethChainId !== "undefined"
                 ? ethers.utils.hexValue(site.ethChainId)
                 : undefined
-            accounts = site.ethAddresses
+            accounts = site.ethAddresses ?? []
 
             // check that the network is still registered before broadcasting
-            connected = !!(await this.getProvider(url))
+            connected = !!accounts.length
 
             if (connected) {
               sendToClient({ type: "connect", data: { chainId } })
@@ -193,8 +193,7 @@ export class EthTabsHandler extends TabsHandler {
             : undefined
         //TODO check eth addresses still exist
         accounts = site?.ethAddresses ?? []
-        // checking the existence of an associated provider also checks that network is still authorized
-        connected = !!(await this.getProvider(url))
+        connected = !!accounts.length
 
         if (typeof siteId === "undefined") {
           // user may just have authorized, try to reinitialize
@@ -321,7 +320,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!ethereumNetwork)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
 
-    const provider = await getProviderForEthereumNetwork(ethereumNetwork)
+    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
     if (!provider)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
@@ -342,12 +341,29 @@ export class EthTabsHandler extends TabsHandler {
     url: string,
     request: EthRequestArguments<K>
   ): Promise<unknown> {
-    const provider = await this.getProvider(url)
+    // obtain the chain id without checking auth.
+    // note: this method is only called if method doesn't require auth, or if auth is already checked
+    const chainId = await this.getChainId(url)
+
+    const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
+    if (!ethereumNetwork)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
+
+    const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
+    if (!provider)
+      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+
     return provider.send(request.method, request.params as unknown as any[])
   }
 
   private signMessage = async (url: string, request: EthRequestSignArguments) => {
     const { params, method } = request as EthRequestSignArguments
+
+    // eth_signTypedData requires a non-empty array of parameters, else throw (uniswap will then call v4)
+    if (method === "eth_signTypedData") {
+      if (!Array.isArray(params[0]))
+        throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
+    }
 
     let isMessageFirst = ["personal_sign", "eth_signTypedData", "eth_signTypedData_v1"].includes(
       method
@@ -553,6 +569,7 @@ export class EthTabsHandler extends TabsHandler {
         "eth_requestAccounts",
         "eth_accounts",
         "eth_chainId",
+        "eth_blockNumber",
         "net_version",
         "wallet_switchEthereumChain",
         "wallet_addEthereumChain",
@@ -573,6 +590,11 @@ export class EthTabsHandler extends TabsHandler {
       case "eth_accounts":
         // public method, no need to auth (returns empty array if not authorized yet)
         return this.accountsList(url)
+
+      case "eth_coinbase": {
+        const accounts = await this.accountsList(url)
+        return accounts[0] ?? null
+      }
 
       case "eth_chainId":
         // public method, no need to auth (returns undefined if not authorized yet)
@@ -662,9 +684,6 @@ export class EthTabsHandler extends TabsHandler {
 
       case "pub(eth.request)":
         return this.ethRequest(id, url, request as AnyEthRequest) as any
-
-      case "pub(eth.mimicMetaMask)":
-        return this.stores.settings.get("shouldMimicMetaMask")
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

@@ -1,9 +1,21 @@
 import { useCallback, useState } from "react"
 import { Button } from "talisman-ui"
 
-import { DecryptResult, EncryptResult } from "../../../../extension/src/core/domains/encrypt/types"
 import { Section } from "../Section"
+import { DecryptResult, EncryptResult, TalismanSigner } from "./types"
 import { useWallet } from "./useWallet"
+
+// TODO: Move these to a common package and import them both here and in the extension
+/** BEGIN: Copy-paste from apps/extension/src/core/domains/encrypt/types.ts **/
+export interface EncryptResult {
+  id: number
+  result: string
+}
+export interface DecryptResult {
+  id: number
+  result: string
+}
+/** END: Copy-paste from apps/extension/src/core/domains/encrypt/types.ts **/
 
 const DATA_TO_ENCRYPT =
   "data to encrypt yeet yeet yeeeeeet. this is a loooooong message blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah blah"
@@ -33,7 +45,7 @@ export const Sumi = () => {
       try {
         setIsProcessing(true)
         setEncryptResult(
-          await extension.signer.encryptMessage({
+          await (extension.signer as TalismanSigner).encryptMessage({
             address: ENCRYPTER_ADDRESS,
             recipient: DECRYPTER_PUB_KEY,
             message: data,
@@ -57,7 +69,7 @@ export const Sumi = () => {
       try {
         setIsProcessing(true)
         setDecryptResult(
-          await extension.signer.decryptMessage({
+          await (extension.signer as TalismanSigner).decryptMessage({
             address: DECRYPTER_ADDRESS,
             sender: ENCRYPTER_PUB_KEY,
             message: data,

@@ -1,5 +1,4 @@
 {
-  "internal": true,
-  "main": "../dist/plugins.js",
-  "types": "../dist/plugins.d.ts"
+  "main": "dist/talismn-chaindata-provider-plugins.cjs.js",
+  "module": "dist/talismn-chaindata-provider-plugins.esm.js"
 }

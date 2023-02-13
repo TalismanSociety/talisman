@@ -4,6 +4,7 @@ import { assert } from "@polkadot/util"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { LoaderIcon, PlusIcon } from "@talisman/theme/icons"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
@@ -15,7 +16,7 @@ import { useSortedEvmNetworks } from "@ui/hooks/useSortedEvmNetworks"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
-import { Button, FormFieldContainer, FormFieldInputText, classNames } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 type FormData = Pick<
@@ -33,7 +34,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 export const AddCustomTokenPage = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
-  const networks = useSortedEvmNetworks()
+  const networks = useSortedEvmNetworks(true)
   const [error, setError] = useState<string>()
 
   // our only user inputs are chain and contract
@@ -120,6 +121,7 @@ export const AddCustomTokenPage = () => {
       <form className="my-20 space-y-4" onSubmit={handleSubmit(submit)}>
         <FormFieldContainer label="Network" error={errors.evmNetworkId?.message}>
           <NetworkSelect
+            withTestnets
             placeholder="Select a network"
             onChange={handleNetworkChange}
             className="w-full"

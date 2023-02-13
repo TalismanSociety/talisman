@@ -1,10 +1,10 @@
 import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { classNames } from "@talismn/util"
 import { useBalance } from "@ui/hooks/useBalance"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import useToken from "@ui/hooks/useToken"
 import { FC, ReactNode, useCallback } from "react"
-import { classNames } from "talisman-ui"
 
 import AccountAvatar from "../Account/Avatar"
 import Fiat from "../Asset/Fiat"

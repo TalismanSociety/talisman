@@ -3,7 +3,7 @@ import { balanceModules } from "@talismn/balances-default-modules"
 import { useBalances, useChaindata, useTokens } from "@talismn/balances-react"
 import { Token } from "@talismn/chaindata-provider"
 import { formatDecimals } from "@talismn/util"
-import { useEffect, useMemo, useState } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 
 export function App(): JSX.Element {
   const chaindata = useChaindata()
@@ -22,78 +22,47 @@ export function App(): JSX.Element {
   const balances = useBalances(balanceModules, chaindata, addressesByToken)
 
   return (
-    <>
-      <h2>Balances Demo</h2>
+    <div className="m-5 flex flex-col gap-5">
+      <h1 className="text-lg">Balances Demo</h1>
 
       {/* Display balances per balance (so, per token per account) */}
-      {balances?.sorted.map((balance) =>
-        balance.total.planck === BigInt("0") ? null : (
-          <div key={balance.id} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <img
-              alt="token logo"
-              src={balance.token?.logo}
-              style={{ height: "2rem", borderRadius: "9999999rem" }}
-            />
+      <div className="grid grid-cols-[repeat(5,_auto)] items-center gap-x-4 gap-y-2">
+        {balances?.sorted.map((balance) =>
+          balance.total.planck === BigInt("0") ? null : (
+            <Fragment key={balance.id}>
+              <img
+                className="h-12 w-12 max-w-none justify-self-center"
+                alt="token logo"
+                src={balance.token?.logo}
+              />
 
-            <span>{balance.status}</span>
+              <span>{balance.status}</span>
 
-            <span>{balance.chain?.name || balance.evmNetwork?.name}</span>
-            <span>
-              {formatDecimals(balance.transferable.tokens)} {balance.token?.symbol}
-            </span>
-            <span style={{ opacity: "0.6", fontSize: "0.8em" }}>
-              {typeof balance.transferable.fiat("usd") === "number"
-                ? new Intl.NumberFormat(undefined, {
-                    style: "currency",
-                    currency: "usd",
-                    currencyDisplay: "narrowSymbol",
-                  }).format(balance.transferable.fiat("usd") || 0)
-                : " -"}
-            </span>
-            <span>{balance.address}</span>
-          </div>
-        )
-      )}
+              <span className="min-w-[6rem] overflow-hidden overflow-ellipsis whitespace-nowrap">
+                {balance.chain?.name || balance.evmNetwork?.name}
+              </span>
 
-      {
-        //      {/* Display balances per token */}
-        //      {Object.values(tokens).map((token) => (
-        //        <div key={token.id} style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        //          <img
-        //            alt="token logo"
-        //            src={token?.logo}
-        //            style={{ height: "2rem", borderRadius: "9999999rem" }}
-        //          />
-        //
-        //          {/* Can't do this yet, alec hasn't implemented it: */}
-        //          {/* <span>{balances?.find({tokenId:token.id}).sum}</span> */}
-        //
-        //          {/* So sum it up manually instead: */}
-        //          <span>
-        //            {formatDecimals(
-        //              new BalanceFormatter(
-        //                balances?.find({ tokenId: token.id }).sorted.reduce((sum, balance) => {
-        //                  return sum + balance.transferable.planck
-        //                }, BigInt("0")) || BigInt("0"),
-        //                token.decimals
-        //              ).tokens
-        //            )}{" "}
-        //            {token.symbol}
-        //          </span>
-        //
-        //          <span style={{ opacity: "0.6", fontSize: "0.8em" }}>
-        //            {typeof balances?.find({ tokenId: token.id }).sum.fiat("usd").transferable === "number"
-        //              ? new Intl.NumberFormat(undefined, {
-        //                  style: "currency",
-        //                  currency: "usd",
-        //                  currencyDisplay: "narrowSymbol",
-        //                }).format(balances?.find({ tokenId: token.id }).sum.fiat("usd").transferable || 0)
-        //              : " -"}
-        //          </span>
-        //        </div>
-        //      ))}
-      }
-    </>
+              <span className="flex flex-col whitespace-nowrap">
+                <span className="whitespace-nowrap">
+                  {formatDecimals(balance.transferable.tokens)} {balance.token?.symbol}
+                </span>
+                <span className="text-xs opacity-60">
+                  {typeof balance.transferable.fiat("usd") === "number"
+                    ? new Intl.NumberFormat(undefined, {
+                        style: "currency",
+                        currency: "usd",
+                        currencyDisplay: "narrowSymbol",
+                      }).format(balance.transferable.fiat("usd") || 0)
+                    : " -"}
+                </span>
+              </span>
+
+              <span className="overflow-hidden overflow-ellipsis">{balance.address}</span>
+            </Fragment>
+          )
+        )}
+      </div>
+    </div>
   )
 }
 

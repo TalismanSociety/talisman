@@ -1,5 +1,5 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { MAX_DECIMALS_FORMAT, formatDecimals } from "@talismn/util"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import BigNumber from "bignumber.js"

@@ -18,6 +18,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSettings } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -80,22 +81,12 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   const [transactionHash, setTransactionHash] = useState<string>()
 
   const accounts = useAccounts()
+  const { useTestnets = false } = useSettings()
   const transferableTokens = useTransferableTokens()
-  const evmNetworks = useEvmNetworks()
-  const chains = useChains()
-  const tokens = useTokens()
-  const chainsMap = useMemo(
-    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
-    [chains]
-  )
-  const evmNetworksMap = useMemo(
-    () => Object.fromEntries((evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])),
-    [evmNetworks]
-  )
-  const tokensMap = useMemo(
-    () => Object.fromEntries((tokens || []).map((token) => [token.id, token])),
-    [tokens]
-  )
+  const { evmNetworksMap } = useEvmNetworks(useTestnets)
+  const { chainsMap } = useChains(useTestnets)
+  const { tokensMap } = useTokens(useTestnets)
+
   const transferableTokensMap = useMemo(
     () => Object.fromEntries((transferableTokens || []).map((tt) => [tt.id, tt])),
     [transferableTokens]
@@ -175,7 +166,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       }
 
       // check recipient's balance, prevent immediate reaping
-      if (toBalance?.total.planck ?? BigInt("0") === BigInt("0")) {
+      const recipientBalance = toBalance?.total.planck ?? BigInt(0)
+      if (recipientBalance === BigInt("0")) {
         assert(
           transfer.amount.planck >= transfer.existentialDeposit.planck,
           `Please send at least ${transfer.existentialDeposit.tokens} ${transfer.symbol} to ensure the receiving address remains active.`
@@ -198,9 +190,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
           const maxFeeAndGasCost =
             gasSettings.type === 0
               ? bigGasLimit.mul(gasSettings.gasPrice)
-              : bigGasLimit.mul(
-                  getMaxFeePerGas(baseFeePerGas as BigNumber, gasSettings.maxPriorityFeePerGas)
-                )
+              : bigGasLimit.mul(gasSettings.maxFeePerGas)
 
           if (
             maxFeeAndGasCost

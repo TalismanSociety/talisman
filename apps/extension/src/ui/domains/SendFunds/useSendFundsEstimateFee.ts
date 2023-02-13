@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useDebouncedMemo } from "@ui/hooks/useDebouncedMemo"
-import useToken from "@ui/hooks/useToken"
+import { useToken } from "@ui/hooks/useToken"
 
 import { getExtensionEthereumProvider } from "../Ethereum/getExtensionEthereumProvider"
 
@@ -63,6 +63,8 @@ export const useSendFundsEstimateFee = (
           )
           return { estimatedFee: partialFee, unsigned, pendingTransferId }
         }
+        default:
+          throw new Error("Unsupported token type")
       }
     },
     retry: false,

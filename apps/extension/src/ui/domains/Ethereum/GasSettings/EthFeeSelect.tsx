@@ -58,7 +58,7 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
   const { isOpen, open, close } = useOpenClose()
 
   useEffect(() => {
-    if (!isOpen) setShowCustomSettings(false)
+    if (isOpen) setShowCustomSettings(false)
   }, [isOpen])
 
   const setPriority = useCallback(
@@ -66,7 +66,6 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
       genericEvent("evm fee change", { priority })
       if (onChange) onChange(priority)
       close()
-      setShowCustomSettings(false)
     },
     [close, genericEvent, onChange]
   )

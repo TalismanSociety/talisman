@@ -24,15 +24,15 @@ export const ContractReadWrite = () => {
   const { isConnected } = useAccount()
   const { chain } = useNetwork()
 
-  const contractAddress = useMemo(() => getGreeterAddress(chain?.id) as string, [chain?.id])
+  const contractAddress = useMemo(() => getGreeterAddress(chain?.id), [chain?.id])
 
   const {
     data: readData,
     isError: readIsError,
     isLoading: readIsLoading,
   } = useContractRead({
-    addressOrName: contractAddress,
-    contractInterface: GreeterAbi.abi,
+    address: contractAddress,
+    abi: GreeterAbi.abi,
     functionName: "greet",
     enabled: !!contractAddress,
   })
@@ -50,8 +50,8 @@ export const ContractReadWrite = () => {
   const message = watch("message")
 
   const { config } = usePrepareContractWrite({
-    addressOrName: contractAddress,
-    contractInterface: GreeterAbi.abi,
+    address: contractAddress,
+    abi: GreeterAbi.abi,
     functionName: "setGreeting",
     enabled: !!contractAddress,
     args: [message],

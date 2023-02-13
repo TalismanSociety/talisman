@@ -1,6 +1,6 @@
 import globeIcon from "@talisman/theme/icons/globe.white.svg?url"
-import { classNames } from "@talisman/util/classNames"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
 import { getBase64ImageUrl } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"

@@ -10,6 +10,7 @@ import { planckToTokens } from "@talismn/util"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { useSettings } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import {
   ButtonHTMLAttributes,
@@ -118,20 +119,12 @@ const FormContainer = styled(Box)`
 `
 
 export const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
+  const { useTestnets = false } = useSettings()
+  const { chainsMap } = useChains(useTestnets)
+  const { evmNetworksMap } = useEvmNetworks(useTestnets)
   const allBalances = useBalances()
-  const chains = useChains()
-  const evmNetworks = useEvmNetworks()
 
-  const chainsMap = useMemo(
-    () => Object.fromEntries((chains || []).map((chain) => [chain.id, chain])),
-    [chains]
-  )
-  const evmNetworksMap = useMemo(
-    () => Object.fromEntries((evmNetworks || []).map((evmNetwork) => [evmNetwork.id, evmNetwork])),
-    [evmNetworks]
-  )
-
-  const allTokens = useTokens()
+  const { tokens: allTokens } = useTokens(useTestnets)
   const allowedTokens = useMemo(
     () =>
       (filter && allTokens ? allTokens.filter(filter) : allTokens ?? [])

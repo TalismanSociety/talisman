@@ -3,7 +3,7 @@ import { Address } from "@core/types/base"
 import { isEthereumAddress } from "@polkadot/util-crypto/ethereum"
 import { TalismanOrb } from "@talisman/components/TalismanOrb"
 import ethIcon from "@talisman/theme/logos/eth-diamond-glyph-white.png"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import useChains from "@ui/hooks/useChains"
 import { useSettings } from "@ui/hooks/useSettings"
@@ -56,9 +56,9 @@ const Container = styled.div`
 `
 
 const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
-  const chains = useChains()
+  const { chains } = useChains(true)
   const chain = useMemo(
-    () => genesisHash && (chains || []).find((c) => c.genesisHash === genesisHash),
+    () => genesisHash && chains.find((c) => c.genesisHash === genesisHash),
     [chains, genesisHash]
   )
 

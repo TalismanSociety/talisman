@@ -1,3 +1,4 @@
+import { classNames } from "@talismn/util"
 import {
   DetailedHTMLProps,
   FC,
@@ -6,8 +7,6 @@ import {
   ReactNode,
   forwardRef,
 } from "react"
-
-import { classNames } from "../utils"
 
 export type FormFieldInputContainerProps = DetailedHTMLProps<
   HTMLAttributes<HTMLDivElement>,

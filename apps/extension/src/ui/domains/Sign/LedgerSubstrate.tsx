@@ -4,9 +4,10 @@ import { log } from "@core/log"
 import { TypeRegistry } from "@polkadot/types"
 import type { HexString } from "@polkadot/util/types"
 import { Drawer } from "@talisman/components/Drawer"
+import { classNames } from "@talismn/util"
 import { useLedgerSubstrate } from "@ui/hooks/ledger/useLedgerSubstrate"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { Button, classNames } from "talisman-ui"
+import { Button } from "talisman-ui"
 
 import {
   LedgerConnectionStatus,
@@ -84,7 +85,9 @@ const LedgerSubstrate = ({
       .catch((e: Error) => {
         if (e.message === "Transaction rejected") return onReject()
         if (e.message === "Txn version not supported")
-          setError("This type of transaction is not supported on your ledger.")
+          setError(
+            "This type of transaction is not supported on your ledger. You should check for firmware updates in Ledger Live before trying again."
+          )
         else {
           log.error("ledger sign Substrate : " + e.message, { err: e })
           setError(e.message)

@@ -4,7 +4,7 @@ import { ethers } from "ethers"
 
 import { RPC_CALL_TIMEOUT } from "./constants"
 import log from "./log"
-import { BatchRpcProvider, StandardRpcProvider, getHealthyRpc, resolveRpcUrl } from "./util"
+import { BatchRpcProvider, StandardRpcProvider, addOnfinalityApiKey, getHealthyRpc } from "./util"
 
 export type GetProviderOptions = {
   /** If true, returns a provider which will batch requests */
@@ -16,8 +16,13 @@ const getEvmNetworkProviderCacheKey = (evmNetworkId: EvmNetworkId, batch?: boole
 const getUrlProviderCacheKey = (url: string, batch?: boolean) =>
   `url-${url}-${batch ? "batch" : "standard"}`
 
+export type ChainConnectorEvmOptions = {
+  onfinalityApiKey?: string
+}
+
 export class ChainConnectorEvm {
   #chaindataEvmNetworkProvider: ChaindataEvmNetworkProvider
+  #onfinalityApiKey?: string
 
   // cache for providers
   //
@@ -39,8 +44,17 @@ export class ChainConnectorEvm {
   // when an error is raised, push the current rpc to the back of the list
   #rpcUrlsCache: Map<EvmNetworkId | string, string[]> = new Map()
 
-  constructor(chaindataEvmNetworkProvider: ChaindataEvmNetworkProvider) {
+  constructor(
+    chaindataEvmNetworkProvider: ChaindataEvmNetworkProvider,
+    options?: ChainConnectorEvmOptions
+  ) {
     this.#chaindataEvmNetworkProvider = chaindataEvmNetworkProvider
+    this.#onfinalityApiKey = options?.onfinalityApiKey ?? undefined
+  }
+
+  setOnfinalityApiKey(apiKey: string | undefined) {
+    this.#onfinalityApiKey = apiKey
+    this.clearRpcProvidersCache()
   }
 
   async getProviderForEvmNetworkId(
@@ -103,7 +117,9 @@ export class ChainConnectorEvm {
 
     // initialize cache for rpc urls if empty
     if (!this.#rpcUrlsCache.has(evmNetwork.id)) {
-      const rpcUrls = evmNetwork.rpcs.map(({ url }) => url).map(resolveRpcUrl)
+      const rpcUrls = evmNetwork.rpcs.map(({ url }) =>
+        addOnfinalityApiKey(url, this.#onfinalityApiKey)
+      )
       this.#rpcUrlsCache.set(evmNetwork.id, rpcUrls)
     }
     let rpcUrls = this.#rpcUrlsCache.get(evmNetwork.id) as string[]

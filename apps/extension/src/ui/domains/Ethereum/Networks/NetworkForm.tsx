@@ -7,6 +7,7 @@ import { ModalDialog } from "@talisman/components/ModalDialog"
 import { notify } from "@talisman/components/Notifications"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ArrowRightIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { AssetLogoBase } from "@ui/domains/Asset/AssetLogo"
@@ -24,7 +25,7 @@ import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useSta
 import { FormProvider, useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import { useDebounce } from "react-use"
-import { Button, Checkbox, FormFieldContainer, FormFieldInputText, classNames } from "talisman-ui"
+import { Button, Checkbox, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
 import { getNetworkFormSchema } from "./getNetworkFormSchema"
 import { getRpcChainId } from "./helpers"
@@ -184,7 +185,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
   const qIsBuiltInEvmNetwork = useIsBuiltInEvmNetwork(evmNetworkId)
 
   const [submitError, setSubmitError] = useState<string>()
-  const evmNetworks = useEvmNetworks()
+  const { evmNetworks } = useEvmNetworks(true)
   const { useTestnets, update } = useSettings()
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)

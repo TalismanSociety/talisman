@@ -1,5 +1,5 @@
 import { hideScrollbarsStyle } from "@talisman/theme/styles"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { RefObject, forwardRef, useEffect, useMemo, useRef, useState } from "react"
 import styled from "styled-components"
 

@@ -45,10 +45,13 @@ export const getTransactionDetails = async (payload: SignerPayloadJSON) => {
       log.error("Failed to decode method", { err })
     }
 
-    try {
-      const chain = await chaindataProvider.getChain({ genesisHash })
-      assert(chain, "Unable to find chain")
+    const chain = await chaindataProvider.getChain({ genesisHash })
+    if (!chain) {
+      log.error("Failed to fetch fee", { error: "Unable to find chain", chain })
+      return
+    }
 
+    try {
       // sign based on current block from our RPC
       const [blockHash, runtimeVersion] = await Promise.all([
         RpcFactory.send<string>(chain.id, "chain_getBlockHash", [], false),

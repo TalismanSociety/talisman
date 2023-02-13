@@ -1,5 +1,5 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -61,7 +61,7 @@ export const BottomNav = () => {
       name: "Goto",
       action: "NFTs button",
     })
-    window.open("https://app.talisman.xyz/nfts", "_blank")
+    window.open("https://app.talisman.xyz/portfolio/nfts", "_blank")
     window.close()
   }, [])
 

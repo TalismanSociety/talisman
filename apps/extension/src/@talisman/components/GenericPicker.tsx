@@ -1,7 +1,7 @@
 import { DEFAULT_SEND_FUNDS_TOKEN_SUBSTRATE } from "@core/constants"
 import { TokenId } from "@core/domains/tokens/types"
 import { scrollbarsStyle } from "@talisman/theme/styles"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import Downshift from "downshift"
 import { ReactNode, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"

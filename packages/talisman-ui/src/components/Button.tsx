@@ -1,7 +1,7 @@
+import { classNames } from "@talismn/util"
 import { FC, SVGProps, useMemo } from "react"
 
 import { IconLoader } from "../icons"
-import { classNames } from "../utils"
 
 export type ButtonProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,

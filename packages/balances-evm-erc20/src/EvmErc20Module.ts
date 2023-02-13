@@ -22,6 +22,8 @@ import isEqual from "lodash/isEqual"
 import erc20Abi from "./erc20.json"
 import log from "./log"
 
+export { erc20Abi }
+
 type ModuleType = "evm-erc20"
 
 export const evmErc20TokenId = (

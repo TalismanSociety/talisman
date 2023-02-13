@@ -2,7 +2,7 @@ import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { IconAlert, InfoIcon, LoaderIcon, SwapIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { tokensToPlanck } from "@talismn/util"
+import { classNames, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useInputNumberOnly } from "@ui/hooks/useInputNumberOnly"
@@ -20,7 +20,7 @@ import {
   useState,
 } from "react"
 import { Container } from "react-dom"
-import { Button, PillButton, classNames } from "talisman-ui"
+import { Button, PillButton } from "talisman-ui"
 
 import AccountAvatar from "../Account/Avatar"
 import { ChainLogo } from "../Asset/ChainLogo"
