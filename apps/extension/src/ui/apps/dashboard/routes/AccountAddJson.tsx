@@ -1,15 +1,14 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { InputFileDrop } from "@talisman/components/InputFileDrop"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import Spacer from "@talisman/components/Spacer"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import Layout from "../layout"
@@ -91,12 +90,12 @@ const AccountJson = () => {
   return (
     <Layout withBack centered>
       <HeaderBlock
-        title="Import from Polkadot.js"
-        text="Please choose the .json file you exported from Polkadot.js"
+        title="Import JSON"
+        text="Please choose the .json file you exported from Polkadot.js or Talisman"
       />
       <Spacer />
       <form data-button-pull-left onSubmit={handleSubmit(submit)}>
-        <FormField error={errors.fileContent}>
+        <FormFieldContainer error={errors.fileContent?.message}>
           <InputFileDrop
             onChange={handleFileChange}
             inputProps={{
@@ -104,25 +103,35 @@ const AccountJson = () => {
               placeholder: "Choose a .json file",
             }}
           />
-        </FormField>
+        </FormFieldContainer>
         <Spacer />
-        <FormField
-          label="Please enter the password you set when creating your polkadot.js account"
-          info="Your account will be re-encrypted with your Talisman password"
-          error={errors.password}
-        >
-          <input
+        <div className="text-body-secondary">
+          Please enter the password you set when creating your polkadot.js account
+        </div>
+        <div className="h-4" />
+        <div className="text-body-disabled text-sm">
+          Your account will be re-encrypted with your Talisman password
+        </div>
+        <div className="h-8" />
+        <FormFieldContainer error={errors.password?.message}>
+          <FormFieldInputText
             {...register("password")}
             type="password"
             placeholder="Enter your password"
             spellCheck={false}
             data-lpignore
           />
-        </FormField>
-        <Spacer />
-        <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-          Import <ArrowRightIcon />
-        </SimpleButton>
+        </FormFieldContainer>
+        <div className="h-4" />
+        <Button
+          icon={ArrowRightIcon}
+          type="submit"
+          primary
+          disabled={!isValid}
+          processing={isSubmitting}
+        >
+          Import
+        </Button>
       </form>
     </Layout>
   )

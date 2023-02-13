@@ -3,7 +3,7 @@ import { FC, ReactNode } from "react"
 
 type FormFieldContainerProps = {
   className?: string
-  label: ReactNode
+  label?: ReactNode
   children: ReactNode
   error?: string | null
   noErrorRow?: boolean

@@ -1,6 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -22,13 +21,6 @@ import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
-
-const IconBox = styled(Box)`
-  .account-avatar {
-    font-size: 3.6rem;
-  }
-`
 
 const PageContent = ({ balances }: { balances: Balances }) => {
   const balancesToDisplay = useDisplayBalances(balances)
@@ -70,24 +62,24 @@ const PageContent = ({ balances }: { balances: Balances }) => {
 
   return (
     <>
-      <Box flex fullwidth gap={1.6}>
-        <Box flex fullwidth gap={0.8} align="center" overflow="hidden">
+      <div className="flex w-full gap-8">
+        <div className="flex w-full items-center gap-4 overflow-hidden">
           <IconButton onClick={handleBackBtnClick}>
             <ChevronLeftIcon />
           </IconButton>
-          <IconBox fontsizecustom="3.6rem" flex column justify="center">
-            <CurrentAccountAvatar />
-          </IconBox>
-          <Box grow flex column gap={0.4} padding="0 0 0 0.4rem" fontsize="small" overflow="hidden">
-            <Box fg="mid" overflow="hidden" textOverflow="ellipsis" noWrap>
+          <div className="flex flex-col justify-center">
+            <CurrentAccountAvatar className="!text-2xl" />
+          </div>
+          <div className="flex grow flex-col gap-2 overflow-hidden pl-2 text-sm">
+            <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
               {account ? account.name ?? "Unnamed Account" : "All Accounts"}
-            </Box>
-            <Box fontsize="medium" overflow="hidden" textOverflow="ellipsis" noWrap>
+            </div>
+            <div className="text-md overflow-hidden text-ellipsis whitespace-nowrap">
               <Fiat amount={balances.sum.fiat("usd").total} isBalance />
-            </Box>
-          </Box>
-        </Box>
-        <Box grow flex justify="flex-end" align="center" gap={0.8}>
+            </div>
+          </div>
+        </div>
+        <div className="flex grow items-center justify-end gap-4">
           <IconButton onClick={sendFunds}>
             <WithTooltip tooltip="Send">
               <PaperPlaneIcon />
@@ -131,11 +123,11 @@ const PageContent = ({ balances }: { balances: Balances }) => {
               </PopNav>
             </>
           )}
-        </Box>
-      </Box>
-      <Box padding="2.4rem 0">
+        </div>
+      </div>
+      <div className="py-12">
         <PopupAssetsTable balances={balancesToDisplay} />
-      </Box>
+      </div>
     </>
   )
 }

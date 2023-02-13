@@ -51,7 +51,7 @@ export const LedgerSigningStatus = ({
       )}
       {status === "signing" && (
         <>
-          <LoaderIcon data-spin />
+          <LoaderIcon className="animate-spin-slow" />
           <span>Sign with Ledger...</span>
         </>
       )}

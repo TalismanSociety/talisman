@@ -2,19 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Talisman specific defaults */
+/* The base layer is for things like reset rules or default styles applied to plain HTML elements. */
 @layer base {
   html {
+    /* this defines the root font size, on which 'rem' units are based */
     font-size: 10px;
-    @apply leading-base text-body bg-black-primary;
+    @apply min-h-screen;
   }
 
   body {
-    @apply text-base;
+    @apply leading-base text-body bg-black-primary font-sans text-base;
   }
 
-  input::placeholder {
-    @apply text-current opacity-30;
+  html,
+  body {
+    /* this ensures we can apply clean borders to the popup */
+    /* might want to move this to popup class or html file */
+    @apply m-0 overflow-hidden p-0;
+  }
+
+  h1 {
+    @apply text-xl;
+  }
+  h2 {
+    @apply text-lg;
+  }
+  h3 {
+    @apply text-md;
+  }
+
+  p {
+    @apply leading-paragraph;
+  }
+
+  svg {
+    @apply h-[1em] w-[1em];
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    @apply text-body-disabled;
+  }
+
+  /* hides password reveal in Edge */
+  input[type="password"]::-ms-reveal {
+    display: none;
+  }
+
+  /* popup borders */
+  html.popup {
+    @apply border-grey-700 border;
+  }
+  html.popup.embedded {
+    @apply border-none;
+  }
+  html.popup.embedded #main {
+    @apply border-grey-700 border;
   }
 
   /* number inputs */
@@ -25,9 +68,8 @@
   }
 }
 
-/* Talisman components rules */
-/* Put here classes that are to be used everywhere (card, btn, badge..) */
-/* Access to the theme is provided by theme() function if needed */
+/* The components layer is for class-based styles that you want to be able to override with utilities. */
+/* Access to the (tailwind) theme is provided by theme() function if needed */
 @layer components {
   input[type="checkbox"].form-checkbox:checked {
     background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M14.6667 6.5L8.25001 12.9167L5.33334 10' stroke='%23D5FF5C' stroke-width='1.33333' stroke-linecap='round' stroke-linejoin='round' /%3e%3c/svg%3e");
@@ -42,9 +84,53 @@
   }
 }
 
-/* Talisman utilities */
+/* The utilities layer is for small, single-purpose classes that should always take precedence over any other styles. */
 @layer utilities {
-  /* .spin {
-    animation: spin linear 3s infinite;
-  } */
+  .scrollable::-webkit-scrollbar {
+    background-color: transparent;
+  }
+  .scrollable::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px currentColor;
+    border: solid 3px transparent;
+    border-radius: 25px;
+    cursor: pointer;
+  }
+  .scrollable:-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+  .scrollable::-webkit-resizer {
+    display: none;
+  }
+  .scrollable {
+    resize: none;
+    scrollbar-color: currentColor transparent;
+  }
+
+  .scrollable-500::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px theme(colors.grey.500);
+  }
+  .scrollable-500 {
+    scrollbar-color: theme(colors.grey.500) transparent;
+  }
+
+  .scrollable-600::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px theme(colors.grey.600);
+  }
+  .scrollable-600 {
+    scrollbar-color: theme(colors.grey.600) transparent;
+  }
+
+  .scrollable-700::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px theme(colors.grey.700);
+  }
+  .scrollable-700 {
+    scrollbar-color: theme(colors.grey.700) transparent;
+  }
+
+  .scrollable-800::-webkit-scrollbar-thumb {
+    box-shadow: inset 0 0 10px 10px theme(colors.grey.800);
+  }
+  .scrollable-800 {
+    scrollbar-color: theme(colors.grey.800) transparent;
+  }
 }

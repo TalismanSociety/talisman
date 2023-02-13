@@ -130,7 +130,7 @@ export const TokenAmountField = ({
         <button
           type="button"
           onClick={handleTokenButtonClick}
-          className={classNames(token && "token")}
+          className={classNames("shrink-0", token && "token")}
         >
           {token ? (
             <>

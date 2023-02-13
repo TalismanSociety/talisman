@@ -83,7 +83,7 @@ const NamedAddress = ({
                   isBalance
                 />
               ) : (
-                <IconLoader data-spin />
+                <IconLoader className="animate-spin-slow" />
               )}
             </span>
           )}

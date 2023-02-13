@@ -1,11 +1,14 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FormField } from "@talisman/components/Field/FormField"
-import { StatusIcon } from "@talisman/components/StatusIcon"
+import { useTalismanOrb } from "@talisman/components/TalismanOrb"
+import { HandMonoTransparentLogo } from "@talisman/theme/logos"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
+import useAccountAddresses from "@ui/hooks/useAccountAddresses"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
-import { Button } from "talisman-ui"
+import { Button, FormFieldInputText } from "talisman-ui"
+import { LoginBackground } from "talisman-ui"
 import * as yup from "yup"
 
 import Layout, { Content, Footer } from "../Layout"
@@ -20,6 +23,15 @@ const schema = yup
     password: yup.string().required(""),
   })
   .required()
+
+const INPUT_CONTAINER_PROPS = { className: "bg-white/10" }
+
+const useAccountColors = (): [string, string] | undefined => {
+  const [rootAccount] = useAccountAddresses()
+  const { bgColor1, bgColor2 } = useTalismanOrb(rootAccount)
+
+  return rootAccount ? [bgColor1, bgColor2] : undefined
+}
 
 const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
   const { popupOpenEvent } = useAnalytics()
@@ -66,33 +78,52 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     }
   }, [handleSubmit, setValue, submit])
 
+  const accountColors = useAccountColors()
+
   return (
     <Layout className="pt-32">
-      <Content className="text-center">
-        <StatusIcon status={isSubmitting ? "SPINNING" : "STATIC"} />
-        <h1 className="mt-2 font-sans text-[3.2rem]">Unlock Talisman</h1>
+      {!!accountColors && (
+        <LoginBackground
+          width={400}
+          height={600}
+          colors={accountColors}
+          className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
+        />
+      )}
+      <Content className={classNames("z-10 text-center", isSubmitting && "animate-pulse")}>
+        <div className="mt-[60px]">
+          <HandMonoTransparentLogo className="inline-block text-[64px]" />
+        </div>
+        <h1 className="font-surtExpanded mt-[34px] text-lg">Unlock the Talisman</h1>
         {errors.password?.message && (
-          <div className="text-alert-warn">{errors.password?.message}</div>
+          <div className="text-alert-warn mt-8">{errors.password?.message}</div>
         )}
       </Content>
-      <Footer>
+      <Footer className="z-10">
         <form className="flex flex-col items-center gap-6" onSubmit={handleSubmit(submit)}>
-          <FormField className="w-full text-center">
-            <input
-              {...register("password")}
-              type="password"
-              placeholder="Enter password"
-              spellCheck={false}
-              autoComplete="off"
-              data-lpignore
-              autoFocus
-            />
-          </FormField>
-          <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>
+          <FormFieldInputText
+            {...register("password")}
+            type="password"
+            placeholder="Enter password"
+            spellCheck={false}
+            autoComplete="off"
+            data-lpignore
+            autoFocus
+            containerProps={INPUT_CONTAINER_PROPS}
+            className="placeholder:text-grey-500"
+          />
+          <Button
+            type="submit"
+            fullWidth
+            primary
+            disabled={!isValid}
+            processing={isSubmitting}
+            className={classNames(!isValid && "bg-white/10")}
+          >
             Unlock
           </Button>
           <span
-            className="text-body-secondary mt-2 cursor-pointer text-sm hover:text-white"
+            className="text-body-disabled mt-2 cursor-pointer text-sm transition-colors hover:text-white"
             onClick={setShowResetWallet}
           >
             Forgot Password?

@@ -1,10 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FormField } from "@talisman/components/Field/FormField"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { api } from "@ui/api"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
-import { Button } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { useMigratePassword } from "./context"
@@ -67,8 +66,8 @@ export const EnterPasswordForm = () => {
       </p>
       <p className="text-body-secondary text-sm">Enter your current password to continue</p>
       <form onSubmit={handleSubmit(submit)}>
-        <FormField error={errors.password} className="mb-4">
-          <input
+        <FormFieldContainer error={errors.password?.message} className="mb-4">
+          <FormFieldInputText
             {...register("password")}
             type="password"
             placeholder="Enter your password"
@@ -77,7 +76,7 @@ export const EnterPasswordForm = () => {
             data-lpignore
             autoFocus
           />
-        </FormField>
+        </FormFieldContainer>
         <Button
           className="mt-12"
           type="submit"

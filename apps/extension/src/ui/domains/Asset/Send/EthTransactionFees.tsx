@@ -103,7 +103,7 @@ export const EthTransactionFees = ({
 
   if (!txDetails) return null
 
-  if (!evmNetwork?.nativeToken || isLoading) return <Loader data-spin />
+  if (!evmNetwork?.nativeToken || isLoading) return <Loader className="animate-spin-slow" />
 
   if (!txDetails.estimatedFee || !transaction) return null
 
