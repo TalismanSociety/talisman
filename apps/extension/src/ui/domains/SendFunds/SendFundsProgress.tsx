@@ -64,7 +64,7 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
   const { title, subtitle, animStatus, extra } = useStatusDetails(status)
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col items-center">
       <div className="text-body mt-32 text-lg font-bold">{title}</div>
       <div className="text-body-secondary mt-12 text-base font-light">{subtitle}</div>
       <div className="flex grow flex-col justify-center">

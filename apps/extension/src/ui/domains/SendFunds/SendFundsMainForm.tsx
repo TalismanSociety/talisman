@@ -13,6 +13,7 @@ import {
   ChangeEventHandler,
   DetailedHTMLProps,
   FC,
+  FormEvent,
   useCallback,
   useEffect,
   useMemo,
@@ -422,11 +423,18 @@ export const SendFundsMainForm = () => {
     [goto]
   )
 
-  const handleSubmit = useCallback(() => {}, [])
+  // we use a form for enter keypress to trigger submit button, but we don't want form to be actually submitted
+  const handleSubmit = useCallback((e: FormEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+  }, [])
 
   return (
     <SendFundsDetailsProvider>
-      <form className="flex h-full w-full flex-col overflow-hidden px-12 pb-8">
+      <form
+        onSubmit={handleSubmit}
+        className="flex h-full w-full flex-col overflow-hidden px-12 pb-8"
+      >
         <Container className="flex h-[9rem] w-full flex-col justify-center gap-5 px-8">
           <div className="flex w-full justify-between gap-4">
             <div>From</div>

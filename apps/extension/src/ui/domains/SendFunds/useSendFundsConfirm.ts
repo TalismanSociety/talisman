@@ -175,13 +175,30 @@ export const useSendFundsConfirmProvider = () => {
           gotoProgress({ substrateTxId: transfer.id })
           return
         }
+        if (evmTransaction && amount && token?.evmNetwork?.id) {
+          const { hash } = await api.assetTransferEthHardware(
+            token?.evmNetwork.id,
+            token.id,
+            amount,
+            signature
+          )
+          gotoProgress({ evmNetworkId: token?.evmNetwork?.id, evmTxHash: hash })
+          return
+        }
         throw new Error("Unknown transaction")
       } catch (err) {
         setErrorMessage((err as Error).message)
         setIsProcessing(false)
       }
     },
-    [gotoProgress, subTransaction?.pendingTransferId]
+    [
+      amount,
+      evmTransaction,
+      gotoProgress,
+      subTransaction?.pendingTransferId,
+      token?.evmNetwork?.id,
+      token?.id,
+    ]
   )
 
   const ctx = useMemo(

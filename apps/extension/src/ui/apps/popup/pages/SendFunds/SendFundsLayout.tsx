@@ -18,7 +18,7 @@ export const SendFundsLayout: FC<SendFundsLayoutProps> = ({ title, children, wit
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="flex h-32 min-h-[6.4rem] w-full px-12">
+      <div className="flex h-32 min-h-[6.4rem] w-full items-center px-12">
         <div className="w-12">
           {withBackLink && window.history.length > 1 && (
             <IconButton className="text-lg" onClick={handleBackClick}>
