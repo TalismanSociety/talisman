@@ -1,6 +1,6 @@
 import { InfoIcon, LoaderIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { FC, PropsWithChildren } from "react"
-import { classNames } from "talisman-ui"
 
 type IconSize = "xl" | "lg" | "md" | "base" | "sm"
 

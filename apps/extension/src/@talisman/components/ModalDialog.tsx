@@ -1,5 +1,5 @@
 import { ReactComponent as IconClose } from "@talisman/theme/icons/x.svg"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { FC, MouseEvent, ReactNode } from "react"
 import styled from "styled-components"
 

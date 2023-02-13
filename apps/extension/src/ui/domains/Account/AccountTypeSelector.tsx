@@ -1,7 +1,7 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
 import CtaButton from "@talisman/components/CtaButton"
 import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { useEffect, useState } from "react"
 import styled from "styled-components"
 

@@ -1,7 +1,7 @@
 import { CustomEvmNetwork, EvmNetwork } from "@core/domains/ethereum/types"
+import { classNames } from "@talismn/util"
 import { CoingeckoLogoRequest } from "@ui/domains/Asset/AssetLogo"
 import { FC } from "react"
-import { classNames } from "talisman-ui"
 
 import { SignParamButton } from "./SignParamButton"
 import { SignParamTokensDisplay } from "./SignParamTokensDisplay"

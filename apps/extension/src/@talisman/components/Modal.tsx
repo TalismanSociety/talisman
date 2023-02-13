@@ -1,5 +1,5 @@
 import { useOpenableComponent } from "@talisman/hooks/useOpenableComponent"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { FC, MouseEventHandler, ReactNode, useRef } from "react"
 import { createPortal } from "react-dom"
 import styled from "styled-components"

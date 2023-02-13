@@ -1,5 +1,5 @@
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { classNames } from "@talisman/util/classNames"
+import { classNames } from "@talismn/util"
 import { useEffect, useRef } from "react"
 import { useLocation } from "react-router-dom"
 

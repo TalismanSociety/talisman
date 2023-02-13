@@ -1,4 +1,4 @@
 import { suppressPortableRegistryConsoleWarnings } from "./suppressPortableRegistryConsoleWarnings"
-export { mutateMetadata } from "./import.cjs"
+export * from "./magicImport"
 
 suppressPortableRegistryConsoleWarnings()

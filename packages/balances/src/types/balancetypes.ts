@@ -1,7 +1,7 @@
+import { PluginBalanceTypes } from "@talismn/balances/plugins"
 import { ChainId, EvmNetworkId, MultiChainId, TokenId } from "@talismn/chaindata-provider"
 import { BigMath } from "@talismn/util"
 
-import { PluginBalanceTypes } from "../plugins"
 import { Address } from "./addresses"
 
 /**
