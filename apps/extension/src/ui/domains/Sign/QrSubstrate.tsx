@@ -8,6 +8,7 @@ import { Drawer } from "@talisman/components/Drawer"
 import { LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/ScanQr"
 import useChains from "@ui/hooks/useChains"
 import QrCodeStyling from "qr-code-styling"
@@ -24,6 +25,8 @@ type ScanState =
   | "INIT"
   // waiting for user to scan and sign qr code on their device
   | "SEND"
+  // waiting for user to scan the chainspec qr code on their device
+  | "CHAINSPEC"
   // waiting for user to decide whether or not they need to update their metadata
   | "UPDATE_METADATA_PROMPT"
   // waiting for user to scan the updated metadata qr code on their device
@@ -166,41 +169,82 @@ export const QrSubstrate = ({
         </header>
       )}
       <section className={classNames("grow", "w-full", scanState !== "UPDATE_METADATA" && "px-12")}>
-        {["SEND", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
+        {["SEND", "CHAINSPEC", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
           <div className="flex h-full flex-col justify-between">
-            <div className="flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-9">
-              {qrCode ? (
-                <img className="h-full w-full" src={qrCode} />
-              ) : (
-                <LoaderIcon className="animate-spin-slow inline text-black" />
-              )}
+            <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-9">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <LoaderIcon className="animate-spin-slow text-black" />
+              </div>
+              {qrCode ? <img className="relative h-full w-full" src={qrCode} /> : null}
             </div>
 
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
-              Scan QR code with the
+              Scan the QR code with the
               <br />
               Parity Signer app on your phone.
             </div>
 
-            {typeof chain?.latestMetadataQrUrl === "string" ? (
+            {typeof chain?.chainspecQrUrl === "string" ||
+            typeof chain?.latestMetadataQrUrl === "string" ? (
               <div className="flex flex-col">
-                <button
-                  className="bg-primary/10 text-primary hover:bg-primary/20 inline-block rounded-full py-4 px-6 text-sm font-light"
-                  onClick={() => setScanState("UPDATE_METADATA")}
-                >
-                  Update Metadata
-                </button>
-                <button
-                  className="text-grey-50 hover:text-grey-300 mt-2 p-4 text-xs font-light"
-                  onClick={() => setScanState("UPDATE_METADATA_PROMPT")}
-                >
-                  Seeing a Parity Signer error?
-                </button>
+                <div className="flex gap-4">
+                  {typeof chain?.chainspecQrUrl === "string" ? (
+                    <button
+                      className="text-grey-400 bg-grey-800 hover:bg-grey-750 inline-block rounded-full py-4 px-6 text-sm font-light"
+                      onClick={() => setScanState("CHAINSPEC")}
+                    >
+                      Add Network
+                    </button>
+                  ) : null}
+                  {typeof chain?.latestMetadataQrUrl === "string" ? (
+                    <button
+                      className="bg-primary/10 text-primary hover:bg-primary/20 inline-block rounded-full py-4 px-6 text-sm font-light"
+                      onClick={() => setScanState("UPDATE_METADATA")}
+                    >
+                      Update Metadata
+                    </button>
+                  ) : null}
+                </div>
+                {typeof chain?.latestMetadataQrUrl === "string" ? (
+                  <button
+                    className="text-grey-50 hover:text-grey-300 mt-2 p-4 text-xs font-light"
+                    onClick={() => setScanState("UPDATE_METADATA_PROMPT")}
+                  >
+                    Seeing a Parity Signer error?
+                  </button>
+                ) : null}
               </div>
             ) : (
               <div></div>
             )}
           </div>
+        )}
+
+        {scanState === "CHAINSPEC" && (
+          <Drawer anchor="bottom" open={true} parent={parent}>
+            <div className="bg-black-tertiary flex flex-col rounded-t p-12">
+              <div className="mb-16 font-bold">Add network</div>
+              <div className="relative mb-16 flex aspect-square w-full max-w-[16rem] items-center justify-center rounded-xl bg-white p-4">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <LoaderIcon className="animate-spin-slow text-black" />
+                </div>
+                {chain?.chainspecQrUrl ? (
+                  <img className="relative h-full w-full" src={chain?.chainspecQrUrl} />
+                ) : null}
+              </div>
+              <div className="text-body-secondary mb-16 max-w-md text-center text-sm leading-10">
+                Scan the QR code with the Parity Signer app on your phone to add the{" "}
+                <div className="text-body inline-flex items-baseline gap-1">
+                  <ChainLogo className="self-center" id={chain?.id} />
+                  {chain?.name ?? "Unknown"}
+                </div>{" "}
+                network.
+              </div>
+              <Button className="w-full" primary small onClick={() => setScanState("SEND")}>
+                Done
+              </Button>
+            </div>
+          </Drawer>
         )}
 
         {scanState === "UPDATE_METADATA_PROMPT" && (
@@ -229,12 +273,13 @@ export const QrSubstrate = ({
 
         {scanState === "UPDATE_METADATA" && (
           <div className="flex h-full w-full flex-col justify-between">
-            <div className="flex aspect-square w-full items-center justify-center bg-white p-10">
+            <div className="relative flex aspect-square w-full items-center justify-center bg-white p-10">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                <LoaderIcon className="animate-spin-slow text-black" />
+              </div>
               {chain?.latestMetadataQrUrl ? (
-                <img className="h-full w-full" src={chain?.latestMetadataQrUrl} />
-              ) : (
-                <LoaderIcon className="animate-spin-slow inline text-black" />
-              )}
+                <img className="relative h-full w-full" src={chain?.latestMetadataQrUrl} />
+              ) : null}
             </div>
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
               Scan the QR video with the Parity Signer app on your phone to update your metadata.
@@ -256,7 +301,7 @@ export const QrSubstrate = ({
         )}
       </section>
       <footer className="flex w-full shrink-0 gap-12 px-12 py-10">
-        {["SEND", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
+        {["SEND", "CHAINSPEC", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
           <>
             <Button className="w-full" onClick={onReject}>
               Cancel

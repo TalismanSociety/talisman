@@ -20,7 +20,8 @@ export type Chain = {
   tokens: Array<{ id: TokenId }> | null // The ORML tokens for this chain
   account: string | null // The account address format of this chain
   subscanUrl: string | null // The subscan endpoint of this chain
-  latestMetadataQrUrl: string | null // A url to a qr encode with the latest metadata for this chain
+  chainspecQrUrl: string | null // A url to a qr code with the chainspec for this chain
+  latestMetadataQrUrl: string | null // A url to a qr code with the latest metadata for this chain
   rpcs: Array<SubstrateRpc> | null // Some public RPCs for connecting to this chain's network
   isHealthy: boolean // The health status of this chain's RPCs
   evmNetworks: Array<{ id: EvmNetworkId }>
