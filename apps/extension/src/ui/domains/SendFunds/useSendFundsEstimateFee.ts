@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useDebouncedMemo } from "@ui/hooks/useDebouncedMemo"
-import { useToken } from "@ui/hooks/useToken"
+import useToken from "@ui/hooks/useToken"
 
 import { getExtensionEthereumProvider } from "../Ethereum/getExtensionEthereumProvider"
 

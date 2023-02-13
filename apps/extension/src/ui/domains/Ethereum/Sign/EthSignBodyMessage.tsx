@@ -59,7 +59,7 @@ export type EthSignBodyMessageProps = {
 }
 
 export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, request }) => {
-  const { isTypedData, text, verifyingAddress, chainId, ethChainId } = useEthSignMessage(request)
+  const { isTypedData, text, verifyingAddress, ethChainId } = useEthSignMessage(request)
   const evmNetwork = useEvmNetwork(ethChainId)
 
   return (

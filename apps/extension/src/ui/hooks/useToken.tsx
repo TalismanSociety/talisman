@@ -1,9 +1,11 @@
+import type { TokenId } from "@core/domains/tokens/types"
+
 import useTokens from "./useTokens"
 
-export const useToken = (tokenId?: string | null) => {
-  const { tokensMap } = useTokens(false)
+const useToken = (id?: TokenId | null) => {
+  const { tokensMap } = useTokens(true)
 
-  return tokenId ? tokensMap[tokenId] : undefined
+  return id ? tokensMap[id] : undefined
 }
 
 export default useToken
