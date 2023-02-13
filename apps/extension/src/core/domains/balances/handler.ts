@@ -34,6 +34,9 @@ export class BalancesHandler extends ExtensionHandler {
       case "pri(balances.locks.get)":
         return getBalanceLocks(request as RequestBalanceLocks)
 
+      case "pri(balances.nompools.get)":
+        return getNomPoolStake(request as RequestBalanceLocks)
+
       case "pri(balances.subscribe)":
         return this.stores.balances.subscribe(id, port)
 

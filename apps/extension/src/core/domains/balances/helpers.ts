@@ -1,3 +1,4 @@
+import { NOM_POOL_SUPPORTED_CHAINS } from "@core/constants"
 import {
   BalanceLockType,
   LockedBalance,
@@ -5,10 +6,15 @@ import {
   ResponseBalanceLocks,
 } from "@core/domains/balances/types"
 import RpcFactory from "@core/libs/RpcFactory"
+import { chainConnector } from "@core/rpcs/chain-connector"
+import { Address } from "@core/types/base"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
+import { Metadata } from "@polkadot/types"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
-import { blake2Concat, decodeAnyAddress } from "@talismn/util"
+import { StorageHelper } from "@talismn/balances"
+import { ChainId } from "@talismn/chaindata-provider"
+import { blake2Concat, decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 const getLockedType = (input: string, chainId: string): BalanceLockType => {
   if (input.includes("vesting")) return "vesting"
@@ -72,4 +78,55 @@ export const getBalanceLocks = async ({
   )
 
   return result
+}
+
+export const getNomPoolStake = async ({
+  addresses,
+  chainId = "polkadot",
+}: {
+  addresses: Address[]
+  chainId?: ChainId
+}) => {
+  if (!NOM_POOL_SUPPORTED_CHAINS.includes(chainId))
+    throw new Error(`Chain ${chainId} not supported for nomination pools`)
+  const { registry, metadataRpc } = await getTypeRegistry(chainId)
+  registry.setMetadata(new Metadata(registry, metadataRpc))
+
+  const poolMembersQueries = addresses
+    // create the queries
+    .map(
+      (address) =>
+        new StorageHelper(registry, "nominationPools", "poolMembers", decodeAnyAddress(address))
+    )
+    // filter out queries which we failed to encode (e.g. an invalid address was input)
+    .filter((query) => query.stateKey !== undefined)
+
+  // set up method and params
+  const method = "state_queryStorageAt"
+  const params = [poolMembersQueries.map((query) => query.stateKey)]
+
+  // query rpc
+  const [result] = await chainConnector.send(chainId, method, params)
+  // sanity-check that the result is in the format we expect
+  if (typeof result !== "object" || result === null) throw new Error("Invalid result")
+  if (!hasOwnProperty(result, "changes") || typeof result.changes !== "object")
+    throw new Error("Invalid result")
+  if (!Array.isArray(result.changes)) throw new Error("Invalid result")
+
+  const poolMembersResults = result.changes.flatMap(([key, change]: [unknown, unknown]) => {
+    if (typeof key !== "string") return
+    if (!(typeof change === "string" || change === null)) return
+
+    const query = poolMembersQueries.find((query) => query.stateKey === key)
+    if (query === undefined) return
+
+    const queryResult = query.decode(change)
+    // is a `Codec` from pjs
+    // has a bunch of methods available
+    // e.g. queryResult?.toJSON()
+    // I recommend having a look at it and seeing what your favourite way of
+    // getting the data you need out of it is
+    return queryResult?.toHuman()
+  })
+  return poolMembersResults
 }
