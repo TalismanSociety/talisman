@@ -371,7 +371,13 @@ const ReviewButton = () => {
 
   return (
     <>
-      <Button primary className="mt-8 w-full" disabled={!isValid} onClick={handleClick}>
+      <Button
+        type="submit"
+        primary
+        className="mt-8 w-full"
+        disabled={!isValid}
+        onClick={handleClick}
+      >
         Review
       </Button>
       <Drawer anchor="bottom" open={isOpen} onClose={close}>
@@ -416,9 +422,11 @@ export const SendFundsMainForm = () => {
     [goto]
   )
 
+  const handleSubmit = useCallback(() => {}, [])
+
   return (
     <SendFundsDetailsProvider>
-      <div className="flex h-full w-full flex-col overflow-hidden px-12 pb-8">
+      <form className="flex h-full w-full flex-col overflow-hidden px-12 pb-8">
         <Container className="flex h-[9rem] w-full flex-col justify-center gap-5 px-8">
           <div className="flex w-full justify-between gap-4">
             <div>From</div>
@@ -448,7 +456,7 @@ export const SendFundsMainForm = () => {
           <EstimatedFeeRow />
         </div>
         <ReviewButton />
-      </div>
+      </form>
     </SendFundsDetailsProvider>
   )
 }

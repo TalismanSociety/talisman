@@ -17,9 +17,11 @@ const SmallIconButton = styled(IconButton)`
 export const SendFundsButton = ({
   symbol,
   networkId,
+  shouldClose,
 }: {
   symbol: string
   networkId: string | number
+  shouldClose?: boolean
 }) => {
   const { account } = useSelectedAccount()
   const { useTestnets = false } = useSettings()
@@ -37,7 +39,8 @@ export const SendFundsButton = ({
       from: account?.address,
       tokenId: token.id,
     })
-  }, [account?.address, token])
+    if (shouldClose) window.close()
+  }, [account?.address, shouldClose, token])
 
   if (!token) return null
 

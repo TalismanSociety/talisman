@@ -2,7 +2,6 @@ import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
-import { IToken } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -15,7 +14,6 @@ import { ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
-import { useSendFundsEstimateFee } from "./useSendFundsEstimateFee"
 
 type SignMethod = "normal" | "ledgerSubstrate" | "ledgerEthereum" | "unknown"
 
@@ -213,10 +211,6 @@ export const useSendFundsConfirmProvider = () => {
       isLocked,
     ]
   )
-
-  // useEffect(() => {
-  //   console.log("ctx", ctx)
-  // }, [ctx])
 
   return ctx
 }

@@ -27,6 +27,7 @@ import { SendFundsConfirmProvider, useSendFundsConfirm } from "./useSendFundsCon
 import { useSendFundsEstimateFee } from "./useSendFundsEstimateFee"
 
 const SendFundsLedgerSubstrate = lazy(() => import("./SendFundsLedgerSubstrate"))
+const SendFundsLedgerEthereum = lazy(() => import("./SendFundsLedgerEthereum"))
 
 const TokenDisplay = () => {
   const { tokenId, amount } = useSendFundsWizard()
@@ -164,6 +165,7 @@ const SendButton = () => {
         </Button>
       )}
       {signMethod === "ledgerSubstrate" && <SendFundsLedgerSubstrate />}
+      {signMethod === "ledgerEthereum" && <SendFundsLedgerEthereum />}
     </Suspense>
   )
 }

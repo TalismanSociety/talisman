@@ -67,7 +67,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
           <Box flex justify="space-between" bold fg="foreground">
             <Box flex align="center" gap={0.8}>
               {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
-              <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
+              <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
               {isFetching && <FetchingIndicator data-spin />}
             </Box>
           </Box>
