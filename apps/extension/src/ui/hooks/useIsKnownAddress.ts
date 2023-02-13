@@ -16,7 +16,9 @@ type IsKnownContact = {
   value: AddressBookContact
 }
 
-export const useIsKnownAddress = (address: string): IsKnownAccount | IsKnownContact | false => {
+export const useIsKnownAddress = (
+  address?: string | null
+): IsKnownAccount | IsKnownContact | false => {
   const localAccount = useAccountByAddress(address)
   const { contacts } = useAddressBook()
   const contactAddress = useMemo(

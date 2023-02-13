@@ -1,7 +1,9 @@
 import { log } from "@core/log"
 import { notify } from "@talisman/components/Notifications"
-import { LoaderIcon } from "@talisman/theme/icons"
+import { WithTooltip } from "@talisman/components/Tooltip"
+import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { BalanceFormatter } from "@talismn/balances"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useBalance } from "@ui/hooks/useBalance"
@@ -10,7 +12,7 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { isEvmToken } from "@ui/util/isEvmToken"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -24,63 +26,18 @@ import { useFeeToken } from "./useFeeToken"
 import { SendFundsConfirmProvider, useSendFundsConfirm } from "./useSendFundsConfirm"
 import { useSendFundsEstimateFee } from "./useSendFundsEstimateFee"
 
+const SendFundsLedgerSubstrate = lazy(() => import("./SendFundsLedgerSubstrate"))
+
 const TokenDisplay = () => {
   const { tokenId, amount } = useSendFundsWizard()
-  // const token = useToken(tokenId)
-  // const tokenRates = useTokenRates(tokenId)
-
-  // const sendAmount = useMemo(() => {
-  //   return amount && token ? new BalanceFormatter(amount, token.decimals, tokenRates) : undefined
-  // }, [amount, token, tokenRates])
-
-  // if (!sendAmount || !token) return null
 
   return (
     <div className="inline-flex h-12 items-center gap-4">
       <TokenLogo tokenId={tokenId} className="inline-block text-lg" />
       <TokensAndFiat tokenId={tokenId} planck={amount} noCountUp />
-      {/* // <Tokens
-      //   amount={sendAmount.tokens}
-      //   decimals={token.decimals}
-      //   symbol={token.symbol}
-      //   noCountUp
-      // /> */}
     </div>
   )
 }
-
-// const AddressDisplay: FC<{ address?: string }> = ({ address }) => {
-//   const handleClick = useCallback(async () => {
-//     if (!address) return
-//     const toastId = "copy"
-//     try {
-//       // TODO convert to chain format
-//       await navigator.clipboard.writeText(address)
-//       notify(
-//         {
-//           type: "success",
-//           title: "Copy successful",
-//           subtitle: "address copied to clipboard",
-//         },
-//         // set an id to prevent multiple clicks to display multiple notifications
-//         { toastId }
-//       )
-//       return true
-//     } catch (err) {
-//       notify(
-//         {
-//           type: "error",
-//           title: `Copy failed`,
-//           subtitle: (err as Error).message,
-//         },
-//         { toastId }
-//       )
-//       return false
-//     }
-//   }, [address])
-
-//   return <SendFundsAddressPillButton address={address} onClick={handleClick} />
-// }
 
 const NetworkDisplay = () => {
   const { tokenId } = useSendFundsWizard()
@@ -107,8 +64,6 @@ const NetworkDisplay = () => {
     </span>
   )
 }
-
-const TotalValueDisplay = () => {}
 
 const TotalValueRow = () => {
   const { tokenId, amount } = useSendFundsWizard()
@@ -152,99 +107,64 @@ const TotalValueRow = () => {
 
 const EstimateFeeDisplay = () => {
   const { from, to, amount, tokenId, allowReap } = useSendFundsWizard()
-  const token = useToken(tokenId)
   const feeToken = useFeeToken(tokenId)
   const { tip } = useSendFundsConfirm() // useTip(token?.chain?.id, true) // TODO stop refreshing when validated
-  const {
-    data: dataEstimateFee,
-    error: estimateFeeError,
-    isFetching: isEstimatingFee,
-  } = useSendFundsEstimateFee(from, to, tokenId, amount, tip, allowReap)
+  const { data, error, isLoading, isRefetching } = useSendFundsEstimateFee(
+    from,
+    to,
+    tokenId,
+    amount,
+    tip,
+    allowReap
+  )
 
   const { estimatedFee, unsigned, pendingTransferId } = useMemo(() => {
-    return dataEstimateFee ?? { estimatedFee: null, unsigned: null, pendingTransferId: null }
-  }, [dataEstimateFee])
+    return data ?? { estimatedFee: null, unsigned: null, pendingTransferId: null }
+  }, [data])
 
   return (
-    <div className="inline-flex h-[1.7rem] items-center">
-      {isEstimatingFee && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
-      {estimatedFee && feeToken && <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />}
+    <div
+      className={classNames("inline-flex h-[1.7rem] items-center", isRefetching && "animate-pulse")}
+    >
+      <>
+        {isLoading && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
+        {estimatedFee && feeToken && <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />}
+        {error && (
+          <WithTooltip tooltip={(error as Error).message}>
+            <span className="text-alert-warn">Failed to estimate fee</span>
+          </WithTooltip>
+        )}
+      </>
     </div>
   )
 }
 
 const SendButton = () => {
-  const { from, to, amount, tokenId, allowReap, transferAll, gotoProgress } = useSendFundsWizard()
-  const { gasSettings, tip } = useSendFundsConfirm()
+  const { tokenId } = useSendFundsWizard()
+  const { signMethod, errorMessage, isReady, send, isProcessing } = useSendFundsConfirm()
   const token = useToken(tokenId)
 
-  // Button should enable 1 second after the form shows up, to prevent sending funds accidentaly by double clicking the review button on previous screen
-  const [ready, setReady] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string>()
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setReady(true)
-    }, 1_000)
-
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, [])
-
-  const handleConfirmClick = useCallback(async () => {
-    try {
-      if (!from) throw new Error("Sender not found")
-      if (!to) throw new Error("Recipient not found")
-      if (!amount) throw new Error("Amount not found")
-      if (!token) throw new Error("Token not found")
-
-      setIsProcessing(true)
-
-      if (token.chain?.id) {
-        const { id } = await api.assetTransfer(
-          token.chain.id,
-          token.id,
-          from,
-          to,
-          amount,
-          tip ?? "0",
-          allowReap
-        )
-        gotoProgress({ substrateTxId: id })
-      } else if (token.evmNetwork?.id) {
-        if (!gasSettings) throw new Error("Missing gas settings")
-        const { hash } = await api.assetTransferEth(
-          token.evmNetwork.id,
-          token.id,
-          from,
-          to,
-          amount,
-          gasSettings
-        )
-        gotoProgress({ evmNetworkId: token.evmNetwork.id, evmTxHash: hash })
-      } else throw new Error("Unknown network")
-    } catch (err) {
-      log.error("Failed to submit tx", err)
-      // ok
-      setIsProcessing(false)
-    }
-  }, [allowReap, amount, from, gasSettings, gotoProgress, tip, to, token])
-
   return (
-    <>
-      {errorMessage && <div className="to-brand-orange">{errorMessage}</div>}
-      <Button
-        className="w-full"
-        primary
-        disabled={!ready || isProcessing}
-        onClick={handleConfirmClick}
-        processing={isProcessing}
-      >
-        Confirm
-      </Button>
-    </>
+    <Suspense fallback={null}>
+      {errorMessage && (
+        <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
+          <AlertCircleIcon className="text-lg" />
+          <div>{errorMessage}</div>
+        </div>
+      )}
+      {signMethod === "normal" && (
+        <Button
+          className="mt-12 w-full"
+          primary
+          disabled={!isReady}
+          onClick={send}
+          processing={isProcessing}
+        >
+          Confirm
+        </Button>
+      )}
+      {signMethod === "ledgerSubstrate" && <SendFundsLedgerSubstrate />}
+    </Suspense>
   )
 }
 
@@ -252,6 +172,10 @@ const EvmFeeSummary = () => {
   const { tokenId } = useSendFundsWizard()
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
+
+  const { evmTransaction } = useSendFundsConfirm()
+
+  if (!token || !evmTransaction) return null
 
   const {
     tx,
@@ -262,7 +186,7 @@ const EvmFeeSummary = () => {
     setPriority,
     networkUsage,
     isLoading,
-  } = useSendFundsConfirm()
+  } = evmTransaction
 
   // useEffect(() => {
   //   console.log("show", !isLoading && evmNetwork?.nativeToken?.id && tx && txDetails && priority, {
@@ -275,7 +199,7 @@ const EvmFeeSummary = () => {
   //   })
   // }, [evmNetwork?.nativeToken?.id, isLoading, priority, tokenId, tx, txDetails])
 
-  if (!isEvmToken(token)) return null
+  // if (!isEvmToken(token)) return null
 
   return (
     <>
@@ -305,8 +229,8 @@ const EvmFeeSummary = () => {
               {isLoading && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
               {txDetails?.estimatedFee && evmNetwork?.nativeToken && (
                 <TokensAndFiat
-                  planck={txDetails?.estimatedFee.toString()}
-                  tokenId={evmNetwork?.nativeToken.id}
+                  planck={txDetails.estimatedFee.toString()}
+                  tokenId={evmNetwork.nativeToken.id}
                 />
               )}
             </>

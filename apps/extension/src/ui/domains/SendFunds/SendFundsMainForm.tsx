@@ -272,17 +272,14 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
   const { balance, token } = useSendFundsDetails()
 
   return (
-    <Container className="flex w-full justify-between px-6 py-4">
+    <Container className="flex h-[50px] w-full justify-between px-6 py-4">
       <div>
         <TokenPillButton tokenId={tokenId} onClick={onEditClick} />
       </div>
-      <div className="text-right">
+      <div className={classNames("text-right", balance?.status === "cache" && "animate-pulse")}>
         {balance && token && (
           <>
             <div>
-              {balance.status === "cache" && (
-                <LoaderIcon className="animate-spin-slow mr-2 inline" />
-              )}
               <Tokens
                 amount={balance.transferable.tokens}
                 decimals={token?.decimals}
@@ -329,10 +326,10 @@ const EstimatedFeeRow = () => {
   const { feeToken, estimatedFee, isEstimatingFee } = useSendFundsDetails()
 
   return (
-    <Container className="flex w-full justify-between gap-4 px-8 py-4">
+    <Container className="flex w-full items-center justify-between gap-4 px-8 py-4">
       <div className="whitespace-nowrap">Estimated Fee</div>
-      <div className="grow overflow-hidden text-ellipsis whitespace-nowrap text-right">
-        {isEstimatingFee && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
+      <div className="flex grow items-center justify-end gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
+        {isEstimatingFee && <LoaderIcon className="animate-spin-slow align-text-top" />}
         {estimatedFee && feeToken && <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />}
       </div>
     </Container>
