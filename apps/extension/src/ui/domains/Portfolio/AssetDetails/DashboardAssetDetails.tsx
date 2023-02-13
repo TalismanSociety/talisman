@@ -1,7 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
-import { Box } from "@talisman/components/Box"
-import { LoaderIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
@@ -78,23 +76,16 @@ const AssetState = ({
 }) => {
   if (!render) return null
   return (
-    <Box h={6.6} padding="1.6rem" flex column justify="center" gap={0.4}>
-      <Box bold fg="foreground">
-        {title}
-      </Box>
+    <div className="flex h-[6.6rem] flex-col justify-center gap-2 p-8">
+      <div className="font-bold text-white">{title}</div>
       {address && (
-        <Box fontsize="small">
+        <div className="text-sm">
           <PortfolioAccount address={address} />
-        </Box>
+        </div>
       )}
-    </Box>
+    </div>
   )
 }
-
-const FetchingIndicator = styled(LoaderIcon)`
-  line-height: 1;
-  font-size: var(--font-size-normal);
-`
 
 type AssetRowProps = {
   chainId: ChainId | EvmNetworkId
@@ -112,19 +103,18 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
     <>
       <tr className={classNames("summary start-row", detailRows.length === 0 && "stop-row")}>
         <td className="topLeftCell" valign="top">
-          <Box fullheight flex>
-            <Box padding="1.6rem" fontsize="xlarge">
+          <div className="flex h-full">
+            <div className="p-8 text-xl">
               <ChainLogo id={chainOrNetwork.id} />
-            </Box>
-            <Box grow flex column justify="center" gap={0.4} noWrap>
-              <Box fontsize="normal" bold fg="foreground" flex align="center" gap={0.8}>
+            </div>
+            <div className="flex grow flex-col justify-center gap-2 whitespace-nowrap">
+              <div className="base text-body flex items-center gap-4 font-bold">
                 {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
                 <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
-                {isFetching && <FetchingIndicator data-spin />}
-              </Box>
+              </div>
               <div>{networkType}</div>
-            </Box>
-          </Box>
+            </div>
+          </div>
         </td>
         <td align="right" valign="top">
           <AssetBalanceCellValue
@@ -134,6 +124,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             fiat={summary.lockedFiat}
             symbol={symbol}
             tooltip="Total Locked Balance"
+            className={classNames(isFetching && "animate-pulse transition-opacity")}
           />
         </td>
         <td align="right" valign="top">
@@ -143,6 +134,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             fiat={summary.availableFiat}
             symbol={symbol}
             tooltip="Total Available Balance"
+            className={classNames(isFetching && "animate-pulse transition-opacity")}
           />
         </td>
       </tr>
@@ -161,6 +153,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                 fiat={row.fiat}
                 symbol={symbol}
                 locked={row.locked}
+                className={classNames(isFetching && "animate-pulse transition-opacity")}
               />
             </td>
           </tr>

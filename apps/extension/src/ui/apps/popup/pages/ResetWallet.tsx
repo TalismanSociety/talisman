@@ -27,24 +27,25 @@ const ConfirmDrawer = ({
 
   return (
     <Drawer open={isOpen} anchor="bottom">
-      <div className="bg-grey-800 items-center rounded-t p-8 pt-12">
-        <div className="flex flex-col gap-6 px-12 text-center">
-          <div className="text-xl">
+      <div className="bg-grey-800 items-center rounded-t-xl p-8 pt-12">
+        <div className="flex flex-col items-center gap-6 px-12 text-center">
+          <div className="text-3xl">
             <AlertCircleIcon className="text-alert-warn" />
           </div>
-          <h2 className="font-bold text-white ">Are you sure you want to reset Talisman?</h2>
+          <div className="max-w-[30rem] font-bold leading-[2.2rem] text-white">
+            Are you sure you want to reset Talisman?
+          </div>
         </div>
-
-        <p className="text-body-secondary p-4 text-center text-sm">
+        <p className="text-body-secondary mt-5 px-4 text-center text-sm">
           Your current accounts and assets will be erased from this wallet. You will need to
           re-import your account via recovery phrase. Note that you will have to re-add any other
           imported accounts such as Ledger devices if you had added any.
         </p>
-        <div className="mt-4 flex flex-col gap-4">
-          <Button fullWidth onClick={handleReset} primary processing={resetting}>
+        <div className="mt-12 flex flex-col gap-8">
+          <Button className="h-24" fullWidth onClick={handleReset} primary processing={resetting}>
             Continue
           </Button>
-          <Button fullWidth onClick={closeResetWallet}>
+          <Button className="h-24" fullWidth onClick={closeResetWallet}>
             Cancel
           </Button>
         </div>
@@ -63,7 +64,7 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
 
   return (
     <Layout className="p-4">
-      <div className="text-body-secondary flex h-32 justify-center px-12 pr-[16px] align-middle">
+      <div className="text-body-secondary flex h-32 items-center justify-center px-12 pr-[16px]">
         <ChevronLeftIcon
           className="flex-shrink cursor-pointer text-lg hover:text-white"
           onClick={closeResetWallet}
@@ -72,7 +73,7 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
       </div>
       <Content>
         <div className="flex flex-col items-center gap-24">
-          <img src={Terrarium} className="h-[27.1rem]" />
+          <img src={Terrarium} className="mt-[0.5rem] h-[27.1rem]" />
           <p className="text-body-secondary text-center">
             To reset your wallet you'll need to re-import your account via recovery phrase and set a
             new password.

@@ -2,7 +2,6 @@ import { AccountAddressType } from "@core/domains/accounts/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Checkbox } from "@talisman/components/Checkbox"
-import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
@@ -17,6 +16,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
+import { FormFieldContainer, FormFieldInputText, FormFieldTextarea } from "talisman-ui"
 import * as yup from "yup"
 
 import Layout from "../../layout"
@@ -318,43 +318,42 @@ export const AccountAddSecretMnemonic = () => {
         data-button-pull-left
         onSubmit={handleSubmit(submit)}
       >
-        <FormField
-          error={errors.name}
-          suffix={
-            targetAddress ? (
-              <div>
-                <AccountAvatar address={targetAddress} />
-              </div>
-            ) : null
-          }
-        >
-          <input
+        <FormFieldContainer error={errors.name?.message}>
+          <FormFieldInputText
             {...register("name")}
             placeholder="Choose a name"
             spellCheck={false}
             autoComplete="off"
             autoFocus
             data-lpignore
+            after={
+              targetAddress ? (
+                <div>
+                  <AccountAvatar address={targetAddress} />
+                </div>
+              ) : null
+            }
           />
-        </FormField>
-        <Spacer small />
-        <FormField error={errors.mnemonic} extra={`Word count : ${words}`}>
-          <textarea
-            {...register("mnemonic")}
-            placeholder={`Enter your 12 or 24 word recovery phrase${
-              type === "ethereum" ? " or private key" : ""
-            }`}
-            rows={5}
-            data-lpignore
-            spellCheck={false}
-          />
-          {/* Waiting for designers validation for this feature, but it's ready ! */}
-          {/* <div className="mnemonic-buttons">
+        </FormFieldContainer>
+        <FormFieldTextarea
+          {...register("mnemonic")}
+          placeholder={`Enter your 12 or 24 word recovery phrase${
+            type === "ethereum" ? " or private key" : ""
+          }`}
+          rows={5}
+          data-lpignore
+          spellCheck={false}
+        />
+        <div className="mt-8 flex justify-between text-xs">
+          <div className="text-body-secondary">Word count: {words}</div>
+          <div className="text-alert-warn text-right">{errors.mnemonic?.message}</div>
+        </div>
+        {/* Waiting for designers validation for this feature, but it's ready ! */}
+        {/* <div className="mnemonic-buttons">
             <button type="button" onClick={handleGenerateNew}>
               Generate New
             </button>
           </div> */}
-        </FormField>
         <Spacer small />
         <Spacer small />
         <Checkbox {...register("multi")} className={classNames(isPrivateKey && "invisible")}>

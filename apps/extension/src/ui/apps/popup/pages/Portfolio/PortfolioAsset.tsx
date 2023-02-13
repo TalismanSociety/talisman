@@ -1,5 +1,4 @@
 import { Balances } from "@core/domains/balances/types"
-import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import Fiat from "@ui/domains/Asset/Fiat"
@@ -23,29 +22,29 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
   return (
     <>
-      <Box flex fullwidth gap={0.8} align="center">
+      <div className="flex w-full items-center gap-4">
         <IconButton onClick={handleBackBtnClick}>
           <ChevronLeftIcon />
         </IconButton>
-        <Box fontsizecustom="3.6rem">
+        <div className="text-2xl">
           <TokenLogo tokenId={token?.id} />
-        </Box>
-        <Box grow flex column gap={0.4} padding="0 0 0 0.4rem" fontsize="small">
-          <Box flex justify="space-between" fg="mid">
-            <Box>Asset</Box>
-            <Box>Total</Box>
-          </Box>
-          <Box flex justify="space-between" fontsize="medium" bold>
-            <Box>{symbol}</Box>
-            <Box>
+        </div>
+        <div className="flex grow flex-col gap-2 pl-2 text-sm">
+          <div className="text-body-secondary flex justify-between">
+            <div>Asset</div>
+            <div>Total</div>
+          </div>
+          <div className="text-md flex justify-between font-bold">
+            <div>{symbol}</div>
+            <div>
               <Fiat amount={total} isBalance />
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-      <Box padding="2.4rem 0">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="py-12">
         <PopupAssetDetails balances={balancesToDisplay} symbol={symbol} />
-      </Box>
+      </div>
     </>
   )
 }

@@ -1,4 +1,3 @@
-import { Box } from "@talisman/components/Box"
 import { ChevronDownIcon, XIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talismn/util"
@@ -230,20 +229,16 @@ export const NetworkPicker = () => {
       isOpen={isOpen}
       disabled={disabled}
     >
-      <Box
-        className="network-main"
-        flex
-        gap={1}
-        w={30}
-        bg="background-muted"
+      <div
+        className="bg-black-secondary network-main flex w-[30rem] items-center gap-1"
         align="center"
         {...getComboboxProps()}
       >
-        <Box h={4.8} flex fullwidth align="center" padding="0 0 0 1.2rem" overflow="hidden">
+        <div className="flex h-24 w-full items-center gap-4 overflow-hidden pl-6">
           {networkFilter ? (
-            <Box margin="0 1.2rem 0 0">
+            <div>
               <ChainLogo id={networkFilter.id} />
-            </Box>
+            </div>
           ) : null}
           <input
             spellCheck="false"
@@ -266,35 +261,29 @@ export const NetworkPicker = () => {
               <ChevronDownIcon />
             </button>
           )}
-        </Box>
-      </Box>
+        </div>
+      </div>
       <ul {...getMenuProps()}>
         {isOpen &&
           (items.length ? (
             items.map((item, index) => (
               <li key={`${item.id}${index}`} {...getItemProps({ item, index })}>
-                <Box
-                  flex
-                  h={4.2}
-                  fullwidth
-                  bg={highlightedIndex === index ? "background-muted-3x" : "background-muted"}
-                  fg="mid"
-                  align="center"
-                  gap={1.2}
-                  padding="0 1.2rem"
+                <div
+                  className={classNames(
+                    "text-body-secondary flex h-[4.2rem] w-full items-center gap-6 px-6",
+                    highlightedIndex === index ? "bg-grey-800" : "bg-black-secondary"
+                  )}
                 >
-                  <Box>
+                  <div>
                     <ChainLogo id={item?.id} />
-                  </Box>
-                  <Box>{item.name}</Box>
-                </Box>
+                  </div>
+                  <div>{item.name}</div>
+                </div>
               </li>
             ))
           ) : (
             <li>
-              <Box padding={1.6} fontsize="small" fg="mid">
-                No network found
-              </Box>
+              <div className="text-body-secondary p-8 text-sm">No network found</div>
             </li>
           ))}
       </ul>

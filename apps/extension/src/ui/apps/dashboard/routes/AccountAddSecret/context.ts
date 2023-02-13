@@ -3,7 +3,7 @@ import { provideContext } from "@talisman/util/provideContext"
 import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import { useCallback, useState } from "react"
-import { useLocation, useParams, useSearchParams } from "react-router-dom"
+import { useSearchParams } from "react-router-dom"
 
 type AccountAddSecretInputs = {
   name: string

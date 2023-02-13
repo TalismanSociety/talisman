@@ -77,7 +77,7 @@ const TokenButton = ({ token, balances, network, onClick }: TokenButtonProps) =>
         <Box grow textalign="left" flex column justify="center" gap={0.4}>
           <Box fontsize="small" bold flex gap={0.6}>
             {token.symbol}
-            {isFetching && <FetchingIcon data-spin />}
+            {isFetching && <FetchingIcon className="animate-spin-slow" />}
           </Box>
           <Box fontsize="xsmall" fg="mid">
             {network.label}
@@ -118,7 +118,7 @@ const FormContainer = styled(Box)`
   }
 `
 
-export const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
+const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
   const { useTestnets = false } = useSettings()
   const { chainsMap } = useChains(useTestnets)
   const { evmNetworksMap } = useEvmNetworks(useTestnets)

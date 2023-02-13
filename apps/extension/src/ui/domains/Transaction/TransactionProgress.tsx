@@ -97,7 +97,7 @@ const TransactionProgressBase: FC<TransactionProgressBaseProps> = ({
     useStatusDetails(status, blockHash, href, handleClose)
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col items-center">
       <div className={classNames("flex w-full justify-end", canClose ? "visible" : "invisible")}>
         <IconButton onClick={handleClose}>
           <XIcon />

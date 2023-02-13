@@ -1,11 +1,11 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Box } from "@talisman/components/Box"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
+import { FormFieldTextarea } from "talisman-ui"
 import * as yup from "yup"
 
 import { OnboardButton } from "../components/OnboardButton"
@@ -81,34 +81,35 @@ export const ImportSeedPage = () => {
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
-      <Box flex justify="center">
-        <Box w={70.9}>
+      <div className="flex justify-center">
+        <div className="w-[70.9rem]">
           <OnboardDialog title="Import wallet">
             <p>
               Please enter your 12 or 24 word recovery phrase, with each word separated by a space.
               Please ensure no-one can see you entering your recovery phrase.
             </p>
             <form onSubmit={handleSubmit(submit)}>
-              <Box margin="4.8rem 0 0 0">
+              <div className="mt-24">
                 <OnboardFormField error={errors.mnemonic}>
-                  <textarea
+                  <FormFieldTextarea
                     {...register("mnemonic")}
                     placeholder="Enter your recovery phrase"
                     rows={5}
                     data-lpignore
                     spellCheck={false}
                     autoFocus
+                    className="placeholder:text-body-secondary/30 ring-grey-600 focus:ring-1"
                   />
                 </OnboardFormField>
-                <Box h={2.4}></Box>
-                <OnboardButton type="submit" primary disabled={!isValid}>
+                <div className="h-12"></div>
+                <OnboardButton className="h-28" type="submit" primary disabled={!isValid}>
                   Import wallet
                 </OnboardButton>
-              </Box>
+              </div>
             </form>
           </OnboardDialog>
-        </Box>
-      </Box>
+        </div>
+      </div>
     </Layout>
   )
 }

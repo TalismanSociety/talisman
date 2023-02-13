@@ -1,6 +1,5 @@
 import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
 import { SignerPayloadRaw, SigningRequest } from "@core/domains/signing/types"
-import { Box } from "@talisman/components/Box"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
@@ -79,7 +78,7 @@ export const SubstrateSignRequest = () => {
         {account && request && (
           <>
             {!account.isHardware && (
-              <Box flex fullwidth gap={2.4}>
+              <div className="flex w-full gap-12">
                 <SimpleButton disabled={processing} onClick={reject}>
                   Cancel
                 </SimpleButton>
@@ -91,7 +90,7 @@ export const SubstrateSignRequest = () => {
                 >
                   Approve
                 </SimpleButton>
-              </Box>
+              </div>
             )}
             {account.isHardware && (
               <Suspense fallback={null}>
