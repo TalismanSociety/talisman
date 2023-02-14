@@ -142,9 +142,9 @@ export const AccountExportPrivateKeyModal = () => {
       <ModalDialog title="Export private key" onClose={close} className="w-[50.3rem]">
         <div className="h-[24.2rem]">
           <PasswordUnlock
-            title=""
-            description={
-              <div className="text-body-secondary mb-8">
+            className="h-full"
+            title={
+              <div className="text-body-secondary text-base">
                 Please confirm your password to export your account.
               </div>
             }

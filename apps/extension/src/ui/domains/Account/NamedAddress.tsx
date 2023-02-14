@@ -23,16 +23,16 @@ const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, className }) => {
         <LinkIcon />
       </WithTooltip>
     )
-  if (origin === "QR")
-    return (
-      <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
-        <ParitySignerIcon />
-      </WithTooltip>
-    )
   if (origin === "HARDWARE")
     return (
       <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
         <UsbIcon />
+      </WithTooltip>
+    )
+  if (origin === "QR")
+    return (
+      <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
+        <ParitySignerIcon />
       </WithTooltip>
     )
   return null
@@ -89,7 +89,7 @@ const NamedAddress = ({
                   isBalance
                 />
               ) : (
-                <IconLoader data-spin />
+                <IconLoader className="animate-spin-slow" />
               )}
             </span>
           )}

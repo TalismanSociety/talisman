@@ -1,5 +1,4 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Box } from "@talisman/components/Box"
 import { breakpoints } from "@talisman/theme/definitions"
 import { AllAccountsIcon, ChevronDownIcon, ParitySignerIcon, UsbIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
@@ -251,21 +250,21 @@ const AccountOption = ({
         )}
       </div>
       <div className="ao-rows">
-        <Box align="center" flex fullwidth className="ao-rowName" gap={0.4}>
-          <Box overflow="hidden" textOverflow="ellipsis" noWrap flex column justify="center">
+        <div className="ao-rowName flex w-full items-center gap-2">
+          <div className="flex flex-col justify-center overflow-hidden text-ellipsis whitespace-nowrap">
             {name ?? (address ? shortenAddress(address) : "unknown")}
-          </Box>
+          </div>
           {origin === "HARDWARE" && (
-            <Box fg="primary" flex column justify="center">
+            <div className="text-primary-500 flex flex-col justify-center">
               <UsbIcon />
-            </Box>
+            </div>
           )}
           {origin === "QR" && (
-            <Box fg="primary" flex column justify="center">
+            <div className="text-primary-500 flex flex-col justify-center">
               <ParitySignerIcon />
-            </Box>
+            </div>
           )}
-        </Box>
+        </div>
         <div className="ao-rowFiat">
           <Fiat amount={totalUsd} currency="usd" isBalance noCountUp />
         </div>

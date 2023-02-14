@@ -320,7 +320,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
       </FormFieldContainer>
       <MessageRow type="error" message={errorGasLimit} />
 
-      <div className="border-grey-700 text-body flex h-[5.2rem] w-full justify-between rounded-sm border px-8 font-bold">
+      <div className="border-grey-700 text-body flex h-[5.2rem] w-full items-center justify-between rounded-sm border px-8 font-bold">
         <div>
           Total Max Fee{" "}
           <WithTooltip tooltip="The total maximum gas fee you are willing to pay for this transaction : Gas Price * Gas Limit">

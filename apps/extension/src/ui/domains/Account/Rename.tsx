@@ -1,13 +1,13 @@
-import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
-import styled from "styled-components"
+import { yupResolver } from "@hookform/resolvers/yup"
 import Dialog from "@talisman/components/Dialog"
+import { api } from "@ui/api"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useAccounts from "@ui/hooks/useAccounts"
-import * as yup from "yup"
+import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
-import { yupResolver } from "@hookform/resolvers/yup"
-import { api } from "@ui/api"
-import { FormField } from "@talisman/components/Field/FormField"
+import styled from "styled-components"
+import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
+import * as yup from "yup"
 
 const StyledDialog = styled(Dialog)`
   .error {
@@ -106,12 +106,11 @@ const AccountRename = ({ address, onConfirm, onCancel, className }: IAccountRena
   return (
     <StyledDialog
       className={className}
-      title="Enter a new name"
       text="Choose a new name for this account"
       extra={
         <form onSubmit={handleSubmit(submit)}>
-          <FormField error={errors.name}>
-            <input
+          <FormFieldContainer error={errors.name?.message}>
+            <FormFieldInputText
               {...registerName}
               ref={handleNameRef}
               placeholder="Choose a name"
@@ -120,7 +119,7 @@ const AccountRename = ({ address, onConfirm, onCancel, className }: IAccountRena
               autoFocus
               data-lpignore
             />
-          </FormField>
+          </FormFieldContainer>
         </form>
       }
       confirmText="Rename"

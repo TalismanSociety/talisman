@@ -165,4 +165,7 @@ const boxPropsInjector = (props: BoxProps): CSSObject => {
   }
 }
 
+/**
+ * @deprecated Seriously? Use Tailwind!
+ */
 export const Box = styled.div<BoxProps>(boxPropsInjector)

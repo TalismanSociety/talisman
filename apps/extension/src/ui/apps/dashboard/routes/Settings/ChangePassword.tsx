@@ -1,9 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Box } from "@talisman/components/Box"
-import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify } from "@talisman/components/Notifications"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { InfoIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
@@ -13,43 +10,8 @@ import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
-
-const Button = styled.button`
-  border-radius: var(--border-radius-small);
-  background-color: var(--color-primary);
-  color: black;
-  padding: 1.6rem;
-  font-size: 1.4rem;
-  white-space: nowrap;
-  border: none;
-  cursor: pointer;
-  width: 20rem;
-`
-
-const Container = styled(Layout)`
-  form {
-    padding-top: 1.6rem;
-    .field {
-      margin-bottom: 2.8rem;
-    }
-    .buttons {
-      display: flex;
-      justify-content: end;
-    }
-  }
-  .mnemonic-warning svg {
-    color: var(--color-primary);
-    margin-right: 1rem;
-    width: 4em;
-    height: 4em;
-  }
-`
-const InfoP = styled.p`
-  color: var(--color-mid);
-  margin: 2rem 0;
-`
 
 type FormData = {
   currentPw: string
@@ -111,36 +73,28 @@ const ChangePassword = () => {
 
   return (
     <>
-      <Container withBack centered>
+      <Layout withBack centered>
         <HeaderBlock title="Change your password" />
-        <InfoP>
+        <p className="text-body-secondary my-10">
           Your password is used to unlock your wallet and is stored securely on your device. We
           recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers.
-        </InfoP>
+        </p>
         {isNotConfirmed && (
-          <Box
-            className="mnemonic-warning"
-            flex
-            column
-            padding={1.6}
-            gap={1}
-            border="1px solid white"
-            borderradius="small"
-          >
-            <Box flex justify={"space-between"} align={"center"}>
-              <InfoIcon />
+          <div className="mnemonic-warning flex flex-col gap-0.5 rounded-sm border border-white p-8">
+            <div className="flex items-center justify-between">
+              <InfoIcon className="text-primary mr-10 text-3xl" />
               You'll need to confirm your recovery phrase is backed up before you change your
               password.
-            </Box>
-            <Box flex justify={"end"}>
+            </div>
+            <div className="flex justify-end">
               <Button onClick={open}>Backup Seed Phrase</Button>
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
 
-        <form onSubmit={handleSubmit(submit)}>
-          <FormField error={errors.currentPw} label="Old Password">
-            <input
+        <form className="mt-8" onSubmit={handleSubmit(submit)}>
+          <FormFieldContainer error={errors.currentPw?.message} label="Old Password">
+            <FormFieldInputText
               {...register("currentPw")}
               placeholder="Enter Old Password"
               spellCheck={false}
@@ -151,9 +105,9 @@ const ChangePassword = () => {
               tabIndex={1}
               disabled={isNotConfirmed}
             />
-          </FormField>
-          <FormField error={errors.newPw} label="New Password">
-            <input
+          </FormFieldContainer>
+          <FormFieldContainer error={errors.newPw?.message} label="New Password">
+            <FormFieldInputText
               {...register("newPw")}
               placeholder="Enter New Password"
               spellCheck={false}
@@ -163,9 +117,9 @@ const ChangePassword = () => {
               tabIndex={2}
               disabled={isNotConfirmed}
             />
-          </FormField>
-          <FormField error={errors.newPwConfirm}>
-            <input
+          </FormFieldContainer>
+          <FormFieldContainer error={errors.newPwConfirm?.message}>
+            <FormFieldInputText
               {...register("newPwConfirm")}
               placeholder="Confirm New Password"
               spellCheck={false}
@@ -175,19 +129,20 @@ const ChangePassword = () => {
               tabIndex={3}
               disabled={isNotConfirmed}
             />
-          </FormField>
-          <div className="buttons">
-            <SimpleButton
+          </FormFieldContainer>
+          <div className="mt-8 flex justify-end">
+            <Button
+              className="w-[20rem]"
               type="submit"
               primary
               disabled={!isValid || isNotConfirmed}
               processing={isSubmitting}
             >
               Submit
-            </SimpleButton>
+            </Button>
           </div>
         </form>
-      </Container>
+      </Layout>
       <MnemonicModal open={isOpen} onClose={close} />
     </>
   )

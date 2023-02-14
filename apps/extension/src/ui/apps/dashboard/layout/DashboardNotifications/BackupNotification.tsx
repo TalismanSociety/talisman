@@ -3,7 +3,7 @@ import { InfoIcon } from "@talisman/theme/icons"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 
-import { Notification } from "./Notification"
+import { DashboardNotification } from "./DashboardNotification"
 
 export const BackupNotification = () => {
   const { isOpen, open, close } = useOpenClose()
@@ -13,7 +13,7 @@ export const BackupNotification = () => {
 
   return (
     <>
-      <Notification
+      <DashboardNotification
         icon={<InfoIcon />}
         title="Please backup your recovery phrase. "
         description="If you don't backup your recovery phrase you may lose access to all your funds."

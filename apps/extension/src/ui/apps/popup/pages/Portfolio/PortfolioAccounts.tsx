@@ -1,5 +1,4 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
 import {
@@ -24,7 +23,6 @@ import useBalances from "@ui/hooks/useBalances"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { MouseEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
 import { PillButton } from "talisman-ui"
 
 import { TotalFiatBalance } from "../../components/TotalFiatBalance"
@@ -43,38 +41,6 @@ type AccountOption = {
   genesisHash?: string | null
   origin?: string
 }
-
-const Button = styled.article`
-  background-color: var(--color-background-muted);
-  outline: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: 1.1rem 1.2rem;
-  border-radius: var(--border-radius-tiny);
-  cursor: pointer;
-  gap: 1.2rem;
-  overflow: hidden;
-
-  .chevron {
-    color: var(--color-mid);
-  }
-
-  &:hover {
-    background-color: var(--color-background-muted-3x);
-    .chevron {
-      color: var(--color-foreground);
-    }
-  }
-`
-
-const CopyButton = styled(IconButton)`
-  font-size: 1.4rem;
-  line-height: 1.4rem;
-  height: 1.4rem;
-  width: 1.4rem;
-`
 
 const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOption) => {
   const { open } = useAddressFormatterModal()
@@ -100,53 +66,48 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
   )
 
   return (
-    <Button onClick={handleAccountClick}>
-      <Box flex column justify="center" fontsize="xlarge">
+    <article
+      role="button"
+      tabIndex={0}
+      className="text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
+      onClick={handleAccountClick}
+    >
+      <div className="flex flex-col justify-center text-xl">
         {address ? (
           <AccountAvatar address={address} genesisHash={genesisHash} />
         ) : (
           <AllAccountsIcon />
         )}
-      </Box>
-      <Box flex column justify="center" align="flex-start" grow gap={0.4} overflow="hidden">
+      </div>
+      <div className="flex grow flex-col items-start justify-center gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center gap-3 text-base leading-none">
           <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{name}</div>
-          {origin === "QR" && (
-            <div className="text-primary">
-              <ParitySignerIcon />
-            </div>
-          )}
           {origin === "HARDWARE" && (
             <div className="text-primary">
               <UsbIcon />
             </div>
           )}
+          {origin === "QR" && (
+            <div className="text-primary">
+              <ParitySignerIcon />
+            </div>
+          )}
           {address ? (
             <div className="flex flex-col justify-end">
-              <CopyButton onClick={handleCopyClick}>
+              <IconButton className="!h-8 !w-8 !text-sm leading-none" onClick={handleCopyClick}>
                 <CopyIcon />
-              </CopyButton>
+              </IconButton>
             </div>
           ) : null}
         </div>
-        <Box
-          fg="mid"
-          fontsize="small"
-          lineheight="small"
-          fullwidth
-          textalign="left"
-          flex
-          overflow="hidden"
-          textOverflow="ellipsis"
-          noWrap
-        >
+        <div className="text-body-secondary flex w-full overflow-hidden text-ellipsis whitespace-nowrap text-left text-sm leading-none">
           <Fiat amount={total} isBalance />
-        </Box>
-      </Box>
-      <Box flex column justify="center" fontsize="large">
-        <ChevronRightIcon className="chevron" />
-      </Box>
-    </Button>
+        </div>
+      </div>
+      <div className="flex flex-col justify-center text-lg">
+        <ChevronRightIcon />
+      </div>
+    </article>
   )
 }
 
@@ -205,15 +166,15 @@ const TopActions = () => {
 }
 
 const Accounts = ({ options }: { options: AccountOption[] }) => (
-  <Box flex column fullwidth>
+  <div className="flex w-full flex-col">
     <TotalFiatBalance />
     <TopActions />
-    <Box flex column fullwidth gap={0.8} padding="2.4rem 0">
+    <div className="flex w-full flex-col gap-4 py-12">
       {options.map((option) => (
         <AccountButton key={option.address ?? "all"} {...option} />
       ))}
-    </Box>
-  </Box>
+    </div>
+  </div>
 )
 
 export const PortfolioAccounts = () => {
