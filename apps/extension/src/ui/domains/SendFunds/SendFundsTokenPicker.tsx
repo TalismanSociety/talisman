@@ -13,6 +13,8 @@ import { useDbCache } from "@ui/hooks/useDbCache"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSettings } from "@ui/hooks/useSettings"
+import { useTokenRates } from "@ui/hooks/useTokenRates"
+import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import { sortBy } from "lodash"
 import { CSSProperties, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -25,6 +27,27 @@ import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
 import { SendFundsSearchInput } from "./SendFundsSearchInput"
 
+const filterIgnoredTokens = (t: Token) => {
+  // on substrate, there could be multiple tokens with same symbol on a same chain (ACA, KINT..)
+  // a good fix would be to detect on subsquid side if ANY account has tokens, if not the token shouldn't be included in github tokens file
+  // until then we hardcode an exclusion list here :
+
+  // ACA, BNC and KAR use native (orml won't work)
+  // INTR, KINT and MGX use orml (native won't work)
+
+  const IGNORED_TOKENS = [
+    "acala-substrate-orml-aca",
+    "bifrost-kusama-substrate-orml-bnc",
+    "bifrost-polkadot-substrate-orml-bnc",
+    "interlay-substrate-native-intr",
+    "karura-substrate-orml-kar",
+    "kintsugi-substrate-native-kint",
+    "mangata-substrate-native-mgx",
+  ]
+
+  return !IGNORED_TOKENS.includes(t.id)
+}
+
 type TokenRowProps = {
   token: Token
   selected: boolean
@@ -32,6 +55,7 @@ type TokenRowProps = {
   balances: Balances
   chainName?: string | null
   chainLogo?: string | null
+  hasFiatRate?: boolean
 }
 
 const TokenRowSkeleton = ({ color = "bg-grey-600" }) => (
@@ -64,6 +88,7 @@ const TokenRow: FC<TokenRowProps> = ({
   balances,
   chainName,
   chainLogo,
+  hasFiatRate,
   onClick,
 }) => {
   const { tokensTotal, isLoading } = useMemo(() => {
@@ -108,11 +133,8 @@ const TokenRow: FC<TokenRowProps> = ({
               <div>
                 {token.symbol}
                 {selected && <CheckCircleIcon className="ml-3 inline align-text-top" />}
-                {isLoading && (
-                  <LoaderIcon className="animate-spin-slow text-body-secondary ml-3 inline align-text-top text-base" />
-                )}
               </div>
-              <div>
+              <div className={classNames(isLoading && "animate-pulse")}>
                 <Tokens
                   amount={tokensTotal}
                   decimals={token.decimals}
@@ -131,8 +153,17 @@ const TokenRow: FC<TokenRowProps> = ({
                 />
               </div>
               <div>{chainName}</div>
-              <div className="grow">
-                <Fiat amount={balances.sum.fiat("usd").total} currency="usd" isBalance noCountUp />
+              <div className={classNames("grow", isLoading && "animate-pulse")}>
+                {hasFiatRate ? (
+                  <Fiat
+                    amount={balances.sum.fiat("usd").total}
+                    currency="usd"
+                    isBalance
+                    noCountUp
+                  />
+                ) : (
+                  "-"
+                )}
               </div>
             </div>
           </div>
@@ -154,6 +185,7 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
   const { chainsMap } = useChains(useTestnets)
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
   const { tokens: allTokens } = useTokens(useTestnets)
+  const tokenRatesMap = useTokenRatesMap()
 
   const balances = useBalances()
 
@@ -170,40 +202,22 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
     [from]
   )
 
-  //const { chainsMap, evmNetworksMap } = useDbCache()
+  const transferableTokens = useMemo(() => {
+    // wait until all dependencies are loaded
+    if (
+      !Object.keys(chainsMap).length ||
+      !Object.keys(evmNetworksMap).length ||
+      !Object.keys(tokenRatesMap).length
+    )
+      return []
 
-  // TODO if we have a tokenId, filter account types
-  const transferableTokens = useMemo(
-    () =>
-      allTokens
-        .filter(filterAccountCompatibleTokens)
-        .filter((t) => {
-          // on substrate, there could be multiple tokens with same symbol on a same chain (ACA, KINT..)
-          // a good fix would be to detect on subsquid side if ANY account has tokens, if not the token shouldn't be included in github tokens file
-          // until then we hardcode an exclusion list here :
-
-          // ACA, BNC and KAR use native (orml won't work)
-          // INTR, KINT and MGX use orml (native won't work)
-
-          const IGNORED_TOKENS = [
-            "acala-substrate-orml-aca",
-            "bifrost-kusama-substrate-orml-bnc",
-            "bifrost-polkadot-substrate-orml-bnc",
-            "interlay-substrate-native-intr",
-            "karura-substrate-orml-kar",
-            "kintsugi-substrate-native-kint",
-            "mangata-substrate-native-mgx",
-          ]
-
-          return !IGNORED_TOKENS.includes(t.id)
-        })
-        .map((t) => ({
-          id: t.id,
-          token: t,
-          chain: t.chain && chainsMap[t.chain.id],
-          evmNetwork: t.evmNetwork && evmNetworksMap[t.evmNetwork.id],
-        }))
-        .map(({ token, chain, evmNetwork }) => ({
+    return allTokens
+      .filter(filterAccountCompatibleTokens)
+      .filter(filterIgnoredTokens)
+      .map((token) => {
+        const chain = token.chain && chainsMap[token.chain.id]
+        const evmNetwork = token.evmNetwork && evmNetworksMap[token.evmNetwork.id]
+        return {
           id: token.id,
           token,
           chainNameSearch: chain?.name ?? evmNetwork?.name,
@@ -213,44 +227,59 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
               ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? " (Ethereum)" : ""}`
               : ""),
           chainLogo: chain?.logo ?? evmNetwork?.logo,
-        })),
+          hasFiatRate: !!tokenRatesMap[token.id],
+        }
+      })
+  }, [allTokens, chainsMap, evmNetworksMap, filterAccountCompatibleTokens, tokenRatesMap])
 
-    [allTokens, chainsMap, evmNetworksMap, filterAccountCompatibleTokens]
-  )
+  const tokensWithBalances = useMemo(() => {
+    // wait until balances are loaded
+    if (!accountBalances.count) return []
 
-  const transferableTokensWithBalances = useMemo(() => {
+    // sort alphabetically by symbol + chain name
     const results = sortBy(
-      transferableTokens.map((t) => ({
-        ...t,
-        balances: accountBalances.find({ tokenId: t.id }),
-        sortIndex: 1 + accountBalances.sorted.findIndex((b) => b.tokenId === t.id),
-      })),
-      "sortIndex"
-    )
+      sortBy(
+        transferableTokens.map((t) => ({
+          ...t,
+          balances: accountBalances.find({ tokenId: t.id }),
+        })),
+        "chainName"
+      ),
+      "token.symbol"
+    ).sort((a, b) => {
+      // selected token first
+      if (a.id === selected) return -1
+      if (b.id === selected) return 1
 
-    return [
-      ...results.filter((t) => t.id === selected),
-      ...results.filter(
-        (t) => t.id !== selected && t.balances.sorted.find((b) => b.transferable.planck > BigInt(0))
-      ),
-      ...results.filter(
-        (t) =>
-          t.id !== selected && !t.balances.sorted.find((b) => b.transferable.planck > BigInt(0))
-      ),
-    ]
+      // sort by fiat balance
+      const aFiat = a.balances.sum.fiat("usd").transferable
+      const bFiat = b.balances.sum.fiat("usd").transferable
+      if (aFiat > bFiat) return -1
+      if (aFiat < bFiat) return 1
+
+      // sort by "has a balance or not" (values don't matter)
+      const aHasBalance = !!a.balances.sorted.find((bal) => bal.transferable.planck > BigInt("0"))
+      const bHasBalance = !!b.balances.sorted.find((bal) => bal.transferable.planck > BigInt("0"))
+      if (aHasBalance && !bHasBalance) return -1
+      if (!aHasBalance && bHasBalance) return 1
+
+      // keep alphabetical sort
+      return 0
+    })
+
+    return results
   }, [accountBalances, selected, transferableTokens])
 
-  // console.log("accountBalances", accountBalances.toJSON())
-
+  // apply user search
   const tokens = useMemo(() => {
     const ls = search?.toLowerCase()
-    return transferableTokensWithBalances.filter(
+    return tokensWithBalances.filter(
       (t) =>
         !ls ||
         t.token.symbol.toLowerCase().includes(ls) ||
         t.chainNameSearch?.toLowerCase().includes(ls)
     )
-  }, [search, transferableTokensWithBalances])
+  }, [search, tokensWithBalances])
 
   const handleAccountClick = useCallback(
     (address: string) => () => {
@@ -263,7 +292,7 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
     <div className="min-h-full">
       {accountBalances.count ? (
         <>
-          {tokens?.map(({ token, balances, chainName, chainLogo }, i) => (
+          {tokens?.map(({ token, balances, chainName, chainLogo, hasFiatRate }, i) => (
             <TokenRow
               key={token.id}
               selected={token.id === selected}
@@ -271,6 +300,7 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
               balances={balances}
               chainName={chainName}
               chainLogo={chainLogo}
+              hasFiatRate={hasFiatRate}
               onClick={handleAccountClick(token.id)}
             />
           ))}
@@ -316,7 +346,11 @@ export const SendFundsTokenPicker = () => {
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-        <SendFundsSearchInput onChange={setSearch} placeholder="Search by account name" autoFocus />
+        <SendFundsSearchInput
+          onChange={setSearch}
+          placeholder="Search by token or network name"
+          autoFocus
+        />
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         <TokensList from={from} selected={tokenId} search={search} onSelect={handleTokenSelect} />
