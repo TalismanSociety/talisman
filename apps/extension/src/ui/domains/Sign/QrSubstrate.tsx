@@ -3,6 +3,7 @@ import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { createSignPayload, decodeString } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
+import { u8aConcat } from "@polkadot/util"
 import type { HexString } from "@polkadot/util/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
@@ -111,8 +112,27 @@ export const QrSubstrate = ({
       `AtcnVsZT0iZXZlbm9kZCIgZmlsbD0iI2ZkNDg0OCIgZmlsbC1ydWxlPSJldmVub2RkIi8+PHBhdGggZD0iTTQ2Ljk0OSA1NS4wMDVhNi4wMDMgNi4wMDMgMCAxIDEtMT` +
       `IuMDA2IDAgNi4wMDMgNi4wMDMgMCAwIDEgMTIuMDA2IDB6IiBmaWxsPSIjZmQ0ODQ4Ii8+PC9zdmc+`
 
+    // BEGIN: This section is required for keystone support
+    // For parity signer, it is enough for us to use `decodeString(data)` as the data to be
+    // encoded in our qr code.
+    // However, polkadot.js always creates a MULTIPART (video) qr code, even when the data
+    // is small enough to fit in a single qr code.
+    // Keystone devices require this MULTIPART wrapper around the qr code data, otherwise
+    // they show an error when signing.
+    const MULTIPART = new Uint8Array([0])
+    const encodeNumber = (value: number) => new Uint8Array([value >> 8, value & 0xff])
+    const numberOfFrames = 1 // we always only have one frame to encode
+    const frameIndex = 0 // we're encoding the first frame
+    const multiFrameData = u8aConcat(
+      MULTIPART,
+      encodeNumber(numberOfFrames),
+      encodeNumber(frameIndex),
+      data
+    )
+    // END: This section is required for keystone support
+
     new QrCodeStyling({
-      data: decodeString(data),
+      data: decodeString(multiFrameData),
       margin: 0,
       qrOptions: { mode: "Byte", errorCorrectionLevel: "L" },
       dotsOptions: { type: "dots" },
