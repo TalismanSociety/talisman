@@ -244,7 +244,7 @@ const AmountEdit = () => {
       <div className="flex h-[12rem] flex-col justify-end text-xl font-bold">
         {isTokenEdit ? <TokenInput /> : <FiatInput />}
       </div>
-      <div className="mt-4 flex justify-center gap-6">
+      <div className="mt-4 flex items-center justify-center gap-6">
         <div className="text-body-secondary text-sm">
           {!isTokenEdit ? <TokenDisplay /> : <FiatDisplay />}
         </div>
@@ -273,7 +273,7 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
   const { balance, token } = useSendFundsDetails()
 
   return (
-    <Container className="flex h-[50px] w-full justify-between px-6 py-4">
+    <Container className="flex h-[50px] w-full items-center justify-between px-6 py-4">
       <div>
         <TokenPillButton tokenId={tokenId} onClick={onEditClick} />
       </div>
@@ -313,7 +313,7 @@ const NetworkRow = () => {
   )
 
   return (
-    <Container className="flex w-full justify-between px-8 py-4 leading-none">
+    <Container className="flex w-full items-center justify-between px-8 py-4 leading-none">
       <div>Network</div>
       <div className="flex items-center gap-2">
         <ChainLogo id={networkId} className="inline-block text-base" />
@@ -329,8 +329,15 @@ const EstimatedFeeRow = () => {
   return (
     <Container className="flex w-full items-center justify-between gap-4 px-8 py-4">
       <div className="whitespace-nowrap">Estimated Fee</div>
-      <div className="flex grow items-center justify-end gap-2 overflow-hidden text-ellipsis whitespace-nowrap">
-        {isEstimatingFee && <LoaderIcon className="animate-spin-slow align-text-top" />}
+      <div
+        className={classNames(
+          "flex grow items-center justify-end gap-2 overflow-hidden text-ellipsis whitespace-nowrap",
+          isEstimatingFee && estimatedFee && "animate-pulse"
+        )}
+      >
+        {isEstimatingFee && !estimatedFee && (
+          <LoaderIcon className="animate-spin-slow align-text-top" />
+        )}
         {estimatedFee && feeToken && <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />}
       </div>
     </Container>
@@ -381,7 +388,12 @@ const ReviewButton = () => {
       >
         Review
       </Button>
-      <Drawer anchor="bottom" open={isOpen} onClose={close}>
+      <Drawer
+        anchor="bottom"
+        open={isOpen}
+        onClose={close}
+        parent={document.getElementById("send-funds-main")}
+      >
         <div className="bg-black-tertiary rounded-t-xl p-12 text-center">
           <div>
             <InfoIcon className="text-primary-500 inline-block text-3xl" />
@@ -402,7 +414,9 @@ const ReviewButton = () => {
             </div>
           </div>
           <div className="mt-10 grid grid-cols-2 gap-4">
-            <Button onClick={close}>Cancel</Button>
+            <Button autoFocus onClick={close}>
+              Cancel
+            </Button>
             <Button primary onClick={handleConfirmReap}>
               Proceed
             </Button>
@@ -436,7 +450,7 @@ export const SendFundsMainForm = () => {
         className="flex h-full w-full flex-col overflow-hidden px-12 pb-8"
       >
         <Container className="flex h-[9rem] w-full flex-col justify-center gap-5 px-8">
-          <div className="flex w-full justify-between gap-4">
+          <div className="flex w-full items-center justify-between gap-4">
             <div>From</div>
             <div>
               <AddressPillButton
@@ -446,7 +460,7 @@ export const SendFundsMainForm = () => {
               />
             </div>
           </div>
-          <div className="flex w-full justify-between gap-4">
+          <div className="flex w-full items-center justify-between gap-4">
             <div>To</div>
             <div>
               <AddressPillButton

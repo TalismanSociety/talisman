@@ -47,11 +47,13 @@ const AccountTokenBalance = ({
   if (!balance || !token) return null
 
   return (
-    <div className="text-body-secondary space-y-2 whitespace-nowrap text-right text-sm">
+    <div
+      className={classNames(
+        "space-y-2 whitespace-nowrap text-right text-sm",
+        balance.status === "cache" && "animate-pulse"
+      )}
+    >
       <div>
-        {balance.status === "cache" && (
-          <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />
-        )}
         <Tokens
           amount={balance.transferable.tokens}
           decimals={token.decimals}
@@ -59,7 +61,7 @@ const AccountTokenBalance = ({
           isBalance
         />
       </div>
-      <div className="text-xs">
+      <div className="text-body-secondary text-xs">
         <Fiat amount={balance.transferable.fiat("usd")} currency="usd" isBalance />
       </div>
     </div>
