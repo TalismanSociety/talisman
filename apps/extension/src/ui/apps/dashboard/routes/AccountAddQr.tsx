@@ -193,7 +193,7 @@ export const AccountAddQr = () => {
                         body: "It looks like you’ve blocked permissions for Talisman to access your camera",
                         extra: (
                           <button
-                            className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full py-4 px-6 text-xs font-light"
+                            className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]"
                             onClick={() => dispatch({ method: "enableScan" })}
                           >
                             Retry
@@ -213,7 +213,7 @@ export const AccountAddQr = () => {
                         body: "Allow Talisman to access your camera to scan QR codes",
                         extra: (
                           <button
-                            className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full py-4 px-6 text-xs font-light"
+                            className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]"
                             onClick={() => dispatch({ method: "enableScan" })}
                           >
                             Turn on Camera
@@ -222,7 +222,13 @@ export const AccountAddQr = () => {
                       },
                   {
                     title: "Open Parity Signer",
-                    body: "Select ‘Keys’ tab then select your account to reveal the QR code",
+                    body: (
+                      <>
+                        Select ‘Keys’ tab then select{" "}
+                        <span className="text-white">the top (root) account</span> to reveal the QR
+                        code
+                      </>
+                    ),
                   },
                   {
                     title: "Scan QR code",
@@ -231,16 +237,16 @@ export const AccountAddQr = () => {
                 ].map(({ title, body, extra, errorIcon }, index) => (
                   <li className="relative ml-20" key={index}>
                     {errorIcon ? (
-                      <div className=" border-alert-error text-alert-error text-tiny absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full border-2 font-bold">
+                      <div className=" border-alert-error text-alert-error absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full border-2 text-xs font-bold">
                         !
                       </div>
                     ) : (
-                      <div className="bg-black-tertiary text-body-secondary text-tiny absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full lining-nums">
+                      <div className="bg-black-tertiary text-body-secondary absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full text-xs lining-nums">
                         {index + 1}
                       </div>
                     )}
                     <div className="mb-8">{title}</div>
-                    <div className="text-body-secondary leading-10">{body}</div>
+                    <p className="text-body-secondary">{body}</p>
                     {extra ?? null}
                   </li>
                 ))}
@@ -293,8 +299,10 @@ export const AccountAddQr = () => {
             <FormFieldInputText
               type="text"
               placeholder="My Parity Signer Account"
+              containerProps={{ className: "!h-28" }}
               small
               value={state.name}
+              autoFocus
               onChange={(event) => dispatch({ method: "setName", name: event.target.value })}
             />
 

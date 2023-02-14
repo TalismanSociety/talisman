@@ -157,20 +157,20 @@ export const QrSubstrate = ({
       )}
     >
       {scanState !== "UPDATE_METADATA" && (
-        <header className="text-grey-400 grid h-32 w-full shrink-0 grid-cols-3 items-center px-12">
-          <span
-            className="flex h-16 w-16 cursor-pointer items-center p-2"
+        <header className="text-body-secondary flex h-32 w-full items-center px-12">
+          <button
+            className="flex h-16 w-16 cursor-pointer items-center p-2 text-lg hover:text-white"
             onClick={() => setScanState((scanState) => (scanState === "RECEIVE" ? "SEND" : "INIT"))}
           >
-            <ChevronLeftIcon className="h-full w-full " />
-          </span>
-          <span className="text-grey-600 text-center text-sm">Scan QR code</span>
-          <span>&nbsp;</span>
+            <ChevronLeftIcon />
+          </button>
+          <span className="text-body-secondary grow text-center">Scan QR code</span>
+          <span className="h-16 w-16">&nbsp;</span>
         </header>
       )}
       <section className={classNames("grow", "w-full", scanState !== "UPDATE_METADATA" && "px-12")}>
         {["SEND", "CHAINSPEC", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
-          <div className="flex h-full flex-col items-center justify-between">
+          <div className="flex h-full flex-col items-center justify-end">
             <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-9">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <LoaderIcon className="animate-spin-slow text-black" />
@@ -178,7 +178,7 @@ export const QrSubstrate = ({
               {qrCode ? <img className="relative h-full w-full" src={qrCode} /> : null}
             </div>
 
-            <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
+            <div className="text-body-secondary mt-14 mb-10 max-w-md text-center leading-10">
               Scan the QR code with the
               <br />
               Parity Signer app on your phone.
@@ -207,7 +207,7 @@ export const QrSubstrate = ({
                 </div>
                 {typeof chain?.latestMetadataQrUrl === "string" ? (
                   <button
-                    className="text-grey-50 hover:text-grey-300 mt-2 p-4 text-xs font-light"
+                    className="text-grey-200 mt-8 text-xs font-light hover:text-white"
                     onClick={() => setScanState("UPDATE_METADATA_PROMPT")}
                   >
                     Seeing a Parity Signer error?
