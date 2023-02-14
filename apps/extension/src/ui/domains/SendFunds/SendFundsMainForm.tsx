@@ -38,7 +38,7 @@ const Container: FC<ContainerProps> = (props) => {
     <div
       {...props}
       className={classNames("bg-grey-900 text-body-secondary rounded", props.className)}
-    ></div>
+    />
   )
 }
 
