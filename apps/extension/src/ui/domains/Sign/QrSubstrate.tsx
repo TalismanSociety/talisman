@@ -128,8 +128,8 @@ export const QrSubstrate = ({
 
   if (scanState === "INIT")
     return (
-      <div className={classNames("flex w-full flex-col", className)}>
-        <div className="flex w-full gap-12">
+      <div className={classNames("flex w-full flex-col items-center", className)}>
+        <div className="flex w-full items-center gap-12">
           <Button className="w-full" onClick={onReject}>
             Cancel
           </Button>
@@ -152,7 +152,7 @@ export const QrSubstrate = ({
   return (
     <div
       className={classNames(
-        "bg-black-primary absolute top-0 left-0 flex h-full w-full flex-col",
+        "bg-black-primary absolute top-0 left-0 flex h-full w-full flex-col items-center",
         className
       )}
     >
@@ -170,7 +170,7 @@ export const QrSubstrate = ({
       )}
       <section className={classNames("grow", "w-full", scanState !== "UPDATE_METADATA" && "px-12")}>
         {["SEND", "CHAINSPEC", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
-          <div className="flex h-full flex-col justify-between">
+          <div className="flex h-full flex-col items-center justify-between">
             <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-9">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <LoaderIcon className="animate-spin-slow text-black" />
@@ -186,8 +186,8 @@ export const QrSubstrate = ({
 
             {typeof chain?.chainspecQrUrl === "string" ||
             typeof chain?.latestMetadataQrUrl === "string" ? (
-              <div className="flex flex-col">
-                <div className="flex gap-4">
+              <div className="flex flex-col items-center">
+                <div className="flex items-center gap-4">
                   {typeof chain?.chainspecQrUrl === "string" ? (
                     <button
                       className="text-grey-400 bg-grey-800 hover:bg-grey-750 inline-block rounded-full py-4 px-6 text-sm font-light"
@@ -222,7 +222,7 @@ export const QrSubstrate = ({
 
         {scanState === "CHAINSPEC" && (
           <Drawer anchor="bottom" open={true} parent={parent}>
-            <div className="bg-black-tertiary flex flex-col rounded-t p-12">
+            <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
               <div className="mb-16 font-bold">Add network</div>
               <div className="relative mb-16 flex aspect-square w-full max-w-[16rem] items-center justify-center rounded-xl bg-white p-4">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -249,7 +249,7 @@ export const QrSubstrate = ({
 
         {scanState === "UPDATE_METADATA_PROMPT" && (
           <Drawer anchor="bottom" open={true} parent={parent}>
-            <div className="bg-black-tertiary flex flex-col rounded-t p-12">
+            <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
               <ParitySignerIcon className="mb-10 h-auto w-16" />
               <div className="mb-5 font-bold">You may need to update metadata</div>
               <div className="text-body-secondary mb-10 max-w-md text-center text-sm leading-10">
@@ -272,7 +272,7 @@ export const QrSubstrate = ({
         )}
 
         {scanState === "UPDATE_METADATA" && (
-          <div className="flex h-full w-full flex-col justify-between">
+          <div className="flex h-full w-full flex-col items-center justify-between">
             <div className="relative flex aspect-square w-full items-center justify-center bg-white p-10">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <LoaderIcon className="animate-spin-slow text-black" />
@@ -289,7 +289,7 @@ export const QrSubstrate = ({
         )}
 
         {scanState === "RECEIVE" && onSignature && (
-          <div className="flex h-full flex-col justify-between">
+          <div className="flex h-full flex-col items-center justify-between">
             <ScanQr type="signature" onScan={onSignature} size={280} />
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
               Scan the Parity Signer QR code.
@@ -300,7 +300,7 @@ export const QrSubstrate = ({
           </div>
         )}
       </section>
-      <footer className="flex w-full shrink-0 gap-12 px-12 py-10">
+      <footer className="flex w-full shrink-0 items-center gap-12 px-12 py-10">
         {["SEND", "CHAINSPEC", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
           <>
             <Button className="w-full" onClick={onReject}>
