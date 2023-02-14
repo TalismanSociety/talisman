@@ -128,7 +128,8 @@ const useSendFundsDetailsProvider = () => {
   }, [amount, recipientBalance, token])
 
   const { isValid, error } = useMemo(() => {
-    if (!from || !to || !amount || !tokenId) return { isValid: false, error: undefined }
+    if (!from || !to || !amount || !tokenId || !estimatedFee)
+      return { isValid: false, error: undefined }
 
     if (hasInsufficientFunds) return { isValid: false, error: "Insufficient funds" }
     if (!token || !feeToken) return { isValid: false, error: "Token not found" }
@@ -172,6 +173,7 @@ const useSendFundsDetailsProvider = () => {
     chain,
     errorRecipientBalance,
     estimateFeeError,
+    estimatedFee,
     evmNetwork,
     feeToken,
     from,

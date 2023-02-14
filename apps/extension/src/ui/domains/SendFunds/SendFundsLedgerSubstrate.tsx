@@ -71,7 +71,7 @@ const SendFundsLedgerSubstrate = () => {
   if (!isLocked || signed)
     return (
       <Button
-        disabled={!subTransaction}
+        disabled={!subTransaction?.unsigned}
         className="mt-12 w-full"
         primary
         onClick={sendToLedger(true)}
@@ -82,7 +82,7 @@ const SendFundsLedgerSubstrate = () => {
     )
 
   // hide when done
-  if (!subTransaction) return null
+  if (!subTransaction?.unsigned) return null
 
   return (
     <LedgerSubstrate

@@ -26,7 +26,7 @@ export const useAssetDetails = (balances: Balances) => {
         ),
       }),
       {} as Record<ChainId | EvmNetworkId, Balances>
-    )
+    ) as Record<ChainId | EvmNetworkId, Balances>
   }, [balances.sorted, chainIds, hydrate])
 
   return { balancesByChain, isLoading }

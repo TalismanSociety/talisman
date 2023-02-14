@@ -83,7 +83,14 @@ const useSubTransaction = (
     enabled: !isLocked,
   })
 
-  return qSubstrateEstimateFee.data ?? undefined
+  return useMemo(() => {
+    if (!isSubToken(token)) return undefined
+
+    const { partialFee, unsigned, pendingTransferId } = qSubstrateEstimateFee.data ?? {}
+    const { isLoading, isRefetching, error } = qSubstrateEstimateFee
+
+    return { partialFee, unsigned, pendingTransferId, isLoading, isRefetching, error }
+  }, [qSubstrateEstimateFee, token])
 }
 
 export const useSendFundsConfirmProvider = () => {
