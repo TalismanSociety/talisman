@@ -171,7 +171,7 @@ export const QrSubstrate = ({
       <section className={classNames("grow", "w-full", scanState !== "UPDATE_METADATA" && "px-12")}>
         {["SEND", "CHAINSPEC", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
           <div className="flex h-full flex-col items-center justify-end">
-            <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-9">
+            <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-4">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <LoaderIcon className="animate-spin-slow text-black" />
               </div>
@@ -224,7 +224,7 @@ export const QrSubstrate = ({
           <Drawer anchor="bottom" open={true} parent={parent}>
             <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
               <div className="mb-16 font-bold">Add network</div>
-              <div className="relative mb-16 flex aspect-square w-full max-w-[16rem] items-center justify-center rounded-xl bg-white p-4">
+              <div className="relative mb-16 flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-2">
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <LoaderIcon className="animate-spin-slow text-black" />
                 </div>
