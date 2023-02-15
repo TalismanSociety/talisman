@@ -15,9 +15,12 @@ import { useEffect, useState } from "react"
 
 import log from "../log"
 
-// TODO: Allow user to call useChaindata from multiple places
+export type Options = {
+  onfinalityApiKey?: string
+}
 
-export function useChaindata() {
+// TODO: Allow user to call useChaindata from multiple places
+export function useChaindata(options: Options = {}) {
   const [chaindataProvider, setChaindataProvider] = useState<
     (ChaindataProvider & { generation?: number }) | null
   >(null)
@@ -26,7 +29,9 @@ export function useChaindata() {
   const [generation, setGeneration] = useState(0)
 
   useEffect(() => {
-    const chaindataProvider = new ChaindataProviderExtension()
+    const chaindataProvider = new ChaindataProviderExtension({
+      onfinalityApiKey: options.onfinalityApiKey,
+    })
 
     let shouldHydrate = true
 
@@ -54,7 +59,7 @@ export function useChaindata() {
     return () => {
       shouldHydrate = false
     }
-  }, [])
+  }, [options.onfinalityApiKey])
 
   if (chaindataProvider) chaindataProvider.generation = generation
   return chaindataProvider
@@ -72,7 +77,7 @@ export function useChains(
       if (thisGeneration !== chaindata.generation) return
       setChains(chains)
     })
-  }, [chaindata?.generation])
+  }, [chaindata, chaindata?.generation])
 
   return chains || {}
 }
@@ -86,7 +91,7 @@ export function useChain(
     if (chaindata === null) return
     if (!chainId) return
     chaindata.getChain(chainId).then(setChain)
-  }, [chaindata?.generation])
+  }, [chainId, chaindata, chaindata?.generation])
 
   return chain
 }
@@ -103,7 +108,7 @@ export function useEvmNetworks(
       if (thisGeneration !== chaindata.generation) return
       setEvmNetworks(evmNetworks)
     })
-  }, [chaindata?.generation])
+  }, [chaindata, chaindata?.generation])
 
   return evmNetworks || {}
 }
@@ -117,7 +122,7 @@ export function useEvmNetwork(
     if (chaindata === null) return
     if (!evmNetworkId) return
     chaindata.getEvmNetwork(evmNetworkId).then(setEvmNetwork)
-  }, [chaindata?.generation])
+  }, [chaindata, chaindata?.generation, evmNetworkId])
 
   return evmNetwork
 }
@@ -134,7 +139,7 @@ export function useTokens(
       if (thisGeneration !== chaindata.generation) return
       setTokens(tokens)
     })
-  }, [chaindata?.generation])
+  }, [chaindata, chaindata?.generation])
 
   return tokens || {}
 }
@@ -148,7 +153,7 @@ export function useToken(
     if (chaindata === null) return
     if (!tokenId) return
     chaindata.getToken(tokenId).then(setToken)
-  }, [chaindata?.generation])
+  }, [chaindata, chaindata?.generation, tokenId])
 
   return token
 }
