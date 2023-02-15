@@ -21,7 +21,6 @@
     "node": ">=14"
   },
   "scripts": {
-    "test": "jest",
     "lint": "eslint . --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
