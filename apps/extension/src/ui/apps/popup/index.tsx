@@ -1,4 +1,8 @@
-import { isEthereumRequest } from "@core/util/isEthereumRequest"
+import { ENCRYPT_ENCRYPT_PREFIX } from "@core/domains/encrypt/types"
+import { ETH_NETWORK_ADD_PREFIX, WATCH_ASSET_PREFIX } from "@core/domains/ethereum/types"
+import { METADATA_PREFIX } from "@core/domains/metadata/types"
+import { SIGNING_TYPES } from "@core/domains/signing/types"
+import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { api } from "@ui/api"
 import {
@@ -54,18 +58,18 @@ const PendingRequestRedirect = () => {
   // detect any pending requests and redirect to the appropriate page
   useEffect(() => {
     if (authRequests.length) {
-      navigate(`/auth/${authRequests[0].id}`)
+      navigate(`/${AUTH_PREFIX}/${authRequests[0].id}`)
     } else if (ethNetworkAddRequests.length) {
-      navigate(`/eth-network-add/${ethNetworkAddRequests[0].id}`)
+      navigate(`/${ETH_NETWORK_ADD_PREFIX}/${ethNetworkAddRequests[0].id}`)
     } else if (ethWatchAssetRequests.length) {
-      navigate(`/eth-watchasset/${ethWatchAssetRequests[0].id}`)
+      navigate(`/${WATCH_ASSET_PREFIX}/${ethWatchAssetRequests[0].id}`)
     } else if (metaDataRequests.length) {
-      navigate(`/metadata/${metaDataRequests[0].id}`)
+      navigate(`/${METADATA_PREFIX}/${metaDataRequests[0].id}`)
     } else if (signingRequests.length) {
       const req = signingRequests[0]
-      navigate(isEthereumRequest(req) ? `/sign/eth/${req.id}` : `/sign/${req.id}`)
+      navigate(`/${req.type}/${req.id}`)
     } else if (encryptRequests.length) {
-      navigate(`/encrypt/${encryptRequests[0].id}`)
+      navigate(`/${ENCRYPT_ENCRYPT_PREFIX}/${encryptRequests[0].id}`)
     }
   }, [
     authRequests,
@@ -123,13 +127,25 @@ const Popup = () => {
                     <AddressFormatterModalProvider>
                       <Routes>
                         <Route path="portfolio/*" element={<Portfolio />}></Route>
-                        <Route path="auth/:id" element={<Connect />}></Route>
-                        <Route path="sign/eth/:id" element={<EthereumSignRequest />}></Route>
-                        <Route path="sign/:id" element={<SubstrateSignRequest />}></Route>
-                        <Route path="metadata/:id" element={<Metadata />}></Route>
-                        <Route path="encrypt/:id" element={<Encrypt />}></Route>
-                        <Route path="eth-network-add/:id" element={<AddEthereumNetwork />}></Route>
-                        <Route path="eth-watchasset/:id" element={<AddCustomErc20Token />}></Route>
+                        <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
+                        <Route
+                          path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
+                          element={<EthereumSignRequest />}
+                        ></Route>
+                        <Route
+                          path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
+                          element={<SubstrateSignRequest />}
+                        ></Route>
+                        <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
+                        <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
+                        <Route
+                          path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
+                          element={<AddEthereumNetwork />}
+                        ></Route>
+                        <Route
+                          path={`${WATCH_ASSET_PREFIX}/:id`}
+                          element={<AddCustomErc20Token />}
+                        ></Route>
                         <Route path="*" element={<Navigate to="/portfolio" replace />} />
                       </Routes>
                       <AccountRenameModal />

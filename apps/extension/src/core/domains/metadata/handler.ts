@@ -1,13 +1,14 @@
 import { db } from "@core/db"
 import { RequestMetadataApprove, RequestMetadataReject } from "@core/domains/metadata/types"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { requestStore } from "@core/libs/requests/store"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { assert } from "@polkadot/util"
 
 export default class MetadataHandler extends ExtensionHandler {
   private async metadataApprove({ id }: RequestMetadataApprove): Promise<boolean> {
-    const queued = this.state.requestStores.metadata.getRequest(id)
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -21,7 +22,7 @@ export default class MetadataHandler extends ExtensionHandler {
   }
 
   private metadataReject({ id }: RequestMetadataReject): boolean {
-    const queued = this.state.requestStores.metadata.getRequest(id)
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -50,7 +51,7 @@ export default class MetadataHandler extends ExtensionHandler {
         return this.metadataReject(request as RequestMetadataReject)
 
       case "pri(metadata.requests)":
-        return this.state.requestStores.metadata.subscribe<"pri(metadata.requests)">(id, port)
+        return requestStore.subscribe<"pri(metadata.requests)">(id, port, ["metadata"])
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

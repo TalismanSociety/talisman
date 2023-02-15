@@ -1,24 +1,28 @@
 import { AccountTypes } from "@core/domains/accounts/types"
-import type { AnySigningRequest, RequestSigningCancel } from "@core/domains/signing/types"
+import type {
+  AnySigningRequest,
+  KnownSigningRequestIdOnly,
+  RequestSigningApproveSignature,
+} from "@core/domains/signing/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
-import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
+import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { requestStore } from "@core/libs/requests/store"
 import { watchSubstrateTransaction } from "@core/notifications"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
-import { Port, RequestIdOnly } from "@core/types/base"
+import type { MessageTypes, RequestType, ResponseType } from "@core/types"
+import { Port } from "@core/types/base"
 import { getTransactionDetails } from "@core/util/getTransactionDetails"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import isJsonPayload from "@core/util/isJsonPayload"
-import { RequestSigningApproveSignature } from "@polkadot/extension-base/background/types"
 import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 
 export default class SigningHandler extends ExtensionHandler {
-  private async signingApprove({ id }: RequestIdOnly) {
-    const queued = this.state.requestStores.signing.getPolkadotRequest(id)
+  private async signingApprove({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -86,7 +90,7 @@ export default class SigningHandler extends ExtensionHandler {
     id,
     signature,
   }: RequestSigningApproveSignature): Promise<boolean> {
-    const queued = this.state.requestStores.signing.getPolkadotRequest(id)
+    const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
     const {
@@ -122,11 +126,11 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
-  private signingCancel({ id }: RequestSigningCancel): boolean {
+  private async signingCancel({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
     /*
      * This method used for both Eth and Polkadot requests
      */
-    const queued = this.state.requestStores.signing.getRequest(id)
+    const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
     talismanAnalytics.captureDelayed("sign reject", {
@@ -137,9 +141,10 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
-  private async decode({ id }: RequestIdOnly) {
-    const queued = this.state.requestStores.signing.getPolkadotRequest(id)
-    assert(queued, "Unable to find request")
+  private async decode({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
+    const queued = requestStore.getRequest(id)
+    if (!queued) return null
+
     if (!isJsonPayload(queued.request.payload)) return null
 
     // analyse the call to extract args and docs
@@ -149,28 +154,25 @@ export default class SigningHandler extends ExtensionHandler {
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
-    request: RequestTypes[TMessageType],
+    request: RequestType<TMessageType>,
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(signing.requests)":
-        return this.state.requestStores.signing.subscribe<"pri(signing.requests)">(id, port)
-
-      case "pri(app.authStatus.subscribe)":
-        return genericSubscription<"pri(app.authStatus.subscribe)">(
-          id,
-          port,
-          this.stores.password.isLoggedIn
-        )
+        return requestStore.subscribe<"pri(signing.requests)">(id, port, [
+          "eth-sign",
+          "eth-send",
+          "substrate-sign",
+        ])
 
       case "pri(signing.byid.subscribe)": {
         const cb = createSubscription<"pri(signing.byid.subscribe)">(id, port)
-        const subscription = this.state.requestStores.signing.observable.subscribe(
-          (reqs: AnySigningRequest[]) => {
-            const signRequest = reqs.find((req) => req.id === (request as RequestIdOnly).id)
-            if (signRequest) cb(signRequest)
-          }
-        )
+        const subscription = requestStore.observable.subscribe((reqs) => {
+          const signRequest = reqs.find(
+            (req) => req.id === (request as RequestType<"pri(signing.byid.subscribe)">).id
+          ) as AnySigningRequest | undefined
+          if (signRequest) cb(signRequest)
+        })
 
         port.onDisconnect.addListener((): void => {
           unsubscribe(id)
@@ -180,19 +182,19 @@ export default class SigningHandler extends ExtensionHandler {
       }
 
       case "pri(signing.approveSign)":
-        return await this.signingApprove(request as RequestIdOnly)
+        return await this.signingApprove(request as RequestType<"pri(signing.approveSign)">)
 
       case "pri(signing.approveSign.hardware)":
-        return this.signingApproveExternal(request as RequestSigningApproveSignature)
+        return await this.signingApproveExternal(request as RequestSigningApproveSignature)
 
       case "pri(signing.approveSign.qr)":
-        return this.signingApproveExternal(request as RequestSigningApproveSignature)
+        return await this.signingApproveExternal(request as RequestSigningApproveSignature)
 
       case "pri(signing.cancel)":
-        return this.signingCancel(request as RequestSigningCancel)
+        return this.signingCancel(request as RequestType<"pri(signing.cancel)">)
 
       case "pri(signing.details)":
-        return this.decode(request as RequestIdOnly)
+        return this.decode(request as RequestType<"pri(signing.details)">)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

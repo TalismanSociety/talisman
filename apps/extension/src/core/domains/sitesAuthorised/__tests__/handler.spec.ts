@@ -2,7 +2,6 @@
 // import Extension from "./Extension"
 import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import Extension from "@core/handlers/Extension"
-import State from "@core/handlers/State"
 import { extensionStores } from "@core/handlers/stores"
 /* eslint-disable no-console */
 import { AccountsStore } from "@polkadot/extension-base/stores"
@@ -20,7 +19,6 @@ keyring.loadAll({ store: new AccountsStore() })
 
 describe("Sites Authorised Handler", () => {
   let handler: Extension
-  let state: State
   let messageSender: ReturnType<typeof getMessageSenderFn>
   const password = "passw0rd"
   let sitesStore: AuthorizedSites
@@ -28,8 +26,7 @@ describe("Sites Authorised Handler", () => {
   async function createExtension(): Promise<Extension> {
     await cryptoWaitReady()
 
-    state = new State()
-    return new Extension(state, extensionStores)
+    return new Extension(extensionStores)
   }
 
   afterAll(async () => {

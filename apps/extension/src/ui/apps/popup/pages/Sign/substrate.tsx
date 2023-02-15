@@ -1,5 +1,5 @@
 import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
-import { SignerPayloadRaw, SigningRequest } from "@core/domains/signing/types"
+import { KnownSigningRequestIdOnly, SignerPayloadRaw } from "@core/domains/signing/types"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
@@ -20,8 +20,8 @@ import { Container } from "./common"
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
 export const SubstrateSignRequest = () => {
-  const { id } = useParams() as { id: string }
-  const signingRequest = useSigningRequestById(id) as SigningRequest | undefined
+  const { id } = useParams() as KnownSigningRequestIdOnly<"substrate-sign">
+  const signingRequest = useSigningRequestById(id)
   const {
     url,
     request,
@@ -103,10 +103,10 @@ export const SubstrateSignRequest = () => {
                 </SimpleButton>
               </div>
             )}
-            {account.origin === "HARDWARE" && (
+            {account.origin === "HARDWARE" && reject && (
               <Suspense fallback={null}>
                 <LedgerSubstrate
-                  payload={(request as SigningRequest["request"]).payload}
+                  payload={request.payload}
                   account={account as AccountJsonHardwareSubstrate}
                   genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                   onSignature={approveHardware}
@@ -114,10 +114,10 @@ export const SubstrateSignRequest = () => {
                 />
               </Suspense>
             )}
-            {account.origin === "QR" && (
+            {account.origin === "QR" && reject && (
               <Suspense fallback={null}>
                 <QrSubstrate
-                  payload={(request as SigningRequest["request"]).payload}
+                  payload={request.payload}
                   account={account as AccountJsonQr}
                   genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                   onSignature={approveQr}

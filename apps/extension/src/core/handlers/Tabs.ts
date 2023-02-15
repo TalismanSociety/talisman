@@ -6,19 +6,23 @@ import {
 } from "@core/domains/accounts/helpers"
 import { RequestAccountList } from "@core/domains/accounts/types"
 import { protector } from "@core/domains/app/protector"
+import { requestDecrypt, requestEncrypt } from "@core/domains/encrypt/requests"
 import {
   DecryptPayload,
   EncryptPayload,
-  ResponseDecrypt,
-  ResponseEncrypt,
+  ResponseEncryptDecrypt,
+  ResponseEncryptEncrypt,
 } from "@core/domains/encrypt/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
+import { requestInjectMetadata } from "@core/domains/metadata/requests"
+import { signSubstrate } from "@core/domains/signing/requests"
 import type { ResponseSigning } from "@core/domains/signing/types"
+import { requestAuthoriseSite } from "@core/domains/sitesAuthorised/requests"
 import { AuthorizedSites, RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
-import State from "@core/handlers/State"
 import { TabStore } from "@core/handlers/stores"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { TabsHandler } from "@core/libs/Handler"
+import { log } from "@core/log"
 import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "@core/types"
 import type { Port } from "@core/types/base"
 import { urlToDomain } from "@core/util/urlToDomain"
@@ -53,12 +57,12 @@ export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()
   readonly #routes: Record<string, TabsHandler> = {}
 
-  constructor(state: State, stores: TabStore) {
-    super(state, stores)
+  constructor(stores: TabStore) {
+    super(stores)
 
     // routing to sub-handlers
     this.#routes = {
-      eth: new EthTabsHandler(state, stores),
+      eth: new EthTabsHandler(stores),
     }
   }
 
@@ -74,8 +78,13 @@ export default class Tabs extends TabsHandler {
 
       return false
     }
-
-    return await this.state.requestStores.sites.requestAuthorizeUrl(url, request)
+    try {
+      await requestAuthoriseSite(url, request)
+    } catch (err) {
+      log.error(err)
+      return false
+    }
+    return true
   }
 
   private async accountsList(
@@ -130,7 +139,7 @@ export default class Tabs extends TabsHandler {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return this.state.requestStores.signing.sign(url, new RequestBytesSign(request), {
+    return signSubstrate(url, new RequestBytesSign(request), {
       address,
       ...pair.meta,
     })
@@ -140,33 +149,33 @@ export default class Tabs extends TabsHandler {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return this.state.requestStores.signing.sign(url, new RequestExtrinsicSign(request), {
+    return signSubstrate(url, new RequestExtrinsicSign(request), {
       address,
       ...pair.meta,
     })
   }
 
-  private messageEncrypt(url: string, request: EncryptPayload): Promise<ResponseEncrypt> {
+  private messageEncrypt(url: string, request: EncryptPayload): Promise<ResponseEncryptEncrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
-    return this.state.requestStores.encrypt.encrypt(url, request, {
+    return requestEncrypt(url, request, {
       address,
       ...pair.meta,
     })
   }
 
-  private messageDecrypt(url: string, request: DecryptPayload): Promise<ResponseDecrypt> {
+  private messageDecrypt(url: string, request: DecryptPayload): Promise<ResponseEncryptDecrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return this.state.requestStores.encrypt.decrypt(url, request, {
+    return requestDecrypt(url, request, {
       address,
       ...pair.meta,
     })
   }
 
   private metadataProvide(url: string, request: MetadataDef): Promise<boolean> {
-    return this.state.requestStores.metadata.injectMetadata(url, request)
+    return requestInjectMetadata(url, request)
   }
 
   private async metadataList(): Promise<InjectedMetadataKnown[]> {

@@ -7,13 +7,11 @@ import type { MessageTypes, TransportRequestMessage } from "core/types"
 import { Runtime } from "webextension-polyfill"
 
 import Extension from "./Extension"
-import TalismanState from "./State"
 import { extensionStores, tabStores } from "./stores"
 import Tabs from "./Tabs"
 
-const state = new TalismanState()
-const extension = new Extension(state, extensionStores)
-const tabs = new Tabs(state, tabStores)
+const extension = new Extension(extensionStores)
+const tabs = new Tabs(tabStores)
 
 const formatFrom = (source: string) => {
   if (["extension", "<unknown>"].includes(source)) return source

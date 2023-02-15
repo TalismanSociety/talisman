@@ -1,4 +1,3 @@
-import State from "@core/handlers/State"
 import { ExtensionStore, Store, TabStore } from "@core/handlers/stores"
 import type { MessageTypes, RequestSignatures, RequestType, ResponseType } from "@core/types"
 import type { Port } from "@core/types/base"
@@ -14,16 +13,10 @@ interface THandler {
 }
 
 abstract class BaseHandler<TStore extends Store> implements THandler {
-  #state: State
   #stores: TStore
 
-  constructor(state: State, stores: TStore) {
-    this.#state = state
+  constructor(stores: TStore) {
     this.#stores = stores
-  }
-
-  protected get state() {
-    return this.#state
   }
 
   protected get stores() {
