@@ -3,14 +3,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import {
-  ChevronLeftIcon,
-  CopyIcon,
-  IconMore,
-  PaperPlaneIcon,
-  ParitySignerIcon,
-  UsbIcon,
-} from "@talisman/theme/icons"
+import { ChevronLeftIcon, CopyIcon, IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"

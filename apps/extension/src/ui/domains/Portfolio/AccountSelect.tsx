@@ -1,6 +1,6 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { breakpoints } from "@talisman/theme/definitions"
-import { AllAccountsIcon, ChevronDownIcon, ParitySignerIcon, UsbIcon } from "@talisman/theme/icons"
+import { AllAccountsIcon, ChevronDownIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames } from "@talismn/util"

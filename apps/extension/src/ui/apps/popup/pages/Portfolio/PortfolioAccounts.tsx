@@ -7,8 +7,6 @@ import {
   CopyIcon,
   CreditCardIcon,
   PaperPlaneIcon,
-  ParitySignerIcon,
-  UsbIcon,
   ZapIcon,
 } from "@talisman/theme/icons"
 import { api } from "@ui/api"
