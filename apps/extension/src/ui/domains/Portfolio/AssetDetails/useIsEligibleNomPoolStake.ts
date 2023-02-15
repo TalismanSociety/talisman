@@ -52,7 +52,7 @@ export const useIsEligibleNomPoolStake = ({
       Object.fromEntries(
         substrateAddresses.map((address) => {
           const isAddressEligible =
-            Boolean(eligibleAddressBalances[address]) && nomPoolStake[address] !== undefined
+            Boolean(eligibleAddressBalances[address]) && nomPoolStake[address] === false
 
           return [address, NOM_POOL_SUPPORTED_CHAINS.includes(chainId) && isAddressEligible]
         })
