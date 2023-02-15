@@ -29,7 +29,7 @@ import Fiat from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
-import { SendFundsDetailsProvider, useSendFundsDetails } from "./useSendFundsDetails"
+import { SendFundsMainFormProvider, useSendFundsMainForm } from "./useSendFundsMainForm"
 
 type ContainerProps = DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
 
@@ -91,7 +91,7 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
 
 const TokenInput = () => {
   const { set, remove } = useSendFundsWizard()
-  const { token, sendAmount } = useSendFundsDetails()
+  const { token, sendAmount } = useSendFundsMainForm()
 
   const placeholder = useMemo(() => `0${token ? ` ${token.symbol}` : ""}`, [token])
 
@@ -143,7 +143,7 @@ const FIAT_PLACEHOLDER = "$0.00"
 
 const FiatInput = () => {
   const { set, remove } = useSendFundsWizard()
-  const { token, sendAmount, tokenRates } = useSendFundsDetails()
+  const { token, sendAmount, tokenRates } = useSendFundsMainForm()
 
   const [text, setText] = useState<string>("")
 
@@ -198,7 +198,7 @@ const FiatInput = () => {
 }
 
 const FiatDisplay = () => {
-  const { tokenRates, sendAmount } = useSendFundsDetails()
+  const { tokenRates, sendAmount } = useSendFundsMainForm()
 
   if (!tokenRates) return null
 
@@ -206,7 +206,7 @@ const FiatDisplay = () => {
 }
 
 const TokenDisplay = () => {
-  const { token, sendAmount } = useSendFundsDetails()
+  const { token, sendAmount } = useSendFundsMainForm()
 
   if (!token) return null
 
@@ -221,23 +221,27 @@ const TokenDisplay = () => {
 }
 
 const ErrorMessage = () => {
-  const { error } = useSendFundsDetails()
+  const { error } = useSendFundsMainForm()
 
   return error ? (
-    <div className="inline-flex items-center gap-2">
-      <IconAlert />
-      <span>{error}</span>
-    </div>
+    <span>
+      <IconAlert className="inline-block align-text-top text-sm" /> {error}
+    </span>
   ) : null
 }
 
 const AmountEdit = () => {
+  const { sendMax, set } = useSendFundsWizard()
   const [isTokenEdit, setIsTokenEdit] = useState(true)
-  const { tokenRates } = useSendFundsDetails()
+  const { tokenRates } = useSendFundsMainForm()
 
   const toggleIsTokenEdit = useCallback(() => {
     setIsTokenEdit((prev) => !prev)
   }, [])
+
+  const toggleSendMax = useCallback(() => {
+    set("sendMax", !sendMax)
+  }, [sendMax, set])
 
   return (
     <div className="w-full grow">
@@ -257,7 +261,14 @@ const AmountEdit = () => {
             <SwapIcon />
           </PillButton>
         )}
-        <PillButton size="xs" className="h-[2.2rem] rounded-sm py-0 px-4">
+        <PillButton
+          onClick={toggleSendMax}
+          size="xs"
+          className={classNames(
+            "h-[2.2rem] rounded-sm py-0 px-4",
+            sendMax && "bg-primary/20 text-primary"
+          )}
+        >
           Max
         </PillButton>
       </div>
@@ -270,7 +281,7 @@ const AmountEdit = () => {
 
 const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
   const { tokenId } = useSendFundsWizard()
-  const { balance, token } = useSendFundsDetails()
+  const { balance, token } = useSendFundsMainForm()
 
   return (
     <Container className="flex h-[50px] w-full items-center justify-between px-6 py-4">
@@ -300,7 +311,7 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
 }
 
 const NetworkRow = () => {
-  const { chain, evmNetwork } = useSendFundsDetails()
+  const { chain, evmNetwork } = useSendFundsMainForm()
 
   const { networkId, networkName } = useMemo(
     () => ({
@@ -324,7 +335,7 @@ const NetworkRow = () => {
 }
 
 const EstimatedFeeRow = () => {
-  const { feeToken, estimatedFee, isEstimatingFee } = useSendFundsDetails()
+  const { feeToken, estimatedFee, isEstimatingFee } = useSendFundsMainForm()
 
   return (
     <Container className="flex w-full items-center justify-between gap-4 px-8 py-4">
@@ -365,7 +376,7 @@ const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
 
 const ReviewButton = () => {
   const { gotoReview, tokenId, set } = useSendFundsWizard()
-  const { isValid, tokensToBeReaped, token } = useSendFundsDetails()
+  const { isValid, tokensToBeReaped, token } = useSendFundsMainForm()
   const { open, close, isOpen } = useOpenClose()
 
   const handleClick = useCallback(() => {
@@ -444,7 +455,7 @@ export const SendFundsMainForm = () => {
   }, [])
 
   return (
-    <SendFundsDetailsProvider>
+    <SendFundsMainFormProvider>
       <form
         onSubmit={handleSubmit}
         className="flex h-full w-full flex-col overflow-hidden px-12 pb-8"
@@ -479,6 +490,6 @@ export const SendFundsMainForm = () => {
         </div>
         <ReviewButton />
       </form>
-    </SendFundsDetailsProvider>
+    </SendFundsMainFormProvider>
   )
 }

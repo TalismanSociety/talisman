@@ -12,10 +12,11 @@ type SendFundsWizardParams = {
   amount: string // planck
   transferAll: boolean
   allowReap: boolean
+  sendMax: boolean
 }
 
 const STRING_PROPS = ["from", "to", "tokenId", "amount"]
-const BOOL_PROPS = ["transferAll", "allowReap"]
+const BOOL_PROPS = ["transferAll", "allowReap", "sendMax"]
 
 export type SendFundsWizardPage = "from" | "to" | "token" | "amount" | "confirm"
 
@@ -23,7 +24,7 @@ const useSendFundsWizardProvider = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const { from, to, tokenId, amount, transferAll, allowReap } = useMemo(
+  const { from, to, tokenId, amount, transferAll, allowReap, sendMax } = useMemo(
     () => ({
       from: searchParams.get("from") ?? undefined,
       to: searchParams.get("to") ?? undefined,
@@ -31,12 +32,10 @@ const useSendFundsWizardProvider = () => {
       amount: searchParams.get("amount") ?? undefined,
       transferAll: searchParams.get("transferAll") !== null,
       allowReap: searchParams.get("allowReap") !== null,
+      sendMax: searchParams.get("sendMax") !== null,
     }),
     [searchParams]
   )
-
-  // const account = useAccountByAddress(from as string)
-  // const token = useToken(tokenId as string)
 
   const goto = useCallback(
     (page: SendFundsWizardPage, replace?: boolean) => {
@@ -45,14 +44,6 @@ const useSendFundsWizardProvider = () => {
     },
     [navigate, searchParams]
   )
-
-  // const gotoNext = useCallback(() => {
-  //   console.log("gotoNext", { account, token, to })
-  //   if (!account) return goto("from")
-  //   if (!token) return goto("token")
-  //   if (!to) return goto("to")
-  //   return goto("amount")
-  // }, [account, goto, to, token])
 
   const set = useCallback(
     <T extends keyof SendFundsWizardParams>(
@@ -144,13 +135,27 @@ const useSendFundsWizardProvider = () => {
       amount,
       transferAll,
       allowReap,
+      sendMax,
       set,
       remove,
       goto,
       gotoReview,
       gotoProgress,
     }),
-    [from, to, tokenId, amount, transferAll, allowReap, set, remove, goto, gotoReview, gotoProgress]
+    [
+      from,
+      to,
+      tokenId,
+      amount,
+      transferAll,
+      allowReap,
+      sendMax,
+      set,
+      remove,
+      goto,
+      gotoReview,
+      gotoProgress,
+    ]
   )
 
   // useEffect(() => {

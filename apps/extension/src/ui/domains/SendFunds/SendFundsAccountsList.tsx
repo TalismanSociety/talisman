@@ -59,10 +59,11 @@ const AccountTokenBalance = ({
           decimals={token.decimals}
           symbol={token.symbol}
           isBalance
+          noCountUp
         />
       </div>
       <div className="text-body-secondary text-xs">
-        <Fiat amount={balance.transferable.fiat("usd")} currency="usd" isBalance />
+        <Fiat amount={balance.transferable.fiat("usd")} currency="usd" isBalance noCountUp />
       </div>
     </div>
   )

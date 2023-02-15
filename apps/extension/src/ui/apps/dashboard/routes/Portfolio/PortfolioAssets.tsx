@@ -9,7 +9,6 @@ import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExpo
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
-import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { FundYourWallet } from "@ui/domains/Portfolio/FundYourWallet"

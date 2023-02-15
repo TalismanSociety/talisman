@@ -1,11 +1,8 @@
 import { log } from "@core/log"
-import { assert } from "@polkadot/util"
 import { provideContext } from "@talisman/util/provideContext"
-import { Address, Balance, BalanceFormatter, BalanceJson } from "@talismn/balances"
-import { SubNativeBalance } from "@talismn/balances-substrate-native"
-import { SubOrmlBalance } from "@talismn/balances-substrate-orml"
+import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
-import { formatDecimals, planckToTokens } from "@talismn/util"
+import { formatDecimals } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -13,7 +10,6 @@ import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useBalance } from "@ui/hooks/useBalance"
 import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
 import useChain from "@ui/hooks/useChain"
-import { useDebouncedState } from "@ui/hooks/useDebouncedState"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
@@ -40,7 +36,7 @@ const useRecipientBalance = (token?: Token, address?: Address | null) => {
   })
 }
 
-const useSendFundsDetailsProvider = () => {
+const useSendFundsMainFormProvider = () => {
   const { from, to, amount, tokenId } = useSendFundsWizard()
   const fromAccount = useAccountByAddress(from)
   const token = useToken(tokenId)
@@ -128,19 +124,21 @@ const useSendFundsDetailsProvider = () => {
   }, [amount, recipientBalance, token])
 
   const { isValid, error } = useMemo(() => {
-    if (!from || !to || !amount || !tokenId || !estimatedFee)
-      return { isValid: false, error: undefined }
+    if (!from || !to || !amount || !tokenId) return { isValid: false, error: undefined }
 
     if (hasInsufficientFunds) return { isValid: false, error: "Insufficient funds" }
     if (!token || !feeToken) return { isValid: false, error: "Token not found" }
 
-    if (estimateFeeError)
+    if (estimateFeeError) {
       return {
         isValid: false,
-        error: ("Failed to estimate fees : " +
-          ((estimateFeeError as any).reason ?? (estimateFeeError as any).error?.message) ??
-          (estimateFeeError as Error).message) as string,
+        error:
+          //"Failed to estimate fees : " +
+          ((estimateFeeError as any).reason ??
+            (estimateFeeError as any).error?.message ??
+            (estimateFeeError as Error).message) as string,
       }
+    }
 
     switch (token.type) {
       case "evm-erc20":
@@ -161,6 +159,7 @@ const useSendFundsDetailsProvider = () => {
       }
     }
 
+    // TODO warn only if amount is lower than ED
     if (errorRecipientBalance)
       return {
         isValid: true,
@@ -173,7 +172,6 @@ const useSendFundsDetailsProvider = () => {
     chain,
     errorRecipientBalance,
     estimateFeeError,
-    estimatedFee,
     evmNetwork,
     feeToken,
     from,
@@ -272,12 +270,16 @@ const useSendFundsDetailsProvider = () => {
   )
 
   // useEffect(() => {
+  //   log.log("SendFundsDetailsProvider", { estimateFeeError })
+  // }, [estimateFeeError])
+
+  // useEffect(() => {
   //   log.log(ctx)
   // }, [ctx])
 
   return ctx
 }
 
-export const [SendFundsDetailsProvider, useSendFundsDetails] = provideContext(
-  useSendFundsDetailsProvider
+export const [SendFundsMainFormProvider, useSendFundsMainForm] = provideContext(
+  useSendFundsMainFormProvider
 )

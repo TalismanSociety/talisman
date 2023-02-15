@@ -4,7 +4,7 @@ import { SendFundsLayout } from "./SendFundsLayout"
 
 export const SendFundsAmount = () => {
   return (
-    <SendFundsLayout title="Send">
+    <SendFundsLayout withBackLink title="Send">
       <SendFundsMainForm />
     </SendFundsLayout>
   )

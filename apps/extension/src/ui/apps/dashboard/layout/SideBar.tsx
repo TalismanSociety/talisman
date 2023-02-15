@@ -15,6 +15,7 @@ import {
   UserIcon,
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
+import { api } from "@ui/api"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { useReceiveTokensModal } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
@@ -236,16 +237,17 @@ const ExtLinkIcon = styled(({ className }: { className?: string }) => (
 
 export const SideBar = () => {
   const { account } = useSelectedAccount()
-  const { open: openSendTokens } = useSendTokensModal()
   const { open: openCopyAddressModal } = useAddressFormatterModal()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
 
   const handleSendClick = useCallback(() => {
-    openSendTokens({ from: account?.address })
+    api.sendFundsOpen({
+      from: account?.address,
+    })
     genericEvent("open send funds", { from: "sidebar" })
-  }, [account?.address, genericEvent, openSendTokens])
+  }, [account?.address, genericEvent])
 
   const { open: openReceiveTokensModal } = useReceiveTokensModal()
   const handleCopyClick = useCallback(() => {

@@ -2,24 +2,21 @@ import { Balances } from "@core/domains/balances/types"
 import { Token, TokenId } from "@core/domains/tokens/types"
 import { Address } from "@core/types/base"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { FadeIn } from "@talisman/components/FadeIn"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
-import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
+import { CheckCircleIcon } from "@talisman/theme/icons"
 import { classNames, planckToTokens } from "@talismn/util"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
-import { useDbCache } from "@ui/hooks/useDbCache"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSettings } from "@ui/hooks/useSettings"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
+import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { sortBy } from "lodash"
-import { CSSProperties, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useIntersection } from "react-use"
-import { Checkbox, FormFieldInputContainerProps } from "talisman-ui"
+import { FormFieldInputContainerProps } from "talisman-ui"
 
 import { ChainLogoBase } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
@@ -99,6 +96,8 @@ const TokenRow: FC<TokenRowProps> = ({
     }
   }, [balances.sorted, token.decimals])
 
+  const isTransferable = useMemo(() => isTransferableToken(token), [token])
+
   // there are more than 250 tokens so we should render only visible tokens to prevent performance issues
   const refButton = useRef<HTMLButtonElement>(null)
   const intersection = useIntersection(refButton, {
@@ -109,12 +108,15 @@ const TokenRow: FC<TokenRowProps> = ({
   return (
     <button
       ref={refButton}
+      disabled={!isTransferable}
+      title={isTransferable ? undefined : "Sending this token is not supported yet"}
       type="button"
       data-id={token.id}
       onClick={onClick}
       tabIndex={1}
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
+        "disabled:cursor-not-allowed disabled:opacity-50",
         selected && "bg-grey-800 text-body-secondary"
       )}
     >
@@ -202,7 +204,7 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
     [from]
   )
 
-  const transferableTokens = useMemo(() => {
+  const accountCompatibleTokens = useMemo(() => {
     // wait until all dependencies are loaded
     if (
       !Object.keys(chainsMap).length ||
@@ -239,7 +241,7 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
     // sort alphabetically by symbol + chain name
     const results = sortBy(
       sortBy(
-        transferableTokens.map((t) => ({
+        accountCompatibleTokens.map((t) => ({
           ...t,
           balances: accountBalances.find({ tokenId: t.id }),
         })),
@@ -268,7 +270,7 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
     })
 
     return results
-  }, [accountBalances, selected, transferableTokens])
+  }, [accountBalances, selected, accountCompatibleTokens])
 
   // apply user search
   const tokens = useMemo(() => {
