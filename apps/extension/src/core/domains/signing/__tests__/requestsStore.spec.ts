@@ -1,5 +1,7 @@
 import { AccountMeta } from "@core/domains/accounts/types"
-import { SigningRequestsStore } from "@core/domains/signing/requestsStore"
+import { signSubstrate } from "@core/domains/signing/requests"
+import { requestStore } from "@core/libs/requests/store"
+import { windowManager } from "@core/libs/WindowManager"
 import RequestExtrinsicSign from "@polkadot/extension-base/background/RequestExtrinsicSign"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import type { SignerPayloadJSON } from "@polkadot/types/types"
@@ -16,6 +18,12 @@ const createAccount = () => {
   } as AccountMeta)
   return pair
 }
+
+jest.mock("@core/libs/WindowManager", () => {
+  return {
+    windowManager: { popupOpen: jest.fn() },
+  }
+})
 
 describe("Signing requests store", () => {
   beforeAll(async () => {
@@ -48,16 +56,14 @@ describe("Signing requests store", () => {
       transactionVersion: "0x00000005",
       version: 4,
     }
-    const testCallback = jest.fn(() => {})
-    const requestStore = new SigningRequestsStore(testCallback)
 
-    expect(requestStore.getRequestCount()).toBe(0)
-    requestStore.sign("http://test.com", new RequestExtrinsicSign(payload), {
+    expect(requestStore.getCounts().get("substrate-sign")).toBe(0)
+    signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
       address,
       ...meta,
     })
-    expect(requestStore.getRequestCount()).toBe(1)
-    expect(testCallback).toBeCalled()
+    expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
+    expect(windowManager.popupOpen).toBeCalled()
   })
 })
 

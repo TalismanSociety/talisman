@@ -1,4 +1,4 @@
-import { EthSignRequest } from "@core/domains/signing/types"
+import { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
@@ -9,12 +9,12 @@ import { useCallback } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
-const useEthSignMessageRequestProvider = ({ id }: { id: string }) => {
-  const request = useSigningRequestById(id) as EthSignRequest | undefined
+const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-sign">) => {
+  const request = useSigningRequestById(id)
   const network = useEvmNetwork(request?.ethChainId)
 
   // wraps status and errors management
-  const baseRequest = useAnySigningRequest<EthSignRequest>({
+  const baseRequest = useAnySigningRequest({
     currentRequest: request,
     approveSignFn: api.ethApproveSign,
     cancelSignFn: api.ethCancelSign,
@@ -22,8 +22,8 @@ const useEthSignMessageRequestProvider = ({ id }: { id: string }) => {
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
-      baseRequest.setStatus.processing("Approving request")
       if (!baseRequest || !baseRequest.id) return
+      baseRequest.setStatus.processing("Approving request")
       try {
         await api.ethApproveSignHardware(baseRequest.id, signature)
         baseRequest.setStatus.success("Approved")

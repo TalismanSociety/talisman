@@ -1,5 +1,5 @@
 import { DEBUG } from "@core/constants"
-import { AnyEncryptRequest, DecryptRequest } from "@core/domains/encrypt/types"
+import { AnyEncryptRequest } from "@core/domains/encrypt/types"
 import { isDecryptRequest } from "@core/util/isDecryptRequest"
 import useStatus from "@talisman/hooks/useStatus"
 import { api } from "@ui/api"
@@ -47,7 +47,7 @@ export const useEncryptRequest = (currentRequest?: AnyEncryptRequest) => {
     account: currentRequest?.account,
     url: currentRequest?.url,
     request: currentRequest?.request,
-    type: currentRequest?.request.type,
+    type: currentRequest?.type,
     status,
     setStatus,
     message,

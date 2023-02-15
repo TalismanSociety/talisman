@@ -46,7 +46,7 @@ export const api: MessageTypes = {
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
   decodeSignRequest: (id) => messageService.sendMessage("pri(signing.details)", { id }),
   subscribeSigningRequests: (cb) => messageService.subscribe("pri(signing.requests)", null, cb),
-  subscribeSigningRequest: (id: string, cb) =>
+  subscribeSigningRequest: (id, cb) =>
     messageService.subscribe("pri(signing.byid.subscribe)", { id }, cb),
   approveSign: (id) =>
     messageService.sendMessage("pri(signing.approveSign)", {
@@ -60,7 +60,7 @@ export const api: MessageTypes = {
 
   // encrypt messages -------------------------------------------------------
   subscribeEncryptRequests: (cb) => messageService.subscribe("pri(encrypt.requests)", null, cb),
-  subscribeEncryptRequest: (id: string, cb) =>
+  subscribeEncryptRequest: (id, cb) =>
     messageService.subscribe("pri(encrypt.byid.subscribe)", { id }, cb),
   approveEncrypt: (id) =>
     messageService.sendMessage("pri(encrypt.approveEncrypt)", {

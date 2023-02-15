@@ -5,8 +5,10 @@ import { Token } from "@talismn/chaindata-provider"
 import { formatDecimals } from "@talismn/util"
 import { Fragment, useEffect, useMemo, useState } from "react"
 
+const onfinalityApiKey = undefined
+
 export function App(): JSX.Element {
-  const chaindata = useChaindata()
+  const chaindata = useChaindata({ onfinalityApiKey })
   const addresses = useExtensionAddresses()
 
   const tokens = useTokens(chaindata)
@@ -19,7 +21,7 @@ export function App(): JSX.Element {
   )
 
   const addressesByToken = useAddressesByToken(addresses, tokenIds)
-  const balances = useBalances(balanceModules, chaindata, addressesByToken)
+  const balances = useBalances(balanceModules, chaindata, addressesByToken, { onfinalityApiKey })
 
   return (
     <div className="m-5 flex flex-col gap-5">

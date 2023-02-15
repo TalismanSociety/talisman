@@ -4,6 +4,7 @@ import { BalancesMessages } from "@core/domains/balances/types"
 import { ChainsMessages } from "@core/domains/chains/types"
 import { EncryptMessages } from "@core/domains/encrypt/types"
 import { EthMessages } from "@core/domains/ethereum/types"
+import { MetadataMessages } from "@core/domains/metadata/types"
 import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { TokenRatesMessages } from "@core/domains/tokenRates/types"
@@ -16,6 +17,10 @@ import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from ".
 export declare type RequestTypes = {
   [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
 }
+
+export declare type RequestTypesArray = {
+  [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
+}[keyof RequestSignatures]
 
 export declare type ResponseTypes = {
   [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][1]
@@ -39,6 +44,12 @@ type RemovedMessages =
   | "pri(accounts.export)"
   | "pri(accounts.forget)"
   | "pri(accounts.subscribe)"
+  | "pri(metadata.requests)"
+  | "pri(metadata.approve)"
+  | "pri(metadata.get)"
+  | "pri(metadata.reject)"
+  | "pri(metadata.list)"
+  | "pri(signing.cancel)"
   | "pri(signing.requests)"
   | "pri(derivation.create)"
   | "pri(derivation.validate)"
@@ -58,6 +69,7 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   SigningMessages &
   TokenMessages &
   TokenRatesMessages &
+  MetadataMessages &
   EncryptMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
@@ -76,7 +88,7 @@ export interface TransportRequestMessage<TMessageType extends MessageTypes> {
   id: string
   message: TMessageType
   origin: OriginTypes
-  request: RequestTypes[TMessageType]
+  request: RequestType<TMessageType>
 }
 
 export declare type MessageTypesWithSubscriptions = keyof SubscriptionMessageTypes

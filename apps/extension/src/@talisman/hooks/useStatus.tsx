@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 export declare type StatusOptions = "INITIALIZED" | "READY" | "PROCESSING" | "SUCCESS" | "ERROR"
 
@@ -15,6 +15,10 @@ export const statusOptions: StatusOptionsRecord = {
 interface UseStatusProps {
   status?: StatusOptions
   message?: string
+}
+
+export type SetStatusFn = {
+  [S in Lowercase<StatusOptions>]: (msg?: string) => void
 }
 
 const useStatus = (props?: UseStatusProps) => {
@@ -42,7 +46,7 @@ const useStatus = (props?: UseStatusProps) => {
         error: setStatusAndMessage("ERROR"),
       }),
       [setStatusAndMessage]
-    ),
+    ) as SetStatusFn,
     statusOptions,
   }
 }
