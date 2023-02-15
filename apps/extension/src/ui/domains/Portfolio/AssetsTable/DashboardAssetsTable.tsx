@@ -71,25 +71,30 @@ const Table = styled.table`
 
 const AssetRowSkeleton = ({ className }: { className?: string }) => {
   return (
-    <tr className={classNames("asset skeleton", className)}>
-      <td>
-        <div className="flex h-[6.6rem]">
-          <div className="p-8 text-xl">
-            <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full"></div>
+    <>
+      <tr className={classNames("asset skeleton", className)}>
+        <td>
+          <div className="flex h-[6.6rem]">
+            <div className="p-8 text-xl">
+              <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full"></div>
+            </div>
+            <div className="flex grow flex-col justify-center gap-2">
+              <div className="bg-grey-700 rounded-xs h-8 w-20 animate-pulse"></div>
+            </div>
           </div>
-          <div className="flex grow flex-col justify-center gap-2">
-            <div className="bg-grey-700 rounded-xs h-8 w-20 animate-pulse"></div>
+        </td>
+        <td></td>
+        <td>
+          <div className="flex h-full flex-col items-end justify-center gap-2 px-8">
+            <div className="bg-grey-700 rounded-xs h-8 w-[10rem] animate-pulse"></div>
+            <div className="bg-grey-700 rounded-xs h-8 w-[6rem] animate-pulse"></div>
           </div>
-        </div>
-      </td>
-      <td></td>
-      <td>
-        <div className="flex h-full flex-col items-end justify-center gap-2 px-8">
-          <div className="bg-grey-700 rounded-xs h-8 w-[10rem] animate-pulse"></div>
-          <div className="bg-grey-700 rounded-xs h-8 w-[6rem] animate-pulse"></div>
-        </div>
-      </td>
-    </tr>
+        </td>
+      </tr>
+      <tr className="spacer h-4">
+        <td colSpan={3}></td>
+      </tr>
+    </>
   )
 }
 
@@ -171,7 +176,9 @@ const AssetRow = ({ balances }: AssetRowProps) => {
           />
         </td>
       </tr>
-      <tr className="spacer h-[0.8rem]" />
+      <tr className="spacer h-4">
+        <td colSpan={3}></td>
+      </tr>
     </>
   )
 }
