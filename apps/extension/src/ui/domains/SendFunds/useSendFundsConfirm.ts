@@ -1,4 +1,5 @@
 import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
+import { AssetTransferMethod } from "@core/domains/transactions/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
@@ -6,6 +7,7 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useBalance } from "@ui/hooks/useBalance"
 import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
 import { isEvmToken } from "@ui/util/isEvmToken"
@@ -14,97 +16,115 @@ import { ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
+import { useSendFunds } from "./useSendAmount"
 
 type SignMethod = "normal" | "ledgerSubstrate" | "ledgerEthereum" | "unknown"
 
-const useEvmTransaction = (
-  tokenId?: string,
-  from?: string,
-  to?: string,
-  amount?: string,
-  isLocked?: boolean
-) => {
-  const token = useToken(tokenId)
+// const useEvmTransaction = (
+//   tokenId?: string,
+//   from?: string,
+//   to?: string,
+//   amount?: string,
+//   isLocked?: boolean
+// ) => {
+//   const token = useToken(tokenId)
 
-  const [tx, setTx] = useState<ethers.providers.TransactionRequest>()
+//   const [tx, setTx] = useState<ethers.providers.TransactionRequest>()
 
-  useEffect(() => {
-    if (!isEvmToken(token) || !token.evmNetwork?.id || !from || !token || !amount || !to)
-      setTx(undefined)
-    else {
-      getEthTransferTransactionBase(token.evmNetwork.id, from, to, token, amount)
-        .then(setTx)
-        .catch((err) => {
-          setTx(undefined)
-          // eslint-disable-next-line no-console
-          console.error("EthTransactionFees", { err })
-        })
-    }
-  }, [from, to, token, amount])
+//   useEffect(() => {
+//     if (!isEvmToken(token) || !token.evmNetwork?.id || !from || !token || !amount || !to)
+//       setTx(undefined)
+//     else {
+//       getEthTransferTransactionBase(token.evmNetwork.id, from, to, token, amount)
+//         .then(setTx)
+//         .catch((err) => {
+//           setTx(undefined)
+//           // eslint-disable-next-line no-console
+//           console.error("EthTransactionFees", { err })
+//         })
+//     }
+//   }, [from, to, token, amount])
 
-  const result = useEthTransaction(tx, isLocked)
+//   const result = useEthTransaction(tx, isLocked)
 
-  // const evmErrorMessage = useMemo(() => {
-  //   if (error?.startsWith("insufficient funds for intrinsic transaction cost"))
-  //     return "Insufficient balance"
-  //   return error ?? null
-  // }, [error])
+//   return tx ? { tx, ...result } : undefined
+// }
 
-  return tx ? { tx, ...result } : undefined
-}
+// const useSubTransaction = (
+//   tokenId?: string,
+//   from?: string,
+//   to?: string,
+//   amount?: string,
+//   tip?: string,
+//   method?: AssetTransferMethod,
+//   isLocked?: boolean
+// ) => {
+//   const token = useToken(tokenId)
 
-const useSubTransaction = (
-  tokenId?: string,
-  from?: string,
-  to?: string,
-  amount?: string,
-  tip?: string,
-  allowReap?: boolean,
-  isLocked?: boolean
-) => {
-  const token = useToken(tokenId)
+//   const qSubstrateEstimateFee = useQuery({
+//     queryKey: ["estimateFee", from, to, token?.id, amount, tip, method],
+//     queryFn: async () => {
+//       if (!token?.chain?.id || !from || !to || !amount) return null
+//       const { partialFee, unsigned, pendingTransferId } = await api.assetTransferCheckFees(
+//         token.chain.id,
+//         token.id,
+//         from,
+//         to,
+//         amount,
+//         tip ?? "0",
+//         method
+//       )
+//       return { partialFee, unsigned, pendingTransferId }
+//     },
+//     refetchInterval: 10_000,
+//     enabled: !isLocked,
+//   })
 
-  const qSubstrateEstimateFee = useQuery({
-    queryKey: ["estimateFee", from, to, token?.id, amount, tip, allowReap],
-    queryFn: async () => {
-      if (!token?.chain?.id || !from || !to || !amount) return null
-      const { partialFee, unsigned, pendingTransferId } = await api.assetTransferCheckFees(
-        token.chain.id,
-        token.id,
-        from,
-        to,
-        amount,
-        tip ?? "0",
-        allowReap
-      )
-      return { partialFee, unsigned, pendingTransferId }
-    },
-    refetchInterval: 10_000,
-    enabled: !isLocked,
-  })
+//   return useMemo(() => {
+//     if (!isSubToken(token)) return undefined
 
-  return useMemo(() => {
-    if (!isSubToken(token)) return undefined
+//     const { partialFee, unsigned, pendingTransferId } = qSubstrateEstimateFee.data ?? {}
+//     const { isLoading, isRefetching, error } = qSubstrateEstimateFee
 
-    const { partialFee, unsigned, pendingTransferId } = qSubstrateEstimateFee.data ?? {}
-    const { isLoading, isRefetching, error } = qSubstrateEstimateFee
-
-    return { partialFee, unsigned, pendingTransferId, isLoading, isRefetching, error }
-  }, [qSubstrateEstimateFee, token])
-}
+//     return { partialFee, unsigned, pendingTransferId, isLoading, isRefetching, error }
+//   }, [qSubstrateEstimateFee, token])
+// }
 
 export const useSendFundsConfirmProvider = () => {
-  const { tokenId, amount, from, to, allowReap, gotoProgress } = useSendFundsWizard()
-  const token = useToken(tokenId)
+  const { tokenId, amount, from, to, allowReap, sendMax, gotoProgress } = useSendFundsWizard()
+  //const token = useToken(tokenId)
   const account = useAccountByAddress(from)
 
   // lock sending payload to hardware device for signing
-  const [isLocked, setIsLocked] = useState(false)
+  //const [isLocked, setIsLocked] = useState(false)
 
-  const { tip } = useTip(token?.chain?.id, !isLocked)
+  // TODO gasSettings
+  const { sendAmount, tip, method, evmTransaction, subTransaction, token, isLocked, setIsLocked } =
+    useSendFunds()
+  // from,
+  // to,
+  // tokenId,
+  // amount,
+  // allowReap,
+  // sendMax,
+  // isLocked
 
-  const evmTransaction = useEvmTransaction(tokenId, from, to, amount, isLocked)
-  const subTransaction = useSubTransaction(tokenId, from, to, amount, tip, allowReap, isLocked)
+  // const evmTransaction = useEvmTransaction(
+  //   tokenId,
+  //   from,
+  //   to,
+  //   sendAmount?.planck.toString(),
+  //   isLocked
+  // )
+  // const subTransaction = useSubTransaction(
+  //   tokenId,
+  //   from,
+  //   to,
+  //   sendAmount?.planck.toString(),
+  //   tip?.planck.toString(),
+  //   method,
+  //   isLocked
+  // )
 
   const signMethod: SignMethod = useMemo(() => {
     if (!account || !token) return "unknown"
@@ -135,7 +155,7 @@ export const useSendFundsConfirmProvider = () => {
     try {
       if (!from) throw new Error("Sender not found")
       if (!to) throw new Error("Recipient not found")
-      if (!amount) throw new Error("Amount not found")
+      if (!sendAmount) throw new Error("Amount not found")
       if (!token) throw new Error("Token not found")
 
       setIsProcessing(true)
@@ -146,19 +166,20 @@ export const useSendFundsConfirmProvider = () => {
           token.id,
           from,
           to,
-          amount,
-          tip ?? "0",
-          allowReap
+          sendAmount?.planck.toString(),
+          tip?.planck.toString(),
+          method
         )
         gotoProgress({ substrateTxId: id })
       } else if (token.evmNetwork?.id) {
+        if (!sendAmount) throw new Error("Missing send amount")
         if (!evmTransaction?.gasSettings) throw new Error("Missing gas settings")
         const { hash } = await api.assetTransferEth(
           token.evmNetwork.id,
           token.id,
           from,
           to,
-          amount,
+          sendAmount.planck.toString(),
           evmTransaction.gasSettings
         )
         gotoProgress({ evmNetworkId: token.evmNetwork.id, evmTxHash: hash })
@@ -168,13 +189,14 @@ export const useSendFundsConfirmProvider = () => {
       setErrorMessage((err as Error).message)
       setIsProcessing(false)
     }
-  }, [allowReap, amount, evmTransaction?.gasSettings, from, gotoProgress, tip, to, token])
+  }, [evmTransaction?.gasSettings, from, gotoProgress, method, sendAmount, tip?.planck, to, token])
 
   const sendWithSignature = useCallback(
     async (signature: HexString) => {
       try {
         setIsProcessing(true)
         if (subTransaction?.pendingTransferId) {
+          // TODO get rid of pending transfer id
           const transfer = await api.assetTransferApproveSign(
             subTransaction.pendingTransferId,
             signature
@@ -210,6 +232,7 @@ export const useSendFundsConfirmProvider = () => {
 
   const ctx = useMemo(
     () => ({
+      sendAmount,
       evmTransaction,
       subTransaction,
       tip,
@@ -223,6 +246,7 @@ export const useSendFundsConfirmProvider = () => {
       setIsLocked,
     }),
     [
+      sendAmount,
       evmTransaction,
       subTransaction,
       tip,
@@ -233,8 +257,13 @@ export const useSendFundsConfirmProvider = () => {
       send,
       sendWithSignature,
       isLocked,
+      setIsLocked,
     ]
   )
+
+  useEffect(() => {
+    log.log("useSendFundsConfirm", ctx)
+  })
 
   return ctx
 }

@@ -29,13 +29,16 @@ import { useSendFundsEstimateFee } from "./useSendFundsEstimateFee"
 const SendFundsLedgerSubstrate = lazy(() => import("./SendFundsLedgerSubstrate"))
 const SendFundsLedgerEthereum = lazy(() => import("./SendFundsLedgerEthereum"))
 
-const TokenDisplay = () => {
+const AmountDisplay = () => {
   const { tokenId, amount } = useSendFundsWizard()
+  const { sendAmount } = useSendFundsConfirm()
+
+  if (!sendAmount) return <div className="bg-grey-750 h-12 w-64 animate-pulse rounded-sm" />
 
   return (
     <div className="inline-flex h-12 items-center gap-4">
       <TokenLogo tokenId={tokenId} className="inline-block text-lg" />
-      <TokensAndFiat tokenId={tokenId} planck={amount} noCountUp />
+      <TokensAndFiat tokenId={tokenId} planck={sendAmount?.planck} noCountUp />
     </div>
   )
 }
@@ -79,16 +82,17 @@ const TotalValueRow = () => {
   const tipToken = useToken(chain?.nativeToken?.id)
   const tipTokenRates = useTokenRates(tipToken?.id)
 
+  // TODO move to hook
   const totalValue = useMemo(() => {
     // Not all tokens have a fiat rate. if one of the 3 tokens doesn't have a rate, don't show the row
     if (
       !tokenRates ||
       !feeTokenRates ||
-      (tip !== "0" && !tipTokenRates) ||
+      (tip && tip.planck > 0n && !tipTokenRates) ||
       (!subTransaction?.partialFee && !evmTransaction?.txDetails?.estimatedFee)
     )
       return null
-    if (!token || !feeToken || (tip !== "0" && !tipToken)) return null
+    if (!token || !feeToken || (tip && tip.planck > 0n && !tipToken)) return null
 
     const estimatedFee =
       subTransaction?.partialFee ?? evmTransaction?.txDetails?.estimatedFee?.toString() ?? "0"
@@ -97,7 +101,7 @@ const TotalValueRow = () => {
     const fiatFee =
       new BalanceFormatter(estimatedFee, feeToken.decimals, tokenRates).fiat("usd") ?? 0
     const fiatTip =
-      tip !== "0" && tipToken
+      tip && tip.planck > 0n && tipToken
         ? new BalanceFormatter(amount, tipToken.decimals, tokenRates).fiat("usd") ?? 0
         : 0
 
@@ -128,41 +132,6 @@ const TotalValueRow = () => {
     </div>
   )
 }
-
-// const EstimateFeeDisplay = () => {
-//   const { from, to, amount, tokenId, allowReap } = useSendFundsWizard()
-//   const feeToken = useFeeToken(tokenId)
-
-//   const { tip } = useSendFundsConfirm() // useTip(token?.chain?.id, true) // TODO stop refreshing when validated
-//   const { data, error, isLoading, isRefetching } = useSendFundsEstimateFee(
-//     from,
-//     to,
-//     tokenId,
-//     amount,
-//     tip,
-//     allowReap
-//   )
-
-//   const { estimatedFee, unsigned, pendingTransferId } = useMemo(() => {
-//     return data ?? { estimatedFee: null, unsigned: null, pendingTransferId: null }
-//   }, [data])
-
-//   return (
-//     <div
-//       className={classNames("inline-flex h-[1.7rem] items-center", isRefetching && "animate-pulse")}
-//     >
-//       <>
-//         {isLoading && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
-//         {estimatedFee && feeToken && <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />}
-//         {error && (
-//           <WithTooltip tooltip={(error as Error).message}>
-//             <span className="text-alert-warn">Failed to estimate fee</span>
-//           </WithTooltip>
-//         )}
-//       </>
-//     </div>
-//   )
-// }
 
 const SendButton = () => {
   const { tokenId } = useSendFundsWizard()
@@ -308,7 +277,7 @@ export const SendFundsConfirmForm = () => {
             <div className="flex h-12 items-center justify-between gap-8">
               <div className="text-body-secondary">Amount</div>
               <div className="text-body h-12">
-                <TokenDisplay />
+                <AmountDisplay />
               </div>
             </div>
             <div className="flex h-12 items-center justify-between gap-8">

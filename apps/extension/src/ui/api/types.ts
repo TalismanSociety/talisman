@@ -50,6 +50,7 @@ import {
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
 import {
+  AssetTransferMethod,
   ResponseAssetTransfer,
   ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
@@ -192,9 +193,9 @@ export default interface MessageTypes {
     tokenId: TokenId,
     fromAddress: string,
     toAddress: string,
-    amount: string,
-    tip: string,
-    reapBalance?: boolean
+    amount?: string,
+    tip?: string,
+    method?: AssetTransferMethod
   ) => Promise<ResponseAssetTransfer>
   assetTransferEth: (
     evmNetworkId: EvmNetworkId,
@@ -215,9 +216,9 @@ export default interface MessageTypes {
     tokenId: TokenId,
     fromAddress: string,
     toAddress: string,
-    amount: string,
-    tip: string,
-    reapBalance?: boolean
+    amount?: string,
+    tip?: string,
+    method?: AssetTransferMethod
   ) => Promise<ResponseAssetTransferFeeQuery>
   assetTransferApproveSign: (
     pendingTransferId: string,

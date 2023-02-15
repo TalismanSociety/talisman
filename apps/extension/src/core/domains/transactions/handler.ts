@@ -21,7 +21,6 @@ import {
   TransactionStatus,
 } from "@core/domains/transactions/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
-import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -33,17 +32,13 @@ import type {
 } from "@core/types"
 import { Address, Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
-import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { TransactionRequest } from "@ethersproject/abstract-provider"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
-import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import { planckToTokens } from "@talismn/util"
-import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
 
-import { addressBookStore } from "../app/store.addressBook"
 import { transferAnalytics } from "./helpers"
 
 export default class AssetTransferHandler extends ExtensionHandler {
@@ -117,9 +112,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tokenId,
     fromAddress,
     toAddress,
-    amount,
-    tip,
-    reapBalance = false,
+    amount = "0",
+    tip = "0",
+    method = "transferKeepAlive",
   }: RequestAssetTransfer) {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
       const token = await chaindataProvider.getToken(tokenId)
@@ -138,7 +133,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
             pair,
             toAddress,
             tip,
-            reapBalance,
+            method,
             watchExtrinsic
           ).catch((err) => {
             log.error("Error sending native substrate transaction: ", { err })
@@ -195,9 +190,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tokenId,
     fromAddress,
     toAddress,
-    amount,
-    tip,
-    reapBalance = false,
+    amount = "0",
+    tip = "0",
+    method = "transferKeepAlive",
   }: RequestAssetTransfer) {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
       const token = await chaindataProvider.getToken(tokenId)
@@ -205,7 +200,14 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
       const tokenType = token.type
       if (tokenType === "substrate-native")
-        return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, tip, reapBalance)
+        return await AssetTransfersRpc.checkFee(
+          chainId,
+          amount,
+          pair,
+          toAddress,
+          tip,
+          "transferKeepAlive"
+        )
       if (tokenType === "evm-native")
         throw new Error(
           "Evm native token transfers are not implemented in this version of Talisman."

@@ -54,6 +54,7 @@ const useSendFundsWizardProvider = () => {
       // reset amount if token changes, as decimals may be totally different
       if (key === "tokenId" && value !== searchParams.get("tokenId")) {
         searchParams.delete("amount")
+        searchParams.delete("sendMax")
 
         // if token type (substrate or evm) changes, clear both account fields
         const prevTokenId = searchParams.get("tokenId")
@@ -62,6 +63,9 @@ const useSendFundsWizardProvider = () => {
           searchParams.delete("to")
         }
       }
+
+      if (key === "sendMax" && value) searchParams.delete("amount")
+      if (key === "amount" && value) searchParams.delete("sendMax")
 
       // boolean values
       if (BOOL_PROPS.includes(key) && value) searchParams.set(key, "")
@@ -89,14 +93,14 @@ const useSendFundsWizardProvider = () => {
       if (!from) throw new Error("Sender is not set")
       if (!to) throw new Error("Recipient is not set")
       if (!tokenId) throw new Error("Token is not set")
-      if (!amount) throw new Error("Amount is not set")
+      if (!amount && !sendMax) throw new Error("Amount is not set")
 
       if (allowReap) searchParams.set("allowReap", "")
       else searchParams.delete("allowReap")
 
       navigate(`/send/confirm?${searchParams.toString()}`)
     },
-    [amount, from, navigate, searchParams, to, tokenId]
+    [amount, from, navigate, searchParams, sendMax, to, tokenId]
   )
 
   const remove = useCallback(

@@ -233,7 +233,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         to,
         transfer.amount.planck.toString(),
         tip ?? "0",
-        allowReap
+        allowReap ? "transfer" : "transferKeepAlive"
       )
 
       const fees: TokenAmountInfo = {
@@ -332,7 +332,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         to,
         tokensToPlanck(amount, token.decimals),
         tip ?? "0",
-        hasAcceptedForfeit
+        hasAcceptedForfeit ? "transfer" : "transferKeepAlive"
       )
       setTransactionId(id)
     } else if (evmNetworkId) {

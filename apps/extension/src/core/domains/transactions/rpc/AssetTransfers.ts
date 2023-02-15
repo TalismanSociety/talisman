@@ -1,6 +1,9 @@
 import { ChainId } from "@core/domains/chains/types"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
-import { ResponseAssetTransferFeeQuery } from "@core/domains/transactions/types"
+import {
+  AssetTransferMethod,
+  ResponseAssetTransferFeeQuery,
+} from "@core/domains/transactions/types"
 import { isHardwareAccount } from "@core/handlers/helpers"
 import RpcFactory from "@core/libs/RpcFactory"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -36,7 +39,7 @@ export default class AssetTransfersRpc {
     from: KeyringPair,
     to: Address,
     tip: string,
-    reapBalance = false,
+    method: AssetTransferMethod,
     callback: SubscriptionCallback<{
       nonce: string
       hash: string
@@ -49,7 +52,7 @@ export default class AssetTransfersRpc {
       from,
       to,
       tip,
-      reapBalance,
+      method,
       true
     )
 
@@ -88,7 +91,7 @@ export default class AssetTransfersRpc {
     from: KeyringPair,
     to: Address,
     tip: string,
-    reapBalance = false
+    method: AssetTransferMethod
   ): Promise<ResponseAssetTransferFeeQuery> {
     const { tx, pendingTransferId, unsigned } = await this.prepareTransaction(
       chainId,
@@ -96,7 +99,7 @@ export default class AssetTransfersRpc {
       from,
       to,
       tip,
-      reapBalance,
+      method,
       false
     )
 
@@ -123,7 +126,7 @@ export default class AssetTransfersRpc {
     from: KeyringPair,
     to: Address,
     tip: string,
-    reapBalance: boolean,
+    method: AssetTransferMethod,
     sign: boolean
   ): Promise<{
     tx: Extrinsic
@@ -150,15 +153,15 @@ export default class AssetTransfersRpc {
     const { registry, metadataRpc } = await getTypeRegistry(chainId, specVersion, blockHash)
     assert(metadataRpc, "Could not fetch metadata")
 
+    const args =
+      method === "transferAll" ? { dest: to, keepAlive: false } : { dest: to, value: amount }
+
     const unsigned = defineMethod(
       {
         method: {
           pallet: "balances",
-          name: reapBalance ? "transfer" : "transferKeepAlive",
-          args: {
-            value: amount,
-            dest: to,
-          },
+          name: method,
+          args,
         },
         address: from.address,
         blockHash,

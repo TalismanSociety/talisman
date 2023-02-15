@@ -18,6 +18,7 @@ import { isSubToken } from "@ui/util/isSubToken"
 import { useEffect, useMemo } from "react"
 
 import { useFeeToken } from "./useFeeToken"
+import { useSendFunds } from "./useSendAmount"
 import { useSendFundsEstimateFee } from "./useSendFundsEstimateFee"
 
 const useRecipientBalance = (token?: Token, address?: Address | null) => {
@@ -37,40 +38,101 @@ const useRecipientBalance = (token?: Token, address?: Address | null) => {
 }
 
 const useSendFundsMainFormProvider = () => {
-  const { from, to, amount, tokenId } = useSendFundsWizard()
+  const { from, to, amount, tokenId, sendMax } = useSendFundsWizard()
+
+  const {
+    error: estimateFeeError,
+    tokenRates,
+    token,
+    tip,
+    balance,
+    tipToken,
+    tipTokenBalance,
+    sendAmount,
+    feeToken,
+    isLoading,
+    estimatedFee,
+    feeTokenBalance,
+  } = useSendFunds()
+
   const fromAccount = useAccountByAddress(from)
-  const token = useToken(tokenId)
-  const tokenRates = useTokenRates(tokenId)
+  // const token = useToken(tokenId)
+  // const tokenRates = useTokenRates(tokenId)
   const chain = useChain(token?.chain?.id)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
-  const balance = useBalance(from as string, tokenId as string)
-  const sendAmount = useMemo(
-    () =>
-      amount && token ? new BalanceFormatter(amount ?? "0", token.decimals, tokenRates) : null,
-    [amount, token, tokenRates]
-  )
+  // const balance = useBalance(from as string, tokenId as string)
 
-  const { requiresTip, tip: tipPlanck } = useTip(token?.chain?.id)
-  const tipToken = useToken(chain?.nativeToken?.id)
-  const tipTokenBalance = useBalance(from as string, tipToken?.id as string)
+  // const { requiresTip, tip: tipPlanck } = useTip(token?.chain?.id)
+  // const tipToken = useToken(chain?.nativeToken?.id)
+  // const tipTokenBalance = useBalance(from as string, tipToken?.id as string)
 
-  const feeToken = useFeeToken(tokenId)
-  const {
-    data: dataEstimateFee,
-    error: estimateFeeError,
-    isFetching: isEstimatingFee,
-  } = useSendFundsEstimateFee(from, from, tokenId, amount)
-  const { estimatedFee, unsigned, pendingTransferId } = useMemo(() => {
-    return dataEstimateFee ?? { estimatedFee: null, unsigned: null, pendingTransferId: null }
-  }, [dataEstimateFee])
-  const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
+  // const feeToken = useFeeToken(tokenId)
+  // const {
+  //   data: dataEstimateFee,
+  //   error: estimateFeeError,
+  //   isFetching: isEstimatingFee,
+  // } = useSendFundsEstimateFee(
+  //   from,
+  //   from,
+  //   tokenId,
+  //   "0", // assume fees doesn't depend on the amount beeing transfered
+  //   undefined,
+  //   sendMax ? "transferAll" : "transferKeepAlive"
+  // )
+  // const { estimatedFee, unsigned, pendingTransferId } = useMemo(() => {
+  //   return dataEstimateFee ?? { estimatedFee: null, unsigned: null, pendingTransferId: null }
+  // }, [dataEstimateFee])
+  //const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
+
+  // const { sendAmount } = useMemo(() => {
+  //   if (sendMax) {
+  //     if (!balance || !token) return { sendAmount: null }
+  //     switch (token.type) {
+  //       case "evm-native":
+  //         // TODO what if fee higher than balance
+  //         return {
+  //           sendAmount: estimatedFee
+  //             ? new BalanceFormatter(
+  //                 balance.transferable.planck - BigInt(estimatedFee) * 2n,
+  //                 token.decimals,
+  //                 tokenRates
+  //               )
+  //             : null,
+  //         }
+  //       case "substrate-native":
+  //         return {
+  //           sendAmount: estimatedFee
+  //             ? new BalanceFormatter(
+  //                 balance.transferable.planck - BigInt(estimatedFee),
+  //                 token.decimals,
+  //                 tokenRates
+  //               )
+  //             : null,
+  //         }
+  //       // other tokens don't use same token to pay fee, can just send all
+  //       default:
+  //         return {
+  //           sendAmount: new BalanceFormatter(
+  //             balance.transferable.planck,
+  //             token.decimals,
+  //             tokenRates
+  //           ),
+  //         }
+  //     }
+  //   }
+
+  //   return {
+  //     sendAmount:
+  //       amount && token ? new BalanceFormatter(amount ?? "0", token.decimals, tokenRates) : null,
+  //   }
+  // }, [amount, balance, estimatedFee, sendMax, token, tokenRates])
 
   const hasInsufficientFunds = useMemo(() => {
     if (amount && balance && BigInt(amount) > balance.transferable.planck) return true
     if (
       estimatedFee &&
       feeTokenBalance &&
-      BigInt(estimatedFee) > feeTokenBalance.transferable.planck
+      estimatedFee.planck > feeTokenBalance.transferable.planck
     )
       return true
     // if token is also used to pay fee, ensure we can pay both transfer and fee
@@ -78,13 +140,13 @@ const useSendFundsMainFormProvider = () => {
       balance &&
       feeTokenBalance &&
       balance.tokenId === feeTokenBalance.tokenId &&
-      amount &&
+      sendAmount &&
       estimatedFee &&
-      BigInt(amount) + BigInt(estimatedFee) > balance.transferable.planck
+      sendAmount.planck + estimatedFee.planck > balance.transferable.planck
     )
       return true
     return false
-  }, [amount, balance, estimatedFee, feeTokenBalance])
+  }, [amount, balance, estimatedFee, feeTokenBalance, sendAmount])
 
   const {
     data: recipientBalance,
@@ -108,11 +170,6 @@ const useSendFundsMainFormProvider = () => {
           token.existentialDeposit ?? "0",
           token.decimals
         )
-        // console.log({
-        //   transfer: transfer.tokens,
-        //   recipientBalance: recipientBalance.total.tokens,
-        //   existentialDeposit: existentialDeposit.tokens,
-        // })
 
         return (
           transfer.planck === 0n ||
@@ -124,7 +181,7 @@ const useSendFundsMainFormProvider = () => {
   }, [amount, recipientBalance, token])
 
   const { isValid, error } = useMemo(() => {
-    if (!from || !to || !amount || !tokenId) return { isValid: false, error: undefined }
+    if (!from || !to || !sendAmount || !tokenId) return { isValid: false, error: undefined }
 
     if (hasInsufficientFunds) return { isValid: false, error: "Insufficient funds" }
     if (!token || !feeToken) return { isValid: false, error: "Token not found" }
@@ -151,6 +208,7 @@ const useSendFundsMainFormProvider = () => {
         break
     }
 
+    // TODO : do this only if recipient balance is below ED
     if (!isSendingEnough && isSubToken(token)) {
       const ed = new BalanceFormatter(token.existentialDeposit, token.decimals)
       return {
@@ -166,31 +224,33 @@ const useSendFundsMainFormProvider = () => {
         error: "Could not fetch recipient balance. Proceed at your own risks.",
       }
 
+    if (!estimatedFee) return { isValid: false, error: undefined }
+
     return { isValid: true, error: undefined }
   }, [
-    amount,
     chain,
     errorRecipientBalance,
     estimateFeeError,
+    estimatedFee,
     evmNetwork,
     feeToken,
     from,
     hasInsufficientFunds,
     isSendingEnough,
+    sendAmount,
     to,
     token,
     tokenId,
   ])
 
   const tokensToBeReaped: Record<TokenId, bigint> = useMemo(() => {
-    if (!token || !feeToken || !amount || !estimatedFee) return {}
+    if (!token || !feeToken || !sendAmount || !estimatedFee || sendMax) return {}
 
     // for EVM checking hasInsufficientFunds is enough
     // for substrate, also check existential deposits on both sender and recipient accounts
-    if (token.type === "substrate-native" || token.type === "substrate-orml") {
-      const transfer = new BalanceFormatter(amount, token.decimals)
-      const fee = new BalanceFormatter(estimatedFee, feeToken.decimals)
-      const tip = new BalanceFormatter(requiresTip ? tipPlanck : "0", tipToken?.decimals)
+    if (isSubToken(token)) {
+      //const fee = new BalanceFormatter(estimatedFee, feeToken.decimals)
+      //const tip = new BalanceFormatter(requiresTip ? tipPlanck : "0", tipToken?.decimals)
       const existentialDeposit = new BalanceFormatter(
         token.existentialDeposit ?? "0",
         token.decimals
@@ -203,11 +263,11 @@ const useSendFundsMainFormProvider = () => {
       if (tipToken) tokenBalances[tipToken.id] = tipTokenBalance
 
       const spend: Record<TokenId, bigint> = {}
-      if (transfer.planck > BigInt("0"))
-        spend[token.id] = (spend[token.id] ?? BigInt("0")) + transfer.planck
-      if (fee.planck > BigInt("0"))
-        spend[feeToken.id] = (spend[feeToken.id] ?? BigInt("0")) + fee.planck
-      if (tipToken && tip.planck > BigInt("0"))
+      if (sendAmount.planck > BigInt("0"))
+        spend[token.id] = (spend[token.id] ?? BigInt("0")) + sendAmount.planck
+      if (estimatedFee.planck > BigInt("0"))
+        spend[feeToken.id] = (spend[feeToken.id] ?? BigInt("0")) + estimatedFee.planck
+      if (tip && tipToken && tip?.planck > BigInt("0"))
         spend[tipToken.id] = (spend[tipToken.id] ?? BigInt("0")) + tip.planck
 
       const result: Record<TokenId, bigint> = {}
@@ -219,13 +279,13 @@ const useSendFundsMainFormProvider = () => {
 
     return {}
   }, [
-    amount,
     balance,
     estimatedFee,
     feeToken,
     feeTokenBalance,
-    requiresTip,
-    tipPlanck,
+    sendAmount,
+    sendMax,
+    tip,
     tipToken,
     tipTokenBalance,
     token,
@@ -243,7 +303,7 @@ const useSendFundsMainFormProvider = () => {
       feeToken,
       estimatedFee,
       // estimateFeeError:  as Error,
-      isEstimatingFee,
+      isEstimatingFee: isLoading,
       hasInsufficientFunds,
       isSendingEnough,
       tokensToBeReaped,
@@ -260,7 +320,7 @@ const useSendFundsMainFormProvider = () => {
       balance,
       feeToken,
       estimatedFee,
-      isEstimatingFee,
+      isLoading,
       hasInsufficientFunds,
       isSendingEnough,
       tokensToBeReaped,
@@ -273,9 +333,9 @@ const useSendFundsMainFormProvider = () => {
   //   log.log("SendFundsDetailsProvider", { estimateFeeError })
   // }, [estimateFeeError])
 
-  // useEffect(() => {
-  //   log.log(ctx)
-  // }, [ctx])
+  useEffect(() => {
+    log.log(ctx)
+  }, [ctx])
 
   return ctx
 }

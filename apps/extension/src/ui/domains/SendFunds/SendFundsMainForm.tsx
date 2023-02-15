@@ -2,7 +2,7 @@ import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { IconAlert, InfoIcon, LoaderIcon, SwapIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { classNames, tokensToPlanck } from "@talismn/util"
+import { classNames, formatDecimals, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useInputNumberOnly } from "@ui/hooks/useInputNumberOnly"
@@ -90,10 +90,14 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
 }
 
 const TokenInput = () => {
-  const { set, remove } = useSendFundsWizard()
+  const { set, remove, sendMax } = useSendFundsWizard()
   const { token, sendAmount } = useSendFundsMainForm()
 
-  const placeholder = useMemo(() => `0${token ? ` ${token.symbol}` : ""}`, [token])
+  const placeholder = useMemo(() => {
+    if (token && sendMax && sendAmount)
+      return `${formatDecimals(sendAmount.tokens)} ${token.symbol}`
+    return token ? `0 ${token.symbol}` : "0"
+  }, [sendAmount, sendMax, token])
 
   const [text, setText] = useState<string>("")
 
@@ -107,12 +111,20 @@ const TokenInput = () => {
   useEffect(() => {
     if (!refInitialized.current && sendAmount?.tokens) {
       refInitialized.current = true
-      setText(sendAmount?.tokens)
+      if (!sendMax) setText(sendAmount?.tokens)
     }
-  }, [sendAmount?.tokens])
+  }, [sendAmount?.tokens, sendMax])
+
+  useEffect(() => {
+    if (sendMax && refInput.current) {
+      setText("")
+    }
+  }, [sendMax])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
+      if (sendMax) set("sendMax", false)
+
       if (token && !isNaN(parseFloat(e.target.value)))
         set("amount", tokensToPlanck(e.target.value, token.decimals))
 
@@ -120,7 +132,7 @@ const TokenInput = () => {
 
       setText(e.target.value || "")
     },
-    [remove, set, token]
+    [remove, sendMax, set, token]
   )
 
   return (
@@ -128,13 +140,22 @@ const TokenInput = () => {
       <input
         ref={refInput}
         type="text"
-        value={text}
+        value={sendMax ? "" : text}
         placeholder={placeholder}
-        autoFocus
-        className="text-body inline-block min-w-0 max-w-[32rem] bg-transparent text-center text-xl"
+        autoFocus={!sendMax}
+        className={classNames(
+          "text-body inline-block min-w-0 max-w-[32rem] bg-transparent text-center text-xl",
+          sendMax && !sendAmount && "hidden" // hide until value is known
+        )}
         onChange={handleChange}
       />
-      {text ? ` ${token?.symbol}` : ""}
+      {text && !sendMax ? ` ${token?.symbol}` : ""}
+      {sendMax && !sendAmount && (
+        <div className="text-body-disabled mb-4 flex items-center justify-center gap-2 text-base font-light">
+          <LoaderIcon className="text-md inline-block animate-spin" />
+          <div>Estimating max amount...</div>
+        </div>
+      )}
     </div>
   )
 }
@@ -142,8 +163,13 @@ const TokenInput = () => {
 const FIAT_PLACEHOLDER = "$0.00"
 
 const FiatInput = () => {
-  const { set, remove } = useSendFundsWizard()
+  const { set, remove, sendMax } = useSendFundsWizard()
   const { token, sendAmount, tokenRates } = useSendFundsMainForm()
+
+  const placeholder = useMemo(() => {
+    if (token && sendMax && sendAmount) return `$${sendAmount?.fiat("usd")?.toFixed(2)}`
+    return FIAT_PLACEHOLDER
+  }, [sendAmount, sendMax, token])
 
   const [text, setText] = useState<string>("")
 
@@ -156,12 +182,20 @@ const FiatInput = () => {
   useEffect(() => {
     if (!refInitialized.current && sendAmount?.tokens) {
       refInitialized.current = true
-      if (!text) setText(sendAmount?.fiat("usd")?.toFixed(2) ?? "")
+      if (!sendMax) setText(sendAmount?.fiat("usd")?.toFixed(2) ?? "")
     }
-  }, [sendAmount, text])
+  }, [sendAmount, sendMax, text])
+
+  useEffect(() => {
+    if (sendMax && refInput.current) {
+      setText("")
+    }
+  }, [sendMax])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
+      if (sendMax) set("sendMax", false)
+
       // TODO exclude 0s
       if (!!tokenRates && tokenRates.usd !== null && token && !isNaN(parseFloat(e.target.value))) {
         const fiat = parseFloat(e.target.value)
@@ -173,7 +207,7 @@ const FiatInput = () => {
       }
       setText(e.target.value)
     },
-    [remove, set, token, tokenRates]
+    [remove, sendMax, set, token, tokenRates]
   )
 
   if (!tokenRates) return null
@@ -184,15 +218,21 @@ const FiatInput = () => {
       <input
         ref={refInput}
         type="text"
-        value={text}
+        value={sendMax ? "" : text}
         autoFocus
-        placeholder={FIAT_PLACEHOLDER}
-        data-symbol={token?.symbol ?? ""}
+        placeholder={placeholder}
         className={classNames(
-          "text-body inline-block min-w-0 max-w-[32rem] bg-transparent text-center text-xl"
+          "text-body inline-block min-w-0 max-w-[32rem] bg-transparent text-center text-xl",
+          sendMax && !sendAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
+      {sendMax && !sendAmount && (
+        <div className="text-body-disabled mb-4 flex items-center justify-center gap-2 text-base font-light">
+          <LoaderIcon className="text-md inline-block animate-spin" />
+          <div>Estimating max amount...</div>
+        </div>
+      )}
     </div>
   )
 }
@@ -264,10 +304,7 @@ const AmountEdit = () => {
         <PillButton
           onClick={toggleSendMax}
           size="xs"
-          className={classNames(
-            "h-[2.2rem] rounded-sm py-0 px-4",
-            sendMax && "bg-primary/20 text-primary"
-          )}
+          className={classNames("h-[2.2rem] rounded-sm py-0 px-4", sendMax && "bg-grey-700")}
         >
           Max
         </PillButton>
@@ -349,7 +386,9 @@ const EstimatedFeeRow = () => {
         {isEstimatingFee && !estimatedFee && (
           <LoaderIcon className="animate-spin-slow align-text-top" />
         )}
-        {estimatedFee && feeToken && <TokensAndFiat planck={estimatedFee} tokenId={feeToken.id} />}
+        {estimatedFee && feeToken && (
+          <TokensAndFiat planck={estimatedFee.planck} tokenId={feeToken.id} />
+        )}
       </div>
     </Container>
   )

@@ -1,26 +1,30 @@
+import { AssetTransferHandler } from "@core/domains/transactions"
+import { AssetTransferMethod } from "@core/domains/transactions/types"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useDebouncedMemo } from "@ui/hooks/useDebouncedMemo"
 import useToken from "@ui/hooks/useToken"
+import { isSubToken } from "@ui/util/isSubToken"
 
 import { getExtensionEthereumProvider } from "../Ethereum/getExtensionEthereumProvider"
 
+// TODO should also work with gasSettings
 export const useSendFundsEstimateFee = (
   from?: string | null,
   to?: string | null,
   tokenId?: string | null,
-  amount?: string | null,
+  amount = "0",
   tip = "0",
-  allowReap = false
+  method?: AssetTransferMethod
 ) => {
   const token = useToken(tokenId)
 
   const debouncedAmount = useDebouncedMemo(() => amount, 200, [amount])
 
   return useQuery({
-    queryKey: ["sendFunds", "estimateFee", from, to, token?.id, debouncedAmount],
+    queryKey: ["sendFunds", "estimateFee", from, to, token?.id, debouncedAmount, method],
     queryFn: async () => {
-      if (!token || !from || !to || !debouncedAmount) {
+      if (!token || !from || !to || (!debouncedAmount && method !== "transferAll")) {
         return {
           estimatedFee: null,
           unsigned: null,
@@ -31,6 +35,7 @@ export const useSendFundsEstimateFee = (
         case "evm-erc20":
         case "evm-native": {
           if (!token.evmNetwork) throw new Error("EVM Network not found")
+          if (!debouncedAmount) throw new Error("Amount is required")
           try {
             const provider = getExtensionEthereumProvider(token.evmNetwork.id)
             const [gasPrice, estimatedGas] = await Promise.all([
@@ -57,10 +62,11 @@ export const useSendFundsEstimateFee = (
             token.id,
             from,
             to,
-            debouncedAmount,
+            debouncedAmount ?? undefined,
             tip,
-            allowReap
+            method
           )
+          // TODO we don't want a pendingTransferId => they stay forever in memory on backend
           return { estimatedFee: partialFee, unsigned, pendingTransferId }
         }
         default:
