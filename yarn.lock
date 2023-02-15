@@ -5478,13 +5478,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-default-modules@workspace:packages/balances-default-modules"
   dependencies:
-    "@talismn/balances-evm-erc20": "workspace:^"
-    "@talismn/balances-evm-native": "workspace:^"
-    "@talismn/balances-substrate-assets": "workspace:^"
-    "@talismn/balances-substrate-equilibrium": "workspace:^"
     "@talismn/balances-substrate-native": "workspace:^"
-    "@talismn/balances-substrate-orml": "workspace:^"
-    "@talismn/balances-substrate-tokens": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
@@ -5495,7 +5489,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-evm-erc20@workspace:^, @talismn/balances-evm-erc20@workspace:packages/balances-evm-erc20":
+"@talismn/balances-evm-erc20@workspace:packages/balances-evm-erc20":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-evm-erc20@workspace:packages/balances-evm-erc20"
   dependencies:
@@ -5516,7 +5510,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-evm-native@workspace:^, @talismn/balances-evm-native@workspace:packages/balances-evm-native":
+"@talismn/balances-evm-native@workspace:packages/balances-evm-native":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-evm-native@workspace:packages/balances-evm-native"
   dependencies:
@@ -5566,7 +5560,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-assets@workspace:^, @talismn/balances-substrate-assets@workspace:packages/balances-substrate-assets":
+"@talismn/balances-substrate-assets@workspace:packages/balances-substrate-assets":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-assets@workspace:packages/balances-substrate-assets"
   dependencies:
@@ -5587,7 +5581,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-equilibrium@workspace:^, @talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium":
+"@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium"
   dependencies:
@@ -5628,7 +5622,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-orml@workspace:^, @talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml":
+"@talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml"
   dependencies:
@@ -5647,7 +5641,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-tokens@workspace:^, @talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens":
+"@talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens"
   dependencies:

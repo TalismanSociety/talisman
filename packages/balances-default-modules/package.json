@@ -26,13 +26,7 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@talismn/balances-evm-erc20": "workspace:^",
-    "@talismn/balances-evm-native": "workspace:^",
-    "@talismn/balances-substrate-assets": "workspace:^",
-    "@talismn/balances-substrate-equilibrium": "workspace:^",
-    "@talismn/balances-substrate-native": "workspace:^",
-    "@talismn/balances-substrate-orml": "workspace:^",
-    "@talismn/balances-substrate-tokens": "workspace:^"
+    "@talismn/balances-substrate-native": "workspace:^"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",
