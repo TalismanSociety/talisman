@@ -11,6 +11,7 @@ import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalCont
 import { ReceiveTokensModalProvider } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
@@ -66,6 +67,8 @@ const DashboardInner = () => {
     }
   }, [isLoggedIn, isOnboarded])
 
+  const paritySignerEnabled = useIsFeatureEnabled("PARITY_SIGNER")
+
   return isLoggedIn === "UNKNOWN" ? (
     <FullScreenLoader spin title="Loading" />
   ) : isLoggedIn === "FALSE" ? (
@@ -82,7 +85,7 @@ const DashboardInner = () => {
             <Route path="json" element={<AccountAddJson />} />
             <Route path="secret/*" element={<AccountAddSecret />} />
             <Route path="ledger/*" element={<AccountAddLedger />} />
-            <Route path="qr/*" element={<AccountAddQr />} />
+            {paritySignerEnabled ? <Route path="qr/*" element={<AccountAddQr />} /> : null}
             <Route path="*" element={<Navigate to="" replace />} />
           </Route>
           <Route path="" element={<Navigate to="/portfolio" />} />
