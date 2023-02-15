@@ -3,7 +3,7 @@
 // import { SubAssetsModule } from "@talismn/balances-substrate-assets"
 // import { SubEquilibriumModule } from "@talismn/balances-substrate-equilibrium"
 import { SubNativeModule } from "@talismn/balances-substrate-native"
-// import { SubOrmlModule } from "@talismn/balances-substrate-orml"
+import { SubOrmlModule } from "@talismn/balances-substrate-orml"
 // import { SubTokensModule } from "@talismn/balances-substrate-tokens"
 
 export const balanceModules = [
@@ -12,6 +12,6 @@ export const balanceModules = [
   // SubAssetsModule,
   // SubEquilibriumModule,
   SubNativeModule,
-  // SubOrmlModule,
+  SubOrmlModule,
   // SubTokensModule,
 ]

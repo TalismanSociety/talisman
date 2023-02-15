@@ -26,7 +26,8 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@talismn/balances-substrate-native": "workspace:^"
+    "@talismn/balances-substrate-native": "workspace:^",
+    "@talismn/balances-substrate-orml": "workspace:^"
   },
   "devDependencies": {
     "@talismn/eslint-config": "workspace:^",

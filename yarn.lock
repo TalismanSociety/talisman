@@ -5479,6 +5479,7 @@ __metadata:
   resolution: "@talismn/balances-default-modules@workspace:packages/balances-default-modules"
   dependencies:
     "@talismn/balances-substrate-native": "workspace:^"
+    "@talismn/balances-substrate-orml": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
@@ -5622,7 +5623,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml":
+"@talismn/balances-substrate-orml@workspace:^, @talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml"
   dependencies:
