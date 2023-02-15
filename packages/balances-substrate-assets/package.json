@@ -30,7 +30,6 @@
     "@polkadot/util": "10.2.1",
     "@talismn/balances": "workspace:^",
     "@talismn/chaindata-provider": "workspace:^",
-    "@talismn/mutate-metadata": "workspace:^",
     "@talismn/util": "workspace:^",
     "anylogger": "^1.0.11"
   },

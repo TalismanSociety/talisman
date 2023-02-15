@@ -29,7 +29,6 @@
     "@polkadot/types": "9.10.5",
     "@talismn/balances": "workspace:^",
     "@talismn/chaindata-provider": "workspace:^",
-    "@talismn/mutate-metadata": "workspace:^",
     "@talismn/util": "workspace:^",
     "anylogger": "^1.0.11"
   },

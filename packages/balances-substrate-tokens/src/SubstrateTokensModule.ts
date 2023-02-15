@@ -17,7 +17,6 @@ import {
   TokenList,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
-import { mutateMetadata } from "@talismn/mutate-metadata"
 import { decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 import log from "./log"
@@ -91,103 +90,7 @@ export const SubTokensModule: BalanceModule<
     const pjsMetadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
     pjsMetadata.registry.setMetadata(pjsMetadata)
 
-    const metadata = await mutateMetadata(metadataRpc, (metadata) => {
-      if (
-        metadata.__kind === "V0" ||
-        metadata.__kind === "V1" ||
-        metadata.__kind === "V2" ||
-        metadata.__kind === "V3" ||
-        metadata.__kind === "V4" ||
-        metadata.__kind === "V5" ||
-        metadata.__kind === "V6" ||
-        metadata.__kind === "V7" ||
-        metadata.__kind === "V8" ||
-        metadata.__kind === "V9" ||
-        metadata.__kind === "V10" ||
-        metadata.__kind === "V11" ||
-        metadata.__kind === "V12" ||
-        metadata.__kind === "V13"
-      ) {
-        // we can't parse metadata < v14
-        //
-        // as of v14 the type information required to interact with a chain is included in the chain metadata
-        // https://github.com/paritytech/substrate/pull/8615
-        //
-        // before this change, the client needed to already know the type information ahead of time
-        return null
-      }
-
-      const isTokensPallet = (pallet: any) => pallet.name === "Tokens"
-      const isAccountsItem = (item: any) => item.name === "Accounts"
-
-      metadata.value.pallets = metadata.value.pallets.filter(isTokensPallet)
-
-      const accountsItem = (() => {
-        const systemPallet = metadata.value.pallets.find(isTokensPallet)
-        if (!systemPallet) return
-        if (!systemPallet.storage) return
-
-        systemPallet.events = undefined
-        systemPallet.calls = undefined
-        systemPallet.errors = undefined
-        systemPallet.constants = []
-        systemPallet.storage.items = systemPallet.storage.items.filter(isAccountsItem)
-
-        return (systemPallet.storage?.items || []).find(isAccountsItem)
-      })()
-
-      // this is a set of type ids which we plan to keep in our mutated metadata
-      // anything not in this set will be deleted
-      // we start off with just the types of the state calls we plan to make,
-      // then we run those types through a function (addDependentTypes) which will also include
-      // all of the types which those types depend on - recursively
-      const keepTypes = new Set(
-        [
-          // each type can be either "Plain" or "Map"
-          // if it's "Plain" we only need to get the value type
-          // if it's a "Map" we want to keep both the key AND the value types
-          accountsItem?.type.__kind === "Map" && accountsItem.type.key,
-          accountsItem?.type.value,
-        ].filter((type): type is number => typeof type === "number")
-      )
-
-      const addDependentTypes = (types: number[]) => {
-        for (const typeIndex of types) {
-          const type = metadata.value.lookup.types[typeIndex]
-          if (!type) {
-            log.warn(`Unable to find type with index ${typeIndex}`)
-            continue
-          }
-
-          keepTypes.add(type.id)
-
-          if (type?.type?.def?.__kind === "Array") addDependentTypes([type.type.def.value.type])
-          if (type?.type?.def?.__kind === "Compact") addDependentTypes([type.type.def.value.type])
-          if (type?.type?.def?.__kind === "Composite")
-            addDependentTypes(type.type.def.value.fields.map(({ type }) => type))
-          if (type?.type?.def?.__kind === "Sequence") addDependentTypes([type.type.def.value.type])
-          if (type?.type?.def?.__kind === "Tuple")
-            addDependentTypes(type.type.def.value.map((type) => type))
-          if (type?.type?.def?.__kind === "Variant")
-            addDependentTypes(
-              type.type.def.value.variants.flatMap(({ fields }) => fields.map(({ type }) => type))
-            )
-        }
-      }
-
-      // recursively find all the types which our keepTypes depend on and add them to the keepTypes set
-      addDependentTypes([...keepTypes])
-
-      // ditch the types we aren't keeping
-      const isKeepType = (type: any) => keepTypes.has(type.id)
-      metadata.value.lookup.types = metadata.value.lookup.types.filter(isKeepType)
-
-      // ditch the chain's signedExtensions, we don't need them for balance lookups
-      // and the polkadot.js TypeRegistry will complain when it can't find the types for them
-      metadata.value.extrinsic.signedExtensions = []
-
-      return metadata
-    })
+    const metadata = metadataRpc
 
     return {
       isTestnet,
