@@ -1,6 +1,7 @@
 import { ParitySignerIcon, UsbIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import AccountAvatar from "@ui/domains/Account/Avatar"
+import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 
 export const PortfolioAccount = ({
@@ -24,16 +25,7 @@ export const PortfolioAccount = ({
       <div className="overflow-hidden text-ellipsis whitespace-nowrap">
         {account.name ?? "Unnknown"}
       </div>
-      {account?.origin === "HARDWARE" && (
-        <div className="text-primary">
-          <UsbIcon />
-        </div>
-      )}
-      {account?.origin === "QR" && (
-        <div className="text-primary">
-          <ParitySignerIcon />
-        </div>
-      )}
+      <AccountTypeIcon className="text-primary" origin={account?.origin} />
     </div>
   )
 }

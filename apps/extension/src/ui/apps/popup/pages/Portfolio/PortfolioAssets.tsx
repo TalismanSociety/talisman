@@ -18,6 +18,7 @@ import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
+import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
@@ -82,16 +83,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
               <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
                 {account ? account.name ?? "Unnamed Account" : "All Accounts"}
               </div>
-              {account?.origin === "HARDWARE" && (
-                <div className="text-primary">
-                  <UsbIcon />
-                </div>
-              )}
-              {account?.origin === "QR" && (
-                <div className="text-primary">
-                  <ParitySignerIcon />
-                </div>
-              )}
+              <AccountTypeIcon className="text-primary" origin={account?.origin} />
             </div>
             <div className="text-md overflow-hidden text-ellipsis whitespace-nowrap">
               <Fiat amount={balances.sum.fiat("usd").total} isBalance />

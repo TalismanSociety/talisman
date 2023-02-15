@@ -13,11 +13,12 @@ import Avatar from "./Avatar"
 
 type AccountTypeIconProps = {
   origin?: AccountJson["origin"] | null
+  linked?: boolean
   className?: string
 }
 
-const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, className }) => {
-  if (["SEED", "JSON"].includes(origin as string))
+export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, linked, className }) => {
+  if (linked && ["SEED", "JSON"].includes(origin as string))
     return (
       <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
         <LinkIcon />
@@ -95,7 +96,7 @@ const NamedAddress = ({
           )}
         </div>
       </span>
-      {!!withSource && <AccountTypeIcon origin={origin} className={className} />}
+      {!!withSource && <AccountTypeIcon linked origin={origin} className={className} />}
     </>
   )
 }

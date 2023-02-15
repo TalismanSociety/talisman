@@ -5,6 +5,7 @@ import { scrollbarsStyle } from "@talisman/theme/styles"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames } from "@talismn/util"
 import AccountAvatar from "@ui/domains/Account/Avatar"
+import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -254,16 +255,7 @@ const AccountOption = ({
           <div className="flex flex-col justify-center overflow-hidden text-ellipsis whitespace-nowrap">
             {name ?? (address ? shortenAddress(address) : "unknown")}
           </div>
-          {origin === "HARDWARE" && (
-            <div className="text-primary-500 flex flex-col justify-center">
-              <UsbIcon />
-            </div>
-          )}
-          {origin === "QR" && (
-            <div className="text-primary-500 flex flex-col justify-center">
-              <ParitySignerIcon />
-            </div>
-          )}
+          <AccountTypeIcon className="text-primary" origin={origin} />
         </div>
         <div className="ao-rowFiat">
           <Fiat amount={totalUsd} currency="usd" isBalance noCountUp />

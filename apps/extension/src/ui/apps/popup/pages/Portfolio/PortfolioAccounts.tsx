@@ -15,6 +15,7 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
+import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -82,16 +83,7 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
       <div className="flex grow flex-col items-start justify-center gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center gap-3 text-base leading-none">
           <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{name}</div>
-          {origin === "HARDWARE" && (
-            <div className="text-primary">
-              <UsbIcon />
-            </div>
-          )}
-          {origin === "QR" && (
-            <div className="text-primary">
-              <ParitySignerIcon />
-            </div>
-          )}
+          <AccountTypeIcon className="text-primary" origin={origin} />
           {address ? (
             <div className="flex flex-col justify-end">
               <IconButton className="!h-8 !w-8 !text-sm leading-none" onClick={handleCopyClick}>
