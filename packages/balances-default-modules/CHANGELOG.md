@@ -1,5 +1,17 @@
 # @talismn/balances-default-modules
 
+## 0.3.2
+
+### Patch Changes
+
+- @talismn/balances-evm-erc20@0.3.2
+- @talismn/balances-evm-native@0.3.2
+- @talismn/balances-substrate-assets@0.3.2
+- @talismn/balances-substrate-equilibrium@0.3.2
+- @talismn/balances-substrate-native@0.3.2
+- @talismn/balances-substrate-orml@0.3.2
+- @talismn/balances-substrate-tokens@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes

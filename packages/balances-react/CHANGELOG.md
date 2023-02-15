@@ -1,5 +1,12 @@
 # @talismn/balances-react
 
+## 0.3.2
+
+### Patch Changes
+
+- 62d7a783: fix: allow @talismn/balances-react users to specify onfinality api key
+  - @talismn/balances@0.3.2
+
 ## 0.3.1
 
 ### Patch Changes
