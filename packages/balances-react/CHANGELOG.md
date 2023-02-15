@@ -1,5 +1,19 @@
 # @talismn/balances-react
 
+## 0.3.1
+
+### Patch Changes
+
+- 8adc7f06: feat: switched build tool to preconstruct
+- Updated dependencies [8adc7f06]
+- Updated dependencies [cfe8d276]
+  - @talismn/chaindata-provider-extension@0.4.1
+  - @talismn/chain-connector-evm@0.4.1
+  - @talismn/chaindata-provider@0.4.1
+  - @talismn/chain-connector@0.4.1
+  - @talismn/token-rates@0.1.13
+  - @talismn/balances@0.3.1
+
 ## 0.3.0
 
 ### Patch Changes

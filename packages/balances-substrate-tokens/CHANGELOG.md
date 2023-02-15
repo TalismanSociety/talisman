@@ -1,5 +1,16 @@
 # @talismn/balances-substrate-tokens
 
+## 0.3.1
+
+### Patch Changes
+
+- 8adc7f06: feat: switched build tool to preconstruct
+- Updated dependencies [8adc7f06]
+  - @talismn/chaindata-provider@0.4.1
+  - @talismn/mutate-metadata@0.0.3
+  - @talismn/balances@0.3.1
+  - @talismn/util@0.1.6
+
 ## 0.3.0
 
 ### Patch Changes
