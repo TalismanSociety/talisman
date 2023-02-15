@@ -1,3 +1,4 @@
+import { AccountTypes } from "@core/domains/accounts/types"
 import type { AnySigningRequest, RequestSigningCancel } from "@core/domains/signing/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, genericSubscription, unsubscribe } from "@core/handlers/subscriptions"
@@ -81,7 +82,7 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
-  private async signingApproveHardware({
+  private async signingApproveExternal({
     id,
     signature,
   }: RequestSigningApproveSignature): Promise<boolean> {
@@ -106,43 +107,16 @@ export default class SigningHandler extends ExtensionHandler {
 
     queued.resolve({ id, signature })
 
-    talismanAnalytics.captureDelayed("sign transaction approve", {
-      ...analyticsProperties,
-      networkType: "substrate",
-      hardwareType: account?.meta.hardwareType,
-    })
-
-    return true
-  }
-
-  private async signingApproveQr({
-    id,
-    signature,
-  }: RequestSigningApproveSignature): Promise<boolean> {
-    const queued = this.state.requestStores.signing.getPolkadotRequest(id)
-    assert(queued, "Unable to find request")
-
-    const {
-      request,
-      url,
-      account: { address: accountAddress },
-    } = queued
-    const { payload } = request
-
-    const analyticsProperties: { dapp: string; chain?: string } = { dapp: url }
-
-    if (isJsonPayload(payload)) {
-      const { genesisHash } = payload
-      const chain = await chaindataProvider.getChain({ genesisHash })
-      analyticsProperties.chain = chain?.chainName
-    }
-
-    queued.resolve({ id, signature })
+    const hardwareType: "ledger" | "qr" | undefined = account?.meta.hardwareType
+      ? account.meta.hardwareType
+      : account?.meta.origin === AccountTypes.QR
+      ? "qr"
+      : undefined
 
     talismanAnalytics.captureDelayed("sign transaction approve", {
       ...analyticsProperties,
       networkType: "substrate",
-      qrType: "parity signer",
+      hardwareType,
     })
 
     return true
@@ -209,10 +183,10 @@ export default class SigningHandler extends ExtensionHandler {
         return await this.signingApprove(request as RequestIdOnly)
 
       case "pri(signing.approveSign.hardware)":
-        return this.signingApproveHardware(request as RequestSigningApproveSignature)
+        return this.signingApproveExternal(request as RequestSigningApproveSignature)
 
       case "pri(signing.approveSign.qr)":
-        return this.signingApproveQr(request as RequestSigningApproveSignature)
+        return this.signingApproveExternal(request as RequestSigningApproveSignature)
 
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestSigningCancel)
