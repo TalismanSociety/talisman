@@ -4,7 +4,7 @@
   "commit": false,
   "fixed": [
     ["@talismn/balances", "@talismn/balances-*"],
-    ["@talismn/chain-connector", "@talismn/chaindata-*"]
+    ["@talismn/chain-connector", "@talismn/chain-connector-evm", "@talismn/chaindata-*"]
   ],
   "linked": [],
   "access": "restricted",
