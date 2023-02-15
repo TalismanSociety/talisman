@@ -7,14 +7,14 @@ import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
+import { useIsEligibleNomPoolStake } from "../AssetDetails/useIsEligibleNomPoolStake"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
 import { usePortfolioSymbolBalances } from "./usePortfolioSymbolBalances"
 
 const Table = styled.table`
-  border-spacing: 0 0.8rem;
-  border-collapse: separate;
+  border-collapse: collapse;
   width: 100%;
   color: var(--color-mid);
   text-align: left;
@@ -26,9 +26,6 @@ const Table = styled.table`
     font-weight: 400;
     padding-bottom: 1rem;
   }
-  td {
-    padding: 0;
-  }
 
   tbody tr.asset {
     :not(.skeleton) {
@@ -36,6 +33,7 @@ const Table = styled.table`
     }
 
     td {
+      padding: 0;
       background: var(--color-background-muted);
       .logo-stack .logo-circle {
         border-color: var(--color-background-muted);
@@ -50,12 +48,19 @@ const Table = styled.table`
     }
 
     > td:first-child {
-      border-top-left-radius: var(--border-radius);
       border-bottom-left-radius: var(--border-radius);
     }
     > td:last-child {
-      border-top-right-radius: var(--border-radius);
       border-bottom-right-radius: var(--border-radius);
+    }
+
+    :not(.has-staking-banner) {
+      > td:first-child {
+        border-top-left-radius: var(--border-radius);
+      }
+      > td:last-child {
+        border-top-right-radius: var(--border-radius);
+      }
     }
   }
 
@@ -103,6 +108,13 @@ const AssetRow = ({ balances }: AssetRowProps) => {
 
   const { token, summary } = useTokenBalancesSummary(balances)
 
+  const { eligible, isLoading: nomPoolLoading } = useIsEligibleNomPoolStake({
+    chainId: token?.chain?.id,
+    balances,
+  })
+
+  const showStakingBanner = !nomPoolLoading && Object.values(eligible).some((x) => x)
+
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
     navigate(`/portfolio/${token?.symbol}`)
@@ -112,42 +124,55 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   if (!token || !summary) return null
 
   return (
-    <tr className={classNames("asset")} onClick={handleClick}>
-      <td valign="top">
-        <div className="flex">
-          <div className="p-8 text-xl">
-            <TokenLogo tokenId={token.id} />
+    <>
+      {showStakingBanner && (
+        <tr className="staking-banner bg-primary-500 text-primary-500 h-[4.1rem] bg-opacity-10 text-sm">
+          <td colSpan={3} className="rounded-t px-8">
+            Staking is fun and profitable
+          </td>
+        </tr>
+      )}
+      <tr
+        className={classNames(`asset${showStakingBanner ? " has-staking-banner" : ""}`)}
+        onClick={handleClick}
+      >
+        <td valign="top">
+          <div className="flex">
+            <div className="p-8 text-xl">
+              <TokenLogo tokenId={token.id} />
+            </div>
+            <div className="flex grow flex-col justify-center gap-2">
+              <div className="text-body text-base font-bold">{token.symbol} </div>
+              {!!networkIds.length && (
+                <div>
+                  <NetworksLogoStack networkIds={networkIds} />
+                </div>
+              )}
+            </div>
           </div>
-          <div className="flex grow flex-col justify-center gap-2">
-            <div className="text-body text-base font-bold">{token.symbol} </div>
-            {!!networkIds.length && (
-              <div>
-                <NetworksLogoStack networkIds={networkIds} />
-              </div>
-            )}
-          </div>
-        </div>
-      </td>
-      <td align="right" valign="top">
-        <AssetBalanceCellValue
-          locked
-          render={summary.lockedTokens.gt(0)}
-          tokens={summary.lockedTokens}
-          fiat={summary.lockedFiat}
-          symbol={token.symbol}
-          className={classNames("noPadRight", isFetching && "animate-pulse transition-opacity")}
-        />
-      </td>
-      <td align="right" valign="top">
-        <AssetBalanceCellValue
-          render
-          tokens={summary.availableTokens}
-          fiat={summary.availableFiat}
-          symbol={token.symbol}
-          className={classNames(isFetching && "animate-pulse transition-opacity")}
-        />
-      </td>
-    </tr>
+        </td>
+        <td align="right" valign="top">
+          <AssetBalanceCellValue
+            locked
+            render={summary.lockedTokens.gt(0)}
+            tokens={summary.lockedTokens}
+            fiat={summary.lockedFiat}
+            symbol={token.symbol}
+            className={classNames("noPadRight", isFetching && "animate-pulse transition-opacity")}
+          />
+        </td>
+        <td align="right" valign="top">
+          <AssetBalanceCellValue
+            render
+            tokens={summary.availableTokens}
+            fiat={summary.availableFiat}
+            symbol={token.symbol}
+            className={classNames(isFetching && "animate-pulse transition-opacity")}
+          />
+        </td>
+      </tr>
+      <tr className="spacer h-[0.8rem]" />
+    </>
   )
 }
 
