@@ -4866,6 +4866,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@solana/qr-code-styling@npm:1.6.0-beta.0":
+  version: 1.6.0-beta.0
+  resolution: "@solana/qr-code-styling@npm:1.6.0-beta.0"
+  dependencies:
+    qrcode-generator: ^1.4.3
+  checksum: dcb17ed21b977e1da6863bcf79525bc3ee3b11ae674b356396f4030fced6f7046e6799ff98980d13176da183e010d8cd031cdcf1216dece631b3d87aca1d26b0
+  languageName: node
+  linkType: hard
+
 "@solana/web3.js@npm:^1.70.1":
   version: 1.73.2
   resolution: "@solana/web3.js@npm:1.73.2"
@@ -11900,6 +11909,7 @@ __metadata:
     "@sentry/react": 7.28.1
     "@sentry/tracing": 7.28.1
     "@sentry/webpack-plugin": 1.20.0
+    "@solana/qr-code-styling": 1.6.0-beta.0
     "@substrate/txwrapper-core": "*"
     "@svgr/webpack": ^6.5.1
     "@swc/core": ^1.3.14
@@ -11988,7 +11998,6 @@ __metadata:
     postcss: ^8.4.20
     postcss-loader: ^7.0.2
     posthog-js: ^1.39.0
-    qr-code-styling: ^1.6.0-rc.1
     react: 18.2.0
     react-app-polyfill: 3.0.0
     react-contenteditable: 3.3.6
@@ -17827,15 +17836,6 @@ __metadata:
   version: 1.5.1
   resolution: "q@npm:1.5.1"
   checksum: 147baa93c805bc1200ed698bdf9c72e9e42c05f96d007e33a558b5fdfd63e5ea130e99313f28efc1783e90e6bdb4e48b67a36fcc026b7b09202437ae88a1fb12
-  languageName: node
-  linkType: hard
-
-"qr-code-styling@npm:^1.6.0-rc.1":
-  version: 1.6.0-rc.1
-  resolution: "qr-code-styling@npm:1.6.0-rc.1"
-  dependencies:
-    qrcode-generator: ^1.4.3
-  checksum: 778754790fe0b586ecd38fb02de777c7dd9cf844cf6e3c88f9a23ad85b122200a8567c946e3c41dba84ddd2f0016aa31ddfd1507150e1dbfea8a58323b62d944
   languageName: node
   linkType: hard
 

@@ -5,6 +5,7 @@ import { createSignPayload, decodeString } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
 import { u8aConcat } from "@polkadot/util"
 import type { HexString } from "@polkadot/util/types"
+import QrCodeStyling from "@solana/qr-code-styling"
 import { Drawer } from "@talisman/components/Drawer"
 import { LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
@@ -12,7 +13,6 @@ import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/ScanQr"
 import useChains from "@ui/hooks/useChains"
-import QrCodeStyling from "qr-code-styling"
 import { ReactElement, useEffect, useState } from "react"
 import { Button } from "talisman-ui"
 
@@ -20,6 +20,18 @@ import { LedgerSigningStatus } from "./LedgerSigningStatus"
 
 const CMD_MORTAL = 2
 const CMD_SIGN_MESSAGE = 3
+
+const talismanRedHandSvg =
+  `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODIiIGhlaWdodD0iODIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTYyLj` +
+  `U3MSA0NS40MjVjLTEuMDMgMS4wMy0yLjgyMi41NjMtMy40MzEtLjc2M2ExLjk4MiAxLjk4MiAwIDAgMS0uMTg1LS44MjlWMjAuOTg5YTUuMDAzIDUuMDAzIDAgMCAwLT` +
+  `EwLjAwNSAwdjExLjU2MmMwIC45OTQtMS4wMTcgMS42NjktMS45NjcgMS4zN2ExLjQ1NCAxLjQ1NCAwIDAgMS0xLjAzMi0xLjM2N1YxMy45ODdhNS4wMDMgNS4wMDMgMC` +
+  `AwIDAtMTAuMDA1IDB2MTguNTY4YTEuNDU0IDEuNDU0IDAgMCAxLTEuMDM0IDEuMzY3Yy0uOTQ5LjMtMS45NjgtLjM3Ni0xLjk2OC0xLjM3MVYyMC45OWE1LjAwMyA1Lj` +
+  `AwMyAwIDAgMC0xMC4wMDUgMHYyMi44NTNjMCAuMjgyLS4wNjQuNTU2LS4xODIuODE0LS41OTYgMS4yOTQtMi4zNDYgMS43NDctMy4zNTUuNzRsLTEuODYxLTEuODYxYT` +
+  `UuMDAyIDUuMDAyIDAgMCAwLTcuMDc1IDcuMDc0bDE0LjcwNiAxNC43MDdhMTkuOTc2IDE5Ljk3NiAwIDAgMCAxNS43NzQgNy42OTdjNi4xNDMgMCAxMS42MzgtMi43Nj` +
+  `cgMTUuMzEtNy4xMjRsMTUuMjgtMTUuMjhhNS4wMDIgNS4wMDIgMCAwIDAtNy4wNzQtNy4wNzR6TTQwLjk0NSA2NS4wMWM4Ljg0IDAgMTYuMDA3LTEwLjAwNSAxNi4wMD` +
+  `ctMTAuMDA1cy03LjE2Ni0xMC4wMDQtMTYuMDA3LTEwLjAwNC0xNi4wMDcgMTAuMDA0LTE2LjAwNyAxMC4wMDRTMzIuMTA1IDY1LjAxIDQwLjk0NSA2NS4wMXoiIGNsaX` +
+  `AtcnVsZT0iZXZlbm9kZCIgZmlsbD0iI2ZkNDg0OCIgZmlsbC1ydWxlPSJldmVub2RkIi8+PHBhdGggZD0iTTQ2Ljk0OSA1NS4wMDVhNi4wMDMgNi4wMDMgMCAxIDEtMT` +
+  `IuMDA2IDAgNi4wMDMgNi4wMDMgMCAwIDEgMTIuMDA2IDB6IiBmaWxsPSIjZmQ0ODQ4Ii8+PC9zdmc+`
 
 type ScanState =
   // waiting for user to inspect tx and click button
@@ -88,9 +100,10 @@ export const QrSubstrate = ({
     )
   }, [genesisHash, cmd])
 
-  const [qrCode, setQrCode] = useState<string | null>(null)
+  const [qrCodeFrames, setQrCodeFrames] = useState<Array<string | null> | null>(null)
   useEffect(() => {
     if (!unsigned) return
+    if (scanState === "INIT") return
 
     const data = createSignPayload(
       account?.address,
@@ -100,51 +113,58 @@ export const QrSubstrate = ({
     )
     if (!data) return
 
-    const talismanRedHandSvg =
-      `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODIiIGhlaWdodD0iODIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTYyLj` +
-      `U3MSA0NS40MjVjLTEuMDMgMS4wMy0yLjgyMi41NjMtMy40MzEtLjc2M2ExLjk4MiAxLjk4MiAwIDAgMS0uMTg1LS44MjlWMjAuOTg5YTUuMDAzIDUuMDAzIDAgMCAwLT` +
-      `EwLjAwNSAwdjExLjU2MmMwIC45OTQtMS4wMTcgMS42NjktMS45NjcgMS4zN2ExLjQ1NCAxLjQ1NCAwIDAgMS0xLjAzMi0xLjM2N1YxMy45ODdhNS4wMDMgNS4wMDMgMC` +
-      `AwIDAtMTAuMDA1IDB2MTguNTY4YTEuNDU0IDEuNDU0IDAgMCAxLTEuMDM0IDEuMzY3Yy0uOTQ5LjMtMS45NjgtLjM3Ni0xLjk2OC0xLjM3MVYyMC45OWE1LjAwMyA1Lj` +
-      `AwMyAwIDAgMC0xMC4wMDUgMHYyMi44NTNjMCAuMjgyLS4wNjQuNTU2LS4xODIuODE0LS41OTYgMS4yOTQtMi4zNDYgMS43NDctMy4zNTUuNzRsLTEuODYxLTEuODYxYT` +
-      `UuMDAyIDUuMDAyIDAgMCAwLTcuMDc1IDcuMDc0bDE0LjcwNiAxNC43MDdhMTkuOTc2IDE5Ljk3NiAwIDAgMCAxNS43NzQgNy42OTdjNi4xNDMgMCAxMS42MzgtMi43Nj` +
-      `cgMTUuMzEtNy4xMjRsMTUuMjgtMTUuMjhhNS4wMDIgNS4wMDIgMCAwIDAtNy4wNzQtNy4wNzR6TTQwLjk0NSA2NS4wMWM4Ljg0IDAgMTYuMDA3LTEwLjAwNSAxNi4wMD` +
-      `ctMTAuMDA1cy03LjE2Ni0xMC4wMDQtMTYuMDA3LTEwLjAwNC0xNi4wMDcgMTAuMDA0LTE2LjAwNyAxMC4wMDRTMzIuMTA1IDY1LjAxIDQwLjk0NSA2NS4wMXoiIGNsaX` +
-      `AtcnVsZT0iZXZlbm9kZCIgZmlsbD0iI2ZkNDg0OCIgZmlsbC1ydWxlPSJldmVub2RkIi8+PHBhdGggZD0iTTQ2Ljk0OSA1NS4wMDVhNi4wMDMgNi4wMDMgMCAxIDEtMT` +
-      `IuMDA2IDAgNi4wMDMgNi4wMDMgMCAwIDEgMTIuMDA2IDB6IiBmaWxsPSIjZmQ0ODQ4Ii8+PC9zdmc+`
-
-    // BEGIN: This section is required for keystone support
-    // For parity signer, it is enough for us to use `decodeString(data)` as the data to be
-    // encoded in our qr code.
-    // However, polkadot.js always creates a MULTIPART (video) qr code, even when the data
-    // is small enough to fit in a single qr code.
-    // Keystone devices require this MULTIPART wrapper around the qr code data, otherwise
-    // they show an error when signing.
     const MULTIPART = new Uint8Array([0])
     const encodeNumber = (value: number) => new Uint8Array([value >> 8, value & 0xff])
-    const numberOfFrames = 1 // we always only have one frame to encode
-    const frameIndex = 0 // we're encoding the first frame
-    const multiFrameData = u8aConcat(
-      MULTIPART,
-      encodeNumber(numberOfFrames),
-      encodeNumber(frameIndex),
-      data
-    )
-    // END: This section is required for keystone support
+    const FRAME_SIZE = 1024
+    const numberOfFrames = Math.ceil(data.length / FRAME_SIZE)
+    const dataFrames = Array.from({ length: numberOfFrames })
+      .map((_, index) => data.subarray(index * FRAME_SIZE, (index + 1) * FRAME_SIZE))
+      .map((dataFrame, index) =>
+        u8aConcat(MULTIPART, encodeNumber(numberOfFrames), encodeNumber(index), dataFrame)
+      )
 
-    new QrCodeStyling({
-      data: decodeString(multiFrameData),
-      margin: 0,
-      qrOptions: { mode: "Byte", errorCorrectionLevel: "L" },
-      dotsOptions: { type: "dots" },
-      cornersSquareOptions: { type: "extra-rounded" },
-      cornersDotOptions: { type: "dot" },
-      image: talismanRedHandSvg,
-      imageOptions: { hideBackgroundDots: true, imageSize: 0.7, margin: 5 },
-    })
-      .getRawData("svg")
-      .then((blob) => (blob ? URL.createObjectURL(blob) : blob))
-      .then(setQrCode)
-  }, [account?.address, cmd, genesisHash, unsigned])
+    let cancelled = false
+    ;(async () => {
+      const qrCodeFrames = []
+      for (const dataFrame of dataFrames) {
+        const blob = await new QrCodeStyling({
+          type: "svg",
+          data: decodeString(dataFrame),
+          margin: 0,
+          qrOptions: { mode: "Byte", errorCorrectionLevel: "L" },
+          dotsOptions: { type: "dots" },
+          cornersSquareOptions: { type: "extra-rounded" },
+          cornersDotOptions: { type: "dot" },
+          image: talismanRedHandSvg,
+          imageOptions: { hideBackgroundDots: true, imageSize: 0.7, margin: 5 },
+        }).getRawData("svg")
+        qrCodeFrames.push(blob ? URL.createObjectURL(blob) : blob)
+      }
+
+      if (cancelled) return
+      setQrCodeFrames(qrCodeFrames)
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [account?.address, cmd, genesisHash, scanState, unsigned])
+
+  const [qrCode, setQrCode] = useState<string | null>(null)
+  useEffect(() => {
+    if (qrCodeFrames === null) return setQrCode(null)
+    if (qrCodeFrames.length < 1) return setQrCode(null)
+    if (qrCodeFrames.length === 1) setQrCode(qrCodeFrames[0])
+
+    let index = 0
+    setQrCode(qrCodeFrames[index])
+    const interval = setInterval(() => {
+      index = (index + 1) % qrCodeFrames.length
+      setQrCode(qrCodeFrames[index])
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [qrCodeFrames])
 
   if (scanState === "INIT")
     return (
@@ -191,7 +211,7 @@ export const QrSubstrate = ({
       <section className={classNames("grow", "w-full", scanState !== "UPDATE_METADATA" && "px-12")}>
         {["SEND", "CHAINSPEC", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
           <div className="flex h-full flex-col items-center justify-end">
-            <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-4">
+            <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-10">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <LoaderIcon className="animate-spin-slow text-black" />
               </div>
@@ -199,7 +219,7 @@ export const QrSubstrate = ({
             </div>
 
             <div className="text-body-secondary mt-14 mb-10 max-w-md text-center leading-10">
-              Scan the QR code with the
+              Scan the QR {(qrCodeFrames?.length ?? 0) > 1 ? "video" : "code"} with the
               <br />
               Parity Signer app on your phone.
             </div>
