@@ -13,6 +13,7 @@ import Browser, { Runtime } from "webextension-polyfill"
 
 import sitesAuthorisedStore from "./domains/sitesAuthorised/store"
 import talismanHandler from "./handlers"
+import { IconManager } from "./libs/IconManager"
 
 initSentry(Sentry)
 consoleOverride(DEBUG)
@@ -94,3 +95,5 @@ cryptoWaitReady()
     })
   })
   .catch(Sentry.captureException)
+
+const iconManager = new IconManager()

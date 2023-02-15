@@ -6,10 +6,14 @@ import {
 } from "@core/domains/sitesAuthorised/types"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { requestStore } from "@core/libs/requests/store"
+import { KnownRequestIdOnly } from "@core/libs/requests/types"
 import type { MessageTypes, RequestType, ResponseType } from "@core/types"
 import type { Port, RequestIdOnly } from "@core/types/base"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+
+import { ignoreRequest } from "./requests"
 
 export default class SitesAuthorisationHandler extends ExtensionHandler {
   private async authorizedForget({ id, type }: RequestAuthorizedSiteForget) {
@@ -29,7 +33,7 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
   }
 
   private authorizeApprove({ id, addresses = [] }: AuthRequestApprove): boolean {
-    const queued = this.state.requestStores.sites.getRequest(id)
+    const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
     talismanAnalytics.capture("authorised site approve", {
@@ -43,8 +47,8 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
     return true
   }
 
-  private authorizeReject({ id }: RequestIdOnly): boolean {
-    const queued = this.state.requestStores.sites.getRequest(id)
+  private authorizeReject({ id }: KnownRequestIdOnly<"auth">): boolean {
+    const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
     const { reject } = queued
@@ -89,16 +93,16 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
       // authorised site requests handlers ----------------------------------
       // --------------------------------------------------------------------
       case "pri(sites.requests.subscribe)":
-        return this.state.requestStores.sites.subscribe<"pri(sites.requests.subscribe)">(id, port)
+        return requestStore.subscribe(id, port, ["auth"])
 
       case "pri(sites.requests.approve)":
         return this.authorizeApprove(request as AuthRequestApprove)
 
       case "pri(sites.requests.reject)":
-        return this.authorizeReject(request as RequestIdOnly)
+        return this.authorizeReject(request as KnownRequestIdOnly<"auth">)
 
       case "pri(sites.requests.ignore)":
-        return this.state.requestStores.sites.ignoreRequest(request as RequestIdOnly)
+        return ignoreRequest(request as KnownRequestIdOnly<"auth">)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

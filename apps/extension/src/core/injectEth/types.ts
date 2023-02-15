@@ -3,9 +3,9 @@ import EventEmitter from "events"
 import type {
   AddEthereumChainParameter,
   RequestedPermissions,
-  WatchAssetBase,
   Web3WalletPermission,
 } from "@core/domains/ethereum/types"
+import type { WatchAssetBase } from "@core/domains/ethereum/types"
 import { BlockWithTransactions } from "@ethersproject/abstract-provider"
 import { BigNumberish } from "@ethersproject/bignumber"
 import type {

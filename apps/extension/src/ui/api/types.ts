@@ -16,7 +16,12 @@ import {
   ResponseBalanceLocks,
 } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
-import { AnyEncryptRequest } from "@core/domains/encrypt/types"
+import type {
+  AnyEncryptRequest,
+  DecryptRequestId,
+  EncryptRequestId,
+} from "@core/domains/encrypt/types"
+import { AddEthereumChainRequestId } from "@core/domains/ethereum/types"
 import {
   AddEthereumChainRequest,
   AnyEthRequestChainId,
@@ -24,16 +29,23 @@ import {
   EvmNetworkId,
   RequestUpsertCustomEvmNetwork,
   WatchAssetRequest,
+  WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
-import { AnySigningRequest, TransactionDetails } from "@core/domains/signing/types"
+import { MetadataRequest, RequestMetadataId } from "@core/domains/metadata/types"
+import {
+  AnySigningRequest,
+  AnySigningRequestID,
+  SigningRequestID,
+  TransactionDetails,
+} from "@core/domains/signing/types"
 import {
   AuthRequestAddresses,
   AuthRequestId,
   AuthorisedSiteUpdate,
-  AuthorizeRequest,
   AuthorizedSite,
   AuthorizedSites,
   ProviderType,
+  SiteAuthRequest,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
 import {
@@ -44,7 +56,6 @@ import {
 import { EthResponseType } from "@core/injectEth/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
-import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
 import { ethers } from "ethers"
@@ -65,25 +76,34 @@ export default interface MessageTypes {
   onboardOpen: () => Promise<boolean>
   popupOpen: () => Promise<boolean>
   promptLogin: (closeOnSuccess?: boolean) => Promise<boolean>
-  approveMetaRequest: (id: string) => Promise<boolean>
-  rejectMetaRequest: (id: string) => Promise<boolean>
+  approveMetaRequest: (id: RequestMetadataId) => Promise<boolean>
+  rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   subscribeMetadataRequests: (cb: (requests: MetadataRequest[]) => void) => UnsubscribeFn
   allowPhishingSite: (url: string) => Promise<boolean>
 
   // signing messages -------------------------------------------------------
-  decodeSignRequest: (id: string) => Promise<TransactionDetails>
-  cancelSignRequest: (id: string) => Promise<boolean>
-  subscribeSigningRequest: (id: string, cb: (requests: AnySigningRequest) => void) => UnsubscribeFn
+  decodeSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<TransactionDetails>
+  cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
+  subscribeSigningRequest: (
+    id: AnySigningRequestID,
+    cb: (requests: AnySigningRequest) => void
+  ) => UnsubscribeFn
   subscribeSigningRequests: (cb: (requests: AnySigningRequest[]) => void) => UnsubscribeFn
-  approveSign: (id: string) => Promise<boolean>
-  approveSignHardware: (id: string, signature: HexString) => Promise<boolean>
+  approveSign: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
+  approveSignHardware: (
+    id: SigningRequestID<"substrate-sign">,
+    signature: HexString
+  ) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
   subscribeEncryptRequests: (cb: (requests: AnyEncryptRequest[]) => void) => UnsubscribeFn
-  subscribeEncryptRequest: (id: string, cb: (requests: AnyEncryptRequest) => void) => UnsubscribeFn
-  approveEncrypt: (id: string) => Promise<boolean>
-  approveDecrypt: (id: string) => Promise<boolean>
-  cancelEncryptRequest: (id: string) => Promise<boolean>
+  subscribeEncryptRequest: (
+    id: DecryptRequestId | EncryptRequestId,
+    cb: (requests: AnyEncryptRequest) => void
+  ) => UnsubscribeFn
+  approveEncrypt: (id: EncryptRequestId) => Promise<boolean>
+  approveDecrypt: (id: DecryptRequestId) => Promise<boolean>
+  cancelEncryptRequest: (id: DecryptRequestId | EncryptRequestId) => Promise<boolean>
 
   // app message types -------------------------------------------------------
   modalOpen: (modal: ModalOpenRequest) => Promise<boolean>
@@ -140,7 +160,7 @@ export default interface MessageTypes {
   authorizedSiteUpdate: (id: string, authorisedSite: AuthorisedSiteUpdate) => Promise<boolean>
 
   // authorization requests message types ------------------------------------
-  authRequestsSubscribe: (cb: (requests: AuthorizeRequest[]) => void) => UnsubscribeFn
+  authRequestsSubscribe: (cb: (requests: SiteAuthRequest[]) => void) => UnsubscribeFn
   authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>
   authrequestReject: (id: AuthRequestId) => Promise<boolean>
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
@@ -203,19 +223,25 @@ export default interface MessageTypes {
   ) => Promise<ResponseAssetTransfer>
 
   // eth related messages
-  ethApproveSign: (id: string) => Promise<boolean>
-  ethApproveSignHardware: (id: string, signature: HexString) => Promise<boolean>
+  ethApproveSign: (id: SigningRequestID<"eth-sign">) => Promise<boolean>
+  ethApproveSignHardware: (
+    id: SigningRequestID<"eth-sign">,
+    signature: HexString
+  ) => Promise<boolean>
   ethApproveSignAndSend: (
-    id: string,
+    id: SigningRequestID<"eth-send">,
     transaction: ethers.providers.TransactionRequest
   ) => Promise<boolean>
-  ethApproveSignAndSendHardware: (id: string, signedTransaction: HexString) => Promise<boolean>
-  ethCancelSign: (id: string) => Promise<boolean>
+  ethApproveSignAndSendHardware: (
+    id: SigningRequestID<"eth-send">,
+    signedTransaction: HexString
+  ) => Promise<boolean>
+  ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>
   ethRequest: <T extends AnyEthRequestChainId>(request: T) => Promise<EthResponseType<T["method"]>>
   ethGetTransactionsCount: (address: string, evmNetworkId: EvmNetworkId) => Promise<number>
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
-  ethNetworkAddApprove: (id: string) => Promise<boolean>
-  ethNetworkAddCancel: (is: string) => Promise<boolean>
+  ethNetworkAddApprove: (id: AddEthereumChainRequestId) => Promise<boolean>
+  ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
   ethNetworkAddSubscribeRequests: (
     cb: (requests: AddEthereumChainRequest[]) => void
   ) => UnsubscribeFn
@@ -227,10 +253,10 @@ export default interface MessageTypes {
   ethNetworkReset: (id: string) => Promise<boolean>
 
   // ethereum tokens message types
-  ethWatchAssetRequestApprove: (id: string) => Promise<boolean>
-  ethWatchAssetRequestCancel: (is: string) => Promise<boolean>
+  ethWatchAssetRequestApprove: (id: WatchAssetRequestId) => Promise<boolean>
+  ethWatchAssetRequestCancel: (is: WatchAssetRequestId) => Promise<boolean>
   ethWatchAssetRequestSubscribe: (
-    id: string,
+    id: WatchAssetRequestId,
     cb: (requests: WatchAssetRequest) => void
   ) => UnsubscribeFn
   ethWatchAssetRequestsSubscribe: (cb: (requests: WatchAssetRequest[]) => void) => UnsubscribeFn

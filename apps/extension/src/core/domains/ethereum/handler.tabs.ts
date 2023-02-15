@@ -1,5 +1,6 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
 import { filterAccountsByAddresses, getPublicAccounts } from "@core/domains/accounts/helpers"
+import { signAndSendEth, signEth } from "@core/domains/signing/requests"
 import {
   AuthorizedSite,
   AuthorizedSiteAddresses,
@@ -41,12 +42,14 @@ import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
 import { ethers, providers } from "ethers"
 
+import { requestAuthoriseSite } from "../sitesAuthorised/requests"
 import {
   getErc20TokenId,
   isValidAddEthereumRequestParam,
   isValidRequestedPermissions,
   isValidWatchAssetRequestParam,
 } from "./helpers"
+import { requestAddNetwork, requestWatchAsset } from "./requests"
 import { getProviderForEthereumNetwork, getProviderForEvmNetworkId } from "./rpcProviders"
 import { Web3WalletPermission, Web3WalletPermissionTarget } from "./types"
 
@@ -100,14 +103,14 @@ export class EthTabsHandler extends TabsHandler {
     }
 
     try {
-      return await this.state.requestStores.sites.requestAuthorizeUrl(url, request)
+      await requestAuthoriseSite(url, request)
+      return true
     } catch (err) {
       // 4001	User Rejected Request	The user rejected the request.
       throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1993_USER_REJECTED)
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private async accountsList(url: string): Promise<string[]> {
     const site = await this.stores.sites.getSiteFromUrl(url)
     if (!site) return []
@@ -292,7 +295,7 @@ export class EthTabsHandler extends TabsHandler {
       })
     )
 
-    await this.state.requestStores.networks.requestAddNetwork(url, network)
+    await requestAddNetwork(url, network)
 
     // switch automatically to new chain
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
@@ -392,16 +395,10 @@ export class EthTabsHandler extends TabsHandler {
       )
     }
 
-    return this.state.requestStores.signing.signEth(
-      url,
-      method,
-      message,
-      site.ethChainId.toString(),
-      {
-        address: ethers.utils.getAddress(address),
-        ...pair.meta,
-      }
-    )
+    return signEth(url, method, message, site.ethChainId.toString(), {
+      address: ethers.utils.getAddress(address),
+      ...pair.meta,
+    })
   }
 
   private addWatchAssetRequest = async (
@@ -446,7 +443,7 @@ export class EthTabsHandler extends TabsHandler {
       image: image ?? tokenInfo.image,
     }
 
-    return this.state.requestStores.evmAssets.requestWatchAsset(url, request.params, token)
+    return requestWatchAsset(url, request.params, token)
   }
 
   private async sendTransaction(url: string, request: EthRequestArguments<"eth_sendTransaction">) {
@@ -485,7 +482,7 @@ export class EthTabsHandler extends TabsHandler {
       )
     }
 
-    return this.state.requestStores.signing.signAndSendEth(
+    return signAndSendEth(
       url,
       {
         // locks the chainId in case the dapp's chainId changes after signing request creation

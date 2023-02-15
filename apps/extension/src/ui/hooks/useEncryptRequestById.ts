@@ -1,4 +1,8 @@
-import type { AnyEncryptRequest } from "@core/domains/encrypt/types"
+import type {
+  AnyEncryptRequest,
+  DecryptRequestId,
+  EncryptRequestId,
+} from "@core/domains/encrypt/types"
 import { api } from "@ui/api"
 import { useCallback } from "react"
 import { BehaviorSubject } from "rxjs"
@@ -8,7 +12,9 @@ import { useMessageSubscription } from "./useMessageSubscription"
 const INITIAL_SUBJECT_VALUE: Record<string, AnyEncryptRequest> = {}
 
 // public hook
-export const useEncryptRequestById = (id: string): AnyEncryptRequest | undefined => {
+export const useEncryptRequestById = (
+  id: EncryptRequestId | DecryptRequestId
+): AnyEncryptRequest | undefined => {
   const subscribe = useCallback(
     (reqs: BehaviorSubject<Record<string, AnyEncryptRequest>>) =>
       api.subscribeEncryptRequest(id, (v) => reqs.next({ [id]: v })),

@@ -1,10 +1,12 @@
 import { DEBUG } from "@core/constants"
-import {
+import type {
   AnyEthRequestChainId,
   EthApproveSignAndSend,
   EthRequestSigningApproveSignature,
-  WatchAssetRequest,
+  WatchAssetRequestIdOnly,
 } from "@core/domains/ethereum/types"
+import { ETH_NETWORK_ADD_PREFIX, WATCH_ASSET_PREFIX } from "@core/domains/ethereum/types"
+import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import { CustomEvmNativeToken } from "@core/domains/tokens/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
@@ -15,6 +17,7 @@ import {
 import { EthRequestArguments, EthRequestSignatures } from "@core/injectEth/types"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { requestStore } from "@core/libs/requests/store"
 import { watchEthereumTransaction } from "@core/notifications"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -31,7 +34,7 @@ import { ethers } from "ethers"
 import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
-import { RequestUpsertCustomEvmNetwork } from "./types"
+import { AddEthereumChainRequestIdOnly, RequestUpsertCustomEvmNetwork } from "./types"
 
 // turns errors into short and human readable message.
 // main use case is teling the user why a transaction failed without going into details and clutter the UI
@@ -76,9 +79,9 @@ export class EthHandler extends ExtensionHandler {
   private async signAndSendApproveHardware({
     id,
     signedPayload,
-  }: EthRequestSigningApproveSignature): Promise<boolean> {
+  }: EthRequestSigningApproveSignature<"eth-send">): Promise<boolean> {
     try {
-      const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
+      const queued = requestStore.getRequest(id)
       assert(queued, "Unable to find request")
       const {
         method,
@@ -117,7 +120,7 @@ export class EthHandler extends ExtensionHandler {
   }
 
   private async signAndSendApprove({ id, transaction }: EthApproveSignAndSend): Promise<boolean> {
-    const queued = this.state.requestStores.signing.getEthSignAndSendRequest(id)
+    const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
     const { resolve, reject, ethChainId, account, url } = queued
 
@@ -128,8 +131,8 @@ export class EthHandler extends ExtensionHandler {
     const tx = rebuildTransactionRequestNumbers(transaction)
     tx.nonce = await getTransactionCount(account.address, ethChainId)
 
-    const result = await getPairForAddressSafely(account.address, async (pair) => {
-      const password = await this.stores.password.getPassword()
+    const { val, ok } = await getPairForAddressSafely(account.address, async (pair) => {
+      const password = this.stores.password.getPassword()
       assert(password, "Unauthorised")
       const privateKey = getPrivateKey(pair, password)
       const signer = new ethers.Wallet(privateKey, provider)
@@ -153,20 +156,23 @@ export class EthHandler extends ExtensionHandler {
       return true
     })
 
-    if (result.ok) {
-      return result.val
+    if (ok) {
+      return val
     } else {
-      if (result.val === "Unauthorised") {
-        reject(Error(result.val))
+      if (val === "Unauthorised") {
+        reject(Error(val))
       } else {
-        throw new Error(getHumanReadableErrorMessage(result.val) ?? "Failed to send transaction")
+        throw new Error(getHumanReadableErrorMessage(val) ?? "Failed to send transaction")
       }
       return false
     }
   }
 
-  private signApproveHardware({ id, signedPayload }: EthRequestSigningApproveSignature): boolean {
-    const queued = this.state.requestStores.signing.getEthSignRequest(id)
+  private signApproveHardware({
+    id,
+    signedPayload,
+  }: EthRequestSigningApproveSignature<"eth-sign">): boolean {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -191,15 +197,15 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async signApprove({ id }: RequestIdOnly): Promise<boolean> {
-    const queued = this.state.requestStores.signing.getEthSignRequest(id)
+  private async signApprove({ id }: KnownSigningRequestIdOnly<"eth-sign">): Promise<boolean> {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
     const { method, request, reject, resolve } = queued
 
-    const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
-      const pw = await this.stores.password.getPassword()
+    const { val, ok } = await getPairForAddressSafely(queued.account.address, async (pair) => {
+      const pw = this.stores.password.getPassword()
       assert(pw, "Unauthorised")
       const privateKey = getPrivateKey(pair, pw)
       let signature: string
@@ -241,21 +247,19 @@ export class EthHandler extends ExtensionHandler {
       return true
     })
 
-    if (result.ok) return result.val
-    else {
-      if (result.val === "Unauthorised") {
-        reject(Error(result.val))
-      } else {
-        const msg = getHumanReadableErrorMessage(result.val)
-        if (msg) throw new Error(msg)
-        else result.unwrap() // throws error
-      }
-      return false
+    if (ok) return val
+    if (val === "Unauthorised") {
+      reject(Error(val))
+    } else {
+      const msg = getHumanReadableErrorMessage(val)
+      if (msg) throw new Error(msg)
+      else throw new Error("Unable to complete transaction")
     }
+    return false
   }
 
-  private signingCancel({ id }: RequestIdOnly): boolean {
-    const queued = this.state.requestStores.signing.getEthRequest(id)
+  private signingCancel({ id }: KnownSigningRequestIdOnly<"eth-send" | "eth-sign">): boolean {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -272,8 +276,8 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private ethNetworkAddCancel({ id }: RequestIdOnly): boolean {
-    const queued = this.state.requestStores.networks.getRequest(id)
+  private ethNetworkAddCancel({ id }: AddEthereumChainRequestIdOnly): boolean {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -284,8 +288,8 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async ethNetworkAddApprove({ id }: RequestIdOnly): Promise<boolean> {
-    const queued = this.state.requestStores.networks.getRequest(id)
+  private async ethNetworkAddApprove({ id }: AddEthereumChainRequestIdOnly): Promise<boolean> {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -419,8 +423,8 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private ethWatchAssetRequestCancel({ id }: RequestIdOnly): boolean {
-    const queued = this.state.requestStores.evmAssets.getRequest(id)
+  private ethWatchAssetRequestCancel({ id }: WatchAssetRequestIdOnly): boolean {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -431,8 +435,8 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async ethWatchAssetRequestApprove({ id }: RequestIdOnly): Promise<boolean> {
-    const queued = this.state.requestStores.evmAssets.getRequest(id)
+  private async ethWatchAssetRequestApprove({ id }: WatchAssetRequestIdOnly): Promise<boolean> {
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
     const { resolve, token } = queued
@@ -481,45 +485,45 @@ export class EthHandler extends ExtensionHandler {
       case "pri(eth.signing.approveSignAndSend)":
         return this.signAndSendApprove(request as EthApproveSignAndSend)
 
-      case "pri(eth.signing.approveSignAndSendHardware)":
-        return this.signAndSendApproveHardware(
-          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"]
-        )
-
       case "pri(eth.signing.approveSign)":
-        return this.signApprove(request as RequestIdOnly)
+        return this.signApprove(request as KnownSigningRequestIdOnly<"eth-sign">)
 
       case "pri(eth.signing.approveSignHardware)":
         return this.signApproveHardware(
           request as RequestTypes["pri(eth.signing.approveSignHardware)"]
         )
 
+      case "pri(eth.signing.approveSignAndSendHardware)":
+        return this.signAndSendApproveHardware(
+          request as RequestTypes["pri(eth.signing.approveSignAndSendHardware)"]
+        )
+
       case "pri(eth.signing.cancel)":
-        return this.signingCancel(request as RequestIdOnly)
+        return this.signingCancel(request as KnownSigningRequestIdOnly<"eth-send" | "eth-sign">)
 
       // --------------------------------------------------------------------
       // ethereum watch asset requests handlers -----------------------------
       // --------------------------------------------------------------------
       case "pri(eth.watchasset.requests.cancel)":
-        return this.ethWatchAssetRequestCancel(request as RequestIdOnly)
+        return this.ethWatchAssetRequestCancel(request as WatchAssetRequestIdOnly)
 
       case "pri(eth.watchasset.requests.approve)":
-        return this.ethWatchAssetRequestApprove(request as RequestIdOnly)
+        return this.ethWatchAssetRequestApprove(request as WatchAssetRequestIdOnly)
 
       case "pri(eth.watchasset.requests.subscribe)":
-        return this.state.requestStores.evmAssets.subscribe<"pri(eth.watchasset.requests.subscribe)">(
-          id,
-          port
-        )
+        return requestStore.subscribe<"pri(eth.watchasset.requests.subscribe)">(id, port, [
+          WATCH_ASSET_PREFIX,
+        ])
 
       case "pri(eth.watchasset.requests.subscribe.byid)": {
         const cb = createSubscription<"pri(eth.watchasset.requests.subscribe.byid)">(id, port)
-        const subscription = this.state.requestStores.evmAssets.observable.subscribe(
-          (reqs: WatchAssetRequest[]) => {
-            const watchAssetRequest = reqs.find((req) => req.id === (request as RequestIdOnly).id)
-            if (watchAssetRequest) cb(watchAssetRequest)
-          }
-        )
+        const subscription = requestStore.observable.subscribe((reqs) => {
+          const watchAssetRequest = reqs.find(
+            (req) => req.id === (request as WatchAssetRequestIdOnly).id
+          )
+          if (watchAssetRequest && watchAssetRequest.type === WATCH_ASSET_PREFIX)
+            cb(watchAssetRequest)
+        })
 
         port.onDisconnect.addListener((): void => {
           unsubscribe(id)
@@ -532,19 +536,18 @@ export class EthHandler extends ExtensionHandler {
       // ethereum network handlers ------------------------------------------
       // --------------------------------------------------------------------
       case "pri(eth.networks.add.cancel)":
-        return this.ethNetworkAddCancel(request as RequestIdOnly)
+        return this.ethNetworkAddCancel(request as AddEthereumChainRequestIdOnly)
 
       case "pri(eth.networks.add.approve)":
-        return this.ethNetworkAddApprove(request as RequestIdOnly)
+        return this.ethNetworkAddApprove(request as AddEthereumChainRequestIdOnly)
 
       case "pri(eth.networks.add.requests)":
-        return this.state.requestStores.networks.getAllRequests()
+        return requestStore.getAllRequests(ETH_NETWORK_ADD_PREFIX)
 
       case "pri(eth.networks.add.subscribe)":
-        return this.state.requestStores.networks.subscribe<"pri(eth.networks.add.subscribe)">(
-          id,
-          port
-        )
+        return requestStore.subscribe<"pri(eth.networks.add.subscribe)">(id, port, [
+          ETH_NETWORK_ADD_PREFIX,
+        ])
 
       case "pri(eth.networks.subscribe)":
         return chaindataProvider.hydrateEvmNetworks()

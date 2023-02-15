@@ -1,6 +1,5 @@
 // import Extension from "./Extension"
 import AppHandler from "@core/domains/app/handler"
-import State from "@core/handlers/State"
 import {
   GettableStoreData,
   extensionStores,
@@ -25,7 +24,6 @@ keyring.loadAll({ store: new AccountsStore() })
 
 describe("App handler when password is not trimmed", () => {
   let extension: AppHandler
-  let state: State
   let messageSender: ReturnType<typeof getMessageSenderFn>
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
@@ -34,8 +32,7 @@ describe("App handler when password is not trimmed", () => {
   async function createExtension(): Promise<AppHandler> {
     await cryptoWaitReady()
 
-    state = new State()
-    return new AppHandler(state, extensionStores)
+    return new AppHandler(extensionStores)
   }
 
   afterAll(async () => {
@@ -163,7 +160,6 @@ describe("App handler when password is not trimmed", () => {
 
 describe("App handler when password is trimmed", () => {
   let extension: AppHandler
-  let state: State
   let messageSender: ReturnType<typeof getMessageSenderFn>
   const password = "passw0rd " // has a space
   let initialStoreData: Partial<GettableStoreData> = {}
@@ -172,8 +168,7 @@ describe("App handler when password is trimmed", () => {
   async function createExtension(): Promise<AppHandler> {
     await cryptoWaitReady()
 
-    state = new State()
-    return new AppHandler(state, extensionStores)
+    return new AppHandler(extensionStores)
   }
 
   afterAll(async () => {
