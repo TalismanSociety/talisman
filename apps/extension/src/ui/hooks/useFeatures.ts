@@ -15,14 +15,28 @@ const useFeaturesProvider = () => {
     return () => sub.unsubscribe()
   }, [])
 
-  const isFeatureEnabled = useCallback(
-    (feature: FeatureFlag) => data.features.includes(feature),
-    [data.features]
-  )
-
   const getFeatureVariant = useCallback(
     <P extends FeatureFlag>(feature: P) => data.variants[feature] as FeatureVariants[P],
     [data.variants]
+  )
+
+  const isFeatureEnabled = useCallback(
+    (feature: FeatureFlag) => {
+      const variant = getFeatureVariant(feature)
+      if (typeof variant === "string") return true
+      if (typeof variant === "boolean") return variant === true
+      if (typeof variant === "undefined") return false
+
+      // force a typescript compilation error if any variant types are not handled.
+      // if a developer adds a feature flag which is, for example, a number (or any other type
+      // which we don't handle yet) then this compliation error will tell them that they need
+      // to add an if statement above to handle that variant type.
+      // without this, their new variant would always return false, and they'd be left confused
+      // as to why their feature flag isn't working.
+      const exhaustiveCheck: never = variant
+      throw new Error(`Unhandled feature variant type ${exhaustiveCheck}`)
+    },
+    [getFeatureVariant]
   )
 
   return { isFeatureEnabled, getFeatureVariant }
