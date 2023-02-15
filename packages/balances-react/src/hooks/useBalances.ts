@@ -16,6 +16,10 @@ import log from "../log"
 import { useChains, useEvmNetworks, useTokens } from "./useChaindata"
 import { useTokenRates } from "./useTokenRates"
 
+export type Options = {
+  onfinalityApiKey?: string
+}
+
 // TODO: Add the equivalent functionalty of `useDbCache` directly to this library.
 //
 //       How it will work:
@@ -28,9 +32,10 @@ export function useBalances(
   // TODO: Make this array of BalanceModules more type-safe
   balanceModules: Array<BalanceModule<any, any, any, any>>,
   chaindataProvider: ChaindataProvider | null,
-  addressesByToken: AddressesByToken<Token> | null
+  addressesByToken: AddressesByToken<Token> | null,
+  options: Options = {}
 ) {
-  useBalancesSubscriptions(balanceModules, chaindataProvider, addressesByToken)
+  useBalancesSubscriptions(balanceModules, chaindataProvider, addressesByToken, options)
 
   const chains = useChains(chaindataProvider)
   const evmNetworks = useEvmNetworks(chaindataProvider)
@@ -84,7 +89,8 @@ function useBalancesSubscriptions(
   // TODO: Make this array of BalanceModules more type-safe
   balanceModules: Array<BalanceModule<any, any, any, any>>,
   chaindataProvider: ChaindataProvider | null,
-  addressesByToken: AddressesByToken<Token> | null
+  addressesByToken: AddressesByToken<Token> | null,
+  options: Options = {}
 ) {
   // const subscriptions = useRef<
   //   Record<string, { unsub: Promise<() => void>; refcount: number; generation: number }>
@@ -161,7 +167,7 @@ function useBalancesSubscriptions(
   }
 
   const chainConnector = useChainConnector(chaindataProvider)
-  const chainConnectorEvm = useChainConnectorEvm(chaindataProvider)
+  const chainConnectorEvm = useChainConnectorEvm(chaindataProvider, options)
   const tokens = useTokens(chaindataProvider)
   useEffect(() => {
     if (chainConnector === null) return
@@ -195,7 +201,14 @@ function useBalancesSubscriptions(
     const unsubAll = () => unsubs.forEach((unsub) => unsub())
 
     return unsubAll
-  }, [addressesByToken, chainConnector, chainConnectorEvm, chaindataProvider, tokens])
+  }, [
+    addressesByToken,
+    balanceModules,
+    chainConnector,
+    chainConnectorEvm,
+    chaindataProvider,
+    tokens,
+  ])
 }
 
 // TODO: Allow advanced users of this library to provide their own chain connector
@@ -209,12 +222,14 @@ function useChainConnector(chaindataProvider: ChaindataProvider | null) {
   return chainConnector
 }
 // TODO: Allow advanced users of this library to provide their own chain connector
-function useChainConnectorEvm(chaindataProvider: ChaindataProvider | null) {
+function useChainConnectorEvm(chaindataProvider: ChaindataProvider | null, options: Options = {}) {
   const [chainConnectorEvm, setChainConnectorEvm] = useState<ChainConnectorEvm | null>(null)
   useEffect(() => {
     if (chaindataProvider === null) return
-    setChainConnectorEvm(new ChainConnectorEvm(chaindataProvider))
-  }, [chaindataProvider])
+    setChainConnectorEvm(
+      new ChainConnectorEvm(chaindataProvider, { onfinalityApiKey: options.onfinalityApiKey })
+    )
+  }, [chaindataProvider, options.onfinalityApiKey])
 
   return chainConnectorEvm
 }
