@@ -191,17 +191,19 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
 
   const balances = useBalances()
 
+  // TODO provide a way to "unfilter"
   const accountBalances = useMemo(
-    () => (from ? balances.find({ address: from ?? undefined }) : balances),
-    [balances, from]
+    // if a token is already selected, assume we want to see the tokens of all accounts (allows switching from substrate to evm)
+    () => (from && !selected ? balances.find({ address: from ?? undefined }) : balances),
+    [balances, from, selected]
   )
 
   const filterAccountCompatibleTokens = useCallback(
     (token: Token) => {
-      if (!from) return true
+      if (!from || selected) return true
       return isEthereumAddress(from) ? !!token.evmNetwork : !!token.chain
     },
-    [from]
+    [from, selected]
   )
 
   const accountCompatibleTokens = useMemo(() => {
@@ -241,14 +243,22 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
     // sort alphabetically by symbol + chain name
     const results = sortBy(
       sortBy(
-        accountCompatibleTokens.map((t) => ({
-          ...t,
-          balances: accountBalances.find({ tokenId: t.id }),
-        })),
+        accountCompatibleTokens
+          .map((t) => ({
+            ...t,
+            balances: accountBalances.find({ tokenId: t.id }),
+          }))
+          .filter((t) => t.balances.sorted.find((bal) => bal.transferable.planck > 0n)),
         "chainName"
       ),
       "token.symbol"
     ).sort((a, b) => {
+      // transferable tokens first
+      const isTransferableA = isTransferableToken(a.token)
+      const isTransferableB = isTransferableToken(b.token)
+      if (isTransferableA && !isTransferableB) return -1
+      if (!isTransferableA && isTransferableB) return 1
+
       // selected token first
       if (a.id === selected) return -1
       if (b.id === selected) return 1

@@ -229,7 +229,7 @@ const useSendFundsProvider = () => {
   const error = evmTransaction?.error || subTransaction?.error
   const isRefetching = subTransaction?.isRefetching // TODO evm refetching
 
-  // debounce to prevent "Estimateing max amount...", and the fee, from flickering on the UI
+  // debounce to prevent "Estimateing max amount...", and the fee, from flickering on the UI (changing amount instantly triggers fee refetch)
   const sendAmount = useDebouncedMemo(() => sendAmountLive, 50, [sendAmountLive])
   const estimatedFee = useDebouncedMemo(() => estimatedFeeLive, 50, [estimatedFeeLive])
 
