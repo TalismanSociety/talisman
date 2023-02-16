@@ -1,5 +1,15 @@
 # @talismn/balances-substrate-assets
 
+## 0.3.3
+
+### Patch Changes
+
+- c651551c: build: move `@polkadot` dependencies to `peerDependencies`
+- Updated dependencies [c651551c]
+  - @talismn/balances@0.3.3
+  - @talismn/util@0.1.7
+  - @talismn/chaindata-provider@0.4.2
+
 ## 0.3.2
 
 ### Patch Changes
