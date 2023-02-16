@@ -2,17 +2,17 @@ import { Balances } from "@core/domains/balances/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ExternalLinkIcon, LockIcon, ZapIcon } from "@talisman/theme/icons"
+import { ExternalLinkIcon, LockIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { ReactNode, useCallback, useMemo } from "react"
+import { ReactNode, useCallback, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
-import { useIsEligibleNomPoolStake } from "../AssetDetails/useIsEligibleNomPoolStake"
+import { useShowNomPoolStakingBanner } from "../AssetDetails/useShowNomPoolStakingBanner"
 import { useSelectedAccount } from "../SelectedAccountContext"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
@@ -124,7 +124,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   )
 
   const { token, summary } = useTokenBalancesSummary(balances)
-  const { showBanner } = useIsEligibleNomPoolStake({
+  const { showBanner, dismissBanner } = useShowNomPoolStakingBanner({
     chainId: token?.chain?.id,
     balances,
   })
@@ -134,6 +134,16 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
     navigate(`/portfolio/${token?.symbol}`)
     genericEvent("goto portfolio asset", { from: "popup", symbol: token?.symbol })
   }, [genericEvent, navigate, token?.symbol])
+
+  const handleClickStakingBanner = useCallback(() => {
+    window.open("https://app.talisman.xyz/staking")
+    genericEvent("open web app staking from banner", { from: "popup", symbol: token?.symbol })
+  }, [genericEvent, token?.symbol])
+
+  const handleDismissStakingBanner = useCallback(() => {
+    dismissBanner()
+    genericEvent("dismiss staking banner", { from: "popup", symbol: token?.symbol })
+  }, [genericEvent, dismissBanner, token?.symbol])
 
   const { tokens, fiat } = useMemo(() => {
     return {
@@ -192,8 +202,8 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
         </div>
       </AssetButton>
       {showBanner && (
-        <AssetButton className="staking-banner bg-primary-500 text-primary-500  bg-opacity-10 p-[1rem]">
-          <a href="https://app.talisman.xyz/staking" target="_blank" className="flex gap-2">
+        <AssetButton className="staking-banner bg-primary-500 text-primary-500 flex justify-between bg-opacity-10 p-[1rem] align-middle">
+          <div onClick={handleClickStakingBanner} className="flex gap-2">
             <ZapIcon className="h-[2.3rem] w-[2.3rem]" />
             <div className="flex flex-col justify-start text-start">
               <span className="text-start text-sm text-white">
@@ -203,7 +213,10 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
                 Earn 15%+ on your {token?.symbol} with Talisman Staking <ExternalLinkIcon />
               </div>
             </div>
-          </a>
+          </div>
+          <div className="self-start">
+            <XIcon onClick={handleDismissStakingBanner} className="h-6" />
+          </div>
         </AssetButton>
       )}
     </>

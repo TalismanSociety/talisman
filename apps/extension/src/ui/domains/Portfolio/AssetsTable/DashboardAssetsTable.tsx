@@ -1,5 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
-import { ExternalLinkIcon, ZapIcon } from "@talisman/theme/icons"
+import { ExternalLinkIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useMemo } from "react"
@@ -8,7 +8,7 @@ import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
-import { useIsEligibleNomPoolStake } from "../AssetDetails/useIsEligibleNomPoolStake"
+import { useShowNomPoolStakingBanner } from "../AssetDetails/useShowNomPoolStakingBanner"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
@@ -114,7 +114,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
 
   const { token, summary } = useTokenBalancesSummary(balances)
 
-  const { showBanner } = useIsEligibleNomPoolStake({
+  const { showBanner, dismissBanner } = useShowNomPoolStakingBanner({
     chainId: token?.chain?.id,
     balances,
   })
@@ -125,22 +125,31 @@ const AssetRow = ({ balances }: AssetRowProps) => {
     genericEvent("goto portfolio asset", { from: "dashboard", symbol: token?.symbol })
   }, [genericEvent, navigate, token?.symbol])
 
+  const handleClickStakingBanner = useCallback(() => {
+    window.open("https://app.talisman.xyz/staking")
+    genericEvent("open web app staking from banner", { from: "dashboard", symbol: token?.symbol })
+  }, [genericEvent, token?.symbol])
+
+  const handleDismissStakingBanner = useCallback(() => {
+    dismissBanner()
+    genericEvent("dismiss staking banner", { from: "dashboard", symbol: token?.symbol })
+  }, [genericEvent, dismissBanner, token?.symbol])
+
   if (!token || !summary) return null
 
   return (
     <>
       {showBanner && (
-        <tr className="staking-banner bg-primary-500 text-primary-500 h-[4.1rem] bg-opacity-10 text-sm">
+        <tr className="staking-banner bg-primary-500 text-primary-500 h-[4.1rem] cursor-pointer bg-opacity-10 text-sm">
           <td colSpan={3} className="rounded-t px-8">
-            <a
-              href="https://app.talisman.xyz/staking"
-              target="_blank"
-              className="flex gap-4 align-middle"
-            >
-              <ZapIcon /> <span className="text-white">Earn ~15% yield on your DOT.</span> This
-              balance is eligible for Nomination Pool Staking via the Talisman Portal.{" "}
-              <ExternalLinkIcon />
-            </a>
+            <div className="flex w-full justify-between align-middle">
+              <div onClick={handleClickStakingBanner} className="flex gap-4 align-middle">
+                <ZapIcon /> <span className="text-white">Earn ~15% yield on your DOT.</span> This
+                balance is eligible for Nomination Pool Staking via the Talisman Portal.{" "}
+                <ExternalLinkIcon />
+              </div>
+              <XIcon className="h-8" onClick={handleDismissStakingBanner} />
+            </div>
           </td>
         </tr>
       )}

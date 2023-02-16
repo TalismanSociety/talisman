@@ -1,9 +1,10 @@
 import { NOM_POOL_MIN_DEPOSIT, NOM_POOL_SUPPORTED_CHAINS } from "@core/constants"
+import { appStore } from "@core/domains/app"
 import { Balances } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
 import { ChainId } from "@talismn/chaindata-provider"
 import useAccounts from "@ui/hooks/useAccounts"
-import { useMemo } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useNomPoolStakedBalance } from "./useNomPoolStakedBalance"
 
@@ -12,10 +13,19 @@ export type NomPoolStakingOptions = {
   balances: Balances
 }
 
-export const useIsEligibleNomPoolStake = ({
+export const useShowNomPoolStakingBanner = ({
   chainId = "polkadot",
   balances,
 }: NomPoolStakingOptions) => {
+  const [showBannerSetting, setShowBannerSetting] = useState(false)
+
+  useEffect(() => {
+    const sub = appStore.observable.subscribe(({ showDotNomPoolStakingBanner }) =>
+      setShowBannerSetting(showDotNomPoolStakingBanner)
+    )
+    return () => sub.unsubscribe()
+  }, [])
+
   const balancesForChain = balances.find({ chainId }).sorted
   const accounts = useAccounts()
   // only balances on substrate accounts are eligible for nom pool staking
@@ -60,7 +70,10 @@ export const useIsEligibleNomPoolStake = ({
     [substrateAddresses, eligibleAddressBalances, nomPoolStake, chainId]
   )
 
-  const showBanner = !isLoading && Object.values(eligible).some((x) => x)
+  const dismissBanner = useCallback(() => appStore.set({ showDotNomPoolStakingBanner: false }), [])
 
-  return { eligible, isLoading, error, showBanner }
+  const showBanner =
+    !isLoading && !error && Object.values(eligible).some((x) => x) && showBannerSetting
+
+  return { eligible, isLoading, error, showBanner, dismissBanner }
 }

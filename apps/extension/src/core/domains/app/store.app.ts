@@ -22,6 +22,7 @@ export type AppStoreData = {
   analyticsRequestShown: boolean
   showWalletFunding: boolean
   hasSpiritKey: boolean
+  showDotNomPoolStakingBanner: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -34,6 +35,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
   showWalletFunding: false, // true after onboarding with a newly created account
   hasSpiritKey: false,
+  showDotNomPoolStakingBanner: true,
 }
 
 export class AppStore extends SubscribableStorageProvider<
@@ -93,6 +95,7 @@ if (DEBUG) {
       hideBraveWarning: false,
       hasBraveWarningBeenShown: false,
       analyticsRequestShown: false,
+      showDotNomPoolStakingBanner: true,
     })
   }
   // @ts-ignore
