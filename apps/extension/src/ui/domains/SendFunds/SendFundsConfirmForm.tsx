@@ -23,23 +23,21 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { AddressDisplay } from "./AddressDisplay"
 import { useFeeToken } from "./useFeeToken"
-import { useSendFunds } from "./useSendAmount"
-import { SendFundsConfirmProvider, useSendFundsConfirm } from "./useSendFundsConfirm"
-import { useSendFundsEstimateFee } from "./useSendFundsEstimateFee"
+import { useSendFunds } from "./useSendFunds"
 
 const SendFundsLedgerSubstrate = lazy(() => import("./SendFundsLedgerSubstrate"))
 const SendFundsLedgerEthereum = lazy(() => import("./SendFundsLedgerEthereum"))
 
 const AmountDisplay = () => {
-  const { sendAmount, token } = useSendFunds()
+  const { sendMax, maxAmount, transfer, token } = useSendFunds()
+  const amount = sendMax ? maxAmount : transfer
 
-  if (!sendAmount || !token)
-    return <div className="bg-grey-750 h-12 w-64 animate-pulse rounded-sm" />
+  if (!amount || !token) return <div className="bg-grey-750 h-12 w-64 animate-pulse rounded-sm" />
 
   return (
     <div className="inline-flex h-12 items-center gap-4">
       <TokenLogo tokenId={token.id} className="inline-block text-lg" />
-      <TokensAndFiat tokenId={token.id} planck={sendAmount?.planck} noCountUp />
+      <TokensAndFiat tokenId={token.id} planck={amount?.planck} noCountUp />
     </div>
   )
 }
@@ -68,13 +66,22 @@ const NetworkDisplay = () => {
 }
 
 const TotalValueRow = () => {
-  const { sendAmount, tokenRates, estimatedFee, tip, feeTokenRates, tipTokenRates } = useSendFunds()
-
+  const {
+    sendMax,
+    maxAmount,
+    transfer,
+    tokenRates,
+    estimatedFee,
+    tip,
+    feeTokenRates,
+    tipTokenRates,
+  } = useSendFunds()
+  const amount = sendMax ? maxAmount : transfer
   // TODO move to hook
   const totalValue = useMemo(() => {
     // Not all tokens have a fiat rate. if one of the 3 tokens doesn't have a rate, don't show the row
     if (
-      !sendAmount ||
+      !amount ||
       !tokenRates ||
       !estimatedFee ||
       !feeTokenRates ||
@@ -82,12 +89,12 @@ const TotalValueRow = () => {
     )
       return null
 
-    const fiatAmount = sendAmount.fiat("usd") ?? 0
+    const fiatAmount = amount.fiat("usd") ?? 0
     const fiatFee = estimatedFee.fiat("usd") ?? 0
     const fiatTip = tip?.fiat("usd") ?? 0
 
     return fiatAmount + fiatFee + fiatTip
-  }, [estimatedFee, feeTokenRates, sendAmount, tip, tipTokenRates, tokenRates])
+  }, [amount, estimatedFee, feeTokenRates, tip, tipTokenRates, tokenRates])
 
   return (
     <div className="mt-4 flex h-[1.7rem] justify-between text-xs">
@@ -105,14 +112,26 @@ const TotalValueRow = () => {
 
 const SendButton = () => {
   const { tokenId } = useSendFundsWizard()
-  const { signMethod, errorMessage, isReady, send, isProcessing } = useSendFundsConfirm()
+  const { signMethod, sendErrorMessage, send, isProcessing } = useSendFunds()
+
+  const [isReady, setIsReady] = useState(false)
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsReady(true)
+    }, 1_000)
+
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, [])
 
   return (
     <Suspense fallback={null}>
-      {errorMessage && (
+      {sendErrorMessage && (
         <div className="text-alert-warn bg-grey-900 flex w-full items-center gap-5 rounded-sm px-5 py-6 text-xs">
           <AlertCircleIcon className="text-lg" />
-          <div>{errorMessage}</div>
+          <div>{sendErrorMessage}</div>
         </div>
       )}
       {signMethod === "normal" && (
@@ -137,7 +156,7 @@ const EvmFeeSummary = () => {
   const token = useToken(tokenId)
   const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
 
-  const { evmTransaction } = useSendFundsConfirm()
+  const { evmTransaction } = useSendFunds()
 
   if (!token || !evmTransaction) return null
 
@@ -194,7 +213,7 @@ const EvmFeeSummary = () => {
 
 const SubFeeSummary = () => {
   const { tokenId } = useSendFundsWizard()
-  const { subTransaction } = useSendFundsConfirm()
+  const { subTransaction } = useSendFunds()
   const feeToken = useFeeToken(tokenId)
 
   if (!subTransaction) return null
@@ -238,46 +257,44 @@ export const SendFundsConfirmForm = () => {
   const { from, to } = useSendFundsWizard()
 
   return (
-    <SendFundsConfirmProvider>
-      <div className="flex h-full w-full flex-col items-center px-12 py-8">
-        <div className="text-lg font-bold">You are sending</div>
-        <div className="mt-24 w-full grow">
-          <div className="bg-grey-900 text-body-secondary space-y-4 rounded px-8 py-4 leading-[140%]">
-            <div className="flex h-12 items-center justify-between gap-8">
-              <div className="text-body-secondary">Amount</div>
-              <div className="text-body h-12">
-                <AmountDisplay />
-              </div>
+    <div className="flex h-full w-full flex-col items-center px-12 py-8">
+      <div className="text-lg font-bold">You are sending</div>
+      <div className="mt-24 w-full grow">
+        <div className="bg-grey-900 text-body-secondary space-y-4 rounded px-8 py-4 leading-[140%]">
+          <div className="flex h-12 items-center justify-between gap-8">
+            <div className="text-body-secondary">Amount</div>
+            <div className="text-body h-12">
+              <AmountDisplay />
             </div>
-            <div className="flex h-12 items-center justify-between gap-8">
-              <div className="text-body-secondary">From</div>
-              <div className="text-body overflow-hidden">
-                <AddressDisplay address={from} />
-              </div>
-            </div>
-            <div className="flex h-12 items-center justify-between gap-8">
-              <div className="text-body-secondary">To</div>
-              <div className="text-body overflow-hidden">
-                <AddressDisplay address={to} />
-              </div>
-            </div>
-            <div className="flex h-12 items-center justify-between gap-8">
-              <div className="text-body-secondary">Network</div>
-              <div className="text-body  h-12 overflow-hidden">
-                <NetworkDisplay />
-              </div>
-            </div>
-
-            <div className="py-8">
-              <hr className="text-grey-800" />
-            </div>
-
-            <FeeSummary />
-            <TotalValueRow />
           </div>
+          <div className="flex h-12 items-center justify-between gap-8">
+            <div className="text-body-secondary">From</div>
+            <div className="text-body overflow-hidden">
+              <AddressDisplay address={from} />
+            </div>
+          </div>
+          <div className="flex h-12 items-center justify-between gap-8">
+            <div className="text-body-secondary">To</div>
+            <div className="text-body overflow-hidden">
+              <AddressDisplay address={to} />
+            </div>
+          </div>
+          <div className="flex h-12 items-center justify-between gap-8">
+            <div className="text-body-secondary">Network</div>
+            <div className="text-body  h-12 overflow-hidden">
+              <NetworkDisplay />
+            </div>
+          </div>
+
+          <div className="py-8">
+            <hr className="text-grey-800" />
+          </div>
+
+          <FeeSummary />
+          <TotalValueRow />
         </div>
-        <SendButton />
       </div>
-    </SendFundsConfirmProvider>
+      <SendButton />
+    </div>
   )
 }

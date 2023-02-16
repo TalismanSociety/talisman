@@ -11,11 +11,11 @@ import useToken from "@ui/hooks/useToken"
 import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 
-import { useSendFundsConfirm } from "./useSendFundsConfirm"
+import { useSendFunds } from "./useSendFunds"
 
 const SendFundsLedgerSubstrate = () => {
   const { tokenId, from, to, amount } = useSendFundsWizard()
-  const { subTransaction, sendWithSignature, isLocked, setIsLocked } = useSendFundsConfirm()
+  const { subTransaction, sendWithSignature, isLocked, setIsLocked } = useSendFunds()
   const [error, setError] = useState<Error>()
 
   const token = useToken(tokenId)

@@ -10,11 +10,11 @@ import { ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 
-import { useSendFundsConfirm } from "./useSendFundsConfirm"
+import { useSendFunds } from "./useSendFunds"
 
 const SendFundsLedgerEthereum = () => {
   const { tokenId, from, to, amount } = useSendFundsWizard()
-  const { evmTransaction, sendWithSignature, isLocked, setIsLocked } = useSendFundsConfirm()
+  const { evmTransaction, sendWithSignature, isLocked, setIsLocked } = useSendFunds()
   // const { formData, sendWithSignatureEthereum, cancel } = useSendTokens()
   // const { from, to, transferableTokenId, amount, gasSettings } = formData as SendTokensData
   const account = useAccountByAddress(from) as AccountJsonHardwareEthereum

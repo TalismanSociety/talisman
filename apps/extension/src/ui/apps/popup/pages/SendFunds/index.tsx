@@ -1,4 +1,4 @@
-import { SendFundsProvider } from "@ui/domains/SendFunds/useSendAmount"
+import { SendFundsProvider } from "@ui/domains/SendFunds/useSendFunds"
 import { Route, Routes } from "react-router-dom"
 
 import { SendFundsWizardProvider } from "./context"

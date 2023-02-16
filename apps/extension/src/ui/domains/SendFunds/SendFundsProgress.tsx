@@ -82,6 +82,13 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
               <span className="text-body">block #{blockNumber}</span>
             )}
           </>
+        ) : href ? (
+          <>
+            View transaction on{" "}
+            <a target="_blank" className="text-body" href={href}>
+              block explorer
+            </a>
+          </>
         ) : (
           extra
         )}

@@ -2,7 +2,7 @@ import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { IconAlert, InfoIcon, LoaderIcon, SwapIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { classNames, formatDecimals, tokensToPlanck } from "@talismn/util"
+import { classNames, formatDecimals, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useInputNumberOnly } from "@ui/hooks/useInputNumberOnly"
@@ -29,7 +29,7 @@ import Fiat from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
-import { SendFundsMainFormProvider, useSendFundsMainForm } from "./useSendFundsMainForm"
+import { useSendFunds } from "./useSendFunds"
 
 type ContainerProps = DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
 
@@ -90,14 +90,13 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
 }
 
 const TokenInput = () => {
-  const { set, remove, sendMax } = useSendFundsWizard()
-  const { token, sendAmount } = useSendFundsMainForm()
+  const { set, remove, sendMax, amount } = useSendFundsWizard()
+  const { token, transfer, maxAmount } = useSendFunds()
 
   const placeholder = useMemo(() => {
-    if (token && sendMax && sendAmount)
-      return `${formatDecimals(sendAmount.tokens)} ${token.symbol}`
+    if (token && sendMax && maxAmount) return `${formatDecimals(maxAmount.tokens)} ${token.symbol}`
     return token ? `0 ${token.symbol}` : "0"
-  }, [sendAmount, sendMax, token])
+  }, [maxAmount, sendMax, token])
 
   const [text, setText] = useState<string>("")
 
@@ -109,17 +108,16 @@ const TokenInput = () => {
   // init from query string
   const refInitialized = useRef(false)
   useEffect(() => {
-    if (!refInitialized.current && sendAmount?.tokens) {
+    if (!refInitialized.current && transfer?.tokens) {
       refInitialized.current = true
-      if (!sendMax) setText(sendAmount?.tokens)
+      if (!sendMax) setText(transfer?.tokens)
     }
-  }, [sendAmount?.tokens, sendMax])
+  }, [sendMax, transfer?.tokens])
 
   useEffect(() => {
-    if (sendMax && refInput.current) {
-      setText("")
-    }
-  }, [sendMax])
+    if (!refInput.current) return
+    setText(sendMax || !amount || !token ? "" : planckToTokens(amount, token.decimals))
+  }, [amount, sendMax, token])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
@@ -136,7 +134,7 @@ const TokenInput = () => {
   )
 
   return (
-    <div className="text-center">
+    <div className="flex w-full max-w-[400px] flex-nowrap justify-center gap-4">
       <input
         ref={refInput}
         type="text"
@@ -144,13 +142,14 @@ const TokenInput = () => {
         placeholder={placeholder}
         autoFocus={!sendMax}
         className={classNames(
-          "text-body inline-block min-w-0 max-w-[32rem] bg-transparent text-center text-xl",
-          sendMax && !sendAmount && "hidden" // hide until value is known
+          "text-body inline-block min-w-0  bg-transparent text-center text-xl",
+          sendMax && "placeholder:text-white",
+          sendMax && !maxAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
-      {text && !sendMax ? ` ${token?.symbol}` : ""}
-      {sendMax && !sendAmount && (
+      <span className="shrink-0">{text && !sendMax ? ` ${token?.symbol}` : ""}</span>
+      {sendMax && !maxAmount && (
         <div className="text-body-disabled mb-4 flex items-center justify-center gap-2 text-base font-light">
           <LoaderIcon className="text-md inline-block animate-spin" />
           <div>Estimating max amount...</div>
@@ -164,12 +163,12 @@ const FIAT_PLACEHOLDER = "$0.00"
 
 const FiatInput = () => {
   const { set, remove, sendMax } = useSendFundsWizard()
-  const { token, sendAmount, tokenRates } = useSendFundsMainForm()
+  const { token, transfer, maxAmount, tokenRates } = useSendFunds()
 
   const placeholder = useMemo(() => {
-    if (token && sendMax && sendAmount) return `$${sendAmount?.fiat("usd")?.toFixed(2)}`
+    if (token && sendMax && maxAmount) return `$${maxAmount?.fiat("usd")?.toFixed(2)}`
     return FIAT_PLACEHOLDER
-  }, [sendAmount, sendMax, token])
+  }, [maxAmount, sendMax, token])
 
   const [text, setText] = useState<string>("")
 
@@ -180,11 +179,11 @@ const FiatInput = () => {
 
   const refInitialized = useRef(false)
   useEffect(() => {
-    if (!refInitialized.current && sendAmount?.tokens) {
+    if (!refInitialized.current && transfer?.tokens) {
       refInitialized.current = true
-      if (!sendMax) setText(sendAmount?.fiat("usd")?.toFixed(2) ?? "")
+      if (!sendMax) setText(transfer?.fiat("usd")?.toFixed(2) ?? "")
     }
-  }, [sendAmount, sendMax, text])
+  }, [sendMax, text, transfer])
 
   useEffect(() => {
     if (sendMax && refInput.current) {
@@ -223,11 +222,11 @@ const FiatInput = () => {
         placeholder={placeholder}
         className={classNames(
           "text-body inline-block min-w-0 max-w-[32rem] bg-transparent text-center text-xl",
-          sendMax && !sendAmount && "hidden" // hide until value is known
+          sendMax && !maxAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
-      {sendMax && !sendAmount && (
+      {sendMax && !maxAmount && (
         <div className="text-body-disabled mb-4 flex items-center justify-center gap-2 text-base font-light">
           <LoaderIcon className="text-md inline-block animate-spin" />
           <div>Estimating max amount...</div>
@@ -238,21 +237,21 @@ const FiatInput = () => {
 }
 
 const FiatDisplay = () => {
-  const { tokenRates, sendAmount } = useSendFundsMainForm()
+  const { tokenRates, transfer } = useSendFunds()
 
   if (!tokenRates) return null
 
-  return <Fiat amount={sendAmount?.fiat("usd") ?? 0} noCountUp />
+  return <Fiat amount={transfer?.fiat("usd") ?? 0} noCountUp />
 }
 
 const TokenDisplay = () => {
-  const { token, sendAmount } = useSendFundsMainForm()
+  const { token, transfer } = useSendFunds()
 
   if (!token) return null
 
   return (
     <Tokens
-      amount={sendAmount?.tokens ?? "0"}
+      amount={transfer?.tokens ?? "0"}
       decimals={token.decimals}
       symbol={token.symbol}
       noCountUp
@@ -261,7 +260,7 @@ const TokenDisplay = () => {
 }
 
 const ErrorMessage = () => {
-  const { error } = useSendFundsMainForm()
+  const { error } = useSendFunds()
 
   return error ? (
     <span>
@@ -273,22 +272,24 @@ const ErrorMessage = () => {
 const AmountEdit = () => {
   const { sendMax, set } = useSendFundsWizard()
   const [isTokenEdit, setIsTokenEdit] = useState(true)
-  const { tokenRates } = useSendFundsMainForm()
+  const { onSendMaxClick, tokenRates } = useSendFunds()
+  // const { tokenRates, token } = useSendFundsConfirm()
 
   const toggleIsTokenEdit = useCallback(() => {
     setIsTokenEdit((prev) => !prev)
   }, [])
 
-  const toggleSendMax = useCallback(() => {
-    set("sendMax", !sendMax)
-  }, [sendMax, set])
+  // const toggleSendMax = useCallback(() => {
+  //   if(token.type === "substrate-native")
+  //   set("sendMax", !sendMax)
+  // }, [sendMax, set])
 
   return (
     <div className="w-full grow">
       <div className="flex h-[12rem] flex-col justify-end text-xl font-bold">
         {isTokenEdit ? <TokenInput /> : <FiatInput />}
       </div>
-      <div className="mt-4 flex items-center justify-center gap-6">
+      <div className="mt-4 flex max-w-full items-center justify-center gap-6 overflow-hidden">
         <div className="text-body-secondary text-sm">
           {!isTokenEdit ? <TokenDisplay /> : <FiatDisplay />}
         </div>
@@ -302,7 +303,7 @@ const AmountEdit = () => {
           </PillButton>
         )}
         <PillButton
-          onClick={toggleSendMax}
+          onClick={onSendMaxClick}
           size="xs"
           className={classNames("h-[2.2rem] rounded-sm py-0 px-4", sendMax && "bg-grey-700")}
         >
@@ -318,7 +319,7 @@ const AmountEdit = () => {
 
 const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
   const { tokenId } = useSendFundsWizard()
-  const { balance, token } = useSendFundsMainForm()
+  const { balance, token } = useSendFunds()
 
   return (
     <Container className="flex h-[50px] w-full items-center justify-between px-6 py-4">
@@ -348,7 +349,7 @@ const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
 }
 
 const NetworkRow = () => {
-  const { chain, evmNetwork } = useSendFundsMainForm()
+  const { chain, evmNetwork } = useSendFunds()
 
   const { networkId, networkName } = useMemo(
     () => ({
@@ -372,7 +373,7 @@ const NetworkRow = () => {
 }
 
 const EstimatedFeeRow = () => {
-  const { feeToken, estimatedFee, isEstimatingFee } = useSendFundsMainForm()
+  const { feeToken, estimatedFee, isLoading } = useSendFunds()
 
   return (
     <Container className="flex w-full items-center justify-between gap-4 px-8 py-4">
@@ -380,12 +381,10 @@ const EstimatedFeeRow = () => {
       <div
         className={classNames(
           "flex grow items-center justify-end gap-2 overflow-hidden text-ellipsis whitespace-nowrap",
-          isEstimatingFee && estimatedFee && "animate-pulse"
+          isLoading && estimatedFee && "animate-pulse"
         )}
       >
-        {isEstimatingFee && !estimatedFee && (
-          <LoaderIcon className="animate-spin-slow align-text-top" />
-        )}
+        {isLoading && !estimatedFee && <LoaderIcon className="animate-spin-slow align-text-top" />}
         {estimatedFee && feeToken && (
           <TokensAndFiat planck={estimatedFee.planck} tokenId={feeToken.id} />
         )}
@@ -415,11 +414,11 @@ const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
 
 const ReviewButton = () => {
   const { gotoReview, tokenId, set } = useSendFundsWizard()
-  const { isValid, tokensToBeReaped, token } = useSendFundsMainForm()
+  const { isValid, tokensToBeReaped } = useSendFunds()
   const { open, close, isOpen } = useOpenClose()
 
   const handleClick = useCallback(() => {
-    if (Object.keys(tokensToBeReaped).length) open()
+    if (tokensToBeReaped?.length) open()
     else gotoReview(false)
   }, [gotoReview, open, tokensToBeReaped])
 
@@ -450,8 +449,8 @@ const ReviewButton = () => {
           </div>
           <div className="mt-10 font-bold">Confirm forfeit</div>
           <div className="text-body-secondary mt-5 text-sm">
-            {Object.entries(tokensToBeReaped).map(([tokenId, planck]) => (
-              <ForfeitDetails key={tokenId} tokenId={tokenId} planck={planck.toString()} />
+            {tokensToBeReaped?.map(({ token, amount }) => (
+              <ForfeitDetails key={token.id} tokenId={token.id} planck={amount.planck.toString()} />
             ))}
             <div className="mt-5">
               <a
@@ -494,41 +493,39 @@ export const SendFundsMainForm = () => {
   }, [])
 
   return (
-    <SendFundsMainFormProvider>
-      <form
-        onSubmit={handleSubmit}
-        className="flex h-full w-full flex-col overflow-hidden px-12 pb-8"
-      >
-        <Container className="flex h-[9rem] w-full flex-col justify-center gap-5 px-8">
-          <div className="flex w-full items-center justify-between gap-4">
-            <div>From</div>
-            <div>
-              <AddressPillButton
-                className="max-w-[260px]"
-                address={from}
-                onClick={handleGotoClick("from")}
-              />
-            </div>
+    <form
+      onSubmit={handleSubmit}
+      className="flex h-full w-full flex-col overflow-hidden px-12 pb-8"
+    >
+      <Container className="flex h-[9rem] w-full flex-col justify-center gap-5 px-8">
+        <div className="flex w-full items-center justify-between gap-4">
+          <div>From</div>
+          <div>
+            <AddressPillButton
+              className="max-w-[260px]"
+              address={from}
+              onClick={handleGotoClick("from")}
+            />
           </div>
-          <div className="flex w-full items-center justify-between gap-4">
-            <div>To</div>
-            <div>
-              <AddressPillButton
-                className="max-w-[260px]"
-                address={to}
-                onClick={handleGotoClick("to")}
-              />
-            </div>
-          </div>
-        </Container>
-        <AmountEdit />
-        <div className="w-full space-y-4 text-xs leading-[140%]">
-          <TokenRow onEditClick={handleGotoClick("token")} />
-          <NetworkRow />
-          <EstimatedFeeRow />
         </div>
-        <ReviewButton />
-      </form>
-    </SendFundsMainFormProvider>
+        <div className="flex w-full items-center justify-between gap-4">
+          <div>To</div>
+          <div>
+            <AddressPillButton
+              className="max-w-[260px]"
+              address={to}
+              onClick={handleGotoClick("to")}
+            />
+          </div>
+        </div>
+      </Container>
+      <AmountEdit />
+      <div className="w-full space-y-4 text-xs leading-[140%]">
+        <TokenRow onEditClick={handleGotoClick("token")} />
+        <NetworkRow />
+        <EstimatedFeeRow />
+      </div>
+      <ReviewButton />
+    </form>
   )
 }

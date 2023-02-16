@@ -269,8 +269,8 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
       if (aFiat < bFiat) return 1
 
       // sort by "has a balance or not" (values don't matter)
-      const aHasBalance = !!a.balances.sorted.find((bal) => bal.transferable.planck > BigInt("0"))
-      const bHasBalance = !!b.balances.sorted.find((bal) => bal.transferable.planck > BigInt("0"))
+      const aHasBalance = !!a.balances.sorted.find((bal) => bal.transferable.planck > 0n)
+      const bHasBalance = !!b.balances.sorted.find((bal) => bal.transferable.planck > 0n)
       if (aHasBalance && !bHasBalance) return -1
       if (!aHasBalance && bHasBalance) return 1
 

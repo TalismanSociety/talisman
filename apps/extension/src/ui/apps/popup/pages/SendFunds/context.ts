@@ -162,11 +162,6 @@ const useSendFundsWizardProvider = () => {
     ]
   )
 
-  // useEffect(() => {
-  //   console.log("useSendFundsContext", ctx)
-  //   console.log(window.location.hash)
-  // }, [ctx])
-
   return ctx
 }
 
