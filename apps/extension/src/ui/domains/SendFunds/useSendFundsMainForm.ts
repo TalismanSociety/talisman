@@ -38,7 +38,7 @@ const useRecipientBalance = (token?: Token, address?: Address | null) => {
 }
 
 const useSendFundsMainFormProvider = () => {
-  const { from, to, amount, tokenId, sendMax } = useSendFundsWizard()
+  const { from, to, tokenId, sendMax } = useSendFundsWizard()
 
   const {
     error: estimateFeeError,
@@ -53,82 +53,14 @@ const useSendFundsMainFormProvider = () => {
     isLoading,
     estimatedFee,
     feeTokenBalance,
+    chain,
+    evmNetwork,
   } = useSendFunds()
 
   const fromAccount = useAccountByAddress(from)
-  // const token = useToken(tokenId)
-  // const tokenRates = useTokenRates(tokenId)
-  const chain = useChain(token?.chain?.id)
-  const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
-  // const balance = useBalance(from as string, tokenId as string)
-
-  // const { requiresTip, tip: tipPlanck } = useTip(token?.chain?.id)
-  // const tipToken = useToken(chain?.nativeToken?.id)
-  // const tipTokenBalance = useBalance(from as string, tipToken?.id as string)
-
-  // const feeToken = useFeeToken(tokenId)
-  // const {
-  //   data: dataEstimateFee,
-  //   error: estimateFeeError,
-  //   isFetching: isEstimatingFee,
-  // } = useSendFundsEstimateFee(
-  //   from,
-  //   from,
-  //   tokenId,
-  //   "0", // assume fees doesn't depend on the amount beeing transfered
-  //   undefined,
-  //   sendMax ? "transferAll" : "transferKeepAlive"
-  // )
-  // const { estimatedFee, unsigned, pendingTransferId } = useMemo(() => {
-  //   return dataEstimateFee ?? { estimatedFee: null, unsigned: null, pendingTransferId: null }
-  // }, [dataEstimateFee])
-  //const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
-
-  // const { sendAmount } = useMemo(() => {
-  //   if (sendMax) {
-  //     if (!balance || !token) return { sendAmount: null }
-  //     switch (token.type) {
-  //       case "evm-native":
-  //         // TODO what if fee higher than balance
-  //         return {
-  //           sendAmount: estimatedFee
-  //             ? new BalanceFormatter(
-  //                 balance.transferable.planck - BigInt(estimatedFee) * 2n,
-  //                 token.decimals,
-  //                 tokenRates
-  //               )
-  //             : null,
-  //         }
-  //       case "substrate-native":
-  //         return {
-  //           sendAmount: estimatedFee
-  //             ? new BalanceFormatter(
-  //                 balance.transferable.planck - BigInt(estimatedFee),
-  //                 token.decimals,
-  //                 tokenRates
-  //               )
-  //             : null,
-  //         }
-  //       // other tokens don't use same token to pay fee, can just send all
-  //       default:
-  //         return {
-  //           sendAmount: new BalanceFormatter(
-  //             balance.transferable.planck,
-  //             token.decimals,
-  //             tokenRates
-  //           ),
-  //         }
-  //     }
-  //   }
-
-  //   return {
-  //     sendAmount:
-  //       amount && token ? new BalanceFormatter(amount ?? "0", token.decimals, tokenRates) : null,
-  //   }
-  // }, [amount, balance, estimatedFee, sendMax, token, tokenRates])
 
   const hasInsufficientFunds = useMemo(() => {
-    if (amount && balance && BigInt(amount) > balance.transferable.planck) return true
+    if (sendAmount && balance && sendAmount.planck > balance.transferable.planck) return true
     if (
       estimatedFee &&
       feeTokenBalance &&
@@ -146,7 +78,7 @@ const useSendFundsMainFormProvider = () => {
     )
       return true
     return false
-  }, [amount, balance, estimatedFee, feeTokenBalance, sendAmount])
+  }, [balance, estimatedFee, feeTokenBalance, sendAmount])
 
   const {
     data: recipientBalance,
@@ -155,7 +87,7 @@ const useSendFundsMainFormProvider = () => {
   } = useRecipientBalance(token, to)
 
   const isSendingEnough = useMemo(() => {
-    if (!token || !recipientBalance || !amount) return true
+    if (!token || !recipientBalance || !sendAmount) return true
     switch (token.type) {
       case "evm-erc20":
       case "evm-native":
@@ -165,20 +97,19 @@ const useSendFundsMainFormProvider = () => {
       case "substrate-assets":
       case "substrate-equilibrium":
       case "substrate-tokens": {
-        const transfer = new BalanceFormatter(amount, token.decimals)
         const existentialDeposit = new BalanceFormatter(
           token.existentialDeposit ?? "0",
           token.decimals
         )
 
         return (
-          transfer.planck === 0n ||
+          sendAmount.planck === 0n ||
           recipientBalance.total.planck > 0n ||
-          transfer.planck >= existentialDeposit.planck
+          sendAmount.planck >= existentialDeposit.planck
         )
       }
     }
-  }, [amount, recipientBalance, token])
+  }, [recipientBalance, sendAmount, token])
 
   const { isValid, error } = useMemo(() => {
     if (!from || !to || !sendAmount || !tokenId) return { isValid: false, error: undefined }

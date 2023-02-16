@@ -17,7 +17,7 @@ export const useEvmTransactionWatch = (
   const provider = useEthereumProvider(evmNetworkId)
 
   const [txReceipt, setTxReceipt] = useState<TransactionReceipt>()
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<Error>()
 
   const waitForTransaction = useCallback(async () => {
     setError(undefined)
@@ -28,7 +28,7 @@ export const useEvmTransactionWatch = (
         setTxReceipt(await provider?.waitForTransaction(evmTxHash, confirmations))
       }
     } catch (err) {
-      setError("Failed to get transaction receipt")
+      setError(err as Error)
       Sentry.captureException(err, { tags: { evmNetworkId: provider?.network?.chainId } })
     }
   }, [confirmations, evmTxHash, provider])
@@ -40,14 +40,13 @@ export const useEvmTransactionWatch = (
   const { blockHash, blockNumber, message, status } = useMemo(() => {
     const blockHash = txReceipt?.blockHash
     const blockNumber = txReceipt?.blockNumber?.toString()
-    const status = (
-      txReceipt ? (txReceipt?.blockNumber ? "SUCCESS" : "ERROR") : "PENDING"
-    ) as TransactionStatus
-    const message = txReceipt
-      ? txReceipt?.blockNumber
-        ? "Transaction successful"
-        : "Transaction failed"
-      : "Please wait"
+
+    const { status, message }: { status: TransactionStatus; message: string } = txReceipt
+      ? txReceipt?.blockNumber && txReceipt.status
+        ? { status: "SUCCESS", message: "Transaction successful" }
+        : { status: "ERROR", message: "Transaction failed" }
+      : { status: "PENDING", message: "Please wait" }
+
     return { blockHash, blockNumber, message, status }
   }, [txReceipt])
 
@@ -56,5 +55,5 @@ export const useEvmTransactionWatch = (
     return urlJoin(evmNetwork?.explorerUrl, "tx", evmTxHash)
   }, [evmNetwork?.explorerUrl, evmTxHash])
 
-  return { blockHash, blockNumber, message, status, href }
+  return { blockHash, blockNumber, message, status, href, error }
 }

@@ -8,6 +8,8 @@ import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { useBalance } from "@ui/hooks/useBalance"
 import useChain from "@ui/hooks/useChain"
+import { useDebouncedMemo } from "@ui/hooks/useDebouncedMemo"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
@@ -105,11 +107,14 @@ const useSendFundsProvider = () => {
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
   const balance = useBalance(from as string, tokenId as string)
+  const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
   const chain = useChain(token?.chain?.id)
   const tipToken = useToken(chain?.nativeToken?.id)
+  const tipTokenRates = useTokenRates(chain?.nativeToken?.id)
   const tipTokenBalance = useBalance(from as string, tipToken?.id as string)
   const feeToken = useFeeToken(tokenId)
   const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
+  const feeTokenRates = useTokenRates(feeToken?.id)
 
   const { tip: tipPlanck } = useTip(token?.chain?.id, !isLocked)
   const tip = useMemo(
@@ -123,24 +128,26 @@ const useSendFundsProvider = () => {
     ? "transfer"
     : "transferKeepAlive"
 
-  const [sendAmountPlanck, setSendAmountPlanck] = useState("0")
+  const [sendAmountEstimate, setSendAmountEstimate] = useState("0")
 
   useEffect(() => {
-    setSendAmountPlanck(amount ?? "0")
+    //console.log("reinitializing sendAmountEstimate", amount)
+    setSendAmountEstimate(amount ?? "0")
   }, [amount])
 
-  const evmTransaction = useEvmTransaction(tokenId, from, to, sendAmountPlanck, isLocked)
+  const evmTransaction = useEvmTransaction(tokenId, from, to, sendAmountEstimate, isLocked)
   const subTransaction = useSubTransaction(
     tokenId,
     from,
     to,
-    sendAmountPlanck,
+    sendAmountEstimate,
     tip?.planck.toString(),
     method,
     isLocked
   )
 
-  const sendAmount = useMemo(() => {
+  // small debounce in case send max triggers another fee check, prevents loader from flickering
+  const sendAmountLive = useMemo(() => {
     if (sendMax) {
       if (!balance || !token) return null
 
@@ -192,34 +199,20 @@ const useSendFundsProvider = () => {
     tokenRates,
   ])
 
-  const estimatedFee = useMemo(() => {
+  useEffect(() => {
+    if (sendAmountLive && sendAmountLive?.planck.toString() !== sendAmountEstimate) {
+      //console.log("updating sendAmountEstimate", sendAmountLive?.planck.toString())
+      setSendAmountEstimate(sendAmountLive?.planck.toString() ?? "0")
+    }
+  }, [sendAmountLive, sendAmountLive?.planck, sendAmountEstimate])
+
+  const estimatedFeeLive = useMemo(() => {
     if (evmTransaction?.txDetails?.estimatedFee) {
       return new BalanceFormatter(
         BigNumber.from(evmTransaction.txDetails.estimatedFee).toBigInt(),
         feeToken?.decimals,
         tokenRates
       )
-      //   switch (evmTransaction.gasSettings.type) {
-      //     case 0:
-      //       return new BalanceFormatter(
-      //         BigNumber.from(evmTransaction.gasSettings.gasLimit)
-      //           .mul(evmTransaction.gasSettings.gasPrice)
-      //           .toBigInt(),
-      //         feeToken?.decimals,
-      //         tokenRates
-      //       )
-      //     case 2:
-      //       return evmTransaction.txDetails?.baseFeePerGas
-      //         ? new BalanceFormatter(
-      //             BigNumber.from(evmTransaction.txDetails.baseFeePerGas)
-      //               .add(evmTransaction.gasSettings.maxPriorityFeePerGas)
-      //               .mul(evmTransaction.gasSettings.gasLimit)
-      //               .toBigInt(),
-      //             feeToken?.decimals,
-      //             tokenRates
-      //           )
-      //         : null
-      //   }
     }
     if (subTransaction?.partialFee) {
       return new BalanceFormatter(BigInt(subTransaction.partialFee), feeToken?.decimals, tokenRates)
@@ -236,7 +229,13 @@ const useSendFundsProvider = () => {
   const error = evmTransaction?.error || subTransaction?.error
   const isRefetching = subTransaction?.isRefetching // TODO evm refetching
 
+  // debounce to prevent "Estimateing max amount...", and the fee, from flickering on the UI
+  const sendAmount = useDebouncedMemo(() => sendAmountLive, 50, [sendAmountLive])
+  const estimatedFee = useDebouncedMemo(() => estimatedFeeLive, 50, [estimatedFeeLive])
+
   return {
+    chain,
+    evmNetwork,
     evmTransaction,
     subTransaction,
     method,
@@ -247,9 +246,11 @@ const useSendFundsProvider = () => {
     estimatedFee,
     feeToken,
     feeTokenBalance,
+    feeTokenRates,
     tip,
     tipToken,
     tipTokenBalance,
+    tipTokenRates,
     isLoading,
     isRefetching,
     error,

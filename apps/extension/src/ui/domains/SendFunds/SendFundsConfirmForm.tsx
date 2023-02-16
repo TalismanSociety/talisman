@@ -23,6 +23,7 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { AddressDisplay } from "./AddressDisplay"
 import { useFeeToken } from "./useFeeToken"
+import { useSendFunds } from "./useSendAmount"
 import { SendFundsConfirmProvider, useSendFundsConfirm } from "./useSendFundsConfirm"
 import { useSendFundsEstimateFee } from "./useSendFundsEstimateFee"
 
@@ -30,24 +31,21 @@ const SendFundsLedgerSubstrate = lazy(() => import("./SendFundsLedgerSubstrate")
 const SendFundsLedgerEthereum = lazy(() => import("./SendFundsLedgerEthereum"))
 
 const AmountDisplay = () => {
-  const { tokenId, amount } = useSendFundsWizard()
-  const { sendAmount } = useSendFundsConfirm()
+  const { sendAmount, token } = useSendFunds()
 
-  if (!sendAmount) return <div className="bg-grey-750 h-12 w-64 animate-pulse rounded-sm" />
+  if (!sendAmount || !token)
+    return <div className="bg-grey-750 h-12 w-64 animate-pulse rounded-sm" />
 
   return (
     <div className="inline-flex h-12 items-center gap-4">
-      <TokenLogo tokenId={tokenId} className="inline-block text-lg" />
-      <TokensAndFiat tokenId={tokenId} planck={sendAmount?.planck} noCountUp />
+      <TokenLogo tokenId={token.id} className="inline-block text-lg" />
+      <TokensAndFiat tokenId={token.id} planck={sendAmount?.planck} noCountUp />
     </div>
   )
 }
 
 const NetworkDisplay = () => {
-  const { tokenId } = useSendFundsWizard()
-  const token = useToken(tokenId)
-  const chain = useChain(token?.chain?.id)
-  const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
+  const { chain, evmNetwork } = useSendFunds()
 
   const { networkId, networkName } = useMemo(
     () => ({
@@ -59,7 +57,7 @@ const NetworkDisplay = () => {
     [chain, evmNetwork]
   )
 
-  if (!token) return null
+  if (!networkId) return null
 
   return (
     <span className="inline-flex items-center gap-4">
@@ -70,54 +68,26 @@ const NetworkDisplay = () => {
 }
 
 const TotalValueRow = () => {
-  const { tokenId, amount } = useSendFundsWizard()
-  const { tip, subTransaction, evmTransaction } = useSendFundsConfirm()
-  const token = useToken(tokenId)
-  const tokenRates = useTokenRates(tokenId)
-
-  const feeToken = useFeeToken(tokenId)
-  const feeTokenRates = useTokenRates(feeToken?.id)
-
-  const chain = useChain(token?.chain?.id)
-  const tipToken = useToken(chain?.nativeToken?.id)
-  const tipTokenRates = useTokenRates(tipToken?.id)
+  const { sendAmount, tokenRates, estimatedFee, tip, feeTokenRates, tipTokenRates } = useSendFunds()
 
   // TODO move to hook
   const totalValue = useMemo(() => {
     // Not all tokens have a fiat rate. if one of the 3 tokens doesn't have a rate, don't show the row
     if (
+      !sendAmount ||
       !tokenRates ||
+      !estimatedFee ||
       !feeTokenRates ||
-      (tip && tip.planck > 0n && !tipTokenRates) ||
-      (!subTransaction?.partialFee && !evmTransaction?.txDetails?.estimatedFee)
+      (tip && tip.planck > 0n && !tipTokenRates)
     )
       return null
-    if (!token || !feeToken || (tip && tip.planck > 0n && !tipToken)) return null
 
-    const estimatedFee =
-      subTransaction?.partialFee ?? evmTransaction?.txDetails?.estimatedFee?.toString() ?? "0"
-
-    const fiatAmount = new BalanceFormatter(amount, token.decimals, tokenRates).fiat("usd") ?? 0
-    const fiatFee =
-      new BalanceFormatter(estimatedFee, feeToken.decimals, tokenRates).fiat("usd") ?? 0
-    const fiatTip =
-      tip && tip.planck > 0n && tipToken
-        ? new BalanceFormatter(amount, tipToken.decimals, tokenRates).fiat("usd") ?? 0
-        : 0
+    const fiatAmount = sendAmount.fiat("usd") ?? 0
+    const fiatFee = estimatedFee.fiat("usd") ?? 0
+    const fiatTip = tip?.fiat("usd") ?? 0
 
     return fiatAmount + fiatFee + fiatTip
-  }, [
-    amount,
-    evmTransaction,
-    feeToken,
-    feeTokenRates,
-    subTransaction,
-    tip,
-    tipToken,
-    tipTokenRates,
-    token,
-    tokenRates,
-  ])
+  }, [estimatedFee, feeTokenRates, sendAmount, tip, tipTokenRates, tokenRates])
 
   return (
     <div className="mt-4 flex h-[1.7rem] justify-between text-xs">
@@ -136,7 +106,6 @@ const TotalValueRow = () => {
 const SendButton = () => {
   const { tokenId } = useSendFundsWizard()
   const { signMethod, errorMessage, isReady, send, isProcessing } = useSendFundsConfirm()
-  const token = useToken(tokenId)
 
   return (
     <Suspense fallback={null}>
