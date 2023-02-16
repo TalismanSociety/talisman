@@ -1,10 +1,13 @@
 import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { Balance } from "@talismn/balances"
+import { Token } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { useBalance } from "@ui/hooks/useBalance"
+import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import useToken from "@ui/hooks/useToken"
-import { FC, ReactNode, useCallback } from "react"
+import { FC, ReactNode, useCallback, useMemo } from "react"
 
 import AccountAvatar from "../Account/Avatar"
 import Fiat from "../Asset/Fiat"
@@ -14,13 +17,14 @@ type SendFundsAccount = {
   address: string
   name?: string
   genesisHash?: string | null
+  balance?: Balance
 }
 
 type AccountRowProps = {
   account: SendFundsAccount
   selected: boolean
   showBalances?: boolean
-  tokenId?: string | null
+  token?: Token
   onClick?: () => void
 }
 
@@ -34,16 +38,7 @@ const AccountGlobalBalance = ({ address }: { address: string }) => {
   )
 }
 
-const AccountTokenBalance = ({
-  address,
-  tokenId,
-}: {
-  address: string
-  tokenId?: string | null
-}) => {
-  const balance = useBalance(address, tokenId as string)
-  const token = useToken(tokenId)
-
+const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Balance }) => {
   if (!balance || !token) return null
 
   return (
@@ -69,7 +64,7 @@ const AccountTokenBalance = ({
   )
 }
 
-const AccountRow: FC<AccountRowProps> = ({ account, selected, onClick, showBalances, tokenId }) => {
+const AccountRow: FC<AccountRowProps> = ({ account, selected, onClick, showBalances, token }) => {
   return (
     <button
       type="button"
@@ -89,12 +84,7 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected, onClick, showBalan
         {account.name ?? shortenAddress(account.address, 6, 6)}
         {selected && <CheckCircleIcon className="ml-3 inline" />}
       </div>
-      {showBalances &&
-        (tokenId ? (
-          <AccountTokenBalance address={account.address} tokenId={tokenId} />
-        ) : (
-          <AccountGlobalBalance address={account.address} />
-        ))}
+      {showBalances && <AccountTokenBalance token={token} balance={account.balance} />}
     </button>
   )
 }
@@ -106,7 +96,7 @@ type SendFundsAccountsListProps = {
   header?: ReactNode
   showIfEmpty?: boolean
   showBalances?: boolean
-  tokenId?: string | null
+  tokenId?: string
 }
 
 export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
@@ -125,19 +115,42 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
     [onSelect]
   )
 
+  const token = useToken(tokenId)
+  const balances = useBalances()
+
+  const accountsWithBalance = useMemo(() => {
+    return accounts
+      .map((account) => ({
+        ...account,
+        balance: balances.find({ address: account.address, tokenId }).sorted[0],
+      }))
+      .sort((a, b) => {
+        // selected account first
+        if (a.address === selected) return -1
+        if (b.address === selected) return 1
+
+        // then accounts by descending balance
+        const balanceA = a.balance?.transferable.planck ?? 0n
+        const balanceB = b.balance?.transferable.planck ?? 0n
+        if (balanceA > balanceB) return -1
+        if (balanceA < balanceB) return 1
+        return 0
+      })
+  }, [accounts, balances, selected, tokenId])
+
   if (!showIfEmpty && !accounts?.length) return null
 
   return (
     <div>
       {!!header && <div className="text-body-secondary mt-8 mb-4 px-12 font-bold">{header}</div>}
-      {accounts?.map((account) => (
+      {accountsWithBalance?.map((account) => (
         <AccountRow
           selected={account.address === selected}
           key={account.address}
           account={account}
           onClick={handleAccountClick(account.address)}
           showBalances={showBalances}
-          tokenId={tokenId}
+          token={token}
         />
       ))}
       {!accounts?.length && (

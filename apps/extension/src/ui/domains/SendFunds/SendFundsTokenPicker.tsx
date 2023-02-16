@@ -191,7 +191,6 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
 
   const balances = useBalances()
 
-  // TODO provide a way to "unfilter"
   const accountBalances = useMemo(
     // if a token is already selected, assume we want to see the tokens of all accounts (allows switching from substrate to evm)
     () => (from && !selected ? balances.find({ address: from ?? undefined }) : balances),
