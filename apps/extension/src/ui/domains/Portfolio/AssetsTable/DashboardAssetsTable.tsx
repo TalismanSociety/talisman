@@ -1,4 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
+import { ExternalLinkIcon, ZapIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useMemo } from "react"
@@ -133,7 +134,15 @@ const AssetRow = ({ balances }: AssetRowProps) => {
       {showStakingBanner && (
         <tr className="staking-banner bg-primary-500 text-primary-500 h-[4.1rem] bg-opacity-10 text-sm">
           <td colSpan={3} className="rounded-t px-8">
-            Staking is fun and profitable
+            <a
+              href="https://app.talisman.xyz/staking"
+              target="_blank"
+              className="flex gap-4 align-middle"
+            >
+              <ZapIcon /> <span className="text-white">Earn ~15% interest on your DOT.</span> This
+              balance is eligible for Nomination Pool Staking via the Talisman Portal.{" "}
+              <ExternalLinkIcon />
+            </a>
           </td>
         </tr>
       )}
