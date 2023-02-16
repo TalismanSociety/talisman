@@ -137,7 +137,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
               target="_blank"
               className="flex gap-4 align-middle"
             >
-              <ZapIcon /> <span className="text-white">Earn ~15% interest on your DOT.</span> This
+              <ZapIcon /> <span className="text-white">Earn ~15% yield on your DOT.</span> This
               balance is eligible for Nomination Pool Staking via the Talisman Portal.{" "}
               <ExternalLinkIcon />
             </a>
