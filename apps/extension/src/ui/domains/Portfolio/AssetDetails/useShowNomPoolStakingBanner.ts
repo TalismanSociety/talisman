@@ -4,6 +4,7 @@ import { Balances } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
 import { ChainId } from "@talismn/chaindata-provider"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useNomPoolStakedBalance } from "./useNomPoolStakedBalance"
@@ -18,6 +19,7 @@ export const useShowNomPoolStakingBanner = ({
   balances,
 }: NomPoolStakingOptions) => {
   const [showBannerSetting, setShowBannerSetting] = useState(false)
+  const featureFlag = useIsFeatureEnabled("BANNER_NOM_POOL_STAKING")
 
   useEffect(() => {
     const sub = appStore.observable.subscribe(({ showDotNomPoolStakingBanner }) =>
@@ -73,7 +75,11 @@ export const useShowNomPoolStakingBanner = ({
   const dismissBanner = useCallback(() => appStore.set({ showDotNomPoolStakingBanner: false }), [])
 
   const showBanner =
-    !isLoading && !error && Object.values(eligible).some((x) => x) && showBannerSetting
+    featureFlag &&
+    !isLoading &&
+    !error &&
+    Object.values(eligible).some((x) => x) &&
+    showBannerSetting
 
   return { eligible, isLoading, error, showBanner, dismissBanner }
 }

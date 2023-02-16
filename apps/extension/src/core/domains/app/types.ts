@@ -36,6 +36,7 @@ export type FeatureVariants = {
   BUY_CRYPTO?: boolean
   LINK_TX_HISTORY: boolean
   LINK_STAKING: boolean
+  BANNER_NOM_POOL_STAKING: boolean
   USE_ONFINALITY_API_KEY_SUBSTRATE: boolean
   USE_ONFINALITY_API_KEY_EVM: boolean
 }
