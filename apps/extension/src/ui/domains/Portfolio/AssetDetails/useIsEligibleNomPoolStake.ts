@@ -60,5 +60,7 @@ export const useIsEligibleNomPoolStake = ({
     [substrateAddresses, eligibleAddressBalances, nomPoolStake, chainId]
   )
 
-  return { eligible, isLoading, error }
+  const showBanner = !isLoading && Object.values(eligible).some((x) => x)
+
+  return { eligible, isLoading, error, showBanner }
 }

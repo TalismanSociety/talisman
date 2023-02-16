@@ -114,12 +114,10 @@ const AssetRow = ({ balances }: AssetRowProps) => {
 
   const { token, summary } = useTokenBalancesSummary(balances)
 
-  const { eligible, isLoading: nomPoolLoading } = useIsEligibleNomPoolStake({
+  const { showBanner } = useIsEligibleNomPoolStake({
     chainId: token?.chain?.id,
     balances,
   })
-
-  const showStakingBanner = !nomPoolLoading && Object.values(eligible).some((x) => x)
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
@@ -131,7 +129,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
 
   return (
     <>
-      {showStakingBanner && (
+      {showBanner && (
         <tr className="staking-banner bg-primary-500 text-primary-500 h-[4.1rem] bg-opacity-10 text-sm">
           <td colSpan={3} className="rounded-t px-8">
             <a
@@ -147,7 +145,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
         </tr>
       )}
       <tr
-        className={classNames(`asset${showStakingBanner ? " has-staking-banner" : ""}`)}
+        className={classNames(`asset${showBanner ? " has-staking-banner" : ""}`)}
         onClick={handleClick}
       >
         <td valign="top">
