@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useAlec } from "@ui/hooks/useAlec"
 import { useBalance } from "@ui/hooks/useBalance"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
@@ -101,7 +102,7 @@ const useSubTransaction = (
       )
       return { partialFee, unsigned, pendingTransferId }
     },
-    refetchInterval: 10_000,
+    refetchInterval: false,
     enabled: !isLocked,
   })
 
@@ -169,23 +170,19 @@ const useSendFundsProvider = () => {
       const tipPlanck = tipToken?.id === token.id ? tip?.planck ?? 0n : 0n
 
       switch (token.type) {
-        case "substrate-native":
-          return subTransaction?.partialFee
-            ? new BalanceFormatter(
-                balance.transferable.planck - BigInt(subTransaction.partialFee) - tipPlanck,
-                token.decimals,
-                tokenRates
-              )
-            : null
-        case "evm-native":
+        case "substrate-native": {
+          if (!subTransaction?.partialFee) return null
+          const val = balance.transferable.planck - BigInt(subTransaction.partialFee) - tipPlanck
+          return new BalanceFormatter(val > 0n ? val : 0n, token.decimals, tokenRates)
+        }
+        case "evm-native": {
+          if (!evmTransaction?.txDetails?.maxFee) return null
+          const val =
+            balance.transferable.planck - BigNumber.from(evmTransaction.txDetails.maxFee).toBigInt()
           return evmTransaction?.txDetails?.maxFee
-            ? new BalanceFormatter(
-                balance.transferable.planck -
-                  BigNumber.from(evmTransaction.txDetails.maxFee).toBigInt(),
-                token.decimals,
-                tokenRates
-              )
+            ? new BalanceFormatter(val > 0n ? val : 0n, token.decimals, tokenRates)
             : null
+        }
         default:
           return new BalanceFormatter(amount ?? "0", token.decimals, tokenRates)
       }
@@ -241,7 +238,7 @@ const useSendFundsProvider = () => {
       if (tip && tipToken && tip.planck > 0n)
         spend[tipToken.id] = (spend[tipToken.id] ?? 0n) + tip.planck
 
-      return Object.entries(spend).map(([tokenId, amount]) => ({
+      const res = Object.entries(spend).map(([tokenId, amount]) => ({
         token: tokensMap[tokenId],
         cost: new BalanceFormatter(amount, tokensMap[tokenId].decimals, tokenRates),
         balance: new BalanceFormatter(
@@ -250,6 +247,13 @@ const useSendFundsProvider = () => {
           tokenRates
         ),
       }))
+
+      // console.log(
+      //   "breakdown",
+      //   res?.map((c) => [c.token.symbol, c.cost.tokens])
+      // )
+
+      return res
     } catch (err) {
       log.error("Failed to compute cost breakdown", { err })
       return null
@@ -471,7 +475,7 @@ const useSendFundsProvider = () => {
       try {
         setIsProcessing(true)
         if (subTransaction?.pendingTransferId) {
-          // TODO get rid of pending transfer id
+          // TODO get rid of pending transfer id, it fills backend memory to death
           const transfer = await api.assetTransferApproveSign(
             subTransaction.pendingTransferId,
             signature
@@ -505,7 +509,7 @@ const useSendFundsProvider = () => {
     ]
   )
 
-  return {
+  const result = {
     from,
     to,
     tokenId,
@@ -543,6 +547,10 @@ const useSendFundsProvider = () => {
     isProcessing,
     sendErrorMessage,
   }
+
+  //useAlec("useSendFunds", { ...result, costBreakdown, requiresTip })
+
+  return result
 }
 
 export const [SendFundsProvider, useSendFunds] = provideContext(useSendFundsProvider)
