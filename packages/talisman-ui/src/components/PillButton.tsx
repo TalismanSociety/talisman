@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
 import { FC, SVGProps } from "react"
 
-export type PillButtonSize = "tiny" | "xs" | "sm"
+export type PillButtonSize = "tiny" | "xs" | "sm" | "base"
 
 export type PillButtonProps = React.DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -14,6 +14,8 @@ export type PillButtonProps = React.DetailedHTMLProps<
 const getFontSize = (size: PillButtonSize) => {
   // because of tailwind, all used classes must appear as plain text
   switch (size) {
+    case "base":
+      return "text-base"
     case "tiny":
       return "text-tiny"
     case "sm":

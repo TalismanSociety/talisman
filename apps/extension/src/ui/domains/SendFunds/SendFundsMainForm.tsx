@@ -1,10 +1,14 @@
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { IconAlert, InfoIcon, LoaderIcon, SwapIcon } from "@talisman/theme/icons"
+import { IconAlert, InfoIcon, LoaderIcon, SwapIcon, UserPlusIcon } from "@talisman/theme/icons"
+import { convertAddress } from "@talisman/util/convertAddress"
+import { AccountAddressType } from "@talisman/util/getAddressType"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames, formatDecimals, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useInputNumberOnly } from "@ui/hooks/useInputNumberOnly"
 import { useInputAutoSize } from "@ui/hooks/useTextWidth"
 import useToken from "@ui/hooks/useToken"
@@ -26,10 +30,21 @@ import { Button, PillButton } from "talisman-ui"
 import AccountAvatar from "../Account/Avatar"
 import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
+import { AddToAddressBookDrawer } from "../Asset/Send/AddToAddressBookDrawer"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { useSendFunds } from "./useSendFunds"
+
+const useContact = (address?: string | null) => {
+  const { contacts } = useAddressBook()
+
+  return useMemo(() => {
+    if (!address) return undefined
+    const genericAddress = convertAddress(address, null)
+    return contacts?.find((c) => convertAddress(c.address, null) === genericAddress)
+  }, [address, contacts])
+}
 
 type ContainerProps = DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
 
@@ -46,13 +61,13 @@ type AddressPillButtonProps = { address?: string | null; className?: string; onC
 
 const AddressPillButton: FC<AddressPillButtonProps> = ({ address, className, onClick }) => {
   const account = useAccountByAddress(address as string)
+  const contact = useContact(address)
 
-  // TODO lookup contacts
-
-  const { name, genesisHash } = useMemo(
-    () => account ?? { name: undefined, genesisHash: undefined },
-    [account]
-  )
+  const { name, genesisHash } = useMemo(() => {
+    if (account) return account
+    if (contact) return { name: contact.name, genesisHash: undefined }
+    return { name: undefined, genesisHash: undefined }
+  }, [account, contact])
 
   if (!address) return null
 
@@ -485,6 +500,44 @@ const ReviewButton = () => {
   )
 }
 
+const AddContact = () => {
+  const { to } = useSendFunds()
+  const account = useAccountByAddress(to)
+  const { contacts } = useAddressBook()
+  const { open, close, isOpen } = useOpenClose()
+
+  const canAdd = useMemo(() => {
+    if (account || !to) return false
+    const genericAddress = convertAddress(to, null)
+    return !contacts?.find((c) => convertAddress(c.address, null) === genericAddress) ?? null
+  }, [account, contacts, to])
+
+  const addressType: AccountAddressType = useMemo(() => {
+    if (!to) return "UNKNOWN"
+    return isEthereumAddress(to) ? "ethereum" : "ss58"
+  }, [to])
+
+  const drawerContainer = document.getElementById("send-funds-main")
+
+  if (!canAdd || !to) return null
+
+  return (
+    <>
+      <PillButton onClick={open} size={"base"} className="h-16 !rounded !px-4" icon={UserPlusIcon}>
+        Add
+      </PillButton>
+      <AddToAddressBookDrawer
+        isOpen={isOpen}
+        close={close}
+        address={to}
+        addressType={addressType}
+        asChild={false}
+        parent={drawerContainer}
+      />
+    </>
+  )
+}
+
 export const SendFundsMainForm = () => {
   const { from, to, goto } = useSendFundsWizard()
 
@@ -517,14 +570,15 @@ export const SendFundsMainForm = () => {
             />
           </div>
         </div>
-        <div className="flex w-full items-center justify-between gap-4">
+        <div className="flex w-full items-center justify-between gap-2">
           <div>To</div>
-          <div>
+          <div className="flex items-center gap-4">
             <AddressPillButton
               className="max-w-[260px]"
               address={to}
               onClick={handleGotoClick("to")}
             />
+            <AddContact />
           </div>
         </div>
       </Container>
