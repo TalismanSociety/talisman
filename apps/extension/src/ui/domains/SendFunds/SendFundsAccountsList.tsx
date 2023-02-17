@@ -1,11 +1,9 @@
-import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
+import { CheckCircleIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Balance } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
-import { useBalance } from "@ui/hooks/useBalance"
 import useBalances from "@ui/hooks/useBalances"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import useToken from "@ui/hooks/useToken"
 import { FC, ReactNode, useCallback, useMemo } from "react"
 
@@ -26,16 +24,7 @@ type AccountRowProps = {
   showBalances?: boolean
   token?: Token
   onClick?: () => void
-}
-
-const AccountGlobalBalance = ({ address }: { address: string }) => {
-  const balances = useBalancesByAddress(address)
-
-  return (
-    <div className="text-body-secondary whitespace-nowrap">
-      <Fiat amount={balances.sum.fiat("usd").transferable} currency="usd" isBalance />
-    </div>
-  )
+  disabled?: boolean
 }
 
 const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Balance }) => {
@@ -64,7 +53,14 @@ const AccountTokenBalance = ({ token, balance }: { token?: Token; balance?: Bala
   )
 }
 
-const AccountRow: FC<AccountRowProps> = ({ account, selected, onClick, showBalances, token }) => {
+const AccountRow: FC<AccountRowProps> = ({
+  account,
+  selected,
+  onClick,
+  showBalances,
+  token,
+  disabled,
+}) => {
   return (
     <button
       type="button"
@@ -72,8 +68,10 @@ const AccountRow: FC<AccountRowProps> = ({ account, selected, onClick, showBalan
       tabIndex={1}
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
-        selected && "bg-grey-800 text-body-secondary"
+        selected && "bg-grey-800 text-body-secondary",
+        "disabled:cursor-not-allowed disabled:opacity-50"
       )}
+      disabled={disabled}
     >
       <AccountAvatar
         address={account.address}
@@ -94,6 +92,7 @@ type SendFundsAccountsListProps = {
   selected?: string | null
   onSelect?: (address: string) => void
   header?: ReactNode
+  allowZeroBalance?: boolean
   showIfEmpty?: boolean
   showBalances?: boolean
   tokenId?: string
@@ -104,6 +103,7 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
   accounts,
   onSelect,
   header,
+  allowZeroBalance,
   showIfEmpty,
   showBalances,
   tokenId,
@@ -136,6 +136,10 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
         if (balanceA < balanceB) return 1
         return 0
       })
+      .map((account) => ({
+        ...account,
+        disabled: !account.balance || account.balance.transferable.planck === 0n,
+      }))
   }, [accounts, balances, selected, tokenId])
 
   if (!showIfEmpty && !accounts?.length) return null
@@ -151,6 +155,7 @@ export const SendFundsAccountsList: FC<SendFundsAccountsListProps> = ({
           onClick={handleAccountClick(account.address)}
           showBalances={showBalances}
           token={token}
+          disabled={!allowZeroBalance && account.disabled}
         />
       ))}
       {!accounts?.length && (

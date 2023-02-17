@@ -250,7 +250,7 @@ const FeeSummary = () => {
 }
 
 export const SendFundsConfirmForm = () => {
-  const { from, to } = useSendFunds()
+  const { from, to, chain, evmNetwork } = useSendFunds()
 
   return (
     <div className="flex h-full w-full flex-col items-center px-12 py-8">
@@ -266,13 +266,13 @@ export const SendFundsConfirmForm = () => {
           <div className="flex h-12 items-center justify-between gap-8">
             <div className="text-body-secondary">From</div>
             <div className="text-body overflow-hidden">
-              <AddressDisplay address={from} />
+              <AddressDisplay address={from} chainId={chain?.id} evmNetworkId={evmNetwork?.id} />
             </div>
           </div>
           <div className="flex h-12 items-center justify-between gap-8">
             <div className="text-body-secondary">To</div>
             <div className="text-body overflow-hidden">
-              <AddressDisplay address={to} />
+              <AddressDisplay address={to} chainId={chain?.id} evmNetworkId={evmNetwork?.id} />
             </div>
           </div>
           <div className="flex h-12 items-center justify-between gap-8">

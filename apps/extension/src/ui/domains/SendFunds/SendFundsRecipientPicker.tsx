@@ -94,6 +94,7 @@ export const SendFundsRecipientPicker = () => {
           <SendFundsAccountsList accounts={newAddresses} selected={to} onSelect={handleSelect} />
         )}
         <SendFundsAccountsList
+          allowZeroBalance
           accounts={contacts}
           selected={to}
           onSelect={handleSelect}
@@ -105,6 +106,7 @@ export const SendFundsRecipientPicker = () => {
           }
         />
         <SendFundsAccountsList
+          allowZeroBalance
           accounts={accounts}
           selected={to}
           onSelect={handleSelect}
