@@ -91,7 +91,7 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
 
 const TokenInput = () => {
   const { set, remove, sendMax, amount } = useSendFundsWizard()
-  const { token, transfer, maxAmount } = useSendFunds()
+  const { token, transfer, maxAmount, isEstimatingMaxAmount } = useSendFunds()
 
   const placeholder = useMemo(() => {
     if (token && sendMax && maxAmount) return `${formatDecimals(maxAmount.tokens)} ${token.symbol}`
@@ -144,12 +144,12 @@ const TokenInput = () => {
         className={classNames(
           "text-body inline-block min-w-0  bg-transparent text-center text-xl",
           sendMax && "placeholder:text-white",
-          sendMax && !maxAmount && "hidden" // hide until value is known
+          isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
       <span className="shrink-0">{text && !sendMax ? ` ${token?.symbol}` : ""}</span>
-      {sendMax && !maxAmount && (
+      {isEstimatingMaxAmount && (
         <div className="text-body-disabled mb-4 flex items-center justify-center gap-2 text-base font-light">
           <LoaderIcon className="text-md inline-block animate-spin" />
           <div>Estimating max amount...</div>
@@ -163,7 +163,7 @@ const FIAT_PLACEHOLDER = "$0.00"
 
 const FiatInput = () => {
   const { set, remove, sendMax } = useSendFundsWizard()
-  const { token, transfer, maxAmount, tokenRates } = useSendFunds()
+  const { token, transfer, maxAmount, tokenRates, isEstimatingMaxAmount } = useSendFunds()
 
   const placeholder = useMemo(() => {
     if (token && sendMax && maxAmount) return `$${maxAmount?.fiat("usd")?.toFixed(2)}`
@@ -222,11 +222,11 @@ const FiatInput = () => {
         placeholder={placeholder}
         className={classNames(
           "text-body inline-block min-w-0 max-w-[32rem] bg-transparent text-center text-xl",
-          sendMax && !maxAmount && "hidden" // hide until value is known
+          isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
-      {sendMax && !maxAmount && (
+      {isEstimatingMaxAmount && (
         <div className="text-body-disabled mb-4 flex items-center justify-center gap-2 text-base font-light">
           <LoaderIcon className="text-md inline-block animate-spin" />
           <div>Estimating max amount...</div>
@@ -237,21 +237,25 @@ const FiatInput = () => {
 }
 
 const FiatDisplay = () => {
-  const { tokenRates, transfer } = useSendFunds()
+  const { tokenRates, transfer, maxAmount, sendMax } = useSendFunds()
 
-  if (!tokenRates) return null
+  const value = sendMax ? maxAmount : transfer
 
-  return <Fiat amount={transfer?.fiat("usd") ?? 0} noCountUp />
+  if (!tokenRates || !value) return null
+
+  return <Fiat amount={value.fiat("usd") ?? 0} noCountUp />
 }
 
 const TokenDisplay = () => {
-  const { token, transfer } = useSendFunds()
+  const { token, transfer, maxAmount, sendMax } = useSendFunds()
 
-  if (!token) return null
+  const value = sendMax ? maxAmount : transfer
+
+  if (!token || !value) return null
 
   return (
     <Tokens
-      amount={transfer?.tokens ?? "0"}
+      amount={value.tokens ?? "0"}
       decimals={token.decimals}
       symbol={token.symbol}
       noCountUp
@@ -272,7 +276,7 @@ const ErrorMessage = () => {
 const AmountEdit = () => {
   const { sendMax, set } = useSendFundsWizard()
   const [isTokenEdit, setIsTokenEdit] = useState(true)
-  const { onSendMaxClick, tokenRates } = useSendFunds()
+  const { onSendMaxClick, tokenRates, isEstimatingMaxAmount } = useSendFunds()
   // const { tokenRates, token } = useSendFundsConfirm()
 
   const toggleIsTokenEdit = useCallback(() => {
@@ -289,8 +293,13 @@ const AmountEdit = () => {
       <div className="flex h-[12rem] flex-col justify-end text-xl font-bold">
         {isTokenEdit ? <TokenInput /> : <FiatInput />}
       </div>
-      <div className="mt-4 flex max-w-full items-center justify-center gap-6 overflow-hidden">
-        <div className="text-body-secondary text-sm">
+      <div
+        className={classNames(
+          "mt-4 flex max-w-full items-center justify-center gap-6",
+          isEstimatingMaxAmount && "invisible"
+        )}
+      >
+        <div className="text-body-secondary max-w-[264px] overflow-hidden text-ellipsis whitespace-nowrap text-sm">
           {!isTokenEdit ? <TokenDisplay /> : <FiatDisplay />}
         </div>
         {tokenRates && (

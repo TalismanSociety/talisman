@@ -392,6 +392,7 @@ const useSendFundsProvider = () => {
   ])
 
   const isLoading = evmTransaction?.isLoading || subTransaction?.isLoading
+  const isEstimatingMaxAmount = sendMax && !maxAmount
 
   const onSendMaxClick = useCallback(() => {
     if (!token || !maxAmount) return
@@ -546,7 +547,10 @@ const useSendFundsProvider = () => {
     signMethod,
     isProcessing,
     sendErrorMessage,
+    isEstimatingMaxAmount,
   }
+
+  useAlec("requiresTip", { requiresTip, tip: tip?.tokens })
 
   //useAlec("useSendFunds", { ...result, costBreakdown, requiresTip })
 

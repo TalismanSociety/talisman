@@ -1,7 +1,7 @@
 import { DEBUG } from "@core/constants"
 import { log } from "@core/log"
 import isEqual from "lodash/isEqual"
-import { useRef } from "react"
+import { useEffect, useRef } from "react"
 
 type UseAlec = (label: string, value: any) => void
 
@@ -10,16 +10,20 @@ const useAlecAtClub: UseAlec = () => {}
 const useAlecAtWork: UseAlec = (label, value) => {
   const refPrev = useRef(value)
 
+  useEffect(() => {
+    // print initial value
+    log.debug("[useAlec]", label, value)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [label])
+
   const prev = refPrev.current
 
-  if (prev) {
-    const changes = Object.keys({ ...prev, ...value }).reduce((acc, key) => {
-      if (!isEqual(prev[key], value[key])) acc[key] = { from: prev[key], to: value[key] }
-      return acc
-    }, {} as Record<string, any>)
+  const changes = Object.keys({ ...prev, ...value }).reduce((acc, key) => {
+    if (!isEqual(prev[key], value[key])) acc[key] = { from: prev[key], to: value[key] }
+    return acc
+  }, {} as Record<string, any>)
 
-    if (Object.keys(changes).length) log.debug("[useAlec]", label, value, changes)
-  }
+  if (Object.keys(changes).length) log.debug("[useAlec]", label, value, changes)
 
   refPrev.current = value
 }

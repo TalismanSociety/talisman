@@ -1,28 +1,16 @@
-import { log } from "@core/log"
-import { notify } from "@talisman/components/Notifications"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
-import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
-import { api } from "@ui/api"
-import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
-import { useBalance } from "@ui/hooks/useBalance"
-import useChain from "@ui/hooks/useChain"
-import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import useToken from "@ui/hooks/useToken"
-import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { isEvmToken } from "@ui/util/isEvmToken"
-import { FC, Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react"
+import { Suspense, lazy, useEffect, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
-import Tokens from "../Asset/Tokens"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { AddressDisplay } from "./AddressDisplay"
-import { useFeeToken } from "./useFeeToken"
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsLedgerSubstrate = lazy(() => import("./SendFundsLedgerSubstrate"))
@@ -96,6 +84,8 @@ const TotalValueRow = () => {
     return fiatAmount + fiatFee + fiatTip
   }, [amount, estimatedFee, feeTokenRates, tip, tipTokenRates, tokenRates])
 
+  if (!totalValue) return null
+
   return (
     <div className="mt-4 flex h-[1.7rem] justify-between text-xs">
       <div className="text-body-secondary">Total Value</div>
@@ -111,7 +101,6 @@ const TotalValueRow = () => {
 }
 
 const SendButton = () => {
-  const { tokenId } = useSendFundsWizard()
   const { signMethod, sendErrorMessage, send, isProcessing } = useSendFunds()
 
   const [isReady, setIsReady] = useState(false)
@@ -152,11 +141,7 @@ const SendButton = () => {
 }
 
 const EvmFeeSummary = () => {
-  const { tokenId } = useSendFundsWizard()
-  const token = useToken(tokenId)
-  const evmNetwork = useEvmNetwork(token?.evmNetwork?.id)
-
-  const { evmTransaction } = useSendFunds()
+  const { token, evmNetwork, evmTransaction } = useSendFunds()
 
   if (!token || !evmTransaction) return null
 
@@ -212,49 +197,60 @@ const EvmFeeSummary = () => {
 }
 
 const SubFeeSummary = () => {
-  const { tokenId } = useSendFundsWizard()
-  const { subTransaction } = useSendFunds()
-  const feeToken = useFeeToken(tokenId)
+  const { subTransaction, feeToken, tip, tipToken } = useSendFunds()
 
   if (!subTransaction) return null
 
   const { isRefetching, isLoading, partialFee, error } = subTransaction
 
   return (
-    <div className="mt-4 flex h-[1.7rem] items-center justify-between gap-8 text-xs">
-      <div className="text-body-secondary">Estimated Fee</div>
-      <div className="text-body">
-        <div
-          className={classNames(
-            "inline-flex h-[1.7rem] items-center",
-            isRefetching && "animate-pulse"
-          )}
-        >
-          <>
-            {isLoading && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
-            {partialFee && feeToken && <TokensAndFiat planck={partialFee} tokenId={feeToken.id} />}
-            {error && (
-              <WithTooltip tooltip={(error as Error).message}>
-                <span className="text-alert-warn">Failed to estimate fee</span>
-              </WithTooltip>
+    <>
+      {!!tip && !!tipToken && tip.planck > 0n && (
+        <div className="mt-4 flex h-[1.7rem] items-center justify-between gap-8 text-xs">
+          <div className="text-body-secondary">Tip</div>
+          <div className="text-body">
+            <div className={classNames("inline-flex h-[1.7rem] items-center")}>
+              <TokensAndFiat planck={tip.planck} tokenId={tipToken.id} />
+            </div>
+          </div>
+        </div>
+      )}
+      <div className="mt-4 flex h-[1.7rem] items-center justify-between gap-8 text-xs">
+        <div className="text-body-secondary">Estimated Fee</div>
+        <div className="text-body">
+          <div
+            className={classNames(
+              "inline-flex h-[1.7rem] items-center",
+              isRefetching && "animate-pulse"
             )}
-          </>
+          >
+            <>
+              {isLoading && <LoaderIcon className="animate-spin-slow mr-2 inline align-text-top" />}
+              {partialFee && feeToken && (
+                <TokensAndFiat planck={partialFee} tokenId={feeToken.id} />
+              )}
+              {error && (
+                <WithTooltip tooltip={(error as Error).message}>
+                  <span className="text-alert-warn">Failed to estimate fee</span>
+                </WithTooltip>
+              )}
+            </>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }
 
 const FeeSummary = () => {
-  const { tokenId } = useSendFundsWizard()
-  const token = useToken(tokenId)
+  const { token } = useSendFunds()
 
   if (isEvmToken(token)) return <EvmFeeSummary />
   return <SubFeeSummary />
 }
 
 export const SendFundsConfirmForm = () => {
-  const { from, to } = useSendFundsWizard()
+  const { from, to } = useSendFunds()
 
   return (
     <div className="flex h-full w-full flex-col items-center px-12 py-8">

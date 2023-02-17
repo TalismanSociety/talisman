@@ -10,13 +10,12 @@ type SendFundsWizardParams = {
   to: Address
   tokenId: TokenId
   amount: string // planck
-  transferAll: boolean
   allowReap: boolean
   sendMax: boolean
 }
 
 const STRING_PROPS = ["from", "to", "tokenId", "amount"]
-const BOOL_PROPS = ["transferAll", "allowReap", "sendMax"]
+const BOOL_PROPS = ["allowReap", "sendMax"]
 
 export type SendFundsWizardPage = "from" | "to" | "token" | "amount" | "confirm"
 
@@ -24,13 +23,12 @@ const useSendFundsWizardProvider = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const navigate = useNavigate()
 
-  const { from, to, tokenId, amount, transferAll, allowReap, sendMax } = useMemo(
+  const { from, to, tokenId, amount, allowReap, sendMax } = useMemo(
     () => ({
       from: searchParams.get("from") ?? undefined,
       to: searchParams.get("to") ?? undefined,
       tokenId: searchParams.get("tokenId") ?? undefined,
       amount: searchParams.get("amount") ?? undefined,
-      transferAll: searchParams.get("transferAll") !== null,
       allowReap: searchParams.get("allowReap") !== null,
       sendMax: searchParams.get("sendMax") !== null,
     }),
@@ -66,6 +64,7 @@ const useSendFundsWizardProvider = () => {
 
       if (key === "sendMax" && value) searchParams.delete("amount")
       if (key === "amount" && value) searchParams.delete("sendMax")
+      if (key === "from" && value) searchParams.delete("sendMax")
 
       // boolean values
       if (BOOL_PROPS.includes(key) && value) searchParams.set(key, "")
@@ -137,7 +136,6 @@ const useSendFundsWizardProvider = () => {
       to,
       tokenId,
       amount,
-      transferAll,
       allowReap,
       sendMax,
       set,
@@ -146,20 +144,7 @@ const useSendFundsWizardProvider = () => {
       gotoReview,
       gotoProgress,
     }),
-    [
-      from,
-      to,
-      tokenId,
-      amount,
-      transferAll,
-      allowReap,
-      sendMax,
-      set,
-      remove,
-      goto,
-      gotoReview,
-      gotoProgress,
-    ]
+    [from, to, tokenId, amount, allowReap, sendMax, set, remove, goto, gotoReview, gotoProgress]
   )
 
   return ctx
