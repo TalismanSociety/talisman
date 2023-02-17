@@ -1,11 +1,11 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { Box } from "@talisman/components/Box"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
+import { FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { OnboardButton } from "../components/OnboardButton"
@@ -19,6 +19,8 @@ type FormData = {
   passwordConfirm?: string
   agreeToS?: boolean
 }
+
+const INPUT_CONTAINER_PROPS_PASSWORD = { className: "!bg-white/5 h-28" }
 
 const TITLE_NEW = "Choose a password"
 const DESC_NEW =
@@ -93,17 +95,17 @@ export const PasswordPage = () => {
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
-      <Box flex justify="center">
-        <Box w={60}>
+      <div className="flex justify-center">
+        <div className="w-[60rem]">
           <OnboardDialog title={title}>
             <p>{description}</p>
             <form onSubmit={handleSubmit(submit)} autoComplete="off">
-              <Box flex column>
-                <Box fontsize="small" margin="3.2rem 0 1.6rem 0">
+              <div className="flex flex-col">
+                <div className="mt-16 mb-8 text-sm">
                   Password strength: <PasswordStrength password={password} />
-                </Box>
+                </div>
                 <OnboardFormField error={errors.password}>
-                  <input
+                  <FormFieldInputText
                     {...register("password")}
                     type="password"
                     placeholder="Enter password"
@@ -111,27 +113,37 @@ export const PasswordPage = () => {
                     spellCheck={false}
                     data-lpignore
                     autoFocus
+                    className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
+                    containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
                   />
                 </OnboardFormField>
                 <OnboardFormField error={errors.passwordConfirm}>
-                  <input
+                  <FormFieldInputText
                     {...register("passwordConfirm")}
                     type="password"
                     autoComplete="off"
                     placeholder="Re-enter password"
                     spellCheck={false}
                     data-lpignore
+                    className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
+                    containerProps={INPUT_CONTAINER_PROPS_PASSWORD}
                   />
                 </OnboardFormField>
-              </Box>
-              <Box h={1.6} />
-              <OnboardButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
+              </div>
+              <div className="h-8" />
+              <OnboardButton
+                className="h-28"
+                type="submit"
+                primary
+                disabled={!isValid}
+                processing={isSubmitting}
+              >
                 Continue
               </OnboardButton>
             </form>
           </OnboardDialog>
-        </Box>
-      </Box>
+        </div>
+      </div>
     </Layout>
   )
 }

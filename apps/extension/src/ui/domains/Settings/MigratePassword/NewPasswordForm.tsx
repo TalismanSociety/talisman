@@ -1,10 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FormField } from "@talisman/components/Field/FormField"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
-import { Button } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { useMigratePassword } from "./context"
@@ -52,8 +51,8 @@ export const NewPasswordForm = () => {
         <div className="text-body-disabled mb-12 text-sm">
           Password strength: <PasswordStrength password={newPwWatch} />
         </div>
-        <FormField error={errors.newPw} className="mb-12">
-          <input
+        <FormFieldContainer error={errors.newPw?.message} className="mb-12">
+          <FormFieldInputText
             {...register("newPw")}
             placeholder="Enter New Password"
             spellCheck={false}
@@ -62,9 +61,9 @@ export const NewPasswordForm = () => {
             type="password"
             tabIndex={1}
           />
-        </FormField>
-        <FormField error={errors.newPwConfirm} className="mb-12">
-          <input
+        </FormFieldContainer>
+        <FormFieldContainer error={errors.newPwConfirm?.message} className="mb-12">
+          <FormFieldInputText
             {...register("newPwConfirm")}
             placeholder="Confirm New Password"
             spellCheck={false}
@@ -73,7 +72,7 @@ export const NewPasswordForm = () => {
             type="password"
             tabIndex={2}
           />
-        </FormField>
+        </FormFieldContainer>
         <Button
           className="mt-12"
           type="submit"

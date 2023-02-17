@@ -1,5 +1,19 @@
 # @talismn/token-rates
 
+## 0.1.14
+
+### Patch Changes
+
+- @talismn/chaindata-provider@0.4.2
+
+## 0.1.13
+
+### Patch Changes
+
+- 8adc7f06: feat: switched build tool to preconstruct
+- Updated dependencies [8adc7f06]
+  - @talismn/chaindata-provider@0.4.1
+
 ## 0.1.12
 
 ### Patch Changes

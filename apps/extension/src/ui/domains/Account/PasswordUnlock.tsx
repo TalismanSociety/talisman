@@ -1,12 +1,10 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FormField } from "@talisman/components/Field/FormField"
-import Spacer from "@talisman/components/Spacer"
 import { KeyIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { ReactNode, useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
-import { Button } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 type FormData = {
@@ -22,9 +20,8 @@ const schema = yup
 type PasswordUnlockProps = {
   className?: string
   children: ReactNode
-  description?: ReactNode
   buttonText?: string
-  title?: string
+  title?: ReactNode
 }
 
 type PasswordUnlockContext = {
@@ -59,7 +56,6 @@ export { usePasswordUnlock }
 const BasePasswordUnlock = ({
   className,
   children,
-  description,
   buttonText,
   title = "Enter your password",
 }: PasswordUnlockProps) => {
@@ -89,24 +85,24 @@ const BasePasswordUnlock = ({
   )
 
   return password ? (
-    <>{children}</>
+    <div className={className}>{children}</div>
   ) : (
     <div className={className}>
-      <form onSubmit={handleSubmit(submit)}>
-        {description}
-        <div className="font-bold">{title}</div>
-        <Spacer small />
-        <FormField error={errors.password} prefix={<KeyIcon className="opacity-50" />}>
-          <input
-            {...register("password")}
-            type="password"
-            placeholder="Enter password"
-            spellCheck={false}
-            data-lpignore
-            autoFocus
-          />
-        </FormField>
-        <Spacer />
+      <form onSubmit={handleSubmit(submit)} className="flex h-full flex-col">
+        <div className="flex grow flex-col justify-center">
+          <div className="text-md mb-12">{title}</div>
+          <FormFieldContainer error={errors.password?.message}>
+            <FormFieldInputText
+              before={<KeyIcon className="opacity-50" />}
+              {...register("password")}
+              type="password"
+              placeholder="Enter password"
+              spellCheck={false}
+              data-lpignore
+              autoFocus
+            />
+          </FormFieldContainer>
+        </div>
         <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>
           {buttonText || "Submit"}
         </Button>

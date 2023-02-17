@@ -1,4 +1,3 @@
-import { Box } from "@talisman/components/Box"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import styled from "styled-components"
@@ -60,14 +59,14 @@ export const OnboardingPage = () => {
 
   return (
     <Container analytics={ANALYTICS_PAGE}>
-      <Box flex justify="center">
-        <Box w={60}>
+      <div className="flex justify-center">
+        <div className="w-[60rem]">
           <Dialog title={title}>
             <OnboardLoader />
             <ErrorMessage>{error}</ErrorMessage>
           </Dialog>
-        </Box>
-      </Box>
+        </div>
+      </div>
     </Container>
   )
 }

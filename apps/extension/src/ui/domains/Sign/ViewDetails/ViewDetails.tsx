@@ -2,7 +2,7 @@ import { BalanceFormatter } from "@core/domains/balances/types"
 import {
   SignerPayloadJSON,
   SignerPayloadRaw,
-  SigningRequest,
+  SubstrateSigningRequest,
   TransactionDetails,
 } from "@core/domains/signing/types"
 import isJsonPayload from "@core/util/isJsonPayload"
@@ -64,7 +64,7 @@ const ViewDetailsContainer = styled.div`
 type BaseViewDetailsProps = {
   txDetails?: TransactionDetails | null
   txDetailsError?: string
-  signingRequest: SigningRequest
+  signingRequest: SubstrateSigningRequest
 }
 
 type ViewDetailsContentProps = BaseViewDetailsProps & {

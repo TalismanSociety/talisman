@@ -1,9 +1,7 @@
 import { AccountAddressType } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FormField } from "@talisman/components/Field/FormField"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { ArrowRightIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { sleep } from "@talismn/util"
@@ -14,6 +12,7 @@ import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNaviga
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import styled from "styled-components"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import Layout from "../layout"
@@ -126,8 +125,8 @@ const AccountNew = () => {
         <AccountTypeSelector onChange={handleTypeChange} />
         <Spacer />
         <div className={classNames("hide", type && "show")}>
-          <FormField error={errors.name}>
-            <input
+          <FormFieldContainer error={errors.name?.message}>
+            <FormFieldInputText
               {...register("name")}
               placeholder="Choose a name"
               spellCheck={false}
@@ -135,12 +134,18 @@ const AccountNew = () => {
               autoFocus
               data-lpignore
             />
-          </FormField>
+          </FormFieldContainer>
           <Spacer />
           <div className="buttons">
-            <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-              Create <ArrowRightIcon />
-            </SimpleButton>
+            <Button
+              icon={ArrowRightIcon}
+              type="submit"
+              primary
+              disabled={!isValid}
+              processing={isSubmitting}
+            >
+              Create
+            </Button>
           </div>
         </div>
       </form>

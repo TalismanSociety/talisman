@@ -1,5 +1,4 @@
 import { Balances } from "@core/domains/balances/types"
-import { Box } from "@talisman/components/Box"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
@@ -10,33 +9,6 @@ import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesS
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useMemo } from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
-import styled from "styled-components"
-
-const Stats = styled(Statistics)`
-  max-width: 40%;
-`
-
-const BackButton = styled.button`
-  color: var(--color-mid);
-  outline: none;
-  border: none;
-  background: none;
-  text-align: left;
-  padding: 0;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  font-size: var(--font-size-small);
-  cursor: pointer;
-
-  svg {
-    font-size: var(--font-size-normal);
-  }
-
-  :hover {
-    color: var(--color-foreground-muted);
-  }
-`
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
@@ -47,27 +19,33 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
   return (
     <div>
-      <Box flex fullwidth gap={1.6} h={9.6}>
-        <Box grow flex column gap={1.6} justify="center">
-          <BackButton type="button" onClick={handleBackBtnClick}>
+      <div className="flex h-48 w-full gap-8">
+        <div className="flex grow flex-col justify-center gap-8">
+          <button
+            className="text-body-secondary hover:text-grey-300 text:text-sm flex cursor-pointer items-center whitespace-nowrap bg-none p-0 text-base"
+            type="button"
+            onClick={handleBackBtnClick}
+          >
             <ChevronLeftIcon />
-            Asset
-          </BackButton>
-          <Box flex align="center" gap={0.8}>
-            <Box fontsize="large">
+            <span className="text-sm">Asset</span>
+          </button>
+          <div className="flex items-center gap-4">
+            <div className="w-12 shrink-0 text-lg">
               <TokenLogo tokenId={token?.id} />
-            </Box>
-            <Box fontsize="medium">{token?.symbol}</Box>
-          </Box>
-        </Box>
-        <Stats
+            </div>
+            <div className="text-md">{token?.symbol}</div>
+          </div>
+        </div>
+        <Statistics
+          className="max-w-[40%]"
           title="Total Asset Value"
           tokens={summary.totalTokens}
           fiat={summary.totalFiat}
           token={token}
           showTokens
         />
-        <Stats
+        <Statistics
+          className="max-w-[40%]"
           title="Locked"
           tokens={summary.lockedTokens}
           fiat={summary.lockedFiat}
@@ -75,17 +53,18 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
           locked
           showTokens
         />
-        <Stats
+        <Statistics
+          className="max-w-[40%]"
           title="Available"
           tokens={summary.availableTokens}
           fiat={summary.availableFiat}
           token={token}
           showTokens
         />
-      </Box>
-      <Box margin="4.8rem 0 0 0">
+      </div>
+      <div className="mt-24">
         <DashboardAssetDetails balances={balancesToDisplay} symbol={symbol} />
-      </Box>
+      </div>
     </div>
   )
 }

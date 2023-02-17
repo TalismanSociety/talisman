@@ -18,6 +18,10 @@ export declare type RequestTypes = {
   [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
 }
 
+export declare type RequestTypesArray = {
+  [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
+}[keyof RequestSignatures]
+
 export declare type ResponseTypes = {
   [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][1]
 }
@@ -40,6 +44,12 @@ type RemovedMessages =
   | "pri(accounts.export)"
   | "pri(accounts.forget)"
   | "pri(accounts.subscribe)"
+  | "pri(metadata.requests)"
+  | "pri(metadata.approve)"
+  | "pri(metadata.get)"
+  | "pri(metadata.reject)"
+  | "pri(metadata.list)"
+  | "pri(signing.cancel)"
   | "pri(signing.requests)"
   | "pri(derivation.create)"
   | "pri(derivation.validate)"
@@ -59,8 +69,8 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   SigningMessages &
   TokenMessages &
   TokenRatesMessages &
-  EncryptMessages &
-  MetadataMessages
+  MetadataMessages &
+  EncryptMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]
@@ -78,7 +88,7 @@ export interface TransportRequestMessage<TMessageType extends MessageTypes> {
   id: string
   message: TMessageType
   origin: OriginTypes
-  request: RequestTypes[TMessageType]
+  request: RequestType<TMessageType>
 }
 
 export declare type MessageTypesWithSubscriptions = keyof SubscriptionMessageTypes

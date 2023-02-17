@@ -2,9 +2,10 @@ import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { requestStore } from "@core/libs/requests/store"
 import { log } from "@core/log"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
-import { Port, RequestIdOnly } from "@core/types/base"
+import { Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { sr25519Decrypt } from "@core/util/sr25519decrypt"
 import { sr25519Encrypt } from "@core/util/sr25519encrypt"
@@ -12,11 +13,17 @@ import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
 import { Keypair } from "@polkadot/util-crypto/types"
 import * as Sentry from "@sentry/browser"
 
-import { AnyEncryptRequest, RequestEncryptCancel } from "./types"
+import {
+  DecryptRequestIdOnly,
+  ENCRYPT_DECRYPT_PREFIX,
+  ENCRYPT_ENCRYPT_PREFIX,
+  EncryptRequestIdOnly,
+  RequestEncryptCancel,
+} from "./types"
 
 export default class EncryptHandler extends ExtensionHandler {
-  private async encryptApprove({ id }: RequestIdOnly) {
-    const queued = this.state.requestStores.encrypt.getEncryptRequest(id)
+  private async encryptApprove({ id }: EncryptRequestIdOnly) {
+    const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
     const { request, resolve } = queued
@@ -24,7 +31,7 @@ export default class EncryptHandler extends ExtensionHandler {
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
 
-      const pw = await this.stores.password.getPassword()
+      const pw = this.stores.password.getPassword()
       assert(pw, "Unable to retreive password from store.")
 
       const pk = getPrivateKey(pair, pw)
@@ -54,8 +61,8 @@ export default class EncryptHandler extends ExtensionHandler {
     throw new Error("Unable to encrypt message.")
   }
 
-  private async decryptApprove({ id }: RequestIdOnly) {
-    const queued = this.state.requestStores.encrypt.getDecryptRequest(id)
+  private async decryptApprove({ id }: DecryptRequestIdOnly) {
+    const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
 
     const { request, resolve } = queued
@@ -63,7 +70,7 @@ export default class EncryptHandler extends ExtensionHandler {
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
 
-      const pw = await this.stores.password.getPassword()
+      const pw = this.stores.password.getPassword()
       assert(pw, "Unable to retreive password from store.")
 
       const pk = getPrivateKey(pair, pw)
@@ -89,7 +96,7 @@ export default class EncryptHandler extends ExtensionHandler {
   }
 
   private encryptCancel({ id }: RequestEncryptCancel): boolean {
-    const queued = this.state.requestStores.encrypt.getRequest(id)
+    const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
@@ -108,16 +115,20 @@ export default class EncryptHandler extends ExtensionHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(encrypt.requests)":
-        return this.state.requestStores.encrypt.subscribe<"pri(encrypt.requests)">(id, port)
+        return requestStore.subscribe<"pri(encrypt.requests)">(id, port, [
+          ENCRYPT_ENCRYPT_PREFIX,
+          ENCRYPT_DECRYPT_PREFIX,
+        ])
 
       case "pri(encrypt.byid.subscribe)": {
         const cb = createSubscription<"pri(encrypt.byid.subscribe)">(id, port)
-        const subscription = this.state.requestStores.encrypt.observable.subscribe(
-          (reqs: AnyEncryptRequest[]) => {
-            const req = reqs.find((req) => req.id === (request as RequestIdOnly).id)
-            if (req) cb(req)
-          }
-        )
+        const subscription = requestStore.observable.subscribe((reqs) => {
+          const req = reqs.find(
+            (req) => req.id === (request as EncryptRequestIdOnly | DecryptRequestIdOnly).id
+          )
+          if (req && (req.type === ENCRYPT_ENCRYPT_PREFIX || req.type === ENCRYPT_DECRYPT_PREFIX))
+            cb(req)
+        })
 
         port.onDisconnect.addListener((): void => {
           unsubscribe(id)
@@ -127,10 +138,10 @@ export default class EncryptHandler extends ExtensionHandler {
       }
 
       case "pri(encrypt.approveEncrypt)":
-        return await this.encryptApprove(request as RequestIdOnly)
+        return await this.encryptApprove(request as EncryptRequestIdOnly)
 
       case "pri(encrypt.approveDecrypt)":
-        return await this.decryptApprove(request as RequestIdOnly)
+        return await this.decryptApprove(request as DecryptRequestIdOnly)
 
       case "pri(encrypt.cancel)":
         return this.encryptCancel(request as RequestEncryptCancel)

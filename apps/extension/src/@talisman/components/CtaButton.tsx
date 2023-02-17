@@ -86,4 +86,7 @@ export const StyledButton = styled(CtaButton)`
   `}
 `
 
+/**
+ * @deprecated Use CtaButton from talisman-ui instead
+ */
 export default StyledButton

@@ -1,4 +1,3 @@
-import { Box } from "@talisman/components/Box"
 import { DownloadIcon, PlusIcon } from "@talisman/theme/icons"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -37,7 +36,7 @@ const WelcomeCtaContainer = styled.button`
   }
 `
 
-const Title = styled(Box)`
+const Title = styled.div`
   font-family: WhyteInktrapMedium, sans-serif;
 `
 
@@ -120,13 +119,11 @@ const WelcomeCta = ({
 }) => {
   return (
     <WelcomeCtaContainer type="button" onClick={onClick}>
-      <Box flex fullwidth justify="space-between">
-        <Box grow fontsize="xlarge">
-          {title}
-        </Box>
-        <Box fontsizecustom={4}>{icon}</Box>
-      </Box>
-      <Box>{description}</Box>
+      <div className="flex w-full justify-between">
+        <div className="grow text-xl">{title}</div>
+        <div className="text-3xl">{icon}</div>
+      </div>
+      <div>{description}</div>
     </WelcomeCtaContainer>
   )
 }
@@ -168,19 +165,17 @@ export const WelcomePage = () => {
 
   return (
     <Container>
-      <Box flex gap={10} justify="center" align="center" margin="8rem 0">
-        <Box className="welcome-text" fg="foreground" flex column gap={4.8} w={67.3}>
-          <Box>
+      <div className="my-[8rem] flex items-center justify-center gap-[10rem] ">
+        <div className="welcome-text flex w-[67.3rem] flex-col gap-24 text-white">
+          <div>
             <Logo />
-          </Box>
-          <Title fontsizecustom={12} lineheightcustom={12}>
-            Multi-chain made easy
-          </Title>
-          <Box className="welcome-description" fontsize="xlarge">
+          </div>
+          <Title className="text-[12rem] leading-none">Multi-chain made easy</Title>
+          <div className="welcome-description text-xl">
             Talisman supports Polkadot, Kusama, Ethereum, and more
-          </Box>
-        </Box>
-        <Box className="welcome-buttons" flex column gap={2.4} w={38}>
+          </div>
+        </div>
+        <div className="welcome-buttons flex w-[38rem] flex-col gap-12">
           <WelcomeCta
             title="New wallet"
             icon={<PlusIcon />}
@@ -198,7 +193,7 @@ export const WelcomePage = () => {
             }
             onClick={handleNextClick(true)}
           />
-          <Box fg="mid" fontsize="small" lineheightcustom="2rem">
+          <div className="text-body-secondary text-sm leading-[2rem]">
             By continuing, you agree to the{" "}
             <a
               href="https://docs.talisman.xyz/legal-and-security/terms-of-use"
@@ -218,9 +213,9 @@ export const WelcomePage = () => {
             >
               Privacy Policy
             </a>
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
     </Container>
   )
 }

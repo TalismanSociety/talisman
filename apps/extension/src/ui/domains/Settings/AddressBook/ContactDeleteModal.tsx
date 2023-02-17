@@ -19,7 +19,7 @@ export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
-    <Modal open={isOpen} className="bg-black-secondary">
+    <Modal open={isOpen} className="bg-black-secondary" onClose={close}>
       <ModalDialog title="Delete contact">
         <div className="text-body-secondary my-12">
           You are deleting contact '<span className="font-bold text-white">{contact.name}</span>'

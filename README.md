@@ -88,6 +88,6 @@ yarn plugin import workspace-tools
 yarn npm login
 git clean -ffdx packages
 yarn
-yarn build:packages:prod
+yarn build:packages
 yarn workspaces foreach --no-private npm publish --tolerate-republish
 ```

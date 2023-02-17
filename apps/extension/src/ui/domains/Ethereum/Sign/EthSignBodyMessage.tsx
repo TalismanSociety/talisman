@@ -63,9 +63,9 @@ export const EthSignBodyMessage: FC<EthSignBodyMessageProps> = ({ account, reque
   const evmNetwork = useEvmNetwork(ethChainId)
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full w-full flex-col items-center">
       <h1 className="!leading-base !my-0 font-sans !text-lg !font-bold">Sign Request</h1>
-      <div className="leading-base my-12 flex w-full flex-col">
+      <div className="leading-base my-12 flex w-full flex-col items-center">
         <div className="p-2">You are signing{isTypedData ? " typed data " : " a message "}</div>
         <div className="flex items-start p-1">
           <div>with</div>

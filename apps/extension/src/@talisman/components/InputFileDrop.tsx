@@ -1,7 +1,7 @@
-import styled from "styled-components"
 import { ReactComponent as IconClear } from "@talisman/theme/icons/x-circle.svg"
-import { useDropzone } from "react-dropzone"
 import { MouseEvent, useCallback, useState } from "react"
+import { useDropzone } from "react-dropzone"
+import styled from "styled-components"
 
 const DropZone = styled.div`
   :hover {
@@ -100,7 +100,7 @@ export const InputFileDrop = ({ hint, inputProps, onChange }: InputFileProps) =>
   const inactiveDragLabel = file ? "Replace file" : "Choose file"
 
   return (
-    <DropZone {...getRootProps()}>
+    <DropZone {...getRootProps()} className="bg-field h-[240px] rounded">
       {!!hint && <span className="hint">{hint}</span>}
       <input type="file" {...getInputProps(inputProps)} className="cta" />
       <span className="cta">{isDragActive ? "Drop file here..." : inactiveDragLabel}</span>

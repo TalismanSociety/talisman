@@ -1,10 +1,22 @@
-import { AnySigningRequest, EthBaseSignRequest } from "@core/domains/signing/types"
+import {
+  AnyEthSigningRequest,
+  AnySigningRequest,
+  SIGNING_TYPES,
+  SigningRequests,
+} from "@core/domains/signing/types"
 
 export const isEthereumRequest = (
   signingRequest: AnySigningRequest
-): signingRequest is EthBaseSignRequest => {
+): signingRequest is AnyEthSigningRequest => {
   return (
-    (signingRequest as EthBaseSignRequest).type !== undefined &&
-    (signingRequest as EthBaseSignRequest).type === "ethereum"
+    (signingRequest as AnyEthSigningRequest).type !== undefined &&
+    ["eth-sign", "eth-send"].includes((signingRequest as AnyEthSigningRequest).type)
   )
+}
+
+export const isSigningType = <T extends keyof SigningRequests>(
+  signingRequest: SigningRequests[T][0],
+  type: T
+) => {
+  return signingRequest.type === type
 }

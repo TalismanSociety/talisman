@@ -1,34 +1,19 @@
-// @ts-nocheck
-import { createContext, useContext, useState } from "react"
-import { ThemeProvider } from "styled-components"
-import themes from "./theme"
-import Variables from "./variables"
-import Global from "./global"
 import "./fonts.css"
 
-const Context = createContext({})
+import { FC, PropsWithChildren } from "react"
+import { ThemeProvider } from "styled-components"
 
-export const useTheme = () => useContext(Context)
+import Global from "./global"
+import themes from "./theme"
+import Variables from "./variables"
 
-const Provider = ({ defaultTheme = "dark", children }) => {
-  const [theme, setTheme] = useState(defaultTheme || "light")
-  const toggle = () => setTheme(theme === "dark" ? "light" : "dark")
-  const set = (mode) => setTheme(mode === "dark" ? "dark" : "light")
-
+const Provider: FC<PropsWithChildren> = ({ children }) => {
   return (
-    <Context.Provider
-      value={{
-        theme,
-        toggle,
-        set,
-      }}
-    >
-      <ThemeProvider theme={themes[theme]}>
-        <Variables />
-        <Global />
-        {children}
-      </ThemeProvider>
-    </Context.Provider>
+    <ThemeProvider theme={themes["dark"]}>
+      <Variables />
+      <Global />
+      {children}
+    </ThemeProvider>
   )
 }
 

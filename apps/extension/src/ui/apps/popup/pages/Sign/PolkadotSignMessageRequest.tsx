@@ -1,5 +1,5 @@
 import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
-import { SignerPayloadRaw, SigningRequest } from "@core/domains/signing/types"
+import { SignerPayloadRaw, SubstrateSigningRequest } from "@core/domains/signing/types"
 import { Box } from "@talisman/components/Box"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
@@ -15,7 +15,7 @@ import { Container } from "./common"
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
 type PolkadotSignMessageRequestProps = {
-  signingRequest: SigningRequest
+  signingRequest: SubstrateSigningRequest
 }
 
 export const PolkadotSignMessageRequest: FC<PolkadotSignMessageRequestProps> = ({
@@ -96,7 +96,7 @@ export const PolkadotSignMessageRequest: FC<PolkadotSignMessageRequestProps> = (
             {account.isHardware && (
               <Suspense fallback={null}>
                 <LedgerSubstrate
-                  payload={(request as SigningRequest["request"]).payload}
+                  payload={request.payload}
                   account={account as AccountJsonHardwareSubstrate}
                   genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                   onSignature={approveHardware}

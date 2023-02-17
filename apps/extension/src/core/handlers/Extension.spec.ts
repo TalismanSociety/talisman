@@ -17,8 +17,9 @@ import { cryptoWaitReady } from "@polkadot/util-crypto"
 import Browser from "webextension-polyfill"
 
 import { getMessageSenderFn } from "../../../tests/util"
+import { signSubstrate } from "../domains/signing/requests"
+import { requestStore } from "../libs/requests/store"
 import Extension from "./Extension"
-import State from "./State"
 import { extensionStores } from "./stores"
 
 jest.mock("@talismn/chaindata-provider-extension/src/graphql")
@@ -35,7 +36,6 @@ jest.mock("@core/util/hasSpiritKey", () => {
 
 describe("Extension", () => {
   let extension: Extension
-  let state: State
   let messageSender: ReturnType<typeof getMessageSenderFn>
   const suri = "seed sock milk update focus rotate barely fade car face mechanic mercy"
   const password = "passw0rd " // has a space
@@ -53,9 +53,8 @@ describe("Extension", () => {
         url: "http://localhost:3000",
       },
     })
-    state = new State()
 
-    return new Extension(state, extensionStores)
+    return new Extension(extensionStores)
   }
 
   const getAccount = async (): Promise<string> => {
@@ -121,7 +120,7 @@ describe("Extension", () => {
     let address: string, payload: SignerPayloadJSON, pair: KeyringPair
 
     beforeEach(async () => {
-      state.requestStores.signing.clearRequests()
+      requestStore.clearRequests()
       // need to use the pw from the store, because it may need to be trimmed
       address = await getAccount()
       pair = keyring.getPair(address)
@@ -161,19 +160,17 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = state.requestStores.signing.sign(
-        "http://test.com",
-        new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...pair.meta,
-        }
-      )
+      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
+        address,
+        ...pair.meta,
+      })
 
-      expect(state.requestStores.signing.getRequestCount()).toBe(1)
+      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
+
+      const request = requestStore.allRequests("substrate-sign")[0]
 
       const approveMessage = await messageSender("pri(signing.approveSign)", {
-        id: state.requestStores.signing.allRequests[0].id,
+        id: request.id,
       })
 
       expect(approveMessage).toEqual(true)
@@ -240,20 +237,17 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = state.requestStores.signing.sign(
-        "http://test.com",
-        new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...meta,
-        }
-      )
+      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
+        address,
+        ...meta,
+      })
 
-      expect(state.requestStores.signing.getRequestCount()).toBe(1)
+      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
 
+      const request = requestStore.allRequests("substrate-sign")[0]
       await expect(
         messageSender("pri(signing.approveSign)", {
-          id: state.requestStores.signing.allRequests[0].id,
+          id: request.id,
         })
       ).resolves.toEqual(true)
 
@@ -311,20 +305,17 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = state.requestStores.signing.sign(
-        "http://test.com",
-        new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...meta,
-        }
-      )
+      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
+        address,
+        ...meta,
+      })
 
-      expect(state.requestStores.signing.getRequestCount()).toBe(1)
+      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
 
+      const request = requestStore.allRequests("substrate-sign")[0]
       await expect(
         messageSender("pri(signing.approveSign)", {
-          id: state.requestStores.signing.allRequests[0].id,
+          id: request.id,
         })
       ).resolves.toEqual(true)
 
@@ -402,20 +393,17 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = state.requestStores.signing.sign(
-        "http://test.com",
-        new RequestExtrinsicSign(payload),
-        {
-          address,
-          ...meta,
-        }
-      )
+      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
+        address,
+        ...meta,
+      })
 
-      expect(state.requestStores.signing.getRequestCount()).toBe(1)
+      expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
 
+      const request = requestStore.allRequests("substrate-sign")[0]
       await expect(
         messageSender("pri(signing.approveSign)", {
-          id: state.requestStores.signing.allRequests[0].id,
+          id: request.id,
         })
       ).resolves.toEqual(true)
 

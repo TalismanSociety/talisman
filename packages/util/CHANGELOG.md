@@ -1,5 +1,17 @@
 # @talismn/util
 
+## 0.1.7
+
+### Patch Changes
+
+- c651551c: build: move `@polkadot` dependencies to `peerDependencies`
+
+## 0.1.6
+
+### Patch Changes
+
+- 8adc7f06: feat: switched build tool to preconstruct
+
 ## 0.1.5
 
 ### Patch Changes
