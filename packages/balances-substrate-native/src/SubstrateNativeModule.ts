@@ -1,5 +1,6 @@
 import { Metadata, TypeRegistry, createType, decorateConstants } from "@polkadot/types"
-import { u8aToHex } from "@polkadot/util"
+import { assert, u8aToHex } from "@polkadot/util"
+import { defineMethod } from "@substrate/txwrapper-core"
 import {
   Amount,
   Balance,
@@ -8,6 +9,7 @@ import {
   DefaultBalanceModule,
   LockedAmount,
   NewBalanceType,
+  NewTransferParamsType,
 } from "@talismn/balances"
 import {
   ChainId,
@@ -126,11 +128,24 @@ declare module "@talismn/balances/plugins" {
   }
 }
 
+export type SubNativeTransferParams = NewTransferParamsType<{
+  registry: TypeRegistry
+  metadataRpc: `0x${string}`
+  blockHash: string
+  blockNumber: number
+  nonce: number
+  specVersion: number
+  transactionVersion: number
+  tip?: string
+  sendAll?: boolean
+}>
+
 export const SubNativeModule: BalanceModule<
   ModuleType,
   SubNativeToken | CustomSubNativeToken,
   SubNativeChainMeta,
-  SubNativeModuleConfig
+  SubNativeModuleConfig,
+  SubNativeTransferParams
 > = {
   ...DefaultBalanceModule("substrate-native"),
 
@@ -488,6 +503,66 @@ export const SubNativeModule: BalanceModule<
     ).filter((balances): balances is Balances => balances !== false)
 
     return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
+  },
+
+  async transferToken(
+    chainConnectors,
+    chaindataProvider,
+    {
+      tokenId,
+      from,
+      to,
+      amount,
+
+      registry,
+      metadataRpc,
+      blockHash,
+      blockNumber,
+      nonce,
+      specVersion,
+      transactionVersion,
+      tip,
+      sendAll,
+    }
+  ) {
+    const token = await chaindataProvider.getToken(tokenId)
+    assert(token, `Token ${tokenId} not found in store`)
+
+    if (token.type !== "substrate-native")
+      throw new Error(`This module doesn't handle tokens of type ${token.type}`)
+
+    const chainId = token.chain.id
+    const chain = await chaindataProvider.getChain(chainId)
+    assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
+
+    const { genesisHash } = chain
+
+    const pallet = "balances"
+    const method = sendAll ? "transferAll" : "transferKeepAlive"
+    const args = sendAll ? { dest: to, keepAlive: false } : { dest: to, value: amount }
+
+    const unsigned = defineMethod(
+      {
+        method: {
+          pallet,
+          name: method,
+          args,
+        },
+        address: from,
+        blockHash,
+        blockNumber,
+        eraPeriod: 64,
+        genesisHash,
+        metadataRpc,
+        nonce,
+        specVersion,
+        tip: tip ? Number(tip) : 0,
+        transactionVersion,
+      },
+      { metadataRpc, registry }
+    )
+
+    return { type: "substrate", tx: unsigned }
   },
 }
 

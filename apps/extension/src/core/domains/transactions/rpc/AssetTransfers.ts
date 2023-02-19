@@ -1,11 +1,12 @@
-import { ChainId } from "@core/domains/chains/types"
+import { balanceModules } from "@core/domains/balances/store"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
+import { pendingTransfers } from "@core/domains/transactions/rpc/PendingTransfers"
 import {
   AssetTransferMethod,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
 import { isHardwareAccount } from "@core/handlers/helpers"
-import RpcFactory from "@core/libs/RpcFactory"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { SubscriptionCallback } from "@core/types"
 import { Address } from "@core/types/base"
@@ -16,16 +17,16 @@ import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
-import { construct, defineMethod } from "@substrate/txwrapper-core"
-
-import { pendingTransfers } from "./PendingTransfers"
+import { construct } from "@substrate/txwrapper-core"
+import { ChainId, TokenId } from "@talismn/chaindata-provider"
 
 export default class AssetTransfersRpc {
   /**
-   * Transfers an amount of nativeToken from one account to another.
+   * Transfers an amount of a token from one account to another.
    *
    * @param chainId - The chain to make the transfer on.
-   * @param amount - The amount of `nativeToken` to transfer.
+   * @param tokenId - The token id to transfer.
+   * @param amount - The amount of planck units to transfer.
    * @param from - An unlocked keypair of the sending account.
    * @param to - An address of the receiving account.
    * @param callback - A callback which will receive tx status updates.
@@ -35,6 +36,7 @@ export default class AssetTransfersRpc {
    */
   static async transfer(
     chainId: ChainId,
+    tokenId: TokenId,
     amount: string,
     from: KeyringPair,
     to: Address,
@@ -48,6 +50,7 @@ export default class AssetTransfersRpc {
   ): Promise<void> {
     const { tx, registry } = await this.prepareTransaction(
       chainId,
+      tokenId,
       amount,
       from,
       to,
@@ -56,7 +59,7 @@ export default class AssetTransfersRpc {
       true
     )
 
-    const unsubscribe = await RpcFactory.subscribe(
+    const unsubscribe = await chainConnector.subscribe(
       chainId,
       "author_submitAndWatchExtrinsic",
       "author_unwatchExtrinsic",
@@ -80,13 +83,15 @@ export default class AssetTransfersRpc {
    * Calculates an estimated fee for transferring an amount of nativeToken from one account to another.
    *
    * @param chainId - The chain to make the transfer on.
-   * @param amount - The amount of `nativeToken` to transfer.
+   * @param tokenId - The token id to transfer.
+   * @param amount - The amount of planck units to transfer.
    * @param from - An unlocked keypair of the sending account.
    * @param to - An address of the receiving account.
    * @returns An object containing the calculated `partialFee` as returned from the `payment_queryInfo` rpc endpoint.
    */
   static async checkFee(
     chainId: ChainId,
+    tokenId: TokenId,
     amount: string,
     from: KeyringPair,
     to: Address,
@@ -95,6 +100,7 @@ export default class AssetTransfersRpc {
   ): Promise<ResponseAssetTransferFeeQuery> {
     const { tx, pendingTransferId, unsigned } = await this.prepareTransaction(
       chainId,
+      tokenId,
       amount,
       from,
       to,
@@ -112,7 +118,8 @@ export default class AssetTransfersRpc {
    * Builds a signed asset transfer transaction, ready for submission to the chain.
    *
    * @param chainId - The chain to make the transfer on.
-   * @param amount - The amount of `nativeToken` to transfer.
+   * @param tokenId - The token id to transfer.
+   * @param amount - The amount of planck units to transfer.
    * @param from - An unlocked keypair of the sending account.
    * @param to - An address of the receiving account.
    * @returns An object containing:
@@ -122,6 +129,7 @@ export default class AssetTransfersRpc {
    */
   private static async prepareTransaction(
     chainId: ChainId,
+    tokenId: TokenId,
     amount: string,
     from: KeyringPair,
     to: Address,
@@ -134,17 +142,17 @@ export default class AssetTransfersRpc {
     pendingTransferId?: string
     unsigned: SignerPayloadJSON
   }> {
-    // TODO: validate
-    // - existential deposit
-    // - sufficient balance
     const chain = await chaindataProvider.getChain(chainId)
     assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
     const { genesisHash } = chain
 
+    const token = await chaindataProvider.getToken(tokenId)
+    assert(token, `Token ${tokenId} not found in store`)
+
     const [blockHash, { block }, nonce, runtimeVersion] = await Promise.all([
-      RpcFactory.send(chainId, "chain_getBlockHash", [], false),
-      RpcFactory.send(chainId, "chain_getBlock", [], false),
-      RpcFactory.send(chainId, "system_accountNextIndex", [from.address]),
+      chainConnector.send(chainId, "chain_getBlockHash", [], false),
+      chainConnector.send(chainId, "chain_getBlock", [], false),
+      chainConnector.send(chainId, "system_accountNextIndex", [from.address]),
       getRuntimeVersion(chainId),
     ])
 
@@ -153,32 +161,50 @@ export default class AssetTransfersRpc {
     const { registry, metadataRpc } = await getTypeRegistry(chainId, specVersion, blockHash)
     assert(metadataRpc, "Could not fetch metadata")
 
-    const args =
-      method === "transferAll" ? { dest: to, keepAlive: false } : { dest: to, value: amount }
+    const palletModule = balanceModules.find((m) => m.type === token.type)
+    assert(palletModule, `Failed to construct tx for token of type '${token.type}'`)
 
-    const unsigned = defineMethod(
+    if (
+      !(
+        "substrate-native" === palletModule.type ||
+        "substrate-orml" === palletModule.type ||
+        "substrate-assets" === palletModule.type ||
+        "substrate-tokens" === palletModule.type ||
+        "substrate-equilibrium" === palletModule.type
+      )
+    )
+      throw new Error(
+        `${token.symbol} transfers on ${token.chain?.id} are not implemented in this version of Talisman.`
+      )
+
+    const transaction = await palletModule.transferToken(
+      { substrate: chainConnector },
+      chaindataProvider,
       {
-        method: {
-          pallet: "balances",
-          name: method,
-          args,
-        },
-        address: from.address,
+        tokenId,
+        from: from.address,
+        to,
+        amount,
+
+        registry,
+        metadataRpc,
         blockHash,
         blockNumber: block.header.number,
-        eraPeriod: 64,
-        genesisHash,
-        metadataRpc,
         nonce,
         specVersion,
-        tip: tip ? Number(tip) : 0,
         transactionVersion,
-      },
-      {
-        metadataRpc,
-        registry,
+        tip,
+        sendAll: method === "transferAll",
       }
     )
+
+    assert(transaction, `Failed to construct tx for token '${token.id}'`)
+    assert(
+      transaction.type === "substrate",
+      `Failed to handle tx type ${transaction.type} for token '${token.id}'`
+    )
+
+    const unsigned = transaction.tx
 
     // create the unsigned extrinsic
     const tx = registry.createType(
@@ -191,13 +217,13 @@ export default class AssetTransfersRpc {
     const payload = construct.signingPayload(unsigned, { registry })
 
     // if hardware account, signing has to be done on the device
-    let pendingTransferId
     if (isHardwareAccount(unsigned.address)) {
       // store in pending transactions map
-      pendingTransferId = pendingTransfers.add({
+      const pendingTransferId = pendingTransfers.add({
         chainId,
         unsigned,
       })
+      return { tx, registry, pendingTransferId, unsigned }
     }
 
     if (sign) {
@@ -214,6 +240,6 @@ export default class AssetTransfersRpc {
       tx.signFake(unsigned.address, { blockHash, genesisHash, nonce, runtimeVersion })
     }
 
-    return { tx, registry, unsigned, pendingTransferId }
+    return { tx, registry, unsigned }
   }
 }

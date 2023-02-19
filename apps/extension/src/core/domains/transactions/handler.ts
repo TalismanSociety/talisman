@@ -9,7 +9,6 @@ import {
 } from "@core/domains/ethereum/transactionCountManager"
 import EventsRpc from "@core/domains/events/rpc"
 import AssetTransfersRpc from "@core/domains/transactions/rpc/AssetTransfers"
-import OrmlTokenTransfersRpc from "@core/domains/transactions/rpc/OrmlTokenTransfers"
 import { pendingTransfers } from "@core/domains/transactions/rpc/PendingTransfers"
 import {
   RequestAssetTransfer,
@@ -126,9 +125,16 @@ export default class AssetTransferHandler extends ExtensionHandler {
         const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)
 
         const tokenType = token.type
-        if (tokenType === "substrate-native")
+        if (
+          tokenType === "substrate-native" ||
+          tokenType === "substrate-orml" ||
+          tokenType === "substrate-assets" ||
+          tokenType === "substrate-tokens" ||
+          tokenType === "substrate-equilibrium"
+        )
           return AssetTransfersRpc.transfer(
             chainId,
+            tokenId,
             amount,
             pair,
             toAddress,
@@ -136,40 +142,15 @@ export default class AssetTransferHandler extends ExtensionHandler {
             method,
             watchExtrinsic
           ).catch((err) => {
-            log.error("Error sending native substrate transaction: ", { err })
+            log.error("Error sending substrate transaction: ", { err })
             reject(err)
           })
         if (tokenType === "evm-native")
           throw new Error(
             "Evm native token transfers are not implemented in this version of Talisman."
           )
-        if (tokenType === "substrate-orml")
-          return OrmlTokenTransfersRpc.transfer(
-            chainId,
-            tokenId,
-            amount,
-            pair,
-            toAddress,
-            tip,
-            watchExtrinsic
-          ).catch((err) => {
-            log.error("Error sending orml transaction: ", { err })
-            reject(err)
-          })
         if (tokenType === "evm-erc20")
           throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
-        if (tokenType === "substrate-assets")
-          throw new Error(
-            `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-          )
-        if (tokenType === "substrate-tokens")
-          throw new Error(
-            `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-          )
-        if (tokenType === "substrate-equilibrium")
-          throw new Error(
-            `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-          )
 
         // force compilation error if any token types don't have a case
         const exhaustiveCheck: never = tokenType
@@ -199,35 +180,28 @@ export default class AssetTransferHandler extends ExtensionHandler {
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       const tokenType = token.type
-      if (tokenType === "substrate-native")
+      if (
+        tokenType === "substrate-native" ||
+        tokenType === "substrate-orml" ||
+        tokenType === "substrate-assets" ||
+        tokenType === "substrate-tokens" ||
+        tokenType === "substrate-equilibrium"
+      )
         return await AssetTransfersRpc.checkFee(
           chainId,
+          tokenId,
           amount,
           pair,
           toAddress,
           tip,
-          "transferKeepAlive"
+          method
         )
       if (tokenType === "evm-native")
         throw new Error(
           "Evm native token transfers are not implemented in this version of Talisman."
         )
-      if (tokenType === "substrate-orml")
-        return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
       if (tokenType === "evm-erc20")
         throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
-      if (tokenType === "substrate-assets")
-        throw new Error(
-          `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-        )
-      if (tokenType === "substrate-tokens")
-        throw new Error(
-          `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-        )
-      if (tokenType === "substrate-equilibrium")
-        throw new Error(
-          `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-        )
 
       // force compilation error if any token types don't have a case
       const exhaustiveCheck: never = tokenType
@@ -370,14 +344,14 @@ export default class AssetTransferHandler extends ExtensionHandler {
       case "pri(assets.transfer)":
         return this.assetTransfer(request as RequestAssetTransfer)
 
-      case "pri(assets.transferEth)":
-        return this.assetTransferEth(request as RequestAssetTransferEth)
+      case "pri(assets.transfer.checkFees)":
+        return this.assetTransferCheckFees(request as RequestAssetTransfer)
 
       case "pri(assets.transferEthHardware)":
         return this.assetTransferEthHardware(request as RequestAssetTransferEthHardware)
 
-      case "pri(assets.transfer.checkFees)":
-        return this.assetTransferCheckFees(request as RequestAssetTransfer)
+      case "pri(assets.transferEth)":
+        return this.assetTransferEth(request as RequestAssetTransferEth)
 
       case "pri(assets.transfer.approveSign)":
         return this.assetTransferApproveSign(request as RequestAssetTransferApproveSign)

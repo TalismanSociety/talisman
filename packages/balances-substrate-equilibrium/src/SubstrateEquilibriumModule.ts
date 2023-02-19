@@ -1,5 +1,7 @@
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { AbstractInt } from "@polkadot/types-codec"
+import { assert } from "@polkadot/util"
+import { defineMethod } from "@substrate/txwrapper-core"
 import {
   AddressesByToken,
   Amount,
@@ -8,6 +10,7 @@ import {
   Balances,
   DefaultBalanceModule,
   NewBalanceType,
+  NewTransferParamsType,
   StorageHelper,
 } from "@talismn/balances"
 import {
@@ -68,11 +71,24 @@ declare module "@talismn/balances/plugins" {
   }
 }
 
+export type SubEquilibriumTransferParams = NewTransferParamsType<{
+  registry: TypeRegistry
+  metadataRpc: `0x${string}`
+  blockHash: string
+  blockNumber: number
+  nonce: number
+  specVersion: number
+  transactionVersion: number
+  tip?: string
+  sendAll?: boolean
+}>
+
 export const SubEquilibriumModule: BalanceModule<
   ModuleType,
   SubEquilibriumToken,
   SubEquilibriumChainMeta,
-  SubEquilibriumModuleConfig
+  SubEquilibriumModuleConfig,
+  SubEquilibriumTransferParams
 > = {
   ...DefaultBalanceModule("substrate-equilibrium"),
 
@@ -331,6 +347,68 @@ export const SubEquilibriumModule: BalanceModule<
     )
 
     return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
+  },
+
+  async transferToken(
+    chainConnectors,
+    chaindataProvider,
+    {
+      tokenId,
+      from,
+      to,
+      amount,
+
+      registry,
+      metadataRpc,
+      blockHash,
+      blockNumber,
+      nonce,
+      specVersion,
+      transactionVersion,
+      tip,
+      sendAll,
+    }
+  ) {
+    const token = await chaindataProvider.getToken(tokenId)
+    assert(token, `Token ${tokenId} not found in store`)
+
+    if (token.type !== "substrate-equilibrium")
+      throw new Error(`This module doesn't handle tokens of type ${token.type}`)
+
+    const chainId = token.chain.id
+    const chain = await chaindataProvider.getChain(chainId)
+    assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
+
+    const { genesisHash } = chain
+
+    const { assetId } = token
+
+    const pallet = "eqBalances"
+    const method = "transfer"
+    const args = { asset: assetId, to, value: amount }
+
+    const unsigned = defineMethod(
+      {
+        method: {
+          pallet,
+          name: method,
+          args,
+        },
+        address: from,
+        blockHash,
+        blockNumber,
+        eraPeriod: 64,
+        genesisHash,
+        metadataRpc,
+        nonce,
+        specVersion,
+        tip: tip ? Number(tip) : 0,
+        transactionVersion,
+      },
+      { metadataRpc, registry }
+    )
+
+    return { type: "substrate", tx: unsigned }
   },
 }
 
