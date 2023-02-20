@@ -1,5 +1,6 @@
 import { Metadata, TypeRegistry } from "@polkadot/types"
-import { BN } from "@polkadot/util"
+import { BN, assert } from "@polkadot/util"
+import { UnsignedTransaction, defineMethod } from "@substrate/txwrapper-core"
 import {
   AddressesByToken,
   Amount,
@@ -8,6 +9,7 @@ import {
   Balances,
   DefaultBalanceModule,
   NewBalanceType,
+  NewTransferParamsType,
   StorageHelper,
 } from "@talismn/balances"
 import {
@@ -74,11 +76,24 @@ declare module "@talismn/balances/plugins" {
   }
 }
 
+export type SubAssetsTransferParams = NewTransferParamsType<{
+  registry: TypeRegistry
+  metadataRpc: `0x${string}`
+  blockHash: string
+  blockNumber: number
+  nonce: number
+  specVersion: number
+  transactionVersion: number
+  tip?: string
+  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+}>
+
 export const SubAssetsModule: BalanceModule<
   ModuleType,
   SubAssetsToken,
   SubAssetsChainMeta,
-  SubAssetsModuleConfig
+  SubAssetsModuleConfig,
+  SubAssetsTransferParams
 > = {
   ...DefaultBalanceModule("substrate-assets"),
 
@@ -370,6 +385,70 @@ export const SubAssetsModule: BalanceModule<
     )
 
     return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
+  },
+
+  async transferToken(
+    chainConnectors,
+    chaindataProvider,
+    {
+      tokenId,
+      from,
+      to,
+      amount,
+
+      registry,
+      metadataRpc,
+      blockHash,
+      blockNumber,
+      nonce,
+      specVersion,
+      transactionVersion,
+      tip,
+      transferMethod,
+    }
+  ) {
+    const token = await chaindataProvider.getToken(tokenId)
+    assert(token, `Token ${tokenId} not found in store`)
+
+    if (token.type !== "substrate-assets")
+      throw new Error(`This module doesn't handle tokens of type ${token.type}`)
+
+    const chainId = token.chain.id
+    const chain = await chaindataProvider.getChain(chainId)
+    assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
+
+    const { genesisHash } = chain
+
+    const id = token.assetId
+
+    const pallet = "assets"
+    const method =
+      // the assets pallet has no transferAll method
+      transferMethod === "transferAll" ? "transfer" : transferMethod
+    const args = { id, target: { Id: to }, amount }
+
+    const unsigned = defineMethod(
+      {
+        method: {
+          pallet,
+          name: method,
+          args,
+        },
+        address: from,
+        blockHash,
+        blockNumber,
+        eraPeriod: 64,
+        genesisHash,
+        metadataRpc,
+        nonce,
+        specVersion,
+        tip: tip ? Number(tip) : 0,
+        transactionVersion,
+      },
+      { metadataRpc, registry }
+    )
+
+    return { type: "substrate", tx: unsigned }
   },
 }
 

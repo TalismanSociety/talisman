@@ -5572,6 +5572,7 @@ __metadata:
   dependencies:
     "@polkadot/types": ^9.10.5
     "@polkadot/util": ^10.2.1
+    "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5587,6 +5588,7 @@ __metadata:
   peerDependencies:
     "@polkadot/types": 9.x
     "@polkadot/util": 10.x
+    "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
 
@@ -5595,6 +5597,8 @@ __metadata:
   resolution: "@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium"
   dependencies:
     "@polkadot/types": ^9.10.5
+    "@polkadot/util": ^10.2.1
+    "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5609,6 +5613,8 @@ __metadata:
     typescript: ^4.6.4
   peerDependencies:
     "@polkadot/types": 9.x
+    "@polkadot/util": 10.x
+    "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
 
@@ -5618,6 +5624,7 @@ __metadata:
   dependencies:
     "@polkadot/types": ^9.10.5
     "@polkadot/util": ^10.2.1
+    "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5633,6 +5640,7 @@ __metadata:
   peerDependencies:
     "@polkadot/types": 9.x
     "@polkadot/util": 10.x
+    "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
 
@@ -5641,6 +5649,8 @@ __metadata:
   resolution: "@talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml"
   dependencies:
     "@polkadot/types": ^9.10.5
+    "@polkadot/util": ^10.2.1
+    "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5654,6 +5664,8 @@ __metadata:
     typescript: ^4.6.4
   peerDependencies:
     "@polkadot/types": 9.x
+    "@polkadot/util": 10.x
+    "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
 
@@ -5662,6 +5674,8 @@ __metadata:
   resolution: "@talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens"
   dependencies:
     "@polkadot/types": ^9.10.5
+    "@polkadot/util": ^10.2.1
+    "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5676,6 +5690,8 @@ __metadata:
     typescript: ^4.6.4
   peerDependencies:
     "@polkadot/types": 9.x
+    "@polkadot/util": 10.x
+    "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
 
