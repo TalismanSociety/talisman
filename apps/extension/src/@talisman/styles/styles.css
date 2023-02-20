@@ -66,6 +66,9 @@
     -webkit-appearance: none;
     margin: 0;
   }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
 }
 
 /* The components layer is for class-based styles that you want to be able to override with utilities. */

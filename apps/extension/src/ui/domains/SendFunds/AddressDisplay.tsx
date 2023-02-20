@@ -1,4 +1,3 @@
-import { IconButton } from "@talisman/components/IconButton"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"

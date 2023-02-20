@@ -248,11 +248,6 @@ const useSendFundsProvider = () => {
         ),
       }))
 
-      // console.log(
-      //   "breakdown",
-      //   res?.map((c) => [c.token.symbol, c.cost.tokens])
-      // )
-
       return res
     } catch (err) {
       log.error("Failed to compute cost breakdown", { err })
@@ -549,10 +544,6 @@ const useSendFundsProvider = () => {
     sendErrorMessage,
     isEstimatingMaxAmount,
   }
-
-  useAlec("requiresTip", { requiresTip, tip: tip?.tokens })
-
-  //useAlec("useSendFunds", { ...result, costBreakdown, requiresTip })
 
   return result
 }

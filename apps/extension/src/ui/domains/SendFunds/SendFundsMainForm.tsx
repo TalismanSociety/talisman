@@ -292,16 +292,10 @@ const AmountEdit = () => {
   const { sendMax, set } = useSendFundsWizard()
   const [isTokenEdit, setIsTokenEdit] = useState(true)
   const { onSendMaxClick, tokenRates, isEstimatingMaxAmount } = useSendFunds()
-  // const { tokenRates, token } = useSendFundsConfirm()
 
   const toggleIsTokenEdit = useCallback(() => {
     setIsTokenEdit((prev) => !prev)
   }, [])
-
-  // const toggleSendMax = useCallback(() => {
-  //   if(token.type === "substrate-native")
-  //   set("sendMax", !sendMax)
-  // }, [sendMax, set])
 
   return (
     <div className="w-full grow">

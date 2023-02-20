@@ -1,6 +1,4 @@
-import { useMemo } from "react"
 import { Navigate, useSearchParams } from "react-router-dom"
-import { useSearchParam } from "react-use"
 
 const getTargetPage = (from: string | null, tokenId: string | null) => {
   if (tokenId && from) return "to"

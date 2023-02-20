@@ -1,5 +1,4 @@
-import { RefObject, useCallback, useEffect, useMemo, useState } from "react"
-import { node } from "webpack"
+import { RefObject, useEffect } from "react"
 
 const getTextWidth = (text?: string, element?: HTMLElement) => {
   if (!text?.length) return 0
@@ -8,7 +7,6 @@ const getTextWidth = (text?: string, element?: HTMLElement) => {
   if (!context) return 0
   context.font = element ? window.getComputedStyle(element).font : ""
   const metrics = context.measureText(text)
-  //console.log("getTextWidth", text, context.font, !!element)
   return metrics.width
 }
 

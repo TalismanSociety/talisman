@@ -14,7 +14,7 @@ import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { sortBy } from "lodash"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FC, useCallback, useMemo, useRef, useState } from "react"
 import { useIntersection } from "react-use"
 import { FormFieldInputContainerProps } from "talisman-ui"
 
