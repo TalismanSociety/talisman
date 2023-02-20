@@ -137,7 +137,7 @@ export type SubNativeTransferParams = NewTransferParamsType<{
   specVersion: number
   transactionVersion: number
   tip?: string
-  sendAll?: boolean
+  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
 }>
 
 export const SubNativeModule: BalanceModule<
@@ -522,7 +522,7 @@ export const SubNativeModule: BalanceModule<
       specVersion,
       transactionVersion,
       tip,
-      sendAll,
+      transferMethod,
     }
   ) {
     const token = await chaindataProvider.getToken(tokenId)
@@ -537,8 +537,10 @@ export const SubNativeModule: BalanceModule<
 
     const { genesisHash } = chain
 
+    const sendAll = transferMethod === "transferAll"
+
     const pallet = "balances"
-    const method = sendAll ? "transferAll" : "transferKeepAlive"
+    const method = transferMethod
     const args = sendAll ? { dest: to, keepAlive: false } : { dest: to, value: amount }
 
     const unsigned = defineMethod(

@@ -87,7 +87,7 @@ export type SubTokensTransferParams = NewTransferParamsType<{
   specVersion: number
   transactionVersion: number
   tip?: string
-  sendAll?: boolean
+  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
 }>
 
 export const SubTokensModule: BalanceModule<
@@ -339,7 +339,7 @@ export const SubTokensModule: BalanceModule<
       specVersion,
       transactionVersion,
       tip,
-      sendAll,
+      transferMethod,
     }
   ) {
     const token = await chaindataProvider.getToken(tokenId)
@@ -371,8 +371,10 @@ export const SubTokensModule: BalanceModule<
     const currenciesMethod = "transfer"
     const currenciesArgs = { dest: to, currencyId, amount }
 
+    const sendAll = transferMethod === "transferAll"
+
     const tokensPallet = "tokens"
-    const tokensMethod = sendAll ? "transferAll" : "transferKeepAlive"
+    const tokensMethod = transferMethod
     const tokensArgs = sendAll
       ? { dest: to, currencyId, keepAlive: false }
       : { dest: to, currencyId, amount }

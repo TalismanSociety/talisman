@@ -80,7 +80,7 @@ export type SubEquilibriumTransferParams = NewTransferParamsType<{
   specVersion: number
   transactionVersion: number
   tip?: string
-  sendAll?: boolean
+  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
 }>
 
 export const SubEquilibriumModule: BalanceModule<
@@ -366,7 +366,7 @@ export const SubEquilibriumModule: BalanceModule<
       specVersion,
       transactionVersion,
       tip,
-      sendAll,
+      transferMethod,
     }
   ) {
     const token = await chaindataProvider.getToken(tokenId)
@@ -384,7 +384,14 @@ export const SubEquilibriumModule: BalanceModule<
     const { assetId } = token
 
     const pallet = "eqBalances"
-    const method = "transfer"
+    const method =
+      transferMethod === "transferAll"
+        ? // the eqBalances pallet has no transferAll method
+          "transfer"
+        : transferMethod === "transferKeepAlive"
+        ? // the eqBalances pallet has no transferKeepAlive method
+          "transfer"
+        : "transfer"
     const args = { asset: assetId, to, value: amount }
 
     const unsigned = defineMethod(

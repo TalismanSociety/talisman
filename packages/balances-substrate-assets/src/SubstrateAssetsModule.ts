@@ -85,7 +85,7 @@ export type SubAssetsTransferParams = NewTransferParamsType<{
   specVersion: number
   transactionVersion: number
   tip?: string
-  sendAll?: boolean
+  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
 }>
 
 export const SubAssetsModule: BalanceModule<
@@ -404,7 +404,7 @@ export const SubAssetsModule: BalanceModule<
       specVersion,
       transactionVersion,
       tip,
-      sendAll,
+      transferMethod,
     }
   ) {
     const token = await chaindataProvider.getToken(tokenId)
@@ -422,7 +422,9 @@ export const SubAssetsModule: BalanceModule<
     const id = token.assetId
 
     const pallet = "assets"
-    const method = sendAll ? "transfer" : "transferKeepAlive"
+    const method =
+      // the assets pallet has no transferAll method
+      transferMethod === "transferAll" ? "transfer" : transferMethod
     const args = { id, target: { Id: to }, amount }
 
     const unsigned = defineMethod(

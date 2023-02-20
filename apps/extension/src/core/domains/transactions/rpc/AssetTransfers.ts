@@ -194,7 +194,7 @@ export default class AssetTransfersRpc {
         specVersion,
         transactionVersion,
         tip,
-        sendAll: method === "transferAll",
+        transferMethod: method,
       }
     )
 
