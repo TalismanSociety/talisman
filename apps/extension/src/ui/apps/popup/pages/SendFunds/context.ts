@@ -3,7 +3,6 @@ import { Address } from "@core/types/base"
 import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { string } from "yup/lib/locale"
 
 type SendFundsWizardParams = {
   from: Address
@@ -129,25 +128,19 @@ const useSendFundsWizardProvider = () => {
     [navigate]
   )
 
-  // TODO before merge : remove useMemo, return directly
-  const ctx = useMemo(
-    () => ({
-      from,
-      to,
-      tokenId,
-      amount,
-      allowReap,
-      sendMax,
-      set,
-      remove,
-      goto,
-      gotoReview,
-      gotoProgress,
-    }),
-    [from, to, tokenId, amount, allowReap, sendMax, set, remove, goto, gotoReview, gotoProgress]
-  )
-
-  return ctx
+  return {
+    from,
+    to,
+    tokenId,
+    amount,
+    allowReap,
+    sendMax,
+    set,
+    remove,
+    goto,
+    gotoReview,
+    gotoProgress,
+  }
 }
 
 export const [SendFundsWizardProvider, useSendFundsWizard] = provideContext(
