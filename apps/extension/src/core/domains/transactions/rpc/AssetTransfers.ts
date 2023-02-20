@@ -217,13 +217,13 @@ export default class AssetTransfersRpc {
     const payload = construct.signingPayload(unsigned, { registry })
 
     // if hardware account, signing has to be done on the device
+    let pendingTransferId
     if (isHardwareAccount(unsigned.address)) {
       // store in pending transactions map
-      const pendingTransferId = pendingTransfers.add({
+      pendingTransferId = pendingTransfers.add({
         chainId,
         unsigned,
       })
-      return { tx, registry, pendingTransferId, unsigned }
     }
 
     if (sign) {
@@ -240,6 +240,6 @@ export default class AssetTransfersRpc {
       tx.signFake(unsigned.address, { blockHash, genesisHash, nonce, runtimeVersion })
     }
 
-    return { tx, registry, unsigned }
+    return { tx, registry, unsigned, pendingTransferId }
   }
 }
