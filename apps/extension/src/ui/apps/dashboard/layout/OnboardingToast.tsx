@@ -1,21 +1,20 @@
-import { Box } from "@talisman/components/Box"
 import { notifyCustom } from "@talisman/components/Notifications"
 import { ExtensionButtonIcon, PinIcon } from "@talisman/theme/icons"
 import { useEffect } from "react"
 import { useSearchParams } from "react-router-dom"
 
 const OnboardNotification = () => (
-  <Box flex gap={1.6} align="center" padding={0.8}>
-    <Box>
+  <div className="flex items-center gap-8 p-4">
+    <div>
       <img src="/favicon.svg" width="34" height="34" />
-    </Box>
-    <Box grow lineheightcustom={2.4}>
+    </div>
+    <div className="grow leading-[2.4rem]">
       Pin Talisman for easy access
       <br />
       Click <ExtensionButtonIcon className="inline-block align-baseline" /> then{" "}
       <PinIcon className="inline-block" /> to pin Talisman
-    </Box>
-  </Box>
+    </div>
+  </div>
 )
 
 // without this singleton, if the full page loader appears the hook and associated notification may trigger twice

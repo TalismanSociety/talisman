@@ -1,7 +1,6 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Box } from "@talisman/components/Box"
 import { Dropdown, RenderItemFunc } from "@talisman/components/Dropdown"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { CheckIcon, CopyIcon } from "@talisman/theme/icons"
@@ -189,19 +188,19 @@ export const ReceiveTokensForm = () => {
         onChange={handleOnChange}
         placeholder="Select Account"
       />
-      <Box grow>
+      <div className="grow">
         {isPolkadot && (
           <Caption>For Polkadot you'll need to pick a specific address format to continue.</Caption>
         )}
         {isCopied && (
-          <Box fontsize="small" fg="primary" flex align="center" gap={0.4}>
-            <Box fontsize="large" flex column justify="center">
+          <div className="text-primary flex items-center gap-2 text-sm">
+            <div className="flex flex-col justify-center text-lg">
               <CheckIcon />
-            </Box>
-            <Box>Address copied</Box>
-          </Box>
+            </div>
+            <div>Address copied</div>
+          </div>
         )}
-      </Box>
+      </div>
       <Button type="submit" disabled={!isValid}>
         Copy Address <CopyIcon />
       </Button>

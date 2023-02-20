@@ -1,5 +1,4 @@
 import { yupResolver } from "@hookform/resolvers/yup"
-import { FormField } from "@talisman/components/Field/FormField"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { PasswordStrength } from "@talisman/components/PasswordStrength"
@@ -9,7 +8,7 @@ import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
-import { Button } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
@@ -106,10 +105,10 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <div className="text-body-disabled mb-8 text-sm">
             Password strength: <PasswordStrength password={newPwWatch} />
           </div>
-          <FormField error={errors.newPw} className="mb-12">
-            <input
+          <FormFieldContainer error={errors.newPw?.message}>
+            <FormFieldInputText
               {...register("newPw")}
-              autoFocus={true}
+              autoFocus
               placeholder="Enter New Password"
               spellCheck={false}
               autoComplete="new-password"
@@ -117,9 +116,9 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
               type="password"
               tabIndex={2}
             />
-          </FormField>
-          <FormField error={errors.newPwConfirm} className="mb-12">
-            <input
+          </FormFieldContainer>
+          <FormFieldContainer error={errors.newPwConfirm?.message}>
+            <FormFieldInputText
               {...register("newPwConfirm")}
               placeholder="Confirm New Password"
               spellCheck={false}
@@ -128,7 +127,7 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
               type="password"
               tabIndex={3}
             />
-          </FormField>
+          </FormFieldContainer>
         </div>
         <Button
           className="mt-12"
@@ -151,7 +150,7 @@ export const AccountExportModal = () => {
     <Modal open={isOpen} onClose={close} className="w-[50.3rem]">
       <ModalDialog title="Export account JSON" onClose={close}>
         <PasswordUnlock
-          description={
+          title={
             <div className="text-body-secondary mb-8">
               Please confirm your password to export your account.
             </div>

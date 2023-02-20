@@ -1,5 +1,20 @@
 # @talismn/chaindata-provider-extension
 
+## 0.4.2
+
+### Patch Changes
+
+- @talismn/chaindata-provider@0.4.2
+
+## 0.4.1
+
+### Patch Changes
+
+- 8adc7f06: feat: switched build tool to preconstruct
+- cfe8d276: feat: configurable onfinality api key
+- Updated dependencies [8adc7f06]
+  - @talismn/chaindata-provider@0.4.1
+
 ## 0.2.1
 
 ### Patch Changes

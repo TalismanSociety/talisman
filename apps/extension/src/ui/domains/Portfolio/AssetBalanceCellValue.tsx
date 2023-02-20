@@ -1,4 +1,3 @@
-import { Box } from "@talisman/components/Box"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { LockIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
@@ -30,16 +29,11 @@ export const AssetBalanceCellValue = ({
   if (!render) return null
   return (
     <WithTooltip tooltip={tooltip}>
-      <Box
-        h={6.6}
-        flex
-        column
-        justify="center"
-        gap={0.4}
-        textalign="right"
-        padding="1.6rem"
-        className={className}
-        noWrap
+      <div
+        className={classNames(
+          "flex h-[6.6rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
+          className
+        )}
       >
         <div
           className={classNames(
@@ -57,7 +51,7 @@ export const AssetBalanceCellValue = ({
           ) : null}
         </div>
         <div>{fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}</div>
-      </Box>
+      </div>
     </WithTooltip>
   )
 }

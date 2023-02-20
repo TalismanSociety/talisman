@@ -11,12 +11,15 @@ export declare type IsNull<T, K extends keyof T> = {
 } & T[K] extends null
   ? K
   : never
+
 export declare type NullKeys<T> = {
   [K in keyof T]: IsNull<T, K>
 }[keyof T]
+
 export declare type KeysWithDefinedValues<T> = {
   [K in keyof T]: T[K] extends undefined ? never : K
 }[keyof T]
+
 export declare type NoUndefinedValues<T> = {
   [K in KeysWithDefinedValues<T>]: T[K]
 }
@@ -29,6 +32,12 @@ export declare type IdOnlyValues<T> = {
   [K in KeysWithIdOnlyValues<T>]: T[K]
 }
 
+export interface BaseRequest<T extends string> {
+  type: T
+  id: BaseRequestId<T>
+}
+
+export type BaseRequestId<T extends string> = `${T}.${string}`
 export interface Resolver<T> {
   reject: (error: Error) => void
   resolve: (result: T) => void

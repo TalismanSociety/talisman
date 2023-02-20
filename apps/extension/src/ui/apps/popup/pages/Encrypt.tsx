@@ -1,5 +1,5 @@
 import { AccountJson } from "@core/domains/accounts/types"
-import { AnyEncryptRequest } from "@core/domains/encrypt/types"
+import { DecryptRequestIdOnly, EncryptRequestIdOnly } from "@core/domains/encrypt/types"
 import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
@@ -43,8 +43,8 @@ const SignMessage = ({
 
 const EncryptApprove = ({ className }: any) => {
   const { popupOpenEvent } = useAnalytics()
-  const { id } = useParams() as { id: string }
-  const req = useEncryptRequestById(id) as AnyEncryptRequest | undefined
+  const { id } = useParams() as EncryptRequestIdOnly | DecryptRequestIdOnly
+  const req = useEncryptRequestById(id)
   const { url, request, approve, reject, status, message, account, type } = useEncryptRequest(req)
 
   useEffect(() => {

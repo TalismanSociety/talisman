@@ -20,7 +20,7 @@ export const EthSignContainer: FC<EthSignContainerProps> = ({
   return (
     <FadeIn className={classNames("flex h-full flex-col", className)}>
       <h1 className="!leading-base !mt-0 font-sans !text-lg !font-bold">{title}</h1>
-      <div className="flex w-full flex-col gap-4 p-8">{children}</div>
+      <div className="flex w-full flex-col items-center gap-4 p-8">{children}</div>
       <div className="mt-12 mb-8 grow text-center">
         <ViewDetailsEth />
       </div>

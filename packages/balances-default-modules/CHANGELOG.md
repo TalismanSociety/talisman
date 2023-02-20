@@ -1,5 +1,45 @@
 # @talismn/balances-default-modules
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [c651551c]
+  - @talismn/balances-substrate-equilibrium@0.3.3
+  - @talismn/balances-substrate-assets@0.3.3
+  - @talismn/balances-substrate-native@0.3.3
+  - @talismn/balances-substrate-tokens@0.3.3
+  - @talismn/balances-substrate-orml@0.3.3
+  - @talismn/balances-evm-erc20@0.3.3
+  - @talismn/balances-evm-native@0.3.3
+
+## 0.3.2
+
+### Patch Changes
+
+- @talismn/balances-evm-erc20@0.3.2
+- @talismn/balances-evm-native@0.3.2
+- @talismn/balances-substrate-assets@0.3.2
+- @talismn/balances-substrate-equilibrium@0.3.2
+- @talismn/balances-substrate-native@0.3.2
+- @talismn/balances-substrate-orml@0.3.2
+- @talismn/balances-substrate-tokens@0.3.2
+
+## 0.3.1
+
+### Patch Changes
+
+- 8adc7f06: feat: switched build tool to preconstruct
+- Updated dependencies [cfe8d276]
+- Updated dependencies [8adc7f06]
+  - @talismn/balances-substrate-equilibrium@0.3.1
+  - @talismn/balances-substrate-assets@0.3.1
+  - @talismn/balances-substrate-native@0.3.1
+  - @talismn/balances-substrate-tokens@0.3.1
+  - @talismn/balances-substrate-orml@0.3.1
+  - @talismn/balances-evm-native@0.3.1
+  - @talismn/balances-evm-erc20@0.3.1
+
 ## 0.3.0
 
 ### Patch Changes

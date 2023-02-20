@@ -20,7 +20,7 @@ interface IAssetBalance extends IAssetBalanceOptions {
 
 const AssetBalance = ({ className, balance, withFiat, noCountUp, isBalance }: IAssetBalance) => (
   <div className={`${className} chain-balance ${balance.id}`}>
-    {balance.status === "cache" && <IconLoader className="loader" data-spin />}
+    {balance.status === "cache" && <IconLoader className="loader animate-spin-slow" />}
     <div className="chain-balance-column">
       <Tokens
         as="div"

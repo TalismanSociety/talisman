@@ -23,13 +23,8 @@ const rotateText = (text: string, nbChars = 0) => text.slice(nbChars) + text.sli
 
 type TalismanOrbProps = { seed: string; width?: number; height?: number; className?: string }
 
-export const TalismanOrb: FC<TalismanOrbProps> = ({
-  seed,
-  width = "1em",
-  height = "1em",
-  className,
-}) => {
-  const { id, bgColor1, bgColor2, transform, glowColor, cx, cy, isEthereum } = useMemo(() => {
+export const useTalismanOrb = (seed: string) => {
+  return useMemo(() => {
     const isEthereum = seed?.startsWith("0x")
     try {
       // seed may be specific to a ss58 prefix, get the base address
@@ -68,6 +63,15 @@ export const TalismanOrb: FC<TalismanOrbProps> = ({
       isEthereum,
     }
   }, [seed])
+}
+
+export const TalismanOrb: FC<TalismanOrbProps> = ({
+  seed,
+  width = "1em",
+  height = "1em",
+  className,
+}) => {
+  const { id, bgColor1, bgColor2, transform, glowColor, cx, cy, isEthereum } = useTalismanOrb(seed)
 
   return (
     <svg

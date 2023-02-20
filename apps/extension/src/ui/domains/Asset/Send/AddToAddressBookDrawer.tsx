@@ -1,7 +1,6 @@
 import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { Drawer } from "@talisman/components/Drawer"
-import { FormField } from "@talisman/components/Field/FormField"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { Address } from "@ui/domains/Account/Address"
 import AccountAvatar from "@ui/domains/Account/Avatar"
@@ -10,8 +9,10 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { FC, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import styled from "styled-components"
-import { Button } from "talisman-ui"
+import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
+
+const INPUT_CONTAINER_PROPS = { className: "bg-grey-700" }
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -100,28 +101,46 @@ export const AddToAddressBookDrawer: FC<{
     <Drawer asChild open={isOpen} anchor="bottom" onClose={closeDrawer}>
       <Container className="bg-black-tertiary">
         <form onSubmit={handleSubmit(submit)}>
-          <header className="flex flex-col justify-center gap-6">
+          <header className="flex flex-col items-center justify-center gap-6">
             <AccountAvatar address={address} />
             <span className="font-bold">
-              {nameValue ? `${nameValue}` : <Address className="address" address={address} />}
+              {nameValue ? (
+                `${nameValue}`
+              ) : (
+                <Address
+                  className="address"
+                  address={address}
+                  endCharCount={6}
+                  startCharCount={6}
+                />
+              )}
             </span>
           </header>
-          <section className="my-8">
-            <FormField error={errors.name}>
-              <input
+          <section className="my-4 mt-10">
+            <FormFieldContainer error={errors.name?.message}>
+              <FormFieldInputText
+                containerProps={INPUT_CONTAINER_PROPS}
                 type="text"
                 {...register("name")}
+                autoFocus
                 placeholder="Contact name"
                 autoComplete="off"
               />
-            </FormField>
+            </FormFieldContainer>
           </section>
           <footer>
             <div className="flex items-stretch gap-4">
               <Button fullWidth onClick={closeDrawer}>
                 Cancel
               </Button>
-              <Button type="submit" fullWidth primary processing={isSubmitting} disabled={!isValid}>
+              <Button
+                className="disabled:bg-grey-700"
+                type="submit"
+                fullWidth
+                primary
+                processing={isSubmitting}
+                disabled={!isValid}
+              >
                 Save
               </Button>
             </div>

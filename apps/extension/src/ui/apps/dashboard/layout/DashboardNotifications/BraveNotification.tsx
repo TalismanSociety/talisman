@@ -8,7 +8,7 @@ import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarnin
 import { useAppState } from "@ui/hooks/useAppState"
 import { useCallback, useMemo } from "react"
 
-import { Notification } from "./Notification"
+import { DashboardNotification } from "./DashboardNotification"
 
 export const BraveWarningNotification = () => {
   const isBrave = useIsBrave()
@@ -25,7 +25,7 @@ export const BraveWarningNotification = () => {
 
   return (
     <>
-      <Notification
+      <DashboardNotification
         icon={<BraveIcon className="icon" />}
         title="Attention Brave users. "
         description="Due to a recent Brave update, users may be experiencing issues loading balances."

@@ -1,6 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { Box } from "@talisman/components/Box"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { IconMore } from "@talisman/theme/icons"
@@ -23,11 +22,7 @@ import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
-import styled from "styled-components"
 
-const Stats = styled(Statistics)`
-  max-width: 40%;
-`
 const PageContent = ({ balances }: { balances: Balances }) => {
   const { showWalletFunding } = useAppState()
   const balancesToDisplay = useDisplayBalances(balances)
@@ -80,18 +75,18 @@ const PageContent = ({ balances }: { balances: Balances }) => {
   }, [navigate])
 
   return (
-    <Box flex column fullheight>
+    <div className="flex w-full flex-col">
       {displayWalletFunding ? (
-        <Box margin="3.8rem 0 0 0" grow flex justify="center" align="center">
+        <div className="mt-[3.8rem] flex grow items-center justify-center">
           <FundYourWallet />
-        </Box>
+        </div>
       ) : (
         <>
-          <Box flex fullwidth gap={1.6}>
-            <Stats title="Total Portfolio Value" fiat={portfolio} />
-            <Stats title="Locked" fiat={locked} locked />
-            <Stats title="Available" fiat={available} />
-            <Box grow flex justify="flex-end" align="center" gap={1.6}>
+          <div className="flex w-full gap-8">
+            <Statistics className="max-w-[40%]" title="Total Portfolio Value" fiat={portfolio} />
+            <Statistics className="max-w-[40%]" title="Locked" fiat={locked} locked />
+            <Statistics className="max-w-[40%]" title="Available" fiat={available} />
+            <div className="flex grow items-center justify-end gap-8">
               {account && (
                 <PopNav
                   trigger={
@@ -122,17 +117,17 @@ const PageContent = ({ balances }: { balances: Balances }) => {
                   )}
                 </PopNav>
               )}
-            </Box>
-          </Box>
-          <Box margin="3.8rem 0 0 0">
+            </div>
+          </div>
+          <div className="mt-[3.8rem]">
             <NetworkPicker />
-          </Box>
-          <Box margin="1.2rem 0 0 0">
+          </div>
+          <div className="mt-6">
             <DashboardAssetsTable balances={balancesToDisplay} />
-          </Box>
+          </div>
         </>
       )}
-    </Box>
+    </div>
   )
 }
 

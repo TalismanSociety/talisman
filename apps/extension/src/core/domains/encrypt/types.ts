@@ -1,7 +1,5 @@
-import { RequestIdOnly } from "@core/types/base"
-import { KeyringPair } from "@polkadot/keyring/types"
-
-import { AccountJson } from "../accounts/types"
+import { AccountJson } from "@core/domains/accounts/types"
+import { BaseRequest, BaseRequestId } from "@core/types/base"
 
 export interface EncryptPayloadBase {
   /**
@@ -30,7 +28,7 @@ export interface EncryptResult {
   result: string
 }
 
-export interface DecryptPayloadBase {
+export type DecryptPayloadBase = {
   /**
    * @description The hex-encoded data for this request
    */
@@ -38,7 +36,7 @@ export interface DecryptPayloadBase {
   sender: string
 }
 
-export interface DecryptPayload extends DecryptPayloadBase {
+export type DecryptPayload = DecryptPayloadBase & {
   /**
    * @description The ss-58 encoded address
    */
@@ -57,55 +55,69 @@ export interface DecryptResult {
   result: string
 }
 
+export type ENCRYPT_ENCRYPT_PREFIX = "encrypt"
+export const ENCRYPT_ENCRYPT_PREFIX: ENCRYPT_ENCRYPT_PREFIX = "encrypt"
+
+export type ENCRYPT_DECRYPT_PREFIX = "decrypt"
+export const ENCRYPT_DECRYPT_PREFIX: ENCRYPT_DECRYPT_PREFIX = "decrypt"
+
 export interface RequestEncrypt {
   readonly payload: EncryptPayload
-  type: "encrypt"
 }
 
-export interface RequestDecrypt {
+export type RequestDecrypt = {
   readonly payload: DecryptPayload
-  type: "decrypt"
 }
 
-export type AnyEncryptRequest = EncryptRequest | DecryptRequest
+export type EncryptRequestId = BaseRequestId<ENCRYPT_ENCRYPT_PREFIX>
+export type EncryptRequestIdOnly = { id: EncryptRequestId }
 
-export interface EncryptRequest {
+export type DecryptRequestId = BaseRequestId<ENCRYPT_DECRYPT_PREFIX>
+export type DecryptRequestIdOnly = { id: DecryptRequestId }
+
+interface BaseEncryptRequest<T extends ENCRYPT_ENCRYPT_PREFIX | ENCRYPT_DECRYPT_PREFIX>
+  extends BaseRequest<T> {
   account: AccountJson
-  id: string
-  request: RequestEncrypt
   url: string
 }
-export interface ResponseEncrypt {
+export interface EncryptEncryptRequest extends BaseEncryptRequest<ENCRYPT_ENCRYPT_PREFIX> {
+  request: RequestEncrypt
+}
+export interface EncryptDecryptRequest extends BaseEncryptRequest<ENCRYPT_DECRYPT_PREFIX> {
+  request: RequestDecrypt
+}
+
+export type AnyEncryptRequest = EncryptEncryptRequest | EncryptDecryptRequest
+export type ResponseEncryptEncrypt = {
   id: string
   result: string
 }
 
-export interface DecryptRequest {
-  account: AccountJson
-  id: string
-  request: RequestDecrypt
-  url: string
-}
-
-export interface ResponseDecrypt {
+export type ResponseEncryptDecrypt = {
   id: string
   result: string | null
 }
 
+export type ResponseEncrypt = ResponseEncryptEncrypt | ResponseEncryptDecrypt
+
 // might remove - just inheriting pattern from RequestSigningSubscribe from "@polkadot/extension-base/background/types"
 export declare type RequestEncryptSubscribe = null
 
-export interface RequestEncryptCancel {
-  id: string
-}
+export type AnyEncryptRequestIdOnly = EncryptRequestIdOnly | DecryptRequestIdOnly
+export type RequestEncryptCancel = AnyEncryptRequestIdOnly
 
 export interface EncryptMessages {
   // Encrypt message signatures
   "pub(encrypt.encrypt)": [EncryptPayload, EncryptResult]
   "pub(encrypt.decrypt)": [DecryptPayload, DecryptResult]
   "pri(encrypt.requests)": [RequestEncryptSubscribe, boolean, AnyEncryptRequest[]]
-  "pri(encrypt.byid.subscribe)": [RequestIdOnly, boolean, AnyEncryptRequest]
-  "pri(encrypt.approveEncrypt)": [RequestIdOnly, boolean]
-  "pri(encrypt.approveDecrypt)": [RequestIdOnly, boolean]
-  "pri(encrypt.cancel)": [RequestIdOnly, boolean]
+  "pri(encrypt.byid.subscribe)": [AnyEncryptRequestIdOnly, boolean, AnyEncryptRequest]
+  "pri(encrypt.approveEncrypt)": [EncryptRequestIdOnly, boolean]
+  "pri(encrypt.approveDecrypt)": [DecryptRequestIdOnly, boolean]
+  "pri(encrypt.cancel)": [AnyEncryptRequestIdOnly, boolean]
+}
+
+export interface EncryptRequests {
+  [ENCRYPT_ENCRYPT_PREFIX]: [EncryptEncryptRequest, ResponseEncryptEncrypt]
+  [ENCRYPT_DECRYPT_PREFIX]: [EncryptDecryptRequest, ResponseEncryptDecrypt]
 }

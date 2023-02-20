@@ -18,7 +18,7 @@ const NetworkUsageBase = ({
   className?: string
 }) => {
   return (
-    <div className={classNames("flex items-start gap-4 text-sm", className)}>
+    <div className={classNames("flex items-center gap-4 text-sm", className)}>
       <div className="leading-none">{text}</div>
       <Icon className="block h-[1em] w-auto" />
     </div>

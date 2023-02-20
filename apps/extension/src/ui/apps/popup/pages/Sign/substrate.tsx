@@ -1,6 +1,5 @@
 import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
-import { SignerPayloadRaw, SigningRequest } from "@core/domains/signing/types"
-import { Box } from "@talisman/components/Box"
+import { KnownSigningRequestIdOnly, SignerPayloadRaw } from "@core/domains/signing/types"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
@@ -20,8 +19,8 @@ import { Container } from "./common"
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
 export const SubstrateSignRequest = () => {
-  const { id } = useParams() as { id: string }
-  const signingRequest = useSigningRequestById(id) as SigningRequest | undefined
+  const { id } = useParams() as KnownSigningRequestIdOnly<"substrate-sign">
+  const signingRequest = useSigningRequestById(id)
   const { url, request, approve, reject, status, message, account, chain, approveHardware } =
     usePolkadotSigningRequest(signingRequest)
   const { analysing, txDetails, error: txDetailsError } = usePolkadotTransactionDetails(id)
@@ -79,7 +78,7 @@ export const SubstrateSignRequest = () => {
         {account && request && (
           <>
             {!account.isHardware && (
-              <Box flex fullwidth gap={2.4}>
+              <div className="flex w-full gap-12">
                 <SimpleButton disabled={processing} onClick={reject}>
                   Cancel
                 </SimpleButton>
@@ -91,12 +90,12 @@ export const SubstrateSignRequest = () => {
                 >
                   Approve
                 </SimpleButton>
-              </Box>
+              </div>
             )}
-            {account.isHardware && (
+            {account.isHardware && reject && (
               <Suspense fallback={null}>
                 <LedgerSubstrate
-                  payload={(request as SigningRequest["request"]).payload}
+                  payload={request.payload}
                   account={account as AccountJsonHardwareSubstrate}
                   genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                   onSignature={approveHardware}

@@ -1,5 +1,23 @@
 # @talismn/chain-connector
 
+## 0.4.2
+
+### Patch Changes
+
+- c651551c: build: move `@polkadot` dependencies to `peerDependencies`
+- Updated dependencies [c651551c]
+  - @talismn/util@0.1.7
+  - @talismn/chaindata-provider@0.4.2
+
+## 0.4.1
+
+### Patch Changes
+
+- 8adc7f06: feat: switched build tool to preconstruct
+- Updated dependencies [8adc7f06]
+  - @talismn/chaindata-provider@0.4.1
+  - @talismn/util@0.1.6
+
 ## 0.2.1
 
 ### Patch Changes

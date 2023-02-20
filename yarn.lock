@@ -5601,8 +5601,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-assets@workspace:packages/balances-substrate-assets"
   dependencies:
-    "@polkadot/types": 9.10.5
-    "@polkadot/util": 10.2.1
+    "@polkadot/types": ^9.10.5
+    "@polkadot/util": ^10.2.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5615,6 +5615,9 @@ __metadata:
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
+  peerDependencies:
+    "@polkadot/types": 9.x
+    "@polkadot/util": 10.x
   languageName: unknown
   linkType: soft
 
@@ -5622,7 +5625,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium"
   dependencies:
-    "@polkadot/types": 9.10.5
+    "@polkadot/types": ^9.10.5
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5635,6 +5638,8 @@ __metadata:
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
+  peerDependencies:
+    "@polkadot/types": 9.x
   languageName: unknown
   linkType: soft
 
@@ -5642,8 +5647,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-native@workspace:packages/balances-substrate-native"
   dependencies:
-    "@polkadot/types": 9.10.5
-    "@polkadot/util": 10.2.1
+    "@polkadot/types": ^9.10.5
+    "@polkadot/util": ^10.2.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5656,6 +5661,9 @@ __metadata:
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
+  peerDependencies:
+    "@polkadot/types": 9.x
+    "@polkadot/util": 10.x
   languageName: unknown
   linkType: soft
 
@@ -5663,7 +5671,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml"
   dependencies:
-    "@polkadot/types": 9.10.5
+    "@polkadot/types": ^9.10.5
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5675,6 +5683,8 @@ __metadata:
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
+  peerDependencies:
+    "@polkadot/types": 9.x
   languageName: unknown
   linkType: soft
 
@@ -5682,7 +5692,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens"
   dependencies:
-    "@polkadot/types": 9.10.5
+    "@polkadot/types": ^9.10.5
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5695,6 +5705,8 @@ __metadata:
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
+  peerDependencies:
+    "@polkadot/types": 9.x
   languageName: unknown
   linkType: soft
 
@@ -5702,7 +5714,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances@workspace:packages/balances"
   dependencies:
-    "@polkadot/types": 9.10.5
+    "@polkadot/types": ^9.10.5
     "@talismn/chain-connector": "workspace:^"
     "@talismn/chain-connector-evm": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
@@ -5719,6 +5731,8 @@ __metadata:
     ts-jest: ^28.0.2
     typescript: ^4.6.4
     typescript-memoize: ^1.1.0
+  peerDependencies:
+    "@polkadot/types": 9.x
   languageName: unknown
   linkType: soft
 
@@ -5755,6 +5769,8 @@ __metadata:
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
+  peerDependencies:
+    "@polkadot/rpc-provider": 9.x
   languageName: unknown
   linkType: soft
 
@@ -5868,6 +5884,10 @@ __metadata:
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
+  peerDependencies:
+    "@polkadot/keyring": 10.x
+    "@polkadot/util": 10.x
+    "@polkadot/util-crypto": ^10.x
   languageName: unknown
   linkType: soft
 
@@ -12111,7 +12131,6 @@ __metadata:
     react-dropzone: ^12.0.4
     react-hook-form: 7.32.2
     react-is: 17.0.2
-    react-loading-skeleton: 3.0.3
     react-router-dom: 6.3.0
     react-toastify: ^9.0.8
     react-use: 17.4.0
@@ -18267,15 +18286,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-loading-skeleton@npm:3.0.3":
-  version: 3.0.3
-  resolution: "react-loading-skeleton@npm:3.0.3"
-  peerDependencies:
-    react: ">=16.8.0"
-  checksum: 1b13da65764a6c2fd7e599589fc3eee2628bf7e9abd8937d7a0b3f8bb72f73635f6b83ce707f493c0c89363b0b7155f600e5c05831487063ea1f9a1243998537
-  languageName: node
-  linkType: hard
-
 "react-property@npm:2.0.0":
   version: 2.0.0
   resolution: "react-property@npm:2.0.0"
@@ -20106,6 +20116,7 @@ __metadata:
     postcss: ^8.4.20
     react: 18.2.0
     react-dom: 18.2.0
+    react-router-dom: 6.3.0
     react-use: 17.4.0
     tailwindcss: ^3.2.4
     typescript: 4.6.4
@@ -20119,6 +20130,7 @@ __metadata:
     postcss: "*"
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
+    react-router-dom: ">=6.3.0"
     react-use: ">=17.4.0"
     styled-components: ">=5.3.6"
     tailwindcss: ">=3.1.8"

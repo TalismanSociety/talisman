@@ -1,10 +1,9 @@
 import { Balances } from "@core/domains/balances/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
-import { Box } from "@talisman/components/Box"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { Skeleton } from "@talisman/components/Skeleton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { LoaderIcon, LockIcon } from "@talisman/theme/icons"
+import { LockIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -53,11 +52,6 @@ type AssetRowProps = {
   locked?: boolean
 }
 
-const FetchingIcon = styled(LoaderIcon)`
-  line-height: 1.2rem;
-  font-size: 1.2rem;
-`
-
 const AssetButton = styled.button`
   width: 100%;
   outline: none;
@@ -95,73 +89,24 @@ const SectionLockIcon = styled(LockIcon)`
 
 const AssetRowSkeleton = ({ className }: { className?: string }) => {
   return (
-    <Box
-      fullwidth
-      flex
-      align="center"
-      bg="background-muted"
-      borderradius="tiny"
-      className={className}
-      padding={"0 0.2rem"}
-      h={5.6}
+    <div
+      className={classNames(
+        "bg-black-secondary flex h-28 items-center gap-6 rounded-sm px-6",
+        className
+      )}
     >
-      <Box padding="1.2rem" fontsize="xlarge" w={5.6}>
-        <Skeleton
-          baseColor="#5A5A5A"
-          highlightColor="#A5A5A5"
-          width={"3.2rem"}
-          height={"3.2rem"}
-          circle
-        />
-      </Box>
-      <Box
-        grow
-        flex
-        column
-        justify="center"
-        gap={0.4}
-        lineheight="small"
-        fontsize="small"
-        padding="0 1.2rem 0 0"
-      >
-        <Box bold fg="foreground" flex justify="space-between">
-          <Box fontsize="small">
-            <Skeleton
-              baseColor="#5A5A5A"
-              highlightColor="#A5A5A5"
-              width={"4rem"}
-              height={"1.4rem"}
-            />
-          </Box>
-          <Box fontsize="normal">
-            <Skeleton
-              baseColor="#5A5A5A"
-              highlightColor="#A5A5A5"
-              width={"10rem"}
-              height={"1.4rem"}
-            />
-          </Box>
-        </Box>
-        <Box flex justify="space-between" lineheight="small">
-          <Box fontsize="normal">
-            <Skeleton
-              baseColor="#5A5A5A"
-              highlightColor="#A5A5A5"
-              width={"2rem"}
-              height={"1.4rem"}
-            />
-          </Box>
-          <Box fg="mid" fontsize="xsmall">
-            <Skeleton
-              baseColor="#5A5A5A"
-              highlightColor="#A5A5A5"
-              width={"6rem"}
-              height={"1.4rem"}
-            />
-          </Box>
-        </Box>
-      </Box>
-    </Box>
+      <div className="bg-grey-700 h-16 w-16 animate-pulse rounded-full px-6 text-xl"></div>
+      <div className="grow space-y-1">
+        <div className="flex justify-between gap-1">
+          <div className="bg-grey-700 rounded-xs h-7 w-20 animate-pulse"></div>
+          <div className="bg-grey-700 rounded-xs h-7 w-[10rem] animate-pulse"></div>
+        </div>
+        <div className="flex justify-between gap-1">
+          <div className="bg-grey-700 rounded-xs h-7 w-10 animate-pulse"></div>
+          <div className="bg-grey-700 rounded-xs h-7 w-[6rem] animate-pulse"></div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -199,47 +144,43 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
 
   return (
     <AssetButton className="asset" onClick={handleClick}>
-      <Box padding="1.2rem" fontsize="xlarge">
+      <div className="p-6 text-xl">
         <TokenLogo tokenId={token.id} />
-      </Box>
-      <Box grow relative flex padding="0 1.2rem 0 0" gap={0.8}>
-        <Box relative grow>
+      </div>
+      <div className="relative flex grow gap-4 pr-6">
+        <div className="relative grow">
           {/* we want content from this cell to be hidden if there are too many tokens to display on right cell */}
-          <Box
-            flex
-            column
-            textalign="left"
-            gap={0.4}
-            absolute
-            top={0}
-            left={0}
-            overflow="hidden"
-            w="100%"
-            h="100%"
-          >
+          <div className="absolute top-0 left-0 flex w-full flex-col gap-2 overflow-hidden text-left">
             <div className="text-body flex items-center gap-2 whitespace-nowrap text-sm font-bold">
               {token.symbol}
-              {isFetching && (
-                <FetchingIcon data-spin className="inline align-baseline opacity-100" />
-              )}
             </div>
             {!!networkIds.length && (
-              <Box fontsize="normal">
+              <div className="text-base">
                 <NetworksLogoStack networkIds={networkIds} />
-              </Box>
+              </div>
             )}
-          </Box>
-        </Box>
-        <Box flex column textalign="right" gap={0.4}>
-          <Box fontsize="small" fg={locked ? "mid" : "foreground"} bold noWrap>
+          </div>
+        </div>
+        <div
+          className={classNames(
+            "flex flex-col gap-2 text-right",
+            isFetching && "animate-pulse transition-opacity"
+          )}
+        >
+          <div
+            className={classNames(
+              "whitespace-nowrap text-sm font-bold",
+              locked ? "text-body-secondary" : "text-white"
+            )}
+          >
             <Tokens amount={tokens} symbol={token?.symbol} isBalance />
             {locked ? <RowLockIcon className="lock inline align-baseline" /> : null}
-          </Box>
-          <Box fg="mid" fontsize="xsmall" lineheight="normal">
+          </div>
+          <div className="text-body-secondary leading-base text-xs">
             {fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
     </AssetButton>
   )
 }
@@ -259,32 +200,23 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
   const { isOpen, toggle } = useOpenClose(true)
 
   return (
-    <Box flex column gap={1.2}>
-      <Box
-        className={className}
+    <div className="flex flex-col gap-6">
+      <div
+        className={classNames("text-md flex cursor-pointer items-center gap-2", className)}
         onClick={toggle}
-        flex
-        fontsize="medium"
-        gap={0.4}
-        align="center"
-        pointer
       >
-        <Box fg="foreground" grow>
-          {label}
-        </Box>
-        <Box fg="mid" overflow="hidden" textOverflow="ellipsis" noWrap>
+        <div className="text-body grow">{label}</div>
+        <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
           <Fiat amount={fiatAmount} currency="usd" isBalance />
-        </Box>
-        <Box flex column justify="center" fontsizecustom="2.4rem" fg="mid">
+        </div>
+        <div className="text-body-secondary flex flex-col justify-center text-lg">
           <AccordionIcon isOpen={isOpen} />
-        </Box>
-      </Box>
+        </div>
+      </div>
       <Accordion isOpen={isOpen}>
-        <Box flex column gap={0.8}>
-          {children}
-        </Box>
+        <div className="flex flex-col gap-4">{children}</div>
       </Accordion>
-    </Box>
+    </div>
   )
 }
 
@@ -331,18 +263,11 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
             <AssetRowSkeleton key={i} className={getSkeletonOpacity(i)} />
           ))}
           {!skeletons && !available.length && (
-            <Box
-              bg="background-muted"
-              fg="mid"
-              padding={2}
-              borderradius="tiny"
-              fontsize="xsmall"
-              textalign="center"
-            >
+            <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
               There are no available balances{account ? " for this account" : ""}.
-            </Box>
+            </div>
           )}
-          <Box h={1.6} />
+          <div className="h-8" />
         </BalancesGroup>
         <BalancesGroup
           label={
@@ -359,16 +284,9 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
             <AssetRow key={symbol} balances={b} locked />
           ))}
           {!locked.length && (
-            <Box
-              bg="background-muted"
-              fg="mid"
-              padding={2}
-              borderradius="tiny"
-              fontsize="xsmall"
-              textalign="center"
-            >
+            <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
               There are no locked balances{account ? " for this account" : ""}.
-            </Box>
+            </div>
           )}
         </BalancesGroup>
       </div>

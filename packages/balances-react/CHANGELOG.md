@@ -1,5 +1,38 @@
 # @talismn/balances-react
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [c651551c]
+  - @talismn/chain-connector@0.4.2
+  - @talismn/balances@0.3.3
+  - @talismn/chain-connector-evm@0.4.2
+  - @talismn/chaindata-provider@0.4.2
+  - @talismn/chaindata-provider-extension@0.4.2
+  - @talismn/token-rates@0.1.14
+
+## 0.3.2
+
+### Patch Changes
+
+- 62d7a783: fix: allow @talismn/balances-react users to specify onfinality api key
+  - @talismn/balances@0.3.2
+
+## 0.3.1
+
+### Patch Changes
+
+- 8adc7f06: feat: switched build tool to preconstruct
+- Updated dependencies [8adc7f06]
+- Updated dependencies [cfe8d276]
+  - @talismn/chaindata-provider-extension@0.4.1
+  - @talismn/chain-connector-evm@0.4.1
+  - @talismn/chaindata-provider@0.4.1
+  - @talismn/chain-connector@0.4.1
+  - @talismn/token-rates@0.1.13
+  - @talismn/balances@0.3.1
+
 ## 0.3.0
 
 ### Patch Changes
