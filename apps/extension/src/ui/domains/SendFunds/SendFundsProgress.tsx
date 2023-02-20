@@ -17,7 +17,7 @@ const useStatusDetails = (status: TransactionStatus) => {
       case "ERROR":
         return {
           title: "Failure",
-          subtitle: "Transaction was not found",
+          subtitle: "Transaction failed.",
           animStatus: "failure",
         }
       case "SUCCESS":

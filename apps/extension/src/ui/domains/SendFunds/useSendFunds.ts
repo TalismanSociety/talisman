@@ -19,6 +19,7 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useTip } from "@ui/hooks/useTip"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
+import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
@@ -122,6 +123,7 @@ const useSendFundsProvider = () => {
 
   const fromAccount = useAccountByAddress(from)
   const { tokensMap } = useTokens(true)
+  const tokenRatesMap = useTokenRatesMap()
   const balances = useBalancesByAddress(from as string)
   const token = useToken(tokenId)
   const tokenRates = useTokenRates(tokenId)
@@ -142,8 +144,8 @@ const useSendFundsProvider = () => {
 
   const { requiresTip, tip: tipPlanck } = useTip(token?.chain?.id, !isLocked)
   const tip = useMemo(
-    () => (tipPlanck ? new BalanceFormatter(tipPlanck, tipToken?.decimals) : null),
-    [tipPlanck, tipToken?.decimals]
+    () => (tipPlanck ? new BalanceFormatter(tipPlanck, tipToken?.decimals, tipTokenRates) : null),
+    [tipPlanck, tipToken?.decimals, tipTokenRates]
   )
 
   const method: AssetTransferMethod = sendMax
@@ -184,14 +186,17 @@ const useSendFundsProvider = () => {
             : null
         }
         default:
-          return new BalanceFormatter(amount ?? "0", token.decimals, tokenRates)
+          return new BalanceFormatter(
+            balance.transferable.planck ?? "0",
+            token.decimals,
+            tokenRates
+          )
       }
     } catch (err) {
       log.error("Failed to compute max amount", { err })
       return null
     }
   }, [
-    amount,
     balance,
     evmTransaction?.txDetails?.maxFee,
     subTransaction?.partialFee,
@@ -206,18 +211,22 @@ const useSendFundsProvider = () => {
       return new BalanceFormatter(
         BigNumber.from(evmTransaction.txDetails.estimatedFee).toBigInt(),
         feeToken?.decimals,
-        tokenRates
+        feeTokenRates
       )
     }
     if (subTransaction?.partialFee) {
-      return new BalanceFormatter(BigInt(subTransaction.partialFee), feeToken?.decimals, tokenRates)
+      return new BalanceFormatter(
+        BigInt(subTransaction.partialFee),
+        feeToken?.decimals,
+        feeTokenRates
+      )
     }
     return null
   }, [
     evmTransaction?.txDetails?.estimatedFee,
     feeToken?.decimals,
+    feeTokenRates,
     subTransaction?.partialFee,
-    tokenRates,
   ])
 
   const costBreakdown = useMemo(() => {
@@ -244,7 +253,7 @@ const useSendFundsProvider = () => {
         balance: new BalanceFormatter(
           balances.find({ tokenId }).sorted[0]?.transferable.planck,
           tokensMap[tokenId].decimals,
-          tokenRates
+          tokenRatesMap[tokenId]
         ),
       }))
 
@@ -264,6 +273,7 @@ const useSendFundsProvider = () => {
     tipToken,
     token,
     tokenRates,
+    tokenRatesMap,
     tokensMap,
     transfer,
   ])
@@ -273,19 +283,19 @@ const useSendFundsProvider = () => {
       ?.map(({ token, cost, balance }) => {
         const remaining = balance.planck - cost.planck
 
-        if (remaining > 0n || !isSubToken(token) || sendMax) return null
+        if (remaining === 0n || !isSubToken(token) || sendMax) return null
 
         const existentialDeposit = new BalanceFormatter(
           token.existentialDeposit ?? "0",
           token.decimals,
-          tokenRates
+          tokenRatesMap[token.id]
         )
 
         return remaining < existentialDeposit.planck
           ? {
               token,
               existentialDeposit,
-              amount: new BalanceFormatter(remaining, token.decimals, tokenRates),
+              amount: new BalanceFormatter(remaining, token.decimals, tokenRatesMap[token.id]),
             }
           : null
       })
@@ -296,7 +306,7 @@ const useSendFundsProvider = () => {
           amount: BalanceFormatter
         }[]
       | undefined
-  }, [costBreakdown, sendMax, tokenRates])
+  }, [costBreakdown, sendMax, tokenRatesMap])
 
   // TODO proper hook
   const {
@@ -392,16 +402,8 @@ const useSendFundsProvider = () => {
   const onSendMaxClick = useCallback(() => {
     if (!token || !maxAmount) return
 
-    switch (token.type) {
-      case "substrate-native": {
-        set("sendMax", !sendMax)
-        break
-      }
-      default: {
-        set("amount", maxAmount.planck.toString())
-        break
-      }
-    }
+    if (isSubToken(token)) set("sendMax", !sendMax)
+    else set("amount", maxAmount.planck.toString())
   }, [maxAmount, sendMax, set, token])
 
   const signMethod: SignMethod = useMemo(() => {
@@ -418,9 +420,10 @@ const useSendFundsProvider = () => {
   const [sendErrorMessage, setSendErrorMessage] = useState<string>()
   const send = useCallback(async () => {
     try {
+      const value = sendMax ? maxAmount : transfer
       if (!from) throw new Error("Sender not found")
       if (!to) throw new Error("Recipient not found")
-      if (!transfer && !sendMax) throw new Error("Amount not found")
+      if (!value) throw new Error("Amount not found")
       if (!token) throw new Error("Token not found")
 
       setIsProcessing(true)
@@ -431,7 +434,7 @@ const useSendFundsProvider = () => {
           token.id,
           from,
           to,
-          transfer?.planck.toString(),
+          value.planck.toString(),
           tip?.planck.toString(),
           method
         )
@@ -444,7 +447,7 @@ const useSendFundsProvider = () => {
           token.id,
           from,
           to,
-          transfer.planck.toString(),
+          value.planck.toString(),
           evmTransaction.gasSettings
         )
         gotoProgress({ evmNetworkId: token.evmNetwork.id, evmTxHash: hash })
@@ -455,10 +458,11 @@ const useSendFundsProvider = () => {
       setIsProcessing(false)
     }
   }, [
+    sendMax,
+    maxAmount,
+    transfer,
     from,
     to,
-    transfer,
-    sendMax,
     token,
     tip?.planck,
     method,
