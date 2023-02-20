@@ -1,5 +1,14 @@
 # @talismn/balances-evm-native
 
+## 0.3.3
+
+### Patch Changes
+
+- Updated dependencies [c651551c]
+  - @talismn/balances@0.3.3
+  - @talismn/util@0.1.7
+  - @talismn/chaindata-provider@0.4.2
+
 ## 0.3.2
 
 ### Patch Changes

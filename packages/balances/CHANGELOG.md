@@ -1,5 +1,17 @@
 # @talismn/balances
 
+## 0.3.3
+
+### Patch Changes
+
+- c651551c: build: move `@polkadot` dependencies to `peerDependencies`
+- Updated dependencies [c651551c]
+  - @talismn/chain-connector@0.4.2
+  - @talismn/util@0.1.7
+  - @talismn/chain-connector-evm@0.4.2
+  - @talismn/chaindata-provider@0.4.2
+  - @talismn/token-rates@0.1.14
+
 ## 0.3.2
 
 ## 0.3.1

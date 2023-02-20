@@ -13,6 +13,7 @@ import {
   PlusIcon,
   SettingsIcon,
   UserIcon,
+  ZapIcon,
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
@@ -240,6 +241,7 @@ export const SideBar = () => {
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
+  const showStaking = useIsFeatureEnabled("LINK_STAKING")
 
   const handleSendClick = useCallback(() => {
     api.sendFundsOpen({
@@ -268,6 +270,12 @@ export const SideBar = () => {
   const handleNftsClick = useCallback(() => {
     genericEvent("open web app nfts", { from: "sidebar", target: "nfts" })
     window.open("https://app.talisman.xyz/portfolio/nfts", "_blank")
+    return false
+  }, [genericEvent])
+
+  const handleStakingClick = useCallback(() => {
+    genericEvent("open web app staking", { from: "sidebar", target: "staking" })
+    window.open("https://app.talisman.xyz/staking", "_blank")
     return false
   }, [genericEvent])
 
@@ -332,16 +340,6 @@ export const SideBar = () => {
           >
             Portfolio
           </NavItemLink>
-          <NavItemButton
-            onClick={handleNftsClick}
-            icon={
-              <ResponsiveTooltip tooltip="NFTs">
-                <ImageIcon />
-              </ResponsiveTooltip>
-            }
-          >
-            NFTs <ExtLinkIcon />
-          </NavItemButton>
           {showBuyCryptoButton && (
             <NavItemButton
               onClick={handleBuyClick}
@@ -365,6 +363,28 @@ export const SideBar = () => {
           >
             Add Account
           </NavItemLink>
+          {showStaking && (
+            <NavItemButton
+              onClick={handleStakingClick}
+              icon={
+                <ResponsiveTooltip tooltip="Staking">
+                  <ZapIcon />
+                </ResponsiveTooltip>
+              }
+            >
+              Staking <ExtLinkIcon />
+            </NavItemButton>
+          )}
+          <NavItemButton
+            onClick={handleNftsClick}
+            icon={
+              <ResponsiveTooltip tooltip="NFTs">
+                <ImageIcon />
+              </ResponsiveTooltip>
+            }
+          >
+            NFTs <ExtLinkIcon />
+          </NavItemButton>
           {/* <NavItemButton
             onClick={handleCrowdloansClick}
             icon={
@@ -384,7 +404,7 @@ export const SideBar = () => {
                 </ResponsiveTooltip>
               }
             >
-              Transaction History
+              Transaction History <ExtLinkIcon />
             </NavItemButton>
           )}
           <NavItemLink
