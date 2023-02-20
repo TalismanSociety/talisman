@@ -1,6 +1,7 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { TalismanHandIcon, UserIcon } from "@talisman/theme/icons"
+import { convertAddress } from "@talisman/util/convertAddress"
 import { isValidAddress } from "@talisman/util/isValidAddress"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -8,6 +9,7 @@ import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useBalances from "@ui/hooks/useBalances"
 import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
+import { ethers } from "ethers"
 import { useCallback, useMemo, useState } from "react"
 
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
@@ -31,15 +33,29 @@ export const SendFundsRecipientPicker = () => {
   }, [from, search])
 
   const newAddresses = useMemo(() => {
+    const isEthereum = isEthereumAddress(from)
+    const normalize = (addr: string) =>
+      isEthereum ? ethers.utils.getAddress(addr) : convertAddress(addr, null)
+
+    const addresses: { address: string }[] = []
+
     if (
       to &&
-      allAccounts.every((account) => account.address !== to) &&
-      allContacts.every((contact) => contact.address !== to)
+      allAccounts.every((account) => normalize(to) !== normalize(account.address)) &&
+      allContacts.every((contact) => normalize(to) !== normalize(contact.address))
     )
-      return [{ address: to }]
-    if (!isValidAddressInput) return []
-    return [{ address: search }]
-  }, [to, allAccounts, allContacts, isValidAddressInput, search])
+      addresses.push({ address: to })
+
+    if (
+      isValidAddressInput &&
+      (!to || normalize(search) !== normalize(to)) &&
+      allAccounts.every((account) => normalize(search) !== normalize(account.address)) &&
+      allContacts.every((contact) => normalize(search) !== normalize(contact.address))
+    )
+      addresses.push({ address: search })
+
+    return addresses
+  }, [from, to, allAccounts, allContacts, isValidAddressInput, search])
 
   const contacts = useMemo(
     () =>
@@ -70,17 +86,31 @@ export const SendFundsRecipientPicker = () => {
     [set]
   )
 
+  const handleValidate = useCallback(() => {
+    if (isValidAddressInput) set("to", search, true)
+  }, [isValidAddressInput, search, set])
+
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
         <div className="font-bold">To</div>
         <div className="grow">
-          <SendFundsSearchInput autoFocus onChange={setSearch} placeholder="Enter address" />
+          <SendFundsSearchInput
+            onValidate={handleValidate}
+            autoFocus
+            onChange={setSearch}
+            placeholder="Enter address"
+          />
         </div>
       </div>
       <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         {!!newAddresses.length && (
-          <SendFundsAccountsList accounts={newAddresses} selected={to} onSelect={handleSelect} />
+          <SendFundsAccountsList
+            allowZeroBalance
+            accounts={newAddresses}
+            selected={to}
+            onSelect={handleSelect}
+          />
         )}
         <SendFundsAccountsList
           allowZeroBalance

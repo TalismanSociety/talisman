@@ -1,7 +1,7 @@
 import { SearchIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
-import { ChangeEventHandler, FC, useCallback, useEffect } from "react"
+import { ChangeEventHandler, FC, KeyboardEventHandler, useCallback, useEffect } from "react"
 import { FormFieldInputContainerProps, FormFieldInputText } from "talisman-ui"
 
 const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
@@ -14,6 +14,7 @@ type SendFundsSearchInputProps = {
   autoFocus?: boolean
   placeholder?: string
   onChange?: (search: string) => void
+  onValidate?: () => void
 }
 
 export const SendFundsSearchInput: FC<SendFundsSearchInputProps> = ({
@@ -21,6 +22,7 @@ export const SendFundsSearchInput: FC<SendFundsSearchInputProps> = ({
   autoFocus,
   onChange,
   placeholder,
+  onValidate,
 }) => {
   const [search, setSearch] = useDebouncedState("")
 
@@ -29,6 +31,15 @@ export const SendFundsSearchInput: FC<SendFundsSearchInputProps> = ({
       setSearch(e.target.value)
     },
     [setSearch]
+  )
+
+  const handleKeyUp: KeyboardEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      if (e.key === "Enter") {
+        onValidate?.()
+      }
+    },
+    [onValidate]
   )
 
   useEffect(() => {
@@ -43,6 +54,7 @@ export const SendFundsSearchInput: FC<SendFundsSearchInputProps> = ({
       before={<SearchIcon className="text-body-disabled" />}
       placeholder={placeholder}
       onChange={handleSearchChange}
+      onKeyUp={handleKeyUp}
     />
   )
 }
