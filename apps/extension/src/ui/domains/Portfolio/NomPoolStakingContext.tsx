@@ -1,6 +1,6 @@
 import { NOM_POOL_MIN_DEPOSIT, NOM_POOL_SUPPORTED_CHAINS } from "@core/constants"
 import { appStore } from "@core/domains/app"
-import { NomPoolStakedBalance, ResponseNomPoolStake } from "@core/domains/balances/types"
+import { ResponseNomPoolStake } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
 import * as Sentry from "@sentry/browser"
 import { provideContext } from "@talisman/util/provideContext"
