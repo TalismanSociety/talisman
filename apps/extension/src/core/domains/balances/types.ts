@@ -51,7 +51,7 @@ export type RequestNomPoolStake = {
   addresses: Address[]
 }
 
-export type ResponseNomPoolStake = Record<Address, NomPoolStakedBalance | false | undefined>
+export type ResponseNomPoolStake = Record<Address, NomPoolStakedBalance | null>
 
 export interface BalancesMessages {
   // balance message signatures

@@ -1,5 +1,6 @@
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
+import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
 import Site from "@ui/domains/Site"
 import { Suspense, lazy } from "react"
 import { Route, Routes, useLocation } from "react-router-dom"
@@ -31,26 +32,28 @@ const AccountAvatar = () => {
 export const Portfolio = () => {
   return (
     <PortfolioProvider>
-      {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
-      <Layout withBottomNav>
-        <Header text={<Site.ConnectedAccountsPill />} nav={<AccountAvatar />} />
-        <Content>
-          <Routes>
-            <Route path="assets" element={<PortfolioAssets />} />
-            <Route path=":symbol" element={<PortfolioAsset />} />
-            <Route path="" element={<PortfolioAccounts />} />
-          </Routes>
-          <Suspense fallback={null}>
-            <BraveWarningPopupBanner />
-          </Suspense>
-          <Suspense fallback={null}>
-            <MigratePasswordAlert />
-          </Suspense>
-          <Suspense fallback={null}>
-            <AnalyticsAlert />
-          </Suspense>
-        </Content>
-      </Layout>
+      <NomPoolStakingBannerProvider>
+        {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
+        <Layout withBottomNav>
+          <Header text={<Site.ConnectedAccountsPill />} nav={<AccountAvatar />} />
+          <Content>
+            <Routes>
+              <Route path="assets" element={<PortfolioAssets />} />
+              <Route path=":symbol" element={<PortfolioAsset />} />
+              <Route path="" element={<PortfolioAccounts />} />
+            </Routes>
+            <Suspense fallback={null}>
+              <BraveWarningPopupBanner />
+            </Suspense>
+            <Suspense fallback={null}>
+              <MigratePasswordAlert />
+            </Suspense>
+            <Suspense fallback={null}>
+              <AnalyticsAlert />
+            </Suspense>
+          </Content>
+        </Layout>
+      </NomPoolStakingBannerProvider>
     </PortfolioProvider>
   )
 }

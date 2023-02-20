@@ -8,7 +8,7 @@ import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
-import { useShowNomPoolStakingBanner } from "../AssetDetails/useShowNomPoolStakingBanner"
+import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
@@ -114,9 +114,10 @@ const AssetRow = ({ balances }: AssetRowProps) => {
 
   const { token, summary } = useTokenBalancesSummary(balances)
 
-  const { showBanner, dismissBanner } = useShowNomPoolStakingBanner({
+  const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
+  const showBanner = showNomPoolBanner({
     chainId: token?.chain?.id,
-    balances,
+    addresses: balances.sorted.map((b) => b.address),
   })
 
   const navigate = useNavigate()
@@ -131,9 +132,9 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   }, [genericEvent, token?.symbol])
 
   const handleDismissStakingBanner = useCallback(() => {
-    dismissBanner()
+    dismissNomPoolBanner()
     genericEvent("dismiss staking banner", { from: "dashboard", symbol: token?.symbol })
-  }, [genericEvent, dismissBanner, token?.symbol])
+  }, [genericEvent, dismissNomPoolBanner, token?.symbol])
 
   if (!token || !summary) return null
 

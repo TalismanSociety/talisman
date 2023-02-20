@@ -128,8 +128,8 @@ export const getNomPoolStake = async ({ addresses, chainId = "polkadot" }: Reque
       // is a `Codec` from pjs
 
       const humanResult = queryResult?.toHuman() as NomPoolStakedBalance | undefined
-      // explicit false is required here to ensure the frontend knows that the address has been queried
-      result[query.address] = humanResult || false
+      // explicit null is required here to ensure the frontend knows that the address has been queried
+      result[query.address] = humanResult || null
       return result
     },
     {} as ResponseNomPoolStake

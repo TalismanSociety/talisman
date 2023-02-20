@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
-import { useShowNomPoolStakingBanner } from "../AssetDetails/useShowNomPoolStakingBanner"
+import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
 import { useSelectedAccount } from "../SelectedAccountContext"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
@@ -124,9 +124,10 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   )
 
   const { token, summary } = useTokenBalancesSummary(balances)
-  const { showBanner, dismissBanner } = useShowNomPoolStakingBanner({
+  const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
+  const showBanner = showNomPoolBanner({
     chainId: token?.chain?.id,
-    balances,
+    addresses: balances.sorted.map((b) => b.address),
   })
 
   const navigate = useNavigate()
@@ -141,9 +142,9 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   }, [genericEvent, token?.symbol])
 
   const handleDismissStakingBanner = useCallback(() => {
-    dismissBanner()
+    dismissNomPoolBanner()
     genericEvent("dismiss staking banner", { from: "popup", symbol: token?.symbol })
-  }, [genericEvent, dismissBanner, token?.symbol])
+  }, [genericEvent, dismissNomPoolBanner, token?.symbol])
 
   const { tokens, fiat } = useMemo(() => {
     return {
