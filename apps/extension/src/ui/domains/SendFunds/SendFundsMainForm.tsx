@@ -34,6 +34,7 @@ import { AddToAddressBookDrawer } from "../Asset/Send/AddToAddressBookDrawer"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
+import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import { useSendFunds } from "./useSendFunds"
 
 const useContact = (address?: string | null) => {
@@ -289,7 +290,7 @@ const ErrorMessage = () => {
 }
 
 const AmountEdit = () => {
-  const { sendMax, set } = useSendFundsWizard()
+  const { sendMax } = useSendFundsWizard()
   const [isTokenEdit, setIsTokenEdit] = useState(true)
   const { onSendMaxClick, tokenRates, isEstimatingMaxAmount } = useSendFunds()
 
@@ -395,7 +396,9 @@ const EstimatedFeeRow = () => {
 
   return (
     <Container className="flex w-full items-center justify-between gap-4 px-8 py-4">
-      <div className="whitespace-nowrap">Estimated Fee</div>
+      <div className="whitespace-nowrap">
+        Estimated Fee <SendFundsFeeTooltip />
+      </div>
       <div
         className={classNames(
           "flex grow items-center justify-end gap-2 overflow-hidden text-ellipsis whitespace-nowrap",
@@ -431,7 +434,7 @@ const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
 }
 
 const ReviewButton = () => {
-  const { gotoReview, tokenId, set } = useSendFundsWizard()
+  const { gotoReview } = useSendFundsWizard()
   const { isValid, tokensToBeReaped } = useSendFunds()
   const { open, close, isOpen } = useOpenClose()
 

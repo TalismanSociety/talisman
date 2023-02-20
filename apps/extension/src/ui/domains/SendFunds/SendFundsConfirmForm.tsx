@@ -11,6 +11,7 @@ import { TokenLogo } from "../Asset/TokenLogo"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { AddressDisplay } from "./AddressDisplay"
+import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsLedgerSubstrate = lazy(() => import("./SendFundsLedgerSubstrate"))
@@ -177,7 +178,9 @@ const EvmFeeSummary = () => {
         </div>
       </div>
       <div className="mt-4 flex h-[1.7rem] items-center justify-between gap-8 text-xs">
-        <div className="text-body-secondary">Estimated Fee</div>
+        <div className="text-body-secondary">
+          Estimated Fee <SendFundsFeeTooltip />
+        </div>
         <div className="text-body">
           <div className="inline-flex h-[1.7rem] items-center">
             <>
@@ -216,7 +219,9 @@ const SubFeeSummary = () => {
         </div>
       )}
       <div className="mt-4 flex h-[1.7rem] items-center justify-between gap-8 text-xs">
-        <div className="text-body-secondary">Estimated Fee</div>
+        <div className="text-body-secondary">
+          Estimated Fee <SendFundsFeeTooltip />
+        </div>
         <div className="text-body">
           <div
             className={classNames(
