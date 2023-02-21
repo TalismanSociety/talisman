@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react"
 export function useTokenRates(tokens?: Record<TokenId, IToken>): TokenRatesList {
   const generation = useRef(0)
 
-  const [tokenRates, setTokenRates] = useState<TokenRatesList>()
+  const [tokenRates, setTokenRates] = useState<TokenRatesList>({})
   useEffect(() => {
     if (!tokens) return
     if (Object.keys(tokens).length < 1) return
@@ -21,5 +21,5 @@ export function useTokenRates(tokens?: Record<TokenId, IToken>): TokenRatesList 
     })
   }, [tokens])
 
-  return tokenRates || {}
+  return tokenRates
 }

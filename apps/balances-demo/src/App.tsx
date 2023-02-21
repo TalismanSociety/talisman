@@ -1,27 +1,19 @@
 import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
-import { balanceModules } from "@talismn/balances-default-modules"
-import { useBalances, useChaindata, useTokens } from "@talismn/balances-react"
+import { useAllAddresses, useBalances, useTokens } from "@talismn/balances-react"
 import { Token } from "@talismn/chaindata-provider"
 import { formatDecimals } from "@talismn/util"
 import { Fragment, useEffect, useMemo, useState } from "react"
 
-const onfinalityApiKey = undefined
-
 export function App(): JSX.Element {
-  const chaindata = useChaindata({ onfinalityApiKey })
   const addresses = useExtensionAddresses()
+  const [, setAllAddresses] = useAllAddresses()
+  useEffect(() => setAllAddresses(addresses ?? []), [addresses, setAllAddresses])
 
-  const tokens = useTokens(chaindata)
-  const tokenIds = useMemo(
-    () =>
-      Object.values(tokens)
-        .filter(({ isTestnet }) => !isTestnet)
-        .map(({ id }) => id),
-    [tokens]
-  )
+  const tokens = useTokens()
+  const tokenIds = useMemo(() => Object.values(tokens).map(({ id }) => id), [tokens])
 
   const addressesByToken = useAddressesByToken(addresses, tokenIds)
-  const balances = useBalances(balanceModules, chaindata, addressesByToken, { onfinalityApiKey })
+  const balances = useBalances(addressesByToken)
 
   return (
     <div className="m-5 flex flex-col gap-5">

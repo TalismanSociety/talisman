@@ -7,9 +7,11 @@ import {
   BalanceModule,
   DefaultChainMeta,
   DefaultModuleConfig,
+  DefaultTransferParams,
   ExtendableChainMeta,
   ExtendableModuleConfig,
   ExtendableTokenType,
+  ExtendableTransferParams,
 } from "./BalanceModule"
 import log from "./log"
 import { AddressesByToken, Balance, Balances, SubscriptionCallback, UnsubscribeFn } from "./types"
@@ -22,9 +24,10 @@ export async function balances<
   TModuleType extends string,
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
 >(
-  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig>,
+  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
   chaindataProvider: ChaindataProvider,
   addressesByToken: AddressesByToken<TTokenType>
@@ -33,9 +36,10 @@ export async function balances<
   TModuleType extends string,
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
 >(
-  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig>,
+  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
   chaindataProvider: ChaindataProvider,
   addressesByToken: AddressesByToken<TTokenType>,
@@ -45,9 +49,10 @@ export async function balances<
   TModuleType extends string,
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
 >(
-  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig>,
+  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
   chaindataProvider: ChaindataProvider,
   addressesByToken: AddressesByToken<TTokenType>,
