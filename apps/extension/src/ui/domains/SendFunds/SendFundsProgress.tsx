@@ -1,5 +1,6 @@
 import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { TransactionStatus } from "@core/domains/transactions/types"
+import { ExternalLinkIcon } from "@talisman/theme/icons"
 import useChain from "@ui/hooks/useChain"
 import { useEvmTransactionWatch } from "@ui/hooks/useEvmTransactionWatch"
 import useTransactionById from "@ui/hooks/useTransactionById"
@@ -75,8 +76,8 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
           <>
             Included in{" "}
             {href ? (
-              <a target="_blank" className="text-body" href={href}>
-                block #{blockNumber}
+              <a target="_blank" className="hover:text-body text-grey-200" href={href}>
+                block #{blockNumber} <ExternalLinkIcon className="inline align-text-top" />
               </a>
             ) : (
               <span className="text-body">block #{blockNumber}</span>
@@ -85,8 +86,8 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
         ) : href ? (
           <>
             View transaction on{" "}
-            <a target="_blank" className="text-body" href={href}>
-              block explorer
+            <a target="_blank" className="hover:text-body text-grey-200" href={href}>
+              block explorer <ExternalLinkIcon className="inline align-text-top" />
             </a>
           </>
         ) : (
