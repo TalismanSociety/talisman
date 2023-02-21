@@ -77,10 +77,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
         extrinsicIndex = block.extrinsics.findIndex(
           (extrinsic) => extrinsic.hash && extrinsic.hash.eq(hash)
         )
+        if (extrinsicIndex === -1) return
 
         // search for ExtrinsicSuccess event
         extrinsicResult =
-          typeof extrinsicIndex === "number" &&
           events
             .filter((event) => event.phase.isApplyExtrinsic)
             .filter((event) => event.phase.asApplyExtrinsic.eq(extrinsicIndex))
