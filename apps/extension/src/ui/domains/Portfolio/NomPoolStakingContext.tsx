@@ -7,13 +7,13 @@ import { provideContext } from "@talisman/util/provideContext"
 import { ChainId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import useAccounts from "@ui/hooks/useAccounts"
+import { useAppState } from "@ui/hooks/useAppState"
 import useBalances from "@ui/hooks/useBalances"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useEffect, useState } from "react"
 import { useDebounce } from "react-use"
 
 const useShowNomPoolStakingBannerProvider = () => {
-  const [showBannerSetting, setShowBannerSetting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [eligibleAddressBalances, setEligibleAddressBalances] = useState<Record<Address, bigint>>(
     {}
@@ -29,15 +29,7 @@ const useShowNomPoolStakingBannerProvider = () => {
     .filter(({ type }) => type === "sr25519")
     .map(({ address }) => address)
 
-  useEffect(() => {
-    const sub = appStore.observable.subscribe(({ showDotNomPoolStakingBanner }) =>
-      setShowBannerSetting(showDotNomPoolStakingBanner)
-    )
-
-    return () => {
-      sub.unsubscribe()
-    }
-  }, [])
+  const { showDotNomPoolStakingBanner: showBannerSetting } = useAppState()
 
   useEffect(() => {
     NOM_POOL_SUPPORTED_CHAINS.forEach((chainId) => {
@@ -49,7 +41,9 @@ const useShowNomPoolStakingBannerProvider = () => {
           .map((balance) => [
             balance.address,
             balance.free.planck -
-              (balance.token && "existentialDeposit" in balance.token
+              (balance.token &&
+              "existentialDeposit" in balance.token &&
+              balance.token.existentialDeposit
                 ? BigInt(balance.token.existentialDeposit)
                 : BigInt(0)) -
               BigInt(NOM_POOL_MIN_DEPOSIT[chainId] || 0),
@@ -64,17 +58,17 @@ const useShowNomPoolStakingBannerProvider = () => {
     () => {
       setIsLoading(true)
       const eligibleAddresses = Object.keys(eligibleAddressBalances)
+      if (eligibleAddresses.length === 0) return
+
       const nomPoolPromises = NOM_POOL_SUPPORTED_CHAINS.map((chainId) => {
         const key = `${chainId}|${eligibleAddresses.join("-")}`
         if (updateKey[chainId] && key === updateKey[chainId]) return Promise.resolve()
-
-        setUpdateKey({ ...updateKey, [chainId]: key })
-
+        setUpdateKey((prev) => ({ ...prev, [chainId]: key }))
         // if we already know that an account is not eligible, there is no point asking the RPC for the staked balance
         return api
           .getNomPoolStakedBalance({ chainId, addresses: eligibleAddresses })
           .then((result) => {
-            setNomPoolStake({ ...nomPoolStake, [chainId]: result })
+            setNomPoolStake((prev) => ({ ...prev, [chainId]: result }))
           })
           .catch((err) => {
             Sentry.captureException(err, { tags: { chainId } })
@@ -83,7 +77,7 @@ const useShowNomPoolStakingBannerProvider = () => {
       Promise.allSettled(nomPoolPromises).then(() => setIsLoading(false))
     },
     200,
-    [eligibleAddressBalances, nomPoolStake, setUpdateKey]
+    [eligibleAddressBalances, setUpdateKey, updateKey]
   )
 
   const dismissNomPoolBanner = useCallback(

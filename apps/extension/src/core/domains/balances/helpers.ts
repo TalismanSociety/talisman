@@ -10,14 +10,11 @@ import {
 } from "@core/domains/balances/types"
 import RpcFactory from "@core/libs/RpcFactory"
 import { chainConnector } from "@core/rpcs/chain-connector"
-import { Address } from "@core/types/base"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { Metadata } from "@polkadot/types"
-import { AnyJson } from "@polkadot/types-codec/types"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { StorageHelper } from "@talismn/balances"
-import { ChainId } from "@talismn/chaindata-provider"
 import { blake2Concat, decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 const getLockedType = (input: string, chainId: string): BalanceLockType => {
@@ -111,8 +108,10 @@ export const getNomPoolStake = async ({ addresses, chainId = "polkadot" }: Reque
   const [result] = await chainConnector.send(chainId, method, params)
   // sanity-check that the result is in the format we expect
   if (typeof result !== "object" || result === null) throw new Error("Invalid result")
+
   if (!hasOwnProperty(result, "changes") || typeof result.changes !== "object")
     throw new Error("Invalid result")
+
   if (!Array.isArray(result.changes)) throw new Error("Invalid result")
 
   const poolMembersResults = (result.changes as Array<[unknown, unknown]>).reduce(
@@ -123,13 +122,16 @@ export const getNomPoolStake = async ({ addresses, chainId = "polkadot" }: Reque
 
       const query = addressQueries.find((query) => query.stateKey === key)
       if (query === undefined) return result
+      try {
+        const queryResult = query.query.decode(change)
+        // is a `Codec` from pjs
 
-      const queryResult = query.query.decode(change)
-      // is a `Codec` from pjs
-
-      const humanResult = queryResult?.toHuman() as NomPoolStakedBalance | undefined
-      // explicit null is required here to ensure the frontend knows that the address has been queried
-      result[query.address] = humanResult || null
+        const humanResult = queryResult?.toHuman() as NomPoolStakedBalance | undefined
+        // explicit null is required here to ensure the frontend knows that the address has been queried
+        result[query.address] = humanResult || null
+      } catch (error) {
+        // noop
+      }
       return result
     },
     {} as ResponseNomPoolStake

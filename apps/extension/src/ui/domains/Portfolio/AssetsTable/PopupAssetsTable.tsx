@@ -203,15 +203,18 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
         </div>
       </AssetButton>
       {showBanner && (
-        <AssetButton className="staking-banner bg-primary-500 text-primary-500 flex justify-between bg-opacity-10 p-[1rem] align-middle">
+        <AssetButton className="staking-banner bg-primary-500 text-primary-500 flex items-center justify-between bg-opacity-10 p-[1rem]">
           <div onClick={handleClickStakingBanner} className="flex gap-2">
-            <ZapIcon className="h-[2.3rem] w-[2.3rem]" />
-            <div className="flex flex-col justify-start text-start">
-              <span className="text-start text-sm text-white">
-                You're eligible for {token?.symbol} staking!
-              </span>
-              <div className="flex gap-1 text-start text-xs">
-                Earn 15%+ on your {token?.symbol} with Talisman Staking <ExternalLinkIcon />
+            <div className="self-center">
+              <ZapIcon className="h-[2.6rem] w-[2.6rem]" />
+            </div>
+            <div className="flex flex-col justify-start gap-[0.2rem] text-start text-sm text-white">
+              <span className="font-bold">You're eligible for {token?.symbol} staking!</span>
+              <div className="inline-flex gap-1 text-xs">
+                Earn ~15% yield on your {token?.symbol} on the
+                <span className="text-primary-500 flex gap-1">
+                  Portal <ExternalLinkIcon />
+                </span>
               </div>
             </div>
           </div>
