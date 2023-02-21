@@ -18,6 +18,7 @@ import {
   DetailedHTMLProps,
   FC,
   FormEvent,
+  PropsWithChildren,
   useCallback,
   useEffect,
   useMemo,
@@ -252,6 +253,14 @@ const FiatInput = () => {
   )
 }
 
+const DisplayContainer: FC<PropsWithChildren> = ({ children }) => {
+  return (
+    <div className="text-body-secondary max-w-[264px] overflow-hidden text-ellipsis whitespace-nowrap text-sm">
+      {children}
+    </div>
+  )
+}
+
 const FiatDisplay = () => {
   const { tokenRates, transfer, maxAmount, sendMax } = useSendFunds()
 
@@ -259,7 +268,11 @@ const FiatDisplay = () => {
 
   if (!tokenRates || !value) return null
 
-  return <Fiat amount={value.fiat("usd") ?? 0} noCountUp />
+  return (
+    <DisplayContainer>
+      <Fiat amount={value.fiat("usd") ?? 0} noCountUp />
+    </DisplayContainer>
+  )
 }
 
 const TokenDisplay = () => {
@@ -270,12 +283,14 @@ const TokenDisplay = () => {
   if (!token || !value) return null
 
   return (
-    <Tokens
-      amount={value.tokens ?? "0"}
-      decimals={token.decimals}
-      symbol={token.symbol}
-      noCountUp
-    />
+    <DisplayContainer>
+      <Tokens
+        amount={value.tokens ?? "0"}
+        decimals={token.decimals}
+        symbol={token.symbol}
+        noCountUp
+      />
+    </DisplayContainer>
   )
 }
 
@@ -309,17 +324,17 @@ const AmountEdit = () => {
           isEstimatingMaxAmount && "invisible"
         )}
       >
-        <div className="text-body-secondary max-w-[264px] overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-          {!isTokenEdit ? <TokenDisplay /> : <FiatDisplay />}
-        </div>
         {tokenRates && (
-          <PillButton
-            onClick={toggleIsTokenEdit}
-            size="xs"
-            className="h-[2.2rem] w-[2.2rem] rounded-full px-0 py-0"
-          >
-            <SwapIcon />
-          </PillButton>
+          <>
+            {!isTokenEdit ? <TokenDisplay /> : <FiatDisplay />}
+            <PillButton
+              onClick={toggleIsTokenEdit}
+              size="xs"
+              className="h-[2.2rem] w-[2.2rem] rounded-full px-0 py-0"
+            >
+              <SwapIcon />
+            </PillButton>
+          </>
         )}
         <PillButton
           onClick={onSendMaxClick}
