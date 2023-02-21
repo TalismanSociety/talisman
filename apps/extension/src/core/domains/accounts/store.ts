@@ -1,5 +1,5 @@
 import { SubscribableStorageProvider } from "@core/libs/Store"
-import passworder from "@metamask/browser-passworder"
+import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert, isObject } from "@polkadot/util"
 import { Err, Ok, Result } from "ts-results"
 
@@ -19,9 +19,9 @@ export type SeedPhraseData = {
 }
 
 export const encryptSeed = async (seed: string, password: string) => {
-  const cipher = await passworder.encrypt(password, seed)
+  const cipher = await encrypt(password, seed)
 
-  const checkedSeed = await passworder.decrypt(password, cipher)
+  const checkedSeed = await decrypt(password, cipher)
   assert(seed === checkedSeed, "Seed encryption failed")
 
   return cipher
@@ -60,7 +60,7 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
     let seed: string
     const cipher = await this.get("cipher")
     try {
-      const decryptedSeed = await passworder.decrypt<string | LegacySeedObj>(password, cipher)
+      const decryptedSeed = (await decrypt(password, cipher)) as string | LegacySeedObj
       if (isObject(decryptedSeed)) {
         const unpackResult = legacyUnpackSeed(decryptedSeed)
         if (unpackResult.err) throw new Error(unpackResult.val)
