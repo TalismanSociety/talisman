@@ -35,7 +35,7 @@ export const SendFundsRecipientPicker = () => {
   const newAddresses = useMemo(() => {
     const isEthereum = isEthereumAddress(from)
     const normalize = (addr: string) =>
-      isEthereum ? ethers.utils.getAddress(addr) : convertAddress(addr, null)
+      isEthereum ? addr.toLowerCase() : convertAddress(addr, null)
 
     const addresses: { address: string }[] = []
 
