@@ -9,7 +9,6 @@ import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useBalances from "@ui/hooks/useBalances"
 import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
-import { ethers } from "ethers"
 import { useCallback, useMemo, useState } from "react"
 
 import { SendFundsAccountsList } from "./SendFundsAccountsList"

@@ -158,7 +158,7 @@ const TokenRow: FC<TokenRowProps> = ({
               <div className={classNames("grow", isLoading && "animate-pulse")}>
                 {hasFiatRate ? (
                   <Fiat
-                    amount={balances.sum.fiat("usd").total}
+                    amount={balances.sum.fiat("usd").transferable}
                     currency="usd"
                     isBalance
                     noCountUp
