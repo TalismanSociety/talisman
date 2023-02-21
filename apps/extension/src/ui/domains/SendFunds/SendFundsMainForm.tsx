@@ -5,7 +5,7 @@ import { IconAlert, InfoIcon, LoaderIcon, SwapIcon, UserPlusIcon } from "@talism
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { classNames, formatDecimals, planckToTokens, tokensToPlanck } from "@talismn/util"
+import { classNames, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
@@ -13,6 +13,7 @@ import { useInputNumberOnly } from "@ui/hooks/useInputNumberOnly"
 import { useInputAutoSize } from "@ui/hooks/useTextWidth"
 import useToken from "@ui/hooks/useToken"
 import { isSubToken } from "@ui/util/isSubToken"
+import { default as debounce } from "lodash/debounce"
 import {
   ChangeEventHandler,
   DetailedHTMLProps,
@@ -107,71 +108,70 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
 }
 
 const TokenInput = () => {
-  const { set, remove, sendMax, amount } = useSendFundsWizard()
+  const { set, remove, sendMax } = useSendFundsWizard()
   const { token, transfer, maxAmount, isEstimatingMaxAmount } = useSendFunds()
-
-  const placeholder = useMemo(() => {
-    if (token && sendMax && maxAmount) return `${formatDecimals(maxAmount.tokens)} ${token.symbol}`
-    return token ? `0 ${token.symbol}` : "0"
-  }, [maxAmount, sendMax, token])
-
-  const [text, setText] = useState<string>("")
 
   //can't measure text from an input[type=number] so we use a input[type=text] and restrict input to numbers
   const refInput = useRef<HTMLInputElement>(null)
   useInputNumberOnly(refInput)
-  useInputAutoSize(refInput)
-
-  // init from query string
-  const refInitialized = useRef(false)
-  useEffect(() => {
-    if (!refInitialized.current && transfer?.tokens) {
-      refInitialized.current = true
-      if (!sendMax) setText(transfer?.tokens)
-    }
-  }, [sendMax, transfer?.tokens])
+  const resize = useInputAutoSize(refInput)
 
   useEffect(() => {
-    if (!refInput.current) return
-    setText(sendMax || !amount || !token ? "" : planckToTokens(amount, token.decimals))
-  }, [amount, sendMax, token])
+    if (!refInput.current || !sendMax || !maxAmount?.tokens) return
+    // while send max feature is on, keep in sync and resize on each change
+    refInput.current.value = maxAmount?.tokens
+    resize()
+  }, [maxAmount?.tokens, resize, sendMax, token])
 
+  const defaultValue = useMemo(
+    () => (sendMax && maxAmount ? maxAmount.tokens : transfer?.tokens ?? ""),
+    [maxAmount, sendMax, transfer?.tokens]
+  )
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
+    debounce((e) => {
       if (sendMax) set("sendMax", false)
 
-      if (token && !isNaN(parseFloat(e.target.value)))
-        set("amount", tokensToPlanck(e.target.value, token.decimals))
+      const text = e.target.value ?? ""
+      const num = Number(text)
 
-      if (!e.target.value.length) remove("amount")
-
-      setText(e.target.value || "")
-    },
+      if (token && text.length && !isNaN(num)) set("amount", tokensToPlanck(text, token.decimals))
+      else remove("amount")
+    }, 250),
     [remove, sendMax, set, token]
   )
 
   return (
-    <div className="flex w-full max-w-[400px] flex-nowrap justify-center gap-4">
+    <div
+      className={classNames(
+        "flex w-full max-w-[400px] flex-nowrap items-center justify-center gap-4",
+        isEstimatingMaxAmount && "animate-pulse"
+      )}
+    >
+      {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>}
       <input
+        key="tokenInput"
         ref={refInput}
         type="text"
-        value={sendMax ? "" : text}
-        placeholder={placeholder}
+        defaultValue={defaultValue}
+        placeholder={`0 ${token?.symbol}`}
         autoFocus={!sendMax}
         className={classNames(
-          "text-body inline-block min-w-0  bg-transparent text-center text-xl",
+          "text-body peer inline-block min-w-0 bg-transparent text-xl",
           sendMax && "placeholder:text-white",
           isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
-      <span className="shrink-0">{text && !sendMax ? ` ${token?.symbol}` : ""}</span>
-      {isEstimatingMaxAmount && (
-        <div className="text-body-disabled mb-4 flex items-center justify-center gap-2 text-base font-light">
-          <LoaderIcon className="text-md inline-block animate-spin" />
-          <div>Estimating max amount...</div>
-        </div>
-      )}
+      <div
+        className={classNames(
+          "block shrink-0 ",
+          isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:hidden"
+        )}
+      >
+        {token?.symbol}
+      </div>
     </div>
   )
 }
@@ -182,46 +182,38 @@ const FiatInput = () => {
   const { set, remove, sendMax } = useSendFundsWizard()
   const { token, transfer, maxAmount, tokenRates, isEstimatingMaxAmount } = useSendFunds()
 
-  const placeholder = useMemo(() => {
-    if (token && sendMax && maxAmount) return `$${maxAmount?.fiat("usd")?.toFixed(2)}`
-    return FIAT_PLACEHOLDER
-  }, [maxAmount, sendMax, token])
-
-  const [text, setText] = useState<string>("")
+  const defaultValue = useMemo(
+    () =>
+      sendMax && maxAmount
+        ? maxAmount.fiat("usd")?.toString()
+        : transfer?.fiat("usd")?.toString() ?? "",
+    [maxAmount, sendMax, transfer]
+  )
 
   //can't measure text from an input[type=number] so we use a input[type=text] and restrict input to numbers
   const refInput = useRef<HTMLInputElement>(null)
   useInputNumberOnly(refInput)
-  useInputAutoSize(refInput)
-
-  const refInitialized = useRef(false)
-  useEffect(() => {
-    if (!refInitialized.current && transfer?.tokens) {
-      refInitialized.current = true
-      if (!sendMax) setText(transfer?.fiat("usd")?.toFixed(2) ?? "")
-    }
-  }, [sendMax, text, transfer])
+  const resize = useInputAutoSize(refInput)
 
   useEffect(() => {
-    if (sendMax && refInput.current) {
-      setText("")
-    }
-  }, [sendMax])
+    if (!refInput.current || !sendMax || !maxAmount?.tokens) return
+    // while send max feature is on, keep in sync and resize on each change
+    refInput.current.value = maxAmount?.fiat("usd")?.toString() ?? ""
+    resize()
+  }, [maxAmount, resize, sendMax, token])
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       if (sendMax) set("sendMax", false)
 
-      // TODO exclude 0s
-      if (!!tokenRates && tokenRates.usd !== null && token && !isNaN(parseFloat(e.target.value))) {
-        const fiat = parseFloat(e.target.value)
+      const text = e.target.value ?? ""
+      const num = Number(text)
+
+      if (token && tokenRates?.usd && text.length && !isNaN(num)) {
+        const fiat = parseFloat(text)
         const tokens = (fiat / tokenRates.usd).toFixed(Math.ceil(token.decimals / 3))
         set("amount", tokensToPlanck(tokens, token.decimals))
-      }
-      if (!e.target.value.length) {
-        remove("amount")
-      }
-      setText(e.target.value)
+      } else remove("amount")
     },
     [remove, sendMax, set, token, tokenRates]
   )
@@ -229,26 +221,35 @@ const FiatInput = () => {
   if (!tokenRates) return null
 
   return (
-    <div className="text-center">
-      {text?.length ? "$" : ""}
+    <div
+      className={classNames(
+        // display flex in reverse order to leverage peer css
+        "end flex w-full max-w-[400px] flex-row-reverse flex-nowrap items-center justify-center",
+        isEstimatingMaxAmount && "animate-pulse"
+      )}
+    >
       <input
+        key="fiatInput"
         ref={refInput}
         type="text"
-        value={sendMax ? "" : text}
-        autoFocus
-        placeholder={placeholder}
+        defaultValue={defaultValue}
+        autoFocus={!sendMax}
+        placeholder={"0.00"}
         className={classNames(
-          "text-body inline-block min-w-0 max-w-[32rem] bg-transparent text-center text-xl",
+          "text-body peer inline-block min-w-0 bg-transparent text-xl",
           isEstimatingMaxAmount && "hidden" // hide until value is known
         )}
         onChange={handleChange}
       />
-      {isEstimatingMaxAmount && (
-        <div className="text-body-disabled mb-4 flex items-center justify-center gap-2 text-base font-light">
-          <LoaderIcon className="text-md inline-block animate-spin" />
-          <div>Estimating max amount...</div>
-        </div>
-      )}
+      {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>}
+      <div
+        className={classNames(
+          "block shrink-0",
+          isEstimatingMaxAmount ? "text-grey-800" : "peer-placeholder-shown:text-body-disabled"
+        )}
+      >
+        $
+      </div>
     </div>
   )
 }
@@ -305,9 +306,8 @@ const ErrorMessage = () => {
 }
 
 const AmountEdit = () => {
-  const { sendMax } = useSendFundsWizard()
   const [isTokenEdit, setIsTokenEdit] = useState(true)
-  const { onSendMaxClick, tokenRates, isEstimatingMaxAmount } = useSendFunds()
+  const { onSendMaxClick, tokenRates, isEstimatingMaxAmount, sendMax, token } = useSendFunds()
 
   const toggleIsTokenEdit = useCallback(() => {
     setIsTokenEdit((prev) => !prev)
@@ -315,38 +315,45 @@ const AmountEdit = () => {
 
   return (
     <div className="w-full grow">
-      <div className="flex h-[12rem] flex-col justify-end text-xl font-bold">
-        {isTokenEdit ? <TokenInput /> : <FiatInput />}
-      </div>
-      <div
-        className={classNames(
-          "mt-4 flex max-w-full items-center justify-center gap-6",
-          isEstimatingMaxAmount && "invisible"
-        )}
-      >
-        {tokenRates && (
-          <>
-            {!isTokenEdit ? <TokenDisplay /> : <FiatDisplay />}
+      {!!token && (
+        <>
+          <div className="flex h-[12rem] flex-col justify-end text-xl font-bold">
+            {isTokenEdit ? <TokenInput /> : <FiatInput />}
+          </div>
+          <div
+            className={classNames(
+              "mt-4 flex max-w-full items-center justify-center gap-6",
+              isEstimatingMaxAmount && "invisible"
+            )}
+          >
+            {tokenRates && (
+              <>
+                {!isTokenEdit ? <TokenDisplay /> : <FiatDisplay />}
+                <PillButton
+                  onClick={toggleIsTokenEdit}
+                  size="xs"
+                  className="h-[2.2rem] w-[2.2rem] rounded-full px-0 py-0"
+                >
+                  <SwapIcon />
+                </PillButton>
+              </>
+            )}
             <PillButton
-              onClick={toggleIsTokenEdit}
+              onClick={onSendMaxClick}
               size="xs"
-              className="h-[2.2rem] w-[2.2rem] rounded-full px-0 py-0"
+              className={classNames(
+                "h-[2.2rem] rounded-sm py-0 px-4"
+                //  , sendMax && "bg-grey-700"
+              )}
             >
-              <SwapIcon />
+              Max
             </PillButton>
-          </>
-        )}
-        <PillButton
-          onClick={onSendMaxClick}
-          size="xs"
-          className={classNames("h-[2.2rem] rounded-sm py-0 px-4", sendMax && "bg-grey-700")}
-        >
-          Max
-        </PillButton>
-      </div>
-      <div className="text-brand-orange mt-4 text-center text-xs">
-        <ErrorMessage />
-      </div>
+          </div>
+          <div className="text-brand-orange mt-4 text-center text-xs">
+            <ErrorMessage />
+          </div>
+        </>
+      )}
     </div>
   )
 }

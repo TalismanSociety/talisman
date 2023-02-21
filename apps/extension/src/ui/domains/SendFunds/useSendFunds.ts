@@ -10,7 +10,6 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
-import { useAlec } from "@ui/hooks/useAlec"
 import { useBalance } from "@ui/hooks/useBalance"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
@@ -402,9 +401,9 @@ const useSendFundsProvider = () => {
   const onSendMaxClick = useCallback(() => {
     if (!token || !maxAmount) return
 
-    if (isSubToken(token)) set("sendMax", !sendMax)
+    if (isSubToken(token)) set("sendMax", true)
     else set("amount", maxAmount.planck.toString())
-  }, [maxAmount, sendMax, set, token])
+  }, [maxAmount, set, token])
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"

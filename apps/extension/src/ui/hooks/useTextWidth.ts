@@ -1,4 +1,4 @@
-import { RefObject, useEffect } from "react"
+import { RefObject, useCallback, useEffect } from "react"
 
 const getTextWidth = (text?: string, element?: HTMLElement) => {
   if (!text?.length) return 0
@@ -11,27 +11,32 @@ const getTextWidth = (text?: string, element?: HTMLElement) => {
 }
 
 const checkSize = (input: HTMLInputElement) => {
-  const width = getTextWidth(input.value?.length ? input.value : input.placeholder ?? "0", input)
+  const text = input.value || input.placeholder || "0"
+  const width = getTextWidth(text, input)
+
   if (width !== input.clientWidth) input.style.width = `${width}px`
 }
 
+// works only with uncontrolled inputs
 export const useInputAutoSize = (ref?: RefObject<HTMLInputElement>) => {
-  useEffect(() => {
-    if (!ref?.current) return
-    const input = ref.current
-
-    const observer = new MutationObserver((changes) => {
-      if (!changes.find((c) => ["value", "placeholder"].includes(c.attributeName ?? ""))) return
-      checkSize(input)
-    })
-
-    observer.observe(input, { attributes: true, childList: false, subtree: false })
-
-    // init
+  const resize = useCallback(() => {
+    const input = ref?.current
+    if (!input) return
     checkSize(input)
+  }, [ref])
+
+  useEffect(() => {
+    const input = ref?.current
+    if (!input) return
+
+    input.addEventListener("input", resize)
+
+    resize()
 
     return () => {
-      observer.disconnect()
+      input.removeEventListener("input", resize)
     }
-  }, [ref])
+  }, [ref, resize])
+
+  return resize
 }

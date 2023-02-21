@@ -61,7 +61,6 @@ const useSendFundsWizardProvider = () => {
         }
       }
 
-      if (key === "sendMax" && value) searchParams.delete("amount")
       if (key === "amount" && value) searchParams.delete("sendMax")
       if (key === "from" && value) searchParams.delete("sendMax")
 
