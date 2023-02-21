@@ -2,16 +2,17 @@ import { Balances } from "@core/domains/balances/types"
 import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { LockIcon } from "@talisman/theme/icons"
+import { ExternalLinkIcon, LockIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { ReactNode, useCallback, useMemo } from "react"
+import { ReactNode, useCallback, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
+import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
 import { useSelectedAccount } from "../SelectedAccountContext"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
@@ -60,9 +61,12 @@ const AssetButton = styled.button`
   align-items: center;
   border-radius: var(--border-radius-tiny);
   height: 5.6rem;
-  padding: 0 0.2rem;
 
-  background: var(--color-background-muted);
+  :not(.staking-banner) {
+    padding: 0 0.2rem;
+    background: var(--color-background-muted);
+  }
+
   .logo-stack .logo-circle {
     border-color: var(--color-background-muted);
   }
@@ -71,7 +75,7 @@ const AssetButton = styled.button`
     cursor: pointer;
   }
 
-  :not(.skeleton):hover {
+  :not(.skeleton, .staking-banner):hover {
     background: var(--color-background-muted-3x);
     .logo-stack .logo-circle {
       border-color: var(--color-background-muted-3x);
@@ -120,12 +124,27 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   )
 
   const { token, summary } = useTokenBalancesSummary(balances)
+  const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
+  const showBanner = showNomPoolBanner({
+    chainId: token?.chain?.id,
+    addresses: balances.sorted.map((b) => b.address),
+  })
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
     navigate(`/portfolio/${token?.symbol}`)
     genericEvent("goto portfolio asset", { from: "popup", symbol: token?.symbol })
   }, [genericEvent, navigate, token?.symbol])
+
+  const handleClickStakingBanner = useCallback(() => {
+    window.open("https://app.talisman.xyz/staking")
+    genericEvent("open web app staking from banner", { from: "popup", symbol: token?.symbol })
+  }, [genericEvent, token?.symbol])
+
+  const handleDismissStakingBanner = useCallback(() => {
+    dismissNomPoolBanner()
+    genericEvent("dismiss staking banner", { from: "popup", symbol: token?.symbol })
+  }, [genericEvent, dismissNomPoolBanner, token?.symbol])
 
   const { tokens, fiat } = useMemo(() => {
     return {
@@ -143,45 +162,68 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   if (!token || !summary) return null
 
   return (
-    <AssetButton className="asset" onClick={handleClick}>
-      <div className="p-6 text-xl">
-        <TokenLogo tokenId={token.id} />
-      </div>
-      <div className="relative flex grow gap-4 pr-6">
-        <div className="relative grow">
-          {/* we want content from this cell to be hidden if there are too many tokens to display on right cell */}
-          <div className="absolute top-0 left-0 flex w-full flex-col gap-2 overflow-hidden text-left">
-            <div className="text-body flex items-center gap-2 whitespace-nowrap text-sm font-bold">
-              {token.symbol}
-            </div>
-            {!!networkIds.length && (
-              <div className="text-base">
-                <NetworksLogoStack networkIds={networkIds} />
-              </div>
-            )}
-          </div>
+    <>
+      <AssetButton className="asset" onClick={handleClick}>
+        <div className="p-6 text-xl">
+          <TokenLogo tokenId={token.id} />
         </div>
-        <div
-          className={classNames(
-            "flex flex-col gap-2 text-right",
-            isFetching && "animate-pulse transition-opacity"
-          )}
-        >
+        <div className="relative flex grow gap-4 pr-6">
+          <div className="relative grow">
+            {/* we want content from this cell to be hidden if there are too many tokens to display on right cell */}
+            <div className="absolute top-0 left-0 flex w-full flex-col gap-2 overflow-hidden text-left">
+              <div className="text-body flex items-center gap-2 whitespace-nowrap text-sm font-bold">
+                {token.symbol}
+              </div>
+              {!!networkIds.length && (
+                <div className="text-base">
+                  <NetworksLogoStack networkIds={networkIds} />
+                </div>
+              )}
+            </div>
+          </div>
           <div
             className={classNames(
-              "whitespace-nowrap text-sm font-bold",
-              locked ? "text-body-secondary" : "text-white"
+              "flex flex-col gap-2 text-right",
+              isFetching && "animate-pulse transition-opacity"
             )}
           >
-            <Tokens amount={tokens} symbol={token?.symbol} isBalance />
-            {locked ? <RowLockIcon className="lock inline align-baseline" /> : null}
-          </div>
-          <div className="text-body-secondary leading-base text-xs">
-            {fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}
+            <div
+              className={classNames(
+                "whitespace-nowrap text-sm font-bold",
+                locked ? "text-body-secondary" : "text-white"
+              )}
+            >
+              <Tokens amount={tokens} symbol={token?.symbol} isBalance />
+              {locked ? <RowLockIcon className="lock inline align-baseline" /> : null}
+            </div>
+            <div className="text-body-secondary leading-base text-xs">
+              {fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}
+            </div>
           </div>
         </div>
-      </div>
-    </AssetButton>
+      </AssetButton>
+      {showBanner && (
+        <AssetButton className="staking-banner bg-primary-500 text-primary-500 flex items-center justify-between bg-opacity-10 p-[1rem]">
+          <div onClick={handleClickStakingBanner} className="flex gap-2">
+            <div className="self-center">
+              <ZapIcon className="h-[2.6rem] w-[2.6rem]" />
+            </div>
+            <div className="flex flex-col justify-start gap-[0.2rem] text-start text-sm text-white">
+              <span className="font-bold">You're eligible for {token?.symbol} staking!</span>
+              <div className="inline-flex gap-1 text-xs">
+                Earn ~15% yield on your {token?.symbol} on the
+                <span className="text-primary-500 flex gap-1">
+                  Portal <ExternalLinkIcon />
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="self-start">
+            <XIcon onClick={handleDismissStakingBanner} className="h-6" />
+          </div>
+        </AssetButton>
+      )}
+    </>
   )
 }
 

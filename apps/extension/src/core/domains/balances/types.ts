@@ -39,10 +39,25 @@ export type RequestBalanceLocks = {
 
 export type ResponseBalanceLocks = Record<Address, LockedBalance[]>
 
+export type NomPoolStakedBalance = {
+  lastRecordedRewardCounter: string
+  points: string
+  poolId: string
+  unbondingEras: unknown
+}
+
+export type RequestNomPoolStake = {
+  chainId?: ChainId
+  addresses: Address[]
+}
+
+export type ResponseNomPoolStake = Record<Address, NomPoolStakedBalance | null>
+
 export interface BalancesMessages {
   // balance message signatures
   "pri(balances.get)": [RequestBalance, BalanceJson]
   "pri(balances.locks.get)": [RequestBalanceLocks, ResponseBalanceLocks]
+  "pri(balances.nompools.get)": [RequestNomPoolStake, ResponseNomPoolStake]
   "pri(balances.subscribe)": [null, boolean, boolean]
   "pri(balances.byparams.subscribe)": [RequestBalancesByParamsSubscribe, boolean, BalancesUpdate]
 }
