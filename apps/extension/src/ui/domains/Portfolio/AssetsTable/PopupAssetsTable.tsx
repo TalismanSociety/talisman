@@ -150,7 +150,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
       <div className="relative flex grow gap-4 pr-6">
         <div className="relative grow">
           {/* we want content from this cell to be hidden if there are too many tokens to display on right cell */}
-          <div className="absolute top-0 left-0 flex h-full w-full flex-col gap-2 overflow-hidden text-left">
+          <div className="absolute top-0 left-0 flex w-full flex-col gap-2 overflow-hidden text-left">
             <div className="text-body flex items-center gap-2 whitespace-nowrap text-sm font-bold">
               {token.symbol}
             </div>
