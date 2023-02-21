@@ -176,8 +176,6 @@ const TokenInput = () => {
   )
 }
 
-const FIAT_PLACEHOLDER = "$0.00"
-
 const FiatInput = () => {
   const { set, remove, sendMax } = useSendFundsWizard()
   const { token, transfer, maxAmount, tokenRates, isEstimatingMaxAmount } = useSendFunds()
