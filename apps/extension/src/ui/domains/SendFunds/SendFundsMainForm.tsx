@@ -202,8 +202,9 @@ const FiatInput = () => {
     resize()
   }, [maxAmount, resize, sendMax, token])
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
-    (e) => {
+    debounce((e) => {
       if (sendMax) set("sendMax", false)
 
       const text = e.target.value ?? ""
@@ -214,7 +215,7 @@ const FiatInput = () => {
         const tokens = (fiat / tokenRates.usd).toFixed(Math.ceil(token.decimals / 3))
         set("amount", tokensToPlanck(tokens, token.decimals))
       } else remove("amount")
-    },
+    }, 250),
     [remove, sendMax, set, token, tokenRates]
   )
 
