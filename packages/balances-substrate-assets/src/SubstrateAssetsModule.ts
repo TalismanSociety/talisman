@@ -572,7 +572,10 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
       //   reason: Sufficient
       //   extra: null
       // }>
-      const balance = (query.decode(change) as any)?.value
+      const balance = (query.decode(change) as any)?.value ?? {
+        balance: "0",
+        isFrozen: false,
+      }
 
       const { address, token } = query.tags || {}
       if (!address || !token || !balance) return
