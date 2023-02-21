@@ -84,7 +84,7 @@ export const useChainMetadata = (genesisHash?: string, specVersion?: number) => 
         updateUrl,
       })
     },
-    500,
+    1000,
     [chain, chains.length, hasMetadataUpdated, isMetadataUpdating, metadata, specVersion]
   )
 
