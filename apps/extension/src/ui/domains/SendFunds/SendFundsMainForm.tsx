@@ -1,5 +1,6 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Drawer } from "@talisman/components/Drawer"
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { IconAlert, InfoIcon, LoaderIcon, SwapIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
@@ -295,12 +296,12 @@ const TokenDisplay = () => {
 }
 
 const ErrorMessage = () => {
-  const { error } = useSendFunds()
+  const { error, errorDetails } = useSendFunds()
 
   return error ? (
-    <span>
+    <WithTooltip tooltip={errorDetails}>
       <IconAlert className="inline-block align-text-top text-sm" /> {error}
-    </span>
+    </WithTooltip>
   ) : null
 }
 

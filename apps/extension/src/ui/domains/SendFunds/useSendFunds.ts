@@ -55,15 +55,18 @@ const useEvmTransaction = (
 ) => {
   const token = useToken(tokenId)
 
+  const [evmInvalidTxError, setEvmInvalidTxError] = useState<Error | undefined>()
   const [tx, setTx] = useState<ethers.providers.TransactionRequest>()
 
   useEffect(() => {
+    setEvmInvalidTxError(undefined)
     if (!isEvmToken(token) || !token.evmNetwork?.id || !from || !token || !amount || !to)
       setTx(undefined)
     else {
       getEthTransferTransactionBase(token.evmNetwork.id, from, to, token, amount)
         .then(setTx)
         .catch((err) => {
+          setEvmInvalidTxError(err)
           setTx(undefined)
           // eslint-disable-next-line no-console
           console.error("Failed to populate transaction", { err })
@@ -73,7 +76,7 @@ const useEvmTransaction = (
 
   const result = useEthTransaction(tx, isLocked)
 
-  return tx ? { tx, ...result } : undefined
+  return { evmTransaction: tx ? { tx, ...result } : undefined, evmInvalidTxError }
 }
 
 const useSubTransaction = (
@@ -153,7 +156,13 @@ const useSendFundsProvider = () => {
     ? "transfer"
     : "transferKeepAlive"
 
-  const evmTransaction = useEvmTransaction(tokenId, from, to, amount ?? "0", isLocked)
+  const { evmTransaction, evmInvalidTxError } = useEvmTransaction(
+    tokenId,
+    from,
+    to,
+    amount ?? "0",
+    isLocked
+  )
   const subTransaction = useSubTransaction(
     tokenId,
     from,
@@ -343,14 +352,23 @@ const useSendFundsProvider = () => {
     }
   }, [recipientBalance, token, transfer])
 
-  const { isValid, error } = useMemo(() => {
+  const { isValid, error, errorDetails } = useMemo(() => {
     try {
+      if (evmInvalidTxError) {
+        return {
+          isValid: false,
+          error: "Invalid input",
+          errorDetails: evmInvalidTxError.message,
+        }
+      }
+
       const txError = (evmTransaction?.error || subTransaction?.error) as Error
 
       if (txError)
         return {
           isValid: false,
-          error: "Failed to validate transaction : " + txError.message,
+          error: "Failed to validate transaction",
+          errorDetails: txError.message,
         }
 
       if (
@@ -382,6 +400,7 @@ const useSendFundsProvider = () => {
     }
   }, [
     costBreakdown,
+    evmInvalidTxError,
     evmTransaction?.error,
     from,
     isSendingEnough,
@@ -536,6 +555,7 @@ const useSendFundsProvider = () => {
     tipTokenRates,
     isLoading,
     error,
+    errorDetails,
     isLocked,
     setIsLocked,
     isValid,
