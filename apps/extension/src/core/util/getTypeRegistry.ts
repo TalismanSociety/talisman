@@ -5,7 +5,6 @@ import {
 } from "@core/util/getMetadataDef"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { hexToNumber } from "@polkadot/util"
-import * as Sentry from "@sentry/browser"
 
 // metadata may have been added manually to the store, for a chain that Talisman doesn't know about (not in chaindata)
 // => use either chainId or genesisHash as identifier

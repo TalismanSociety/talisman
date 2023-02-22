@@ -33,7 +33,11 @@ import {
   WatchAssetRequest,
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
-import { MetadataRequest, RequestMetadataId } from "@core/domains/metadata/types"
+import {
+  MetadataRequest,
+  MetadataUpdateStatus,
+  RequestMetadataId,
+} from "@core/domains/metadata/types"
 import {
   AnySigningRequest,
   AnySigningRequestID,
@@ -170,6 +174,11 @@ export default interface MessageTypes {
   authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>
   authrequestReject: (id: AuthRequestId) => Promise<boolean>
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
+
+  metadataUpdatesSubscribe: (
+    genesisHash: string,
+    cb: (status: MetadataUpdateStatus) => void
+  ) => UnsubscribeFn
 
   // chain message types
   chains: (cb: () => void) => UnsubscribeFn

@@ -3,11 +3,14 @@ import {
   SigningRequestID,
   SubstrateSigningRequest,
   TransactionDetails,
+  TransactionPayload,
 } from "@core/domains/signing/types"
 import { log } from "@core/log"
+import isJsonPayload from "@core/util/isJsonPayload"
 import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
 import useChains from "@ui/hooks/useChains"
+import { useChainMetadata } from "@ui/hooks/useMetadataUpdates"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
@@ -33,6 +36,46 @@ export const usePolkadotTransactionDetails = (requestId?: SigningRequestID<"subs
   }, [requestId])
 
   return { analysing, txDetails, error }
+}
+
+export const usePolkadotTransaction = (signingRequest: SubstrateSigningRequest) => {
+  const { analysing, txDetails, error } = usePolkadotTransactionDetails(signingRequest.id)
+
+  const { genesisHash, specVersion } = useMemo(() => {
+    const payload = signingRequest?.request?.payload
+    const isTx = payload && isJsonPayload(payload)
+    if (isTx) {
+      const { genesisHash, specVersion } = payload as TransactionPayload
+      return {
+        genesisHash,
+        specVersion: parseInt(specVersion, 16),
+      }
+    }
+    return { genesisHash: undefined, specVersion: undefined }
+  }, [signingRequest])
+
+  const {
+    isReady,
+    isLoading: isMetadataLoading,
+    isKnownChain,
+    isMetadataUpToDate,
+    isMetadataUpdating,
+    hasMetadataUpdateFailed,
+    updateUrl,
+  } = useChainMetadata(genesisHash, specVersion)
+
+  return {
+    isReady,
+    isMetadataLoading,
+    analysing,
+    txDetails,
+    error,
+    requiresMetadataUpdate:
+      !analysing && !isMetadataLoading && (!isKnownChain || !isMetadataUpToDate),
+    isMetadataUpdating,
+    hasMetadataUpdateFailed,
+    updateUrl,
+  }
 }
 
 export const usePolkadotSigningRequest = (signingRequest?: SubstrateSigningRequest) => {
@@ -68,5 +111,6 @@ export const usePolkadotSigningRequest = (signingRequest?: SubstrateSigningReque
     ...baseRequest,
     chain,
     approveHardware,
+    isLoading: !chains.length, // helps preventing chain name flickering
   }
 }

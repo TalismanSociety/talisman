@@ -146,6 +146,12 @@ export default class MessageService {
       delete this.handlers[data.id]
     }
 
+    // lost 4 hours on this, a warning would have helped :)
+    if (typeof data.subscription === "boolean")
+      log.warn(
+        "MessageService.handleResponse : subscription callback will not be called for falsy values, don't use booleans"
+      )
+
     if (data.subscription && handler.subscriber) handler.subscriber(data.subscription)
     else if (data.error) {
       if (data.isEthProviderRpcError)
