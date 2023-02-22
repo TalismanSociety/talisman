@@ -66,7 +66,7 @@ const TotalValueRow = () => {
     tipTokenRates,
   } = useSendFunds()
   const amount = sendMax ? maxAmount : transfer
-  // TODO move to hook
+
   const totalValue = useMemo(() => {
     // Not all tokens have a fiat rate. if one of the 3 tokens doesn't have a rate, don't show the row
     if (
@@ -286,11 +286,9 @@ export const SendFundsConfirmForm = () => {
               <NetworkDisplay />
             </div>
           </div>
-
           <div className="py-8">
             <hr className="text-grey-800" />
           </div>
-
           <FeeSummary />
           <TotalValueRow />
         </div>

@@ -32,7 +32,7 @@ const useStatusDetails = (status: TransactionStatus) => {
         return {
           title: "Transfer in progress",
           subtitle: "This may take a few minutes.",
-          extra: "You can close this window while your transfer will continue.",
+          extra: "You can now close this window. Your transfer will continue in the background.",
           animStatus: "processing",
         }
     }

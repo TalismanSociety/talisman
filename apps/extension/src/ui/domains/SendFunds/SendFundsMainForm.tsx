@@ -6,7 +6,7 @@ import { IconAlert, InfoIcon, LoaderIcon, SwapIcon, UserPlusIcon } from "@talism
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { classNames, tokensToPlanck } from "@talismn/util"
+import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
@@ -447,10 +447,21 @@ const ForfeitDetails: FC<ForfeitDetailsProps> = ({ tokenId, planck }) => {
 
   return (
     <>
-      This transaction will cause <TokensAndFiat planck={planck} tokenId={tokenId} noCountUp /> to
-      be lost. If your balance falls below the minimum of{" "}
-      <TokensAndFiat planck={token.existentialDeposit} tokenId={tokenId} noCountUp />, any remaining
-      tokens will be forfeit.
+      This transaction will cause{" "}
+      <Tokens
+        amount={planckToTokens(planck, token.decimals)}
+        decimals={token.decimals}
+        symbol={token.symbol}
+        noCountUp
+      />{" "}
+      to be lost. If your balance falls below the minimum of{" "}
+      <Tokens
+        amount={planckToTokens(token.existentialDeposit, token.decimals)}
+        decimals={token.decimals}
+        symbol={token.symbol}
+        noCountUp
+      />
+      , any remaining tokens will be forfeited.
     </>
   )
 }
