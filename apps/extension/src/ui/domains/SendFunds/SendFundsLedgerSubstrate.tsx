@@ -65,7 +65,6 @@ const SendFundsLedgerSubstrate = () => {
     [setIsLocked]
   )
 
-  // TODO test this case
   if (error) return <div className="text-alert-error">{error.message}</div>
 
   if (!isLocked || signed)
@@ -91,6 +90,7 @@ const SendFundsLedgerSubstrate = () => {
       payload={subTransaction.unsigned}
       onReject={sendToLedger(false)}
       onSignature={handleSigned}
+      parent={document.getElementById("send-funds-container")}
     />
   )
 }

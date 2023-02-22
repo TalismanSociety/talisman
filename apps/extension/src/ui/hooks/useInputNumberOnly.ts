@@ -24,8 +24,6 @@ const getInputFilter = (inputFilter: (text: string) => boolean) =>
     }
   }
 
-// TODO : max decimals
-// TODO : pad 0 left
 export const useInputNumberOnly = (ref: RefObject<HTMLInputElement>) => {
   useEffect(() => {
     const input = ref.current

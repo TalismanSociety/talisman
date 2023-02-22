@@ -22,6 +22,7 @@ import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
+import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
@@ -44,6 +45,42 @@ const useRecipientBalance = (token?: Token, address?: Address | null) => {
     retry: false,
     refetchInterval: 10_000,
   })
+}
+
+const useIsSendingEnough = (
+  recipientBalance?: Balance | null,
+  token?: Token,
+  transfer?: BalanceFormatter | null
+) => {
+  return useMemo(() => {
+    try {
+      if (!token || !recipientBalance || !transfer) return true
+      switch (token.type) {
+        case "evm-erc20":
+        case "evm-native":
+          return true
+        case "substrate-native":
+        case "substrate-orml":
+        case "substrate-assets":
+        case "substrate-equilibrium":
+        case "substrate-tokens": {
+          const existentialDeposit = new BalanceFormatter(
+            token.existentialDeposit ?? "0",
+            token.decimals
+          )
+
+          return (
+            transfer.planck === 0n ||
+            recipientBalance.total.planck > 0n ||
+            transfer.planck >= existentialDeposit.planck
+          )
+        }
+      }
+    } catch (err) {
+      log.error("isSendingEnough", { err })
+      return false
+    }
+  }, [recipientBalance, token, transfer])
 }
 
 const useEvmTransaction = (
@@ -94,7 +131,7 @@ const useSubTransaction = (
     queryKey: ["estimateFee", from, to, token?.id, amount, tip, method],
     queryFn: async () => {
       if (!token?.chain?.id || !from || !to || !amount) return null
-      const { partialFee, unsigned, pendingTransferId } = await api.assetTransferCheckFees(
+      const { partialFee, unsigned } = await api.assetTransferCheckFees(
         token.chain.id,
         token.id,
         from,
@@ -103,7 +140,7 @@ const useSubTransaction = (
         tip ?? "0",
         method
       )
-      return { partialFee, unsigned, pendingTransferId }
+      return { partialFee, unsigned }
     },
     refetchInterval: false,
     enabled: !isLocked,
@@ -112,10 +149,10 @@ const useSubTransaction = (
   return useMemo(() => {
     if (!isSubToken(token)) return undefined
 
-    const { partialFee, unsigned, pendingTransferId } = qSubstrateEstimateFee.data ?? {}
+    const { partialFee, unsigned } = qSubstrateEstimateFee.data ?? {}
     const { isLoading, isRefetching, error } = qSubstrateEstimateFee
 
-    return { partialFee, unsigned, pendingTransferId, isLoading, isRefetching, error }
+    return { partialFee, unsigned, isLoading, isRefetching, error }
   }, [qSubstrateEstimateFee, token])
 }
 
@@ -316,44 +353,18 @@ const useSendFundsProvider = () => {
       | undefined
   }, [costBreakdown, sendMax, tokenRatesMap])
 
-  // TODO proper hook
-  const {
-    data: recipientBalance,
-    isLoading: recipientBalanceIsLoading,
-    error: recipientBalanceError,
-  } = useRecipientBalance(token, to)
-  const isSendingEnough = useMemo(() => {
-    try {
-      if (!token || !recipientBalance || !transfer) return true
-      switch (token.type) {
-        case "evm-erc20":
-        case "evm-native":
-          return true
-        case "substrate-native":
-        case "substrate-orml":
-        case "substrate-assets":
-        case "substrate-equilibrium":
-        case "substrate-tokens": {
-          const existentialDeposit = new BalanceFormatter(
-            token.existentialDeposit ?? "0",
-            token.decimals
-          )
+  const { data: recipientBalance } = useRecipientBalance(token, to)
 
-          return (
-            transfer.planck === 0n ||
-            recipientBalance.total.planck > 0n ||
-            transfer.planck >= existentialDeposit.planck
-          )
-        }
-      }
-    } catch (err) {
-      log.error("isSendingEnough", { err })
-      return false
-    }
-  }, [recipientBalance, token, transfer])
+  const isSendingEnough = useIsSendingEnough(recipientBalance, token, transfer)
 
   const { isValid, error, errorDetails } = useMemo(() => {
     try {
+      if (token && !isTransferableToken(token))
+        return {
+          isValid: false,
+          error: `${token.symbol} transfers are not supported at this time`,
+        }
+
       if (evmInvalidTxError) {
         return {
           isValid: false,
@@ -362,13 +373,13 @@ const useSendFundsProvider = () => {
         }
       }
 
-      const txError = (evmTransaction?.error || subTransaction?.error) as Error
+      const txError = evmTransaction?.error || subTransaction?.error
 
       if (txError)
         return {
           isValid: false,
           error: "Failed to validate transaction",
-          errorDetails: txError.message,
+          errorDetails: (txError as Error)?.message ?? txError?.toString?.() ?? "Unknown error",
         }
 
       if (
@@ -492,12 +503,8 @@ const useSendFundsProvider = () => {
     async (signature: HexString) => {
       try {
         setIsProcessing(true)
-        if (subTransaction?.pendingTransferId) {
-          // TODO get rid of pending transfer id, it fills backend memory to death
-          const transfer = await api.assetTransferApproveSign(
-            subTransaction.pendingTransferId,
-            signature
-          )
+        if (subTransaction?.unsigned) {
+          const transfer = await api.assetTransferApproveSign(subTransaction.unsigned, signature)
           gotoProgress({ substrateTxId: transfer.id })
           return
         }
@@ -521,13 +528,13 @@ const useSendFundsProvider = () => {
       amount,
       evmTransaction,
       gotoProgress,
-      subTransaction?.pendingTransferId,
+      subTransaction?.unsigned,
       token?.evmNetwork?.id,
       token?.id,
     ]
   )
 
-  const result = {
+  return {
     from,
     to,
     tokenId,
@@ -567,8 +574,6 @@ const useSendFundsProvider = () => {
     sendErrorMessage,
     isEstimatingMaxAmount,
   }
-
-  return result
 }
 
 export const [SendFundsProvider, useSendFunds] = provideContext(useSendFundsProvider)

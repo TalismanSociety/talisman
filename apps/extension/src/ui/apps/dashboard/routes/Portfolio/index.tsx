@@ -1,4 +1,5 @@
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
+import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useEffect } from "react"
 import { Route, Routes, useSearchParams } from "react-router-dom"
@@ -25,12 +26,14 @@ export const Portfolio = () => {
     // share layout to prevent sidebar flickering when navigating between the 2 pages
     <Layout centered large>
       <PortfolioProvider>
-        <Routes>
-          {/* To match popup structure, in case of expand */}
-          <Route path="/assets" element={<PortfolioAssets />} />
-          <Route path=":symbol" element={<PortfolioAsset />} />
-          <Route path="" element={<PortfolioAssets />} />
-        </Routes>
+        <NomPoolStakingBannerProvider>
+          <Routes>
+            {/* To match popup structure, in case of expand */}
+            <Route path="/assets" element={<PortfolioAssets />} />
+            <Route path=":symbol" element={<PortfolioAsset />} />
+            <Route path="" element={<PortfolioAssets />} />
+          </Routes>
+        </NomPoolStakingBannerProvider>
       </PortfolioProvider>
     </Layout>
   )

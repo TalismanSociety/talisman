@@ -116,6 +116,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(balances.get)", { chainId, evmNetworkId, tokenId, address }),
   getBalanceLocks: ({ chainId, addresses }) =>
     messageService.sendMessage("pri(balances.locks.get)", { chainId, addresses }),
+  getNomPoolStakedBalance: ({ chainId, addresses }) =>
+    messageService.sendMessage("pri(balances.nompools.get)", { chainId, addresses }),
   balances: (cb) => messageService.subscribe("pri(balances.subscribe)", null, cb),
   balancesByParams: (addressesByChain, addressesByEvmNetwork, cb) =>
     messageService.subscribe(
@@ -141,6 +143,10 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(sites.requests.approve)", { id, addresses }),
   authrequestReject: (id) => messageService.sendMessage("pri(sites.requests.reject)", { id }),
   authrequestIgnore: (id) => messageService.sendMessage("pri(sites.requests.ignore)", { id }),
+
+  // track metadata updates ----------------------------------------------
+  metadataUpdatesSubscribe: (genesisHash, cb) =>
+    messageService.subscribe("pri(metadata.updates.subscribe)", { id: genesisHash }, cb),
 
   // chain message types
   chains: (cb) => messageService.subscribe("pri(chains.subscribe)", null, cb),
@@ -200,9 +206,9 @@ export const api: MessageTypes = {
       tip,
       method,
     }),
-  assetTransferApproveSign: (id, signature) =>
+  assetTransferApproveSign: (unsigned, signature) =>
     messageService.sendMessage("pri(assets.transfer.approveSign)", {
-      id,
+      unsigned,
       signature,
     }),
 

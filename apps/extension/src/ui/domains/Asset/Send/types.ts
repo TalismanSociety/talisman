@@ -45,12 +45,10 @@ export type SendTokensExpectedResult =
       transfer: TokenAmountInfo
       fees: TokenAmountInfo
       forfeits: TokenAmountInfo[]
-      pendingTransferId?: string
       unsigned: SignerPayloadJSON
     }
   | {
       type: "evm"
       transfer: TokenAmountInfo
       fees?: TokenAmountInfo
-      pendingTransferId?: string
     }

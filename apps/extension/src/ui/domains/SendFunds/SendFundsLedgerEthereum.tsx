@@ -33,8 +33,6 @@ const SendFundsLedgerEthereum = () => {
     [setIsLocked]
   )
 
-  const parent = useMemo(() => document.getElementById("send-funds-container"), [])
-
   if (error) return <div className="text-alert-error">{error.message}</div>
 
   if (!isLocked || signed)
@@ -60,7 +58,7 @@ const SendFundsLedgerEthereum = () => {
       onReject={sendToLedger(false)}
       onSignature={handleSigned}
       payload={evmTransaction.transaction}
-      parent={parent}
+      parent={document.getElementById("send-funds-container")}
     />
   )
 }

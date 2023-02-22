@@ -1,10 +1,14 @@
-import { BaseRequest, BaseRequestId } from "@core/types/base"
+import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
 import type {
   MetadataRequest as PolkadotMetadataRequest,
   RequestMetadataSubscribe,
 } from "@polkadot/extension-base/background/types"
 import type { MetadataDef } from "@polkadot/extension-inject/types"
 export type { MetadataDef }
+
+export type MetadataUpdateStatus = {
+  isUpdating: boolean
+}
 
 export type METADATA_PREFIX = "metadata"
 export const METADATA_PREFIX: METADATA_PREFIX = "metadata"
@@ -27,6 +31,7 @@ export type MetadataMessages = {
   "pri(metadata.reject)": [RequestMetadataReject, boolean]
   "pri(metadata.requests)": [RequestMetadataSubscribe, boolean, MetadataRequest[]]
   "pri(metadata.list)": [null, MetadataDef[]]
+  "pri(metadata.updates.subscribe)": [RequestIdOnly, boolean, MetadataUpdateStatus]
 }
 
 export type MetadataRequests = {

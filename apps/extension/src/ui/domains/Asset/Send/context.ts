@@ -226,7 +226,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         return
       }
 
-      const { partialFee, unsigned, pendingTransferId } = await api.assetTransferCheckFees(
+      const { partialFee, unsigned } = await api.assetTransferCheckFees(
         chainId,
         token.id,
         from,
@@ -300,7 +300,6 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         transfer,
         fees,
         forfeits,
-        pendingTransferId,
         unsigned,
       })
     },
@@ -349,22 +348,26 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     } else throw new Error("Network not found")
   }, [formData, hasAcceptedForfeit, transferableTokensMap])
 
+  const account = useMemo(
+    () => accounts.find((acc) => acc.address === formData.from),
+    [accounts, formData.from]
+  )
+
   const approvalMode = useMemo((): "hwSubstrate" | "hwEthereum" | "backend" => {
-    const account = accounts.find((acc) => acc.address === formData.from)
     if (account?.isHardware) {
       if (expectedResult?.type === "substrate") return "hwSubstrate"
       if (expectedResult?.type === "evm") return "hwEthereum"
     }
     return "backend"
-  }, [accounts, expectedResult?.type, formData.from])
+  }, [account?.isHardware, expectedResult?.type])
 
   // execute the TX
   const sendWithSignature = useCallback(
     async (signature: `0x${string}` | Uint8Array) => {
       if (expectedResult?.type !== "substrate") throw new Error("Review data not found")
-      const { pendingTransferId } = expectedResult
-      if (!pendingTransferId) throw new Error("Pending transaction not found")
-      const { id } = await api.assetTransferApproveSign(pendingTransferId, signature)
+      const { unsigned } = expectedResult
+      if (!unsigned) throw new Error("Unsigned transaction not found")
+      const { id } = await api.assetTransferApproveSign(unsigned, signature)
       setTransactionId(id)
     },
     [expectedResult]
@@ -414,6 +417,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   }, [expectedResult, hasAcceptedForfeit, transactionHash, transactionId])
 
   const context = {
+    account,
     formData,
     expectedResult,
     check,

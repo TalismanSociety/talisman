@@ -34,14 +34,6 @@ const useSendFundsWizardProvider = () => {
     [searchParams]
   )
 
-  const goto = useCallback(
-    (page: SendFundsWizardPage, replace?: boolean) => {
-      const url = `/send/${page}?${searchParams.toString()}`
-      navigate(url, { replace })
-    },
-    [navigate, searchParams]
-  )
-
   const set = useCallback(
     <T extends keyof SendFundsWizardParams>(
       key: T,
@@ -85,6 +77,22 @@ const useSendFundsWizardProvider = () => {
     [navigate, searchParams, setSearchParams]
   )
 
+  const remove = useCallback(
+    (key: keyof SendFundsWizardParams) => {
+      searchParams.delete(key)
+      setSearchParams(searchParams, { replace: true })
+    },
+    [searchParams, setSearchParams]
+  )
+
+  const goto = useCallback(
+    (page: SendFundsWizardPage, replace?: boolean) => {
+      const url = `/send/${page}?${searchParams.toString()}`
+      navigate(url, { replace })
+    },
+    [navigate, searchParams]
+  )
+
   const gotoReview = useCallback(
     (allowReap: boolean) => {
       if (!from) throw new Error("Sender is not set")
@@ -98,14 +106,6 @@ const useSendFundsWizardProvider = () => {
       navigate(`/send/confirm?${searchParams.toString()}`)
     },
     [amount, from, navigate, searchParams, sendMax, to, tokenId]
-  )
-
-  const remove = useCallback(
-    (key: keyof SendFundsWizardParams) => {
-      searchParams.delete(key)
-      setSearchParams(searchParams, { replace: true })
-    },
-    [searchParams, setSearchParams]
   )
 
   const gotoProgress = useCallback(

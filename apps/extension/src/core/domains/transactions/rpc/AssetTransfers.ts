@@ -1,6 +1,5 @@
 import { balanceModules } from "@core/domains/balances/store"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
-import { pendingTransfers } from "@core/domains/transactions/rpc/PendingTransfers"
 import {
   AssetTransferMethod,
   ResponseAssetTransferFeeQuery,
@@ -78,6 +77,49 @@ export default class AssetTransfersRpc {
     )
   }
 
+  static async transferSigned(
+    unsigned: SignerPayloadJSON,
+    signature: `0x${string}` | Uint8Array,
+    callback: SubscriptionCallback<{
+      nonce: string
+      hash: string
+      status: ExtrinsicStatus
+    }>
+  ): Promise<void> {
+    const chain = await chaindataProvider.getChain({ genesisHash: unsigned.genesisHash })
+    if (!chain) throw new Error(`Could not find chain for genesisHash ${unsigned.genesisHash}`)
+
+    // create the unsigned extrinsic
+    const { registry } = await getTypeRegistry(chain.id)
+    const tx = registry.createType(
+      "Extrinsic",
+      { method: unsigned.method },
+      { version: unsigned.version }
+    )
+
+    // apply signature
+    tx.addSignature(unsigned.address, signature, unsigned)
+
+    const unsubscribe = await chainConnector.subscribe(
+      chain.id,
+      "author_submitAndWatchExtrinsic",
+      "author_unwatchExtrinsic",
+      "author_extrinsicUpdate",
+      [tx.toHex()],
+      (error, result) => {
+        if (error) {
+          callback(error)
+          unsubscribe()
+          return
+        }
+
+        const status = registry.createType<ExtrinsicStatus>("ExtrinsicStatus", result)
+        callback(null, { nonce: tx.nonce.toString(), hash: tx.hash.toString(), status })
+        if (status.isFinalized) unsubscribe()
+      }
+    )
+  }
+
   /**
    * Calculates an estimated fee for transferring an amount of nativeToken from one account to another.
    *
@@ -97,7 +139,7 @@ export default class AssetTransfersRpc {
     tip: string,
     method: AssetTransferMethod
   ): Promise<ResponseAssetTransferFeeQuery> {
-    const { tx, pendingTransferId, unsigned } = await this.prepareTransaction(
+    const { tx, unsigned } = await this.prepareTransaction(
       chainId,
       tokenId,
       amount,
@@ -110,7 +152,7 @@ export default class AssetTransfersRpc {
 
     const { partialFee } = await getExtrinsicDispatchInfo(chainId, tx)
 
-    return { partialFee, pendingTransferId, unsigned }
+    return { partialFee, unsigned }
   }
 
   /**
@@ -138,7 +180,6 @@ export default class AssetTransfersRpc {
   ): Promise<{
     tx: Extrinsic
     registry: TypeRegistry
-    pendingTransferId?: string
     unsigned: SignerPayloadJSON
   }> {
     const chain = await chaindataProvider.getChain(chainId)
@@ -212,16 +253,6 @@ export default class AssetTransfersRpc {
       { version: unsigned.version }
     )
 
-    // if hardware account, signing has to be done on the device
-    let pendingTransferId
-    if (isHardwareAccount(unsigned.address)) {
-      // store in pending transactions map
-      pendingTransferId = pendingTransfers.add({
-        chainId,
-        unsigned,
-      })
-    }
-
     if (sign) {
       // create signable extrinsic payload
       const extrinsicPayload = registry.createType("ExtrinsicPayload", unsigned, {
@@ -238,6 +269,6 @@ export default class AssetTransfersRpc {
       tx.signFake(unsigned.address, { blockHash, genesisHash, nonce, runtimeVersion })
     }
 
-    return { tx, registry, unsigned, pendingTransferId }
+    return { tx, registry, unsigned }
   }
 }

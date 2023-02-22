@@ -6,6 +6,8 @@ import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import { assert } from "@polkadot/util"
 
+import { metadataUpdatesStore } from "./metadataUpdates"
+
 export default class MetadataHandler extends ExtensionHandler {
   private async metadataApprove({ id }: RequestMetadataApprove): Promise<boolean> {
     const queued = requestStore.getRequest(id)
@@ -52,6 +54,11 @@ export default class MetadataHandler extends ExtensionHandler {
 
       case "pri(metadata.requests)":
         return requestStore.subscribe<"pri(metadata.requests)">(id, port, ["metadata"])
+
+      case "pri(metadata.updates.subscribe)": {
+        const { id: genesisHash } = request as RequestTypes["pri(metadata.updates.subscribe)"]
+        return metadataUpdatesStore.subscribe(id, port, genesisHash)
+      }
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

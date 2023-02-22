@@ -24,7 +24,7 @@ export const SendFundsSearchInput: FC<SendFundsSearchInputProps> = ({
   placeholder,
   onValidate,
 }) => {
-  const [search, setSearch] = useDebouncedState("")
+  const [search, setSearch] = useDebouncedState("", 200)
 
   const handleSearchChange: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {

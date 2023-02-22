@@ -9,7 +9,6 @@ import {
 } from "@core/domains/ethereum/transactionCountManager"
 import EventsRpc from "@core/domains/events/rpc"
 import AssetTransfersRpc from "@core/domains/transactions/rpc/AssetTransfers"
-import { pendingTransfers } from "@core/domains/transactions/rpc/PendingTransfers"
 import {
   RequestAssetTransfer,
   RequestAssetTransferApproveSign,
@@ -315,22 +314,16 @@ export default class AssetTransferHandler extends ExtensionHandler {
     }
   }
 
-  private assetTransferApproveSign({
-    id,
+  private async assetTransferApproveSign({
+    unsigned,
     signature,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
-    const pendingTx = pendingTransfers.get(id)
-    assert(pendingTx, `No pending transfer with id ${id}`)
-    const { data, transfer } = pendingTx
+    const chain = await chaindataProvider.getChain({ genesisHash: unsigned.genesisHash })
+    if (!chain) throw new Error(`Could not find chain for genesisHash ${unsigned.genesisHash}`)
 
     return new Promise((resolve, reject) => {
-      const watchExtrinsic = this.getExtrinsicWatch(
-        data.chainId,
-        data.unsigned.address,
-        resolve,
-        reject
-      )
-      transfer(signature, watchExtrinsic).catch(reject)
+      const watchExtrinsic = this.getExtrinsicWatch(chain.id, unsigned.address, resolve, reject)
+      return AssetTransfersRpc.transferSigned(unsigned, signature, watchExtrinsic).catch(reject)
     })
   }
 
