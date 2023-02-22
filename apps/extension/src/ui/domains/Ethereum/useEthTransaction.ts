@@ -17,6 +17,7 @@ import {
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
+import { log } from "@core/log"
 import {
   TransactionInfo as TransactionType,
   getEthTransactionInfo,
@@ -71,7 +72,9 @@ const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
       const { baseFeePerGas } = await provider.send("eth_getBlockByNumber", ["latest", false])
       setHasEip1559Support(baseFeePerGas !== undefined)
     } catch (err) {
-      setError("Failed to check EIP-1559 support")
+      const error = err as Error
+      log.error("Failed to check EIP-1559 support", { err })
+      setError(`Failed to check EIP-1559 support${error?.message ? ` : ${error.message}` : ""}`)
     }
     setIsLoading(false)
   }, [provider])

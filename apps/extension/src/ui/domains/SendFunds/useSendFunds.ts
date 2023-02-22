@@ -362,13 +362,13 @@ const useSendFundsProvider = () => {
         }
       }
 
-      const txError = (evmTransaction?.error || subTransaction?.error) as Error
+      const txError = evmTransaction?.error || subTransaction?.error
 
       if (txError)
         return {
           isValid: false,
           error: "Failed to validate transaction",
-          errorDetails: txError.message,
+          errorDetails: (txError as Error)?.message ?? txError?.toString?.() ?? "Unknown error",
         }
 
       if (

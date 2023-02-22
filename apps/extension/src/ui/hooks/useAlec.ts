@@ -19,7 +19,11 @@ const useAlecAtWork: UseAlec = (label, value) => {
   const prev = refPrev.current
 
   const changes = Object.keys({ ...prev, ...value }).reduce((acc, key) => {
-    if (!isEqual(prev[key], value[key])) acc[key] = { from: prev[key], to: value[key] }
+    try {
+      if (!isEqual(prev[key], value[key])) acc[key] = { from: prev[key], to: value[key] }
+    } catch (err) {
+      acc[key] = "[useAlec] - Failed to read key"
+    }
     return acc
   }, {} as Record<string, any>)
 
