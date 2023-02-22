@@ -32,7 +32,7 @@ export interface RequestAssetTransferEthHardware {
 }
 
 export interface RequestAssetTransferApproveSign {
-  id: string
+  unsigned: SignerPayloadJSON
   signature: `0x${string}` | Uint8Array
 }
 
@@ -46,7 +46,6 @@ export interface ResponseAssetTransferEth {
 
 export interface ResponseAssetTransferFeeQuery {
   partialFee: string
-  pendingTransferId?: string
   unsigned: SignerPayloadJSON
 }
 

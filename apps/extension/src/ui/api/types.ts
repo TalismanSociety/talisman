@@ -42,6 +42,7 @@ import {
 import {
   AnySigningRequest,
   AnySigningRequestID,
+  SignerPayloadJSON,
   SigningRequestID,
   TransactionDetails,
 } from "@core/domains/signing/types"
@@ -236,7 +237,7 @@ export default interface MessageTypes {
     method?: AssetTransferMethod
   ) => Promise<ResponseAssetTransferFeeQuery>
   assetTransferApproveSign: (
-    pendingTransferId: string,
+    unsigned: SignerPayloadJSON,
     signature: `0x${string}` | Uint8Array
   ) => Promise<ResponseAssetTransfer>
 

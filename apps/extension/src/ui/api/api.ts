@@ -206,9 +206,9 @@ export const api: MessageTypes = {
       tip,
       method,
     }),
-  assetTransferApproveSign: (id, signature) =>
+  assetTransferApproveSign: (unsigned, signature) =>
     messageService.sendMessage("pri(assets.transfer.approveSign)", {
-      id,
+      unsigned,
       signature,
     }),
 
