@@ -1,6 +1,3 @@
-import { db } from "@core/db"
-import { chaindataProvider } from "@core/rpcs/chaindata"
-import { provideContext } from "@talisman/util/provideContext"
 import { BalanceJson, db as balancesDb } from "@talismn/balances"
 import {
   Chain,
@@ -15,12 +12,14 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
+import { db as tokenRatesDb } from "@talismn/token-rates"
 import { DbTokenRates, TokenRates } from "@talismn/token-rates"
 import { useLiveQuery } from "dexie-react-hooks"
 import { useEffect, useRef, useState } from "react"
 import { useDebounce } from "react-use"
 
-import { useSettings } from "./useSettings"
+import { provideContext } from "../util/provideContext"
+import { useChaindata } from "./useChaindata"
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
@@ -32,15 +31,15 @@ type DbCache = {
   tokensWithTestnets: Token[]
   tokensWithoutTestnets: Token[]
 
-  chainsWithTestnetsMap: Record<ChainId, Chain>
-  chainsWithoutTestnetsMap: Record<ChainId, Chain>
-  evmNetworksWithTestnetsMap: Record<EvmNetworkId, EvmNetwork>
-  evmNetworksWithoutTestnetsMap: Record<EvmNetworkId, EvmNetwork>
+  chainsWithTestnetsMap: Record<ChainId, Chain | CustomChain>
+  chainsWithoutTestnetsMap: Record<ChainId, Chain | CustomChain>
+  evmNetworksWithTestnetsMap: Record<EvmNetworkId, EvmNetwork | CustomEvmNetwork>
+  evmNetworksWithoutTestnetsMap: Record<EvmNetworkId, EvmNetwork | CustomEvmNetwork>
   tokensWithTestnetsMap: Record<TokenId, Token>
   tokensWithoutTestnetsMap: Record<TokenId, Token>
+  tokenRatesMap: Record<TokenId, TokenRates>
 
   balances: BalanceJson[]
-  tokenRatesMap: Record<TokenId, TokenRates>
 }
 
 const DEFAULT_VALUE: DbCache = {
@@ -57,20 +56,19 @@ const DEFAULT_VALUE: DbCache = {
   evmNetworksWithoutTestnetsMap: {},
   tokensWithTestnetsMap: {},
   tokensWithoutTestnetsMap: {},
+  tokenRatesMap: {},
 
   balances: [],
-
-  tokenRatesMap: {},
 }
 
 const consolidateDbCache = (
   chainsMap?: ChainList,
   evmNetworksMap?: EvmNetworkList,
   tokensMap?: TokenList,
-  allBalances?: BalanceJson[],
-  tokenRates?: DbTokenRates[]
+  tokenRates?: DbTokenRates[],
+  allBalances?: BalanceJson[]
 ): DbCache => {
-  if (!chainsMap || !evmNetworksMap || !tokensMap || !allBalances || !tokenRates)
+  if (!chainsMap || !evmNetworksMap || !tokensMap || !tokenRates || !allBalances)
     return DEFAULT_VALUE
 
   // BEGIN: temp hack to indicate that
@@ -122,11 +120,10 @@ const consolidateDbCache = (
     tokensWithoutTestnets.map((token) => [token.id, token])
   )
 
-  // return only balances for which we have a token
-  // note that db only contains testnet balances if useTestnets setting is turned on, they are deleted as soon as settings is turned off.
-  const balances = allBalances.filter((b) => tokensWithTestnetsMap[b.tokenId])
-
   const tokenRatesMap = Object.fromEntries(tokenRates.map(({ tokenId, rates }) => [tokenId, rates]))
+
+  // return only balances for which we have a token
+  const balances = allBalances.filter((b) => tokensWithTestnetsMap[b.tokenId])
 
   return {
     chainsWithTestnets,
@@ -142,28 +139,30 @@ const consolidateDbCache = (
     evmNetworksWithoutTestnetsMap,
     tokensWithTestnetsMap,
     tokensWithoutTestnetsMap,
+    tokenRatesMap,
 
     balances,
-
-    tokenRatesMap,
   }
 }
 
-const useDbCacheProvider = (): DbCache => {
-  const { useTestnets = false } = useSettings()
+type DbCacheProviderProps = {
+  useTestnets?: boolean
+}
+const useDbCacheProvider = ({ useTestnets = false }: DbCacheProviderProps): DbCache => {
+  const chaindataProvider = useChaindata()
 
-  const chainList = useLiveQuery(() => chaindataProvider.chains(), [])
-  const evmNetworkList = useLiveQuery(() => chaindataProvider.evmNetworks(), [])
-  const tokenList = useLiveQuery(() => chaindataProvider.tokens(), [])
+  const chainList = useLiveQuery(() => chaindataProvider?.chains(), [chaindataProvider])
+  const evmNetworkList = useLiveQuery(() => chaindataProvider?.evmNetworks(), [chaindataProvider])
+  const tokenList = useLiveQuery(() => chaindataProvider?.tokens(), [chaindataProvider])
+  const tokenRates = useLiveQuery(() => tokenRatesDb.tokenRates.toArray(), [])
   const rawBalances = useLiveQuery(() => balancesDb.balances.toArray(), [])
-  const tokenRates = useLiveQuery(() => db.tokenRates.toArray(), [])
 
   const [dbData, setDbData] = useState(DEFAULT_VALUE)
 
   // debounce every 500ms to prevent hammering UI with updates
   useDebounce(
     () => {
-      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, rawBalances, tokenRates))
+      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances))
     },
     500,
     [chainList, evmNetworkList, tokenList, rawBalances, tokenRates, useTestnets]
@@ -178,10 +177,10 @@ const useDbCacheProvider = (): DbCache => {
       chainList &&
       evmNetworkList &&
       tokenList &&
-      rawBalances &&
-      tokenRates
+      tokenRates &&
+      rawBalances
     ) {
-      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, rawBalances, tokenRates))
+      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances))
       refInitialized.current = true
     }
   }, [chainList, evmNetworkList, rawBalances, tokenList, tokenRates, useTestnets])

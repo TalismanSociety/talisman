@@ -1,7 +1,6 @@
 import { ProtectorSources, ProtectorStorage } from "@core/domains/app/protector/ParaverseProtector"
 import { MetadataDef } from "@core/inject/types"
-import { TokenId } from "@talismn/chaindata-provider"
-import { TokenRates } from "@talismn/token-rates"
+import { DbTokenRates } from "@talismn/token-rates"
 import { Dexie, Transaction, Version } from "dexie"
 import Browser from "webextension-polyfill"
 
@@ -46,11 +45,6 @@ export class TalismanDatabase extends Dexie {
       })
       .upgrade(inBackgroundScript(migrateExtensionDbV5ToV6))
   }
-}
-
-export type DbTokenRates = {
-  tokenId: TokenId
-  rates: TokenRates
 }
 
 export const db = new TalismanDatabase()

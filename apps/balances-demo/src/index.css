@@ -27,3 +27,7 @@
     color: #213547;
   }
 }
+
+html {
+  overflow-y: auto;
+}

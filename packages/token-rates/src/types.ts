@@ -2,6 +2,7 @@ import { TokenId } from "@talismn/chaindata-provider"
 
 export type TokenRatesList = Record<TokenId, TokenRates>
 export type TokenRateCurrency = keyof TokenRates
+export type DbTokenRates = { tokenId: TokenId; rates: TokenRates }
 export type TokenRates = {
   /** us dollar rate */
   usd: number | null

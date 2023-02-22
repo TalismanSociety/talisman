@@ -16,7 +16,6 @@ import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
-import { construct } from "@substrate/txwrapper-core"
 import { ChainId, TokenId } from "@talismn/chaindata-provider"
 
 export default class AssetTransfersRpc {
@@ -254,15 +253,14 @@ export default class AssetTransfersRpc {
       { version: unsigned.version }
     )
 
-    // create payload and export it in case it has to be signed by hardware device
-    const payload = construct.signingPayload(unsigned, { registry })
-
     if (sign) {
-      // create signable payload
-      const signingPayload = registry.createType("ExtrinsicPayload", payload, { version: 4 })
+      // create signable extrinsic payload
+      const extrinsicPayload = registry.createType("ExtrinsicPayload", unsigned, {
+        version: unsigned.version,
+      })
 
       // sign it using keyring (will fail if keyring is locked or if address is from hardware device)
-      const { signature } = signingPayload.sign(from)
+      const { signature } = extrinsicPayload.sign(from)
 
       // apply signature
       tx.addSignature(unsigned.address, signature, unsigned)
