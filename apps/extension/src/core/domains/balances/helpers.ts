@@ -1,14 +1,21 @@
+import { NOM_POOL_SUPPORTED_CHAINS } from "@core/constants"
 import {
   BalanceLockType,
   LockedBalance,
+  NomPoolStakedBalance,
   RequestBalanceLocks,
+  RequestNomPoolStake,
   ResponseBalanceLocks,
+  ResponseNomPoolStake,
 } from "@core/domains/balances/types"
 import RpcFactory from "@core/libs/RpcFactory"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
+import { Metadata } from "@polkadot/types"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
-import { blake2Concat, decodeAnyAddress } from "@talismn/util"
+import { StorageHelper } from "@talismn/balances"
+import { blake2Concat, decodeAnyAddress, hasOwnProperty } from "@talismn/util"
 
 const getLockedType = (input: string, chainId: string): BalanceLockType => {
   if (input.includes("vesting")) return "vesting"
@@ -72,4 +79,62 @@ export const getBalanceLocks = async ({
   )
 
   return result
+}
+
+export const getNomPoolStake = async ({ addresses, chainId = "polkadot" }: RequestNomPoolStake) => {
+  if (!NOM_POOL_SUPPORTED_CHAINS.includes(chainId))
+    throw new Error(`Chain ${chainId} not supported for nomination pools`)
+  const { registry, metadataRpc } = await getTypeRegistry(chainId)
+  registry.setMetadata(new Metadata(registry, metadataRpc))
+
+  const addressQueries = addresses.reduce((result, address) => {
+    const storageHelper = new StorageHelper(
+      registry,
+      "nominationPools",
+      "poolMembers",
+      decodeAnyAddress(address)
+    )
+    // filter out queries which we failed to encode (e.g. an invalid address was input)
+    if (storageHelper.stateKey == undefined) return result
+    result.push({ address, stateKey: storageHelper.stateKey, query: storageHelper })
+    return result
+  }, [] as { address: string; stateKey: string; query: StorageHelper }[])
+
+  // set up method and params
+  const method = "state_queryStorageAt"
+  const params = [addressQueries.map((query) => query.stateKey)]
+
+  // query rpc
+  const [result] = await chainConnector.send(chainId, method, params)
+  // sanity-check that the result is in the format we expect
+  if (typeof result !== "object" || result === null) throw new Error("Invalid result")
+
+  if (!hasOwnProperty(result, "changes") || typeof result.changes !== "object")
+    throw new Error("Invalid result")
+
+  if (!Array.isArray(result.changes)) throw new Error("Invalid result")
+
+  const poolMembersResults = (result.changes as Array<[unknown, unknown]>).reduce(
+    (result, changes: [unknown, unknown]) => {
+      const [key, change] = changes
+      if (typeof key !== "string") return result
+      if (!(typeof change === "string" || change === null)) return result
+
+      const query = addressQueries.find((query) => query.stateKey === key)
+      if (query === undefined) return result
+      try {
+        const queryResult = query.query.decode(change)
+        // is a `Codec` from pjs
+
+        const humanResult = queryResult?.toHuman() as NomPoolStakedBalance | undefined
+        // explicit null is required here to ensure the frontend knows that the address has been queried
+        result[query.address] = humanResult || null
+      } catch (error) {
+        // noop
+      }
+      return result
+    },
+    {} as ResponseNomPoolStake
+  )
+  return poolMembersResults
 }

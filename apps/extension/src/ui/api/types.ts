@@ -14,7 +14,9 @@ import {
   BalancesUpdate,
   RequestBalance,
   RequestBalanceLocks,
+  RequestNomPoolStake,
   ResponseBalanceLocks,
+  ResponseNomPoolStake,
 } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
 import type {
@@ -147,6 +149,10 @@ export default interface MessageTypes {
     address,
   }: RequestBalance) => Promise<BalanceJson | undefined>
   getBalanceLocks: ({ chainId, addresses }: RequestBalanceLocks) => Promise<ResponseBalanceLocks>
+  getNomPoolStakedBalance: ({
+    chainId,
+    addresses,
+  }: RequestNomPoolStake) => Promise<ResponseNomPoolStake>
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,

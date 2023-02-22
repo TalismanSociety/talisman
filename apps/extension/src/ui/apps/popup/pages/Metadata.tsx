@@ -1,4 +1,3 @@
-import { MetadataRequest } from "@polkadot/extension-base/background/types"
 import Button from "@talisman/components/Button"
 import Grid from "@talisman/components/Grid"
 import { notify } from "@talisman/components/Notifications"
@@ -7,11 +6,10 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useMetadataRequestById } from "@ui/hooks/useMetadataRequestById"
 import { FC, useCallback, useEffect } from "react"
 import { useParams } from "react-router-dom"
-import styled from "styled-components"
 
 import Layout, { Content, Footer, Header } from "../Layout"
 
-const UnstyledMetadata: FC<{ className?: string }> = ({ className }) => {
+export const Metadata: FC<{ className?: string }> = ({ className }) => {
   const { id } = useParams<{ id: string }>()
   const metadataRequest = useMetadataRequestById(id)
   const { popupOpenEvent } = useAnalytics()
@@ -44,19 +42,22 @@ const UnstyledMetadata: FC<{ className?: string }> = ({ className }) => {
       <Header text={"Update Metadata"} />
       <Content>
         <div>
-          <h1>Your metadata is out of date</h1>
-          <h2 className="font-medium">
-            Approving this update will sync your metadata for the <strong>{request.chain}</strong>{" "}
-            chain from <strong>{url}</strong>
-          </h2>
-          <hr className="my-10" />
-          <div className="stats space-y-2 text-left">
-            <p>
-              <strong>Symbol:</strong> {request.tokenSymbol}
+          <div className="px-4 text-center">
+            <h1 className="my-8 text-lg">Your metadata is out of date</h1>
+            <p className="text-body-secondary mt-16">
+              Approving this update will sync your metadata for the{" "}
+              <span className="text-body">{request.chain}</span> chain from{" "}
+              <span className="text-body">{url}</span>
             </p>
-            <p>
-              <strong>Decimals:</strong> {request.tokenDecimals}
-            </p>
+          </div>
+          <hr className="text-grey-700 my-20" />
+          <div className="text-left">
+            <div className="ml-16 inline-grid grid-cols-2 gap-x-8 gap-y-2">
+              <div className="text-body-secondary">Symbol:</div>
+              <div>{request.tokenSymbol}</div>
+              <div className="text-body-secondary">Decimals:</div>
+              <div>{request.tokenDecimals}</div>
+            </div>
           </div>
         </div>
       </Content>
@@ -71,56 +72,3 @@ const UnstyledMetadata: FC<{ className?: string }> = ({ className }) => {
     </Layout>
   )
 }
-
-export const Metadata = styled(UnstyledMetadata)`
-  .layout-header {
-    .pill {
-      background: var(--color-background-muted);
-      color: var(--color-mid);
-      font-weight: normal;
-    }
-  }
-
-  .layout-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-
-    h1 {
-      font-size: var(--font-size-medium);
-      font-weight: var(--font-weight-bold);
-    }
-
-    h2 {
-      color: var(--color-mid);
-      word-break: break-word;
-      strong {
-        color: var(--color-foreground-muted-2x);
-      }
-    }
-
-    .stats {
-      width: auto;
-      margin: 0 auto;
-      p {
-        font-weight: var(--font-weight-normal);
-        font-size: var(--font-size-small);
-        color: var(--color-foreground-muted-2x);
-        line-height: 1em;
-        margin: 0.4rem 0;
-        text-align: left;
-
-        strong {
-          font-weight: var(--font-weight-normal);
-          text-align: right;
-          min-width: 10rem;
-          color: var(--color-mid);
-          display: inline-block;
-          margin-right: 0.4em;
-        }
-      }
-    }
-  }
-`
