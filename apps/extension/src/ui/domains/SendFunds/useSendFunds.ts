@@ -534,7 +534,7 @@ const useSendFundsProvider = () => {
     ]
   )
 
-  const result = {
+  return {
     from,
     to,
     tokenId,
@@ -574,8 +574,6 @@ const useSendFundsProvider = () => {
     sendErrorMessage,
     isEstimatingMaxAmount,
   }
-
-  return result
 }
 
 export const [SendFundsProvider, useSendFunds] = provideContext(useSendFundsProvider)
