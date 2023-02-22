@@ -12,14 +12,14 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { TokenRates } from "@talismn/token-rates"
+import { db as tokenRatesDb } from "@talismn/token-rates"
+import { DbTokenRates, TokenRates } from "@talismn/token-rates"
 import { useLiveQuery } from "dexie-react-hooks"
 import { useEffect, useRef, useState } from "react"
 import { useDebounce } from "react-use"
 
 import { provideContext } from "../util/provideContext"
 import { useChaindata } from "./useChaindata"
-import { useTokenRates } from "./useTokenRates"
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
@@ -37,9 +37,9 @@ type DbCache = {
   evmNetworksWithoutTestnetsMap: Record<EvmNetworkId, EvmNetwork | CustomEvmNetwork>
   tokensWithTestnetsMap: Record<TokenId, Token>
   tokensWithoutTestnetsMap: Record<TokenId, Token>
+  tokenRatesMap: Record<TokenId, TokenRates>
 
   balances: BalanceJson[]
-  tokenRatesMap: Record<TokenId, TokenRates>
 }
 
 const DEFAULT_VALUE: DbCache = {
@@ -56,27 +56,19 @@ const DEFAULT_VALUE: DbCache = {
   evmNetworksWithoutTestnetsMap: {},
   tokensWithTestnetsMap: {},
   tokensWithoutTestnetsMap: {},
+  tokenRatesMap: {},
 
   balances: [],
-
-  tokenRatesMap: {},
 }
 
 const consolidateDbCache = (
   chainsMap?: ChainList,
   evmNetworksMap?: EvmNetworkList,
   tokensMap?: TokenList,
-  allBalances?: BalanceJson[],
-  tokenRates?: Record<TokenId, TokenRates>
+  tokenRates?: DbTokenRates[],
+  allBalances?: BalanceJson[]
 ): DbCache => {
-  if (
-    !chainsMap ||
-    !evmNetworksMap ||
-    !tokensMap ||
-    !allBalances
-    // TODO: Store tokenRates in a DB so that we don't have to wait for tokens before we can begin to fetch tokenRates
-    /* || !tokenRates */
-  )
+  if (!chainsMap || !evmNetworksMap || !tokensMap || !tokenRates || !allBalances)
     return DEFAULT_VALUE
 
   // BEGIN: temp hack to indicate that
@@ -128,6 +120,8 @@ const consolidateDbCache = (
     tokensWithoutTestnets.map((token) => [token.id, token])
   )
 
+  const tokenRatesMap = Object.fromEntries(tokenRates.map(({ tokenId, rates }) => [tokenId, rates]))
+
   // return only balances for which we have a token
   const balances = allBalances.filter((b) => tokensWithTestnetsMap[b.tokenId])
 
@@ -145,9 +139,9 @@ const consolidateDbCache = (
     evmNetworksWithoutTestnetsMap,
     tokensWithTestnetsMap,
     tokensWithoutTestnetsMap,
+    tokenRatesMap,
 
     balances,
-    tokenRatesMap: tokenRates ?? {},
   }
 }
 
@@ -160,17 +154,15 @@ const useDbCacheProvider = ({ useTestnets = false }: DbCacheProviderProps): DbCa
   const chainList = useLiveQuery(() => chaindataProvider?.chains(), [chaindataProvider])
   const evmNetworkList = useLiveQuery(() => chaindataProvider?.evmNetworks(), [chaindataProvider])
   const tokenList = useLiveQuery(() => chaindataProvider?.tokens(), [chaindataProvider])
+  const tokenRates = useLiveQuery(() => tokenRatesDb.tokenRates.toArray(), [])
   const rawBalances = useLiveQuery(() => balancesDb.balances.toArray(), [])
-
-  // TODO: Store in a DB so that we don't have to wait for tokens before we can begin to fetch tokenRates
-  const tokenRates = useTokenRates()
 
   const [dbData, setDbData] = useState(DEFAULT_VALUE)
 
   // debounce every 500ms to prevent hammering UI with updates
   useDebounce(
     () => {
-      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, rawBalances, tokenRates))
+      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances))
     },
     500,
     [chainList, evmNetworkList, tokenList, rawBalances, tokenRates, useTestnets]
@@ -185,11 +177,10 @@ const useDbCacheProvider = ({ useTestnets = false }: DbCacheProviderProps): DbCa
       chainList &&
       evmNetworkList &&
       tokenList &&
+      tokenRates &&
       rawBalances
-      // TODO: Store tokenRates in a DB so that we don't have to wait for tokens before we can begin to fetch tokenRates
-      // && tokenRates
     ) {
-      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, rawBalances, tokenRates))
+      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances))
       refInitialized.current = true
     }
   }, [chainList, evmNetworkList, rawBalances, tokenList, tokenRates, useTestnets])

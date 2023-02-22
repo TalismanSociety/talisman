@@ -21,6 +21,15 @@ export function App(): JSX.Element {
 
       {/* Display balances per balance (so, per token per account) */}
       <div className="grid grid-cols-[repeat(5,_auto)] items-center gap-x-4 gap-y-2">
+        <div className="text-lg font-bold">
+          {balances.count > 0 &&
+            ((balances.sum.fiat("usd").total ?? 0).toLocaleString(undefined, {
+              style: "currency",
+              currency: "USD",
+              currencyDisplay: "narrowSymbol",
+            }) ??
+              "-")}
+        </div>
         {balances?.sorted.map((balance) =>
           balance.total.planck === BigInt("0") ? null : (
             <Fragment key={balance.id}>

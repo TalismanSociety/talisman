@@ -1,4 +1,4 @@
-import { AddressesByToken, BalanceModule, Balances } from "@talismn/balances"
+import { AddressesByToken, Balances } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 

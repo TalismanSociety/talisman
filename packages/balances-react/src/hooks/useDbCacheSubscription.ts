@@ -1,9 +1,8 @@
-import { Balances, balances as balancesFn } from "@talismn/balances"
-import { db } from "@talismn/balances"
+import { Balances, db as balancesDb, balances as balancesFn } from "@talismn/balances"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
+import { DbTokenRates, fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
 import { useLiveQuery } from "dexie-react-hooks"
-import { useCallback, useRef } from "react"
-import { useEffect, useMemo } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 
 import log from "../log"
 import { createMulticastSubscription, provideContext, useMulticastSubscription } from "../util"
@@ -12,12 +11,13 @@ import { useBalanceModules } from "./useBalanceModules"
 import { useChainConnectors } from "./useChainConnectors"
 import { useChaindata } from "./useChaindata"
 
-export type DbEntityType = "chains" | "evmNetworks" | "tokens" | "balances"
+export type DbEntityType = "chains" | "evmNetworks" | "tokens" | "tokenRates" | "balances"
 
 const useSubscriptionsProvider = () => [
   useSubscribeChaindataHydrate("chains"),
   useSubscribeChaindataHydrate("evmNetworks"),
   useSubscribeChaindataHydrate("tokens"),
+  useSubscribeTokenRates(),
   useSubscribeBalances(),
 ]
 export const [SubscriptionsProvider, useSubscriptions] = provideContext(useSubscriptionsProvider)
@@ -30,6 +30,7 @@ export const useDbCacheSubscription = (subscribeTo: DbEntityType) => {
     subscribeHydrateChains,
     subscribeHydrateEvmNetworks,
     subscribeHydrateTokens,
+    subscribeTokenRates,
     subscribeBalances,
   ] = useSubscriptions()
 
@@ -41,15 +42,18 @@ export const useDbCacheSubscription = (subscribeTo: DbEntityType) => {
         return subscribeHydrateEvmNetworks()
       case "tokens":
         return subscribeHydrateTokens()
+      case "tokenRates":
+        return subscribeTokenRates()
       case "balances":
         return subscribeBalances()
     }
   }, [
-    subscribeBalances,
+    subscribeTo,
     subscribeHydrateChains,
     subscribeHydrateEvmNetworks,
     subscribeHydrateTokens,
-    subscribeTo,
+    subscribeTokenRates,
+    subscribeBalances,
   ])
 }
 
@@ -88,6 +92,69 @@ function useSubscribeChaindataHydrate(type: "chains" | "evmNetworks" | "tokens")
       active = false
     }
   }, [chaindata, type])
+
+  const subscribe = useMulticastSubscription(createSubscription)
+
+  return subscribe
+}
+
+function useSubscribeTokenRates() {
+  const chaindataProvider = useChaindata()
+  const tokens = useLiveQuery(() => chaindataProvider?.tokens(), [chaindataProvider])
+
+  const generationRef = useRef(0)
+
+  const createSubscription = useCallback(() => {
+    if (!chaindataProvider) return
+    if (!tokens) return
+    if (Object.keys(tokens).length < 1) return
+
+    // when we make a new request, we want to ignore any old requests which haven't yet completed
+    // otherwise we risk replacing the most recent data with older data
+    const generation = (generationRef.current + 1) % Number.MAX_SAFE_INTEGER
+    generationRef.current = generation
+
+    let active = true
+    const REFRESH_INTERVAL = 300_000 // 300_000ms = 5 minutes
+    const RETRY_INTERVAL = 5_000 // 5_000ms = 5 seconds
+
+    const hydrate = async () => {
+      if (!active) return
+      if (generationRef.current !== generation) return
+
+      try {
+        const tokenRates = await fetchTokenRates(tokens)
+
+        if (!active) return
+        if (generationRef.current !== generation) return
+
+        const putTokenRates = Object.entries(tokenRates).map(
+          ([tokenId, rates]): DbTokenRates => ({
+            tokenId,
+            rates,
+          })
+        )
+        tokenRatesDb.transaction(
+          "rw",
+          tokenRatesDb.tokenRates,
+          async () => await tokenRatesDb.tokenRates.bulkPut(putTokenRates)
+        )
+
+        setTimeout(hydrate, REFRESH_INTERVAL)
+      } catch (error) {
+        log.error(
+          `Failed to fetch tokenRates, retrying in ${Math.round(RETRY_INTERVAL / 1000)} seconds`,
+          error
+        )
+        setTimeout(hydrate, RETRY_INTERVAL)
+      }
+    }
+    hydrate()
+
+    return () => {
+      active = false
+    }
+  }, [chaindataProvider, tokens])
 
   const subscribe = useMulticastSubscription(createSubscription)
 
@@ -149,11 +216,11 @@ function useSubscribeBalances() {
           unsub.then((unsubscribe) => unsubscribe())
 
           // set this subscription's balances in the store to status: cache
-          db.transaction(
+          balancesDb.transaction(
             "rw",
-            db.balances,
+            balancesDb.balances,
             async () =>
-              await db.balances
+              await balancesDb.balances
                 .filter((balance) => {
                   if (balance.source !== balanceModule.type) return false
                   if (!Object.keys(addressesByModuleToken).includes(balance.tokenId)) return false
@@ -171,7 +238,11 @@ function useSubscribeBalances() {
           id,
           ...balance,
         }))
-        db.transaction("rw", db.balances, async () => await db.balances.bulkPut(putBalances))
+        balancesDb.transaction(
+          "rw",
+          balancesDb.balances,
+          async () => await balancesDb.balances.bulkPut(putBalances)
+        )
       })
 
       return unsubscribe
