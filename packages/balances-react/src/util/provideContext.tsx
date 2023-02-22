@@ -11,8 +11,8 @@ export const provideContext = <P, T>(useProviderContext: (props: P) => T) => {
   type ProviderProps = P & { children?: ReactNode }
   type ProviderType = FC<ProviderProps>
 
-  const Context = createContext<ContextType | { __provideContextInteralDefaultValue: true }>({
-    __provideContextInteralDefaultValue: true,
+  const Context = createContext<ContextType | { __provideContextInternalDefaultValue: true }>({
+    __provideContextInternalDefaultValue: true,
   })
 
   const Provider: ProviderType = ({ children, ...props }: ProviderProps) => {
@@ -24,7 +24,7 @@ export const provideContext = <P, T>(useProviderContext: (props: P) => T) => {
   const useProvidedContext = () => {
     const context = useContext(Context)
 
-    if (typeof context === "object" && context && "__provideContextInteralDefaultValue" in context)
+    if (typeof context === "object" && context && "__provideContextInternalDefaultValue" in context)
       throw new Error("This hook requires a provider to be present above it in the tree")
 
     return context
