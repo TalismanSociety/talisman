@@ -144,6 +144,10 @@ export const api: MessageTypes = {
   authrequestReject: (id) => messageService.sendMessage("pri(sites.requests.reject)", { id }),
   authrequestIgnore: (id) => messageService.sendMessage("pri(sites.requests.ignore)", { id }),
 
+  // track metadata updates ----------------------------------------------
+  metadataUpdatesSubscribe: (genesisHash, cb) =>
+    messageService.subscribe("pri(metadata.updates.subscribe)", { id: genesisHash }, cb),
+
   // chain message types
   chains: (cb) => messageService.subscribe("pri(chains.subscribe)", null, cb),
 

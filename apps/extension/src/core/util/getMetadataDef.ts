@@ -1,8 +1,9 @@
+import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
+import { metadataUpdatesStore } from "@core/domains/metadata/metadataUpdates"
 import { MetadataDef } from "@core/inject/types"
 import RpcFactory from "@core/libs/RpcFactory"
 import { log } from "@core/log"
-/* eslint-disable no-console */
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { assert, hexToU8a, isHex, u8aToHex } from "@polkadot/util"
 import { base64Decode, base64Encode } from "@polkadot/util-crypto"
@@ -31,6 +32,7 @@ export const getMetadataFromDef = (metadata: MetadataDef) => {
     if (metadata.metadataRpc) return decodeMetadataRpc(metadata.metadataRpc)
     if (metadata.metaCalls) return decodeMetaCalls(metadata.metaCalls)
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.warn("Could not decode metadata from store", { metadata })
   }
   return undefined
@@ -75,7 +77,7 @@ export const getMetadataDef = async (
   if (storeMetadata?.metadataRpc && specVersion === storeMetadata.specVersion) return storeMetadata
 
   if (!chain) {
-    log.warn(`Metadata for chain ${storeMetadata?.chain ?? genesisHash} isn't up to date`)
+    log.warn(`Metadata for unknown isn't up to date`, storeMetadata?.chain ?? genesisHash)
     return storeMetadata
   }
 
@@ -90,6 +92,13 @@ export const getMetadataDef = async (
     const cacheKey = getCacheKey(genesisHash, runtimeSpecVersion) as string
     if (cache[cacheKey]) return cache[cacheKey]
 
+    // mark as updating in database (can be picked up by frontend via subscription)
+    metadataUpdatesStore.set(genesisHash, true)
+
+    // developer helpers to test all states, uncomment as needed
+    // if (DEBUG) await sleep(5_000)
+    // if (DEBUG) throw new Error("Failed to update metadata (debugging)")
+
     // fetch the metadata from the chain
     const [metadataRpc, chainProperties] = await Promise.all([
       RpcFactory.send<HexString>(chain.id, "state_getMetadata", [blockHash], !!blockHash),
@@ -102,15 +111,21 @@ export const getMetadataDef = async (
       genesisHash,
       chain: chain.chainName,
       specVersion: runtimeSpecVersion,
-      ss58Format: chainProperties.chainSS58,
-      tokenSymbol: chainProperties.chainTokens?.[0],
-      tokenDecimals: chainProperties.chainDecimals?.[0],
+      ss58Format: chainProperties.ss58Format,
+      tokenSymbol: Array.isArray(chainProperties.tokenSymbol)
+        ? chainProperties.tokenSymbol[0]
+        : chainProperties.tokenSymbol,
+      tokenDecimals: Array.isArray(chainProperties.tokenDecimals)
+        ? chainProperties.tokenDecimals[0]
+        : chainProperties.tokenDecimals,
       metaCalls: undefined, // won't be used anymore, yeet
       metadataRpc: encodeMetadataRpc(metadataRpc),
     } as MetadataDef
 
     // save in cache
     cache[cacheKey] = newData
+
+    metadataUpdatesStore.set(genesisHash, false)
 
     // if requested version is outdated, cache it and return it without updating store
     if (storeMetadata && runtimeSpecVersion < storeMetadata.specVersion) return newData
@@ -130,7 +145,18 @@ export const getMetadataDef = async (
   } catch (err) {
     log.error(`Failed to update metadata for chain ${genesisHash}`, { err })
     Sentry.captureException(err, { extra: { genesisHash } })
+    metadataUpdatesStore.set(genesisHash, false)
   }
 
   return storeMetadata
+}
+
+// useful for developer when testing updates
+if (DEBUG) {
+  ;(window as any).clearMetadata = () => {
+    Object.keys(cache).forEach((key) => {
+      delete cache[key]
+    })
+    db.metadata.clear()
+  }
 }
