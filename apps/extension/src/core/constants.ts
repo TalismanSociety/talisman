@@ -23,3 +23,8 @@ export const API_KEY_ONFINALITY = process.env.API_KEY_ONFINALITY
 export const IPFS_GATEWAY = "https://talisman.mypinata.cloud/ipfs/"
 
 export const TALISMAN_WEB_APP_DOMAIN = "app.talisman.xyz"
+
+export const NOM_POOL_SUPPORTED_CHAINS = ["polkadot"]
+export const NOM_POOL_MIN_DEPOSIT: Record<string, string> = {
+  polkadot: "10000000000",
+}

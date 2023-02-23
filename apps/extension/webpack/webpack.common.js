@@ -96,7 +96,9 @@ const config = (env) => ({
       "process.env.PORT_PREFIX": JSON.stringify(process.env.PORT_PREFIX || "talisman"),
       "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG || ""),
       "process.env.POSTHOG_AUTH_TOKEN": JSON.stringify(process.env.POSTHOG_AUTH_TOKEN || ""),
-      "process.env.API_KEY_ONFINALITY": JSON.stringify(process.env.API_KEY_ONFINALITY || ""),
+      "process.env.API_KEY_ONFINALITY": JSON.stringify(
+        env.build === "production" ? process.env.API_KEY_ONFINALITY || "" : ""
+      ),
       "process.env.SENTRY_AUTH_TOKEN": JSON.stringify(process.env.SENTRY_AUTH_TOKEN || ""),
       "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
 

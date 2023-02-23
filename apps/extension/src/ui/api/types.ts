@@ -13,7 +13,9 @@ import {
   BalancesUpdate,
   RequestBalance,
   RequestBalanceLocks,
+  RequestNomPoolStake,
   ResponseBalanceLocks,
+  ResponseNomPoolStake,
 } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
 import type {
@@ -31,7 +33,11 @@ import {
   WatchAssetRequest,
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
-import { MetadataRequest, RequestMetadataId } from "@core/domains/metadata/types"
+import {
+  MetadataRequest,
+  MetadataUpdateStatus,
+  RequestMetadataId,
+} from "@core/domains/metadata/types"
 import {
   AnySigningRequest,
   AnySigningRequestID,
@@ -146,6 +152,10 @@ export default interface MessageTypes {
     address,
   }: RequestBalance) => Promise<BalanceJson | undefined>
   getBalanceLocks: ({ chainId, addresses }: RequestBalanceLocks) => Promise<ResponseBalanceLocks>
+  getNomPoolStakedBalance: ({
+    chainId,
+    addresses,
+  }: RequestNomPoolStake) => Promise<ResponseNomPoolStake>
   balances: (cb: () => void) => UnsubscribeFn
   balancesByParams: (
     addressesByChain: AddressesByChain,
@@ -166,6 +176,11 @@ export default interface MessageTypes {
   authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>
   authrequestReject: (id: AuthRequestId) => Promise<boolean>
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>
+
+  metadataUpdatesSubscribe: (
+    genesisHash: string,
+    cb: (status: MetadataUpdateStatus) => void
+  ) => UnsubscribeFn
 
   // chain message types
   chains: (cb: () => void) => UnsubscribeFn

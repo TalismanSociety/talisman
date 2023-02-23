@@ -1,11 +1,12 @@
 import { DEBUG } from "@core/constants"
-import { getBalanceLocks } from "@core/domains/balances/helpers"
+import { getBalanceLocks, getNomPoolStake } from "@core/domains/balances/helpers"
 import { balanceModules } from "@core/domains/balances/store"
 import {
   Balances,
   RequestBalance,
   RequestBalanceLocks,
   RequestBalancesByParamsSubscribe,
+  RequestNomPoolStake,
 } from "@core/domains/balances/types"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { ExtensionHandler } from "@core/libs/Handler"
@@ -33,6 +34,9 @@ export class BalancesHandler extends ExtensionHandler {
 
       case "pri(balances.locks.get)":
         return getBalanceLocks(request as RequestBalanceLocks)
+
+      case "pri(balances.nompools.get)":
+        return getNomPoolStake(request as RequestNomPoolStake)
 
       case "pri(balances.subscribe)":
         return this.stores.balances.subscribe(id, port)

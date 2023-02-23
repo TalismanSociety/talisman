@@ -1,12 +1,13 @@
 import { getNftMetadata } from "@core/util/getNftMetadata"
 import { useQuery } from "@tanstack/react-query"
+import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { UnsafeImage } from "talisman-ui"
 
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
-import { SignAlertMessage, SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
+import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
