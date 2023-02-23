@@ -24,10 +24,12 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { BigNumber, ethers } from "ethers"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useFeeToken } from "./useFeeToken"
+import { useSendFundsInputNumber } from "./useSendFundsInputNumber"
+import { useSendFundsInputSize } from "./useSendFundsInputSize"
 
 type SignMethod = "normal" | "ledgerSubstrate" | "ledgerEthereum" | "unknown"
 
@@ -175,6 +177,14 @@ const useSendFundsProvider = () => {
   const feeToken = useFeeToken(tokenId)
   const feeTokenBalance = useBalance(from as string, feeToken?.id as string)
   const feeTokenRates = useTokenRates(feeToken?.id)
+
+  const refTokensInput = useRef<HTMLInputElement>(null)
+  useSendFundsInputNumber(refTokensInput, token?.decimals)
+  const resizeTokensInput = useSendFundsInputSize(refTokensInput)
+
+  const refFiatInput = useRef<HTMLInputElement>(null)
+  useSendFundsInputNumber(refFiatInput, 2)
+  const resizeFiatInput = useSendFundsInputSize(refFiatInput)
 
   const transfer = useMemo(
     () => (token && amount ? new BalanceFormatter(amount, token.decimals, tokenRates) : null),
@@ -437,7 +447,16 @@ const useSendFundsProvider = () => {
 
     if (isSubToken(token)) set("sendMax", true)
     else set("amount", maxAmount.planck.toString())
-  }, [maxAmount, set, token])
+
+    if (refTokensInput.current) {
+      refTokensInput.current.value = maxAmount.tokens
+      resizeTokensInput()
+    }
+    if (refFiatInput.current) {
+      refFiatInput.current.value = maxAmount.fiat("usd")?.toString() ?? ""
+      resizeFiatInput()
+    }
+  }, [maxAmount, resizeFiatInput, resizeTokensInput, set, token])
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"
@@ -577,6 +596,10 @@ const useSendFundsProvider = () => {
     isProcessing,
     sendErrorMessage,
     isEstimatingMaxAmount,
+    refTokensInput,
+    resizeTokensInput,
+    refFiatInput,
+    resizeFiatInput,
   }
 }
 

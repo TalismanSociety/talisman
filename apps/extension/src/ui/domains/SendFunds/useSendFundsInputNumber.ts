@@ -24,12 +24,15 @@ const getInputFilter = (inputFilter: (text: string) => boolean) =>
     }
   }
 
-export const useInputNumberOnly = (ref: RefObject<HTMLInputElement>) => {
+export const useSendFundsInputNumber = (ref: RefObject<HTMLInputElement>, decimals = 18) => {
   useEffect(() => {
     const input = ref.current
     if (!input) return () => {}
 
-    const handler = getInputFilter((value: string) => /^\d*\.?\d*$/.test(value))
+    const handler = getInputFilter((value: string) =>
+      // eslint-disable-next-line no-useless-escape
+      new RegExp(`^\\d*\\.?\\d{0,${decimals}}$`).test(value)
+    )
 
     const events = [
       "input",
@@ -48,5 +51,7 @@ export const useInputNumberOnly = (ref: RefObject<HTMLInputElement>) => {
     return () => {
       events.forEach((eventName) => input.removeEventListener(eventName, handler))
     }
-  }, [ref])
+    // ref?.current will toggle between defined and not, it's imperative to resubscribe each time
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [decimals, ref?.current])
 }

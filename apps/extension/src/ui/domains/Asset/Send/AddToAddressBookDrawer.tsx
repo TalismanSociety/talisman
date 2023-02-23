@@ -54,7 +54,7 @@ export const AddToAddressBookDrawer: FC<{
   close: () => void
   address: string
   addressType: AddressBookContact["addressType"]
-  parent?: HTMLElement | null
+  parent?: HTMLElement | string | null
   asChild?: boolean
 }> = ({ isOpen, close, address, addressType, asChild, parent }) => {
   const { add } = useAddressBook()

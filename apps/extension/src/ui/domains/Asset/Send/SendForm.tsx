@@ -493,7 +493,7 @@ export const SendForm = () => {
         address={to}
         addressType={addressType}
         asChild={false}
-        parent={document.getElementById("send-funds-container")}
+        parent={"send-funds-container"}
       />
     </Container>
   )

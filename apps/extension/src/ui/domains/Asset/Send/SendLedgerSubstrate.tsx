@@ -68,8 +68,6 @@ const SendLedgerSubstrate = () => {
     ]
   )
 
-  const parent = useMemo(() => document.getElementById("send-funds-container"), [])
-
   if (error) return <div className="text-alert-error">{error.message}</div>
 
   // hide when done
@@ -82,7 +80,7 @@ const SendLedgerSubstrate = () => {
       payload={payload}
       onReject={cancel}
       onSignature={handleSigned}
-      parent={parent}
+      parent={"send-funds-container"}
     />
   )
 }

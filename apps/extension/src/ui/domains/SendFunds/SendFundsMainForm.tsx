@@ -1,3 +1,4 @@
+import { log } from "@core/log"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Drawer } from "@talisman/components/Drawer"
 import { WithTooltip } from "@talisman/components/Tooltip"
@@ -10,8 +11,6 @@ import { classNames, planckToTokens, tokensToPlanck } from "@talismn/util"
 import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
-import { useInputNumberOnly } from "@ui/hooks/useInputNumberOnly"
-import { useInputAutoSize } from "@ui/hooks/useTextWidth"
 import useToken from "@ui/hooks/useToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { default as debounce } from "lodash/debounce"
@@ -39,6 +38,16 @@ import Tokens from "../Asset/Tokens"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import { useSendFunds } from "./useSendFunds"
+
+const normalizeStringNumber = (value?: string | number | null, decimals = 18) => {
+  try {
+    // fixes the decimals and remove all leading/trailing zeros
+    return value ? Number(Number(value).toFixed(decimals)).toString() : ""
+  } catch (err) {
+    log.error("normalizeStringNumber", { value, decimals, err })
+    return ""
+  }
+}
 
 const useContact = (address?: string | null) => {
   const { contacts } = useAddressBook()
@@ -109,24 +118,24 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
 }
 
 const TokenInput = () => {
-  const { set, remove, sendMax } = useSendFundsWizard()
-  const { token, transfer, maxAmount, isEstimatingMaxAmount } = useSendFunds()
-
-  //can't measure text from an input[type=number] so we use a input[type=text] and restrict input to numbers
-  const refInput = useRef<HTMLInputElement>(null)
-  useInputNumberOnly(refInput)
-  const resize = useInputAutoSize(refInput)
-
-  useEffect(() => {
-    if (!refInput.current || !sendMax || !maxAmount?.tokens) return
-    // while send max feature is on, keep in sync and resize on each change
-    refInput.current.value = maxAmount?.tokens
-    resize()
-  }, [maxAmount?.tokens, resize, sendMax, token])
+  const { set, remove } = useSendFundsWizard()
+  const {
+    token,
+    transfer,
+    maxAmount,
+    isEstimatingMaxAmount,
+    sendMax,
+    refTokensInput,
+    resizeTokensInput,
+  } = useSendFunds()
 
   const defaultValue = useMemo(
-    () => (sendMax && maxAmount ? maxAmount.tokens : transfer?.tokens ?? ""),
-    [maxAmount, sendMax, transfer?.tokens]
+    () =>
+      normalizeStringNumber(
+        sendMax && maxAmount ? maxAmount.tokens : transfer?.tokens,
+        token?.decimals
+      ),
+    [maxAmount, sendMax, token?.decimals, transfer?.tokens]
   )
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -143,6 +152,10 @@ const TokenInput = () => {
     [remove, sendMax, set, token]
   )
 
+  useEffect(() => {
+    resizeTokensInput()
+  }, [resizeTokensInput])
+
   return (
     <div
       className={classNames(
@@ -153,11 +166,11 @@ const TokenInput = () => {
       {isEstimatingMaxAmount && <div className="bg-grey-800 h-16 w-48 rounded"></div>}
       <input
         key="tokenInput"
-        ref={refInput}
+        ref={refTokensInput}
         type="text"
         defaultValue={defaultValue}
         placeholder={`0 ${token?.symbol}`}
-        autoFocus={!sendMax}
+        autoFocus={!sendMax && !transfer}
         className={classNames(
           "text-body peer inline-block min-w-0 bg-transparent text-xl",
           sendMax && "placeholder:text-white",
@@ -179,27 +192,24 @@ const TokenInput = () => {
 
 const FiatInput = () => {
   const { set, remove, sendMax } = useSendFundsWizard()
-  const { token, transfer, maxAmount, tokenRates, isEstimatingMaxAmount } = useSendFunds()
+  const {
+    token,
+    transfer,
+    maxAmount,
+    tokenRates,
+    isEstimatingMaxAmount,
+    refFiatInput,
+    resizeFiatInput,
+  } = useSendFunds()
 
   const defaultValue = useMemo(
     () =>
-      sendMax && maxAmount
-        ? maxAmount.fiat("usd")?.toString()
-        : transfer?.fiat("usd")?.toString() ?? "",
+      normalizeStringNumber(
+        sendMax && maxAmount ? maxAmount.fiat("usd") : transfer?.fiat("usd"),
+        2
+      ),
     [maxAmount, sendMax, transfer]
   )
-
-  //can't measure text from an input[type=number] so we use a input[type=text] and restrict input to numbers
-  const refInput = useRef<HTMLInputElement>(null)
-  useInputNumberOnly(refInput)
-  const resize = useInputAutoSize(refInput)
-
-  useEffect(() => {
-    if (!refInput.current || !sendMax || !maxAmount?.tokens) return
-    // while send max feature is on, keep in sync and resize on each change
-    refInput.current.value = maxAmount?.fiat("usd")?.toString() ?? ""
-    resize()
-  }, [maxAmount, resize, sendMax, token])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback(
@@ -218,6 +228,10 @@ const FiatInput = () => {
     [remove, sendMax, set, token, tokenRates]
   )
 
+  useEffect(() => {
+    resizeFiatInput()
+  }, [resizeFiatInput])
+
   if (!tokenRates) return null
 
   return (
@@ -230,10 +244,10 @@ const FiatInput = () => {
     >
       <input
         key="fiatInput"
-        ref={refInput}
+        ref={refFiatInput}
         type="text"
         defaultValue={defaultValue}
-        autoFocus={!sendMax}
+        autoFocus={!sendMax && !transfer}
         placeholder={"0.00"}
         className={classNames(
           "text-body peer inline-block min-w-0 bg-transparent text-xl",

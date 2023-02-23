@@ -18,7 +18,7 @@ const checkSize = (input: HTMLInputElement) => {
 }
 
 // works only with uncontrolled inputs
-export const useInputAutoSize = (ref?: RefObject<HTMLInputElement>) => {
+export const useSendFundsInputSize = (ref?: RefObject<HTMLInputElement>) => {
   const resize = useCallback(() => {
     const input = ref?.current
     if (!input) return
@@ -27,7 +27,7 @@ export const useInputAutoSize = (ref?: RefObject<HTMLInputElement>) => {
 
   useEffect(() => {
     const input = ref?.current
-    if (!input) return
+    if (!input || !input?.placeholder) return
 
     input.addEventListener("input", resize)
 
@@ -36,7 +36,10 @@ export const useInputAutoSize = (ref?: RefObject<HTMLInputElement>) => {
     return () => {
       input.removeEventListener("input", resize)
     }
-  }, [ref, resize])
+
+    // if ref?.current can toggle between defined and not, it's important to resubscribe each time
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ref?.current, resize])
 
   return resize
 }
