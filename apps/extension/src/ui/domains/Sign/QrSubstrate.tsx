@@ -96,7 +96,8 @@ export const QrSubstrate = ({
     if (cmd === CMD_MORTAL) return
 
     setError(
-      "Parity Signer only supports plain message signing for wallets which are locked to a single network."
+      "Your account is enabled for all networks and can't sign this message.\n" +
+        "Parity Signer only supports plain message signing for single-chain accounts."
     )
   }, [genesisHash, cmd])
 
