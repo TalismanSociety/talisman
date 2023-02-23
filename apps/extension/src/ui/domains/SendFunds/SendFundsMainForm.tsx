@@ -307,7 +307,7 @@ const ErrorMessage = () => {
 
 const AmountEdit = () => {
   const [isTokenEdit, setIsTokenEdit] = useState(true)
-  const { onSendMaxClick, tokenRates, isEstimatingMaxAmount, sendMax, token } = useSendFunds()
+  const { onSendMaxClick, tokenRates, isEstimatingMaxAmount, maxAmount, token } = useSendFunds()
 
   const toggleIsTokenEdit = useCallback(() => {
     setIsTokenEdit((prev) => !prev)
@@ -340,11 +340,9 @@ const AmountEdit = () => {
             )}
             <PillButton
               onClick={onSendMaxClick}
+              disabled={!maxAmount}
               size="xs"
-              className={classNames(
-                "h-[2.2rem] rounded-sm py-0 px-4"
-                //  , sendMax && "bg-grey-700"
-              )}
+              className={classNames("h-[2.2rem] rounded-sm py-0 px-4")}
             >
               Max
             </PillButton>
