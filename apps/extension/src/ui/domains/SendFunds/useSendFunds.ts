@@ -373,8 +373,11 @@ const useSendFundsProvider = () => {
         }
       }
 
-      const txError = evmTransaction?.error || subTransaction?.error
+      // some EVM networks will break on estimate fee if balance is insufficient, this simple check will prevent unfriendly error message
+      if (token && balance && transfer && balance.transferable.planck < transfer.planck)
+        return { isValid: false, error: `Insufficient ${token.symbol}` }
 
+      const txError = evmTransaction?.error || subTransaction?.error
       if (txError)
         return {
           isValid: false,
@@ -410,6 +413,7 @@ const useSendFundsProvider = () => {
       return { isValid: true, error: "Failed to validate" }
     }
   }, [
+    balance,
     costBreakdown,
     evmInvalidTxError,
     evmTransaction?.error,
