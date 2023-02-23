@@ -4,6 +4,7 @@ import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
 import { QrSubstrate } from "@ui/domains/Sign/QrSubstrate"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import useChain from "@ui/hooks/useChain"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { useCallback, useMemo, useState } from "react"
 
@@ -16,6 +17,7 @@ export const SendQr = () => {
   const { from, to, transferableTokenId } = formData as SendTokensInputs
   const [error, setError] = useState<Error>()
   const transferableToken = useTransferableTokenById(transferableTokenId)
+  const chain = useChain(transferableToken?.chainId)
 
   const account = useAccountByAddress(from) as AccountJsonQr
   const knownAddress = useIsKnownAddress(to)
@@ -76,11 +78,11 @@ export const SendQr = () => {
 
   return (
     <QrSubstrate
-      account={account}
-      genesisHash={account.genesisHash ?? undefined}
       payload={payload}
-      onReject={cancel}
+      account={account}
+      genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
       onSignature={handleSigned}
+      onReject={cancel}
       parent={parent}
     />
   )
