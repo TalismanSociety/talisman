@@ -225,8 +225,8 @@ export default class AppHandler extends ExtensionHandler {
 
   private async openSendFunds({ from, tokenId }: SendFundsOpenRequest): Promise<boolean> {
     if (
-      (await featuresStore.isFeatureEnabled("SEND_FUNDS_V2")) ||
-      (await this.stores.app.get("hasSpiritKey"))
+      (await featuresStore.isFeatureEnabled("SEND_FUNDS_V2")) &&
+      (await this.stores.settings.get("spiritClanFeatures"))
     ) {
       const params = new URLSearchParams()
       if (from) params.append("from", from)

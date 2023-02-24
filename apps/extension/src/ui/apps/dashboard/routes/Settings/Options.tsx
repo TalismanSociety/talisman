@@ -4,8 +4,10 @@ import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
 import Spacer from "@talisman/components/Spacer"
+import { WithTooltip } from "@talisman/components/Tooltip"
 import Layout from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
+import { useAppState } from "@ui/hooks/useAppState"
 import { useSettings } from "@ui/hooks/useSettings"
 import { useCallback } from "react"
 
@@ -15,6 +17,7 @@ const Options = () => {
     useTestnets = false,
     hideBalances = false,
     allowNotifications = true,
+    spiritClanFeatures = true,
     update,
   } = useSettings()
 
@@ -25,6 +28,8 @@ const Options = () => {
       },
     [update]
   )
+
+  const { hasSpiritKey } = useAppState()
 
   return (
     <Layout centered withBack backTo="/settings">
@@ -56,6 +61,31 @@ const Options = () => {
             selectedType={identiconType}
             onChange={handleSettingChange("identiconType")}
           />
+        </Setting>
+        <Setting
+          title="Pre-release features"
+          subtitle={
+            <>
+              <a
+                href="https://docs.talisman.xyz/talisman/explore-the-paraverse/talisman-portal/spirit-keys-and-commendations#sprit-keys"
+                target="_blank"
+                className="text-grey-200 hover:text-body"
+              >
+                Spirit Key NFT
+              </a>{" "}
+              holders get special early access to new features
+            </>
+          }
+        >
+          <WithTooltip
+            tooltip={hasSpiritKey ? undefined : "You need a Spirit Key to enable this option"}
+          >
+            <Field.Toggle
+              disabled={!hasSpiritKey}
+              value={hasSpiritKey && spiritClanFeatures}
+              onChange={handleSettingChange("spiritClanFeatures")}
+            />
+          </WithTooltip>
         </Setting>
       </Grid>
     </Layout>
