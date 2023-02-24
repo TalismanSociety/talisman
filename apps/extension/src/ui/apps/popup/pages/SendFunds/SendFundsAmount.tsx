@@ -1,5 +1,5 @@
 import { AnalyticsPage } from "@ui/api/analytics"
-import { SendFundsMainForm } from "@ui/domains/SendFunds/SendFundsMainForm"
+import { SendFundsAmountForm } from "@ui/domains/SendFunds/SendFundsAmountForm"
 
 import { SendFundsLayout } from "./SendFundsLayout"
 
@@ -12,8 +12,8 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 export const SendFundsAmount = () => {
   return (
-    <SendFundsLayout withBackLink title="Send" analytics={ANALYTICS_PAGE}>
-      <SendFundsMainForm />
+    <SendFundsLayout title="Send" analytics={ANALYTICS_PAGE}>
+      <SendFundsAmountForm />
     </SendFundsLayout>
   )
 }

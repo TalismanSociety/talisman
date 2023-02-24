@@ -261,7 +261,7 @@ export const SendFundsConfirmForm = () => {
     <div className="flex h-full w-full flex-col items-center px-12 py-8">
       <div className="text-lg font-bold">You are sending</div>
       <div className="mt-24 w-full grow">
-        <div className="bg-grey-900 text-body-secondary space-y-4 rounded p-8 leading-[140%]">
+        <div className="bg-grey-900 text-body-secondary space-y-4 rounded px-12 py-8 leading-[140%]">
           <div className="flex h-12 items-center justify-between gap-8">
             <div className="text-body-secondary">Amount</div>
             <div className="text-body h-12">

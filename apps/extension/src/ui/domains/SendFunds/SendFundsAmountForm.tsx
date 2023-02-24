@@ -580,7 +580,7 @@ const AddContact = () => {
   )
 }
 
-export const SendFundsMainForm = () => {
+export const SendFundsAmountForm = () => {
   const { from, to, goto } = useSendFundsWizard()
 
   const handleGotoClick = useCallback(
