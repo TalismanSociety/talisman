@@ -12,7 +12,7 @@ const useAlecAtWork: UseAlec = (label, value) => {
 
   useEffect(() => {
     // print initial value
-    log.debug("[useAlec]", label, value)
+    log.debug("[useAlec]", label, { value })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [label])
 
@@ -27,7 +27,7 @@ const useAlecAtWork: UseAlec = (label, value) => {
     return acc
   }, {} as Record<string, any>)
 
-  if (Object.keys(changes).length) log.debug("[useAlec]", label, value, changes)
+  if (Object.keys(changes).length) log.debug("[useAlec]", label, { value, changes })
 
   refPrev.current = value
 }

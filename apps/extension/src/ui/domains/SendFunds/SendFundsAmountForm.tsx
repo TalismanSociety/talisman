@@ -371,8 +371,7 @@ const AmountEdit = () => {
 }
 
 const TokenRow = ({ onEditClick }: { onEditClick: () => void }) => {
-  const { tokenId } = useSendFundsWizard()
-  const { balance, token } = useSendFunds()
+  const { tokenId, balance, token } = useSendFunds()
 
   return (
     <Container className="flex h-[50px] w-full items-center justify-between px-6 py-4">

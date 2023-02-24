@@ -12,6 +12,7 @@ import { useSettings } from "@ui/hooks/useSettings"
 import { useCallback } from "react"
 
 const Options = () => {
+  const { hasSpiritKey } = useAppState()
   const {
     identiconType = "talisman-orb",
     useTestnets = false,
@@ -28,8 +29,6 @@ const Options = () => {
       },
     [update]
   )
-
-  const { hasSpiritKey } = useAppState()
 
   return (
     <Layout centered withBack backTo="/settings">

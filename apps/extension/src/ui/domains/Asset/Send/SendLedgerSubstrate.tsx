@@ -5,7 +5,6 @@ import { api } from "@ui/api"
 import LedgerSubstrate from "@ui/domains/Sign/LedgerSubstrate"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import BigNumber from "bignumber.js"
 import { useCallback, useMemo, useState } from "react"
 
 import { useSendTokens } from "./context"

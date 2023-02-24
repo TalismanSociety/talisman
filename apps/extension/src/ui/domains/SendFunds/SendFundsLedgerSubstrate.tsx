@@ -8,7 +8,7 @@ import LedgerSubstrate from "@ui/domains/Sign/LedgerSubstrate"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import useToken from "@ui/hooks/useToken"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useState } from "react"
 import { Button } from "talisman-ui"
 
 import { useSendFunds } from "./useSendFunds"
@@ -36,7 +36,6 @@ const SendFundsLedgerSubstrate = () => {
           contact: "contact",
         }
 
-        // TODO move this away from here
         api.analyticsCapture({
           eventName: "asset transfer",
           options: {

@@ -4,7 +4,6 @@ import {
   AssetTransferMethod,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
-import { isHardwareAccount } from "@core/handlers/helpers"
 import { chainConnector } from "@core/rpcs/chain-connector"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { SubscriptionCallback } from "@core/types"
