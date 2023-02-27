@@ -1,4 +1,4 @@
-import { DEBUG, TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
+import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
 import { AccountMeta } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
@@ -32,7 +32,7 @@ export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
 
   private async onboard({ pass, passConfirm, mnemonic }: RequestOnboard): Promise<OnboardedType> {
-    !DEBUG && (await sleep(1000))
+    if (!(DEBUG || TEST)) await sleep(1000)
     assert(pass, "Password cannot be empty")
     assert(passConfirm, "Password confirm cannot be empty")
 
