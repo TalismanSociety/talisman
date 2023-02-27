@@ -1,25 +1,73 @@
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
-import { SimpleButton } from "@talisman/components/SimpleButton"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { ArrowRightIcon, LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
-import { decodeAnyAddress, formatDecimals, sleep } from "@talismn/util"
+import imgImportDerived from "@talisman/theme/images/import-ps-derived.png"
+import imgImportRoot from "@talisman/theme/images/import-ps-root.png"
+import { classNames, decodeAnyAddress, formatDecimals, sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { Address } from "@ui/domains/Account/Address"
 import Avatar from "@ui/domains/Account/Avatar"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { ScanQr } from "@ui/domains/Sign/ScanQr"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
-import { useSettings } from "@ui/hooks/useSettings"
-import { useCallback, useMemo, useReducer } from "react"
-import { Checkbox, FormFieldInputText } from "talisman-ui"
+import { FC, ReactNode, useCallback, useMemo, useReducer } from "react"
+import { Button, FormFieldInputText } from "talisman-ui"
+
+const AccountTypeButton: FC<{
+  title: ReactNode
+  description: ReactNode
+  imgSrc: string
+  onClick: () => void
+}> = ({ title, description, imgSrc, onClick }) => (
+  <button
+    type="button"
+    className="bg-grey-900 leading-paragraph hover:bg-grey-800 ring-body-secondary w-[346px] rounded-lg py-14 px-16 text-left focus:ring-1"
+    onClick={onClick}
+  >
+    <div className="text-body font-bold">{title}</div>
+    <div className="mt-4">{description}</div>
+    <div className="mt-8">
+      <img alt="" src={imgSrc} className="w-[265px]" />
+    </div>
+  </button>
+)
+
+const ListEntry: FC<{
+  number: number
+  title: ReactNode
+  children: ReactNode
+  isError?: boolean
+  extra?: ReactNode
+}> = ({ number, title, children, isError, extra }) => (
+  <li className="relative ml-20">
+    {isError ? (
+      <div className=" border-alert-error text-alert-error absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full border-2 text-xs font-bold">
+        !
+      </div>
+    ) : (
+      <div className="bg-black-tertiary text-body-secondary absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full text-xs lining-nums">
+        {number}
+      </div>
+    )}
+    <div className="mb-8">{title}</div>
+    <p className="text-body-secondary">{children}</p>
+    {extra ?? null}
+  </li>
+)
 
 type State =
-  | { type: "SCAN"; enable: boolean; cameraError?: string; scanError?: string }
+  | { type: "SELECT_TYPE" }
+  | {
+      type: "SCAN"
+      enable: boolean
+      cameraError?: string
+      scanError?: string
+      isChainSpecific: boolean
+    }
   | {
       type: "CONFIGURE"
       name: string
@@ -30,6 +78,7 @@ type State =
     }
 
 type Action =
+  | { method: "setAccountType"; isChainSpecific: boolean }
   | { method: "enableScan" }
   | { method: "setScanError"; error: string }
   | { method: "setCameraError"; error: string }
@@ -39,36 +88,40 @@ type Action =
   | { method: "setSubmitting" }
   | { method: "setSubmittingFailed" }
 
-const initialState: State = { type: "SCAN", enable: false }
+const initialState: State = { type: "SELECT_TYPE" }
 
 const reducer = (state: State, action: Action): State => {
+  if (state.type === "SELECT_TYPE") {
+    if (action.method === "setAccountType")
+      return { type: "SCAN", enable: false, isChainSpecific: action.isChainSpecific }
+  }
+
   if (state.type === "SCAN") {
-    if (action.method === "enableScan") return { type: "SCAN", enable: true }
+    if (action.method === "enableScan") return { ...state, enable: true }
     if (action.method === "setScanError")
-      return { type: "SCAN", enable: false, scanError: action.error }
+      return { ...state, enable: false, scanError: action.error }
     if (action.method === "setCameraError")
-      return { type: "SCAN", enable: false, cameraError: action.error }
+      return { ...state, enable: false, cameraError: action.error }
 
     if (action.method === "onScan") {
       const scanned = action.scanned
 
       if (!scanned) return state
-      if (!scanned.isAddress)
-        return { type: "SCAN", enable: true, scanError: "QR code is not valid" }
+      if (!scanned.isAddress) return { ...state, scanError: "QR code is not valid" }
 
       const { content: address, genesisHash } = scanned
 
       if (decodeAnyAddress(address).byteLength !== 32)
-        return { type: "SCAN", enable: true, scanError: "QR code contains an invalid address" }
+        return { ...state, scanError: "QR code contains an invalid address" }
       if (!genesisHash.startsWith("0x"))
-        return { type: "SCAN", enable: true, scanError: "QR code contains an invalid genesisHash" }
+        return { ...state, scanError: "QR code contains an invalid genesisHash" }
 
       return {
         type: "CONFIGURE",
         name: "",
         address,
         genesisHash,
-        lockToNetwork: false,
+        lockToNetwork: state.isChainSpecific,
       }
     }
   }
@@ -136,8 +189,7 @@ export const AccountAddQr = () => {
     [setAddress, state]
   )
 
-  const { useTestnets = false } = useSettings()
-  const { chains } = useChains(useTestnets)
+  const { chains } = useChains(true)
   const addressesByChain = useMemo(() => {
     if (state.type !== "CONFIGURE") return
 
@@ -179,6 +231,36 @@ export const AccountAddQr = () => {
 
   return (
     <Layout withBack centered>
+      {state.type === "SELECT_TYPE" && (
+        <div className="w-[748px]">
+          <HeaderBlock className="mb-12" title="Import Parity Signer" />
+          <div className="grid grid-cols-2 gap-12">
+            <div>
+              <ol className="flex flex-col gap-12">
+                <ListEntry number={1} title="Open Parity Signer on your device">
+                  Select 'Keys' tab from the bottom navigation bar
+                </ListEntry>
+                <ListEntry number={2} title="Which account type would you like to use ?">
+                  <div className="grid min-w-[716px] grid-cols-2 gap-12">
+                    <AccountTypeButton
+                      title="For multi-chain (recommended)"
+                      description="Select the top (root) account in Parity Signer to reveal the QR code"
+                      imgSrc={imgImportRoot}
+                      onClick={() => dispatch({ method: "setAccountType", isChainSpecific: false })}
+                    />
+                    <AccountTypeButton
+                      title="For single-chain (derived keys)"
+                      description="Select the derived account in Parity Signer to reveal the QR code"
+                      imgSrc={imgImportDerived}
+                      onClick={() => dispatch({ method: "setAccountType", isChainSpecific: true })}
+                    />
+                  </div>
+                </ListEntry>
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
       {state.type === "SCAN" && (
         <>
           <HeaderBlock className="mb-12" title="Import Parity Signer" />
@@ -201,19 +283,15 @@ export const AccountAddQr = () => {
                         ),
                         errorIcon: true,
                       }
-                    : state.enable
-                    ? // ENABLED AND NO ERROR
-                      {
-                        title: "Approve camera permissions",
-                        body: "Allow Talisman to access your camera to scan QR codes",
-                      }
-                    : // NOT ENABLED
-                      {
+                    : {
                         title: "Approve camera permissions",
                         body: "Allow Talisman to access your camera to scan QR codes",
                         extra: (
                           <button
-                            className="bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]"
+                            className={classNames(
+                              "bg-primary/10 text-primary hover:bg-primary/20 mt-6 inline-block rounded-full px-6 text-sm font-light leading-[32px]",
+                              state.enable ? "invisible" : "visible"
+                            )}
                             onClick={() => dispatch({ method: "enableScan" })}
                           >
                             Turn on Camera
@@ -221,34 +299,19 @@ export const AccountAddQr = () => {
                         ),
                       },
                   {
-                    title: "Open Parity Signer",
-                    body: (
-                      <>
-                        Select ‘Keys’ tab then select{" "}
-                        <span className="text-white">the top (root) account</span> to reveal the QR
-                        code
-                      </>
-                    ),
-                  },
-                  {
                     title: "Scan QR code",
                     body: "Bring your QR code in front of your camera. The preview image is blurred for security, but this does not affect the reading",
                   },
                 ].map(({ title, body, extra, errorIcon }, index) => (
-                  <li className="relative ml-20" key={index}>
-                    {errorIcon ? (
-                      <div className=" border-alert-error text-alert-error absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full border-2 text-xs font-bold">
-                        !
-                      </div>
-                    ) : (
-                      <div className="bg-black-tertiary text-body-secondary absolute -left-20 flex h-12 w-12 items-center justify-center rounded-full text-xs lining-nums">
-                        {index + 1}
-                      </div>
-                    )}
-                    <div className="mb-8">{title}</div>
-                    <p className="text-body-secondary">{body}</p>
-                    {extra ?? null}
-                  </li>
+                  <ListEntry
+                    key={index}
+                    title={title}
+                    extra={extra}
+                    isError={errorIcon}
+                    number={index + 3}
+                  >
+                    {body}
+                  </ListEntry>
                 ))}
               </ol>
             </div>
@@ -336,30 +399,10 @@ export const AccountAddQr = () => {
                 </WithTooltip>
               </div>
             </div>
-
-            <Checkbox
-              checked={state.lockToNetwork}
-              onChange={(event) =>
-                dispatch({ method: "setLockToNetwork", lockToNetwork: event.target.checked })
-              }
-            >
-              <div className="text-body-secondary">
-                Restrict account to{" "}
-                <div className="text-body inline-flex items-baseline gap-2">
-                  <ChainLogo
-                    className="self-center"
-                    id={chains.find((chain) => chain.genesisHash === state.genesisHash)?.id}
-                  />
-                  {chains.find((chain) => chain.genesisHash === state.genesisHash)?.name ??
-                    "Unknown"}
-                </div>{" "}
-                network
-              </div>
-            </Checkbox>
-            <div className="flex justify-end py-8">
-              <SimpleButton type="submit" primary processing={state.submitting}>
-                Import <ArrowRightIcon />
-              </SimpleButton>
+            <div className="flex justify-end pt-12">
+              <Button icon={ArrowRightIcon} type="submit" primary processing={state.submitting}>
+                Import
+              </Button>
             </div>
           </form>
         </>
