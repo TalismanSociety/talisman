@@ -17,17 +17,13 @@ import {
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
-import {
-  TransactionInfo as TransactionType,
-  getEthTransactionInfo,
-} from "@core/util/getEthTransactionInfo"
+import { getEthTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { BigNumber, ethers } from "ethers"
-import { default as debounce } from "lodash/debounce"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { useIsValidEthTransaction } from "./Sign/useIsValidEthTransaction"
 
@@ -77,7 +73,7 @@ const useEstimatedGas = (
       }
     },
     refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
-    retry: false,
+    retry: false, // don't retry. other requests would have fallbacked to a good rpc if necessary before this hook is called. an error here means tx is invalid
   })
 }
 

@@ -132,7 +132,6 @@ const Popup = () => {
                           path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
                           element={<EthereumSignRequest />}
                         ></Route>
-
                         <Route
                           path={`${SIGNING_TYPES.ETH_SEND}/:id`}
                           element={<EthereumSignRequest />}
