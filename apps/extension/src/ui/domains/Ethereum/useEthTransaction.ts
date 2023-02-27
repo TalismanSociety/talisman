@@ -83,10 +83,9 @@ const useEstimatedGas = (
 
 const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOptions?: boolean) => {
   const { data, ...rest } = useQuery({
-    queryKey: ["block", provider?.network?.chainId],
+    queryKey: ["block", provider?.network?.chainId, withFeeOptions],
     queryFn: async () => {
       if (!provider) return null
-
       const [
         gasPrice,
         { gasLimit: blockGasLimit, baseFeePerGas, gasUsed, number: blockNumber },
