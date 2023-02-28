@@ -113,11 +113,15 @@ export default class ParaverseProtector {
     commitSha: string,
     data: HostList | MetaMaskDetectorConfig
   ): void {
-    db.phishing.put({
-      commitSha,
-      hostList: data,
-      source,
-    })
+    db.phishing
+      .put({
+        commitSha,
+        hostList: data,
+        source,
+      })
+      .catch((error) => {
+        log.error("Failed to persist phishing list", { error })
+      })
   }
 
   async getCommitSha(url: string) {

@@ -95,7 +95,12 @@ export default class Extension extends ExtensionHandler {
 
   private initDb() {
     // Forces database migrations to run on first start up
-    db.open()
+    // By accessing db.metadata we can be sure that dexie will:
+    //   1. open a connection to the database
+    //   2. (if required) run any new db migrations
+    //   3. close the database connection only when it is no longer required
+    //      (or re-use the connection when it's being accessed elsewhere in our code!)
+    db.metadata.toArray()
 
     db.on("ready", async () => {
       // TODO: Add back this migration logic to delete old data from localStorage/old idb-managed db
