@@ -153,10 +153,13 @@ export default class Extension extends ExtensionHandler {
     setTimeout(async () => {
       try {
         const hasSpiritKey = await fetchHasSpiritKey()
-        this.stores.app.set({ hasSpiritKey })
-        await talismanAnalytics.capture("Spirit Key ownership check", {
-          $set: { hasSpiritKey },
-        })
+        const currentSpiritKey = await this.stores.app.get("hasSpiritKey")
+        if (currentSpiritKey !== hasSpiritKey) {
+          this.stores.app.set({ hasSpiritKey })
+          await talismanAnalytics.capture("Spirit Key ownership check", {
+            $set: { hasSpiritKey },
+          })
+        }
       } catch (err) {
         // ignore, don't update app store nor posthog property
         log.error("Failed to check Spirit Key ownership", { err })
