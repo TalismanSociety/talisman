@@ -1,7 +1,7 @@
 import "@core/util/enableLogsInDevelopment"
 
 import { initSentry } from "@core/config/sentry"
-import { DEBUG, PORT_CONTENT, PORT_EXTENSION, TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
+import { DEBUG, PORT_CONTENT, PORT_EXTENSION, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
 import { consoleOverride } from "@core/util/logging"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
@@ -52,7 +52,7 @@ Browser.runtime.onInstalled.addListener(async ({ reason }) => {
               url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
             },
           }),
-        2000
+        DEBUG || TEST ? 0 : 2000
       )
   }
 })
