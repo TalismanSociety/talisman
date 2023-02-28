@@ -125,6 +125,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     transaction,
     transactionInfo,
     error,
+    errorDetails,
   } = useEthSignTransactionRequest()
   const { genericEvent } = useAnalytics()
 
@@ -334,7 +335,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
             "N/A"
           )}
         </ViewDetailsField>
-        <ViewDetailsField label="Error" error={error} />
+        <ViewDetailsField label="Error" error={errorDetails ?? error} />
         {request.data && (
           <ViewDetailsField
             label={
