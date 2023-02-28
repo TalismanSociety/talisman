@@ -43,13 +43,21 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   async chainIds(): Promise<ChainId[]> {
-    return await this.#db.chains.toCollection().primaryKeys()
+    try {
+      return await this.#db.chains.toCollection().primaryKeys()
+    } catch (cause) {
+      throw new Error("Failed to get chainIds", { cause })
+    }
   }
   async chains(): Promise<ChainList> {
-    return (await this.#db.chains.toArray()).reduce(
-      (list, chain) => ({ ...list, [chain.id]: chain }),
-      {}
-    )
+    try {
+      return (await this.#db.chains.toArray()).reduce(
+        (list, chain) => ({ ...list, [chain.id]: chain }),
+        {}
+      )
+    } catch (cause) {
+      throw new Error("Failed to get chains", { cause })
+    }
   }
   async getChain(chainIdOrQuery: ChainId | Partial<Chain>): Promise<Chain | CustomChain | null> {
     const [chainId, chainQuery] =
@@ -59,19 +67,31 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         : // chainQuery (Partial<Chain>)
           [undefined, chainIdOrQuery]
 
-    return chainId !== undefined
-      ? (await this.#db.chains.get(chainId)) || null
-      : (await this.#db.chains.get(chainQuery)) || null
+    try {
+      return chainId !== undefined
+        ? (await this.#db.chains.get(chainId)) || null
+        : (await this.#db.chains.get(chainQuery)) || null
+    } catch (cause) {
+      throw new Error("Failed to get chain", { cause })
+    }
   }
 
   async evmNetworkIds(): Promise<EvmNetworkId[]> {
-    return await this.#db.evmNetworks.toCollection().primaryKeys()
+    try {
+      return await this.#db.evmNetworks.toCollection().primaryKeys()
+    } catch (cause) {
+      throw new Error("Failed to get evmNetworkIds", { cause })
+    }
   }
   async evmNetworks(): Promise<EvmNetworkList> {
-    return (await this.#db.evmNetworks.toArray()).reduce(
-      (list, evmNetwork) => ({ ...list, [evmNetwork.id]: evmNetwork }),
-      {}
-    )
+    try {
+      return (await this.#db.evmNetworks.toArray()).reduce(
+        (list, evmNetwork) => ({ ...list, [evmNetwork.id]: evmNetwork }),
+        {}
+      )
+    } catch (cause) {
+      throw new Error("Failed to get evmNetworks", { cause })
+    }
   }
   async getEvmNetwork(
     evmNetworkIdOrQuery: EvmNetworkId | Partial<EvmNetwork>
@@ -83,19 +103,31 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         : // evmNetworkQuery (Partial<EvmNetwork>)
           [undefined, evmNetworkIdOrQuery]
 
-    return evmNetworkId !== undefined
-      ? (await this.#db.evmNetworks.get(evmNetworkId)) || null
-      : (await this.#db.evmNetworks.get(evmNetworkQuery)) || null
+    try {
+      return evmNetworkId !== undefined
+        ? (await this.#db.evmNetworks.get(evmNetworkId)) || null
+        : (await this.#db.evmNetworks.get(evmNetworkQuery)) || null
+    } catch (cause) {
+      throw new Error("Failed to get evmNetwork", { cause })
+    }
   }
 
   async tokenIds(): Promise<TokenId[]> {
-    return await this.#db.tokens.toCollection().primaryKeys()
+    try {
+      return await this.#db.tokens.toCollection().primaryKeys()
+    } catch (cause) {
+      throw new Error("Failed to get tokenIds", { cause })
+    }
   }
   async tokens(): Promise<TokenList> {
-    return (await this.#db.tokens.toArray()).reduce(
-      (list, token) => ({ ...list, [token.id]: token }),
-      {}
-    )
+    try {
+      return (await this.#db.tokens.toArray()).reduce(
+        (list, token) => ({ ...list, [token.id]: token }),
+        {}
+      )
+    } catch (cause) {
+      throw new Error("Failed to get tokens", { cause })
+    }
   }
   async getToken(tokenIdOrQuery: TokenId | Partial<Token>): Promise<Token | null> {
     const [tokenId, tokenQuery] =
@@ -105,39 +137,59 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         : // tokenQuery (Partial<Token>)
           [undefined, tokenIdOrQuery]
 
-    return tokenId !== undefined
-      ? (await this.#db.tokens.get(tokenId)) || null
-      : (await this.#db.tokens.get(tokenQuery)) || null
+    try {
+      return tokenId !== undefined
+        ? (await this.#db.tokens.get(tokenId)) || null
+        : (await this.#db.tokens.get(tokenQuery)) || null
+    } catch (cause) {
+      throw new Error("Failed to get token", { cause })
+    }
   }
 
   async addCustomChain(customChain: CustomChain) {
-    if (!("isCustom" in customChain)) return
-    return this.#db.chains.put(customChain)
+    try {
+      if (!("isCustom" in customChain)) return
+      return this.#db.chains.put(customChain)
+    } catch (cause) {
+      throw new Error("Failed to add custom chain", { cause })
+    }
   }
   async removeCustomChain(chainId: ChainId) {
-    return (
-      this.#db.chains
-        // only affect custom chains
-        .filter((chain) => "isCustom" in chain && chain.isCustom === true)
-        // only affect the provided chainId
-        .filter((chain) => chain.id === chainId)
-        // delete the chain (if exists)
-        .delete()
-    )
+    try {
+      return (
+        this.#db.chains
+          // only affect custom chains
+          .filter((chain) => "isCustom" in chain && chain.isCustom === true)
+          // only affect the provided chainId
+          .filter((chain) => chain.id === chainId)
+          // delete the chain (if exists)
+          .delete()
+      )
+    } catch (cause) {
+      throw new Error("Failed to remove custom chain", { cause })
+    }
   }
 
   async addCustomEvmNetwork(customEvmNetwork: CustomEvmNetwork) {
-    if (!("isCustom" in customEvmNetwork)) return
-    return this.#db.evmNetworks.put(customEvmNetwork)
+    try {
+      if (!("isCustom" in customEvmNetwork)) return
+      return this.#db.evmNetworks.put(customEvmNetwork)
+    } catch (cause) {
+      throw new Error("Failed to add custom evm network", { cause })
+    }
   }
   async removeCustomEvmNetwork(evmNetworkId: EvmNetworkId) {
     if (await this.getIsBuiltInEvmNetwork(evmNetworkId))
       throw new Error("Cannot remove built-in EVM network")
 
-    return this.#db.transaction("rw", [this.#db.evmNetworks, this.#db.tokens], async () => {
-      await this.#db.evmNetworks.delete(evmNetworkId)
-      await this.#db.tokens.filter((token) => token.evmNetwork?.id === evmNetworkId).delete()
-    })
+    try {
+      return this.#db.transaction("rw", [this.#db.evmNetworks, this.#db.tokens], async () => {
+        await this.#db.evmNetworks.delete(evmNetworkId)
+        await this.#db.tokens.filter((token) => token.evmNetwork?.id === evmNetworkId).delete()
+      })
+    } catch (cause) {
+      throw new Error("Failed to remove custom evm network", { cause })
+    }
   }
   async resetEvmNetwork(evmNetworkId: EvmNetworkId) {
     const builtInEvmNetwork = await fetchEvmNetwork(evmNetworkId)
@@ -145,36 +197,52 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     const builtInNativeToken = await fetchToken(builtInEvmNetwork.nativeToken.id)
     if (!builtInNativeToken) throw new Error("Failed to lookup native token")
 
-    return this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
-      // delete network and it's native token
-      const networkToDelete = await this.#db.evmNetworks.get(evmNetworkId)
-      if (networkToDelete?.nativeToken?.id)
-        await this.#db.tokens.delete(networkToDelete.nativeToken.id)
-      await this.#db.evmNetworks.delete(evmNetworkId)
+    try {
+      return await this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
+        // delete network and it's native token
+        const networkToDelete = await this.#db.evmNetworks.get(evmNetworkId)
+        if (networkToDelete?.nativeToken?.id)
+          await this.#db.tokens.delete(networkToDelete.nativeToken.id)
+        await this.#db.evmNetworks.delete(evmNetworkId)
 
-      // reprovision them from subsquid data
-      await this.#db.tokens.put(builtInNativeToken)
-      await this.#db.evmNetworks.put(builtInEvmNetwork)
-    })
+        // reprovision them from subsquid data
+        await this.#db.tokens.put(builtInNativeToken)
+        await this.#db.evmNetworks.put(builtInEvmNetwork)
+      })
+    } catch (cause) {
+      throw new Error("Failed to reset evm network", { cause })
+    }
   }
 
   async addCustomToken(customToken: Token) {
-    if (!("isCustom" in customToken)) return
-    return this.#db.tokens.put(customToken)
+    try {
+      if (!("isCustom" in customToken)) return
+      return this.#db.tokens.put(customToken)
+    } catch (cause) {
+      throw new Error("Failed to add custom token", { cause })
+    }
   }
   async removeCustomToken(tokenId: TokenId) {
-    return (
-      this.#db.tokens
-        // only affect custom tokens
-        .filter((token) => "isCustom" in token && (token as any).isCustom === true)
-        // only affect the provided token
-        .filter((token) => token.id === tokenId)
-        // delete the token (if exists)
-        .delete()
-    )
+    try {
+      return (
+        this.#db.tokens
+          // only affect custom tokens
+          .filter((token) => "isCustom" in token && (token as any).isCustom === true)
+          // only affect the provided token
+          .filter((token) => token.id === tokenId)
+          // delete the token (if exists)
+          .delete()
+      )
+    } catch (cause) {
+      throw new Error("Failed to remove custom token", { cause })
+    }
   }
-  removeToken(tokenId: TokenId) {
-    return this.#db.tokens.delete(tokenId)
+  async removeToken(tokenId: TokenId) {
+    try {
+      return await this.#db.tokens.delete(tokenId)
+    } catch (cause) {
+      throw new Error("Failed to remove token", { cause })
+    }
   }
 
   /**
