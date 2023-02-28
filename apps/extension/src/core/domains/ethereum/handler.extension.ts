@@ -18,6 +18,7 @@ import { EthRequestArguments, EthRequestSignatures } from "@core/injectEth/types
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"
+import { log } from "@core/log"
 import { watchEthereumTransaction } from "@core/notifications"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -31,6 +32,7 @@ import { evmNativeTokenId } from "@talismn/balances-evm-native"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
 
+import { addEvmTransaction } from "../recentTransactions/helpers"
 import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
@@ -139,11 +141,18 @@ export class EthHandler extends ExtensionHandler {
 
       const { chainId, hash } = await signer.sendTransaction(tx)
 
-      incrementTransactionCount(account.address, ethChainId)
+      try {
+        incrementTransactionCount(account.address, ethChainId)
 
-      // notify user about transaction progress
-      if (await this.stores.settings.get("allowNotifications"))
-        watchEthereumTransaction(chainId.toString(), hash)
+        await addEvmTransaction(tx, hash, url)
+
+        // notify user about transaction progress
+        if (await this.stores.settings.get("allowNotifications"))
+          watchEthereumTransaction(chainId.toString(), hash)
+      } catch (err) {
+        // ignore
+        log
+      }
 
       resolve(hash)
 

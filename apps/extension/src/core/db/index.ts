@@ -37,6 +37,7 @@ export class TalismanDatabase extends Dexie {
         tokenRates: "tokenId",
         metadata: "genesisHash",
         phishing: "source, commitSha",
+        transactions: "hash",
 
         chains: null, // delete legacy table
         evmNetworks: null, // delete legacy table
