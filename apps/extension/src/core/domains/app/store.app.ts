@@ -23,6 +23,7 @@ export type AppStoreData = {
   showWalletFunding: boolean
   hasSpiritKey: boolean
   showDotNomPoolStakingBanner: boolean
+  needsSpiritKeyUpdate: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
@@ -35,6 +36,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
   showWalletFunding: false, // true after onboarding with a newly created account
   hasSpiritKey: false,
+  needsSpiritKeyUpdate: false,
   showDotNomPoolStakingBanner: true,
 }
 
