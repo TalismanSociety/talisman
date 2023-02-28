@@ -72,9 +72,20 @@ export const getMetadataDef = async (
   const cacheKey = getCacheKey(genesisHash, specVersion)
   if (cacheKey && cache[cacheKey]) return cache[cacheKey]
 
-  const storeMetadata = await db.metadata.get(genesisHash)
-  // having a metadataRpc on expected specVersion is ideal scenario, don't go further
-  if (storeMetadata?.metadataRpc && specVersion === storeMetadata.specVersion) return storeMetadata
+  try {
+    // eslint-disable-next-line no-var
+    var storeMetadata = await db.metadata.get(genesisHash)
+
+    // having a metadataRpc on expected specVersion is ideal scenario, don't go further
+    if (storeMetadata?.metadataRpc && specVersion === storeMetadata.specVersion) {
+      return storeMetadata
+    }
+  } catch (cause) {
+    const message = `Failed to load chain metadata from the db for chain ${genesisHash}`
+    const error = new Error(message, { cause })
+    log.error(error)
+    throw error
+  }
 
   if (!chain) {
     log.warn(`Metadata for unknown isn't up to date`, storeMetadata?.chain ?? genesisHash)
@@ -142,9 +153,11 @@ export const getMetadataDef = async (
     // save full object in cache
     cache[cacheKey] = (await db.metadata.get(genesisHash)) as MetadataDef
     return cache[cacheKey]
-  } catch (err) {
-    log.error(`Failed to update metadata for chain ${genesisHash}`, { err })
-    Sentry.captureException(err, { extra: { genesisHash } })
+  } catch (cause) {
+    const message = `Failed to update metadata for chain ${genesisHash}`
+    const error = new Error(message, { cause })
+    log.error(error)
+    Sentry.captureException(error, { extra: { genesisHash } })
     metadataUpdatesStore.set(genesisHash, false)
   }
 

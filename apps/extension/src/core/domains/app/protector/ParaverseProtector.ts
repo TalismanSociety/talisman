@@ -1,6 +1,7 @@
 import { db } from "@core/db"
 import { log } from "@core/log"
 import { checkHost } from "@polkadot/phishing"
+import * as Sentry from "@sentry/browser"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
 import { decompressFromUTF16 } from "lz-string"
@@ -113,11 +114,17 @@ export default class ParaverseProtector {
     commitSha: string,
     data: HostList | MetaMaskDetectorConfig
   ): void {
-    db.phishing.put({
-      commitSha,
-      hostList: data,
-      source,
-    })
+    db.phishing
+      .put({
+        commitSha,
+        hostList: data,
+        source,
+      })
+      .catch((cause) => {
+        const error = new Error("Failed to persist phishing list", { cause })
+        log.error(error)
+        Sentry.captureException(error)
+      })
   }
 
   async getCommitSha(url: string) {

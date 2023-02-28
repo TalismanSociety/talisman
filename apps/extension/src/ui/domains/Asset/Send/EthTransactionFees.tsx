@@ -81,12 +81,6 @@ export const EthTransactionFees = ({
     networkUsage,
   } = useEthTransaction(tx)
 
-  const errorMessage = useMemo(() => {
-    if (error?.startsWith("insufficient funds for intrinsic transaction cost"))
-      return "Insufficient balance"
-    return error ?? null
-  }, [error])
-
   useEffect(() => {
     if (!onChange) return
     if (gasSettings) {
@@ -95,9 +89,9 @@ export const EthTransactionFees = ({
         gasSettings,
       })
     } else {
-      onChange({}, errorMessage)
+      onChange({}, error)
     }
-  }, [errorMessage, gasSettings, onChange, priority])
+  }, [error, gasSettings, onChange, priority])
 
   if (!txDetails) return null
 

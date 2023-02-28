@@ -181,6 +181,7 @@ export const EthSignTransactionRequest = () => {
     priority,
     setPriority,
     error,
+    errorDetails,
     network,
     isLoading,
     transaction,
@@ -237,7 +238,9 @@ export const EthSignTransactionRequest = () => {
         <div className="space-y-4">
           <div id="sign-alerts-inject"></div>
           {isReadyToDisplay && errorMessage && (
-            <SignAlertMessage type="error">{errorMessage}</SignAlertMessage>
+            <SignAlertMessage type="error">
+              <WithTooltip tooltip={errorDetails}>{errorMessage}</WithTooltip>
+            </SignAlertMessage>
           )}
         </div>
         {isReadyToDisplay && (

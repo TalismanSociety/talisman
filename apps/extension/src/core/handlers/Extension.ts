@@ -95,7 +95,12 @@ export default class Extension extends ExtensionHandler {
 
   private initDb() {
     // Forces database migrations to run on first start up
-    db.open()
+    // By accessing db.metadata we can be sure that dexie will:
+    //   1. open a connection to the database
+    //   2. (if required) run any new db migrations
+    //   3. close the database connection only when it is no longer required
+    //      (or re-use the connection when it's being accessed elsewhere in our code!)
+    db.metadata.toArray()
 
     db.on("ready", async () => {
       // TODO: Add back this migration logic to delete old data from localStorage/old idb-managed db
@@ -153,15 +158,36 @@ export default class Extension extends ExtensionHandler {
     setTimeout(async () => {
       try {
         const hasSpiritKey = await fetchHasSpiritKey()
-        this.stores.app.set({ hasSpiritKey })
-        await talismanAnalytics.capture("Spirit Key ownership check", {
-          $set: { hasSpiritKey },
-        })
+        const currentSpiritKey = await this.stores.app.get("hasSpiritKey")
+
+        if (currentSpiritKey !== hasSpiritKey) {
+          await this.stores.app.set({ hasSpiritKey, needsSpiritKeyUpdate: true })
+          await this.updateSpiritKeyOwnership(hasSpiritKey)
+        }
       } catch (err) {
         // ignore, don't update app store nor posthog property
         log.error("Failed to check Spirit Key ownership", { err })
       }
     }, 10_000)
+
+    // in case reporting to posthog fails, set a timer so that every 5 min we will re-attempt
+    setInterval(async () => {
+      const { hasSpiritKey, needsSpiritKeyUpdate } = await this.stores.app.get()
+      if (needsSpiritKeyUpdate) await this.updateSpiritKeyOwnership(hasSpiritKey)
+    }, 300_000)
+  }
+
+  private async updateSpiritKeyOwnership(hasSpiritKey: boolean) {
+    try {
+      await talismanAnalytics.capture("Spirit Key ownership check", {
+        $set: { hasSpiritKey },
+      })
+    } catch (err) {
+      // ignore, don't update app store
+      log.error("Failed to update Spirit Key ownership", { err })
+      return
+    }
+    await this.stores.app.set({ needsSpiritKeyUpdate: false })
   }
 
   public async handle<TMessageType extends MessageTypes>(
