@@ -19,6 +19,8 @@ export const useFeeToken = (tokenId?: string | null) => {
         return "kintsugi-substrate-orml-kint"
       case "interlay":
         return "interlay-substrate-orml-intr"
+      case "equilibrium-polkadot":
+        return "equilibrium-polkadot-substrate-equilibrium-eq"
       default:
         break
     }
