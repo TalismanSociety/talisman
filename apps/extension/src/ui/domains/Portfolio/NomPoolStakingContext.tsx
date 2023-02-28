@@ -44,7 +44,7 @@ const useShowNomPoolStakingBannerProvider = () => {
               (balance.token &&
               "existentialDeposit" in balance.token &&
               balance.token.existentialDeposit
-                ? BigInt(balance.token.existentialDeposit)
+                ? BigInt(balance.token.existentialDeposit as string)
                 : BigInt(0)) -
               BigInt(NOM_POOL_MIN_DEPOSIT[chainId] || 0),
           ])
