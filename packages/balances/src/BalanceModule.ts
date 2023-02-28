@@ -1,6 +1,8 @@
+import { UnsignedTransaction } from "@substrate/txwrapper-core"
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { ChainId, ChaindataProvider, IToken } from "@talismn/chaindata-provider"
+import { ethers } from "ethers"
 
 import { AddressesByToken, Balances, SubscriptionCallback, UnsubscribeFn } from "./types"
 
@@ -8,23 +10,46 @@ import { AddressesByToken, Balances, SubscriptionCallback, UnsubscribeFn } from 
 // exported
 //
 
+export type ExtendableTokenType = IToken
+export type ExtendableChainMeta = Record<string, unknown> | undefined
+export type DefaultChainMeta = undefined
+export type ExtendableModuleConfig = Record<string, unknown> | undefined
+export type DefaultModuleConfig = undefined
+export type BaseTransferParams = { tokenId: string; from: string; to: string; amount: string }
+export type ExtendableTransferParams = BaseTransferParams | undefined
+export type DefaultTransferParams = undefined
+
+export type NewTransferParamsType<T extends Record<string, unknown>> = BaseTransferParams & T
+
+export type TransferTokenTx =
+  | { type: "substrate"; tx: UnsignedTransaction }
+  | { type: "evm"; tx: ethers.providers.TransactionRequest }
+
 export interface BalanceModule<
   TModuleType extends string,
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
-> extends BalanceModuleSubstrate<TModuleType, TTokenType, TChainMeta, TModuleConfig>,
-    BalanceModuleEvm<TModuleType, TTokenType, TChainMeta, TModuleConfig> {}
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
+> extends BalanceModuleSubstrate<
+      TModuleType,
+      TTokenType,
+      TChainMeta,
+      TModuleConfig,
+      TTransferParams
+    >,
+    BalanceModuleEvm<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams> {}
 
 // TODO: Document default balances module purpose/usage
 export const DefaultBalanceModule = <
   TModuleType extends string,
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
 >(
   type: TModuleType
-): BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig> => ({
+): BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams> => ({
   get type() {
     return type
   },
@@ -52,24 +77,23 @@ export const DefaultBalanceModule = <
   async fetchBalances() {
     throw new Error("Balance fetching is not implemented in this module.")
   },
+
+  async transferToken() {
+    throw new Error("Token transfers are not implemented in this module.")
+  },
 })
 
 //
 // internal
 //
 
-export type ExtendableTokenType = IToken
-export type ExtendableChainMeta = Record<string, unknown> | undefined
-export type DefaultChainMeta = undefined
-export type ExtendableModuleConfig = Record<string, unknown> | undefined
-export type DefaultModuleConfig = undefined
-
 interface BalanceModuleSubstrate<
   TModuleType extends string,
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
-> extends BalanceModuleCommon<TModuleType, TTokenType> {
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
+> extends BalanceModuleCommon<TModuleType, TTokenType, TTransferParams> {
   /** Pre-processes any substrate chain metadata required by this module ahead of time */
   fetchSubstrateChainMeta(
     chainConnector: ChainConnector,
@@ -92,8 +116,9 @@ interface BalanceModuleEvm<
   TModuleType extends string,
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
-> extends BalanceModuleCommon<TModuleType, TTokenType> {
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
+> extends BalanceModuleCommon<TModuleType, TTokenType, TTransferParams> {
   /** Pre-processes any evm chain metadata required by this module ahead of time */
   fetchEvmChainMeta(
     chainConnector: ChainConnectorEvm,
@@ -112,7 +137,11 @@ interface BalanceModuleEvm<
   ): Promise<Record<TTokenType["id"], TTokenType>>
 }
 
-interface BalanceModuleCommon<TModuleType extends string, TTokenType extends ExtendableTokenType> {
+interface BalanceModuleCommon<
+  TModuleType extends string,
+  TTokenType extends ExtendableTokenType,
+  TTransferParams extends ExtendableTransferParams
+> {
   get type(): TModuleType
 
   /**
@@ -135,7 +164,11 @@ interface BalanceModuleCommon<TModuleType extends string, TTokenType extends Ext
     addressesByToken: AddressesByToken<TTokenType>
   ): Promise<Balances>
 
-  // transferTx(): Promise<>
+  transferToken(
+    chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
+    chaindataProvider: ChaindataProvider,
+    transferParams: TTransferParams
+  ): Promise<TransferTokenTx | null>
 
   // BalanceModule implementations must implement all of the methods required by this interface, but they may also implement additional methods for their own internal use.
   // This next line allows them to do this without getting a `Type is not assignable to type 'BalanceModule'` typescript error.

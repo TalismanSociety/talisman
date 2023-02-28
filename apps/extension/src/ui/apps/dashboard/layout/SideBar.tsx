@@ -16,10 +16,10 @@ import {
   ZapIcon,
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
+import { api } from "@ui/api"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { useReceiveTokensModal } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
-import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import Build from "@ui/domains/Build"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -237,7 +237,6 @@ const ExtLinkIcon = styled(({ className }: { className?: string }) => (
 
 export const SideBar = () => {
   const { account } = useSelectedAccount()
-  const { open: openSendTokens } = useSendTokensModal()
   const { open: openCopyAddressModal } = useAddressFormatterModal()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
@@ -245,9 +244,11 @@ export const SideBar = () => {
   const showStaking = useIsFeatureEnabled("LINK_STAKING")
 
   const handleSendClick = useCallback(() => {
-    openSendTokens({ from: account?.address })
+    api.sendFundsOpen({
+      from: account?.address,
+    })
     genericEvent("open send funds", { from: "sidebar" })
-  }, [account?.address, genericEvent, openSendTokens])
+  }, [account?.address, genericEvent])
 
   const { open: openReceiveTokensModal } = useReceiveTokensModal()
   const handleCopyClick = useCallback(() => {

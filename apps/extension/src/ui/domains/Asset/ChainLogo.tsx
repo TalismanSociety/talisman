@@ -39,6 +39,7 @@ export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, name, logo, iconUrls
       src={src}
       className={imgClassName}
       alt=""
+      loading="lazy" // defers download, helps performance especially in chain lists
       onError={handleError}
     />
   )

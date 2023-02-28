@@ -8,7 +8,7 @@ import {
   forwardRef,
 } from "react"
 
-type FormFieldInputContainerProps = DetailedHTMLProps<
+export type FormFieldInputContainerProps = DetailedHTMLProps<
   HTMLAttributes<HTMLDivElement>,
   HTMLDivElement
 > & {
@@ -32,7 +32,7 @@ export const FormFieldInputContainer: FC<FormFieldInputContainerProps> = ({
   )
 }
 
-type FormFieldInputTextProps = DetailedHTMLProps<
+export type FormFieldInputTextProps = DetailedHTMLProps<
   InputHTMLAttributes<HTMLInputElement>,
   HTMLInputElement
 > & {

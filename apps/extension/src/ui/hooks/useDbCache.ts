@@ -1,4 +1,4 @@
-import { DbTokenRates, db } from "@core/db"
+import { db } from "@core/db"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { provideContext } from "@talisman/util/provideContext"
 import { BalanceJson, db as balancesDb } from "@talismn/balances"
@@ -15,7 +15,7 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { TokenRates } from "@talismn/token-rates"
+import { DbTokenRates, TokenRates } from "@talismn/token-rates"
 import { useLiveQuery } from "dexie-react-hooks"
 import { useEffect, useRef, useState } from "react"
 import { useDebounce } from "react-use"

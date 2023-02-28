@@ -30,7 +30,7 @@ type LedgerEthereumProps = {
   method: LedgerEthereumSignMethod
   payload: any // string message, typed object for eip712, TransactionRequest for tx
   manualSend?: boolean // requests user to click a button to send the payload to the ledger
-  parent?: HTMLElement | null
+  parent?: HTMLElement | string | null
   onSignature?: (result: { signature: `0x${string}` }) => void
   onReject: () => void
   onSendToLedger?: () => void // triggered when tx is sent to the ledger

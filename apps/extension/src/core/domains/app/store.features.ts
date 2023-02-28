@@ -33,6 +33,7 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     BUY_CRYPTO: true, // nav buttons + button in fund wallet component
     LINK_TX_HISTORY: true,
     LINK_STAKING: true,
+    SEND_FUNDS_V2: true,
     BANNER_NOM_POOL_STAKING: true,
     USE_ONFINALITY_API_KEY_SUBSTRATE: false,
     USE_ONFINALITY_API_KEY_EVM: false,

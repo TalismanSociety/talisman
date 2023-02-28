@@ -81,8 +81,6 @@ export const EthTransactionFees = ({
     networkUsage,
   } = useEthTransaction(tx)
 
-  const sendFundsContainer = document.getElementById("send-funds-container")
-
   useEffect(() => {
     if (!onChange) return
     if (gasSettings) {
@@ -108,7 +106,7 @@ export const EthTransactionFees = ({
           Priority :{" "}
           <EthFeeSelect
             tokenId={evmNetwork?.nativeToken?.id}
-            drawerContainer={sendFundsContainer}
+            drawerContainer={"send-funds-container"}
             gasSettingsByPriority={gasSettingsByPriority}
             setCustomSettings={setCustomSettings}
             onChange={setPriority}

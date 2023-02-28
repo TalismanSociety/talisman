@@ -1,4 +1,6 @@
 import { Metadata, TypeRegistry } from "@polkadot/types"
+import { assert } from "@polkadot/util"
+import { UnsignedTransaction, defineMethod } from "@substrate/txwrapper-core"
 import {
   AddressesByToken,
   Amount,
@@ -7,6 +9,7 @@ import {
   Balances,
   DefaultBalanceModule,
   NewBalanceType,
+  NewTransferParamsType,
   StorageHelper,
 } from "@talismn/balances"
 import {
@@ -75,11 +78,24 @@ declare module "@talismn/balances/plugins" {
   }
 }
 
+export type SubTokensTransferParams = NewTransferParamsType<{
+  registry: TypeRegistry
+  metadataRpc: `0x${string}`
+  blockHash: string
+  blockNumber: number
+  nonce: number
+  specVersion: number
+  transactionVersion: number
+  tip?: string
+  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+}>
+
 export const SubTokensModule: BalanceModule<
   ModuleType,
   SubTokensToken,
   SubTokensChainMeta,
-  SubTokensModuleConfig
+  SubTokensModuleConfig,
+  SubTokensTransferParams
 > = {
   ...DefaultBalanceModule("substrate-tokens"),
 
@@ -305,6 +321,119 @@ export const SubTokensModule: BalanceModule<
 
     return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
   },
+
+  async transferToken(
+    chainConnectors,
+    chaindataProvider,
+    {
+      tokenId,
+      from,
+      to,
+      amount,
+
+      registry,
+      metadataRpc,
+      blockHash,
+      blockNumber,
+      nonce,
+      specVersion,
+      transactionVersion,
+      tip,
+      transferMethod,
+    }
+  ) {
+    const token = await chaindataProvider.getToken(tokenId)
+    assert(token, `Token ${tokenId} not found in store`)
+
+    if (token.type !== "substrate-tokens")
+      throw new Error(`This module doesn't handle tokens of type ${token.type}`)
+
+    const chainId = token.chain.id
+    const chain = await chaindataProvider.getChain(chainId)
+    assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
+
+    const { genesisHash } = chain
+
+    const currencyId = (() => {
+      try {
+        return JSON.parse(token.onChainId as any)
+      } catch (error) {
+        return token.onChainId
+      }
+    })()
+
+    // different chains use different orml transfer methods
+    // we'll try each one in sequence until we get one that doesn't throw an error
+    let unsigned: UnsignedTransaction | undefined = undefined
+    const errors: Error[] = []
+
+    const currenciesPallet = "currencies"
+    const currenciesMethod = "transfer"
+    const currenciesArgs = { dest: to, currencyId, amount }
+
+    const sendAll = transferMethod === "transferAll"
+
+    const tokensPallet = "tokens"
+    const tokensMethod = transferMethod
+    const tokensArgs = sendAll
+      ? { dest: to, currencyId, keepAlive: false }
+      : { dest: to, currencyId, amount }
+
+    const commonDefineMethodFields = {
+      address: from,
+      blockHash,
+      blockNumber,
+      eraPeriod: 64,
+      genesisHash,
+      metadataRpc,
+      nonce,
+      specVersion,
+      tip: tip ? Number(tip) : 0,
+      transactionVersion,
+    }
+
+    const unsignedMethods = [
+      () =>
+        defineMethod(
+          {
+            method: {
+              pallet: currenciesPallet,
+              name: currenciesMethod,
+              args: currenciesArgs,
+            },
+            ...commonDefineMethodFields,
+          },
+          { metadataRpc, registry }
+        ),
+      () =>
+        defineMethod(
+          {
+            method: {
+              pallet: tokensPallet,
+              name: tokensMethod,
+              args: tokensArgs,
+            },
+            ...commonDefineMethodFields,
+          },
+          { metadataRpc, registry }
+        ),
+    ]
+
+    for (const method of unsignedMethods) {
+      try {
+        unsigned = method()
+      } catch (error: unknown) {
+        errors.push(error as Error)
+      }
+    }
+
+    if (unsigned === undefined) {
+      errors.forEach((error) => log.error(error))
+      throw new Error(`${token.symbol} transfers are not supported at this time.`)
+    }
+
+    return { type: "substrate", tx: unsigned }
+  },
 }
 
 function groupAddressesByTokenByChain(
@@ -432,7 +561,11 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
       //   reserved: 0
       //   frozen: 0
       // }
-      const balance = query.decode(change) as any
+      const balance = (query.decode(change) as any) ?? {
+        free: "0",
+        reserved: "0",
+        frozen: "0",
+      }
 
       const { address, token } = query.tags || {}
       if (!address || !token || !balance) return

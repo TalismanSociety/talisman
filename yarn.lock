@@ -5560,6 +5560,7 @@ __metadata:
     jest: ^28.1.0
     react: ^18.2.0
     react-use: ^17.4.0
+    rxjs: ^7.8.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
@@ -5574,6 +5575,7 @@ __metadata:
   dependencies:
     "@polkadot/types": ^9.10.5
     "@polkadot/util": ^10.2.1
+    "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5589,6 +5591,7 @@ __metadata:
   peerDependencies:
     "@polkadot/types": 9.x
     "@polkadot/util": 10.x
+    "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
 
@@ -5597,6 +5600,8 @@ __metadata:
   resolution: "@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium"
   dependencies:
     "@polkadot/types": ^9.10.5
+    "@polkadot/util": ^10.2.1
+    "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5611,6 +5616,8 @@ __metadata:
     typescript: ^4.6.4
   peerDependencies:
     "@polkadot/types": 9.x
+    "@polkadot/util": 10.x
+    "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
 
@@ -5620,6 +5627,7 @@ __metadata:
   dependencies:
     "@polkadot/types": ^9.10.5
     "@polkadot/util": ^10.2.1
+    "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5635,6 +5643,7 @@ __metadata:
   peerDependencies:
     "@polkadot/types": 9.x
     "@polkadot/util": 10.x
+    "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
 
@@ -5643,6 +5652,8 @@ __metadata:
   resolution: "@talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml"
   dependencies:
     "@polkadot/types": ^9.10.5
+    "@polkadot/util": ^10.2.1
+    "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5656,6 +5667,8 @@ __metadata:
     typescript: ^4.6.4
   peerDependencies:
     "@polkadot/types": 9.x
+    "@polkadot/util": 10.x
+    "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
 
@@ -5664,6 +5677,8 @@ __metadata:
   resolution: "@talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens"
   dependencies:
     "@polkadot/types": ^9.10.5
+    "@polkadot/util": ^10.2.1
+    "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5678,6 +5693,8 @@ __metadata:
     typescript: ^4.6.4
   peerDependencies:
     "@polkadot/types": 9.x
+    "@polkadot/util": 10.x
+    "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
 
@@ -5827,6 +5844,7 @@ __metadata:
     "@talismn/tsconfig": "workspace:^"
     "@types/jest": ^27.5.1
     axios: ^0.27.2
+    dexie: ^3.2.2
     eslint: ^8.4.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
@@ -10397,7 +10415,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dexie@npm:^3.2.3":
+"dexie@npm:^3.2.2, dexie@npm:^3.2.3":
   version: 3.2.3
   resolution: "dexie@npm:3.2.3"
   checksum: 54fd7bc94364ed601dc2d53f8b488e49ac61d4ec532f001a68fde9ffccb4bf3c6a8af310b41d8f52c94c1a99c0e165437d7b223b655df582ceda90b9bfcd60e7

@@ -1,5 +1,7 @@
 // @ts-nocheck
+import { useCallback } from "react"
 import styled from "styled-components"
+
 import Field, { IFieldProps, fieldDefaultProps } from "./Field"
 
 interface IProps extends IFieldProps {
@@ -10,18 +12,34 @@ const defaultProps: IProps = {
   ...fieldDefaultProps,
 }
 
-const Toggle = ({ value, onChange, fieldProps, ...rest }: IProps) => (
-  <Field {...rest}>
-    <div className="toggle" data-on={value === true} onClick={() => onChange(!value)}>
-      <span />
-    </div>
-  </Field>
-)
+const Toggle = ({ value, onChange, fieldProps, disabled, ...rest }: IProps) => {
+  const handleToggle = useCallback(() => {
+    if (disabled) return
+    onChange(!value)
+  }, [disabled, onChange, value])
+
+  return (
+    <Field {...rest}>
+      <div className="toggle" data-on={value === true} onClick={handleToggle}>
+        <span />
+      </div>
+    </Field>
+  )
+}
 
 const StyledToggle = styled(Toggle)`
   position: relative;
   cursor: pointer;
   overflow: visible;
+
+  ${({ disabled }) => {
+    if (disabled) {
+      return `
+        cursor: not-allowed;
+        opacity: 0.5;
+      `
+    }
+  }}
 
   .field-header {
     display: inline-block;

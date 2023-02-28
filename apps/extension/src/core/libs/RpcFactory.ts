@@ -4,8 +4,7 @@ import { ChainId } from "@core/domains/chains/types"
 import { chainConnector } from "@core/rpcs/chain-connector"
 import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 
-// TODO: Refactor any code which uses this class to directly
-//       call methods on `chainConnector` instead!
+/** @deprecated Refactor any code which uses this class to directly call methods on `chainConnector` instead! */
 class RpcFactory {
   async send<T = any>(
     chainId: ChainId,
@@ -35,4 +34,7 @@ class RpcFactory {
   }
 }
 
-export default new RpcFactory()
+/** @deprecated Refactor any code which uses this class to directly call methods on `chainConnector` instead! */
+const rpcFactory = new RpcFactory()
+
+export default rpcFactory

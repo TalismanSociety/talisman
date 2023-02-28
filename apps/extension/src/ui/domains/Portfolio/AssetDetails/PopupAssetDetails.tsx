@@ -59,7 +59,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
           <div className="flex justify-between font-bold text-white">
             <div className="flex items-center gap-4">
               {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
-              <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} />
+              <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
             </div>
           </div>
           <div className="text-body-secondary flex justify-between text-xs">
