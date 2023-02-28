@@ -42,7 +42,7 @@ export const CtaButton: FC<CtaButton> = ({
       )}
       onClick={handleClick}
     >
-      {IconLeft && <IconLeft className="text-body text-lg" />}
+      {IconLeft && <IconLeft className=" text-primary text-lg" />}
       <div className="flex grow flex-col items-start gap-4">
         <div className="text-body">{title}</div>
         <div className="text-body-secondary text-sm">{subtitle}</div>
