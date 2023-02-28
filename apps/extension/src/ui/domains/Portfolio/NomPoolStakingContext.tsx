@@ -43,8 +43,8 @@ const useShowNomPoolStakingBannerProvider = () => {
             balance.free.planck -
               (balance.token &&
               "existentialDeposit" in balance.token &&
-              balance.token.existentialDeposit
-                ? BigInt(balance.token.existentialDeposit as string) // TODO find why it works with preconstruct but not when building, without the "as string" cast
+              typeof balance.token.existentialDeposit === "string"
+                ? BigInt(balance.token.existentialDeposit)
                 : BigInt(0)) -
               BigInt(NOM_POOL_MIN_DEPOSIT[chainId] || 0),
           ])

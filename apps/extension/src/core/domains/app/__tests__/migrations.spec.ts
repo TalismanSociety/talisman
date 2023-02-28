@@ -11,8 +11,6 @@ import { migratePasswordV1ToV2 } from "../migrations"
 const mnemonic = "seed sock milk update focus rotate barely fade car face mechanic mercy"
 const password = "passw0rd"
 
-jest.setTimeout(20_000)
-
 const createPair = (
   origin: AccountMeta["origin"] = "ROOT",
   derivationPath = "",
