@@ -1,6 +1,6 @@
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
-import { UnsignedTransaction } from "ethers"
+import { UnsignedTransaction, ethers } from "ethers"
 
 // unknown for substrate txs from dapps
 export type TransactionStatus = "unknown" | "pending" | "success" | "error"
@@ -8,14 +8,14 @@ export type TransactionStatus = "unknown" | "pending" | "success" | "error"
 export type EvmWalletTransaction = {
   networkType: "evm"
   account: string
-  networkId: EvmNetworkId
+  evmNetworkId: EvmNetworkId
   siteUrl?: string
   timestamp: number
   hash: string
   status: TransactionStatus
 
   // replay
-  unsigned: UnsignedTransaction
+  unsigned: ethers.providers.TransactionRequest
   nonce: number
 
   // display
