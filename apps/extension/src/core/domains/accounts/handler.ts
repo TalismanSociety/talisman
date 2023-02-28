@@ -42,7 +42,7 @@ export default class AccountsHandler extends ExtensionHandler {
   //   - account seed (unlocked via password)
 
   private async accountCreate({ name, type }: RequestAccountCreate): Promise<string> {
-    const password = await this.stores.password.getPassword()
+    const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     const allAccounts = keyring.getAccounts()

@@ -12,9 +12,6 @@ import Browser from "webextension-polyfill"
 import { getMessageSenderFn } from "../../../../../tests/util"
 import { AuthorizedSites } from "../types"
 
-jest.mock("@talismn/chaindata-provider-extension/src/graphql")
-jest.setTimeout(20000)
-
 keyring.loadAll({ store: new AccountsStore() })
 
 describe("Sites Authorised Handler", () => {
@@ -61,16 +58,15 @@ describe("Sites Authorised Handler", () => {
       type: "sr25519",
     })
 
-    // expect that the talisman web app is in the sites store
     const webApp = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
-    expect(webApp)
+    expect(webApp).toBeTruthy()
     // expect that it has connectAllSubstrate
     expect(webApp.connectAllSubstrate).toBeTruthy()
 
     // expect that the new account address is in the webApp accounts
     const webAppAddresses = webApp.addresses
-    expect(webAppAddresses?.includes(newAddress)).toBeTruthy()
-
+    expect(webAppAddresses).toBeTruthy()
+    expect(webAppAddresses!.includes(newAddress)).toBeTruthy()
     // update the addresses for that site
     await messageSender("pri(sites.update)", {
       id: TALISMAN_WEB_APP_DOMAIN,
@@ -79,10 +75,11 @@ describe("Sites Authorised Handler", () => {
       },
     })
 
-    // expect that connectAllSubstrate is undefined now for the web app
     const webAppAgain = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
-
+    // expect that connectAllSubstrate is undefined now for the web app
     expect(webAppAgain.connectAllSubstrate).toBeUndefined()
+    // expect that the new adress is not one of the addresses
+    expect(webAppAgain.addresses?.includes(newAddress)).toBeFalsy()
   })
 
   test("Forgetting a site with ethAddresses turns off connectAllSubstrate", async () => {
@@ -116,6 +113,7 @@ describe("Sites Authorised Handler", () => {
   test("Forgetting a site with only substrate addresses deletes it", async () => {
     // expect that the talisman web app is in the sites store
     const webApp = await extensionStores.sites.get(TALISMAN_WEB_APP_DOMAIN)
+
     expect(webApp)
     expect(webApp.ethAddresses).toBeUndefined()
 

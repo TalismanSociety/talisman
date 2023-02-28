@@ -1,3 +1,4 @@
+import { DEBUG, TEST } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
 import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
@@ -76,14 +77,15 @@ export default class Extension extends ExtensionHandler {
           Object.entries(sites)
             .filter(([url, site]) => site.connectAllSubstrate)
             .forEach(async ([url, autoAddSite]) => {
-              if (!autoAddSite.addresses) autoAddSite.addresses = []
-              Object.values(addresses).forEach(({ json: { address } }) => {
-                if (!autoAddSite.addresses?.includes(address)) autoAddSite.addresses?.push(address)
-              })
+              const newAddresses = Object.values(addresses)
+                .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))
+                .map(({ json: { address } }) => address)
+
+              autoAddSite.addresses = [...(autoAddSite.addresses || []), ...newAddresses]
               await stores.sites.updateSite(url, autoAddSite)
             })
         }),
-      2000
+      DEBUG || TEST ? 0 : 2000
     )
 
     this.initDb()
