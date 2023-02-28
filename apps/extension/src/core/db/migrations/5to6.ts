@@ -28,6 +28,9 @@ export async function migrateExtensionDbV5ToV6(tx: Transaction) {
   const customEvmNetworks = evmNetworks.filter(isCustom)
   const customTokens = tokens.filter(isCustom)
 
+  // don't migrate if no custom legacy data exists
+  if (customChains.length < 1 && customEvmNetworks.length < 1 && customTokens.length < 1) return
+
   // set up some helper functions
   const migrateTokenId = (tokenId: string, { evm }: { evm?: boolean }) =>
     tokenId
