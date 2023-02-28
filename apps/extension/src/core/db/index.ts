@@ -1,4 +1,5 @@
 import { ProtectorSources, ProtectorStorage } from "@core/domains/app/protector/ParaverseProtector"
+import { WalletTransaction } from "@core/domains/recentTransactions/types"
 import { MetadataDef } from "@core/inject/types"
 import { TokenId } from "@talismn/chaindata-provider"
 import { TokenRates } from "@talismn/token-rates"
@@ -19,6 +20,7 @@ export class TalismanDatabase extends Dexie {
   tokenRates!: Dexie.Table<DbTokenRates, string>
   metadata!: Dexie.Table<MetadataDef, string>
   phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
+  transactions!: Dexie.Table<WalletTransaction, string>
 
   constructor() {
     super("Talisman")
