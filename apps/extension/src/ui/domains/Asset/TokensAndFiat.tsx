@@ -50,7 +50,7 @@ export const TokensAndFiat: FC<TokensAndFiatProps> = ({
         isBalance={isBalance}
       />
       {/* warning : some tokens (ex: EQ) have a fiatRates object, but with null values for all fiat currencies */}
-      {tokenRates?.usd && !noFiat ? (
+      {balance.fiat("usd") !== null && !noFiat ? (
         <>
           {" "}
           (
