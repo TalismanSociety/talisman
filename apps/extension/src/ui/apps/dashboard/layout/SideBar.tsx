@@ -148,7 +148,6 @@ const Container = styled.aside`
 
     .link {
       border-radius: var(--border-radius);
-      transition: all var(--transition-speed) ease-in-out;
       background: rgb(var(--color-foreground-raw), 0);
       width: 100%;
       padding-left: 0.8;

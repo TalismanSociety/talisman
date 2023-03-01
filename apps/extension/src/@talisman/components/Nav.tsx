@@ -13,13 +13,11 @@ const NAV_ITEM_STYLE = css`
   padding: 1em 0.4em;
   line-height: 1.6em;
   cursor: pointer;
-  transition: all var(--transition-speed) ease-in-out;
   text-align: center;
   position: relative;
   overflow: hidden;
 
   > * {
-    transition: all var(--transition-speed-fast) ease-in;
     margin: 0 0.4em;
 
     &.icon {
