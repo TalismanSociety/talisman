@@ -31,11 +31,15 @@ export const SendFundsRecipientPicker = () => {
     return isEthereumAddress(from) ? isEthereumAddress(search) : isValidAddress(search)
   }, [from, search])
 
-  const newAddresses = useMemo(() => {
-    const isEthereum = isEthereumAddress(from)
-    const normalize = (addr: string) =>
-      isEthereum ? addr.toLowerCase() : convertAddress(addr, null)
+  const normalize = useCallback(
+    (addr = "") => {
+      const isEthereum = isEthereumAddress(from)
+      return isEthereum ? addr.toLowerCase() : convertAddress(addr, null)
+    },
+    [from]
+  )
 
+  const newAddresses = useMemo(() => {
     const addresses: { address: string }[] = []
 
     if (
@@ -54,7 +58,7 @@ export const SendFundsRecipientPicker = () => {
       addresses.push({ address: search })
 
     return addresses
-  }, [from, to, allAccounts, allContacts, isValidAddressInput, search])
+  }, [to, allAccounts, allContacts, isValidAddressInput, normalize, search])
 
   const contacts = useMemo(
     () =>
@@ -69,13 +73,15 @@ export const SendFundsRecipientPicker = () => {
   const accounts = useMemo(
     () =>
       allAccounts
-        .filter((account) => account.address !== from)
+        .filter((account) => normalize(account.address) !== normalize(from))
         .filter(
-          (account) => !from || isEthereumAddress(account.address) === isEthereumAddress(from)
+          (account) =>
+            !search ||
+            account.name?.toLowerCase().includes(search) ||
+            (isValidAddressInput && normalize(search) === normalize(account.address))
         )
-        .filter((account) => !search || account.name?.toLowerCase().includes(search))
         .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash),
-    [allAccounts, chain?.genesisHash, from, search]
+    [allAccounts, chain?.genesisHash, from, isValidAddressInput, normalize, search]
   )
 
   const handleSelect = useCallback(
