@@ -110,7 +110,6 @@ const Buttons = styled.div`
   display: none;
   gap: 0.8rem;
   padding: 0.8rem;
-  padding-top: 0;
   justify-content: center;
 
   @media (max-width: ${breakpoints.medium}px) {
@@ -132,6 +131,7 @@ const Container = styled.aside`
   justify-content: space-between;
   align-items: flex-start;
   background: var(--color-background-muted);
+  flex-shrink: 0;
 
   .scrollable {
     flex-grow: 1;
@@ -148,11 +148,17 @@ const Container = styled.aside`
 
     .link {
       border-radius: var(--border-radius);
-      transition: all var(--transition-speed) ease-in-out;
       background: rgb(var(--color-foreground-raw), 0);
       width: 100%;
       padding-left: 0.8;
       padding-right: 0;
+
+      span:not(.icon) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+      }
 
       &:hover {
         background: rgb(var(--color-foreground-raw), 0.05);
@@ -199,6 +205,10 @@ const Container = styled.aside`
       padding-left: 0;
       padding-right: 0;
       font-size: var(--font-size-normal);
+
+      > span:not(.icon) {
+        display: none;
+      }
     }
 
     ${Pills} {
@@ -320,11 +330,9 @@ export const SideBar = () => {
           <IconButton onClick={handleSendClick}>
             <PaperPlaneIcon />
           </IconButton>
-          {account && (
-            <IconButton onClick={handleCopyClick}>
-              <CopyIcon />
-            </IconButton>
-          )}
+          <IconButton onClick={handleCopyClick}>
+            <CopyIcon />
+          </IconButton>
         </Buttons>
       </PaddedItem>
       <ScrollContainer className="scrollable">
