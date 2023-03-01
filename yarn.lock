@@ -18852,6 +18852,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"scale-codec@npm:^0.11.0-beta.0":
+  version: 0.11.0-beta.0
+  resolution: "scale-codec@npm:0.11.0-beta.0"
+  checksum: 9ce1b65c2a244a2135e17e2eebbf32ad146bfe410b4e75ee64922d991c33e74dae1110342317abad02b966a71ee0fc71eb19709fcb7862f5042636436d54d2f4
+  languageName: node
+  linkType: hard
+
 "scheduler@npm:^0.23.0":
   version: 0.23.0
   resolution: "scheduler@npm:0.23.0"
@@ -20020,6 +20027,7 @@ __metadata:
     prettier: ^2.8.1
     prettier-plugin-import-sort: ^0.0.7
     prettier-plugin-tailwindcss: ^0.1.13
+    scale-codec: ^0.11.0-beta.0
     ts-loader: 9.3.0
     turbo: latest
   languageName: unknown
