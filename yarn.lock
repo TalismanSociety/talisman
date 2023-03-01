@@ -5554,6 +5554,7 @@ __metadata:
     "@types/jest": ^27.5.1
     "@types/react": ^18.0.17
     anylogger: ^1.0.11
+    blueimp-md5: ^2.19.0
     dexie: ^3.2.3
     dexie-react-hooks: ^1.1.1
     eslint: ^8.4.0
@@ -8734,7 +8735,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"blueimp-md5@npm:2.19.0":
+"blueimp-md5@npm:2.19.0, blueimp-md5@npm:^2.19.0":
   version: 2.19.0
   resolution: "blueimp-md5@npm:2.19.0"
   checksum: 28095dcbd2c67152a2938006e8d7c74c3406ba6556071298f872505432feb2c13241b0476644160ee0a5220383ba94cb8ccdac0053b51f68d168728f9c382530

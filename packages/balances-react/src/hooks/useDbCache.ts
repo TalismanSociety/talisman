@@ -145,10 +145,7 @@ const consolidateDbCache = (
   }
 }
 
-type DbCacheProviderProps = {
-  useTestnets?: boolean
-}
-const useDbCacheProvider = ({ useTestnets = false }: DbCacheProviderProps): DbCache => {
+const useDbCacheProvider = (): DbCache => {
   const chaindataProvider = useChaindata()
 
   const chainList = useLiveQuery(() => chaindataProvider?.chains(), [chaindataProvider])
@@ -165,7 +162,7 @@ const useDbCacheProvider = ({ useTestnets = false }: DbCacheProviderProps): DbCa
       setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances))
     },
     500,
-    [chainList, evmNetworkList, tokenList, rawBalances, tokenRates, useTestnets]
+    [chainList, evmNetworkList, tokenList, rawBalances, tokenRates]
   )
 
   const refInitialized = useRef(false)
@@ -183,7 +180,7 @@ const useDbCacheProvider = ({ useTestnets = false }: DbCacheProviderProps): DbCa
       setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances))
       refInitialized.current = true
     }
-  }, [chainList, evmNetworkList, rawBalances, tokenList, tokenRates, useTestnets])
+  }, [chainList, evmNetworkList, rawBalances, tokenList, tokenRates])
 
   return dbData
 }
