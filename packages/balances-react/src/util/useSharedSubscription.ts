@@ -1,4 +1,3 @@
-import { isFunction } from "@polkadot/util"
 import { useEffect } from "react"
 import { Subject } from "rxjs"
 
@@ -47,7 +46,7 @@ export const useSharedSubscription = (key: string, subscribe: InitSubscriptionCa
 
       log.debug(`[useSharedSubscription] subscribing ${key}`)
 
-      if (isFunction(cb)) subscriptions[key].unsubscribe = cb
+      if (cb) subscriptions[key].unsubscribe = cb
       // this error should only happen when developping a new hook, let it bubble up
       else throw new Error(`${key} subscribe did not return an unsubscribe callback`)
     }
