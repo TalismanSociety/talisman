@@ -1,11 +1,11 @@
 import { TokenId } from "@talismn/chaindata-provider"
 
 import { useDbCache } from "./useDbCache"
-import { useDbCacheSubscription } from "./useDbCacheSubscription"
+import { useDbCacheTokenRatesSubscription } from "./useDbCacheSubscription"
 
 export function useTokenRates() {
   // keep db data up to date
-  useDbCacheSubscription("tokenRates")
+  useDbCacheTokenRatesSubscription()
 
   const { tokenRatesMap } = useDbCache()
   return tokenRatesMap

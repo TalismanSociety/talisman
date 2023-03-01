@@ -10,8 +10,6 @@ import { ChaindataProvider, TokenList } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
 import { DbTokenRates, fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
 import md5 from "blueimp-md5"
-import { liveQuery } from "dexie"
-import { default as debounce } from "lodash/debounce"
 import { useCallback, useMemo } from "react"
 
 import log from "../log"
@@ -23,7 +21,7 @@ import { useChaindata } from "./useChaindata"
 import { useTokens } from "./useTokens"
 import { useWithTestnets } from "./useWithTestnets"
 
-export type DbEntityType = "chains" | "evmNetworks" | "tokens" | "tokenRates"
+export type DbEntityType = "chains" | "evmNetworks" | "tokens"
 
 /**
  * This hook is responsible for fetching the data used for balances and inserting it into the db.
@@ -31,7 +29,7 @@ export type DbEntityType = "chains" | "evmNetworks" | "tokens" | "tokenRates"
 export const useDbCacheSubscription = (subscribeTo: DbEntityType) => {
   const provider = useChaindata()
 
-  // can't handle balances here as there are more dependencies, it would trigger to many subscriptions
+  // can't handle balances & tokenRates here as they have other dependencies, it would trigger to many subscriptions
   const subscribe = useCallback(() => {
     switch (subscribeTo) {
       case "chains":
@@ -40,12 +38,37 @@ export const useDbCacheSubscription = (subscribeTo: DbEntityType) => {
         return subscribeChainDataHydrate(provider, "evmNetworks")
       case "tokens":
         return subscribeChainDataHydrate(provider, "tokens")
-      case "tokenRates":
-        return subscribeTokenRates(provider)
     }
   }, [provider, subscribeTo])
 
   useSharedSubscription(subscribeTo, subscribe)
+}
+
+/**
+ * This hook is responsible for fetching the data used for token rates and inserting it into the db.
+ */
+export function useDbCacheTokenRatesSubscription() {
+  const { withTestnets } = useWithTestnets()
+  const tokens = useTokens(withTestnets)
+
+  const subscriptionKey = useMemo(
+    // not super sexy but we need key to change based on this stuff
+    () => {
+      const key = Object.values(tokens ?? {})
+        .map(({ id }) => id)
+        .sort()
+        .join()
+      return `tokenRates-${md5(key)}`
+    },
+    [tokens]
+  )
+
+  const subscription = useCallback(() => {
+    if (!Object.values(tokens ?? {}).length) return () => {}
+    return subscribeTokenRates(tokens)
+  }, [tokens])
+
+  useSharedSubscription(subscriptionKey, subscription)
 }
 
 /**
@@ -99,7 +122,6 @@ const subscribeChainDataHydrate = (
   provider: ChaindataProvider,
   type: "chains" | "evmNetworks" | "tokens"
 ) => {
-  log.debug("subscribeChainDataHydrate", type)
   const chaindata = provider as ChaindataProviderExtension
   const delay = 300_000 // 300_000ms = 300s = 5 minutes
 
@@ -122,24 +144,23 @@ const subscribeChainDataHydrate = (
     }
   }
 
+  // launch the loop
+  hydrate()
+
   return () => {
     if (timeout) clearTimeout(timeout)
   }
 }
 
-const subscribeTokenRates = (provider: ChaindataProvider) => {
+const subscribeTokenRates = (tokens: TokenList) => {
   const REFRESH_INTERVAL = 300_000 // 6 minutes
   const RETRY_INTERVAL = 5_000 // 5 sec
 
-  const observeTokens = liveQuery(() => provider.tokens())
-
   let timeout: NodeJS.Timeout | null = null
 
-  // debounce to prevent burst calls
-  const refreshTokenRates = debounce(async (tokens) => {
+  const refreshTokenRates = async () => {
     try {
       if (timeout) clearTimeout(timeout)
-
       const tokenRates = await fetchTokenRates(tokens)
 
       const putTokenRates = Object.entries(tokenRates).map(
@@ -154,8 +175,8 @@ const subscribeTokenRates = (provider: ChaindataProvider) => {
         async () => await tokenRatesDb.tokenRates.bulkPut(putTokenRates)
       )
 
-      timeout = setTimeout(async () => {
-        refreshTokenRates(await provider.tokens())
+      timeout = setTimeout(() => {
+        refreshTokenRates()
       }, REFRESH_INTERVAL)
     } catch (error) {
       log.error(
@@ -163,17 +184,16 @@ const subscribeTokenRates = (provider: ChaindataProvider) => {
         error
       )
       setTimeout(async () => {
-        refreshTokenRates(await provider.tokens())
+        refreshTokenRates()
       }, RETRY_INTERVAL)
     }
-  }, 200)
+  }
 
-  // refetch if tokens change
-  const subscribe = observeTokens.subscribe(refreshTokenRates)
+  // launch the loop
+  refreshTokenRates()
 
   return () => {
     if (timeout) clearTimeout(timeout)
-    subscribe.unsubscribe()
   }
 }
 
