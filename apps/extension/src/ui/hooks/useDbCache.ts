@@ -20,8 +20,6 @@ import { useLiveQuery } from "dexie-react-hooks"
 import { useEffect, useRef, useState } from "react"
 import { useDebounce } from "react-use"
 
-import { useSettings } from "./useSettings"
-
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
 type DbCache = {
@@ -150,8 +148,6 @@ const consolidateDbCache = (
 }
 
 const useDbCacheProvider = (): DbCache => {
-  const { useTestnets = false } = useSettings()
-
   const chainList = useLiveQuery(() => chaindataProvider.chains(), [])
   const evmNetworkList = useLiveQuery(() => chaindataProvider.evmNetworks(), [])
   const tokenList = useLiveQuery(() => chaindataProvider.tokens(), [])
@@ -166,7 +162,7 @@ const useDbCacheProvider = (): DbCache => {
       setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, rawBalances, tokenRates))
     },
     500,
-    [chainList, evmNetworkList, tokenList, rawBalances, tokenRates, useTestnets]
+    [chainList, evmNetworkList, tokenList, rawBalances, tokenRates]
   )
 
   const refInitialized = useRef(false)
@@ -184,7 +180,7 @@ const useDbCacheProvider = (): DbCache => {
       setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, rawBalances, tokenRates))
       refInitialized.current = true
     }
-  }, [chainList, evmNetworkList, rawBalances, tokenList, tokenRates, useTestnets])
+  }, [chainList, evmNetworkList, rawBalances, tokenList, tokenRates])
 
   return dbData
 }
