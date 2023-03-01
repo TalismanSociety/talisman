@@ -5558,6 +5558,7 @@ __metadata:
     dexie-react-hooks: ^1.1.1
     eslint: ^8.4.0
     jest: ^28.1.0
+    lodash: ^4.17.21
     react: ^18.2.0
     react-use: ^17.4.0
     rxjs: ^7.8.0

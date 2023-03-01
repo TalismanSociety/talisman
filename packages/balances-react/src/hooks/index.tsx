@@ -19,7 +19,8 @@ import { BalanceModulesProvider } from "./useBalanceModules"
 import { ChainConnectorsProvider } from "./useChainConnectors"
 import { ChaindataProvider } from "./useChaindata"
 import { DbCacheProvider } from "./useDbCache"
-import { SubscriptionsProvider } from "./useDbCacheSubscription"
+
+// import { SubscriptionsProvider } from "./useDbCacheSubscription"
 
 export type BalancesProviderProps = {
   // TODO: Make this array of BalanceModules more type-safe
@@ -38,9 +39,7 @@ export const BalancesProvider = ({
     <ChainConnectorsProvider onfinalityApiKey={onfinalityApiKey}>
       <AllAddressesProvider>
         <BalanceModulesProvider balanceModules={balanceModules}>
-          <DbCacheProvider useTestnets={useTestnets}>
-            <SubscriptionsProvider>{children}</SubscriptionsProvider>
-          </DbCacheProvider>
+          <DbCacheProvider useTestnets={useTestnets}>{children}</DbCacheProvider>
         </BalanceModulesProvider>
       </AllAddressesProvider>
     </ChainConnectorsProvider>

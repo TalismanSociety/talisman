@@ -9,7 +9,9 @@ export type ChaindataProviderOptions = {
 }
 
 function useChaindataProvider(options: ChaindataProviderOptions = {}) {
-  const [chaindata, setChaindata] = useState<Chaindata | undefined>()
+  const [chaindata, setChaindata] = useState(
+    () => new ChaindataProviderExtension({ onfinalityApiKey: options.onfinalityApiKey })
+  )
 
   useEffect(() => {
     setChaindata(new ChaindataProviderExtension({ onfinalityApiKey: options.onfinalityApiKey }))

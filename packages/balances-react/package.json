@@ -35,6 +35,7 @@
     "anylogger": "^1.0.11",
     "dexie": "^3.2.3",
     "dexie-react-hooks": "^1.1.1",
+    "lodash": "^4.17.21",
     "react-use": "^17.4.0",
     "rxjs": "^7.8.0"
   },
