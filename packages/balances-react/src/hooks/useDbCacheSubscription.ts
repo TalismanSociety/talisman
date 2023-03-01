@@ -15,11 +15,11 @@ import { default as debounce } from "lodash/debounce"
 import { useCallback, useMemo } from "react"
 
 import log from "../log"
+import { useSharedSubscription } from "../util/useSharedSubscription"
 import { useAllAddresses } from "./useAllAddresses"
 import { useBalanceModules } from "./useBalanceModules"
 import { useChainConnectors } from "./useChainConnectors"
 import { useChaindata } from "./useChaindata"
-import { useSharedSubscription } from "./useSharedSubscription"
 import { useTokens } from "./useTokens"
 import { useWithTestnets } from "./useWithTestnets"
 
