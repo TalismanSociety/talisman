@@ -143,7 +143,7 @@ export const SendReviewHeader = () => {
 }
 
 const SendReview = () => {
-  const { formData, expectedResult, send, showReview, approvalMode } = useSendTokens()
+  const { formData, expectedResult, send, showReview, approvalMode, account } = useSendTokens()
   const transferableToken = useTransferableTokenById(formData.transferableTokenId)
   const { token } = transferableToken || {}
   const chain = useChain(transferableToken?.chainId)
@@ -172,7 +172,7 @@ const SendReview = () => {
   if (!showReview || (!chain && !evmNetwork)) return null
 
   // force typings to get data to be displayed
-  const { fees, transfer, pendingTransferId } = expectedResult as SendTokensExpectedResult
+  const { fees, transfer } = expectedResult as SendTokensExpectedResult
   const { from, to } = formData as SendTokensInputs
 
   return (
@@ -237,9 +237,9 @@ const SendReview = () => {
                 primary
                 onClick={handleSend}
                 processing={sending}
-                disabled={sending || !!pendingTransferId}
+                disabled={sending || !account}
               >
-                {pendingTransferId ? "Ledger approval" : "Approve"}
+                Approve
               </SimpleButton>
             </div>
           )}

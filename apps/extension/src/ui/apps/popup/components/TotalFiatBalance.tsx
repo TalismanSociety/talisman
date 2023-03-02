@@ -53,6 +53,7 @@ const TitleRow = styled.div`
   display: flex;
   justify-content: center;
   margin-bottom: 1rem;
+  align-items: center;
 `
 
 const Title = styled.h3`
@@ -65,6 +66,7 @@ const Side = styled.div`
   position: relative;
   font-size: 1.4rem;
   flex-grow: 0.5;
+  height: 2rem;
 `
 
 // force height to prevent flickering

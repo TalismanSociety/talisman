@@ -22,5 +22,6 @@ module.exports = {
     "jest-fetch-mock/setupJest",
     "<rootDir>/tests/setup",
   ],
+  setupFilesAfterEnv: ["<rootDir>/tests/mock.ts"],
   testEnvironment: "jsdom",
 }

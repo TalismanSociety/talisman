@@ -17,16 +17,13 @@ import {
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
-import {
-  TransactionInfo as TransactionType,
-  getEthTransactionInfo,
-} from "@core/util/getEthTransactionInfo"
+import { getEthTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { BigNumber, ethers } from "ethers"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { useIsValidEthTransaction } from "./Sign/useIsValidEthTransaction"
 
@@ -34,59 +31,28 @@ import { useIsValidEthTransaction } from "./Sign/useIsValidEthTransaction"
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 
 const useNonce = (address?: string, evmNetworkId?: EvmNetworkId) => {
-  const [nonce, setNonce] = useState<number>()
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [error, setError] = useState<string>()
+  const { data, ...rest } = useQuery({
+    queryKey: ["nonce", address, evmNetworkId],
+    queryFn: () => {
+      return address && evmNetworkId ? api.ethGetTransactionsCount(address, evmNetworkId) : null
+    },
+  })
 
-  useEffect(() => {
-    setIsLoading(true)
-    setError(undefined)
-    setNonce(undefined)
-
-    if (address && evmNetworkId)
-      api
-        .ethGetTransactionsCount(address, evmNetworkId)
-        .then(setNonce)
-        .catch(() => setError("Failed to load nonce"))
-        .finally(() => setIsLoading(false))
-  }, [address, evmNetworkId])
-
-  return { nonce, isLoading, error }
+  return { nonce: data ?? undefined, ...rest }
 }
 
 const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
-  // initialize with undefined, which is used to trigger the check
-  const [hasEip1559Support, setHasEip1559Support] = useState<boolean>()
-  const [isLoading, setIsLoading] = useState<boolean>()
-  const [error, setError] = useState<string>()
-
-  const checkEip1559Support = useCallback(async () => {
-    setHasEip1559Support(undefined)
-
-    if (!provider) return
-    setIsLoading(true)
-    setError(undefined)
-
-    try {
+  const { data, ...rest } = useQuery({
+    queryKey: ["hasEip1559Support", provider?.network?.chainId],
+    queryFn: async () => {
+      if (!provider) return null
       const { baseFeePerGas } = await provider.send("eth_getBlockByNumber", ["latest", false])
-      setHasEip1559Support(baseFeePerGas !== undefined)
-    } catch (err) {
-      setError("Failed to check EIP-1559 support")
-    }
-    setIsLoading(false)
-  }, [provider])
+      return baseFeePerGas !== undefined
+    },
+    refetchInterval: false,
+  })
 
-  useEffect(() => {
-    // if provider changes, reset
-    setHasEip1559Support(undefined)
-  }, [provider])
-
-  useEffect(() => {
-    // if value is unknown, fetch it
-    if (hasEip1559Support === undefined) checkEip1559Support()
-  }, [checkEip1559Support, hasEip1559Support])
-
-  return { hasEip1559Support, isLoading, error }
+  return { hasEip1559Support: data ?? undefined, ...rest }
 }
 
 const useEstimatedGas = (
@@ -107,134 +73,103 @@ const useEstimatedGas = (
       }
     },
     refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
-    retry: false,
+    retry: false, // don't retry. other requests would have fallbacked to a good rpc if necessary before this hook is called. an error here means tx is invalid
   })
 }
 
 const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOptions?: boolean) => {
-  const [gasPrice, setGasPrice] = useState<BigNumber | null>()
-  const [baseFeePerGas, setBaseFeePerGas] = useState<BigNumber | null>()
-  const [gasUsed, setGasUsed] = useState<BigNumber | null>()
-  const [blockGasLimit, setBlockGasLimit] = useState<BigNumber | null>()
-  const [feeHistoryAnalysis, setFeeHistoryAnalysis] = useState<FeeHistoryAnalysis | null>()
-  const [error, setError] = useState<string>()
-  const [isLoading, setIsLoading] = useState(false)
-  const [blockNumber, setBlockNumber] = useState<number>()
+  const { data, ...rest } = useQuery({
+    queryKey: ["block", provider?.network?.chainId, withFeeOptions],
+    queryFn: async () => {
+      if (!provider) return null
+      const [
+        gasPrice,
+        { gasLimit: blockGasLimit, baseFeePerGas, gasUsed, number: blockNumber },
+        feeHistoryAnalysis,
+      ] = await Promise.all([
+        provider.getGasPrice(),
+        provider.getBlock("latest"),
+        withFeeOptions ? getFeeHistoryAnalysis(provider) : undefined,
+      ])
 
-  // analyse fees on each block
-  useEffect(() => {
-    // check that withFeeOptions is defined to prevent "gas flickering" on initial load
-    if (!provider || withFeeOptions === undefined) {
-      setGasPrice(undefined)
-      setBaseFeePerGas(undefined)
-      setBlockGasLimit(undefined)
-      setGasUsed(undefined)
-      setFeeHistoryAnalysis(undefined)
-      setError(undefined)
-      setBlockNumber(undefined)
-      return
-    }
-
-    // local lock used to force block data to be fetched sequentially
-    // we may skip blocks, but they won't be overriden with data from previous ones
-    // important on fast L2 networks such as arbitrum and polygon
-    let isBusy = false
-
-    const handleBlock = async (blockNumber?: number) => {
-      if (isBusy) return
-      isBusy = true
-
-      setIsLoading(true)
-      try {
-        const [gPrice, { gasLimit, baseFeePerGas, gasUsed, number: blockNumber }, feeOptions] =
-          await Promise.all([
-            provider.getGasPrice(),
-            provider.getBlock("latest"),
-            withFeeOptions ? getFeeHistoryAnalysis(provider) : undefined,
-          ])
-
-        if (feeOptions && !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(provider.network.chainId)) {
-          // minimum maxPriorityPerGas value required to be considered valid into next block is equal to `gasPrice - baseFee`
-          let minimumMaxPriorityFeePerGas = gPrice.sub(baseFeePerGas ?? 0)
-          if (minimumMaxPriorityFeePerGas.lt(0)) {
-            // on a busy network, when there is a sudden lowering of amount of transactions, it can happen that baseFeePerGas is higher than gPrice
-            minimumMaxPriorityFeePerGas = BigNumber.from("0")
-          }
-
-          // if feeHistory is invalid (network is inactive), use minimumMaxPriorityFeePerGas for all options.
-          // else if feeHistory is valid but network usage below 80% (active but not busy), use it for the low priority option if lower
-          // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
-          if (!feeOptions.isValid) {
-            feeOptions.maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas
-            feeOptions.maxPriorityPerGasOptions.medium = minimumMaxPriorityFeePerGas
-            feeOptions.maxPriorityPerGasOptions.high = minimumMaxPriorityFeePerGas
-          } else if (feeOptions.avgGasUsedRatio !== null && feeOptions.avgGasUsedRatio < 0.8)
-            feeOptions.maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas.lt(
-              feeOptions.maxPriorityPerGasOptions.low
-            )
-              ? minimumMaxPriorityFeePerGas
-              : feeOptions.maxPriorityPerGasOptions.low
+      if (
+        feeHistoryAnalysis &&
+        !UNRELIABLE_GASPRICE_NETWORK_IDS.includes(provider.network.chainId)
+      ) {
+        // minimum maxPriorityPerGas value required to be considered valid into next block is equal to `gasPrice - baseFee`
+        let minimumMaxPriorityFeePerGas = gasPrice.sub(baseFeePerGas ?? 0)
+        if (minimumMaxPriorityFeePerGas.lt(0)) {
+          // on a busy network, when there is a sudden lowering of amount of transactions, it can happen that baseFeePerGas is higher than gPrice
+          minimumMaxPriorityFeePerGas = BigNumber.from("0")
         }
 
-        setGasPrice(gPrice)
-        setBaseFeePerGas(baseFeePerGas)
-        setBlockGasLimit(gasLimit)
-        setGasUsed(gasUsed)
-        setFeeHistoryAnalysis(feeOptions)
-        setBlockNumber(blockNumber)
-        setError(undefined)
-      } catch (err) {
-        setError((err as Error).message)
+        // if feeHistory is invalid (network is inactive), use minimumMaxPriorityFeePerGas for all options.
+        // else if feeHistory is valid but network usage below 80% (active but not busy), use it for the low priority option if lower
+        // this prevents paying to much fee based on historical data when other users are setting unnecessarily high fees on their transactions.
+        if (!feeHistoryAnalysis.isValid) {
+          feeHistoryAnalysis.maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas
+          feeHistoryAnalysis.maxPriorityPerGasOptions.medium = minimumMaxPriorityFeePerGas
+          feeHistoryAnalysis.maxPriorityPerGasOptions.high = minimumMaxPriorityFeePerGas
+        } else if (
+          feeHistoryAnalysis.avgGasUsedRatio !== null &&
+          feeHistoryAnalysis.avgGasUsedRatio < 0.8
+        )
+          feeHistoryAnalysis.maxPriorityPerGasOptions.low = minimumMaxPriorityFeePerGas.lt(
+            feeHistoryAnalysis.maxPriorityPerGasOptions.low
+          )
+            ? minimumMaxPriorityFeePerGas
+            : feeHistoryAnalysis.maxPriorityPerGasOptions.low
       }
-      setIsLoading(false)
-      isBusy = false
-    }
 
-    provider.on("block", handleBlock)
+      const networkUsage =
+        !gasUsed || !blockGasLimit
+          ? undefined
+          : gasUsed.mul(100).div(blockGasLimit).toNumber() / 100
 
-    //init
-    handleBlock()
+      return {
+        gasPrice,
+        baseFeePerGas,
+        blockGasLimit,
+        networkUsage,
+        feeHistoryAnalysis,
+        blockNumber,
+      }
+    },
+    refetchInterval: 6_000,
+    retry: false,
+  })
 
-    return () => {
-      provider.off("block", handleBlock)
-    }
-  }, [provider, withFeeOptions])
-
-  const blockGasUsedRatio = useMemo(() => {
-    if (!gasUsed || !blockGasLimit) return undefined
-    return gasUsed.mul(100).div(blockGasLimit).toNumber() / 100
-  }, [blockGasLimit, gasUsed])
+  const allProps = data || {
+    gasPrice: undefined,
+    baseFeePerGas: undefined,
+    blockGasLimit: undefined,
+    networkUsage: undefined,
+    feeHistoryAnalysis: undefined,
+    blockNumber: undefined,
+  }
 
   return {
-    blockNumber,
-    gasPrice,
-    baseFeePerGas,
-    blockGasUsedRatio,
-    blockGasLimit,
-    feeHistoryAnalysis,
-    isLoading,
-    error,
+    ...allProps,
+    ...rest,
   }
 }
 
 const useTransactionInfo = (
-  provider?: ethers.providers.Provider,
+  provider?: ethers.providers.JsonRpcProvider,
   tx?: ethers.providers.TransactionRequest
 ) => {
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<Error>()
-  const [transactionInfo, setTransactionInfo] = useState<TransactionType>()
+  const { data, ...rest } = useQuery({
+    // check tx as boolean as it's not pure
+    queryKey: ["transactionInfo", provider?.network?.chainId, tx],
+    queryFn: async () => {
+      if (!provider || !tx) return null
+      return await getEthTransactionInfo(provider, tx)
+    },
+    refetchInterval: false,
+    refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
+  })
 
-  useEffect(() => {
-    if (!provider || !tx) return
-    setIsLoading(true)
-    getEthTransactionInfo(provider, tx)
-      .then(setTransactionInfo)
-      .catch(setError)
-      .finally(() => setIsLoading(false))
-  }, [provider, tx])
-
-  return { isLoading, transactionInfo, error: error?.message }
+  return { transactionInfo: data ?? undefined, ...rest }
 }
 
 const getEthGasSettingsFromTransaction = (
@@ -388,7 +323,7 @@ export const useEthTransaction = (
 
   const {
     gasPrice,
-    blockGasUsedRatio: networkUsage,
+    networkUsage,
     baseFeePerGas,
     blockGasLimit,
     feeHistoryAnalysis,
@@ -456,30 +391,36 @@ export const useEthTransaction = (
     priority
   )
 
-  const error = useMemo(
-    () =>
-      errorEip1559Support ??
-      (estimatedGasError as Error)?.message ??
-      blockFeeDataError ??
-      nonceError ??
-      errorTransactionInfo ??
-      (isValidError as Error)?.message,
-    [
-      blockFeeDataError,
-      isValidError,
-      errorEip1559Support,
-      errorTransactionInfo,
-      estimatedGasError,
-      nonceError,
-    ]
-  )
+  const { error, errorDetails } = useMemo(() => {
+    const networkError =
+      errorEip1559Support || nonceError || blockFeeDataError || errorTransactionInfo
+    if (networkError)
+      return { error: "Network error", errorDetails: (networkError as Error).message }
+
+    const validationError = (estimatedGasError || isValidError) as Error
+    if (validationError) {
+      if (validationError?.message?.startsWith("insufficient funds for intrinsic transaction cost"))
+        return { error: "Insufficient balance", errorDetails: validationError.message }
+
+      return { error: "Invalid transaction", errorDetails: validationError.message }
+    }
+
+    return { error: undefined, errorDetails: undefined }
+  }, [
+    blockFeeDataError,
+    isValidError,
+    errorEip1559Support,
+    errorTransactionInfo,
+    estimatedGasError,
+    nonceError,
+  ])
 
   const isLoading = useMemo(
     () => tx && !transactionInfo && !txDetails && !error,
     [tx, transactionInfo, txDetails, error]
   )
 
-  const result = {
+  return {
     transactionInfo,
     transaction,
     txDetails,
@@ -489,10 +430,9 @@ export const useEthTransaction = (
     isLoading,
     isValid,
     error,
+    errorDetails,
     networkUsage,
     setCustomSettings,
     gasSettingsByPriority,
   }
-
-  return result
 }

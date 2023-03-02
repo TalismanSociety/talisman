@@ -1,4 +1,4 @@
-import { DEBUG, TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
+import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
 import { AccountMeta } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
@@ -9,12 +9,14 @@ import type {
   RequestLogin,
   RequestOnboard,
   RequestRoute,
+  SendFundsOpenRequest,
 } from "@core/domains/app/types"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { windowManager } from "@core/libs/WindowManager"
+import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 import keyring from "@polkadot/ui-keyring"
@@ -27,12 +29,13 @@ import Browser from "webextension-polyfill"
 import { AccountTypes } from "../accounts/helpers"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
+import { featuresStore } from "./store.features"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
 
   private async onboard({ pass, passConfirm, mnemonic }: RequestOnboard): Promise<OnboardedType> {
-    !DEBUG && (await sleep(1000))
+    if (!(DEBUG || TEST)) await sleep(1000)
     assert(pass, "Password cannot be empty")
     assert(passConfirm, "Password confirm cannot be empty")
 
@@ -220,6 +223,29 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
+  private async openSendFunds({ from, tokenId }: SendFundsOpenRequest): Promise<boolean> {
+    if (
+      (await featuresStore.isFeatureEnabled("SEND_FUNDS_V2")) ||
+      ((await this.stores.app.get("hasSpiritKey")) &&
+        (await this.stores.settings.get("spiritClanFeatures")))
+    ) {
+      const params = new URLSearchParams()
+      if (from) params.append("from", from)
+      if (tokenId) params.append("tokenId", tokenId)
+      await windowManager.popupOpen(`#/send?${params.toString()}`)
+    } else {
+      // TODO : delete as soon as we remove the SEND_FUNDS_V2 feature flag
+      let transferableTokenId: string | undefined = undefined
+      if (tokenId) {
+        const token = await chaindataProvider.getToken(tokenId)
+        if (token?.chain) transferableTokenId = `${token.id}-${token.chain.id}`
+        else if (token?.evmNetwork) transferableTokenId = `${token.id}-${token.evmNetwork.id}`
+      }
+      await this.openModal({ modalType: "send", from, transferableTokenId })
+    }
+    return true
+  }
+
   private async openModal(request: ModalOpenRequest): Promise<void> {
     const queryUrl = Browser.runtime.getURL("dashboard.html")
     const [tab] = await Browser.tabs.query({ url: queryUrl })
@@ -306,6 +332,9 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.modalOpen.request)":
         return this.openModal(request as ModalOpenRequest)
+
+      case "pri(app.sendFunds.open)":
+        return this.openSendFunds(request as RequestTypes["pri(app.sendFunds.open)"])
 
       case "pri(app.modalOpen.subscribe)":
         return genericSubscription<"pri(app.modalOpen.subscribe)">(id, port, this.#modalOpenRequest)

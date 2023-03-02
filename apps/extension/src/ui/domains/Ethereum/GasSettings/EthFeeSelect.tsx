@@ -35,7 +35,7 @@ type EthFeeSelectProps = {
   networkUsage?: number
   gasSettingsByPriority?: GasSettingsByPriority
   priority?: EthPriorityOptionName
-  drawerContainer?: HTMLElement | null
+  drawerContainer?: HTMLElement | string | null
   onChange?: (priority: EthPriorityOptionName) => void
   setCustomSettings: (gasSettings: EthGasSettings) => void
 }

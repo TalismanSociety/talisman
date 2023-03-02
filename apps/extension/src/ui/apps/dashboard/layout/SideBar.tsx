@@ -16,10 +16,10 @@ import {
   ZapIcon,
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
+import { api } from "@ui/api"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { useReceiveTokensModal } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
-import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import Build from "@ui/domains/Build"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -110,7 +110,6 @@ const Buttons = styled.div`
   display: none;
   gap: 0.8rem;
   padding: 0.8rem;
-  padding-top: 0;
   justify-content: center;
 
   @media (max-width: ${breakpoints.medium}px) {
@@ -132,6 +131,7 @@ const Container = styled.aside`
   justify-content: space-between;
   align-items: flex-start;
   background: var(--color-background-muted);
+  flex-shrink: 0;
 
   .scrollable {
     flex-grow: 1;
@@ -148,11 +148,17 @@ const Container = styled.aside`
 
     .link {
       border-radius: var(--border-radius);
-      transition: all var(--transition-speed) ease-in-out;
       background: rgb(var(--color-foreground-raw), 0);
       width: 100%;
       padding-left: 0.8;
       padding-right: 0;
+
+      span:not(.icon) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+      }
 
       &:hover {
         background: rgb(var(--color-foreground-raw), 0.05);
@@ -199,6 +205,10 @@ const Container = styled.aside`
       padding-left: 0;
       padding-right: 0;
       font-size: var(--font-size-normal);
+
+      > span:not(.icon) {
+        display: none;
+      }
     }
 
     ${Pills} {
@@ -237,7 +247,6 @@ const ExtLinkIcon = styled(({ className }: { className?: string }) => (
 
 export const SideBar = () => {
   const { account } = useSelectedAccount()
-  const { open: openSendTokens } = useSendTokensModal()
   const { open: openCopyAddressModal } = useAddressFormatterModal()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
@@ -245,9 +254,11 @@ export const SideBar = () => {
   const showStaking = useIsFeatureEnabled("LINK_STAKING")
 
   const handleSendClick = useCallback(() => {
-    openSendTokens({ from: account?.address })
+    api.sendFundsOpen({
+      from: account?.address,
+    })
     genericEvent("open send funds", { from: "sidebar" })
-  }, [account?.address, genericEvent, openSendTokens])
+  }, [account?.address, genericEvent])
 
   const { open: openReceiveTokensModal } = useReceiveTokensModal()
   const handleCopyClick = useCallback(() => {
@@ -319,11 +330,9 @@ export const SideBar = () => {
           <IconButton onClick={handleSendClick}>
             <PaperPlaneIcon />
           </IconButton>
-          {account && (
-            <IconButton onClick={handleCopyClick}>
-              <CopyIcon />
-            </IconButton>
-          )}
+          <IconButton onClick={handleCopyClick}>
+            <CopyIcon />
+          </IconButton>
         </Buttons>
       </PaddedItem>
       <ScrollContainer className="scrollable">

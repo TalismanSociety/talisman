@@ -9,8 +9,6 @@ import {
 } from "@core/domains/ethereum/transactionCountManager"
 import EventsRpc from "@core/domains/events/rpc"
 import AssetTransfersRpc from "@core/domains/transactions/rpc/AssetTransfers"
-import OrmlTokenTransfersRpc from "@core/domains/transactions/rpc/OrmlTokenTransfers"
-import { pendingTransfers } from "@core/domains/transactions/rpc/PendingTransfers"
 import {
   RequestAssetTransfer,
   RequestAssetTransferApproveSign,
@@ -21,7 +19,6 @@ import {
   TransactionStatus,
 } from "@core/domains/transactions/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
-import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -33,17 +30,13 @@ import type {
 } from "@core/types"
 import { Address, Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
-import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { TransactionRequest } from "@ethersproject/abstract-provider"
 import { ExtrinsicStatus } from "@polkadot/types/interfaces"
-import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 import { planckToTokens } from "@talismn/util"
-import BigNumber from "bignumber.js"
 import { Wallet, ethers } from "ethers"
 
-import { addressBookStore } from "../app/store.addressBook"
 import { transferAnalytics } from "./helpers"
 
 export default class AssetTransferHandler extends ExtensionHandler {
@@ -83,10 +76,10 @@ export default class AssetTransferHandler extends ExtensionHandler {
         extrinsicIndex = block.extrinsics.findIndex(
           (extrinsic) => extrinsic.hash && extrinsic.hash.eq(hash)
         )
+        if (extrinsicIndex === -1) return
 
         // search for ExtrinsicSuccess event
         extrinsicResult =
-          typeof extrinsicIndex === "number" &&
           events
             .filter((event) => event.phase.isApplyExtrinsic)
             .filter((event) => event.phase.asApplyExtrinsic.eq(extrinsicIndex))
@@ -117,9 +110,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tokenId,
     fromAddress,
     toAddress,
-    amount,
-    tip,
-    reapBalance = false,
+    amount = "0",
+    tip = "0",
+    method = "transferKeepAlive",
   }: RequestAssetTransfer) {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
       const token = await chaindataProvider.getToken(tokenId)
@@ -131,50 +124,32 @@ export default class AssetTransferHandler extends ExtensionHandler {
         const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)
 
         const tokenType = token.type
-        if (tokenType === "substrate-native")
+        if (
+          tokenType === "substrate-native" ||
+          tokenType === "substrate-orml" ||
+          tokenType === "substrate-assets" ||
+          tokenType === "substrate-tokens" ||
+          tokenType === "substrate-equilibrium"
+        )
           return AssetTransfersRpc.transfer(
-            chainId,
-            amount,
-            pair,
-            toAddress,
-            tip,
-            reapBalance,
-            watchExtrinsic
-          ).catch((err) => {
-            log.error("Error sending native substrate transaction: ", { err })
-            reject(err)
-          })
-        if (tokenType === "evm-native")
-          throw new Error(
-            "Evm native token transfers are not implemented in this version of Talisman."
-          )
-        if (tokenType === "substrate-orml")
-          return OrmlTokenTransfersRpc.transfer(
             chainId,
             tokenId,
             amount,
             pair,
             toAddress,
             tip,
+            method,
             watchExtrinsic
           ).catch((err) => {
-            log.error("Error sending orml transaction: ", { err })
+            log.error("Error sending substrate transaction: ", { err })
             reject(err)
           })
+        if (tokenType === "evm-native")
+          throw new Error(
+            "Evm native token transfers are not implemented in this version of Talisman."
+          )
         if (tokenType === "evm-erc20")
           throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
-        if (tokenType === "substrate-assets")
-          throw new Error(
-            `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-          )
-        if (tokenType === "substrate-tokens")
-          throw new Error(
-            `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-          )
-        if (tokenType === "substrate-equilibrium")
-          throw new Error(
-            `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-          )
 
         // force compilation error if any token types don't have a case
         const exhaustiveCheck: never = tokenType
@@ -195,37 +170,37 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tokenId,
     fromAddress,
     toAddress,
-    amount,
-    tip,
-    reapBalance = false,
+    amount = "0",
+    tip = "0",
+    method = "transferKeepAlive",
   }: RequestAssetTransfer) {
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
       const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
       const tokenType = token.type
-      if (tokenType === "substrate-native")
-        return await AssetTransfersRpc.checkFee(chainId, amount, pair, toAddress, tip, reapBalance)
+      if (
+        tokenType === "substrate-native" ||
+        tokenType === "substrate-orml" ||
+        tokenType === "substrate-assets" ||
+        tokenType === "substrate-tokens" ||
+        tokenType === "substrate-equilibrium"
+      )
+        return await AssetTransfersRpc.checkFee(
+          chainId,
+          tokenId,
+          amount,
+          pair,
+          toAddress,
+          tip,
+          method
+        )
       if (tokenType === "evm-native")
         throw new Error(
           "Evm native token transfers are not implemented in this version of Talisman."
         )
-      if (tokenType === "substrate-orml")
-        return await OrmlTokenTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip)
       if (tokenType === "evm-erc20")
         throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
-      if (tokenType === "substrate-assets")
-        throw new Error(
-          `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-        )
-      if (tokenType === "substrate-tokens")
-        throw new Error(
-          `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-        )
-      if (tokenType === "substrate-equilibrium")
-        throw new Error(
-          `${token.symbol} transfers on ${token.chain.id} are not implemented in this version of Talisman.`
-        )
 
       // force compilation error if any token types don't have a case
       const exhaustiveCheck: never = tokenType
@@ -339,22 +314,16 @@ export default class AssetTransferHandler extends ExtensionHandler {
     }
   }
 
-  private assetTransferApproveSign({
-    id,
+  private async assetTransferApproveSign({
+    unsigned,
     signature,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
-    const pendingTx = pendingTransfers.get(id)
-    assert(pendingTx, `No pending transfer with id ${id}`)
-    const { data, transfer } = pendingTx
+    const chain = await chaindataProvider.getChain({ genesisHash: unsigned.genesisHash })
+    if (!chain) throw new Error(`Could not find chain for genesisHash ${unsigned.genesisHash}`)
 
     return new Promise((resolve, reject) => {
-      const watchExtrinsic = this.getExtrinsicWatch(
-        data.chainId,
-        data.unsigned.address,
-        resolve,
-        reject
-      )
-      transfer(signature, watchExtrinsic).catch(reject)
+      const watchExtrinsic = this.getExtrinsicWatch(chain.id, unsigned.address, resolve, reject)
+      return AssetTransfersRpc.transferSigned(unsigned, signature, watchExtrinsic).catch(reject)
     })
   }
 
@@ -368,14 +337,14 @@ export default class AssetTransferHandler extends ExtensionHandler {
       case "pri(assets.transfer)":
         return this.assetTransfer(request as RequestAssetTransfer)
 
-      case "pri(assets.transferEth)":
-        return this.assetTransferEth(request as RequestAssetTransferEth)
+      case "pri(assets.transfer.checkFees)":
+        return this.assetTransferCheckFees(request as RequestAssetTransfer)
 
       case "pri(assets.transferEthHardware)":
         return this.assetTransferEthHardware(request as RequestAssetTransferEthHardware)
 
-      case "pri(assets.transfer.checkFees)":
-        return this.assetTransferCheckFees(request as RequestAssetTransfer)
+      case "pri(assets.transferEth)":
+        return this.assetTransferEth(request as RequestAssetTransferEth)
 
       case "pri(assets.transfer.approveSign)":
         return this.assetTransferApproveSign(request as RequestAssetTransferApproveSign)

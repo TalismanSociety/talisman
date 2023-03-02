@@ -6,7 +6,7 @@ import { Address } from "@ui/domains/Account/Address"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { FC, useCallback } from "react"
+import { FC, FormEventHandler, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import styled from "styled-components"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
@@ -26,7 +26,8 @@ const Container = styled.div`
   max-width: 42rem;
   box-sizing: border-box;
   border: 1px solid var(--color-background-muted-3x);
-  border-radius: 1.6rem;
+  border-top-right-radius: 1.6rem;
+  border-top-left-radius: 1.6rem;
   padding: 2.4rem 2.4rem 2.9rem 2.4rem;
 
   > section > p {
@@ -53,7 +54,9 @@ export const AddToAddressBookDrawer: FC<{
   close: () => void
   address: string
   addressType: AddressBookContact["addressType"]
-}> = ({ isOpen, close, address, addressType }) => {
+  parent?: HTMLElement | string | null
+  asChild?: boolean
+}> = ({ isOpen, close, address, addressType, asChild, parent }) => {
   const { add } = useAddressBook()
   const {
     register,
@@ -95,12 +98,22 @@ export const AddToAddressBookDrawer: FC<{
     [add, addressType, address, setError, close]
   )
 
+  // don't bubble up submit event, in case we're in another form (send funds)
+  const submitWithoutBubbleUp: FormEventHandler<HTMLFormElement> = useCallback(
+    (e) => {
+      e.preventDefault()
+      handleSubmit(submit)(e)
+      e.stopPropagation()
+    },
+    [handleSubmit, submit]
+  )
+
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
-    <Drawer asChild open={isOpen} anchor="bottom" onClose={closeDrawer}>
+    <Drawer asChild={asChild} open={isOpen} anchor="bottom" onClose={closeDrawer} parent={parent}>
       <Container className="bg-black-tertiary">
-        <form onSubmit={handleSubmit(submit)}>
+        <form onSubmit={submitWithoutBubbleUp}>
           <header className="flex flex-col items-center justify-center gap-6">
             <AccountAvatar address={address} />
             <span className="font-bold">

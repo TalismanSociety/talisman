@@ -16,6 +16,8 @@ export default class MetadataHandler extends ExtensionHandler {
 
     const { request, resolve } = queued
 
+    // NOTE: If this throws, errors are handled in the UI (we show a nice error message toast to the user)
+    // For more info check out @ui/apps/popup/pages/Metadata.tsx
     await db.metadata.put(request)
 
     resolve(true)

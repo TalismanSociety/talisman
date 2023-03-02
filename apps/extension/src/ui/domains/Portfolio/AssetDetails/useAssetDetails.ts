@@ -11,7 +11,7 @@ export const useAssetDetails = (balances: Balances) => {
     () =>
       [...new Set(balances.sorted.map((b) => b.chainId ?? b.evmNetworkId))].filter(
         (cid) => cid !== undefined
-      ),
+      ) as (ChainId | EvmNetworkId)[],
     [balances.sorted]
   )
 
@@ -19,14 +19,13 @@ export const useAssetDetails = (balances: Balances) => {
     return chainIds.reduce(
       (acc, chainId) => ({
         ...acc,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        [chainId!]: new Balances(
+        [chainId]: new Balances(
           balances.sorted.filter((b) => b.chainId === chainId || b.evmNetworkId === chainId),
           hydrate
         ),
       }),
       {} as Record<ChainId | EvmNetworkId, Balances>
-    )
+    ) as Record<ChainId | EvmNetworkId, Balances>
   }, [balances.sorted, chainIds, hydrate])
 
   return { balancesByChain, isLoading }

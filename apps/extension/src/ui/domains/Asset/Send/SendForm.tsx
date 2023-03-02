@@ -492,6 +492,8 @@ export const SendForm = () => {
         close={toggleAddContact}
         address={to}
         addressType={addressType}
+        asChild={false}
+        parent={"send-funds-container"}
       />
     </Container>
   )

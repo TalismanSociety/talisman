@@ -17,7 +17,7 @@ export type DrawerProps = {
   asChild?: boolean
   className?: string
   children?: ReactNode
-  parent?: HTMLElement | null
+  parent?: HTMLElement | string | null
 }
 
 const Container = styled.div`
@@ -145,7 +145,10 @@ export const Drawer: FC<DrawerProps> = ({
 
   // DOM node where the drawer will be rendered
   const container =
-    parent ?? document.getElementById("main") ?? document.getElementById("root") ?? document.body
+    ((typeof parent === "string" && document.getElementById(parent)) || (parent as HTMLElement)) ??
+    document.getElementById("main") ??
+    document.getElementById("root") ??
+    document.body
 
   return createPortal(output, container)
 }

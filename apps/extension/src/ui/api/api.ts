@@ -39,6 +39,7 @@ export const api: MessageTypes = {
   modalOpen: (request) => messageService.sendMessage("pri(app.modalOpen.request)", request),
   modalOpenSubscribe: (cb) => messageService.subscribe("pri(app.modalOpen.subscribe)", null, cb),
   analyticsCapture: (request) => messageService.sendMessage("pri(app.analyticsCapture)", request),
+  sendFundsOpen: (request = {}) => messageService.sendMessage("pri(app.sendFunds.open)", request),
   resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
 
   // signing messages ------------------------------------------------
@@ -169,7 +170,7 @@ export const api: MessageTypes = {
   transactionsSubscribe: (cb) => messageService.subscribe("pri(transactions.subscribe)", null, cb),
 
   // asset transfer messages
-  assetTransfer: (chainId, tokenId, fromAddress, toAddress, amount, tip, reapBalance) =>
+  assetTransfer: (chainId, tokenId, fromAddress, toAddress, amount, tip, method) =>
     messageService.sendMessage("pri(assets.transfer)", {
       chainId,
       tokenId,
@@ -177,7 +178,7 @@ export const api: MessageTypes = {
       toAddress,
       amount,
       tip,
-      reapBalance,
+      method,
     }),
   assetTransferEth: (evmNetworkId, tokenId, fromAddress, toAddress, amount, gasSettings) =>
     messageService.sendMessage("pri(assets.transferEth)", {
@@ -195,7 +196,7 @@ export const api: MessageTypes = {
       amount,
       signedTransaction,
     }),
-  assetTransferCheckFees: (chainId, tokenId, fromAddress, toAddress, amount, tip, reapBalance) =>
+  assetTransferCheckFees: (chainId, tokenId, fromAddress, toAddress, amount, tip, method) =>
     messageService.sendMessage("pri(assets.transfer.checkFees)", {
       chainId,
       tokenId,
@@ -203,11 +204,11 @@ export const api: MessageTypes = {
       toAddress,
       amount,
       tip,
-      reapBalance,
+      method,
     }),
-  assetTransferApproveSign: (id, signature) =>
+  assetTransferApproveSign: (unsigned, signature) =>
     messageService.sendMessage("pri(assets.transfer.approveSign)", {
-      id,
+      unsigned,
       signature,
     }),
 

@@ -1,27 +1,19 @@
 import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
-import { balanceModules } from "@talismn/balances-default-modules"
-import { useBalances, useChaindata, useTokens } from "@talismn/balances-react"
+import { useAllAddresses, useBalances, useTokens } from "@talismn/balances-react"
 import { Token } from "@talismn/chaindata-provider"
 import { formatDecimals } from "@talismn/util"
 import { Fragment, useEffect, useMemo, useState } from "react"
 
-const onfinalityApiKey = undefined
-
 export function App(): JSX.Element {
-  const chaindata = useChaindata({ onfinalityApiKey })
   const addresses = useExtensionAddresses()
+  const [, setAllAddresses] = useAllAddresses()
+  useEffect(() => setAllAddresses(addresses ?? []), [addresses, setAllAddresses])
 
-  const tokens = useTokens(chaindata)
-  const tokenIds = useMemo(
-    () =>
-      Object.values(tokens)
-        .filter(({ isTestnet }) => !isTestnet)
-        .map(({ id }) => id),
-    [tokens]
-  )
+  const tokens = useTokens()
+  const tokenIds = useMemo(() => Object.values(tokens).map(({ id }) => id), [tokens])
 
   const addressesByToken = useAddressesByToken(addresses, tokenIds)
-  const balances = useBalances(balanceModules, chaindata, addressesByToken, { onfinalityApiKey })
+  const balances = useBalances(addressesByToken)
 
   return (
     <div className="m-5 flex flex-col gap-5">
@@ -29,6 +21,15 @@ export function App(): JSX.Element {
 
       {/* Display balances per balance (so, per token per account) */}
       <div className="grid grid-cols-[repeat(5,_auto)] items-center gap-x-4 gap-y-2">
+        <div className="text-lg font-bold">
+          {balances.count > 0 &&
+            ((balances.sum.fiat("usd").total ?? 0).toLocaleString(undefined, {
+              style: "currency",
+              currency: "USD",
+              currencyDisplay: "narrowSymbol",
+            }) ??
+              "-")}
+        </div>
         {balances?.sorted.map((balance) =>
           balance.total.planck === BigInt("0") ? null : (
             <Fragment key={balance.id}>

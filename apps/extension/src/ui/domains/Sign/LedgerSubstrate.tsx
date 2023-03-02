@@ -22,7 +22,7 @@ interface Props {
   onSignature?: ({ signature }: { signature: HexString }) => void
   onReject: () => void
   payload: SignerPayloadJSON | SignerPayloadRaw
-  parent?: HTMLElement | null
+  parent?: HTMLElement | string | null
 }
 
 const registry = new TypeRegistry()

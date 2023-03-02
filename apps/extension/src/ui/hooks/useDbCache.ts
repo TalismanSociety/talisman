@@ -1,4 +1,4 @@
-import { DbTokenRates, db } from "@core/db"
+import { db } from "@core/db"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { provideContext } from "@talisman/util/provideContext"
 import { BalanceJson, db as balancesDb } from "@talismn/balances"
@@ -15,12 +15,10 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { TokenRates } from "@talismn/token-rates"
+import { DbTokenRates, TokenRates } from "@talismn/token-rates"
 import { useLiveQuery } from "dexie-react-hooks"
 import { useEffect, useRef, useState } from "react"
 import { useDebounce } from "react-use"
-
-import { useSettings } from "./useSettings"
 
 const filterNoTestnet = ({ isTestnet }: { isTestnet?: boolean }) => isTestnet === false
 
@@ -150,8 +148,6 @@ const consolidateDbCache = (
 }
 
 const useDbCacheProvider = (): DbCache => {
-  const { useTestnets = false } = useSettings()
-
   const chainList = useLiveQuery(() => chaindataProvider.chains(), [])
   const evmNetworkList = useLiveQuery(() => chaindataProvider.evmNetworks(), [])
   const tokenList = useLiveQuery(() => chaindataProvider.tokens(), [])
@@ -166,7 +162,7 @@ const useDbCacheProvider = (): DbCache => {
       setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, rawBalances, tokenRates))
     },
     500,
-    [chainList, evmNetworkList, tokenList, rawBalances, tokenRates, useTestnets]
+    [chainList, evmNetworkList, tokenList, rawBalances, tokenRates]
   )
 
   const refInitialized = useRef(false)
@@ -184,7 +180,7 @@ const useDbCacheProvider = (): DbCache => {
       setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, rawBalances, tokenRates))
       refInitialized.current = true
     }
-  }, [chainList, evmNetworkList, rawBalances, tokenList, tokenRates, useTestnets])
+  }, [chainList, evmNetworkList, rawBalances, tokenList, tokenRates])
 
   return dbData
 }

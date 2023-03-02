@@ -6,14 +6,15 @@ import { RequestIdOnly } from "@core/types/base"
 import { EthGasSettings, EvmNetworkId } from "../ethereum/types"
 
 // Asset Transfer Messages
+export type AssetTransferMethod = "transferKeepAlive" | "transfer" | "transferAll"
 export interface RequestAssetTransfer {
   chainId: ChainId
   tokenId: TokenId
   fromAddress: string
   toAddress: string
-  amount: string
-  tip: string
-  reapBalance?: boolean
+  amount?: string
+  tip?: string
+  method?: AssetTransferMethod
 }
 export interface RequestAssetTransferEth {
   evmNetworkId: EvmNetworkId
@@ -31,7 +32,7 @@ export interface RequestAssetTransferEthHardware {
 }
 
 export interface RequestAssetTransferApproveSign {
-  id: string
+  unsigned: SignerPayloadJSON
   signature: `0x${string}` | Uint8Array
 }
 
@@ -45,7 +46,6 @@ export interface ResponseAssetTransferEth {
 
 export interface ResponseAssetTransferFeeQuery {
   partialFee: string
-  pendingTransferId?: string
   unsigned: SignerPayloadJSON
 }
 

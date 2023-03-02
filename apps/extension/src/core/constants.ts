@@ -1,6 +1,7 @@
 export const PORT_EXTENSION = "talisman-extension"
 export const PORT_CONTENT = "talisman-content"
 export const DEBUG = process.env.BUILD !== "production" && process.env.NODE_ENV !== "test"
+export const TEST = process.env.NODE_ENV === "test"
 export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
 
 export const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [

@@ -43,6 +43,7 @@ import { Encrypt } from "./pages/Encrypt"
 import { LoginViewManager } from "./pages/Login"
 import { Metadata } from "./pages/Metadata"
 import { Portfolio } from "./pages/Portfolio"
+import { SendFundsPage } from "./pages/SendFunds"
 import { EthereumSignRequest } from "./pages/Sign/ethereum"
 import { SubstrateSignRequest } from "./pages/Sign/substrate"
 
@@ -133,6 +134,10 @@ const Popup = () => {
                           element={<EthereumSignRequest />}
                         ></Route>
                         <Route
+                          path={`${SIGNING_TYPES.ETH_SEND}/:id`}
+                          element={<EthereumSignRequest />}
+                        ></Route>
+                        <Route
                           path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
                           element={<SubstrateSignRequest />}
                         ></Route>
@@ -146,6 +151,7 @@ const Popup = () => {
                           path={`${WATCH_ASSET_PREFIX}/:id`}
                           element={<AddCustomErc20Token />}
                         ></Route>
+                        <Route path="send/*" element={<SendFundsPage />} />
                         <Route path="*" element={<Navigate to="/portfolio" replace />} />
                       </Routes>
                       <AccountRenameModal />

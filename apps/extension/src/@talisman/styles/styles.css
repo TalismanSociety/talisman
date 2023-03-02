@@ -59,6 +59,16 @@
   html.popup.embedded #main {
     @apply border-grey-700 border;
   }
+
+  /* number inputs */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
 }
 
 /* The components layer is for class-based styles that you want to be able to override with utilities. */
