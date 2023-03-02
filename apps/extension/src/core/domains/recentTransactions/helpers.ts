@@ -1,30 +1,42 @@
 import { db } from "@core/db"
-import { UnsignedTransaction, ethers } from "ethers"
+import { BigNumber, BigNumberish, ethers } from "ethers"
+import merge from "lodash/merge"
+
+import { WalletTransaction } from "./types"
+
+const safeBigNumberish = (value?: BigNumberish) =>
+  BigNumber.isBigNumber(value) ? value.toString() : value
+
+type AddEvemTransactionOptions = {
+  label?: string
+  siteUrl?: string
+}
+
+const DEFAULT_OPTIONS: AddEvemTransactionOptions = {
+  label: "Transaction",
+}
 
 export const addEvmTransaction = async (
-  tx: ethers.providers.TransactionRequest,
   hash: string,
-  siteUrl?: string
+  tx: ethers.providers.TransactionRequest,
+  options: AddEvemTransactionOptions = {}
 ) => {
+  const { siteUrl, label } = merge(structuredClone(DEFAULT_OPTIONS), options)
+
   try {
     if (!tx.chainId || !tx.nonce || !tx.from) throw new Error("Invalid transaction")
 
-    // serialize big numbers
+    // make it serializable so it can be safely stored
     const unsigned: ethers.providers.TransactionRequest = {
       ...tx,
-      gasLimit: ethers.BigNumber.isBigNumber(tx.gasLimit) ? tx.gasLimit?.toString() : tx.gasLimit,
-      gasPrice: ethers.BigNumber.isBigNumber(tx.gasPrice) ? tx.gasPrice?.toString() : tx.gasPrice,
-      maxFeePerGas: ethers.BigNumber.isBigNumber(tx.maxFeePerGas)
-        ? tx.maxFeePerGas?.toString()
-        : tx.maxFeePerGas,
-      maxPriorityFeePerGas: ethers.BigNumber.isBigNumber(tx.maxPriorityFeePerGas)
-        ? tx.maxPriorityFeePerGas?.toString()
-        : tx.maxPriorityFeePerGas,
-      value: ethers.BigNumber.isBigNumber(tx.value) ? tx.value?.toString() : tx.value,
-      nonce: ethers.BigNumber.isBigNumber(tx.nonce) ? tx.nonce?.toString() : tx.nonce,
+      gasLimit: safeBigNumberish(tx.gasLimit),
+      gasPrice: safeBigNumberish(tx.gasPrice),
+      maxFeePerGas: safeBigNumberish(tx.maxFeePerGas),
+      maxPriorityFeePerGas: safeBigNumberish(tx.maxPriorityFeePerGas),
+      value: safeBigNumberish(tx.value),
+      nonce: safeBigNumberish(tx.nonce),
     }
 
-    // hi
     db.transactions.add({
       networkType: "evm",
       evmNetworkId: String(tx.chainId),
@@ -40,5 +52,32 @@ export const addEvmTransaction = async (
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error("addEvmTransaction", { err })
+  }
+}
+
+export const updateEvmTransaction = async (
+  hash: string,
+  changes: Omit<Partial<WalletTransaction>, "hash">
+) => {
+  try {
+    await db.transactions.update(hash, changes)
+    return true
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("updateEvmTransaction", { err })
+    return false
+  }
+}
+
+export const updateTransactionsRestart = async () => {
+  try {
+    // TODO for all pending ones, issue a get_nonce and nuke the matches ?
+
+    await db.transactions.filter((tx) => tx.status === "pending").modify({ status: "unknown" })
+    return true
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("updateTransactionsRestart", { err })
+    return false
   }
 }

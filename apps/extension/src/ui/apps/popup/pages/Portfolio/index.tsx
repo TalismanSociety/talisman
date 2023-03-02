@@ -2,8 +2,9 @@ import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
 import Site from "@ui/domains/Site"
+import { PendingTransactionsButton } from "@ui/domains/Transactions/PendingTransactionsButton"
 import { Suspense, lazy } from "react"
-import { Route, Routes, useLocation } from "react-router-dom"
+import { Route, Routes } from "react-router-dom"
 
 import Layout, { Content, Header } from "../../Layout"
 import { PortfolioAccounts } from "./PortfolioAccounts"
@@ -16,16 +17,19 @@ const BraveWarningPopupBanner = lazy(
 const AnalyticsAlert = lazy(() => import("@ui/domains/Settings/Analytics/AnalyticsAlert"))
 const MigratePasswordAlert = lazy(() => import("@ui/domains/Settings/MigratePasswordAlert"))
 
-const AccountAvatar = () => {
-  const location = useLocation()
-
-  // do now show it on portfolio's home
-  if (location.pathname === "/portfolio") return null
-
+const TopRight = () => {
   return (
-    <div className="text-xl">
-      <CurrentAccountAvatar withTooltip />
-    </div>
+    <Routes>
+      <Route path="" element={<PendingTransactionsButton />} />
+      <Route
+        path="*"
+        element={
+          <div className="text-xl">
+            <CurrentAccountAvatar withTooltip />
+          </div>
+        }
+      />
+    </Routes>
   )
 }
 
@@ -35,7 +39,7 @@ export const Portfolio = () => {
       <NomPoolStakingBannerProvider>
         {/* share layout to prevent sidebar flickering when navigating between the 2 pages */}
         <Layout withBottomNav>
-          <Header text={<Site.ConnectedAccountsPill />} nav={<AccountAvatar />} />
+          <Header text={<Site.ConnectedAccountsPill />} nav={<TopRight />} />
           <Content>
             <Routes>
               <Route path="assets" element={<PortfolioAssets />} />

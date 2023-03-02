@@ -7,6 +7,7 @@ import { BalancesHandler } from "@core/domains/balances"
 import { EncryptHandler } from "@core/domains/encrypt"
 import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
+import { updateTransactionsRestart } from "@core/domains/recentTransactions/helpers"
 import { SigningHandler } from "@core/domains/signing"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
 import TokenRatesHandler from "@core/domains/tokenRates/handler"
@@ -126,6 +127,9 @@ export default class Extension extends ExtensionHandler {
       //   // db.tokens.bulkAdd(tokensInit as unknown as Token[])
       // }
     })
+
+    // marks all pending transaction as status unknown
+    updateTransactionsRestart()
   }
 
   private initWalletFunding() {

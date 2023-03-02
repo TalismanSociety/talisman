@@ -99,9 +99,8 @@ export class EthHandler extends ExtensionHandler {
 
       incrementTransactionCount(from, chainId.toString())
 
-      // notify user about transaction progress
-      if (await this.stores.settings.get("allowNotifications"))
-        watchEthereumTransaction(chainId.toString(), hash)
+      // TODO add unsigned payload (check if can be rebuild from provider.sendTransaction)
+      watchEthereumTransaction(chainId.toString(), hash, {}, queued.url)
 
       resolve(hash)
 
@@ -141,18 +140,12 @@ export class EthHandler extends ExtensionHandler {
 
       const { chainId, hash } = await signer.sendTransaction(tx)
 
-      try {
-        incrementTransactionCount(account.address, ethChainId)
+      // TODO remove and compute on the fly based on transactions table
+      incrementTransactionCount(account.address, ethChainId)
 
-        await addEvmTransaction(tx, hash, url)
+      //await addEvmTransaction(tx, hash, url)
 
-        // notify user about transaction progress
-        if (await this.stores.settings.get("allowNotifications"))
-          watchEthereumTransaction(chainId.toString(), hash)
-      } catch (err) {
-        // ignore
-        log
-      }
+      watchEthereumTransaction(chainId.toString(), hash, tx, queued.url)
 
       resolve(hash)
 

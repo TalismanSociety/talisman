@@ -25,7 +25,7 @@ export class TalismanDatabase extends Dexie {
     super("Talisman")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
-    this.version(6)
+    this.version(7)
       .stores({
         // You only need to specify properties that you wish to index.
         // The object store will allow any properties on your stored objects but you can only query them by indexed properties
