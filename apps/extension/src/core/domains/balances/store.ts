@@ -109,7 +109,9 @@ export class BalanceStore {
             .map((evmNetwork) => ({
               ...pick(evmNetwork, ["id", "isHealthy", "nativeToken", "substrateChain"]),
               erc20Tokens: erc20TokensByNetwork[evmNetwork.id],
-              substrateChainAccountFormat: null,
+              substrateChainAccountFormat:
+                (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) ||
+                null,
             })),
 
           // tokens
@@ -206,12 +208,9 @@ export class BalanceStore {
 
     // Update chains and networks
     this.#chains = newChains
+    this.#evmNetworks = newEvmNetworks
+
     const chainsMap = Object.fromEntries(this.#chains.map((chain) => [chain.id, chain]))
-    this.#evmNetworks = newEvmNetworks.map((evmNetwork) => ({
-      ...evmNetwork,
-      substrateChainAccountFormat:
-        (evmNetwork.substrateChain && chainsMap[evmNetwork.substrateChain.id]?.account) || null,
-    }))
     const evmNetworksMap = Object.fromEntries(
       this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
     )
