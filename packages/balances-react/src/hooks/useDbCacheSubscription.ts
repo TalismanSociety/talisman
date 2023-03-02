@@ -257,8 +257,10 @@ const subscribeBalances = (
     )
 
     return () => {
-      // TODO should we add a timeout before unsubscribe to prevent closing sockets to quickly ?
-      unsub.then((unsubscribe) => unsubscribe())
+      // wait 2 seconds before actually unsubscribing, allowing for websocket to be reused
+      unsub.then((unsubscribe) => {
+        setTimeout(unsubscribe, 2_000)
+      })
       balancesDb.transaction(
         "rw",
         balancesDb.balances,
