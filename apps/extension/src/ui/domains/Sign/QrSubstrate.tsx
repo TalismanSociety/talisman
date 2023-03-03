@@ -1,11 +1,9 @@
 import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
-import { QrNetworkSpecs } from "@polkadot/react-qr"
 import { createSignPayload, decodeString } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
-import { NetworkSpecsStruct } from "@polkadot/ui-settings/types"
-import { hexToU8a, stringToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
+import { hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
 import type { HexString } from "@polkadot/util/types"
 import QrCodeStyling from "@solana/qr-code-styling"
 import { Drawer } from "@talisman/components/Drawer"
@@ -22,6 +20,40 @@ import * as $ from "scale-codec"
 import { Button } from "talisman-ui"
 
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
+
+const $networkSpecs = $.object(
+  $.field("base58prefix", $.u16),
+  $.field("color", $.str),
+  $.field("decimals", $.u8),
+  $.field("encryption", $.u8), // Ed25519=0, Sr25519=1, Ecdsa=2, ethereum=3
+  $.field("genesis_hash", $.sizedUint8Array(32)),
+  $.field("logo", $.str),
+  $.field("name", $.str),
+  $.field("path_id", $.str),
+  $.field("secondary_color", $.str),
+  $.field("title", $.str),
+  $.field("unit", $.str)
+)
+const $networkSpecsPayload = $.object($.field("specs", $.uint8Array))
+
+export type AddNetworkSpecsPayload = ReturnType<typeof decodeAddSpecsPayload>
+
+const decodeAddSpecsPayload = (raw: Uint8Array) => {
+  const withoutPrelude = raw.slice(3)
+  const encoded = $networkSpecsPayload.decode(withoutPrelude)
+  return $networkSpecs.decode(encoded.specs)
+}
+
+export const encodeAddNetworkSpecs = (specs: AddNetworkSpecsPayload) => {
+  return u8aToU8a(
+    u8aConcat(
+      new Uint8Array([0x53]), // 53 = update
+      new Uint8Array([0xff]), // 0x00 Ed25519, 0x01 Sr25519, 0x02 Ecdsa, 0xff unsigned
+      new Uint8Array([0xc1]), // c1 = add_specs
+      $networkSpecsPayload.encode({ specs: $networkSpecs.encode(specs) })
+    )
+  )
+}
 
 const CMD_MORTAL = 2
 const CMD_SIGN_MESSAGE = 3
@@ -68,39 +100,15 @@ function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is
 }
 
 const createNetworkSpecsPayload = (chain: Chain, token: Token) => {
-  const $networkSpec = $.object(
-    $.field("base58prefix", $.u16),
-    $.field("encryption", $.u8),
-    $.field("color", $.str),
-    $.field("secondary_color", $.str),
-    $.field("decimals", $.u8),
-    $.field("genesis_hash", $.uint8Array),
-    $.field("name", $.str),
-    $.field("title", $.str),
-    $.field("unit", $.str),
-    $.field("logo", $.str)
-  )
-  return u8aConcat(
-    new Uint8Array([0x53]),
-    new Uint8Array([0xff]), // 0x00 Ed25519, 0x01 Sr25519, 0x02 Ecdsa, 0xff unsigned
-    new Uint8Array([0xc1]), // network specs
-    $networkSpec.encode({
-      genesis_hash: hexToU8a(chain.genesisHash),
-      color: "#000000",
-      secondary_color: "#000000",
-      encryption: 1,
-      decimals: token.decimals as number,
-      base58prefix: chain.prefix as number,
-      name: chain.specName as string,
-      title: chain.specName as string,
-      unit: token.symbol as string,
-      logo: "",
-    }),
-    stringToU8a("add_specs"),
-    stringToU8a(chain.specName),
-    stringToU8a("sr25519"),
-    stringToU8a("unverified")
-  )
+  const payload = {
+    base58prefix: chain.prefix as number,
+    decimals: token.decimals as number,
+    genesis_hash: hexToU8a(chain.genesisHash as string),
+    name: chain.specName as string,
+    unit: token.symbol as string,
+  } as AddNetworkSpecsPayload
+
+  return encodeAddNetworkSpecs(payload)
 }
 
 const QrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
