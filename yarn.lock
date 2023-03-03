@@ -7621,6 +7621,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@sentry/types@npm:7.36.0":
+  version: 7.36.0
+  resolution: "@sentry/types@npm:7.36.0"
+  checksum: 7d4d0b049e23ebff208cbd0519e90fba8953268609a11fa16652406c76edd92d190de3af76acc39f2a0b2f640a60762527ce7b59edae9724edb9009b3cb35426
+  languageName: node
+  linkType: hard
+
 "@sentry/types@npm:7.92.0":
   version: 7.92.0
   resolution: "@sentry/types@npm:7.92.0"
@@ -7635,6 +7642,15 @@ __metadata:
     "@sentry/types": 5.30.0
     tslib: ^1.9.3
   checksum: 27b259a136c664427641dd32ee3dc490553f3b5e92986accfa829d14063ebc69b191e92209ac9c40fbc367f74cfa17dc93b4c40981d666711fd57b4d51a82062
+  languageName: node
+  linkType: hard
+
+"@sentry/utils@npm:7.36.0":
+  version: 7.36.0
+  resolution: "@sentry/utils@npm:7.36.0"
+  dependencies:
+    "@sentry-internal/tracing": 7.92.0
+  checksum: 3f08cfecc1ff1423c19ebbd94e457a8d0223eed0d119f412888682f58d01bfe973ef7b9753aab01257277a3d718a7404f6b7f1add43db20439e234bda6d4f6a0
   languageName: node
   linkType: hard
 
@@ -15970,9 +15986,7 @@ __metadata:
     postcss: ^8.4.33
     postcss-import: ^15.1.0
     postcss-loader: ^7.0.2
-    posthog-js: ^1.96.1
-    raptorq: 1.7.24
-    raw-loader: ^4.0.2
+    posthog-js: ^1.50.3
     react: 18.2.0
     react-app-polyfill: 3.0.0
     react-countup: ^6.5.0
@@ -22417,6 +22431,16 @@ __metadata:
     picocolors: ^1.0.0
     source-map-js: ^1.0.2
   checksum: 6f98b2af4b76632a3de20c4f47bf0e984a1ce1a531cf11adcb0b1d63a6cbda0aae4165e578b66c32ca4879038e3eaad386a6be725a8fb4429c78e3c1ab858fe9
+  languageName: node
+  linkType: hard
+
+"posthog-js@npm:^1.50.3":
+  version: 1.50.3
+  resolution: "posthog-js@npm:1.50.3"
+  dependencies:
+    fflate: ^0.4.1
+    rrweb-snapshot: ^1.1.14
+  checksum: 9ca00f33deff0414aa25bc4042361922626de4f3334dce0eeaa5758013f8e8208e303a82881ad8524fcd2c74f88e9ff4d0f1d2723e4f0b59619acf92dd0190b1
   languageName: node
   linkType: hard
 
