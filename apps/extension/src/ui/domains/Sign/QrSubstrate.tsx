@@ -70,7 +70,7 @@ const registry = new TypeRegistry()
 
 const FRAME_SIZE = 1072
 
-const LegacyQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
+const MultipartQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
   const [qrCodeFrames, setQrCodeFrames] = useState<Array<string | null> | null>(null)
 
   useEffect(() => {
@@ -136,7 +136,7 @@ const LegacyQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
 
 const QrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
   if (!data) return null
-  if (data.length < FRAME_SIZE) return <LegacyQrCode data={data} />
+  if (data.length < FRAME_SIZE) return <MultipartQrCode data={data} />
   return <RaptorQrCode data={data} />
 }
 
@@ -265,10 +265,9 @@ export const QrSubstrate = ({
           <div className="flex h-full flex-col items-center justify-end">
             <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-10">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <LoaderIcon className="animate-spin-slow text-black" />
+                <LoaderIcon className="animate-spin-slow text-body-secondary !text-3xl" />
               </div>
               <QrCode data={data} />
-              {/* {qrCode ? <img className="relative h-full w-full" src={qrCode} /> : null} */}
             </div>
 
             <div className="text-body-secondary mt-14 mb-10 max-w-md text-center leading-10">
@@ -314,12 +313,12 @@ export const QrSubstrate = ({
         )}
 
         {scanState === "CHAINSPEC" && (
-          <Drawer anchor="bottom" open={true} parent={parent}>
+          <Drawer anchor="bottom" open={true} parent={parent} onClose={() => setScanState("SEND")}>
             <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
               <div className="mb-16 font-bold">Add network</div>
-              <div className="relative mb-16 flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-2">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                  <LoaderIcon className="animate-spin-slow text-black" />
+              <div className="relative mb-16 flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-4">
+                <div className="text-body-secondary absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
+                  <LoaderIcon className="animate-spin-slow text-xl " />
                 </div>
                 {!!genesisHash && <NetworkSpecsQrCode genesisHash={genesisHash} />}
               </div>
@@ -365,8 +364,9 @@ export const QrSubstrate = ({
         {scanState === "UPDATE_METADATA" && (
           <div className="flex h-full w-full flex-col items-center justify-between">
             <div className="relative flex aspect-square w-full items-center justify-center bg-white p-10">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <LoaderIcon className="animate-spin-slow text-black" />
+              <div className="text-body-secondary absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
+                <LoaderIcon className="animate-spin-slow text-3xl " />
+                <div className="text-center">Generating metadata...</div>
               </div>
               {isJsonPayload(payload) && (
                 <MetadataQrCode
