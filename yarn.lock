@@ -12051,7 +12051,7 @@ __metadata:
     postcss: ^8.4.20
     postcss-loader: ^7.0.2
     posthog-js: ^1.39.0
-    raptorq: ^1.7.22
+    raptorq: 1.7.22
     react: 18.2.0
     react-app-polyfill: 3.0.0
     react-contenteditable: 3.3.6
@@ -12065,6 +12065,7 @@ __metadata:
     react-use: 17.4.0
     remove-files-webpack-plugin: ^1.5.0
     rxjs: ^7.8.0
+    scale-codec: ^0.11.0-beta.0
     semver: ^7.3.7
     sinon-chrome: ^3.0.1
     style-loader: 3.3.1
@@ -18017,7 +18018,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"raptorq@npm:^1.7.22":
+"raptorq@npm:1.7.22":
   version: 1.7.22
   resolution: "raptorq@npm:1.7.22"
   checksum: f3a3b1211441b000ca401ae95fa8ee7c836d65c1ccd182b65ce79ee44ea55fd5ed5716950b9869d1b2705e6c087fc28096ba1ecf0f40dee6961774d06bf18f96
@@ -20035,7 +20036,6 @@ __metadata:
     prettier: ^2.8.1
     prettier-plugin-import-sort: ^0.0.7
     prettier-plugin-tailwindcss: ^0.1.13
-    scale-codec: ^0.11.0-beta.0
     ts-loader: 9.3.0
     turbo: latest
   languageName: unknown
