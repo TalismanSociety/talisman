@@ -1,8 +1,9 @@
 import { decodeString } from "@polkadot/react-qr/util"
 import { hexToNumber, numberToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
 import QRCodeStyling from "@solana/qr-code-styling"
+import { classNames } from "@talismn/util"
 import init, { Encoder } from "raptorq"
-import { FC, useEffect, useState } from "react"
+import { FC, useEffect, useRef, useState } from "react"
 
 // TODO put this in a constants file so it can be shared with components from QrSubstrate
 const FRAME_SIZE = 1072
@@ -21,7 +22,12 @@ const talismanRedHandSvg =
 // This component uses raptorq wasm library (250ko) to generate the QR code, import only if necessary
 // spec here : https://github.com/varovainen/parity-signer/blob/2022-05-25-uos/docs/src/development/UOS.md
 const RaptorQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
-  const [qrCodeFrames, setQrCodeFrames] = useState<Array<string | null> | null>(null)
+  const [totalFramesCount, setTotalFramesCount] = useState<number>()
+
+  // storing in a ref so we can start iterating on frames before they are all ready
+  // they will appear as they are generated
+  const refQrCodes = useRef<string[]>()
+  const refImg = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
     if (!data) return
@@ -44,9 +50,13 @@ const RaptorQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
         .map((frame) => u8aToU8a(u8aConcat(framePrefix, u8aToU8a(frame))))
 
       ;(async () => {
-        const qrCodeFrames = []
+        const qrCodeFrames: string[] = [] // work with a local var to prevent rerenders to mix they qrcodes (dev mode)
+        refQrCodes.current = qrCodeFrames
+        setTotalFramesCount(frames.length)
+
         for (const dataFrame of frames) {
-          if (cancelled) return // stop computing for nothing, happens especially in dev because of strict mode double mount}
+          if (cancelled) return // stop computing for nothing, happens especially in dev because of strict mode double mount
+
           const blob = await new QRCodeStyling({
             type: "svg",
             data: decodeString(dataFrame),
@@ -58,11 +68,10 @@ const RaptorQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
             image: talismanRedHandSvg,
             imageOptions: { hideBackgroundDots: true, imageSize: 0.7, margin: 5 },
           }).getRawData("svg")
-          qrCodeFrames.push(blob ? URL.createObjectURL(blob) : blob)
+          if (blob) qrCodeFrames.push(URL.createObjectURL(blob))
         }
 
         if (cancelled) return
-        setQrCodeFrames(qrCodeFrames)
       })()
     })
 
@@ -71,25 +80,29 @@ const RaptorQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
     }
   }, [data])
 
-  const [qrCode, setQrCode] = useState<string | null>(null)
   useEffect(() => {
-    if (qrCodeFrames === null) return setQrCode(null)
-    if (qrCodeFrames.length < 1) return setQrCode(null)
-    if (qrCodeFrames.length === 1) setQrCode(qrCodeFrames[0])
+    const img = refImg.current
+    if (!img || totalFramesCount === undefined) return
 
     let index = 0
-    setQrCode(qrCodeFrames[index])
     const interval = setInterval(() => {
-      index = (index + 1) % qrCodeFrames.length
-      setQrCode(qrCodeFrames[index])
+      // array may change overtime, pick from ref
+      const qrCodes = refQrCodes.current
+      if (!qrCodes?.length) return
+
+      index = (index + 1) % qrCodes.length
+      img.src = qrCodes[index]
     }, 100)
 
     return () => clearInterval(interval)
-  }, [qrCodeFrames])
+  }, [totalFramesCount])
 
-  if (!qrCode) return null
-
-  return <img className="relative h-full w-full" src={qrCode} />
+  return (
+    <img
+      ref={refImg}
+      className={classNames("relative h-full w-full", totalFramesCount ? "block" : "hidden")}
+    />
+  )
 }
 
 // export as default module to make it possible to lazy import

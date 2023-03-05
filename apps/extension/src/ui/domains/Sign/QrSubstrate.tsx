@@ -363,7 +363,7 @@ export const QrSubstrate = ({
 
         {scanState === "UPDATE_METADATA" && (
           <div className="flex h-full w-full flex-col items-center justify-between">
-            <div className="relative flex aspect-square w-full items-center justify-center bg-white p-10">
+            <div className="relative flex aspect-square w-full items-center justify-center bg-white p-12">
               <div className="text-body-secondary absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
                 <LoaderIcon className="animate-spin-slow text-3xl " />
                 <div className="text-center">Generating metadata...</div>
