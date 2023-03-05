@@ -4,7 +4,7 @@ import isJsonPayload from "@core/util/isJsonPayload"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { createSignPayload, decodeString } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
-import { hexToU8a, u8aConcat } from "@polkadot/util"
+import { hexToU8a, stringToU8a, u8aConcat } from "@polkadot/util"
 import type { HexString } from "@polkadot/util/types"
 import QrCodeStyling from "@solana/qr-code-styling"
 import { Drawer } from "@talisman/components/Drawer"
@@ -22,9 +22,16 @@ import { Button } from "talisman-ui"
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 
 const RaptorQrCode = lazy(() => import("./RaptorQrCode"))
-
-const CMD_MORTAL = 2
+const CMD_SIGN_TX = 0
+const CMD_SIGN_TX_HASH = 1
+const CMD_IMMORTAL = 2
 const CMD_SIGN_MESSAGE = 3
+
+type Command =
+  | typeof CMD_SIGN_TX
+  | typeof CMD_SIGN_TX_HASH
+  | typeof CMD_IMMORTAL
+  | typeof CMD_SIGN_MESSAGE
 
 const talismanRedHandSvg =
   `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODIiIGhlaWdodD0iODIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTYyLj` +
@@ -181,39 +188,31 @@ export const QrSubstrate = ({
   parent,
 }: Props): ReactElement<Props> => {
   const [scanState, setScanState] = useState<ScanState>("INIT")
-  const [error, setError] = useState<string | null>(null)
-  const [cmd, setCmd] = useState<typeof CMD_MORTAL | typeof CMD_SIGN_MESSAGE>(CMD_MORTAL)
-  const [unsigned, setUnsigned] = useState<Uint8Array>()
   const { chains } = useChains(true)
   const chain = chains.find((chain) => chain.genesisHash === genesisHash)
 
-  useEffect(() => {
-    if (isRawPayload(payload)) {
-      setCmd(CMD_SIGN_MESSAGE)
-      setUnsigned(wrapBytes(payload.data))
-    } else {
-      if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
-      const { version } = payload
-      const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, { version })
-      setCmd(CMD_MORTAL)
-      setUnsigned(extrinsicPayload.toU8a())
+  const { cmd, unsigned } = useMemo(() => {
+    if (isRawPayload(payload)) return { cmd: CMD_SIGN_MESSAGE, unsigned: wrapBytes(payload.data) }
+
+    if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
+    const { version } = payload
+    const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, { version })
+    return {
+      cmd: extrinsicPayload.era?.isImmortalEra ? CMD_IMMORTAL : CMD_SIGN_TX,
+      unsigned: extrinsicPayload.toU8a(),
     }
   }, [payload])
 
-  useEffect(() => {
-    if (genesisHash) return
-    if (cmd === CMD_MORTAL) return
-
-    setError(
-      "Your account is enabled for all networks and can't sign this message.\n" +
-        "Parity Signer only supports plain message signing for single-chain accounts."
-    )
-  }, [genesisHash, cmd])
+  const error = useMemo(() => {
+    return cmd === CMD_SIGN_MESSAGE
+      ? "Parity Signer does not support signing plain text messages."
+      : undefined
+  }, [cmd])
 
   const data = useMemo(
     () =>
       unsigned && account
-        ? createSignPayload(account.address, cmd ?? CMD_MORTAL, unsigned, genesisHash ?? "0x")
+        ? createSignPayload(account.address, cmd, unsigned, genesisHash ?? new Uint8Array([0]))
         : undefined,
     [account, cmd, genesisHash, unsigned]
   )
