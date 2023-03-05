@@ -1,59 +1,27 @@
 import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
+import isJsonPayload from "@core/util/isJsonPayload"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { createSignPayload, decodeString } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
-import { hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
+import { hexToU8a, u8aConcat } from "@polkadot/util"
 import type { HexString } from "@polkadot/util/types"
 import QrCodeStyling from "@solana/qr-code-styling"
 import { Drawer } from "@talisman/components/Drawer"
 import { LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
-import { Chain, Token } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
+import { useQuery } from "@tanstack/react-query"
+import { api } from "@ui/api"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/ScanQr"
 import useChains from "@ui/hooks/useChains"
-import useToken from "@ui/hooks/useToken"
-import { FC, ReactElement, useEffect, useMemo, useState } from "react"
-import * as $ from "scale-codec"
+import { FC, ReactElement, lazy, useEffect, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
 
-const $networkSpecs = $.object(
-  $.field("base58prefix", $.u16),
-  $.field("color", $.str),
-  $.field("decimals", $.u8),
-  $.field("encryption", $.u8), // Ed25519=0, Sr25519=1, Ecdsa=2, ethereum=3
-  $.field("genesis_hash", $.sizedUint8Array(32)),
-  $.field("logo", $.str),
-  $.field("name", $.str),
-  $.field("path_id", $.str),
-  $.field("secondary_color", $.str),
-  $.field("title", $.str),
-  $.field("unit", $.str)
-)
-const $networkSpecsPayload = $.object($.field("specs", $.uint8Array))
-
-export type AddNetworkSpecsPayload = ReturnType<typeof decodeAddSpecsPayload>
-
-const decodeAddSpecsPayload = (raw: Uint8Array) => {
-  const withoutPrelude = raw.slice(3)
-  const encoded = $networkSpecsPayload.decode(withoutPrelude)
-  return $networkSpecs.decode(encoded.specs)
-}
-
-export const encodeAddNetworkSpecs = (specs: AddNetworkSpecsPayload) => {
-  return u8aToU8a(
-    u8aConcat(
-      new Uint8Array([0x53]), // 53 = update
-      new Uint8Array([0xff]), // 0x00 Ed25519, 0x01 Sr25519, 0x02 Ecdsa, 0xff unsigned
-      new Uint8Array([0xc1]), // c1 = add_specs
-      $networkSpecsPayload.encode({ specs: $networkSpecs.encode(specs) })
-    )
-  )
-}
+const RaptorQrCode = lazy(() => import("./RaptorQrCode"))
 
 const CMD_MORTAL = 2
 const CMD_SIGN_MESSAGE = 3
@@ -94,25 +62,17 @@ interface Props {
   parent?: HTMLElement | null
 }
 
-const registry = new TypeRegistry()
 function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is SignerPayloadRaw {
   return !!(payload as SignerPayloadRaw).data
 }
 
-const createNetworkSpecsPayload = (chain: Chain, token: Token) => {
-  const payload = {
-    base58prefix: chain.prefix as number,
-    decimals: token.decimals as number,
-    genesis_hash: hexToU8a(chain.genesisHash as string),
-    name: chain.specName as string,
-    unit: token.symbol as string,
-  } as AddNetworkSpecsPayload
+const registry = new TypeRegistry()
 
-  return encodeAddNetworkSpecs(payload)
-}
+const FRAME_SIZE = 1072
 
-const QrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
+const LegacyQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
   const [qrCodeFrames, setQrCodeFrames] = useState<Array<string | null> | null>(null)
+
   useEffect(() => {
     if (!data) return
 
@@ -139,7 +99,7 @@ const QrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
           cornersSquareOptions: { type: "extra-rounded" },
           cornersDotOptions: { type: "dot" },
           image: talismanRedHandSvg,
-          imageOptions: { hideBackgroundDots: true, imageSize: 0.7, margin: 5 },
+          imageOptions: { hideBackgroundDots: true, imageSize: 0.7 },
         }).getRawData("svg")
         qrCodeFrames.push(blob ? URL.createObjectURL(blob) : blob)
       }
@@ -164,7 +124,7 @@ const QrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
     const interval = setInterval(() => {
       index = (index + 1) % qrCodeFrames.length
       setQrCode(qrCodeFrames[index])
-    }, 1000)
+    }, 100)
 
     return () => clearInterval(interval)
   }, [qrCodeFrames])
@@ -172,6 +132,43 @@ const QrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
   if (!qrCode) return null
 
   return <img className="relative h-full w-full" src={qrCode} />
+}
+
+const QrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
+  if (!data) return null
+  if (data.length < FRAME_SIZE) return <LegacyQrCode data={data} />
+  return <RaptorQrCode data={data} />
+}
+
+const NetworkSpecsQrCode: FC<{ genesisHash: string }> = ({ genesisHash }) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["chainSpecsQr", genesisHash],
+    queryFn: async () => {
+      const hexData = await api.chainSpecsQr(genesisHash)
+      return hexToU8a(hexData)
+    },
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+  })
+
+  return <QrCode data={data} />
+}
+
+const MetadataQrCode: FC<{ genesisHash: string; specVersion: string }> = ({
+  genesisHash,
+  specVersion,
+}) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["chainMetadataQr", genesisHash, specVersion],
+    queryFn: async () => {
+      const hexData = await api.chainMetadataQr(genesisHash, Number(specVersion))
+      return hexToU8a(hexData)
+    },
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+  })
+
+  return <QrCode data={data} />
 }
 
 export const QrSubstrate = ({
@@ -189,7 +186,6 @@ export const QrSubstrate = ({
   const [unsigned, setUnsigned] = useState<Uint8Array>()
   const { chains } = useChains(true)
   const chain = chains.find((chain) => chain.genesisHash === genesisHash)
-  const token = useToken(chain?.nativeToken?.id)
 
   useEffect(() => {
     if (isRawPayload(payload)) {
@@ -220,85 +216,6 @@ export const QrSubstrate = ({
         ? createSignPayload(account.address, cmd ?? CMD_MORTAL, unsigned, genesisHash ?? "0x")
         : undefined,
     [account, cmd, genesisHash, unsigned]
-  )
-
-  // const [qrCodeFrames, setQrCodeFrames] = useState<Array<string | null> | null>(null)
-  // useEffect(() => {
-  //   if (!unsigned) return
-  //   if (scanState === "INIT") return
-
-  //   const data = createSignPayload(
-  //     account?.address,
-  //     cmd ?? CMD_MORTAL,
-  //     unsigned,
-  //     genesisHash ?? "0x"
-  //   )
-  //   if (!data) return
-
-  //   const MULTIPART = new Uint8Array([0])
-  //   const encodeNumber = (value: number) => new Uint8Array([value >> 8, value & 0xff])
-  //   const FRAME_SIZE = 1024
-  //   const numberOfFrames = Math.ceil(data.length / FRAME_SIZE)
-  //   const dataFrames = Array.from({ length: numberOfFrames })
-  //     .map((_, index) => data.subarray(index * FRAME_SIZE, (index + 1) * FRAME_SIZE))
-  //     .map((dataFrame, index) =>
-  //       u8aConcat(MULTIPART, encodeNumber(numberOfFrames), encodeNumber(index), dataFrame)
-  //     )
-
-  //   let cancelled = false
-  //   ;(async () => {
-  //     const qrCodeFrames = []
-  //     for (const dataFrame of dataFrames) {
-  //       const blob = await new QrCodeStyling({
-  //         type: "svg",
-  //         data: decodeString(dataFrame),
-  //         margin: 0,
-  //         qrOptions: { mode: "Byte", errorCorrectionLevel: "L" },
-  //         dotsOptions: { type: "dots" },
-  //         cornersSquareOptions: { type: "extra-rounded" },
-  //         cornersDotOptions: { type: "dot" },
-  //         image: talismanRedHandSvg,
-  //         imageOptions: { hideBackgroundDots: true, imageSize: 0.7, margin: 5 },
-  //       }).getRawData("svg")
-  //       qrCodeFrames.push(blob ? URL.createObjectURL(blob) : blob)
-  //     }
-
-  //     if (cancelled) return
-  //     setQrCodeFrames(qrCodeFrames)
-  //   })()
-
-  //   return () => {
-  //     cancelled = true
-  //   }
-  // }, [account?.address, cmd, genesisHash, scanState, unsigned])
-
-  // const [qrCode, setQrCode] = useState<string | null>(null)
-  // useEffect(() => {
-  //   if (qrCodeFrames === null) return setQrCode(null)
-  //   if (qrCodeFrames.length < 1) return setQrCode(null)
-  //   if (qrCodeFrames.length === 1) setQrCode(qrCodeFrames[0])
-
-  //   let index = 0
-  //   setQrCode(qrCodeFrames[index])
-  //   const interval = setInterval(() => {
-  //     index = (index + 1) % qrCodeFrames.length
-  //     setQrCode(qrCodeFrames[index])
-  //   }, 1000)
-
-  //   return () => clearInterval(interval)
-  // }, [qrCodeFrames])
-
-  const networkSpecs = useMemo(
-    () => (chain && token ? createNetworkSpecsPayload(chain, token) : undefined),
-    // ? {
-    //     genesis_hash: chain.genesisHash as string,
-    //     decimals: token.decimals as number,
-    //     prefix: chain.prefix as number,
-    //     title: chain.specName as string,
-    //     unit: token.symbol as string,
-    //   }
-    // : null,
-    [chain, token]
   )
 
   if (scanState === "INIT")
@@ -404,14 +321,7 @@ export const QrSubstrate = ({
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <LoaderIcon className="animate-spin-slow text-black" />
                 </div>
-                {chain?.chainspecQrUrl && networkSpecs ? (
-                  <div className="bg-white p-5">
-                    {/* <QrNetworkSpecs networkSpecs={networkSpecs as unknown as NetworkSpecsStruct} /> */}
-                    <QrCode data={networkSpecs} />
-                  </div>
-                ) : // <img className="relative h-full w-full" src={chain?.chainspecQrUrl} />
-                // <img className="relative h-full w-full" src={chain?.chainspecQrUrl} />
-                null}
+                {!!genesisHash && <NetworkSpecsQrCode genesisHash={genesisHash} />}
               </div>
               <div className="text-body-secondary mb-16 max-w-md text-center text-sm leading-10">
                 Scan the QR code with the Parity Signer app on your phone to add the{" "}
@@ -458,9 +368,12 @@ export const QrSubstrate = ({
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <LoaderIcon className="animate-spin-slow text-black" />
               </div>
-              {chain?.latestMetadataQrUrl ? (
-                <img className="relative h-full w-full" src={chain?.latestMetadataQrUrl} />
-              ) : null}
+              {isJsonPayload(payload) && (
+                <MetadataQrCode
+                  genesisHash={payload.genesisHash}
+                  specVersion={payload.specVersion}
+                />
+              )}
             </div>
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
               Scan the QR video with the Parity Signer app on your phone to update your metadata.

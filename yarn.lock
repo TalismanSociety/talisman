@@ -12051,6 +12051,7 @@ __metadata:
     postcss: ^8.4.20
     postcss-loader: ^7.0.2
     posthog-js: ^1.39.0
+    raptorq: ^1.7.22
     react: 18.2.0
     react-app-polyfill: 3.0.0
     react-contenteditable: 3.3.6
@@ -18013,6 +18014,13 @@ __metadata:
     randombytes: ^2.0.5
     safe-buffer: ^5.1.0
   checksum: 33734bb578a868d29ee1b8555e21a36711db084065d94e019a6d03caa67debef8d6a1bfd06a2b597e32901ddc761ab483a85393f0d9a75838f1912461d4dbfc7
+  languageName: node
+  linkType: hard
+
+"raptorq@npm:^1.7.22":
+  version: 1.7.22
+  resolution: "raptorq@npm:1.7.22"
+  checksum: f3a3b1211441b000ca401ae95fa8ee7c836d65c1ccd182b65ce79ee44ea55fd5ed5716950b9869d1b2705e6c087fc28096ba1ecf0f40dee6961774d06bf18f96
   languageName: node
   linkType: hard
 
