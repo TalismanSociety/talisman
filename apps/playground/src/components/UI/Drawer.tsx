@@ -59,9 +59,8 @@ export const DrawerPage = () => {
         <Drawer
           className="bg-brand-orange"
           isOpen={ocRight.isOpen}
-          lightDismiss={withLightDismiss}
           containerId={containerId}
-          onDismiss={ocRight.close}
+          onDismiss={withLightDismiss ? ocRight.close : undefined}
           anchor="right"
         >
           <DrawerContent />
@@ -69,9 +68,8 @@ export const DrawerPage = () => {
         <Drawer
           className="bg-brand-orange"
           isOpen={ocLeft.isOpen}
-          lightDismiss={withLightDismiss}
           containerId={containerId}
-          onDismiss={ocLeft.close}
+          onDismiss={withLightDismiss ? ocLeft.close : undefined}
           anchor="left"
         >
           <DrawerContent />
@@ -79,9 +77,8 @@ export const DrawerPage = () => {
         <Drawer
           className="bg-brand-orange"
           isOpen={ocTop.isOpen}
-          lightDismiss={withLightDismiss}
           containerId={containerId}
-          onDismiss={ocTop.close}
+          onDismiss={withLightDismiss ? ocTop.close : undefined}
           anchor="top"
         >
           <DrawerContent />
@@ -89,9 +86,8 @@ export const DrawerPage = () => {
         <Drawer
           className="bg-brand-orange"
           isOpen={ocBottom.isOpen}
-          lightDismiss={withLightDismiss}
           containerId={containerId}
-          onDismiss={ocBottom.close}
+          onDismiss={withLightDismiss ? ocBottom.close : undefined}
           anchor="bottom"
         >
           <DrawerContent />

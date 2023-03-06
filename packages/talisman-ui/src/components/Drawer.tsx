@@ -64,7 +64,6 @@ type DrawerProps = {
   isOpen?: boolean
   onDismiss?: () => void
   children: ReactNode
-  lightDismiss?: boolean
   className?: string
   anchor: DrawerAnchor
   containerId?: string
@@ -74,15 +73,16 @@ export const Drawer: FC<DrawerProps> = ({
   isOpen = false,
   children,
   onDismiss,
-  lightDismiss,
   className,
   anchor,
   containerId,
 }) => {
   const handleDismiss: MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
+      if (!onDismiss) return
+
       e.stopPropagation()
-      onDismiss?.()
+      onDismiss()
     },
     [onDismiss]
   )
@@ -97,12 +97,11 @@ export const Drawer: FC<DrawerProps> = ({
   return createPortal(
     <Transition show={isOpen}>
       {/* Background overlay */}
-      {lightDismiss && (
+      {onDismiss && (
         <Transition.Child
           className={clsx(
-            "bg-grey-900 top-0 left-0 z-40 h-full w-full bg-opacity-50",
-            position,
-            onDismiss ? "cursor-pointer" : ""
+            "bg-grey-900 top-0 left-0 z-40 h-full w-full cursor-pointer bg-opacity-50",
+            position
           )}
           enter="transition-opacity ease-linear duration-300"
           enterFrom="opacity-0"
