@@ -54,17 +54,17 @@ export const generateQrAddNetworkSpecs = async (genesisHash: string) => {
   assert(chain.nativeToken?.id, "Chain native token not found")
 
   const token = (await chaindataProvider.getToken(chain?.nativeToken?.id)) as SubNativeToken
-  assert(chain, "Token not found")
+  assert(token, "Token not found")
 
   const specs = $networkSpecs.encode({
-    base58prefix: chain.prefix as number,
-    decimals: token.decimals as number,
+    base58prefix: chain.prefix ?? 0,
+    decimals: token.decimals,
     encryption: 1, // TODO specify encryption based on what we need to sign
-    genesis_hash: hexToU8a(chain.genesisHash as string),
-    name: chain.specName as string, // TODO
-    unit: token.symbol as string,
-    title: chain.name as string,
-    path_id: `//${chain.name?.toLowerCase()}`,
+    genesis_hash: hexToU8a(genesisHash),
+    name: chain.specName ?? chain.name ?? chain.id,
+    unit: token.symbol,
+    title: chain.name ?? chain.id,
+    path_id: `//${(chain.name ?? chain.id)?.toLowerCase()}`,
 
     // below ones seem useless
     logo: "", // looks like we could pass a base64 encoded image here
