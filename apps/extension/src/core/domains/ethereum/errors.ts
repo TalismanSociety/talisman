@@ -33,7 +33,7 @@ export const getEthersErrorLabelFromCode = (code?: string | number) => {
       case ethers.errors.UNPREDICTABLE_GAS_LIMIT:
         // TODO could be gas limit to low, parameters making the operation impossible, balance to low to pay for gas, or anything else that makes the operation impossible to succeed.
         // TODO need a better copy to explain this, but gas limit issue has to be stated as it can be solved by the user.
-        return "Could not estimate gas limit. Transaction may fail because of illogic parameters or may require higher gas limit"
+        return "Could not estimate gas limit. Transaction may fail because of incorrect parameters or may require higher gas limit"
       case ethers.errors.TRANSACTION_REPLACED:
         return "Transaction was replaced with another one with higher gas price"
       case ethers.errors.REPLACEMENT_UNDERPRICED:
