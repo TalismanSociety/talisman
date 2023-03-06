@@ -2800,6 +2800,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@headlessui/react@npm:1.7.13":
+  version: 1.7.13
+  resolution: "@headlessui/react@npm:1.7.13"
+  dependencies:
+    client-only: ^0.0.1
+  peerDependencies:
+    react: ^16 || ^17 || ^18
+    react-dom: ^16 || ^17 || ^18
+  checksum: 132e5fce86978b9a6fd9d669fb556acec783debcd8f510c99226b3b3229dad50a13aeed69fc9af66465fc7029487ecfc46e6226f14218b760d5a309e08c0d059
+  languageName: node
+  linkType: hard
+
 "@hookform/resolvers@npm:2.9.11":
   version: 2.9.11
   resolution: "@hookform/resolvers@npm:2.9.11"
@@ -9401,6 +9413,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"client-only@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "client-only@npm:0.0.1"
+  checksum: 0c16bf660dadb90610553c1d8946a7fdfb81d624adea073b8440b7d795d5b5b08beb3c950c6a2cf16279365a3265158a236876d92bce16423c485c322d7dfaf8
+  languageName: node
+  linkType: hard
+
 "cliui@npm:^5.0.0":
   version: 5.0.0
   resolution: "cliui@npm:5.0.0"
@@ -11924,6 +11943,7 @@ __metadata:
     "@dnd-kit/sortable": 7.0.2
     "@ethereumjs/util": 8.0.3
     "@floating-ui/react-dom": ^1.2.2
+    "@headlessui/react": 1.7.13
     "@hookform/resolvers": 2.9.11
     "@ledgerhq/hw-app-eth": 6.31.0
     "@ledgerhq/hw-transport-webusb": 6.27.11
@@ -17366,6 +17386,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "playground@workspace:apps/playground"
   dependencies:
+    "@headlessui/react": 1.7.13
     "@metamask/eth-sig-util": 5.0.2
     "@tailwindcss/forms": ^0.5.3
     "@talismn/eslint-config": "workspace:^"
@@ -19909,6 +19930,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "talisman-ui@workspace:packages/talisman-ui"
   dependencies:
+    "@headlessui/react": 1.7.13
     "@tailwindcss/forms": ^0.5.3
     "@talismn/eslint-config": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
@@ -19928,6 +19950,7 @@ __metadata:
     tailwindcss: ^3.2.4
     typescript: 4.6.4
   peerDependencies:
+    "@headlessui/react": ">=1.7.13"
     "@tailwindcss/forms": ">=0.5.3"
     "@talismn/util": "*"
     autoprefixer: ">=10.4.12"

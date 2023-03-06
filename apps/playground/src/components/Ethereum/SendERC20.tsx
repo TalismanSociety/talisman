@@ -17,7 +17,7 @@ import {
   useWaitForTransaction,
 } from "wagmi"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 import { getUSDCAddress } from "./contracts"
 import erc20 from "./contracts/erc20.json"
 import { TransactionReceipt } from "./shared/TransactionReceipt"

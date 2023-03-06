@@ -15,6 +15,7 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "devDependencies": {
+    "@headlessui/react": "1.7.13",
     "@tailwindcss/forms": "^0.5.3",
     "@talismn/eslint-config": "workspace:^",
     "@talismn/tsconfig": "workspace:^",
@@ -35,6 +36,7 @@
     "typescript": "4.6.4"
   },
   "peerDependencies": {
+    "@headlessui/react": ">=1.7.13",
     "@tailwindcss/forms": ">=0.5.3",
     "@talismn/util": "*",
     "autoprefixer": ">=10.4.12",

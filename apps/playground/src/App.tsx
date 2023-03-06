@@ -3,13 +3,10 @@ import "./styles/styles.css"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 
 import talismanLogo from "./assets/talisman-full-color.svg"
-import { Background } from "./components/Background"
-import { Buttons } from "./components/Buttons"
-import { Checkboxes } from "./components/Chexkboxes"
 import { Ethereum } from "./components/Ethereum"
-import { Nav } from "./components/Nav"
+import { Nav } from "./components/shared/Nav"
 import { Substrate } from "./components/Substrate"
-import { TxStatusPage } from "./components/TxStatusPage"
+import { UIPage } from "./components/UI"
 
 function App() {
   return (
@@ -23,10 +20,7 @@ function App() {
           <Routes>
             <Route path="substrate" element={<Substrate />} />
             <Route path="ethereum" element={<Ethereum />} />
-            <Route path="button" element={<Buttons />} />
-            <Route path="checkbox" element={<Checkboxes />} />
-            <Route path="mystical-background" element={<Background />} />
-            <Route path="tx-status" element={<TxStatusPage />} />
+            <Route path="ui/*" element={<UIPage />} />
           </Routes>
         </BrowserRouter>
       </div>

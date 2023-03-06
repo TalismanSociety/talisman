@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 import { useAccount } from "wagmi"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 
 export const PersonalSignReversed = () => {
   const { isConnected, address, connector } = useAccount()

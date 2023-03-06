@@ -10,6 +10,7 @@
     "@dnd-kit/sortable": "7.0.2",
     "@ethereumjs/util": "8.0.3",
     "@floating-ui/react-dom": "^1.2.2",
+    "@headlessui/react": "1.7.13",
     "@hookform/resolvers": "2.9.11",
     "@ledgerhq/hw-app-eth": "6.31.0",
     "@ledgerhq/hw-transport-webusb": "6.27.11",

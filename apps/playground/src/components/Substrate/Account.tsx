@@ -3,7 +3,7 @@ import { classNames } from "@talismn/util"
 import { useCallback } from "react"
 import { Button } from "talisman-ui"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 import { useWallet } from "./useWallet"
 
 export const Account = () => {
@@ -20,7 +20,7 @@ export const Account = () => {
     <Section title="Account">
       {isConnected ? (
         <div className="space-y-8">
-          <div className="flex-wap my-8 flex gap-8">
+          <div className="my-8 flex flex-wrap gap-8">
             {accounts?.map((acc) => {
               return (
                 <Button
