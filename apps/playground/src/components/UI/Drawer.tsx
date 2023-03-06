@@ -5,7 +5,16 @@ import { Button, Checkbox, Drawer, useOpenClose } from "talisman-ui"
 import { TestLayout } from "../shared/TestLayout"
 
 const DrawerContent: FC<{ className?: string }> = ({ className }) => {
-  return <div className={classNames("bg-brand-blue", className)}>content</div>
+  return (
+    <div
+      className={classNames(
+        "bg-brand-blue flex h-full flex-col items-center justify-center",
+        className
+      )}
+    >
+      <p>content</p>
+    </div>
+  )
 }
 
 export const DrawerPage = () => {
@@ -15,6 +24,8 @@ export const DrawerPage = () => {
   const ocRight = useOpenClose()
   const ocBottom = useOpenClose()
   const ocTop = useOpenClose()
+
+  const containerId = withContainer ? "container" : undefined
 
   return (
     <TestLayout title="Mystical Background">
@@ -28,20 +39,28 @@ export const DrawerPage = () => {
           checked={withLightDismiss}
           onChange={(e) => setWithLightDismiss(e.target.checked)}
         >
-          In container
+          Light dismiss
         </Checkbox>
       </div>
       <div className="my-16 flex gap-8">
-        <Button onClick={ocTop.toggle}>Top</Button>
-        <Button onClick={ocRight.toggle}>Right</Button>
-        <Button onClick={ocBottom.toggle}>Bottom</Button>
-        <Button onClick={ocLeft.toggle}>Left</Button>
+        <div className="grid grid-cols-3">
+          <div></div>
+          <Button onClick={ocTop.toggle}>Top</Button>
+          <div></div>
+          <Button onClick={ocLeft.toggle}>Left</Button>
+          <div></div>
+          <Button onClick={ocRight.toggle}>Right</Button>
+          <div></div>
+          <Button onClick={ocBottom.toggle}>Bottom</Button>
+          <div></div>
+        </div>
       </div>
       <div>
         <Drawer
           className="bg-brand-orange"
           isOpen={ocRight.isOpen}
           lightDismiss={withLightDismiss}
+          containerId={containerId}
           onDismiss={ocRight.close}
           anchor="right"
         >
@@ -51,6 +70,7 @@ export const DrawerPage = () => {
           className="bg-brand-orange"
           isOpen={ocLeft.isOpen}
           lightDismiss={withLightDismiss}
+          containerId={containerId}
           onDismiss={ocLeft.close}
           anchor="left"
         >
@@ -60,6 +80,7 @@ export const DrawerPage = () => {
           className="bg-brand-orange"
           isOpen={ocTop.isOpen}
           lightDismiss={withLightDismiss}
+          containerId={containerId}
           onDismiss={ocTop.close}
           anchor="top"
         >
@@ -69,6 +90,7 @@ export const DrawerPage = () => {
           className="bg-brand-orange"
           isOpen={ocBottom.isOpen}
           lightDismiss={withLightDismiss}
+          containerId={containerId}
           onDismiss={ocBottom.close}
           anchor="bottom"
         >
@@ -76,7 +98,10 @@ export const DrawerPage = () => {
         </Drawer>
       </div>
       <div>
-        <div className="h-[600px] w-[400px] border"></div>
+        <div
+          id="container"
+          className="bg-brand-pink relative h-[600px] w-[400px] overflow-hidden border "
+        ></div>
       </div>
     </TestLayout>
   )
