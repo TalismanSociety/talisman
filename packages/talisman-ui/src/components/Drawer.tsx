@@ -61,21 +61,21 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
 }
 
 type DrawerProps = {
-  isOpen?: boolean
-  onDismiss?: () => void
-  children: ReactNode
-  className?: string
   anchor: DrawerAnchor
+  children: ReactNode
+  isOpen: boolean
+  className?: string
   containerId?: string
+  onDismiss?: () => void
 }
 
 export const Drawer: FC<DrawerProps> = ({
-  isOpen = false,
-  children,
-  onDismiss,
-  className,
   anchor,
+  children,
+  isOpen,
+  className,
   containerId,
+  onDismiss,
 }) => {
   const handleDismiss: MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
