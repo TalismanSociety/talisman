@@ -112,7 +112,7 @@ export const generateQrUpdateNetworkMetadata = async (genesisHash: string, specV
 
   const payload = $updateNetworkMetadataPayload.encode({
     meta: hexToU8a(metadataRpc),
-    genesis_hash: hexToU8a(chain.genesisHash as string),
+    genesis_hash: hexToU8a(genesisHash),
   })
 
   const { publicKey, signature } = await signWithRoot(payload)
