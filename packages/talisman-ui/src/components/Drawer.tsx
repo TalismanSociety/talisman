@@ -1,24 +1,69 @@
 import { Transition } from "@headlessui/react"
+import { classNames } from "@talismn/util"
 import { default as clsx } from "clsx"
-import { ReactNode } from "react"
+import { MouseEventHandler, ReactNode, useCallback } from "react"
 
-import { IconX } from "../icons"
+type DrawerAnchor = "top" | "right" | "bottom" | "left"
 
 type DrawerProps = {
   isOpen?: boolean
   onDismiss?: () => void
-  title?: string
   children: ReactNode
   lightDismiss?: boolean
+  className?: string
+  anchor: DrawerAnchor
+}
+
+type AnchorClasses = {
+  container: string
+  enterFrom: string
+  enterTo: string
+  leaveFrom: string
+  leaveTo: string
+}
+
+const getAnchorClasses = (anchor: DrawerAnchor): AnchorClasses => {
+  switch (anchor) {
+    case "right":
+      return {
+        container: "fixed top-0 right-0 h-screen max-w-[100vw]",
+        enterFrom: "translate-x-full",
+        enterTo: "translate-x-0",
+        leaveFrom: "translate-x-0",
+        leaveTo: "translate-x-full",
+      }
+    case "top":
+    case "bottom":
+    case "left":
+    default:
+      return {
+        container: "string",
+        enterFrom: "string",
+        enterTo: "string",
+        leaveFrom: "string",
+        leaveTo: "string",
+      }
+  }
 }
 
 export const Drawer = ({
   isOpen = false,
   children,
-  title,
   onDismiss,
   lightDismiss,
+  className,
+  anchor,
 }: DrawerProps) => {
+  const handleDismiss: MouseEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      e.stopPropagation()
+      onDismiss?.()
+    },
+    [onDismiss]
+  )
+
+  const { container, enterFrom, enterTo, leaveFrom, leaveTo } = getAnchorClasses(anchor)
+
   return (
     <Transition show={isOpen}>
       {/* Background overlay */}
@@ -26,7 +71,7 @@ export const Drawer = ({
         <Transition.Child
           data-testid="sidepanel-overlay"
           className={clsx(
-            "fixed top-0 left-0 z-40 h-full w-full bg-zinc-900 bg-opacity-50",
+            "bg-grey-900 fixed top-0 left-0 z-40 h-full w-full bg-opacity-50",
             onDismiss ? "cursor-pointer" : ""
           )}
           enter="transition-opacity ease-linear duration-300"
@@ -35,22 +80,23 @@ export const Drawer = ({
           leave="transition-opacity ease-linear duration-300"
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
-          onClick={onDismiss}
+          onClick={handleDismiss}
         ></Transition.Child>
       )}
 
       {/* Sliding sidebar */}
       <Transition.Child
         data-testid="sidepanel-panel"
-        className="fixed top-0 right-0 z-50 flex h-screen w-full max-w-[100vw] flex-col bg-zinc-800 shadow-2xl sm:w-96"
+        className={classNames("z-50 shadow-2xl", container, className)}
         enter="transition ease-in-out duration-300 transform"
-        enterFrom="translate-x-full"
-        enterTo="translate-x-0"
+        enterFrom={enterFrom}
+        enterTo={enterTo}
         leave="transition ease-in-out duration-300 transform"
-        leaveFrom="translate-x-0"
-        leaveTo="translate-x-full"
+        leaveFrom={leaveFrom}
+        leaveTo={leaveTo}
       >
-        <div className="flex h-12 w-full bg-zinc-900 text-white">
+        {children}
+        {/* <div className="bg-grey-900 flex h-12 w-full text-white">
           <div className="flex w-full flex-grow items-center pl-4 pr-1">
             <h3 data-testid="sidepanel-title" className="grow text-xl">
               {title}
@@ -65,9 +111,9 @@ export const Drawer = ({
             )}
           </div>
         </div>
-        <div className="flex-grow overflow-y-hidden text-base font-normal text-zinc-200">
+        <div className="text-grey-200 flex-grow overflow-y-hidden text-base font-normal">
           {children}
-        </div>
+        </div> */}
       </Transition.Child>
     </Transition>
   )

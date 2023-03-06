@@ -32,6 +32,12 @@ export const NavUI = () => {
       >
         TxStatus
       </Link>
+      <Link
+        to="/ui/drawer"
+        className={classNames(location.pathname === "/ui/drawer" && "text-primary-500")}
+      >
+        Drawer
+      </Link>
     </div>
   )
 }
