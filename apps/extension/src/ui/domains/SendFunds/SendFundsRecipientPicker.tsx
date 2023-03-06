@@ -17,7 +17,7 @@ import { SendFundsSearchInput } from "./SendFundsSearchInput"
 export const SendFundsRecipientPicker = () => {
   const { from, to, set, tokenId } = useSendFundsWizard()
   const [search, setSearch] = useState("")
-  const token = useToken()
+  const token = useToken(tokenId)
   const chain = useChain(token?.chain?.id)
 
   // maintain subscription to balances, as a search filter could close subscriptions from account rows
@@ -66,14 +66,20 @@ export const SendFundsRecipientPicker = () => {
         .filter(
           (account) => !from || isEthereumAddress(account.address) === isEthereumAddress(from)
         )
-        .filter((contact) => !search || contact.name?.toLowerCase().includes(search)),
-    [allContacts, from, search]
+        .filter(
+          (contact) =>
+            !search ||
+            contact.name?.toLowerCase().includes(search) ||
+            (isValidAddressInput && normalize(search) === normalize(contact.address))
+        ),
+    [allContacts, from, isValidAddressInput, normalize, search]
   )
 
   const accounts = useMemo(
     () =>
       allAccounts
         .filter((account) => normalize(account.address) !== normalize(from))
+        .filter((account) => isEthereumAddress(account.address) === isEthereumAddress(from))
         .filter(
           (account) =>
             !search ||
