@@ -5,8 +5,10 @@ import { useChains } from "./useChains"
 import { useEvmNetworks } from "./useEvmNetworks"
 import { useTokenRates } from "./useTokenRates"
 import { useTokens } from "./useTokens"
+import { useWithTestnets } from "./useWithTestnets"
 
-export const useBalancesHydrate = (withTestnets?: boolean): HydrateDb => {
+export const useBalancesHydrate = (): HydrateDb => {
+  const { withTestnets } = useWithTestnets()
   const chains = useChains(withTestnets)
   const evmNetworks = useEvmNetworks(withTestnets)
   const tokens = useTokens(withTestnets)

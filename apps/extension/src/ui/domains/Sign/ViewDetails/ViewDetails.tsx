@@ -166,7 +166,9 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
           </>
         )}
       </div>
-      <Button onClick={onClose}>Close</Button>
+      <Button className="shrink-0" onClick={onClose}>
+        Close
+      </Button>
     </ViewDetailsContainer>
   )
 }

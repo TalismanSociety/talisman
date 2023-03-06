@@ -1,6 +1,5 @@
-import { ChaindataProvider as Chaindata } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import { provideContext } from "../util/provideContext"
 
@@ -9,13 +8,14 @@ export type ChaindataProviderOptions = {
 }
 
 function useChaindataProvider(options: ChaindataProviderOptions = {}) {
-  const [chaindata, setChaindata] = useState<Chaindata | undefined>()
+  const [onfinalityApiKey, setOnfinalityApiKey] = useState(options.onfinalityApiKey)
 
+  // make sure we recreate provider only when the onfinalityApiKey changes
   useEffect(() => {
-    setChaindata(new ChaindataProviderExtension({ onfinalityApiKey: options.onfinalityApiKey }))
-  }, [options.onfinalityApiKey])
+    if (options.onfinalityApiKey !== onfinalityApiKey) setOnfinalityApiKey(options.onfinalityApiKey)
+  }, [options.onfinalityApiKey, onfinalityApiKey])
 
-  return chaindata
+  return useMemo(() => new ChaindataProviderExtension({ onfinalityApiKey }), [onfinalityApiKey])
 }
 
 export const [ChaindataProvider, useChaindata] = provideContext(useChaindataProvider)

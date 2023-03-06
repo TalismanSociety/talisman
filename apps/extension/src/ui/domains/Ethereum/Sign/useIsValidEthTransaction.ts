@@ -1,43 +1,29 @@
 import { EthPriorityOptionName } from "@core/domains/signing/types"
 import { useQuery } from "@tanstack/react-query"
 import { ethers } from "ethers"
-import { useEffect, useState } from "react"
 
 export const useIsValidEthTransaction = (
   provider?: ethers.providers.JsonRpcProvider,
   transaction?: ethers.providers.TransactionRequest,
   priority?: EthPriorityOptionName
 ) => {
-  // staleIsValid can be used to return previous value, this prevents having flashing approve button in tx form when gas changes on each block
-  const [staleIsValid, setStaleIsValid] = useState(false)
-
   const { data, error, isLoading } = useQuery({
     queryKey: ["useCheckTransaction", provider?.network?.chainId, transaction, priority],
     queryFn: async () => {
       if (!provider || !transaction) {
-        setStaleIsValid(false)
         return null
       }
-      try {
-        const estimatedGas = await provider.estimateGas(transaction)
-        const result = estimatedGas?.gt(0)
-        setStaleIsValid(result)
-        return result
-      } catch (err) {
-        setStaleIsValid(false)
-        // if ethers.js error, throw underlying error that has the real error message
-        throw (err as any)?.error ?? err
-      }
+
+      // dry runs the transaction, if it fails we can't know for sure what the issue really is
+      // there should be helpful message in the error though.
+      const estimatedGas = await provider.estimateGas(transaction)
+      return estimatedGas?.gt(0)
     },
     refetchInterval: false,
     refetchOnWindowFocus: false,
     retry: 0,
+    keepPreviousData: true,
   })
 
-  // reset stale value if priority changes
-  useEffect(() => {
-    setStaleIsValid(false)
-  }, [priority])
-
-  return { isValid: !!data, error, staleIsValid: !!data || staleIsValid, isLoading }
+  return { isValid: !!data, error, isLoading }
 }

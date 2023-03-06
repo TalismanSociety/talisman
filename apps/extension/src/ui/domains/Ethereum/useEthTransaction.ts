@@ -1,3 +1,4 @@
+import { getEthersErrorLabelFromCode } from "@core/domains/ethereum/errors"
 import {
   getGasLimit,
   getGasSettingsEip1559,
@@ -55,41 +56,26 @@ const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
   return { hasEip1559Support: data ?? undefined, ...rest }
 }
 
-const useEstimatedGas = (
+const useBlockFeeData = (
   provider?: ethers.providers.JsonRpcProvider,
-  tx?: ethers.providers.TransactionRequest
+  tx?: ethers.providers.TransactionRequest,
+  withFeeOptions?: boolean
 ) => {
-  return useQuery({
-    queryKey: ["estimateGas", provider?.network?.chainId, tx],
+  const { data, ...rest } = useQuery({
+    queryKey: ["block", provider?.network?.chainId, tx, withFeeOptions],
     queryFn: async () => {
       if (!provider || !tx) return null
-      try {
-        // ignore gas settings set by dapp
-        const { gasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas, ...rest } = tx
-        return await provider.estimateGas(rest)
-      } catch (err) {
-        // if ethers.js error, throw underlying error that has the real error message
-        throw (err as any)?.error ?? err
-      }
-    },
-    refetchOnWindowFocus: false, // prevents error to be cleared when window gets focus
-    retry: false, // don't retry. other requests would have fallbacked to a good rpc if necessary before this hook is called. an error here means tx is invalid
-  })
-}
-
-const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOptions?: boolean) => {
-  const { data, ...rest } = useQuery({
-    queryKey: ["block", provider?.network?.chainId, withFeeOptions],
-    queryFn: async () => {
-      if (!provider) return null
       const [
         gasPrice,
         { gasLimit: blockGasLimit, baseFeePerGas, gasUsed, number: blockNumber },
         feeHistoryAnalysis,
+        estimatedGas,
       ] = await Promise.all([
         provider.getGasPrice(),
         provider.getBlock("latest"),
         withFeeOptions ? getFeeHistoryAnalysis(provider) : undefined,
+        // estimate gas may change over time for contract calls, so we need to refresh it every time we prepare the tx to prevent an invalid transaction
+        provider.estimateGas(tx),
       ])
 
       if (
@@ -127,6 +113,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
           : gasUsed.mul(100).div(blockGasLimit).toNumber() / 100
 
       return {
+        estimatedGas,
         gasPrice,
         baseFeePerGas,
         blockGasLimit,
@@ -140,6 +127,7 @@ const useBlockFeeData = (provider?: ethers.providers.JsonRpcProvider, withFeeOpt
   })
 
   const allProps = data || {
+    estimatedGas: undefined,
     gasPrice: undefined,
     baseFeePerGas: undefined,
     blockGasLimit: undefined,
@@ -203,7 +191,7 @@ const getEthGasSettingsFromTransaction = (
   return undefined
 }
 
-const usePerPriorityGasSettings = ({
+const useGasSettings = ({
   hasEip1559Support,
   baseFeePerGas,
   estimatedGas,
@@ -319,7 +307,6 @@ export const useEthTransaction = (
   const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(provider, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(provider)
   const { nonce, error: nonceError } = useNonce(tx?.from, tx?.chainId?.toString())
-  const { data: estimatedGas, error: estimatedGasError } = useEstimatedGas(provider, tx)
 
   const {
     gasPrice,
@@ -327,8 +314,9 @@ export const useEthTransaction = (
     baseFeePerGas,
     blockGasLimit,
     feeHistoryAnalysis,
+    estimatedGas,
     error: blockFeeDataError,
-  } = useBlockFeeData(provider, hasEip1559Support)
+  } = useBlockFeeData(provider, tx, hasEip1559Support)
 
   const [priority, setPriority] = useState<EthPriorityOptionName>()
 
@@ -338,7 +326,7 @@ export const useEthTransaction = (
     setPriority(hasEip1559Support ? "low" : "recommended")
   }, [hasEip1559Support, priority])
 
-  const { gasSettings, setCustomSettings, gasSettingsByPriority } = usePerPriorityGasSettings({
+  const { gasSettings, setCustomSettings, gasSettingsByPriority } = useGasSettings({
     tx,
     priority,
     hasEip1559Support,
@@ -385,35 +373,28 @@ export const useEthTransaction = (
   }, [baseFeePerGas, estimatedGas, feeHistoryAnalysis, gasPrice, gasSettings, transaction])
 
   // use staleIsValid to prevent disabling approve button each time there is a new block (triggers gas check)
-  const { staleIsValid: isValid, error: isValidError } = useIsValidEthTransaction(
-    provider,
-    transaction,
-    priority
-  )
+  const { isValid, error: isValidError } = useIsValidEthTransaction(provider, transaction, priority)
 
   const { error, errorDetails } = useMemo(() => {
-    const networkError =
-      errorEip1559Support || nonceError || blockFeeDataError || errorTransactionInfo
-    if (networkError)
-      return { error: "Network error", errorDetails: (networkError as Error).message }
+    const anyError = (errorEip1559Support ??
+      nonceError ??
+      blockFeeDataError ??
+      errorTransactionInfo ??
+      isValidError) as Error & { code?: string; error?: Error }
 
-    const validationError = (estimatedGasError || isValidError) as Error
-    if (validationError) {
-      if (validationError?.message?.startsWith("insufficient funds for intrinsic transaction cost"))
-        return { error: "Insufficient balance", errorDetails: validationError.message }
+    const userFriendlyError = getEthersErrorLabelFromCode(anyError?.code)
 
-      return { error: "Invalid transaction", errorDetails: validationError.message }
-    }
+    // if ethers.js error, display underlying error that shows the RPC's error message
+    const errorToDisplay = anyError?.error ?? anyError
+
+    if (errorToDisplay)
+      return {
+        error: userFriendlyError ?? "Failed to prepare transaction",
+        errorDetails: errorToDisplay.message,
+      }
 
     return { error: undefined, errorDetails: undefined }
-  }, [
-    blockFeeDataError,
-    isValidError,
-    errorEip1559Support,
-    errorTransactionInfo,
-    estimatedGasError,
-    nonceError,
-  ])
+  }, [blockFeeDataError, isValidError, errorEip1559Support, errorTransactionInfo, nonceError])
 
   const isLoading = useMemo(
     () => tx && !transactionInfo && !txDetails && !error,
