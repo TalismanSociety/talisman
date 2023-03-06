@@ -102,10 +102,6 @@ const $updateNetworkMetadataPayload = $.object(
 )
 
 export const generateQrUpdateNetworkMetadata = async (genesisHash: string, specVersion: number) => {
-  const chain = await chaindataProvider.getChain({ genesisHash })
-  assert(chain, "Chain not found")
-  assert(chain.nativeToken?.id, "Chain native token not found")
-
   const metadataDef = await getMetadataDef(genesisHash, specVersion)
   const metadataRpc = getMetadataRpcFromDef(metadataDef)
   assert(metadataRpc, "Failed to fetch metadata")
