@@ -15,7 +15,7 @@ type DrawerProps = {
 }
 
 type AnchorClasses = {
-  container: string
+  drawer: string
   enterFrom: string
   enterTo: string
   leaveFrom: string
@@ -26,22 +26,35 @@ const getAnchorClasses = (anchor: DrawerAnchor): AnchorClasses => {
   switch (anchor) {
     case "right":
       return {
-        container: "fixed top-0 right-0 h-screen max-w-[100vw]",
+        drawer: "fixed top-0 right-0 h-screen max-w-[100vw]",
         enterFrom: "translate-x-full",
         enterTo: "translate-x-0",
         leaveFrom: "translate-x-0",
         leaveTo: "translate-x-full",
       }
-    case "top":
-    case "bottom":
     case "left":
-    default:
       return {
-        container: "string",
-        enterFrom: "string",
-        enterTo: "string",
-        leaveFrom: "string",
-        leaveTo: "string",
+        drawer: "fixed top-0 left-0 h-screen max-w-[100vw]",
+        enterFrom: "translate-x-[-100%]",
+        enterTo: "translate-x-0",
+        leaveFrom: "translate-x-0",
+        leaveTo: "translate-x-[-100%]",
+      }
+    case "top":
+      return {
+        drawer: "fixed top-0 left-0 w-screen max-h-[100vh]",
+        enterFrom: "translate-y-[-100%]",
+        enterTo: "translate-y-0",
+        leaveFrom: "translate-y-0",
+        leaveTo: "translate-y-[-100%]",
+      }
+    case "bottom":
+      return {
+        drawer: "fixed bottom-0 left-0 w-screen max-h-[100vh]",
+        enterFrom: "translate-y-full",
+        enterTo: "translate-y-0",
+        leaveFrom: "translate-y-0",
+        leaveTo: "translate-y-full",
       }
   }
 }
@@ -62,7 +75,7 @@ export const Drawer = ({
     [onDismiss]
   )
 
-  const { container, enterFrom, enterTo, leaveFrom, leaveTo } = getAnchorClasses(anchor)
+  const { drawer, enterFrom, enterTo, leaveFrom, leaveTo } = getAnchorClasses(anchor)
 
   return (
     <Transition show={isOpen}>
@@ -72,7 +85,8 @@ export const Drawer = ({
           data-testid="sidepanel-overlay"
           className={clsx(
             "bg-grey-900 fixed top-0 left-0 z-40 h-full w-full bg-opacity-50",
-            onDismiss ? "cursor-pointer" : ""
+            onDismiss ? "cursor-pointer" : "",
+            "" // a virer
           )}
           enter="transition-opacity ease-linear duration-300"
           enterFrom="opacity-0"
@@ -84,10 +98,10 @@ export const Drawer = ({
         ></Transition.Child>
       )}
 
-      {/* Sliding sidebar */}
+      {/* Drawer */}
       <Transition.Child
         data-testid="sidepanel-panel"
-        className={classNames("z-50 shadow-2xl", container, className)}
+        className={classNames("z-50 shadow-2xl", drawer, className)}
         enter="transition ease-in-out duration-300 transform"
         enterFrom={enterFrom}
         enterTo={enterTo}
