@@ -10,22 +10,24 @@ export type ChainConnectorsProviderOptions = {
 }
 
 function useChainConnectorsProvider(options: ChainConnectorsProviderOptions) {
+  const [onfinalityApiKey, setOnfinalityApiKey] = useState(options.onfinalityApiKey)
+
+  // make sure we recreate provider only when the onfinalityApiKey changes
+  useEffect(() => {
+    if (options.onfinalityApiKey !== onfinalityApiKey) setOnfinalityApiKey(options.onfinalityApiKey)
+  }, [options.onfinalityApiKey, onfinalityApiKey])
+
   // chaindata dependency
   const chaindata = useChaindata()
 
   // substrate connector
-  const [substrate, setSubstrate] = useState<ChainConnector | undefined>()
-  useEffect(() => {
-    if (!chaindata) return
-    setSubstrate(new ChainConnector(chaindata))
-  }, [chaindata])
+  const substrate = useMemo(() => new ChainConnector(chaindata), [chaindata])
 
   // evm connector
-  const [evm, setEvm] = useState<ChainConnectorEvm | undefined>()
-  useEffect(() => {
-    if (!chaindata) return
-    setEvm(new ChainConnectorEvm(chaindata, { onfinalityApiKey: options.onfinalityApiKey }))
-  }, [chaindata, options.onfinalityApiKey])
+  const evm = useMemo(
+    () => new ChainConnectorEvm(chaindata, { onfinalityApiKey }),
+    [chaindata, onfinalityApiKey]
+  )
 
   return useMemo(() => ({ substrate, evm }), [substrate, evm])
 }
