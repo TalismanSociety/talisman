@@ -9,25 +9,27 @@ import { useForm } from "react-hook-form"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { ExistingContactModalProps } from "./types"
+import { ContactModalProps } from "./types"
 
 type FormValues = {
   name: string
+  address: string
 }
 
 const schema = yup.object({
   name: yup.string().required(""),
+  address: yup.string().required(""),
 })
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Settings",
   featureVersion: 1,
-  page: "Address book contact edit",
+  page: "Address book contact create",
 }
 
-export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModalProps) => {
-  const { edit } = useAddressBook()
+export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
+  const { add } = useAddressBook()
   const {
     register,
     handleSubmit,
@@ -37,13 +39,12 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
     resolver: yupResolver(schema),
     mode: "all",
     reValidateMode: "onChange",
-    defaultValues: { name: contact.name },
   })
 
   const submit = useCallback(
     async (formData: FormValues) => {
       try {
-        await edit({ ...contact, ...formData })
+        await add({ ...formData, addressType: "ss58" })
         sendAnalyticsEvent({
           ...ANALYTICS_PAGE,
           name: "Interact",
@@ -54,14 +55,14 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
         setError("name", error as Error)
       }
     },
-    [close, contact, edit, setError]
+    [close, add, setError]
   )
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   return (
     <Modal open={isOpen} className="bg-black-secondary" onClose={close}>
-      <ModalDialog title="Edit contact">
+      <ModalDialog title="Add new contact">
         <form onSubmit={handleSubmit(submit)} className="grid gap-8">
           <FormFieldContainer error={errors.name?.message} label="Name">
             <FormFieldInputText
@@ -72,10 +73,16 @@ export const ContactEditModal = ({ contact, isOpen, close }: ExistingContactModa
               spellCheck="false"
             />
           </FormFieldContainer>
-          <div>
-            <div className="text-body-secondary block text-xs">Address</div>
-            <div className="mt-3 block bg-none text-xs text-white">{contact.address}</div>
-          </div>
+          <FormFieldContainer error={errors.address?.message} label="Address">
+            <FormFieldInputText
+              type="text"
+              {...register("address")}
+              placeholder="Address"
+              autoComplete="off"
+              spellCheck="false"
+            />
+          </FormFieldContainer>
+
           <div className="flex items-stretch gap-4 pt-4">
             <Button fullWidth onClick={close}>
               Cancel

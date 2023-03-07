@@ -5,7 +5,7 @@ import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { Button } from "talisman-ui"
 
-import { ContactModalProps } from "./types"
+import { ExistingContactModalProps } from "./types"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -14,7 +14,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Address book contact delete",
 }
 
-export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps) => {
+export const ContactDeleteModal = ({ contact, isOpen, close }: ExistingContactModalProps) => {
   const { deleteContact } = useAddressBook()
   useAnalyticsPageView(ANALYTICS_PAGE)
 

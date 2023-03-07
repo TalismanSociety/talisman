@@ -1,15 +1,18 @@
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { EditIcon, TrashIcon } from "@talisman/theme/icons"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
 import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
+import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
-import { ContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
+import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useMemo, useState } from "react"
+import { Button } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -18,7 +21,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Address book contact list",
 }
 
-type ContactItemProps = ContactComponentProps & {
+type ContactItemProps = ExistingContactComponentProps & {
   handleDelete: (address: string) => void
   handleEdit: (address: string) => void
 }
@@ -41,6 +44,7 @@ const AddressBook = () => {
   )
   const [toDelete, setToDelete] = useState<string>()
   const [toEdit, setToEdit] = useState<string>()
+  const { open, isOpen, close } = useOpenClose()
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
@@ -48,6 +52,11 @@ const AddressBook = () => {
     <>
       <Layout centered withBack backTo="/settings" analytics={ANALYTICS_PAGE}>
         <HeaderBlock title="Address Book" text="Manage your saved contacts" />
+        <div className="flex justify-end">
+          <Button onClick={open} primary small>
+            Add new
+          </Button>
+        </div>
         <Spacer />
         <div className="flex flex-col gap-3">
           {contacts.map((contact) => (
@@ -80,6 +89,7 @@ const AddressBook = () => {
           contact={contactsMap[toEdit]}
         />
       )}
+      <ContactCreateModal isOpen={isOpen} close={close} />
     </>
   )
 }
