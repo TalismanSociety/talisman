@@ -4,7 +4,6 @@ import {
   SubWalletTransaction,
   WalletTransaction,
 } from "@core/domains/recentTransactions/types"
-import { Menu } from "@headlessui/react"
 import { IconButton } from "@talisman/components/IconButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import {
@@ -22,65 +21,56 @@ import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { useLiveQuery } from "dexie-react-hooks"
 import { BigNumber } from "ethers"
-import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FC, forwardRef, useCallback, useMemo, useState } from "react"
+import { useLayer } from "react-laag"
 import { Button, Drawer } from "talisman-ui"
+import urlJoin from "url-join"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
-
-type TransactionRowPropsEvm = {
-  tx: EvmWalletTransaction
-  enabled: boolean
-  onContextMenuOpen?: () => void
-  onContextMenuClose?: () => void
-}
-
-type TransactionRowPropsSub = {
-  tx: SubWalletTransaction
-  enabled: boolean
-  onContextMenuOpen?: () => void
-  onContextMenuClose?: () => void
-}
+import { SpeedUpDrawer } from "./SpeedUpDrawer"
 
 type TransactionRowProps = {
   tx: WalletTransaction
   enabled: boolean
   onContextMenuOpen?: () => void
   onContextMenuClose?: () => void
+  onActionClick?: (action: TransactionAction) => void
 }
 
-const ActionButton = ({ children }: { children: React.ReactNode }) => {
+type TransactionRowPropsEvm = TransactionRowProps & { tx: EvmWalletTransaction }
+type TransactionRowPropsSub = TransactionRowProps & { tx: SubWalletTransaction }
+
+const ActionButton = forwardRef<
+  HTMLButtonElement,
+  React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>
+>(({ type = "button", className, ...props }, ref) => {
   return (
     <button
-      type="button"
-      className="hover:bg-grey-700 text-body-secondary hover:text-body inline-block h-[36px] w-[36px] shrink-0 rounded-sm text-center"
-    >
-      {children}
-    </button>
+      ref={ref}
+      className={classNames(
+        "hover:bg-grey-700 text-body-secondary hover:text-body inline-block h-[36px] w-[36px] shrink-0 rounded-sm text-center",
+        className
+      )}
+      {...props}
+    />
   )
-}
-
-const OpenBroadcast: FC<{ open: boolean; onOpenChange: (open: boolean) => void }> = ({
-  open,
-  onOpenChange,
-}) => {
-  useEffect(() => {
-    onOpenChange(open)
-  }, [onOpenChange, open])
-  return null
-}
+})
 
 const TransactionRowEvm: FC<TransactionRowPropsEvm> = ({
   tx,
   enabled,
   onContextMenuOpen,
   onContextMenuClose,
+  onActionClick,
 }) => {
   const { to, value } = tx.unsigned
   const evmNetwork = useEvmNetwork(tx.evmNetworkId)
   const token = useToken(evmNetwork?.nativeToken?.id)
   const tokenRates = useTokenRates(evmNetwork?.nativeToken?.id)
+
+  const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
 
   const amount = useMemo(
     () =>
@@ -90,109 +80,147 @@ const TransactionRowEvm: FC<TransactionRowPropsEvm> = ({
     [token, tokenRates, value]
   )
 
-  const handleOpenChange = useCallback(
-    (open: boolean) => {
-      if (open) onContextMenuOpen?.()
-      else onContextMenuClose?.()
+  const handleOpenCtxMenu = useCallback(() => {
+    if (!enabled) return
+    onContextMenuOpen?.()
+    setIsCtxMenuOpen(true)
+  }, [enabled, onContextMenuOpen])
+
+  const handleCloseCtxMenu = useCallback(() => {
+    setIsCtxMenuOpen(false)
+    onContextMenuClose?.()
+  }, [onContextMenuClose])
+
+  const hrefBlockExplorer = useMemo(
+    () => (evmNetwork?.explorerUrl ? urlJoin(evmNetwork.explorerUrl, "tx", tx.hash) : null),
+    [evmNetwork?.explorerUrl, tx.hash]
+  )
+  const handleBlockExplorerClick = useCallback(() => {
+    if (!hrefBlockExplorer) return
+    window.open(hrefBlockExplorer)
+    setIsCtxMenuOpen(false)
+    window.close()
+  }, [hrefBlockExplorer])
+
+  const { renderLayer, triggerProps, layerProps } = useLayer({
+    isOpen: isCtxMenuOpen,
+    onOutsideClick: handleCloseCtxMenu, // close the menu when the user clicks outside
+    onDisappear: handleCloseCtxMenu, // close the menu when the menu gets scrolled out of sight
+    auto: true, // automatically find the best placement
+    possiblePlacements: ["bottom-end", "top-end"], // but we also accept "bottom-end"
+    placement: "bottom-end", // we prefer to place the menu "top-end"
+    triggerOffset: 8, // keep some distance to the trigger
+  })
+
+  const handleActionClick = useCallback(
+    (action: TransactionAction) => () => {
+      onActionClick?.(action)
     },
-    [onContextMenuClose, onContextMenuOpen]
+    [onActionClick]
   )
 
   return (
-    <Menu>
-      {({ open }) => (
-        <div
-          className={classNames(
-            " group z-0 flex h-[45px] w-full grow items-center gap-4 rounded-sm px-4",
-            open && "bg-grey-750",
-            enabled && "hover:bg-grey-750"
-          )}
-        >
-          <OpenBroadcast open={open} onOpenChange={handleOpenChange} />
-          <ChainLogo id={tx.evmNetworkId} className="shrink-0 text-xl" />
-          <div className="leading-paragraph relative flex w-full grow justify-between">
-            <div className="text-left">
-              <div className="flex items-center gap-2 text-sm font-bold">
-                <span>Sending </span>
-                {<LoaderIcon className="animate-spin-slow" />}
+    <div
+      className={classNames(
+        " group z-0 flex h-[45px] w-full grow items-center gap-4 rounded-sm px-4",
+        isCtxMenuOpen && "bg-grey-750",
+        enabled && "hover:bg-grey-750"
+      )}
+    >
+      <ChainLogo id={tx.evmNetworkId} className="shrink-0 text-xl" />
+      <div className="leading-paragraph relative flex w-full grow justify-between">
+        <div className="text-left">
+          <div className="flex items-center gap-2 text-sm font-bold">
+            <span>Sending </span>
+            {<LoaderIcon className="animate-spin-slow" />}
+          </div>
+          <div className="text-body-secondary text-xs">
+            To: {to ? shortenAddress(to) : "unknown"}
+          </div>
+        </div>
+        <div className="relative grow text-right">
+          {amount && token && (
+            <div
+              className={classNames(
+                isCtxMenuOpen ? "opacity-0" : "opacity-100",
+                enabled && "group-hover:opacity-0"
+              )}
+            >
+              <div className="text-sm">
+                <Tokens
+                  amount={amount.tokens}
+                  decimals={token.decimals}
+                  noCountUp
+                  symbol={token.symbol}
+                />
               </div>
               <div className="text-body-secondary text-xs">
-                To: {to ? shortenAddress(to) : "unknown"}
+                {amount.fiat("usd") && (
+                  <Fiat amount={amount.fiat("usd")} currency="usd" noCountUp />
+                )}
               </div>
             </div>
-            <div className="relative grow text-right">
-              {amount && token && (
+          )}
+          <div
+            className={classNames(
+              " absolute top-0 right-0 z-10 flex h-[36px] items-center",
+              isCtxMenuOpen ? "visible opacity-100" : "invisible opacity-0",
+              enabled && "group-hover:visible group-hover:opacity-100"
+            )}
+          >
+            <div className="relative">
+              <ActionButton onClick={handleActionClick("speed-up")}>
+                <RocketIcon className="inline" />
+              </ActionButton>
+              <ActionButton onClick={handleActionClick("cancel")}>
+                <XOctagonIcon className="inline" />
+              </ActionButton>
+              <ActionButton
+                {...triggerProps}
+                className={classNames(isCtxMenuOpen && " !bg-grey-700")}
+                onClick={handleOpenCtxMenu}
+              >
+                <MoreHorizontalIcon className="inline" />
+              </ActionButton>
+              {renderLayer(
                 <div
                   className={classNames(
-                    open ? "opacity-0" : "opacity-100",
-                    enabled && "group-hover:opacity-0"
+                    "border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left shadow-lg",
+                    isCtxMenuOpen ? "visible opacity-100" : "invisible opacity-0"
                   )}
+                  {...layerProps}
                 >
-                  <div className="text-sm">
-                    <Tokens
-                      amount={amount.tokens}
-                      decimals={token.decimals}
-                      noCountUp
-                      symbol={token.symbol}
-                    />
-                  </div>
-                  <div className="text-body-secondary text-xs">
-                    {amount.fiat("usd") && (
-                      <Fiat amount={amount.fiat("usd")} currency="usd" noCountUp />
-                    )}
-                  </div>
+                  <button
+                    onClick={handleActionClick("cancel")}
+                    className="hover:bg-grey-800 rounded-xs h-20 p-6"
+                  >
+                    Cancel transaction
+                  </button>
+                  <button
+                    onClick={handleActionClick("speed-up")}
+                    className="hover:bg-grey-800 rounded-xs h-20 p-6"
+                  >
+                    Speed up transaction
+                  </button>
+                  <button
+                    onClick={handleBlockExplorerClick}
+                    className="hover:bg-grey-800 rounded-xs h-20 p-6"
+                  >
+                    View on block explorer
+                  </button>
+                  <button
+                    onClick={handleActionClick("dismiss")}
+                    className="hover:bg-grey-800 rounded-xs h-20 p-6"
+                  >
+                    Dismiss
+                  </button>
                 </div>
               )}
-              <div
-                className={classNames(
-                  " absolute top-0 right-0 z-10 flex h-[36px] items-center",
-                  open ? "visible opacity-100" : "invisible opacity-0",
-                  enabled && "group-hover:visible group-hover:opacity-100"
-                )}
-              >
-                <div className="relative">
-                  <ActionButton>
-                    <RocketIcon className="inline" />
-                  </ActionButton>
-                  <ActionButton>
-                    <XOctagonIcon className="inline" />
-                  </ActionButton>
-                  <Menu.Button className="hover:bg-grey-700 text-body-secondary hover:text-body inline-block h-[36px] w-[36px] shrink-0 rounded-sm text-center">
-                    <MoreHorizontalIcon className="inline" />
-                  </Menu.Button>
-                  <Menu.Items
-                    className={classNames(
-                      "absolute right-0 z-10 mt-2 origin-top-right divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
-                    )}
-                  >
-                    <div className="border-grey-800 flex flex-col  whitespace-nowrap rounded-sm bg-black px-2 py-3 shadow-xl">
-                      <Menu.Item>
-                        <button className="hover:bg-grey-800 rounded-xs h-20 p-6">
-                          Cancel transaction
-                        </button>
-                      </Menu.Item>
-                      <Menu.Item>
-                        <button className="hover:bg-grey-800 rounded-xs h-20 p-6">
-                          Speed up transaction
-                        </button>
-                      </Menu.Item>
-                      <Menu.Item>
-                        <button className="hover:bg-grey-800 rounded-xs h-20 p-6">
-                          View on block explorer
-                        </button>
-                      </Menu.Item>
-                      <Menu.Item>
-                        <button className="hover:bg-grey-800 rounded-xs h-20 p-6">Dismiss</button>
-                      </Menu.Item>
-                    </div>
-                  </Menu.Items>
-                </div>
-              </div>
             </div>
           </div>
         </div>
-      )}
-    </Menu>
+      </div>
+    </div>
   )
 }
 
@@ -207,7 +235,8 @@ const TransactionRow: FC<TransactionRowProps> = ({ tx, ...props }) => {
 
 const TransactionsList: FC<{
   transactions?: WalletTransaction[]
-}> = ({ transactions }) => {
+  onTxAction?: (hash: string, action: TransactionAction) => void
+}> = ({ transactions, onTxAction }) => {
   // because of the context menu, we need to control at this level which row shows buttons
   const [activeTxHash, setActiveTxHash] = useState<string>()
 
@@ -225,6 +254,14 @@ const TransactionsList: FC<{
     [activeTxHash]
   )
 
+  const handleActionClick = useCallback(
+    (hash: string) => (action: TransactionAction) => {
+      onTxAction?.(hash, action)
+      setActiveTxHash(undefined)
+    },
+    [onTxAction]
+  )
+
   return (
     <div className="space-y-8">
       {transactions?.map((tx) => (
@@ -234,19 +271,37 @@ const TransactionsList: FC<{
           enabled={!activeTxHash || activeTxHash === tx.hash}
           onContextMenuOpen={handleContextMenuOpen(tx.hash)}
           onContextMenuClose={handleContextMenuClose(tx.hash)}
+          onActionClick={handleActionClick(tx.hash)}
         />
       ))}
     </div>
   )
 }
 
+type TransactionAction = "cancel" | "speed-up" | "dismiss"
+
 export const PendingTransactionsButton = () => {
   const transactions = useLiveQuery(() => db.transactions.toArray(), [])
   const { isOpen, open, close } = useOpenClose(true) // TODO remove true
 
-  // useEffect(() => {
-  //   console.log({ transactions })
-  // }, [transactions])
+  const [currentAction, setCurrentAction] = useState<{
+    tx?: WalletTransaction
+    action?: TransactionAction
+  }>({})
+
+  const handleTxAction = useCallback(
+    (hash: string, action: TransactionAction) => {
+      setCurrentAction({
+        tx: transactions?.find((tx) => tx.hash === hash),
+        action,
+      })
+    },
+    [transactions]
+  )
+
+  const handleCloseAction = useCallback(() => {
+    setCurrentAction({})
+  }, [])
 
   return (
     <>
@@ -262,11 +317,16 @@ export const PendingTransactionsButton = () => {
                 <span>{transactions?.length ?? 0}</span>
               </span>
             </div>
-            <TransactionsList transactions={transactions} />
+            <TransactionsList transactions={transactions} onTxAction={handleTxAction} />
             <Button className="w-full">Close</Button>
           </div>
         </div>
       </Drawer>
+      <SpeedUpDrawer
+        tx={currentAction?.tx}
+        isOpen={currentAction?.action === "speed-up"}
+        onClose={handleCloseAction}
+      />
     </>
   )
 }
