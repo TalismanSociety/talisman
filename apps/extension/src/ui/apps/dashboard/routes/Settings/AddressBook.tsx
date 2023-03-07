@@ -1,7 +1,9 @@
+import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { EditIcon, TrashIcon } from "@talisman/theme/icons"
+import { EditIcon, TrashIcon, UserPlusIcon } from "@talisman/theme/icons"
+import { AccountAddressType } from "@talisman/util/getAddressType"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
 import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
@@ -9,10 +11,11 @@ import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCrea
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
 import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
+import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useMemo, useState } from "react"
-import { Button } from "talisman-ui"
+import { Button, PillButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -36,6 +39,11 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   </div>
 )
 
+const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
+  polkadot: "ss58",
+  ethereum: "ethereum",
+}
+
 const AddressBook = () => {
   const { contacts } = useAddressBook()
   const contactsMap = useMemo(
@@ -45,6 +53,7 @@ const AddressBook = () => {
   const [toDelete, setToDelete] = useState<string>()
   const [toEdit, setToEdit] = useState<string>()
   const { open, isOpen, close } = useOpenClose()
+  const [addressType, setAddressType] = useState<"polkadot" | "ethereum">("polkadot")
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
@@ -52,21 +61,24 @@ const AddressBook = () => {
     <>
       <Layout centered withBack backTo="/settings" analytics={ANALYTICS_PAGE}>
         <HeaderBlock title="Address Book" text="Manage your saved contacts" />
-        <div className="flex justify-end">
-          <Button onClick={open} primary small>
-            Add new
-          </Button>
+        <div className="mt-4 flex justify-between align-middle">
+          <ProviderTypeSwitch defaultProvider="polkadot" onChange={setAddressType} />
+          <PillButton onClick={open} icon={UserPlusIcon}>
+            Add new contact
+          </PillButton>
         </div>
         <Spacer />
         <div className="flex flex-col gap-3">
-          {contacts.map((contact) => (
-            <AddressBookContactItem
-              contact={contact}
-              key={contact.address}
-              handleDelete={setToDelete}
-              handleEdit={setToEdit}
-            />
-          ))}
+          {contacts
+            .filter((contact) => contact.addressType === contactTypeAddressTypeMap[addressType])
+            .map((contact) => (
+              <AddressBookContactItem
+                contact={contact}
+                key={contact.address}
+                handleDelete={setToDelete}
+                handleEdit={setToEdit}
+              />
+            ))}
           {contacts.length === 0 && (
             <div className="bg-black-secondary flex w-full justify-between rounded p-8">
               You have no saved contacts yet. You can save contacts when sending funds and they'll
@@ -89,7 +101,9 @@ const AddressBook = () => {
           contact={contactsMap[toEdit]}
         />
       )}
-      <ContactCreateModal isOpen={isOpen} close={close} />
+      {isOpen && ( // need to unmount the component as well as just closing it to clear the form state
+        <ContactCreateModal isOpen={isOpen} close={close} />
+      )}
     </>
   )
 }
