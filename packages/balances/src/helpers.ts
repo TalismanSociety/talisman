@@ -59,7 +59,7 @@ export async function balances<
   return await balanceModule.fetchBalances(addressesByToken)
 }
 
-export const useMetadataCache = () => {
+export const createMetadataCache = () => {
   const metadataCache: Map<ChainId, Metadata> = new Map()
 
   const getOrCreateMetadata = (chainId: ChainId, metadataRpc: `0x${string}`): Metadata => {
@@ -78,8 +78,8 @@ export const useMetadataCache = () => {
   return { getOrCreateMetadata }
 }
 
-export const useTypeRegistryCache = () => {
-  const { getOrCreateMetadata } = useMetadataCache()
+export const createTypeRegistryCache = () => {
+  const { getOrCreateMetadata } = createMetadataCache()
 
   const getOrCreateTypeRegistry = (chainId: ChainId, metadataRpc: `0x${string}`): Registry =>
     getOrCreateMetadata(chainId, metadataRpc).registry

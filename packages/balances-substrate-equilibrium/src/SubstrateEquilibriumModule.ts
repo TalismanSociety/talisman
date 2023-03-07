@@ -13,7 +13,7 @@ import {
   NewBalanceType,
   NewTransferParamsType,
   StorageHelper,
-  useTypeRegistryCache,
+  createTypeRegistryCache,
 } from "@talismn/balances"
 import {
   ChainId,
@@ -96,7 +96,7 @@ export const SubEquilibriumModule: NewBalanceModule<
   const chainConnector = chainConnectors.substrate
   assert(chainConnector, "This module requires a substrate chain connector")
 
-  const { getOrCreateTypeRegistry } = useTypeRegistryCache()
+  const { getOrCreateTypeRegistry } = createTypeRegistryCache()
 
   return {
     ...DefaultBalanceModule("substrate-equilibrium"),
