@@ -11,7 +11,7 @@
   }
 
   body {
-    @apply leading-base text-body bg-black-primary font-sans text-base;
+    @apply leading-base text-body bg-black-primary font-sans text-base antialiased;
   }
 
   html,
