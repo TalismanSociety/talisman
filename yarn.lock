@@ -5692,7 +5692,6 @@ __metadata:
     dexie: ^3.2.3
     eslint: ^8.4.0
     jest: ^28.1.0
-    lodash: ^4.17.21
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
