@@ -2,6 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
+import { notify } from "@talisman/components/Notifications"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { isValidSubstrateAddress } from "@talisman/util/isValidSubstrateAddress"
@@ -125,6 +126,11 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
           ...ANALYTICS_PAGE,
           name: "Interact",
           action: "Create address book contact",
+        })
+        notify({
+          type: "success",
+          title: "New contact added",
+          subtitle: `'${formData.name}' is now in your address book`,
         })
         close()
       } catch (error) {
