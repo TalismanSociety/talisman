@@ -79,20 +79,32 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
       network.symbols = getNetworkTokenSymbols({ tokens, chainId, evmNetworkId })
     })
 
+    // construct a lookup table of chains and networks for which we have a balance
+    // we do this step first so that we can avoid looping through the entire list of balances
+    // once per NetworkOption.
+    // instead, we go through the list -once- and then do fast lookups when we filter the list of
+    // NetworkOptions.
+    const chainIdsWithBalances = new Set()
+    const evmNetworkIdsWithBalances = new Set()
+    balances?.each.forEach((b) => {
+      // ignore empty balances
+      if (b.total.planck <= 0n) return
+
+      b.chainId && chainIdsWithBalances.add(b.chainId)
+      b.evmNetworkId && evmNetworkIdsWithBalances.add(b.evmNetworkId)
+    })
+
     return result
-      .filter(({ chainId, evmNetworkId }) =>
-        balances?.sorted.some(
-          (b) =>
-            b.total.planck > BigInt(0) &&
-            ((!!chainId && b.chainId === chainId) ||
-              (!!evmNetworkId && b.evmNetworkId === evmNetworkId))
-        )
+      .filter(
+        ({ chainId, evmNetworkId }) =>
+          (!!chainId && chainIdsWithBalances.has(chainId)) ||
+          (!!evmNetworkId && evmNetworkIdsWithBalances.has(evmNetworkId))
       )
       .sort(
         (a, b) =>
           (a.sortIndex ?? Number.MAX_SAFE_INTEGER) - (b.sortIndex ?? Number.MAX_SAFE_INTEGER)
       )
-  }, [balances?.sorted, chains, evmNetworks, tokens, type])
+  }, [balances, chains, evmNetworks, tokens, type])
 
   useEffect(() => {
     if (networks.map(({ id }) => id).join(",") !== safeNetworks.map(({ id }) => id).join(",")) {

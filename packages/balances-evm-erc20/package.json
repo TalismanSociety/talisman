@@ -34,6 +34,7 @@
     "lodash": "4.17.21"
   },
   "devDependencies": {
+    "@polkadot/util": "^10.2.1",
     "@talismn/eslint-config": "workspace:^",
     "@talismn/tsconfig": "workspace:^",
     "@types/jest": "^27.5.1",
@@ -42,6 +43,9 @@
     "jest": "^28.1.0",
     "ts-jest": "^28.0.2",
     "typescript": "^4.6.4"
+  },
+  "peerDependencies": {
+    "@polkadot/util": "10.x"
   },
   "eslintConfig": {
     "root": true,

@@ -12,7 +12,7 @@ export * from "./useTokenRates"
 export * from "./useTokens"
 export * from "./useWithTestnets"
 
-import { BalanceModule } from "@talismn/balances"
+import { BalanceModule, Hydrate } from "@talismn/balances"
 import { ReactNode } from "react"
 
 import { AllAddressesProvider } from "./useAllAddresses"
@@ -24,7 +24,7 @@ import { WithTestnetsProvider } from "./useWithTestnets"
 
 export type BalancesProviderProps = {
   // TODO: Make this array of BalanceModules more type-safe
-  balanceModules: Array<BalanceModule<any, any, any, any, any>>
+  balanceModules: Array<(hydrate: Hydrate) => BalanceModule<any, any, any, any, any>>
   onfinalityApiKey?: string
   withTestnets?: boolean
   children?: ReactNode

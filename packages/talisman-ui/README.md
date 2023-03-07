@@ -9,7 +9,7 @@ This library is meant to be used as an internal dependency, which helps consumin
 Add dependencies :
 
 ```bash
-    yarn workspace <my-workspace> add tailwindcss autoprefixer postcss -D
+yarn workspace <my-workspace> add -D tailwindcss autoprefixer postcss
 ```
 
 At the root of the new project, create a `tailwind.config.cjs` file with the following content :
@@ -22,9 +22,9 @@ const TALISMAN_TAILWIND_CONFIG = require("talisman-ui/tailwind.config.cjs")
 module.exports = {
   ...TALISMAN_TAILWIND_CONFIG,
   content: [
-    "./src/**/*.{html,ts,tsx,svg}",
+    "./**/*.{html,ts,tsx,svg}",
     "./public/*.html",
-    "../../packages/talisman-ui/**/*.{ts,tsx,svg}",
+    "../../packages/talisman-ui/**/*.{html,ts,tsx,svg,css}",
   ],
 }
 ```
@@ -66,6 +66,18 @@ Then import that file in your website entry point :
 import "./styles/styles.css"
 ```
 
-Note : if using webpack, postcss will throw an error when trying to import the css file from talisman-ui. Copy paste the whole [styles.css](./src/styles//styles.css) file inside your project instead of importing it.
+Note : if using webpack, postcss will throw an error when trying to import the css file from talisman-ui.  
+Add `postcss-import` to the beginning of your `plugins` array inside your `postcss.config.cjs`, and change the import to be `import "@import "talisman-ui/src/styles/styles.css";`.
 
-Finally, import all the fonts from the [fonts](./fonts) folder of this project. Easiest way is to copy paste the folder into the public folder of the app.
+```js
+/* eslint-env es2021 */
+const postcssImport = require("postcss-import")
+const tailwindcss = require("tailwindcss")
+const autoprefixer = require("autoprefixer")
+
+module.exports = {
+  plugins: [postcssImport, tailwindcss("./tailwind.config.cjs"), autoprefixer],
+}
+```
+
+Finally, import all the fonts from the [fonts](./fonts) folder of this project. Easiest way is to copy paste the folder into the public folder of the app, and add `<link rel="stylesheet" href="/fonts/fonts.css" />` to the `head` section of your index.html.

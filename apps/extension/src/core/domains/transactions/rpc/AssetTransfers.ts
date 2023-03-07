@@ -216,26 +216,22 @@ export default class AssetTransfersRpc {
         `${token.symbol} transfers on ${token.chain?.id} are not implemented in this version of Talisman.`
       )
 
-    const transaction = await palletModule.transferToken(
-      { substrate: chainConnector },
-      chaindataProvider,
-      {
-        tokenId,
-        from: from.address,
-        to,
-        amount,
+    const transaction = await palletModule.transferToken({
+      tokenId,
+      from: from.address,
+      to,
+      amount,
 
-        registry,
-        metadataRpc,
-        blockHash,
-        blockNumber: block.header.number,
-        nonce,
-        specVersion,
-        transactionVersion,
-        tip,
-        transferMethod: method,
-      }
-    )
+      registry,
+      metadataRpc,
+      blockHash,
+      blockNumber: block.header.number,
+      nonce,
+      specVersion,
+      transactionVersion,
+      tip,
+      transferMethod: method,
+    })
 
     assert(transaction, `Failed to construct tx for token '${token.id}'`)
     assert(
