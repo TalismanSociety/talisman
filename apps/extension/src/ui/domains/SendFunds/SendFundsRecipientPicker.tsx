@@ -17,8 +17,10 @@ import { SendFundsSearchInput } from "./SendFundsSearchInput"
 export const SendFundsRecipientPicker = () => {
   const { from, to, set, tokenId } = useSendFundsWizard()
   const [search, setSearch] = useState("")
-  const token = useToken()
+  const token = useToken(tokenId)
   const chain = useChain(token?.chain?.id)
+
+  const isFromEthereum = useMemo(() => isEthereumAddress(from), [from])
 
   // maintain subscription to balances, as a search filter could close subscriptions from account rows
   useBalances()
@@ -28,60 +30,83 @@ export const SendFundsRecipientPicker = () => {
 
   const isValidAddressInput = useMemo(() => {
     if (!from) return isValidAddress(search)
-    return isEthereumAddress(from) ? isEthereumAddress(search) : isValidAddress(search)
-  }, [from, search])
+    return isFromEthereum ? isEthereumAddress(search) : isValidAddress(search)
+  }, [from, isFromEthereum, search])
 
   const normalize = useCallback(
-    (addr = "") => {
-      const isEthereum = isEthereumAddress(from)
-      return isEthereum ? addr.toLowerCase() : convertAddress(addr, null)
-    },
-    [from]
+    (addr = "") =>
+      !isValidAddressInput || isFromEthereum ? addr.toLowerCase() : convertAddress(addr, null),
+    [isFromEthereum, isValidAddressInput]
   )
+  const normalizedFrom = useMemo(() => normalize(from), [from, normalize])
+  const normalizedTo = useMemo(() => normalize(to), [to, normalize])
+  const normalizedSearch = useMemo(() => normalize(search), [search, normalize])
 
   const newAddresses = useMemo(() => {
     const addresses: { address: string }[] = []
 
     if (
       to &&
-      allAccounts.every((account) => normalize(to) !== normalize(account.address)) &&
-      allContacts.every((contact) => normalize(to) !== normalize(contact.address))
+      allAccounts.every((account) => normalizedTo !== normalize(account.address)) &&
+      allContacts.every((contact) => normalizedTo !== normalize(contact.address))
     )
       addresses.push({ address: to })
 
     if (
       isValidAddressInput &&
-      (!to || normalize(search) !== normalize(to)) &&
-      allAccounts.every((account) => normalize(search) !== normalize(account.address)) &&
-      allContacts.every((contact) => normalize(search) !== normalize(contact.address))
+      (!to || normalizedSearch !== normalizedTo) &&
+      allAccounts.every((account) => normalizedSearch !== normalize(account.address)) &&
+      allContacts.every((contact) => normalizedSearch !== normalize(contact.address))
     )
       addresses.push({ address: search })
 
     return addresses
-  }, [to, allAccounts, allContacts, isValidAddressInput, normalize, search])
+  }, [
+    to,
+    allAccounts,
+    allContacts,
+    isValidAddressInput,
+    normalizedSearch,
+    normalizedTo,
+    search,
+    normalize,
+  ])
 
   const contacts = useMemo(
     () =>
       allContacts
+        .filter((account) => isEthereumAddress(account.address) === isFromEthereum)
         .filter(
-          (account) => !from || isEthereumAddress(account.address) === isEthereumAddress(from)
-        )
-        .filter((contact) => !search || contact.name?.toLowerCase().includes(search)),
-    [allContacts, from, search]
+          (contact) =>
+            !search ||
+            contact.name?.toLowerCase().includes(search) ||
+            (isValidAddressInput && normalizedSearch === normalize(contact.address))
+        ),
+    [allContacts, isFromEthereum, isValidAddressInput, normalize, normalizedSearch, search]
   )
 
   const accounts = useMemo(
     () =>
       allAccounts
-        .filter((account) => normalize(account.address) !== normalize(from))
+        .filter((account) => normalize(account.address) !== normalizedFrom)
+        .filter((account) => isEthereumAddress(account.address) === isFromEthereum)
         .filter(
           (account) =>
             !search ||
             account.name?.toLowerCase().includes(search) ||
-            (isValidAddressInput && normalize(search) === normalize(account.address))
+            (isValidAddressInput && normalizedSearch === normalize(account.address))
         )
         .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash),
-    [allAccounts, chain?.genesisHash, from, isValidAddressInput, normalize, search]
+    [
+      allAccounts,
+      chain?.genesisHash,
+      isFromEthereum,
+      isValidAddressInput,
+      normalize,
+      normalizedFrom,
+      normalizedSearch,
+      search,
+    ]
   )
 
   const handleSelect = useCallback(

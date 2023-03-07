@@ -5,11 +5,11 @@ import { useMemo } from "react"
 import { useBalanceModules } from "./useBalanceModules"
 import { useBalancesHydrate } from "./useBalancesHydrate"
 import { useDbCache } from "./useDbCache"
-import { useDbCacheSubscription } from "./useDbCacheSubscription"
+import { useDbCacheBalancesSubscription, useDbCacheSubscription } from "./useDbCacheSubscription"
 
 export function useBalances(addressesByToken: AddressesByToken<Token> | null) {
   // keep db data up to date
-  useDbCacheSubscription("balances")
+  useDbCacheBalancesSubscription()
 
   const balanceModules = useBalanceModules()
   const { balances } = useDbCache()

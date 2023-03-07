@@ -29,6 +29,10 @@ const Container = styled.div`
   .breakAll {
     word-break: break-all;
   }
+
+  &&& .error {
+    white-space: pre-wrap;
+  }
 `
 
 export type ViewDetailsFieldProps = {
