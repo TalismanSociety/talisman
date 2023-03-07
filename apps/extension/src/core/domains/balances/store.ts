@@ -23,7 +23,10 @@ import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
 import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
 
-export const balanceModules = defaultBalanceModules
+const chainConnectors = { substrate: chainConnector, evm: chainConnectorEvm }
+export const balanceModules = defaultBalanceModules.map((mod) =>
+  mod({ chainConnectors, chaindataProvider })
+)
 
 type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account">
 type EvmNetworkIdAndHealth = Pick<
@@ -168,11 +171,7 @@ export class BalanceStore {
     }
 
     const addressesByToken = { [tokenId]: [address] }
-    const balances = await balanceModule.fetchBalances(
-      { substrate: chainConnector, evm: chainConnectorEvm },
-      chaindataProvider,
-      addressesByToken
-    )
+    const balances = await balanceModule.fetchBalances(addressesByToken)
 
     return balances.find({ chainId, evmNetworkId, tokenId, address }).sorted[0]?.toJSON()
   }
@@ -400,8 +399,6 @@ export class BalanceStore {
 
     const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
       balanceModule.subscribeBalances(
-        { substrate: chainConnector, evm: chainConnectorEvm },
-        chaindataProvider,
         addressesByTokenByModule[balanceModule.type] ?? {},
         (error, result) => {
           // ignore old subscriptions which have been told to close but aren't closed yet
