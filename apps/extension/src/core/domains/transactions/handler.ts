@@ -21,6 +21,7 @@ import {
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
+import { watchEthereumTransaction } from "@core/notifications"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type {
   RequestSignatures,
@@ -231,8 +232,6 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const { from, to, hash, ...otherDetails } = await provider.sendTransaction(signedTransaction)
       if (!to) throw new Error("Unable to transfer - no recipient address given")
 
-      log.log("assetTransferEth - sent", { from, to, hash, ...otherDetails })
-
       transferAnalytics({
         network: { evmNetworkId },
         amount: planckToTokens(amount, token.decimals),
@@ -261,15 +260,42 @@ export default class AssetTransferHandler extends ExtensionHandler {
     amount,
     gasSettings,
   }: RequestAssetTransferEth): Promise<ResponseAssetTransferEth> {
+    const token = await chaindataProvider.getToken(tokenId)
+    if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+
+    const provider = await getProviderForEvmNetworkId(evmNetworkId)
+    if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
+
+    const transfer = await getEthTransferTransactionBase(
+      evmNetworkId,
+      ethers.utils.getAddress(fromAddress),
+      ethers.utils.getAddress(toAddress),
+      token,
+      amount
+    )
+
+    const transaction: TransactionRequest = {
+      nonce: await getTransactionCount(fromAddress, evmNetworkId),
+      ...rebuildGasSettings(gasSettings),
+      ...transfer,
+    }
+
     const result = await getPairForAddressSafely(fromAddress, async (pair) => {
       const password = this.stores.password.getPassword()
       assert(password, "Unauthorised")
 
-      const token = await chaindataProvider.getToken(tokenId)
-      if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+      const privateKey = getPrivateKey(pair, password)
+      const wallet = new Wallet(privateKey, provider)
 
-      const provider = await getProviderForEvmNetworkId(evmNetworkId)
-      if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
+      const { hash } = await wallet.sendTransaction(transaction)
+
+      incrementTransactionCount(fromAddress, evmNetworkId)
+
+      return { hash }
+    })
+
+    if (result.ok) {
+      watchEthereumTransaction(evmNetworkId, result.val.hash, transaction)
 
       transferAnalytics({
         network: { evmNetworkId },
@@ -278,35 +304,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
         toAddress,
       })
 
-      const transfer = await getEthTransferTransactionBase(
-        evmNetworkId,
-        ethers.utils.getAddress(fromAddress),
-        ethers.utils.getAddress(toAddress),
-        token,
-        amount
-      )
-
-      const transaction: TransactionRequest = {
-        nonce: await getTransactionCount(fromAddress, evmNetworkId),
-        ...rebuildGasSettings(gasSettings),
-        ...transfer,
-      }
-
-      const privateKey = getPrivateKey(pair, password)
-      const wallet = new Wallet(privateKey, provider)
-
-      const response = await wallet.sendTransaction(transaction)
-
-      const { hash, ...otherDetails } = response
-      log.log("assetTransferEth - sent", { hash, ...otherDetails })
-
-      incrementTransactionCount(fromAddress, evmNetworkId)
-
-      return { hash }
-    })
-
-    if (result.ok) return result.val
-    else {
+      return result.val
+    } else {
       const error = result.val as Error & { reason?: string; error?: Error }
       log.error("Failed to send transaction", { err: result.val })
       Sentry.captureException(result.val, { tags: { tokenId, evmNetworkId } })

@@ -11,14 +11,20 @@ import urlJoin from "url-join"
 import { getProviderForEthereumNetwork } from "../domains/ethereum/rpcProviders"
 import { createNotification } from "./createNotification"
 
+type WatchEthereumTransactionOptions = {
+  siteUrl?: string
+  notifications?: boolean
+}
+
 export const watchEthereumTransaction = async (
   ethChainId: EvmNetworkId,
   txHash: string,
   unsigned: ethers.providers.TransactionRequest,
-  siteUrl?: string
+  options: WatchEthereumTransactionOptions = {}
 ) => {
   try {
-    const allowNotifications = await settingsStore.get("allowNotifications")
+    const { siteUrl, notifications } = options
+    const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
 
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(ethChainId)
     if (!ethereumNetwork) throw new Error(`Could not find ethereum network ${ethChainId}`)
@@ -33,7 +39,7 @@ export const watchEthereumTransaction = async (
       : nanoid()
 
     // PENDING
-    if (allowNotifications) await createNotification("submitted", networkName, txUrl)
+    if (withNotifications) await createNotification("submitted", networkName, txUrl)
 
     try {
       await addEvmTransaction(txHash, unsigned, { siteUrl })
@@ -49,7 +55,7 @@ export const watchEthereumTransaction = async (
       })
 
       // success if associated to a block number
-      if (allowNotifications)
+      if (withNotifications)
         await createNotification(
           receipt.blockNumber && receipt.status ? "success" : "error",
           networkName,
@@ -58,7 +64,7 @@ export const watchEthereumTransaction = async (
     } catch (err) {
       updateEvmTransaction(txHash, { status: "unknown" })
 
-      if (allowNotifications) await createNotification("error", networkName, txUrl, err as Error)
+      if (withNotifications) await createNotification("error", networkName, txUrl, err as Error)
       // eslint-disable-next-line no-console
       else console.error("Failed to watch transaction", { err })
     }

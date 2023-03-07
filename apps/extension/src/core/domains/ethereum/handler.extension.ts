@@ -62,7 +62,12 @@ export class EthHandler extends ExtensionHandler {
       incrementTransactionCount(from, chainId.toString())
 
       // TODO add unsigned payload (check if can be rebuild from provider.sendTransaction)
-      watchEthereumTransaction(chainId.toString(), hash, {}, queued.url)
+      watchEthereumTransaction(
+        chainId.toString(),
+        hash,
+        {},
+        { siteUrl: queued.url, notifications: true }
+      )
 
       resolve(hash)
 
@@ -94,22 +99,28 @@ export class EthHandler extends ExtensionHandler {
     const tx = rebuildTransactionRequestNumbers(transaction)
     tx.nonce = await getTransactionCount(account.address, ethChainId)
 
-    const { val, ok } = await getPairForAddressSafely(account.address, async (pair) => {
+    const result = await getPairForAddressSafely(account.address, async (pair) => {
       const password = this.stores.password.getPassword()
       assert(password, "Unauthorised")
       const privateKey = getPrivateKey(pair, password)
       const signer = new ethers.Wallet(privateKey, provider)
 
-      const { chainId, hash } = await signer.sendTransaction(tx)
+      const { hash } = await signer.sendTransaction(tx)
+
+      return hash
+    })
+
+    if (result.ok) {
+      // long running operation, we do not want this inside getPairForAddressSafely
+      watchEthereumTransaction(ethChainId, result.val, tx, {
+        siteUrl: queued.url,
+        notifications: true,
+      })
 
       // TODO remove and compute on the fly based on transactions table
       incrementTransactionCount(account.address, ethChainId)
 
-      //await addEvmTransaction(tx, hash, url)
-
-      watchEthereumTransaction(chainId.toString(), hash, tx, queued.url)
-
-      resolve(hash)
+      resolve(result.val)
 
       talismanAnalytics.captureDelayed("sign transaction approve", {
         type: "evm sign and send",
@@ -117,16 +128,13 @@ export class EthHandler extends ExtensionHandler {
         chain: ethChainId,
         networkType: "ethereum",
       })
-      return true
-    })
 
-    if (ok) {
-      return val
+      return true
     } else {
-      if (val === "Unauthorised") {
-        reject(Error(val))
+      if (result.val === "Unauthorised") {
+        reject(Error(result.val))
       } else {
-        throw new Error(getHumanReadableErrorMessage(val) ?? "Failed to send transaction")
+        throw new Error(getHumanReadableErrorMessage(result.val) ?? "Failed to send transaction")
       }
       return false
     }
