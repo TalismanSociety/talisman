@@ -194,22 +194,16 @@ function useSubscribeBalances() {
       )
 
       const subscribe = createMulticastSubscription<Balances>((next) => {
-        const unsub = balancesFn(
-          balanceModule,
-          chainConnectors,
-          chaindataProvider,
-          addressesByModuleToken,
-          (error, balances) => {
-            // log errors
-            if (error) return log.error(`Failed to fetch ${balanceModule.type} balances`, error)
-            // ignore empty balance responses
-            if (!balances) return
-            // ignore balances from old subscriptions which are still in the process of unsubscribing
-            if (generationRef.current !== generation) return
+        const unsub = balancesFn(balanceModule, addressesByModuleToken, (error, balances) => {
+          // log errors
+          if (error) return log.error(`Failed to fetch ${balanceModule.type} balances`, error)
+          // ignore empty balance responses
+          if (!balances) return
+          // ignore balances from old subscriptions which are still in the process of unsubscribing
+          if (generationRef.current !== generation) return
 
-            next(balances)
-          }
-        )
+          next(balances)
+        })
 
         return () => {
           // unsubscribe from upstream

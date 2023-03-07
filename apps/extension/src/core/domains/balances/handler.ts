@@ -10,8 +10,6 @@ import {
 } from "@core/domains/balances/types"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { ExtensionHandler } from "@core/libs/Handler"
-import { chainConnector } from "@core/rpcs/chain-connector"
-import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { Port } from "@core/types/base"
 import { AddressesByToken } from "@talismn/balances"
@@ -118,8 +116,6 @@ export class BalancesHandler extends ExtensionHandler {
         // subscribe to balances by params
         const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
           balanceModule.subscribeBalances(
-            { substrate: chainConnector, evm: chainConnectorEvm },
-            chaindataProvider,
             addressesByTokenByModule[balanceModule.type] ?? {},
             (error, result) => {
               // eslint-disable-next-line no-console

@@ -34,8 +34,7 @@
     "@talismn/util": "workspace:^",
     "anylogger": "^1.0.11",
     "dexie": "^3.2.3",
-    "lodash": "^4.17.21",
-    "typescript-memoize": "^1.1.0"
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@polkadot/types": "^9.10.5",

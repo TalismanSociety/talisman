@@ -1,15 +1,17 @@
 import { Metadata, TypeRegistry, createType } from "@polkadot/types"
+import type { Registry } from "@polkadot/types-codec/types"
 import { assert } from "@polkadot/util"
 import { UnsignedTransaction, defineMethod } from "@substrate/txwrapper-core"
 import {
   AddressesByToken,
   Amount,
   Balance,
-  BalanceModule,
   Balances,
   DefaultBalanceModule,
+  NewBalanceModule,
   NewBalanceType,
   NewTransferParamsType,
+  useTypeRegistryCache,
 } from "@talismn/balances"
 import {
   ChainId,
@@ -89,241 +91,244 @@ export type SubOrmlTransferParams = NewTransferParamsType<{
   transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
 }>
 
-export const SubOrmlModule: BalanceModule<
+export const SubOrmlModule: NewBalanceModule<
   ModuleType,
   SubOrmlToken,
   SubOrmlChainMeta,
   SubOrmlModuleConfig,
   SubOrmlTransferParams
-> = {
-  ...DefaultBalanceModule("substrate-orml"),
+> = (hydrate) => {
+  const { chainConnectors, chaindataProvider } = hydrate
+  const chainConnector = chainConnectors.substrate
+  assert(chainConnector, "This module requires a substrate chain connector")
 
-  async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId, moduleConfig) {
-    const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
+  const { getOrCreateTypeRegistry } = useTypeRegistryCache()
 
-    if (moduleConfig?.disable === true)
-      return { isTestnet, symbols: [], decimals: [], stateKeys: {} }
+  return {
+    ...DefaultBalanceModule("substrate-orml"),
 
-    const [metadataRpc, chainProperties] = await Promise.all([
-      chainConnector.send(chainId, "state_getMetadata", []),
-      chainConnector.send(chainId, "system_properties", []),
-    ])
+    async fetchSubstrateChainMeta(chainId, moduleConfig) {
+      const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
 
-    const { tokenSymbol, tokenDecimals } = chainProperties
+      if (moduleConfig?.disable === true)
+        return { isTestnet, symbols: [], decimals: [], stateKeys: {} }
 
-    const symbols: string[] = Array.isArray(tokenSymbol) ? tokenSymbol : []
-    const decimals: number[] = Array.isArray(tokenDecimals) ? tokenDecimals : []
+      const [metadataRpc, chainProperties] = await Promise.all([
+        chainConnector.send(chainId, "state_getMetadata", []),
+        chainConnector.send(chainId, "system_properties", []),
+      ])
 
-    const metadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
-    metadata.registry.setMetadata(metadata)
+      const { tokenSymbol, tokenDecimals } = chainProperties
 
-    const currencyIdDef = (metadata.asLatest.lookup?.types || []).find(
-      ({ type }) => type.path.slice(-1).toString() === "CurrencyId" && type?.def?.isVariant
-    )
-    const currencyIdVariants = (currencyIdDef?.type?.def?.asVariant?.variants.toJSON() ||
-      []) as Array<{
-      name: string
-      index: number
-    }>
-    const currencyIdLookup = Object.fromEntries(
-      currencyIdVariants.map(({ name, index }) => [name, index])
-    )
-    const tokensCurrencyIdIndex = currencyIdLookup["Token"]
+      const symbols: string[] = Array.isArray(tokenSymbol) ? tokenSymbol : []
+      const decimals: number[] = Array.isArray(tokenDecimals) ? tokenDecimals : []
 
-    const tokenSymbolDef = (metadata.asLatest.lookup?.types || []).find(
-      ({ type }) => type.path.slice(-1).toString() === "TokenSymbol"
-    )
-    const tokenSymbolVariants = (tokenSymbolDef?.type?.def?.asVariant?.variants.toJSON() ||
-      []) as Array<{
-      name: string
-      index: number
-    }>
-    const tokenStateKeyLookup = Object.fromEntries(
-      tokenSymbolVariants
-        .map(
-          ({ name, index }) => [name, new Uint8Array([tokensCurrencyIdIndex || 0, index])] as const
-        )
-        .map(([name, stateKey]) => [name, twox64Concat(stateKey)])
-    )
+      const metadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
+      metadata.registry.setMetadata(metadata)
 
-    const stateKeys = tokenStateKeyLookup
+      const currencyIdDef = (metadata.asLatest.lookup?.types || []).find(
+        ({ type }) => type.path.slice(-1).toString() === "CurrencyId" && type?.def?.isVariant
+      )
+      const currencyIdVariants = (currencyIdDef?.type?.def?.asVariant?.variants.toJSON() ||
+        []) as Array<{
+        name: string
+        index: number
+      }>
+      const currencyIdLookup = Object.fromEntries(
+        currencyIdVariants.map(({ name, index }) => [name, index])
+      )
+      const tokensCurrencyIdIndex = currencyIdLookup["Token"]
 
-    return {
-      isTestnet,
-      symbols,
-      decimals,
-      stateKeys,
-    }
-  },
+      const tokenSymbolDef = (metadata.asLatest.lookup?.types || []).find(
+        ({ type }) => type.path.slice(-1).toString() === "TokenSymbol"
+      )
+      const tokenSymbolVariants = (tokenSymbolDef?.type?.def?.asVariant?.variants.toJSON() ||
+        []) as Array<{
+        name: string
+        index: number
+      }>
+      const tokenStateKeyLookup = Object.fromEntries(
+        tokenSymbolVariants
+          .map(
+            ({ name, index }) =>
+              [name, new Uint8Array([tokensCurrencyIdIndex || 0, index])] as const
+          )
+          .map(([name, stateKey]) => [name, twox64Concat(stateKey)])
+      )
 
-  async fetchSubstrateChainTokens(
-    chainConnector,
-    chaindataProvider,
-    chainId,
-    chainMeta,
-    moduleConfig
-  ) {
-    if (moduleConfig?.disable === true) return {}
+      const stateKeys = tokenStateKeyLookup
 
-    const { isTestnet, symbols, decimals, stateKeys } = chainMeta
-
-    const tokens: Record<string, SubOrmlToken> = {}
-    for (const index in symbols) {
-      const symbol = symbols[index]
-      const stateKey = stateKeys[symbol]
-      if (stateKey === undefined) continue
-
-      const id = subOrmlTokenId(chainId, symbol)
-      const token: SubOrmlToken = {
-        id,
-        type: "substrate-orml",
+      return {
         isTestnet,
-        symbol,
-        decimals: decimals[index],
-        logo: githubTokenLogoUrl(id),
-        // TODO: Fetch the ED
-        existentialDeposit: "0",
-        stateKey,
-        chain: { id: chainId },
+        symbols,
+        decimals,
+        stateKeys,
+      }
+    },
+
+    async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
+      if (moduleConfig?.disable === true) return {}
+
+      const { isTestnet, symbols, decimals, stateKeys } = chainMeta
+
+      const tokens: Record<string, SubOrmlToken> = {}
+      for (const index in symbols) {
+        const symbol = symbols[index]
+        const stateKey = stateKeys[symbol]
+        if (stateKey === undefined) continue
+
+        const id = subOrmlTokenId(chainId, symbol)
+        const token: SubOrmlToken = {
+          id,
+          type: "substrate-orml",
+          isTestnet,
+          symbol,
+          decimals: decimals[index],
+          logo: githubTokenLogoUrl(id),
+          // TODO: Fetch the ED
+          existentialDeposit: "0",
+          stateKey,
+          chain: { id: chainId },
+        }
+
+        tokens[token.id] = token
       }
 
-      tokens[token.id] = token
-    }
+      return tokens
+    },
 
-    return tokens
-  },
+    // TODO: Don't create empty subscriptions
+    async subscribeBalances(addressesByToken, callback) {
+      const tokens = await chaindataProvider.tokens()
 
-  // TODO: Don't create empty subscriptions
-  async subscribeBalances(chainConnectors, chaindataProvider, addressesByToken, callback) {
-    const tokens = await chaindataProvider.tokens()
+      const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
 
-    const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
+      const subscriptions = Object.entries(addressesByTokenGroupedByChain)
+        .map(async ([chainId, addressesByToken]) => {
+          if (!chainConnectors.substrate)
+            throw new Error(`This module requires a substrate chain connector`)
 
-    const subscriptions = Object.entries(addressesByTokenGroupedByChain)
-      .map(async ([chainId, addressesByToken]) => {
-        if (!chainConnectors.substrate)
-          throw new Error(`This module requires a substrate chain connector`)
+          const tokensAndAddresses = Object.entries(addressesByToken)
+            .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
+            .filter(([tokenId, token]) => {
+              if (!token) {
+                log.error(`Token ${tokenId} not found`)
+                return false
+              }
 
-        const tokensAndAddresses = Object.entries(addressesByToken)
-          .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
-          .filter(([tokenId, token]) => {
-            if (!token) {
-              log.error(`Token ${tokenId} not found`)
-              return false
+              // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
+              if (token.type !== "substrate-orml") {
+                log.debug(`This module doesn't handle tokens of type ${token.type}`)
+                return false
+              }
+
+              const stateKey = token.stateKey
+              if (!stateKey) {
+                log.error(`Token ${token.id} has no stateKey`)
+                return false
+              }
+
+              return true
+            })
+            .map(([, token, addresses]): [SubOrmlToken, string[]] => [
+              token as SubOrmlToken,
+              addresses,
+            ])
+
+          const typeRegistry = getOrCreateTypeRegistry(chainId, "0x00")
+
+          // set up method, return message type and params
+          const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
+          const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
+          const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
+          const params = buildParams(tokensAndAddresses)
+
+          // build lookup table of `rpc hex output` -> `input address`
+          const references = buildReferences(tokensAndAddresses)
+
+          // set up subscription
+          const unsubscribe = await chainConnectors.substrate.subscribe(
+            chainId,
+            subscribeMethod,
+            unsubscribeMethod,
+            responseMethod,
+            params,
+            (error, result) => {
+              if (error) return callback(error)
+              callback(null, formatRpcResult(chainId, tokens, typeRegistry, references, result))
             }
+          )
 
-            // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-            if (token.type !== "substrate-orml") {
-              log.debug(`This module doesn't handle tokens of type ${token.type}`)
-              return false
-            }
-
-            const stateKey = token.stateKey
-            if (!stateKey) {
-              log.error(`Token ${token.id} has no stateKey`)
-              return false
-            }
-
-            return true
+          return unsubscribe
+        })
+        .map((subscription) =>
+          subscription.catch((error) => {
+            log.warn(`Failed to create subscription: ${error.message}`)
+            return () => {}
           })
-          .map(([, token, addresses]): [SubOrmlToken, string[]] => [
-            token as SubOrmlToken,
-            addresses,
-          ])
-
-        // set up method, return message type and params
-        const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
-        const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
-        const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
-        const params = buildParams(tokensAndAddresses)
-
-        // build lookup table of `rpc hex output` -> `input address`
-        const references = buildReferences(tokensAndAddresses)
-
-        // set up subscription
-        const unsubscribe = await chainConnectors.substrate.subscribe(
-          chainId,
-          subscribeMethod,
-          unsubscribeMethod,
-          responseMethod,
-          params,
-          (error, result) => {
-            if (error) return callback(error)
-            callback(null, formatRpcResult(chainId, tokens, references, result))
-          }
         )
 
-        return unsubscribe
-      })
-      .map((subscription) =>
-        subscription.catch((error) => {
-          log.warn(`Failed to create subscription: ${error.message}`)
-          return () => {}
+      return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
+    },
+
+    async fetchBalances(addressesByToken) {
+      const tokens = await chaindataProvider.tokens()
+
+      const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
+
+      const balances = await Promise.all(
+        Object.entries(addressesByTokenGroupedByChain).map(async ([chainId, addressesByToken]) => {
+          if (!chainConnectors.substrate)
+            throw new Error(`This module requires a substrate chain connector`)
+
+          const tokensAndAddresses = Object.entries(addressesByToken)
+            .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
+            .filter(([tokenId, token]) => {
+              if (!token) {
+                log.error(`Token ${tokenId} not found`)
+                return false
+              }
+
+              // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
+              if (token.type !== "substrate-orml") {
+                log.debug(`This module doesn't handle tokens of type ${token.type}`)
+                return false
+              }
+
+              const stateKey = token.stateKey
+              if (!stateKey) {
+                log.error(`Token ${token.id} has no stateKey`)
+                return false
+              }
+
+              return true
+            })
+            .map(([, token, addresses]): [SubOrmlToken, string[]] => [
+              token as SubOrmlToken,
+              addresses,
+            ])
+
+          const typeRegistry = getOrCreateTypeRegistry(chainId, "0x00")
+
+          // set up method and params
+          const method = "state_queryStorageAt" // method we call to fetch
+          const params = buildParams(tokensAndAddresses)
+
+          // build lookup table of `rpc hex output` -> `input address`
+          const references = buildReferences(tokensAndAddresses)
+
+          // query rpc
+          const response = await chainConnectors.substrate.send(chainId, method, params)
+          const result = response[0]
+
+          return formatRpcResult(chainId, tokens, typeRegistry, references, result)
         })
       )
 
-    return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
-  },
+      return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
+    },
 
-  async fetchBalances(chainConnectors, chaindataProvider, addressesByToken) {
-    const tokens = await chaindataProvider.tokens()
-
-    const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
-
-    const balances = await Promise.all(
-      Object.entries(addressesByTokenGroupedByChain).map(async ([chainId, addressesByToken]) => {
-        if (!chainConnectors.substrate)
-          throw new Error(`This module requires a substrate chain connector`)
-
-        const tokensAndAddresses = Object.entries(addressesByToken)
-          .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
-          .filter(([tokenId, token]) => {
-            if (!token) {
-              log.error(`Token ${tokenId} not found`)
-              return false
-            }
-
-            // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-            if (token.type !== "substrate-orml") {
-              log.debug(`This module doesn't handle tokens of type ${token.type}`)
-              return false
-            }
-
-            const stateKey = token.stateKey
-            if (!stateKey) {
-              log.error(`Token ${token.id} has no stateKey`)
-              return false
-            }
-
-            return true
-          })
-          .map(([, token, addresses]): [SubOrmlToken, string[]] => [
-            token as SubOrmlToken,
-            addresses,
-          ])
-
-        // set up method and params
-        const method = "state_queryStorageAt" // method we call to fetch
-        const params = buildParams(tokensAndAddresses)
-
-        // build lookup table of `rpc hex output` -> `input address`
-        const references = buildReferences(tokensAndAddresses)
-
-        // query rpc
-        const response = await chainConnectors.substrate.send(chainId, method, params)
-        const result = response[0]
-
-        return formatRpcResult(chainId, tokens, references, result)
-      })
-    )
-
-    return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
-  },
-
-  async transferToken(
-    chainConnectors,
-    chaindataProvider,
-    {
+    async transferToken({
       tokenId,
       from,
       to,
@@ -338,94 +343,94 @@ export const SubOrmlModule: BalanceModule<
       transactionVersion,
       tip,
       transferMethod,
-    }
-  ) {
-    const token = await chaindataProvider.getToken(tokenId)
-    assert(token, `Token ${tokenId} not found in store`)
+    }) {
+      const token = await chaindataProvider.getToken(tokenId)
+      assert(token, `Token ${tokenId} not found in store`)
 
-    if (token.type !== "substrate-orml")
-      throw new Error(`This module doesn't handle tokens of type ${token.type}`)
+      if (token.type !== "substrate-orml")
+        throw new Error(`This module doesn't handle tokens of type ${token.type}`)
 
-    const chainId = token.chain.id
-    const chain = await chaindataProvider.getChain(chainId)
-    assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
+      const chainId = token.chain.id
+      const chain = await chaindataProvider.getChain(chainId)
+      assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
 
-    const { genesisHash } = chain
+      const { genesisHash } = chain
 
-    const currencyId = { Token: token.symbol.toUpperCase() }
+      const currencyId = { Token: token.symbol.toUpperCase() }
 
-    // different chains use different orml transfer methods
-    // we'll try each one in sequence until we get one that doesn't throw an error
-    let unsigned: UnsignedTransaction | undefined = undefined
-    const errors: Error[] = []
+      // different chains use different orml transfer methods
+      // we'll try each one in sequence until we get one that doesn't throw an error
+      let unsigned: UnsignedTransaction | undefined = undefined
+      const errors: Error[] = []
 
-    const currenciesPallet = "currencies"
-    const currenciesMethod = "transfer"
-    const currenciesArgs = { dest: to, currencyId, amount }
+      const currenciesPallet = "currencies"
+      const currenciesMethod = "transfer"
+      const currenciesArgs = { dest: to, currencyId, amount }
 
-    const sendAll = transferMethod === "transferAll"
+      const sendAll = transferMethod === "transferAll"
 
-    const tokensPallet = "tokens"
-    const tokensMethod = transferMethod
-    const tokensArgs = sendAll
-      ? { dest: to, currencyId, keepAlive: false }
-      : { dest: to, currencyId, amount }
+      const tokensPallet = "tokens"
+      const tokensMethod = transferMethod
+      const tokensArgs = sendAll
+        ? { dest: to, currencyId, keepAlive: false }
+        : { dest: to, currencyId, amount }
 
-    const commonDefineMethodFields = {
-      address: from,
-      blockHash,
-      blockNumber,
-      eraPeriod: 64,
-      genesisHash,
-      metadataRpc,
-      nonce,
-      specVersion,
-      tip: tip ? Number(tip) : 0,
-      transactionVersion,
-    }
-
-    const unsignedMethods = [
-      () =>
-        defineMethod(
-          {
-            method: {
-              pallet: currenciesPallet,
-              name: currenciesMethod,
-              args: currenciesArgs,
-            },
-            ...commonDefineMethodFields,
-          },
-          { metadataRpc, registry }
-        ),
-      () =>
-        defineMethod(
-          {
-            method: {
-              pallet: tokensPallet,
-              name: tokensMethod,
-              args: tokensArgs,
-            },
-            ...commonDefineMethodFields,
-          },
-          { metadataRpc, registry }
-        ),
-    ]
-
-    for (const method of unsignedMethods) {
-      try {
-        unsigned = method()
-      } catch (error: unknown) {
-        errors.push(error as Error)
+      const commonDefineMethodFields = {
+        address: from,
+        blockHash,
+        blockNumber,
+        eraPeriod: 64,
+        genesisHash,
+        metadataRpc,
+        nonce,
+        specVersion,
+        tip: tip ? Number(tip) : 0,
+        transactionVersion,
       }
-    }
 
-    if (unsigned === undefined) {
-      errors.forEach((error) => log.error(error))
-      throw new Error(`${token.symbol} transfers are not supported at this time.`)
-    }
+      const unsignedMethods = [
+        () =>
+          defineMethod(
+            {
+              method: {
+                pallet: currenciesPallet,
+                name: currenciesMethod,
+                args: currenciesArgs,
+              },
+              ...commonDefineMethodFields,
+            },
+            { metadataRpc, registry }
+          ),
+        () =>
+          defineMethod(
+            {
+              method: {
+                pallet: tokensPallet,
+                name: tokensMethod,
+                args: tokensArgs,
+              },
+              ...commonDefineMethodFields,
+            },
+            { metadataRpc, registry }
+          ),
+      ]
 
-    return { type: "substrate", tx: unsigned }
-  },
+      for (const method of unsignedMethods) {
+        try {
+          unsigned = method()
+        } catch (error: unknown) {
+          errors.push(error as Error)
+        }
+      }
+
+      if (unsigned === undefined) {
+        errors.forEach((error) => log.error(error))
+        throw new Error(`${token.symbol} transfers are not supported at this time.`)
+      }
+
+      return { type: "substrate", tx: unsigned }
+    },
+  }
 }
 
 function groupAddressesByTokenByChain(
@@ -533,6 +538,7 @@ function buildReferences(
 function formatRpcResult(
   chainId: ChainId,
   tokens: TokenList,
+  typeRegistry: Registry,
   references: Array<[string, string, string]>,
   result: unknown
 ): Balances {
@@ -567,7 +573,7 @@ function formatRpcResult(
         return false
       }
 
-      const balance: any = createType(new TypeRegistry(), AccountData, change)
+      const balance: any = createType(typeRegistry, AccountData, change)
 
       const free = (balance.free.toBigInt() || BigInt("0")).toString()
       const reserved = (balance.reserved.toBigInt() || BigInt("0")).toString()
