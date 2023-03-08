@@ -59,30 +59,24 @@ export async function balances<
   return await balanceModule.fetchBalances(addressesByToken)
 }
 
-export const createMetadataCache = () => {
-  const metadataCache: Map<ChainId, Metadata> = new Map()
+export const createTypeRegistryCache = () => {
+  const typeRegistryCache: Map<ChainId, TypeRegistry> = new Map()
 
-  const getOrCreateMetadata = (chainId: ChainId, metadataRpc: `0x${string}`): Metadata => {
+  const getOrCreateTypeRegistry = (chainId: ChainId, metadataRpc?: `0x${string}`): Registry => {
     // TODO: Delete cache when metadataRpc is different from last time
-    const cached = metadataCache.get(chainId)
+    const cached = typeRegistryCache.get(chainId)
     if (cached) return cached
 
-    const metadata = new Metadata(new TypeRegistry(), metadataRpc)
-    metadata.registry.setMetadata(metadata)
+    const typeRegistry = new TypeRegistry()
+    if (typeof metadataRpc === "string") {
+      const metadata = new Metadata(typeRegistry, metadataRpc)
+      metadata.registry.setMetadata(metadata)
+    }
 
-    metadataCache.set(chainId, metadata)
+    typeRegistryCache.set(chainId, typeRegistry)
 
-    return metadata
+    return typeRegistry
   }
-
-  return { getOrCreateMetadata }
-}
-
-export const createTypeRegistryCache = () => {
-  const { getOrCreateMetadata } = createMetadataCache()
-
-  const getOrCreateTypeRegistry = (chainId: ChainId, metadataRpc: `0x${string}`): Registry =>
-    getOrCreateMetadata(chainId, metadataRpc).registry
 
   return { getOrCreateTypeRegistry }
 }
