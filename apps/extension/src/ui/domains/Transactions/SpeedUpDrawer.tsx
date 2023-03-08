@@ -4,8 +4,7 @@ import {
   WalletTransaction,
 } from "@core/domains/recentTransactions/types"
 import { RocketIcon } from "@talisman/theme/icons"
-import { ethers } from "ethers"
-import { FC, useMemo } from "react"
+import { FC, useEffect, useState } from "react"
 import { Button, Drawer } from "talisman-ui"
 
 type SpeedUpDrawerProps = {
@@ -18,9 +17,19 @@ type EvmSpeedUpProps = SpeedUpDrawerProps & { tx: EvmWalletTransaction }
 type SubSpeedUpProps = SpeedUpDrawerProps & { tx: SubWalletTransaction }
 
 const SpeedUpEvm: FC<EvmSpeedUpProps> = ({ tx, isOpen, onClose }) => {
+  // must render once before turning isOpen to true or transition won't happen
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => {
+    setIsMounted(!!tx)
+
+    return () => {
+      setIsMounted(false)
+    }
+  }, [tx])
+
   return (
     <Drawer
-      isOpen={!!isOpen}
+      isOpen={isMounted && !!isOpen}
       anchor="bottom"
       containerId="main"
       onDismiss={onClose}
@@ -42,9 +51,15 @@ const SpeedUpEvm: FC<EvmSpeedUpProps> = ({ tx, isOpen, onClose }) => {
 }
 
 export const SpeedUpDrawer: FC<SpeedUpDrawerProps> = ({ tx, ...props }) => {
-  switch (tx?.networkType) {
+  // tx needed to keep rendering after isOpen becomes false
+  const [staleTx, setStaleTx] = useState<WalletTransaction>()
+  useEffect(() => {
+    if (tx) setStaleTx(tx)
+  }, [tx])
+
+  switch (staleTx?.networkType) {
     case "evm":
-      return <SpeedUpEvm tx={tx} {...props} />
+      return <SpeedUpEvm tx={staleTx} {...props} />
     default:
       return null
   }

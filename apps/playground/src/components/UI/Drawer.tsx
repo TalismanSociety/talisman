@@ -1,10 +1,13 @@
 import { classNames } from "@talismn/util"
-import { FC, useState } from "react"
+import { FC, ReactNode, useState } from "react"
 import { Button, Checkbox, Drawer, useOpenClose } from "talisman-ui"
 
 import { TestLayout } from "../shared/TestLayout"
 
-const DrawerContent: FC<{ className?: string }> = ({ className }) => {
+const DrawerContent: FC<{ className?: string; children?: ReactNode }> = ({
+  className,
+  children,
+}) => {
   return (
     <div
       className={classNames(
@@ -12,7 +15,7 @@ const DrawerContent: FC<{ className?: string }> = ({ className }) => {
         className
       )}
     >
-      <p>content</p>
+      {children ?? <p>content</p>}
     </div>
   )
 }
@@ -22,7 +25,8 @@ export const DrawerPage = () => {
   const [withLightDismiss, setWithLightDismiss] = useState(false)
   const ocLeft = useOpenClose()
   const ocRight = useOpenClose()
-  const ocBottom = useOpenClose()
+  const ocBottom1 = useOpenClose()
+  const ocBottom2 = useOpenClose()
   const ocTop = useOpenClose()
 
   const containerId = withContainer ? "container" : undefined
@@ -45,13 +49,22 @@ export const DrawerPage = () => {
       <div className="my-16 flex gap-8">
         <div className="grid grid-cols-3">
           <div></div>
-          <Button onClick={ocTop.toggle}>Top</Button>
+          <div>
+            <Button onClick={ocTop.toggle}>Top</Button>
+          </div>
           <div></div>
-          <Button onClick={ocLeft.toggle}>Left</Button>
+          <div>
+            <Button onClick={ocLeft.toggle}>Left</Button>
+          </div>
           <div></div>
-          <Button onClick={ocRight.toggle}>Right</Button>
+          <div>
+            <Button onClick={ocRight.toggle}>Right</Button>
+          </div>
           <div></div>
-          <Button onClick={ocBottom.toggle}>Bottom</Button>
+          <div className="flex flex-col">
+            <Button onClick={ocBottom1.toggle}>Bottom 1</Button>
+            <Button onClick={ocBottom2.toggle}>Bottom 2</Button>
+          </div>
           <div></div>
         </div>
       </div>
@@ -85,12 +98,21 @@ export const DrawerPage = () => {
         </Drawer>
         <Drawer
           className="bg-brand-orange"
-          isOpen={ocBottom.isOpen}
+          isOpen={ocBottom1.isOpen}
           containerId={containerId}
-          onDismiss={withLightDismiss ? ocBottom.close : undefined}
+          onDismiss={withLightDismiss ? ocBottom1.close : undefined}
           anchor="bottom"
         >
-          <DrawerContent className="h-[150px]" />
+          <DrawerContent className="h-[150px]">Bottom 1</DrawerContent>
+        </Drawer>
+        <Drawer
+          className="bg-brand-orange"
+          isOpen={ocBottom2.isOpen}
+          containerId={containerId}
+          onDismiss={withLightDismiss ? ocBottom2.close : undefined}
+          anchor="bottom"
+        >
+          <DrawerContent className="bg-brand-orange h-[250px]">Bottom 2</DrawerContent>
         </Drawer>
       </div>
       <div>

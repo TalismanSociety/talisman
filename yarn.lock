@@ -12093,7 +12093,6 @@ __metadata:
     react-dropzone: ^12.0.4
     react-hook-form: 7.32.2
     react-is: 17.0.2
-    react-laag: ^2.0.5
     react-router-dom: 6.3.0
     react-toastify: ^9.0.8
     react-use: 17.4.0
@@ -18177,18 +18176,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-laag@npm:^2.0.5":
-  version: 2.0.5
-  resolution: "react-laag@npm:2.0.5"
-  dependencies:
-    tiny-warning: ^1.0.3
-  peerDependencies:
-    react: ^16.0.0 || ^17.0.0 || ^18.0.0
-    react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
-  checksum: 3a7cefe0970493305ca4ba529e7d517e61eeff3c56a14e29d4cf39be84d5530e1fd8b125cc2121a5fa63ba5f08025b89b5ff6ac43bc3c017c62b9f158f7122c3
-  languageName: node
-  linkType: hard
-
 "react-property@npm:2.0.0":
   version: 2.0.0
   resolution: "react-property@npm:2.0.0"
@@ -20005,7 +19992,6 @@ __metadata:
     postcss: ^8.4.20
     react: 18.2.0
     react-dom: 18.2.0
-    react-laag: ^2.0.5
     react-router-dom: 6.3.0
     react-use: 17.4.0
     tailwindcss: ^3.2.4
@@ -20021,7 +20007,6 @@ __metadata:
     postcss: "*"
     react: ">=18.2.0"
     react-dom: ">=18.2.0"
-    react-laag: ">=2.0.5"
     react-router-dom: ">=6.3.0"
     react-use: ">=17.4.0"
     styled-components: ">=5.3.6"
@@ -20229,13 +20214,6 @@ __metadata:
     es5-ext: ~0.10.46
     next-tick: 1
   checksum: ef3f27a0702a88d885bcbb0317c3e3ecd094ce644da52e7f7d362394a125d9e3578292a8f8966071a980d8abbc3395725333b1856f3ae93835b46589f700d938
-  languageName: node
-  linkType: hard
-
-"tiny-warning@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "tiny-warning@npm:1.0.3"
-  checksum: da62c4acac565902f0624b123eed6dd3509bc9a8d30c06e017104bedcf5d35810da8ff72864400ad19c5c7806fc0a8323c68baf3e326af7cb7d969f846100d71
   languageName: node
   linkType: hard
 

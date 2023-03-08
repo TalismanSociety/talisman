@@ -1,7 +1,16 @@
 import { Transition } from "@headlessui/react"
 import { classNames } from "@talismn/util"
 import { default as clsx } from "clsx"
-import { FC, MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
+import {
+  FC,
+  MouseEventHandler,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useState,
+} from "react"
 import { createPortal } from "react-dom"
 
 type DrawerAnchor = "top" | "right" | "bottom" | "left"
@@ -63,7 +72,7 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
 type DrawerProps = {
   anchor: DrawerAnchor
   children: ReactNode
-  isOpen: boolean
+  isOpen?: boolean
   className?: string
   containerId?: string
   onDismiss?: () => void
@@ -75,7 +84,7 @@ export const Drawer: FC<DrawerProps> = ({
   isOpen,
   className,
   containerId,
-  onDismiss,
+  onDismiss: onDismiss,
 }) => {
   const handleDismiss: MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
@@ -116,10 +125,10 @@ export const Drawer: FC<DrawerProps> = ({
       {/* Drawer */}
       <Transition.Child
         className={classNames("z-10 shadow-2xl", position, drawer, className)}
-        enter="transition ease-in-out duration-300 transform"
+        enter="transition-transform ease-in-out duration-300 transform"
         enterFrom={enterFrom}
         enterTo={enterTo}
-        leave="transition ease-in-out duration-300 transform"
+        leave="transition-transform ease-in-out duration-300 transform"
         leaveFrom={leaveFrom}
         leaveTo={leaveTo}
       >
