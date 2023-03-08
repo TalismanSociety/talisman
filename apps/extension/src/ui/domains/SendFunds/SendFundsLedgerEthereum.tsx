@@ -44,7 +44,7 @@ const SendFundsLedgerEthereum = () => {
         onClick={sendToLedger(true)}
         processing={signed}
       >
-        Send to Ledger
+        Approve on Ledger
       </Button>
     )
 
