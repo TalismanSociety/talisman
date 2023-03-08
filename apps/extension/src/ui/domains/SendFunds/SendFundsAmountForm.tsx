@@ -527,9 +527,7 @@ const ReviewButton = () => {
             </div>
           </div>
           <div className="mt-10 grid grid-cols-2 gap-4">
-            <Button autoFocus onClick={close}>
-              Cancel
-            </Button>
+            <Button onClick={close}>Cancel</Button>
             <Button primary onClick={handleConfirmReap}>
               Proceed
             </Button>

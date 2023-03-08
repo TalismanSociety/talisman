@@ -34,9 +34,15 @@ export const SendFundsRecipientPicker = () => {
   }, [from, isFromEthereum, search])
 
   const normalize = useCallback(
-    (addr = "") =>
-      !isValidAddressInput || isFromEthereum ? addr.toLowerCase() : convertAddress(addr, null),
-    [isFromEthereum, isValidAddressInput]
+    (addr = "") => {
+      if (!addr) return null
+      try {
+        return isFromEthereum ? addr.toLowerCase() : convertAddress(addr, null)
+      } catch (err) {
+        return null
+      }
+    },
+    [isFromEthereum]
   )
   const normalizedFrom = useMemo(() => normalize(from), [from, normalize])
   const normalizedTo = useMemo(() => normalize(to), [to, normalize])
