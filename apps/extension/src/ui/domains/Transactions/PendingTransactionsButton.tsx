@@ -30,6 +30,7 @@ import urlJoin from "url-join"
 import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
+import { Popover, PopoverContent, PopoverTrigger } from "./Popover"
 import { SpeedUpDrawer } from "./SpeedUpDrawer"
 
 type TransactionRowProps = {
@@ -82,15 +83,23 @@ const EvmTxActions: FC<{
     [onActionClick]
   )
 
-  const { renderLayer, triggerProps, layerProps } = useLayer({
-    isOpen,
-    onOutsideClick: onContextMenuClose, // close the menu when the user clicks outside
-    onDisappear: onContextMenuClose, // close the menu when the menu gets scrolled out of sight
-    auto: true, // automatically find the best placement
-    possiblePlacements: ["bottom-end", "top-end"], // but we also accept "bottom-end"
-    placement: "bottom-end", // we prefer to place the menu "top-end"
-    triggerOffset: 8, // keep some distance to the trigger
-  })
+  const handleOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) onContextMenuOpen?.()
+      else onContextMenuClose?.()
+    },
+    [onContextMenuClose, onContextMenuOpen]
+  )
+
+  // const { renderLayer, triggerProps, layerProps } = useLayer({
+  //   isOpen,
+  //   onOutsideClick: onContextMenuClose, // close the menu when the user clicks outside
+  //   onDisappear: onContextMenuClose, // close the menu when the menu gets scrolled out of sight
+  //   auto: true, // automatically find the best placement
+  //   possiblePlacements: ["bottom-end", "top-end"], // but we also accept "bottom-end"
+  //   placement: "bottom-end", // we prefer to place the menu "top-end"
+  //   triggerOffset: 8, // keep some distance to the trigger
+  // })
 
   return (
     <div
@@ -107,20 +116,22 @@ const EvmTxActions: FC<{
         <ActionButton onClick={handleActionClick("cancel")}>
           <XOctagonIcon className="inline" />
         </ActionButton>
-        <ActionButton
-          {...triggerProps}
-          className={classNames(isOpen && " !bg-grey-700")}
-          onClick={onContextMenuOpen}
-        >
-          <MoreHorizontalIcon className="inline" />
-        </ActionButton>
-        {renderLayer(
-          <div
+        {/* <Popover open={isOpen} onOpenChange={handleOpenChange}>
+          <PopoverTrigger
+            //{...triggerProps}
+            className={classNames(
+              "hover:bg-grey-700 text-body-secondary hover:text-body inline-block h-[36px] w-[36px] shrink-0 rounded-sm text-center",
+              isOpen && " !bg-grey-700"
+            )}
+            onClick={() => handleOpenChange(true)}
+          >
+            <MoreHorizontalIcon className="inline" />
+          </PopoverTrigger>
+          <PopoverContent
             className={classNames(
               "border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left shadow-lg",
               isOpen ? "visible opacity-100" : "invisible opacity-0"
             )}
-            {...layerProps}
           >
             <button
               onClick={handleActionClick("cancel")}
@@ -146,8 +157,8 @@ const EvmTxActions: FC<{
             >
               Dismiss
             </button>
-          </div>
-        )}
+          </PopoverContent>
+        </Popover> */}
       </div>
     </div>
   )
