@@ -19,19 +19,23 @@ type SubSpeedUpProps = SpeedUpDrawerProps & { tx: SubWalletTransaction }
 
 const SpeedUpEvm: FC<EvmSpeedUpProps> = ({ tx, isOpen, onClose }) => {
   return (
-    <Drawer isOpen={!!isOpen} anchor="bottom" containerId="main" onDismiss={onClose}>
-      <div className="bg-grey-800 flex w-full flex-col items-center rounded-t-xl text-[40px]">
-        <RocketIcon className="text-primary" />
-        <div className="font-bold">Speed Up Transaction</div>
-        <div className="text-body-secondary text-sm">
-          This will attempt to speed up your pending transaction by resubmitting it with a higher
-          priority
-        </div>
-        <div className="h-24"></div>
-        <div className="grid h-24 grid-cols-2">
-          <Button onClick={onClose}>Cancel</Button>
-          <Button primary>Speed Up</Button>
-        </div>
+    <Drawer
+      isOpen={!!isOpen}
+      anchor="bottom"
+      containerId="main"
+      onDismiss={onClose}
+      className="bg-grey-800 flex w-full flex-col items-center rounded-t-xl p-12"
+    >
+      <RocketIcon className="text-primary text-[40px]" />
+      <div className="text-base font-bold">Speed Up Transaction</div>
+      <div className="text-body-secondary text-sm">
+        This will attempt to speed up your pending transaction by resubmitting it with a higher
+        priority
+      </div>
+      <div className="h-24"></div>
+      <div className="grid h-24 w-full grid-cols-2 gap-4">
+        <Button onClick={onClose}>Cancel</Button>
+        <Button primary>Speed Up</Button>
       </div>
     </Drawer>
   )

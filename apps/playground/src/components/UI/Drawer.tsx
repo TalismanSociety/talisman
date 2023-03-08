@@ -63,7 +63,7 @@ export const DrawerPage = () => {
           onDismiss={withLightDismiss ? ocRight.close : undefined}
           anchor="right"
         >
-          <DrawerContent />
+          <DrawerContent className="h-[150px]" />
         </Drawer>
         <Drawer
           className="bg-brand-orange"
@@ -72,7 +72,7 @@ export const DrawerPage = () => {
           onDismiss={withLightDismiss ? ocLeft.close : undefined}
           anchor="left"
         >
-          <DrawerContent />
+          <DrawerContent className="h-[150px]" />
         </Drawer>
         <Drawer
           className="bg-brand-orange"
@@ -81,7 +81,7 @@ export const DrawerPage = () => {
           onDismiss={withLightDismiss ? ocTop.close : undefined}
           anchor="top"
         >
-          <DrawerContent />
+          <DrawerContent className="h-[150px]" />
         </Drawer>
         <Drawer
           className="bg-brand-orange"
@@ -90,7 +90,7 @@ export const DrawerPage = () => {
           onDismiss={withLightDismiss ? ocBottom.close : undefined}
           anchor="bottom"
         >
-          <DrawerContent />
+          <DrawerContent className="h-[150px]" />
         </Drawer>
       </div>
       <div>

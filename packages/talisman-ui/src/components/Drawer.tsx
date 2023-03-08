@@ -24,7 +24,7 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
     case "right":
       return {
         position,
-        drawer: classNames("top-0 right-0 max-w-[100vw]", position, leftRight),
+        drawer: classNames("top-0 right-0", position, leftRight),
         enterFrom: "translate-x-full",
         enterTo: "translate-x-0",
         leaveFrom: "translate-x-0",
@@ -33,7 +33,7 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
     case "left":
       return {
         position,
-        drawer: classNames("top-0 left-0 max-w-[100vw]", position, leftRight),
+        drawer: classNames("top-0 left-0", position, leftRight),
         enterFrom: "translate-x-[-100%]",
         enterTo: "translate-x-0",
         leaveFrom: "translate-x-0",
@@ -42,7 +42,7 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
     case "top":
       return {
         position,
-        drawer: classNames("top-0 left-0 max-h-[100vh]", position, topBottom),
+        drawer: classNames("top-0 left-0", position, topBottom),
         enterFrom: "translate-y-[-100%]",
         enterTo: "translate-y-0",
         leaveFrom: "translate-y-0",
@@ -51,7 +51,7 @@ const getAnchorClasses = (anchor: DrawerAnchor, withContainer: boolean): AnchorC
     case "bottom":
       return {
         position,
-        drawer: classNames("bottom-0 left-0 max-h-[100vh]", position, topBottom),
+        drawer: classNames("bottom-0 left-0", position, topBottom),
         enterFrom: "translate-y-full",
         enterTo: "translate-y-0",
         leaveFrom: "translate-y-0",
@@ -100,7 +100,7 @@ export const Drawer: FC<DrawerProps> = ({
       {onDismiss && (
         <Transition.Child
           className={clsx(
-            "bg-grey-900 top-0 left-0 z-40 h-full w-full cursor-pointer bg-opacity-50",
+            "bg-grey-900 top-0 left-0 z-10 h-full w-full cursor-pointer bg-opacity-50",
             position
           )}
           enter="transition-opacity ease-linear duration-300"
@@ -115,7 +115,7 @@ export const Drawer: FC<DrawerProps> = ({
 
       {/* Drawer */}
       <Transition.Child
-        className={classNames("z-50 shadow-2xl", position, drawer, className)}
+        className={classNames("z-10 shadow-2xl", position, drawer, className)}
         enter="transition ease-in-out duration-300 transform"
         enterFrom={enterFrom}
         enterTo={enterTo}
