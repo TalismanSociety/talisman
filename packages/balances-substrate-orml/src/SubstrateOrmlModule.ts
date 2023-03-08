@@ -235,7 +235,7 @@ export const SubOrmlModule: NewBalanceModule<
               addresses,
             ])
 
-          const typeRegistry = getOrCreateTypeRegistry(chainId, "0x00")
+          const typeRegistry = getOrCreateTypeRegistry(chainId)
 
           // set up method, return message type and params
           const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
@@ -308,7 +308,7 @@ export const SubOrmlModule: NewBalanceModule<
               addresses,
             ])
 
-          const typeRegistry = getOrCreateTypeRegistry(chainId, "0x00")
+          const typeRegistry = getOrCreateTypeRegistry(chainId)
 
           // set up method and params
           const method = "state_queryStorageAt" // method we call to fetch
