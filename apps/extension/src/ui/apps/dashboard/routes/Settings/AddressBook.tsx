@@ -15,7 +15,7 @@ import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useMemo, useState } from "react"
-import { Button, PillButton } from "talisman-ui"
+import { PillButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -87,23 +87,22 @@ const AddressBook = () => {
           )}
         </div>
       </Layout>
-      {toDelete && contactsMap[toDelete] && (
+
+      {toDelete && (
         <ContactDeleteModal
           isOpen={!!toDelete}
           close={() => setToDelete(undefined)}
           contact={contactsMap[toDelete]}
         />
       )}
-      {toEdit && contactsMap[toEdit] && (
+      {toEdit && (
         <ContactEditModal
           isOpen={!!toEdit}
           close={() => setToEdit(undefined)}
           contact={contactsMap[toEdit]}
         />
       )}
-      {isOpen && ( // need to unmount the component as well as just closing it to clear the form state
-        <ContactCreateModal isOpen={isOpen} close={close} />
-      )}
+      <ContactCreateModal isOpen={isOpen} close={close} />
     </>
   )
 }

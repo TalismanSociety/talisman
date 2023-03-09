@@ -10,7 +10,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
@@ -23,9 +23,36 @@ type FormValues = {
   addressType: AccountAddressType
 }
 
+interface ValidationContext {
+  accounts: string[]
+  contacts: string[]
+}
+
+const ethRegex = new RegExp("^0[xX][a-fA-F0-9]{40}$")
+
 const schema = yup.object({
   name: yup.string().required(""),
-  address: yup.string().required(""),
+  address: yup
+    .string()
+    .required("")
+    .transform((value) => value.trim())
+    .test("is-valid", "Address is not valid", (value, ctx) => {
+      const context = ctx.options.context as ValidationContext
+      if (!value) return false
+      const isEthAddress = ethRegex.test(value) ?? isEthereumAddress(value.toLowerCase())
+      const isValidAddress = isEthAddress || isValidSubstrateAddress(value)
+      if (!isValidAddress) return ctx.createError({ message: "Invalid Address" })
+
+      const normalised = normalise(value, isEthAddress ? "ethereum" : "ss58")
+
+      const { accounts, contacts } = context
+      if (accounts.includes(normalised))
+        return ctx.createError({ message: "Cannot save a wallet address as a contact" })
+      if (contacts.includes(normalised))
+        return ctx.createError({ message: "Address already saved in contacts" })
+      return true
+    }),
+  addressType: yup.string().oneOf(["ss58", "ethereum"]).required(""),
 })
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -35,10 +62,29 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Address book contact create",
 }
 
+const normaliseMethods = {
+  ss58: (addr: string) => convertAddress(addr, null),
+  ethereum: (addr: string) => addr.toLowerCase(),
+}
+
+const normalise = (address: string, addressType?: "ss58" | "ethereum") =>
+  normaliseMethods[addressType || "ss58"](address)
+
 export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
   const { add, contacts } = useAddressBook()
   const accounts = useAccounts()
-  const [addressInput, setAddressInput] = useState("")
+
+  const { existingContactAddresses, existingAccountAddresses } = useMemo(
+    () => ({
+      existingContactAddresses: contacts.map((c) =>
+        normalise(c.address, c.addressType === "UNKNOWN" ? "ss58" : c.addressType)
+      ),
+      existingAccountAddresses: accounts.map((acc) =>
+        normalise(acc.address, acc.type === "ethereum" ? acc.type : "ss58")
+      ),
+    }),
+    [contacts, accounts]
+  )
 
   const {
     register,
@@ -46,77 +92,28 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
     formState: { isValid, errors, isSubmitting },
     setError,
     setValue,
-    clearErrors,
+    reset,
+    watch,
   } = useForm<FormValues>({
     resolver: yupResolver(schema),
+    context: {
+      contacts: existingContactAddresses,
+      accounts: existingAccountAddresses,
+    },
     mode: "all",
     reValidateMode: "onChange",
   })
 
-  const ethRegex = useRef(new RegExp("^0[xX][a-fA-F0-9]{40}$"))
-  // using a simple regex for this means we don't have to do an expensive isEthereumAddress call unless it looks like it might be one
-  const ethAddressMatch = useMemo(
-    () => ethRegex.current.test(addressInput),
-    [ethRegex, addressInput]
-  )
+  useEffect(() => {
+    if (isOpen) reset()
+  }, [isOpen, reset])
 
-  const isValidAddressInput = useMemo(() => {
-    return ethAddressMatch
-      ? isEthereumAddress(addressInput.toLowerCase())
-      : isValidSubstrateAddress(addressInput)
-  }, [ethAddressMatch, addressInput])
+  const address = watch("address")
 
   useEffect(() => {
-    if (isValidAddressInput) {
-      if (ethAddressMatch) setValue("addressType", "ethereum")
-      else setValue("addressType", "ss58")
-    }
-  }, [ethAddressMatch, isValidAddressInput, setValue])
-
-  const normalize = useCallback(
-    (addr = "") =>
-      !isValidAddressInput
-        ? addr // don't do anything if not a valid address
-        : ethAddressMatch
-        ? addr.toLowerCase()
-        : convertAddress(addr, null),
-    [ethAddressMatch, isValidAddressInput]
-  )
-
-  const { existingContactAddresses, existingAccountAddresses } = useMemo(() => {
-    const existingContacts = contacts
-      .filter((c) => (ethAddressMatch ? c.addressType === "ethereum" : c.addressType === "ss58"))
-      .map((c) => normalize(c.address))
-    const existingAccounts = accounts
-      .filter((acc) => (ethAddressMatch ? acc.type === "ethereum" : acc.type !== "ethereum"))
-      .map((acc) => normalize(acc.address))
-    return {
-      existingContactAddresses: existingContacts,
-      existingAccountAddresses: existingAccounts,
-    }
-  }, [contacts, accounts, ethAddressMatch, normalize])
-
-  useEffect(() => {
-    clearErrors()
-
-    if (!addressInput || addressInput === "") return
-    if (!isValidAddressInput) setError("address", { message: "Invalid Address" })
-    const normalisedAddress = normalize(addressInput)
-    if (existingContactAddresses.includes(normalisedAddress))
-      setError("address", { message: "Address already saved in contacts" })
-    else if (existingAccountAddresses.includes(normalisedAddress))
-      setError("address", { message: "Cannot save a wallet address as a contact" })
-    else setValue("address", normalisedAddress)
-  }, [
-    addressInput,
-    normalize,
-    isValidAddressInput,
-    existingAccountAddresses,
-    existingContactAddresses,
-    setError,
-    clearErrors,
-    setValue,
-  ])
+    if (ethRegex.test(address)) setValue("addressType", "ethereum")
+    else setValue("addressType", "ss58")
+  }, [address, setValue])
 
   const submit = useCallback(
     async (formData: FormValues) => {
@@ -158,7 +155,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
           <FormFieldContainer error={errors.address?.message} label="Address">
             <FormFieldInputText
               type="text"
-              onChange={(e) => setAddressInput(e.target.value)}
+              {...register("address")}
               placeholder="Address"
               autoComplete="off"
               spellCheck="false"
@@ -169,7 +166,7 @@ export const ContactCreateModal = ({ isOpen, close }: ContactModalProps) => {
             <Button fullWidth onClick={close}>
               Cancel
             </Button>
-            <Button type="submit" fullWidth primary disabled={!isValid || isSubmitting}>
+            <Button type="submit" fullWidth primary processing={isSubmitting} disabled={!isValid}>
               Save
             </Button>
           </div>
