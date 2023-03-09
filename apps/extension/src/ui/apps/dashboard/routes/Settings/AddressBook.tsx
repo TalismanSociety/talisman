@@ -2,11 +2,19 @@ import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { EditIcon, TrashIcon, UserPlusIcon } from "@talisman/theme/icons"
+import {
+  CopyIcon,
+  EditIcon,
+  HamburgerMenuIcon,
+  TrashIcon,
+  UserPlusIcon,
+} from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
-import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
+import { Address } from "@ui/domains/Account/Address"
+import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import AccountAvatar from "@ui/domains/Account/Avatar"
 import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
@@ -29,15 +37,37 @@ type ContactItemProps = ExistingContactComponentProps & {
   handleEdit: (address: string) => void
 }
 
-const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => (
-  <div className="bg-black-secondary hover:bg-black-tertiary flex w-full items-center justify-between rounded p-8">
-    <FormattedAddress address={contact.address} />
-    <div className="text-body-secondary flex gap-6">
-      <EditIcon className="cursor-pointer" onClick={() => handleEdit(contact.address)} />
-      <TrashIcon className="cursor-pointer" onClick={() => handleDelete(contact.address)} />
+const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => {
+  const { open: openCopyAddressModal } = useAddressFormatterModal()
+  const [hover, setHover] = useState(false)
+  return (
+    <div
+      className="bg-black-secondary hover:bg-black-tertiary flex w-full items-center justify-between rounded p-8"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <span className="gap flex gap-4">
+        <AccountAvatar address={contact.address} />
+        <div className="flex flex-col justify-between">
+          <span>{contact.name}</span>
+          <Address className="text-body-secondary text-xs" address={contact.address} />
+        </div>
+      </span>
+      <div
+        className={`text-body-secondary flex gap-6 duration-300 ${
+          hover ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <CopyIcon
+          className="cursor-pointer"
+          onClick={() => openCopyAddressModal(contact.address)}
+        />
+        <EditIcon className="cursor-pointer" onClick={() => handleEdit(contact.address)} />
+        <TrashIcon className="cursor-pointer" onClick={() => handleDelete(contact.address)} />
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
   polkadot: "ss58",
