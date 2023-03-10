@@ -3,6 +3,7 @@ import {
   SubWalletTransaction,
   WalletTransaction,
 } from "@core/domains/recentTransactions/types"
+import { TransactionStatus } from "@core/domains/recentTransactions/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -20,7 +21,8 @@ import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
 import { Popover, PopoverContent, PopoverTrigger } from "./Popover"
-import { SpeedUpDrawer } from "./SpeedUpDrawer"
+import { TxCancelDrawer } from "./TxCancelDrawer"
+import { TxSpeedUpDrawer } from "./TxSpeedUpDrawer"
 
 type TransactionRowProps = {
   tx: WalletTransaction
@@ -63,13 +65,15 @@ const EvmTxActions: FC<{
   onContextMenuClose,
 }) => {
   const ocSpeedUp = useOpenClose()
+  const ocCancelUp = useOpenClose()
 
   const handleActionClick = useCallback(
     (action: TransactionAction) => () => {
       onContextMenuClose?.()
       if (action === "speed-up") ocSpeedUp.open()
+      if (action === "cancel") ocCancelUp.open()
     },
-    [ocSpeedUp, onContextMenuClose]
+    [ocCancelUp, ocSpeedUp, onContextMenuClose]
   )
 
   const handleOpenChange = useCallback(
@@ -124,36 +128,55 @@ const EvmTxActions: FC<{
           >
             <button
               onClick={handleActionClick("cancel")}
-              className="hover:bg-grey-800 rounded-xs h-20 p-6"
+              className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
             >
               Cancel transaction
             </button>
             <button
               onClick={handleActionClick("speed-up")}
-              className="hover:bg-grey-800 rounded-xs h-20 p-6"
+              className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
             >
               Speed up transaction
             </button>
             {hrefBlockExplorer && (
               <button
                 onClick={handleBlockExplorerClick}
-                className="hover:bg-grey-800 rounded-xs h-20 p-6"
+                className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
               >
                 View on block explorer
               </button>
             )}
             <button
               onClick={handleActionClick("dismiss")}
-              className="hover:bg-grey-800 rounded-xs h-20 p-6"
+              className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
             >
               Dismiss
             </button>
           </PopoverContent>
         </Popover>
       </div>
-      <SpeedUpDrawer tx={tx} isOpen={ocSpeedUp.isOpen} onClose={ocSpeedUp.close} />
+      <TxSpeedUpDrawer tx={tx} isOpen={ocSpeedUp.isOpen} onClose={ocSpeedUp.close} />
+      <TxCancelDrawer tx={tx} isOpen={ocCancelUp.isOpen} onClose={ocCancelUp.close} />
     </div>
   )
+}
+
+const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) => {
+  switch (status) {
+    case "error":
+      return <span className="text-brand-orange">Failed</span>
+    case "pending":
+      return (
+        <>
+          <span>Sending </span>
+          <LoaderIcon className="animate-spin-slow" />
+        </>
+      )
+    case "success":
+      return <span>Confirmed</span>
+    case "unknown":
+      return <span>Unknown</span>
+  }
 }
 
 const TransactionRowEvm: FC<TransactionRowPropsEvm> = ({
@@ -207,8 +230,7 @@ const TransactionRowEvm: FC<TransactionRowPropsEvm> = ({
       <div className="leading-paragraph relative flex w-full grow justify-between">
         <div className="text-left">
           <div className="flex items-center gap-2 text-sm font-bold">
-            <span>Sending </span>
-            {<LoaderIcon className="animate-spin-slow" />}
+            <TransactionStatusLabel status={tx.status} />
           </div>
           <div className="text-body-secondary text-xs">
             To: {to ? shortenAddress(to) : "unknown"}

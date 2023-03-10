@@ -31,15 +31,16 @@ import { useIsValidEthTransaction } from "./Sign/useIsValidEthTransaction"
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 
-const useNonce = (address?: string, evmNetworkId?: EvmNetworkId) => {
+const useNonce = (address?: string, evmNetworkId?: EvmNetworkId, forcedValue?: number) => {
   const { data, ...rest } = useQuery({
     queryKey: ["nonce", address, evmNetworkId],
     queryFn: () => {
       return address && evmNetworkId ? api.ethGetTransactionsCount(address, evmNetworkId) : null
     },
+    enabled: forcedValue === undefined, // don't bother fetching if value is forced
   })
 
-  return { nonce: data ?? undefined, ...rest }
+  return { nonce: forcedValue ?? data ?? undefined, ...rest }
 }
 
 const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
@@ -301,12 +302,17 @@ const useGasSettings = ({
 
 export const useEthTransaction = (
   tx?: ethers.providers.TransactionRequest,
-  lockTransaction = false
+  lockTransaction = false,
+  isReplacement = false
 ) => {
   const provider = useEthereumProvider(tx?.chainId?.toString())
   const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(provider, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(provider)
-  const { nonce, error: nonceError } = useNonce(tx?.from, tx?.chainId?.toString())
+  const { nonce, error: nonceError } = useNonce(
+    tx?.from,
+    tx?.chainId?.toString(),
+    isReplacement && tx?.nonce ? BigNumber.from(tx.nonce).toNumber() : undefined
+  )
 
   const {
     gasPrice,
@@ -323,8 +329,8 @@ export const useEthTransaction = (
   // set default priority based on EIP1559 support
   useEffect(() => {
     if (priority !== undefined || hasEip1559Support === undefined) return
-    setPriority(hasEip1559Support ? "low" : "recommended")
-  }, [hasEip1559Support, priority])
+    setPriority(hasEip1559Support ? (isReplacement ? "high" : "low") : "recommended")
+  }, [hasEip1559Support, isReplacement, priority])
 
   const { gasSettings, setCustomSettings, gasSettingsByPriority } = useGasSettings({
     tx,

@@ -106,7 +106,7 @@ export const EthTransactionFees = ({
           Priority :{" "}
           <EthFeeSelect
             tokenId={evmNetwork?.nativeToken?.id}
-            drawerContainer={"send-funds-container"}
+            drawerContainerId={"send-funds-container"}
             gasSettingsByPriority={gasSettingsByPriority}
             setCustomSettings={setCustomSettings}
             onChange={setPriority}

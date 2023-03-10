@@ -10,6 +10,8 @@ export const PendingTransactionsButton = () => {
   const transactions = useLiveQuery(() => db.transactions.toArray(), [])
   const { isOpen, open, close } = useOpenClose()
 
+  if (!transactions?.length) return null
+
   return (
     <div>
       <IconButton onClick={open} className={transactions?.length ? "visible" : "invisible"}>
