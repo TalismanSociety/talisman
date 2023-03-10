@@ -3,6 +3,8 @@ import type {
   AnyEthRequestChainId,
   EthApproveSignAndSend,
   EthRequestSigningApproveSignature,
+  EthTxSendSigned,
+  EthTxSignAndSend,
   WatchAssetRequestIdOnly,
 } from "@core/domains/ethereum/types"
 import { ETH_NETWORK_ADD_PREFIX, WATCH_ASSET_PREFIX } from "@core/domains/ethereum/types"
@@ -28,6 +30,7 @@ import { getPrivateKey } from "@core/util/getPrivateKey"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
+import { HexString } from "@polkadot/util/types"
 import { evmNativeTokenId } from "@talismn/balances-evm-native"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
@@ -38,6 +41,10 @@ import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 import { AddEthereumChainRequestIdOnly, RequestUpsertCustomEvmNetwork } from "./types"
+
+type Handler<TMessageType extends MessageTypes> = (
+  req: RequestTypes[TMessageType]
+) => Promise<ResponseType<TMessageType>>
 
 export class EthHandler extends ExtensionHandler {
   private async signAndSendApproveHardware({
@@ -137,6 +144,80 @@ export class EthHandler extends ExtensionHandler {
         throw new Error(getHumanReadableErrorMessage(result.val) ?? "Failed to send transaction")
       }
       return false
+    }
+  }
+
+  private sendSigned: Handler<"pri(eth.signing.sendSigned)"> = async ({ unsigned, signed }) => {
+    assert(unsigned.chainId, "chainId is not defined")
+    const evmNetworkId = unsigned.chainId.toString()
+
+    const provider = await getProviderForEvmNetworkId(evmNetworkId)
+    assert(provider, `Unable to find provider for chain ${unsigned.chainId}`)
+
+    // rebuild BigNumber property values (converted to json when serialized)
+    const tx = rebuildTransactionRequestNumbers(unsigned)
+
+    try {
+      const { hash } = await provider.sendTransaction(signed)
+
+      // long running operation, we do not want this inside getPairForAddressSafely
+      watchEthereumTransaction(evmNetworkId, hash, tx, {
+        notifications: true,
+      })
+
+      talismanAnalytics.captureDelayed("sign transaction approve", {
+        type: "evm sign and send",
+        chain: evmNetworkId,
+        networkType: "ethereum",
+      })
+
+      return hash as HexString
+    } catch (err) {
+      throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
+    }
+  }
+
+  private signAndSend: Handler<"pri(eth.signing.signAndSend)"> = async ({ unsigned }) => {
+    assert(unsigned.chainId, "chainId is not defined")
+    assert(unsigned.from, "from is not defined")
+    const evmNetworkId = unsigned.chainId.toString()
+
+    const provider = await getProviderForEvmNetworkId(evmNetworkId)
+    assert(provider, `Unable to find provider for chain ${unsigned.chainId}`)
+
+    // rebuild BigNumber property values (converted to json when serialized)
+    const tx = rebuildTransactionRequestNumbers(unsigned)
+
+    const result = await getPairForAddressSafely(unsigned.from, async (pair) => {
+      const password = this.stores.password.getPassword()
+      assert(password, "Unauthorised")
+      const privateKey = getPrivateKey(pair, password)
+      const signer = new ethers.Wallet(privateKey, provider)
+
+      const { hash } = await signer.sendTransaction(tx)
+
+      return hash as HexString
+    })
+
+    if (result.ok) {
+      // long running operation, we do not want this inside getPairForAddressSafely
+      watchEthereumTransaction(evmNetworkId, result.val, tx, {
+        notifications: true,
+      })
+
+      talismanAnalytics.captureDelayed("sign transaction approve", {
+        type: "evm sign and send",
+        chain: evmNetworkId,
+        networkType: "ethereum",
+      })
+
+      return result.val // hash
+    } else {
+      if (result.val === "Unauthorised") {
+        throw new Error("Unauthorized")
+      } else {
+        throw new Error(getHumanReadableErrorMessage(result.val) ?? "Failed to send transaction")
+      }
     }
   }
 
@@ -457,6 +538,12 @@ export class EthHandler extends ExtensionHandler {
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
+      case "pri(eth.signing.signAndSend)":
+        return this.signAndSend(request as RequestTypes["pri(eth.signing.signAndSend)"])
+
+      case "pri(eth.signing.sendSigned)":
+        return this.sendSigned(request as RequestTypes["pri(eth.signing.sendSigned)"])
+
       case "pri(eth.signing.approveSignAndSend)":
         return this.signAndSendApprove(request as EthApproveSignAndSend)
 

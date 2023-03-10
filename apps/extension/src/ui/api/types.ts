@@ -242,6 +242,11 @@ export default interface MessageTypes {
   ) => Promise<ResponseAssetTransfer>
 
   // eth related messages
+  ethSignAndSend: (unsigned: ethers.providers.TransactionRequest) => Promise<HexString>
+  ethSendSigned: (
+    unsigned: ethers.providers.TransactionRequest,
+    signed: HexString
+  ) => Promise<HexString>
   ethApproveSign: (id: SigningRequestID<"eth-sign">) => Promise<boolean>
   ethApproveSignHardware: (
     id: SigningRequestID<"eth-sign">,

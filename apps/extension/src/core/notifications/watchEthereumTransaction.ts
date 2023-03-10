@@ -1,6 +1,9 @@
 import { db } from "@core/db"
 import { settingsStore } from "@core/domains/app"
-import { addEvmTransaction, updateEvmTransaction } from "@core/domains/recentTransactions/helpers"
+import {
+  addEvmTransaction,
+  updateEvmTransactionStatus,
+} from "@core/domains/recentTransactions/helpers"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
@@ -49,10 +52,8 @@ export const watchEthereumTransaction = async (
       // status 0 = error
       // status 1 = ok
       // easy to test on busy AMM pools with a 0.05% slippage limit
-      updateEvmTransaction(txHash, {
-        status: receipt.status ? "success" : "error",
-        blockNumber: receipt.blockNumber?.toString(),
-      })
+      // TODO are there other statuses ? one for replaced maybe ?
+      updateEvmTransactionStatus(txHash, receipt.status ? "success" : "error")
 
       // success if associated to a block number
       if (withNotifications)
@@ -62,7 +63,7 @@ export const watchEthereumTransaction = async (
           txUrl
         )
     } catch (err) {
-      updateEvmTransaction(txHash, { status: "unknown" })
+      updateEvmTransactionStatus(txHash, "unknown")
 
       if (withNotifications) await createNotification("error", networkName, txUrl, err as Error)
       // eslint-disable-next-line no-console

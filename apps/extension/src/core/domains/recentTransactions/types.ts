@@ -3,7 +3,7 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { UnsignedTransaction, ethers } from "ethers"
 
 // unknown for substrate txs from dapps
-export type TransactionStatus = "unknown" | "pending" | "success" | "error"
+export type TransactionStatus = "unknown" | "pending" | "success" | "error" | "replaced"
 
 export type EvmWalletTransaction = {
   networkType: "evm"
@@ -13,6 +13,7 @@ export type EvmWalletTransaction = {
   timestamp: number
   hash: string
   status: TransactionStatus
+  isReplacement?: boolean
 
   // replay
   unsigned: ethers.providers.TransactionRequest
@@ -35,6 +36,7 @@ export type SubWalletTransaction = {
   chainId?: ChainId
   timestamp: number
   hash: string
+  isReplacement?: boolean
 
   // replay
   unsigned: SignerPayloadJSON

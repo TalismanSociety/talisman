@@ -28,5 +28,6 @@ export const useEthReplaceTransaction = (
     [tx, type]
   )
 
+  // TODO force maxPriorityFee (type 2) or gasPrice (type 1) to be 0.01 GWEI higher than the original tx ?
   return useEthTransaction(transaction, lock, true)
 }

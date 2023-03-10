@@ -2,7 +2,8 @@ import { db } from "@core/db"
 import { BigNumber, BigNumberish, ethers } from "ethers"
 import merge from "lodash/merge"
 
-import { WalletTransaction } from "./types"
+import { serializeTransactionRequestBigNumbers } from "../ethereum/helpers"
+import { TransactionStatus, WalletTransaction } from "./types"
 
 const safeBigNumberish = (value?: BigNumberish) =>
   BigNumber.isBigNumber(value) ? value.toString() : value
@@ -27,15 +28,7 @@ export const addEvmTransaction = async (
     if (!tx.chainId || !tx.nonce || !tx.from) throw new Error("Invalid transaction")
 
     // make it serializable so it can be safely stored
-    const unsigned: ethers.providers.TransactionRequest = {
-      ...tx,
-      gasLimit: safeBigNumberish(tx.gasLimit),
-      gasPrice: safeBigNumberish(tx.gasPrice),
-      maxFeePerGas: safeBigNumberish(tx.maxFeePerGas),
-      maxPriorityFeePerGas: safeBigNumberish(tx.maxPriorityFeePerGas),
-      value: safeBigNumberish(tx.value),
-      nonce: safeBigNumberish(tx.nonce),
-    }
+    const unsigned = serializeTransactionRequestBigNumbers(tx)
 
     db.transactions.add({
       networkType: "evm",
@@ -55,12 +48,18 @@ export const addEvmTransaction = async (
   }
 }
 
-export const updateEvmTransaction = async (
-  hash: string,
-  changes: Omit<Partial<WalletTransaction>, "hash">
-) => {
+export const updateEvmTransactionStatus = async (hash: string, status: TransactionStatus) => {
   try {
-    await db.transactions.update(hash, changes)
+    await db.transactions.update(hash, { status })
+    if (["success", "error"].includes(status)) {
+      const tx = await db.transactions.get(hash)
+
+      if (tx?.networkType === "evm")
+        await db.transactions
+          .filter((row) => row.nonce === tx.nonce && ["pending", "unknown"].includes(row.status))
+          .modify({ status: "replaced" })
+    }
+
     return true
   } catch (err) {
     // eslint-disable-next-line no-console

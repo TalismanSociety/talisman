@@ -1,20 +1,20 @@
+import { serializeTransactionRequestBigNumbers } from "@core/domains/ethereum/helpers"
 import {
   EvmWalletTransaction,
   SubWalletTransaction,
   WalletTransaction,
 } from "@core/domains/recentTransactions/types"
 import { notify } from "@talisman/components/Notifications"
-import { RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
+import { XOctagonIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import { BigNumber, ethers } from "ethers"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { BigNumber } from "ethers"
+import { FC, useCallback, useEffect, useState } from "react"
 import { Button, Drawer } from "talisman-ui"
 
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"
-import { useEthTransaction } from "../Ethereum/useEthTransaction"
 
 type TxCancelDrawerProps = {
   tx?: WalletTransaction
@@ -47,23 +47,27 @@ const EvmDrawerContent: FC<{
 
   const [isProcessing, setIsProcessing] = useState(false)
 
-  const handleCancel = useCallback(async () => {
+  const handleSend = useCallback(async () => {
     if (!transaction) return
     setIsProcessing(true)
     try {
-      await api.ethApproveSignAndSend(`eth-send.${tx.hash}-replace`, transaction)
+      const safeTx = serializeTransactionRequestBigNumbers(transaction)
+      await api.ethSignAndSend(safeTx)
       onClose?.()
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.error("handleCancel", { err })
+      console.error("handleSend", { err })
       notify({
-        title: "Error",
+        title: "Failed to cancel",
         type: "error",
-        subtitle: "Failed to cancel",
+        subtitle:
+          (err as any)?.message === "nonce too low"
+            ? "Transaction already confirmed"
+            : "Failed to cancel",
       })
     }
     setIsProcessing(false)
-  }, [onClose, transaction, tx.hash])
+  }, [onClose, transaction])
 
   return (
     <>
@@ -112,8 +116,8 @@ const EvmDrawerContent: FC<{
         <Button
           className="h-24"
           primary
-          onClick={handleCancel}
-          disabled={!isValid}
+          onClick={handleSend}
+          disabled={!isLoading && !isValid}
           processing={isProcessing}
         >
           Try to Cancel

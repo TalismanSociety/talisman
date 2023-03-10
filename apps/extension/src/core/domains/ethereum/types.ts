@@ -2,6 +2,7 @@ import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "@core/domain
 import type { CustomErc20Token } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
+import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BigNumberish, ethers } from "ethers"
 
@@ -27,6 +28,14 @@ export type AddEthereumChainParameter = {
   blockExplorerUrls?: string[]
   /** Currently ignored by metamask */
   iconUrls?: string[]
+}
+
+export type EthTxSignAndSend = {
+  unsigned: ethers.providers.TransactionRequest
+}
+export type EthTxSendSigned = {
+  unsigned: ethers.providers.TransactionRequest
+  signed: `0x${string}`
 }
 
 export declare type EthApproveSignAndSend = KnownSigningRequestIdOnly<ETH_SEND> & {
@@ -86,6 +95,8 @@ export interface EthMessages {
   // eth signing message signatures
   "pri(eth.request)": [AnyEthRequestChainId, EthResponseTypes]
   "pri(eth.transactions.count)": [EthNonceRequest, number]
+  "pri(eth.signing.signAndSend)": [EthTxSignAndSend, HexString]
+  "pri(eth.signing.sendSigned)": [EthTxSendSigned, HexString]
   "pri(eth.signing.cancel)": [KnownSigningRequestIdOnly<"eth-send" | "eth-sign">, boolean]
   "pri(eth.signing.approveSign)": [KnownSigningRequestIdOnly<"eth-sign">, boolean]
   "pri(eth.signing.approveSignAndSend)": [EthApproveSignAndSend, boolean]

@@ -4,7 +4,6 @@ import {
   WalletTransaction,
 } from "@core/domains/recentTransactions/types"
 import { TransactionStatus } from "@core/domains/recentTransactions/types"
-import { TooltipBoundaryProvider, WithTooltip } from "@talisman/components/Tooltip"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -14,6 +13,7 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { BigNumber } from "ethers"
+import sortBy from "lodash/sortBy"
 import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
@@ -65,6 +65,7 @@ const EvmTxActions: FC<{
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
+  const isPending = useMemo(() => ["pending", "unknown"].includes(tx?.status), [tx.status])
   const ocSpeedUp = useOpenClose()
   const ocCancelUp = useOpenClose()
 
@@ -105,26 +106,30 @@ const EvmTxActions: FC<{
       )}
     >
       <div className="relative">
-        <Tooltip>
-          <TooltipTrigger>
-            <ActionButton onClick={handleActionClick("speed-up")}>
-              <RocketIcon className="inline" />
-            </ActionButton>
-          </TooltipTrigger>
-          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-            Speed Up
-          </TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger>
-            <ActionButton onClick={handleActionClick("cancel")}>
-              <XOctagonIcon className="inline" />
-            </ActionButton>
-          </TooltipTrigger>
-          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-            Cancel
-          </TooltipContent>
-        </Tooltip>
+        {isPending && (
+          <>
+            <Tooltip>
+              <TooltipTrigger>
+                <ActionButton onClick={handleActionClick("speed-up")}>
+                  <RocketIcon className="inline" />
+                </ActionButton>
+              </TooltipTrigger>
+              <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+                Speed Up
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger>
+                <ActionButton onClick={handleActionClick("cancel")}>
+                  <XOctagonIcon className="inline" />
+                </ActionButton>
+              </TooltipTrigger>
+              <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+                Cancel
+              </TooltipContent>
+            </Tooltip>
+          </>
+        )}
         <Popover open={isOpen} onOpenChange={handleOpenChange}>
           <Tooltip>
             <TooltipTrigger>
@@ -148,18 +153,22 @@ const EvmTxActions: FC<{
               isOpen ? "visible opacity-100" : "invisible opacity-0"
             )}
           >
-            <button
-              onClick={handleActionClick("cancel")}
-              className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-            >
-              Cancel transaction
-            </button>
-            <button
-              onClick={handleActionClick("speed-up")}
-              className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-            >
-              Speed up transaction
-            </button>
+            {isPending && (
+              <>
+                <button
+                  onClick={handleActionClick("cancel")}
+                  className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
+                >
+                  Cancel transaction
+                </button>
+                <button
+                  onClick={handleActionClick("speed-up")}
+                  className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
+                >
+                  Speed up transaction
+                </button>
+              </>
+            )}
             {hrefBlockExplorer && (
               <button
                 onClick={handleBlockExplorerClick}
@@ -196,6 +205,13 @@ const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) =
       )
     case "success":
       return <span>Confirmed</span>
+    case "replaced":
+      return (
+        <>
+          <span>Cancelled</span>
+          <XOctagonIcon className="text-brand-orange" />
+        </>
+      )
     case "unknown":
       return <span>Unknown</span>
   }
@@ -258,10 +274,15 @@ const TransactionRowEvm: FC<TransactionRowPropsEvm> = ({
       </Tooltip>
       <div className="leading-paragraph relative flex w-full grow justify-between">
         <div className="text-left">
-          <div className="flex items-center gap-2 text-sm font-bold">
+          <div className="flex h-10 items-center gap-2 text-sm font-bold">
             <TransactionStatusLabel status={tx.status} />
+            {tx.isReplacement && (
+              <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
+                Replacement
+              </span>
+            )}
           </div>
-          <div className="text-body-secondary text-xs">
+          <div className="text-body-secondary h-[17px] text-xs">
             To: {to ? shortenAddress(to) : "unknown"}
           </div>
         </div>
@@ -313,8 +334,19 @@ const TransactionRow: FC<TransactionRowProps> = ({ tx, ...props }) => {
 }
 
 const TransactionsList: FC<{
-  transactions?: WalletTransaction[]
+  transactions: WalletTransaction[]
 }> = ({ transactions }) => {
+  const sortedTxs: WalletTransaction[] = useMemo(
+    () =>
+      sortBy(transactions, ["timestamp"])
+        .reverse()
+        .map((tx, i, arr) => ({
+          ...tx,
+          isReplacement: arr.findIndex((t) => t.hash !== tx.hash && t.nonce === tx.nonce) > i,
+        })),
+    [transactions]
+  )
+
   // if context menu is open on a row, we need to disable others
   // because of this we need to control at list level which row shows buttons
   const [activeTxHash, setActiveTxHash] = useState<string>()
@@ -337,7 +369,7 @@ const TransactionsList: FC<{
 
   return (
     <div className="scrollable scrollable-700 space-y-8 overflow-y-auto px-12">
-      {transactions?.map((tx) => (
+      {sortedTxs?.map((tx) => (
         <TransactionRow
           key={tx.hash}
           tx={tx}
@@ -371,7 +403,7 @@ export const PendingTransactionsDrawer: FC<{
           <span>{transactions?.length ?? 0}</span>
         </span>
       </div>
-      <TransactionsList transactions={transactions} />
+      {transactions && <TransactionsList transactions={transactions} />}
       <div className="p-12">
         <Button className="w-full shrink-0" onClick={onClose}>
           Close

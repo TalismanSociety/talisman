@@ -67,11 +67,27 @@ export const getErc20TokenId = (
   contractAddress: string
 ) => `${chainOrNetworkId}-evm-erc20-${contractAddress}`.toLowerCase()
 
+const safeBigNumberish = (value?: BigNumberish) =>
+  BigNumber.isBigNumber(value) ? value.toString() : value
+
+export const serializeTransactionRequestBigNumbers = (tx: ethers.providers.TransactionRequest) => {
+  const clone = structuredClone(tx)
+
+  if (tx.gasLimit) tx.gasLimit = safeBigNumberish(tx.gasLimit)
+  if (tx.gasPrice) tx.gasPrice = safeBigNumberish(tx.gasPrice)
+  if (tx.maxFeePerGas) tx.maxFeePerGas = safeBigNumberish(tx.maxFeePerGas)
+  if (tx.maxPriorityFeePerGas) tx.maxPriorityFeePerGas = safeBigNumberish(tx.maxPriorityFeePerGas)
+  if (tx.value) tx.value = safeBigNumberish(tx.value)
+  if (tx.nonce) tx.nonce = safeBigNumberish(tx.nonce)
+
+  return clone
+}
+
 // BigNumbers need to be reconstructed if they are serialized then deserialized
 export const rebuildTransactionRequestNumbers = (
   transaction: ethers.providers.TransactionRequest
 ) => {
-  const tx = { ...transaction } as ethers.providers.TransactionRequest
+  const tx = structuredClone(transaction)
 
   if (tx.gasLimit) tx.gasLimit = BigNumber.from(tx.gasLimit)
   if (tx.gasPrice) tx.gasPrice = BigNumber.from(tx.gasPrice)
@@ -84,7 +100,7 @@ export const rebuildTransactionRequestNumbers = (
 }
 
 export const rebuildGasSettings = (gasSettings: EthGasSettings) => {
-  const gs = { ...gasSettings } as EthGasSettings
+  const gs = structuredClone(gasSettings)
 
   gs.gasLimit = BigNumber.from(gs.gasLimit)
 
