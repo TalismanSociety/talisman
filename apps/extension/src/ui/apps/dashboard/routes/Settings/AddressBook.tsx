@@ -3,7 +3,7 @@ import HeaderBlock from "@talisman/components/HeaderBlock"
 import PopNav from "@talisman/components/PopNav"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { CopyIcon, MoreHorizontalIcon, UserPlusIcon } from "@talisman/theme/icons"
+import { CopyIcon, MoreHorizontalIcon, PlusIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
@@ -11,7 +11,6 @@ import Layout from "@ui/apps/dashboard/layout"
 import { Address } from "@ui/domains/Account/Address"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
-import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
@@ -20,7 +19,7 @@ import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { PropsWithChildren, useMemo, useState } from "react"
-import { PillButton } from "talisman-ui"
+import { Button, PillButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -121,6 +120,11 @@ const AddressBook = () => {
   const [toEdit, setToEdit] = useState<string>()
   const { open, isOpen, close } = useOpenClose()
   const [addressType, setAddressType] = useState<"polkadot" | "ethereum">("polkadot")
+  const contactactsToDisplay = useMemo(
+    () =>
+      contacts.filter((contact) => contact.addressType === contactTypeAddressTypeMap[addressType]),
+    [contacts, addressType]
+  )
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
@@ -130,26 +134,31 @@ const AddressBook = () => {
         <HeaderBlock title="Address Book" text="Manage your saved contacts" />
         <div className="mt-4 flex justify-between align-middle">
           <ProviderTypeSwitch defaultProvider="polkadot" onChange={setAddressType} />
-          <PillButton onClick={open} icon={UserPlusIcon}>
-            Add new contact
-          </PillButton>
+          {contactactsToDisplay.length > 0 && (
+            <PillButton onClick={open} icon={UserPlusIcon}>
+              Add new contact
+            </PillButton>
+          )}
         </div>
         <Spacer />
         <div className="flex flex-col gap-3">
-          {contacts
-            .filter((contact) => contact.addressType === contactTypeAddressTypeMap[addressType])
-            .map((contact) => (
-              <AddressBookContactItem
-                contact={contact}
-                key={contact.address}
-                handleDelete={setToDelete}
-                handleEdit={setToEdit}
-              />
-            ))}
-          {contacts.length === 0 && (
-            <div className="bg-black-secondary flex w-full justify-between rounded p-8">
-              You have no saved contacts yet. You can save contacts when sending funds and they'll
-              appear here.
+          {contactactsToDisplay.map((contact) => (
+            <AddressBookContactItem
+              contact={contact}
+              key={contact.address}
+              handleDelete={setToDelete}
+              handleEdit={setToEdit}
+            />
+          ))}
+          {contactactsToDisplay.length === 0 && (
+            <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
+              <span>
+                You have no saved {addressType[0].toUpperCase()}
+                {addressType.slice(1)} contacts yet.
+              </span>
+              <Button primary onClick={open} iconLeft={PlusIcon}>
+                Add a contact
+              </Button>
             </div>
           )}
         </div>
