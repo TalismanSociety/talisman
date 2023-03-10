@@ -1,14 +1,17 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import HeaderBlock from "@talisman/components/HeaderBlock"
+import PopNav from "@talisman/components/PopNav"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, MoreHorizontalIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
+import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
 import { Address } from "@ui/domains/Account/Address"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
+import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
@@ -27,9 +30,12 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const SquareButton = ({ children }: PropsWithChildren) => (
-  <span className="hover:bg-grey-700 flex h-[3.2rem] w-[3.2rem] cursor-pointer items-center justify-center rounded">
+  <button
+    type="button"
+    className="hover:bg-grey-700 flex h-[3.2rem] w-[3.2rem] cursor-pointer items-center justify-center rounded"
+  >
     {children}
-  </span>
+  </button>
 )
 
 type ContactItemProps = ExistingContactComponentProps & {
@@ -40,6 +46,7 @@ type ContactItemProps = ExistingContactComponentProps & {
 const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => {
   const { open: openCopyAddressModal } = useAddressFormatterModal()
   const [hover, setHover] = useState(false)
+
   return (
     <div
       className="bg-black-secondary hover:bg-black-tertiary flex w-full items-center justify-between rounded p-8"
@@ -59,9 +66,41 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
         <SquareButton>
           <CopyIcon onClick={() => openCopyAddressModal(contact.address)} />
         </SquareButton>
-        <SquareButton>
-          <MoreHorizontalIcon />
-        </SquareButton>
+        <PopNav
+          trigger={
+            <SquareButton>
+              <MoreHorizontalIcon />
+            </SquareButton>
+          }
+          className="icon more"
+          noPadding
+          closeOnMouseOut
+        >
+          <PopNav.Item
+            className="hover:bg-black-tertiary"
+            onClick={() => handleEdit(contact.address)}
+          >
+            Edit contact
+          </PopNav.Item>
+          <PopNav.Item
+            className="hover:bg-black-tertiary"
+            onClick={() => api.sendFundsOpen({ to: contact.address })}
+          >
+            Send to this contact
+          </PopNav.Item>
+          <PopNav.Item
+            className="hover:bg-black-tertiary"
+            onClick={() => openCopyAddressModal(contact.address)}
+          >
+            Copy Address
+          </PopNav.Item>
+          <PopNav.Item
+            className="hover:bg-black-tertiary"
+            onClick={() => handleDelete(contact.address)}
+          >
+            Delete Contact
+          </PopNav.Item>
+        </PopNav>
       </div>
     </div>
   )

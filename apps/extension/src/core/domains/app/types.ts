@@ -25,7 +25,7 @@ export type ModalOpenRequestSend = {
   transferableTokenId?: string
 }
 export type ModalOpenRequest = ModalOpenRequestBuy | ModalOpenRequestSend
-export type SendFundsOpenRequest = { from?: Address; tokenId?: TokenId }
+export type SendFundsOpenRequest = { from?: Address; tokenId?: TokenId; to?: Address }
 
 export interface AnalyticsCaptureRequest {
   eventName: string
