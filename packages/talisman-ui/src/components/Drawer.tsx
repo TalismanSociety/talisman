@@ -1,16 +1,6 @@
 import { Transition } from "@headlessui/react"
 import { classNames } from "@talismn/util"
-import { default as clsx } from "clsx"
-import {
-  FC,
-  MouseEventHandler,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useState,
-} from "react"
+import { FC, MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { createPortal } from "react-dom"
 
 type DrawerAnchor = "top" | "right" | "bottom" | "left"
@@ -108,7 +98,7 @@ export const Drawer: FC<DrawerProps> = ({
       {/* Background overlay */}
       {onDismiss && (
         <Transition.Child
-          className={clsx(
+          className={classNames(
             "bg-grey-900 top-0 left-0 z-10 h-full w-full cursor-pointer bg-opacity-50",
             position
           )}

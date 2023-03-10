@@ -109,7 +109,7 @@ const EvmTxActions: FC<{
         {isPending && (
           <>
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger asChild>
                 <ActionButton onClick={handleActionClick("speed-up")}>
                   <RocketIcon className="inline" />
                 </ActionButton>
@@ -119,7 +119,7 @@ const EvmTxActions: FC<{
               </TooltipContent>
             </Tooltip>
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger asChild>
                 <ActionButton onClick={handleActionClick("cancel")}>
                   <XOctagonIcon className="inline" />
                 </ActionButton>
@@ -130,17 +130,16 @@ const EvmTxActions: FC<{
             </Tooltip>
           </>
         )}
-        <Popover open={isOpen} onOpenChange={handleOpenChange}>
+        <Popover placement="bottom-end" open={isOpen} onOpenChange={handleOpenChange}>
           <Tooltip>
-            <TooltipTrigger>
-              <PopoverTrigger
-                className={classNames(
-                  "hover:bg-grey-700 text-body-secondary hover:text-body inline-block h-[36px] w-[36px] shrink-0 rounded-sm text-center",
-                  isOpen && " !bg-grey-700"
-                )}
-                onClick={() => handleOpenChange(true)}
-              >
-                <MoreHorizontalIcon className="inline" />
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <ActionButton
+                  className={classNames(isOpen && " !bg-grey-700 !text-body")}
+                  onClick={() => handleOpenChange(true)}
+                >
+                  <MoreHorizontalIcon className="inline" />
+                </ActionButton>
               </PopoverTrigger>
             </TooltipTrigger>
             <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
