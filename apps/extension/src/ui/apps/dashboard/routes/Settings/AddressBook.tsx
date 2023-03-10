@@ -2,13 +2,7 @@ import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import {
-  CopyIcon,
-  EditIcon,
-  HamburgerMenuIcon,
-  TrashIcon,
-  UserPlusIcon,
-} from "@talisman/theme/icons"
+import { CopyIcon, MoreHorizontalIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
@@ -22,7 +16,7 @@ import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useMemo, useState } from "react"
+import { PropsWithChildren, useMemo, useState } from "react"
 import { PillButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -31,6 +25,12 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   featureVersion: 1,
   page: "Address book contact list",
 }
+
+const SquareButton = ({ children }: PropsWithChildren) => (
+  <span className="hover:bg-grey-700 flex h-[3.2rem] w-[3.2rem] cursor-pointer items-center justify-center rounded">
+    {children}
+  </span>
+)
 
 type ContactItemProps = ExistingContactComponentProps & {
   handleDelete: (address: string) => void
@@ -54,16 +54,14 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
         </div>
       </span>
       <div
-        className={`text-body-secondary flex gap-6 duration-300 ${
-          hover ? "opacity-100" : "opacity-0"
-        }`}
+        className={`text-body-secondary flex duration-300 ${hover ? "opacity-100" : "opacity-0"}`}
       >
-        <CopyIcon
-          className="cursor-pointer"
-          onClick={() => openCopyAddressModal(contact.address)}
-        />
-        <EditIcon className="cursor-pointer" onClick={() => handleEdit(contact.address)} />
-        <TrashIcon className="cursor-pointer" onClick={() => handleDelete(contact.address)} />
+        <SquareButton>
+          <CopyIcon onClick={() => openCopyAddressModal(contact.address)} />
+        </SquareButton>
+        <SquareButton>
+          <MoreHorizontalIcon />
+        </SquareButton>
       </div>
     </div>
   )
