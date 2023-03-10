@@ -1,15 +1,16 @@
-import { StorageKey, TypeRegistry, decorateStorage } from "@polkadot/types"
-import { ChainConnector } from "@talismn/chain-connector"
-import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
-import { ChaindataProvider, IToken } from "@talismn/chaindata-provider"
+import { Metadata, StorageKey, TypeRegistry, decorateStorage } from "@polkadot/types"
+import type { Registry } from "@polkadot/types-codec/types"
+import { ChainId, IToken } from "@talismn/chaindata-provider"
 
 import {
   BalanceModule,
   DefaultChainMeta,
   DefaultModuleConfig,
+  DefaultTransferParams,
   ExtendableChainMeta,
   ExtendableModuleConfig,
   ExtendableTokenType,
+  ExtendableTransferParams,
 } from "./BalanceModule"
 import log from "./log"
 import { AddressesByToken, Balance, Balances, SubscriptionCallback, UnsubscribeFn } from "./types"
@@ -22,22 +23,20 @@ export async function balances<
   TModuleType extends string,
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
 >(
-  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig>,
-  chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
-  chaindataProvider: ChaindataProvider,
+  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   addressesByToken: AddressesByToken<TTokenType>
 ): Promise<Balances>
 export async function balances<
   TModuleType extends string,
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
 >(
-  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig>,
-  chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
-  chaindataProvider: ChaindataProvider,
+  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   addressesByToken: AddressesByToken<TTokenType>,
   callback: SubscriptionCallback<Balances>
 ): Promise<UnsubscribeFn>
@@ -45,29 +44,45 @@ export async function balances<
   TModuleType extends string,
   TTokenType extends ExtendableTokenType,
   TChainMeta extends ExtendableChainMeta = DefaultChainMeta,
-  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig
+  TModuleConfig extends ExtendableModuleConfig = DefaultModuleConfig,
+  TTransferParams extends ExtendableTransferParams = DefaultTransferParams
 >(
-  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig>,
-  chainConnectors: { substrate?: ChainConnector; evm?: ChainConnectorEvm },
-  chaindataProvider: ChaindataProvider,
+  balanceModule: BalanceModule<TModuleType, TTokenType, TChainMeta, TModuleConfig, TTransferParams>,
   addressesByToken: AddressesByToken<TTokenType>,
   callback?: SubscriptionCallback<Balances>
 ): Promise<Balances | UnsubscribeFn> {
   // subscription request
   if (callback !== undefined)
-    return await balanceModule.subscribeBalances(
-      chainConnectors,
-      chaindataProvider,
-      addressesByToken,
-      callback
-    )
+    return await balanceModule.subscribeBalances(addressesByToken, callback)
 
   // one-off request
-  return await balanceModule.fetchBalances(chainConnectors, chaindataProvider, addressesByToken)
+  return await balanceModule.fetchBalances(addressesByToken)
+}
+
+export const createTypeRegistryCache = () => {
+  const typeRegistryCache: Map<ChainId, TypeRegistry> = new Map()
+
+  const getOrCreateTypeRegistry = (chainId: ChainId, metadataRpc?: `0x${string}`): Registry => {
+    // TODO: Delete cache when metadataRpc is different from last time
+    const cached = typeRegistryCache.get(chainId)
+    if (cached) return cached
+
+    const typeRegistry = new TypeRegistry()
+    if (typeof metadataRpc === "string") {
+      const metadata = new Metadata(typeRegistry, metadataRpc)
+      metadata.registry.setMetadata(metadata)
+    }
+
+    typeRegistryCache.set(chainId, typeRegistry)
+
+    return typeRegistry
+  }
+
+  return { getOrCreateTypeRegistry }
 }
 
 export const filterMirrorTokens = (balance: Balance, i: number, balances: Balance[]) => {
-  // TODO implement a mirrorOf property, which should be set from chaindata
+  // TODO: implement a mirrorOf property, which should be set from chaindata
   const mirrorOf = (balance.token as (IToken & { mirrorOf?: string | null }) | null)?.mirrorOf
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }
@@ -85,7 +100,7 @@ export class StorageHelper {
 
   tags: any = null
 
-  constructor(registry: TypeRegistry, module: string, method: string, ...parameters: any[]) {
+  constructor(registry: Registry, module: string, method: string, ...parameters: any[]) {
     this.#registry = registry
 
     this.#module = module
@@ -142,7 +157,7 @@ export class StorageHelper {
   }
 
   #decodeStorageScaleResponse(
-    typeRegistry: TypeRegistry,
+    typeRegistry: Registry,
     storageKey: StorageKey,
     input?: string | null
   ) {

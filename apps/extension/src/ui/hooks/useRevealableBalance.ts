@@ -24,17 +24,17 @@ export const useRevealableBalance = (isBalance?: boolean, noCountUp?: boolean) =
     if (!hideBalances || !isBalance || !span) return
 
     const show = (e: MouseEvent) => {
-      e.cancelBubble = true
+      e.stopPropagation()
       setIsRevealed((prev) => !prev)
     }
     const hide = () => setIsRevealed(false)
 
     span.addEventListener("click", show)
-    span.addEventListener("mouseout", hide)
+    span.addEventListener("mouseleave", hide)
 
     return () => {
       span.removeEventListener("click", show)
-      span.removeEventListener("mouseout", hide)
+      span.removeEventListener("mouseleave", hide)
     }
   }, [hideBalances, isBalance])
 

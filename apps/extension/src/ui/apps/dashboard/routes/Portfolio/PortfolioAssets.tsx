@@ -3,12 +3,12 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { IconMore } from "@talisman/theme/icons"
+import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
-import { useSendTokensModal } from "@ui/domains/Asset/Send"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { FundYourWallet } from "@ui/domains/Portfolio/FundYourWallet"
@@ -33,13 +33,12 @@ const PageContent = ({ balances }: { balances: Balances }) => {
   const { canRemove, open: openAccountRemoveModal } = useAccountRemoveModal()
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openAddressFormatterModal } = useAddressFormatterModal()
-  const { open: openSendFundsModal } = useSendTokensModal()
   const { genericEvent } = useAnalytics()
 
   const sendFunds = useCallback(() => {
-    openSendFundsModal({ from: account?.address })
+    api.sendFundsOpen({ from: account?.address })
     genericEvent("open send funds", { from: "dashboard portfolio" })
-  }, [account?.address, genericEvent, openSendFundsModal])
+  }, [account?.address, genericEvent])
 
   const { portfolio, available, locked } = useMemo(() => {
     const { total, frozen, reserved, transferable } = balancesToDisplay.sum.fiat("usd")

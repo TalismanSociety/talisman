@@ -9,6 +9,7 @@ import {
   PaperPlaneIcon,
   ZapIcon,
 } from "@talisman/theme/icons"
+import { Balance, Balances } from "@talismn/balances"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
@@ -108,7 +109,7 @@ const TopActions = () => {
       name: "Goto",
       action: "Send Funds button",
     })
-    await api.modalOpen({ modalType: "send" })
+    await api.sendFundsOpen()
     window.close()
   }, [])
 
@@ -173,6 +174,14 @@ export const PortfolioAccounts = () => {
   const { popupOpenEvent } = useAnalytics()
 
   const options: AccountOption[] = useMemo(() => {
+    // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
+    // instead, we'll only interate over the balances one time
+    const balancesByAddress: Map<string, Balance[]> = new Map()
+    balances.each.forEach((balance) => {
+      if (!balancesByAddress.has(balance.address)) balancesByAddress.set(balance.address, [])
+      balancesByAddress.get(balance.address)?.push(balance)
+    })
+
     return [
       {
         name: "All Accounts",
@@ -183,7 +192,7 @@ export const PortfolioAccounts = () => {
         genesisHash,
         name: name ?? "Unknown Account",
         origin: typeof origin === "string" ? origin : undefined,
-        total: balances.find({ address }).sum.fiat("usd").total,
+        total: new Balances(balancesByAddress.get(address) ?? []).sum.fiat("usd").total,
       })),
     ]
   }, [accounts, balances])

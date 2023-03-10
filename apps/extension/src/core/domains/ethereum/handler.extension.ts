@@ -18,6 +18,7 @@ import { EthRequestArguments, EthRequestSignatures } from "@core/injectEth/types
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"
+import { log } from "@core/log"
 import { watchEthereumTransaction } from "@core/notifications"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -31,49 +32,11 @@ import { evmNativeTokenId } from "@talismn/balances-evm-native"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
 
+import { getHumanReadableErrorMessage } from "./errors"
 import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
 import { AddEthereumChainRequestIdOnly, RequestUpsertCustomEvmNetwork } from "./types"
-
-// turns errors into short and human readable message.
-// main use case is teling the user why a transaction failed without going into details and clutter the UI
-const getHumanReadableErrorMessage = (error: unknown) => {
-  const {
-    code,
-    reason,
-    error: serverError,
-  } = error as { code?: string; reason?: string; error?: any }
-
-  if (serverError) {
-    const message = serverError.error?.message ?? serverError.reason ?? serverError.message
-    return message
-      .replace("VM Exception while processing transaction: reverted with reason string ", "")
-      .replace("VM Exception while processing transaction: revert", "")
-      .replace("VM Exception while processing transaction:", "")
-      .trim()
-  }
-
-  if (reason === "processing response error") return "Invalid transaction"
-
-  if (reason) return reason
-  if (code === ethers.errors.INSUFFICIENT_FUNDS) return "Insufficient balance"
-  if (code === ethers.errors.CALL_EXCEPTION) return "Contract method failed"
-  if (code === ethers.errors.NETWORK_ERROR) return "Network error"
-  if (code === ethers.errors.NONCE_EXPIRED) return "Nonce expired"
-  if (code === ethers.errors.UNSUPPORTED_OPERATION) return "Unsupported operation"
-  if (code === ethers.errors.NOT_IMPLEMENTED) return "Not implemented"
-  if (code === ethers.errors.TIMEOUT) return "Timeout exceeded"
-  if (code === ethers.errors.UNEXPECTED_ARGUMENT) return "Unexpected argument"
-  if (code === ethers.errors.BUFFER_OVERRUN) return "Buffer overrun"
-  if (code === ethers.errors.MISSING_ARGUMENT) return "Missing argument"
-  if (code === ethers.errors.UNEXPECTED_ARGUMENT) return "Unexpected argument"
-  if (code === ethers.errors.INVALID_ARGUMENT) return "Invalid argument"
-  if (code === ethers.errors.SERVER_ERROR) return "Server error"
-
-  // let the catch block decide what to display
-  return undefined
-}
 
 export class EthHandler extends ExtensionHandler {
   private async signAndSendApproveHardware({
@@ -466,12 +429,15 @@ export class EthHandler extends ExtensionHandler {
     request: EthRequestArguments<TEthMessageType>
   ): Promise<unknown> {
     const provider = await getProviderForEvmNetworkId(chainId, { batch: true })
-    assert(provider, `No healthy RPCs available for provider for chain ${chainId}`)
+    assert(provider, `No healthy RPCs available for chain ${chainId}`)
     try {
       return await provider.send(request.method, request.params as unknown as any[])
     } catch (err) {
-      const msg = getHumanReadableErrorMessage(err)
-      throw new Error(msg ?? (err as Error)?.message)
+      log.error("[ethRequest]", { err })
+      // errors raised from batches are raw (number code), errors raised from ethers JsonProvider are wrapped by ethers (text code)
+      // throw error as-is so frontend can figure it out on it's own it, while keeping access to underlying error message
+      // any component interested in knowing what the error is about should use @core/domains/ethereum/errors helpers
+      throw err
     }
   }
 

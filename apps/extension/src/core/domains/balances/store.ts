@@ -5,6 +5,7 @@ import { Chain } from "@core/domains/chains/types"
 import { EvmNetwork, EvmNetworkId } from "@core/domains/ethereum/types"
 import { Erc20Token } from "@core/domains/tokens/types"
 import { unsubscribe } from "@core/handlers/subscriptions"
+import { log } from "@core/log"
 import { chainConnector } from "@core/rpcs/chain-connector"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -22,7 +23,10 @@ import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
 import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
 
-export const balanceModules = defaultBalanceModules
+const chainConnectors = { substrate: chainConnector, evm: chainConnectorEvm }
+export const balanceModules = defaultBalanceModules.map((mod) =>
+  mod({ chainConnectors, chaindataProvider })
+)
 
 type ChainIdAndHealth = Pick<Chain, "id" | "isHealthy" | "genesisHash" | "account">
 type EvmNetworkIdAndHealth = Pick<
@@ -108,7 +112,9 @@ export class BalanceStore {
             .map((evmNetwork) => ({
               ...pick(evmNetwork, ["id", "isHealthy", "nativeToken", "substrateChain"]),
               erc20Tokens: erc20TokensByNetwork[evmNetwork.id],
-              substrateChainAccountFormat: null,
+              substrateChainAccountFormat:
+                (evmNetwork.substrateChain && chains[evmNetwork.substrateChain.id]?.account) ||
+                null,
             })),
 
           // tokens
@@ -165,11 +171,7 @@ export class BalanceStore {
     }
 
     const addressesByToken = { [tokenId]: [address] }
-    const balances = await balanceModule.fetchBalances(
-      { substrate: chainConnector, evm: chainConnectorEvm },
-      chaindataProvider,
-      addressesByToken
-    )
+    const balances = await balanceModule.fetchBalances(addressesByToken)
 
     return balances.find({ chainId, evmNetworkId, tokenId, address }).sorted[0]?.toJSON()
   }
@@ -205,12 +207,9 @@ export class BalanceStore {
 
     // Update chains and networks
     this.#chains = newChains
+    this.#evmNetworks = newEvmNetworks
+
     const chainsMap = Object.fromEntries(this.#chains.map((chain) => [chain.id, chain]))
-    this.#evmNetworks = newEvmNetworks.map((evmNetwork) => ({
-      ...evmNetwork,
-      substrateChainAccountFormat:
-        (evmNetwork.substrateChain && chainsMap[evmNetwork.substrateChain.id]?.account) || null,
-    }))
     const evmNetworksMap = Object.fromEntries(
       this.#evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork])
     )
@@ -282,9 +281,9 @@ export class BalanceStore {
     // If this job is triggered while a pending cleanup has not run yet, we cancel the pending one
     // and replace it with the latest one (which will have more accounts loaded).
     if (this.#addressesCleanupTimeout !== null) clearTimeout(this.#addressesCleanupTimeout)
-    this.#addressesCleanupTimeout = setTimeout(async () => {
+    this.#addressesCleanupTimeout = setTimeout(() => {
       this.#addressesCleanupTimeout = null
-      await this.deleteBalances((balance) => {
+      this.deleteBalances((balance) => {
         // remove balance if account doesn't exist
         if (!balance.address || addresses[balance.address] === undefined) return true
 
@@ -301,6 +300,8 @@ export class BalanceStore {
 
         // keep balance
         return false
+      }).catch((error) => {
+        log.error("Failed to clean up balances", { error })
       })
     }, 10_000 /* 10_000ms = 10 seconds */)
 
@@ -396,8 +397,6 @@ export class BalanceStore {
 
     const closeSubscriptionCallbacks = balanceModules.map((balanceModule) =>
       balanceModule.subscribeBalances(
-        { substrate: chainConnector, evm: chainConnectorEvm },
-        chaindataProvider,
         addressesByTokenByModule[balanceModule.type] ?? {},
         (error, result) => {
           // ignore old subscriptions which have been told to close but aren't closed yet
@@ -405,7 +404,10 @@ export class BalanceStore {
 
           // eslint-disable-next-line no-console
           if (error) DEBUG && console.error(error)
-          else this.upsertBalances(result ?? new Balances([]))
+          else
+            this.upsertBalances(result ?? new Balances([])).catch((error) => {
+              log.error("Failed to upsert balances", { error })
+            })
         }
       )
     )
@@ -451,11 +453,15 @@ export class BalanceStore {
       // this way the rpcs will remain connected for an extra ten seconds
       .forEach((cb) => cb.then((close) => setTimeout(close, 10_000)))
 
-    // rpcs are no longer connected,
-    // update cached balances to 'cache' status
-    await balancesDb.transaction("rw", balancesDb.balances, async () => {
-      await balancesDb.balances.toCollection().modify({ status: "cache" })
-    })
+    try {
+      // rpcs are no longer connected,
+      // update cached balances to 'cache' status
+      await balancesDb.transaction("rw", balancesDb.balances, async () => {
+        await balancesDb.balances.toCollection().modify({ status: "cache" })
+      })
+    } catch (error) {
+      log.error("Failed to update all balances to 'cache' status", { error })
+    }
 
     this.setSubscriptionsState("Closed")
   }

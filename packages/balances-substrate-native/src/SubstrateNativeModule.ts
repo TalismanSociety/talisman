@@ -1,13 +1,17 @@
 import { Metadata, TypeRegistry, createType, decorateConstants } from "@polkadot/types"
-import { u8aToHex } from "@polkadot/util"
+import type { Registry } from "@polkadot/types-codec/types"
+import { assert, u8aToHex } from "@polkadot/util"
+import { defineMethod } from "@substrate/txwrapper-core"
 import {
   Amount,
   Balance,
-  BalanceModule,
   Balances,
   DefaultBalanceModule,
   LockedAmount,
+  NewBalanceModule,
   NewBalanceType,
+  NewTransferParamsType,
+  createTypeRegistryCache,
 } from "@talismn/balances"
 import {
   ChainId,
@@ -126,329 +130,250 @@ declare module "@talismn/balances/plugins" {
   }
 }
 
-export const SubNativeModule: BalanceModule<
+export type SubNativeTransferParams = NewTransferParamsType<{
+  registry: TypeRegistry
+  metadataRpc: `0x${string}`
+  blockHash: string
+  blockNumber: number
+  nonce: number
+  specVersion: number
+  transactionVersion: number
+  tip?: string
+  transferMethod: "transfer" | "transferKeepAlive" | "transferAll"
+}>
+
+export const SubNativeModule: NewBalanceModule<
   ModuleType,
   SubNativeToken | CustomSubNativeToken,
   SubNativeChainMeta,
-  SubNativeModuleConfig
-> = {
-  ...DefaultBalanceModule("substrate-native"),
+  SubNativeModuleConfig,
+  SubNativeTransferParams
+> = (hydrate) => {
+  const { chainConnectors, chaindataProvider } = hydrate
+  const chainConnector = chainConnectors.substrate
+  assert(chainConnector, "This module requires a substrate chain connector")
 
-  async fetchSubstrateChainMeta(chainConnector, chaindataProvider, chainId, moduleConfig) {
-    const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
+  const { getOrCreateTypeRegistry } = createTypeRegistryCache()
 
-    if (moduleConfig?.disable === true)
-      return {
-        isTestnet,
-        symbol: "",
-        decimals: 0,
-        existentialDeposit: null,
-        accountInfoType: null,
-        metadata: null,
-        metadataVersion: 0,
-      }
+  return {
+    ...DefaultBalanceModule("substrate-native"),
 
-    const [metadataRpc, chainProperties] = await Promise.all([
-      chainConnector.send(chainId, "state_getMetadata", []),
-      chainConnector.send(chainId, "system_properties", []),
-    ])
+    async fetchSubstrateChainMeta(chainId, moduleConfig) {
+      const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
 
-    const { tokenSymbol, tokenDecimals } = chainProperties
+      if (moduleConfig?.disable === true)
+        return {
+          isTestnet,
+          symbol: "",
+          decimals: 0,
+          existentialDeposit: null,
+          accountInfoType: null,
+          metadata: null,
+          metadataVersion: 0,
+        }
 
-    const symbol: string = (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) || "Unknown"
-    const decimals: number = (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) || 0
+      const [metadataRpc, chainProperties] = await Promise.all([
+        chainConnector.send(chainId, "state_getMetadata", []),
+        chainConnector.send(chainId, "system_properties", []),
+      ])
 
-    const pjsMetadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
-    pjsMetadata.registry.setMetadata(pjsMetadata)
+      const { tokenSymbol, tokenDecimals } = chainProperties
 
-    const constants = decorateConstants(
-      pjsMetadata.registry,
-      pjsMetadata.asLatest,
-      pjsMetadata.version
-    )
-    const existentialDeposit = constants?.balances?.existentialDeposit
-      ? constants.balances.existentialDeposit.toString()
-      : null
+      const symbol: string =
+        (Array.isArray(tokenSymbol) ? tokenSymbol[0] : tokenSymbol) || "Unknown"
+      const decimals: number =
+        (Array.isArray(tokenDecimals) ? tokenDecimals[0] : tokenDecimals) || 0
 
-    let accountInfoType = null
-    const balanceMetadata = await mutateMetadata(metadataRpc, (metadata) => {
-      if (
-        metadata.__kind === "V0" ||
-        metadata.__kind === "V1" ||
-        metadata.__kind === "V2" ||
-        metadata.__kind === "V3" ||
-        metadata.__kind === "V4" ||
-        metadata.__kind === "V5" ||
-        metadata.__kind === "V6" ||
-        metadata.__kind === "V7" ||
-        metadata.__kind === "V8" ||
-        metadata.__kind === "V9" ||
-        metadata.__kind === "V10" ||
-        metadata.__kind === "V11" ||
-        metadata.__kind === "V12" ||
-        metadata.__kind === "V13"
-      ) {
-        // we can't parse metadata < v14
-        //
-        // as of v14 the type information required to interact with a chain is included in the chain metadata
-        // https://github.com/paritytech/substrate/pull/8615
-        //
-        // before this change, the client needed to already know the type information ahead of time
-        return null
-      }
+      const pjsMetadata: Metadata = new Metadata(new TypeRegistry(), metadataRpc)
+      pjsMetadata.registry.setMetadata(pjsMetadata)
 
-      const isSystemPallet = (pallet: any) => pallet.name === "System"
-      const isAccountItem = (item: any) => item.name === "Account"
-
-      metadata.value.pallets = metadata.value.pallets.filter(isSystemPallet)
-
-      const { systemPallet /* systemPallet is not needed anymore 🔥 */, accountItem } = (() => {
-        const systemPallet = metadata.value.pallets.find(isSystemPallet)
-        if (!systemPallet) return { systemPallet, accountItem: undefined }
-        if (!systemPallet.storage) return { systemPallet, accountItem: undefined }
-
-        systemPallet.events = undefined
-        systemPallet.calls = undefined
-        systemPallet.errors = undefined
-        systemPallet.constants = []
-        systemPallet.storage.items = systemPallet.storage.items.filter(isAccountItem)
-
-        const accountItem = (systemPallet.storage?.items || []).find(isAccountItem)
-        if (!accountItem) return { systemPallet, accountItem: undefined }
-
-        accountInfoType = accountItem.type.value
-        return { systemPallet, accountItem }
-      })()
-
-      // this is a set of type ids which we plan to keep in our mutated metadata
-      // anything not in this set will be deleted
-      // we start off with just the types of the state calls we plan to make,
-      // then we run those types through a function (addDependentTypes) which will also include
-      // all of the types which those types depend on - recursively
-      const keepTypes = new Set(
-        [
-          // NOTE: I don't think we need these for the balance state call,
-          //       but I'm leaving them here just in case we have issues later on.
-          // systemPallet?.events?.type,
-          // systemPallet?.calls?.type,
-          // systemPallet?.errors?.type,
-          accountItem?.type.value,
-        ].filter((type): type is number => typeof type === "number")
+      const constants = decorateConstants(
+        pjsMetadata.registry,
+        pjsMetadata.asLatest,
+        pjsMetadata.version
       )
+      const existentialDeposit = constants?.balances?.existentialDeposit
+        ? constants.balances.existentialDeposit.toString()
+        : null
 
-      const addDependentTypes = (types: number[]) => {
-        for (const typeIndex of types) {
-          const type = metadata.value.lookup.types[typeIndex]
-          if (!type) {
-            log.warn(`Unable to find type with index ${typeIndex}`)
-            continue
-          }
-
-          keepTypes.add(type.id)
-
-          if (type?.type?.def?.__kind === "Array") addDependentTypes([type.type.def.value.type])
-          if (type?.type?.def?.__kind === "Compact") addDependentTypes([type.type.def.value.type])
-          if (type?.type?.def?.__kind === "Composite")
-            addDependentTypes(type.type.def.value.fields.map(({ type }) => type))
-          if (type?.type?.def?.__kind === "Sequence") addDependentTypes([type.type.def.value.type])
-          if (type?.type?.def?.__kind === "Tuple")
-            addDependentTypes(type.type.def.value.map((type) => type))
-          if (type?.type?.def?.__kind === "Variant")
-            addDependentTypes(
-              type.type.def.value.variants.flatMap(({ fields }) => fields.map(({ type }) => type))
-            )
-        }
-      }
-
-      // recursively find all the types which our keepTypes depend on and add them to the keepTypes set
-      addDependentTypes([...keepTypes])
-
-      // ditch the types we aren't keeping
-      const isKeepType = (type: any) => keepTypes.has(type.id)
-      metadata.value.lookup.types = metadata.value.lookup.types.filter(isKeepType)
-
-      // ditch the chain's signedExtensions, we don't need them for balance lookups
-      // and the polkadot.js TypeRegistry will complain when it can't find the types for them
-      metadata.value.extrinsic.signedExtensions = []
-
-      return metadata
-    })
-
-    return {
-      isTestnet,
-      symbol,
-      decimals,
-      existentialDeposit,
-      accountInfoType,
-      metadata: balanceMetadata,
-      metadataVersion: pjsMetadata.version,
-    }
-  },
-
-  async fetchSubstrateChainTokens(
-    chainConnector,
-    chaindataProvider,
-    chainId,
-    chainMeta,
-    moduleConfig
-  ) {
-    if (moduleConfig?.disable === true) return {}
-
-    const {
-      isTestnet,
-      symbol,
-      decimals,
-      existentialDeposit,
-      accountInfoType,
-      metadata,
-      metadataVersion,
-    } = chainMeta
-
-    const id = subNativeTokenId(chainId, symbol)
-    const nativeToken: SubNativeToken = {
-      id,
-      type: "substrate-native",
-      isTestnet,
-      symbol,
-      decimals,
-      logo: githubTokenLogoUrl(id),
-      existentialDeposit: existentialDeposit || "0",
-      accountInfoType, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
-      metadata, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
-      metadataVersion, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
-      chain: { id: chainId },
-    }
-
-    return { [nativeToken.id]: nativeToken }
-  },
-
-  async subscribeBalances(chainConnectors, chaindataProvider, addressesByToken, callback) {
-    const chains = await chaindataProvider.chains()
-    const tokens = await chaindataProvider.tokens()
-    const subscriptions = Object.entries(addressesByToken)
-      .map(async ([tokenId, addresses]) => {
-        if (!chainConnectors.substrate)
-          throw new Error(`This module requires a substrate chain connector`)
-
-        const token = tokens[tokenId]
-        if (!token) throw new Error(`Token ${tokenId} not found`)
-
-        // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-        if (token.type !== "substrate-native") {
-          log.debug(`This module doesn't handle tokens of type ${token.type}`)
-          return () => {}
-        }
-
-        const chainId = token.chain?.id
-        if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
-
-        const chain = chains[chainId]
-        if (!chain) throw new Error(`Chain ${chainId} for token ${tokenId} not found`)
-
-        const typeRegistry = new TypeRegistry()
-        const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
-          ({ moduleType }) => moduleType === "substrate-native"
-        )?.metadata
+      let accountInfoType = null
+      const balanceMetadata = await mutateMetadata(metadataRpc, (metadata) => {
         if (
-          chainMeta?.metadata !== undefined &&
-          chainMeta?.metadata !== null &&
-          chainMeta?.metadataVersion >= 14
-        )
-          typeRegistry.setMetadata(new Metadata(typeRegistry, chainMeta.metadata))
+          metadata.__kind === "V0" ||
+          metadata.__kind === "V1" ||
+          metadata.__kind === "V2" ||
+          metadata.__kind === "V3" ||
+          metadata.__kind === "V4" ||
+          metadata.__kind === "V5" ||
+          metadata.__kind === "V6" ||
+          metadata.__kind === "V7" ||
+          metadata.__kind === "V8" ||
+          metadata.__kind === "V9" ||
+          metadata.__kind === "V10" ||
+          metadata.__kind === "V11" ||
+          metadata.__kind === "V12" ||
+          metadata.__kind === "V13"
+        ) {
+          // we can't parse metadata < v14
+          //
+          // as of v14 the type information required to interact with a chain is included in the chain metadata
+          // https://github.com/paritytech/substrate/pull/8615
+          //
+          // before this change, the client needed to already know the type information ahead of time
+          return null
+        }
 
-        const accountInfoTypeDef = (() => {
-          if (chainMeta?.accountInfoType === undefined) return AccountInfoOverrides[chainId]
-          if (chainMeta?.accountInfoType === null) return AccountInfoOverrides[chainId]
-          if (!(chainMeta?.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
+        const isSystemPallet = (pallet: any) => pallet.name === "System"
+        const isAccountItem = (item: any) => item.name === "Account"
 
-          try {
-            return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
-          } catch (error: any) {
-            log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
-            return
-          }
+        metadata.value.pallets = metadata.value.pallets.filter(isSystemPallet)
+
+        const { systemPallet /* systemPallet is not needed anymore 🔥 */, accountItem } = (() => {
+          const systemPallet = metadata.value.pallets.find(isSystemPallet)
+          if (!systemPallet) return { systemPallet, accountItem: undefined }
+          if (!systemPallet.storage) return { systemPallet, accountItem: undefined }
+
+          systemPallet.events = undefined
+          systemPallet.calls = undefined
+          systemPallet.errors = undefined
+          systemPallet.constants = []
+          systemPallet.storage.items = systemPallet.storage.items.filter(isAccountItem)
+
+          const accountItem = (systemPallet.storage?.items || []).find(isAccountItem)
+          if (!accountItem) return { systemPallet, accountItem: undefined }
+
+          accountInfoType = accountItem.type.value
+          return { systemPallet, accountItem }
         })()
 
-        // set up method, return message type and params
-        const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
-        const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
-        const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
-        const params = buildParams(addresses)
-
-        // build lookup table of `rpc hex output` -> `input address`
-        const addressReferences = buildAddressReferences(addresses)
-
-        // set up subscription
-        const unsubscribe = await chainConnectors.substrate.subscribe(
-          chainId,
-          subscribeMethod,
-          unsubscribeMethod,
-          responseMethod,
-          params,
-          (error, result) => {
-            if (error) return callback(error)
-            callback(
-              null,
-              formatRpcResult(
-                tokenId,
-                chainId,
-                chain.account,
-                accountInfoTypeDef,
-                typeRegistry,
-                addressReferences,
-                result
-              )
-            )
-          }
+        // this is a set of type ids which we plan to keep in our mutated metadata
+        // anything not in this set will be deleted
+        // we start off with just the types of the state calls we plan to make,
+        // then we run those types through a function (addDependentTypes) which will also include
+        // all of the types which those types depend on - recursively
+        const keepTypes = new Set(
+          [
+            // NOTE: I don't think we need these for the balance state call,
+            //       but I'm leaving them here just in case we have issues later on.
+            // systemPallet?.events?.type,
+            // systemPallet?.calls?.type,
+            // systemPallet?.errors?.type,
+            accountItem?.type.value,
+          ].filter((type): type is number => typeof type === "number")
         )
 
-        return unsubscribe
+        const addDependentTypes = (types: number[]) => {
+          for (const typeIndex of types) {
+            const type = metadata.value.lookup.types[typeIndex]
+            if (!type) {
+              log.warn(`Unable to find type with index ${typeIndex}`)
+              continue
+            }
+
+            keepTypes.add(type.id)
+
+            if (type?.type?.def?.__kind === "Array") addDependentTypes([type.type.def.value.type])
+            if (type?.type?.def?.__kind === "Compact") addDependentTypes([type.type.def.value.type])
+            if (type?.type?.def?.__kind === "Composite")
+              addDependentTypes(type.type.def.value.fields.map(({ type }) => type))
+            if (type?.type?.def?.__kind === "Sequence")
+              addDependentTypes([type.type.def.value.type])
+            if (type?.type?.def?.__kind === "Tuple")
+              addDependentTypes(type.type.def.value.map((type) => type))
+            if (type?.type?.def?.__kind === "Variant")
+              addDependentTypes(
+                type.type.def.value.variants.flatMap(({ fields }) => fields.map(({ type }) => type))
+              )
+          }
+        }
+
+        // recursively find all the types which our keepTypes depend on and add them to the keepTypes set
+        addDependentTypes([...keepTypes])
+
+        // ditch the types we aren't keeping
+        const isKeepType = (type: any) => keepTypes.has(type.id)
+        metadata.value.lookup.types = metadata.value.lookup.types.filter(isKeepType)
+
+        // ditch the chain's signedExtensions, we don't need them for balance lookups
+        // and the polkadot.js TypeRegistry will complain when it can't find the types for them
+        metadata.value.extrinsic.signedExtensions = []
+
+        return metadata
       })
-      .map((subscription) =>
-        subscription.catch((error) => {
-          log.warn(`Failed to create subscription: ${error.message}`)
-          return () => {}
-        })
-      )
 
-    return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
-  },
+      return {
+        isTestnet,
+        symbol,
+        decimals,
+        existentialDeposit,
+        accountInfoType,
+        metadata: balanceMetadata,
+        metadataVersion: pjsMetadata.version,
+      }
+    },
 
-  async fetchBalances(chainConnectors, chaindataProvider, addressesByToken) {
-    const chains = await chaindataProvider.chains()
-    const tokens = await chaindataProvider.tokens()
+    async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
+      if (moduleConfig?.disable === true) return {}
 
-    const balances = (
-      await Promise.all(
-        Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
-          if (!chainConnectors.substrate)
-            throw new Error(`This module requires a substrate chain connector`)
+      const {
+        isTestnet,
+        symbol,
+        decimals,
+        existentialDeposit,
+        accountInfoType,
+        metadata,
+        metadataVersion,
+      } = chainMeta
+
+      const id = subNativeTokenId(chainId, symbol)
+      const nativeToken: SubNativeToken = {
+        id,
+        type: "substrate-native",
+        isTestnet,
+        symbol,
+        decimals,
+        logo: githubTokenLogoUrl(id),
+        existentialDeposit: existentialDeposit || "0",
+        accountInfoType, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
+        metadata, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
+        metadataVersion, // TODO: Remove this from the token (it's not used - deprecated - but the existing live release uses it)
+        chain: { id: chainId },
+      }
+
+      return { [nativeToken.id]: nativeToken }
+    },
+
+    async subscribeBalances(addressesByToken, callback) {
+      const chains = await chaindataProvider.chains()
+      const tokens = await chaindataProvider.tokens()
+      const subscriptions = Object.entries(addressesByToken)
+        .map(async ([tokenId, addresses]) => {
+          assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
           const token = tokens[tokenId]
-          if (!token) throw new Error(`Token ${tokenId} not found`)
+          assert(token, `Token ${tokenId} not found`)
 
           // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
           if (token.type !== "substrate-native") {
             log.debug(`This module doesn't handle tokens of type ${token.type}`)
-            return false
+            return () => {}
           }
 
           const chainId = token.chain?.id
-          if (!chainId) throw new Error(`Token ${tokenId} has no chain`)
+          assert(chainId, `Token ${tokenId} has no chain`)
 
           const chain = chains[chainId]
-          if (!chain) throw new Error(`Chain ${chainId} for token ${tokenId} not found`)
+          assert(chain, `Chain ${chainId} for token ${tokenId} not found`)
 
-          const typeRegistry = new TypeRegistry()
           const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
             ({ moduleType }) => moduleType === "substrate-native"
           )?.metadata
-          if (
+          const typeRegistry =
             chainMeta?.metadata !== undefined &&
             chainMeta?.metadata !== null &&
             chainMeta?.metadataVersion >= 14
-          )
-            typeRegistry.setMetadata(new Metadata(typeRegistry, chainMeta.metadata))
+              ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
+              : new TypeRegistry()
 
           const accountInfoTypeDef = (() => {
             if (chainMeta?.accountInfoType === undefined) return AccountInfoOverrides[chainId]
@@ -463,32 +388,183 @@ export const SubNativeModule: BalanceModule<
             }
           })()
 
-          // set up method and params
-          const method = "state_queryStorageAt" // method we call to fetch
+          // set up method, return message type and params
+          const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
+          const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
+          const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
           const params = buildParams(addresses)
 
           // build lookup table of `rpc hex output` -> `input address`
           const addressReferences = buildAddressReferences(addresses)
 
-          // query rpc
-          const response = await chainConnectors.substrate.send(chainId, method, params)
-          const result = response[0]
-
-          return formatRpcResult(
-            tokenId,
+          // set up subscription
+          const unsubscribe = await chainConnectors.substrate.subscribe(
             chainId,
-            chain.account,
-            accountInfoTypeDef,
-            typeRegistry,
-            addressReferences,
-            result
+            subscribeMethod,
+            unsubscribeMethod,
+            responseMethod,
+            params,
+            (error, result) => {
+              if (error) return callback(error)
+              callback(
+                null,
+                formatRpcResult(
+                  tokenId,
+                  chainId,
+                  chain.account,
+                  accountInfoTypeDef,
+                  typeRegistry,
+                  addressReferences,
+                  result
+                )
+              )
+            }
           )
-        })
-      )
-    ).filter((balances): balances is Balances => balances !== false)
 
-    return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
-  },
+          return unsubscribe
+        })
+        .map((subscription) =>
+          subscription.catch((error) => {
+            log.warn(`Failed to create subscription: ${error.message}`)
+            return () => {}
+          })
+        )
+
+      return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
+    },
+
+    async fetchBalances(addressesByToken) {
+      const chains = await chaindataProvider.chains()
+      const tokens = await chaindataProvider.tokens()
+
+      const balances = (
+        await Promise.all(
+          Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
+            assert(chainConnectors.substrate, "This module requires a substrate chain connector")
+
+            const token = tokens[tokenId]
+            assert(token, `Token ${tokenId} not found`)
+
+            // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
+            if (token.type !== "substrate-native") {
+              log.debug(`This module doesn't handle tokens of type ${token.type}`)
+              return false
+            }
+
+            const chainId = token.chain?.id
+            assert(chainId, `Token ${tokenId} has no chain`)
+
+            const chain = chains[chainId]
+            assert(chain, `Chain ${chainId} for token ${tokenId} not found`)
+
+            const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
+              ({ moduleType }) => moduleType === "substrate-native"
+            )?.metadata
+            const typeRegistry =
+              chainMeta?.metadata !== undefined &&
+              chainMeta?.metadata !== null &&
+              chainMeta?.metadataVersion >= 14
+                ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
+                : new TypeRegistry()
+
+            const accountInfoTypeDef = (() => {
+              if (chainMeta?.accountInfoType === undefined) return AccountInfoOverrides[chainId]
+              if (chainMeta?.accountInfoType === null) return AccountInfoOverrides[chainId]
+              if (!(chainMeta?.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
+
+              try {
+                return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
+              } catch (error: any) {
+                log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
+                return
+              }
+            })()
+
+            // set up method and params
+            const method = "state_queryStorageAt" // method we call to fetch
+            const params = buildParams(addresses)
+
+            // build lookup table of `rpc hex output` -> `input address`
+            const addressReferences = buildAddressReferences(addresses)
+
+            // query rpc
+            const response = await chainConnectors.substrate.send(chainId, method, params)
+            const result = response[0]
+
+            return formatRpcResult(
+              tokenId,
+              chainId,
+              chain.account,
+              accountInfoTypeDef,
+              typeRegistry,
+              addressReferences,
+              result
+            )
+          })
+        )
+      ).filter((balances): balances is Balances => balances !== false)
+
+      return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
+    },
+
+    async transferToken({
+      tokenId,
+      from,
+      to,
+      amount,
+
+      registry,
+      metadataRpc,
+      blockHash,
+      blockNumber,
+      nonce,
+      specVersion,
+      transactionVersion,
+      tip,
+      transferMethod,
+    }) {
+      const token = await chaindataProvider.getToken(tokenId)
+      assert(token, `Token ${tokenId} not found in store`)
+
+      if (token.type !== "substrate-native")
+        throw new Error(`This module doesn't handle tokens of type ${token.type}`)
+
+      const chainId = token.chain.id
+      const chain = await chaindataProvider.getChain(chainId)
+      assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
+
+      const { genesisHash } = chain
+
+      const sendAll = transferMethod === "transferAll"
+
+      const pallet = "balances"
+      const method = transferMethod
+      const args = sendAll ? { dest: to, keepAlive: false } : { dest: to, value: amount }
+
+      const unsigned = defineMethod(
+        {
+          method: {
+            pallet,
+            name: method,
+            args,
+          },
+          address: from,
+          blockHash,
+          blockNumber,
+          eraPeriod: 64,
+          genesisHash,
+          metadataRpc,
+          nonce,
+          specVersion,
+          tip: tip ? Number(tip) : 0,
+          transactionVersion,
+        },
+        { metadataRpc, registry }
+      )
+
+      return { type: "substrate", tx: unsigned }
+    },
+  }
 }
 
 /**
@@ -551,7 +627,7 @@ function formatRpcResult(
   chainId: ChainId,
   chainAccountFormat: string | null,
   accountInfoTypeDef: string | undefined,
-  typeRegistry: TypeRegistry,
+  typeRegistry: Registry,
   addressReferences: Array<[string, string]>,
   result: unknown
 ): Balances {

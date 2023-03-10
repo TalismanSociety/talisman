@@ -2,7 +2,6 @@
   "extends": "@talismn/tsconfig/es6-react.json",
   "compilerOptions": {
     "noEmit": true,
-    "experimentalDecorators": true,
     "baseUrl": "src",
     "paths": {
       "@talisman": ["./@talisman"],

@@ -9,6 +9,8 @@ import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
 import { db as balancesDb } from "@talismn/balances"
+import { ChainList, EvmNetworkList, TokenList } from "@talismn/chaindata-provider"
+import { TokenRatesList } from "@talismn/token-rates"
 import posthog, { Properties } from "posthog-js"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours
@@ -111,21 +113,30 @@ class TalismanAnalytics {
       posthog.capture("accounts breakdown", { accountBreakdown })
     }
 
-    // cache chains, evmNetworks, tokens and tokenRates here to prevent lots of fetch calls
-    const chains = await chaindataProvider.chains()
-    const evmNetworks = await chaindataProvider.evmNetworks()
-    const tokens = await chaindataProvider.tokens()
-    const tokenRates = Object.fromEntries(
-      ((await db.tokenRates.toArray()) || []).map(({ tokenId, rates }) => [tokenId, rates])
-    )
+    // cache chains, evmNetworks, tokens, tokenRates and balances here to prevent lots of fetch calls
+    try {
+      /* eslint-disable no-var */
+      var chains = await chaindataProvider.chains()
+      var evmNetworks = await chaindataProvider.evmNetworks()
+      var tokens = await chaindataProvider.tokens()
+      var tokenRates = Object.fromEntries(
+        ((await db.tokenRates.toArray()) || []).map(({ tokenId, rates }) => [tokenId, rates])
+      )
 
-    // balances + balances fiat sum estimate
-    const balances = new Balances(await balancesDb.balances.toArray(), {
-      chains,
-      evmNetworks,
-      tokens,
-      tokenRates,
-    })
+      // balances + balances fiat sum estimate
+      var balances = new Balances(await balancesDb.balances.toArray(), {
+        chains,
+        evmNetworks,
+        tokens,
+        tokenRates,
+      })
+      /* eslint-enable no-var */
+    } catch (cause) {
+      const error = new Error("Failed to access db to build general analyics report", { cause })
+      // eslint-disable-next-line no-console
+      DEBUG && console.error(error)
+      throw error
+    }
 
     posthog.capture("balances fiat sum", {
       total: roundToFirstInteger(balances.sum.fiat("usd").total),
@@ -133,7 +144,7 @@ class TalismanAnalytics {
 
     // balances top 5 tokens/networks
     // get Balance list per chain/evmNetwork and token
-    const balancesPerChainToken: Record<string, Balance[]> = [...balances]
+    const balancesPerChainToken: Record<string, Balance[]> = balances.each
       .filter(Boolean)
       .reduce((result, balance) => {
         const key = `${balance.chainId || balance.evmNetworkId}-${balance.tokenId}`

@@ -11,7 +11,7 @@
   }
 
   body {
-    @apply leading-base text-body bg-black-primary font-sans text-base;
+    @apply leading-base text-body bg-black-primary font-sans text-base antialiased;
   }
 
   html,
@@ -58,6 +58,16 @@
   }
   html.popup.embedded #main {
     @apply border-grey-700 border;
+  }
+
+  /* number inputs */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
   }
 }
 

@@ -1,14 +1,13 @@
 import "@core/util/enableLogsInDevelopment"
 
 import { initSentry } from "@core/config/sentry"
-import { DEBUG, PORT_CONTENT, PORT_EXTENSION, TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
+import { DEBUG, PORT_CONTENT, PORT_EXTENSION, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
 import { consoleOverride } from "@core/util/logging"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
-import satisfies from "semver/functions/satisfies"
 import Browser, { Runtime } from "webextension-polyfill"
 
 import sitesAuthorisedStore from "./domains/sitesAuthorised/store"
@@ -36,7 +35,7 @@ Browser.runtime.onInstalled.addListener(async ({ reason }) => {
     }
   })
 
-  if (reason === "update" && satisfies(process.env.VERSION ?? "0", "1.14.x")) {
+  if (reason === "update") {
     // once off migration to add `connectAllSubstrate` to the record for the Talisman Web App
     const site = await sitesAuthorisedStore.get(TALISMAN_WEB_APP_DOMAIN)
     if (!site)
@@ -52,7 +51,7 @@ Browser.runtime.onInstalled.addListener(async ({ reason }) => {
               url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
             },
           }),
-        2000
+        DEBUG || TEST ? 0 : 2000
       )
   }
 })

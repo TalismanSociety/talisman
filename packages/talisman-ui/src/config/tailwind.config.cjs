@@ -148,7 +148,20 @@ module.exports = {
         whyteInkTrap:
           'WhyteInktrapMedium, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", sans-serif',
       },
+      keyframes: {
+        "fade-in": {
+          "0%": {
+            opacity: "0",
+          },
+          "100%": {
+            opacity: "1",
+          },
+        },
+      },
       animation: {
+        "fade-in-fase": "fade-in 0.1s ease-out",
+        "fade-in": "fade-in 0.2s ease-out",
+        "fade-in-slow": "fade-in 0.5s ease-out",
         "spin-slow": "spin 2s linear infinite",
       },
       gridTemplateColumns: {

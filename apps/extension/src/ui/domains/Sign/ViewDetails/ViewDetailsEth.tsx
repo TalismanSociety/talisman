@@ -125,6 +125,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
     transaction,
     transactionInfo,
     error,
+    errorDetails,
   } = useEthSignTransactionRequest()
   const { genericEvent } = useAnalytics()
 
@@ -334,7 +335,10 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
             "N/A"
           )}
         </ViewDetailsField>
-        <ViewDetailsField label="Error" error={error} />
+        <ViewDetailsField
+          label="Error"
+          error={`${error ?? ""}${errorDetails ? `\n${errorDetails}` : ""}`}
+        />
         {request.data && (
           <ViewDetailsField
             label={
@@ -355,7 +359,9 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({ onClose }) => {
           </ViewDetailsField>
         )}
       </div>
-      <Button onClick={onClose}>Close</Button>
+      <Button className="shrink-0" onClick={onClose}>
+        Close
+      </Button>
     </ViewDetailsContainer>
   )
 }

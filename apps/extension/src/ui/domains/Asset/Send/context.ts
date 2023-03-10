@@ -226,14 +226,14 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         return
       }
 
-      const { partialFee, unsigned, pendingTransferId } = await api.assetTransferCheckFees(
+      const { partialFee, unsigned } = await api.assetTransferCheckFees(
         chainId,
         token.id,
         from,
         to,
         transfer.amount.planck.toString(),
         tip ?? "0",
-        allowReap
+        allowReap ? "transfer" : "transferKeepAlive"
       )
 
       const fees: TokenAmountInfo = {
@@ -300,7 +300,6 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         transfer,
         fees,
         forfeits,
-        pendingTransferId,
         unsigned,
       })
     },
@@ -332,7 +331,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         to,
         tokensToPlanck(amount, token.decimals),
         tip ?? "0",
-        hasAcceptedForfeit
+        hasAcceptedForfeit ? "transfer" : "transferKeepAlive"
       )
       setTransactionId(id)
     } else if (evmNetworkId) {
@@ -349,23 +348,27 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     } else throw new Error("Network not found")
   }, [formData, hasAcceptedForfeit, transferableTokensMap])
 
+  const account = useMemo(
+    () => accounts.find((acc) => acc.address === formData.from),
+    [accounts, formData.from]
+  )
+
   const approvalMode = useMemo((): "hwSubstrate" | "hwEthereum" | "qr" | "backend" => {
-    const account = accounts.find((acc) => acc.address === formData.from)
     if (account?.isHardware) {
       if (expectedResult?.type === "substrate") return "hwSubstrate"
       if (expectedResult?.type === "evm") return "hwEthereum"
     }
     if (account?.isQr) return "qr"
     return "backend"
-  }, [accounts, expectedResult?.type, formData.from])
+  }, [account?.isHardware, account?.isQr, expectedResult?.type])
 
   // execute the TX
   const sendWithSignature = useCallback(
     async (signature: `0x${string}` | Uint8Array) => {
       if (expectedResult?.type !== "substrate") throw new Error("Review data not found")
-      const { pendingTransferId } = expectedResult
-      if (!pendingTransferId) throw new Error("Pending transaction not found")
-      const { id } = await api.assetTransferApproveSign(pendingTransferId, signature)
+      const { unsigned } = expectedResult
+      if (!unsigned) throw new Error("Unsigned transaction not found")
+      const { id } = await api.assetTransferApproveSign(unsigned, signature)
       setTransactionId(id)
     },
     [expectedResult]
@@ -415,6 +418,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   }, [expectedResult, hasAcceptedForfeit, transactionHash, transactionId])
 
   const context = {
+    account,
     formData,
     expectedResult,
     check,

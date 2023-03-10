@@ -28,20 +28,22 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 
 export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) => {
   const { edit } = useAddressBook()
+
   const {
     register,
     handleSubmit,
-    formState: { isValid, errors, isSubmitting },
+    formState: { isValid, errors },
     setError,
   } = useForm<FormValues>({
     resolver: yupResolver(schema),
     mode: "all",
     reValidateMode: "onChange",
-    defaultValues: { name: contact.name },
+    defaultValues: { name: contact ? contact.name : "" },
   })
 
   const submit = useCallback(
     async (formData: FormValues) => {
+      if (!contact) return
       try {
         await edit({ ...contact, ...formData })
         sendAnalyticsEvent({
@@ -74,7 +76,9 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
           </FormFieldContainer>
           <div>
             <div className="text-body-secondary block text-xs">Address</div>
-            <div className="mt-3 block bg-none text-xs text-white">{contact.address}</div>
+            <div className="mt-3 block bg-none text-xs text-white">
+              {contact && contact.address}
+            </div>
           </div>
           <div className="flex items-stretch gap-4 pt-4">
             <Button fullWidth onClick={close}>

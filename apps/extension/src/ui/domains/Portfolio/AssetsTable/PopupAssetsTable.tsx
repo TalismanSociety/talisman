@@ -127,7 +127,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
   const showBanner = showNomPoolBanner({
     chainId: token?.chain?.id,
-    addresses: balances.sorted.map((b) => b.address),
+    addresses: locked ? [] : balances.sorted.map((b) => b.address),
   })
 
   const navigate = useNavigate()

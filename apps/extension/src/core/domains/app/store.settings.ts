@@ -10,6 +10,7 @@ export interface SettingsStoreData {
   allowNotifications: boolean
   selectedAccount?: string // undefined = show all accounts
   autoLockTimeout: 0 | 300 | 1800 | 3600
+  spiritClanFeatures: boolean
 }
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
@@ -22,4 +23,5 @@ export const settingsStore = new SettingsStore("settings", {
   hideBalances: false,
   allowNotifications: true,
   autoLockTimeout: 0,
+  spiritClanFeatures: true,
 })

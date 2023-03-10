@@ -6,6 +6,7 @@ import {
   LoggedinType,
   ModalOpenRequest,
   OnboardedType,
+  SendFundsOpenRequest,
 } from "@core/domains/app/types"
 import {
   AddressesByEvmNetwork,
@@ -41,6 +42,7 @@ import {
 import {
   AnySigningRequest,
   AnySigningRequestID,
+  SignerPayloadJSON,
   SigningRequestID,
   TransactionDetails,
 } from "@core/domains/signing/types"
@@ -55,6 +57,7 @@ import {
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
 import {
+  AssetTransferMethod,
   ResponseAssetTransfer,
   ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
@@ -116,6 +119,7 @@ export default interface MessageTypes {
   modalOpen: (modal: ModalOpenRequest) => Promise<boolean>
   modalOpenSubscribe: (cb: (val: ModalOpenRequest) => void) => UnsubscribeFn
   analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>
+  sendFundsOpen: (request?: SendFundsOpenRequest) => Promise<boolean>
   resetWallet: () => Promise<boolean>
 
   // mnemonic message types -------------------------------------------------------
@@ -209,9 +213,9 @@ export default interface MessageTypes {
     tokenId: TokenId,
     fromAddress: string,
     toAddress: string,
-    amount: string,
-    tip: string,
-    reapBalance?: boolean
+    amount?: string,
+    tip?: string,
+    method?: AssetTransferMethod
   ) => Promise<ResponseAssetTransfer>
   assetTransferEth: (
     evmNetworkId: EvmNetworkId,
@@ -232,12 +236,12 @@ export default interface MessageTypes {
     tokenId: TokenId,
     fromAddress: string,
     toAddress: string,
-    amount: string,
-    tip: string,
-    reapBalance?: boolean
+    amount?: string,
+    tip?: string,
+    method?: AssetTransferMethod
   ) => Promise<ResponseAssetTransferFeeQuery>
   assetTransferApproveSign: (
-    pendingTransferId: string,
+    unsigned: SignerPayloadJSON,
     signature: `0x${string}` | Uint8Array
   ) => Promise<ResponseAssetTransfer>
 

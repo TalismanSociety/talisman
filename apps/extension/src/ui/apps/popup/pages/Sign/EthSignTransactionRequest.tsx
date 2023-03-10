@@ -181,6 +181,7 @@ export const EthSignTransactionRequest = () => {
     priority,
     setPriority,
     error,
+    errorDetails,
     network,
     isLoading,
     transaction,
@@ -212,11 +213,6 @@ export const EthSignTransactionRequest = () => {
     setIsPayloadLocked(true)
   }, [setIsPayloadLocked])
 
-  const isReadyToDisplay = useMemo(
-    () => Boolean(transactionInfo && (txDetails?.estimatedFee || errorMessage)),
-    [transactionInfo, txDetails?.estimatedFee, errorMessage]
-  )
-
   const handleFeeChange = useCallback(
     (priority: EthPriorityOptionName) => {
       setPriority(priority)
@@ -230,17 +226,19 @@ export const EthSignTransactionRequest = () => {
       <Header text={<AppPill url={url} />}></Header>
       <Content>
         <div className="scrollable scrollable-800 h-full overflow-y-auto">
-          <EthSignBody transactionInfo={transactionInfo} isReady={isReadyToDisplay} />
+          <EthSignBody transactionInfo={transactionInfo} isReady={!isLoading} />
         </div>
       </Content>
-      <Footer>
-        <div className="space-y-4">
-          <div id="sign-alerts-inject"></div>
-          {isReadyToDisplay && errorMessage && (
-            <SignAlertMessage type="error">{errorMessage}</SignAlertMessage>
-          )}
-        </div>
-        {isReadyToDisplay && (
+      {!isLoading && (
+        <Footer>
+          <div className="space-y-4">
+            <div id="sign-alerts-inject"></div>
+            {errorMessage && (
+              <SignAlertMessage type="error">
+                <WithTooltip tooltip={errorDetails}>{errorMessage}</WithTooltip>
+              </SignAlertMessage>
+            )}
+          </div>
           <Suspense fallback={null}>
             {transaction && txDetails && network?.nativeToken ? (
               <div className="gasInfo mt-8">
@@ -318,8 +316,8 @@ export const EthSignTransactionRequest = () => {
               </Grid>
             )}
           </Suspense>
-        )}
-      </Footer>
+        </Footer>
+      )}
     </SignContainer>
   )
 }
