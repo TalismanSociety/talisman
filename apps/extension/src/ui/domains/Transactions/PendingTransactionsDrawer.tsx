@@ -4,6 +4,7 @@ import {
   WalletTransaction,
 } from "@core/domains/recentTransactions/types"
 import { TransactionStatus } from "@core/domains/recentTransactions/types"
+import { TooltipBoundaryProvider, WithTooltip } from "@talisman/components/Tooltip"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -13,14 +14,14 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { BigNumber } from "ethers"
-import { FC, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
-import { Button, Drawer } from "talisman-ui"
+import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
 import urlJoin from "url-join"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
-import { Popover, PopoverContent, PopoverTrigger } from "./Popover"
 import { TxCancelDrawer } from "./TxCancelDrawer"
 import { TxSpeedUpDrawer } from "./TxSpeedUpDrawer"
 
@@ -104,22 +105,43 @@ const EvmTxActions: FC<{
       )}
     >
       <div className="relative">
-        <ActionButton onClick={handleActionClick("speed-up")}>
-          <RocketIcon className="inline" />
-        </ActionButton>
-        <ActionButton onClick={handleActionClick("cancel")}>
-          <XOctagonIcon className="inline" />
-        </ActionButton>
+        <Tooltip placement="bottom">
+          <TooltipTrigger>
+            <ActionButton onClick={handleActionClick("speed-up")}>
+              <RocketIcon className="inline" />
+            </ActionButton>
+          </TooltipTrigger>
+          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+            Speed Up
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip placement="bottom">
+          <TooltipTrigger>
+            <ActionButton onClick={handleActionClick("cancel")}>
+              <XOctagonIcon className="inline" />
+            </ActionButton>
+          </TooltipTrigger>
+          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+            Cancel
+          </TooltipContent>
+        </Tooltip>
         <Popover open={isOpen} onOpenChange={handleOpenChange}>
-          <PopoverTrigger
-            className={classNames(
-              "hover:bg-grey-700 text-body-secondary hover:text-body inline-block h-[36px] w-[36px] shrink-0 rounded-sm text-center",
-              isOpen && " !bg-grey-700"
-            )}
-            onClick={() => handleOpenChange(true)}
-          >
-            <MoreHorizontalIcon className="inline" />
-          </PopoverTrigger>
+          <Tooltip placement="bottom">
+            <TooltipTrigger>
+              <PopoverTrigger
+                className={classNames(
+                  "hover:bg-grey-700 text-body-secondary hover:text-body inline-block h-[36px] w-[36px] shrink-0 rounded-sm text-center",
+                  isOpen && " !bg-grey-700"
+                )}
+                onClick={() => handleOpenChange(true)}
+              >
+                <MoreHorizontalIcon className="inline" />
+              </PopoverTrigger>
+            </TooltipTrigger>
+            <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+              More options
+            </TooltipContent>
+          </Tooltip>
           <PopoverContent
             className={classNames(
               "border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left shadow-lg",
@@ -307,7 +329,7 @@ const TransactionsList: FC<{
   )
 
   return (
-    <div className="space-y-8">
+    <div className="scrollable scrollable-700 space-y-8 overflow-y-auto px-12">
       {transactions?.map((tx) => (
         <TransactionRow
           key={tx.hash}
@@ -329,25 +351,25 @@ export const PendingTransactionsDrawer: FC<{
   transactions?: WalletTransaction[]
 }> = ({ isOpen, onClose, transactions }) => {
   return (
-    <>
-      <Drawer
-        anchor="bottom"
-        isOpen={isOpen}
-        onDismiss={onClose}
-        containerId="main"
-        className="bg-grey-800 flex w-full flex-col gap-12 rounded-t-xl p-12"
-      >
-        <div className="text-md text-body flex items-center gap-4 font-bold">
-          <span>Pending transactions </span>
-          <span className="bg-grey-700 text-body-secondary inline-flex h-12 w-12 flex-col items-center justify-center rounded-full text-xs">
-            <span>{transactions?.length ?? 0}</span>
-          </span>
-        </div>
-        <TransactionsList transactions={transactions} />
+    <Drawer
+      anchor="bottom"
+      isOpen={isOpen}
+      onDismiss={onClose}
+      containerId="main"
+      className="bg-grey-800 flex w-full flex-col rounded-t-xl"
+    >
+      <div className="text-md text-body flex items-center gap-4 p-12 font-bold">
+        <span>Pending transactions </span>
+        <span className="bg-grey-700 text-body-secondary inline-flex h-12 w-12 flex-col items-center justify-center rounded-full text-xs">
+          <span>{transactions?.length ?? 0}</span>
+        </span>
+      </div>
+      <TransactionsList transactions={transactions} />
+      <div className="p-12">
         <Button className="w-full shrink-0" onClick={onClose}>
           Close
         </Button>
-      </Drawer>
-    </>
+      </div>
+    </Drawer>
   )
 }
