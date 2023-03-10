@@ -14,6 +14,7 @@ import { useCallback, useMemo } from "react"
 import styled from "styled-components"
 import { PillButton } from "talisman-ui"
 
+import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
@@ -43,7 +44,7 @@ const ChainTokenBlock = styled.div`
 `
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const { chainOrNetwork, summary, symbol, detailRows, chain, isFetching, networkType } =
+  const { chainOrNetwork, summary, symbol, detailRows, chain, isFetching, stale, networkType } =
     useChainTokenBalances({ chainId, balances })
 
   // wait for data to load
@@ -102,6 +103,12 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                   <>
                     {" "}
                     <LockIcon className="lock inline align-baseline" />
+                  </>
+                ) : null}
+                {stale.length > 0 ? (
+                  <>
+                    {" "}
+                    <StaleBalancesIcon className="inline align-baseline" stale={stale} />
                   </>
                 ) : null}
               </div>

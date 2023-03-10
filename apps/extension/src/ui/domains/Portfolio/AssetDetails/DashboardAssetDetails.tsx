@@ -93,7 +93,7 @@ type AssetRowProps = {
 }
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const { chainOrNetwork, summary, symbol, detailRows, chain, isFetching, networkType } =
+  const { chainOrNetwork, summary, symbol, detailRows, chain, isFetching, stale, networkType } =
     useChainTokenBalances({ chainId, balances })
 
   // wait for data to load
@@ -124,6 +124,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             fiat={summary.lockedFiat}
             symbol={symbol}
             tooltip="Total Locked Balance"
+            stale={stale}
             className={classNames(isFetching && "animate-pulse transition-opacity")}
           />
         </td>
@@ -134,6 +135,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             fiat={summary.availableFiat}
             symbol={symbol}
             tooltip="Total Available Balance"
+            stale={stale}
             className={classNames(isFetching && "animate-pulse transition-opacity")}
           />
         </td>
@@ -153,6 +155,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                 fiat={row.fiat}
                 symbol={symbol}
                 locked={row.locked}
+                stale={stale}
                 className={classNames(isFetching && "animate-pulse transition-opacity")}
               />
             </td>

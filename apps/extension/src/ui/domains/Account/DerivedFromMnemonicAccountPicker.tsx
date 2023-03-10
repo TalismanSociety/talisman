@@ -147,7 +147,7 @@ const useDerivedAccounts = (
           isBalanceLoading:
             (!addressesByChain && !addressesByEvmNetwork) ||
             accountBalances.length < expectedBalancesCount ||
-            accountBalances.some((b) => b.status !== "live"),
+            accountBalances.some((b) => b.status === "cache"),
         }
       }),
     [

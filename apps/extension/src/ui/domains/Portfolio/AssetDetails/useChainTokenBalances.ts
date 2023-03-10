@@ -12,6 +12,7 @@ import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
+import { getStale } from "../StaleBalancesIcon"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { useBalanceLocks } from "./useBalanceLocks"
 
@@ -169,9 +170,10 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
   )
 
   const isFetching = useMemo(
-    () => balances.sorted.some((b) => b.status === "cache") || isLoading,
+    () => balances.each.some((b) => b.status === "cache") || isLoading,
     [balances, isLoading]
   )
+  const stale = useMemo(() => getStale(balances), [balances])
 
   return {
     summary,
@@ -180,6 +182,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
     evmNetwork,
     chain,
     isFetching,
+    stale,
     networkType,
     chainOrNetwork: chain || evmNetwork,
   }

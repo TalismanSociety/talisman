@@ -6,6 +6,7 @@ import { ReactNode } from "react"
 
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
+import { StaleBalancesIcon } from "./StaleBalancesIcon"
 
 type Props = {
   locked?: boolean
@@ -15,6 +16,7 @@ type Props = {
   render?: boolean
   className?: string
   tooltip?: ReactNode
+  stale?: string[]
 }
 
 export const AssetBalanceCellValue = ({
@@ -25,6 +27,7 @@ export const AssetBalanceCellValue = ({
   render = true,
   className,
   tooltip,
+  stale = [],
 }: Props) => {
   if (!render) return null
   return (
@@ -47,6 +50,11 @@ export const AssetBalanceCellValue = ({
           {locked ? (
             <div className="pb-1">
               <LockIcon className="lock" />
+            </div>
+          ) : null}
+          {stale.length > 0 ? (
+            <div className="pb-1">
+              <StaleBalancesIcon stale={stale} />
             </div>
           ) : null}
         </div>
