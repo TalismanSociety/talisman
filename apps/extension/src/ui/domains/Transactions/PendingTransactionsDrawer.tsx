@@ -105,7 +105,7 @@ const EvmTxActions: FC<{
       )}
     >
       <div className="relative">
-        <Tooltip placement="bottom">
+        <Tooltip>
           <TooltipTrigger>
             <ActionButton onClick={handleActionClick("speed-up")}>
               <RocketIcon className="inline" />
@@ -115,7 +115,7 @@ const EvmTxActions: FC<{
             Speed Up
           </TooltipContent>
         </Tooltip>
-        <Tooltip placement="bottom">
+        <Tooltip>
           <TooltipTrigger>
             <ActionButton onClick={handleActionClick("cancel")}>
               <XOctagonIcon className="inline" />
@@ -126,7 +126,7 @@ const EvmTxActions: FC<{
           </TooltipContent>
         </Tooltip>
         <Popover open={isOpen} onOpenChange={handleOpenChange}>
-          <Tooltip placement="bottom">
+          <Tooltip>
             <TooltipTrigger>
               <PopoverTrigger
                 className={classNames(
@@ -248,7 +248,14 @@ const TransactionRowEvm: FC<TransactionRowPropsEvm> = ({
         enabled && "hover:bg-grey-750"
       )}
     >
-      <ChainLogo id={tx.evmNetworkId} className="shrink-0 text-xl" />
+      <Tooltip>
+        <TooltipTrigger className="cursor-default">
+          <ChainLogo id={tx.evmNetworkId} className="shrink-0 text-xl" />
+        </TooltipTrigger>
+        <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+          {evmNetwork?.name}
+        </TooltipContent>
+      </Tooltip>
       <div className="leading-paragraph relative flex w-full grow justify-between">
         <div className="text-left">
           <div className="flex items-center gap-2 text-sm font-bold">
