@@ -9,7 +9,7 @@ import styled from "styled-components"
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
-import { getStale } from "../StaleBalancesIcon"
+import { getStaleChains } from "../StaleBalancesIcon"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
@@ -109,7 +109,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   const { genericEvent } = useAnalytics()
 
   const isFetching = useMemo(() => balances.each.some((b) => b.status === "cache"), [balances])
-  const stale = useMemo(() => getStale(balances), [balances])
+  const staleChains = useMemo(() => getStaleChains(balances), [balances])
 
   const { token, summary } = useTokenBalancesSummary(balances)
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
@@ -178,7 +178,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
             tokens={summary.lockedTokens}
             fiat={summary.lockedFiat}
             symbol={token.symbol}
-            stale={stale}
+            staleChains={staleChains}
             className={classNames("noPadRight", isFetching && "animate-pulse transition-opacity")}
           />
         </td>
@@ -188,7 +188,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
             tokens={summary.availableTokens}
             fiat={summary.availableFiat}
             symbol={token.symbol}
-            stale={stale}
+            staleChains={staleChains}
             className={classNames(isFetching && "animate-pulse transition-opacity")}
           />
         </td>

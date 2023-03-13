@@ -32,6 +32,9 @@ export class ExponentialBackoff {
   reset() {
     this.#nextInterval = this.#minInterval
   }
+  resetTo(nextInterval: number) {
+    this.#nextInterval = this.#capMax(this.#capMin(nextInterval))
+  }
   resetToMax() {
     this.#nextInterval = this.#maxInterval
   }

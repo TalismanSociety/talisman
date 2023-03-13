@@ -1,6 +1,6 @@
 import { Balances } from "@core/domains/balances/types"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { CopyIcon, CreditCardIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
+import { CopyIcon, CreditCardIcon, LockIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -9,23 +9,17 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { StaleBalancesIcon } from "@ui/domains/Portfolio/StaleBalancesIcon"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useMemo } from "react"
 import styled from "styled-components"
 import { PillButton } from "talisman-ui"
 
-import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
 import { useAssetDetails } from "./useAssetDetails"
 import { useChainTokenBalances } from "./useChainTokenBalances"
-
-const FetchingIndicator = styled(LoaderIcon)`
-  font-size: 1em;
-  line-height: 1;
-  margin-left: 0.4rem;
-`
 
 type AssetRowProps = {
   chainId: ChainId | EvmNetworkId
@@ -44,8 +38,16 @@ const ChainTokenBlock = styled.div`
 `
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const { chainOrNetwork, summary, symbol, detailRows, chain, isFetching, stale, networkType } =
-    useChainTokenBalances({ chainId, balances })
+  const {
+    chainOrNetwork,
+    summary,
+    symbol,
+    detailRows,
+    chain,
+    isFetching,
+    staleChains,
+    networkType,
+  } = useChainTokenBalances({ chainId, balances })
 
   // wait for data to load
   if (!chainOrNetwork || !summary || !symbol || balances.count === 0) return null
@@ -105,10 +107,13 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                     <LockIcon className="lock inline align-baseline" />
                   </>
                 ) : null}
-                {stale.length > 0 ? (
+                {staleChains.length > 0 ? (
                   <>
                     {" "}
-                    <StaleBalancesIcon className="inline align-baseline" stale={stale} />
+                    <StaleBalancesIcon
+                      className="inline align-baseline"
+                      staleChains={staleChains}
+                    />
                   </>
                 ) : null}
               </div>

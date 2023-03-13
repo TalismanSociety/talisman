@@ -16,7 +16,7 @@ type Props = {
   render?: boolean
   className?: string
   tooltip?: ReactNode
-  stale?: string[]
+  staleChains?: string[]
 }
 
 export const AssetBalanceCellValue = ({
@@ -27,7 +27,7 @@ export const AssetBalanceCellValue = ({
   render = true,
   className,
   tooltip,
-  stale = [],
+  staleChains = [],
 }: Props) => {
   if (!render) return null
   return (
@@ -52,9 +52,9 @@ export const AssetBalanceCellValue = ({
               <LockIcon className="lock" />
             </div>
           ) : null}
-          {stale.length > 0 ? (
+          {staleChains.length > 0 ? (
             <div className="pb-1">
-              <StaleBalancesIcon stale={stale} />
+              <StaleBalancesIcon staleChains={staleChains} />
             </div>
           ) : null}
         </div>

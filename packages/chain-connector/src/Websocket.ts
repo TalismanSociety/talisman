@@ -15,7 +15,7 @@ import EventEmitter from "eventemitter3"
 import { ExponentialBackoff } from "./helpers"
 import log from "./log"
 
-type ProviderInterfaceEmitted = PjsProviderInterfaceEmitted | "maxbackoff"
+type ProviderInterfaceEmitted = PjsProviderInterfaceEmitted | "stale-rpcs"
 
 interface SubscriptionHandler {
   callback: ProviderInterfaceCallback
@@ -83,6 +83,7 @@ export class Websocket implements ProviderInterface {
 
   #autoConnectBackoff: ExponentialBackoff
   #endpointIndex: number
+  #endpointsTriedSinceLastConnection = 0
   #isConnected = false
   #subscriptions: Record<string, WsStateSubscription> = {}
   #timeoutId?: ReturnType<typeof setInterval> | null = null
@@ -94,7 +95,12 @@ export class Websocket implements ProviderInterface {
    * @param {Record<string, string>} headers The headers provided to the underlying WebSocket
    * @param {number} [timeout] Custom timeout value used per request . Defaults to `DEFAULT_TIMEOUT_MS`
    */
-  constructor(endpoint: string | string[], headers: Record<string, string> = {}, timeout?: number) {
+  constructor(
+    endpoint: string | string[],
+    headers: Record<string, string> = {},
+    timeout?: number,
+    nextBackoffInterval?: number
+  ) {
     const endpoints = Array.isArray(endpoint) ? endpoint : [endpoint]
 
     if (endpoints.length === 0) {
@@ -109,6 +115,7 @@ export class Websocket implements ProviderInterface {
 
     this.#eventemitter = new EventEmitter()
     this.#autoConnectBackoff = new ExponentialBackoff()
+    if (nextBackoffInterval) this.#autoConnectBackoff.resetTo(nextBackoffInterval)
     this.#coder = new RpcCoder()
     this.#endpointIndex = -1
     this.#endpoints = endpoints
@@ -170,6 +177,7 @@ export class Websocket implements ProviderInterface {
   }
 
   protected selectEndpointIndex(endpoints: string[]): number {
+    this.#endpointsTriedSinceLastConnection += 1
     return (this.#endpointIndex + 1) % endpoints.length
   }
 
@@ -225,16 +233,33 @@ export class Websocket implements ProviderInterface {
     try {
       await this.connect()
     } catch (error) {
-      // TODO: Only increase when we've tried all RPCs
-      this.#autoConnectBackoff.increase()
-      if (this.#autoConnectBackoff.isMax) this.#emit("maxbackoff")
+      this.scheduleNextRetry()
+    }
+  }
 
-      setTimeout((): void => {
+  protected scheduleNextRetry() {
+    if (!this.#autoConnectBackoff.isActive) return
+
+    const haveTriedAllEndpoints =
+      this.#endpointsTriedSinceLastConnection > 0 &&
+      this.#endpointsTriedSinceLastConnection % this.#endpoints.length === 0
+
+    setTimeout(
+      (): void => {
         this.connectWithRetry().catch(() => {
           // does not throw
         })
-      }, this.#autoConnectBackoff.next)
-    }
+      },
+      haveTriedAllEndpoints ? this.#autoConnectBackoff.next : 0
+    )
+
+    // Increase backoff when we've tried all endpoints
+    if (haveTriedAllEndpoints) this.#autoConnectBackoff.increase()
+
+    // Fire a stale-rpcs event when we've tried all endpoints in the list
+    // but haven't successfully connected to any of them
+    if (haveTriedAllEndpoints)
+      this.#emit("stale-rpcs", { nextBackoffInterval: this.#autoConnectBackoff.next })
   }
 
   /**
@@ -420,17 +445,7 @@ export class Websocket implements ProviderInterface {
 
     this.#emit("disconnected")
 
-    if (this.#autoConnectBackoff.isActive) {
-      // TODO: Only increase when we've tried all RPCs
-      this.#autoConnectBackoff.increase()
-      if (this.#autoConnectBackoff.isMax) this.#emit("maxbackoff")
-
-      setTimeout((): void => {
-        this.connectWithRetry().catch(() => {
-          // does not throw
-        })
-      }, this.#autoConnectBackoff.next)
-    }
+    this.scheduleNextRetry()
   }
 
   #onSocketError = (error: Event): void => {
@@ -519,6 +534,7 @@ export class Websocket implements ProviderInterface {
     log.debug(() => ["connected to", this.endpoint])
 
     this.#isConnected = true
+    this.#endpointsTriedSinceLastConnection = 0
     this.#autoConnectBackoff.reset()
 
     this.#resubscribe()

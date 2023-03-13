@@ -14,7 +14,7 @@ import styled from "styled-components"
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
 import { useSelectedAccount } from "../SelectedAccountContext"
-import { StaleBalancesIcon, getStale } from "../StaleBalancesIcon"
+import { StaleBalancesIcon, getStaleChains } from "../StaleBalancesIcon"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
@@ -120,7 +120,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const { genericEvent } = useAnalytics()
 
   const isFetching = useMemo(() => balances.each.some((b) => b.status === "cache"), [balances])
-  const stale = useMemo(() => getStale(balances), [balances])
+  const staleChains = useMemo(() => getStaleChains(balances), [balances])
 
   const { token, summary } = useTokenBalancesSummary(balances)
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
@@ -196,7 +196,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               {locked ? <RowLockIcon className="lock inline align-baseline" /> : null}
               <StaleBalancesIcon
                 className="alert ml-2 inline align-baseline text-xs"
-                stale={stale}
+                staleChains={staleChains}
               />
             </div>
             <div className="text-body-secondary leading-base text-xs">

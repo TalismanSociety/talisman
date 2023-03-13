@@ -1,6 +1,6 @@
 {
-  "name": "@talismn/chain-connector",
-  "version": "0.4.2",
+  "name": "@talismn/connection-meta",
+  "version": "0.0.1",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "UNLICENSED",
@@ -8,12 +8,12 @@
     "access": "public"
   },
   "repository": {
-    "directory": "packages/chain-connector",
+    "directory": "packages/connection-meta",
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
-  "main": "dist/talismn-chain-connector.cjs.js",
-  "module": "dist/talismn-chain-connector.esm.js",
+  "main": "dist/talismn-connection-meta.cjs.js",
+  "module": "dist/talismn-connection-meta.esm.js",
   "files": [
     "/dist"
   ],
@@ -27,12 +27,9 @@
   },
   "dependencies": {
     "@talismn/chaindata-provider": "workspace:^",
-    "@talismn/connection-meta": "workspace:^",
-    "@talismn/util": "workspace:^",
-    "anylogger": "^1.0.11"
+    "dexie": "^3.2.2"
   },
   "devDependencies": {
-    "@polkadot/rpc-provider": "^9.1.1",
     "@talismn/eslint-config": "workspace:^",
     "@talismn/tsconfig": "workspace:^",
     "@types/jest": "^27.5.1",
@@ -40,9 +37,6 @@
     "jest": "^28.1.0",
     "ts-jest": "^28.0.2",
     "typescript": "^4.6.4"
-  },
-  "peerDependencies": {
-    "@polkadot/rpc-provider": "9.x"
   },
   "eslintConfig": {
     "root": true,

@@ -1,5 +1,6 @@
 import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { ChainId, ChaindataChainProvider } from "@talismn/chaindata-provider"
+import { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
 import { Deferred, sleep } from "@talismn/util"
 
 import log from "./log"
@@ -28,13 +29,28 @@ type SocketUserId = number
  */
 export class ChainConnector {
   #chaindataChainProvider: ChaindataChainProvider
+  #connectionMetaDb?: TalismanConnectionMetaDatabase
 
   #socketConnections: Record<ChainId, Websocket> = {}
   #socketKeepAliveIntervals: Record<ChainId, ReturnType<typeof setInterval>> = {}
   #socketUsers: Record<ChainId, SocketUserId[]> = {}
 
-  constructor(chaindataChainProvider: ChaindataChainProvider) {
+  constructor(
+    chaindataChainProvider: ChaindataChainProvider,
+    connectionMetaDb?: TalismanConnectionMetaDatabase
+  ) {
     this.#chaindataChainProvider = chaindataChainProvider
+    this.#connectionMetaDb = connectionMetaDb
+
+    if (this.#connectionMetaDb) {
+      this.#chaindataChainProvider.chains().then((chains) => {
+        const chainIds = Object.keys(chains)
+
+        // tidy up connectionMeta for chains which no longer exist
+        this.#connectionMetaDb?.chainPriorityRpc.where("id").noneOf(chainIds).delete()
+        this.#connectionMetaDb?.chainBackoffInterval.where("id").noneOf(chainIds).delete()
+      })
+    }
   }
 
   async send<T = any>(
@@ -52,8 +68,7 @@ export class ChainConnector {
 
     try {
       // wait for ws to be ready, but don't wait forever
-      // 15 seconds before we riot
-      const timeout = 15_000
+      const timeout = 15_000 // 15 seconds in milliseconds
       await this.waitForWs(ws, timeout)
     } catch (error) {
       await this.disconnectChainSocket(chainId, socketUserId)
@@ -81,7 +96,7 @@ export class ChainConnector {
     responseMethod: string,
     params: unknown[],
     callback: ProviderInterfaceCallback,
-    timeout = true
+    timeout: number | false = 30_000 // 30 seconds in milliseconds
   ): Promise<() => void> {
     try {
       // eslint-disable-next-line no-var
@@ -103,21 +118,33 @@ export class ChainConnector {
     // the subscription to be created (which can take some time if e.g. the connection can't be established)
     ;(async () => {
       // wait for ws to be ready, but don't wait forever
-      // if timeout is true, cancel when timeout is reached (or caller unsubscribes)
+      // if timeout is number, cancel when timeout is reached (or caller unsubscribes)
       // if timeout is false, only cancel when the caller unsubscribes
       let unsubRpcStatus: (() => void) | null = null
       try {
-        const unsubStale = ws.on("maxbackoff", () => callback(new StaleRpcError(chainId), null))
+        const unsubStale = ws.on(
+          "stale-rpcs",
+          ({ nextBackoffInterval }: { nextBackoffInterval?: number } = {}) => {
+            callback(new StaleRpcError(chainId), null)
+
+            if (this.#connectionMetaDb && nextBackoffInterval) {
+              const id = chainId
+              this.#connectionMetaDb.chainBackoffInterval.put(
+                { id, interval: nextBackoffInterval },
+                id
+              )
+            }
+          }
+        )
         const unsubConnected = ws.on("connected", () => {
-          // TODO: Set this endpoint as first in the list next time we connect
-          // ws.endpoint
+          if (this.#connectionMetaDb) this.#connectionMetaDb.chainBackoffInterval.delete(chainId)
         })
         unsubRpcStatus = () => {
           unsubStale()
           unsubConnected()
         }
 
-        if (timeout) await Promise.race([this.waitForWs(ws), callerUnsubscribed])
+        if (timeout) await Promise.race([this.waitForWs(ws, timeout), callerUnsubscribed])
         else await Promise.race([ws.isReady, callerUnsubscribed])
       } catch (error) {
         unsubRpcStatus && unsubRpcStatus()
@@ -167,13 +194,11 @@ export class ChainConnector {
    */
   private async waitForWs(
     ws: Websocket,
-
-    // 30 seconds before we riot
-    timeout: number | false = 30_000
+    timeout: number | false = 30_000 // 30 seconds in milliseconds
   ): Promise<void> {
     const timer = timeout
       ? sleep(timeout).then(() => {
-          throw new Error("timeout reached")
+          throw new Error("RPC connect timeout reached")
         })
       : false
 
@@ -201,9 +226,42 @@ export class ChainConnector {
       .map(({ url }) => url)
     const rpcs = [...healthyRpcs, ...unhealthyRpcs]
 
-    if (rpcs.length) this.#socketConnections[chainId] = new Websocket(rpcs)
+    // sort most recently connected rpc to the top of the list (if one exists)
+    if (this.#connectionMetaDb) {
+      const priorityRpc = await this.#connectionMetaDb.chainPriorityRpc.get(chainId)
+      if (priorityRpc) {
+        rpcs.sort((a, b) => (a === priorityRpc.url ? -1 : b === priorityRpc.url ? 1 : 0))
+      }
+    }
+
+    // retrieve next rpc backoff interval from connection meta db (if one exists)
+    let nextBackoffInterval: number | undefined = undefined
+    if (this.#connectionMetaDb)
+      nextBackoffInterval = (await this.#connectionMetaDb.chainBackoffInterval.get(chainId))
+        ?.interval
+
+    if (rpcs.length)
+      this.#socketConnections[chainId] = new Websocket(
+        rpcs,
+        undefined,
+        undefined,
+        nextBackoffInterval
+      )
     else {
       throw new Error(`No healthy RPCs available for chain ${chainId}`)
+    }
+
+    // on ws connected event, store current rpc as most recently connected rpc
+    if (this.#connectionMetaDb) {
+      this.#socketConnections[chainId].on("connected", () => {
+        if (!this.#connectionMetaDb) return
+
+        const id = chainId
+        const url = this.#socketConnections[chainId]?.endpoint
+        if (!url) return
+
+        this.#connectionMetaDb.chainPriorityRpc.put({ id, url }, id)
+      })
     }
 
     // set up healthcheck (keeps ws open when idle), don't wait for setup to complete
