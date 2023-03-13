@@ -5554,6 +5554,7 @@ __metadata:
     "@talismn/chain-connector-evm": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/chaindata-provider-extension": "workspace:^"
+    "@talismn/connection-meta": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
     "@talismn/token-rates": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
@@ -5752,6 +5753,9 @@ __metadata:
   resolution: "@talismn/chain-connector@workspace:packages/chain-connector"
   dependencies:
     "@polkadot/rpc-provider": ^9.1.1
+    "@polkadot/util": ^10.2.1
+    "@polkadot/x-global": ^10.2.1
+    "@polkadot/x-ws": ^10.2.1
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/connection-meta": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5760,11 +5764,15 @@ __metadata:
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     eslint: ^8.4.0
+    eventemitter3: ^5.0.0
     jest: ^28.1.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
     "@polkadot/rpc-provider": 9.x
+    "@polkadot/util": 10.x
+    "@polkadot/x-global": 10.x
+    "@polkadot/x-ws": 10.x
   languageName: unknown
   linkType: soft
 
