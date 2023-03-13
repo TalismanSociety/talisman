@@ -10,14 +10,6 @@ import { useMemo } from "react"
 
 import { TransferableToken, TransferableTokenId } from "./types"
 
-const nonEmptyBalanceFilter = ({ balances }: { balances: Balances }) => {
-  const amount = balances.sorted.reduce(
-    (amount, balance) => amount + BigInt(balance.transferable.planck),
-    BigInt(0)
-  )
-  return amount > BigInt(0)
-}
-
 /**
  *
  * @returns tokens list split by network (ASTR on substrate and ASTR on evm will be 2 distinct entries)
@@ -44,7 +36,7 @@ export const useTransferableTokens = () => {
           },
         ].filter(Boolean) as TransferableToken[]
       }) ?? []
-    ).filter((tt, i, arr) => {
+    ).filter((tt, _, arr) => {
       // on substrate, there could be multiple tokens with same symbol on a same chain (ACA, KINT..)
       // a good fix would be to detect on subsquid side if ANY account has tokens, if not the token shouldn't be included in github tokens file
       // until then we hardcode an exclusion list here :
@@ -93,44 +85,47 @@ export const useSortedTransferableTokens = (withBalanceFirst = false) => {
   const transferableTokens = useTransferableTokens()
   const balances = useBalances()
 
-  const sortable = useMemo(() => {
-    return transferableTokens.map((transferableToken) => {
-      const sortIndex =
-        1 + balances.sorted.findIndex((b) => b.tokenId === transferableToken.token.id)
-      const balanceFilter: BalanceSearchQuery = transferableToken.chainId
-        ? { tokenId: transferableToken.token.id, chainId: transferableToken.chainId }
-        : {
-            tokenId: transferableToken.token.id,
-            evmNetworkId: transferableToken.evmNetworkId,
-          }
-      return {
-        ...transferableToken,
-        sortIndex,
-        balances: balances?.find(balanceFilter) ?? new Balances([]),
-      }
-    })
-  }, [balances, transferableTokens])
+  const transferableTokenIdsWithBalances = useMemo(() => {
+    const transferableTokenIdsWithBalances = new Set<string>()
+    if (!withBalanceFirst) return transferableTokenIdsWithBalances
 
-  const results = useMemo(() => {
-    const sorted = sortable.sort(
-      (a, b) =>
-        (a?.sortIndex || Number.MAX_SAFE_INTEGER) - (b?.sortIndex || Number.MAX_SAFE_INTEGER)
+    balances.each
+      .filter((balance) => balance.transferable.planck > 0n)
+      .forEach((balance) => {
+        if (balance.chainId) {
+          const id = `${balance.tokenId}-${balance.chainId}`
+          transferableTokenIdsWithBalances.add(id)
+        }
+        if (balance.evmNetworkId) {
+          const id = `${balance.tokenId}-${balance.evmNetworkId}`
+          transferableTokenIdsWithBalances.add(id)
+        }
+      })
+
+    return transferableTokenIdsWithBalances
+  }, [balances, withBalanceFirst])
+
+  const sortedTransferableTokens = useMemo(() => {
+    const sortIndexes = Object.fromEntries(
+      balances.sorted.map((balance, index) => [balance.tokenId, index])
     )
+
+    const sorted = transferableTokens
+      .slice()
+      .sort(
+        (a, b) =>
+          (sortIndexes[a.token.id] ?? Number.MAX_SAFE_INTEGER) -
+          (sortIndexes[b.token.id] ?? Number.MAX_SAFE_INTEGER)
+      )
 
     if (!withBalanceFirst) return sorted
     return [
-      ...sorted.filter((token) => nonEmptyBalanceFilter(token)),
-      ...sorted.filter((token) => !nonEmptyBalanceFilter(token)),
-    ] as TransferableToken[]
-  }, [withBalanceFirst, sortable])
+      ...sorted.filter(({ id }) => transferableTokenIdsWithBalances.has(id)),
+      ...sorted.filter(({ id }) => !transferableTokenIdsWithBalances.has(id)),
+    ]
+  }, [balances, transferableTokenIdsWithBalances, transferableTokens, withBalanceFirst])
 
-  // keep only TransferableToken fields
-  return results.map<TransferableToken>(({ id, chainId, evmNetworkId, token }) => ({
-    id,
-    chainId,
-    evmNetworkId,
-    token,
-  }))
+  return sortedTransferableTokens
 }
 
 export const useTransferableTokenById = (id?: TransferableTokenId) => {
