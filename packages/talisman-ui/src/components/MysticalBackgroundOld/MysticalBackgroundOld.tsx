@@ -1,22 +1,17 @@
-import { useMemo, useRef } from "react"
+import React, { useMemo, useRef } from "react"
 import { useMeasure, useMouse } from "react-use"
-import styled from "styled-components"
 
 import { useWindowHovered } from "../MysticalBackground/useWindowHovered"
 import { CelestialArtifact } from "./CelestialArtifact"
 import { MYSTICAL_PHYSICS } from "./MysticalPhysics"
 
-const Universe = styled.div`
-  filter: blur(${MYSTICAL_PHYSICS.blur}px);
-`
+const Universe = (
+  props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
+) => <div style={{ filter: `blur(${MYSTICAL_PHYSICS.blur}px)` }} {...props} />
 
-const CosmicRadar = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-`
+const CosmicRadar = (
+  props: React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
+) => <div className="absolute top-0 left-0 h-full w-full" {...props} />
 
 // still beeing used in playground to compare with new version
 export const MysticalBackgroundOld = ({ className }: { className?: string }) => {
