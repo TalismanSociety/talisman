@@ -222,7 +222,7 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
-  private async openSendFunds({ from, tokenId }: SendFundsOpenRequest): Promise<boolean> {
+  private async openSendFunds({ from, tokenId, to }: SendFundsOpenRequest): Promise<boolean> {
     if (
       (await featuresStore.isFeatureEnabled("SEND_FUNDS_V2")) ||
       ((await this.stores.app.get("hasSpiritKey")) &&
@@ -231,6 +231,7 @@ export default class AppHandler extends ExtensionHandler {
       const params = new URLSearchParams()
       if (from) params.append("from", from)
       if (tokenId) params.append("tokenId", tokenId)
+      if (to) params.append("to", to)
       await windowManager.popupOpen(`#/send?${params.toString()}`)
     } else {
       // TODO : delete as soon as we remove the SEND_FUNDS_V2 feature flag
