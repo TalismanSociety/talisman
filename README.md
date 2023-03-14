@@ -8,13 +8,13 @@ This turborepo uses [Yarn](https://classic.yarnpkg.com/lang/en/) as a package ma
 
 ## System Requirements
 
-Node version >14
+Node version >18
 Yarn version >1.2
 
 This README was written and verified with:
 
-- Node v14.19.1
-- Yarn v1.22.18
+- Node v18.14.2
+- Yarn v1.22.19
 
 ### Apps and Packages
 
