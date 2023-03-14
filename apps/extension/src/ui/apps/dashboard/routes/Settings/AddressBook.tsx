@@ -18,6 +18,7 @@ import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import startCase from "lodash/startCase"
 import { PropsWithChildren, useMemo, useState } from "react"
 import { Button, PillButton } from "talisman-ui"
 
@@ -120,7 +121,7 @@ const AddressBook = () => {
   const [toEdit, setToEdit] = useState<string>()
   const { open, isOpen, close } = useOpenClose()
   const [addressType, setAddressType] = useState<"polkadot" | "ethereum">("polkadot")
-  const contactactsToDisplay = useMemo(
+  const contactsToDisplay = useMemo(
     () =>
       contacts.filter((contact) => contact.addressType === contactTypeAddressTypeMap[addressType]),
     [contacts, addressType]
@@ -134,7 +135,7 @@ const AddressBook = () => {
         <HeaderBlock title="Address Book" text="Manage your saved contacts" />
         <div className="mt-4 flex justify-between align-middle">
           <ProviderTypeSwitch defaultProvider="polkadot" onChange={setAddressType} />
-          {contactactsToDisplay.length > 0 && (
+          {contactsToDisplay.length > 0 && (
             <PillButton onClick={open} icon={UserPlusIcon}>
               Add new contact
             </PillButton>
@@ -142,7 +143,7 @@ const AddressBook = () => {
         </div>
         <Spacer />
         <div className="flex flex-col gap-3">
-          {contactactsToDisplay.map((contact) => (
+          {contactsToDisplay.map((contact) => (
             <AddressBookContactItem
               contact={contact}
               key={contact.address}
@@ -150,12 +151,9 @@ const AddressBook = () => {
               handleEdit={setToEdit}
             />
           ))}
-          {contactactsToDisplay.length === 0 && (
+          {contactsToDisplay.length === 0 && (
             <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
-              <span>
-                You have no saved {addressType[0].toUpperCase()}
-                {addressType.slice(1)} contacts yet.
-              </span>
+              <span>You have no saved {startCase(addressType)} contacts yet.</span>
               <Button primary onClick={open} iconLeft={PlusIcon}>
                 Add a contact
               </Button>
