@@ -3,7 +3,8 @@ import CtaButton from "@talisman/components/CtaButton"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
-import { KeyIcon, PlusIcon, SeedIcon, UsbIcon } from "@talisman/theme/icons"
+import { KeyIcon, ParitySignerIcon, PlusIcon, SeedIcon, UsbIcon } from "@talisman/theme/icons"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import styled from "styled-components"
 
 import Layout from "../layout"
@@ -15,6 +16,7 @@ const LargePlusIcon = styled(PlusIcon)`
 
 const AccountAddTypePicker = () => {
   const isLedgerCapable = getIsLedgerCapable()
+  const paritySignerEnabled = useIsFeatureEnabled("PARITY_SIGNER")
 
   return (
     <Layout centered>
@@ -39,7 +41,6 @@ const AccountAddTypePicker = () => {
           subtitle="Import your Polkadot.js account"
           to={`/accounts/add/json`}
         />
-
         <CtaButton
           icon={<UsbIcon />}
           title="Import from Ledger"
@@ -50,6 +51,14 @@ const AccountAddTypePicker = () => {
           to={`/accounts/add/ledger`}
           disabled={!isLedgerCapable}
         />
+        {paritySignerEnabled && (
+          <CtaButton
+            icon={<ParitySignerIcon />}
+            title="Import Parity Signer"
+            subtitle={"Sign transactions using Parity Signer"}
+            to={`/accounts/add/qr`}
+          />
+        )}
       </Grid>
     </Layout>
   )

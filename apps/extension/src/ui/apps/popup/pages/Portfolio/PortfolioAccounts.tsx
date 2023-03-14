@@ -7,7 +7,6 @@ import {
   CopyIcon,
   CreditCardIcon,
   PaperPlaneIcon,
-  UsbIcon,
   ZapIcon,
 } from "@talisman/theme/icons"
 import { Balance, Balances } from "@talismn/balances"
@@ -15,6 +14,7 @@ import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
+import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useAccounts from "@ui/hooks/useAccounts"
@@ -39,10 +39,10 @@ type AccountOption = {
   name: string
   total?: number
   genesisHash?: string | null
-  isHardware?: boolean
+  origin?: string
 }
 
-const AccountButton = ({ address, name, total, genesisHash, isHardware }: AccountOption) => {
+const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOption) => {
   const { open } = useAddressFormatterModal()
   const { select } = useSelectedAccount()
   const navigate = useNavigate()
@@ -82,11 +82,7 @@ const AccountButton = ({ address, name, total, genesisHash, isHardware }: Accoun
       <div className="flex grow flex-col items-start justify-center gap-2 overflow-hidden">
         <div className="text-body flex w-full items-center gap-3 text-base leading-none">
           <div className="overflow-hidden overflow-ellipsis whitespace-nowrap">{name}</div>
-          {isHardware && (
-            <div className="text-primary">
-              <UsbIcon />
-            </div>
-          )}
+          <AccountTypeIcon className="text-primary" origin={origin} />
           {address ? (
             <div className="flex flex-col justify-end">
               <IconButton className="!h-8 !w-8 !text-sm leading-none" onClick={handleCopyClick}>
@@ -191,11 +187,11 @@ export const PortfolioAccounts = () => {
         name: "All Accounts",
         total: balances.sum.fiat("usd").total,
       },
-      ...accounts.map(({ address, name, genesisHash, isHardware }) => ({
+      ...accounts.map(({ address, name, genesisHash, origin }) => ({
         address,
         genesisHash,
         name: name ?? "Unknown Account",
-        isHardware,
+        origin: typeof origin === "string" ? origin : undefined,
         total: new Balances(balancesByAddress.get(address) ?? []).sum.fiat("usd").total,
       })),
     ]

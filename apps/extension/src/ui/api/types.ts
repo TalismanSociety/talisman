@@ -103,6 +103,7 @@ export default interface MessageTypes {
     id: SigningRequestID<"substrate-sign">,
     signature: HexString
   ) => Promise<boolean>
+  approveSignQr: (id: SigningRequestID<"substrate-sign">, signature: HexString) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
   subscribeEncryptRequests: (cb: (requests: AnyEncryptRequest[]) => void) => UnsubscribeFn
@@ -135,6 +136,7 @@ export default interface MessageTypes {
     request: Omit<RequestAccountCreateHardware, "hardwareType">
   ) => Promise<string>
   accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<string>
+  accountCreateQr: (name: string, address: string, genesisHash: string | null) => Promise<string>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountForget: (address: string) => Promise<boolean>
   accountExport: (
@@ -186,6 +188,8 @@ export default interface MessageTypes {
 
   // chain message types
   chains: (cb: () => void) => UnsubscribeFn
+  chainSpecsQr: (genesisHash: string) => Promise<HexString>
+  chainMetadataQr: (genesisHash: string, specVersion: number) => Promise<HexString>
 
   // token message types
   tokens: (cb: () => void) => UnsubscribeFn

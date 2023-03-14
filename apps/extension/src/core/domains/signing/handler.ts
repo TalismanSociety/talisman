@@ -1,3 +1,4 @@
+import { AccountTypes } from "@core/domains/accounts/types"
 import type {
   AnySigningRequest,
   KnownSigningRequestIdOnly,
@@ -85,7 +86,7 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
-  private async signingApproveHardware({
+  private async signingApproveExternal({
     id,
     signature,
   }: RequestSigningApproveSignature): Promise<boolean> {
@@ -110,10 +111,16 @@ export default class SigningHandler extends ExtensionHandler {
 
     queued.resolve({ id, signature })
 
+    const hardwareType: "ledger" | "qr" | undefined = account?.meta.hardwareType
+      ? account.meta.hardwareType
+      : account?.meta.origin === AccountTypes.QR
+      ? "qr"
+      : undefined
+
     talismanAnalytics.captureDelayed("sign transaction approve", {
       ...analyticsProperties,
       networkType: "substrate",
-      hardwareType: account?.meta.hardwareType,
+      hardwareType,
     })
 
     return true
@@ -178,7 +185,10 @@ export default class SigningHandler extends ExtensionHandler {
         return await this.signingApprove(request as RequestType<"pri(signing.approveSign)">)
 
       case "pri(signing.approveSign.hardware)":
-        return await this.signingApproveHardware(request as RequestSigningApproveSignature)
+        return await this.signingApproveExternal(request as RequestSigningApproveSignature)
+
+      case "pri(signing.approveSign.qr)":
+        return await this.signingApproveExternal(request as RequestSigningApproveSignature)
 
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestType<"pri(signing.cancel)">)

@@ -353,13 +353,14 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     [accounts, formData.from]
   )
 
-  const approvalMode = useMemo((): "hwSubstrate" | "hwEthereum" | "backend" => {
+  const approvalMode = useMemo((): "hwSubstrate" | "hwEthereum" | "qr" | "backend" => {
     if (account?.isHardware) {
       if (expectedResult?.type === "substrate") return "hwSubstrate"
       if (expectedResult?.type === "evm") return "hwEthereum"
     }
+    if (account?.isQr) return "qr"
     return "backend"
-  }, [account?.isHardware, expectedResult?.type])
+  }, [account?.isHardware, account?.isQr, expectedResult?.type])
 
   // execute the TX
   const sendWithSignature = useCallback(

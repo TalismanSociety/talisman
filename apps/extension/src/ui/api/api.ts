@@ -57,6 +57,11 @@ export const api: MessageTypes = {
       id,
       signature,
     }),
+  approveSignQr: (id, signature) =>
+    messageService.sendMessage("pri(signing.approveSign.qr)", {
+      id,
+      signature,
+    }),
 
   // encrypt messages -------------------------------------------------------
   subscribeEncryptRequests: (cb) => messageService.subscribe("pri(encrypt.requests)", null, cb),
@@ -99,6 +104,12 @@ export const api: MessageTypes = {
       name,
       address,
       path,
+    }),
+  accountCreateQr: (name, address, genesisHash) =>
+    messageService.sendMessage("pri(accounts.create.qr.substrate)", {
+      name,
+      address,
+      genesisHash,
     }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountForget: (address) => messageService.sendMessage("pri(accounts.forget)", { address }),
@@ -150,6 +161,10 @@ export const api: MessageTypes = {
 
   // chain message types
   chains: (cb) => messageService.subscribe("pri(chains.subscribe)", null, cb),
+  chainSpecsQr: (genesisHash) =>
+    messageService.sendMessage("pri(chains.addNetworkSpecsQr)", { genesisHash }),
+  chainMetadataQr: (genesisHash, specVersion) =>
+    messageService.sendMessage("pri(chains.updateNetworkMetadataQr)", { genesisHash, specVersion }),
 
   // token message types
   tokens: (cb) => messageService.subscribe("pri(tokens.subscribe)", null, cb),

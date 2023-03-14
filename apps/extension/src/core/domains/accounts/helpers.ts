@@ -4,14 +4,6 @@ import { canDerive } from "@polkadot/extension-base/utils"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
 
-export const AccountTypes = {
-  ROOT: "ROOT",
-  DERIVED: "DERIVED",
-  HARDWARE: "HARDWARE",
-  SEED: "SEED",
-  JSON: "JSON",
-}
-
 const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
   return accounts.sort((acc1, acc2) => {
     const acc1Created = acc1.whenCreated
@@ -55,9 +47,10 @@ export const sortAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
   ordered = [...ordered, ...derivedSorted]
 
   // can be multiple imported accounts - both JSON or SEED imports
+  // as well as QR (parity signer) and HARDWARE (ledger) accounts
   // should order these by created date? probably
   const imported = transformedAccounts.filter(({ origin }) =>
-    ["SEED", "JSON", "HARDWARE"].includes(origin as string)
+    ["SEED", "JSON", "QR", "HARDWARE"].includes(origin as string)
   )
   const importedSorted = sortAccountsByWhenCreated(imported)
   ordered = [...ordered, ...importedSorted]

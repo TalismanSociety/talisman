@@ -38,6 +38,7 @@ export type FeatureVariants = Partial<{
   BUY_CRYPTO: boolean
   LINK_TX_HISTORY: boolean
   LINK_STAKING: boolean
+  PARITY_SIGNER: boolean
   SEND_FUNDS_V2: boolean
   BANNER_NOM_POOL_STAKING: boolean
   USE_ONFINALITY_API_KEY_SUBSTRATE: boolean

@@ -4089,6 +4089,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@polkadot/react-qr@npm:2.11.1":
+  version: 2.11.1
+  resolution: "@polkadot/react-qr@npm:2.11.1"
+  dependencies:
+    "@babel/runtime": ^7.20.13
+    "@polkadot/ui-settings": 2.11.1
+    "@polkadot/util": ^10.3.1
+    "@polkadot/util-crypto": ^10.3.1
+    qrcode-generator: ^1.4.4
+    react-qr-reader: ^2.2.1
+    styled-components: ^5.3.6
+  peerDependencies:
+    "@polkadot/util": "*"
+    "@polkadot/util-crypto": "*"
+    react: "*"
+    react-dom: "*"
+    styled-components: "*"
+  checksum: c632c7f852aa2b4f37df2851b4129e976e62307532f977d2761e1800edec9ed1d9c64d3d3bf3b112759ab774e066bff13c99d7c389948482820aa09f51068b3f
+  languageName: node
+  linkType: hard
+
 "@polkadot/rpc-augment@npm:9.13.6":
   version: 9.13.6
   resolution: "@polkadot/rpc-augment@npm:9.13.6"
@@ -4818,6 +4839,15 @@ __metadata:
   dependencies:
     buffer: ~6.0.3
   checksum: f244e9c42425477ded1fb5295252d7cb093cd591a14552e89271000ad5c01a5b5c0f2f83c7253d640414b600d4b31d95e9f3fcaec6d8280d3d6cb7f3d0a88565
+  languageName: node
+  linkType: hard
+
+"@solana/qr-code-styling@npm:1.6.0-beta.0":
+  version: 1.6.0-beta.0
+  resolution: "@solana/qr-code-styling@npm:1.6.0-beta.0"
+  dependencies:
+    qrcode-generator: ^1.4.3
+  checksum: dcb17ed21b977e1da6863bcf79525bc3ee3b11ae674b356396f4030fced6f7046e6799ff98980d13176da183e010d8cd031cdcf1216dece631b3d87aca1d26b0
   languageName: node
   linkType: hard
 
@@ -11913,6 +11943,7 @@ __metadata:
     "@polkadot/networks": "*"
     "@polkadot/phishing": latest
     "@polkadot/react-identicon": "*"
+    "@polkadot/react-qr": ^2.10.1
     "@polkadot/ui-keyring": "*"
     "@polkadot/ui-settings": "*"
     "@polkadot/util": "*"
@@ -11924,6 +11955,7 @@ __metadata:
     "@sentry/react": 7.36.0
     "@sentry/tracing": 7.36.0
     "@sentry/webpack-plugin": 1.20.0
+    "@solana/qr-code-styling": 1.6.0-beta.0
     "@substrate/txwrapper-core": "*"
     "@svgr/webpack": ^6.5.1
     "@swc/core": ^1.3.14
@@ -12013,6 +12045,7 @@ __metadata:
     postcss-import: ^15.1.0
     postcss-loader: ^7.0.2
     posthog-js: ^1.39.0
+    raptorq: 1.7.22
     react: 18.2.0
     react-app-polyfill: 3.0.0
     react-contenteditable: 3.3.6
@@ -12026,6 +12059,7 @@ __metadata:
     react-use: 17.4.0
     remove-files-webpack-plugin: ^1.5.0
     rxjs: ^7.8.0
+    scale-codec: ^0.11.0-beta.0
     semver: ^7.3.7
     sinon-chrome: ^3.0.1
     style-loader: 3.3.1
@@ -15378,6 +15412,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jsqr@npm:^1.2.0":
+  version: 1.4.0
+  resolution: "jsqr@npm:1.4.0"
+  checksum: 7c572971f90c42772e30d152bde63b84edf1164bde80c53942e6b2068ea31caf00ad704aa46cacc9e71645f52dbeddebc6e84ba15e883c678ee93cde690de339
+  languageName: node
+  linkType: hard
+
 "jsx-ast-utils@npm:^2.4.1 || ^3.0.0, jsx-ast-utils@npm:^3.2.1":
   version: 3.3.2
   resolution: "jsx-ast-utils@npm:3.3.2"
@@ -17850,6 +17891,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"qrcode-generator@npm:^1.4.3, qrcode-generator@npm:^1.4.4":
+  version: 1.4.4
+  resolution: "qrcode-generator@npm:1.4.4"
+  checksum: 860cfdd2a7a608d34e92cab99774cc08182e1911432f30ed36d16f8a5cdabd7fdf40239caed91fa2691cfe66c8d95c1340a2fc9cc439eed07a9f2eb328c6f527
+  languageName: node
+  linkType: hard
+
 "qrcode@npm:1.4.4":
   version: 1.4.4
   resolution: "qrcode@npm:1.4.4"
@@ -17973,6 +18021,13 @@ __metadata:
     randombytes: ^2.0.5
     safe-buffer: ^5.1.0
   checksum: 33734bb578a868d29ee1b8555e21a36711db084065d94e019a6d03caa67debef8d6a1bfd06a2b597e32901ddc761ab483a85393f0d9a75838f1912461d4dbfc7
+  languageName: node
+  linkType: hard
+
+"raptorq@npm:1.7.22":
+  version: 1.7.22
+  resolution: "raptorq@npm:1.7.22"
+  checksum: f3a3b1211441b000ca401ae95fa8ee7c836d65c1ccd182b65ce79ee44ea55fd5ed5716950b9869d1b2705e6c087fc28096ba1ecf0f40dee6961774d06bf18f96
   languageName: node
   linkType: hard
 
@@ -18107,6 +18162,20 @@ __metadata:
   version: 2.0.0
   resolution: "react-property@npm:2.0.0"
   checksum: 8a444df30ef0937689c7968dae2501a0ca523777169f450e1f7ef5beeb855d6509bd058bf612f6ed8f459aa35468335d356e50264492e1938586e59fdb988262
+  languageName: node
+  linkType: hard
+
+"react-qr-reader@npm:^2.2.1":
+  version: 2.2.1
+  resolution: "react-qr-reader@npm:2.2.1"
+  dependencies:
+    jsqr: ^1.2.0
+    prop-types: ^15.7.2
+    webrtc-adapter: ^7.2.1
+  peerDependencies:
+    react: ~16
+    react-dom: ~16
+  checksum: a6e997fdd9106dc06efd5df979c49174cf5da97ced9dd1212ebe084fc6c346d2b8a636c6e710668bde32ced28a54e0a4a99e843101062fc3ca99cb90287473cb
   languageName: node
   linkType: hard
 
@@ -18689,6 +18758,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rtcpeerconnection-shim@npm:^1.2.15":
+  version: 1.2.15
+  resolution: "rtcpeerconnection-shim@npm:1.2.15"
+  dependencies:
+    sdp: ^2.6.0
+  checksum: 42a733d8e3846b7e7e3c33b6d5cddec95659ceb39d3f990f0a4437e6d719ed717237fea02352d4a18d86c825a1493eaeb481cc835267d2288b0ce43582b97f46
+  languageName: node
+  linkType: hard
+
 "rtl-css-js@npm:^1.14.0":
   version: 1.15.0
   resolution: "rtl-css-js@npm:1.15.0"
@@ -18789,6 +18867,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"scale-codec@npm:^0.11.0-beta.0":
+  version: 0.11.0-beta.0
+  resolution: "scale-codec@npm:0.11.0-beta.0"
+  checksum: 9ce1b65c2a244a2135e17e2eebbf32ad146bfe410b4e75ee64922d991c33e74dae1110342317abad02b966a71ee0fc71eb19709fcb7862f5042636436d54d2f4
+  languageName: node
+  linkType: hard
+
 "scheduler@npm:^0.23.0":
   version: 0.23.0
   resolution: "scheduler@npm:0.23.0"
@@ -18832,6 +18917,13 @@ __metadata:
   version: 3.0.1
   resolution: "scrypt-js@npm:3.0.1"
   checksum: b7c7d1a68d6ca946f2fbb0778e0c4ec63c65501b54023b2af7d7e9f48fdb6c6580d6f7675cd53bda5944c5ebc057560d5a6365079752546865defb3b79dea454
+  languageName: node
+  linkType: hard
+
+"sdp@npm:^2.12.0, sdp@npm:^2.6.0":
+  version: 2.12.0
+  resolution: "sdp@npm:2.12.0"
+  checksum: 5deb20ac50a1aeb4dd5ff2e506c22d1674222c21f08ae97105c9552ae979e90ddc42b8526f2c3dcacfeebc45c7b2e6b6b4254ae2cf335263bf3ddf2ad9b8ec76
   languageName: node
   linkType: hard
 
@@ -21434,6 +21526,16 @@ __metadata:
   bin:
     webpack: bin/webpack.js
   checksum: 320c41369a75051b19e18c63f408b3dcc481852e992f83d311771c5ec0f05f2946385e8ebef62030cf3587f0a3d2f12779ffdb191569a966847289ba7313f946
+  languageName: node
+  linkType: hard
+
+"webrtc-adapter@npm:^7.2.1":
+  version: 7.7.1
+  resolution: "webrtc-adapter@npm:7.7.1"
+  dependencies:
+    rtcpeerconnection-shim: ^1.2.15
+    sdp: ^2.12.0
+  checksum: 16534a721794bf375753b031e538f5c1ce84df3a272085069bbce7fa1b085e5a2d33b92096256a6fdacdf6f9e30f8543e2478a293ccf5a3849bc7143b10b38d3
   languageName: node
   linkType: hard
 

@@ -1,5 +1,5 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
-import { AccountMeta } from "@core/domains/accounts/types"
+import { AccountMeta, AccountTypes } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
   AnalyticsCaptureRequest,
@@ -26,7 +26,6 @@ import { sleep } from "@talismn/util"
 import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
-import { AccountTypes } from "../accounts/helpers"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
 import { featuresStore } from "./store.features"

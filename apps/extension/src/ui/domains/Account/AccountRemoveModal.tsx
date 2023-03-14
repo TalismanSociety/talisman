@@ -8,7 +8,7 @@ import { api } from "@ui/api"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-const REMOVABLE_ORIGINS = ["DERIVED", "SEED", "JSON", "HARDWARE"]
+const REMOVABLE_ORIGINS = ["DERIVED", "SEED", "JSON", "QR", "HARDWARE"]
 
 const useAccountRemoveModalProvider = () => {
   const { account } = useSelectedAccount()

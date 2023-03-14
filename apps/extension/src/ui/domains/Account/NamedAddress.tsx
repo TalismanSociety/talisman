@@ -1,7 +1,7 @@
 import { Balances } from "@core/domains/balances/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { LinkIcon, UsbIcon } from "@talisman/theme/icons"
+import { LinkIcon, ParitySignerIcon, UsbIcon } from "@talisman/theme/icons"
 import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
 import { ReactComponent as IconLoader } from "@talisman/theme/icons/loader.svg"
 import Asset from "@ui/domains/Asset"
@@ -13,11 +13,12 @@ import Avatar from "./Avatar"
 
 type AccountTypeIconProps = {
   origin?: AccountJson["origin"] | null
+  linked?: boolean
   className?: string
 }
 
-const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, className }) => {
-  if (["SEED", "JSON"].includes(origin as string))
+export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, linked, className }) => {
+  if (linked && ["SEED", "JSON"].includes(origin as string))
     return (
       <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
         <LinkIcon />
@@ -27,6 +28,12 @@ const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, className }) => {
     return (
       <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
         <UsbIcon />
+      </WithTooltip>
+    )
+  if (origin === "QR")
+    return (
+      <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
+        <ParitySignerIcon />
       </WithTooltip>
     )
   return null
@@ -89,7 +96,7 @@ const NamedAddress = ({
           )}
         </div>
       </span>
-      {!!withSource && <AccountTypeIcon origin={origin} className={className} />}
+      {!!withSource && <AccountTypeIcon linked origin={origin} className={className} />}
     </>
   )
 }

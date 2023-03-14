@@ -29,6 +29,8 @@ export const ChainFragment = gql`
     }
     account
     subscanUrl
+    chainspecQrUrl
+    latestMetadataQrUrl
     rpcs {
       url
       isHealthy
