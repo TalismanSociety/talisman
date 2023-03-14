@@ -215,8 +215,6 @@ export class ChainConnector {
     if (!chain) throw new Error(`Chain ${chainId} not found in store`)
     const socketUserId = this.addSocketUser(chainId)
 
-    if (this.#socketConnections[chainId]) return [socketUserId, this.#socketConnections[chainId]]
-
     // sort healthy rpcs before unhealthy rpcs
     const healthyRpcs = (chain.rpcs || [])
       .filter(({ isHealthy }) => isHealthy)
@@ -239,6 +237,15 @@ export class ChainConnector {
     if (this.#connectionMetaDb)
       nextBackoffInterval = (await this.#connectionMetaDb.chainBackoffInterval.get(chainId))
         ?.interval
+
+    // NOTE: Make sure there are no calls to `await` between this check and the
+    // next step where we assign a `new Websocket` to `this.#socketConnections[chainId]`
+    //
+    // If there is an `await` between these two steps then there will be a race condition introduced.
+    // The result of this race condition will be the unnecessary creation of multiple instances of
+    // `Websocket` per chain, rather than the intended behaviour where every call to send/subscribe
+    // shares a single `Websocket` per chain.
+    if (this.#socketConnections[chainId]) return [socketUserId, this.#socketConnections[chainId]]
 
     if (rpcs.length)
       this.#socketConnections[chainId] = new Websocket(
