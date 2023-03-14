@@ -38,16 +38,8 @@ const ChainTokenBlock = styled.div`
 `
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const {
-    chainOrNetwork,
-    summary,
-    symbol,
-    detailRows,
-    chain,
-    isFetching,
-    staleChains,
-    networkType,
-  } = useChainTokenBalances({ chainId, balances })
+  const { chainOrNetwork, summary, symbol, detailRows, chain, status, networkType } =
+    useChainTokenBalances({ chainId, balances })
 
   // wait for data to load
   if (!chainOrNetwork || !summary || !symbol || balances.count === 0) return null
@@ -91,7 +83,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             <div
               className={classNames(
                 "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
-                isFetching && "animate-pulse transition-opacity"
+                status.status === "fetching" && "animate-pulse transition-opacity"
               )}
             >
               <div
@@ -107,12 +99,12 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                     <LockIcon className="lock inline align-baseline" />
                   </>
                 ) : null}
-                {staleChains.length > 0 ? (
+                {status.status === "stale" ? (
                   <>
                     {" "}
                     <StaleBalancesIcon
                       className="inline align-baseline"
-                      staleChains={staleChains}
+                      staleChains={status.staleChains}
                     />
                   </>
                 ) : null}

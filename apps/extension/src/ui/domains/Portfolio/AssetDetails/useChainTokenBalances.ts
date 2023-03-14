@@ -6,13 +6,13 @@ import { sortBigBy } from "@talisman/util/bigHelper"
 import { ChainId, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { TokenRates } from "@talismn/token-rates"
 import { planckToTokens } from "@talismn/util"
+import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
 import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
-import { getStaleChains } from "../StaleBalancesIcon"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { useBalanceLocks } from "./useBalanceLocks"
 
@@ -65,7 +65,12 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
   )
 
   // query only locks for addresses that have frozen balance
-  const { consolidatedLocks, isLoading, error, balanceLocks } = useBalanceLocks({
+  const {
+    consolidatedLocks,
+    isLoading: isLoadingLocks,
+    error,
+    balanceLocks,
+  } = useBalanceLocks({
     chainId,
     addresses: addressesWithLocks,
   })
@@ -169,11 +174,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
     [chain, evmNetwork, relay]
   )
 
-  const isFetching = useMemo(
-    () => balances.each.some((b) => b.status === "cache") || isLoading,
-    [balances, isLoading]
-  )
-  const staleChains = useMemo(() => getStaleChains(balances), [balances])
+  const status = useBalancesStatus(balances, isLoadingLocks)
 
   return {
     summary,
@@ -181,8 +182,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
     detailRows,
     evmNetwork,
     chain,
-    isFetching,
-    staleChains,
+    status,
     networkType,
     chainOrNetwork: chain || evmNetwork,
   }

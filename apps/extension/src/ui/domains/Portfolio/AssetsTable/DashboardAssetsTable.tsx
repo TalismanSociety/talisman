@@ -2,14 +2,14 @@ import { Balances } from "@core/domains/balances/types"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useCallback, useMemo } from "react"
+import { useBalancesStatus } from "@ui/hooks/useBalancesStatus"
+import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
 import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
-import { getStaleChains } from "../StaleBalancesIcon"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
@@ -108,8 +108,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
-  const isFetching = useMemo(() => balances.each.some((b) => b.status === "cache"), [balances])
-  const staleChains = useMemo(() => getStaleChains(balances), [balances])
+  const status = useBalancesStatus(balances)
 
   const { token, summary } = useTokenBalancesSummary(balances)
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
@@ -178,8 +177,11 @@ const AssetRow = ({ balances }: AssetRowProps) => {
             tokens={summary.lockedTokens}
             fiat={summary.lockedFiat}
             symbol={token.symbol}
-            staleChains={staleChains}
-            className={classNames("noPadRight", isFetching && "animate-pulse transition-opacity")}
+            balancesStatus={status}
+            className={classNames(
+              "noPadRight",
+              status.status === "fetching" && "animate-pulse transition-opacity"
+            )}
           />
         </td>
         <td align="right" valign="top">
@@ -188,8 +190,10 @@ const AssetRow = ({ balances }: AssetRowProps) => {
             tokens={summary.availableTokens}
             fiat={summary.availableFiat}
             symbol={token.symbol}
-            staleChains={staleChains}
-            className={classNames(isFetching && "animate-pulse transition-opacity")}
+            balancesStatus={status}
+            className={classNames(
+              status.status === "fetching" && "animate-pulse transition-opacity"
+            )}
           />
         </td>
       </tr>

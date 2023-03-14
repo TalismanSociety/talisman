@@ -93,16 +93,8 @@ type AssetRowProps = {
 }
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const {
-    chainOrNetwork,
-    summary,
-    symbol,
-    detailRows,
-    chain,
-    isFetching,
-    staleChains,
-    networkType,
-  } = useChainTokenBalances({ chainId, balances })
+  const { chainOrNetwork, summary, symbol, detailRows, chain, status, networkType } =
+    useChainTokenBalances({ chainId, balances })
 
   // wait for data to load
   if (!chainOrNetwork || !summary || !symbol || balances.count === 0) return null
@@ -132,8 +124,10 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             fiat={summary.lockedFiat}
             symbol={symbol}
             tooltip="Total Locked Balance"
-            staleChains={staleChains}
-            className={classNames(isFetching && "animate-pulse transition-opacity")}
+            balancesStatus={status}
+            className={classNames(
+              status.status === "fetching" && "animate-pulse transition-opacity"
+            )}
           />
         </td>
         <td align="right" valign="top">
@@ -143,8 +137,10 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             fiat={summary.availableFiat}
             symbol={symbol}
             tooltip="Total Available Balance"
-            staleChains={staleChains}
-            className={classNames(isFetching && "animate-pulse transition-opacity")}
+            balancesStatus={status}
+            className={classNames(
+              status.status === "fetching" && "animate-pulse transition-opacity"
+            )}
           />
         </td>
       </tr>
@@ -163,8 +159,10 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                 fiat={row.fiat}
                 symbol={symbol}
                 locked={row.locked}
-                staleChains={staleChains}
-                className={classNames(isFetching && "animate-pulse transition-opacity")}
+                balancesStatus={status}
+                className={classNames(
+                  status.status === "fetching" && "animate-pulse transition-opacity"
+                )}
               />
             </td>
           </tr>
