@@ -41,12 +41,18 @@ export const getFeeHistoryAnalysis = async (
       REWARD_PERCENTILES,
     ])
 
+    // instrument for information - remove asap
+    if (!rawHistoryFee.reward)
+      Sentry.captureMessage(`No reward on fee history`, { extra: { chain: provider.network.name } })
+
     // parse hex values
     const feeHistory: FeeHistory = {
       oldestBlock: parseInt(rawHistoryFee.oldestBlock, 16),
       baseFeePerGas: rawHistoryFee.baseFeePerGas.map((fee: string) => BigNumber.from(fee)),
       gasUsedRatio: rawHistoryFee.gasUsedRatio as (number | null)[],
-      reward: rawHistoryFee.reward.map((reward: string[]) => reward.map((r) => BigNumber.from(r))),
+      reward: rawHistoryFee.reward
+        ? rawHistoryFee.reward.map((reward: string[]) => reward.map((r) => BigNumber.from(r)))
+        : null,
     }
 
     // how busy the network is over this period
