@@ -107,8 +107,7 @@
     "ethereumjs-abi": "0.6.8"
   },
   "engines": {
-    "npm": ">=8.0.0",
-    "node": ">=16.0.0"
+    "node": ">=18"
   },
   "packageManager": "yarn@3.2.1",
   "lint-staged": {
