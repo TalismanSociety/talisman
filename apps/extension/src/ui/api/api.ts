@@ -41,6 +41,7 @@ export const api: MessageTypes = {
   analyticsCapture: (request) => messageService.sendMessage("pri(app.analyticsCapture)", request),
   sendFundsOpen: (request = {}) => messageService.sendMessage("pri(app.sendFunds.open)", request),
   resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
+  subscribeRequests: (cb) => messageService.subscribe("pri(app.requests)", null, cb),
 
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),

@@ -19,10 +19,6 @@ export type KnownRequestTypes = keyof KnownRequests
 export type KnownRequestId<T extends KnownRequestTypes> = `${T}.${string}`
 export type AnyRequestID = KnownRequestId<KnownRequestTypes>
 
-export type AnyKnownRequestIdOnly = {
-  id: AnyRequestID
-}
-
 export type KnownRequestIdOnly<T extends KnownRequestTypes> = {
   id: KnownRequestId<T>
 }

@@ -63,6 +63,7 @@ import {
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
 import { EthResponseType } from "@core/injectEth/types"
+import { ValidRequests } from "@core/libs/requests/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
@@ -121,6 +122,7 @@ export default interface MessageTypes {
   analyticsCapture: (request: AnalyticsCaptureRequest) => Promise<boolean>
   sendFundsOpen: (request?: SendFundsOpenRequest) => Promise<boolean>
   resetWallet: () => Promise<boolean>
+  subscribeRequests: (cb: (request: ValidRequests[]) => void) => UnsubscribeFn
 
   // mnemonic message types -------------------------------------------------------
   mnemonicUnlock: (pass: string) => Promise<string>

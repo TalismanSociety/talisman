@@ -1,4 +1,5 @@
 import { TokenId } from "@core/domains/tokens/types"
+import { ValidRequests } from "@core/libs/requests/types"
 import { Address } from "@core/types/base"
 import { Properties } from "posthog-js"
 
@@ -89,4 +90,5 @@ export interface AppMessages {
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
   "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
   "pri(app.resetWallet)": [null, boolean]
+  "pri(app.requests)": [null, boolean, ValidRequests[]]
 }

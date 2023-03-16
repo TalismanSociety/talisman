@@ -15,6 +15,7 @@ import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { requestStore } from "@core/libs/requests/store"
 import { windowManager } from "@core/libs/WindowManager"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -353,6 +354,9 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.resetWallet)":
         return this.resetWallet()
+
+      case "pri(app.requests)":
+        return requestStore.subscribe<"pri(app.requests)">(id, port)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)
