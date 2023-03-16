@@ -45,6 +45,7 @@ export type IToken = {
   type: string
   isTestnet: boolean
   symbol: string
+  themeColor?: string
   decimals: number
   logo: string
   coingeckoId?: string
