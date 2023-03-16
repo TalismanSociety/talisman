@@ -1,5 +1,4 @@
 import { Balances } from "@talismn/balances"
-import { getStaleChains } from "@ui/domains/Portfolio/StaleBalancesIcon"
 import { useMemo } from "react"
 
 export type BalancesStatus =
@@ -7,6 +6,14 @@ export type BalancesStatus =
   | { status: "fetching" }
   | { status: "stale"; staleChains: string[] }
 
+/**
+ * Given a collection of `Balances`, this hook returns a `BalancesStatus` summary for the collection.
+ *
+ * @param balances The collection of balances to get the status from.
+ * @param isLoadingLocks Because the wallet currently fetches locks outside of the balances api, this param can be used to indicate that the locks are still loading, even if the `Balances` collection is not.
+ * @returns An instance of `BalancesStatus` which represents the status of the balances collection.
+
+ */
 export const useBalancesStatus = (balances: Balances, isLoadingLocks?: boolean) =>
   useMemo<BalancesStatus>(() => {
     // stale
@@ -20,3 +27,11 @@ export const useBalancesStatus = (balances: Balances, isLoadingLocks?: boolean) 
     // live
     return { status: "live" }
   }, [balances, isLoadingLocks])
+
+export const getStaleChains = (balances: Balances): string[] => [
+  ...new Set(
+    balances.sorted
+      .filter((b) => b.status === "stale")
+      .map((b) => b.chain?.name ?? b.chainId ?? "Unknown")
+  ),
+]
