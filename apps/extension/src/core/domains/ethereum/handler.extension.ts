@@ -476,26 +476,6 @@ export class EthHandler extends ExtensionHandler {
       case "pri(eth.watchasset.requests.approve)":
         return this.ethWatchAssetRequestApprove(request as WatchAssetRequestIdOnly)
 
-      case "pri(eth.watchasset.requests.subscribe)":
-        return requestStore.subscribe(id, port, [WATCH_ASSET_PREFIX])
-
-      case "pri(eth.watchasset.requests.subscribe.byid)": {
-        const cb = createSubscription(id, port)
-        const subscription = requestStore.observable.subscribe((reqs) => {
-          const watchAssetRequest = reqs.find(
-            (req) => req.id === (request as WatchAssetRequestIdOnly).id
-          )
-          if (watchAssetRequest && watchAssetRequest.type === WATCH_ASSET_PREFIX)
-            cb(watchAssetRequest)
-        })
-
-        port.onDisconnect.addListener((): void => {
-          unsubscribe(id)
-          subscription.unsubscribe()
-        })
-        return true
-      }
-
       // --------------------------------------------------------------------
       // ethereum network handlers ------------------------------------------
       // --------------------------------------------------------------------

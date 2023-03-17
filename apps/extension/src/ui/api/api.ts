@@ -266,8 +266,4 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(eth.watchasset.requests.approve)", { id }),
   ethWatchAssetRequestCancel: (id) =>
     messageService.sendMessage("pri(eth.watchasset.requests.cancel)", { id }),
-  ethWatchAssetRequestSubscribe: (id, cb) =>
-    messageService.subscribe("pri(eth.watchasset.requests.subscribe.byid)", { id }, cb),
-  ethWatchAssetRequestsSubscribe: (cb) =>
-    messageService.subscribe("pri(eth.watchasset.requests.subscribe)", null, cb),
 }

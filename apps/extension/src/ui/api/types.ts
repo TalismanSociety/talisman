@@ -276,9 +276,4 @@ export default interface MessageTypes {
   // ethereum tokens message types
   ethWatchAssetRequestApprove: (id: WatchAssetRequestId) => Promise<boolean>
   ethWatchAssetRequestCancel: (is: WatchAssetRequestId) => Promise<boolean>
-  ethWatchAssetRequestSubscribe: (
-    id: WatchAssetRequestId,
-    cb: (requests: WatchAssetRequest) => void
-  ) => UnsubscribeFn
-  ethWatchAssetRequestsSubscribe: (cb: (requests: WatchAssetRequest[]) => void) => UnsubscribeFn
 }
