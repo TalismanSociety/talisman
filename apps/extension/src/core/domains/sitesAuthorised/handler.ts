@@ -92,9 +92,6 @@ export default class SitesAuthorisationHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       // authorised site requests handlers ----------------------------------
       // --------------------------------------------------------------------
-      case "pri(sites.requests.subscribe)":
-        return requestStore.subscribe(id, port, ["auth"])
-
       case "pri(sites.requests.approve)":
         return this.authorizeApprove(request as AuthRequestApprove)
 

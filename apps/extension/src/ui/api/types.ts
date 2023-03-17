@@ -178,7 +178,6 @@ export default interface MessageTypes {
   authorizedSiteUpdate: (id: string, authorisedSite: AuthorisedSiteUpdate) => Promise<boolean>
 
   // authorization requests message types ------------------------------------
-  authRequestsSubscribe: (cb: (requests: SiteAuthRequest[]) => void) => UnsubscribeFn
   authrequestApprove: (id: AuthRequestId, addresses: AuthRequestAddresses) => Promise<boolean>
   authrequestReject: (id: AuthRequestId) => Promise<boolean>
   authrequestIgnore: (id: AuthRequestId) => Promise<boolean>

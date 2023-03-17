@@ -146,8 +146,6 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(sites.update)", { id, authorisedSite }),
 
   // authorization requests messages ------------------------------------
-  authRequestsSubscribe: (cb) =>
-    messageService.subscribe("pri(sites.requests.subscribe)", null, cb),
   authrequestApprove: (id, addresses) =>
     messageService.sendMessage("pri(sites.requests.approve)", { id, addresses }),
   authrequestReject: (id) => messageService.sendMessage("pri(sites.requests.reject)", { id }),
