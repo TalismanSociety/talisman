@@ -32,7 +32,6 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(app.promptLogin)", closeOnSuccess),
   approveMetaRequest: (id) => messageService.sendMessage("pri(metadata.approve)", { id }),
   rejectMetaRequest: (id) => messageService.sendMessage("pri(metadata.reject)", { id }),
-  subscribeMetadataRequests: (cb) => messageService.subscribe("pri(metadata.requests)", null, cb),
   allowPhishingSite: (url) => messageService.sendMessage("pri(app.phishing.addException)", { url }),
 
   // app messages -------------------------------------------------------

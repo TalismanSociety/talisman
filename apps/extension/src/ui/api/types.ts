@@ -93,7 +93,6 @@ export default interface MessageTypes {
   promptLogin: (closeOnSuccess?: boolean) => Promise<boolean>
   approveMetaRequest: (id: RequestMetadataId) => Promise<boolean>
   rejectMetaRequest: (id: RequestMetadataId) => Promise<boolean>
-  subscribeMetadataRequests: (cb: (requests: MetadataRequest[]) => void) => UnsubscribeFn
   allowPhishingSite: (url: string) => Promise<boolean>
 
   // signing messages -------------------------------------------------------
