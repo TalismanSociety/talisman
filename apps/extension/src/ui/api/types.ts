@@ -266,9 +266,6 @@ export default interface MessageTypes {
   ethNetworkAddGetRequests: () => Promise<AddEthereumChainRequest[]>
   ethNetworkAddApprove: (id: AddEthereumChainRequestId) => Promise<boolean>
   ethNetworkAddCancel: (is: AddEthereumChainRequestId) => Promise<boolean>
-  ethNetworkAddSubscribeRequests: (
-    cb: (requests: AddEthereumChainRequest[]) => void
-  ) => UnsubscribeFn
 
   // ethereum networks message types
   ethereumNetworks: (cb: () => void) => UnsubscribeFn

@@ -1,3 +1,4 @@
+import { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { AppPill } from "@talisman/components/AppPill"
 import StyledGrid from "@talisman/components/Grid"
 import { IconButton } from "@talisman/components/IconButton"
@@ -6,7 +7,7 @@ import { SimpleButton } from "@talisman/components/SimpleButton"
 import { GlobeIcon, XIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { NetworksDetailsButton } from "@ui/domains/Ethereum/NetworkDetailsButton"
-import { useEthNetworkAddRequestById } from "@ui/hooks/useEthNetworkAddRequestById"
+import { useRequest } from "@ui/hooks/useRequest"
 import { useCallback } from "react"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
@@ -72,8 +73,8 @@ const Container = styled(Layout)`
 `
 
 export const AddEthereumNetwork = () => {
-  const { id } = useParams<"id">()
-  const request = useEthNetworkAddRequestById(id)
+  const { id } = useParams<"id">() as KnownRequestIdOnly<"eth-network-add">
+  const request = useRequest(id)
 
   const approve = useCallback(async () => {
     if (!request) return

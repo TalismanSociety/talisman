@@ -508,9 +508,6 @@ export class EthHandler extends ExtensionHandler {
       case "pri(eth.networks.add.requests)":
         return requestStore.getAllRequests(ETH_NETWORK_ADD_PREFIX)
 
-      case "pri(eth.networks.add.subscribe)":
-        return requestStore.subscribe(id, port, [ETH_NETWORK_ADD_PREFIX])
-
       case "pri(eth.networks.subscribe)":
         return chaindataProvider.hydrateEvmNetworks()
 

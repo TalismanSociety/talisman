@@ -254,8 +254,7 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(eth.networks.add.requests)", null),
   ethNetworkAddApprove: (id) => messageService.sendMessage("pri(eth.networks.add.approve)", { id }),
   ethNetworkAddCancel: (id) => messageService.sendMessage("pri(eth.networks.add.cancel)", { id }),
-  ethNetworkAddSubscribeRequests: (cb) =>
-    messageService.subscribe("pri(eth.networks.add.subscribe)", null, cb),
+
   // ethereum network message types
   ethereumNetworks: (cb) => messageService.subscribe("pri(eth.networks.subscribe)", null, cb),
   ethNetworkUpsert: (network) => messageService.sendMessage("pri(eth.networks.upsert)", network),
