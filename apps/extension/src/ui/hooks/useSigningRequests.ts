@@ -1,13 +1,11 @@
 import type { AnySigningRequest } from "@core/domains/signing/types"
-import { api } from "@ui/api"
-import { BehaviorSubject } from "rxjs"
+import { SIGNING_TYPES } from "@core/domains/signing/types"
 
-import { useMessageSubscription } from "./useMessageSubscription"
+import { useRequests } from "./useRequests"
 
-const INITIAL_VALUE: Array<AnySigningRequest> = []
-
-const subscribe = (subject: BehaviorSubject<AnySigningRequest[]>) =>
-  api.subscribeSigningRequests((v) => subject.next(v))
-
-export const useSigningRequests = () =>
-  useMessageSubscription("subscribeSigningRequests", INITIAL_VALUE, subscribe)
+export const useSigningRequests = () => {
+  const requests = useRequests()
+  return requests.filter((req) =>
+    Object.keys(SIGNING_TYPES).includes(req.type)
+  ) as AnySigningRequest[]
+}

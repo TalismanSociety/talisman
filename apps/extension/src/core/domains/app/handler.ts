@@ -290,7 +290,7 @@ export default class AppHandler extends ExtensionHandler {
         return await this.stores.app.get("onboarded")
 
       case "pri(app.onboardStatus.subscribe)":
-        return genericSubscription<"pri(app.onboardStatus.subscribe)">(
+        return genericSubscription(
           id,
           port,
           this.stores.app.observable,
@@ -356,7 +356,7 @@ export default class AppHandler extends ExtensionHandler {
         return this.resetWallet()
 
       case "pri(app.requests)":
-        return requestStore.subscribe<"pri(app.requests)">(id, port)
+        return requestStore.subscribe(id, port)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

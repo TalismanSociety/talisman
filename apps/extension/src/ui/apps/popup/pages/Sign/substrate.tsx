@@ -1,5 +1,5 @@
 import { KnownSigningRequestIdOnly, SignerPayloadRaw } from "@core/domains/signing/types"
-import { useSigningRequestById } from "@ui/hooks/useSigningRequestById"
+import { useRequest } from "@ui/hooks/useRequest"
 import { useMemo } from "react"
 import { useParams } from "react-router-dom"
 
@@ -8,7 +8,7 @@ import { PolkadotSignTransactionRequest } from "./PolkadotSignTransactionRequest
 
 export const SubstrateSignRequest = () => {
   const { id } = useParams() as KnownSigningRequestIdOnly<"substrate-sign">
-  const signingRequest = useSigningRequestById(id)
+  const signingRequest = useRequest(id)
 
   const payloadType = useMemo(() => {
     const payload = signingRequest?.request?.payload

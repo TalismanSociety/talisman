@@ -115,13 +115,10 @@ export default class EncryptHandler extends ExtensionHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pri(encrypt.requests)":
-        return requestStore.subscribe<"pri(encrypt.requests)">(id, port, [
-          ENCRYPT_ENCRYPT_PREFIX,
-          ENCRYPT_DECRYPT_PREFIX,
-        ])
+        return requestStore.subscribe(id, port, [ENCRYPT_ENCRYPT_PREFIX, ENCRYPT_DECRYPT_PREFIX])
 
       case "pri(encrypt.byid.subscribe)": {
-        const cb = createSubscription<"pri(encrypt.byid.subscribe)">(id, port)
+        const cb = createSubscription(id, port)
         const subscription = requestStore.observable.subscribe((reqs) => {
           const req = reqs.find(
             (req) => req.id === (request as EncryptRequestIdOnly | DecryptRequestIdOnly).id

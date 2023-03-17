@@ -1,5 +1,5 @@
 import { TokenId } from "@core/domains/tokens/types"
-import { ValidRequests } from "@core/libs/requests/types"
+import { AnyRequestID, ValidRequests } from "@core/libs/requests/types"
 import { Address } from "@core/types/base"
 import { Properties } from "posthog-js"
 

@@ -477,12 +477,10 @@ export class EthHandler extends ExtensionHandler {
         return this.ethWatchAssetRequestApprove(request as WatchAssetRequestIdOnly)
 
       case "pri(eth.watchasset.requests.subscribe)":
-        return requestStore.subscribe<"pri(eth.watchasset.requests.subscribe)">(id, port, [
-          WATCH_ASSET_PREFIX,
-        ])
+        return requestStore.subscribe(id, port, [WATCH_ASSET_PREFIX])
 
       case "pri(eth.watchasset.requests.subscribe.byid)": {
-        const cb = createSubscription<"pri(eth.watchasset.requests.subscribe.byid)">(id, port)
+        const cb = createSubscription(id, port)
         const subscription = requestStore.observable.subscribe((reqs) => {
           const watchAssetRequest = reqs.find(
             (req) => req.id === (request as WatchAssetRequestIdOnly).id
@@ -511,9 +509,7 @@ export class EthHandler extends ExtensionHandler {
         return requestStore.getAllRequests(ETH_NETWORK_ADD_PREFIX)
 
       case "pri(eth.networks.add.subscribe)":
-        return requestStore.subscribe<"pri(eth.networks.add.subscribe)">(id, port, [
-          ETH_NETWORK_ADD_PREFIX,
-        ])
+        return requestStore.subscribe(id, port, [ETH_NETWORK_ADD_PREFIX])
 
       case "pri(eth.networks.subscribe)":
         return chaindataProvider.hydrateEvmNetworks()

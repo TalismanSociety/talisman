@@ -46,9 +46,6 @@ export const api: MessageTypes = {
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
   decodeSignRequest: (id) => messageService.sendMessage("pri(signing.details)", { id }),
-  subscribeSigningRequests: (cb) => messageService.subscribe("pri(signing.requests)", null, cb),
-  subscribeSigningRequest: (id, cb) =>
-    messageService.subscribe("pri(signing.byid.subscribe)", { id }, cb),
   approveSign: (id) =>
     messageService.sendMessage("pri(signing.approveSign)", {
       id,

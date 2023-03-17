@@ -63,7 +63,12 @@ import {
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
 import { EthResponseType } from "@core/injectEth/types"
-import { ValidRequests } from "@core/libs/requests/types"
+import {
+  KnownRequest,
+  KnownRequestId,
+  KnownRequestTypes,
+  ValidRequests,
+} from "@core/libs/requests/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
@@ -94,11 +99,6 @@ export default interface MessageTypes {
   // signing messages -------------------------------------------------------
   decodeSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<TransactionDetails>
   cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
-  subscribeSigningRequest: (
-    id: AnySigningRequestID,
-    cb: (requests: AnySigningRequest) => void
-  ) => UnsubscribeFn
-  subscribeSigningRequests: (cb: (requests: AnySigningRequest[]) => void) => UnsubscribeFn
   approveSign: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
   approveSignHardware: (
     id: SigningRequestID<"substrate-sign">,
