@@ -4,8 +4,7 @@ import isJsonPayload from "@core/util/isJsonPayload"
 import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
 import { createSignPayload, decodeString } from "@polkadot/react-qr/util"
 import { TypeRegistry } from "@polkadot/types"
-import { hexToU8a, stringToU8a, u8aConcat } from "@polkadot/util"
-import type { HexString } from "@polkadot/util/types"
+import { hexToU8a, u8aConcat } from "@polkadot/util"
 import QrCodeStyling from "@solana/qr-code-styling"
 import { Drawer } from "@talisman/components/Drawer"
 import { LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
@@ -20,6 +19,7 @@ import { FC, ReactElement, lazy, useEffect, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 
 import { LedgerSigningStatus } from "./LedgerSigningStatus"
+import { FRAME_SIZE, talismanRedHandSvg } from "./QrConstants"
 
 const RaptorQrCode = lazy(() => import("./RaptorQrCode"))
 const CMD_SIGN_TX = 0
@@ -32,18 +32,6 @@ type Command =
   | typeof CMD_SIGN_TX_HASH
   | typeof CMD_IMMORTAL
   | typeof CMD_SIGN_MESSAGE
-
-const talismanRedHandSvg =
-  `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODIiIGhlaWdodD0iODIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTYyLj` +
-  `U3MSA0NS40MjVjLTEuMDMgMS4wMy0yLjgyMi41NjMtMy40MzEtLjc2M2ExLjk4MiAxLjk4MiAwIDAgMS0uMTg1LS44MjlWMjAuOTg5YTUuMDAzIDUuMDAzIDAgMCAwLT` +
-  `EwLjAwNSAwdjExLjU2MmMwIC45OTQtMS4wMTcgMS42NjktMS45NjcgMS4zN2ExLjQ1NCAxLjQ1NCAwIDAgMS0xLjAzMi0xLjM2N1YxMy45ODdhNS4wMDMgNS4wMDMgMC` +
-  `AwIDAtMTAuMDA1IDB2MTguNTY4YTEuNDU0IDEuNDU0IDAgMCAxLTEuMDM0IDEuMzY3Yy0uOTQ5LjMtMS45NjgtLjM3Ni0xLjk2OC0xLjM3MVYyMC45OWE1LjAwMyA1Lj` +
-  `AwMyAwIDAgMC0xMC4wMDUgMHYyMi44NTNjMCAuMjgyLS4wNjQuNTU2LS4xODIuODE0LS41OTYgMS4yOTQtMi4zNDYgMS43NDctMy4zNTUuNzRsLTEuODYxLTEuODYxYT` +
-  `UuMDAyIDUuMDAyIDAgMCAwLTcuMDc1IDcuMDc0bDE0LjcwNiAxNC43MDdhMTkuOTc2IDE5Ljk3NiAwIDAgMCAxNS43NzQgNy42OTdjNi4xNDMgMCAxMS42MzgtMi43Nj` +
-  `cgMTUuMzEtNy4xMjRsMTUuMjgtMTUuMjhhNS4wMDIgNS4wMDIgMCAwIDAtNy4wNzQtNy4wNzR6TTQwLjk0NSA2NS4wMWM4Ljg0IDAgMTYuMDA3LTEwLjAwNSAxNi4wMD` +
-  `ctMTAuMDA1cy03LjE2Ni0xMC4wMDQtMTYuMDA3LTEwLjAwNC0xNi4wMDcgMTAuMDA0LTE2LjAwNyAxMC4wMDRTMzIuMTA1IDY1LjAxIDQwLjk0NSA2NS4wMXoiIGNsaX` +
-  `AtcnVsZT0iZXZlbm9kZCIgZmlsbD0iI2ZkNDg0OCIgZmlsbC1ydWxlPSJldmVub2RkIi8+PHBhdGggZD0iTTQ2Ljk0OSA1NS4wMDVhNi4wMDMgNi4wMDMgMCAxIDEtMT` +
-  `IuMDA2IDAgNi4wMDMgNi4wMDMgMCAwIDEgMTIuMDA2IDB6IiBmaWxsPSIjZmQ0ODQ4Ii8+PC9zdmc+`
 
 type ScanState =
   // waiting for user to inspect tx and click button
@@ -63,10 +51,12 @@ interface Props {
   account: AccountJsonQr
   className?: string
   genesisHash?: string
-  onSignature?: ({ signature }: { signature: HexString }) => void
+  onSignature?: (result: { signature: `0x${string}` }) => void
   onReject: () => void
   payload: SignerPayloadJSON | SignerPayloadRaw
-  parent?: HTMLElement | null
+  parent?: HTMLElement | string | null
+  skipInit?: boolean
+  narrowMargin?: boolean
 }
 
 function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is SignerPayloadRaw {
@@ -74,8 +64,6 @@ function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is
 }
 
 const registry = new TypeRegistry()
-
-const FRAME_SIZE = 1072
 
 const MultipartQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
   const [qrCodeFrames, setQrCodeFrames] = useState<Array<string | null> | null>(null)
@@ -186,8 +174,14 @@ export const QrSubstrate = ({
   onReject,
   payload,
   parent,
+  // the sign tx popup makes sense to show an INIT state
+  // the send funds popup does not
+  skipInit = false,
+  // the send funds popup has a narrower margin on the bottom
+  // than the sign tx popup does
+  narrowMargin = false,
 }: Props): ReactElement<Props> => {
-  const [scanState, setScanState] = useState<ScanState>("INIT")
+  const [scanState, setScanState] = useState<ScanState>(skipInit ? "SEND" : "INIT")
   const { chains } = useChains(true)
   const chain = chains.find((chain) => chain.genesisHash === genesisHash)
 
@@ -230,6 +224,7 @@ export const QrSubstrate = ({
         </div>
         {error && (
           <Drawer anchor="bottom" open={true} parent={parent}>
+            {/* Shouldn't be a LedgerSigningStatus, just an error message */}
             <LedgerSigningStatus
               message={error ? error : ""}
               status={error ? "error" : undefined}
@@ -248,14 +243,22 @@ export const QrSubstrate = ({
       )}
     >
       {scanState !== "UPDATE_METADATA" && (
-        <header className="text-body-secondary flex h-32 w-full items-center px-12">
+        <header className="text-body-secondary flex h-32 min-h-[6.4rem] w-full items-center px-12">
           <button
             className="flex h-16 w-16 cursor-pointer items-center p-2 text-lg hover:text-white"
-            onClick={() => setScanState((scanState) => (scanState === "RECEIVE" ? "SEND" : "INIT"))}
+            onClick={() => {
+              setScanState((scanState) => {
+                if (scanState === "INIT") onReject()
+                if (skipInit && scanState === "SEND") onReject()
+
+                if (!skipInit && scanState === "SEND") return "INIT"
+                return "SEND"
+              })
+            }}
           >
             <ChevronLeftIcon />
           </button>
-          <span className="text-body-secondary grow text-center">Scan QR code</span>
+          <span className="grow text-center">Scan QR code</span>
           <span className="h-16 w-16">&nbsp;</span>
         </header>
       )}
@@ -393,7 +396,14 @@ export const QrSubstrate = ({
           </div>
         )}
       </section>
-      <footer className="flex w-full shrink-0 items-center gap-12 px-12 py-10">
+      <footer
+        className={classNames(
+          "flex w-full shrink-0 items-center gap-12 px-12",
+          // the send funds popup has a narrower margin on the bottom
+          // than the sign tx popup does
+          narrowMargin ? "py-8" : "py-10"
+        )}
+      >
         {["SEND", "CHAINSPEC", "UPDATE_METADATA_PROMPT"].includes(scanState) && unsigned && (
           <>
             <Button className="w-full" onClick={onReject}>
@@ -415,6 +425,17 @@ export const QrSubstrate = ({
           </Button>
         )}
       </footer>
+
+      {error && (
+        <Drawer anchor="bottom" open={true} parent={parent}>
+          {/* Shouldn't be a LedgerSigningStatus, just an error message */}
+          <LedgerSigningStatus
+            message={error ? error : ""}
+            status={error ? "error" : undefined}
+            confirm={onReject}
+          />
+        </Drawer>
+      )}
     </div>
   )
 }
