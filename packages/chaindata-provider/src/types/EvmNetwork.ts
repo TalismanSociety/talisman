@@ -9,6 +9,7 @@ export type EvmNetwork = {
   isTestnet: boolean
   sortIndex: number | null
   name: string | null
+  themeColor?: string
   logo: string | null
   // TODO: Create ethereum tokens store (and reference here by id).
   //       Or extend substrate tokens store to support both substrate and ethereum tokens.

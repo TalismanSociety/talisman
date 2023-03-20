@@ -1,8 +1,9 @@
 import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
 import { useAllAddresses, useBalances, useTokens } from "@talismn/balances-react"
 import { Token } from "@talismn/chaindata-provider"
-import { formatDecimals } from "@talismn/util"
+import { classNames, formatDecimals } from "@talismn/util"
 import { Fragment, useEffect, useMemo, useState } from "react"
+import tinycolor from "tinycolor2"
 
 export function App(): JSX.Element {
   const addresses = useExtensionAddresses()
@@ -19,17 +20,18 @@ export function App(): JSX.Element {
     <div className="m-5 flex flex-col gap-5">
       <h1 className="text-lg">Balances Demo</h1>
 
+      <div className="text-lg font-bold">
+        {balances.count > 0 &&
+          ((balances.sum.fiat("usd").total ?? 0).toLocaleString(undefined, {
+            style: "currency",
+            currency: "USD",
+            currencyDisplay: "narrowSymbol",
+          }) ??
+            "-")}
+      </div>
+
       {/* Display balances per balance (so, per token per account) */}
-      <div className="grid grid-cols-[repeat(5,_auto)] items-center gap-x-4 gap-y-2">
-        <div className="text-lg font-bold">
-          {balances.count > 0 &&
-            ((balances.sum.fiat("usd").total ?? 0).toLocaleString(undefined, {
-              style: "currency",
-              currency: "USD",
-              currencyDisplay: "narrowSymbol",
-            }) ??
-              "-")}
-        </div>
+      <div className="grid grid-cols-[repeat(6,_auto)] items-center gap-x-4 gap-y-2">
         {balances?.sorted.map((balance) =>
           balance.total.planck === BigInt("0") ? null : (
             <Fragment key={balance.id}>
@@ -39,10 +41,38 @@ export function App(): JSX.Element {
                 src={balance.token?.logo}
               />
 
+              <span>
+                <span
+                  className={classNames(
+                    "rounded-sm p-2 text-center",
+                    tinycolor(balance.token?.themeColor).getLuminance() >= 0.6
+                      ? "text-body-black"
+                      : ""
+                  )}
+                  style={{ background: balance.token?.themeColor }}
+                >
+                  {balance.token?.themeColor}
+                </span>
+              </span>
+
               <span>{balance.status}</span>
 
-              <span className="min-w-[6rem] overflow-hidden overflow-ellipsis whitespace-nowrap">
-                {balance.chain?.name || balance.evmNetwork?.name}
+              <span>
+                <span
+                  className={classNames(
+                    "min-w-[6rem] overflow-hidden overflow-ellipsis whitespace-nowrap rounded-sm p-2 text-center",
+                    tinycolor(
+                      balance.chain?.themeColor || balance.evmNetwork?.themeColor
+                    ).getLuminance() >= 0.6
+                      ? "text-body-black"
+                      : ""
+                  )}
+                  style={{
+                    background: balance.chain?.themeColor || balance.evmNetwork?.themeColor,
+                  }}
+                >
+                  {balance.chain?.name || balance.evmNetwork?.name}
+                </span>
               </span>
 
               <span className="flex flex-col whitespace-nowrap">

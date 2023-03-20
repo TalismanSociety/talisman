@@ -16,6 +16,7 @@ export const ChainFragment = gql`
     genesisHash
     prefix
     name
+    themeColor
     logo
     chainName
     implName
@@ -60,6 +61,7 @@ export const EvmNetworkFragment = gql`
     isTestnet
     sortIndex
     name
+    themeColor
     logo
     nativeToken {
       id
