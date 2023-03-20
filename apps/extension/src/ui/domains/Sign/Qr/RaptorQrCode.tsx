@@ -5,7 +5,7 @@ import { classNames } from "@talismn/util"
 import init, { Encoder } from "raptorq"
 import { FC, useEffect, useRef, useState } from "react"
 
-import { FRAME_SIZE, talismanRedHandSvg } from "./QrConstants"
+import { FRAME_SIZE, talismanRedHandSvg } from "./constants"
 
 // This component uses raptorq wasm library (250ko) to generate the QR code, import only if necessary
 // spec here : https://github.com/varovainen/parity-signer/blob/2022-05-25-uos/docs/src/development/UOS.md

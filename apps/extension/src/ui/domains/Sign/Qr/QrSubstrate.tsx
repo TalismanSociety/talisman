@@ -1,0 +1,377 @@
+import { AccountJsonQr } from "@core/domains/accounts/types"
+import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
+import isJsonPayload from "@core/util/isJsonPayload"
+import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
+import { createSignPayload } from "@polkadot/react-qr/util"
+import { TypeRegistry } from "@polkadot/types"
+import { Drawer } from "@talisman/components/Drawer"
+import { LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
+import { ChevronLeftIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
+import useChains from "@ui/hooks/useChains"
+import { ReactElement, useMemo, useState } from "react"
+import { Button } from "talisman-ui"
+
+import { LedgerSigningStatus } from "../LedgerSigningStatus"
+import { MetadataQrCode } from "./MetadataQrCode"
+import { NetworkSpecsQrCode } from "./NetworkSpecsQrCode"
+import { QrCode } from "./QrCode"
+
+const CMD_SIGN_TX = 0
+const CMD_SIGN_TX_HASH = 1
+const CMD_IMMORTAL = 2
+const CMD_SIGN_MESSAGE = 3
+type Command =
+  | typeof CMD_SIGN_TX
+  | typeof CMD_SIGN_TX_HASH
+  | typeof CMD_IMMORTAL
+  | typeof CMD_SIGN_MESSAGE
+
+type ScanState =
+  // waiting for user to inspect tx and click button
+  | { page: "INIT" }
+  // waiting for user to scan and sign qr code on their device
+  | {
+      page: "SEND"
+      // show the chainspec drawer for the user to add the current chain to their device
+      showChainspecDrawer?: boolean
+      // show the drawer instructing users that they may need to update their metadata
+      showUpdateMetadataDrawer?: boolean
+    }
+  // waiting for user to scan the updated metadata qr code on their device
+  | { page: "UPDATE_METADATA" }
+  // waiting for user to scan qr code from their device to return the signature
+  | { page: "RECEIVE" }
+
+interface Props {
+  account: AccountJsonQr
+  className?: string
+  genesisHash?: string
+  onSignature?: (result: { signature: `0x${string}` }) => void
+  onReject: () => void
+  payload: SignerPayloadJSON | SignerPayloadRaw
+  parent?: HTMLElement | string | null
+  skipInit?: boolean
+  narrowMargin?: boolean
+}
+
+function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is SignerPayloadRaw {
+  return !!(payload as SignerPayloadRaw).data
+}
+
+const registry = new TypeRegistry()
+
+export const QrSubstrate = ({
+  account,
+  className = "",
+  genesisHash,
+  onSignature,
+  onReject,
+  payload,
+  parent,
+  // in the sign tx popup it makes sense to show an INIT state
+  // in the send funds popup it does not
+  skipInit = false,
+  // the send funds popup has a narrower margin on the bottom
+  // than the sign tx popup does
+  // we replicate that here so that the buttons at the bottom don't
+  // move around when switching to this component
+  narrowMargin = false,
+}: Props): ReactElement<Props> => {
+  const [scanState, setScanState] = useState<ScanState>(
+    skipInit ? { page: "SEND" } : { page: "INIT" }
+  )
+  const { chains } = useChains(true)
+  const chain = chains.find((chain) => chain.genesisHash === genesisHash)
+
+  const { cmd, unsigned } = useMemo<{ cmd: Command; unsigned: Uint8Array }>(() => {
+    if (isRawPayload(payload)) return { cmd: CMD_SIGN_MESSAGE, unsigned: wrapBytes(payload.data) }
+
+    if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
+    const { version } = payload
+    const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, { version })
+    return {
+      cmd: extrinsicPayload.era?.isImmortalEra ? CMD_IMMORTAL : CMD_SIGN_TX,
+      unsigned: extrinsicPayload.toU8a(),
+    }
+  }, [payload])
+
+  const error = useMemo(() => {
+    return cmd === CMD_SIGN_MESSAGE
+      ? "Parity Signer does not support signing plain text messages."
+      : undefined
+  }, [cmd])
+
+  const data = useMemo(
+    () =>
+      unsigned && account
+        ? createSignPayload(account.address, cmd, unsigned, genesisHash ?? new Uint8Array([0]))
+        : undefined,
+    [account, cmd, genesisHash, unsigned]
+  )
+
+  if (scanState.page === "INIT")
+    return (
+      <div className={classNames("flex w-full flex-col items-center", className)}>
+        <div className="flex w-full items-center gap-12">
+          <Button className="w-full" onClick={onReject}>
+            Cancel
+          </Button>
+          <Button className="w-full" primary onClick={() => setScanState({ page: "SEND" })}>
+            Sign with QR
+          </Button>
+        </div>
+        {error && (
+          <Drawer anchor="bottom" open={true} parent={parent}>
+            {/* Shouldn't be a LedgerSigningStatus, just an error message */}
+            <LedgerSigningStatus
+              message={error ? error : ""}
+              status={error ? "error" : undefined}
+              confirm={onReject}
+            />
+          </Drawer>
+        )}
+      </div>
+    )
+
+  return (
+    <div
+      className={classNames(
+        "bg-black-primary absolute top-0 left-0 flex h-full w-full flex-col items-center",
+        className
+      )}
+    >
+      {/* don't show header on UPDATE_METADATA view */}
+      {scanState.page !== "UPDATE_METADATA" && (
+        <header className="text-body-secondary flex h-32 min-h-[6.4rem] w-full items-center px-12">
+          <button
+            className="flex h-16 w-16 cursor-pointer items-center p-2 text-lg hover:text-white"
+            onClick={() => {
+              setScanState((scanState) => {
+                // if back is clicked and we're on the first page, reject the signing attempt
+                // (which is INIT when skipInit is false, or SEND when it's true)
+                if (scanState.page === "INIT") onReject()
+                if (skipInit && scanState.page === "SEND") onReject()
+
+                // if we're on the SEND page, go back to the INIT page
+                if (!skipInit && scanState.page === "SEND") return { page: "INIT" }
+                // if we're on any other page, go back to the SEND page
+                return { page: "SEND" }
+              })
+            }}
+          >
+            <ChevronLeftIcon />
+          </button>
+          <span className="grow text-center">Scan QR code</span>
+          <span className="h-16 w-16">&nbsp;</span>
+        </header>
+      )}
+      <section
+        className={classNames("grow", "w-full", scanState.page !== "UPDATE_METADATA" && "px-12")}
+      >
+        {/*
+         ** SEND page
+         */}
+        {scanState.page === "SEND" && (
+          <>
+            <div className="flex h-full flex-col items-center justify-end">
+              <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-10">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                  <LoaderIcon className="animate-spin-slow text-body-secondary !text-3xl" />
+                </div>
+                <QrCode data={data} />
+              </div>
+
+              <div className="text-body-secondary mt-14 mb-10 max-w-md text-center leading-10">
+                Scan the QR code with the
+                <br />
+                Parity Signer app on your phone.
+              </div>
+
+              {typeof chain?.chainspecQrUrl === "string" ||
+              typeof chain?.latestMetadataQrUrl === "string" ? (
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-4">
+                    {typeof chain?.chainspecQrUrl === "string" ? (
+                      <button
+                        className="text-grey-400 bg-grey-800 hover:bg-grey-750 inline-block rounded-full py-4 px-6 text-sm font-light"
+                        onClick={() => setScanState({ page: "SEND", showChainspecDrawer: true })}
+                      >
+                        Add Network
+                      </button>
+                    ) : null}
+                    {typeof chain?.latestMetadataQrUrl === "string" ? (
+                      <button
+                        className="bg-primary/10 text-primary hover:bg-primary/20 inline-block rounded-full py-4 px-6 text-sm font-light"
+                        onClick={() => setScanState({ page: "UPDATE_METADATA" })}
+                      >
+                        Update Metadata
+                      </button>
+                    ) : null}
+                  </div>
+                  {typeof chain?.latestMetadataQrUrl === "string" ? (
+                    <button
+                      className="text-grey-200 mt-8 text-xs font-light hover:text-white"
+                      onClick={() => setScanState({ page: "SEND", showUpdateMetadataDrawer: true })}
+                    >
+                      Seeing a Parity Signer error?
+                    </button>
+                  ) : null}
+                </div>
+              ) : (
+                <div></div>
+              )}
+            </div>
+
+            {scanState.showChainspecDrawer && (
+              <Drawer
+                anchor="bottom"
+                open={true}
+                parent={parent}
+                onClose={() => setScanState({ page: "SEND" })}
+              >
+                <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
+                  <div className="mb-16 font-bold">Add network</div>
+                  <div className="relative mb-16 flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-4">
+                    <div className="text-body-secondary absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
+                      <LoaderIcon className="animate-spin-slow text-xl " />
+                    </div>
+                    {!!genesisHash && <NetworkSpecsQrCode genesisHash={genesisHash} />}
+                  </div>
+                  <div className="text-body-secondary mb-16 max-w-md text-center text-sm leading-10">
+                    Scan the QR code with the Parity Signer app on your phone to add the{" "}
+                    <div className="text-body inline-flex items-baseline gap-1">
+                      <ChainLogo className="self-center" id={chain?.id} />
+                      {chain?.name ?? "Unknown"}
+                    </div>{" "}
+                    network.
+                  </div>
+                  <Button
+                    className="w-full"
+                    primary
+                    small
+                    onClick={() => setScanState({ page: "SEND" })}
+                  >
+                    Done
+                  </Button>
+                </div>
+              </Drawer>
+            )}
+
+            {scanState.showUpdateMetadataDrawer && (
+              <Drawer
+                anchor="bottom"
+                open={true}
+                parent={parent}
+                onClose={() => setScanState({ page: "SEND" })}
+              >
+                <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
+                  <ParitySignerIcon className="mb-10 h-auto w-16" />
+                  <div className="mb-5 font-bold">You may need to update metadata</div>
+                  <div className="text-body-secondary mb-10 max-w-md text-center text-sm leading-10">
+                    If you’re receiving an error on your Parity Signer when trying to scan the QR
+                    code, it likely means your metadata is out of date.
+                  </div>
+                  <Button
+                    className="mb-4 w-full"
+                    primary
+                    small
+                    onClick={() => setScanState({ page: "UPDATE_METADATA" })}
+                  >
+                    Update Metadata
+                  </Button>
+                  <Button small className="w-full" onClick={() => setScanState({ page: "SEND" })}>
+                    Cancel
+                  </Button>
+                </div>
+              </Drawer>
+            )}
+          </>
+        )}
+
+        {/*
+         ** UPDATE_METADATA page
+         */}
+        {scanState.page === "UPDATE_METADATA" && (
+          <div className="flex h-full w-full flex-col items-center justify-between">
+            <div className="relative flex aspect-square w-full items-center justify-center bg-white p-12">
+              <div className="text-body-secondary absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
+                <LoaderIcon className="animate-spin-slow text-3xl " />
+                <div className="text-center">Generating metadata...</div>
+              </div>
+              {isJsonPayload(payload) && (
+                <MetadataQrCode
+                  genesisHash={payload.genesisHash}
+                  specVersion={payload.specVersion}
+                />
+              )}
+            </div>
+            <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
+              Scan the QR video with the Parity Signer app on your phone to update your metadata.
+            </div>
+            <div></div>
+          </div>
+        )}
+
+        {/*
+         ** RECEIVE page
+         */}
+        {scanState.page === "RECEIVE" && onSignature && (
+          <div className="flex h-full flex-col items-center justify-between">
+            <ScanQr type="signature" onScan={onSignature} size={280} />
+            <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
+              Scan the Parity Signer QR code.
+              <br />
+              The image is blurred for security, but this does not affect the reading.
+            </div>
+            <div></div>
+          </div>
+        )}
+      </section>
+      <footer
+        className={classNames(
+          "flex w-full shrink-0 items-center gap-12 px-12",
+          // the send funds popup has a narrower margin on the bottom
+          // than the sign tx popup does
+          // we replicate that here so that the buttons at the bottom don't
+          // move around when switching to this component
+          narrowMargin ? "py-8" : "py-10"
+        )}
+      >
+        {scanState.page === "SEND" && (
+          <>
+            <Button className="w-full" onClick={onReject}>
+              Cancel
+            </Button>
+            <Button className="w-full" primary onClick={() => setScanState({ page: "RECEIVE" })}>
+              Next
+            </Button>
+          </>
+        )}
+        {scanState.page === "UPDATE_METADATA" && (
+          <Button className="w-full" primary onClick={() => setScanState({ page: "SEND" })}>
+            Done
+          </Button>
+        )}
+        {scanState.page === "RECEIVE" && onSignature && (
+          <Button className="w-full" onClick={onReject}>
+            Cancel
+          </Button>
+        )}
+      </footer>
+
+      {error && (
+        <Drawer anchor="bottom" open={true} parent={parent}>
+          {/* Shouldn't be a LedgerSigningStatus, just an error message */}
+          <LedgerSigningStatus
+            message={error ? error : ""}
+            status={error ? "error" : undefined}
+            confirm={onReject}
+          />
+        </Drawer>
+      )}
+    </div>
+  )
+}
