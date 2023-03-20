@@ -4,7 +4,7 @@ import { notify } from "@talisman/components/Notifications"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useMetadataRequestById } from "@ui/hooks/useMetadataRequestById"
-import { FC, useCallback, useEffect } from "react"
+import { FC, useCallback, useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 
 import Layout, { Content, Footer, Header } from "../Layout"
@@ -33,9 +33,17 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
     window.close()
   }, [metadataRequest])
 
+  const displayUrl = useMemo(
+    () =>
+      metadataRequest?.url
+        ? new URL(metadataRequest?.url || "").origin // use origin to keep the prefixed protocol
+        : metadataRequest?.url ?? "",
+    [metadataRequest?.url]
+  )
+
   if (!metadataRequest) return null
 
-  const { request, url } = metadataRequest
+  const { request } = metadataRequest
 
   return (
     <Layout className={className}>
@@ -46,8 +54,13 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
             <h1 className="my-8 text-lg">Your metadata is out of date</h1>
             <p className="text-body-secondary mt-16">
               Approving this update will sync your metadata for the{" "}
-              <span className="text-body">{request.chain}</span> chain from{" "}
-              <span className="text-body">{url}</span>
+              <span className="text-body">{request.chain}</span> chain
+              {displayUrl && (
+                <>
+                  {" "}
+                  from <span className="text-body">{displayUrl}</span>
+                </>
+              )}
             </p>
           </div>
           <hr className="text-grey-700 my-20" />
