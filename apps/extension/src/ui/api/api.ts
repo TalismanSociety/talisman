@@ -61,9 +61,6 @@ export const api: MessageTypes = {
     }),
 
   // encrypt messages -------------------------------------------------------
-  subscribeEncryptRequests: (cb) => messageService.subscribe("pri(encrypt.requests)", null, cb),
-  subscribeEncryptRequest: (id, cb) =>
-    messageService.subscribe("pri(encrypt.byid.subscribe)", { id }, cb),
   approveEncrypt: (id) =>
     messageService.sendMessage("pri(encrypt.approveEncrypt)", {
       id,

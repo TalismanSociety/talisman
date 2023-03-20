@@ -114,26 +114,6 @@ export default class EncryptHandler extends ExtensionHandler {
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(encrypt.requests)":
-        return requestStore.subscribe(id, port, [ENCRYPT_ENCRYPT_PREFIX, ENCRYPT_DECRYPT_PREFIX])
-
-      case "pri(encrypt.byid.subscribe)": {
-        const cb = createSubscription(id, port)
-        const subscription = requestStore.observable.subscribe((reqs) => {
-          const req = reqs.find(
-            (req) => req.id === (request as EncryptRequestIdOnly | DecryptRequestIdOnly).id
-          )
-          if (req && (req.type === ENCRYPT_ENCRYPT_PREFIX || req.type === ENCRYPT_DECRYPT_PREFIX))
-            cb(req)
-        })
-
-        port.onDisconnect.addListener((): void => {
-          unsubscribe(id)
-          subscription.unsubscribe()
-        })
-        return true
-      }
-
       case "pri(encrypt.approveEncrypt)":
         return await this.encryptApprove(request as EncryptRequestIdOnly)
 

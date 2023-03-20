@@ -106,11 +106,6 @@ export default interface MessageTypes {
   approveSignQr: (id: SigningRequestID<"substrate-sign">, signature: HexString) => Promise<boolean>
 
   // encrypt messages -------------------------------------------------------
-  subscribeEncryptRequests: (cb: (requests: AnyEncryptRequest[]) => void) => UnsubscribeFn
-  subscribeEncryptRequest: (
-    id: DecryptRequestId | EncryptRequestId,
-    cb: (requests: AnyEncryptRequest) => void
-  ) => UnsubscribeFn
   approveEncrypt: (id: EncryptRequestId) => Promise<boolean>
   approveDecrypt: (id: DecryptRequestId) => Promise<boolean>
   cancelEncryptRequest: (id: DecryptRequestId | EncryptRequestId) => Promise<boolean>
