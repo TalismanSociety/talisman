@@ -59,10 +59,15 @@ export const getCoinGeckoErc20Coin = async (
 ): Promise<CoinGeckoErc20Coin | null> => {
   const assetPlatform = await getCoinGeckoAssetPlatform(assetPlatformId)
   if (!assetPlatform) return null
-  const fetchErc20Coin = await fetch(
-    `https://api.coingecko.com/api/v3/coins/${
-      assetPlatform.id
-    }/contract/${contractAddress.toLowerCase()}`
-  )
-  return fetchErc20Coin.json()
+  try {
+    const fetchErc20Coin = await fetch(
+      `https://api.coingecko.com/api/v3/coins/${
+        assetPlatform.id
+      }/contract/${contractAddress.toLowerCase()}`
+    )
+    return fetchErc20Coin.json()
+  } catch (error) {
+    log.error("Can't fetch erc20 coingecko details")
+    return null
+  }
 }
