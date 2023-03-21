@@ -16,6 +16,7 @@ import { FC, useCallback, useMemo } from "react"
 import {
   FieldArrayWithId,
   FieldError,
+  FieldErrors,
   UseFormRegister,
   UseFormTrigger,
   useFieldArray,
@@ -29,9 +30,7 @@ type SortableRpcItemProps = {
   register: UseFormRegister<RequestUpsertCustomEvmNetwork>
   trigger: UseFormTrigger<RequestUpsertCustomEvmNetwork>
   rpc: FieldArrayWithId<RequestUpsertCustomEvmNetwork, "rpcs", "id">
-  errors?: {
-    url?: FieldError | undefined
-  }[]
+  errors?: FieldErrors<RequestUpsertCustomEvmNetwork>["rpcs"]
   canDelete?: boolean
   canDrag?: boolean
   onDelete?: () => void
