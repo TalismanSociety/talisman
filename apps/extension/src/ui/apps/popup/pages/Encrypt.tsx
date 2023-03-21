@@ -7,7 +7,7 @@ import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { useEncryptRequest } from "@ui/domains/Encrypt/EncryptRequestContext"
 import { Message } from "@ui/domains/Sign/Message"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useEncryptRequestById from "@ui/hooks/useEncryptRequestById"
+import { useRequest } from "@ui/hooks/useRequest"
 import { useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
@@ -41,10 +41,10 @@ const SignMessage = ({
   )
 }
 
-const EncryptApprove = ({ className }: any) => {
+const EncryptApprove = () => {
   const { popupOpenEvent } = useAnalytics()
   const { id } = useParams() as EncryptRequestIdOnly | DecryptRequestIdOnly
-  const req = useEncryptRequestById(id)
+  const req = useRequest(id)
   const { url, request, approve, reject, status, message, account, type } = useEncryptRequest(req)
 
   useEffect(() => {

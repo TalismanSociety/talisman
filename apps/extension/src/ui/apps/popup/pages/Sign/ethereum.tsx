@@ -3,7 +3,7 @@ import {
   EthSignMessageRequestProvider,
   EthSignTransactionRequestProvider,
 } from "@ui/domains/Sign/SignRequestContext"
-import useSigningRequestById from "@ui/hooks/useSigningRequestById"
+import { useRequest } from "@ui/hooks/useRequest"
 import { useParams } from "react-router-dom"
 
 import { EthSignMessageRequest } from "./EthSignMessageRequest"
@@ -13,7 +13,7 @@ export const EthereumSignRequest = () => {
   const { id } = useParams<"id">() as {
     id: SigningRequestID<"eth-send"> | SigningRequestID<"eth-sign">
   }
-  const signingRequest = useSigningRequestById(id)
+  const signingRequest = useRequest(id)
   if (!signingRequest) return null
 
   switch (signingRequest.type) {

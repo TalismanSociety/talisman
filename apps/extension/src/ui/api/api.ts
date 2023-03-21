@@ -32,7 +32,6 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(app.promptLogin)", closeOnSuccess),
   approveMetaRequest: (id) => messageService.sendMessage("pri(metadata.approve)", { id }),
   rejectMetaRequest: (id) => messageService.sendMessage("pri(metadata.reject)", { id }),
-  subscribeMetadataRequests: (cb) => messageService.subscribe("pri(metadata.requests)", null, cb),
   allowPhishingSite: (url) => messageService.sendMessage("pri(app.phishing.addException)", { url }),
 
   // app messages -------------------------------------------------------
@@ -41,13 +40,11 @@ export const api: MessageTypes = {
   analyticsCapture: (request) => messageService.sendMessage("pri(app.analyticsCapture)", request),
   sendFundsOpen: (request = {}) => messageService.sendMessage("pri(app.sendFunds.open)", request),
   resetWallet: () => messageService.sendMessage("pri(app.resetWallet)"),
+  subscribeRequests: (cb) => messageService.subscribe("pri(app.requests)", null, cb),
 
   // signing messages ------------------------------------------------
   cancelSignRequest: (id) => messageService.sendMessage("pri(signing.cancel)", { id }),
   decodeSignRequest: (id) => messageService.sendMessage("pri(signing.details)", { id }),
-  subscribeSigningRequests: (cb) => messageService.subscribe("pri(signing.requests)", null, cb),
-  subscribeSigningRequest: (id, cb) =>
-    messageService.subscribe("pri(signing.byid.subscribe)", { id }, cb),
   approveSign: (id) =>
     messageService.sendMessage("pri(signing.approveSign)", {
       id,
@@ -64,9 +61,6 @@ export const api: MessageTypes = {
     }),
 
   // encrypt messages -------------------------------------------------------
-  subscribeEncryptRequests: (cb) => messageService.subscribe("pri(encrypt.requests)", null, cb),
-  subscribeEncryptRequest: (id, cb) =>
-    messageService.subscribe("pri(encrypt.byid.subscribe)", { id }, cb),
   approveEncrypt: (id) =>
     messageService.sendMessage("pri(encrypt.approveEncrypt)", {
       id,
@@ -148,8 +142,6 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(sites.update)", { id, authorisedSite }),
 
   // authorization requests messages ------------------------------------
-  authRequestsSubscribe: (cb) =>
-    messageService.subscribe("pri(sites.requests.subscribe)", null, cb),
   authrequestApprove: (id, addresses) =>
     messageService.sendMessage("pri(sites.requests.approve)", { id, addresses }),
   authrequestReject: (id) => messageService.sendMessage("pri(sites.requests.reject)", { id }),
@@ -258,8 +250,7 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(eth.networks.add.requests)", null),
   ethNetworkAddApprove: (id) => messageService.sendMessage("pri(eth.networks.add.approve)", { id }),
   ethNetworkAddCancel: (id) => messageService.sendMessage("pri(eth.networks.add.cancel)", { id }),
-  ethNetworkAddSubscribeRequests: (cb) =>
-    messageService.subscribe("pri(eth.networks.add.subscribe)", null, cb),
+
   // ethereum network message types
   ethereumNetworks: (cb) => messageService.subscribe("pri(eth.networks.subscribe)", null, cb),
   ethNetworkUpsert: (network) => messageService.sendMessage("pri(eth.networks.upsert)", network),
@@ -271,8 +262,4 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(eth.watchasset.requests.approve)", { id }),
   ethWatchAssetRequestCancel: (id) =>
     messageService.sendMessage("pri(eth.watchasset.requests.cancel)", { id }),
-  ethWatchAssetRequestSubscribe: (id, cb) =>
-    messageService.subscribe("pri(eth.watchasset.requests.subscribe.byid)", { id }, cb),
-  ethWatchAssetRequestsSubscribe: (cb) =>
-    messageService.subscribe("pri(eth.watchasset.requests.subscribe)", null, cb),
 }

@@ -158,29 +158,6 @@ export default class SigningHandler extends ExtensionHandler {
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(signing.requests)":
-        return requestStore.subscribe<"pri(signing.requests)">(id, port, [
-          "eth-sign",
-          "eth-send",
-          "substrate-sign",
-        ])
-
-      case "pri(signing.byid.subscribe)": {
-        const cb = createSubscription<"pri(signing.byid.subscribe)">(id, port)
-        const subscription = requestStore.observable.subscribe((reqs) => {
-          const signRequest = reqs.find(
-            (req) => req.id === (request as RequestType<"pri(signing.byid.subscribe)">).id
-          ) as AnySigningRequest | undefined
-          if (signRequest) cb(signRequest)
-        })
-
-        port.onDisconnect.addListener((): void => {
-          unsubscribe(id)
-          subscription.unsubscribe()
-        })
-        return true
-      }
-
       case "pri(signing.approveSign)":
         return await this.signingApprove(request as RequestType<"pri(signing.approveSign)">)
 

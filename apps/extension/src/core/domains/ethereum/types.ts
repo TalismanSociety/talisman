@@ -99,16 +99,9 @@ export interface EthMessages {
   "pri(eth.networks.add.requests)": [null, AddEthereumChainRequest[]]
   "pri(eth.networks.add.approve)": [AddEthereumChainRequestIdOnly, boolean]
   "pri(eth.networks.add.cancel)": [AddEthereumChainRequestIdOnly, boolean]
-  "pri(eth.networks.add.subscribe)": [null, boolean, AddEthereumChainRequest[]]
   // eth watchassets requests  management
   "pri(eth.watchasset.requests.approve)": [WatchAssetRequestIdOnly, boolean]
   "pri(eth.watchasset.requests.cancel)": [WatchAssetRequestIdOnly, boolean]
-  "pri(eth.watchasset.requests.subscribe)": [null, boolean, WatchAssetRequest[]]
-  "pri(eth.watchasset.requests.subscribe.byid)": [
-    WatchAssetRequestIdOnly,
-    boolean,
-    WatchAssetRequest
-  ]
 
   // ethereum networks message signatures
   "pri(eth.networks.subscribe)": [null, boolean, boolean]

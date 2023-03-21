@@ -7,8 +7,8 @@ import { XIcon } from "@talisman/theme/icons"
 import unknownToken from "@talisman/theme/icons/custom-token-generic.svg?url"
 import { api } from "@ui/api"
 import { CustomErc20TokenViewDetails } from "@ui/domains/Erc20Tokens/CustomErc20TokenViewDetails"
-import { useEthWatchAssetRequestById } from "@ui/hooks/useEthWatchAssetRequestById"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useRequest } from "@ui/hooks/useRequest"
 import { useCallback, useState } from "react"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
@@ -97,7 +97,7 @@ const ErrorMessage = styled.p`
 export const AddCustomErc20Token = () => {
   const [error, setError] = useState<string>()
   const { id } = useParams() as WatchAssetRequestIdOnly
-  const request = useEthWatchAssetRequestById(id)
+  const request = useRequest(id)
 
   const network = useEvmNetwork(request?.token?.evmNetwork?.id)
 

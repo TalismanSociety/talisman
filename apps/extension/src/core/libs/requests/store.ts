@@ -1,7 +1,7 @@
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { MessageTypesWithSubscriptions } from "@core/types"
 import type { Port } from "@core/types/base"
-import { ReplaySubject, map } from "rxjs"
+import { ReplaySubject, filter, map } from "rxjs"
 import { v4 } from "uuid"
 
 import { windowManager } from "../WindowManager"
@@ -90,12 +90,8 @@ export class RequestStore {
     })
   }
 
-  public subscribe<TMessageType extends MessageTypesWithSubscriptions>(
-    id: string,
-    port: Port,
-    types?: Array<KnownRequestTypes>
-  ) {
-    return genericSubscription<TMessageType>(
+  public subscribe(id: string, port: Port, types?: Array<KnownRequestTypes>) {
+    return genericSubscription(
       id,
       port,
       this.observable.pipe(

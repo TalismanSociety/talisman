@@ -3,7 +3,7 @@
 // Adapted from polkadot.js
 
 import { DEBUG } from "@core/constants"
-import type { MessageTypesWithSubscriptions, SubscriptionMessageTypes } from "@core/types"
+import type { KnownSubscriptionDataTypes, MessageTypesWithSubscriptions } from "@core/types"
 import type { Port } from "@core/types/base"
 import { Observable } from "rxjs"
 type Subscriptions = Record<string, Port>
@@ -17,7 +17,7 @@ export function genericSubscription<TMessageType extends MessageTypesWithSubscri
   id: string,
   port: Port,
   observable: Observable<any>,
-  transformFn: (value: any) => SubscriptionMessageTypes[TMessageType] = (value) => value
+  transformFn: (value: any) => KnownSubscriptionDataTypes<TMessageType> = (value) => value
 ): boolean {
   const cb = createSubscription<TMessageType>(id, port)
   const subscription = observable.subscribe((data) => cb(transformFn(data)))
@@ -37,7 +37,7 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
   id: string,
   port: Port,
   observable: Observable<any>,
-  transformFn: (value: any) => Promise<SubscriptionMessageTypes[TMessageType]> = (value) => value
+  transformFn: (value: any) => Promise<KnownSubscriptionDataTypes<TMessageType>> = (value) => value
 ): boolean {
   const cb = createSubscription<TMessageType>(id, port)
   const subscription = observable.subscribe((data) => transformFn(data).then(cb))
@@ -54,7 +54,7 @@ export function genericAsyncSubscription<TMessageType extends MessageTypesWithSu
 export function createSubscription<TMessageType extends MessageTypesWithSubscriptions>(
   id: string,
   port: Port
-): (data: SubscriptionMessageTypes[TMessageType]) => void {
+): (data: KnownSubscriptionDataTypes<TMessageType>) => void {
   subscriptions[id] = port
   return (data): void => {
     if (subscriptions[id]) {

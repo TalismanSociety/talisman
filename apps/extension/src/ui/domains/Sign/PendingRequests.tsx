@@ -1,4 +1,5 @@
-import { useSigningRequests } from "@ui/hooks/useSigningRequests"
+import { SIGNING_TYPES } from "@core/domains/signing/types"
+import { useRequests } from "@ui/hooks/useRequests"
 import { useMemo } from "react"
 import styled from "styled-components"
 
@@ -10,12 +11,12 @@ const Container = styled.span`
 `
 
 export const PendingRequests = () => {
-  const signingRequests = useSigningRequests()
+  const allRequests = useRequests()
 
   const pendingRequests = useMemo(() => {
-    const count = signingRequests?.length > 0 ? signingRequests.length : 0
-    return count ? `${count} Pending Request${count > 1 ? "s" : ""}` : null
-  }, [signingRequests?.length])
+    const signingCount = allRequests.filter((req) => req.type in SIGNING_TYPES).length
+    return signingCount ? `${signingCount} Pending Request${signingCount > 1 ? "s" : ""}` : null
+  }, [allRequests])
 
   return <Container className="pending-requests">{pendingRequests}</Container>
 }

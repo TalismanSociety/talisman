@@ -6,13 +6,13 @@ import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEthTransaction } from "@ui/domains/Ethereum/useEthTransaction"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import useSigningRequestById from "@ui/hooks/useSigningRequestById"
+import { useRequest } from "@ui/hooks/useRequest"
 import { useCallback, useMemo, useState } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-send">) => {
-  const signingRequest = useSigningRequestById(id)
+  const signingRequest = useRequest(id)
   const network = useEvmNetwork(signingRequest?.ethChainId)
 
   const transactionRequest = useMemo(

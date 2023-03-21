@@ -1,8 +1,8 @@
-import { BehaviorSubject, map } from "rxjs"
-import { useEffect, useState } from "react"
+import { DEBUG } from "@core/constants"
 import { UnsubscribeFn } from "@core/types"
 import { isFunction } from "@polkadot/util"
-import { DEBUG } from "@core/constants"
+import { useEffect, useState } from "react"
+import { BehaviorSubject, map } from "rxjs"
 
 type Subscription = { subject: BehaviorSubject<any>; unsubscribe?: () => void }
 type InitSubscriptionCallback<S> = (subject: BehaviorSubject<S>) => UnsubscribeFn
