@@ -3390,12 +3390,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/cryptoassets@npm:^8.0.0":
-  version: 8.0.0
-  resolution: "@ledgerhq/cryptoassets@npm:8.0.0"
+"@ledgerhq/cryptoassets@npm:^9.1.0":
+  version: 9.1.0
+  resolution: "@ledgerhq/cryptoassets@npm:9.1.0"
   dependencies:
     invariant: 2
-  checksum: 41a1d45138ee6a383f32dc926c63d5a00127de2280fa7446dbb1912983ae31a18c8929ed8fe913d1cc62ff39b11f02722ea79cb2bdaa2a1783091bbb81195437
+  checksum: 03e6ea05d22c5996f18d96391ebfafe5d2c06eb44fa936fbb5f29a4612be7ebce58b1026ead395ffbe35e7ead8c9562af4fed39d6f1b17fe20a45d5a492870f9
   languageName: node
   linkType: hard
 
@@ -3408,18 +3408,6 @@ __metadata:
     rxjs: 6
     semver: ^7.3.5
   checksum: e4615841b094fe4990c74421c23f57da6a83b56bfa73880af3ce0a67db86f5b3a642f6022be24bf4b24d7b236623a578dbdba74805b28e2486006d1f0cbff543
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/devices@npm:^7.0.7":
-  version: 7.0.7
-  resolution: "@ledgerhq/devices@npm:7.0.7"
-  dependencies:
-    "@ledgerhq/errors": ^6.12.3
-    "@ledgerhq/logs": ^6.10.1
-    rxjs: 6
-    semver: ^7.3.5
-  checksum: 75550ebdc26dbe2d9fbcc476687fbf5534f05c8b69085e4be13bf9f92b9edd7bc72d43a4e546e47ba91818159ca0f213d5d1f823817a0d8c2a7c79f0503339e5
   languageName: node
   linkType: hard
 
@@ -3442,31 +3430,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-app-eth@npm:6.31.0":
-  version: 6.31.0
-  resolution: "@ledgerhq/hw-app-eth@npm:6.31.0"
+"@ledgerhq/hw-app-eth@npm:6.32.1":
+  version: 6.32.1
+  resolution: "@ledgerhq/hw-app-eth@npm:6.32.1"
   dependencies:
     "@ethersproject/abi": ^5.5.0
     "@ethersproject/rlp": ^5.5.0
-    "@ledgerhq/cryptoassets": ^8.0.0
+    "@ledgerhq/cryptoassets": ^9.1.0
     "@ledgerhq/errors": ^6.12.3
-    "@ledgerhq/hw-transport": ^6.28.0
-    "@ledgerhq/hw-transport-mocker": ^6.27.11
+    "@ledgerhq/hw-transport": ^6.28.1
+    "@ledgerhq/hw-transport-mocker": ^6.27.12
     "@ledgerhq/logs": ^6.10.1
     axios: ^0.26.1
     bignumber.js: ^9.1.0
     crypto-js: ^4.1.1
-  checksum: d02ef09864d3a64b8b19ef3629868caac33c65b40dd0a6ce137eccb20c8e4ae78b9fa8a66d712ad851562378d837f793d465cd2251f8ff8fee3a2f8803999353
+  checksum: 2056289ddf3b57e2200cf2422bf2f25b19ba43c7a81e1abcdf723d8cd2fbb2f9d2b96b3787513d477b6bc1e474b1b5cddb77118aae9d762188529e35c74ce675
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport-mocker@npm:^6.27.11":
-  version: 6.27.11
-  resolution: "@ledgerhq/hw-transport-mocker@npm:6.27.11"
+"@ledgerhq/hw-transport-mocker@npm:^6.27.12":
+  version: 6.27.12
+  resolution: "@ledgerhq/hw-transport-mocker@npm:6.27.12"
   dependencies:
-    "@ledgerhq/hw-transport": ^6.28.0
+    "@ledgerhq/hw-transport": ^6.28.1
     "@ledgerhq/logs": ^6.10.1
-  checksum: 09e1ffd1cbb4f4161fdb4da941e66587fa554044bcc80619ef2053fb0f47d874b78005fc5b5968b89746d8abbbc68c4b3063f723c235cfaae583dfd767495a7a
+  checksum: 6f1f1c0f527a45ae2d2deff594cbcdff0adc6e5652c8391b4e36e244d3b50389388ca5b06af26698b3870640238c19af647c1b0ecb476d8662921ce02d643fd1
   languageName: node
   linkType: hard
 
@@ -3511,19 +3499,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport-webusb@npm:6.27.11":
-  version: 6.27.11
-  resolution: "@ledgerhq/hw-transport-webusb@npm:6.27.11"
-  dependencies:
-    "@ledgerhq/devices": ^7.0.7
-    "@ledgerhq/errors": ^6.12.3
-    "@ledgerhq/hw-transport": ^6.28.0
-    "@ledgerhq/logs": ^6.10.1
-  checksum: f82729170dd64c9be29f469f609dadfed1433a2b07ff095cc4905df518dcd35fe444f3e2f4fc195fd28c0b18987c4e21006ea9596bb4908f07bf7539d1811660
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/hw-transport-webusb@npm:^6.27.12":
+"@ledgerhq/hw-transport-webusb@npm:6.27.12, @ledgerhq/hw-transport-webusb@npm:^6.27.12":
   version: 6.27.12
   resolution: "@ledgerhq/hw-transport-webusb@npm:6.27.12"
   dependencies:
@@ -3543,17 +3519,6 @@ __metadata:
     "@ledgerhq/errors": ^6.10.0
     events: ^3.3.0
   checksum: 415acc9e7bab27b3738d4304f8517cdc3e3c0efe0b3f1afd960d61e55b8a5610c48edce891cef012049597df1e13a08d052c23fd9c87f5c1a36899d1157fd254
-  languageName: node
-  linkType: hard
-
-"@ledgerhq/hw-transport@npm:^6.28.0":
-  version: 6.28.0
-  resolution: "@ledgerhq/hw-transport@npm:6.28.0"
-  dependencies:
-    "@ledgerhq/devices": ^7.0.7
-    "@ledgerhq/errors": ^6.12.3
-    events: ^3.3.0
-  checksum: 3951b7780eb0412b3732adf2ac92913f8fd5f8adefb484df28d38fd8d2bd4e73f468fad65c1142a265b8d652d3e2ad5aabe579f5d7b285f8fee6ad1b04907b39
   languageName: node
   linkType: hard
 
@@ -3617,10 +3582,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@metamask/browser-passworder@npm:4.0.2":
-  version: 4.0.2
-  resolution: "@metamask/browser-passworder@npm:4.0.2"
-  checksum: 997c330b1c72f7135d0fd2a7f4b0dce37b3c2e6b30e92f048fa8d4f8c949f5b669dcc3064790f41df30ee2e53a9e64a812df72e00527736be704cce2cf4f6e49
+"@metamask/browser-passworder@npm:4.1.0":
+  version: 4.1.0
+  resolution: "@metamask/browser-passworder@npm:4.1.0"
+  checksum: f1edb3b75594b8e8d075b3134c9ce6c73573160eb48184ef722b9d96a5763db1e2e9acb166fc5c66c7c82936e134a02a3fb4c0022ca9a948857a30181cb84d7e
   languageName: node
   linkType: hard
 
@@ -11927,9 +11892,9 @@ __metadata:
     "@ethereumjs/util": 8.0.3
     "@floating-ui/react-dom": ^1.2.2
     "@hookform/resolvers": 2.9.11
-    "@ledgerhq/hw-app-eth": 6.31.0
-    "@ledgerhq/hw-transport-webusb": 6.27.11
-    "@metamask/browser-passworder": 4.0.2
+    "@ledgerhq/hw-app-eth": 6.32.1
+    "@ledgerhq/hw-transport-webusb": 6.27.12
+    "@metamask/browser-passworder": 4.1.0
     "@metamask/eth-sig-util": 5.0.2
     "@peculiar/webcrypto": ^1.4.1
     "@polkadot/api": "*"
