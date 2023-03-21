@@ -15,7 +15,6 @@ import { DragIcon, PlusIcon, TrashIcon } from "@talisman/theme/icons"
 import { FC, useCallback, useMemo } from "react"
 import {
   FieldArrayWithId,
-  FieldError,
   FieldErrors,
   UseFormRegister,
   UseFormTrigger,
