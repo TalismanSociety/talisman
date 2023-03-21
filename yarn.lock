@@ -5169,14 +5169,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@substrate/txwrapper-core@npm:5.0.0":
-  version: 5.0.0
-  resolution: "@substrate/txwrapper-core@npm:5.0.0"
+"@substrate/txwrapper-core@npm:5.0.1":
+  version: 5.0.1
+  resolution: "@substrate/txwrapper-core@npm:5.0.1"
   dependencies:
-    "@polkadot/api": ^9.11.1
-    "@polkadot/keyring": ^10.2.3
+    "@polkadot/api": ^9.14.2
+    "@polkadot/keyring": ^10.4.2
     memoizee: 0.4.15
-  checksum: db9b89817ae53f797a673af65b96073b49cad3daa1a46a82e7f6c6295f96b0ff2af4476ab890d0a7bcd81b4ae750e2bd82c0460b64433857d27f6588bab172ea
+  checksum: 2852e158eafdf3514cab32c8ae631ad273218685463d883edeac92f6246142281baeaaedf579d3d155002077a219bcbb9e40cf55bbb98475f62418a3a924bb56
   languageName: node
   linkType: hard
 
