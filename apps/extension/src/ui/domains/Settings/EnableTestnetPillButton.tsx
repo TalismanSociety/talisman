@@ -1,4 +1,4 @@
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
 import { PillButton } from "talisman-ui"
 
@@ -33,11 +33,11 @@ type EnableTestnetPillButtonProps = {
 }
 
 export const EnableTestnetPillButton: FC<EnableTestnetPillButtonProps> = ({ className }) => {
-  const { useTestnets, update } = useSettings()
+  const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const handleClick = useCallback(() => {
-    update({ useTestnets: !useTestnets })
-  }, [update, useTestnets])
+    setUseTestnets((prev) => !prev)
+  }, [setUseTestnets])
 
   return (
     <PillButton

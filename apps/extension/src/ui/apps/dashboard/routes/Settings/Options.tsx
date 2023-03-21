@@ -1,4 +1,3 @@
-import { SettingsStoreData } from "@core/domains/app/store.settings"
 import Field from "@talisman/components/Field"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
@@ -8,58 +7,38 @@ import { WithTooltip } from "@talisman/components/Tooltip"
 import Layout from "@ui/apps/dashboard/layout"
 import { AvatarTypeSelect } from "@ui/domains/Settings/AvatarTypeSelect"
 import { useAppState } from "@ui/hooks/useAppState"
-import { useSettings } from "@ui/hooks/useSettings"
-import { useCallback } from "react"
+import { useSetting } from "@ui/hooks/useSettings"
 
 const Options = () => {
   const { hasSpiritKey } = useAppState()
-  const {
-    identiconType = "talisman-orb",
-    useTestnets = false,
-    hideBalances = false,
-    allowNotifications = true,
-    spiritClanFeatures = true,
-    update,
-  } = useSettings()
-
-  const handleSettingChange = useCallback(
-    <K extends keyof SettingsStoreData>(key: K) =>
-      (value: SettingsStoreData[K]) => {
-        update({ [key]: value })
-      },
-    [update]
-  )
+  const [identiconType, setIdenticonType] = useSetting("identiconType")
+  const [useTestnets, setUseTestnets] = useSetting("useTestnets")
+  const [hideBalances, setHideBalances] = useSetting("hideBalances")
+  const [allowNotifications, setAllowNotifications] = useSetting("allowNotifications")
+  const [spiritClanFeatures, setSpiritClanFeatures] = useSetting("spiritClanFeatures")
 
   return (
     <Layout centered withBack backTo="/settings">
       <HeaderBlock title="Extension options" text="Customise your extension experience" />
       <Spacer />
       <Grid columns={1}>
-        {useTestnets !== undefined && (
-          <Setting title="Enable Testnets" subtitle="Connect to test networks (Westend, Mandala)">
-            <Field.Toggle value={useTestnets} onChange={handleSettingChange("useTestnets")} />
-          </Setting>
-        )}
+        <Setting title="Enable Testnets" subtitle="Connect to test networks (Westend, Mandala)">
+          <Field.Toggle value={useTestnets} onChange={setUseTestnets} />
+        </Setting>
         <Setting
           title="Allow notifications"
           subtitle="Allow Talisman to send you notifications about transactions in progress"
         >
-          <Field.Toggle
-            value={allowNotifications}
-            onChange={handleSettingChange("allowNotifications")}
-          />
+          <Field.Toggle value={allowNotifications} onChange={setAllowNotifications} />
         </Setting>
         <Setting title="Hide Balances" subtitle="Blurs your portfolio and account balances">
-          <Field.Toggle value={hideBalances} onChange={handleSettingChange("hideBalances")} />
+          <Field.Toggle value={hideBalances} onChange={setHideBalances} />
         </Setting>
         <Setting
           title="Account Avatars"
           subtitle="Choose between the Talisman orbs or Polkadot.js identicons"
         >
-          <AvatarTypeSelect
-            selectedType={identiconType}
-            onChange={handleSettingChange("identiconType")}
-          />
+          <AvatarTypeSelect selectedType={identiconType} onChange={setIdenticonType} />
         </Setting>
         <Setting
           title="Pre-release features"
@@ -82,7 +61,7 @@ const Options = () => {
             <Field.Toggle
               disabled={!hasSpiritKey}
               value={hasSpiritKey && spiritClanFeatures}
-              onChange={handleSettingChange("spiritClanFeatures")}
+              onChange={setSpiritClanFeatures}
             />
           </WithTooltip>
         </Setting>

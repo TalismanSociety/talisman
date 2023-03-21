@@ -4,7 +4,6 @@ import {
 } from "@core/constants"
 import { Balance, BalanceFormatter, BalanceJson, Balances } from "@core/domains/balances/types"
 import { Chain, ChainId } from "@core/domains/chains/types"
-import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
@@ -18,7 +17,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -81,7 +80,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   const [transactionHash, setTransactionHash] = useState<string>()
 
   const accounts = useAccounts()
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const transferableTokens = useTransferableTokens()
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
   const { chainsMap } = useChains(useTestnets)

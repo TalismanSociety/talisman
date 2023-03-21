@@ -1,22 +1,37 @@
 import { SettingsStoreData, settingsStore } from "@core/domains/app/store.settings"
-import { provideContext } from "@talisman/util/provideContext"
-import { useCallback, useEffect, useState } from "react"
+import { RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
 
-const useSettingsProvider = () => {
-  const [settings, setSettings] = useState<SettingsStoreData>()
+const settingsAtom = atom<SettingsStoreData>({
+  key: "settingsAtom",
+  default: settingsStore.get(),
+  effects: [
+    ({ setSelf }) => {
+      const sub = settingsStore.observable.subscribe(setSelf)
+      return () => {
+        sub.unsubscribe()
+      }
+    },
+  ],
+})
 
-  useEffect(() => {
-    const sub = settingsStore.observable.subscribe(setSettings)
-    return () => sub.unsubscribe()
-  }, [])
+const settingsFamily = selectorFamily({
+  key: "settingsFamily",
+  get:
+    <K extends keyof SettingsStoreData, V extends SettingsStoreData[K]>(key: K) =>
+    ({ get }): V => {
+      const settings = get(settingsAtom)
+      return settings[key] as V
+    },
+  set:
+    (key) =>
+    ({ get }, value) => {
+      // update the rxjs observable so the derived recoil atom is updated
+      const settings = get(settingsAtom)
+      settingsStore.set({ ...settings, [key]: value })
+    },
+})
 
-  const update = useCallback((updates: Partial<SettingsStoreData>): void => {
-    settingsStore.set(updates)
-  }, [])
-
-  return { ...settings, update }
+export const useSetting = <K extends keyof SettingsStoreData>(setting: K) => {
+  const selector = settingsFamily(setting) as RecoilState<SettingsStoreData[K]>
+  return useRecoilState(selector)
 }
-
-// use with a provider in index.ts so settings don't have to be reloaded on each page
-// for example this prevents flickering on hidden balances
-export const [SettingsProvider, useSettings] = provideContext(useSettingsProvider)

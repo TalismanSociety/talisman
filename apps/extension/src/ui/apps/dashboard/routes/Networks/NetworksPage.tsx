@@ -7,7 +7,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { EnableTestnetPillButton } from "@ui/domains/Settings/EnableTestnetPillButton"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import sortBy from "lodash/sortBy"
 import { useCallback, useMemo } from "react"
@@ -34,7 +34,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 const NetworksList = () => {
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const navigate = useNavigate()
   const { evmNetworks } = useEvmNetworks(useTestnets)
   const sortedNetworks = useMemo(() => sortBy(evmNetworks, "name"), [evmNetworks])

@@ -10,7 +10,7 @@ import { planckToTokens } from "@talismn/util"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import {
   ButtonHTMLAttributes,
@@ -119,7 +119,7 @@ const FormContainer = styled(Box)`
 `
 
 const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const { chainsMap } = useChains(useTestnets)
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
   const allBalances = useBalances()

@@ -14,7 +14,7 @@ import { ScanQr } from "@ui/domains/Sign/ScanQr"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { useCallback, useMemo, useReducer } from "react"
 import { Checkbox, FormFieldInputText } from "talisman-ui"
 
@@ -136,7 +136,7 @@ export const AccountAddQr = () => {
     [setAddress, state]
   )
 
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const { chains } = useChains(useTestnets)
   const addressesByChain = useMemo(() => {
     if (state.type !== "CONFIGURE") return
