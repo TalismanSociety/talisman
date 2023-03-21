@@ -1512,7 +1512,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.14.8, @babel/runtime@npm:^7.15.4, @babel/runtime@npm:^7.16.3, @babel/runtime@npm:^7.17.2, @babel/runtime@npm:^7.18.9, @babel/runtime@npm:^7.19.0, @babel/runtime@npm:^7.20.1, @babel/runtime@npm:^7.20.13, @babel/runtime@npm:^7.20.6, @babel/runtime@npm:^7.20.7, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.6, @babel/runtime@npm:^7.7.7, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.9.2":
+"@babel/runtime@npm:^7.1.2, @babel/runtime@npm:^7.10.2, @babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.14.8, @babel/runtime@npm:^7.15.4, @babel/runtime@npm:^7.16.3, @babel/runtime@npm:^7.17.2, @babel/runtime@npm:^7.18.9, @babel/runtime@npm:^7.19.0, @babel/runtime@npm:^7.20.1, @babel/runtime@npm:^7.20.6, @babel/runtime@npm:^7.20.7, @babel/runtime@npm:^7.5.5, @babel/runtime@npm:^7.7.6, @babel/runtime@npm:^7.7.7, @babel/runtime@npm:^7.8.4, @babel/runtime@npm:^7.9.2":
   version: 7.20.13
   resolution: "@babel/runtime@npm:7.20.13"
   dependencies:
@@ -4104,21 +4104,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/react-identicon@npm:2.11.1":
-  version: 2.11.1
-  resolution: "@polkadot/react-identicon@npm:2.11.1"
+"@polkadot/react-identicon@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@polkadot/react-identicon@npm:3.1.1"
   dependencies:
-    "@babel/runtime": ^7.20.13
-    "@polkadot/keyring": ^10.3.1
-    "@polkadot/ui-settings": 2.11.1
-    "@polkadot/ui-shared": 2.11.1
-    "@polkadot/util": ^10.3.1
-    "@polkadot/util-crypto": ^10.3.1
-    color: ^3.2.1
+    "@polkadot/keyring": ^11.1.1
+    "@polkadot/ui-settings": 3.1.1
+    "@polkadot/ui-shared": 3.1.1
+    "@polkadot/util": ^11.1.1
+    "@polkadot/util-crypto": ^11.1.1
     ethereum-blockies-base64: ^1.0.2
     jdenticon: 3.2.0
     react-copy-to-clipboard: ^5.1.0
-    styled-components: ^5.3.6
+    styled-components: ^5.3.9
+    tslib: ^2.5.0
   peerDependencies:
     "@polkadot/keyring": "*"
     "@polkadot/util": "*"
@@ -4127,28 +4126,28 @@ __metadata:
     react-dom: "*"
     react-is: "*"
     styled-components: "*"
-  checksum: 0ac90cce0449633438089532408ec1211937e168783f53b8a6020333748ecc2e9ce131db49275a1cf890b8964df37f83ae2cebcf03327999c25bc8aa0ae67b04
+  checksum: 89ea6decc89165ec939845ff4f0e38031017fcdebd8adbc1c498da9f52a200f210de538e4adfcc23ea58a22698709c87e6d6719221d5f82bcf98c62b9826d614
   languageName: node
   linkType: hard
 
-"@polkadot/react-qr@npm:2.11.1":
-  version: 2.11.1
-  resolution: "@polkadot/react-qr@npm:2.11.1"
+"@polkadot/react-qr@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@polkadot/react-qr@npm:3.1.1"
   dependencies:
-    "@babel/runtime": ^7.20.13
-    "@polkadot/ui-settings": 2.11.1
-    "@polkadot/util": ^10.3.1
-    "@polkadot/util-crypto": ^10.3.1
+    "@polkadot/ui-settings": 3.1.1
+    "@polkadot/util": ^11.1.1
+    "@polkadot/util-crypto": ^11.1.1
     qrcode-generator: ^1.4.4
     react-qr-reader: ^2.2.1
-    styled-components: ^5.3.6
+    styled-components: ^5.3.9
+    tslib: ^2.5.0
   peerDependencies:
     "@polkadot/util": "*"
     "@polkadot/util-crypto": "*"
     react: "*"
     react-dom: "*"
     styled-components: "*"
-  checksum: c632c7f852aa2b4f37df2851b4129e976e62307532f977d2761e1800edec9ed1d9c64d3d3bf3b112759ab774e066bff13c99d7c389948482820aa09f51068b3f
+  checksum: 100d8bb3fed9a12ba2946d6b2a776858d07ee80bdd8119774ee94d88eedabb95a88bac52f8225eb2f6814f76b666fc0d4f7c3560718bdde7eab2aaec45992f2d
   languageName: node
   linkType: hard
 
@@ -4277,52 +4276,52 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/ui-keyring@npm:2.11.1":
-  version: 2.11.1
-  resolution: "@polkadot/ui-keyring@npm:2.11.1"
+"@polkadot/ui-keyring@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@polkadot/ui-keyring@npm:3.1.1"
   dependencies:
-    "@babel/runtime": ^7.20.13
-    "@polkadot/keyring": ^10.3.1
-    "@polkadot/ui-settings": 2.11.1
-    "@polkadot/util": ^10.3.1
-    "@polkadot/util-crypto": ^10.3.1
-    mkdirp: ^2.1.3
+    "@polkadot/keyring": ^11.1.1
+    "@polkadot/ui-settings": 3.1.1
+    "@polkadot/util": ^11.1.1
+    "@polkadot/util-crypto": ^11.1.1
+    mkdirp: ^2.1.5
     rxjs: ^7.8.0
     store: ^2.0.12
+    tslib: ^2.5.0
   peerDependencies:
     "@polkadot/keyring": "*"
     "@polkadot/ui-settings": "*"
     "@polkadot/util": "*"
-  checksum: 6f20577e527f8be097e8e874967284b0fee21886235f0b86ee028d68f55032c50140b606702cb571a742e565799f0413ba9937e69310cd36c9c8375a681a5999
+  checksum: 6b37a0ff22d5400cf360ce73e12f0412342f2d112fb1ff9660983afa445cbbb9bc1ab6c6d65658cbf776048bfd3bceae36cb1de0df3f427e6715946e85e37e0b
   languageName: node
   linkType: hard
 
-"@polkadot/ui-settings@npm:2.11.1":
-  version: 2.11.1
-  resolution: "@polkadot/ui-settings@npm:2.11.1"
+"@polkadot/ui-settings@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@polkadot/ui-settings@npm:3.1.1"
   dependencies:
-    "@babel/runtime": ^7.20.13
-    "@polkadot/networks": ^10.3.1
-    "@polkadot/util": ^10.3.1
+    "@polkadot/networks": ^11.1.1
+    "@polkadot/util": ^11.1.1
     eventemitter3: ^4.0.7
     store: ^2.0.12
+    tslib: ^2.5.0
   peerDependencies:
     "@polkadot/networks": "*"
     "@polkadot/util": "*"
-  checksum: 243af3e897dc5d146ab22daa061a74f7a0801f26ee302d0fef7be07f48aff07c208ad9547cd0438bef381e1a54a66cbac52e3be4de5e2d121303036d3bfafdd8
+  checksum: 3e982aff725aac3b2402ee417b0db45f8f01c1abdbc16ab7b7d9eec8c4d00315fa58f76eceb54f16c05d2c680cf1c5417b98cbf26af9d9f956342d1fde9da07d
   languageName: node
   linkType: hard
 
-"@polkadot/ui-shared@npm:2.11.1":
-  version: 2.11.1
-  resolution: "@polkadot/ui-shared@npm:2.11.1"
+"@polkadot/ui-shared@npm:3.1.1":
+  version: 3.1.1
+  resolution: "@polkadot/ui-shared@npm:3.1.1"
   dependencies:
-    "@babel/runtime": ^7.20.13
-    color: ^3.2.1
+    colord: ^2.9.3
+    tslib: ^2.5.0
   peerDependencies:
     "@polkadot/util": "*"
     "@polkadot/util-crypto": "*"
-  checksum: ca98235b39bf00fa54eaf4aa038d1da6c2921feaa84695a6fe20274f3b566fe0e51db8e9aa3017a66f632db99c1af4fd8935854d49a45eef747b71c5049386b5
+  checksum: d1b456bf1b0123dbe23ffe69adc36db86d205f14ca8d21871e4732cb21f96ebe59938b046b0480ba5574ed554a598bee683a51f4f63999e3fae22e0297a26383
   languageName: node
   linkType: hard
 
@@ -9511,7 +9510,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-convert@npm:^1.9.0, color-convert@npm:^1.9.3":
+"color-convert@npm:^1.9.0":
   version: 1.9.3
   resolution: "color-convert@npm:1.9.3"
   dependencies:
@@ -9543,7 +9542,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color-string@npm:^1.6.0, color-string@npm:^1.9.0":
+"color-string@npm:^1.9.0":
   version: 1.9.1
   resolution: "color-string@npm:1.9.1"
   dependencies:
@@ -9572,13 +9571,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"color@npm:^3.2.1":
-  version: 3.2.1
-  resolution: "color@npm:3.2.1"
-  dependencies:
-    color-convert: ^1.9.3
-    color-string: ^1.6.0
-  checksum: f81220e8b774d35865c2561be921f5652117638dcda7ca4029262046e37fc2444ac7bbfdd110cf1fd9c074a4ee5eda8f85944ffbdda26186b602dd9bb05f6400
+"colord@npm:^2.9.3":
+  version: 2.9.3
+  resolution: "colord@npm:2.9.3"
+  checksum: 95d909bfbcfd8d5605cbb5af56f2d1ce2b323990258fd7c0d2eb0e6d3bb177254d7fb8213758db56bb4ede708964f78c6b992b326615f81a18a6aaf11d64c650
   languageName: node
   linkType: hard
 
@@ -16307,12 +16303,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mkdirp@npm:^2.1.3":
-  version: 2.1.3
-  resolution: "mkdirp@npm:2.1.3"
+"mkdirp@npm:^2.1.5":
+  version: 2.1.5
+  resolution: "mkdirp@npm:2.1.5"
   bin:
     mkdirp: dist/cjs/src/bin.js
-  checksum: 5d7d7997e38a962e8b66dd4db1974bdcb841f084531ba8c9e1f3d52d71f5e6639677a96b2eb5d5940406d729a2153d820f396077ed3a6716058d3e75041dc1f2
+  checksum: 039998e3a55f056f48dbd025ad1f5095c78464ed62bd666fcaf78d07fd15b73218aabe3237e7a500b3f6cacdce684f6bbbc9a773792dce7cceab0dc266e95238
   languageName: node
   linkType: hard
 
@@ -19822,9 +19818,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"styled-components@npm:^5.3.6":
-  version: 5.3.6
-  resolution: "styled-components@npm:5.3.6"
+"styled-components@npm:^5.3.9":
+  version: 5.3.9
+  resolution: "styled-components@npm:5.3.9"
   dependencies:
     "@babel/helper-module-imports": ^7.0.0
     "@babel/traverse": ^7.4.5
@@ -19840,7 +19836,7 @@ __metadata:
     react: ">= 16.8.0"
     react-dom: ">= 16.8.0"
     react-is: ">= 16.8.0"
-  checksum: 68eac1e451be81d66739cf86de8ec9e72f46e7584aa359271761a2437468210bd7cf0a864281fc97dab08c32b35e6bf7513dc8b4104ed6b196cf8d65674dd289
+  checksum: 404311cc7028259218674d3f9f39bdda2342fc02f2ebbba8f057ef560b2ad205c5bd63b82deed4d0bf217ac7eb960d0e1127510b0b606e32cbd5a48c10373ce8
   languageName: node
   linkType: hard
 
