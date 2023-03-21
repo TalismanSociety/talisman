@@ -269,6 +269,9 @@ export class EthTabsHandler extends TabsHandler {
         params: [{ chainId: network.chainId }],
       })
 
+    // on some dapps (ex: https://app.pangolin.exchange/), iconUrls is a string instead of an array
+    if (typeof network.iconUrls === "string") network.iconUrls = [network.iconUrls]
+
     // type check payload
     if (!isValidAddEthereumRequestParam(network))
       throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
