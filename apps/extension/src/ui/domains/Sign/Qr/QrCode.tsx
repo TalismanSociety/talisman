@@ -1,12 +1,13 @@
 import { lazy } from "react"
 
 import { FRAME_SIZE } from "./constants"
-import { MultipartQrCode } from "./MultipartQrCode"
+import { MultipartQrRenderer } from "./Renderers/MultipartQrRenderer"
 
-const RaptorQrCode = lazy(() => import("./RaptorQrCode"))
+const RaptorQrRenderer = lazy(() => import("./Renderers/RaptorQrRenderer"))
 
 export const QrCode = ({ data }: { data?: Uint8Array }) => {
   if (!data) return null
-  if (data.length < FRAME_SIZE) return <MultipartQrCode data={data} />
-  return <RaptorQrCode data={data} />
+  // TODO: Reuse renderer (img) and frame cycler, just swap out the encoder for these:
+  if (data.length < FRAME_SIZE) return <MultipartQrRenderer data={data} />
+  return <RaptorQrRenderer data={data} />
 }

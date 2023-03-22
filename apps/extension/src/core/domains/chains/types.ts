@@ -2,11 +2,11 @@ import { HexString } from "@polkadot/util/types"
 
 export type { Chain, ChainId, ChainList, SubstrateRpc } from "@talismn/chaindata-provider"
 
-export type RequestChainAddNetworkSpecsQr = {
+export type RequestChainGenerateQrAddNetworkSpecs = {
   genesisHash: string
 }
 
-export type RequestChainUpdateNetworkMetadataQr = {
+export type RequestChainGenerateQrUpdateNetworkMetadata = {
   genesisHash: string
   specVersion: number
 }
@@ -14,6 +14,9 @@ export type RequestChainUpdateNetworkMetadataQr = {
 export interface ChainsMessages {
   // chain message signatures
   "pri(chains.subscribe)": [null, boolean, boolean]
-  "pri(chains.addNetworkSpecsQr)": [RequestChainAddNetworkSpecsQr, HexString]
-  "pri(chains.updateNetworkMetadataQr)": [RequestChainUpdateNetworkMetadataQr, HexString]
+  "pri(chains.generateQr.addNetworkSpecs)": [RequestChainGenerateQrAddNetworkSpecs, HexString]
+  "pri(chains.generateQr.updateNetworkMetadata)": [
+    RequestChainGenerateQrUpdateNetworkMetadata,
+    HexString
+  ]
 }

@@ -153,10 +153,13 @@ export const api: MessageTypes = {
 
   // chain message types
   chains: (cb) => messageService.subscribe("pri(chains.subscribe)", null, cb),
-  chainSpecsQr: (genesisHash) =>
-    messageService.sendMessage("pri(chains.addNetworkSpecsQr)", { genesisHash }),
-  chainMetadataQr: (genesisHash, specVersion) =>
-    messageService.sendMessage("pri(chains.updateNetworkMetadataQr)", { genesisHash, specVersion }),
+  generateChainSpecsQr: (genesisHash) =>
+    messageService.sendMessage("pri(chains.generateQr.addNetworkSpecs)", { genesisHash }),
+  generateChainMetadataQr: (genesisHash, specVersion) =>
+    messageService.sendMessage("pri(chains.generateQr.updateNetworkMetadata)", {
+      genesisHash,
+      specVersion,
+    }),
 
   // token message types
   tokens: (cb) => messageService.subscribe("pri(tokens.subscribe)", null, cb),

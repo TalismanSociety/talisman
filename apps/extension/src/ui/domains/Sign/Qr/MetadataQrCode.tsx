@@ -13,12 +13,15 @@ export const MetadataQrCode = ({ genesisHash, specVersion }: Props) => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["chainMetadataQr", genesisHash, specVersion],
     queryFn: async () => {
-      const hexData = await api.chainMetadataQr(genesisHash, Number(specVersion))
+      const hexData = await api.generateChainMetadataQr(genesisHash, Number(specVersion))
       return hexToU8a(hexData)
     },
     refetchInterval: false,
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
   })
+
+  if (isLoading || error) return null
 
   return <QrCode data={data} />
 }

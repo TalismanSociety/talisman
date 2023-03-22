@@ -3,9 +3,9 @@ import { u8aConcat } from "@polkadot/util"
 import QrCodeStyling from "@solana/qr-code-styling"
 import { useEffect, useState } from "react"
 
-import { talismanRedHandSvg } from "./constants"
+import { talismanRedHandSvg } from "../constants"
 
-export const MultipartQrCode = ({ data }: { data?: Uint8Array }) => {
+export const MultipartQrRenderer = ({ data }: { data?: Uint8Array }) => {
   const [qrCodeFrames, setQrCodeFrames] = useState<Array<string | null> | null>(null)
 
   useEffect(() => {
@@ -34,9 +34,9 @@ export const MultipartQrCode = ({ data }: { data?: Uint8Array }) => {
           cornersSquareOptions: { type: "extra-rounded" },
           cornersDotOptions: { type: "dot" },
           image: talismanRedHandSvg,
-          imageOptions: { hideBackgroundDots: true, imageSize: 0.7 },
+          imageOptions: { hideBackgroundDots: true, imageSize: 0.7, margin: 5 },
         }).getRawData("svg")
-        qrCodeFrames.push(blob ? URL.createObjectURL(blob) : blob)
+        if (blob) qrCodeFrames.push(URL.createObjectURL(blob))
       }
 
       if (cancelled) return

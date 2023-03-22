@@ -1,9 +1,6 @@
 import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
-import isJsonPayload from "@core/util/isJsonPayload"
-import { wrapBytes } from "@polkadot/extension-dapp/wrapBytes"
-import { createSignPayload } from "@polkadot/react-qr/util"
-import { TypeRegistry } from "@polkadot/types"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import { Drawer } from "@talisman/components/Drawer"
 import { LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
@@ -11,23 +8,12 @@ import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import useChains from "@ui/hooks/useChains"
-import { ReactElement, useMemo, useState } from "react"
+import { ReactElement, useState } from "react"
 import { Button } from "talisman-ui"
 
-import { LedgerSigningStatus } from "../LedgerSigningStatus"
+import { ExtrinsicQrCode } from "./ExtrinsicQrCode"
 import { MetadataQrCode } from "./MetadataQrCode"
 import { NetworkSpecsQrCode } from "./NetworkSpecsQrCode"
-import { QrCode } from "./QrCode"
-
-const CMD_SIGN_TX = 0
-const CMD_SIGN_TX_HASH = 1
-const CMD_IMMORTAL = 2
-const CMD_SIGN_MESSAGE = 3
-type Command =
-  | typeof CMD_SIGN_TX
-  | typeof CMD_SIGN_TX_HASH
-  | typeof CMD_IMMORTAL
-  | typeof CMD_SIGN_MESSAGE
 
 type ScanState =
   // waiting for user to inspect tx and click button
@@ -57,12 +43,6 @@ interface Props {
   narrowMargin?: boolean
 }
 
-function isRawPayload(payload: SignerPayloadJSON | SignerPayloadRaw): payload is SignerPayloadRaw {
-  return !!(payload as SignerPayloadRaw).data
-}
-
-const registry = new TypeRegistry()
-
 export const QrSubstrate = ({
   account,
   className = "",
@@ -86,32 +66,6 @@ export const QrSubstrate = ({
   const { chains } = useChains(true)
   const chain = chains.find((chain) => chain.genesisHash === genesisHash)
 
-  const { cmd, unsigned } = useMemo<{ cmd: Command; unsigned: Uint8Array }>(() => {
-    if (isRawPayload(payload)) return { cmd: CMD_SIGN_MESSAGE, unsigned: wrapBytes(payload.data) }
-
-    if (payload.signedExtensions) registry.setSignedExtensions(payload.signedExtensions)
-    const { version } = payload
-    const extrinsicPayload = registry.createType("ExtrinsicPayload", payload, { version })
-    return {
-      cmd: extrinsicPayload.era?.isImmortalEra ? CMD_IMMORTAL : CMD_SIGN_TX,
-      unsigned: extrinsicPayload.toU8a(),
-    }
-  }, [payload])
-
-  const error = useMemo(() => {
-    return cmd === CMD_SIGN_MESSAGE
-      ? "Parity Signer does not support signing plain text messages."
-      : undefined
-  }, [cmd])
-
-  const data = useMemo(
-    () =>
-      unsigned && account
-        ? createSignPayload(account.address, cmd, unsigned, genesisHash ?? new Uint8Array([0]))
-        : undefined,
-    [account, cmd, genesisHash, unsigned]
-  )
-
   if (scanState.page === "INIT")
     return (
       <div className={classNames("flex w-full flex-col items-center", className)}>
@@ -123,16 +77,6 @@ export const QrSubstrate = ({
             Sign with QR
           </Button>
         </div>
-        {error && (
-          <Drawer anchor="bottom" open={true} parent={parent}>
-            {/* Shouldn't be a LedgerSigningStatus, just an error message */}
-            <LedgerSigningStatus
-              message={error ? error : ""}
-              status={error ? "error" : undefined}
-              confirm={onReject}
-            />
-          </Drawer>
-        )}
       </div>
     )
 
@@ -169,7 +113,11 @@ export const QrSubstrate = ({
         </header>
       )}
       <section
-        className={classNames("grow", "w-full", scanState.page !== "UPDATE_METADATA" && "px-12")}
+        className={classNames(
+          "w-full grow",
+          // don't pad the UPDATE_METADATA view
+          scanState.page !== "UPDATE_METADATA" && "px-12"
+        )}
       >
         {/*
          ** SEND page
@@ -181,7 +129,7 @@ export const QrSubstrate = ({
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <LoaderIcon className="animate-spin-slow text-body-secondary !text-3xl" />
                 </div>
-                <QrCode data={data} />
+                <ExtrinsicQrCode account={account} genesisHash={genesisHash} payload={payload} />
               </div>
 
               <div className="text-body-secondary mt-14 mb-10 max-w-md text-center leading-10">
@@ -190,35 +138,28 @@ export const QrSubstrate = ({
                 Parity Signer app on your phone.
               </div>
 
-              {typeof chain?.chainspecQrUrl === "string" ||
-              typeof chain?.latestMetadataQrUrl === "string" ? (
+              {isJsonPayload(payload) ? (
                 <div className="flex flex-col items-center">
                   <div className="flex items-center gap-4">
-                    {typeof chain?.chainspecQrUrl === "string" ? (
-                      <button
-                        className="text-grey-400 bg-grey-800 hover:bg-grey-750 inline-block rounded-full py-4 px-6 text-sm font-light"
-                        onClick={() => setScanState({ page: "SEND", showChainspecDrawer: true })}
-                      >
-                        Add Network
-                      </button>
-                    ) : null}
-                    {typeof chain?.latestMetadataQrUrl === "string" ? (
-                      <button
-                        className="bg-primary/10 text-primary hover:bg-primary/20 inline-block rounded-full py-4 px-6 text-sm font-light"
-                        onClick={() => setScanState({ page: "UPDATE_METADATA" })}
-                      >
-                        Update Metadata
-                      </button>
-                    ) : null}
-                  </div>
-                  {typeof chain?.latestMetadataQrUrl === "string" ? (
                     <button
-                      className="text-grey-200 mt-8 text-xs font-light hover:text-white"
-                      onClick={() => setScanState({ page: "SEND", showUpdateMetadataDrawer: true })}
+                      className="text-grey-400 bg-grey-800 hover:bg-grey-750 inline-block rounded-full py-4 px-6 text-sm font-light"
+                      onClick={() => setScanState({ page: "SEND", showChainspecDrawer: true })}
                     >
-                      Seeing a Parity Signer error?
+                      Add Network
                     </button>
-                  ) : null}
+                    <button
+                      className="bg-primary/10 text-primary hover:bg-primary/20 inline-block rounded-full py-4 px-6 text-sm font-light"
+                      onClick={() => setScanState({ page: "UPDATE_METADATA" })}
+                    >
+                      Update Metadata
+                    </button>
+                  </div>
+                  <button
+                    className="text-grey-200 mt-8 text-xs font-light hover:text-white"
+                    onClick={() => setScanState({ page: "SEND", showUpdateMetadataDrawer: true })}
+                  >
+                    Seeing a Parity Signer error?
+                  </button>
                 </div>
               ) : (
                 <div></div>
@@ -298,8 +239,7 @@ export const QrSubstrate = ({
           <div className="flex h-full w-full flex-col items-center justify-between">
             <div className="relative flex aspect-square w-full items-center justify-center bg-white p-12">
               <div className="text-body-secondary absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
-                <LoaderIcon className="animate-spin-slow text-3xl " />
-                <div className="text-center">Generating metadata...</div>
+                <LoaderIcon className="animate-spin-slow text-3xl" />
               </div>
               {isJsonPayload(payload) && (
                 <MetadataQrCode
@@ -361,17 +301,6 @@ export const QrSubstrate = ({
           </Button>
         )}
       </footer>
-
-      {error && (
-        <Drawer anchor="bottom" open={true} parent={parent}>
-          {/* Shouldn't be a LedgerSigningStatus, just an error message */}
-          <LedgerSigningStatus
-            message={error ? error : ""}
-            status={error ? "error" : undefined}
-            confirm={onReject}
-          />
-        </Drawer>
-      )}
     </div>
   )
 }

@@ -10,12 +10,15 @@ export const NetworkSpecsQrCode = ({ genesisHash }: Props) => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["chainSpecsQr", genesisHash],
     queryFn: async () => {
-      const hexData = await api.chainSpecsQr(genesisHash)
+      const hexData = await api.generateChainSpecsQr(genesisHash)
       return hexToU8a(hexData)
     },
     refetchInterval: false,
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
   })
+
+  if (isLoading || error) return null
 
   return <QrCode data={data} />
 }

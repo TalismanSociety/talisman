@@ -1,15 +1,15 @@
 import { decodeString } from "@polkadot/react-qr/util"
 import { hexToNumber, numberToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
-import QRCodeStyling from "@solana/qr-code-styling"
+import QrCodeStyling from "@solana/qr-code-styling"
 import { classNames } from "@talismn/util"
 import init, { Encoder } from "raptorq"
-import { FC, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
-import { FRAME_SIZE, talismanRedHandSvg } from "./constants"
+import { FRAME_SIZE, talismanRedHandSvg } from "../constants"
 
 // This component uses raptorq wasm library (250ko) to generate the QR code, import only if necessary
 // spec here : https://github.com/varovainen/parity-signer/blob/2022-05-25-uos/docs/src/development/UOS.md
-const RaptorQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
+const RaptorQrRenderer = ({ data }: { data?: Uint8Array }) => {
   const [totalFramesCount, setTotalFramesCount] = useState<number>()
 
   // storing in a ref so we can start iterating on frames before they are all ready
@@ -45,12 +45,12 @@ const RaptorQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
         for (const dataFrame of frames) {
           if (cancelled) return // stop computing for nothing, happens especially in dev because of strict mode double mount
 
-          const blob = await new QRCodeStyling({
+          const blob = await new QrCodeStyling({
             type: "svg",
             data: decodeString(dataFrame),
             margin: 0,
             qrOptions: { mode: "Byte", errorCorrectionLevel: "L" },
-            dotsOptions: { type: "square" },
+            dotsOptions: { type: "dots" },
             cornersSquareOptions: { type: "extra-rounded" },
             cornersDotOptions: { type: "dot" },
             image: talismanRedHandSvg,
@@ -94,4 +94,4 @@ const RaptorQrCode: FC<{ data?: Uint8Array }> = ({ data }) => {
 }
 
 // export as default module to make it possible to lazy import
-export default RaptorQrCode
+export default RaptorQrRenderer
