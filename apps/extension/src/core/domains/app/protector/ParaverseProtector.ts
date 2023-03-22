@@ -192,6 +192,7 @@ export default class ParaverseProtector {
 
   async getMetamaskData(): Promise<MetaMaskDetectorConfig> {
     const json = await this.getData(METAMASK_CONTENT_URL)
+    if (json.content === "" && json.download_url) return await this.getData(json.download_url)
     if (!json.content) throw new Error("Unable to get content for Metamask phishing list")
     return JSON.parse(Buffer.from(json.content, "base64").toString())
   }
