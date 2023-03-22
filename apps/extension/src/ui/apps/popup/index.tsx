@@ -140,6 +140,7 @@ const Popup = () => {
                         ></Route>
                         <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
                         <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
+                        <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
                         <Route
                           path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
                           element={<AddEthereumNetwork />}
