@@ -14,7 +14,6 @@ import { RecoilRoot } from "recoil"
 
 import { AddressBookProvider } from "./hooks/useAddressBook"
 import { DbCacheProvider } from "./hooks/useDbCache"
-import { FeaturesProvider } from "./hooks/useFeatures"
 
 const queryClient = new QueryClient()
 
@@ -33,13 +32,11 @@ export const renderTalisman = (app: any) => {
           <ErrorBoundaryDatabaseMigration>
             <RecoilRoot>
               <QueryClientProvider client={queryClient}>
-                <FeaturesProvider>
-                  <AddressBookProvider>
-                    <DbCacheProvider>
-                      <HashRouter>{app}</HashRouter>
-                    </DbCacheProvider>
-                  </AddressBookProvider>
-                </FeaturesProvider>
+                <AddressBookProvider>
+                  <DbCacheProvider>
+                    <HashRouter>{app}</HashRouter>
+                  </DbCacheProvider>
+                </AddressBookProvider>
                 <NotificationsContainer />
               </QueryClientProvider>
             </RecoilRoot>
