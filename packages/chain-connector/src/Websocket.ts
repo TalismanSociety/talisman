@@ -334,7 +334,7 @@ export class Websocket implements ProviderInterface {
           error ? reject(error) : resolve(result as T)
         }
 
-        log.debug(() => ["calling", method, body])
+        // log.debug(() => ["calling", method, body])
 
         this.#handlers[id] = {
           callback,
@@ -388,7 +388,7 @@ export class Websocket implements ProviderInterface {
     // a slight complication in solving - since we cannot rely on the send id, but rather
     // need to find the actual subscription id to map it
     if (isUndefined(this.#subscriptions[subscription])) {
-      log.debug(() => `Unable to find active subscription=${subscription}`)
+      // log.debug(() => `Unable to find active subscription=${subscription}`)
 
       return false
     }
@@ -449,12 +449,12 @@ export class Websocket implements ProviderInterface {
   }
 
   #onSocketError = (error: Event): void => {
-    log.debug(() => ["socket error", error])
+    // log.debug(() => ["socket error", error])
     this.#emit("error", error)
   }
 
   #onSocketMessage = (message: MessageEvent<string>): void => {
-    log.debug(() => ["received", message.data])
+    // log.debug(() => ["received", message.data])
 
     const response = JSON.parse(message.data) as JsonRpcResponse
 
@@ -467,7 +467,7 @@ export class Websocket implements ProviderInterface {
     const handler = this.#handlers[response.id]
 
     if (!handler) {
-      log.debug(() => `Unable to find handler for id=${response.id}`)
+      // log.debug(() => `Unable to find handler for id=${response.id}`)
 
       return
     }
@@ -509,7 +509,7 @@ export class Websocket implements ProviderInterface {
       // store the JSON, we could have out-of-order subid coming in
       this.#waitingForId[subId] = response
 
-      log.debug(() => `Unable to find handler for subscription=${subId}`)
+      // log.debug(() => `Unable to find handler for subscription=${subId}`)
 
       return
     }
@@ -531,7 +531,7 @@ export class Websocket implements ProviderInterface {
       throw new Error("WebSocket cannot be null in onOpen")
     }
 
-    log.debug(() => ["connected to", this.endpoint])
+    // log.debug(() => ["connected to", this.endpoint])
 
     this.#isConnected = true
     this.#endpointsTriedSinceLastConnection = 0
