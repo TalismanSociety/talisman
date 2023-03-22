@@ -1,6 +1,6 @@
 {
-  "name": "@talismn/util",
-  "version": "0.1.7",
+  "name": "@talismn/connection-meta",
+  "version": "0.0.1",
   "author": "Talisman",
   "homepage": "https://talisman.xyz",
   "license": "UNLICENSED",
@@ -8,17 +8,17 @@
     "access": "public"
   },
   "repository": {
-    "directory": "packages/util",
+    "directory": "packages/connection-meta",
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
-  "main": "dist/talismn-util.cjs.js",
-  "module": "dist/talismn-util.esm.js",
+  "main": "dist/talismn-connection-meta.cjs.js",
+  "module": "dist/talismn-connection-meta.esm.js",
   "files": [
     "/dist"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=14"
   },
   "scripts": {
     "test": "jest",
@@ -26,12 +26,10 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "bignumber.js": "^9.1.1"
+    "@talismn/chaindata-provider": "workspace:^",
+    "dexie": "^3.2.2"
   },
   "devDependencies": {
-    "@polkadot/keyring": "^11.1.1",
-    "@polkadot/util": "^11.1.1",
-    "@polkadot/util-crypto": "^11.1.1",
     "@talismn/eslint-config": "workspace:^",
     "@talismn/tsconfig": "workspace:^",
     "@types/jest": "^27.5.1",
@@ -39,11 +37,6 @@
     "jest": "^28.1.0",
     "ts-jest": "^28.0.2",
     "typescript": "^4.6.4"
-  },
-  "peerDependencies": {
-    "@polkadot/keyring": "11.x",
-    "@polkadot/util": "11.x",
-    "@polkadot/util-crypto": "^11.x"
   },
   "eslintConfig": {
     "root": true,

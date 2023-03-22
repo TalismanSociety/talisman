@@ -26,9 +26,14 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
+    "@polkadot/util": "^10.2.1",
+    "@polkadot/x-global": "^10.2.1",
+    "@polkadot/x-ws": "^10.2.1",
     "@talismn/chaindata-provider": "workspace:^",
+    "@talismn/connection-meta": "workspace:^",
     "@talismn/util": "workspace:^",
-    "anylogger": "^1.0.11"
+    "anylogger": "^1.0.11",
+    "eventemitter3": "^5.0.0"
   },
   "devDependencies": {
     "@polkadot/rpc-provider": "^9.1.1",
@@ -41,7 +46,10 @@
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
-    "@polkadot/rpc-provider": "9.x"
+    "@polkadot/rpc-provider": "9.x",
+    "@polkadot/util": "10.x",
+    "@polkadot/x-global": "10.x",
+    "@polkadot/x-ws": "10.x"
   },
   "eslintConfig": {
     "root": true,

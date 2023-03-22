@@ -111,7 +111,7 @@ const useLedgerEthereumAccounts = (
           isBalanceLoading:
             !addressesByEvmNetwork ||
             accountBalances.length < BALANCE_CHECK_EVM_NETWORK_IDS.length ||
-            accountBalances.some((b) => b.status !== "live"),
+            accountBalances.some((b) => b.status === "cache"),
         }
       }),
     [balances.sorted, derivedAccounts, selectedAccounts, addressesByEvmNetwork, walletAccounts]

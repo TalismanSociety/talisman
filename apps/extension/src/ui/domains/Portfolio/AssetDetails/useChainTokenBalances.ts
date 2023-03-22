@@ -3,6 +3,7 @@ import { BalanceFormatter, BalanceLockType, LockedBalance } from "@core/domains/
 import { Address } from "@core/types/base"
 import { getNetworkCategory } from "@core/util/getNetworkCategory"
 import { sortBigBy } from "@talisman/util/bigHelper"
+import { useBalancesStatus } from "@talismn/balances-react"
 import { ChainId, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { TokenRates } from "@talismn/token-rates"
 import { planckToTokens } from "@talismn/util"
@@ -64,7 +65,12 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
   )
 
   // query only locks for addresses that have frozen balance
-  const { consolidatedLocks, isLoading, error, balanceLocks } = useBalanceLocks({
+  const {
+    consolidatedLocks,
+    isLoading: isLoadingLocks,
+    error,
+    balanceLocks,
+  } = useBalanceLocks({
     chainId,
     addresses: addressesWithLocks,
   })
@@ -168,10 +174,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
     [chain, evmNetwork, relay]
   )
 
-  const isFetching = useMemo(
-    () => balances.sorted.some((b) => b.status === "cache") || isLoading,
-    [balances, isLoading]
-  )
+  const status = useBalancesStatus(balances, isLoadingLocks)
 
   return {
     summary,
@@ -179,7 +182,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
     detailRows,
     evmNetwork,
     chain,
-    isFetching,
+    status,
     networkType,
     chainOrNetwork: chain || evmNetwork,
   }

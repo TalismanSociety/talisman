@@ -1,6 +1,6 @@
 import { Balances } from "@core/domains/balances/types"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { CopyIcon, CreditCardIcon, LoaderIcon, LockIcon } from "@talisman/theme/icons"
+import { CopyIcon, CreditCardIcon, LockIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -9,6 +9,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { StaleBalancesIcon } from "@ui/domains/Portfolio/StaleBalancesIcon"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useMemo } from "react"
 import styled from "styled-components"
@@ -19,12 +20,6 @@ import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
 import { useAssetDetails } from "./useAssetDetails"
 import { useChainTokenBalances } from "./useChainTokenBalances"
-
-const FetchingIndicator = styled(LoaderIcon)`
-  font-size: 1em;
-  line-height: 1;
-  margin-left: 0.4rem;
-`
 
 type AssetRowProps = {
   chainId: ChainId | EvmNetworkId
@@ -43,7 +38,7 @@ const ChainTokenBlock = styled.div`
 `
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const { chainOrNetwork, summary, symbol, detailRows, chain, isFetching, networkType } =
+  const { chainOrNetwork, summary, symbol, detailRows, chain, status, networkType } =
     useChainTokenBalances({ chainId, balances })
 
   // wait for data to load
@@ -88,7 +83,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             <div
               className={classNames(
                 "flex flex-col flex-nowrap justify-center gap-2 whitespace-nowrap text-right",
-                isFetching && "animate-pulse transition-opacity"
+                status.status === "fetching" && "animate-pulse transition-opacity"
               )}
             >
               <div
@@ -102,6 +97,15 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                   <>
                     {" "}
                     <LockIcon className="lock inline align-baseline" />
+                  </>
+                ) : null}
+                {status.status === "stale" ? (
+                  <>
+                    {" "}
+                    <StaleBalancesIcon
+                      className="inline align-baseline"
+                      staleChains={status.staleChains}
+                    />
                   </>
                 ) : null}
               </div>

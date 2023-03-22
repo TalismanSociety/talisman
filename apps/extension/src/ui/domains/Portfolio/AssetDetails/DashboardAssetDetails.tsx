@@ -3,11 +3,11 @@ import { Address } from "@core/types/base"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
+import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
 import { Fragment } from "react"
 import styled from "styled-components"
 
-import { AssetBalanceCellValue } from "../AssetBalanceCellValue"
-import { NoTokensMessage } from "../NoTokensMessage"
 import { CopyAddressButton } from "./CopyAddressIconButton"
 import { PortfolioAccount } from "./PortfolioAccount"
 import { SendFundsButton } from "./SendFundsIconButton"
@@ -93,7 +93,7 @@ type AssetRowProps = {
 }
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const { chainOrNetwork, summary, symbol, detailRows, chain, isFetching, networkType } =
+  const { chainOrNetwork, summary, symbol, detailRows, chain, status, networkType } =
     useChainTokenBalances({ chainId, balances })
 
   // wait for data to load
@@ -124,7 +124,10 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             fiat={summary.lockedFiat}
             symbol={symbol}
             tooltip="Total Locked Balance"
-            className={classNames(isFetching && "animate-pulse transition-opacity")}
+            balancesStatus={status}
+            className={classNames(
+              status.status === "fetching" && "animate-pulse transition-opacity"
+            )}
           />
         </td>
         <td align="right" valign="top">
@@ -134,7 +137,10 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             fiat={summary.availableFiat}
             symbol={symbol}
             tooltip="Total Available Balance"
-            className={classNames(isFetching && "animate-pulse transition-opacity")}
+            balancesStatus={status}
+            className={classNames(
+              status.status === "fetching" && "animate-pulse transition-opacity"
+            )}
           />
         </td>
       </tr>
@@ -153,7 +159,10 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                 fiat={row.fiat}
                 symbol={symbol}
                 locked={row.locked}
-                className={classNames(isFetching && "animate-pulse transition-opacity")}
+                balancesStatus={status}
+                className={classNames(
+                  status.status === "fetching" && "animate-pulse transition-opacity"
+                )}
               />
             </td>
           </tr>

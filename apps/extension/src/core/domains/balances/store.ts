@@ -1,4 +1,3 @@
-import { DEBUG } from "@core/constants"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { Balance, BalanceJson, Balances, RequestBalance } from "@core/domains/balances/types"
 import { Chain } from "@core/domains/chains/types"
@@ -157,7 +156,7 @@ export class BalanceStore {
     if (!token) {
       const error = new Error(`Failed to fetch balance: no token with id ${tokenId}`)
       Sentry.captureException(error)
-      DEBUG && console.error(error) // eslint-disable-line no-console
+      log.error(error)
       return
     }
 
@@ -166,7 +165,7 @@ export class BalanceStore {
     if (!balanceModule) {
       const error = new Error(`Failed to fetch balance: no module with type ${tokenType}`)
       Sentry.captureException(error)
-      DEBUG && console.error(error) // eslint-disable-line no-console
+      log.error(error)
       return
     }
 
@@ -317,7 +316,7 @@ export class BalanceStore {
    */
   private async deleteBalances(balancesFilter: (balance: Balance) => boolean) {
     return await balancesDb.transaction("rw", balancesDb.balances, async () => {
-      const deleteBalances = new Balances(await balancesDb.balances.toArray()).sorted
+      const deleteBalances = new Balances(await balancesDb.balances.toArray()).each
         .filter(balancesFilter)
         .map((balance) => balance.id)
 
@@ -402,12 +401,24 @@ export class BalanceStore {
           // ignore old subscriptions which have been told to close but aren't closed yet
           if (this.#subscriptionsGeneration !== generation) return
 
-          // eslint-disable-next-line no-console
-          if (error) DEBUG && console.error(error)
-          else
-            this.upsertBalances(result ?? new Balances([])).catch((error) => {
-              log.error("Failed to upsert balances", { error })
-            })
+          if (error?.type === "STALE_RPC_ERROR") {
+            const addressesByModuleToken = addressesByTokenByModule[balanceModule.type] ?? {}
+            balancesDb.balances
+              .where({ source: balanceModule.type, chainId: error.chainId })
+              .filter((balance) => {
+                if (!Object.keys(addressesByModuleToken).includes(balance.tokenId)) return false
+                if (!addressesByModuleToken[balance.tokenId].includes(balance.address)) return false
+                return true
+              })
+              .modify({ status: "stale" })
+            return
+          }
+
+          if (error) return log.error(error)
+
+          this.upsertBalances(result ?? new Balances([])).catch((error) =>
+            log.error("Failed to upsert balances", { error })
+          )
         }
       )
     )
@@ -424,14 +435,13 @@ export class BalanceStore {
    */
   private async upsertBalances(balancesUpdates: Balances) {
     // seralize
-    const updates = balancesUpdates.toJSON()
+    const updates = Object.entries(balancesUpdates.toJSON()).map(([id, balance]) => ({
+      id,
+      ...balance,
+    }))
 
     // update stored balances
-    await balancesDb.transaction("rw", balancesDb.balances, async () => {
-      await balancesDb.balances.bulkPut(
-        Object.entries(updates).map(([id, balance]) => ({ id, ...balance }))
-      )
-    })
+    await balancesDb.balances.bulkPut(updates)
   }
 
   /**
@@ -456,9 +466,7 @@ export class BalanceStore {
     try {
       // rpcs are no longer connected,
       // update cached balances to 'cache' status
-      await balancesDb.transaction("rw", balancesDb.balances, async () => {
-        await balancesDb.balances.toCollection().modify({ status: "cache" })
-      })
+      await balancesDb.balances.where("status").equals("live").modify({ status: "cache" })
     } catch (error) {
       log.error("Failed to update all balances to 'cache' status", { error })
     }
