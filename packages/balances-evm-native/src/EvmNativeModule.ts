@@ -2,6 +2,7 @@ import {
   Address,
   Amount,
   Balance,
+  BalanceJsonList,
   Balances,
   DefaultBalanceModule,
   NewBalanceModule,
@@ -109,15 +110,31 @@ export const EvmNativeModule: NewBalanceModule<
     async subscribeBalances(addressesByToken, callback) {
       let subscriptionActive = true
       const subscriptionInterval = 6_000 // 6_000ms == 6 seconds
-      const cache = new Map<string, unknown>()
+      const cache = new Map<EvmNetworkId, BalanceJsonList>()
+
+      // for chains with a zero balance we only call fetchBalances once every 5 subscriptionIntervals
+      // if subscriptionInterval is 6 seconds, this means we only poll chains with a zero balance every 30 seconds
+      let zeroBalanceSubscriptionIntervalCounter = 0
 
       const poll = async () => {
         if (!subscriptionActive) return
+
+        zeroBalanceSubscriptionIntervalCounter = (zeroBalanceSubscriptionIntervalCounter + 1) % 5
 
         try {
           // fetch balance for each network sequentially to prevent creating a big queue of http requests (browser can only handle 2 at a time)
           // since these are native tokens (1 per network), we can iterate on tokens
           for (const tokenId of Object.keys(addressesByToken)) {
+            const cached = cache.get(tokenId)
+            if (
+              cached &&
+              zeroBalanceSubscriptionIntervalCounter !== 0 &&
+              new Balances(cached).each.reduce((sum, b) => sum + b.total.planck, 0n) === 0n
+            ) {
+              // only poll empty token balances every 5 subscriptionIntervals
+              continue
+            }
+
             try {
               const tokenAddresses = { [tokenId]: addressesByToken[tokenId] }
 

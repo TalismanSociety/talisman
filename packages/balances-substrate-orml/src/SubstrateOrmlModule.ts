@@ -247,6 +247,7 @@ export const SubOrmlModule: NewBalanceModule<
           const references = buildReferences(tokensAndAddresses)
 
           // set up subscription
+          const timeout = false
           const unsubscribe = await chainConnectors.substrate.subscribe(
             chainId,
             subscribeMethod,
@@ -256,7 +257,8 @@ export const SubOrmlModule: NewBalanceModule<
             (error, result) => {
               if (error) return callback(error)
               callback(null, formatRpcResult(chainId, tokens, typeRegistry, references, result))
-            }
+            },
+            timeout
           )
 
           return unsubscribe
@@ -268,7 +270,8 @@ export const SubOrmlModule: NewBalanceModule<
           })
         )
 
-      return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
+      return () =>
+        subscriptions.forEach((subscription) => subscription.then((unsubscribe) => unsubscribe()))
     },
 
     async fetchBalances(addressesByToken) {

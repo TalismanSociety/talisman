@@ -3,17 +3,19 @@ import { Accordion, AccordionIcon } from "@talisman/components/Accordion"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { ExternalLinkIcon, LockIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
+import { useBalancesStatus } from "@talismn/balances-react"
 import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { ReactNode, useCallback, useMemo, useState } from "react"
+import { ReactNode, useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
 import { TokenLogo } from "../../Asset/TokenLogo"
 import { useNomPoolStakingBanner } from "../NomPoolStakingContext"
 import { useSelectedAccount } from "../SelectedAccountContext"
+import { StaleBalancesIcon } from "../StaleBalancesIcon"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 import { NetworksLogoStack } from "./NetworksLogoStack"
 import { usePortfolioNetworkIds } from "./usePortfolioNetworkIds"
@@ -118,10 +120,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
-  const isFetching = useMemo(
-    () => balances.sorted.some((b) => b.status === "cache"),
-    [balances.sorted]
-  )
+  const status = useBalancesStatus(balances)
 
   const { token, summary } = useTokenBalancesSummary(balances)
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
@@ -184,7 +183,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
           <div
             className={classNames(
               "flex flex-col gap-2 text-right",
-              isFetching && "animate-pulse transition-opacity"
+              status.status === "fetching" && "animate-pulse transition-opacity"
             )}
           >
             <div
@@ -195,6 +194,10 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
             >
               <Tokens amount={tokens} symbol={token?.symbol} isBalance />
               {locked ? <RowLockIcon className="lock inline align-baseline" /> : null}
+              <StaleBalancesIcon
+                className="alert ml-2 inline align-baseline text-xs"
+                staleChains={status.status === "stale" ? status.staleChains : []}
+              />
             </div>
             <div className="text-body-secondary leading-base text-xs">
               {fiat === null ? "-" : <Fiat currency="usd" amount={fiat} isBalance />}

@@ -398,6 +398,7 @@ export const SubNativeModule: NewBalanceModule<
           const addressReferences = buildAddressReferences(addresses)
 
           // set up subscription
+          const timeout = false
           const unsubscribe = await chainConnectors.substrate.subscribe(
             chainId,
             subscribeMethod,
@@ -418,7 +419,8 @@ export const SubNativeModule: NewBalanceModule<
                   result
                 )
               )
-            }
+            },
+            timeout
           )
 
           return unsubscribe
@@ -430,7 +432,8 @@ export const SubNativeModule: NewBalanceModule<
           })
         )
 
-      return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
+      return () =>
+        subscriptions.forEach((subscription) => subscription.then((unsubscribe) => unsubscribe()))
     },
 
     async fetchBalances(addressesByToken) {
