@@ -10,7 +10,7 @@ import { useAppState } from "@ui/hooks/useAppState"
 import { useSetting } from "@ui/hooks/useSettings"
 
 const Options = () => {
-  const { hasSpiritKey } = useAppState()
+  const [hasSpiritKey] = useAppState("hasSpiritKey")
   const [identiconType, setIdenticonType] = useSetting("identiconType")
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
   const [hideBalances, setHideBalances] = useSetting("hideBalances")

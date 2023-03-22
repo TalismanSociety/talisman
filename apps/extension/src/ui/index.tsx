@@ -13,7 +13,6 @@ import { HashRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
 
 import { AddressBookProvider } from "./hooks/useAddressBook"
-import { AppStateProvider } from "./hooks/useAppState"
 import { DbCacheProvider } from "./hooks/useDbCache"
 import { FeaturesProvider } from "./hooks/useFeatures"
 
@@ -36,11 +35,9 @@ export const renderTalisman = (app: any) => {
               <QueryClientProvider client={queryClient}>
                 <FeaturesProvider>
                   <AddressBookProvider>
-                    <AppStateProvider>
-                      <DbCacheProvider>
-                        <HashRouter>{app}</HashRouter>
-                      </DbCacheProvider>
-                    </AppStateProvider>
+                    <DbCacheProvider>
+                      <HashRouter>{app}</HashRouter>
+                    </DbCacheProvider>
                   </AddressBookProvider>
                 </FeaturesProvider>
                 <NotificationsContainer />

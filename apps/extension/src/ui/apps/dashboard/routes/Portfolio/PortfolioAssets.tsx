@@ -24,7 +24,7 @@ import { useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 
 const PageContent = ({ balances }: { balances: Balances }) => {
-  const { showWalletFunding } = useAppState()
+  const [showWalletFunding] = useAppState("showWalletFunding")
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
   const { canExportAccount, open: openAccountExportModal } = useAccountExportModal()

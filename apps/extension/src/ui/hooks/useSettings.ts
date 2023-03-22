@@ -22,13 +22,10 @@ const settingsFamily = selectorFamily({
       const settings = get(settingsAtom)
       return settings[key] as V
     },
-  set:
-    (key) =>
-    ({ get }, value) => {
-      // update the rxjs observable so the derived recoil atom is updated
-      const settings = get(settingsAtom)
-      settingsStore.set({ ...settings, [key]: value })
-    },
+  set: (key) => (_, value) => {
+    // update the rxjs observable so the derived recoil atom is updated
+    settingsStore.set({ [key]: value })
+  },
 })
 
 export const useSetting = <K extends keyof SettingsStoreData>(setting: K) => {
