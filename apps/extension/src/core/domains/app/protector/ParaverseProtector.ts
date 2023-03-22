@@ -2,6 +2,7 @@ import { db } from "@core/db"
 import { log } from "@core/log"
 import { checkHost } from "@polkadot/phishing"
 import * as Sentry from "@sentry/browser"
+import Dexie from "dexie"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
 import { decompressFromUTF16 } from "lz-string"
@@ -55,6 +56,7 @@ export default class ParaverseProtector {
   }
   #refreshTimer?: NodeJS.Timer
   #metamaskDetector = new MetamaskDetector(metamaskInitialData)
+  #persistQueue?: Record<ProtectorSources, ProtectorStorage>
 
   constructor() {
     this.setRefreshTimer = this.setRefreshTimer.bind(this)
@@ -105,6 +107,26 @@ export default class ParaverseProtector {
     await this.getMetamaskCommit()
     await this.getPolkadotCommit()
     await this.getPhishFortCommit()
+    await this.persistAllData()
+  }
+
+  async persistAllData() {
+    if (this.#persistQueue && Object.values(this.#persistQueue).length > 0) {
+      if (!db.isOpen()) await db.open()
+      const data = this.#persistQueue
+      this.#persistQueue = {} as Record<ProtectorSources, ProtectorStorage>
+
+      db.phishing.bulkPut(Object.values(data)).catch((cause) => {
+        // put it back
+        this.#persistQueue = data
+        // we can't do much about DatabaseClosedError errors
+        if (!(cause instanceof Dexie.DatabaseClosedError)) {
+          const error = new Error("Failed to persist phishing list", { cause })
+          log.error(error)
+          Sentry.captureException(error)
+        }
+      })
+    }
   }
 
   private persistData(source: "metamask", commitSha: string, data: MetaMaskDetectorConfig): void
@@ -114,17 +136,8 @@ export default class ParaverseProtector {
     commitSha: string,
     data: HostList | MetaMaskDetectorConfig
   ): void {
-    db.phishing
-      .put({
-        commitSha,
-        hostList: data,
-        source,
-      })
-      .catch((cause) => {
-        const error = new Error("Failed to persist phishing list", { cause })
-        log.error(error)
-        Sentry.captureException(error)
-      })
+    if (!this.#persistQueue) this.#persistQueue = {} as Record<ProtectorSources, ProtectorStorage>
+    this.#persistQueue[source] = { source, commitSha, hostList: data }
   }
 
   async getCommitSha(url: string) {
