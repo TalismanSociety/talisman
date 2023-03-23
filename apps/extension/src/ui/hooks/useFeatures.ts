@@ -6,8 +6,8 @@ import {
 import { FeatureFlag, FeatureVariants } from "@core/domains/app/types"
 import { RecoilState, atom, selectorFamily, useRecoilValue } from "recoil"
 
-const featuresAtom = atom<FeaturesStoreData>({
-  key: "featuresAtom",
+const featuresState = atom<FeaturesStoreData>({
+  key: "featuresState",
   default: FEATURE_STORE_INITIAL_DATA,
   effects: [
     ({ setSelf }) => {
@@ -19,22 +19,22 @@ const featuresAtom = atom<FeaturesStoreData>({
   ],
 })
 //, V extends FeatureVariants[K]
-const featureVariantsFamily = selectorFamily({
-  key: "featureVariantsFamily",
+const featureVariantsQuery = selectorFamily({
+  key: "featureVariantsQuery",
   get:
     <K extends FeatureFlag>(key: K) =>
     ({ get }) => {
-      const features = get(featuresAtom)
+      const features = get(featuresState)
       return features.variants[key] as FeatureVariants[K]
     },
 })
 
-const featureFlagsFamily = selectorFamily({
-  key: "featureFlagsFamily",
+const featureFlagsQuery = selectorFamily({
+  key: "featureFlagsQuery",
   get:
     (key: FeatureFlag) =>
     ({ get }) => {
-      const variant = get(featureVariantsFamily(key))
+      const variant = get(featureVariantsQuery(key))
 
       if (typeof variant === "undefined") return false
       if (typeof variant === "string") return true
@@ -52,9 +52,9 @@ const featureFlagsFamily = selectorFamily({
 })
 
 export const useFeatureVariant = <K extends FeatureFlag>(feature: K) => {
-  const selector = featureVariantsFamily(feature) as RecoilState<FeatureVariants[K]>
+  const selector = featureVariantsQuery(feature) as RecoilState<FeatureVariants[K]>
   return useRecoilValue(selector)
 }
 export const useIsFeatureEnabled = (feature: FeatureFlag) => {
-  return useRecoilValue(featureFlagsFamily(feature))
+  return useRecoilValue(featureFlagsQuery(feature))
 }

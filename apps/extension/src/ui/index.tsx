@@ -13,7 +13,6 @@ import { HashRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
 
 import { AddressBookProvider } from "./hooks/useAddressBook"
-import { DbCacheProvider } from "./hooks/useDbCache"
 
 const queryClient = new QueryClient()
 
@@ -33,9 +32,7 @@ export const renderTalisman = (app: any) => {
             <RecoilRoot>
               <QueryClientProvider client={queryClient}>
                 <AddressBookProvider>
-                  <DbCacheProvider>
-                    <HashRouter>{app}</HashRouter>
-                  </DbCacheProvider>
+                  <HashRouter>{app}</HashRouter>
                 </AddressBookProvider>
                 <NotificationsContainer />
               </QueryClientProvider>

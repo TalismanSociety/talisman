@@ -1,10 +1,22 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { useMemo } from "react"
+import { dbCacheState } from "@ui/atoms"
+import { selectorFamily, useRecoilValue } from "recoil"
 
-import { useTokenRatesMap } from "./useTokenRatesMap"
+import { useDbCacheSubscription } from "./useDbCacheSubscription"
+
+const tokenRatesQuery = selectorFamily({
+  key: "tokenRatesQuery",
+  get:
+    (tokenId: TokenId | null | undefined) =>
+    ({ get }) => {
+      const { tokenRatesMap } = get(dbCacheState)
+      return tokenId ? tokenRatesMap[tokenId] : undefined
+    },
+})
 
 export const useTokenRates = (tokenId?: TokenId | null) => {
-  const tokenRatesMap = useTokenRatesMap()
+  // keep db table up to date
+  useDbCacheSubscription("tokenRates")
 
-  return useMemo(() => (tokenId ? tokenRatesMap[tokenId] : undefined), [tokenId, tokenRatesMap])
+  return useRecoilValue(tokenRatesQuery(tokenId))
 }

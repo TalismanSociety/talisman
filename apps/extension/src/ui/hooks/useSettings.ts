@@ -5,8 +5,8 @@ import {
 } from "@core/domains/app/store.settings"
 import { RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
 
-const settingsAtom = atom<SettingsStoreData>({
-  key: "settingsAtom",
+const settingsState = atom<SettingsStoreData>({
+  key: "settingsState",
   default: DEFAULT_SETTINGS,
   effects: [
     ({ setSelf }) => {
@@ -18,12 +18,12 @@ const settingsAtom = atom<SettingsStoreData>({
   ],
 })
 
-const settingsFamily = selectorFamily({
-  key: "settingsFamily",
+const settingQuery = selectorFamily({
+  key: "settingQuery",
   get:
     <K extends keyof SettingsStoreData, V extends SettingsStoreData[K]>(key: K) =>
     ({ get }): V => {
-      const settings = get(settingsAtom)
+      const settings = get(settingsState)
       return settings[key] as V
     },
   set: (key) => (_, value) => {
@@ -33,6 +33,6 @@ const settingsFamily = selectorFamily({
 })
 
 export const useSetting = <K extends keyof SettingsStoreData>(setting: K) => {
-  const selector = settingsFamily(setting) as RecoilState<SettingsStoreData[K]>
+  const selector = settingQuery(setting) as RecoilState<SettingsStoreData[K]>
   return useRecoilState(selector)
 }

@@ -1,17 +1,16 @@
-import { Balances } from "@core/domains/balances/types"
-import { useMemo } from "react"
+import { allBalancesState } from "@ui/atoms"
+import { useRecoilValue } from "recoil"
 
-import { useBalancesHydrate } from "./useBalancesHydrate"
-import { useDbCache } from "./useDbCache"
 import { useDbCacheSubscription } from "./useDbCacheSubscription"
 
 export const useBalances = () => {
   // keep db data up to date
   useDbCacheSubscription("balances")
-  const { balances } = useDbCache()
+  useDbCacheSubscription("chains")
+  useDbCacheSubscription("evmNetworks")
+  useDbCacheSubscription("tokens")
+  useDbCacheSubscription("tokenRates")
 
-  const hydrate = useBalancesHydrate()
-
-  return useMemo(() => new Balances(balances, hydrate), [balances, hydrate])
+  return useRecoilValue(allBalancesState)
 }
 export default useBalances

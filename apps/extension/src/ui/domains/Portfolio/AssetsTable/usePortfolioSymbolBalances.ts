@@ -14,7 +14,7 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
   // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
   // Also, we might want to separate testnet tokens from non-testnet tokens.
   const symbolBalances = useMemo(() => {
-    const groupedByToken = balances.sorted.reduce((acc, b) => {
+    const groupedByToken = balances.each.reduce((acc, b) => {
       if (!b.token) return acc
       const key = b.token.symbol
       if (acc[key]) acc[key].push(b)
@@ -29,7 +29,7 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
       {} as Record<string, Balances>
     )
     return Object.entries(balancesByToken)
-  }, [balances.sorted])
+  }, [balances])
 
   const { account, accounts } = useSelectedAccount()
   const { networkFilter } = usePortfolio()

@@ -1,12 +1,18 @@
 import { Address } from "@core/types/base"
-import useBalances from "@ui/hooks/useBalances"
-import { useMemo } from "react"
+import { balancesQuery } from "@ui/atoms"
+import { useRecoilValue } from "recoil"
+
+import { useDbCacheSubscription } from "./useDbCacheSubscription"
 
 const useBalancesByAddress = (address: Address) => {
   // TODO would be nice to subscribe only to this address's balances changes
-  const balances = useBalances()
+  useDbCacheSubscription("balances")
+  useDbCacheSubscription("chains")
+  useDbCacheSubscription("evmNetworks")
+  useDbCacheSubscription("tokens")
+  useDbCacheSubscription("tokenRates")
 
-  return useMemo(() => balances.find({ address }), [address, balances])
+  return useRecoilValue(balancesQuery({ address }))
 }
 
 export default useBalancesByAddress

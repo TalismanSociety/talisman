@@ -1,9 +1,19 @@
 import { TokenId } from "@core/domains/tokens/types"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
+import { balancesQuery } from "@ui/atoms"
 import { useMemo } from "react"
+import { useRecoilValue } from "recoil"
+
+import { useDbCacheSubscription } from "./useDbCacheSubscription"
 
 export const useBalance = (address: string, tokenId: TokenId) => {
-  const balances = useBalancesByAddress(address)
+  // TODO would be nice to subscribe only to this address and token changes
+  useDbCacheSubscription("balances")
+  useDbCacheSubscription("chains")
+  useDbCacheSubscription("evmNetworks")
+  useDbCacheSubscription("tokens")
+  useDbCacheSubscription("tokenRates")
 
-  return useMemo(() => [...balances.find({ tokenId })][0] || undefined, [balances, tokenId])
+  const balances = useRecoilValue(balancesQuery({ address, tokenId }))
+
+  return useMemo(() => [...balances][0], [balances])
 }
