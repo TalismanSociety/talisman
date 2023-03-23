@@ -112,17 +112,16 @@ export default class ParaverseProtector {
 
   async persistAllData() {
     if (this.#persistQueue && Object.values(this.#persistQueue).length > 0) {
-      if (!db.isOpen()) await db.open()
       const data = this.#persistQueue
       this.#persistQueue = {} as Record<ProtectorSources, ProtectorStorage>
 
       db.phishing.bulkPut(Object.values(data)).catch((cause) => {
         // put it back
         this.#persistQueue = data
+        const error = new Error("Failed to persist phishing list", { cause })
+        log.error(error)
         // we can't do much about DatabaseClosedError errors
         if (!(cause instanceof Dexie.DatabaseClosedError)) {
-          const error = new Error("Failed to persist phishing list", { cause })
-          log.error(error)
           Sentry.captureException(error)
         }
       })
