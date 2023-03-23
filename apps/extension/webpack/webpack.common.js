@@ -14,6 +14,7 @@ const { srcDir, coreDir, distDir, getRelease, getGitShortHash } = require("./uti
 const config = (env) => ({
   entry: {
     substrate: ["@substrate/txwrapper-core"],
+    typesBundle: ["@polkadot/apps-config/api"],
     frontEnd: ["lottie-react", "@substrate/txwrapper-core"],
     popup: { import: path.join(srcDir, "index.popup.tsx"), dependOn: "frontEnd" },
     onboarding: { import: path.join(srcDir, "index.onboarding.tsx"), dependOn: "frontEnd" },

@@ -5,7 +5,7 @@ import {
   getMetadataFromDef,
   getMetadataRpcFromDef,
 } from "@core/util/getMetadataDef"
-import { typesBundle } from "@polkadot/apps-config/api"
+import { typesBundle } from "@polkadot/apps-config/api/typesBundle"
 import { Metadata, TypeRegistry } from "@polkadot/types"
 import { getSpecAlias, getSpecTypes } from "@polkadot/types-known/util"
 import { hexToNumber, isHex } from "@polkadot/util"
