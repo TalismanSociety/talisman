@@ -1,5 +1,3 @@
-import { featuresStore } from "@core/domains/app/store.features"
-import RpcFactory from "@core/libs/RpcFactory"
 import { GenericExtrinsic } from "@polkadot/types"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"

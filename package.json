@@ -43,6 +43,7 @@
     "turbo": "latest"
   },
   "resolutions": {
+    "@polkadot/apps-config": "0.124.1",
     "@polkadot/api-augment": "10.1.4",
     "@polkadot/api-base": "10.1.4",
     "@polkadot/api-contract": "10.1.4",

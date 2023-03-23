@@ -1,4 +1,4 @@
-import RpcFactory from "@core/libs/RpcFactory"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import { Codec } from "@polkadot/types-codec/types"
 import { u8aConcatStrict } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
@@ -15,7 +15,11 @@ export const stateCall = async <K extends string = string>(
 
   const bytes = registry.createType("Raw", u8aConcatStrict(args.map((arg) => arg.toU8a())))
 
-  const result = await RpcFactory.send(chainId, "state_callAt", [method, bytes.toHex(), blockHash])
+  const result = await chainConnector.send(chainId, "state_callAt", [
+    method,
+    bytes.toHex(),
+    blockHash,
+  ])
 
   return registry.createType(resultType, result)
 }
