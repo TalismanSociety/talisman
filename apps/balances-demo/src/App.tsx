@@ -3,7 +3,6 @@ import { useAllAddresses, useBalances, useTokens } from "@talismn/balances-react
 import { Token } from "@talismn/chaindata-provider"
 import { classNames, formatDecimals } from "@talismn/util"
 import { Fragment, useEffect, useMemo, useState } from "react"
-import tinycolor from "tinycolor2"
 
 export function App(): JSX.Element {
   const addresses = useExtensionAddresses()
@@ -43,13 +42,8 @@ export function App(): JSX.Element {
 
               <span>
                 <span
-                  className={classNames(
-                    "rounded-sm p-2 text-center",
-                    tinycolor(balance.token?.themeColor).getLuminance() >= 0.6
-                      ? "text-body-black"
-                      : ""
-                  )}
-                  style={{ background: balance.token?.themeColor }}
+                  className={classNames("rounded-sm bg-[#1a1a1a] p-2 text-center font-bold")}
+                  style={{ color: balance.token?.themeColor }}
                 >
                   {balance.token?.themeColor}
                 </span>
@@ -60,15 +54,10 @@ export function App(): JSX.Element {
               <span>
                 <span
                   className={classNames(
-                    "min-w-[6rem] overflow-hidden overflow-ellipsis whitespace-nowrap rounded-sm p-2 text-center",
-                    tinycolor(
-                      balance.chain?.themeColor || balance.evmNetwork?.themeColor
-                    ).getLuminance() >= 0.6
-                      ? "text-body-black"
-                      : ""
+                    "min-w-[6rem] overflow-hidden overflow-ellipsis whitespace-nowrap rounded-sm bg-[#1a1a1a] p-2 text-center font-bold"
                   )}
                   style={{
-                    background: balance.chain?.themeColor || balance.evmNetwork?.themeColor,
+                    color: balance.chain?.themeColor || balance.evmNetwork?.themeColor,
                   }}
                 >
                   {balance.chain?.name || balance.evmNetwork?.name}
