@@ -10,6 +10,8 @@ import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
+import { isEvmToken } from "@ui/util/isEvmToken"
+import { isSubToken } from "@ui/util/isSubToken"
 import { useEffect, useMemo, useState } from "react"
 
 export type NetworkOption = {
@@ -32,8 +34,8 @@ const getNetworkTokenSymbols = ({
 }) => {
   if (!tokens) return []
   const networkTokens = tokens.filter((token) => {
-    if (chainId) return "chain" in token && token.chain?.id === chainId
-    if (evmNetworkId) return "evmNetwork" in token && token.evmNetwork?.id === evmNetworkId
+    if (isSubToken(token)) return token.chain?.id === chainId
+    if (isEvmToken(token)) return token.evmNetwork?.id === evmNetworkId
     return true
   })
   return networkTokens.map(({ symbol }) => symbol).filter(Boolean)
