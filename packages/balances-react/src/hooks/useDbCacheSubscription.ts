@@ -4,8 +4,6 @@ import {
   db as balancesDb,
   balances as balancesFn,
 } from "@talismn/balances"
-import { ChainConnector } from "@talismn/chain-connector"
-import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { ChaindataProvider, TokenList } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
 import { DbTokenRates, fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
@@ -18,7 +16,7 @@ import { useAllAddresses } from "./useAllAddresses"
 import { useBalanceModules } from "./useBalanceModules"
 import { useChainConnectors } from "./useChainConnectors"
 import { useChaindata } from "./useChaindata"
-import { useTokens } from "./useTokens"
+import { useDbCache } from "./useDbCache"
 import { useWithTestnets } from "./useWithTestnets"
 
 export type DbEntityType = "chains" | "evmNetworks" | "tokens"
@@ -110,6 +108,12 @@ export function useDbCacheBalancesSubscription() {
   }, [allAddresses, balanceModules, tokens])
 
   useSharedSubscription(subscriptionKey, subscription)
+}
+
+// subscriptionless version of useTokens, prevents circular dependency
+const useTokens = (withTestnets?: boolean) => {
+  const { tokensWithTestnetsMap, tokensWithoutTestnetsMap } = useDbCache()
+  return withTestnets ? tokensWithTestnetsMap : tokensWithoutTestnetsMap
 }
 
 const subscribeChainDataHydrate = (
