@@ -240,6 +240,7 @@ export default class AssetTransfersRpc {
     )
 
     const unsigned = transaction.tx
+    if (unsigned.assetId === 0) unsigned.assetId = undefined
 
     // create the unsigned extrinsic
     const tx = registry.createType(
