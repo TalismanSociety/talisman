@@ -1,6 +1,7 @@
 import BlocksRpc from "@core/domains/blocks/rpc"
 import { ChainId } from "@core/domains/chains/types"
-import RpcFactory from "@core/libs/RpcFactory"
+import { log } from "@core/log"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import { SubscriptionCallback, UnsubscribeFn } from "@core/types"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 
@@ -63,16 +64,25 @@ export default class EventsRpc {
     const params = [[`0x${systemEventsHash}`], blockHash].filter(Boolean)
 
     // query rpc
-    const response = await RpcFactory.send(chainId, method, params)
+    const response = await chainConnector.send(chainId, method, params)
 
     // get events from response
     const eventsFrame = response[0]?.changes[0][1] || []
 
+    // get SCALE decoder for chain
+    const { registry } = await getTypeRegistry(chainId)
+
     // decode events
-    const events = (await getTypeRegistry(chainId)).registry.createType(
-      "Vec<FrameSystemEventRecord>",
-      eventsFrame
-    )
+    const events = (() => {
+      try {
+        return registry.createType("Vec<FrameSystemEventRecord>", eventsFrame)
+      } catch (error) {
+        log.warn(
+          "Failed to decode events as `FrameSystemEventRecord`, trying again as just `EventRecord` for old (pre metadata v14) chains"
+        )
+        return registry.createType("Vec<EventRecord>", eventsFrame)
+      }
+    })()
 
     return events.map((record) => {
       const { event, phase } = record
