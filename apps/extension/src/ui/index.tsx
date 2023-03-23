@@ -12,8 +12,6 @@ import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
 
-import { AddressBookProvider } from "./hooks/useAddressBook"
-
 const queryClient = new QueryClient()
 
 initSentry(Sentry)
@@ -31,9 +29,7 @@ export const renderTalisman = (app: any) => {
           <ErrorBoundaryDatabaseMigration>
             <RecoilRoot>
               <QueryClientProvider client={queryClient}>
-                <AddressBookProvider>
-                  <HashRouter>{app}</HashRouter>
-                </AddressBookProvider>
+                <HashRouter>{app}</HashRouter>
                 <NotificationsContainer />
               </QueryClientProvider>
             </RecoilRoot>
