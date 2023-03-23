@@ -20,7 +20,7 @@ const getCacheKey = (genesisHash: HexString, specVersion?: number) =>
 // those are stored as base64 for lower storage size
 const encodeMetadataRpc = (metadataRpc: HexString) => base64Encode(hexToU8a(metadataRpc))
 const decodeMetadataRpc = (encoded: string) => u8aToHex(base64Decode(encoded))
-const decodeMetaCalls = (encoded: string) => base64Decode(encoded)
+const decodeMetaCalls = (encoded: string) => u8aToHex(base64Decode(encoded))
 
 /**
  *
