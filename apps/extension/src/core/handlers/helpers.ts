@@ -5,7 +5,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { Err, Ok, Result } from "ts-results"
 
-const getPairFromAddress = (address: Address) => {
+export const getPairFromAddress = (address: Address) => {
   const pair = keyring.getPair(address)
   if (!pair) throw new Error("Unable to find pair")
   return pair
