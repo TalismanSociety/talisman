@@ -142,6 +142,13 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
         message: `Connecting to Ledger...`,
         requiresManualRetry: false,
       }
+
+    case "There is no Ledger app available for this network.":
+      return {
+        status: "error",
+        message: "There is no Ledger app available for this network.",
+        requiresManualRetry: false,
+      }
   }
 
   // eslint-disable-next-line no-console

@@ -22,7 +22,6 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
 
   const connectLedger = useCallback(
     async (resetError?: boolean) => {
-      if (!app) return
       if (refConnecting.current) return
       refConnecting.current = true
 
