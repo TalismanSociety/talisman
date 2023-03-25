@@ -1,32 +1,31 @@
-import { dbCacheState } from "@ui/atoms"
-import { selectorFamily, useRecoilValue } from "recoil"
+import {
+  tokensWithTestnetsMapState,
+  tokensWithTestnetsState,
+  tokensWithoutTestnetsMapState,
+  tokensWithoutTestnetsState,
+} from "@ui/atoms/chaindata"
+import { useMemo } from "react"
+import { useRecoilValue } from "recoil"
 
-import { useDbCacheSubscription } from "./useDbCacheSubscription"
+export const useTokens = (withTestnets: boolean) => {
+  const tokensWithTestnets = useRecoilValue(tokensWithTestnetsState)
+  const tokensWithoutTestnets = useRecoilValue(tokensWithoutTestnetsState)
+  const tokensWithTestnetsMap = useRecoilValue(tokensWithTestnetsMapState)
+  const tokensWithoutTestnetsMap = useRecoilValue(tokensWithoutTestnetsMapState)
 
-const tokenListQuery = selectorFamily({
-  key: "tokenListQuery",
-  get:
-    (withTestnets: boolean) =>
-    ({ get }) => {
-      const {
-        tokensWithTestnets,
-        tokensWithoutTestnets,
-        tokensWithTestnetsMap,
-        tokensWithoutTestnetsMap,
-      } = get(dbCacheState)
-
-      return {
-        tokens: withTestnets ? tokensWithTestnets : tokensWithoutTestnets,
-        tokensMap: withTestnets ? tokensWithTestnetsMap : tokensWithoutTestnetsMap,
-      }
-    },
-})
-
-export const useTokens = (withTestnet: boolean) => {
-  // keep db table up to date
-  useDbCacheSubscription("tokens")
-
-  return useRecoilValue(tokenListQuery(withTestnet))
+  return useMemo(
+    () => ({
+      tokens: withTestnets ? tokensWithTestnets : tokensWithoutTestnets,
+      tokensMap: withTestnets ? tokensWithTestnetsMap : tokensWithoutTestnetsMap,
+    }),
+    [
+      tokensWithTestnets,
+      tokensWithTestnetsMap,
+      tokensWithoutTestnets,
+      tokensWithoutTestnetsMap,
+      withTestnets,
+    ]
+  )
 }
 
 export default useTokens

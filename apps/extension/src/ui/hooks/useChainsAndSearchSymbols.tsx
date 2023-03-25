@@ -1,16 +1,12 @@
 import { Chain } from "@core/domains/chains/types"
+import { tokensWithTestnetsMapState } from "@ui/atoms"
 import { useMemo } from "react"
-
-import { useDbCache } from "./useDbCache"
-import { useDbCacheSubscription } from "./useDbCacheSubscription"
+import { useRecoilValue } from "recoil"
 
 const useChainsAndSearchSymbols = <T extends Chain>(
   chains: T[]
 ): Array<T & { searchSymbols: string[] }> => {
-  // keep shared db data up to date
-  useDbCacheSubscription("tokens")
-
-  const { tokensWithTestnetsMap } = useDbCache()
+  const tokensWithTestnetsMap = useRecoilValue(tokensWithTestnetsMapState)
 
   return useMemo(
     () =>

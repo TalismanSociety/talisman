@@ -1,55 +1,65 @@
-import { Address, Balances, HydrateDb } from "@talismn/balances"
+import { Address, BalanceJson, Balances, HydrateDb, db as balancesDb } from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
-import { selector, selectorFamily } from "recoil"
+import { api } from "@ui/api"
+import { liveQuery } from "dexie"
+import { atom, selector, selectorFamily } from "recoil"
+import { debounceTime, first, from, merge } from "rxjs"
 
-import { dbCacheState } from "./dbCache"
+import {
+  chainsWithTestnetsMapState,
+  evmNetworksWithTestnetsMapState,
+  tokensWithTestnetsMapState,
+} from "./chaindata"
+import { tokenRatesMapState } from "./tokenRates"
 
-/**
- * Necessary subscriptions to keep data updated :
- * useDbCacheSubscription("balances")
- */
-const rawBalancesState = selector({
+const NO_OP = () => {}
+
+const rawBalancesState = atom<BalanceJson[]>({
   key: "rawBalancesState",
-  get: ({ get }) => {
-    const { balances } = get(dbCacheState)
+  default: [],
+  effects: [
+    // sync from db
+    ({ setSelf }) => {
+      const obs = from(liveQuery(() => balancesDb.balances.toArray()))
 
-    return balances
+      // backend will do a lot of updates to the balances table
+      // debounce to mitigate performance issues
+      // also, we only need the first value to hydrate the atom
+      const sub = merge(obs.pipe(first()), obs.pipe(debounceTime(500))).subscribe(setSelf)
+
+      return sub.unsubscribe
+    },
+    // instruct backend to keep db syncrhonized while this atom is in use
+    () => api.balances(NO_OP),
+  ],
+})
+
+const filteredRawBalancesState = selector({
+  key: "filteredRawBalancesState",
+  get: ({ get }) => {
+    const tokens = get(tokensWithTestnetsMapState)
+    const balances = get(rawBalancesState)
+
+    return balances.filter((b) => tokens[b.tokenId])
   },
 })
 
-/**
- * Necessary subscriptions to keep data updated :
- * useDbCacheSubscription("chains")
- * useDbCacheSubscription("evmNetworks")
- * useDbCacheSubscription("tokens")
- * useDbCacheSubscription("tokenRates")
- */
 export const balancesHydrateState = selector<HydrateDb>({
   key: "balancesHydrateState",
   get: ({ get }) => {
-    const {
-      chainsWithTestnetsMap: chains,
-      evmNetworksWithTestnetsMap: evmNetworks,
-      tokensWithTestnetsMap: tokens,
-      tokenRatesMap: tokenRates,
-    } = get(dbCacheState)
+    const chains = get(chainsWithTestnetsMapState)
+    const evmNetworks = get(evmNetworksWithTestnetsMapState)
+    const tokens = get(tokensWithTestnetsMapState)
+    const tokenRates = get(tokenRatesMapState)
 
     return { chains, evmNetworks, tokens, tokenRates }
   },
 })
 
-/**
- * Necessary subscriptions to keep data updated :
- * useDbCacheSubscription("balances")
- * useDbCacheSubscription("chains")
- * useDbCacheSubscription("evmNetworks")
- * useDbCacheSubscription("tokens")
- * useDbCacheSubscription("tokenRates")
- */
 export const allBalancesState = selector({
   key: "allBalancesState",
   get: ({ get }) => {
-    const rawBalances = get(rawBalancesState)
+    const rawBalances = get(filteredRawBalancesState)
     const hydrate = get(balancesHydrateState)
 
     return new Balances(rawBalances, hydrate)
@@ -61,21 +71,13 @@ const rawBalancesQuery = selectorFamily({
   get:
     ({ address, tokenId }: { address?: Address; tokenId?: TokenId }) =>
     ({ get }) => {
-      const balances = get(rawBalancesState)
+      const balances = get(filteredRawBalancesState)
       return balances.filter(
         (b) => (!address || b.address === address) && (!tokenId || b.tokenId === tokenId)
       )
     },
 })
 
-/**
- * Necessary subscriptions to keep data updated :
- * useDbCacheSubscription("balances")
- * useDbCacheSubscription("chains")
- * useDbCacheSubscription("evmNetworks")
- * useDbCacheSubscription("tokens")
- * useDbCacheSubscription("tokenRates")
- */
 export const balancesQuery = selectorFamily({
   key: "balancesQuery",
   get:
