@@ -22,10 +22,9 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
       return acc
     }, {} as Record<string, Balance[]>)
 
-    return Object.entries(groupedByToken).map(([key, tokenBalances]) => [
-      key,
-      new Balances(tokenBalances),
-    ])
+    return Object.entries(groupedByToken).map(
+      ([key, tokenBalances]) => [key, new Balances(tokenBalances)] as const
+    )
   }, [balances])
 
   const { account, accounts } = useSelectedAccount()
