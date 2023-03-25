@@ -2,8 +2,8 @@ import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
 import { metadataUpdatesStore } from "@core/domains/metadata/metadataUpdates"
 import { MetadataDef } from "@core/inject/types"
-import RpcFactory from "@core/libs/RpcFactory"
 import { log } from "@core/log"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { assert, hexToU8a, isHex, u8aToHex } from "@polkadot/util"
 import { base64Decode, base64Encode } from "@polkadot/util-crypto"
@@ -112,8 +112,8 @@ export const getMetadataDef = async (
 
     // fetch the metadata from the chain
     const [metadataRpc, chainProperties] = await Promise.all([
-      RpcFactory.send<HexString>(chain.id, "state_getMetadata", [blockHash], !!blockHash),
-      RpcFactory.send(chain.id, "system_properties", [], true),
+      chainConnector.send<HexString>(chain.id, "state_getMetadata", [blockHash], !!blockHash),
+      chainConnector.send(chain.id, "system_properties", [], true),
     ])
 
     assert(!specVersion || specVersion === runtimeSpecVersion, "specVersion mismatch")

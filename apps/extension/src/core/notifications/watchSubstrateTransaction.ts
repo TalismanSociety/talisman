@@ -3,8 +3,7 @@ import { log } from "@core/log"
 import { chainConnector } from "@core/rpcs/chain-connector"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { TypeRegistry } from "@polkadot/types"
-import { Vec } from "@polkadot/types-codec"
-import { EventRecord, Hash } from "@polkadot/types/interfaces"
+import { Hash } from "@polkadot/types/interfaces"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { Err, Ok, Result } from "ts-results"
@@ -40,15 +39,23 @@ const getExtrinsincResult = async (
     const block = registry.createType("SignedBlock", blockData)
 
     const eventsStorageKey = getStorageKeyHash("System", "Events")
-    const eventsFrame = await chainConnector.send(chainId, "state_queryStorageAt", [
+    const response = await chainConnector.send(chainId, "state_queryStorageAt", [
       [eventsStorageKey],
       blockHash,
     ])
 
-    const events = registry.createType<Vec<EventRecord>>(
-      "Vec<FrameSystemEventRecord>",
-      eventsFrame[0].changes[0][1]
-    )
+    const eventsFrame = response[0]?.changes[0][1] || []
+
+    const events = (() => {
+      try {
+        return registry.createType("Vec<FrameSystemEventRecord>", eventsFrame)
+      } catch (error) {
+        log.warn(
+          "Failed to decode events as `FrameSystemEventRecord`, trying again as just `EventRecord` for old (pre metadata v14) chains"
+        )
+        return registry.createType("Vec<EventRecord>", eventsFrame)
+      }
+    })()
 
     for (const [txIndex, x] of block.block.extrinsics.entries()) {
       if (x.signature.eq(hexSignature)) {
