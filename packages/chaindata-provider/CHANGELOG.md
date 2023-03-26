@@ -1,5 +1,12 @@
 # @talismn/chaindata-provider
 
+## 0.4.3
+
+### Patch Changes
+
+- 79f6ccf6: added latestMetadataQrUrl to chaindata chains
+- c24dc1fb: feat: added themeColor property to chains, evmNetworks, tokens
+
 ## 0.4.2
 
 ## 0.4.1

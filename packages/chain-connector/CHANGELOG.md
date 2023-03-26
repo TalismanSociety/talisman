@@ -1,5 +1,17 @@
 # @talismn/chain-connector
 
+## 0.4.3
+
+### Patch Changes
+
+- 3068bd60: feat: stale balances and exponential rpc backoff
+- Updated dependencies [3068bd60]
+- Updated dependencies [79f6ccf6]
+- Updated dependencies [c24dc1fb]
+  - @talismn/connection-meta@0.0.2
+  - @talismn/util@0.1.8
+  - @talismn/chaindata-provider@0.4.3
+
 ## 0.4.2
 
 ### Patch Changes
