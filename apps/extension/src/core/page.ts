@@ -7,6 +7,7 @@ import type { Message } from "@polkadot/extension-base/types"
 import { DEBUG } from "./constants"
 import TalismanInjected from "./inject/Injected"
 import { injectExtension } from "./inject/injectExtension"
+import { injectSubstrate } from "./inject/injectSubstrate"
 import type { Injected } from "./inject/types"
 import { injectEthereum } from "./injectEth/injectEthereum"
 import MessageService from "./libs/MessageService"
@@ -46,6 +47,12 @@ function inject() {
   })
 
   injectEthereum(messageService.sendMessage)
+
+  // Custom `injectSub` endpoint used by app.talisman.xyz
+  // to access the ChainConnector instance of the wallet
+  const injectSubstrateHostnames = ["app.talisman.xyz"]
+  if (injectSubstrateHostnames.includes(window.location.hostname))
+    injectSubstrate(messageService.sendMessage)
 }
 
 inject()

@@ -26,6 +26,10 @@ type SocketUserId = number
  * 1. ChainConnector methods all accept a `chainId` instead of an array of RPCs. RPCs are then fetched internally from chaindata.
  * 2. ChainConnector creates only one `WsProvider` per chain and ensures that all downstream requests to a chain share the one socket connection.
  * 3. Subscriptions return a callable `unsubscribe` method instead of an id.
+ *
+ * Additionally, when run on the clientside of a dapp where `window.talismanSub` is available, instead of spinning up new websocket
+ * connections this class will forward all requests through to the wallet backend - where another instance of this class will
+ * handle the websocket connections.
  */
 export class ChainConnector {
   #chaindataChainProvider: ChaindataChainProvider
@@ -59,6 +63,25 @@ export class ChainConnector {
     params: unknown[],
     isCacheable?: boolean | undefined
   ): Promise<T> {
+    const talismanSub = this.getTalismanSub()
+    if (talismanSub !== undefined) {
+      try {
+        const chain = await this.#chaindataChainProvider.getChain(chainId)
+        if (!chain) throw new Error(`Chain ${chainId} not found in store`)
+
+        const { genesisHash } = chain
+        if (typeof genesisHash !== "string")
+          throw new Error(`Chain ${chainId} has no genesisHash in store`)
+
+        return await talismanSub.send(genesisHash, method, params)
+      } catch (error) {
+        log.warn(
+          `Failed to make wallet-proxied send request for chain ${chainId}. Falling back to plain websocket`,
+          error
+        )
+      }
+    }
+
     try {
       // eslint-disable-next-line no-var
       var [socketUserId, ws] = await this.connectChainSocket(chainId)
@@ -98,6 +121,35 @@ export class ChainConnector {
     callback: ProviderInterfaceCallback,
     timeout: number | false = 30_000 // 30 seconds in milliseconds
   ): Promise<() => void> {
+    const talismanSub = this.getTalismanSub()
+    if (talismanSub !== undefined) {
+      try {
+        const chain = await this.#chaindataChainProvider.getChain(chainId)
+        if (!chain) throw new Error(`Chain ${chainId} not found in store`)
+
+        const { genesisHash } = chain
+        if (typeof genesisHash !== "string")
+          throw new Error(`Chain ${chainId} has no genesisHash in store`)
+
+        const subscriptionId = await talismanSub.subscribe(
+          genesisHash,
+          subscribeMethod,
+          unsubscribeMethod,
+          responseMethod,
+          params,
+          callback,
+          timeout
+        )
+
+        return () => talismanSub.unsubscribe(subscriptionId)
+      } catch (error) {
+        log.warn(
+          `Failed to create wallet-proxied subscription for chain ${chainId}. Falling back to plain websocket`,
+          error
+        )
+      }
+    }
+
     try {
       // eslint-disable-next-line no-var
       var [socketUserId, ws] = await this.connectChainSocket(chainId)
@@ -343,5 +395,34 @@ export class ChainConnector {
   /** generates a random number */
   private getRandomId(): number {
     return Math.trunc(Math.random() * Math.pow(10, 8))
+  }
+
+  private getTalismanSub() {
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    const sendRequest: Function | undefined = (window as any)?.talismanSub?.sendRequest
+    if (typeof sendRequest !== "function") return
+
+    return {
+      send: async <T = any>(genesisHash: string, method: string, params: unknown[]): Promise<T> =>
+        await sendRequest("pub(rpc.talisman.byGenesisHash.send)", { genesisHash, method, params }),
+
+      subscribe: async (
+        genesisHash: string,
+        subscribeMethod: string,
+        unsubscribeMethod: string,
+        responseMethod: string,
+        params: unknown[],
+        callback: ProviderInterfaceCallback,
+        timeout: number | false
+      ): Promise<string> =>
+        await sendRequest(
+          "pub(rpc.talisman.byGenesisHash.subscribe)",
+          { genesisHash, subscribeMethod, unsubscribeMethod, responseMethod, params, timeout },
+          ({ error, data }: any) => callback(error ?? null, data)
+        ),
+
+      unsubscribe: async (subscriptionId: string): Promise<void> =>
+        await sendRequest("pub(rpc.talisman.byGenesisHash.unsubscribe)", { subscriptionId }),
+    }
   }
 }
