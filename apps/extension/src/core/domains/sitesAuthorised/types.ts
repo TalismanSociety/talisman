@@ -77,7 +77,6 @@ export declare type RequestAuthorizedSiteForget = { id: string; type: ProviderTy
 // authorized sites message signatures
 export interface AuthorisedSiteMessages {
   // authorization requests message signatures
-  "pri(sites.requests.subscribe)": [RequestAuthorizeSubscribe, boolean, SiteAuthRequest[]]
   "pri(sites.requests.approve)": [AuthRequestApprove, boolean]
   "pri(sites.requests.reject)": [RequestIdOnly, boolean]
   "pri(sites.requests.ignore)": [RequestIdOnly, boolean]

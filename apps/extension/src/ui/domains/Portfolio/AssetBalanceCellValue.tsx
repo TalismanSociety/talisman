@@ -1,11 +1,13 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { LockIcon } from "@talisman/theme/icons"
+import { BalancesStatus } from "@talismn/balances-react"
 import { classNames } from "@talismn/util"
 import BigNumber from "bignumber.js"
 import { ReactNode } from "react"
 
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
+import { StaleBalancesIcon } from "./StaleBalancesIcon"
 
 type Props = {
   locked?: boolean
@@ -15,6 +17,7 @@ type Props = {
   render?: boolean
   className?: string
   tooltip?: ReactNode
+  balancesStatus?: BalancesStatus
 }
 
 export const AssetBalanceCellValue = ({
@@ -25,6 +28,7 @@ export const AssetBalanceCellValue = ({
   render = true,
   className,
   tooltip,
+  balancesStatus,
 }: Props) => {
   if (!render) return null
   return (
@@ -47,6 +51,11 @@ export const AssetBalanceCellValue = ({
           {locked ? (
             <div className="pb-1">
               <LockIcon className="lock" />
+            </div>
+          ) : null}
+          {balancesStatus?.status === "stale" ? (
+            <div className="pb-1">
+              <StaleBalancesIcon staleChains={balancesStatus.staleChains} />
             </div>
           ) : null}
         </div>

@@ -107,10 +107,26 @@ export const usePolkadotSigningRequest = (signingRequest?: SubstrateSigningReque
     [baseRequest]
   )
 
+  const approveQr = useCallback(
+    async ({ signature }: { signature: HexString }) => {
+      baseRequest.setStatus.processing("Approving request")
+      if (!baseRequest || !baseRequest.id) return
+      try {
+        await api.approveSignQr(baseRequest.id, signature)
+        baseRequest.setStatus.success("Approved")
+      } catch (err) {
+        log.error("failed to approve qr", { err })
+        baseRequest.setStatus.error("Failed to approve sign request")
+      }
+    },
+    [baseRequest]
+  )
+
   return {
     ...baseRequest,
     chain,
     approveHardware,
+    approveQr,
     isLoading: !chains.length, // helps preventing chain name flickering
   }
 }

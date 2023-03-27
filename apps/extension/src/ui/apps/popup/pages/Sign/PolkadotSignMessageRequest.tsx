@@ -1,10 +1,11 @@
-import { AccountJsonHardwareSubstrate } from "@core/domains/accounts/types"
+import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadRaw, SubstrateSigningRequest } from "@core/domains/signing/types"
 import { Box } from "@talisman/components/Box"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { PendingRequests } from "@ui/domains/Sign/PendingRequests"
+import { QrSubstrate } from "@ui/domains/Sign/QrSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SiteInfo } from "@ui/domains/Sign/SiteInfo"
 import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
@@ -32,6 +33,7 @@ export const PolkadotSignMessageRequest: FC<PolkadotSignMessageRequestProps> = (
     account,
     chain,
     approveHardware,
+    approveQr,
   } = usePolkadotSigningRequest(signingRequest)
 
   const { processing, errorMessage } = useMemo(() => {
@@ -78,7 +80,7 @@ export const PolkadotSignMessageRequest: FC<PolkadotSignMessageRequestProps> = (
       <Footer>
         {account && request && (
           <>
-            {!account.isHardware && (
+            {account.origin !== "HARDWARE" && account.origin !== "QR" && (
               <Box flex fullwidth gap={2.4}>
                 <SimpleButton disabled={processing} onClick={reject}>
                   Cancel
@@ -93,13 +95,24 @@ export const PolkadotSignMessageRequest: FC<PolkadotSignMessageRequestProps> = (
                 </SimpleButton>
               </Box>
             )}
-            {account.isHardware && (
+            {account.origin === "HARDWARE" && (
               <Suspense fallback={null}>
                 <LedgerSubstrate
                   payload={request.payload}
                   account={account as AccountJsonHardwareSubstrate}
                   genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
                   onSignature={approveHardware}
+                  onReject={reject}
+                />
+              </Suspense>
+            )}
+            {account.origin === "QR" && (
+              <Suspense fallback={null}>
+                <QrSubstrate
+                  payload={request.payload}
+                  account={account as AccountJsonQr}
+                  genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
+                  onSignature={approveQr}
                   onReject={reject}
                 />
               </Suspense>

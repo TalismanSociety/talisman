@@ -1,3 +1,4 @@
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { useMemo, useState } from "react"
 
@@ -17,7 +18,7 @@ export const useConnectedAccounts = (siteId: string, providerType: ProviderType)
         .filter(({ type }) =>
           providerType === "polkadot" ? showEthAccounts || type !== "ethereum" : type === "ethereum"
         )
-        .map((account) => ({
+        .map((account): AccountJsonAny & { isConnected: boolean; toggle: () => void } => ({
           ...account,
           isConnected: connected.includes(account.address),
           toggle: () => toggleOne(account.address),

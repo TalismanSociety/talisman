@@ -1,5 +1,5 @@
 import { DEBUG, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
-import { AccountMeta } from "@core/domains/accounts/types"
+import { AccountMeta, AccountTypes } from "@core/domains/accounts/types"
 import { AppStoreData } from "@core/domains/app/store.app"
 import type {
   AnalyticsCaptureRequest,
@@ -15,6 +15,7 @@ import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { genericSubscription } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { requestStore } from "@core/libs/requests/store"
 import { windowManager } from "@core/libs/WindowManager"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -26,7 +27,6 @@ import { sleep } from "@talismn/util"
 import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
-import { AccountTypes } from "../accounts/helpers"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
 import { featuresStore } from "./store.features"
@@ -223,15 +223,12 @@ export default class AppHandler extends ExtensionHandler {
     return true
   }
 
-  private async openSendFunds({ from, tokenId }: SendFundsOpenRequest): Promise<boolean> {
-    if (
-      (await featuresStore.isFeatureEnabled("SEND_FUNDS_V2")) ||
-      ((await this.stores.app.get("hasSpiritKey")) &&
-        (await this.stores.settings.get("spiritClanFeatures")))
-    ) {
+  private async openSendFunds({ from, tokenId, to }: SendFundsOpenRequest): Promise<boolean> {
+    if (await featuresStore.isFeatureEnabled("SEND_FUNDS_V2")) {
       const params = new URLSearchParams()
       if (from) params.append("from", from)
       if (tokenId) params.append("tokenId", tokenId)
+      if (to) params.append("to", to)
       await windowManager.popupOpen(`#/send?${params.toString()}`)
     } else {
       // TODO : delete as soon as we remove the SEND_FUNDS_V2 feature flag
@@ -289,7 +286,7 @@ export default class AppHandler extends ExtensionHandler {
         return await this.stores.app.get("onboarded")
 
       case "pri(app.onboardStatus.subscribe)":
-        return genericSubscription<"pri(app.onboardStatus.subscribe)">(
+        return genericSubscription(
           id,
           port,
           this.stores.app.observable,
@@ -353,6 +350,9 @@ export default class AppHandler extends ExtensionHandler {
 
       case "pri(app.resetWallet)":
         return this.resetWallet()
+
+      case "pri(app.requests)":
+        return requestStore.subscribe(id, port)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

@@ -1,3 +1,4 @@
+import { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { AppPill } from "@talisman/components/AppPill"
 import { Drawer } from "@talisman/components/Drawer"
 import Field from "@talisman/components/Field"
@@ -13,7 +14,7 @@ import { api } from "@ui/api"
 import Account from "@ui/domains/Account"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useAuthRequestById } from "@ui/hooks/useAuthRequestById"
+import { useRequest } from "@ui/hooks/useRequest"
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
@@ -89,8 +90,8 @@ const NoEthAccountWarning = ({
 )
 
 const UnstyledConnect = ({ className }: any) => {
-  const { id } = useParams<"id">()
-  const authRequest = useAuthRequestById(id)
+  const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
+  const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
   const allAccounts = useAccounts()
   const { items: connected, toggle, set } = useSet<string>()

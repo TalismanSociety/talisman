@@ -1,3 +1,4 @@
+import { AccountTypes } from "@core/domains/accounts/types"
 import type {
   AnySigningRequest,
   KnownSigningRequestIdOnly,
@@ -85,7 +86,7 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
-  private async signingApproveHardware({
+  private async signingApproveExternal({
     id,
     signature,
   }: RequestSigningApproveSignature): Promise<boolean> {
@@ -110,10 +111,16 @@ export default class SigningHandler extends ExtensionHandler {
 
     queued.resolve({ id, signature })
 
+    const hardwareType: "ledger" | "qr" | undefined = account?.meta.hardwareType
+      ? account.meta.hardwareType
+      : account?.meta.origin === AccountTypes.QR
+      ? "qr"
+      : undefined
+
     talismanAnalytics.captureDelayed("sign transaction approve", {
       ...analyticsProperties,
       networkType: "substrate",
-      hardwareType: account?.meta.hardwareType,
+      hardwareType,
     })
 
     return true
@@ -151,34 +158,14 @@ export default class SigningHandler extends ExtensionHandler {
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(signing.requests)":
-        return requestStore.subscribe<"pri(signing.requests)">(id, port, [
-          "eth-sign",
-          "eth-send",
-          "substrate-sign",
-        ])
-
-      case "pri(signing.byid.subscribe)": {
-        const cb = createSubscription<"pri(signing.byid.subscribe)">(id, port)
-        const subscription = requestStore.observable.subscribe((reqs) => {
-          const signRequest = reqs.find(
-            (req) => req.id === (request as RequestType<"pri(signing.byid.subscribe)">).id
-          ) as AnySigningRequest | undefined
-          if (signRequest) cb(signRequest)
-        })
-
-        port.onDisconnect.addListener((): void => {
-          unsubscribe(id)
-          subscription.unsubscribe()
-        })
-        return true
-      }
-
       case "pri(signing.approveSign)":
         return await this.signingApprove(request as RequestType<"pri(signing.approveSign)">)
 
       case "pri(signing.approveSign.hardware)":
-        return await this.signingApproveHardware(request as RequestSigningApproveSignature)
+        return await this.signingApproveExternal(request as RequestSigningApproveSignature)
+
+      case "pri(signing.approveSign.qr)":
+        return await this.signingApproveExternal(request as RequestSigningApproveSignature)
 
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestType<"pri(signing.cancel)">)

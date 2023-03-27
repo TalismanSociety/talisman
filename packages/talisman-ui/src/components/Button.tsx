@@ -12,10 +12,12 @@ export type ButtonProps = React.DetailedHTMLProps<
   fullWidth?: boolean
   small?: boolean
   icon?: FC<SVGProps<SVGSVGElement>>
+  iconLeft?: FC<SVGProps<SVGSVGElement>>
 }
 
 export const Button: FC<ButtonProps> = ({
   icon: Icon,
+  iconLeft: IconLeft,
   disabled,
   primary,
   fullWidth,
@@ -65,6 +67,11 @@ export const Button: FC<ButtonProps> = ({
         <div
           className={classNames("flex items-center gap-5", !disabled && processing && "invisible")}
         >
+          {IconLeft && (
+            <div className={small ? "text-md" : "text-lg"}>
+              <IconLeft />
+            </div>
+          )}
           <div>{props.children}</div>
           {Icon && (
             <div className={small ? "text-md" : "text-lg"}>

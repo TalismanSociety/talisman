@@ -6,7 +6,7 @@ import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { ReactNode, useEffect } from "react"
 import { useCallback, useState } from "react"
 
-export type ImportMethodType = "mnemonic" | "private-key" | "ledger" | "json"
+export type ImportMethodType = "mnemonic" | "private-key" | "ledger" | "qr" | "json"
 
 export type OnboardingWizardData = {
   password?: string
@@ -38,6 +38,8 @@ const useAppOnboardProvider = ({ isResettingWallet = false }: { isResettingWalle
     if (importMethodType === "json") location.href = "dashboard.html#/accounts/add/json"
     else if (importMethodType === "ledger")
       location.href = `dashboard.html#/accounts/add/ledger?type=${importAccountType}`
+    else if (importMethodType === "qr")
+      location.href = `dashboard.html#/accounts/add/qr?type=${importAccountType}`
     else if (importMethodType === "private-key")
       location.href = `dashboard.html#/accounts/add/secret?type=${importAccountType}`
     else if (isResettingWallet) location.href = "dashboard.html#/portfolio"

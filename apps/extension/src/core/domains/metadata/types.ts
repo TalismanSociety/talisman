@@ -29,7 +29,6 @@ export type MetadataMessages = {
   "pri(metadata.approve)": [RequestMetadataApprove, boolean]
   "pri(metadata.get)": [string | null, MetadataDef | null]
   "pri(metadata.reject)": [RequestMetadataReject, boolean]
-  "pri(metadata.requests)": [RequestMetadataSubscribe, boolean, MetadataRequest[]]
   "pri(metadata.list)": [null, MetadataDef[]]
   "pri(metadata.updates.subscribe)": [RequestIdOnly, boolean, MetadataUpdateStatus]
 }

@@ -1,10 +1,11 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { breakpoints } from "@talisman/theme/definitions"
-import { AllAccountsIcon, ChevronDownIcon, UsbIcon } from "@talisman/theme/icons"
+import { AllAccountsIcon, ChevronDownIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames } from "@talismn/util"
 import AccountAvatar from "@ui/domains/Account/Avatar"
+import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -216,7 +217,7 @@ type AccountOptionProps = AnyAccountOptionProps & {
   totalUsd: number
   genesisHash?: string | null
   name?: string
-  isHardware?: boolean
+  origin?: string
 }
 
 type SingleAccountOptionProps = Omit<AccountOptionProps, "totalUsd"> & {
@@ -228,7 +229,7 @@ const AccountOption = ({
   totalUsd,
   genesisHash,
   name,
-  isHardware,
+  origin,
   withTrack,
 }: AccountOptionProps) => {
   const { genericEvent } = useAnalytics()
@@ -254,11 +255,7 @@ const AccountOption = ({
           <div className="flex flex-col justify-center overflow-hidden text-ellipsis whitespace-nowrap">
             {name ?? (address ? shortenAddress(address) : "unknown")}
           </div>
-          {isHardware && (
-            <div className="text-primary-500 flex flex-col justify-center">
-              <UsbIcon />
-            </div>
-          )}
+          <AccountTypeIcon className="text-primary" origin={origin} />
         </div>
         <div className="ao-rowFiat">
           <Fiat amount={totalUsd} currency="usd" isBalance noCountUp />
@@ -286,7 +283,7 @@ type DropdownItem = {
   name?: string
   address?: string
   genesisHash?: string | null
-  isHardware?: boolean
+  origin?: string
 }
 const OPTION_ALL_ACCOUNTS: DropdownItem = {}
 

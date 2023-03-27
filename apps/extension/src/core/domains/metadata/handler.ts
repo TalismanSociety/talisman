@@ -54,9 +54,6 @@ export default class MetadataHandler extends ExtensionHandler {
       case "pri(metadata.reject)":
         return this.metadataReject(request as RequestMetadataReject)
 
-      case "pri(metadata.requests)":
-        return requestStore.subscribe<"pri(metadata.requests)">(id, port, ["metadata"])
-
       case "pri(metadata.updates.subscribe)": {
         const { id: genesisHash } = request as RequestTypes["pri(metadata.updates.subscribe)"]
         return metadataUpdatesStore.subscribe(id, port, genesisHash)

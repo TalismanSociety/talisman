@@ -162,8 +162,7 @@ export interface SigningMessages {
   // signing message signatures
   "pri(signing.approveSign)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]
   "pri(signing.approveSign.hardware)": [RequestSigningApproveSignature, boolean]
+  "pri(signing.approveSign.qr)": [RequestSigningApproveSignature, boolean]
   "pri(signing.details)": [KnownSigningRequestIdOnly<"substrate-sign">, TransactionDetails]
-  "pri(signing.requests)": [RequestSigningSubscribe, boolean, AnySigningRequest[]]
   "pri(signing.cancel)": [KnownSigningRequestIdOnly<"substrate-sign">, boolean]
-  "pri(signing.byid.subscribe)": [AnySigningRequestIdOnly, boolean, AnySigningRequest]
 }

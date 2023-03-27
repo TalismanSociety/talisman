@@ -37,7 +37,13 @@ export type BalanceJson = BalanceTypes[keyof BalanceTypes] extends never
 /** A collection of `BalanceJson` objects */
 export type BalanceJsonList = Record<string, BalanceJson>
 
-export type BalanceStatus = "live" | "cache"
+export type BalanceStatus =
+  // balance is subscribed to the on-chain value and up to date
+  | "live"
+  // balance was retrieved from the chain but is no longer subscribed
+  | "cache"
+  // balance was retrieved from the chain but we're unable to create a new subscription
+  | "stale"
 
 /** `IBalance` is a common interface which all balance types must implement. */
 export type IBalance = {

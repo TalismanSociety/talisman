@@ -4,13 +4,13 @@ import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
-import useSigningRequestById from "@ui/hooks/useSigningRequestById"
+import { useRequest } from "@ui/hooks/useRequest"
 import { useCallback } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 const useEthSignMessageRequestProvider = ({ id }: KnownSigningRequestIdOnly<"eth-sign">) => {
-  const request = useSigningRequestById(id)
+  const request = useRequest(id)
   const network = useEvmNetwork(request?.ethChainId)
 
   // wraps status and errors management

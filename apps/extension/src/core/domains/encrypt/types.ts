@@ -110,8 +110,6 @@ export interface EncryptMessages {
   // Encrypt message signatures
   "pub(encrypt.encrypt)": [EncryptPayload, EncryptResult]
   "pub(encrypt.decrypt)": [DecryptPayload, DecryptResult]
-  "pri(encrypt.requests)": [RequestEncryptSubscribe, boolean, AnyEncryptRequest[]]
-  "pri(encrypt.byid.subscribe)": [AnyEncryptRequestIdOnly, boolean, AnyEncryptRequest]
   "pri(encrypt.approveEncrypt)": [EncryptRequestIdOnly, boolean]
   "pri(encrypt.approveDecrypt)": [DecryptRequestIdOnly, boolean]
   "pri(encrypt.cancel)": [AnyEncryptRequestIdOnly, boolean]

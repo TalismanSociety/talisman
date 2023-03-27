@@ -26,13 +26,13 @@ Run:
 
 ## System Requirements
 
-Node version >14
+Node version >18
 Yarn version >1.2
 
 This README was written and verified with:
 
-- Node v16.14.0
-- Yarn v1.22.11
+- Node v18.14.2
+- Yarn v1.22.19
 
 ## Writing and running tests
 

@@ -1,4 +1,5 @@
 import { TokenId } from "@core/domains/tokens/types"
+import { AnyRequestID, ValidRequests } from "@core/libs/requests/types"
 import { Address } from "@core/types/base"
 import { Properties } from "posthog-js"
 
@@ -25,7 +26,7 @@ export type ModalOpenRequestSend = {
   transferableTokenId?: string
 }
 export type ModalOpenRequest = ModalOpenRequestBuy | ModalOpenRequestSend
-export type SendFundsOpenRequest = { from?: Address; tokenId?: TokenId }
+export type SendFundsOpenRequest = { from?: Address; tokenId?: TokenId; to?: Address }
 
 export interface AnalyticsCaptureRequest {
   eventName: string
@@ -33,16 +34,17 @@ export interface AnalyticsCaptureRequest {
 }
 
 // values must match the flags defined in Posthog
-export type FeatureVariants = {
-  WALLET_FUNDING?: boolean
-  BUY_CRYPTO?: boolean
+export type FeatureVariants = Partial<{
+  WALLET_FUNDING: boolean
+  BUY_CRYPTO: boolean
   LINK_TX_HISTORY: boolean
   LINK_STAKING: boolean
+  PARITY_SIGNER: boolean
   SEND_FUNDS_V2: boolean
   BANNER_NOM_POOL_STAKING: boolean
   USE_ONFINALITY_API_KEY_SUBSTRATE: boolean
   USE_ONFINALITY_API_KEY_EVM: boolean
-}
+}>
 export type FeatureFlag = keyof FeatureVariants
 
 type FALSE = "FALSE"
@@ -88,4 +90,5 @@ export interface AppMessages {
   "pri(app.analyticsCapture)": [AnalyticsCaptureRequest, boolean]
   "pri(app.phishing.addException)": [RequestAllowPhishingSite, boolean]
   "pri(app.resetWallet)": [null, boolean]
+  "pri(app.requests)": [null, boolean, ValidRequests[]]
 }

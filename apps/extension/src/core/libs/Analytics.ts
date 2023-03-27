@@ -1,7 +1,7 @@
 import { initPosthog } from "@core/config/posthog"
 import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
-import { AccountTypes } from "@core/domains/accounts/helpers"
+import { AccountTypes } from "@core/domains/accounts/types"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { chaindataProvider } from "@core/rpcs/chaindata"

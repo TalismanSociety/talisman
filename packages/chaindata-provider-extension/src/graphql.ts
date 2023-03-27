@@ -16,6 +16,7 @@ export const ChainFragment = gql`
     genesisHash
     prefix
     name
+    themeColor
     logo
     chainName
     implName
@@ -29,6 +30,8 @@ export const ChainFragment = gql`
     }
     account
     subscanUrl
+    chainspecQrUrl
+    latestMetadataQrUrl
     rpcs {
       url
       isHealthy
@@ -58,6 +61,7 @@ export const EvmNetworkFragment = gql`
     isTestnet
     sortIndex
     name
+    themeColor
     logo
     nativeToken {
       id

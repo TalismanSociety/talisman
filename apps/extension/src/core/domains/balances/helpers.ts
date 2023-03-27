@@ -28,6 +28,17 @@ const getLockedType = (input: string, chainId: string): BalanceLockType => {
   if (input.includes("stkngcol")) return "staking" // staking collator
   if (input.includes("kiltpstk")) return "staking" // Kilt specific staking
   if (input.includes("dapstake")) return "dapp-staking" // Astar specific
+  if (input.includes("appstake")) return "dapp-staking" // Quartz (unique) specific
+
+  // Joystream specifics https://github.com/Joystream/pioneer/blob/dev/packages/ui/src/accounts/model/lockTypes.ts
+  if (input.includes("voting")) return "democracy"
+  if (input.includes("candidac")) return "democracy" // Council Candidate
+  if (input.includes("councilo")) return "democracy" // Councilor
+  if (input.includes("proposal")) return "democracy"
+  if (input.includes("boundsta")) return "staking" // Bound Staking Account
+  if (input.includes("invitemb")) return "other" // Invite member
+  if (input.includes("bounty")) return "other"
+  if (input.startsWith("wg-")) return "other"
 
   // ignore technical or undocumented lock types
   if (input.includes("pdexlock")) return "other"

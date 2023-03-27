@@ -106,7 +106,7 @@ const useLedgerChainAccounts = (
           isBalanceLoading:
             !addressesByChain || // show spinner when not fetching yet
             accountBalances.length < 1 ||
-            accountBalances.some((b) => b.status !== "live"),
+            accountBalances.some((b) => b.status === "cache"),
         }
       }),
     [balances.sorted, chain?.id, ledgerAccounts, selectedAccounts, addressesByChain, walletAccounts]

@@ -1,8 +1,9 @@
 import { Balances } from "@core/domains/balances/types"
 import { ExternalLinkIcon, XIcon, ZapIcon } from "@talisman/theme/icons"
+import { useBalancesStatus } from "@talismn/balances-react"
 import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useCallback, useMemo } from "react"
+import { useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -107,10 +108,7 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
-  const isFetching = useMemo(
-    () => balances.sorted.some((b) => b.status === "cache"),
-    [balances.sorted]
-  )
+  const status = useBalancesStatus(balances)
 
   const { token, summary } = useTokenBalancesSummary(balances)
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
@@ -179,7 +177,11 @@ const AssetRow = ({ balances }: AssetRowProps) => {
             tokens={summary.lockedTokens}
             fiat={summary.lockedFiat}
             symbol={token.symbol}
-            className={classNames("noPadRight", isFetching && "animate-pulse transition-opacity")}
+            balancesStatus={status}
+            className={classNames(
+              "noPadRight",
+              status.status === "fetching" && "animate-pulse transition-opacity"
+            )}
           />
         </td>
         <td align="right" valign="top">
@@ -188,7 +190,10 @@ const AssetRow = ({ balances }: AssetRowProps) => {
             tokens={summary.availableTokens}
             fiat={summary.availableFiat}
             symbol={token.symbol}
-            className={classNames(isFetching && "animate-pulse transition-opacity")}
+            balancesStatus={status}
+            className={classNames(
+              status.status === "fetching" && "animate-pulse transition-opacity"
+            )}
           />
         </td>
       </tr>

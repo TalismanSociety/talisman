@@ -11,6 +11,7 @@ import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
 import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
+import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
@@ -71,8 +72,11 @@ const PageContent = ({ balances }: { balances: Balances }) => {
             <CurrentAccountAvatar className="!text-2xl" />
           </div>
           <div className="flex grow flex-col gap-2 overflow-hidden pl-2 text-sm">
-            <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
-              {account ? account.name ?? "Unnamed Account" : "All Accounts"}
+            <div className="flex items-center gap-3">
+              <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
+                {account ? account.name ?? "Unnamed Account" : "All Accounts"}
+              </div>
+              <AccountTypeIcon className="text-primary" origin={account?.origin} />
             </div>
             <div className="text-md overflow-hidden text-ellipsis whitespace-nowrap">
               <Fiat amount={balances.sum.fiat("usd").total} isBalance />

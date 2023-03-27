@@ -18,7 +18,7 @@ import {
   ResponseAssetTransferEth,
   TransactionStatus,
 } from "@core/domains/transactions/types"
-import { getPairForAddressSafely } from "@core/handlers/helpers"
+import { getPairForAddressSafely, getPairFromAddress } from "@core/handlers/helpers"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
 import { watchEthereumTransaction } from "@core/notifications"
@@ -175,45 +175,29 @@ export default class AssetTransferHandler extends ExtensionHandler {
     tip = "0",
     method = "transferKeepAlive",
   }: RequestAssetTransfer) {
-    const result = await getPairForAddressSafely(fromAddress, async (pair) => {
-      const token = await chaindataProvider.getToken(tokenId)
-      if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
+    const token = await chaindataProvider.getToken(tokenId)
+    if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
-      const tokenType = token.type
-      if (
-        tokenType === "substrate-native" ||
-        tokenType === "substrate-orml" ||
-        tokenType === "substrate-assets" ||
-        tokenType === "substrate-tokens" ||
-        tokenType === "substrate-equilibrium"
-      )
-        return await AssetTransfersRpc.checkFee(
-          chainId,
-          tokenId,
-          amount,
-          pair,
-          toAddress,
-          tip,
-          method
-        )
-      if (tokenType === "evm-native")
-        throw new Error(
-          "Evm native token transfers are not implemented in this version of Talisman."
-        )
-      if (tokenType === "evm-erc20")
-        throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
+    const tokenType = token.type
+    if (
+      tokenType === "substrate-native" ||
+      tokenType === "substrate-orml" ||
+      tokenType === "substrate-assets" ||
+      tokenType === "substrate-tokens" ||
+      tokenType === "substrate-equilibrium"
+    ) {
+      const pair = getPairFromAddress(fromAddress) // no need for an unlocked pair for fee estimation
+      return AssetTransfersRpc.checkFee(chainId, tokenId, amount, pair, toAddress, tip, method)
+    }
 
-      // force compilation error if any token types don't have a case
-      const exhaustiveCheck: never = tokenType
-      throw new Error(`Unhandled token type ${exhaustiveCheck}`)
-    })
+    if (tokenType === "evm-native")
+      throw new Error("Evm native token transfers are not implemented in this version of Talisman.")
+    if (tokenType === "evm-erc20")
+      throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
-    if (result.ok) return result.val
-    // 1010 (Invalid signature) happens often on kusama, simply retrying usually works.
-    // This message should hopefully motivate the user to retry
-    else if ((result.val as any)?.code === 1010) throw new Error("Failed to send transaction")
-    else if (result.val instanceof Error) throw result.val
-    else throw new Error("Failed to check fees")
+    // force compilation error if any token types don't have a case
+    const exhaustiveCheck: never = tokenType
+    throw new Error(`Unhandled token type ${exhaustiveCheck}`)
   }
 
   private async assetTransferEthHardware({

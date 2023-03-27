@@ -55,6 +55,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     on: eventEmitter.on.bind(eventEmitter),
     off: eventEmitter.off.bind(eventEmitter),
     removeListener: eventEmitter.removeListener.bind(eventEmitter),
+    removeAllListeners: eventEmitter.removeAllListeners.bind(eventEmitter),
   }
 
   const isConnected = () => {

@@ -4,8 +4,6 @@ import {
   db as balancesDb,
   balances as balancesFn,
 } from "@talismn/balances"
-import { ChainConnector } from "@talismn/chain-connector"
-import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
 import { ChaindataProvider, TokenList } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
 import { DbTokenRates, fetchTokenRates, db as tokenRatesDb } from "@talismn/token-rates"
@@ -18,7 +16,7 @@ import { useAllAddresses } from "./useAllAddresses"
 import { useBalanceModules } from "./useBalanceModules"
 import { useChainConnectors } from "./useChainConnectors"
 import { useChaindata } from "./useChaindata"
-import { useTokens } from "./useTokens"
+import { useDbCache } from "./useDbCache"
 import { useWithTestnets } from "./useWithTestnets"
 
 export type DbEntityType = "chains" | "evmNetworks" | "tokens"
@@ -106,16 +104,16 @@ export function useDbCacheBalancesSubscription() {
 
   const subscription = useCallback(() => {
     if (!Object.values(tokens ?? {}).length || !allAddresses.length) return () => {}
-    return subscribeBalances(
-      tokens ?? {},
-      allAddresses,
-      chainConnectors,
-      chaindataProvider,
-      balanceModules
-    )
-  }, [allAddresses, balanceModules, chainConnectors, chaindataProvider, tokens])
+    return subscribeBalances(tokens ?? {}, allAddresses, balanceModules)
+  }, [allAddresses, balanceModules, tokens])
 
   useSharedSubscription(subscriptionKey, subscription)
+}
+
+// subscriptionless version of useTokens, prevents circular dependency
+const useTokens = (withTestnets?: boolean) => {
+  const { tokensWithTestnetsMap, tokensWithoutTestnetsMap } = useDbCache()
+  return withTestnets ? tokensWithTestnetsMap : tokensWithoutTestnetsMap
 }
 
 const subscribeChainDataHydrate = (
@@ -200,11 +198,6 @@ const subscribeTokenRates = (tokens: TokenList) => {
 const subscribeBalances = (
   tokens: TokenList,
   addresses: string[],
-  chainConnectors: {
-    substrate?: ChainConnector
-    evm?: ChainConnectorEvm
-  },
-  provider: ChaindataProvider,
   balanceModules: Array<BalanceModule<any, any, any, any, any>>
 ) => {
   const tokenIds = Object.values(tokens).map(({ id }) => id)
@@ -241,7 +234,19 @@ const subscribeBalances = (
 
     const unsub = balancesFn(balanceModule, addressesByModuleToken, (error, balances) => {
       // log errors
-      if (error) return log.error(`Failed to fetch ${balanceModule.type} balances`, error)
+      if (error) {
+        if (error?.type === "STALE_RPC_ERROR")
+          return balancesDb.balances
+            .where({ source: balanceModule.type, chainId: error.chainId })
+            .filter((balance) => {
+              if (!Object.keys(addressesByModuleToken).includes(balance.tokenId)) return false
+              if (!addressesByModuleToken[balance.tokenId].includes(balance.address)) return false
+              return true
+            })
+            .modify({ status: "stale" })
+
+        return log.error(`Failed to fetch ${balanceModule.type} balances`, error)
+      }
       // ignore empty balance responses
       if (!balances) return
       // ignore balances from old subscriptions which are still in the process of unsubscribing
@@ -255,19 +260,14 @@ const subscribeBalances = (
       unsub.then((unsubscribe) => {
         setTimeout(unsubscribe, 2_000)
       })
-      balancesDb.transaction(
-        "rw",
-        balancesDb.balances,
-        async () =>
-          await balancesDb.balances
-            .filter((balance) => {
-              if (balance.source !== balanceModule.type) return false
-              if (!Object.keys(addressesByModuleToken).includes(balance.tokenId)) return false
-              if (!addressesByModuleToken[balance.tokenId].includes(balance.address)) return false
-              return true
-            })
-            .modify({ status: "cache" })
-      )
+      balancesDb.balances
+        .where({ source: balanceModule.type })
+        .filter((balance) => {
+          if (!Object.keys(addressesByModuleToken).includes(balance.tokenId)) return false
+          if (!addressesByModuleToken[balance.tokenId].includes(balance.address)) return false
+          return true
+        })
+        .modify({ status: "cache" })
     }
   })
 

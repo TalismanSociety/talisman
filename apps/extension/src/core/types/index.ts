@@ -15,23 +15,29 @@ import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/e
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
 
 export declare type RequestTypes = {
-  [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
+  [MessageType in MessageTypes]: RequestSignatures[MessageType][0]
 }
 
 export declare type RequestTypesArray = {
-  [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
-}[keyof RequestSignatures]
+  [MessageType in MessageTypes]: RequestSignatures[MessageType][0]
+}[MessageTypes]
 
 export declare type ResponseTypes = {
-  [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][1]
+  [MessageType in MessageTypes]: RequestSignatures[MessageType][1]
 }
 
 export declare type SubscriptionMessageTypes = NoUndefinedValues<{
-  [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][2]
+  [MessageType in MessageTypes]: RequestSignatures[MessageType][2]
 }>
 
+export declare type KnownSubscriptionMessageTypes<T extends MessageTypes> = NoUndefinedValues<{
+  [K in T]: RequestSignatures[K][2]
+}>
+
+export declare type KnownSubscriptionDataTypes<T extends MessageTypes> = RequestSignatures[T][2]
+
 export declare type RequestIdOnlyMessageTypes = IdOnlyValues<{
-  [MessageType in keyof RequestSignatures]: RequestSignatures[MessageType][0]
+  [MessageType in MessageTypes]: RequestSignatures[MessageType][0]
 }>
 
 type RemovedMessages =

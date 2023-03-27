@@ -17,12 +17,13 @@ import { ExtensionStore } from "@core/handlers/stores"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
+import { generateQrAddNetworkSpecs, generateQrUpdateNetworkMetadata } from "@core/libs/QrGenerator"
 import { log } from "@core/log"
 import { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port, RequestIdOnly } from "@core/types/base"
 import { fetchHasSpiritKey } from "@core/util/hasSpiritKey"
 import keyring from "@polkadot/ui-keyring"
-import { assert } from "@polkadot/util"
+import { assert, u8aToHex } from "@polkadot/util"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { db as balancesDb } from "@talismn/balances"
 import { liveQuery } from "dexie"
@@ -255,7 +256,22 @@ export default class Extension extends ExtensionHandler {
       // chain handlers -----------------------------------------------------
       // --------------------------------------------------------------------
       case "pri(chains.subscribe)":
-        return await this.stores.chains.hydrateStore()
+        return this.stores.chains.hydrateStore()
+
+      case "pri(chains.addNetworkSpecsQr)": {
+        const { genesisHash } = request as RequestType<"pri(chains.addNetworkSpecsQr)">
+        const data = await generateQrAddNetworkSpecs(genesisHash)
+        // serialize as hex for transfer
+        return u8aToHex(data)
+      }
+
+      case "pri(chains.updateNetworkMetadataQr)": {
+        const { genesisHash, specVersion } =
+          request as RequestType<"pri(chains.updateNetworkMetadataQr)">
+        const data = await generateQrUpdateNetworkMetadata(genesisHash, specVersion)
+        // serialize as hex for transfer
+        return u8aToHex(data)
+      }
 
       // --------------------------------------------------------------------
       // transaction handlers -----------------------------------------------

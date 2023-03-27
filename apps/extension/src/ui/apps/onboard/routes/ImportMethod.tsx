@@ -1,7 +1,14 @@
 import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
-import { FileTextIcon, KeyIcon, MessageCircleIcon, UsbIcon } from "@talisman/theme/icons"
+import {
+  FileTextIcon,
+  KeyIcon,
+  MessageCircleIcon,
+  ParitySignerIcon,
+  UsbIcon,
+} from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 
@@ -44,6 +51,7 @@ export const ImportMethodPage = () => {
   )
 
   const disableLedger = useMemo(() => !getIsLedgerCapable(), [])
+  const paritySignerEnabled = useIsFeatureEnabled("PARITY_SIGNER")
 
   if (!data.importAccountType) return null
 
@@ -86,6 +94,14 @@ export const ImportMethodPage = () => {
               icon={KeyIcon}
               title="Private key"
               subtitle="Import an account from a private key"
+            />
+          )}
+          {paritySignerEnabled && data.importAccountType === "sr25519" && (
+            <OnboardCta
+              onClick={handleClick("qr")}
+              icon={ParitySignerIcon}
+              title="Parity signer"
+              subtitle="Connect your Parity Signer account"
             />
           )}
         </div>

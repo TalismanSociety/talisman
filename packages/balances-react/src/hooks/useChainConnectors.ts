@@ -1,5 +1,6 @@
 import { ChainConnector } from "@talismn/chain-connector"
 import { ChainConnectorEvm } from "@talismn/chain-connector-evm"
+import { connectionMetaDb } from "@talismn/connection-meta"
 import { useEffect, useMemo, useState } from "react"
 
 import { provideContext } from "../util/provideContext"
@@ -21,7 +22,7 @@ function useChainConnectorsProvider(options: ChainConnectorsProviderOptions) {
   const chaindata = useChaindata()
 
   // substrate connector
-  const substrate = useMemo(() => new ChainConnector(chaindata), [chaindata])
+  const substrate = useMemo(() => new ChainConnector(chaindata, connectionMetaDb), [chaindata])
 
   // evm connector
   const evm = useMemo(

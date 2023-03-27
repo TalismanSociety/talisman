@@ -13,6 +13,7 @@ type TProps = PropsWithChildren<{
   forceClose?: boolean
   closeOnMouseOut?: boolean
   tabIndex?: number
+  noPadding?: boolean
 }>
 
 const PopNavItem = ({ children, className, ...rest }: any) => {
@@ -31,11 +32,13 @@ const StyledPopNavItem = styled(PopNavItem)`
   user-select: none;
 
   &:hover {
-    color: var(--color-primary);
+    ${({ className }: TProps) => {
+      return className ? "" : `color: var(--color-primary);`
+    }}
   }
 `
 
-const PopNavContent = ({ children, className }: any) => {
+const PopNavContent = ({ children, className, noPadding }: any) => {
   const [isMounted, setIsMounted] = useState(false)
   useEffect(() => setIsMounted(true), [])
 
@@ -53,7 +56,7 @@ const PopNavContent = ({ children, className }: any) => {
 const StyledPopNavContent = styled(PopNavContent)`
   max-height: 100rem;
   height: auto;
-  padding: var(--padding-small);
+
   overflow: hidden;
   opacity: 1;
   transition: all var(--transition-speed-slow) ease-in-out;
@@ -63,6 +66,10 @@ const StyledPopNavContent = styled(PopNavContent)`
   min-width: 20rem;
   max-width: 25rem;
   z-index: 1;
+
+  ${({ noPadding }: { noPadding: boolean }) => {
+    return noPadding ? "" : `padding: var(--padding-small);`
+  }}
 
   &[data-is-mounted="false"] {
     max-height: 0;
@@ -79,6 +86,7 @@ const PopNav = ({
   children,
   forceClose,
   tabIndex,
+  noPadding,
 }: TProps) => {
   const nodeRef = useRef<HTMLDivElement>(null)
   const [open, , setOpen] = useBoolean(false)
@@ -120,7 +128,7 @@ const PopNav = ({
       tabIndex={tabIndex}
     >
       {trigger}
-      {!!open && <StyledPopNavContent>{children}</StyledPopNavContent>}
+      {!!open && <StyledPopNavContent noPadding={noPadding}>{children}</StyledPopNavContent>}
     </span>
   )
 }

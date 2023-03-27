@@ -14,7 +14,7 @@ import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { sortBy } from "lodash"
-import { FC, useCallback, useMemo, useRef, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useIntersection } from "react-use"
 import { FormFieldInputContainerProps } from "talisman-ui"
 
@@ -177,12 +177,13 @@ const TokenRow: FC<TokenRowProps> = ({
 
 type TokensListProps = {
   from?: Address
+  networkType?: "ethereum" | "polkadot"
   selected?: TokenId
   search?: string
   onSelect?: (tokenId: TokenId) => void
 }
 
-const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) => {
+const TokensList: FC<TokensListProps> = ({ from, selected, search, networkType, onSelect }) => {
   const { useTestnets = false } = useSettings()
   const { chainsMap } = useChains(useTestnets)
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
@@ -199,10 +200,11 @@ const TokensList: FC<TokensListProps> = ({ from, selected, search, onSelect }) =
 
   const filterAccountCompatibleTokens = useCallback(
     (token: Token) => {
-      if (!from || selected) return true
+      if ((!from && !networkType) || selected) return true
+      if (networkType) return networkType === "ethereum" ? !!token.evmNetwork : !!token.chain
       return isEthereumAddress(from) ? !!token.evmNetwork : !!token.chain
     },
-    [from, selected]
+    [from, selected, networkType]
   )
 
   const accountCompatibleTokens = useMemo(() => {
@@ -344,15 +346,19 @@ const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
 }
 
 export const SendFundsTokenPicker = () => {
-  const { from, tokenId, set } = useSendFundsWizard()
+  const { from, tokenId, to, set } = useSendFundsWizard()
   const [search, setSearch] = useState("")
-
+  const [networkType, setNetworkType] = useState<"polkadot" | "ethereum">()
   const handleTokenSelect = useCallback(
     (tokenId: TokenId) => {
       set("tokenId", tokenId, true)
     },
     [set]
   )
+
+  useEffect(() => {
+    if (to && !from) setNetworkType(isEthereumAddress(to) ? "ethereum" : "polkadot")
+  }, [to, from])
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
@@ -364,7 +370,13 @@ export const SendFundsTokenPicker = () => {
         />
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
-        <TokensList from={from} selected={tokenId} search={search} onSelect={handleTokenSelect} />
+        <TokensList
+          networkType={networkType}
+          from={from}
+          selected={tokenId}
+          search={search}
+          onSelect={handleTokenSelect}
+        />
       </ScrollContainer>
     </div>
   )

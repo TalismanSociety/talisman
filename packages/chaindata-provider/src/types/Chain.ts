@@ -11,6 +11,7 @@ export type Chain = {
   genesisHash: string | null // The genesisHash of this chain
   prefix: number | null // The substrate prefix of this chain
   name: string | null // The name of this chain
+  themeColor?: string // The theme color for this chain
   logo: string | null // A url to the logo of this chain
   chainName: string // The on-chain name of this chain
   implName: string | null // The implementation name of this chain
@@ -20,6 +21,8 @@ export type Chain = {
   tokens: Array<{ id: TokenId }> | null // The ORML tokens for this chain
   account: string | null // The account address format of this chain
   subscanUrl: string | null // The subscan endpoint of this chain
+  chainspecQrUrl: string | null // A url to a qr code with the chainspec for this chain
+  latestMetadataQrUrl: string | null // A url to a qr code with the latest metadata for this chain
   rpcs: Array<SubstrateRpc> | null // Some public RPCs for connecting to this chain's network
   isHealthy: boolean // The health status of this chain's RPCs
   evmNetworks: Array<{ id: EvmNetworkId }>

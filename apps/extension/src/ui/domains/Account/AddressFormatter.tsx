@@ -1,6 +1,8 @@
 import { Chain } from "@core/domains/chains/types"
 import Input from "@talisman/components/Field/Input"
+import { WithTooltip } from "@talisman/components/Tooltip"
 import { useSearchFilter } from "@talisman/hooks/useSearchFilter"
+import { AlertCircleIcon } from "@talisman/theme/icons"
 import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
 import { ReactComponent as IconCheck } from "@talisman/theme/icons/check.svg"
 import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
@@ -11,6 +13,7 @@ import { useAccountChainsFilter } from "@ui/hooks/useAccountChainsFilter"
 import useAddressTypeChainsFilter from "@ui/hooks/useAddressTypeChainsFilter"
 import useChainsAndSearchSymbols from "@ui/hooks/useChainsAndSearchSymbols"
 import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
+import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { useSettings } from "@ui/hooks/useSettings"
 import { useSortedChains } from "@ui/hooks/useSortedChains"
 import { copyAddress } from "@ui/util/copyAddress"
@@ -149,6 +152,8 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
   const { useTestnets } = useSettings()
   const chains = useSortedChains(!!useTestnets)
   const [copied, setCopied] = useState("")
+  const isKnown = useIsKnownAddress(address)
+  const isContact = isKnown && isKnown.type === "contact"
 
   const accountCompatibleChains = useAccountChainsFilter(chains, address)
   const addressTypeCompatibleChains = useAddressTypeChainsFilter(accountCompatibleChains, address)
@@ -173,10 +178,22 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
   return (
     <div className={className}>
       <SearchNetworks onSearch={setSearchQuery} />
-      <div className="title">Choose the address format you would like to use</div>
-      <InfoMessage>
-        If sending funds from an exchange make sure you choose the correct address format.
-      </InfoMessage>
+      {isContact && (
+        <div className="inline-flex items-center gap-2">
+          <span>Which network would you like to use?</span>
+          <WithTooltip tooltip="In Polkadot, each network has a unique address">
+            <AlertCircleIcon className="cursor-pointer text-sm hover:text-white" />
+          </WithTooltip>
+        </div>
+      )}
+      {!isContact && (
+        <div className="flex flex-col gap-4">
+          <div className="title">Choose the address format you would like to use</div>
+          <InfoMessage>
+            If sending funds from an exchange make sure you choose the correct address format.
+          </InfoMessage>
+        </div>
+      )}
       <div className="addresses-list scrollbars">
         {filteredChains.map((chain) => {
           const convertedAddress = encodeAnyAddress(address, chain.prefix)
@@ -201,6 +218,7 @@ const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressF
   height: 100%;
   max-height: 100%;
   overflow: hidden;
+  gap: 2.4rem;
 
   .flex {
     display: flex;

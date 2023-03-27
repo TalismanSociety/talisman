@@ -5,7 +5,7 @@ import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { Err, Ok, Result } from "ts-results"
 
-const getPairFromAddress = (address: Address) => {
+export const getPairFromAddress = (address: Address) => {
   const pair = keyring.getPair(address)
   if (!pair) throw new Error("Unable to find pair")
   return pair
@@ -30,9 +30,10 @@ export const getPairForAddressSafely = async <T>(
   let pair: KeyringPair | null = null
   try {
     try {
-      pair = isHardwareAccount(address)
-        ? getPairFromAddress(address)
-        : getUnlockedPairFromAddress(address)
+      pair =
+        isHardwareAccount(address) || isQrAccount(address)
+          ? getPairFromAddress(address)
+          : getUnlockedPairFromAddress(address)
     } catch (error) {
       passwordStore.clearPassword()
       throw error
@@ -48,4 +49,9 @@ export const getPairForAddressSafely = async <T>(
 export const isHardwareAccount = (address: Address) => {
   const acc = keyring.getAccount(address)
   return acc?.meta?.isHardware ?? false
+}
+
+export const isQrAccount = (address: Address) => {
+  const acc = keyring.getAccount(address)
+  return acc?.meta?.origin === "QR" ?? false
 }

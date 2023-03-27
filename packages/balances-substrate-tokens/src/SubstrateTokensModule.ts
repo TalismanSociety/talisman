@@ -285,6 +285,7 @@ export const SubTokensModule: NewBalanceModule<
           const params = [queries.map((query) => query.stateKey)]
 
           // set up subscription
+          const timeout = false
           const unsubscribe = await chainConnector.subscribe(
             chainId,
             subscribeMethod,
@@ -294,7 +295,8 @@ export const SubTokensModule: NewBalanceModule<
             (error, result) => {
               if (error) return callback(error)
               callback(null, formatRpcResult(chainId, queries, result))
-            }
+            },
+            timeout
           )
 
           return unsubscribe
@@ -306,7 +308,8 @@ export const SubTokensModule: NewBalanceModule<
           })
         )
 
-      return () => subscriptions.forEach((promise) => promise.then((unsubscribe) => unsubscribe()))
+      return () =>
+        subscriptions.forEach((subscription) => subscription.then((unsubscribe) => unsubscribe()))
     },
 
     async fetchBalances(addressesByToken) {

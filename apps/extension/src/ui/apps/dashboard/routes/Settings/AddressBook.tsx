@@ -1,12 +1,16 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import HeaderBlock from "@talisman/components/HeaderBlock"
+import PopNav from "@talisman/components/PopNav"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { EditIcon, TrashIcon, UserPlusIcon } from "@talisman/theme/icons"
+import { CopyIcon, MoreHorizontalIcon, PlusIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
+import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
-import { FormattedAddress } from "@ui/domains/Account/FormattedAddress"
+import { Address } from "@ui/domains/Account/Address"
+import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import AccountAvatar from "@ui/domains/Account/Avatar"
 import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
@@ -14,8 +18,9 @@ import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useMemo, useState } from "react"
-import { PillButton } from "talisman-ui"
+import startCase from "lodash/startCase"
+import { PropsWithChildren, useMemo, useState } from "react"
+import { Button, PillButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -24,20 +29,82 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Address book contact list",
 }
 
+const SquareButton = ({ children }: PropsWithChildren) => (
+  <button
+    type="button"
+    className="hover:bg-grey-700 flex h-[3.2rem] w-[3.2rem] cursor-pointer items-center justify-center rounded"
+  >
+    {children}
+  </button>
+)
+
 type ContactItemProps = ExistingContactComponentProps & {
   handleDelete: (address: string) => void
   handleEdit: (address: string) => void
 }
 
-const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => (
-  <div className="bg-black-secondary hover:bg-black-tertiary flex w-full items-center justify-between rounded p-8">
-    <FormattedAddress address={contact.address} />
-    <div className="text-body-secondary flex gap-6">
-      <EditIcon className="cursor-pointer" onClick={() => handleEdit(contact.address)} />
-      <TrashIcon className="cursor-pointer" onClick={() => handleDelete(contact.address)} />
+const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => {
+  const { open: openCopyAddressModal } = useAddressFormatterModal()
+  const [hover, setHover] = useState(false)
+
+  return (
+    <div
+      className="bg-black-secondary hover:bg-black-tertiary flex w-full items-center justify-between rounded p-8"
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+    >
+      <span className="gap flex gap-4">
+        <AccountAvatar address={contact.address} />
+        <div className="flex flex-col justify-between">
+          <span>{contact.name}</span>
+          <Address className="text-body-secondary text-xs" address={contact.address} />
+        </div>
+      </span>
+      <div
+        className={`text-body-secondary flex duration-300 ${hover ? "opacity-100" : "opacity-0"}`}
+      >
+        <SquareButton>
+          <CopyIcon onClick={() => openCopyAddressModal(contact.address)} />
+        </SquareButton>
+        <PopNav
+          trigger={
+            <SquareButton>
+              <MoreHorizontalIcon />
+            </SquareButton>
+          }
+          className="icon more"
+          noPadding
+          closeOnMouseOut
+        >
+          <PopNav.Item
+            className="hover:bg-black-tertiary"
+            onClick={() => handleEdit(contact.address)}
+          >
+            Edit contact
+          </PopNav.Item>
+          <PopNav.Item
+            className="hover:bg-black-tertiary"
+            onClick={() => api.sendFundsOpen({ to: contact.address })}
+          >
+            Send to this contact
+          </PopNav.Item>
+          <PopNav.Item
+            className="hover:bg-black-tertiary"
+            onClick={() => openCopyAddressModal(contact.address)}
+          >
+            Copy Address
+          </PopNav.Item>
+          <PopNav.Item
+            className="hover:bg-black-tertiary"
+            onClick={() => handleDelete(contact.address)}
+          >
+            Delete Contact
+          </PopNav.Item>
+        </PopNav>
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
   polkadot: "ss58",
@@ -54,6 +121,11 @@ const AddressBook = () => {
   const [toEdit, setToEdit] = useState<string>()
   const { open, isOpen, close } = useOpenClose()
   const [addressType, setAddressType] = useState<"polkadot" | "ethereum">("polkadot")
+  const contactsToDisplay = useMemo(
+    () =>
+      contacts.filter((contact) => contact.addressType === contactTypeAddressTypeMap[addressType]),
+    [contacts, addressType]
+  )
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
@@ -63,26 +135,28 @@ const AddressBook = () => {
         <HeaderBlock title="Address Book" text="Manage your saved contacts" />
         <div className="mt-4 flex justify-between align-middle">
           <ProviderTypeSwitch defaultProvider="polkadot" onChange={setAddressType} />
-          <PillButton onClick={open} icon={UserPlusIcon}>
-            Add new contact
-          </PillButton>
+          {contactsToDisplay.length > 0 && (
+            <PillButton onClick={open} icon={UserPlusIcon}>
+              Add new contact
+            </PillButton>
+          )}
         </div>
         <Spacer />
         <div className="flex flex-col gap-3">
-          {contacts
-            .filter((contact) => contact.addressType === contactTypeAddressTypeMap[addressType])
-            .map((contact) => (
-              <AddressBookContactItem
-                contact={contact}
-                key={contact.address}
-                handleDelete={setToDelete}
-                handleEdit={setToEdit}
-              />
-            ))}
-          {contacts.length === 0 && (
-            <div className="bg-black-secondary flex w-full justify-between rounded p-8">
-              You have no saved contacts yet. You can save contacts when sending funds and they'll
-              appear here.
+          {contactsToDisplay.map((contact) => (
+            <AddressBookContactItem
+              contact={contact}
+              key={contact.address}
+              handleDelete={setToDelete}
+              handleEdit={setToEdit}
+            />
+          ))}
+          {contactsToDisplay.length === 0 && (
+            <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
+              <span>You have no saved {startCase(addressType)} contacts yet.</span>
+              <Button primary onClick={open} iconLeft={PlusIcon}>
+                Add a contact
+              </Button>
             </div>
           )}
         </div>

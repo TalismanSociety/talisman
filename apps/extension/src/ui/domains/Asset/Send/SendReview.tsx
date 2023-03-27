@@ -14,6 +14,7 @@ import { Tokens } from "../Tokens"
 import { useSendTokens } from "./context"
 import { SendDialogContainer } from "./SendDialogContainer"
 import { SendForfeitInfo } from "./SendForfeitInfo"
+import { SendQr } from "./SendQr"
 import { SendReviewAddress } from "./SendReviewAddress"
 import { SendTokensExpectedResult, SendTokensInputs } from "./types"
 import { useTransferableTokenById } from "./useTransferableTokens"
@@ -231,6 +232,8 @@ const SendReview = () => {
           )}
           {approvalMode === "hwSubstrate" && <SendLedgerSubstrate />}
           {approvalMode === "hwEthereum" && <SendLedgerEthereum />}
+          {/* TODO: Integrate QR signing into send funds v2 */}
+          {approvalMode === "qr" && <SendQr />}
           {approvalMode === "backend" && (
             <div className="buttons">
               <SimpleButton

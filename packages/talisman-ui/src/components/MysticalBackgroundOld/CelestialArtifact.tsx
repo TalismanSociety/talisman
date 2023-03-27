@@ -1,7 +1,6 @@
 import Color from "color"
 import { TargetAndTransition, motion } from "framer-motion"
 import { useCallback, useEffect, useState } from "react"
-import styled from "styled-components"
 
 import { MYSTICAL_PHYSICS } from "./MysticalPhysics"
 
@@ -54,10 +53,6 @@ const generateCelestialTransform = (parentSize: Size, isAcolyte = false, cx = 0,
   return target
 }
 
-const CelestialArtifactBase = styled(motion.div)`
-  position: absolute;
-`
-
 type CelestialArtifactProps = {
   parentSize: Size
   isAcolyte?: boolean
@@ -103,5 +98,5 @@ export const CelestialArtifact = ({ parentSize, isAcolyte, cx, cy }: CelestialAr
     }
   }, [change])
 
-  return <CelestialArtifactBase initial={false} animate={target} />
+  return <motion.div className="absolute" initial={false} animate={target} />
 }

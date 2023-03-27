@@ -1,17 +1,16 @@
 import { Chain, ChainId } from "@core/domains/chains/types"
-import RpcFactory from "@core/libs/RpcFactory"
 import { log } from "@core/log"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { TypeRegistry } from "@polkadot/types"
-import { Vec } from "@polkadot/types-codec"
-import { EventRecord, Hash } from "@polkadot/types/interfaces"
+import { Hash } from "@polkadot/types/interfaces"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { Err, Ok, Result } from "ts-results"
 
 import { NotificationType, createNotification } from "./createNotification"
 
-const TX_WATCH_TIMEOUT = 90000
+const TX_WATCH_TIMEOUT = 90_000 // 90 seconds in milliseconds
 
 type ExtrinsicResult = {
   result: "error" | "success"
@@ -36,19 +35,27 @@ const getExtrinsincResult = async (
   hexSignature: string
 ): Promise<Result<ExtrinsicResult, "Unable to get result">> => {
   try {
-    const blockData = await RpcFactory.send(chainId, "chain_getBlock", [blockHash])
+    const blockData = await chainConnector.send(chainId, "chain_getBlock", [blockHash])
     const block = registry.createType("SignedBlock", blockData)
 
     const eventsStorageKey = getStorageKeyHash("System", "Events")
-    const eventsFrame = await RpcFactory.send(chainId, "state_queryStorageAt", [
+    const response = await chainConnector.send(chainId, "state_queryStorageAt", [
       [eventsStorageKey],
       blockHash,
     ])
 
-    const events = registry.createType<Vec<EventRecord>>(
-      "Vec<FrameSystemEventRecord>",
-      eventsFrame[0].changes[0][1]
-    )
+    const eventsFrame = response[0]?.changes[0][1] || []
+
+    const events = (() => {
+      try {
+        return registry.createType("Vec<FrameSystemEventRecord>", eventsFrame)
+      } catch (error) {
+        log.warn(
+          "Failed to decode events as `FrameSystemEventRecord`, trying again as just `EventRecord` for old (pre metadata v14) chains"
+        )
+        return registry.createType("Vec<EventRecord>", eventsFrame)
+      }
+    })()
 
     for (const [txIndex, x] of block.block.extrinsics.entries()) {
       if (x.signature.eq(hexSignature)) {
@@ -109,15 +116,15 @@ const watchExtrinsicStatus = async (
   }
   const unsubscribe = async (
     key: "finalizedHeads" | "allHeads",
-    unsubscribeHandler: () => Promise<void>
+    unsubscribeHandler: () => void
   ) => {
     if (!subscriptions[key]) return
     subscriptions[key] = false
-    await unsubscribeHandler()
+    unsubscribeHandler()
   }
 
   // watch for finalized blocks, this is the source of truth for successfull transactions
-  const unsubscribeFinalizeHeads = await RpcFactory.subscribe(
+  const unsubscribeFinalizeHeads = await chainConnector.subscribe(
     chainId,
     "chain_subscribeFinalizedHeads",
     "chain_subscribeFinalizedHeads",
@@ -125,8 +132,11 @@ const watchExtrinsicStatus = async (
     [],
     async (error, data) => {
       if (error) {
-        log.error(error)
-        Sentry.captureException(error, { extra: { chainId } })
+        const err = new Error("Failed to watch extrinsic status (chain_subscribeFinalizedHeads)", {
+          cause: error,
+        })
+        log.error(err)
+        Sentry.captureException(err, { extra: { chainId } })
         return
       }
 
@@ -152,7 +162,7 @@ const watchExtrinsicStatus = async (
 
   // watch for new blocks, a successfull extrinsic here only means it's included in a block
   // => need to wait for block to be finalized before considering it a success
-  const unsubscribeAllHeads = await RpcFactory.subscribe(
+  const unsubscribeAllHeads = await chainConnector.subscribe(
     chainId,
     "chain_subscribeAllHeads",
     "chain_subscribeAllHeads",
@@ -160,7 +170,11 @@ const watchExtrinsicStatus = async (
     [],
     async (error, data) => {
       if (error) {
-        Sentry.captureException(error, { extra: { chainId } })
+        const err = new Error("Failed to watch extrinsic status (chain_subscribeAllHeads)", {
+          cause: error,
+        })
+        log.error(err)
+        Sentry.captureException(err, { extra: { chainId } })
         return
       }
 
