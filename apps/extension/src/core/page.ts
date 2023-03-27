@@ -50,7 +50,7 @@ function inject() {
 
   // Custom `injectSub` endpoint used by app.talisman.xyz
   // to access the ChainConnector instance of the wallet
-  const injectSubstrateHostnames = ["app.talisman.xyz"]
+  const injectSubstrateHostnames = ["app.talisman.xyz", DEBUG && "localhost"].filter(Boolean)
   if (injectSubstrateHostnames.includes(window.location.hostname))
     injectSubstrate(messageService.sendMessage)
 }
