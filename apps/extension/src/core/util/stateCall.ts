@@ -15,10 +15,11 @@ export const stateCall = async <K extends string = string>(
 
   const bytes = registry.createType("Raw", u8aConcatStrict(args.map((arg) => arg.toU8a())))
 
-  // WARNING : state_callAt is missing on some chains (ex: moonriver)
-  const result = blockHash
-    ? await chainConnector.send(chainId, "state_callAt", [method, bytes.toHex(), blockHash])
-    : await chainConnector.send(chainId, "state_call", [method, bytes.toHex()])
+  const result = await chainConnector.send(chainId, "state_call", [
+    method,
+    bytes.toHex(),
+    blockHash,
+  ])
 
   return registry.createType(resultType, result)
 }
