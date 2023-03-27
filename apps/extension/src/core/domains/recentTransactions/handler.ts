@@ -10,12 +10,6 @@ export default class RecentTransactionsHandler extends ExtensionHandler {
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
-      case "pri(transaction.boost)":
-        throw new Error("Not implemented")
-
-      case "pri(transaction.cancel)":
-        throw new Error("Not implemented")
-
       case "pri(transaction.delete)":
         throw new Error("Not implemented")
 

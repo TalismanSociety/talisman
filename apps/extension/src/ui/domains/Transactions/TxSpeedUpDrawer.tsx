@@ -53,6 +53,12 @@ const EvmDrawerContent: FC<{
     try {
       const safeTx = serializeTransactionRequestBigNumbers(transaction)
       await api.ethSignAndSend(safeTx)
+      api.analyticsCapture({
+        eventName: "transaction speed up",
+        options: {
+          chainId: transaction.chainId,
+        },
+      })
       onClose?.()
     } catch (err) {
       // eslint-disable-next-line no-console

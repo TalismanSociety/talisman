@@ -1,12 +1,9 @@
 import { db } from "@core/db"
-import { BigNumber, BigNumberish, ethers } from "ethers"
+import { ethers } from "ethers"
 import merge from "lodash/merge"
 
 import { serializeTransactionRequestBigNumbers } from "../ethereum/helpers"
-import { TransactionStatus, WalletTransaction } from "./types"
-
-const safeBigNumberish = (value?: BigNumberish) =>
-  BigNumber.isBigNumber(value) ? value.toString() : value
+import { TransactionStatus } from "./types"
 
 type AddEvemTransactionOptions = {
   label?: string
