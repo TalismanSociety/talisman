@@ -126,7 +126,7 @@ const EvmDrawerContent: FC<{
           disabled={!isLoading && !isValid}
           processing={isProcessing}
         >
-          Try to Speed Up
+          Speed Up
         </Button>
       </div>
     </>
