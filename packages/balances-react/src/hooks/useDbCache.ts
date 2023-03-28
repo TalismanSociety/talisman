@@ -40,7 +40,6 @@ type DbCache = {
   tokenRatesMap: Record<TokenId, TokenRates>
 
   balances: BalanceJson[]
-  balancesMeta: { subscriptionId: string | undefined }
 }
 
 const DEFAULT_VALUE: DbCache = {
@@ -60,7 +59,6 @@ const DEFAULT_VALUE: DbCache = {
   tokenRatesMap: {},
 
   balances: [],
-  balancesMeta: { subscriptionId: undefined },
 }
 
 const consolidateDbCache = (
@@ -68,8 +66,7 @@ const consolidateDbCache = (
   evmNetworksMap?: EvmNetworkList,
   tokensMap?: TokenList,
   tokenRates?: DbTokenRates[],
-  allBalances?: BalanceJson[],
-  meta?: Array<{ id: string; value: string }>
+  allBalances?: BalanceJson[]
 ): DbCache => {
   if (!chainsMap || !evmNetworksMap || !tokensMap || !tokenRates || !allBalances)
     return DEFAULT_VALUE
@@ -128,8 +125,6 @@ const consolidateDbCache = (
   // return only balances for which we have a token
   const balances = allBalances.filter((b) => tokensWithTestnetsMap[b.tokenId])
 
-  const balancesMeta = { subscriptionId: meta?.find(({ id }) => id === "subscriptionId")?.value }
-
   return {
     chainsWithTestnets,
     chainsWithoutTestnets,
@@ -147,7 +142,6 @@ const consolidateDbCache = (
     tokenRatesMap,
 
     balances,
-    balancesMeta,
   }
 }
 
@@ -159,19 +153,16 @@ const useDbCacheProvider = (): DbCache => {
   const tokenList = useLiveQuery(() => chaindataProvider?.tokens(), [chaindataProvider])
   const tokenRates = useLiveQuery(() => tokenRatesDb.tokenRates.toArray(), [])
   const rawBalances = useLiveQuery(() => balancesDb.balances.toArray(), [])
-  const meta = useLiveQuery(() => balancesDb.meta.toArray(), [])
 
   const [dbData, setDbData] = useState(DEFAULT_VALUE)
 
   // debounce every 500ms to prevent hammering UI with updates
   useDebounce(
     () => {
-      setDbData(
-        consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances, meta)
-      )
+      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances))
     },
     500,
-    [chainList, evmNetworkList, tokenList, tokenRates, rawBalances, meta]
+    [chainList, evmNetworkList, tokenList, tokenRates, rawBalances]
   )
 
   const refInitialized = useRef(false)
@@ -184,15 +175,12 @@ const useDbCacheProvider = (): DbCache => {
       evmNetworkList &&
       tokenList &&
       tokenRates &&
-      rawBalances &&
-      meta
+      rawBalances
     ) {
-      setDbData(
-        consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances, meta)
-      )
+      setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances))
       refInitialized.current = true
     }
-  }, [chainList, evmNetworkList, tokenList, tokenRates, rawBalances, meta])
+  }, [chainList, evmNetworkList, tokenList, tokenRates, rawBalances])
 
   return dbData
 }

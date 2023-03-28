@@ -1,4 +1,9 @@
-import { AddressesByToken, Balances, deriveStatuses } from "@talismn/balances"
+import {
+  AddressesByToken,
+  Balances,
+  deriveStatuses,
+  getValidSubscriptionIds,
+} from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
@@ -12,14 +17,14 @@ export function useBalances(addressesByToken: AddressesByToken<Token> | null) {
   useDbCacheBalancesSubscription()
 
   const balanceModules = useBalanceModules()
-  const { balances, balancesMeta } = useDbCache()
+  const { balances } = useDbCache()
   const hydrate = useBalancesHydrate()
 
   return useMemo(
     () =>
       new Balances(
         deriveStatuses(
-          balancesMeta.subscriptionId,
+          [...getValidSubscriptionIds()],
           balances.filter((balance) => {
             // check that this balance is included in our queried balance modules
             if (!balanceModules.map(({ type }) => type).includes(balance.source)) return false
@@ -41,6 +46,6 @@ export function useBalances(addressesByToken: AddressesByToken<Token> | null) {
         // hydrate balance chains, evmNetworks, tokens and tokenRates
         hydrate
       ),
-    [balancesMeta.subscriptionId, balances, hydrate, balanceModules, addressesByToken]
+    [balances, hydrate, balanceModules, addressesByToken]
   )
 }

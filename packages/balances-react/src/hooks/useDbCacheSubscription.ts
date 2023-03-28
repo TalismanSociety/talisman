@@ -4,6 +4,8 @@ import {
   Balances,
   db as balancesDb,
   balances as balancesFn,
+  createSubscriptionId,
+  deleteSubscriptionId,
 } from "@talismn/balances"
 import { ChaindataProvider, TokenList } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
@@ -204,8 +206,7 @@ const subscribeBalances = (
   const tokenIds = Object.values(tokens).map(({ id }) => id)
   const addressesByToken = Object.fromEntries(tokenIds.map((tokenId) => [tokenId, addresses]))
 
-  const subscriptionId = Date.now().toString()
-  balancesDb.meta.put({ id: "subscriptionId", value: subscriptionId })
+  const subscriptionId = createSubscriptionId()
 
   // TODO: Create subscriptions in a service worker, where we can detect page closes
   // and therefore reliably delete the subscriptionId when the user closes our dapp
@@ -217,7 +218,7 @@ const subscribeBalances = (
   //
   // For now, we'll just last-ditch remove the subscriptionId (it works surprisingly well!) in the beforeunload event
   window.onbeforeunload = () => {
-    balancesDb.meta.delete("subscriptionId")
+    deleteSubscriptionId()
   }
 
   const updateDb = (balances: Balances) => {
@@ -281,7 +282,7 @@ const subscribeBalances = (
       unsub.then((unsubscribe) => {
         setTimeout(unsubscribe, 2_000)
       })
-      balancesDb.meta.delete("subscriptionId")
+      deleteSubscriptionId()
     }
   })
 

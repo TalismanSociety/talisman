@@ -94,20 +94,53 @@ export const filterMirrorTokens = (balance: Balance, i: number, balances: Balanc
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }
 
+export const getValidSubscriptionIds = () => {
+  return new Set(localStorage.getItem("TalismanBalancesSubscriptionIds")?.split(",") ?? [])
+}
+export const createSubscriptionId = () => {
+  // delete current id (if exists)
+  deleteSubscriptionId()
+
+  // create new id
+  const subscriptionId = Date.now().toString()
+  sessionStorage.setItem("TalismanBalancesSubscriptionId", subscriptionId)
+
+  // add to list of current ids
+  const subscriptionIds = getValidSubscriptionIds()
+  subscriptionIds.add(subscriptionId)
+  localStorage.setItem(
+    "TalismanBalancesSubscriptionIds",
+    [...subscriptionIds].filter(Boolean).join(",")
+  )
+
+  return subscriptionId
+}
+export const deleteSubscriptionId = () => {
+  const subscriptionId = sessionStorage.getItem("TalismanBalancesSubscriptionId")
+  if (!subscriptionId) return
+
+  const subscriptionIds = getValidSubscriptionIds()
+  subscriptionIds.delete(subscriptionId)
+  localStorage.setItem(
+    "TalismanBalancesSubscriptionIds",
+    [...subscriptionIds].filter(Boolean).join(",")
+  )
+}
+
 /**
  * Sets all balance statuses from `live-${string}` to either `live` or `cached`
  */
 export const deriveStatuses = (
-  latestSubscriptionId: string | undefined,
+  validSubscriptionIds: string[],
   balances: BalanceJson[]
 ): BalanceJson[] =>
   balances.map((balance) => {
     if (balance.status === "live" || balance.status === "cache" || balance.status === "stale")
       return balance
 
-    if (!latestSubscriptionId) return { ...balance, status: "cache" }
+    if (validSubscriptionIds.length < 1) return { ...balance, status: "cache" }
 
-    if (balance.status.slice("live-".length) !== latestSubscriptionId)
+    if (!validSubscriptionIds.includes(balance.status.slice("live-".length)))
       return { ...balance, status: "cache" }
 
     return { ...balance, status: "live" }

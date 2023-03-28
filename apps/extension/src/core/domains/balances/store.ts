@@ -13,7 +13,13 @@ import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
-import { AddressesByToken, BalanceStatusLive, db as balancesDb } from "@talismn/balances"
+import {
+  AddressesByToken,
+  BalanceStatusLive,
+  db as balancesDb,
+  createSubscriptionId,
+  deleteSubscriptionId,
+} from "@talismn/balances"
 import { balanceModules as defaultBalanceModules } from "@talismn/balances-default-modules"
 import { Token, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
@@ -358,8 +364,7 @@ export class BalanceStore {
     if (this.#subscriptionsState !== "Closed") return
     this.setSubscriptionsState("Open")
 
-    const subscriptionId = Date.now().toString()
-    await balancesDb.meta.put({ id: "subscriptionId", value: subscriptionId })
+    const subscriptionId = createSubscriptionId()
 
     const generation = this.#subscriptionsGeneration
     const addresses = await firstValueFrom(this.#addresses)
@@ -471,9 +476,9 @@ export class BalanceStore {
       .forEach((cb) => cb.then((close) => setTimeout(close, 10_000)))
 
     try {
-      await balancesDb.meta.delete("subscriptionId")
+      deleteSubscriptionId()
     } catch (cause) {
-      log.error(new Error("Failed to delete subscriptionId from balances db", { cause }))
+      log.error(new Error("Failed to delete subscriptionId", { cause }))
     }
 
     this.setSubscriptionsState("Closed")
