@@ -235,7 +235,10 @@ const subscribeBalances = (
     const unsub = balancesFn(balanceModule, addressesByModuleToken, (error, balances) => {
       // log errors
       if (error) {
-        if (error?.type === "STALE_RPC_ERROR")
+        if (
+          error?.type === "STALE_RPC_ERROR" ||
+          error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
+        )
           return balancesDb.balances
             .where({ source: balanceModule.type, chainId: error.chainId })
             .filter((balance) => {

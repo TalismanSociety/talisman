@@ -401,7 +401,10 @@ export class BalanceStore {
           // ignore old subscriptions which have been told to close but aren't closed yet
           if (this.#subscriptionsGeneration !== generation) return
 
-          if (error?.type === "STALE_RPC_ERROR") {
+          if (
+            error?.type === "STALE_RPC_ERROR" ||
+            error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
+          ) {
             const addressesByModuleToken = addressesByTokenByModule[balanceModule.type] ?? {}
             balancesDb.balances
               .where({ source: balanceModule.type, chainId: error.chainId })

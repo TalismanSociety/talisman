@@ -17,6 +17,20 @@ export class StaleRpcError extends Error {
     this.chainId = chainId
   }
 }
+export class WebsocketAllocationExhaustedError extends Error {
+  type: "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
+  chainId: string
+
+  constructor(chainId: string, options?: ErrorOptions) {
+    super(
+      `No websockets are available from the browser pool to connect to chain ${chainId}`,
+      options
+    )
+
+    this.type = "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
+    this.chainId = chainId
+  }
+}
 
 type SocketUserId = number
 
@@ -166,6 +180,13 @@ export class ChainConnector {
     // we queue up our work to clean up our subscription when this promise rejects
     const callerUnsubscribed = unsubDeferred.promise
 
+    // used to detect when there are no more websockets available from the browser websocket pool
+    // in this scenario, we'll be waiting for ws.isReady until some existing sockets are closed
+    //
+    // while we're waiting, we'll send an error back to the caller so that they can show some useful
+    // info to the user
+    let noMoreSocketsTimeout: NodeJS.Timeout | undefined = undefined
+
     // create subscription asynchronously so that the caller can unsubscribe without waiting for
     // the subscription to be created (which can take some time if e.g. the connection can't be established)
     ;(async () => {
@@ -196,9 +217,18 @@ export class ChainConnector {
           unsubConnected()
         }
 
+        noMoreSocketsTimeout = setTimeout(
+          () => callback(new WebsocketAllocationExhaustedError(chainId), null),
+          30_000 // 30 seconds in ms
+        )
+
         if (timeout) await Promise.race([this.waitForWs(ws, timeout), callerUnsubscribed])
         else await Promise.race([ws.isReady, callerUnsubscribed])
+
+        clearTimeout(noMoreSocketsTimeout)
       } catch (error) {
+        clearTimeout(noMoreSocketsTimeout)
+
         unsubRpcStatus && unsubRpcStatus()
         await this.disconnectChainSocket(chainId, socketUserId)
         return
