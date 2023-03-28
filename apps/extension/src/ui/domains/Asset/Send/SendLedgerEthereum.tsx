@@ -1,5 +1,8 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
-import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
+import {
+  getEthTransferTransactionBase,
+  serializeTransactionRequestBigNumbers,
+} from "@core/domains/ethereum/helpers"
 import { HexString } from "@polkadot/util/types"
 import { tokensToPlanck } from "@talismn/util"
 import { api } from "@ui/api"
@@ -54,14 +57,15 @@ const SendLedgerEthereum = () => {
   const [signed, setSigned] = useState(false)
   const handleSigned = useCallback(
     async ({ signature }: { signature: HexString }) => {
+      if (!transaction) return
       try {
         setSigned(true)
-        await sendWithSignatureEthereum(signature)
+        await sendWithSignatureEthereum(transaction, signature)
       } catch (err) {
         setError(err as Error)
       }
     },
-    [sendWithSignatureEthereum]
+    [sendWithSignatureEthereum, transaction]
   )
 
   if (error) return <div className="text-alert-error">{error.message}</div>

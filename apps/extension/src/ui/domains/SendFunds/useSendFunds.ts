@@ -1,4 +1,7 @@
-import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
+import {
+  getEthTransferTransactionBase,
+  serializeTransactionRequestBigNumbers,
+} from "@core/domains/ethereum/helpers"
 import { AssetTransferMethod } from "@core/domains/transfers/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
@@ -531,11 +534,12 @@ const useSendFundsProvider = () => {
           gotoProgress({ substrateTxId: transfer.id })
           return
         }
-        if (evmTransaction && amount && token?.evmNetwork?.id) {
+        if (evmTransaction?.transaction && amount && token?.evmNetwork?.id) {
           const { hash } = await api.assetTransferEthHardware(
             token?.evmNetwork.id,
             token.id,
             amount,
+            serializeTransactionRequestBigNumbers(evmTransaction.transaction),
             signature
           )
           gotoProgress({ evmNetworkId: token?.evmNetwork?.id, evmTxHash: hash })

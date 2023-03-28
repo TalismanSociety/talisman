@@ -207,6 +207,7 @@ export default interface MessageTypes {
     evmNetworkId: EvmNetworkId,
     tokenId: TokenId,
     amount: string,
+    unsigned: ethers.providers.TransactionRequest,
     signedTransaction: HexString
   ) => Promise<ResponseAssetTransferEth>
   assetTransferCheckFees: (

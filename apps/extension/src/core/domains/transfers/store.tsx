@@ -31,15 +31,15 @@ export class TransactionStore extends StorageProvider<TransactionSubject> {
 
     // Clear this store
     // TODO keep this for few months so it's cleared for most users, then delete the store
-    this.clear()
+    // this.clear()
 
     // Once off migration to remove all old (pre-uuid ID) transactions
-    // this.get().then((txs) => {
-    //   const deleteTxIds = Object.keys(txs).filter(
-    //     (txId) => !isUuid(txId) || uuidVersion(txId) !== 4
-    //   )
-    //   this.delete(deleteTxIds)
-    // })
+    this.get().then((txs) => {
+      const deleteTxIds = Object.keys(txs).filter(
+        (txId) => !isUuid(txId) || uuidVersion(txId) !== 4
+      )
+      this.delete(deleteTxIds)
+    })
   }
 
   public upsert(

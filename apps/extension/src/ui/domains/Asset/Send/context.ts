@@ -4,7 +4,7 @@ import {
 } from "@core/constants"
 import { Balance, BalanceFormatter, BalanceJson, Balances } from "@core/domains/balances/types"
 import { Chain, ChainId } from "@core/domains/chains/types"
-import { getMaxFeePerGas } from "@core/domains/ethereum/helpers"
+import { serializeTransactionRequestBigNumbers } from "@core/domains/ethereum/helpers"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
@@ -20,7 +20,7 @@ import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSettings } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
-import { BigNumber } from "ethers"
+import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import {
@@ -376,7 +376,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   // execute the TX
   const sendWithSignatureEthereum = useCallback(
-    async (signature: `0x${string}`) => {
+    async (unsigned: ethers.providers.TransactionRequest, signature: `0x${string}`) => {
       if (expectedResult?.type !== "evm") throw new Error("Review data not found")
 
       const { amount, transferableTokenId } = formData as SendTokensData
@@ -387,7 +387,13 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       if (!token) throw new Error("Token not found")
       if (!evmNetworkId) throw new Error("network not found")
 
-      const { hash } = await api.assetTransferEthHardware(evmNetworkId, token.id, amount, signature)
+      const { hash } = await api.assetTransferEthHardware(
+        evmNetworkId,
+        token.id,
+        amount,
+        serializeTransactionRequestBigNumbers(unsigned),
+        signature
+      )
       setTransactionHash(hash)
     },
     [expectedResult?.type, formData, transferableTokensMap]

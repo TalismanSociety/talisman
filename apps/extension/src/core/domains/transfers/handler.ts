@@ -204,6 +204,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     evmNetworkId,
     tokenId,
     amount,
+    unsigned,
     signedTransaction,
   }: RequestAssetTransferEthHardware): Promise<ResponseAssetTransferEth> {
     try {
@@ -215,6 +216,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
       const { from, to, hash, ...otherDetails } = await provider.sendTransaction(signedTransaction)
       if (!to) throw new Error("Unable to transfer - no recipient address given")
+
+      watchEthereumTransaction(evmNetworkId, hash, unsigned)
 
       transferAnalytics({
         network: { evmNetworkId },

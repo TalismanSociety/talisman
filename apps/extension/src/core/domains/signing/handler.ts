@@ -1,11 +1,9 @@
 import { AccountTypes } from "@core/domains/accounts/types"
 import type {
-  AnySigningRequest,
   KnownSigningRequestIdOnly,
   RequestSigningApproveSignature,
 } from "@core/domains/signing/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
-import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"

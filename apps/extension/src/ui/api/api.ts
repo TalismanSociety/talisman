@@ -196,11 +196,12 @@ export const api: MessageTypes = {
       amount,
       gasSettings,
     }),
-  assetTransferEthHardware: (evmNetworkId, tokenId, amount, signedTransaction) =>
+  assetTransferEthHardware: (evmNetworkId, tokenId, amount, unsigned, signedTransaction) =>
     messageService.sendMessage("pri(assets.transferEthHardware)", {
       evmNetworkId,
       tokenId,
       amount,
+      unsigned,
       signedTransaction,
     }),
   assetTransferCheckFees: (chainId, tokenId, fromAddress, toAddress, amount, tip, method) =>

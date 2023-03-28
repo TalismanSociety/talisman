@@ -2,6 +2,7 @@ import { ChainId } from "@core/domains/chains/types"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { RequestIdOnly } from "@core/types/base"
+import { ethers } from "ethers"
 
 import { EthGasSettings, EvmNetworkId } from "../ethereum/types"
 
@@ -28,6 +29,7 @@ export interface RequestAssetTransferEthHardware {
   evmNetworkId: EvmNetworkId
   tokenId: TokenId
   amount: string
+  unsigned: ethers.providers.TransactionRequest
   signedTransaction: string
 }
 
