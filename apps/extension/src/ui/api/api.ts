@@ -238,9 +238,10 @@ export const api: MessageTypes = {
       id,
       transaction,
     }),
-  ethApproveSignAndSendHardware: (id, signedPayload) =>
+  ethApproveSignAndSendHardware: (id, unsigned, signedPayload) =>
     messageService.sendMessage("pri(eth.signing.approveSignAndSendHardware)", {
       id,
+      unsigned,
       signedPayload,
     }),
   ethCancelSign: (id) =>

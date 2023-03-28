@@ -19,11 +19,7 @@ import {
   ResponseNomPoolStake,
 } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
-import type {
-  AnyEncryptRequest,
-  DecryptRequestId,
-  EncryptRequestId,
-} from "@core/domains/encrypt/types"
+import type { DecryptRequestId, EncryptRequestId } from "@core/domains/encrypt/types"
 import { AddEthereumChainRequestId } from "@core/domains/ethereum/types"
 import {
   AddEthereumChainRequest,
@@ -31,17 +27,10 @@ import {
   EthGasSettings,
   EvmNetworkId,
   RequestUpsertCustomEvmNetwork,
-  WatchAssetRequest,
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
+import { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
 import {
-  MetadataRequest,
-  MetadataUpdateStatus,
-  RequestMetadataId,
-} from "@core/domains/metadata/types"
-import {
-  AnySigningRequest,
-  AnySigningRequestID,
   SignerPayloadJSON,
   SigningRequestID,
   TransactionDetails,
@@ -53,7 +42,6 @@ import {
   AuthorizedSite,
   AuthorizedSites,
   ProviderType,
-  SiteAuthRequest,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
 import {
@@ -63,12 +51,7 @@ import {
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transactions/types"
 import { EthResponseType } from "@core/injectEth/types"
-import {
-  KnownRequest,
-  KnownRequestId,
-  KnownRequestTypes,
-  ValidRequests,
-} from "@core/libs/requests/types"
+import { ValidRequests } from "@core/libs/requests/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
@@ -257,6 +240,7 @@ export default interface MessageTypes {
   ) => Promise<boolean>
   ethApproveSignAndSendHardware: (
     id: SigningRequestID<"eth-send">,
+    unsigned: ethers.providers.TransactionRequest,
     signedTransaction: HexString
   ) => Promise<boolean>
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>

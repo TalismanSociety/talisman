@@ -1,18 +1,12 @@
-import { EthGasSettings, EthGasSettingsLegacy } from "@core/domains/ethereum/types"
-import {
-  EthPriorityOptionNameEip1559,
-  EthPriorityOptionNameLegacy,
-} from "@core/domains/signing/types"
 import { ethers } from "ethers"
 import { useMemo } from "react"
 
+import { TxReplaceType } from "../Transactions/shared"
 import { useEthTransaction } from "./useEthTransaction"
-
-type ReplacementType = "speed-up" | "cancel"
 
 export const useEthReplaceTransaction = (
   tx: ethers.providers.TransactionRequest,
-  type: ReplacementType,
+  type: TxReplaceType,
   lock?: boolean
 ) => {
   const transaction: ethers.providers.TransactionRequest = useMemo(

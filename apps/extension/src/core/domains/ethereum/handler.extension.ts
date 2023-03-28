@@ -1,22 +1,11 @@
 import { DEBUG } from "@core/constants"
-import type {
-  AnyEthRequestChainId,
-  EthApproveSignAndSend,
-  EthRequestSigningApproveSignature,
-  EthTxSendSigned,
-  EthTxSignAndSend,
-  WatchAssetRequestIdOnly,
-} from "@core/domains/ethereum/types"
-import { ETH_NETWORK_ADD_PREFIX, WATCH_ASSET_PREFIX } from "@core/domains/ethereum/types"
-import type { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
+import { ETH_NETWORK_ADD_PREFIX } from "@core/domains/ethereum/types"
 import { CustomEvmNativeToken } from "@core/domains/tokens/types"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
-import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import {
   ETH_ERROR_EIP1993_USER_REJECTED,
   EthProviderRpcError,
 } from "@core/injectEth/EthProviderRpcError"
-import { EthRequestArguments, EthRequestSignatures } from "@core/injectEth/types"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"
@@ -24,8 +13,8 @@ import { log } from "@core/log"
 import { watchEthereumTransaction } from "@core/notifications"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import { MessageTypes, RequestTypes, ResponseType } from "@core/types"
-import { Port, RequestIdOnly } from "@core/types/base"
+import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "@core/types"
+import { Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { SignTypedDataVersion, personalSign, signTypedData } from "@metamask/eth-sig-util"
 import keyring from "@polkadot/ui-keyring"
@@ -35,66 +24,59 @@ import { evmNativeTokenId } from "@talismn/balances-evm-native"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
 
-import { addEvmTransaction } from "../recentTransactions/helpers"
 import { getHumanReadableErrorMessage } from "./errors"
 import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
 import { getTransactionCount, incrementTransactionCount } from "./transactionCountManager"
-import { AddEthereumChainRequestIdOnly, RequestUpsertCustomEvmNetwork } from "./types"
-
-type Handler<TMessageType extends MessageTypes> = (
-  req: RequestTypes[TMessageType]
-) => Promise<ResponseType<TMessageType>>
 
 export class EthHandler extends ExtensionHandler {
-  private async signAndSendApproveHardware({
-    id,
-    signedPayload,
-  }: EthRequestSigningApproveSignature<"eth-send">): Promise<boolean> {
-    try {
-      const queued = requestStore.getRequest(id)
-      assert(queued, "Unable to find request")
-      const {
-        method,
-        resolve,
-        ethChainId,
-        account: { address: accountAddress },
-      } = queued
+  private signAndSendApproveHardware: MessageHandler<"pri(eth.signing.approveSignAndSendHardware)"> =
+    async ({ id, unsigned, signedPayload }) => {
+      try {
+        const queued = requestStore.getRequest(id)
+        assert(queued, "Unable to find request")
 
-      const provider = await getProviderForEvmNetworkId(ethChainId)
-      assert(provider, "Unable to find provider for chain " + ethChainId)
+        const {
+          method,
+          resolve,
+          ethChainId,
+          account: { address: accountAddress },
+        } = queued
 
-      const { chainId, hash, from } = await provider.sendTransaction(signedPayload)
+        const provider = await getProviderForEvmNetworkId(ethChainId)
+        assert(provider, "Unable to find provider for chain " + ethChainId)
 
-      incrementTransactionCount(from, chainId.toString())
+        const { chainId, hash, from } = await provider.sendTransaction(signedPayload)
 
-      // TODO add unsigned payload (check if can be rebuild from provider.sendTransaction)
-      watchEthereumTransaction(
-        chainId.toString(),
-        hash,
-        {},
-        { siteUrl: queued.url, notifications: true }
-      )
+        watchEthereumTransaction(chainId.toString(), hash, unsigned, {
+          siteUrl: queued.url,
+          notifications: true,
+        })
 
-      resolve(hash)
+        incrementTransactionCount(from, chainId.toString())
 
-      const account = keyring.getAccount(accountAddress)
-      talismanAnalytics.captureDelayed("sign transaction approve", {
-        method,
-        dapp: queued.url,
-        chain: chainId,
-        networkType: "ethereum",
-        hardwareType: account?.meta.hardwareType,
-      })
-      return true
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      DEBUG && console.error("signAndSendApproveHardware", { err })
-      throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
+        resolve(hash)
+
+        const account = keyring.getAccount(accountAddress)
+        talismanAnalytics.captureDelayed("sign transaction approve", {
+          method,
+          dapp: queued.url,
+          chain: chainId,
+          networkType: "ethereum",
+          hardwareType: account?.meta.hardwareType,
+        })
+        return true
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        DEBUG && console.error("signAndSendApproveHardware", { err })
+        throw new Error(getHumanReadableErrorMessage(err) ?? "Failed to send transaction")
+      }
     }
-  }
 
-  private async signAndSendApprove({ id, transaction }: EthApproveSignAndSend): Promise<boolean> {
+  private signAndSendApprove: MessageHandler<"pri(eth.signing.approveSignAndSend)"> = async ({
+    id,
+    transaction,
+  }) => {
     const queued = requestStore.getRequest(id)
     assert(queued, "Unable to find request")
     const { resolve, reject, ethChainId, account, url } = queued
@@ -147,7 +129,10 @@ export class EthHandler extends ExtensionHandler {
     }
   }
 
-  private sendSigned: Handler<"pri(eth.signing.sendSigned)"> = async ({ unsigned, signed }) => {
+  private sendSigned: MessageHandler<"pri(eth.signing.sendSigned)"> = async ({
+    unsigned,
+    signed,
+  }) => {
     assert(unsigned.chainId, "chainId is not defined")
     const evmNetworkId = unsigned.chainId.toString()
 
@@ -177,7 +162,7 @@ export class EthHandler extends ExtensionHandler {
     }
   }
 
-  private signAndSend: Handler<"pri(eth.signing.signAndSend)"> = async ({ unsigned }) => {
+  private signAndSend: MessageHandler<"pri(eth.signing.signAndSend)"> = async ({ unsigned }) => {
     assert(unsigned.chainId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
     const evmNetworkId = unsigned.chainId.toString()
@@ -221,10 +206,10 @@ export class EthHandler extends ExtensionHandler {
     }
   }
 
-  private signApproveHardware({
+  private signApproveHardware: MessageHandler<"pri(eth.signing.approveSignHardware)"> = ({
     id,
     signedPayload,
-  }: EthRequestSigningApproveSignature<"eth-sign">): boolean {
+  }) => {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
@@ -250,7 +235,7 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async signApprove({ id }: KnownSigningRequestIdOnly<"eth-sign">): Promise<boolean> {
+  private signApprove: MessageHandler<"pri(eth.signing.approveSign)"> = async ({ id }) => {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
@@ -311,7 +296,7 @@ export class EthHandler extends ExtensionHandler {
     return false
   }
 
-  private signingCancel({ id }: KnownSigningRequestIdOnly<"eth-send" | "eth-sign">): boolean {
+  private signingCancel: MessageHandler<"pri(eth.signing.cancel)"> = ({ id }) => {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
@@ -329,7 +314,7 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private ethNetworkAddCancel({ id }: AddEthereumChainRequestIdOnly): boolean {
+  private ethNetworkAddCancel: MessageHandler<"pri(eth.networks.add.cancel)"> = ({ id }) => {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
@@ -341,7 +326,9 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async ethNetworkAddApprove({ id }: AddEthereumChainRequestIdOnly): Promise<boolean> {
+  private ethNetworkAddApprove: MessageHandler<"pri(eth.networks.add.approve)"> = async ({
+    id,
+  }) => {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
@@ -391,7 +378,7 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async ethNetworkUpsert(network: RequestUpsertCustomEvmNetwork): Promise<boolean> {
+  private ethNetworkUpsert: MessageHandler<"pri(eth.networks.upsert)"> = async (network) => {
     await chaindataProvider.transaction("rw", ["evmNetworks", "tokens"], async () => {
       const existingNetwork = await chaindataProvider.getEvmNetwork(network.id)
       const existingToken = existingNetwork?.nativeToken?.id
@@ -450,7 +437,7 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async ethNetworkRemove(request: RequestIdOnly): Promise<boolean> {
+  private ethNetworkRemove: MessageHandler<"pri(eth.networks.remove)"> = async (request) => {
     await chaindataProvider.removeCustomEvmNetwork(request.id)
 
     talismanAnalytics.capture("remove custom network", {
@@ -463,7 +450,7 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async ethNetworkReset(request: RequestIdOnly): Promise<boolean> {
+  private ethNetworkReset: MessageHandler<"pri(eth.networks.reset)"> = async (request) => {
     await chaindataProvider.resetEvmNetwork(request.id)
 
     talismanAnalytics.capture("reset custom network", {
@@ -476,7 +463,9 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private ethWatchAssetRequestCancel({ id }: WatchAssetRequestIdOnly): boolean {
+  private ethWatchAssetRequestCancel: MessageHandler<"pri(eth.watchasset.requests.cancel)"> = ({
+    id,
+  }) => {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
@@ -488,40 +477,37 @@ export class EthHandler extends ExtensionHandler {
     return true
   }
 
-  private async ethWatchAssetRequestApprove({ id }: WatchAssetRequestIdOnly): Promise<boolean> {
-    const queued = requestStore.getRequest(id)
+  private ethWatchAssetRequestApprove: MessageHandler<"pri(eth.watchasset.requests.approve)"> =
+    async ({ id }) => {
+      const queued = requestStore.getRequest(id)
 
-    assert(queued, "Unable to find request")
-    const { resolve, token } = queued
+      assert(queued, "Unable to find request")
+      const { resolve, token } = queued
 
-    // some dapps set decimals as a string, which breaks balances
-    const safeToken = {
-      ...token,
-      decimals: Number(token.decimals),
+      // some dapps set decimals as a string, which breaks balances
+      const safeToken = {
+        ...token,
+        decimals: Number(token.decimals),
+      }
+
+      await chaindataProvider.addCustomToken(safeToken)
+      talismanAnalytics.captureDelayed("add asset evm", {
+        contractAddress: token.contractAddress,
+        symbol: token.symbol,
+        network: token.evmNetwork,
+        isCustom: true,
+      })
+
+      resolve(true)
+
+      return true
     }
 
-    await chaindataProvider.addCustomToken(safeToken)
-    talismanAnalytics.captureDelayed("add asset evm", {
-      contractAddress: token.contractAddress,
-      symbol: token.symbol,
-      network: token.evmNetwork,
-      isCustom: true,
-    })
-
-    resolve(true)
-
-    return true
-  }
-
-  private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
-    id: string,
-    chainId: string,
-    request: EthRequestArguments<TEthMessageType>
-  ): Promise<unknown> {
+  private ethRequest: MessageHandler<"pri(eth.request)"> = async ({ chainId, method, params }) => {
     const provider = await getProviderForEvmNetworkId(chainId, { batch: true })
     assert(provider, `No healthy RPCs available for chain ${chainId}`)
     try {
-      return await provider.send(request.method, request.params as unknown as any[])
+      return await provider.send(method, params as unknown as any[])
     } catch (err) {
       log.error("[ethRequest]", { err })
       // errors raised from batches are raw (number code), errors raised from ethers JsonProvider are wrapped by ethers (text code)
@@ -538,6 +524,9 @@ export class EthHandler extends ExtensionHandler {
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
+      // --------------------------------------------------------------------
+      // ethereum signing requests handlers -----------------------------
+      // --------------------------------------------------------------------
       case "pri(eth.signing.signAndSend)":
         return this.signAndSend(request as RequestTypes["pri(eth.signing.signAndSend)"])
 
@@ -545,10 +534,12 @@ export class EthHandler extends ExtensionHandler {
         return this.sendSigned(request as RequestTypes["pri(eth.signing.sendSigned)"])
 
       case "pri(eth.signing.approveSignAndSend)":
-        return this.signAndSendApprove(request as EthApproveSignAndSend)
+        return this.signAndSendApprove(
+          request as RequestTypes["pri(eth.signing.approveSignAndSend)"]
+        )
 
       case "pri(eth.signing.approveSign)":
-        return this.signApprove(request as KnownSigningRequestIdOnly<"eth-sign">)
+        return this.signApprove(request as RequestTypes["pri(eth.signing.approveSign)"])
 
       case "pri(eth.signing.approveSignHardware)":
         return this.signApproveHardware(
@@ -561,25 +552,29 @@ export class EthHandler extends ExtensionHandler {
         )
 
       case "pri(eth.signing.cancel)":
-        return this.signingCancel(request as KnownSigningRequestIdOnly<"eth-send" | "eth-sign">)
+        return this.signingCancel(request as RequestTypes["pri(eth.signing.cancel)"])
 
       // --------------------------------------------------------------------
       // ethereum watch asset requests handlers -----------------------------
       // --------------------------------------------------------------------
       case "pri(eth.watchasset.requests.cancel)":
-        return this.ethWatchAssetRequestCancel(request as WatchAssetRequestIdOnly)
+        return this.ethWatchAssetRequestCancel(
+          request as RequestTypes["pri(eth.watchasset.requests.cancel)"]
+        )
 
       case "pri(eth.watchasset.requests.approve)":
-        return this.ethWatchAssetRequestApprove(request as WatchAssetRequestIdOnly)
+        return this.ethWatchAssetRequestApprove(
+          request as RequestTypes["pri(eth.watchasset.requests.approve)"]
+        )
 
       // --------------------------------------------------------------------
       // ethereum network handlers ------------------------------------------
       // --------------------------------------------------------------------
       case "pri(eth.networks.add.cancel)":
-        return this.ethNetworkAddCancel(request as AddEthereumChainRequestIdOnly)
+        return this.ethNetworkAddCancel(request as RequestTypes["pri(eth.networks.add.cancel)"])
 
       case "pri(eth.networks.add.approve)":
-        return this.ethNetworkAddApprove(request as AddEthereumChainRequestIdOnly)
+        return this.ethNetworkAddApprove(request as RequestTypes["pri(eth.networks.add.approve)"])
 
       case "pri(eth.networks.add.requests)":
         return requestStore.getAllRequests(ETH_NETWORK_ADD_PREFIX)
@@ -590,21 +585,22 @@ export class EthHandler extends ExtensionHandler {
       case "pri(eth.networks.upsert)":
         return this.ethNetworkUpsert(request as RequestTypes["pri(eth.networks.upsert)"])
 
-      case "pri(eth.transactions.count)": {
-        const { address, evmNetworkId } = request as RequestTypes["pri(eth.transactions.count)"]
-        return getTransactionCount(address, evmNetworkId)
-      }
-
       case "pri(eth.networks.remove)":
         return this.ethNetworkRemove(request as RequestTypes["pri(eth.networks.remove)"])
 
       case "pri(eth.networks.reset)":
         return this.ethNetworkReset(request as RequestTypes["pri(eth.networks.reset)"])
 
-      case "pri(eth.request)": {
-        const { chainId: ethChainId, ...rest } = request as AnyEthRequestChainId
-        return this.ethRequest(id, ethChainId, rest) as any
+      // --------------------------------------------------------------------
+      // ethereum other handlers ------------------------------------------
+      // --------------------------------------------------------------------
+      case "pri(eth.transactions.count)": {
+        const { address, evmNetworkId } = request as RequestTypes["pri(eth.transactions.count)"]
+        return getTransactionCount(address, evmNetworkId)
       }
+
+      case "pri(eth.request)":
+        return this.ethRequest(request as RequestTypes["pri(eth.request)"])
     }
     throw new Error(`Unable to handle message of type ${type}`)
   }

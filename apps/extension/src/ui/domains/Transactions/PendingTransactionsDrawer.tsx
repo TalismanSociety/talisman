@@ -14,7 +14,7 @@ import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { BigNumber } from "ethers"
 import sortBy from "lodash/sortBy"
-import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { FC, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
 import urlJoin from "url-join"
@@ -22,8 +22,8 @@ import urlJoin from "url-join"
 import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import Tokens from "../Asset/Tokens"
-import { TxCancelDrawer } from "./TxCancelDrawer"
-import { TxSpeedUpDrawer } from "./TxSpeedUpDrawer"
+import { TxReplaceType } from "./shared"
+import { TxReplaceDrawer } from "./TxReplaceDrawer"
 
 type TransactionRowProps = {
   tx: WalletTransaction
@@ -66,16 +66,16 @@ const EvmTxActions: FC<{
   onContextMenuClose,
 }) => {
   const isPending = useMemo(() => ["pending", "unknown"].includes(tx?.status), [tx.status])
-  const ocSpeedUp = useOpenClose()
-  const ocCancelUp = useOpenClose()
+
+  const [replaceType, setReplaceType] = useState<TxReplaceType>()
 
   const handleActionClick = useCallback(
     (action: TransactionAction) => () => {
       onContextMenuClose?.()
-      if (action === "speed-up") ocSpeedUp.open()
-      if (action === "cancel") ocCancelUp.open()
+      if (action === "speed-up") setReplaceType("speed-up") // ocSpeedUp.open()
+      if (action === "cancel") setReplaceType("cancel") // ocCancelUp.open()
     },
-    [ocCancelUp, ocSpeedUp, onContextMenuClose]
+    [onContextMenuClose]
   )
 
   const handleOpenChange = useCallback(
@@ -185,8 +185,12 @@ const EvmTxActions: FC<{
           </PopoverContent>
         </Popover>
       </div>
-      <TxSpeedUpDrawer tx={tx} isOpen={ocSpeedUp.isOpen} onClose={ocSpeedUp.close} />
-      <TxCancelDrawer tx={tx} isOpen={ocCancelUp.isOpen} onClose={ocCancelUp.close} />
+      <TxReplaceDrawer
+        tx={tx}
+        type={replaceType}
+        isOpen={!!replaceType}
+        onClose={() => setReplaceType(undefined)}
+      />
     </div>
   )
 }
