@@ -13,7 +13,14 @@ import {
   ExtendableTransferParams,
 } from "./BalanceModule"
 import log from "./log"
-import { AddressesByToken, Balance, Balances, SubscriptionCallback, UnsubscribeFn } from "./types"
+import {
+  AddressesByToken,
+  Balance,
+  BalanceJson,
+  Balances,
+  SubscriptionCallback,
+  UnsubscribeFn,
+} from "./types"
 
 /**
  * Wraps a BalanceModule's fetch/subscribe methods with a single `balances` method.
@@ -86,6 +93,25 @@ export const filterMirrorTokens = (balance: Balance, i: number, balances: Balanc
   const mirrorOf = (balance.token as (IToken & { mirrorOf?: string | null }) | null)?.mirrorOf
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }
+
+/**
+ * Sets all balance statuses from `live-${string}` to either `live` or `cached`
+ */
+export const deriveStatuses = (
+  latestSubscriptionId: string | undefined,
+  balances: BalanceJson[]
+): BalanceJson[] =>
+  balances.map((balance) => {
+    if (balance.status === "live" || balance.status === "cache" || balance.status === "stale")
+      return balance
+
+    if (!latestSubscriptionId) return { ...balance, status: "cache" }
+
+    if (balance.status.slice("live-".length) !== latestSubscriptionId)
+      return { ...balance, status: "cache" }
+
+    return { ...balance, status: "live" }
+  })
 
 /**
  * Used by a variety of balance modules to help encode and decode substrate state calls.

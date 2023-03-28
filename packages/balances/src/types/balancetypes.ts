@@ -37,7 +37,14 @@ export type BalanceJson = BalanceTypes[keyof BalanceTypes] extends never
 /** A collection of `BalanceJson` objects */
 export type BalanceJsonList = Record<string, BalanceJson>
 
+export type BalanceStatusLive = `live-${string}`
+export const BalanceStatusLive = (subscriptionId: string): BalanceStatusLive =>
+  `live-${subscriptionId}`
 export type BalanceStatus =
+  // balance is subscribed to the on-chain value and up to date
+  // (NOTE: format: `live-${subscriptionId}`, if subscriptionId is out of
+  // date then balance status should be considered as `cache`)
+  | BalanceStatusLive
   // balance is subscribed to the on-chain value and up to date
   | "live"
   // balance was retrieved from the chain but is no longer subscribed

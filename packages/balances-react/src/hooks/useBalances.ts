@@ -1,43 +1,46 @@
-import { AddressesByToken, Balances } from "@talismn/balances"
+import { AddressesByToken, Balances, deriveStatuses } from "@talismn/balances"
 import { Token } from "@talismn/chaindata-provider"
 import { useMemo } from "react"
 
 import { useBalanceModules } from "./useBalanceModules"
 import { useBalancesHydrate } from "./useBalancesHydrate"
 import { useDbCache } from "./useDbCache"
-import { useDbCacheBalancesSubscription, useDbCacheSubscription } from "./useDbCacheSubscription"
+import { useDbCacheBalancesSubscription } from "./useDbCacheSubscription"
 
 export function useBalances(addressesByToken: AddressesByToken<Token> | null) {
   // keep db data up to date
   useDbCacheBalancesSubscription()
 
   const balanceModules = useBalanceModules()
-  const { balances } = useDbCache()
+  const { balances, balancesMeta } = useDbCache()
   const hydrate = useBalancesHydrate()
 
   return useMemo(
     () =>
       new Balances(
-        balances.filter((balance) => {
-          // check that this balance is included in our queried balance modules
-          if (!balanceModules.map(({ type }) => type).includes(balance.source)) return false
+        deriveStatuses(
+          balancesMeta.subscriptionId,
+          balances.filter((balance) => {
+            // check that this balance is included in our queried balance modules
+            if (!balanceModules.map(({ type }) => type).includes(balance.source)) return false
 
-          // check that our query includes some tokens and addresses
-          if (!addressesByToken) return false
+            // check that our query includes some tokens and addresses
+            if (!addressesByToken) return false
 
-          // check that this balance is included in our queried tokens
-          if (!Object.keys(addressesByToken).includes(balance.tokenId)) return false
+            // check that this balance is included in our queried tokens
+            if (!Object.keys(addressesByToken).includes(balance.tokenId)) return false
 
-          // check that this balance is included in our queried addresses for this token
-          if (!addressesByToken[balance.tokenId].includes(balance.address)) return false
+            // check that this balance is included in our queried addresses for this token
+            if (!addressesByToken[balance.tokenId].includes(balance.address)) return false
 
-          // keep this balance
-          return true
-        }),
+            // keep this balance
+            return true
+          })
+        ),
 
         // hydrate balance chains, evmNetworks, tokens and tokenRates
         hydrate
       ),
-    [balances, hydrate, balanceModules, addressesByToken]
+    [balancesMeta.subscriptionId, balances, hydrate, balanceModules, addressesByToken]
   )
 }

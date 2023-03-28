@@ -13,7 +13,7 @@ import keyring from "@polkadot/ui-keyring"
 import { SingleAddress } from "@polkadot/ui-keyring/observable/types"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
-import { AddressesByToken, db as balancesDb } from "@talismn/balances"
+import { AddressesByToken, BalanceStatusLive, db as balancesDb } from "@talismn/balances"
 import { balanceModules as defaultBalanceModules } from "@talismn/balances-default-modules"
 import { Token, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
@@ -358,6 +358,9 @@ export class BalanceStore {
     if (this.#subscriptionsState !== "Closed") return
     this.setSubscriptionsState("Open")
 
+    const subscriptionId = Date.now().toString()
+    await balancesDb.meta.put({ id: "subscriptionId", value: subscriptionId })
+
     const generation = this.#subscriptionsGeneration
     const addresses = await firstValueFrom(this.#addresses)
     const tokens = await firstValueFrom(this.#tokens)
@@ -419,7 +422,7 @@ export class BalanceStore {
 
           if (error) return log.error(error)
 
-          this.upsertBalances(result ?? new Balances([])).catch((error) =>
+          this.upsertBalances(subscriptionId, result ?? new Balances([])).catch((error) =>
             log.error("Failed to upsert balances", { error })
           )
         }
@@ -436,11 +439,12 @@ export class BalanceStore {
    *
    * @param balancesUpdates - An list of updated balances.
    */
-  private async upsertBalances(balancesUpdates: Balances) {
+  private async upsertBalances(subscriptionId: string, balancesUpdates: Balances) {
     // seralize
     const updates = Object.entries(balancesUpdates.toJSON()).map(([id, balance]) => ({
       id,
       ...balance,
+      status: BalanceStatusLive(subscriptionId),
     }))
 
     // update stored balances
@@ -467,11 +471,9 @@ export class BalanceStore {
       .forEach((cb) => cb.then((close) => setTimeout(close, 10_000)))
 
     try {
-      // rpcs are no longer connected,
-      // update cached balances to 'cache' status
-      await balancesDb.balances.where("status").equals("live").modify({ status: "cache" })
-    } catch (error) {
-      log.error("Failed to update all balances to 'cache' status", { error })
+      await balancesDb.meta.delete("subscriptionId")
+    } catch (cause) {
+      log.error(new Error("Failed to delete subscriptionId from balances db", { cause }))
     }
 
     this.setSubscriptionsState("Closed")
