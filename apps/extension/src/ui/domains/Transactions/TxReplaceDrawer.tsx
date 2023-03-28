@@ -1,18 +1,23 @@
-import { AccountJsonAny, AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
+import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { serializeTransactionRequestBigNumbers } from "@core/domains/ethereum/helpers"
 import {
   EvmWalletTransaction,
   SubWalletTransaction,
   WalletTransaction,
 } from "@core/domains/recentTransactions/types"
+import { EthTransactionDetails } from "@core/domains/signing/types"
 import { notify } from "@talisman/components/Notifications"
-import { XOctagonIcon } from "@talisman/theme/icons"
+import { InfoIcon, XOctagonIcon } from "@talisman/theme/icons"
+import { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useBalance } from "@ui/hooks/useBalance"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { BigNumber } from "ethers"
+import { ethers } from "ethers"
 import { FC, lazy, useCallback, useEffect, useState } from "react"
 import { Button, Drawer } from "talisman-ui"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
@@ -46,6 +51,60 @@ const TEXT = {
     "speed-up": "Speed Up",
     "cancel": "Try to Cancel",
   },
+}
+
+export const EvmEstimatedFeeTooltip: FC<{
+  account: string
+  feeTokenId?: TokenId
+  txDetails?: EthTransactionDetails
+}> = ({ account, feeTokenId, txDetails }) => {
+  const balance = useBalance(account, feeTokenId as string)
+
+  if (!feeTokenId || !txDetails) return null
+
+  return (
+    <Tooltip>
+      <TooltipTrigger>
+        <InfoIcon className="inline align-text-top text-sm" />
+      </TooltipTrigger>
+      <TooltipContent>
+        <div className="grid grid-cols-2 gap-2">
+          <div>Estimated fee:</div>
+          <div className="text-right">
+            <TokensAndFiat
+              planck={ethers.BigNumber.from(txDetails.estimatedFee).toBigInt()}
+              tokenId={feeTokenId}
+              noCountUp
+            />
+          </div>
+          {!!txDetails?.maxFee && (
+            <>
+              <div>Max. fee:</div>
+              <div className="text-right">
+                <TokensAndFiat
+                  planck={ethers.BigNumber.from(txDetails.maxFee).toBigInt()}
+                  tokenId={feeTokenId}
+                  noCountUp
+                />
+              </div>
+            </>
+          )}
+          {!!balance && (
+            <>
+              <div>Balance:</div>
+              <div className="text-right">
+                <TokensAndFiat
+                  planck={balance.transferable.planck}
+                  tokenId={feeTokenId}
+                  noCountUp
+                />
+              </div>
+            </>
+          )}
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 const EvmDrawerContent: FC<{
@@ -145,7 +204,14 @@ const EvmDrawerContent: FC<{
       <p className="text-body-secondary mt-10 text-center text-sm">{TEXT.description[type]}</p>
       <div className="text-body-secondary mt-16 w-full space-y-2 text-xs">
         <div className="flex w-full items-center justify-between">
-          <div>Estimated Fee TODO</div>
+          <div>
+            Estimated Fee{" "}
+            <EvmEstimatedFeeTooltip
+              account={tx.account}
+              feeTokenId={evmNetwork?.nativeToken?.id}
+              txDetails={txDetails}
+            />
+          </div>
           <div>Priority</div>
         </div>
         <div className="flex h-12 w-full items-center justify-between">

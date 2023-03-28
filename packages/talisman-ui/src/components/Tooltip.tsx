@@ -127,7 +127,13 @@ export const TooltipTrigger = React.forwardRef<
 })
 
 export const TooltipContent = React.forwardRef<HTMLDivElement, React.HTMLProps<HTMLDivElement>>(
-  function TooltipContent(props, propRef) {
+  function TooltipContent(
+    {
+      className = "rounded-xs text-body-secondary border-grey-700 z-20 border-[0.5px] bg-black p-3 text-xs shadow",
+      ...props
+    },
+    propRef
+  ) {
     const context = useTooltipContext()
     const ref = useMergeRefs([context.refs.setFloating, propRef])
 
@@ -136,6 +142,7 @@ export const TooltipContent = React.forwardRef<HTMLDivElement, React.HTMLProps<H
         {context.open && (
           <div
             ref={ref}
+            className={className}
             style={{
               position: context.strategy,
               top: context.y ?? 0,
