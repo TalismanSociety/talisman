@@ -1,9 +1,6 @@
 import { balanceModules } from "@core/domains/balances/store"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
-import {
-  AssetTransferMethod,
-  ResponseAssetTransferFeeQuery,
-} from "@core/domains/transactions/types"
+import { AssetTransferMethod, ResponseAssetTransferFeeQuery } from "@core/domains/transfers/types"
 import { chainConnector } from "@core/rpcs/chain-connector"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { SubscriptionCallback } from "@core/types"

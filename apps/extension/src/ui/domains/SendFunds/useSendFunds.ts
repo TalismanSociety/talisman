@@ -1,5 +1,5 @@
 import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
-import { AssetTransferMethod } from "@core/domains/transactions/types"
+import { AssetTransferMethod } from "@core/domains/transfers/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"

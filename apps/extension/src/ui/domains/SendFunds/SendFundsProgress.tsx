@@ -1,5 +1,5 @@
 import { EvmNetworkId } from "@core/domains/ethereum/types"
-import { TransactionStatus } from "@core/domains/transactions/types"
+import { TransactionStatus } from "@core/domains/transfers/types"
 import { ExternalLinkIcon } from "@talisman/theme/icons"
 import useChain from "@ui/hooks/useChain"
 import { useEvmTransactionWatch } from "@ui/hooks/useEvmTransactionWatch"

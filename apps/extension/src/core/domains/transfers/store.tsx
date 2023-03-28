@@ -1,5 +1,5 @@
 import { ChainId } from "@core/domains/chains/types"
-import { Transaction, TransactionId, TransactionStatus } from "@core/domains/transactions/types"
+import { Transaction, TransactionId, TransactionStatus } from "@core/domains/transfers/types"
 import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { StorageProvider } from "@core/libs/Store"
 import { Address, Port, RequestIdOnly } from "@core/types/base"
@@ -29,13 +29,17 @@ export class TransactionStore extends StorageProvider<TransactionSubject> {
   constructor(prefix: string) {
     super(prefix)
 
+    // Clear this store
+    // TODO keep this for few months so it's cleared for most users, then delete the store
+    this.clear()
+
     // Once off migration to remove all old (pre-uuid ID) transactions
-    this.get().then((txs) => {
-      const deleteTxIds = Object.keys(txs).filter(
-        (txId) => !isUuid(txId) || uuidVersion(txId) !== 4
-      )
-      this.delete(deleteTxIds)
-    })
+    // this.get().then((txs) => {
+    //   const deleteTxIds = Object.keys(txs).filter(
+    //     (txId) => !isUuid(txId) || uuidVersion(txId) !== 4
+    //   )
+    //   this.delete(deleteTxIds)
+    // })
   }
 
   public upsert(

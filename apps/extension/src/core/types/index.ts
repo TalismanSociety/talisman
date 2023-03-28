@@ -9,7 +9,7 @@ import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { TokenRatesMessages } from "@core/domains/tokenRates/types"
 import { TokenMessages } from "@core/domains/tokens/types"
-import { AssetTransferMessages } from "@core/domains/transactions/types"
+import { AssetTransferMessages } from "@core/domains/transfers/types"
 import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
 
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"

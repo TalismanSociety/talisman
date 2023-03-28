@@ -1,5 +1,5 @@
 import { EvmNetworkId } from "@core/domains/ethereum/types"
-import { TransactionStatus } from "@core/domains/transactions/types"
+import { TransactionStatus } from "@core/domains/transfers/types"
 import { IconButton } from "@talisman/components/IconButton"
 import { XIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"

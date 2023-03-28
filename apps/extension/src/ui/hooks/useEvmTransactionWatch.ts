@@ -1,4 +1,4 @@
-import { TransactionStatus } from "@core/domains/transactions/types"
+import { TransactionStatus } from "@core/domains/transfers/types"
 import { TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider"
 import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"

@@ -9,7 +9,7 @@ import { sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import sitesAuthorisedStore from "@core/domains/sitesAuthorised/store"
 import { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
 import { tokenRatesStore } from "@core/domains/tokenRates"
-import transactionStore, { TransactionSubject } from "@core/domains/transactions/store"
+import transactionStore, { TransactionSubject } from "@core/domains/transfers/store"
 
 export type TabStore = {
   chains: typeof chainStore

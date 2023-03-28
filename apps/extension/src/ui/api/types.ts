@@ -49,7 +49,7 @@ import {
   ResponseAssetTransfer,
   ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
-} from "@core/domains/transactions/types"
+} from "@core/domains/transfers/types"
 import { EthResponseType } from "@core/injectEth/types"
 import { ValidRequests } from "@core/libs/requests/types"
 import { UnsubscribeFn } from "@core/types"

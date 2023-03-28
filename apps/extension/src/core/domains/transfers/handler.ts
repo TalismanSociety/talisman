@@ -8,7 +8,7 @@ import {
   incrementTransactionCount,
 } from "@core/domains/ethereum/transactionCountManager"
 import EventsRpc from "@core/domains/events/rpc"
-import AssetTransfersRpc from "@core/domains/transactions/rpc/AssetTransfers"
+import AssetTransfersRpc from "@core/domains/transfers/rpc/AssetTransfers"
 import {
   RequestAssetTransfer,
   RequestAssetTransferApproveSign,
@@ -17,7 +17,7 @@ import {
   ResponseAssetTransfer,
   ResponseAssetTransferEth,
   TransactionStatus,
-} from "@core/domains/transactions/types"
+} from "@core/domains/transfers/types"
 import { getPairForAddressSafely, getPairFromAddress } from "@core/handlers/helpers"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"

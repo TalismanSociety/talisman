@@ -1,4 +1,4 @@
-import type { Transaction, TransactionId } from "@core/domains/transactions/types"
+import type { Transaction, TransactionId } from "@core/domains/transfers/types"
 import { api } from "@ui/api"
 import { useCallback } from "react"
 import { BehaviorSubject } from "rxjs"
