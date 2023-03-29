@@ -59,19 +59,18 @@ export default class AssetTransfersRpc {
     const unsubscribe = await chainConnector.subscribe(
       chainId,
       "author_submitAndWatchExtrinsic",
-      "author_unwatchExtrinsic",
       "author_extrinsicUpdate",
       [tx.toHex()],
       (error, result) => {
         if (error) {
           callback(error)
-          unsubscribe()
+          unsubscribe("author_unwatchExtrinsic")
           return
         }
 
         const status = registry.createType<ExtrinsicStatus>("ExtrinsicStatus", result)
         callback(null, { nonce: tx.nonce.toString(), hash: tx.hash.toString(), status })
-        if (status.isFinalized) unsubscribe()
+        if (status.isFinalized) unsubscribe("author_unwatchExtrinsic")
       }
     )
   }
@@ -102,19 +101,18 @@ export default class AssetTransfersRpc {
     const unsubscribe = await chainConnector.subscribe(
       chain.id,
       "author_submitAndWatchExtrinsic",
-      "author_unwatchExtrinsic",
       "author_extrinsicUpdate",
       [tx.toHex()],
       (error, result) => {
         if (error) {
           callback(error)
-          unsubscribe()
+          unsubscribe("author_unwatchExtrinsic")
           return
         }
 
         const status = registry.createType<ExtrinsicStatus>("ExtrinsicStatus", result)
         callback(null, { nonce: tx.nonce.toString(), hash: tx.hash.toString(), status })
-        if (status.isFinalized) unsubscribe()
+        if (status.isFinalized) unsubscribe("author_unwatchExtrinsic")
       }
     )
   }

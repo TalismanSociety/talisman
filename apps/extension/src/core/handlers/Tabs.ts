@@ -62,7 +62,7 @@ import { createSubscription, genericAsyncSubscription, unsubscribe } from "./sub
 
 export default class Tabs extends TabsHandler {
   #rpcState = new RpcState()
-  #talismanByGenesisHashSubscriptions = new Map<string, () => void>()
+  #talismanByGenesisHashSubscriptions = new Map<string, (unsubscribeMethod: string) => void>()
   readonly #routes: Record<string, TabsHandler> = {}
 
   constructor(stores: TabStore) {
@@ -215,8 +215,7 @@ export default class Tabs extends TabsHandler {
   ): Promise<string> {
     const subscriptionId = `${port.name}-${id}`
 
-    const { genesisHash, subscribeMethod, unsubscribeMethod, responseMethod, params, timeout } =
-      request
+    const { genesisHash, subscribeMethod, responseMethod, params, timeout } = request
 
     const chain = await chaindataProvider.getChain({ genesisHash })
     assert(chain, `Chain with genesisHash '${genesisHash}' not found`)
@@ -224,14 +223,24 @@ export default class Tabs extends TabsHandler {
     const unsubscribe = await chainConnector.subscribe(
       chain.id,
       subscribeMethod,
-      unsubscribeMethod,
       responseMethod,
       params,
       (error, data) => {
         try {
           port.postMessage({ id, subscription: { error, data } })
         } catch (error) {
-          unsubscribe()
+          // end subscription when port no longer exists
+          //
+          // unfortunately, we won't know what unsubscribe method to call on the rpc itself
+          // so we'll continue to receive updates from the rpc until it's also disconnected
+          //
+          // but we can at least stop trying to send those updates down to the disconnected port
+          //
+          // this is a design limitation due to the `ProviderInterface` which we must support
+          // in order to use ChainConnector with ApiPromise from the @polkadot/api package
+          // this interface doesn't provide the unsubscribeMethod for a subscription until
+          // later when the consumer is preparing to unsubscribe
+          unsubscribe("")
         }
       },
       timeout
@@ -239,7 +248,8 @@ export default class Tabs extends TabsHandler {
 
     this.#talismanByGenesisHashSubscriptions.set(subscriptionId, unsubscribe)
     port.onDisconnect.addListener(() =>
-      this.rpcTalismanByGenesisHashUnsubscribe({ subscriptionId })
+      // end subscription when port closes
+      this.rpcTalismanByGenesisHashUnsubscribe({ subscriptionId, unsubscribeMethod: "" })
     )
 
     return subscriptionId
@@ -248,14 +258,14 @@ export default class Tabs extends TabsHandler {
   private async rpcTalismanByGenesisHashUnsubscribe(
     request: RequestRpcByGenesisHashUnsubscribe
   ): Promise<boolean> {
-    const { subscriptionId } = request
+    const { subscriptionId, unsubscribeMethod } = request
 
     if (!this.#talismanByGenesisHashSubscriptions.has(subscriptionId)) return false
 
     const unsubscribe = this.#talismanByGenesisHashSubscriptions.get(subscriptionId)
     this.#talismanByGenesisHashSubscriptions.delete(subscriptionId)
 
-    unsubscribe && unsubscribe()
+    unsubscribe && unsubscribe(unsubscribeMethod)
 
     return true
   }

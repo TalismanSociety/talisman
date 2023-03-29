@@ -1,4 +1,8 @@
-import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
+import type {
+  ProviderInterface,
+  ProviderInterfaceCallback,
+  ProviderInterfaceEmitted,
+} from "@polkadot/rpc-provider/types"
 import { ChainId, ChaindataChainProvider } from "@talismn/chaindata-provider"
 import { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
 import { Deferred, sleep } from "@talismn/util"
@@ -29,6 +33,19 @@ export class WebsocketAllocationExhaustedError extends Error {
 
     this.type = "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
     this.chainId = chainId
+  }
+}
+class CallerUnsubscribedError extends Error {
+  type: "CALLER_UNSUBSCRIBED_ERROR"
+  chainId: string
+  unsubscribeMethod: string
+
+  constructor(chainId: string, unsubscribeMethod: string, options?: ErrorOptions) {
+    super(`Caller unsubscribed from ${chainId}`, options)
+
+    this.type = "CALLER_UNSUBSCRIBED_ERROR"
+    this.chainId = chainId
+    this.unsubscribeMethod = unsubscribeMethod
   }
 }
 
@@ -69,6 +86,54 @@ export class ChainConnector {
         this.#connectionMetaDb?.chainBackoffInterval.where("id").noneOf(chainIds).delete()
       })
     }
+  }
+
+  /**
+   * Creates a facade over this ChainConnector which conforms to the PJS ProviderInterface
+   * @example // Using a chainConnector as a Provider for an ApiPromise
+   *   const provider = chainConnector.asProvider('polkadot')
+   *   const api = new ApiPromise({ provider })
+   */
+  asProvider(chainId: ChainId): ProviderInterface {
+    const unsubHandler = new Map<string, (unsubscribeMethod: string) => void>()
+
+    const providerFacade: ProviderInterface = {
+      hasSubscriptions: true,
+      isClonable: false,
+      isConnected: true,
+      clone: () => providerFacade,
+      connect: () => Promise.resolve(),
+      disconnect: () => Promise.resolve(),
+      on: () => () => {},
+
+      send: async <T = any>(method: string, params: unknown[], isCacheable?: boolean): Promise<T> =>
+        await this.send(chainId, method, params, isCacheable),
+
+      subscribe: async (
+        type: string,
+        method: string,
+        params: unknown[],
+        cb: ProviderInterfaceCallback
+      ): Promise<string> => {
+        const unsubscribe = await this.subscribe(chainId, method, type, params, cb)
+
+        const subscriptionId = this.getExclusiveRandomId(
+          [...unsubHandler.keys()].map(Number)
+        ).toString()
+        unsubHandler.set(subscriptionId, unsubscribe)
+
+        return subscriptionId
+      },
+
+      unsubscribe: async (_type: string, unsubscribeMethod: string, subscriptionId: string) => {
+        unsubHandler.get(subscriptionId)?.(unsubscribeMethod)
+        unsubHandler.delete(subscriptionId)
+
+        return true
+      },
+    }
+
+    return providerFacade
   }
 
   async send<T = any>(
@@ -129,12 +194,11 @@ export class ChainConnector {
   async subscribe(
     chainId: ChainId,
     subscribeMethod: string,
-    unsubscribeMethod: string,
     responseMethod: string,
     params: unknown[],
     callback: ProviderInterfaceCallback,
     timeout: number | false = 30_000 // 30 seconds in milliseconds
-  ): Promise<() => void> {
+  ): Promise<(unsubscribeMethod: string) => void> {
     const talismanSub = this.getTalismanSub()
     if (talismanSub !== undefined) {
       try {
@@ -148,14 +212,14 @@ export class ChainConnector {
         const subscriptionId = await talismanSub.subscribe(
           genesisHash,
           subscribeMethod,
-          unsubscribeMethod,
           responseMethod,
           params,
           callback,
           timeout
         )
 
-        return () => talismanSub.unsubscribe(subscriptionId)
+        return (unsubscribeMethod: string) =>
+          talismanSub.unsubscribe(subscriptionId, unsubscribeMethod)
       } catch (error) {
         log.warn(
           `Failed to create wallet-proxied subscription for chain ${chainId}. Falling back to plain websocket`,
@@ -176,7 +240,8 @@ export class ChainConnector {
     // we can queue up our async cleanup on the promise and then immediately return an unsubscribe method to the caller
     const unsubDeferred = Deferred()
     // we return this to the caller so that they can let us know when they're no longer interested in this subscription
-    const unsubscribe = () => unsubDeferred.reject(new Error(`Caller unsubscribed from ${chainId}`))
+    const unsubscribe = (unsubscribeMethod: string) =>
+      unsubDeferred.reject(new CallerUnsubscribedError(chainId, unsubscribeMethod))
     // we queue up our work to clean up our subscription when this promise rejects
     const callerUnsubscribed = unsubDeferred.promise
 
@@ -240,29 +305,40 @@ export class ChainConnector {
       // - the subscriptionId is not set yet, but will be
       let subscriptionId: string | number | null = null
       let disconnected = false
+      let unsubscribeMethod: string | undefined = undefined
       try {
         await Promise.race([
           ws.subscribe(responseMethod, subscribeMethod, params, callback).then((id) => {
-            if (disconnected) ws.unsubscribe(responseMethod, unsubscribeMethod, id)
-            else subscriptionId = id
+            if (disconnected) {
+              unsubscribeMethod && ws.unsubscribe(responseMethod, unsubscribeMethod, id)
+            } else subscriptionId = id
           }),
           callerUnsubscribed,
         ])
       } catch (error) {
+        if (error instanceof CallerUnsubscribedError) unsubscribeMethod = error.unsubscribeMethod
+
         unsubRpcStatus && unsubRpcStatus()
         disconnected = true
-        subscriptionId !== null &&
-          (await ws.unsubscribe(responseMethod, unsubscribeMethod, subscriptionId))
+
+        if (subscriptionId !== null && unsubscribeMethod)
+          await ws.unsubscribe(responseMethod, unsubscribeMethod, subscriptionId)
+
         await this.disconnectChainSocket(chainId, socketUserId)
         return
       }
 
       // unsubscribe from ws subscription when the caller has unsubscribed
       callerUnsubscribed
-        .catch(async () => {
+        .catch(async (error) => {
+          let unsubscribeMethod = undefined
+          if (error instanceof CallerUnsubscribedError) unsubscribeMethod = error.unsubscribeMethod
+
           unsubRpcStatus && unsubRpcStatus()
-          subscriptionId !== null &&
-            (await ws.unsubscribe(responseMethod, unsubscribeMethod, subscriptionId))
+
+          if (subscriptionId !== null && unsubscribeMethod)
+            await ws.unsubscribe(responseMethod, unsubscribeMethod, subscriptionId)
+
           await this.disconnectChainSocket(chainId, socketUserId)
         })
         .catch((error) => log.warn(error))
@@ -439,7 +515,6 @@ export class ChainConnector {
       subscribe: async (
         genesisHash: string,
         subscribeMethod: string,
-        unsubscribeMethod: string,
         responseMethod: string,
         params: unknown[],
         callback: ProviderInterfaceCallback,
@@ -447,12 +522,15 @@ export class ChainConnector {
       ): Promise<string> =>
         await sendRequest(
           "pub(rpc.talisman.byGenesisHash.subscribe)",
-          { genesisHash, subscribeMethod, unsubscribeMethod, responseMethod, params, timeout },
+          { genesisHash, subscribeMethod, responseMethod, params, timeout },
           ({ error, data }: any) => callback(error ?? null, data)
         ),
 
-      unsubscribe: async (subscriptionId: string): Promise<void> =>
-        await sendRequest("pub(rpc.talisman.byGenesisHash.unsubscribe)", { subscriptionId }),
+      unsubscribe: async (subscriptionId: string, unsubscribeMethod: string): Promise<void> =>
+        await sendRequest("pub(rpc.talisman.byGenesisHash.unsubscribe)", {
+          subscriptionId,
+          unsubscribeMethod,
+        }),
     }
   }
 }

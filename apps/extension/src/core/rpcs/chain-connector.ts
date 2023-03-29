@@ -12,11 +12,11 @@ export type RequestRpcByGenesisHashSend = {
 export type RequestRpcByGenesisHashSubscribe = {
   genesisHash: string
   subscribeMethod: string
-  unsubscribeMethod: string
   responseMethod: string
   params: unknown[]
   timeout: number | false
 }
 export type RequestRpcByGenesisHashUnsubscribe = {
   subscriptionId: string
+  unsubscribeMethod: string
 }
