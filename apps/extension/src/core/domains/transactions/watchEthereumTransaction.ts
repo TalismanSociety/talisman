@@ -1,9 +1,5 @@
-import { db } from "@core/db"
 import { settingsStore } from "@core/domains/app"
-import {
-  addEvmTransaction,
-  updateEvmTransactionStatus,
-} from "@core/domains/recentTransactions/helpers"
+import { addEvmTransaction, updateEvmTransactionStatus } from "@core/domains/transactions/helpers"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
@@ -11,8 +7,8 @@ import { ethers } from "ethers"
 import { nanoid } from "nanoid"
 import urlJoin from "url-join"
 
-import { getProviderForEthereumNetwork } from "../domains/ethereum/rpcProviders"
-import { createNotification } from "./createNotification"
+import { createNotification } from "../../notifications/createNotification"
+import { getProviderForEthereumNetwork } from "../ethereum/rpcProviders"
 
 type WatchEthereumTransactionOptions = {
   siteUrl?: string

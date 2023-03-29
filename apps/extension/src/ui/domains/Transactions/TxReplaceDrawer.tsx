@@ -1,11 +1,11 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { serializeTransactionRequestBigNumbers } from "@core/domains/ethereum/helpers"
+import { EthTransactionDetails } from "@core/domains/signing/types"
 import {
   EvmWalletTransaction,
   SubWalletTransaction,
   WalletTransaction,
-} from "@core/domains/recentTransactions/types"
-import { EthTransactionDetails } from "@core/domains/signing/types"
+} from "@core/domains/transactions/types"
 import { notify } from "@talisman/components/Notifications"
 import { InfoIcon, XOctagonIcon } from "@talisman/theme/icons"
 import { TokenId } from "@talismn/chaindata-provider"

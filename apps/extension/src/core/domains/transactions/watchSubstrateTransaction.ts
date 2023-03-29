@@ -1,5 +1,6 @@
 import { Chain, ChainId } from "@core/domains/chains/types"
 import { log } from "@core/log"
+import { NotificationType, createNotification } from "@core/notifications/createNotification"
 import { chainConnector } from "@core/rpcs/chain-connector"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { TypeRegistry } from "@polkadot/types"
@@ -7,8 +8,6 @@ import { Hash } from "@polkadot/types/interfaces"
 import { xxhashAsHex } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
 import { Err, Ok, Result } from "ts-results"
-
-import { NotificationType, createNotification } from "./createNotification"
 
 const TX_WATCH_TIMEOUT = 90_000 // 90 seconds in milliseconds
 

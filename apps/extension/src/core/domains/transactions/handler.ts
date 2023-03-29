@@ -2,7 +2,7 @@ import { ExtensionHandler } from "@core/libs/Handler"
 import { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
 
-export default class RecentTransactionsHandler extends ExtensionHandler {
+export default class TransactionsHandler extends ExtensionHandler {
   handle<TMessageType extends keyof RequestSignatures>(
     id: string,
     type: TMessageType,

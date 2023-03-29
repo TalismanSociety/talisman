@@ -2,8 +2,8 @@ import {
   EvmWalletTransaction,
   SubWalletTransaction,
   WalletTransaction,
-} from "@core/domains/recentTransactions/types"
-import { TransactionStatus } from "@core/domains/recentTransactions/types"
+} from "@core/domains/transactions/types"
+import { TransactionStatus } from "@core/domains/transactions/types"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"

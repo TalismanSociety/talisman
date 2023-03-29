@@ -3,11 +3,11 @@ import type {
   KnownSigningRequestIdOnly,
   RequestSigningApproveSignature,
 } from "@core/domains/signing/types"
+import { watchSubstrateTransaction } from "@core/domains/transactions"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"
-import { watchSubstrateTransaction } from "@core/notifications"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"

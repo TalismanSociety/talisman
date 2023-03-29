@@ -1,6 +1,6 @@
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
-import { UnsignedTransaction, ethers } from "ethers"
+import { ethers } from "ethers"
 
 // unknown for substrate txs from dapps
 export type TransactionStatus = "unknown" | "pending" | "success" | "error" | "replaced"
@@ -53,5 +53,5 @@ export type SubWalletTransaction = {
   status: TransactionStatus
 }
 
-// named like this to avoid conflicts with types from various Dexie, Polkadot and Ethers libraries
+// Named Wallet* this to avoid conflicts with types from various Dexie, Polkadot and Ethers libraries
 export type WalletTransaction = EvmWalletTransaction | SubWalletTransaction

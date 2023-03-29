@@ -1,5 +1,5 @@
 import { ProtectorSources, ProtectorStorage } from "@core/domains/app/protector/ParaverseProtector"
-import { WalletTransaction } from "@core/domains/recentTransactions/types"
+import { WalletTransaction } from "@core/domains/transactions/types"
 import { MetadataDef } from "@core/inject/types"
 import { DbTokenRates } from "@talismn/token-rates"
 import { Dexie, Transaction, Version } from "dexie"
