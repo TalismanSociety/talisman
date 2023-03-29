@@ -1,4 +1,7 @@
 import { db } from "@core/db"
+import { TypeRegistry } from "@polkadot/types"
+import { HexString } from "@polkadot/util/types"
+import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { ethers } from "ethers"
 import merge from "lodash/merge"
 
@@ -45,15 +48,60 @@ export const addEvmTransaction = async (
   }
 }
 
-export const updateEvmTransactionStatus = async (hash: string, status: TransactionStatus) => {
+export const addSubstrateTransaction = async (
+  hash: string,
+  payload: SignerPayloadJSON,
+  options: AddEvemTransactionOptions = {}
+) => {
+  const { siteUrl, label } = merge(structuredClone(DEFAULT_OPTIONS), options)
+
   try {
-    await db.transactions.update(hash, { status })
+    if (!payload.genesisHash || !payload.nonce || !payload.address)
+      throw new Error("Invalid transaction")
+
+    db.transactions.add({
+      hash,
+      networkType: "substrate",
+      account: payload.address,
+      genesisHash: payload.genesisHash,
+      nonce: Number(payload.nonce),
+      unsigned: payload,
+      status: "pending",
+      siteUrl,
+      label,
+      timestamp: Date.now(),
+    })
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error("addSubstrateTransaction", { err })
+  }
+}
+
+export const updateTransactionStatus = async (
+  hash: string,
+  status: TransactionStatus,
+  blockNumber?: number
+) => {
+  try {
+    await db.transactions.update(hash, { status, blockNumber })
+
     if (["success", "error"].includes(status)) {
       const tx = await db.transactions.get(hash)
 
-      if (tx?.networkType === "evm")
+      // mark pending transactions with the same nonce as replaced
+      if (tx)
         await db.transactions
-          .filter((row) => row.nonce === tx.nonce && ["pending", "unknown"].includes(row.status))
+          .filter(
+            (row) =>
+              ((tx.networkType === "evm" &&
+                row.networkType === "evm" &&
+                row.evmNetworkId === tx.evmNetworkId) ||
+                (tx.networkType === "substrate" &&
+                  row.networkType === "substrate" &&
+                  row.genesisHash === tx.genesisHash)) &&
+              row.nonce === tx.nonce &&
+              ["pending", "unknown"].includes(row.status)
+          )
           .modify({ status: "replaced" })
     }
 
@@ -67,8 +115,6 @@ export const updateEvmTransactionStatus = async (hash: string, status: Transacti
 
 export const updateTransactionsRestart = async () => {
   try {
-    // TODO for all pending ones, issue a get_nonce and nuke the matches ?
-
     await db.transactions.filter((tx) => tx.status === "pending").modify({ status: "unknown" })
     return true
   } catch (err) {
@@ -76,4 +122,18 @@ export const updateTransactionsRestart = async () => {
     console.error("updateTransactionsRestart", { err })
     return false
   }
+}
+
+export const getExtrinsicHash = (
+  registry: TypeRegistry,
+  payload: SignerPayloadJSON,
+  signature: HexString
+) => {
+  const tx = registry.createType(
+    "Extrinsic",
+    { method: payload.method },
+    { version: payload.version }
+  )
+  tx.addSignature(payload.address, signature, payload)
+  return tx.hash.toHex()
 }

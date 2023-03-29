@@ -1,6 +1,11 @@
 import { SignerPayloadJSON } from "@core/domains/signing/types"
-import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
+
+export type WatchTransactionOptions = {
+  siteUrl?: string
+  notifications?: boolean
+}
 
 // unknown for substrate txs from dapps
 export type TransactionStatus = "unknown" | "pending" | "success" | "error" | "replaced"
@@ -33,7 +38,6 @@ export type SubWalletTransaction = {
   account: string
   genesisHash: string
   siteUrl?: string
-  chainId?: ChainId
   timestamp: number
   hash: string
   isReplacement?: boolean

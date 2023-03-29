@@ -1,22 +1,29 @@
-import { EvmNetworkId } from "@core/domains/ethereum/types"
-import { TransactionStatus } from "@core/domains/transfers/types"
+import {
+  EvmWalletTransaction,
+  SubWalletTransaction,
+  TransactionStatus,
+} from "@core/domains/transactions"
+import { HexString } from "@polkadot/util/types"
 import { IconButton } from "@talisman/components/IconButton"
 import { XIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import Link from "@ui/domains/Transaction/Link"
-import useChain from "@ui/hooks/useChain"
-import { useEvmTransactionWatch } from "@ui/hooks/useEvmTransactionWatch"
-import useTransactionById from "@ui/hooks/useTransactionById"
+import useChains from "@ui/hooks/useChains"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import useTransactionByHash from "@ui/hooks/useTransactionByHash"
 import { FC, useCallback, useMemo } from "react"
 import { Button, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
+import urlJoin from "url-join"
 
 const getAnimStatus = (status: TransactionStatus): ProcessAnimationStatus => {
   switch (status) {
-    case "ERROR":
+    case "error":
+    case "replaced":
+    case "unknown":
       return "failure"
-    case "SUCCESS":
+    case "success":
       return "success"
-    case "PENDING":
+    case "pending":
       return "processing"
   }
 }
@@ -25,41 +32,47 @@ const useStatusDetails = (
   status: TransactionStatus,
   blockHash?: string,
   href?: string,
-  handleClose?: () => void
+  onClose?: () => void
 ) => {
   const handleViewTx = useCallback(() => {
     window.open(href, "_blank")
-    handleClose?.()
-  }, [handleClose, href])
+    onClose?.()
+  }, [onClose, href])
 
   const { title, subtitle } = useMemo(() => {
     switch (status) {
-      case "ERROR":
+      case "unknown":
+      case "error":
         return {
           title: "Failure",
           subtitle: "Transaction was not found",
         }
-      case "SUCCESS":
+      case "success":
         return {
           title: "Success",
           subtitle: "Your transaction was successful",
         }
-      case "PENDING":
-      default:
+      case "pending":
         return {
           title: "Transaction in progress",
           subtitle: "This may take a few minutes",
         }
+      case "replaced": {
+        return {
+          title: "Transaction cancelled",
+          subtitle: "This transaction has been replaced with another one",
+        }
+      }
     }
   }, [status])
 
   const { canClose, animStatus, showLink, showClose, showViewTx } = useMemo(() => {
-    const canClose = status !== "PENDING"
-    const showViewTx = status === "SUCCESS" && !!href
+    const canClose = status !== "pending"
+    const showViewTx = status === "success" && !!href
     return {
       canClose,
       animStatus: getAnimStatus(status),
-      showLink: status === "PENDING" && !!blockHash,
+      showLink: status === "pending" && !!blockHash,
       showClose: canClose && !showViewTx,
       showViewTx,
     }
@@ -79,27 +92,26 @@ const useStatusDetails = (
 
 type TransactionProgressBaseProps = {
   className?: string
-  blockHash?: string
   blockNumber?: string
   status: TransactionStatus
-  handleClose?: () => void
+  onClose?: () => void
   href?: string
 }
 
 const TransactionProgressBase: FC<TransactionProgressBaseProps> = ({
   status,
-  blockHash,
+  //blockHash,
   blockNumber,
   href,
-  handleClose,
+  onClose,
 }) => {
   const { title, subtitle, animStatus, canClose, showClose, showLink, showViewTx, handleViewTx } =
-    useStatusDetails(status, blockHash, href, handleClose)
+    useStatusDetails(status, blockNumber, href, onClose)
 
   return (
     <div className="flex h-full w-full flex-col items-center">
       <div className={classNames("flex w-full justify-end", canClose ? "visible" : "invisible")}>
-        <IconButton onClick={handleClose}>
+        <IconButton onClick={onClose}>
           <XIcon />
         </IconButton>
       </div>
@@ -109,16 +121,14 @@ const TransactionProgressBase: FC<TransactionProgressBaseProps> = ({
         <ProcessAnimation status={animStatus} className="h-[14.5rem]" />
       </div>
       <div className="flex h-28 w-full flex-col justify-center">
-        {showLink && (
-          <Link prefix="Included in" blockHash={blockHash} blockNumber={blockNumber} href={href} />
-        )}
+        {showLink && <Link prefix="Included in" blockNumber={blockNumber} href={href} />}
         {showViewTx && (
           <Button fullWidth onClick={handleViewTx}>
             View Transaction
           </Button>
         )}
         {showClose && (
-          <Button fullWidth onClick={handleClose}>
+          <Button fullWidth onClick={onClose}>
             Close
           </Button>
         )}
@@ -128,91 +138,72 @@ const TransactionProgressBase: FC<TransactionProgressBaseProps> = ({
 }
 
 type TransactionProgressSubstrateProps = {
-  substrateTxId: string
-  handleClose?: () => void
+  tx: SubWalletTransaction
+  onClose?: () => void
   className?: string
 }
 
-const TransactionProgressSubstrate: FC<TransactionProgressSubstrateProps> = (props) => {
-  const { chainId, blockHash, blockNumber, extrinsicIndex, status } = useTransactionById(
-    props.substrateTxId
-  )
-  const { subscanUrl } = useChain(chainId) || {}
-
+const TransactionProgressSubstrate: FC<TransactionProgressSubstrateProps> = ({
+  tx,
+  onClose,
+  className,
+}) => {
+  const { chains } = useChains(true)
   const href = useMemo(() => {
-    if (!subscanUrl || !blockHash) return undefined
-    if (!blockNumber || typeof extrinsicIndex !== "number") return `${subscanUrl}block/${blockHash}`
-    return `${subscanUrl}extrinsic/${blockNumber}-${extrinsicIndex}`
-  }, [blockHash, blockNumber, extrinsicIndex, subscanUrl])
+    const chain = chains?.find((c) => c.genesisHash === tx.genesisHash)
+    return chain?.subscanUrl ? urlJoin(chain.subscanUrl, "tx", tx.hash) : undefined
+  }, [chains, tx])
 
   return (
     <TransactionProgressBase
-      {...props}
-      status={status}
-      blockHash={blockHash}
-      blockNumber={blockNumber}
+      className={className}
+      onClose={onClose}
+      status={tx.status}
+      blockNumber={tx.blockNumber}
       href={href}
     />
   )
 }
 
 type TransactionProgressEvmProps = {
-  evmNetworkId: EvmNetworkId
-  evmTxHash: string
-  handleClose?: () => void
+  tx: EvmWalletTransaction
+  onClose?: () => void
   className?: string
 }
 
-const TransactionProgressEvm: FC<TransactionProgressEvmProps> = (props) => {
-  const { blockHash, blockNumber, status, href } = useEvmTransactionWatch(
-    props.evmNetworkId,
-    props.evmTxHash
+const TransactionProgressEvm: FC<TransactionProgressEvmProps> = ({ tx, className, onClose }) => {
+  const network = useEvmNetwork(tx.evmNetworkId)
+
+  const href = useMemo(
+    () => (network?.explorerUrl ? urlJoin(network.explorerUrl, "tx", tx.hash) : undefined),
+    [network?.explorerUrl, tx.hash]
   )
 
   return (
     <TransactionProgressBase
-      {...props}
-      status={status}
-      blockHash={blockHash}
-      blockNumber={blockNumber}
+      className={className}
+      onClose={onClose}
+      status={tx.status}
+      blockNumber={tx.blockNumber}
       href={href}
     />
   )
 }
 
 type TransactionProgressProps = {
-  substrateTxId?: string
-  evmNetworkId?: EvmNetworkId
-  evmTxHash?: string
-  handleClose?: () => void
+  hash?: HexString
+  onClose?: () => void
   className?: string
 }
 
-export const TransactionProgress: FC<TransactionProgressProps> = ({
-  substrateTxId,
-  evmNetworkId,
-  evmTxHash,
-  handleClose,
-  className,
-}) => {
-  if (substrateTxId)
-    return (
-      <TransactionProgressSubstrate
-        substrateTxId={substrateTxId}
-        handleClose={handleClose}
-        className={className}
-      />
-    )
+export const TransactionProgress: FC<TransactionProgressProps> = ({ hash, onClose, className }) => {
+  const tx = useTransactionByHash(hash)
 
-  if (evmNetworkId && evmTxHash)
-    return (
-      <TransactionProgressEvm
-        evmNetworkId={evmNetworkId}
-        evmTxHash={evmTxHash}
-        handleClose={handleClose}
-        className={className}
-      />
-    )
+  if (tx?.networkType === "substrate")
+    return <TransactionProgressSubstrate tx={tx} onClose={onClose} className={className} />
+
+  if (tx?.networkType === "evm")
+    return <TransactionProgressEvm tx={tx} onClose={onClose} className={className} />
 
   return null
 }

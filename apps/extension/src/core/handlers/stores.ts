@@ -15,7 +15,7 @@ export type TabStore = {
   chains: typeof chainStore
   tokenRates: typeof tokenRatesStore
   balances: typeof balanceStore
-  transactions: typeof transactionStore
+  transactions: typeof transactionStore // to delete in few months
   app: typeof appStore
   sites: typeof sitesAuthorisationStore
   settings: typeof settingsStore

@@ -47,7 +47,6 @@ import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains
 import {
   AssetTransferMethod,
   ResponseAssetTransfer,
-  ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transfers/types"
 import { EthResponseType } from "@core/injectEth/types"
@@ -181,10 +180,6 @@ export default interface MessageTypes {
   addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
   removeCustomErc20Token: (id: string) => Promise<boolean>
 
-  // transaction message types
-  transactionSubscribe: (id: string, cb: (tx: any) => void) => UnsubscribeFn
-  transactionsSubscribe: (cb: (txs: any) => void) => UnsubscribeFn
-
   // asset transfer messages
   assetTransfer: (
     chainId: ChainId,
@@ -202,14 +197,14 @@ export default interface MessageTypes {
     toAddress: string,
     amount: string,
     gasSettings: EthGasSettings
-  ) => Promise<ResponseAssetTransferEth>
+  ) => Promise<ResponseAssetTransfer>
   assetTransferEthHardware: (
     evmNetworkId: EvmNetworkId,
     tokenId: TokenId,
     amount: string,
     unsigned: ethers.providers.TransactionRequest,
     signedTransaction: HexString
-  ) => Promise<ResponseAssetTransferEth>
+  ) => Promise<ResponseAssetTransfer>
   assetTransferCheckFees: (
     chainId: ChainId,
     tokenId: TokenId,
@@ -221,7 +216,7 @@ export default interface MessageTypes {
   ) => Promise<ResponseAssetTransferFeeQuery>
   assetTransferApproveSign: (
     unsigned: SignerPayloadJSON,
-    signature: `0x${string}` | Uint8Array
+    signature: `0x${string}`
   ) => Promise<ResponseAssetTransfer>
 
   // eth related messages

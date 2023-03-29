@@ -1,5 +1,5 @@
-import { TransactionStatus } from "@core/domains/transfers/types"
-import { TransactionReceipt, TransactionResponse } from "@ethersproject/abstract-provider"
+import { TransactionStatus } from "@core/domains/transactions"
+import { TransactionReceipt } from "@ethersproject/abstract-provider"
 import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -8,9 +8,10 @@ import urlJoin from "url-join"
 import { useEthereumProvider } from "../domains/Ethereum/useEthereumProvider"
 import { useEvmNetwork } from "./useEvmNetwork"
 
+// unused anymore but could be useful someday
 export const useEvmTransactionWatch = (
   evmNetworkId: EvmNetworkId,
-  evmTxHash: string,
+  hash: string,
   confirmations = 1
 ) => {
   const evmNetwork = useEvmNetwork(evmNetworkId)
@@ -22,16 +23,16 @@ export const useEvmTransactionWatch = (
   const waitForTransaction = useCallback(async () => {
     setError(undefined)
     try {
-      if (!provider || !evmTxHash) {
+      if (!provider || !hash) {
         setTxReceipt(undefined)
       } else {
-        setTxReceipt(await provider?.waitForTransaction(evmTxHash, confirmations))
+        setTxReceipt(await provider?.waitForTransaction(hash, confirmations))
       }
     } catch (err) {
       setError(err as Error)
       Sentry.captureException(err, { tags: { evmNetworkId: provider?.network?.chainId } })
     }
-  }, [confirmations, evmTxHash, provider])
+  }, [confirmations, hash, provider])
 
   useEffect(() => {
     waitForTransaction()
@@ -43,17 +44,17 @@ export const useEvmTransactionWatch = (
 
     const { status, message }: { status: TransactionStatus; message: string } = txReceipt
       ? txReceipt?.blockNumber && txReceipt.status
-        ? { status: "SUCCESS", message: "Transaction successful" }
-        : { status: "ERROR", message: "Transaction failed" }
-      : { status: "PENDING", message: "Please wait" }
+        ? { status: "success", message: "Transaction successful" }
+        : { status: "error", message: "Transaction failed" }
+      : { status: "pending", message: "Please wait" }
 
     return { blockHash, blockNumber, message, status }
   }, [txReceipt])
 
   const href = useMemo(() => {
     if (!evmNetwork?.explorerUrl) return undefined
-    return urlJoin(evmNetwork?.explorerUrl, "tx", evmTxHash)
-  }, [evmNetwork?.explorerUrl, evmTxHash])
+    return urlJoin(evmNetwork?.explorerUrl, "tx", hash)
+  }, [evmNetwork?.explorerUrl, hash])
 
   return { blockHash, blockNumber, message, status, href, error }
 }

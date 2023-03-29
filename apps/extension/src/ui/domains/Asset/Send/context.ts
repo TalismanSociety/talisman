@@ -9,6 +9,7 @@ import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
 import { provideContext } from "@talisman/util/provideContext"
 import { tokensToPlanck } from "@talismn/util"
@@ -75,10 +76,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   )
   const [expectedResult, setExpectedResult] = useState<SendTokensExpectedResult>()
   const [hasAcceptedForfeit, setHasAcceptedForfeit] = useState(false)
-  // for substrate extrinsics
-  const [transactionId, setTransactionId] = useState<string>()
-  // for evm transactions
-  const [transactionHash, setTransactionHash] = useState<string>()
+  const [transactionHash, setTransactionHash] = useState<HexString>()
 
   const accounts = useAccounts()
   const { useTestnets = false } = useSettings()
@@ -324,7 +322,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     if (!chainId && !evmNetworkId) throw new Error("chain not found")
 
     if (chainId) {
-      const { id } = await api.assetTransfer(
+      const { hash } = await api.assetTransfer(
         chainId,
         token.id,
         from,
@@ -333,7 +331,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         tip ?? "0",
         hasAcceptedForfeit ? "transfer" : "transferKeepAlive"
       )
-      setTransactionId(id)
+      setTransactionHash(hash)
     } else if (evmNetworkId) {
       if (!gasSettings) throw new Error("Missing gas settings")
       const { hash } = await api.assetTransferEth(
@@ -364,12 +362,12 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   // execute the TX
   const sendWithSignature = useCallback(
-    async (signature: `0x${string}` | Uint8Array) => {
+    async (signature: `0x${string}`) => {
       if (expectedResult?.type !== "substrate") throw new Error("Review data not found")
       const { unsigned } = expectedResult
       if (!unsigned) throw new Error("Unsigned transaction not found")
-      const { id } = await api.assetTransferApproveSign(unsigned, signature)
-      setTransactionId(id)
+      const { hash } = await api.assetTransferApproveSign(unsigned, signature)
+      setTransactionHash(hash)
     },
     [expectedResult]
   )
@@ -408,7 +406,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   // components visibility
   const { showForm, showConfirmReap, showReview, showTransaction } = useMemo(() => {
-    const showTransaction = Boolean(transactionId ?? transactionHash)
+    const showTransaction = Boolean(transactionHash)
     const requiresForfeit = Boolean(
       expectedResult?.type === "substrate" && expectedResult.forfeits.length
     )
@@ -421,7 +419,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       ),
       showTransaction,
     }
-  }, [expectedResult, hasAcceptedForfeit, transactionHash, transactionId])
+  }, [expectedResult, hasAcceptedForfeit, transactionHash])
 
   const context = {
     account,
@@ -431,7 +429,6 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     cancel,
     send,
     acceptForfeit,
-    transactionId,
     transactionHash,
     hasAcceptedForfeit,
     showForm,

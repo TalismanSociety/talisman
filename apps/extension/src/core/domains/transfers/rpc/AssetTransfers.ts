@@ -1,18 +1,25 @@
 import { balanceModules } from "@core/domains/balances/store"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
+import { watchSubstrateTransaction } from "@core/domains/transactions"
 import { AssetTransferMethod, ResponseAssetTransferFeeQuery } from "@core/domains/transfers/types"
 import { chainConnector } from "@core/rpcs/chain-connector"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import { SubscriptionCallback } from "@core/types"
 import { Address } from "@core/types/base"
 import { getExtrinsicDispatchInfo } from "@core/util/getExtrinsicDispatchInfo"
 import { getRuntimeVersion } from "@core/util/getRuntimeVersion"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { KeyringPair } from "@polkadot/keyring/types"
 import { TypeRegistry } from "@polkadot/types"
-import { Extrinsic, ExtrinsicStatus } from "@polkadot/types/interfaces"
+import { Extrinsic } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
-import { ChainId, TokenId } from "@talismn/chaindata-provider"
+import { HexString } from "@polkadot/util/types"
+import { UnsignedTransaction } from "@substrate/txwrapper-core"
+import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
+
+const getUnsignedJson = (unsigned: UnsignedTransaction): SignerPayloadJSON => {
+  const { assetId, metadataRpc, ...payload } = unsigned
+  return payload
+}
 
 export default class AssetTransfersRpc {
   /**
@@ -35,14 +42,9 @@ export default class AssetTransfersRpc {
     from: KeyringPair,
     to: Address,
     tip: string,
-    method: AssetTransferMethod,
-    callback: SubscriptionCallback<{
-      nonce: string
-      hash: string
-      status: ExtrinsicStatus
-    }>
-  ): Promise<void> {
-    const { tx, registry } = await this.prepareTransaction(
+    method: AssetTransferMethod
+  ) {
+    const { chain, registry, tx, unsigned, signature } = await this.prepareTransaction(
       chainId,
       tokenId,
       amount,
@@ -53,40 +55,22 @@ export default class AssetTransfersRpc {
       true
     )
 
-    const unsubscribe = await chainConnector.subscribe(
-      chainId,
-      "author_submitAndWatchExtrinsic",
-      "author_unwatchExtrinsic",
-      "author_extrinsicUpdate",
-      [tx.toHex()],
-      (error, result) => {
-        if (error) {
-          callback(error)
-          unsubscribe()
-          return
-        }
+    assert(signature, "transaction is not signed")
 
-        const status = registry.createType<ExtrinsicStatus>("ExtrinsicStatus", result)
-        callback(null, { nonce: tx.nonce.toString(), hash: tx.hash.toString(), status })
-        if (status.isFinalized) unsubscribe()
-      }
-    )
+    await watchSubstrateTransaction(chain, registry, unsigned, signature)
+
+    await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
+
+    return tx.hash.toHex()
   }
 
-  static async transferSigned(
-    unsigned: SignerPayloadJSON,
-    signature: `0x${string}` | Uint8Array,
-    callback: SubscriptionCallback<{
-      nonce: string
-      hash: string
-      status: ExtrinsicStatus
-    }>
-  ): Promise<void> {
+  static async transferSigned(unsigned: SignerPayloadJSON, signature: `0x${string}`) {
     const chain = await chaindataProvider.getChain({ genesisHash: unsigned.genesisHash })
     if (!chain) throw new Error(`Could not find chain for genesisHash ${unsigned.genesisHash}`)
 
     // create the unsigned extrinsic
     const { registry } = await getTypeRegistry(chain.id)
+
     const tx = registry.createType(
       "Extrinsic",
       { method: unsigned.method },
@@ -96,24 +80,11 @@ export default class AssetTransfersRpc {
     // apply signature
     tx.addSignature(unsigned.address, signature, unsigned)
 
-    const unsubscribe = await chainConnector.subscribe(
-      chain.id,
-      "author_submitAndWatchExtrinsic",
-      "author_unwatchExtrinsic",
-      "author_extrinsicUpdate",
-      [tx.toHex()],
-      (error, result) => {
-        if (error) {
-          callback(error)
-          unsubscribe()
-          return
-        }
+    await watchSubstrateTransaction(chain, registry, unsigned, signature)
 
-        const status = registry.createType<ExtrinsicStatus>("ExtrinsicStatus", result)
-        callback(null, { nonce: tx.nonce.toString(), hash: tx.hash.toString(), status })
-        if (status.isFinalized) unsubscribe()
-      }
-    )
+    await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
+
+    return tx.hash.toHex()
   }
 
   /**
@@ -177,6 +148,8 @@ export default class AssetTransfersRpc {
     tx: Extrinsic
     registry: TypeRegistry
     unsigned: SignerPayloadJSON
+    chain: Chain
+    signature?: HexString
   }> {
     const chain = await chaindataProvider.getChain(chainId)
     assert(chain?.genesisHash, `Chain ${chainId} not found in store`)
@@ -236,7 +209,7 @@ export default class AssetTransfersRpc {
       `Failed to handle tx type ${transaction.type} for token '${token.id}'`
     )
 
-    const unsigned = transaction.tx
+    const unsigned = getUnsignedJson(transaction.tx)
 
     // create the unsigned extrinsic
     const tx = registry.createType(
@@ -256,11 +229,13 @@ export default class AssetTransfersRpc {
 
       // apply signature
       tx.addSignature(unsigned.address, signature, unsigned)
+
+      return { tx, registry, unsigned, chain, signature }
     } else {
       // tx signed with fake signature for fee calculation
       tx.signFake(unsigned.address, { blockHash, genesisHash, nonce, runtimeVersion })
-    }
 
-    return { tx, registry, unsigned }
+      return { tx, registry, unsigned, chain, signature: undefined }
+    }
   }
 }

@@ -1,5 +1,6 @@
 import { settingsStore } from "@core/domains/app"
-import { addEvmTransaction, updateEvmTransactionStatus } from "@core/domains/transactions/helpers"
+import { addEvmTransaction, updateTransactionStatus } from "@core/domains/transactions/helpers"
+import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
@@ -9,17 +10,13 @@ import urlJoin from "url-join"
 
 import { createNotification } from "../../notifications/createNotification"
 import { getProviderForEthereumNetwork } from "../ethereum/rpcProviders"
-
-type WatchEthereumTransactionOptions = {
-  siteUrl?: string
-  notifications?: boolean
-}
+import { WatchTransactionOptions } from "./types"
 
 export const watchEthereumTransaction = async (
   ethChainId: EvmNetworkId,
   txHash: string,
   unsigned: ethers.providers.TransactionRequest,
-  options: WatchEthereumTransactionOptions = {}
+  options: WatchTransactionOptions = {}
 ) => {
   try {
     const { siteUrl, notifications } = options
@@ -49,7 +46,9 @@ export const watchEthereumTransaction = async (
       // status 1 = ok
       // easy to test on busy AMM pools with a 0.05% slippage limit
       // TODO are there other statuses ? one for replaced maybe ?
-      updateEvmTransactionStatus(txHash, receipt.status ? "success" : "error")
+      if (receipt.status === undefined || ![0, 1].includes(receipt.status))
+        log.warn("Unknown evm tx status", receipt)
+      updateTransactionStatus(txHash, receipt.status ? "success" : "error", receipt.blockNumber)
 
       // success if associated to a block number
       if (withNotifications)
@@ -59,7 +58,7 @@ export const watchEthereumTransaction = async (
           txUrl
         )
     } catch (err) {
-      updateEvmTransactionStatus(txHash, "unknown")
+      updateTransactionStatus(txHash, "unknown")
 
       if (withNotifications) await createNotification("error", networkName, txUrl, err as Error)
       // eslint-disable-next-line no-console

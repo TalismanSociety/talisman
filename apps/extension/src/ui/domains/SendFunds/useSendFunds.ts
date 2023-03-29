@@ -484,7 +484,7 @@ const useSendFundsProvider = () => {
       setIsProcessing(true)
 
       if (token.chain?.id) {
-        const { id } = await api.assetTransfer(
+        const { hash } = await api.assetTransfer(
           token.chain.id,
           token.id,
           from,
@@ -493,7 +493,7 @@ const useSendFundsProvider = () => {
           tip?.planck.toString(),
           method
         )
-        gotoProgress({ substrateTxId: id })
+        gotoProgress({ hash })
       } else if (token.evmNetwork?.id) {
         if (!transfer) throw new Error("Missing send amount")
         if (!evmTransaction?.gasSettings) throw new Error("Missing gas settings")
@@ -505,7 +505,7 @@ const useSendFundsProvider = () => {
           value.planck.toString(),
           evmTransaction.gasSettings
         )
-        gotoProgress({ evmNetworkId: token.evmNetwork.id, evmTxHash: hash })
+        gotoProgress({ hash })
       } else throw new Error("Unknown network")
     } catch (err) {
       log.error("Failed to submit tx", err)
@@ -530,8 +530,8 @@ const useSendFundsProvider = () => {
       try {
         setIsProcessing(true)
         if (subTransaction?.unsigned) {
-          const transfer = await api.assetTransferApproveSign(subTransaction.unsigned, signature)
-          gotoProgress({ substrateTxId: transfer.id })
+          const { hash } = await api.assetTransferApproveSign(subTransaction.unsigned, signature)
+          gotoProgress({ hash })
           return
         }
         if (evmTransaction?.transaction && amount && token?.evmNetwork?.id) {
@@ -542,7 +542,7 @@ const useSendFundsProvider = () => {
             serializeTransactionRequestBigNumbers(evmTransaction.transaction),
             signature
           )
-          gotoProgress({ evmNetworkId: token?.evmNetwork?.id, evmTxHash: hash })
+          gotoProgress({ hash })
           return
         }
         throw new Error("Unknown transaction")

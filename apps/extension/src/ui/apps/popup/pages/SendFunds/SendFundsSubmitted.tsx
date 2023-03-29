@@ -1,3 +1,4 @@
+import { HexString } from "@polkadot/util/types"
 import { AnalyticsPage } from "@ui/api/analytics"
 import { SendFundsProgress } from "@ui/domains/SendFunds/SendFundsProgress"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -16,13 +17,7 @@ export const SendFundsSubmitted = () => {
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const txInfo = useMemo(() => {
-    const evmTxHash = searchParams.get("evmTxHash") ?? undefined
-    const substrateTxId = searchParams.get("substrateTxId") ?? undefined
-    const evmNetworkId = searchParams.get("evmNetworkId") ?? undefined
-
-    return { evmTxHash, substrateTxId, evmNetworkId }
-  }, [searchParams])
+  const hash = useMemo(() => (searchParams.get("hash") as HexString) ?? undefined, [searchParams])
 
   const handleClose = useCallback(() => {
     window.close()
@@ -30,7 +25,7 @@ export const SendFundsSubmitted = () => {
 
   return (
     <div className="h-full w-full px-12 py-8">
-      <SendFundsProgress {...txInfo} onClose={handleClose} />
+      <SendFundsProgress hash={hash} onClose={handleClose} />
     </div>
   )
 }

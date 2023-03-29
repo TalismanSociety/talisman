@@ -1,13 +1,10 @@
 import { DEBUG } from "@core/constants"
-import BlocksRpc from "@core/domains/blocks/rpc"
-import { ChainId } from "@core/domains/chains/types"
 import { getEthTransferTransactionBase, rebuildGasSettings } from "@core/domains/ethereum/helpers"
 import { getProviderForEvmNetworkId } from "@core/domains/ethereum/rpcProviders"
 import {
   getTransactionCount,
   incrementTransactionCount,
 } from "@core/domains/ethereum/transactionCountManager"
-import EventsRpc from "@core/domains/events/rpc"
 import AssetTransfersRpc from "@core/domains/transfers/rpc/AssetTransfers"
 import {
   RequestAssetTransfer,
@@ -15,25 +12,18 @@ import {
   RequestAssetTransferEth,
   RequestAssetTransferEthHardware,
   ResponseAssetTransfer,
-  ResponseAssetTransferEth,
-  TransactionStatus,
 } from "@core/domains/transfers/types"
 import { getPairForAddressSafely, getPairFromAddress } from "@core/handlers/helpers"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
 import { watchEthereumTransaction } from "@core/notifications"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import type {
-  RequestSignatures,
-  RequestTypes,
-  ResponseType,
-  SubscriptionCallback,
-} from "@core/types"
-import { Address, Port } from "@core/types/base"
+import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
+import { Port } from "@core/types/base"
 import { getPrivateKey } from "@core/util/getPrivateKey"
 import { TransactionRequest } from "@ethersproject/abstract-provider"
-import { ExtrinsicStatus } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
+import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
 import { planckToTokens } from "@talismn/util"
 import { Wallet, ethers } from "ethers"
@@ -41,71 +31,6 @@ import { Wallet, ethers } from "ethers"
 import { transferAnalytics } from "./helpers"
 
 export default class AssetTransferHandler extends ExtensionHandler {
-  private getExtrinsicWatch(
-    chainId: ChainId,
-    from: Address,
-    resolve: (value: ResponseAssetTransfer | PromiseLike<ResponseAssetTransfer>) => void,
-    reject: (reason: any) => void
-  ) {
-    const watchExtrinsic: SubscriptionCallback<{
-      nonce: string
-      hash: string
-      status: ExtrinsicStatus
-    }> = async (error, result) => {
-      if (error) return reject(error)
-      if (!result) return
-
-      const { nonce, hash, status } = result
-
-      let blockNumber: string | undefined = undefined
-      let extrinsicIndex: number | undefined = undefined
-      let extrinsicResult: TransactionStatus | undefined = undefined
-      if (status && (status.isInBlock || status.isFinalized)) {
-        // get tx block and events
-        const blockHash = status.isFinalized
-          ? status.asFinalized.toString()
-          : status.isInBlock
-          ? status.asInBlock.toString()
-          : false
-        if (blockHash === false) return
-
-        const [block, events] = await Promise.all([
-          BlocksRpc.block(chainId, blockHash),
-          EventsRpc.events(chainId, blockHash),
-        ])
-        blockNumber = block.header.number.toString()
-        extrinsicIndex = block.extrinsics.findIndex(
-          (extrinsic) => extrinsic.hash && extrinsic.hash.eq(hash)
-        )
-        if (extrinsicIndex === -1) return
-
-        // search for ExtrinsicSuccess event
-        extrinsicResult =
-          events
-            .filter((event) => event.phase.isApplyExtrinsic)
-            .filter((event) => event.phase.asApplyExtrinsic.eq(extrinsicIndex))
-            .filter((event) => event.section === "system")
-            .filter((event) => ["ExtrinsicSuccess"].includes(event.method)).length > 0
-            ? "SUCCESS"
-            : "ERROR"
-      }
-
-      const { isCreated, id } = this.stores.transactions.upsert(
-        from,
-        nonce,
-        hash,
-        status,
-        chainId,
-        blockNumber,
-        extrinsicIndex,
-        extrinsicResult
-      )
-      if (isCreated) resolve({ id })
-    }
-
-    return watchExtrinsic
-  }
-
   private async assetTransfer({
     chainId,
     tokenId,
@@ -121,41 +46,40 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
       transferAnalytics({ network: { chainId }, amount, tokenId, toAddress })
 
-      return await new Promise<ResponseAssetTransfer>((resolve, reject) => {
-        const watchExtrinsic = this.getExtrinsicWatch(chainId, fromAddress, resolve, reject)
-
-        const tokenType = token.type
-        if (
-          tokenType === "substrate-native" ||
-          tokenType === "substrate-orml" ||
-          tokenType === "substrate-assets" ||
-          tokenType === "substrate-tokens" ||
-          tokenType === "substrate-equilibrium"
-        )
-          return AssetTransfersRpc.transfer(
+      const tokenType = token.type
+      if (
+        tokenType === "substrate-native" ||
+        tokenType === "substrate-orml" ||
+        tokenType === "substrate-assets" ||
+        tokenType === "substrate-tokens" ||
+        tokenType === "substrate-equilibrium"
+      ) {
+        try {
+          const hash = await AssetTransfersRpc.transfer(
             chainId,
             tokenId,
             amount,
             pair,
             toAddress,
             tip,
-            method,
-            watchExtrinsic
-          ).catch((err) => {
-            log.error("Error sending substrate transaction: ", { err })
-            reject(err)
-          })
-        if (tokenType === "evm-native")
-          throw new Error(
-            "Evm native token transfers are not implemented in this version of Talisman."
+            method
           )
-        if (tokenType === "evm-erc20")
-          throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
+          return { hash } as ResponseAssetTransfer
+        } catch (err) {
+          log.error("Error sending substrate transaction: ", { err })
+          throw err
+        }
+      }
+      if (tokenType === "evm-native")
+        throw new Error(
+          "Evm native token transfers are not implemented in this version of Talisman."
+        )
+      if (tokenType === "evm-erc20")
+        throw new Error("Erc20 token transfers are not implemented in this version of Talisman.")
 
-        // force compilation error if any token types don't have a case
-        const exhaustiveCheck: never = tokenType
-        throw new Error(`Unhandled token type ${exhaustiveCheck}`)
-      })
+      // force compilation error if any token types don't have a case
+      const exhaustiveCheck: never = tokenType
+      throw new Error(`Unhandled token type ${exhaustiveCheck}`)
     })
 
     if (result.ok) return result.val
@@ -206,7 +130,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     amount,
     unsigned,
     signedTransaction,
-  }: RequestAssetTransferEthHardware): Promise<ResponseAssetTransferEth> {
+  }: RequestAssetTransferEthHardware): Promise<ResponseAssetTransfer> {
     try {
       const provider = await getProviderForEvmNetworkId(evmNetworkId)
       if (!provider) throw new Error(`Could not find provider for network ${evmNetworkId}`)
@@ -229,7 +153,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
       incrementTransactionCount(from, evmNetworkId)
 
-      return { hash }
+      return { hash } as { hash: HexString }
     } catch (err) {
       const error = err as Error & { reason?: string; error?: Error }
       // eslint-disable-next-line no-console
@@ -246,7 +170,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     toAddress,
     amount,
     gasSettings,
-  }: RequestAssetTransferEth): Promise<ResponseAssetTransferEth> {
+  }: RequestAssetTransferEth): Promise<ResponseAssetTransfer> {
     const token = await chaindataProvider.getToken(tokenId)
     if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
@@ -278,7 +202,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
       incrementTransactionCount(fromAddress, evmNetworkId)
 
-      return { hash }
+      return { hash } as { hash: HexString }
     })
 
     if (result.ok) {
@@ -307,10 +231,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
     const chain = await chaindataProvider.getChain({ genesisHash: unsigned.genesisHash })
     if (!chain) throw new Error(`Could not find chain for genesisHash ${unsigned.genesisHash}`)
 
-    return new Promise((resolve, reject) => {
-      const watchExtrinsic = this.getExtrinsicWatch(chain.id, unsigned.address, resolve, reject)
-      return AssetTransfersRpc.transferSigned(unsigned, signature, watchExtrinsic).catch(reject)
-    })
+    const hash = await AssetTransfersRpc.transferSigned(unsigned, signature)
+    return { hash }
   }
 
   handle<TMessageType extends keyof RequestSignatures>(

@@ -5,21 +5,28 @@ import { chainConnector } from "@core/rpcs/chain-connector"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { TypeRegistry } from "@polkadot/types"
 import { Hash } from "@polkadot/types/interfaces"
+import { assert } from "@polkadot/util"
 import { xxhashAsHex } from "@polkadot/util-crypto"
+import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
+import { SignerPayloadJSON } from "@substrate/txwrapper-core"
 import { Err, Ok, Result } from "ts-results"
+
+import { settingsStore } from "../app"
+import { addSubstrateTransaction, getExtrinsicHash, updateTransactionStatus } from "./helpers"
+import { WatchTransactionOptions } from "./types"
 
 const TX_WATCH_TIMEOUT = 90_000 // 90 seconds in milliseconds
 
 type ExtrinsicResult = {
   result: "error" | "success"
-  blockNumber: string | number
+  blockNumber: number
   extIndex: number
 }
 
 type ExtrinsicStatusChangeHandler = (
   eventType: "included" | "error" | "success",
-  blockNumber: string | number,
+  blockNumber: number,
   extIndex: number
 ) => void
 
@@ -31,7 +38,7 @@ const getExtrinsincResult = async (
   registry: TypeRegistry,
   blockHash: Hash,
   chainId: ChainId,
-  hexSignature: string
+  extrinsicHash: string
 ): Promise<Result<ExtrinsicResult, "Unable to get result">> => {
   try {
     const blockData = await chainConnector.send(chainId, "chain_getBlock", [blockHash])
@@ -57,7 +64,7 @@ const getExtrinsincResult = async (
     })()
 
     for (const [txIndex, x] of block.block.extrinsics.entries()) {
-      if (x.signature.eq(hexSignature)) {
+      if (x.hash.eq(extrinsicHash)) {
         const relevantEvent = events.find(
           ({ phase, event }) =>
             phase.isApplyExtrinsic &&
@@ -97,22 +104,22 @@ const getExtrinsincResult = async (
 
 const watchExtrinsicStatus = async (
   chainId: ChainId,
-  hexSignature: string,
+  extrinsicHash: string,
   cb: ExtrinsicStatusChangeHandler
 ) => {
   const { registry, metadataRpc } = await getTypeRegistry(chainId)
-  let blockHash: Hash
+  let foundInBlockHash: Hash
+  let timeout: NodeJS.Timeout | null = null
 
-  if (!metadataRpc) {
-    // eslint-disable-next-line no-console
+  if (!metadataRpc)
     throw new Error(`Missing metadataRpc for ${chainId}, cannot watch extrinsic status`)
-  }
 
   // keep track of subscriptions state because it raises errors when calling unsubscribe multiple times
   const subscriptions = {
     finalizedHeads: true,
     allHeads: true,
   }
+
   const unsubscribe = async (
     key: "finalizedHeads" | "allHeads",
     unsubscribeHandler: () => void
@@ -140,19 +147,21 @@ const watchExtrinsicStatus = async (
       }
 
       try {
-        const { hash } = registry.createType("Header", data)
+        const { hash: blockHash } = registry.createType("Header", data)
         const { val: extResult, err } = await getExtrinsincResult(
           registry,
-          hash,
+          blockHash,
           chainId,
-          hexSignature
+          extrinsicHash
         )
 
-        if (err) return
+        if (err) return // err is true if extrinsic is not found in this block
+
         const { result, blockNumber, extIndex } = extResult
         cb(result, blockNumber, extIndex)
 
         await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
+        if (timeout !== null) clearTimeout(timeout)
       } catch (error) {
         Sentry.captureException(error, { extra: { chainId } })
       }
@@ -178,26 +187,29 @@ const watchExtrinsicStatus = async (
       }
 
       try {
-        const { hash } = registry.createType("Header", data)
+        const { hash: blockHash } = registry.createType("Header", data)
         const { val: extResult, err } = await getExtrinsincResult(
           registry,
-          hash,
+          blockHash,
           chainId,
-          hexSignature
+          extrinsicHash
         )
 
-        if (err) return
+        if (err) return // err is true if extrinsic is not found in this block
 
         const { result, blockNumber, extIndex } = extResult
         if (result === "success") {
-          blockHash = hash
+          foundInBlockHash = blockHash
           cb("included", blockNumber, extIndex)
         } else cb(result, blockNumber, extIndex)
 
         await unsubscribe("allHeads", unsubscribeAllHeads)
 
         // if error, no need to wait for a confirmation
-        if (result === "error") await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
+        if (result === "error") {
+          await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
+          if (timeout !== null) clearTimeout(timeout)
+        }
       } catch (error) {
         Sentry.captureException(error, { extra: { chainId } })
       }
@@ -205,17 +217,17 @@ const watchExtrinsicStatus = async (
   )
 
   // the transaction may never be submitted by the dapp, so we stop watching after {TX_WATCH_TIMEOUT}
-  setTimeout(async () => {
+  timeout = setTimeout(async () => {
     await unsubscribe("allHeads", unsubscribeAllHeads)
     if (subscriptions.finalizedHeads) {
       await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
       // sometimes the finalized is not received, better check explicitely here
-      if (blockHash) {
+      if (foundInBlockHash) {
         const { val: extResult, err } = await getExtrinsincResult(
           registry,
-          blockHash,
+          foundInBlockHash,
           chainId,
-          hexSignature
+          extrinsicHash
         )
         if (err) return
         const { result, blockNumber, extIndex } = extResult
@@ -225,12 +237,29 @@ const watchExtrinsicStatus = async (
   }, TX_WATCH_TIMEOUT)
 }
 
-export const watchSubstrateTransaction = (chain: Chain, hexSignature: string) => {
-  return watchExtrinsicStatus(chain.id, hexSignature, async (result, blockNumber, extIndex) => {
+export const watchSubstrateTransaction = async (
+  chain: Chain,
+  registry: TypeRegistry,
+  payload: SignerPayloadJSON,
+  signature: HexString,
+  options: WatchTransactionOptions = {}
+) => {
+  const { siteUrl, notifications } = options
+  const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
+
+  assert(chain.genesisHash === payload.genesisHash, "Genesis hash mismatch")
+
+  const hash = getExtrinsicHash(registry, payload, signature)
+
+  await addSubstrateTransaction(hash, payload, { siteUrl })
+
+  return watchExtrinsicStatus(chain.id, hash, async (result, blockNumber, extIndex) => {
     const type: NotificationType = result === "included" ? "submitted" : result
     const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
 
-    createNotification(type, chain.name ?? "chain", url)
+    if (withNotifications) createNotification(type, chain.name ?? "chain", url)
+
+    if (result !== "included") await updateTransactionStatus(hash, result, blockNumber)
   }).catch((err) => {
     // eslint-disable-next-line no-console
     console.warn("Failed to watch extrinsic", { err })

@@ -171,11 +171,6 @@ export const api: MessageTypes = {
   removeCustomErc20Token: (id) =>
     messageService.sendMessage("pri(tokens.erc20.custom.remove)", { id }),
 
-  // transaction message types
-  transactionSubscribe: (id, cb) =>
-    messageService.subscribe("pri(transactions.byid.subscribe)", { id }, cb),
-  transactionsSubscribe: (cb) => messageService.subscribe("pri(transactions.subscribe)", null, cb),
-
   // asset transfer messages
   assetTransfer: (chainId, tokenId, fromAddress, toAddress, amount, tip, method) =>
     messageService.sendMessage("pri(assets.transfer)", {

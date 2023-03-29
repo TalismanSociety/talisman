@@ -273,15 +273,6 @@ export default class Extension extends ExtensionHandler {
         return u8aToHex(data)
       }
 
-      // --------------------------------------------------------------------
-      // transaction handlers -----------------------------------------------
-      // --------------------------------------------------------------------
-      case "pri(transactions.subscribe)":
-        return this.stores.transactions.subscribe(id, port)
-
-      case "pri(transactions.byid.subscribe)":
-        return this.stores.transactions.subscribeById(id, port, request as RequestIdOnly)
-
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

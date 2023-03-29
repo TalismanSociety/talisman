@@ -4,15 +4,8 @@ import { useSendTokens } from "./context"
 import { useSendTokensModal } from "./SendTokensModalContext"
 
 export const SendTransaction = () => {
-  const { transactionId, transactionHash, transferableToken } = useSendTokens()
+  const { transactionHash } = useSendTokens()
   const { close } = useSendTokensModal()
 
-  return (
-    <TransactionProgress
-      evmNetworkId={transferableToken?.evmNetworkId}
-      evmTxHash={transactionHash}
-      substrateTxId={transactionId}
-      handleClose={close}
-    />
-  )
+  return <TransactionProgress hash={transactionHash} onClose={close} />
 }

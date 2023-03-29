@@ -1,11 +1,16 @@
-import { EvmNetworkId } from "@core/domains/ethereum/types"
-import { TransactionStatus } from "@core/domains/transfers/types"
+import {
+  EvmWalletTransaction,
+  SubWalletTransaction,
+  TransactionStatus,
+} from "@core/domains/transactions"
+import { HexString } from "@polkadot/util/types"
 import { ExternalLinkIcon } from "@talisman/theme/icons"
-import useChain from "@ui/hooks/useChain"
-import { useEvmTransactionWatch } from "@ui/hooks/useEvmTransactionWatch"
-import useTransactionById from "@ui/hooks/useTransactionById"
+import useChains from "@ui/hooks/useChains"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import useTransactionByHash from "@ui/hooks/useTransactionByHash"
 import { FC, useMemo } from "react"
 import { Button, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
+import urlJoin from "url-join"
 
 const useStatusDetails = (status: TransactionStatus) => {
   const { title, subtitle, extra, animStatus } = useMemo<{
@@ -15,20 +20,32 @@ const useStatusDetails = (status: TransactionStatus) => {
     extra?: string
   }>(() => {
     switch (status) {
-      case "ERROR":
+      case "unknown":
+        return {
+          title: "Failure",
+          subtitle: "Transaction was not found.",
+          animStatus: "failure",
+        }
+      case "replaced": {
+        return {
+          title: "Transaction cancelled",
+          subtitle: "This transaction has been replaced with another one",
+          animStatus: "failure",
+        }
+      }
+      case "error":
         return {
           title: "Failure",
           subtitle: "Transaction failed.",
           animStatus: "failure",
         }
-      case "SUCCESS":
+      case "success":
         return {
           title: "Success",
           subtitle: "Your transfer was successful!",
           animStatus: "success",
         }
-      case "PENDING":
-      default:
+      case "pending":
         return {
           title: "Transfer in progress",
           subtitle: "This may take a few minutes.",
@@ -48,7 +65,6 @@ const useStatusDetails = (status: TransactionStatus) => {
 
 type SendFundsProgressBaseProps = {
   className?: string
-  blockHash?: string
   blockNumber?: string
   status: TransactionStatus
   onClose?: () => void
@@ -57,7 +73,6 @@ type SendFundsProgressBaseProps = {
 
 const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
   status,
-  blockHash,
   blockNumber,
   href,
   onClose,
@@ -102,91 +117,75 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
 }
 
 type SendFundsProgressSubstrateProps = {
-  substrateTxId: string
+  tx: SubWalletTransaction
   onClose?: () => void
   className?: string
 }
 
-const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = (props) => {
-  const { chainId, blockHash, blockNumber, extrinsicIndex, status } = useTransactionById(
-    props.substrateTxId
-  )
-  const { subscanUrl } = useChain(chainId) || {}
-
+const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = ({
+  tx,
+  onClose,
+  className,
+}) => {
+  const { chains } = useChains(true)
   const href = useMemo(() => {
-    if (!subscanUrl || !blockHash) return undefined
-    if (!blockNumber || typeof extrinsicIndex !== "number") return `${subscanUrl}block/${blockHash}`
-    return `${subscanUrl}extrinsic/${blockNumber}-${extrinsicIndex}`
-  }, [blockHash, blockNumber, extrinsicIndex, subscanUrl])
+    const chain = chains?.find((c) => c.genesisHash === tx.genesisHash)
+    return chain?.subscanUrl ? urlJoin(chain.subscanUrl, "tx", tx.hash) : undefined
+  }, [chains, tx])
 
   return (
     <SendFundsProgressBase
-      {...props}
-      status={status}
-      blockHash={blockHash}
-      blockNumber={blockNumber}
+      className={className}
+      onClose={onClose}
+      status={tx.status}
+      blockNumber={tx.blockNumber}
       href={href}
     />
   )
 }
 
 type SendFundsProgressEvmProps = {
-  evmNetworkId: EvmNetworkId
-  evmTxHash: string
+  tx: EvmWalletTransaction
   onClose?: () => void
   className?: string
 }
 
-const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = (props) => {
-  const { blockHash, blockNumber, status, href } = useEvmTransactionWatch(
-    props.evmNetworkId,
-    props.evmTxHash
-  )
+const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
+  tx,
+  className,
+  onClose,
+}) => {
+  const network = useEvmNetwork(tx.evmNetworkId)
 
+  const href = useMemo(
+    () => (network?.explorerUrl ? urlJoin(network.explorerUrl, "tx", tx.hash) : undefined),
+    [network?.explorerUrl, tx.hash]
+  )
   return (
     <SendFundsProgressBase
-      {...props}
-      status={status}
-      blockHash={blockHash}
-      blockNumber={blockNumber}
+      className={className}
+      onClose={onClose}
+      status={tx.status}
+      blockNumber={tx.blockNumber}
       href={href}
     />
   )
 }
 
 type SendFundsProgressProps = {
-  substrateTxId?: string
-  evmNetworkId?: EvmNetworkId
-  evmTxHash?: string
+  hash: HexString
   onClose?: () => void
   className?: string
 }
 
-export const SendFundsProgress: FC<SendFundsProgressProps> = ({
-  substrateTxId,
-  evmNetworkId,
-  evmTxHash,
-  onClose,
-  className,
-}) => {
-  if (substrateTxId)
-    return (
-      <SendFundsProgressSubstrate
-        substrateTxId={substrateTxId}
-        onClose={onClose}
-        className={className}
-      />
-    )
+export const SendFundsProgress: FC<SendFundsProgressProps> = ({ hash, onClose, className }) => {
+  const tx = useTransactionByHash(hash)
 
-  if (evmNetworkId && evmTxHash)
-    return (
-      <SendFundsProgressProgressEvm
-        evmNetworkId={evmNetworkId}
-        evmTxHash={evmTxHash}
-        onClose={onClose}
-        className={className}
-      />
-    )
+  if (tx?.networkType === "substrate")
+    return <SendFundsProgressSubstrate tx={tx} onClose={onClose} className={className} />
+
+  if (tx?.networkType === "evm")
+    return <SendFundsProgressProgressEvm tx={tx} onClose={onClose} className={className} />
 
   return null
 }

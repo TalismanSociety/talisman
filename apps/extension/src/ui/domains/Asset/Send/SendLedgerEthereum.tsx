@@ -1,15 +1,12 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
-import {
-  getEthTransferTransactionBase,
-  serializeTransactionRequestBigNumbers,
-} from "@core/domains/ethereum/helpers"
+import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { HexString } from "@polkadot/util/types"
 import { tokensToPlanck } from "@talismn/util"
 import { api } from "@ui/api"
 import LedgerEthereum from "@ui/domains/Sign/LedgerEthereum"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { ethers } from "ethers"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 import { useSendTokens } from "./context"
 import { SendTokensData } from "./types"
