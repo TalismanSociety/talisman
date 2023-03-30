@@ -20,7 +20,8 @@ export type AppStoreData = {
   hideBraveWarning: boolean
   hasBraveWarningBeenShown: boolean
   analyticsRequestShown: boolean
-  showWalletFunding: boolean
+  showWalletFunding?: boolean
+  hasFunds: boolean
   hasSpiritKey: boolean
   showDotNomPoolStakingBanner: boolean
   needsSpiritKeyUpdate: boolean
@@ -34,7 +35,11 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hasBraveWarningBeenShown: false,
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
-  showWalletFunding: false, // true after onboarding with a newly created account
+  /**
+   * @deprecated Use hasFunds
+   */
+  showWalletFunding: false, // legacy
+  hasFunds: true, // false after onboarding with a newly created account
   hasSpiritKey: false,
   needsSpiritKeyUpdate: false,
   showDotNomPoolStakingBanner: true,
@@ -68,14 +73,20 @@ export class AppStore extends SubscribableStorageProvider<
     // Onboarding page won't display with UNKNOWN
     // Initialize to FALSE after install
     if ((await this.get("onboarded")) === UNKNOWN) await this.set({ onboarded: FALSE })
+
+    // migrate showWalletFunding to hasFunds
+    const showWalletFunding = await this.get("showWalletFunding")
+    if (showWalletFunding !== undefined) {
+      await this.set({ hasFunds: !showWalletFunding, showWalletFunding: undefined })
+    }
   }
 
   async getIsOnboarded() {
     return (await this.get("onboarded")) === TRUE
   }
 
-  async setOnboarded(showWalletFunding: boolean) {
-    return (await this.set({ onboarded: TRUE, showWalletFunding })).onboarded
+  async setOnboarded(hasFunds: boolean) {
+    return (await this.set({ onboarded: TRUE, hasFunds })).onboarded
   }
 
   async ensureOnboarded() {
