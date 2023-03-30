@@ -3,7 +3,7 @@ import { u8aConcat } from "@polkadot/util"
 import QrCodeStyling from "@solana/qr-code-styling"
 import { useEffect, useState } from "react"
 
-import { talismanRedHandSvg } from "../constants"
+import { FRAME_SIZE, talismanRedHandSvg } from "../constants"
 
 export const MultipartQrRenderer = ({ data }: { data?: Uint8Array }) => {
   const [qrCodeFrames, setQrCodeFrames] = useState<Array<string | null> | null>(null)
@@ -13,7 +13,6 @@ export const MultipartQrRenderer = ({ data }: { data?: Uint8Array }) => {
 
     const MULTIPART = new Uint8Array([0])
     const encodeNumber = (value: number) => new Uint8Array([value >> 8, value & 0xff])
-    const FRAME_SIZE = 1024
     const numberOfFrames = Math.ceil(data.length / FRAME_SIZE)
     const dataFrames = Array.from({ length: numberOfFrames })
       .map((_, index) => data.subarray(index * FRAME_SIZE, (index + 1) * FRAME_SIZE))
@@ -25,6 +24,8 @@ export const MultipartQrRenderer = ({ data }: { data?: Uint8Array }) => {
     ;(async () => {
       const qrCodeFrames = []
       for (const dataFrame of dataFrames) {
+        if (cancelled) return
+
         const blob = await new QrCodeStyling({
           type: "svg",
           data: decodeString(dataFrame),
