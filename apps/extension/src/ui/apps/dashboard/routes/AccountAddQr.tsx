@@ -8,13 +8,13 @@ import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { Address } from "@ui/domains/Account/Address"
 import Avatar from "@ui/domains/Account/Avatar"
-import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChains from "@ui/hooks/useChains"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useSettings } from "@ui/hooks/useSettings"
+import { AnimatePresence, motion } from "framer-motion"
 import { useCallback, useMemo, useReducer } from "react"
 import { Checkbox, FormFieldInputText } from "talisman-ui"
 
@@ -68,7 +68,7 @@ const reducer = (state: State, action: Action): State => {
         name: "",
         address,
         genesisHash,
-        lockToNetwork: false,
+        lockToNetwork: true,
       }
     }
   }
@@ -338,24 +338,47 @@ export const AccountAddQr = () => {
             </div>
 
             <Checkbox
-              checked={state.lockToNetwork}
+              checked={!state.lockToNetwork}
               onChange={(event) =>
-                dispatch({ method: "setLockToNetwork", lockToNetwork: event.target.checked })
+                dispatch({ method: "setLockToNetwork", lockToNetwork: !event.target.checked })
               }
             >
-              <div className="text-body-secondary">
-                Restrict account to{" "}
-                <div className="text-body inline-flex items-baseline gap-2">
-                  <ChainLogo
-                    className="self-center"
-                    id={chains.find((chain) => chain.genesisHash === state.genesisHash)?.id}
-                  />
-                  {chains.find((chain) => chain.genesisHash === state.genesisHash)?.name ??
-                    "Unknown"}
-                </div>{" "}
-                network
-              </div>
+              <div className="text-body-secondary">Allow use on any network</div>
             </Checkbox>
+            <AnimatePresence>
+              {!state.lockToNetwork && (
+                <motion.div
+                  className="text-body-secondary ml-[1.7em] !mt-2 overflow-hidden"
+                  initial={{ height: 0 }}
+                  animate={{ height: "auto" }}
+                  exit={{ height: 0 }}
+                >
+                  <div>
+                    It's important to{" "}
+                    <a
+                      className="text-primary"
+                      href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-vault"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      configure your signer device correctly
+                    </a>{" "}
+                    before using this option. Failure to do so will result in issues when signing
+                    transactions with your imported account.
+                  </div>
+                  <div className="mt-2">
+                    If you aren't sure what this option does, it is safer to{" "}
+                    <span
+                      className="text-primary cursor-pointer"
+                      onClick={() => dispatch({ method: "setLockToNetwork", lockToNetwork: true })}
+                    >
+                      turn it off
+                    </span>{" "}
+                    for now.
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             <div className="flex justify-end py-8">
               <SimpleButton type="submit" primary processing={state.submitting}>
                 Import <ArrowRightIcon />
