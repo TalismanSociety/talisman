@@ -108,19 +108,19 @@ export declare type MessageTypesWithNoSubscriptions = Exclude<
 
 export type MessageHandler<
   TMessageType extends MessageTypesWithNoSubscriptions,
-  Req = RequestTypes[TMessageType],
+  Req = RequestType<TMessageType>,
   Res = ResponseType<TMessageType>
 > = (req: Req) => Res | Promise<Res>
 
 // export type SubscriptionHandler<
 //   TMessageType extends MessageTypesWithSubscriptions,
-//   Req = RequestTypes[TMessageType],
+//   Req = RequestType<TMessageType>,
 //   Res = ResponseType<TMessageType>
 // > = (req: Req) => Res | Promise<Res>
 
 // export type SubscriptionByIdHandler<
 //   TMessageType extends MessageTypesWithSubscriptionsById,
-//   Req = RequestTypes[TMessageType],
+//   Req = RequestTypes<TMessageType>,
 //   Res = ResponseType<TMessageType>
 // > = (req: Req) => Res | Promise<Res>
 

@@ -5,6 +5,7 @@ import {
 } from "@core/domains/transactions"
 import { HexString } from "@polkadot/util/types"
 import { ExternalLinkIcon } from "@talisman/theme/icons"
+import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useTransactionByHash from "@ui/hooks/useTransactionByHash"
@@ -127,11 +128,10 @@ const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = ({
   onClose,
   className,
 }) => {
-  const { chains } = useChains(true)
+  const chain = useChainByGenesisHash(tx.genesisHash)
   const href = useMemo(() => {
-    const chain = chains?.find((c) => c.genesisHash === tx.genesisHash)
     return chain?.subscanUrl ? urlJoin(chain.subscanUrl, "tx", tx.hash) : undefined
-  }, [chains, tx])
+  }, [chain, tx])
 
   return (
     <SendFundsProgressBase

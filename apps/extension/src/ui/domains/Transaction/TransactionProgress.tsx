@@ -8,6 +8,7 @@ import { IconButton } from "@talisman/components/IconButton"
 import { XIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import Link from "@ui/domains/Transaction/Link"
+import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useTransactionByHash from "@ui/hooks/useTransactionByHash"
@@ -148,11 +149,10 @@ const TransactionProgressSubstrate: FC<TransactionProgressSubstrateProps> = ({
   onClose,
   className,
 }) => {
-  const { chains } = useChains(true)
+  const chain = useChainByGenesisHash(tx.genesisHash)
   const href = useMemo(() => {
-    const chain = chains?.find((c) => c.genesisHash === tx.genesisHash)
     return chain?.subscanUrl ? urlJoin(chain.subscanUrl, "tx", tx.hash) : undefined
-  }, [chains, tx])
+  }, [chain, tx])
 
   return (
     <TransactionProgressBase

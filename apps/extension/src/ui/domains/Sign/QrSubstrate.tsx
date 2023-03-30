@@ -15,6 +15,7 @@ import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/ScanQr"
+import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { FC, ReactElement, lazy, useEffect, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
@@ -188,8 +189,7 @@ export const QrSubstrate = ({
   parent,
 }: Props): ReactElement<Props> => {
   const [scanState, setScanState] = useState<ScanState>("INIT")
-  const { chains } = useChains(true)
-  const chain = chains.find((chain) => chain.genesisHash === genesisHash)
+  const chain = useChainByGenesisHash(genesisHash)
 
   const { cmd, unsigned } = useMemo(() => {
     if (isRawPayload(payload)) return { cmd: CMD_SIGN_MESSAGE, unsigned: wrapBytes(payload.data) }
