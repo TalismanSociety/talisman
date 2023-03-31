@@ -17,7 +17,10 @@ const useMnemonicBackup = () => {
   )
 
   const showBackupWarning = useMemo(() => {
-    return hideBackupWarningUntil && hideBackupWarningUntil < Date.now() && isNotConfirmed
+    return Boolean(
+      (hideBackupWarningUntil === undefined || hideBackupWarningUntil < Date.now()) &&
+        isNotConfirmed
+    )
   }, [hideBackupWarningUntil, isNotConfirmed])
 
   // toggle menmonic confirmed
