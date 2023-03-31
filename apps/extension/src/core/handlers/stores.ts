@@ -43,7 +43,7 @@ export const tabStores = {
   chains: chainStore,
   tokenRates: tokenRatesStore,
   balances: balanceStore,
-  transactions: transactionStore,
+  transactions: transactionStore, // TODO this is the legacy transfers store which was called transactions. to be deleted in few months, this data now lives in db
   app: appStore,
   sites: sitesAuthorisationStore,
   settings: settingsStore,
