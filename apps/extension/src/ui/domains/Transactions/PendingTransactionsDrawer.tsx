@@ -1,3 +1,4 @@
+import { db } from "@core/db"
 import {
   EvmWalletTransaction,
   SubWalletTransaction,
@@ -79,9 +80,9 @@ const EvmTxActions: FC<{
       onContextMenuClose?.()
       if (action === "speed-up") setReplaceType("speed-up")
       if (action === "cancel") setReplaceType("cancel")
-      if (action === "dismiss") alert("not implemented") // TODO
+      if (action === "dismiss") db.transactions.delete(tx.hash)
     },
-    [onContextMenuClose]
+    [onContextMenuClose, tx.hash]
   )
 
   const handleOpenChange = useCallback(
@@ -385,9 +386,9 @@ const SubTxActions: FC<{
   const handleActionClick = useCallback(
     (action: TransactionAction) => () => {
       onContextMenuClose?.()
-      if (action === "dismiss") alert("not implemented") // TODO
+      if (action === "dismiss") db.transactions.delete(tx.hash)
     },
-    [onContextMenuClose]
+    [onContextMenuClose, tx.hash]
   )
 
   const handleOpenChange = useCallback(

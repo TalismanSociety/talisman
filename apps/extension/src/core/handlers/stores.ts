@@ -61,7 +61,7 @@ const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
   app: appStore,
   sites: sitesAuthorisedStore,
   seedPhrase: seedPhraseStore,
-  transactions: transactionStore,
+  transactions: transactionStore, // TODO this is the legacy transfers store which was called transactions. to be deleted in few months, this data now lives in db
 }
 
 // utility functions used in tests
