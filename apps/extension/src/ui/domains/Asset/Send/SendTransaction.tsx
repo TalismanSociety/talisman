@@ -1,7 +1,6 @@
-import { TransactionProgress } from "@ui/domains/Transaction/TransactionProgress"
-
 import { useSendTokens } from "./context"
 import { useSendTokensModal } from "./SendTokensModalContext"
+import { TransactionProgress } from "./TransactionProgress"
 
 export const SendTransaction = () => {
   const { transactionHash } = useSendTokens()
