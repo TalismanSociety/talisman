@@ -9,7 +9,6 @@ import { XIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import Link from "@ui/domains/Transaction/Link"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
-import useChains from "@ui/hooks/useChains"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useTransactionByHash from "@ui/hooks/useTransactionByHash"
 import { FC, useCallback, useMemo } from "react"
@@ -31,7 +30,7 @@ const getAnimStatus = (status: TransactionStatus): ProcessAnimationStatus => {
 
 const useStatusDetails = (
   status: TransactionStatus,
-  blockHash?: string,
+  blockNumber?: string,
   href?: string,
   onClose?: () => void
 ) => {
@@ -73,11 +72,11 @@ const useStatusDetails = (
     return {
       canClose,
       animStatus: getAnimStatus(status),
-      showLink: status === "pending" && !!blockHash,
+      showLink: status === "pending" && blockNumber !== undefined,
       showClose: canClose && !showViewTx,
       showViewTx,
     }
-  }, [blockHash, href, status])
+  }, [blockNumber, href, status])
 
   return {
     title,
@@ -101,7 +100,6 @@ type TransactionProgressBaseProps = {
 
 const TransactionProgressBase: FC<TransactionProgressBaseProps> = ({
   status,
-  //blockHash,
   blockNumber,
   href,
   onClose,

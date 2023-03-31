@@ -2,9 +2,11 @@ import { ChainId } from "@core/domains/chains/types"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import { TokenId } from "@core/domains/tokens/types"
 import { HexString } from "@polkadot/util/types"
+import { Address } from "@talismn/balances"
 import { ethers } from "ethers"
 
 import { EthGasSettings, EvmNetworkId } from "../ethereum/types"
+import { WalletTransactionTransferInfo } from "../transactions"
 
 // Asset Transfer Messages
 export type AssetTransferMethod = "transferKeepAlive" | "transfer" | "transferAll"
@@ -29,6 +31,7 @@ export interface RequestAssetTransferEthHardware {
   evmNetworkId: EvmNetworkId
   tokenId: TokenId
   amount: string
+  to: Address
   unsigned: ethers.providers.TransactionRequest
   signedTransaction: string
 }
@@ -36,6 +39,7 @@ export interface RequestAssetTransferEthHardware {
 export interface RequestAssetTransferApproveSign {
   unsigned: SignerPayloadJSON
   signature: `0x${string}`
+  transferInfo: WalletTransactionTransferInfo
 }
 
 export interface ResponseAssetTransfer {

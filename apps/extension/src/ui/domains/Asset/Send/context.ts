@@ -362,14 +362,23 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
   // execute the TX
   const sendWithSignature = useCallback(
-    async (signature: `0x${string}`) => {
+    async (formData: Partial<SendTokensData>, signature: `0x${string}`) => {
       if (expectedResult?.type !== "substrate") throw new Error("Review data not found")
       const { unsigned } = expectedResult
       if (!unsigned) throw new Error("Unsigned transaction not found")
-      const { hash } = await api.assetTransferApproveSign(unsigned, signature)
+      if (!formData.transferableTokenId) throw new Error("Transferable token not found")
+      const transferableToken = transferableTokensMap[formData.transferableTokenId]
+      if (!transferableToken) throw new Error("Transferable token not found")
+      const { token } = transferableToken
+      if (!token) throw new Error("Token not found")
+      const { hash } = await api.assetTransferApproveSign(unsigned, signature, {
+        tokenId: token.id,
+        value: tokensToPlanck(formData.amount, token.decimals),
+        to: formData.to,
+      })
       setTransactionHash(hash)
     },
-    [expectedResult]
+    [expectedResult, transferableTokensMap]
   )
 
   // execute the TX
@@ -377,7 +386,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     async (unsigned: ethers.providers.TransactionRequest, signature: `0x${string}`) => {
       if (expectedResult?.type !== "evm") throw new Error("Review data not found")
 
-      const { amount, transferableTokenId } = formData as SendTokensData
+      const { amount, transferableTokenId, to } = formData as SendTokensData
       const transferableToken = transferableTokensMap[transferableTokenId]
       if (!transferableToken) throw new Error("Transferable token not found")
 
@@ -389,6 +398,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         evmNetworkId,
         token.id,
         amount,
+        to,
         serializeTransactionRequestBigNumbers(unsigned),
         signature
       )

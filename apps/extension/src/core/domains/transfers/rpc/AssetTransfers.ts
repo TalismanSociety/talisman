@@ -1,6 +1,9 @@
 import { balanceModules } from "@core/domains/balances/store"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
-import { watchSubstrateTransaction } from "@core/domains/transactions"
+import {
+  WalletTransactionTransferInfo,
+  watchSubstrateTransaction,
+} from "@core/domains/transactions"
 import { AssetTransferMethod, ResponseAssetTransferFeeQuery } from "@core/domains/transfers/types"
 import { chainConnector } from "@core/rpcs/chain-connector"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -15,6 +18,7 @@ import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import { UnsignedTransaction } from "@substrate/txwrapper-core"
 import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
+import { tokensToPlanck } from "@talismn/util"
 
 const getUnsignedJson = (unsigned: UnsignedTransaction): SignerPayloadJSON => {
   const { assetId, metadataRpc, ...payload } = unsigned
@@ -57,14 +61,25 @@ export default class AssetTransfersRpc {
 
     assert(signature, "transaction is not signed")
 
-    await watchSubstrateTransaction(chain, registry, unsigned, signature)
+    const token = await chaindataProvider.getToken(tokenId)
+    await watchSubstrateTransaction(chain, registry, unsigned, signature, {
+      transferInfo: {
+        tokenId: token?.id,
+        value: amount,
+        to,
+      },
+    })
 
     await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
 
     return tx.hash.toHex()
   }
 
-  static async transferSigned(unsigned: SignerPayloadJSON, signature: `0x${string}`) {
+  static async transferSigned(
+    unsigned: SignerPayloadJSON,
+    signature: `0x${string}`,
+    transferInfo: WalletTransactionTransferInfo
+  ) {
     const chain = await chaindataProvider.getChain({ genesisHash: unsigned.genesisHash })
     if (!chain) throw new Error(`Could not find chain for genesisHash ${unsigned.genesisHash}`)
 
@@ -80,7 +95,7 @@ export default class AssetTransfersRpc {
     // apply signature
     tx.addSignature(unsigned.address, signature, unsigned)
 
-    await watchSubstrateTransaction(chain, registry, unsigned, signature)
+    await watchSubstrateTransaction(chain, registry, unsigned, signature, { transferInfo })
 
     await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
 

@@ -1,60 +1,45 @@
 import { SignerPayloadJSON } from "@core/domains/signing/types"
-import { EvmNetworkId } from "@talismn/chaindata-provider"
+import { Address } from "@talismn/balances"
+import { EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
-
-export type WatchTransactionOptions = {
-  siteUrl?: string
-  notifications?: boolean
-}
 
 // unknown for substrate txs from dapps
 export type TransactionStatus = "unknown" | "pending" | "success" | "error" | "replaced"
 
-export type EvmWalletTransaction = {
-  networkType: "evm"
-  account: string
-  evmNetworkId: EvmNetworkId
+export type WatchTransactionOptions = {
+  siteUrl?: string
+  notifications?: boolean
+  transferInfo?: WalletTransactionTransferInfo
+}
+
+export type WalletTransactionTransferInfo = {
+  tokenId?: TokenId
+  value?: string
+  to?: Address
+}
+
+export type WalletTransactionBase = WalletTransactionTransferInfo & {
+  account: Address
   siteUrl?: string
   timestamp: number
   hash: string
   status: TransactionStatus
   isReplacement?: boolean
-
-  // replay
-  unsigned: ethers.providers.TransactionRequest
-  nonce: number
-
-  // display
   label?: string
-  tokenId?: string
-  value?: string
-
-  // lookup
+  nonce: number
   blockNumber?: string
 }
 
-export type SubWalletTransaction = {
+export type EvmWalletTransaction = WalletTransactionBase & {
+  networkType: "evm"
+  evmNetworkId: EvmNetworkId
+  unsigned: ethers.providers.TransactionRequest
+}
+
+export type SubWalletTransaction = WalletTransactionBase & {
   networkType: "substrate"
-  account: string
   genesisHash: string
-  siteUrl?: string
-  timestamp: number
-  hash: string
-  isReplacement?: boolean
-
-  // replay
   unsigned: SignerPayloadJSON
-  nonce: number
-
-  // display
-  label?: string
-  tokenId?: string
-  value?: string
-
-  // lookup
-  blockNumber?: string
-  extrinsicIndex?: number
-  status: TransactionStatus
 }
 
 // Named Wallet* this to avoid conflicts with types from various Dexie, Polkadot and Ethers libraries

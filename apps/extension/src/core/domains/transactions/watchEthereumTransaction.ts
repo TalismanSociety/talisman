@@ -19,7 +19,7 @@ export const watchEthereumTransaction = async (
   options: WatchTransactionOptions = {}
 ) => {
   try {
-    const { siteUrl, notifications } = options
+    const { siteUrl, notifications, transferInfo = {} } = options
     const withNotifications = !!(notifications && (await settingsStore.get("allowNotifications")))
 
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(ethChainId)
@@ -38,7 +38,7 @@ export const watchEthereumTransaction = async (
     if (withNotifications) await createNotification("submitted", networkName, txUrl)
 
     try {
-      await addEvmTransaction(txHash, unsigned, { siteUrl })
+      await addEvmTransaction(txHash, unsigned, { siteUrl, ...transferInfo })
 
       const receipt = await provider.waitForTransaction(txHash)
 

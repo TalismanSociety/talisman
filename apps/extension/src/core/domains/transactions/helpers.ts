@@ -2,27 +2,31 @@ import { db } from "@core/db"
 import { TypeRegistry } from "@polkadot/types"
 import { HexString } from "@polkadot/util/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
+import { Address } from "@talismn/balances"
 import { ethers } from "ethers"
 import merge from "lodash/merge"
 
 import { serializeTransactionRequestBigNumbers } from "../ethereum/helpers"
 import { TransactionStatus } from "./types"
 
-type AddEvemTransactionOptions = {
+type AddTransactionOptions = {
   label?: string
   siteUrl?: string
+  tokenId?: string
+  value?: string
+  to?: Address
 }
 
-const DEFAULT_OPTIONS: AddEvemTransactionOptions = {
+const DEFAULT_OPTIONS: AddTransactionOptions = {
   label: "Transaction",
 }
 
 export const addEvmTransaction = async (
   hash: string,
   tx: ethers.providers.TransactionRequest,
-  options: AddEvemTransactionOptions = {}
+  options: AddTransactionOptions = {}
 ) => {
-  const { siteUrl, label } = merge(structuredClone(DEFAULT_OPTIONS), options)
+  const { siteUrl, label, tokenId, value, to } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
   try {
     if (!tx.chainId || !tx.nonce || !tx.from) throw new Error("Invalid transaction")
@@ -31,16 +35,19 @@ export const addEvmTransaction = async (
     const unsigned = serializeTransactionRequestBigNumbers(tx)
 
     db.transactions.add({
+      hash,
       networkType: "evm",
       evmNetworkId: String(tx.chainId),
-      nonce: ethers.BigNumber.from(tx.nonce).toNumber(),
       account: tx.from,
+      nonce: ethers.BigNumber.from(tx.nonce).toNumber(),
+      unsigned,
       status: "pending",
       siteUrl,
-      label: "Transaction", // TODO
-      hash,
+      label,
+      tokenId,
+      value,
+      to,
       timestamp: Date.now(),
-      unsigned,
     })
   } catch (err) {
     // eslint-disable-next-line no-console
@@ -51,9 +58,9 @@ export const addEvmTransaction = async (
 export const addSubstrateTransaction = async (
   hash: string,
   payload: SignerPayloadJSON,
-  options: AddEvemTransactionOptions = {}
+  options: AddTransactionOptions = {}
 ) => {
-  const { siteUrl, label } = merge(structuredClone(DEFAULT_OPTIONS), options)
+  const { siteUrl, label, tokenId, value, to } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
   try {
     if (!payload.genesisHash || !payload.nonce || !payload.address)
@@ -62,13 +69,17 @@ export const addSubstrateTransaction = async (
     db.transactions.add({
       hash,
       networkType: "substrate",
-      account: payload.address,
       genesisHash: payload.genesisHash,
+      account: payload.address,
+
       nonce: Number(payload.nonce),
       unsigned: payload,
       status: "pending",
       siteUrl,
       label,
+      tokenId,
+      value,
+      to,
       timestamp: Date.now(),
     })
   } catch (err) {
@@ -83,7 +94,7 @@ export const updateTransactionStatus = async (
   blockNumber?: number
 ) => {
   try {
-    await db.transactions.update(hash, { status, blockNumber })
+    await db.transactions.update(hash, { status, blockNumber: blockNumber?.toString() })
 
     if (["success", "error"].includes(status)) {
       const tx = await db.transactions.get(hash)

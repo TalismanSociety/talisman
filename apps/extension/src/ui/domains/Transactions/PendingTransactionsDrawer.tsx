@@ -4,16 +4,16 @@ import {
   WalletTransaction,
 } from "@core/domains/transactions/types"
 import { TransactionStatus } from "@core/domains/transactions/types"
+import StyledFavicon from "@talisman/components/Favicon"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
+import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
-import useChain from "@ui/hooks/useChain"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
-import { useLiveQuery } from "dexie-react-hooks"
 import { BigNumber } from "ethers"
 import sortBy from "lodash/sortBy"
 import { FC, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
@@ -23,6 +23,7 @@ import urlJoin from "url-join"
 
 import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
+import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
 import { TxReplaceType } from "./shared"
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
@@ -76,8 +77,9 @@ const EvmTxActions: FC<{
   const handleActionClick = useCallback(
     (action: TransactionAction) => () => {
       onContextMenuClose?.()
-      if (action === "speed-up") setReplaceType("speed-up") // ocSpeedUp.open()
-      if (action === "cancel") setReplaceType("cancel") // ocCancelUp.open()
+      if (action === "speed-up") setReplaceType("speed-up")
+      if (action === "cancel") setReplaceType("cancel")
+      if (action === "dismiss") alert("not implemented") // TODO
     },
     [onContextMenuClose]
   )
@@ -230,10 +232,22 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
-  const { to, value } = tx.unsigned
   const evmNetwork = useEvmNetwork(tx.evmNetworkId)
-  const token = useToken(evmNetwork?.nativeToken?.id)
-  const tokenRates = useTokenRates(evmNetwork?.nativeToken?.id)
+
+  const { isTransfer, value, tokenId, to } = useMemo(() => {
+    const isTransfer = !!tx.tokenId && !!tx.value && tx.to
+    return isTransfer
+      ? { isTransfer, value: tx.value, tokenId: tx.tokenId, to: tx.to }
+      : {
+          isTransfer,
+          value: tx.unsigned.value,
+          tokenId: evmNetwork?.nativeToken?.id,
+          to: tx.unsigned.to,
+        }
+  }, [evmNetwork?.nativeToken?.id, tx.to, tx.tokenId, tx.unsigned.to, tx.unsigned.value, tx.value])
+
+  const token = useToken(tokenId)
+  const tokenRates = useTokenRates(tokenId)
 
   const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
 
@@ -271,14 +285,37 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
         enabled && "hover:bg-grey-750"
       )}
     >
-      <Tooltip>
-        <TooltipTrigger className="cursor-default">
-          <ChainLogo id={tx.evmNetworkId} className="shrink-0 text-xl" />
-        </TooltipTrigger>
-        <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-          {evmNetwork?.name}
-        </TooltipContent>
-      </Tooltip>
+      {tx.siteUrl ? (
+        <>
+          <Tooltip>
+            <TooltipTrigger className="shrink-0 cursor-default">
+              <StyledFavicon url={tx.siteUrl} className="text-xl" />
+            </TooltipTrigger>
+            <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+              {tx.siteUrl}
+            </TooltipContent>
+          </Tooltip>
+        </>
+      ) : isTransfer && token ? (
+        <Tooltip>
+          <TooltipTrigger className="shrink-0 cursor-default">
+            <TokenLogo tokenId={token.id} className="text-xl" />
+          </TooltipTrigger>
+          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+            {token?.symbol} on {evmNetwork?.name}
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <Tooltip>
+          <TooltipTrigger className="cursor-default">
+            <ChainLogo id={tx.evmNetworkId} className="shrink-0 text-xl" />
+          </TooltipTrigger>
+          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+            {evmNetwork?.name}
+          </TooltipContent>
+        </Tooltip>
+      )}
+
       <div className="leading-paragraph relative flex w-full grow justify-between">
         <div className="text-left">
           <div className="flex h-10 items-center gap-2 text-sm font-bold">
@@ -345,15 +382,10 @@ const SubTxActions: FC<{
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
-  const isPending = useMemo(() => ["pending", "unknown"].includes(tx?.status), [tx.status])
-
-  const [replaceType, setReplaceType] = useState<TxReplaceType>()
-
   const handleActionClick = useCallback(
     (action: TransactionAction) => () => {
       onContextMenuClose?.()
-      if (action === "speed-up") setReplaceType("speed-up") // ocSpeedUp.open()
-      if (action === "cancel") setReplaceType("cancel") // ocCancelUp.open()
+      if (action === "dismiss") alert("not implemented") // TODO
     },
     [onContextMenuClose]
   )
@@ -386,30 +418,6 @@ const SubTxActions: FC<{
       )}
     >
       <div className="relative">
-        {/* {isPending && (
-          <>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ActionButton onClick={handleActionClick("speed-up")}>
-                  <RocketIcon className="inline" />
-                </ActionButton>
-              </TooltipTrigger>
-              <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-                Speed Up
-              </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <ActionButton onClick={handleActionClick("cancel")}>
-                  <XOctagonIcon className="inline" />
-                </ActionButton>
-              </TooltipTrigger>
-              <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-                Cancel
-              </TooltipContent>
-            </Tooltip>
-          </>
-        )} */}
         <Popover placement="bottom-end" open={isOpen} onOpenChange={handleOpenChange}>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -432,22 +440,6 @@ const SubTxActions: FC<{
               isOpen ? "visible opacity-100" : "invisible opacity-0"
             )}
           >
-            {/* {isPending && (
-              <>
-                <button
-                  onClick={handleActionClick("cancel")}
-                  className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-                >
-                  Cancel transaction
-                </button>
-                <button
-                  onClick={handleActionClick("speed-up")}
-                  className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
-                >
-                  Speed up transaction
-                </button>
-              </>
-            )} */}
             {hrefBlockExplorer && (
               <button
                 onClick={handleBlockExplorerClick}
@@ -465,12 +457,6 @@ const SubTxActions: FC<{
           </PopoverContent>
         </Popover>
       </div>
-      <TxReplaceDrawer
-        tx={tx}
-        type={replaceType}
-        isOpen={!!replaceType}
-        onClose={() => setReplaceType(undefined)}
-      />
     </div>
   )
 }
@@ -483,8 +469,16 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
 }) => {
   const { address, genesisHash } = tx.unsigned
   const chain = useChainByGenesisHash(genesisHash)
-  const token = useToken(chain?.nativeToken?.id)
-  const tokenRates = useTokenRates(chain?.nativeToken?.id)
+  const token = useToken(tx.tokenId)
+  const tokenRates = useTokenRates(tx.tokenId)
+
+  const { isTransfer, amount } = useMemo(() => {
+    const isTransfer = tx.value && tx.tokenId && tx.to && token
+    return {
+      isTransfer,
+      amount: isTransfer ? new BalanceFormatter(tx.value, token.decimals, tokenRates) : null,
+    }
+  }, [token, tokenRates, tx.to, tx.tokenId, tx.value])
 
   const [isCtxMenuOpen, setIsCtxMenuOpen] = useState(false)
 
@@ -514,14 +508,36 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
         enabled && "hover:bg-grey-750"
       )}
     >
-      <Tooltip>
-        <TooltipTrigger className="cursor-default">
-          <ChainLogo id={chain?.id} className="shrink-0 text-xl" />
-        </TooltipTrigger>
-        <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-          {chain?.name}
-        </TooltipContent>
-      </Tooltip>
+      {tx.siteUrl ? (
+        <>
+          <Tooltip>
+            <TooltipTrigger className="shrink-0 cursor-default">
+              <StyledFavicon url={tx.siteUrl} className="text-xl" />
+            </TooltipTrigger>
+            <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+              {tx.siteUrl}
+            </TooltipContent>
+          </Tooltip>
+        </>
+      ) : isTransfer && token ? (
+        <Tooltip>
+          <TooltipTrigger className="shrink-0 cursor-default">
+            <TokenLogo tokenId={token.id} className="text-xl" />
+          </TooltipTrigger>
+          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+            {token?.symbol} on {chain?.name}
+          </TooltipContent>
+        </Tooltip>
+      ) : (
+        <Tooltip>
+          <TooltipTrigger className="shrink-0 cursor-default">
+            <ChainLogo id={chain?.id} className="text-xl" />
+          </TooltipTrigger>
+          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+            {chain?.name}
+          </TooltipContent>
+        </Tooltip>
+      )}
       <div className="leading-paragraph relative flex w-full grow justify-between">
         <div className="text-left">
           <div className="flex h-10 items-center gap-2 text-sm font-bold">
@@ -533,11 +549,20 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
             )}
           </div>
           <div className="text-body-secondary h-[17px] text-xs">
-            From: {address ? shortenAddress(address) : "unknown"}
+            {tx.to ? (
+              <>
+                To:{" "}
+                {chain?.prefix
+                  ? shortenAddress(convertAddress(tx.to, chain.prefix))
+                  : shortenAddress(tx.to)}
+              </>
+            ) : (
+              <>From: {address ? shortenAddress(address) : "unknown"}</>
+            )}
           </div>
         </div>
         <div className="relative grow text-right">
-          {/* {amount && token && (
+          {amount && token && (
             <div
               className={classNames(
                 isCtxMenuOpen ? "opacity-0" : "opacity-100",
@@ -558,7 +583,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
                 )}
               </div>
             </div>
-          )} */}
+          )}
           {isMounted && (
             <SubTxActions
               tx={tx}

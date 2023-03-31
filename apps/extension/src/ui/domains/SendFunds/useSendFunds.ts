@@ -529,16 +529,21 @@ const useSendFundsProvider = () => {
     async (signature: HexString) => {
       try {
         setIsProcessing(true)
-        if (subTransaction?.unsigned) {
-          const { hash } = await api.assetTransferApproveSign(subTransaction.unsigned, signature)
+        if (subTransaction?.unsigned && token?.id) {
+          const { hash } = await api.assetTransferApproveSign(subTransaction.unsigned, signature, {
+            tokenId: token.id,
+            value: amount,
+            to,
+          })
           gotoProgress({ hash })
           return
         }
-        if (evmTransaction?.transaction && amount && token?.evmNetwork?.id) {
+        if (evmTransaction?.transaction && amount && token?.evmNetwork?.id && to) {
           const { hash } = await api.assetTransferEthHardware(
             token?.evmNetwork.id,
             token.id,
             amount,
+            to,
             serializeTransactionRequestBigNumbers(evmTransaction.transaction),
             signature
           )
@@ -553,9 +558,10 @@ const useSendFundsProvider = () => {
     },
     [
       amount,
-      evmTransaction,
+      evmTransaction?.transaction,
       gotoProgress,
       subTransaction?.unsigned,
+      to,
       token?.evmNetwork?.id,
       token?.id,
     ]

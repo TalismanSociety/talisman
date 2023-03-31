@@ -25,7 +25,7 @@ import { TransactionRequest } from "@ethersproject/abstract-provider"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
-import { planckToTokens } from "@talismn/util"
+import { planckToTokens, tokensToPlanck } from "@talismn/util"
 import { Wallet, ethers } from "ethers"
 
 import { transferAnalytics } from "./helpers"
@@ -128,6 +128,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
     evmNetworkId,
     tokenId,
     amount,
+    to,
     unsigned,
     signedTransaction,
   }: RequestAssetTransferEthHardware): Promise<ResponseAssetTransfer> {
@@ -141,7 +142,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const { from, to, hash, ...otherDetails } = await provider.sendTransaction(signedTransaction)
       if (!to) throw new Error("Unable to transfer - no recipient address given")
 
-      watchEthereumTransaction(evmNetworkId, hash, unsigned)
+      watchEthereumTransaction(evmNetworkId, hash, unsigned, {
+        transferInfo: { tokenId: token.id, value: amount, to },
+      })
 
       transferAnalytics({
         network: { evmNetworkId },
@@ -206,7 +209,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
     })
 
     if (result.ok) {
-      watchEthereumTransaction(evmNetworkId, result.val.hash, transaction)
+      watchEthereumTransaction(evmNetworkId, result.val.hash, transaction, {
+        transferInfo: { tokenId: token.id, value: amount, to: toAddress },
+      })
 
       transferAnalytics({
         network: { evmNetworkId },
@@ -227,11 +232,12 @@ export default class AssetTransferHandler extends ExtensionHandler {
   private async assetTransferApproveSign({
     unsigned,
     signature,
+    transferInfo,
   }: RequestAssetTransferApproveSign): Promise<ResponseAssetTransfer> {
     const chain = await chaindataProvider.getChain({ genesisHash: unsigned.genesisHash })
     if (!chain) throw new Error(`Could not find chain for genesisHash ${unsigned.genesisHash}`)
 
-    const hash = await AssetTransfersRpc.transferSigned(unsigned, signature)
+    const hash = await AssetTransfersRpc.transferSigned(unsigned, signature, transferInfo)
     return { hash }
   }
 

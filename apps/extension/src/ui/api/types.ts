@@ -44,6 +44,7 @@ import {
   ProviderType,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
+import { WalletTransactionTransferInfo } from "@core/domains/transactions"
 import {
   AssetTransferMethod,
   ResponseAssetTransfer,
@@ -55,6 +56,7 @@ import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
+import { Address } from "@talismn/balances"
 import { ethers } from "ethers"
 
 export default interface MessageTypes {
@@ -202,6 +204,7 @@ export default interface MessageTypes {
     evmNetworkId: EvmNetworkId,
     tokenId: TokenId,
     amount: string,
+    to: Address,
     unsigned: ethers.providers.TransactionRequest,
     signedTransaction: HexString
   ) => Promise<ResponseAssetTransfer>
@@ -216,7 +219,8 @@ export default interface MessageTypes {
   ) => Promise<ResponseAssetTransferFeeQuery>
   assetTransferApproveSign: (
     unsigned: SignerPayloadJSON,
-    signature: `0x${string}`
+    signature: `0x${string}`,
+    transferInfo: WalletTransactionTransferInfo
   ) => Promise<ResponseAssetTransfer>
 
   // eth related messages

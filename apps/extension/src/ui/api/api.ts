@@ -191,11 +191,12 @@ export const api: MessageTypes = {
       amount,
       gasSettings,
     }),
-  assetTransferEthHardware: (evmNetworkId, tokenId, amount, unsigned, signedTransaction) =>
+  assetTransferEthHardware: (evmNetworkId, tokenId, amount, to, unsigned, signedTransaction) =>
     messageService.sendMessage("pri(assets.transferEthHardware)", {
       evmNetworkId,
       tokenId,
       amount,
+      to,
       unsigned,
       signedTransaction,
     }),
@@ -209,10 +210,11 @@ export const api: MessageTypes = {
       tip,
       method,
     }),
-  assetTransferApproveSign: (unsigned, signature) =>
+  assetTransferApproveSign: (unsigned, signature, transferInfo) =>
     messageService.sendMessage("pri(assets.transfer.approveSign)", {
       unsigned,
       signature,
+      transferInfo,
     }),
 
   // eth related messages
