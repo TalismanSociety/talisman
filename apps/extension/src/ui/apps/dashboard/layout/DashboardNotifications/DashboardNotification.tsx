@@ -36,9 +36,11 @@ export const DashboardNotification = ({
           {action}
         </button>
       )}
-      <IconButton onClick={onClose}>
-        <XIcon />
-      </IconButton>
+      {onClose && (
+        <IconButton onClick={onClose}>
+          <XIcon />
+        </IconButton>
+      )}
     </div>
   )
 }

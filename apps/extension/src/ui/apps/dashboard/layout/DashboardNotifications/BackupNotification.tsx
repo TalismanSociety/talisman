@@ -7,19 +7,20 @@ import { DashboardNotification } from "./DashboardNotification"
 
 export const BackupNotification = () => {
   const { isOpen, open, close } = useOpenClose()
-  const { isNotConfirmed, confirm } = useMnemonicBackup()
+  const { isNotConfirmed, showBackupWarning } = useMnemonicBackup()
 
-  if (!isNotConfirmed) return null
+  // showBackupWarning refers to the main full screen backup warning. This backup notification should be shown whenever that
+  // full screen backup warning is *not* shown, as long as the account has not been backed up
+  if (!isNotConfirmed || showBackupWarning) return null
 
   return (
     <>
       <DashboardNotification
         icon={<InfoIcon />}
-        title="Please backup your recovery phrase. "
+        title="Please backup your account. "
         description="If you don't backup your recovery phrase you may lose access to all your funds."
         action="Backup Now"
         onActionClick={open}
-        onClose={confirm}
       />
       <MnemonicModal open={isOpen} onClose={close} />
     </>
