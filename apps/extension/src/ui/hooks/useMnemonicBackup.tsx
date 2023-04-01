@@ -16,12 +16,13 @@ const useMnemonicBackup = () => {
     [backupConfirmed]
   )
 
-  const showBackupWarning = useMemo(() => {
-    return Boolean(
-      (hideBackupWarningUntil === undefined || hideBackupWarningUntil < Date.now()) &&
-        isNotConfirmed
-    )
+  const isSnoozed = useMemo(() => {
+    return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now() && isNotConfirmed)
   }, [hideBackupWarningUntil, isNotConfirmed])
+
+  const showBackupWarning = useMemo(() => {
+    return !isSnoozed && isNotConfirmed
+  }, [isSnoozed, isNotConfirmed])
 
   // toggle menmonic confirmed
   const toggleConfirmed = useCallback((confirmed: boolean) => api.mnemonicConfirm(confirmed), [])
@@ -35,6 +36,7 @@ const useMnemonicBackup = () => {
     confirm,
     showBackupWarning,
     snoozeBackupReminder,
+    isSnoozed,
   }
 }
 

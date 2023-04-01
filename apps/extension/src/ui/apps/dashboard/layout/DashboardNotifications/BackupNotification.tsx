@@ -40,7 +40,7 @@ export const BackupWarningModal = ({ isOpen, snooze, openBackupModal }: BackupWa
 
 export const BackupNotification = () => {
   const { isOpen, open, close } = useOpenClose()
-  const { isNotConfirmed, showBackupWarning, snoozeBackupReminder } = useMnemonicBackup()
+  const { isNotConfirmed, isSnoozed, showBackupWarning, snoozeBackupReminder } = useMnemonicBackup()
 
   // showBackupWarning refers to the main full screen backup warning. This backup notification should be shown whenever that
   // full screen backup warning is *not* shown, as long as the account has not been backed up
@@ -55,7 +55,7 @@ export const BackupNotification = () => {
               openBackupModal={open}
             />
           )}
-          {!showBackupWarning && (
+          {isSnoozed && (
             <DashboardNotification
               icon={<InfoIcon />}
               title="Please backup your account. "
