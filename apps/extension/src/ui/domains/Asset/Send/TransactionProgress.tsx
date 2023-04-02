@@ -115,7 +115,7 @@ const TransactionProgressBase: FC<TransactionProgressBaseProps> = ({
         </IconButton>
       </div>
       <div className="text-body my-12 text-lg font-bold">{title}</div>
-      <div className="text-body-secondary text-base font-light">{subtitle}</div>
+      <div className="text-body-secondary text-center text-base font-light">{subtitle}</div>
       <div className="flex grow flex-col justify-center">
         <ProcessAnimation status={animStatus} className="h-[14.5rem]" />
       </div>

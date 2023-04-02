@@ -6,16 +6,18 @@ import {
   SubWalletTransaction,
   WalletTransaction,
 } from "@core/domains/transactions/types"
+import { HexString } from "@polkadot/util/types"
 import { notify } from "@talisman/components/Notifications"
-import { InfoIcon, XOctagonIcon } from "@talisman/theme/icons"
+import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
 import { TokenId } from "@talismn/chaindata-provider"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useBalance } from "@ui/hooks/useBalance"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { BigNumber } from "ethers"
 import { ethers } from "ethers"
-import { FC, lazy, useCallback, useEffect, useState } from "react"
+import { FC, lazy, useCallback, useEffect, useMemo, useState } from "react"
 import { Button, Drawer } from "talisman-ui"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -30,28 +32,11 @@ type TxReplaceDrawerProps = {
   tx?: WalletTransaction
   type?: TxReplaceType
   isOpen?: boolean
-  onClose?: () => void
+  onClose?: (newTxHash?: HexString) => void
 }
 
 type EvmTxReplaceProps = TxReplaceDrawerProps & { tx: EvmWalletTransaction; type: TxReplaceType }
 type SubTxReplaceProps = TxReplaceDrawerProps & { tx: SubWalletTransaction; type: TxReplaceType }
-
-const TEXT = {
-  title: {
-    "speed-up": "Speed Up Transaction",
-    "cancel": "Cancel Transaction",
-  },
-  description: {
-    "speed-up":
-      "This will attempt to speed up your pending transaction by resubmitting it with a higher priority.",
-    "cancel":
-      "This will attempt to cancel your pending transaction, by replacing it with a zero-balance transfer with a higher priority.",
-  },
-  approve: {
-    "speed-up": "Speed Up",
-    "cancel": "Try to Cancel",
-  },
-}
 
 export const EvmEstimatedFeeTooltip: FC<{
   account: string
@@ -110,7 +95,7 @@ export const EvmEstimatedFeeTooltip: FC<{
 const EvmDrawerContent: FC<{
   tx: EvmWalletTransaction
   type: TxReplaceType
-  onClose?: () => void
+  onClose?: (newTxHash?: HexString) => void
 }> = ({ tx, type, onClose }) => {
   const evmNetwork = useEvmNetwork(tx.evmNetworkId)
   const [isLocked, setIsLocked] = useState(false)
@@ -124,8 +109,6 @@ const EvmDrawerContent: FC<{
     networkUsage,
     isLoading,
     isValid,
-    error,
-    errorDetails,
   } = useEthReplaceTransaction(tx.unsigned, type, isLocked)
 
   const account = useAccountByAddress(tx.account)
@@ -137,7 +120,7 @@ const EvmDrawerContent: FC<{
     setIsProcessing(true)
     try {
       const safeTx = serializeTransactionRequestBigNumbers(transaction)
-      await api.ethSignAndSend(safeTx)
+      const newHash = await api.ethSignAndSend(safeTx)
       api.analyticsCapture({
         eventName: `transaction ${type}`,
         options: {
@@ -145,7 +128,7 @@ const EvmDrawerContent: FC<{
           networkType: "ethereum",
         },
       })
-      onClose?.()
+      onClose?.(newHash)
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error("handleSend", { err })
@@ -167,7 +150,7 @@ const EvmDrawerContent: FC<{
       setIsProcessing(true)
       try {
         const safeTx = serializeTransactionRequestBigNumbers(transaction)
-        await api.ethSendSigned(safeTx, signature)
+        const newHash = await api.ethSendSigned(safeTx, signature)
         api.analyticsCapture({
           eventName: `transaction ${type}`,
           options: {
@@ -175,7 +158,7 @@ const EvmDrawerContent: FC<{
             networkType: "ethereum",
           },
         })
-        onClose?.()
+        onClose?.(newHash)
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error("handleSend", { err })
@@ -197,12 +180,52 @@ const EvmDrawerContent: FC<{
     setIsLocked(true)
   }, [])
 
+  const { canReplace, Icon, iconClassName, title, description, approveText } = useMemo(() => {
+    const canReplace = tx.status === "pending"
+
+    if (canReplace && type === "speed-up")
+      return {
+        canReplace,
+        Icon: RocketIcon,
+        iconClassName: "text-primary",
+        title: "Speed Up Transaction",
+        description:
+          "This will attempt to speed up your pending transaction by resubmitting it with a higher priority.",
+        approveText: "Speed Up",
+      }
+
+    if (canReplace && type === "cancel")
+      return {
+        canReplace,
+        Icon: XOctagonIcon,
+        iconClassName: "text-brand-orange",
+        title: "Cancel Transaction",
+        description:
+          "This will attempt to cancel your pending transaction, by replacing it with a zero-balance transfer with a higher priority.",
+        approveText: "Try to Cancel",
+      }
+
+    return {
+      canReplace,
+      Icon: AlertCircleIcon,
+      iconClassName: "text-alert-warn",
+      title: "Transaction already confirmed",
+      description: "This transaction has already been confirmed and can no longer be replaced.",
+      approveText: undefined,
+    }
+  }, [tx.status, type])
+
   return (
     <>
-      <XOctagonIcon className="text-brand-orange text-[40px]" />
-      <div className="mt-12 text-base font-bold">{TEXT.title[type]}</div>
-      <p className="text-body-secondary mt-10 text-center text-sm">{TEXT.description[type]}</p>
-      <div className="text-body-secondary mt-16 w-full space-y-2 text-xs">
+      <Icon className={classNames("text-[40px]", iconClassName)} />
+      <div className="mt-12 text-base font-bold">{title}</div>
+      <p className="text-body-secondary mt-10 text-center text-sm">{description}</p>
+      <div
+        className={classNames(
+          "text-body-secondary mt-16 w-full space-y-2 text-xs",
+          !canReplace && "pointer-events-none opacity-50"
+        )}
+      >
         <div className="flex w-full items-center justify-between">
           <div>
             Estimated Fee{" "}
@@ -242,7 +265,7 @@ const EvmDrawerContent: FC<{
         </div>
       </div>
       <>
-        {account?.isHardware ? (
+        {canReplace && account?.isHardware ? (
           <div className="w-full">
             <LedgerEthereum
               manualSend
@@ -256,19 +279,26 @@ const EvmDrawerContent: FC<{
             />
           </div>
         ) : (
-          <div className="mt-8 grid w-full grid-cols-2 gap-4">
-            <Button className="h-24" onClick={onClose}>
+          <div
+            className={classNames(
+              "mt-8 grid w-full  gap-4",
+              canReplace ? "grid-cols-2" : "grid-cols-1"
+            )}
+          >
+            <Button className="h-24" onClick={() => onClose?.()}>
               Close
             </Button>
-            <Button
-              className="h-24"
-              primary
-              onClick={handleSend}
-              disabled={!account || (!isLoading && !isValid)}
-              processing={isProcessing}
-            >
-              {TEXT.approve[type]}
-            </Button>
+            {canReplace && (
+              <Button
+                className="h-24"
+                primary
+                onClick={handleSend}
+                disabled={!account || (!isLoading && !isValid)}
+                processing={isProcessing}
+              >
+                {approveText}
+              </Button>
+            )}
           </div>
         )}
       </>

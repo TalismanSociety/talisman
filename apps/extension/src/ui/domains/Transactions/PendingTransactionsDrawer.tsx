@@ -615,13 +615,8 @@ const TransactionsList: FC<{
   transactions: WalletTransaction[]
 }> = ({ transactions }) => {
   const sortedTxs: WalletTransaction[] = useMemo(
-    () =>
-      sortBy(transactions, ["timestamp"])
-        .reverse()
-        .map((tx, i, arr) => ({
-          ...tx,
-          isReplacement: arr.findIndex((t) => t.hash !== tx.hash && t.nonce === tx.nonce) > i,
-        })),
+    // results should already be sorted by the caller, this is just in case
+    () => sortBy(transactions, ["timestamp"]).reverse(),
     [transactions]
   )
 

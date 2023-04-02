@@ -329,7 +329,7 @@ export const useEthTransaction = (
   // set default priority based on EIP1559 support
   useEffect(() => {
     if (priority !== undefined || hasEip1559Support === undefined) return
-    setPriority(hasEip1559Support ? (isReplacement ? "medium" : "low") : "recommended")
+    setPriority(hasEip1559Support ? (isReplacement ? "high" : "low") : "recommended")
   }, [hasEip1559Support, isReplacement, priority])
 
   const { gasSettings, setCustomSettings, gasSettingsByPriority } = useGasSettings({

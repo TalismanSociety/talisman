@@ -24,7 +24,7 @@ export const SendFundsSubmitted = () => {
   }, [])
 
   return (
-    <div className="h-full w-full px-12 py-8">
+    <div id="main" className="relative h-full w-full px-12 py-8">
       <SendFundsProgress hash={hash} onClose={handleClose} />
     </div>
   )

@@ -505,7 +505,7 @@ const ReviewButton = () => {
         anchor="bottom"
         open={isOpen}
         onClose={close}
-        parent={document.getElementById("send-funds-main")}
+        parent={document.getElementById("main")}
       >
         <div className="bg-black-tertiary rounded-t-xl p-12 text-center">
           <div>
@@ -555,7 +555,7 @@ const AddContact = () => {
     return isEthereumAddress(to) ? "ethereum" : "ss58"
   }, [to])
 
-  const drawerContainer = document.getElementById("send-funds-main")
+  const drawerContainer = document.getElementById("main")
 
   if (!canAdd || !to) return null
 

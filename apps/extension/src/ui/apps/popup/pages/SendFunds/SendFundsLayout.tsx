@@ -32,7 +32,7 @@ export const SendFundsLayout: FC<SendFundsLayoutProps> = ({
   }, [analytics, navigate])
 
   return (
-    <div id="send-funds-main" className="relative flex h-full w-full flex-col">
+    <div id="main" className="relative flex h-full w-full flex-col">
       <div className="flex h-32 min-h-[6.4rem] w-full items-center px-12">
         <div className="w-12">
           {withBackLink && window.history.length > 1 && (

@@ -165,7 +165,7 @@ const EvmFeeSummary = () => {
           {evmNetwork?.nativeToken?.id && priority && tx && txDetails && (
             <EthFeeSelect
               tokenId={evmNetwork.nativeToken.id}
-              drawerContainerId={"send-funds-main"}
+              drawerContainerId="main"
               gasSettingsByPriority={gasSettingsByPriority}
               setCustomSettings={setCustomSettings}
               onChange={setPriority}

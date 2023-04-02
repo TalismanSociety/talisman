@@ -2,25 +2,77 @@ import {
   EvmWalletTransaction,
   SubWalletTransaction,
   TransactionStatus,
+  WalletTransaction,
 } from "@core/domains/transactions"
 import { HexString } from "@polkadot/util/types"
-import { ExternalLinkIcon } from "@talisman/theme/icons"
+import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talisman/theme/icons"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
-import useChains from "@ui/hooks/useChains"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useTransactionByHash from "@ui/hooks/useTransactionByHash"
-import { FC, useMemo } from "react"
-import { Button, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
+import { ethers } from "ethers"
+import { FC, useCallback, useMemo, useState } from "react"
+import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 import urlJoin from "url-join"
 
-const useStatusDetails = (status: TransactionStatus) => {
+import { TxReplaceType } from "../Transactions/shared"
+import { TxReplaceDrawer } from "../Transactions/TxReplaceDrawer"
+
+const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
+  const [replaceType, setReplaceType] = useState<TxReplaceType>()
+  const { gotoProgress } = useSendFundsWizard()
+
+  const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
+
+  const handleClose = useCallback(
+    (newHash?: HexString) => {
+      setReplaceType(undefined)
+      if (newHash) gotoProgress({ hash: newHash })
+    },
+    [gotoProgress]
+  )
+
+  //if (tx.status !== "pending" || tx.networkType !== "evm") return null
+
+  return (
+    <>
+      <div className="mt-8 flex w-full items-center justify-center gap-4">
+        <PillButton
+          size="sm"
+          onClick={handleShowDrawer("speed-up")}
+          icon={RocketIcon}
+          className="!p-4"
+        >
+          Speed Up
+        </PillButton>
+        <PillButton
+          size="sm"
+          onClick={handleShowDrawer("cancel")}
+          icon={XCircleIcon}
+          className="!p-4"
+        >
+          Cancel Transfer
+        </PillButton>
+      </div>
+      <TxReplaceDrawer tx={tx} type={replaceType} isOpen={!!replaceType} onClose={handleClose} />
+    </>
+  )
+}
+
+const useStatusDetails = (tx: WalletTransaction) => {
   const { title, subtitle, extra, animStatus } = useMemo<{
     title: string
     subtitle: string
     animStatus: ProcessAnimationStatus
     extra?: string
   }>(() => {
-    switch (status) {
+    const isReplacementCancel =
+      tx.networkType === "evm" &&
+      tx.isReplacement &&
+      tx.unsigned.value &&
+      ethers.BigNumber.from(tx.unsigned.value).isZero()
+
+    switch (tx.status) {
       case "unknown":
         return {
           title: "Failure",
@@ -42,9 +94,11 @@ const useStatusDetails = (status: TransactionStatus) => {
         }
       case "success":
         return {
-          title: "Success",
-          subtitle: "Your transfer was successful!",
-          animStatus: "success",
+          title: isReplacementCancel ? "Transaction cancelled" : "Success",
+          subtitle: isReplacementCancel
+            ? "Your transfer was cancelled"
+            : "Your transfer was successful!",
+          animStatus: isReplacementCancel ? "failure" : "success",
         }
       case "pending":
         return {
@@ -54,7 +108,7 @@ const useStatusDetails = (status: TransactionStatus) => {
           animStatus: "processing",
         }
     }
-  }, [status])
+  }, [tx])
 
   return {
     title,
@@ -65,50 +119,53 @@ const useStatusDetails = (status: TransactionStatus) => {
 }
 
 type SendFundsProgressBaseProps = {
+  tx: WalletTransaction
   className?: string
   blockNumber?: string
-  status: TransactionStatus
   onClose?: () => void
   href?: string
 }
 
 const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
-  status,
+  tx,
   blockNumber,
   href,
   onClose,
 }) => {
-  const { title, subtitle, animStatus, extra } = useStatusDetails(status)
+  const { title, subtitle, animStatus, extra } = useStatusDetails(tx)
 
   return (
     <div className="flex h-full w-full flex-col items-center">
       <div className="text-body mt-32 text-lg font-bold">{title}</div>
-      <div className="text-body-secondary mt-12 text-base font-light">{subtitle}</div>
-      <div className="flex grow flex-col justify-center">
-        <ProcessAnimation status={animStatus} className="h-[14.5rem]" />
-      </div>
-      <div className="text-body-secondary h-[10rem] px-10 text-center">
-        {blockNumber ? (
-          <>
-            Included in{" "}
-            {href ? (
+      <div className="text-body-secondary mt-12 text-center text-base font-light">{subtitle}</div>
+      {/* <div className="flex grow flex-col justify-center"> */}
+      <ProcessAnimation status={animStatus} className="mt-[7.5rem] h-[14.5rem]" />
+      {/* </div> */}
+      <div className="text-body-secondary flex w-full grow flex-col justify-center px-10 text-center ">
+        <div>
+          {blockNumber ? (
+            <>
+              Included in{" "}
+              {href ? (
+                <a target="_blank" className="hover:text-body text-grey-200" href={href}>
+                  block #{blockNumber} <ExternalLinkIcon className="inline align-text-top" />
+                </a>
+              ) : (
+                <span className="text-body">block #{blockNumber}</span>
+              )}
+            </>
+          ) : href ? (
+            <>
+              View transaction on{" "}
               <a target="_blank" className="hover:text-body text-grey-200" href={href}>
-                block #{blockNumber} <ExternalLinkIcon className="inline align-text-top" />
+                block explorer <ExternalLinkIcon className="inline align-text-top" />
               </a>
-            ) : (
-              <span className="text-body">block #{blockNumber}</span>
-            )}
-          </>
-        ) : href ? (
-          <>
-            View transaction on{" "}
-            <a target="_blank" className="hover:text-body text-grey-200" href={href}>
-              block explorer <ExternalLinkIcon className="inline align-text-top" />
-            </a>
-          </>
-        ) : (
-          extra
-        )}
+            </>
+          ) : (
+            extra
+          )}
+        </div>
+        {tx.status === "pending" && <TxReplaceActions tx={tx} />}
       </div>
       <Button fullWidth onClick={onClose}>
         Close
@@ -135,9 +192,9 @@ const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = ({
 
   return (
     <SendFundsProgressBase
+      tx={tx}
       className={className}
       onClose={onClose}
-      status={tx.status}
       blockNumber={tx.blockNumber}
       href={href}
     />
@@ -163,9 +220,9 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
   )
   return (
     <SendFundsProgressBase
+      tx={tx}
       className={className}
       onClose={onClose}
-      status={tx.status}
       blockNumber={tx.blockNumber}
       href={href}
     />

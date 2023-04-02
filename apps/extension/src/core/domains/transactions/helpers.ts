@@ -34,12 +34,23 @@ export const addEvmTransaction = async (
     // make it serializable so it can be safely stored
     const unsigned = serializeTransactionRequestBigNumbers(tx)
 
+    const evmNetworkId = String(tx.chainId)
+    const nonce = ethers.BigNumber.from(tx.nonce).toNumber()
+    const isReplacement =
+      (await db.transactions
+        .filter(
+          (row) =>
+            row.networkType === "evm" && row.evmNetworkId === evmNetworkId && row.nonce === nonce
+        )
+        .count()) > 0
+
     db.transactions.add({
       hash,
       networkType: "evm",
-      evmNetworkId: String(tx.chainId),
+      evmNetworkId,
       account: tx.from,
-      nonce: ethers.BigNumber.from(tx.nonce).toNumber(),
+      nonce,
+      isReplacement,
       unsigned,
       status: "pending",
       siteUrl,

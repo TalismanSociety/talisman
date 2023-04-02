@@ -1,0 +1,20 @@
+<svg width="31" height="30" viewBox="0 0 31 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M15.6673 28.3337C23.0311 28.3337 29.0007 22.3641 29.0007 15.0003C29.0007 7.63653 23.0311 1.66699 15.6673 1.66699C8.30352 1.66699 2.33398 7.63653 2.33398 15.0003C2.33398 22.3641 8.30352 28.3337 15.6673 28.3337Z" stroke="#262626" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M15.668 7V15L21.0013 17.6667" stroke="currentColor" stroke-width="2.66667" stroke-linecap="round" stroke-linejoin="round"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M14.3335 3.5C8.6453 3.5 3.8335 8.53344 3.8335 15C3.8335 21.4666 8.64529 26.5 14.3335 26.5C15.1619 26.5 15.8335 27.1716 15.8335 28C15.8335 28.8284 15.1619 29.5 14.3335 29.5C6.76687 29.5 0.833496 22.8928 0.833496 15C0.833496 7.1072 6.76687 0.5 14.3335 0.5C15.1619 0.5 15.8335 1.17157 15.8335 2C15.8335 2.82843 15.1619 3.5 14.3335 3.5Z" fill="url(#paint0_linear_544_11836)">
+    <animateTransform
+      attributeName="transform"
+      attributeType="XML"
+      type="rotate"
+      from="0 16 15"
+      to="360 16 15"
+      dur="2s"
+      repeatCount="indefinite" />
+</path>
+<defs>
+<linearGradient id="paint0_linear_544_11836" x1="8.3335" y1="0.5" x2="14.5" y2="32.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="currentColor"/>
+<stop offset="1" stop-color="currentColor" stop-opacity="0"/>
+</linearGradient>
+</defs>
+</svg>

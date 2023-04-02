@@ -89,7 +89,7 @@ const SendFundsLedgerSubstrate = () => {
       payload={subTransaction.unsigned}
       onReject={sendToLedger(false)}
       onSignature={handleSigned}
-      parent={"send-funds-main"}
+      parent="main"
     />
   )
 }
