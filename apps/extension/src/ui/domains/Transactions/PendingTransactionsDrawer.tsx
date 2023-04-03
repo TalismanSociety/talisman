@@ -11,6 +11,8 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
+import { AnalyticsPage } from "@ui/api/analytics"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
@@ -28,6 +30,13 @@ import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
 import { TxReplaceType } from "./shared"
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Popup",
+  feature: "Transactions",
+  featureVersion: 1,
+  page: "Recent history drawer",
+}
 
 type TransactionRowProps = {
   tx: WalletTransaction
@@ -671,6 +680,12 @@ const PendingTransactionsTitle: FC<{ transactions?: WalletTransaction[] }> = ({ 
   )
 }
 
+const PageTracker = () => {
+  useAnalyticsPageView(ANALYTICS_PAGE)
+
+  return null
+}
+
 export const PendingTransactionsDrawer: FC<{
   isOpen?: boolean
   onClose?: () => void
@@ -684,6 +699,7 @@ export const PendingTransactionsDrawer: FC<{
       containerId="main"
       className="bg-grey-800 flex w-full flex-col rounded-t-xl"
     >
+      <PageTracker />
       <PendingTransactionsTitle transactions={transactions} />
       {transactions && <TransactionsList transactions={transactions} />}
       <div className="p-12">

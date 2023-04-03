@@ -12,7 +12,9 @@ import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talisman/t
 import { TokenId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
+import { AnalyticsPage } from "@ui/api/analytics"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useBalance } from "@ui/hooks/useBalance"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { BigNumber } from "ethers"
@@ -25,6 +27,13 @@ import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"
 import { TxReplaceType } from "./shared"
+
+const ANALYTICS_PAGE: AnalyticsPage = {
+  container: "Popup",
+  feature: "Transactions",
+  featureVersion: 1,
+  page: "Replace Transaction",
+}
 
 const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
@@ -97,6 +106,15 @@ const EvmDrawerContent: FC<{
   type: TxReplaceType
   onClose?: (newTxHash?: HexString) => void
 }> = ({ tx, type, onClose }) => {
+  const analyticsProps = useMemo(
+    () => ({
+      evmNetworkId: tx.evmNetworkId,
+      networkType: "ethereum",
+    }),
+    [tx.evmNetworkId]
+  )
+  useAnalyticsPageView(ANALYTICS_PAGE, analyticsProps)
+
   const evmNetwork = useEvmNetwork(tx.evmNetworkId)
   const [isLocked, setIsLocked] = useState(false)
   const {
