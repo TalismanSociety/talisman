@@ -1,11 +1,13 @@
 import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
+import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types"
 import { useAllAddresses, useBalances, useTokens } from "@talismn/balances-react"
 import { Token } from "@talismn/chaindata-provider"
 import { classNames, formatDecimals } from "@talismn/util"
 import { Fragment, useEffect, useMemo, useState } from "react"
 
 export function App(): JSX.Element {
-  const addresses = useExtensionAddresses()
+  const accounts = useExtensionAccounts()
+  const addresses = useMemo(() => (accounts ?? []).map((account) => account.address), [accounts])
   const [, setAllAddresses] = useAllAddresses()
   useEffect(() => setAllAddresses(addresses ?? []), [addresses, setAllAddresses])
 
@@ -79,7 +81,10 @@ export function App(): JSX.Element {
                 </span>
               </span>
 
-              <span className="overflow-hidden overflow-ellipsis">{balance.address}</span>
+              <span className="max-w-md overflow-hidden overflow-ellipsis whitespace-pre">
+                {accounts?.find(({ address }) => address === balance.address)?.meta?.name ??
+                  balance.address}
+              </span>
             </Fragment>
           )
         )}
@@ -91,9 +96,9 @@ export function App(): JSX.Element {
 /**
  * Connects to the web3 provider (e.g. talisman) and subscribes to the list of account addresses.
  */
-function useExtensionAddresses() {
-  // some state to store the list of addresses which we plan to fetch from the extension
-  const [addresses, setAddresses] = useState<string[] | null>(null)
+function useExtensionAccounts() {
+  // some state to store the list of account addresses which we plan to fetch from the extension
+  const [accounts, setAccounts] = useState<InjectedAccountWithMeta[] | null>(null)
 
   useEffect(() => {
     const unsubscribePromise = (async () => {
@@ -101,13 +106,10 @@ function useExtensionAddresses() {
       await web3Enable("balances-demo")
 
       // subscribe to the list of accounts from the extension
-      const unsubscribe = await web3AccountsSubscribe((accounts) => {
-        // convert the list of accounts into a list of account addresses
-        const addresses = accounts.map((account) => account.address)
-
-        // provide the list of account addresses to the caller of this hook
-        setAddresses(addresses)
-      })
+      const unsubscribe = await web3AccountsSubscribe((accounts) =>
+        // provide the list of accounts to the caller of this hook
+        setAccounts(accounts)
+      )
 
       // return the unsubscribe callback, which we can retrieve later with `unsubscribePromise.then`
       return unsubscribe
@@ -124,7 +126,7 @@ function useExtensionAddresses() {
   }, [])
 
   // provide the list of account addresses to the caller of this hook
-  return addresses
+  return accounts
 }
 
 /**
