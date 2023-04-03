@@ -51,6 +51,8 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
       isTrimmed: false,
       isHashed: true,
       salt: undefined,
+      secret: undefined,
+      check: undefined,
       ignorePasswordUpdate: false,
     })
   }
