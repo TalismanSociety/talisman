@@ -21,8 +21,17 @@ import { useLiveQuery } from "dexie-react-hooks"
 import { BigNumber } from "ethers"
 import sortBy from "lodash/sortBy"
 import { FC, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
-import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
-import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
+import {
+  Button,
+  Drawer,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  useOpenCloseWithData,
+} from "talisman-ui"
 import urlJoin from "url-join"
 
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -237,12 +246,7 @@ const EvmTxActions: FC<{
           </PopoverContent>
         </Popover>
       </div>
-      <TxReplaceDrawer
-        tx={tx}
-        type={replaceType}
-        isOpen={!!replaceType}
-        onClose={() => setReplaceType(undefined)}
-      />
+      <TxReplaceDrawer tx={tx} type={replaceType} onClose={() => setReplaceType(undefined)} />
     </div>
   )
 }
@@ -691,22 +695,6 @@ const TransactionsList: FC<{
   )
 }
 
-const PendingTransactionsTitle: FC<{ transactions?: WalletTransaction[] }> = ({ transactions }) => {
-  const pendingCount = useMemo(
-    () => transactions?.filter((tx) => tx.status === "pending").length ?? 0,
-    [transactions]
-  )
-
-  return (
-    <div className="text-md text-body flex items-center gap-4 p-12 font-bold">
-      <span>Pending transactions</span>
-      <span className="bg-grey-700 text-body-secondary inline-flex h-12 w-12 flex-col items-center justify-center rounded-full text-xs">
-        <span>{pendingCount}</span>
-      </span>
-    </div>
-  )
-}
-
 const DrawerContent: FC<{ transactions: WalletTransaction[]; onClose?: () => void }> = ({
   transactions,
   onClose,
@@ -733,7 +721,7 @@ const DrawerContent: FC<{ transactions: WalletTransaction[]; onClose?: () => voi
           transaction history page
         </button>
       </p>
-      {transactions && <TransactionsList transactions={transactions} />}
+      <TransactionsList transactions={transactions} />
       <div className="p-12">
         <Button className="w-full shrink-0" onClick={onClose}>
           Close
@@ -753,25 +741,17 @@ export const PendingTransactionsDrawer: FC<{
     [isOpen]
   )
 
-  // memory for smooth drawer close
-  const [previousTransactions, setPreviousTransactions] = useState<WalletTransaction[]>()
-  useEffect(() => {
-    if (isOpen && transactions) setPreviousTransactions(transactions)
-  }, [isOpen, transactions])
-
-  const staleTransactions = transactions ?? previousTransactions
+  const { isOpenReady, data } = useOpenCloseWithData(isOpen, transactions)
 
   return (
     <Drawer
       anchor="bottom"
-      isOpen={isOpen && !!staleTransactions}
+      isOpen={isOpenReady}
       onDismiss={onClose}
       containerId="main"
       className="bg-grey-800 flex w-full flex-col rounded-t-xl"
     >
-      {staleTransactions ? (
-        <DrawerContent transactions={staleTransactions} onClose={onClose} />
-      ) : null}
+      {data ? <DrawerContent transactions={data} onClose={onClose} /> : null}
     </Drawer>
   )
 }

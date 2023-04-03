@@ -52,7 +52,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
           Cancel Transfer
         </PillButton>
       </div>
-      <TxReplaceDrawer tx={tx} type={replaceType} isOpen={!!replaceType} onClose={handleClose} />
+      <TxReplaceDrawer tx={tx} type={replaceType} onClose={handleClose} />
     </>
   )
 }

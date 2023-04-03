@@ -12,11 +12,6 @@
       "@ui/*": ["./ui/*"]
     }
   },
-  "include": [
-    "src",
-    "**/*.ts",
-    "**/*.tsx",
-    "../../packages/talisman-ui/src/components/Popover.tsx"
-  ],
+  "include": ["src", "**/*.ts", "**/*.tsx"],
   "exclude": ["node_modules", ".next", ".turbo", ".dist"]
 }

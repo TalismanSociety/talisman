@@ -1,11 +1,7 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { serializeTransactionRequestBigNumbers } from "@core/domains/ethereum/helpers"
 import { EthTransactionDetails } from "@core/domains/signing/types"
-import {
-  EvmWalletTransaction,
-  SubWalletTransaction,
-  WalletTransaction,
-} from "@core/domains/transactions/types"
+import { EvmWalletTransaction, WalletTransaction } from "@core/domains/transactions/types"
 import { HexString } from "@polkadot/util/types"
 import { notify } from "@talisman/components/Notifications"
 import { AlertCircleIcon, InfoIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
@@ -19,8 +15,8 @@ import { useBalance } from "@ui/hooks/useBalance"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { BigNumber } from "ethers"
 import { ethers } from "ethers"
-import { FC, lazy, useCallback, useEffect, useMemo, useState } from "react"
-import { Button, Drawer } from "talisman-ui"
+import { FC, lazy, useCallback, useMemo, useState } from "react"
+import { Button, Drawer, useOpenCloseWithData } from "talisman-ui"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
@@ -39,13 +35,9 @@ const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
 type TxReplaceDrawerProps = {
   tx?: WalletTransaction
-  type?: TxReplaceType
-  isOpen?: boolean
+  type?: TxReplaceType // will open if set
   onClose?: (newTxHash?: HexString) => void
 }
-
-type EvmTxReplaceProps = TxReplaceDrawerProps & { tx: EvmWalletTransaction; type: TxReplaceType }
-type SubTxReplaceProps = TxReplaceDrawerProps & { tx: SubWalletTransaction; type: TxReplaceType }
 
 export const EvmEstimatedFeeTooltip: FC<{
   account: string
@@ -311,7 +303,7 @@ const EvmDrawerContent: FC<{
                 className="h-24"
                 primary
                 onClick={handleSend}
-                disabled={!account || (!isLoading && !isValid)}
+                disabled={!isProcessing && (!account || (!isLoading && !isValid))}
                 processing={isProcessing}
               >
                 {approveText}
@@ -324,41 +316,21 @@ const EvmDrawerContent: FC<{
   )
 }
 
-const TxReplaceEvm: FC<EvmTxReplaceProps> = ({ tx, type, isOpen, onClose }) => {
-  // must render once before turning isOpen to true or transition won't happen
-  const [isMounted, setIsMounted] = useState(false)
-  useEffect(() => {
-    setIsMounted(true)
-
-    return () => {
-      setIsMounted(false)
-    }
-  }, [tx, type])
+export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, onClose }) => {
+  const inputs = useMemo(() => (tx && type ? { tx, type } : undefined), [tx, type])
+  const { isOpenReady, data } = useOpenCloseWithData(!!inputs, inputs)
 
   return (
     <Drawer
-      isOpen={isMounted && !!isOpen}
+      isOpen={isOpenReady}
       anchor="bottom"
       containerId="main"
       onDismiss={onClose}
       className="bg-grey-800 flex w-full flex-col items-center rounded-t-xl p-12"
     >
-      <EvmDrawerContent tx={tx} type={type} onClose={onClose} />
+      {data?.type && data?.tx?.networkType === "evm" ? (
+        <EvmDrawerContent tx={data.tx} type={data.type} onClose={onClose} />
+      ) : null}
     </Drawer>
   )
-}
-
-export const TxReplaceDrawer: FC<TxReplaceDrawerProps> = ({ tx, type, ...props }) => {
-  // tx needed to keep rendering after isOpen becomes false to ensure nice slide out transition
-  const [stale, setStale] = useState<{ tx: WalletTransaction; type: TxReplaceType }>()
-  useEffect(() => {
-    if (tx && type) setStale({ tx, type })
-  }, [tx, type])
-
-  switch (stale?.tx?.networkType) {
-    case "evm":
-      return <TxReplaceEvm tx={stale.tx} type={stale.type} {...props} />
-    default:
-      return null
-  }
 }
