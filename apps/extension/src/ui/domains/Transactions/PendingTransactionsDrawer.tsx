@@ -5,16 +5,14 @@ import {
   WalletTransaction,
 } from "@core/domains/transactions/types"
 import { TransactionStatus } from "@core/domains/transactions/types"
-import StyledFavicon from "@talisman/components/Favicon"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
-import { convertAddress } from "@talisman/util/convertAddress"
-import { shortenAddress } from "@talisman/util/shortenAddress"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
@@ -31,6 +29,7 @@ import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
+import { NetworkLogo } from "../Ethereum/NetworkLogo"
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
 import { TxReplaceType } from "./types"
@@ -53,6 +52,20 @@ type TransactionRowEvmProps = TransactionRowProps & { tx: EvmWalletTransaction }
 type TransactionRowSubProps = TransactionRowProps & { tx: SubWalletTransaction }
 
 type TransactionAction = "cancel" | "speed-up" | "dismiss"
+
+const Favicon: FC<{ siteUrl: string; className?: string }> = ({ siteUrl, className }) => {
+  const iconUrl = useFaviconUrl(siteUrl)
+  const [isError, setError] = useState(false)
+
+  const handleError = useCallback(() => {
+    setError(true)
+  }, [])
+
+  if (!iconUrl) return null
+  if (isError) return <NetworkLogo className={className} />
+
+  return <img loading="lazy" src={iconUrl} className={className} onError={handleError} />
+}
 
 const displayDistanceToNow = (timestamp: number) =>
   Date.now() - timestamp > 60_000
@@ -322,7 +335,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
         <>
           <Tooltip>
             <TooltipTrigger className="shrink-0 cursor-default">
-              <StyledFavicon url={tx.siteUrl} className="text-xl" />
+              <Favicon siteUrl={tx.siteUrl} className="h-16 w-16" />
             </TooltipTrigger>
             <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
               {tx.siteUrl}
@@ -340,8 +353,8 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
         </Tooltip>
       ) : (
         <Tooltip>
-          <TooltipTrigger className="cursor-default">
-            <ChainLogo id={tx.evmNetworkId} className="shrink-0 text-xl" />
+          <TooltipTrigger className="shrink-0 cursor-default">
+            <ChainLogo id={tx.evmNetworkId} className="text-xl" />
           </TooltipTrigger>
           <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
             {evmNetwork?.name}
@@ -545,7 +558,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
         <>
           <Tooltip>
             <TooltipTrigger className="shrink-0 cursor-default">
-              <StyledFavicon url={tx.siteUrl} className="text-xl" />
+              <Favicon siteUrl={tx.siteUrl} className="h-16 w-16" />
             </TooltipTrigger>
             <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
               {tx.siteUrl}
@@ -692,10 +705,6 @@ const PendingTransactionsTitle: FC<{ transactions?: WalletTransaction[] }> = ({ 
       </span>
     </div>
   )
-}
-
-const PageTracker = () => {
-  return null
 }
 
 const DrawerContent: FC<{ onClose?: () => void }> = ({ onClose }) => {
