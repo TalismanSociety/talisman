@@ -11,7 +11,14 @@ import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 import { useNavigationContext } from "../../context/NavigationContext"
-import { NavIconExpand, NavIconHistory, NavIconHome, NavIconMore, NavIconNft } from "./icons"
+import {
+  NavIconExpand,
+  NavIconHistory,
+  NavIconHome,
+  NavIconMore,
+  NavIconMoreAlert,
+  NavIconNft,
+} from "./icons"
 
 type BottomNavButtonProps = DetailedHTMLProps<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -100,7 +107,7 @@ export const BottomNav = () => {
     open()
   }, [open])
 
-  const { isSnoozed } = useMnemonicBackup()
+  const { isSnoozed, isNotConfirmed } = useMnemonicBackup()
 
   return (
     <>
@@ -138,7 +145,8 @@ export const BottomNav = () => {
         </WithTooltip>
         <WithTooltip as="div" tooltip={"More Options"} noWrap>
           <BottomNavButton onClick={handleMoreClick}>
-            <NavIconMore />
+            {isNotConfirmed && <NavIconMoreAlert />}
+            {!isNotConfirmed && <NavIconMore />}
           </BottomNavButton>
         </WithTooltip>
       </div>
