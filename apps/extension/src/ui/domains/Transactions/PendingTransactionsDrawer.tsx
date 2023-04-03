@@ -707,10 +707,12 @@ const PendingTransactionsTitle: FC<{ transactions?: WalletTransaction[] }> = ({ 
   )
 }
 
-const DrawerContent: FC<{ onClose?: () => void }> = ({ onClose }) => {
+const DrawerContent: FC<{ transactions: WalletTransaction[]; onClose?: () => void }> = ({
+  transactions,
+  onClose,
+}) => {
   const { account } = useSelectedAccount()
   useAnalyticsPageView(ANALYTICS_PAGE)
-  const transactions = useLiveQuery(() => db.transactions.reverse().sortBy("timestamp"), [])
 
   const handleTxHistoryClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -745,15 +747,31 @@ export const PendingTransactionsDrawer: FC<{
   isOpen?: boolean
   onClose?: () => void
 }> = ({ isOpen, onClose }) => {
+  // load transactions only if we need to open the drawer
+  const transactions = useLiveQuery<WalletTransaction[] | undefined>(
+    () => (isOpen ? db.transactions.reverse().sortBy("timestamp") : undefined),
+    [isOpen]
+  )
+
+  // memory for smooth drawer close
+  const [previousTransactions, setPreviousTransactions] = useState<WalletTransaction[]>()
+  useEffect(() => {
+    if (isOpen && transactions) setPreviousTransactions(transactions)
+  }, [isOpen, transactions])
+
+  const staleTransactions = transactions ?? previousTransactions
+
   return (
     <Drawer
       anchor="bottom"
-      isOpen={isOpen}
+      isOpen={isOpen && !!staleTransactions}
       onDismiss={onClose}
       containerId="main"
       className="bg-grey-800 flex w-full flex-col rounded-t-xl"
     >
-      <DrawerContent onClose={onClose} />
+      {staleTransactions ? (
+        <DrawerContent transactions={staleTransactions} onClose={onClose} />
+      ) : null}
     </Drawer>
   )
 }
