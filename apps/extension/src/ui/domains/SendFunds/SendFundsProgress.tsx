@@ -1,7 +1,6 @@
 import {
   EvmWalletTransaction,
   SubWalletTransaction,
-  TransactionStatus,
   WalletTransaction,
 } from "@core/domains/transactions"
 import { HexString } from "@polkadot/util/types"
@@ -15,8 +14,7 @@ import { FC, useCallback, useMemo, useState } from "react"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 import urlJoin from "url-join"
 
-import { TxReplaceType } from "../Transactions/shared"
-import { TxReplaceDrawer } from "../Transactions/TxReplaceDrawer"
+import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
 const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
@@ -32,7 +30,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
     [gotoProgress]
   )
 
-  //if (tx.status !== "pending" || tx.networkType !== "evm") return null
+  if (tx.status !== "pending" || tx.networkType !== "evm") return null
 
   return (
     <>

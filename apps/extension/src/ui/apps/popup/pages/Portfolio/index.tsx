@@ -2,7 +2,7 @@ import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
 import Site from "@ui/domains/Site"
-import { PendingTransactionsButton } from "@ui/domains/Transactions/PendingTransactionsButton"
+import { PendingTransactionsButton } from "@ui/domains/Transactions"
 import { Suspense, lazy } from "react"
 import { Route, Routes } from "react-router-dom"
 

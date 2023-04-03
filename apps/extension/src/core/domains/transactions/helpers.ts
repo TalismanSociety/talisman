@@ -1,4 +1,5 @@
 import { db } from "@core/db"
+import { log } from "@core/log"
 import { TypeRegistry } from "@polkadot/types"
 import { HexString } from "@polkadot/util/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
@@ -137,7 +138,13 @@ export const updateTransactionStatus = async (
 
 export const updateTransactionsRestart = async () => {
   try {
-    await db.transactions.filter((tx) => tx.status === "pending").modify({ status: "unknown" })
+    // mark all pending transactions as unknown
+    await db.transactions.where("status").equals("pending").modify({ status: "unknown" })
+
+    // delete all transactions older than 7 days
+    const cutOffDate = Date.now() - 7 * 24 * 60 * 60 * 1000
+    await db.transactions.where("timestamp").below(cutOffDate).delete()
+
     return true
   } catch (err) {
     // eslint-disable-next-line no-console

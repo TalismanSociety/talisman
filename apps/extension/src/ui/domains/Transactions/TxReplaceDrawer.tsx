@@ -26,7 +26,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { useEthReplaceTransaction } from "../Ethereum/useEthReplaceTransaction"
-import { TxReplaceType } from "./shared"
+import { TxReplaceType } from "./types"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",

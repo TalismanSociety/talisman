@@ -11,12 +11,15 @@ import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
-import { AnalyticsPage } from "@ui/api/analytics"
+import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
+import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
+import formatDistanceToNowStrict from "date-fns/formatDistanceToNowStrict"
+import { useLiveQuery } from "dexie-react-hooks"
 import { BigNumber } from "ethers"
 import sortBy from "lodash/sortBy"
 import { FC, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
@@ -28,8 +31,9 @@ import { ChainLogo } from "../Asset/ChainLogo"
 import Fiat from "../Asset/Fiat"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
-import { TxReplaceType } from "./shared"
+import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
 import { TxReplaceDrawer } from "./TxReplaceDrawer"
+import { TxReplaceType } from "./types"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -49,6 +53,25 @@ type TransactionRowEvmProps = TransactionRowProps & { tx: EvmWalletTransaction }
 type TransactionRowSubProps = TransactionRowProps & { tx: SubWalletTransaction }
 
 type TransactionAction = "cancel" | "speed-up" | "dismiss"
+
+const displayDistanceToNow = (timestamp: number) =>
+  Date.now() - timestamp > 60_000
+    ? formatDistanceToNowStrict(timestamp, { addSuffix: true })
+    : "Just now"
+
+const DistanceToNow: FC<{ timestamp: number }> = ({ timestamp }) => {
+  const [text, setText] = useState(() => displayDistanceToNow(timestamp))
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setText(displayDistanceToNow(timestamp))
+    }, 10_000)
+
+    return () => clearInterval(interval)
+  }, [text, timestamp])
+
+  return <>{text}</>
+}
 
 const ActionButton = forwardRef<
   HTMLButtonElement,
@@ -337,7 +360,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
             )}
           </div>
           <div className="text-body-secondary h-[17px] text-xs">
-            To: {to ? shortenAddress(to) : "unknown"}
+            <DistanceToNow timestamp={tx.timestamp} />
           </div>
         </div>
         <div className="relative grow text-right">
@@ -559,16 +582,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
             )}
           </div>
           <div className="text-body-secondary h-[17px] text-xs">
-            {tx.to ? (
-              <>
-                To:{" "}
-                {chain?.prefix
-                  ? shortenAddress(convertAddress(tx.to, chain.prefix))
-                  : shortenAddress(tx.to)}
-              </>
-            ) : (
-              <>From: {address ? shortenAddress(address) : "unknown"}</>
-            )}
+            <DistanceToNow timestamp={tx.timestamp} />
           </div>
         </div>
         <div className="relative grow text-right">
@@ -672,7 +686,7 @@ const PendingTransactionsTitle: FC<{ transactions?: WalletTransaction[] }> = ({ 
 
   return (
     <div className="text-md text-body flex items-center gap-4 p-12 font-bold">
-      <span>Pending transactions </span>
+      <span>Pending transactions</span>
       <span className="bg-grey-700 text-body-secondary inline-flex h-12 w-12 flex-col items-center justify-center rounded-full text-xs">
         <span>{pendingCount}</span>
       </span>
@@ -681,16 +695,47 @@ const PendingTransactionsTitle: FC<{ transactions?: WalletTransaction[] }> = ({ 
 }
 
 const PageTracker = () => {
-  useAnalyticsPageView(ANALYTICS_PAGE)
-
   return null
+}
+
+const DrawerContent: FC<{ onClose?: () => void }> = ({ onClose }) => {
+  const { account } = useSelectedAccount()
+  useAnalyticsPageView(ANALYTICS_PAGE)
+  const transactions = useLiveQuery(() => db.transactions.reverse().sortBy("timestamp"), [])
+
+  const handleTxHistoryClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Goto",
+      action: "Tx History button",
+    })
+    window.open(getTransactionHistoryUrl(account?.address), "_blank")
+    window.close()
+  }, [account?.address])
+
+  return (
+    <>
+      <h3 className="text-md mt-12 text-center font-bold">Recent Activity</h3>
+      <p className="text-body-secondary leading-paragraph my-8 w-full px-24 text-center text-sm">
+        View recent and pending transactions for the past week. For a comprehesive history visit our{" "}
+        <button type="button" onClick={handleTxHistoryClick} className="text-body inline">
+          transaction history page
+        </button>
+      </p>
+      {transactions && <TransactionsList transactions={transactions} />}
+      <div className="p-12">
+        <Button className="w-full shrink-0" onClick={onClose}>
+          Close
+        </Button>
+      </div>
+    </>
+  )
 }
 
 export const PendingTransactionsDrawer: FC<{
   isOpen?: boolean
   onClose?: () => void
-  transactions?: WalletTransaction[]
-}> = ({ isOpen, onClose, transactions }) => {
+}> = ({ isOpen, onClose }) => {
   return (
     <Drawer
       anchor="bottom"
@@ -699,14 +744,7 @@ export const PendingTransactionsDrawer: FC<{
       containerId="main"
       className="bg-grey-800 flex w-full flex-col rounded-t-xl"
     >
-      <PageTracker />
-      <PendingTransactionsTitle transactions={transactions} />
-      {transactions && <TransactionsList transactions={transactions} />}
-      <div className="p-12">
-        <Button className="w-full shrink-0" onClick={onClose}>
-          Close
-        </Button>
-      </div>
+      <DrawerContent onClose={onClose} />
     </Drawer>
   )
 }
