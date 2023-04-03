@@ -42,10 +42,10 @@ export const watchEthereumTransaction = async (
 
       const receipt = await provider.waitForTransaction(txHash)
 
+      // to test failing transactions, swap on busy AMM pools with a 0.05% slippage limit
       // status 0 = error
       // status 1 = ok
-      // easy to test on busy AMM pools with a 0.05% slippage limit
-      // TODO are there other statuses ? one for replaced maybe ?
+      // TODO are there other statuses ?
       if (receipt.status === undefined || ![0, 1].includes(receipt.status))
         log.warn("Unknown evm tx status", receipt)
       updateTransactionStatus(txHash, receipt.status ? "success" : "error", receipt.blockNumber)
