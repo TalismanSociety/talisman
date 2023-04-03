@@ -15,6 +15,11 @@ import {
 } from "@core/domains/encrypt/types"
 import { EthTabsHandler } from "@core/domains/ethereum"
 import { requestInjectMetadata } from "@core/domains/metadata/requests"
+import {
+  RequestRpcByGenesisHashSend,
+  RequestRpcByGenesisHashSubscribe,
+  RequestRpcByGenesisHashUnsubscribe,
+} from "@core/domains/rpc/types"
 import { signSubstrate } from "@core/domains/signing/requests"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { requestAuthoriseSite } from "@core/domains/sitesAuthorised/requests"
@@ -23,12 +28,7 @@ import { TabStore } from "@core/handlers/stores"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { TabsHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
-import {
-  RequestRpcByGenesisHashSend,
-  RequestRpcByGenesisHashSubscribe,
-  RequestRpcByGenesisHashUnsubscribe,
-  chainConnector,
-} from "@core/rpcs/chain-connector"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType, SubscriptionMessageTypes } from "@core/types"
 import type { Port } from "@core/types/base"

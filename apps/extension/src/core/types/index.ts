@@ -5,6 +5,7 @@ import { ChainsMessages } from "@core/domains/chains/types"
 import { EncryptMessages } from "@core/domains/encrypt/types"
 import { EthMessages } from "@core/domains/ethereum/types"
 import { MetadataMessages } from "@core/domains/metadata/types"
+import { RpcMessages } from "@core/domains/rpc/types"
 import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { TokenRatesMessages } from "@core/domains/tokenRates/types"
@@ -64,19 +65,20 @@ type RemovedMessages =
   | "pub(authorize.tab)"
 
 type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
-  AuthorisedSiteMessages &
   AccountsMessages &
   AppMessages &
   AssetTransferMessages &
+  AuthorisedSiteMessages &
   BalancesMessages &
   ChainsMessages &
+  EncryptMessages &
   EthMessages &
+  MetadataMessages &
   MnemonicMessages &
+  RpcMessages &
   SigningMessages &
   TokenMessages &
-  TokenRatesMessages &
-  MetadataMessages &
-  EncryptMessages
+  TokenRatesMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]

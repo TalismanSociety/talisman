@@ -1,8 +1,4 @@
-import type {
-  ProviderInterface,
-  ProviderInterfaceCallback,
-  ProviderInterfaceEmitted,
-} from "@polkadot/rpc-provider/types"
+import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { ChainId, ChaindataChainProvider } from "@talismn/chaindata-provider"
 import { TalismanConnectionMetaDatabase } from "@talismn/connection-meta"
 import { Deferred, sleep } from "@talismn/util"
@@ -504,15 +500,24 @@ export class ChainConnector {
   }
 
   private getTalismanSub() {
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    const sendRequest: Function | undefined = (window as any)?.talismanSub?.sendRequest
-    if (typeof sendRequest !== "function") return
+    /* eslint-disable @typescript-eslint/ban-types */
+    const rpcByGenesisHashSend: Function | undefined = (window as any)?.talismanSub
+      ?.rpcByGenesisHashSend
+    const rpcByGenesisHashSubscribe: Function | undefined = (window as any)?.talismanSub
+      ?.rpcByGenesisHashSubscribe
+    const rpcByGenesisHashUnsubscribe: Function | undefined = (window as any)?.talismanSub
+      ?.rpcByGenesisHashUnsubscribe
+    /* eslint-enable @typescript-eslint/ban-types */
+
+    if (typeof rpcByGenesisHashSend !== "function") return
+    if (typeof rpcByGenesisHashSubscribe !== "function") return
+    if (typeof rpcByGenesisHashUnsubscribe !== "function") return
 
     return {
-      send: async <T = any>(genesisHash: string, method: string, params: unknown[]): Promise<T> =>
-        await sendRequest("pub(rpc.talisman.byGenesisHash.send)", { genesisHash, method, params }),
+      send: <T = any>(genesisHash: string, method: string, params: unknown[]): Promise<T> =>
+        rpcByGenesisHashSend(genesisHash, method, params),
 
-      subscribe: async (
+      subscribe: (
         genesisHash: string,
         subscribeMethod: string,
         responseMethod: string,
@@ -520,17 +525,17 @@ export class ChainConnector {
         callback: ProviderInterfaceCallback,
         timeout: number | false
       ): Promise<string> =>
-        await sendRequest(
-          "pub(rpc.talisman.byGenesisHash.subscribe)",
-          { genesisHash, subscribeMethod, responseMethod, params, timeout },
-          ({ error, data }: any) => callback(error ?? null, data)
+        rpcByGenesisHashSubscribe(
+          genesisHash,
+          subscribeMethod,
+          responseMethod,
+          params,
+          callback,
+          timeout
         ),
 
-      unsubscribe: async (subscriptionId: string, unsubscribeMethod: string): Promise<void> =>
-        await sendRequest("pub(rpc.talisman.byGenesisHash.unsubscribe)", {
-          subscriptionId,
-          unsubscribeMethod,
-        }),
+      unsubscribe: (subscriptionId: string, unsubscribeMethod: string): Promise<void> =>
+        rpcByGenesisHashUnsubscribe(subscriptionId, unsubscribeMethod),
     }
   }
 }
