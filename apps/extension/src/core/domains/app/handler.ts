@@ -112,18 +112,25 @@ export default class AppHandler extends ExtensionHandler {
 
     try {
       const transformedPassword = await this.stores.password.transformPassword(pass)
-      // get root account
-      const rootAccount = this.getRootAccount()
+      const { secret, check } = await this.stores.password.get()
+      if (!secret || !check) {
+        // attempt to log in via the legacy method, and convert
+        // get root account
+        const rootAccount = this.getRootAccount()
 
-      assert(rootAccount, "No root account")
+        assert(rootAccount, "No root account")
 
-      // fetch keyring pair from address
-      const pair = keyring.getPair(rootAccount.address)
-      // attempt unlock the pair
-      // a successful unlock means authenticated
-      pair.unlock(transformedPassword)
-      pair.lock()
-      await this.stores.password.setPlaintextPassword(pass)
+        // fetch keyring pair from address
+        const pair = keyring.getPair(rootAccount.address)
+        // attempt unlock the pair
+        // a successful unlock means authenticated
+        pair.unlock(transformedPassword)
+        pair.lock()
+        await this.stores.password.setPlaintextPassword(pass)
+        await this.stores.password.setUpAuthSecret(transformedPassword)
+      } else {
+        await this.stores.password.authenticate(pass)
+      }
 
       talismanAnalytics.capture("authenticate")
       return true
