@@ -15,7 +15,7 @@ export const stateCall = async <K extends string = string>(
 
   const bytes = registry.createType("Raw", u8aConcatStrict(args.map((arg) => arg.toU8a())))
 
-  const result = await chainConnector.send(chainId, "state_callAt", [
+  const result = await chainConnector.send(chainId, "state_call", [
     method,
     bytes.toHex(),
     blockHash,

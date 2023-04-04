@@ -1,4 +1,5 @@
 import { StorageProvider } from "@core/libs/Store"
+import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert } from "@polkadot/util"
 import { genSalt, hash } from "bcryptjs"
 import { BehaviorSubject } from "rxjs"
@@ -22,6 +23,8 @@ export type PasswordStoreData = {
   isTrimmed: boolean
   isHashed: boolean
   ignorePasswordUpdate: boolean
+  secret?: string
+  check?: string
 }
 
 const initialData = {
@@ -48,15 +51,39 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
       isTrimmed: false,
       isHashed: true,
       salt: undefined,
+      secret: undefined,
+      check: undefined,
       ignorePasswordUpdate: false,
     })
+  }
+
+  async setUpAuthSecret(password: string) {
+    const secret = crypto.randomUUID()
+    const check = await encrypt(password, { secret })
+    const result = (await decrypt(password, check)) as { secret: string }
+    assert(result.secret && result.secret === secret, "Unable to set password")
+
+    await this.set({ secret, check })
   }
 
   async createPassword(plaintextPw: string) {
     const salt = await generateSalt()
     const pwResult = await getHashedPassword(plaintextPw, salt)
     if (!pwResult.ok) pwResult.unwrap()
+    // create stored secret and check value
+    if (!(await this.get("secret"))) await this.setUpAuthSecret(pwResult.val)
+
     return { password: pwResult.val, salt }
+  }
+
+  async authenticate(password: string) {
+    if (this.isLoggedIn.value === TRUE) return
+    const pw = await this.transformPassword(password)
+    const { secret, check } = await this.get()
+    assert(secret && check, "Unable to authenticate")
+    const result = (await decrypt(pw, check)) as { secret: string }
+    assert(result.secret && result.secret === secret, "Incorrect Password")
+    this.setPassword(pw)
   }
 
   setPassword(password: string | undefined) {

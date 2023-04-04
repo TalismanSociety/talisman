@@ -226,6 +226,28 @@ export default class AssetTransfersRpc {
 
     const unsigned = getUnsignedJson(transaction.tx)
 
+    // If the following line of code is not added, the extrinsic (referred to as "unsigned" here)
+    // will fail when submitted to the Picasso chain, resulting in a wasm runtime panic.
+    // It's possible that other chains will also experience this issue, but Picasso is the first
+    // one where we've encountered it.
+    //
+    // In the defineMethod function of @substrate/txwrapper-core, the assetId is set to 0.
+    // You can find the code for this function here:
+    // https://github.com/paritytech/txwrapper-core/blob/90a231e07e69de96602f92d37897493ac2e7b7f7/packages/txwrapper-core/src/core/method/defineMethod.ts#LL160C3-L160C10
+    //
+    // As far as we can tell, on most chains, the assetId is ignored, so the encoding of 0 is
+    // nothing, represented as an empty string in the hex-encoded extrinsic.
+    // However, on the Picasso chain, the assetId is not ignored, and the 0 set by defineMethod is
+    // encoded as 01 00000000.
+    // This causes a wasm runtime panic when the extrinsic is submitted to the chain.
+    //
+    // Extrinsics constructed using polkadot.js apps for the Picasso chain encode the assetId as 00,
+    // and these extrinsics don't cause a runtime panic when submitted.
+    //
+    // If we override the default assetId value from @substrate/txwrapper-core (which sets assetId to 0)
+    // and instead set assetId back to undefined, our extrinsics also encode the assetId field as 00.
+    if (unsigned.assetId === 0) unsigned.assetId = undefined
+
     // create the unsigned extrinsic
     const tx = registry.createType(
       "Extrinsic",
