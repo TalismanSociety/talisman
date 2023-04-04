@@ -8,8 +8,8 @@ import { SimpleButton } from "./SimpleButton"
 const ErrorContainer = styled.section`
   display: flex;
   align-items: center;
-  height: 100vh;
-  width: 100vw;
+  height: 100%;
+  width: 100%;
   min-width: 36rem;
   min-height: 48rem;
   justify-content: center;
