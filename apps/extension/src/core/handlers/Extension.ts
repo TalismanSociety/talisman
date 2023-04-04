@@ -143,8 +143,8 @@ export default class Extension extends ExtensionHandler {
       const obsHasFunds = liveQuery(
         async () => await balancesDb.balances.filter((balance) => balance.free !== "0").count()
       )
-      const subBalances = obsHasFunds.subscribe((hasFunds) => {
-        if (hasFunds) {
+      const subBalances = obsHasFunds.subscribe((positiveBalances) => {
+        if (positiveBalances) {
           this.stores.app.set({ hasFunds: true })
           subBalances.unsubscribe()
           subAppStore.unsubscribe()

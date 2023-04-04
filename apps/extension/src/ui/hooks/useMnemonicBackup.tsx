@@ -5,7 +5,7 @@ import { useAppState } from "./useAppState"
 import { useMnemonicBackupConfirmed } from "./useMnemonicBackupConfirmed"
 
 const useMnemonicBackup = () => {
-  const { hideBackupWarningUntil, snoozeBackupReminder } = useAppState()
+  const { hideBackupWarningUntil, snoozeBackupReminder, hasFunds } = useAppState()
   const backupConfirmed = useMnemonicBackupConfirmed()
 
   const { isConfirmed, isNotConfirmed } = useMemo(
@@ -21,8 +21,8 @@ const useMnemonicBackup = () => {
   }, [hideBackupWarningUntil, isNotConfirmed])
 
   const showBackupWarning = useMemo(() => {
-    return !isSnoozed && isNotConfirmed
-  }, [isSnoozed, isNotConfirmed])
+    return !isSnoozed && isNotConfirmed && hasFunds
+  }, [isSnoozed, isNotConfirmed, hasFunds])
 
   // toggle menmonic confirmed
   const toggleConfirmed = useCallback((confirmed: boolean) => api.mnemonicConfirm(confirmed), [])
