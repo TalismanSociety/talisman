@@ -8,6 +8,7 @@ import { TransactionStatus } from "@core/domains/transactions/types"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { BalanceFormatter } from "@talismn/balances"
+import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -22,7 +23,7 @@ import formatDistanceToNowStrict from "date-fns/formatDistanceToNowStrict"
 import { useLiveQuery } from "dexie-react-hooks"
 import { BigNumber } from "ethers"
 import sortBy from "lodash/sortBy"
-import { FC, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
+import { FC, PropsWithChildren, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
 import {
   Button,
   Drawer,
@@ -77,6 +78,25 @@ const Favicon: FC<{ siteUrl: string; className?: string }> = ({ siteUrl, classNa
 
   return <img loading="lazy" src={iconUrl} className={className} onError={handleError} />
 }
+
+const TxIconContainer: FC<
+  PropsWithChildren & { tooltip?: string | null; networkId?: EvmNetworkId | ChainId }
+> = ({ children, tooltip, networkId }) => (
+  <Tooltip>
+    <TooltipTrigger className="relative h-16 w-16 shrink-0 cursor-default">
+      {children}
+      {!!networkId && (
+        <ChainLogo
+          id={networkId}
+          className="border-grey-800 !absolute top-[-4px] right-[-4px] h-8 w-8 rounded-full border"
+        />
+      )}
+    </TooltipTrigger>
+    <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
+      {tooltip}
+    </TooltipContent>
+  </Tooltip>
+)
 
 const displayDistanceToNow = (timestamp: number) =>
   Date.now() - timestamp > 60_000
@@ -338,34 +358,20 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
       )}
     >
       {tx.siteUrl ? (
-        <>
-          <Tooltip>
-            <TooltipTrigger className="shrink-0 cursor-default">
-              <Favicon siteUrl={tx.siteUrl} className="h-16 w-16" />
-            </TooltipTrigger>
-            <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-              {tx.siteUrl}
-            </TooltipContent>
-          </Tooltip>
-        </>
+        <TxIconContainer tooltip={tx.siteUrl} networkId={evmNetwork?.id}>
+          <Favicon siteUrl={tx.siteUrl} className="h-16 w-16" />
+        </TxIconContainer>
       ) : isTransfer && token ? (
-        <Tooltip>
-          <TooltipTrigger className="shrink-0 cursor-default">
-            <TokenLogo tokenId={token.id} className="text-xl" />
-          </TooltipTrigger>
-          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-            {token?.symbol} on {evmNetwork?.name}
-          </TooltipContent>
-        </Tooltip>
+        <TxIconContainer
+          tooltip={`${token?.symbol} on ${evmNetwork?.name}`}
+          networkId={evmNetwork?.id}
+        >
+          <TokenLogo tokenId={token.id} className="h-16 w-16" />
+        </TxIconContainer>
       ) : (
-        <Tooltip>
-          <TooltipTrigger className="shrink-0 cursor-default">
-            <ChainLogo id={tx.evmNetworkId} className="text-xl" />
-          </TooltipTrigger>
-          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-            {evmNetwork?.name}
-          </TooltipContent>
-        </Tooltip>
+        <TxIconContainer tooltip={evmNetwork?.name}>
+          <ChainLogo id={evmNetwork?.id} className="h-16 w-16" />
+        </TxIconContainer>
       )}
 
       <div className="leading-paragraph relative flex w-full grow justify-between">
@@ -561,34 +567,17 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
       )}
     >
       {tx.siteUrl ? (
-        <>
-          <Tooltip>
-            <TooltipTrigger className="shrink-0 cursor-default">
-              <Favicon siteUrl={tx.siteUrl} className="h-16 w-16" />
-            </TooltipTrigger>
-            <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-              {tx.siteUrl}
-            </TooltipContent>
-          </Tooltip>
-        </>
+        <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
+          <Favicon siteUrl={tx.siteUrl} className="h-16 w-16" />
+        </TxIconContainer>
       ) : isTransfer && token ? (
-        <Tooltip>
-          <TooltipTrigger className="shrink-0 cursor-default">
-            <TokenLogo tokenId={token.id} className="text-xl" />
-          </TooltipTrigger>
-          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-            {token?.symbol} on {chain?.name}
-          </TooltipContent>
-        </Tooltip>
+        <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
+          <TokenLogo tokenId={token.id} className="h-16 w-16" />
+        </TxIconContainer>
       ) : (
-        <Tooltip>
-          <TooltipTrigger className="shrink-0 cursor-default">
-            <ChainLogo id={chain?.id} className="text-xl" />
-          </TooltipTrigger>
-          <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-            {chain?.name}
-          </TooltipContent>
-        </Tooltip>
+        <TxIconContainer tooltip={chain?.name}>
+          <ChainLogo id={chain?.id} className="h-16 w-16" />
+        </TxIconContainer>
       )}
       <div className="leading-paragraph relative flex w-full grow justify-between">
         <div className="text-left">
