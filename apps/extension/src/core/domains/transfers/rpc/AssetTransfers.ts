@@ -16,14 +16,7 @@ import { TypeRegistry } from "@polkadot/types"
 import { Extrinsic } from "@polkadot/types/interfaces"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
-import { UnsignedTransaction } from "@substrate/txwrapper-core"
 import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
-import { tokensToPlanck } from "@talismn/util"
-
-const getUnsignedJson = (unsigned: UnsignedTransaction): SignerPayloadJSON => {
-  const { assetId, metadataRpc, ...payload } = unsigned
-  return payload
-}
 
 export default class AssetTransfersRpc {
   /**
@@ -224,7 +217,7 @@ export default class AssetTransfersRpc {
       `Failed to handle tx type ${transaction.type} for token '${token.id}'`
     )
 
-    const unsigned = getUnsignedJson(transaction.tx)
+    const unsigned = transaction.tx
 
     // If the following line of code is not added, the extrinsic (referred to as "unsigned" here)
     // will fail when submitted to the Picasso chain, resulting in a wasm runtime panic.
