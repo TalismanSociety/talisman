@@ -30,6 +30,7 @@ import Browser from "webextension-polyfill"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
 import { featuresStore } from "./store.features"
+import { PasswordStoreData } from "./store.password"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
@@ -69,10 +70,15 @@ export default class AppHandler extends ExtensionHandler {
       confirmed = true
     }
 
-    const { password: transformedPw, salt } = await this.stores.password.createPassword(pass)
+    const {
+      password: transformedPw,
+      salt,
+      secret,
+      check,
+    } = await this.stores.password.createPassword(pass)
     assert(transformedPw, "Password creation failed")
     this.stores.password.setPassword(transformedPw)
-    await this.stores.password.set({ isTrimmed: false, isHashed: true, salt })
+    await this.stores.password.set({ isTrimmed: false, isHashed: true, salt, secret, check })
 
     const { pair } = keyring.addUri(mnemonic, transformedPw, {
       name: "My Polkadot Account",
@@ -127,7 +133,7 @@ export default class AppHandler extends ExtensionHandler {
         pair.unlock(transformedPassword)
         pair.lock()
         await this.stores.password.setPlaintextPassword(pass)
-        await this.stores.password.setUpAuthSecret(transformedPassword)
+        await this.stores.password.setupAuthSecret(transformedPassword)
       } else {
         await this.stores.password.authenticate(pass)
       }
@@ -198,9 +204,13 @@ export default class AppHandler extends ExtensionHandler {
     const result = await changePassword({ currentPw: transformedPw, newPw: hashedNewPw })
     if (!result.ok) throw Error(result.val)
 
-    // update password secret for extra security
-    await this.stores.password.setUpAuthSecret(hashedNewPw)
-    const pwStoreData: Record<string, any> = { isTrimmed: false, isHashed: true }
+    // update password secret
+    const secretResult = await this.stores.password.createAuthSecret(hashedNewPw)
+    const pwStoreData: Partial<PasswordStoreData> = {
+      ...secretResult,
+      isTrimmed: false,
+      isHashed: true,
+    }
     if (newSalt) {
       pwStoreData.salt = newSalt
     }
