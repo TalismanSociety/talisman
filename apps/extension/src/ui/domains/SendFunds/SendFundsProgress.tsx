@@ -87,7 +87,7 @@ const useStatusDetails = (tx: WalletTransaction) => {
       case "error":
         return {
           title: "Failure",
-          subtitle: "Transaction failed.",
+          subtitle: isReplacementCancel ? "Failed to cancel transfer" : "Transaction failed.",
           animStatus: "failure",
         }
       case "success":
@@ -100,9 +100,13 @@ const useStatusDetails = (tx: WalletTransaction) => {
         }
       case "pending":
         return {
-          title: "Transfer in progress",
-          subtitle: "This may take a few minutes.",
-          extra: "You can now close this window. Your transfer will continue in the background.",
+          title: isReplacementCancel ? "Cancelling transaction" : "Transfer in progress",
+          subtitle: isReplacementCancel
+            ? "Attempting to cancel transfer"
+            : "This may take a few minutes.",
+          extra: isReplacementCancel
+            ? undefined
+            : "You can now close this window. Your transfer will continue in the background.",
           animStatus: "processing",
         }
     }
