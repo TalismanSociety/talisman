@@ -17,11 +17,14 @@ export const useEthReplaceTransaction = (
       value: type === "cancel" ? "0" : tx.value,
       data: type === "cancel" ? undefined : tx.data,
       nonce: tx.nonce,
+
+      // pass previous tx gas data
+      type: tx.type,
+      gasPrice: tx.gasPrice,
+      maxPriorityFeePerGas: tx.maxPriorityFeePerGas,
     }),
     [tx, type]
   )
 
-  // TODO force maxPriorityFee (type 2) or gasPrice (type 1) to be 0.01 GWEI higher than the original tx ?
-  // seems complex to achieve
   return useEthTransaction(transaction, lock, true)
 }
