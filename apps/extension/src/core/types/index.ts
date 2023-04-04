@@ -112,12 +112,14 @@ export type MessageHandler<
   Res = ResponseType<TMessageType>
 > = (req: Req) => Res | Promise<Res>
 
+// TODO cooldown
 // export type SubscriptionHandler<
 //   TMessageType extends MessageTypesWithSubscriptions,
 //   Req = RequestType<TMessageType>,
 //   Res = ResponseType<TMessageType>
 // > = (req: Req) => Res | Promise<Res>
 
+// TODO cooldown
 // export type SubscriptionByIdHandler<
 //   TMessageType extends MessageTypesWithSubscriptionsById,
 //   Req = RequestTypes<TMessageType>,

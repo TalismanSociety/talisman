@@ -1,1 +1,1 @@
-export * from "../domains/transactions/watchEthereumTransaction"
+export * from "./createNotification"

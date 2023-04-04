@@ -1,5 +1,4 @@
 import { db } from "@core/db"
-import { log } from "@core/log"
 import { TypeRegistry } from "@polkadot/types"
 import { HexString } from "@polkadot/util/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"

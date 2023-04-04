@@ -1,6 +1,7 @@
 import { settingsStore } from "@core/domains/app"
 import { addEvmTransaction, updateTransactionStatus } from "@core/domains/transactions/helpers"
 import { log } from "@core/log"
+import { createNotification } from "@core/notifications"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import * as Sentry from "@sentry/browser"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
@@ -8,7 +9,6 @@ import { ethers } from "ethers"
 import { nanoid } from "nanoid"
 import urlJoin from "url-join"
 
-import { createNotification } from "../../notifications/createNotification"
 import { getProviderForEthereumNetwork } from "../ethereum/rpcProviders"
 import { WatchTransactionOptions } from "./types"
 

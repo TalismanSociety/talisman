@@ -1,6 +1,6 @@
 import { Chain, ChainId } from "@core/domains/chains/types"
 import { log } from "@core/log"
-import { NotificationType, createNotification } from "@core/notifications/createNotification"
+import { NotificationType, createNotification } from "@core/notifications"
 import { chainConnector } from "@core/rpcs/chain-connector"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { TypeRegistry } from "@polkadot/types"

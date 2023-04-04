@@ -1,6 +1,7 @@
 import { DEBUG } from "@core/constants"
 import { ETH_NETWORK_ADD_PREFIX } from "@core/domains/ethereum/types"
 import { CustomEvmNativeToken } from "@core/domains/tokens/types"
+import { watchEthereumTransaction } from "@core/domains/transactions"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import {
   ETH_ERROR_EIP1993_USER_REJECTED,
@@ -10,7 +11,6 @@ import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"
 import { log } from "@core/log"
-import { watchEthereumTransaction } from "@core/notifications"
 import { chainConnectorEvm } from "@core/rpcs/chain-connector-evm"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { MessageHandler, MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -106,7 +106,6 @@ export class EthHandler extends ExtensionHandler {
         notifications: true,
       })
 
-      // TODO remove and compute on the fly based on transactions table
       incrementTransactionCount(account.address, ethChainId)
 
       resolve(result.val)

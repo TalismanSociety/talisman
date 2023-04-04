@@ -5,6 +5,7 @@ import {
   getTransactionCount,
   incrementTransactionCount,
 } from "@core/domains/ethereum/transactionCountManager"
+import { watchEthereumTransaction } from "@core/domains/transactions"
 import AssetTransfersRpc from "@core/domains/transfers/rpc/AssetTransfers"
 import {
   RequestAssetTransfer,
@@ -16,7 +17,6 @@ import {
 import { getPairForAddressSafely, getPairFromAddress } from "@core/handlers/helpers"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { log } from "@core/log"
-import { watchEthereumTransaction } from "@core/notifications"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { RequestSignatures, RequestTypes, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
@@ -25,7 +25,7 @@ import { TransactionRequest } from "@ethersproject/abstract-provider"
 import { assert } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
 import * as Sentry from "@sentry/browser"
-import { planckToTokens, tokensToPlanck } from "@talismn/util"
+import { planckToTokens } from "@talismn/util"
 import { Wallet, ethers } from "ethers"
 
 import { transferAnalytics } from "./helpers"
@@ -128,7 +128,6 @@ export default class AssetTransferHandler extends ExtensionHandler {
     evmNetworkId,
     tokenId,
     amount,
-    to,
     unsigned,
     signedTransaction,
   }: RequestAssetTransferEthHardware): Promise<ResponseAssetTransfer> {
@@ -139,7 +138,7 @@ export default class AssetTransferHandler extends ExtensionHandler {
       const token = await chaindataProvider.getToken(tokenId)
       if (!token) throw new Error(`Invalid tokenId ${tokenId}`)
 
-      const { from, to, hash, ...otherDetails } = await provider.sendTransaction(signedTransaction)
+      const { from, to, hash } = await provider.sendTransaction(signedTransaction)
       if (!to) throw new Error("Unable to transfer - no recipient address given")
 
       watchEthereumTransaction(evmNetworkId, hash, unsigned, {

@@ -18,8 +18,6 @@ type Transaction = {
   createdAt: number
 }
 
-type TransactionList = Record<TransactionId, Transaction>
-
 export type TransactionSubject = Record<TransactionId, Transaction>
 
 export class TransactionStore extends StorageProvider<TransactionSubject> {
