@@ -2,7 +2,6 @@ import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
 import Site from "@ui/domains/Site"
-import { PendingTransactionsButton } from "@ui/domains/Transactions"
 import { Suspense, lazy } from "react"
 import { Route, Routes } from "react-router-dom"
 
@@ -20,7 +19,7 @@ const MigratePasswordAlert = lazy(() => import("@ui/domains/Settings/MigratePass
 const TopRight = () => {
   return (
     <Routes>
-      <Route path="" element={<PendingTransactionsButton />} />
+      <Route path="" element={null} />
       <Route
         path="*"
         element={

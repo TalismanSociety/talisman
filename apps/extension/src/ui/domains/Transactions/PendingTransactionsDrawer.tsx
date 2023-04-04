@@ -6,6 +6,7 @@ import {
 } from "@core/domains/transactions/types"
 import { TransactionStatus } from "@core/domains/transactions/types"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
+import { convertAddress } from "@talisman/util/convertAddress"
 import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -13,6 +14,7 @@ import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
+import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
@@ -517,7 +519,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
   onContextMenuOpen,
   onContextMenuClose,
 }) => {
-  const { address, genesisHash } = tx.unsigned
+  const { genesisHash } = tx.unsigned
   const chain = useChainByGenesisHash(genesisHash)
   const token = useToken(tx.tokenId)
   const tokenRates = useTokenRates(tx.tokenId)
@@ -701,6 +703,7 @@ const DrawerContent: FC<{ transactions: WalletTransaction[]; onClose?: () => voi
 }) => {
   const { account } = useSelectedAccount()
   useAnalyticsPageView(ANALYTICS_PAGE)
+  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
 
   const handleTxHistoryClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -716,10 +719,16 @@ const DrawerContent: FC<{ transactions: WalletTransaction[]; onClose?: () => voi
     <>
       <h3 className="text-md mt-12 text-center font-bold">Recent Activity</h3>
       <p className="text-body-secondary leading-paragraph my-8 w-full px-24 text-center text-sm">
-        View recent and pending transactions for the past week. For a comprehesive history visit our{" "}
-        <button type="button" onClick={handleTxHistoryClick} className="text-body inline">
-          transaction history page
-        </button>
+        View recent and pending transactions for the past week.
+        {showTxHistory && (
+          <>
+            {" "}
+            For a comprehesive history visit our{" "}
+            <button type="button" onClick={handleTxHistoryClick} className="text-body inline">
+              transaction history page
+            </button>
+          </>
+        )}
       </p>
       <TransactionsList transactions={transactions} />
       <div className="p-12">
@@ -735,9 +744,20 @@ export const PendingTransactionsDrawer: FC<{
   isOpen?: boolean
   onClose?: () => void
 }> = ({ isOpen, onClose }) => {
+  const { account } = useSelectedAccount()
   // load transactions only if we need to open the drawer
   const transactions = useLiveQuery<WalletTransaction[] | undefined>(
-    () => (isOpen ? db.transactions.reverse().sortBy("timestamp") : undefined),
+    () =>
+      isOpen
+        ? db.transactions
+            .filter(
+              (tx) =>
+                !account ||
+                convertAddress(account.address, null) === convertAddress(tx.account, null)
+            )
+            .reverse()
+            .sortBy("timestamp")
+        : undefined,
     [isOpen]
   )
 
