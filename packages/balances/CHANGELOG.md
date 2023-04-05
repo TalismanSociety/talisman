@@ -1,5 +1,22 @@
 # @talismn/balances
 
+## 0.4.0
+
+### Patch Changes
+
+- 3068bd60: feat: stale balances and exponential rpc backoff
+- 6643a4e4: fix: tokenRates in @talismn/balances-react
+- 6643a4e4: fix: ported useDbCache related perf fixes to @talismn/balances-react
+- Updated dependencies [3068bd60]
+- Updated dependencies [6643a4e4]
+- Updated dependencies [79f6ccf6]
+- Updated dependencies [c24dc1fb]
+  - @talismn/chain-connector@0.4.3
+  - @talismn/util@0.1.8
+  - @talismn/token-rates@0.1.15
+  - @talismn/chaindata-provider@0.4.3
+  - @talismn/chain-connector-evm@0.4.3
+
 ## 0.3.3
 
 ### Patch Changes

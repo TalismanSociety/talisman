@@ -1,9 +1,11 @@
 import { db } from "@core/db"
+import { AlertCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { PendingTransactionsDrawer } from "@ui/domains/Transactions/PendingTransactionsDrawer"
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useLiveQuery } from "dexie-react-hooks"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
@@ -16,6 +18,7 @@ import {
   NavIconExpand,
   NavIconHome,
   NavIconMore,
+  NavIconMoreAlert,
   NavIconNft,
 } from "./icons"
 
@@ -127,41 +130,55 @@ export const BottomNav = () => {
     open()
   }, [open])
 
+  const { isSnoozed, isNotConfirmed } = useMnemonicBackup()
+
   return (
-    <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] items-center justify-between border-t px-12 text-3xl">
-      <Tooltip placement="top">
-        <TooltipTrigger>
-          <BottomNavButton onClick={handleHomeClick} current={location.pathname === "/portfolio"}>
-            <NavIconHome />
-          </BottomNavButton>
-        </TooltipTrigger>
-        <TooltipContent>Portfolio</TooltipContent>
-      </Tooltip>
-      <Tooltip placement="top">
-        <TooltipTrigger>
-          <BottomNavButton onClick={handleNftClick}>
-            <NavIconNft />
-          </BottomNavButton>
-        </TooltipTrigger>
-        <TooltipContent>View NFTs</TooltipContent>
-      </Tooltip>
-      <RecentActivityButton />
-      <Tooltip placement="top">
-        <TooltipTrigger>
-          <BottomNavButton onClick={handleExpandClick}>
-            <NavIconExpand />
-          </BottomNavButton>
-        </TooltipTrigger>
-        <TooltipContent>Expand Portfolio View</TooltipContent>
-      </Tooltip>
-      <Tooltip placement="top">
-        <TooltipTrigger>
-          <BottomNavButton onClick={handleMoreClick}>
-            <NavIconMore />
-          </BottomNavButton>
-        </TooltipTrigger>
-        <TooltipContent>More Options</TooltipContent>
-      </Tooltip>
-    </div>
+    <>
+      {isSnoozed && (
+        <div className="bg-black-tertiary w-100 flex h-20 min-h-[4rem] items-center justify-center gap-4 px-4">
+          <AlertCircleIcon className="text-primary-500 h-12 w-12" />
+          <div className="text-body-secondary text-center text-xs">
+            <span className="font-bold text-white">Backup your wallet</span> to prevent losing
+            access to your funds
+          </div>
+        </div>
+      )}
+      <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] items-center justify-between border-t px-12 text-3xl">
+        <Tooltip placement="top">
+          <TooltipTrigger>
+            <BottomNavButton onClick={handleHomeClick} current={location.pathname === "/portfolio"}>
+              <NavIconHome />
+            </BottomNavButton>
+          </TooltipTrigger>
+          <TooltipContent>Portfolio</TooltipContent>
+        </Tooltip>
+        <Tooltip placement="top">
+          <TooltipTrigger>
+            <BottomNavButton onClick={handleNftClick}>
+              <NavIconNft />
+            </BottomNavButton>
+          </TooltipTrigger>
+          <TooltipContent>View NFTs</TooltipContent>
+        </Tooltip>
+        <RecentActivityButton />
+        <Tooltip placement="top">
+          <TooltipTrigger>
+            <BottomNavButton onClick={handleExpandClick}>
+              <NavIconExpand />
+            </BottomNavButton>
+          </TooltipTrigger>
+          <TooltipContent>Expand Portfolio View</TooltipContent>
+        </Tooltip>
+        <Tooltip placement="top">
+          <TooltipTrigger>
+            <BottomNavButton onClick={handleMoreClick}>
+              {isNotConfirmed && <NavIconMoreAlert />}
+              {!isNotConfirmed && <NavIconMore />}
+            </BottomNavButton>
+          </TooltipTrigger>
+          <TooltipContent>More Options</TooltipContent>
+        </Tooltip>
+      </div>
+    </>
   )
 }
