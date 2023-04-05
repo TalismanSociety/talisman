@@ -1,5 +1,11 @@
 # @talismn/util
 
+## 0.1.8
+
+### Patch Changes
+
+- 3068bd60: feat: stale balances and exponential rpc backoff
+
 ## 0.1.7
 
 ### Patch Changes

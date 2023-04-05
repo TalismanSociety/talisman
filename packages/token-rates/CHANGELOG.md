@@ -1,5 +1,14 @@
 # @talismn/token-rates
 
+## 0.1.15
+
+### Patch Changes
+
+- 6643a4e4: fix: tokenRates in @talismn/balances-react
+- Updated dependencies [79f6ccf6]
+- Updated dependencies [c24dc1fb]
+  - @talismn/chaindata-provider@0.4.3
+
 ## 0.1.14
 
 ### Patch Changes
