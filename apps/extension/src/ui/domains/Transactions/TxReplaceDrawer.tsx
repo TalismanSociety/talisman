@@ -300,7 +300,7 @@ const EvmDrawerContent: FC<{
                 className="h-24"
                 primary
                 onClick={handleSend}
-                disabled={!isProcessing && (!account || (!isLoading && !isValid))}
+                disabled={!isProcessing && (!transaction || !account || (!isLoading && !isValid))}
                 processing={isProcessing}
               >
                 {approveText}
