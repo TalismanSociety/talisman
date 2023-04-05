@@ -6,6 +6,7 @@ import { Address } from "@talismn/balances"
 import { ethers } from "ethers"
 import merge from "lodash/merge"
 
+import { serializeTransactionRequestBigNumbers } from "../ethereum/helpers"
 import { TransactionStatus } from "./types"
 
 type AddTransactionOptions = {
@@ -48,7 +49,7 @@ export const addEvmTransaction = async (
       account: unsigned.from,
       nonce,
       isReplacement,
-      unsigned,
+      unsigned: serializeTransactionRequestBigNumbers(unsigned),
       status: "pending",
       siteUrl,
       label,

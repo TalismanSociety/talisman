@@ -67,6 +67,24 @@ export const getErc20TokenId = (
   contractAddress: string
 ) => `${chainOrNetworkId}-evm-erc20-${contractAddress}`.toLowerCase()
 
+const safeBigNumberish = (value?: BigNumberish) =>
+  BigNumber.isBigNumber(value) ? value.toString() : value
+
+export const serializeTransactionRequestBigNumbers = (
+  transaction: ethers.providers.TransactionRequest
+) => {
+  const tx = { ...transaction }
+
+  if (tx.gasLimit) tx.gasLimit = safeBigNumberish(tx.gasLimit)
+  if (tx.gasPrice) tx.gasPrice = safeBigNumberish(tx.gasPrice)
+  if (tx.maxFeePerGas) tx.maxFeePerGas = safeBigNumberish(tx.maxFeePerGas)
+  if (tx.maxPriorityFeePerGas) tx.maxPriorityFeePerGas = safeBigNumberish(tx.maxPriorityFeePerGas)
+  if (tx.value) tx.value = safeBigNumberish(tx.value)
+  if (tx.nonce) tx.nonce = safeBigNumberish(tx.nonce)
+
+  return tx
+}
+
 // BigNumbers need to be reconstructed if they are serialized then deserialized
 export const rebuildTransactionRequestNumbers = (
   transaction: ethers.providers.TransactionRequest
