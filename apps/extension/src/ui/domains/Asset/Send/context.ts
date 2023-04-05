@@ -4,7 +4,6 @@ import {
 } from "@core/constants"
 import { Balance, BalanceFormatter, BalanceJson, Balances } from "@core/domains/balances/types"
 import { Chain, ChainId } from "@core/domains/chains/types"
-import { serializeTransactionRequestBigNumbers } from "@core/domains/ethereum/helpers"
 import { EvmNetwork } from "@core/domains/ethereum/types"
 import { Token } from "@core/domains/tokens/types"
 import { assert } from "@polkadot/util"
@@ -399,7 +398,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         token.id,
         amount,
         to,
-        serializeTransactionRequestBigNumbers(unsigned),
+        unsigned,
         signature
       )
       setTransactionHash(hash)

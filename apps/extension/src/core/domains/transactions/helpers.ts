@@ -6,7 +6,6 @@ import { Address } from "@talismn/balances"
 import { ethers } from "ethers"
 import merge from "lodash/merge"
 
-import { serializeTransactionRequestBigNumbers } from "../ethereum/helpers"
 import { TransactionStatus } from "./types"
 
 type AddTransactionOptions = {
@@ -23,19 +22,17 @@ const DEFAULT_OPTIONS: AddTransactionOptions = {
 
 export const addEvmTransaction = async (
   hash: string,
-  tx: ethers.providers.TransactionRequest,
+  unsigned: ethers.providers.TransactionRequest,
   options: AddTransactionOptions = {}
 ) => {
   const { siteUrl, label, tokenId, value, to } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
   try {
-    if (!tx.chainId || !tx.nonce || !tx.from) throw new Error("Invalid transaction")
+    if (!unsigned.chainId || !unsigned.nonce || !unsigned.from)
+      throw new Error("Invalid transaction")
 
-    // make it serializable so it can be safely stored
-    const unsigned = serializeTransactionRequestBigNumbers(tx)
-
-    const evmNetworkId = String(tx.chainId)
-    const nonce = ethers.BigNumber.from(tx.nonce).toNumber()
+    const evmNetworkId = String(unsigned.chainId)
+    const nonce = ethers.BigNumber.from(unsigned.nonce).toNumber()
     const isReplacement =
       (await db.transactions
         .filter(
@@ -48,7 +45,7 @@ export const addEvmTransaction = async (
       hash,
       networkType: "evm",
       evmNetworkId,
-      account: tx.from,
+      account: unsigned.from,
       nonce,
       isReplacement,
       unsigned,

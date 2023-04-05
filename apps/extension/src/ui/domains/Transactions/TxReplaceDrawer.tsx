@@ -1,5 +1,4 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
-import { serializeTransactionRequestBigNumbers } from "@core/domains/ethereum/helpers"
 import { EthTransactionDetails } from "@core/domains/signing/types"
 import { EvmWalletTransaction, WalletTransaction } from "@core/domains/transactions/types"
 import { HexString } from "@polkadot/util/types"
@@ -129,8 +128,7 @@ const EvmDrawerContent: FC<{
     if (!transaction) return
     setIsProcessing(true)
     try {
-      const safeTx = serializeTransactionRequestBigNumbers(transaction)
-      const newHash = await api.ethSignAndSend(safeTx)
+      const newHash = await api.ethSignAndSend(transaction)
       api.analyticsCapture({
         eventName: `transaction ${type}`,
         options: {
@@ -159,8 +157,7 @@ const EvmDrawerContent: FC<{
       if (!transaction) return
       setIsProcessing(true)
       try {
-        const safeTx = serializeTransactionRequestBigNumbers(transaction)
-        const newHash = await api.ethSendSigned(safeTx, signature)
+        const newHash = await api.ethSendSigned(transaction, signature)
         api.analyticsCapture({
           eventName: `transaction ${type}`,
           options: {

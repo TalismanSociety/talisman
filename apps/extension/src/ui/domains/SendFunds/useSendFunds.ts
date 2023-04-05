@@ -1,7 +1,4 @@
-import {
-  getEthTransferTransactionBase,
-  serializeTransactionRequestBigNumbers,
-} from "@core/domains/ethereum/helpers"
+import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
 import { AssetTransferMethod } from "@core/domains/transfers/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
@@ -544,7 +541,7 @@ const useSendFundsProvider = () => {
             token.id,
             amount,
             to,
-            serializeTransactionRequestBigNumbers(evmTransaction.transaction),
+            evmTransaction.transaction,
             signature
           )
           gotoProgress({ hash })

@@ -1,5 +1,4 @@
 import { rebuildTransactionRequestNumbers } from "@core/domains/ethereum/helpers"
-import { serializeTransactionRequestBigNumbers } from "@core/domains/ethereum/helpers"
 import { KnownSigningRequestIdOnly } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
@@ -54,11 +53,7 @@ const useEthSignTransactionRequestProvider = ({ id }: KnownSigningRequestIdOnly<
       if (!baseRequest || !transaction || !baseRequest.id) return
       baseRequest.setStatus.processing("Approving request")
       try {
-        await api.ethApproveSignAndSendHardware(
-          baseRequest.id,
-          serializeTransactionRequestBigNumbers(transaction),
-          signature
-        )
+        await api.ethApproveSignAndSendHardware(baseRequest.id, transaction, signature)
         baseRequest.setStatus.success("Approved")
       } catch (err) {
         log.error("failed to approve hardware", { err })
