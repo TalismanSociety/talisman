@@ -1,32 +1,28 @@
 import { Address } from "@core/types/base"
 import { provideContext } from "@talisman/util/provideContext"
 import { ChainId, TokenId } from "@talismn/chaindata-provider"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { CopyAddressWizardInputs } from "./types"
 
-type CopyAddressWizardPage = "token" | "chain" | "address" | "copy"
+export type CopyAddressWizardPage = "token" | "chain" | "account" | "copy"
 
 const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage => {
   if (inputs.type === "chain") {
     if (!inputs.chainId) return "chain"
-    if (!inputs.address) return "address"
+    if (!inputs.address) return "account"
   }
 
   if (inputs.type === "token") {
     if (!inputs.tokenId) return "token"
-    if (!inputs.address) return "address"
+    if (!inputs.address) return "account"
   }
 
   return "copy"
 }
 
-export const useCopyAddressWizardProvider = ({
-  initialInputs,
-}: {
-  initialInputs: CopyAddressWizardInputs
-}) => {
-  const [state, setState] = useState<CopyAddressWizardInputs>(initialInputs)
+export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInputs }) => {
+  const [state, setState] = useState<CopyAddressWizardInputs>(inputs)
   const [route, setRoute] = useState(() => getNextRoute(state))
 
   const setTokenId = (tokenId: TokenId) => {

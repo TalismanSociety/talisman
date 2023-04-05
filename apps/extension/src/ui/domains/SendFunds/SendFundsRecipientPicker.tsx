@@ -1,5 +1,6 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { TalismanHandIcon, UserIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { isValidAddress } from "@talisman/util/isValidAddress"
@@ -12,7 +13,6 @@ import useToken from "@ui/hooks/useToken"
 import { useCallback, useMemo, useState } from "react"
 
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
-import { SendFundsSearchInput } from "./SendFundsSearchInput"
 
 export const SendFundsRecipientPicker = () => {
   const { from, to, set, tokenId } = useSendFundsWizard()
@@ -131,7 +131,7 @@ export const SendFundsRecipientPicker = () => {
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
         <div className="font-bold">To</div>
         <div className="grow">
-          <SendFundsSearchInput
+          <SearchInput
             onValidate={handleValidate}
             autoFocus
             onChange={setSearch}

@@ -9,7 +9,7 @@ const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
   className: "!px-8 h-[4.6rem] my-1 !bg-black-tertiary",
 }
 
-type SendFundsSearchInputProps = {
+type SearchInputProps = {
   className?: string
   autoFocus?: boolean
   placeholder?: string
@@ -17,7 +17,7 @@ type SendFundsSearchInputProps = {
   onValidate?: () => void
 }
 
-export const SendFundsSearchInput: FC<SendFundsSearchInputProps> = ({
+export const SearchInput: FC<SearchInputProps> = ({
   className,
   autoFocus,
   onChange,
