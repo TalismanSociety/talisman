@@ -1,5 +1,19 @@
 # @talismn/balances-evm-native
 
+## 0.4.0
+
+### Patch Changes
+
+- 3068bd60: feat: stale balances and exponential rpc backoff
+- Updated dependencies [3068bd60]
+- Updated dependencies [6643a4e4]
+- Updated dependencies [79f6ccf6]
+- Updated dependencies [6643a4e4]
+- Updated dependencies [c24dc1fb]
+  - @talismn/balances@0.4.0
+  - @talismn/util@0.1.8
+  - @talismn/chaindata-provider@0.4.3
+
 ## 0.3.3
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @talismn/chaindata-provider-extension
 
+## 0.4.3
+
+### Patch Changes
+
+- 79f6ccf6: added latestMetadataQrUrl to chaindata chains
+- Updated dependencies [79f6ccf6]
+- Updated dependencies [c24dc1fb]
+  - @talismn/chaindata-provider@0.4.3
+
 ## 0.4.2
 
 ### Patch Changes

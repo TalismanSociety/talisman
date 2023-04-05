@@ -131,10 +131,10 @@ export default class Extension extends ExtensionHandler {
 
   private initWalletFunding() {
     // We need to show a specific UI until wallet has funds in it.
-    // Note that showWalletFunding flag is turned on when onboarding.
-    // Turn off the showWalletFunding flag as soon as there is a positive balance
-    const subAppStore = this.stores.app.observable.subscribe(({ showWalletFunding, onboarded }) => {
-      if (!showWalletFunding) {
+    // Note that hasFunds flag is turned off when onboarding without importing a seed.
+    // Turn on the hasFunds flag as soon as there is a positive balance
+    const subAppStore = this.stores.app.observable.subscribe(({ hasFunds, onboarded }) => {
+      if (hasFunds) {
         if (onboarded === "TRUE") subAppStore.unsubscribe()
         return
       }
@@ -143,9 +143,9 @@ export default class Extension extends ExtensionHandler {
       const obsHasFunds = liveQuery(
         async () => await balancesDb.balances.filter((balance) => balance.free !== "0").count()
       )
-      const subBalances = obsHasFunds.subscribe((hasFunds) => {
-        if (hasFunds) {
-          this.stores.app.set({ showWalletFunding: false })
+      const subBalances = obsHasFunds.subscribe((positiveBalances) => {
+        if (positiveBalances) {
+          this.stores.app.set({ hasFunds: true })
           subBalances.unsubscribe()
           subAppStore.unsubscribe()
         }

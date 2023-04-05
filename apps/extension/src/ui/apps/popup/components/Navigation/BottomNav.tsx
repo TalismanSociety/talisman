@@ -1,15 +1,24 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
+import { AlertCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 import { useNavigationContext } from "../../context/NavigationContext"
-import { NavIconExpand, NavIconHistory, NavIconHome, NavIconMore, NavIconNft } from "./icons"
+import {
+  NavIconExpand,
+  NavIconHistory,
+  NavIconHome,
+  NavIconMore,
+  NavIconMoreAlert,
+  NavIconNft,
+} from "./icons"
 
 type BottomNavButtonProps = DetailedHTMLProps<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -98,35 +107,49 @@ export const BottomNav = () => {
     open()
   }, [open])
 
+  const { isSnoozed, isNotConfirmed } = useMnemonicBackup()
+
   return (
-    <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] items-center justify-between border-t px-12 text-3xl">
-      <WithTooltip as="div" tooltip={"Portfolio"}>
-        <BottomNavButton onClick={handleHomeClick} current={location.pathname === "/portfolio"}>
-          <NavIconHome />
-        </BottomNavButton>
-      </WithTooltip>
-      <WithTooltip as="div" tooltip={"View NFTs"}>
-        <BottomNavButton onClick={handleNftClick}>
-          <NavIconNft />
-        </BottomNavButton>
-      </WithTooltip>
-      {showTxHistory && (
-        <WithTooltip as="div" tooltip={"Transaction History"}>
-          <BottomNavButton onClick={handleTxHistoryClick}>
-            <NavIconHistory />
+    <>
+      {isSnoozed && (
+        <div className="bg-black-tertiary w-100 flex h-20 min-h-[4rem] items-center justify-center gap-4 px-4">
+          <AlertCircleIcon className="text-primary-500 h-12 w-12" />
+          <div className="text-body-secondary text-center text-xs">
+            <span className="font-bold text-white">Backup your wallet</span> to prevent losing
+            access to your funds
+          </div>
+        </div>
+      )}
+      <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] items-center justify-between border-t px-12 text-3xl">
+        <WithTooltip as="div" tooltip={"Portfolio"}>
+          <BottomNavButton onClick={handleHomeClick} current={location.pathname === "/portfolio"}>
+            <NavIconHome />
           </BottomNavButton>
         </WithTooltip>
-      )}
-      <WithTooltip as="div" tooltip={"Expand Portfolio View"}>
-        <BottomNavButton onClick={handleExpandClick}>
-          <NavIconExpand />
-        </BottomNavButton>
-      </WithTooltip>
-      <WithTooltip as="div" tooltip={"More Options"} noWrap>
-        <BottomNavButton onClick={handleMoreClick}>
-          <NavIconMore />
-        </BottomNavButton>
-      </WithTooltip>
-    </div>
+        <WithTooltip as="div" tooltip={"View NFTs"}>
+          <BottomNavButton onClick={handleNftClick}>
+            <NavIconNft />
+          </BottomNavButton>
+        </WithTooltip>
+        {showTxHistory && (
+          <WithTooltip as="div" tooltip={"Transaction History"}>
+            <BottomNavButton onClick={handleTxHistoryClick}>
+              <NavIconHistory />
+            </BottomNavButton>
+          </WithTooltip>
+        )}
+        <WithTooltip as="div" tooltip={"Expand Portfolio View"}>
+          <BottomNavButton onClick={handleExpandClick}>
+            <NavIconExpand />
+          </BottomNavButton>
+        </WithTooltip>
+        <WithTooltip as="div" tooltip={"More Options"} noWrap>
+          <BottomNavButton onClick={handleMoreClick}>
+            {isNotConfirmed && <NavIconMoreAlert />}
+            {!isNotConfirmed && <NavIconMore />}
+          </BottomNavButton>
+        </WithTooltip>
+      </div>
+    </>
   )
 }

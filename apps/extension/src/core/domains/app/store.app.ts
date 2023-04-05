@@ -20,13 +20,19 @@ export type AppStoreData = {
   hideBraveWarning: boolean
   hasBraveWarningBeenShown: boolean
   analyticsRequestShown: boolean
-  showWalletFunding: boolean
+  /**
+   * @deprecated Use hasFunds
+   */
+  showWalletFunding?: boolean
+  hasFunds: boolean
+  hideBackupWarningUntil?: number
   hasSpiritKey: boolean
   showDotNomPoolStakingBanner: boolean
   needsSpiritKeyUpdate: boolean
 }
 
 const ANALYTICS_VERSION = "1.5.0"
+const BACKUP_WARNING_SNOOZE = 60 * 60 * 24 * 3 * 10000 // 3 days
 
 export const DEFAULT_APP_STATE: AppStoreData = {
   onboarded: UNKNOWN,
@@ -34,7 +40,7 @@ export const DEFAULT_APP_STATE: AppStoreData = {
   hasBraveWarningBeenShown: false,
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   analyticsRequestShown: gt(process.env.VERSION!, ANALYTICS_VERSION), // assume user has onboarded with analytics if current version is newer
-  showWalletFunding: false, // true after onboarding with a newly created account
+  hasFunds: true, // false after onboarding with a newly created account
   hasSpiritKey: false,
   needsSpiritKeyUpdate: false,
   showDotNomPoolStakingBanner: true,
@@ -68,14 +74,20 @@ export class AppStore extends SubscribableStorageProvider<
     // Onboarding page won't display with UNKNOWN
     // Initialize to FALSE after install
     if ((await this.get("onboarded")) === UNKNOWN) await this.set({ onboarded: FALSE })
+
+    // migrate showWalletFunding to hasFunds
+    const showWalletFunding = await this.get("showWalletFunding")
+    if (showWalletFunding !== undefined) {
+      await this.set({ hasFunds: !showWalletFunding, showWalletFunding: undefined })
+    }
   }
 
   async getIsOnboarded() {
     return (await this.get("onboarded")) === TRUE
   }
 
-  async setOnboarded(showWalletFunding: boolean) {
-    return (await this.set({ onboarded: TRUE, showWalletFunding })).onboarded
+  async setOnboarded(hasFunds: boolean) {
+    return (await this.set({ onboarded: TRUE, hasFunds })).onboarded
   }
 
   async ensureOnboarded() {
@@ -84,6 +96,10 @@ export class AppStore extends SubscribableStorageProvider<
       "Talisman extension has not been configured yet. Please continue with onboarding."
     )
     return true
+  }
+
+  snoozeBackupReminder() {
+    return this.set({ hideBackupWarningUntil: Date.now() + BACKUP_WARNING_SNOOZE })
   }
 }
 
