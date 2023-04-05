@@ -229,6 +229,17 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
   )
 }
 
+const UNKNOWN_TX: WalletTransaction = {
+  hash: "",
+  networkType: "evm",
+  status: "unknown",
+  evmNetworkId: "",
+  account: "",
+  unsigned: {},
+  nonce: 0,
+  timestamp: 0,
+}
+
 type SendFundsProgressProps = {
   hash: HexString
   onClose?: () => void
@@ -238,11 +249,16 @@ type SendFundsProgressProps = {
 export const SendFundsProgress: FC<SendFundsProgressProps> = ({ hash, onClose, className }) => {
   const tx = useTransactionByHash(hash)
 
+  // tx is null if not found in db
+  if (tx === null)
+    return <SendFundsProgressBase tx={UNKNOWN_TX} className={className} onClose={onClose} />
+
   if (tx?.networkType === "substrate")
     return <SendFundsProgressSubstrate tx={tx} onClose={onClose} className={className} />
 
   if (tx?.networkType === "evm")
     return <SendFundsProgressProgressEvm tx={tx} onClose={onClose} className={className} />
 
+  // render null while loading
   return null
 }

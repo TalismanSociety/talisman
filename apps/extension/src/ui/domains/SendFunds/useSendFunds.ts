@@ -5,7 +5,7 @@ import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
-import { formatDecimals } from "@talismn/util"
+import { formatDecimals, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -490,6 +490,7 @@ const useSendFundsProvider = () => {
           tip?.planck.toString(),
           method
         )
+        await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
         gotoProgress({ hash })
       } else if (token.evmNetwork?.id) {
         if (!transfer) throw new Error("Missing send amount")
@@ -502,6 +503,7 @@ const useSendFundsProvider = () => {
           value.planck.toString(),
           evmTransaction.gasSettings
         )
+        await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
         gotoProgress({ hash })
       } else throw new Error("Unknown network")
     } catch (err) {
