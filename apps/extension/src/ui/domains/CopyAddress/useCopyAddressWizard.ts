@@ -7,7 +7,7 @@ import { CopyAddressWizardInputs } from "./types"
 
 type CopyAddressWizardPage = "token" | "chain" | "address" | "copy"
 
-const getNextPage = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage => {
+const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage => {
   if (inputs.type === "chain") {
     if (!inputs.chainId) return "chain"
     if (!inputs.address) return "address"
@@ -27,7 +27,7 @@ export const useCopyAddressWizardProvider = ({
   initialInputs: CopyAddressWizardInputs
 }) => {
   const [state, setState] = useState<CopyAddressWizardInputs>(initialInputs)
-  const [activePage, setActivePage] = useState(() => getNextPage(state))
+  const [route, setRoute] = useState(() => getNextRoute(state))
 
   const setTokenId = (tokenId: TokenId) => {
     setState((prev) => ({ ...prev, tokenId }))
@@ -42,12 +42,13 @@ export const useCopyAddressWizardProvider = ({
   }
 
   useEffect(() => {
-    const nextPage = getNextPage(state)
-    if (activePage !== nextPage) setActivePage(nextPage)
-  }, [activePage, state])
+    const nextPage = getNextRoute(state)
+    if (route !== nextPage) setRoute(nextPage)
+  }, [route, state])
 
   return {
     state,
+    route,
     setTokenId,
     setChainId,
     setAddress,

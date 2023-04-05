@@ -21,6 +21,7 @@ import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterMo
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { useReceiveTokensModal } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
 import Build from "@ui/domains/Build"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress/useCopyAddressModal"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -247,11 +248,12 @@ const ExtLinkIcon = styled(({ className }: { className?: string }) => (
 
 export const SideBar = () => {
   const { account } = useSelectedAccount()
-  const { open: openCopyAddressModal } = useAddressFormatterModal()
+  const { open: openAddressFormatterModal } = useAddressFormatterModal()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
   const showStaking = useIsFeatureEnabled("LINK_STAKING")
+  const isCopyAddressV2 = useIsFeatureEnabled("COPY_ADDRESS_V2")
 
   const handleSendClick = useCallback(() => {
     api.sendFundsOpen({
@@ -261,11 +263,26 @@ export const SideBar = () => {
   }, [account?.address, genericEvent])
 
   const { open: openReceiveTokensModal } = useReceiveTokensModal()
+  const { open: openCopyAddressModal } = useCopyAddressModal()
   const handleCopyClick = useCallback(() => {
-    if (account) openCopyAddressModal(account.address)
-    else openReceiveTokensModal("Select address to copy")
+    if (isCopyAddressV2)
+      openCopyAddressModal({
+        type: "token",
+        address: account?.address,
+      })
+    else {
+      if (account) openAddressFormatterModal(account.address)
+      else openReceiveTokensModal("Select address to copy")
+    }
     genericEvent("open copy address", { from: "sidebar" })
-  }, [account, genericEvent, openCopyAddressModal, openReceiveTokensModal])
+  }, [
+    account,
+    genericEvent,
+    isCopyAddressV2,
+    openAddressFormatterModal,
+    openCopyAddressModal,
+    openReceiveTokensModal,
+  ])
 
   const handlePortfolioClick = useCallback(() => {
     genericEvent("goto portfolio", { from: "sidebar" })
