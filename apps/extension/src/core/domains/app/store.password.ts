@@ -57,13 +57,17 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     })
   }
 
-  async setUpAuthSecret(password: string) {
+  async createAuthSecret(password: string) {
     const secret = crypto.randomUUID()
     const check = await encrypt(password, { secret })
     const result = (await decrypt(password, check)) as { secret: string }
     assert(result.secret && result.secret === secret, "Unable to set password")
+    return { secret, check }
+  }
 
-    await this.set({ secret, check })
+  async setupAuthSecret(password: string) {
+    const result = await this.createAuthSecret(password)
+    return await this.set(result)
   }
 
   async createPassword(plaintextPw: string) {
@@ -71,9 +75,9 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     const pwResult = await getHashedPassword(plaintextPw, salt)
     if (!pwResult.ok) pwResult.unwrap()
     // create stored secret and check value
-    if (!(await this.get("secret"))) await this.setUpAuthSecret(pwResult.val)
+    const { secret, check } = await this.createAuthSecret(pwResult.val)
 
-    return { password: pwResult.val, salt }
+    return { password: pwResult.val, salt, secret, check }
   }
 
   async authenticate(password: string) {

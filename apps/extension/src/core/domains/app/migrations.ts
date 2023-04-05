@@ -3,11 +3,16 @@ import passwordStore from "@core/domains/app/store.password"
 import { changePassword } from "./helpers"
 
 export const migratePasswordV1ToV2 = async (plaintextPw: string) => {
-  const { salt, password: hashedPw } = await passwordStore.createPassword(plaintextPw)
+  const {
+    salt,
+    password: hashedPw,
+    check,
+    secret,
+  } = await passwordStore.createPassword(plaintextPw)
   const { ok, val } = await changePassword({ currentPw: plaintextPw, newPw: hashedPw })
   if (ok) {
     // success
-    await passwordStore.set({ isHashed: true, salt })
+    await passwordStore.set({ isHashed: true, salt, check, secret })
     passwordStore.setPassword(hashedPw)
     return true
   }
