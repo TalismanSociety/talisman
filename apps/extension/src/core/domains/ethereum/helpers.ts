@@ -70,8 +70,10 @@ export const getErc20TokenId = (
 const safeBigNumberish = (value?: BigNumberish) =>
   BigNumber.isBigNumber(value) ? value.toString() : value
 
-export const serializeTransactionRequestBigNumbers = (tx: ethers.providers.TransactionRequest) => {
-  const clone = structuredClone(tx)
+export const serializeTransactionRequestBigNumbers = (
+  transaction: ethers.providers.TransactionRequest
+) => {
+  const tx = structuredClone(transaction)
 
   if (tx.gasLimit) tx.gasLimit = safeBigNumberish(tx.gasLimit)
   if (tx.gasPrice) tx.gasPrice = safeBigNumberish(tx.gasPrice)
@@ -80,7 +82,7 @@ export const serializeTransactionRequestBigNumbers = (tx: ethers.providers.Trans
   if (tx.value) tx.value = safeBigNumberish(tx.value)
   if (tx.nonce) tx.nonce = safeBigNumberish(tx.nonce)
 
-  return clone
+  return tx
 }
 
 // BigNumbers need to be reconstructed if they are serialized then deserialized
