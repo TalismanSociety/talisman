@@ -10,6 +10,7 @@ import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormat
 import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { ReceiveTokensModalProvider } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
+import { CopyAddressModalProvider } from "@ui/domains/CopyAddress/useCopyAddressModal"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -134,13 +135,15 @@ const Dashboard = () => (
           <AccountExportModalProvider>
             <AccountExportPrivateKeyModalProvider>
               <AddressFormatterModalProvider>
-                <SendTokensModalProvider>
-                  <BuyTokensModalProvider>
-                    <ReceiveTokensModalProvider>
-                      <DashboardInner />
-                    </ReceiveTokensModalProvider>
-                  </BuyTokensModalProvider>
-                </SendTokensModalProvider>
+                <CopyAddressModalProvider>
+                  <SendTokensModalProvider>
+                    <BuyTokensModalProvider>
+                      <ReceiveTokensModalProvider>
+                        <DashboardInner />
+                      </ReceiveTokensModalProvider>
+                    </BuyTokensModalProvider>
+                  </SendTokensModalProvider>
+                </CopyAddressModalProvider>
               </AddressFormatterModalProvider>
             </AccountExportPrivateKeyModalProvider>
           </AccountExportModalProvider>

@@ -9,6 +9,7 @@ import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
 import { ReceiveTokensModal } from "@ui/domains/Asset/Receive/ReceiveTokensModal"
 import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
+import { CopyAddressModal } from "@ui/domains/CopyAddress/CopyAddressModal"
 import { FC, Suspense, lazy } from "react"
 import styled from "styled-components"
 
@@ -48,6 +49,7 @@ const UnstyledLayout: FC<LayoutProps> = ({ withBack, backTo, children, className
       <AccountExportPrivateKeyModal />
       <AccountRemoveModal />
       <AddressFormatterModal />
+      <CopyAddressModal />
       <OnboardingToast />
     </main>
   )

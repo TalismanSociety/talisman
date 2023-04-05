@@ -20,6 +20,7 @@ const Layout: FC<LayoutProps> = ({ className, withBottomNav, children }) => {
         {children}
         {withBottomNav && <BottomNav />}
         <AddressFormatterModal />
+
         {/* NavigationDrawer here so user can see the drawer close smoothly in case he navigates from one page to another (as long as both page use this Layout) */}
         <NavigationDrawer />
       </ErrorBoundary>

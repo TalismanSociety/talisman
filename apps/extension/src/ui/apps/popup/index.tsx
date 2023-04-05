@@ -23,6 +23,8 @@ import {
   AccountRenameModalProvider,
 } from "@ui/domains/Account/AccountRenameModal"
 import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
+import { CopyAddressModal } from "@ui/domains/CopyAddress/CopyAddressModal"
+import { CopyAddressModalProvider } from "@ui/domains/CopyAddress/useCopyAddressModal"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
@@ -123,39 +125,48 @@ const Popup = () => {
                 <CurrentSiteProvider>
                   <NavigationProvider>
                     <AddressFormatterModalProvider>
-                      <Routes>
-                        <Route path="portfolio/*" element={<Portfolio />}></Route>
-                        <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
-                        <Route
-                          path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
-                          element={<EthereumSignRequest />}
-                        ></Route>
-                        <Route
-                          path={`${SIGNING_TYPES.ETH_SEND}/:id`}
-                          element={<EthereumSignRequest />}
-                        ></Route>
-                        <Route
-                          path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
-                          element={<SubstrateSignRequest />}
-                        ></Route>
-                        <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
-                        <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
-                        <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
-                        <Route
-                          path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
-                          element={<AddEthereumNetwork />}
-                        ></Route>
-                        <Route
-                          path={`${WATCH_ASSET_PREFIX}/:id`}
-                          element={<AddCustomErc20Token />}
-                        ></Route>
-                        <Route path="send/*" element={<SendFundsPage />} />
-                        <Route path="*" element={<Navigate to="/portfolio" replace />} />
-                      </Routes>
-                      <AccountRenameModal />
-                      <AccountRemoveModal />
-                      <AccountExportModal />
-                      <AccountExportPrivateKeyModal />
+                      <CopyAddressModalProvider>
+                        <Routes>
+                          <Route path="portfolio/*" element={<Portfolio />}></Route>
+                          <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
+                          <Route
+                            path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
+                            element={<EthereumSignRequest />}
+                          ></Route>
+                          <Route
+                            path={`${SIGNING_TYPES.ETH_SEND}/:id`}
+                            element={<EthereumSignRequest />}
+                          ></Route>
+                          <Route
+                            path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
+                            element={<SubstrateSignRequest />}
+                          ></Route>
+                          <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
+                          <Route
+                            path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`}
+                            element={<Encrypt />}
+                          ></Route>
+                          <Route
+                            path={`${ENCRYPT_DECRYPT_PREFIX}/:id`}
+                            element={<Encrypt />}
+                          ></Route>
+                          <Route
+                            path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
+                            element={<AddEthereumNetwork />}
+                          ></Route>
+                          <Route
+                            path={`${WATCH_ASSET_PREFIX}/:id`}
+                            element={<AddCustomErc20Token />}
+                          ></Route>
+                          <Route path="send/*" element={<SendFundsPage />} />
+                          <Route path="*" element={<Navigate to="/portfolio" replace />} />
+                        </Routes>
+                        <AccountRenameModal />
+                        <AccountRemoveModal />
+                        <AccountExportModal />
+                        <AccountExportPrivateKeyModal />
+                        <CopyAddressModal />
+                      </CopyAddressModalProvider>
                     </AddressFormatterModalProvider>
                   </NavigationProvider>
                 </CurrentSiteProvider>

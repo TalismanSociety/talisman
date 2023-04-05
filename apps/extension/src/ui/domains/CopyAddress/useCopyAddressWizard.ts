@@ -3,27 +3,7 @@ import { provideContext } from "@talisman/util/provideContext"
 import { ChainId, TokenId } from "@talismn/chaindata-provider"
 import { useEffect, useMemo, useState } from "react"
 
-type CopyAddressByTokenWizardInputs = {
-  type: "token"
-  tokenId?: TokenId
-  address?: Address
-}
-
-type CopyAddressByChainWizardInputs = {
-  type: "chain"
-  chainId?: ChainId
-  address?: Address
-}
-
-type CopyAddressRawWizardInputs = {
-  type: "raw"
-  address: Address
-}
-
-type CopyAddressWizardInputs =
-  | CopyAddressByTokenWizardInputs
-  | CopyAddressByChainWizardInputs
-  | CopyAddressRawWizardInputs
+import { CopyAddressWizardInputs } from "./types"
 
 type CopyAddressWizardPage = "token" | "chain" | "address" | "copy"
 
