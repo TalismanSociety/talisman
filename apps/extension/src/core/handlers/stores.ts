@@ -9,13 +9,11 @@ import { sitesAuthorisationStore } from "@core/domains/sitesAuthorised"
 import sitesAuthorisedStore from "@core/domains/sitesAuthorised/store"
 import { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
 import { tokenRatesStore } from "@core/domains/tokenRates"
-import transactionStore, { TransactionSubject } from "@core/domains/transfers/store"
 
 export type TabStore = {
   chains: typeof chainStore
   tokenRates: typeof tokenRatesStore
   balances: typeof balanceStore
-  transactions: typeof transactionStore // to delete in few months
   app: typeof appStore
   sites: typeof sitesAuthorisationStore
   settings: typeof settingsStore
@@ -32,7 +30,6 @@ type GettableStores = {
   app: [typeof appStore, AppStoreData]
   sites: [typeof sitesAuthorisedStore, AuthorizedSites]
   seedPhrase: [typeof seedPhraseStore, SeedPhraseData]
-  transactions: [typeof transactionStore, TransactionSubject]
 }
 // Stores that expose the .get method
 type GettableStoreKeys = keyof GettableStores
@@ -43,7 +40,6 @@ export const tabStores = {
   chains: chainStore,
   tokenRates: tokenRatesStore,
   balances: balanceStore,
-  transactions: transactionStore, // TODO this is the legacy transfers store which was called transactions. to be deleted in few months, this data now lives in db
   app: appStore,
   sites: sitesAuthorisationStore,
   settings: settingsStore,
@@ -61,7 +57,6 @@ const localStorageStores: { [K in GettableStoreKeys]: GettableStores[K][0] } = {
   app: appStore,
   sites: sitesAuthorisedStore,
   seedPhrase: seedPhraseStore,
-  transactions: transactionStore, // TODO this is the legacy transfers store which was called transactions. to be deleted in few months, this data now lives in db
 }
 
 // utility functions used in tests

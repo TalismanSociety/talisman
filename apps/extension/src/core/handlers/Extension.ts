@@ -93,6 +93,19 @@ export default class Extension extends ExtensionHandler {
     this.initDb()
     this.initWalletFunding()
     this.checkSpiritKeyOwnership()
+    this.cleanup()
+  }
+
+  private cleanup() {
+    // remove legacy entries from localStorage
+    return Browser.storage.local.remove([
+      "chains",
+      "ethereumNetworks",
+      "tokens",
+      "balances",
+      "metadata",
+      "transactions",
+    ])
   }
 
   private initDb() {
@@ -109,14 +122,6 @@ export default class Extension extends ExtensionHandler {
       // (We don't store metadata OR chains in here anymore, so we have no idea whether or not its has already been initialised)
       // // if store has no chains yet, consider it's a fresh install or legacy version
       // if ((await db.chains.count()) < 1) {
-      //   // delete old localstorage-managed 'db'
-      //   Browser.storage.local.remove([
-      //     "chains",
-      //     "ethereumNetworks",
-      //     "tokens",
-      //     "balances",
-      //     "metadata",
-      //   ])
       //
       //   // delete old idb-managed metadata+metadataRpc db
       //   indexedDB.deleteDatabase("talisman")
