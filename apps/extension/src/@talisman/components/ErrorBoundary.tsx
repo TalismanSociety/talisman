@@ -69,9 +69,9 @@ const ErrorMessage: FC<{ error: Error }> = ({ error }) => {
             <img className="inline-block" src={STATIC} alt="Talisman Hand logo" />
           </div>
           {isDbVersionError ? (
-            <p>Sorry, an error occured in Talisman.</p>
-          ) : (
             <p>Invalid database version.</p>
+          ) : (
+            <p>Sorry, an error occured in Talisman.</p>
           )}
         </div>
         <div className="space-y-4">
