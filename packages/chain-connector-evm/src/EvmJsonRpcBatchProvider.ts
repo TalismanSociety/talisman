@@ -1,5 +1,5 @@
 import { ethers } from "ethers"
-import { default as debounce } from "lodash/debounce"
+import debounce from "lodash/debounce"
 
 type PendingRequest = {
   method: string

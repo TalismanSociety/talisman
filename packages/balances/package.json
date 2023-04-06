@@ -33,13 +33,15 @@
     "@talismn/token-rates": "workspace:^",
     "@talismn/util": "workspace:^",
     "anylogger": "^1.0.11",
-    "dexie": "^3.2.3"
+    "dexie": "^3.2.3",
+    "lodash": "4.17.21"
   },
   "devDependencies": {
     "@polkadot/types": "^9.10.5",
     "@talismn/eslint-config": "workspace:^",
     "@talismn/tsconfig": "workspace:^",
     "@types/jest": "^27.5.1",
+    "@types/lodash": "^4.14.180",
     "eslint": "^8.4.0",
     "jest": "^28.1.0",
     "ts-jest": "^28.0.2",

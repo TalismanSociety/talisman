@@ -30,9 +30,13 @@ type ChainTokenBalancesParams = {
   balances: Balances
 }
 
-const getBalanceLockTypeTitle = (input: BalanceLockType, allLocks: LockedBalance[]) => {
+const getBalanceLockTypeTitle = (input: BalanceLockType | string, allLocks: LockedBalance[]) => {
   if (!input) return input
+
   if (input === "democracy") return "Governance"
+  if (input === "staking") return "Staking"
+  if (input === "nompools-staking") return "Pooled staking"
+  if (input === "vesting") return "Vesting"
   if (input === "dapp-staking") return "DApp staking"
   if (input === "other")
     return allLocks.some(({ type }) => type !== "other") ? "Locked (other)" : "Locked"
@@ -133,27 +137,20 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
             fiat: summary.frozenFiat,
             locked: true,
           },
-          ...(account
-            ? [
-                {
-                  key: "reserved",
-                  title: "Reserved",
-                  tokens: summary.reservedTokens,
-                  fiat: summary.reservedFiat,
-                  locked: false,
-                },
-              ]
-            : tokenBalances
-                .filter((b) => b.reserved.planck > BigInt(0))
-                .map((b) => ({
-                  key: `${b.id}-reserved`,
-                  title: "Reserved",
-                  tokens: BigNumber(b.reserved.tokens),
-                  fiat: b.reserved.fiat("usd"),
-                  locked: true,
-                  address: b.address,
-                }))
-                .sort(sortBigBy("tokens", true))),
+          ...tokenBalances
+            .filter((b) => b.reserved.planck > BigInt(0))
+            .flatMap((b) =>
+              b.reserves.map((reserve, index) => ({
+                key: `${b.id}-reserved-${index}`,
+                title: getBalanceLockTypeTitle(reserve.label, []),
+                tokens: BigNumber(reserve.amount.tokens),
+                fiat: reserve.amount.fiat("usd"),
+                locked: true,
+                // only show address when we're viewing balances for all accounts
+                address: account ? undefined : b.address,
+              }))
+            )
+            .sort(sortBigBy("tokens", true)),
         ].filter((row) => row && row.tokens.gt(0)) as DetailRow[])
       : []
   }, [

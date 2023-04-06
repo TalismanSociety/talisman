@@ -98,18 +98,19 @@ export const getNomPoolStake = async ({ addresses, chainId = "polkadot" }: Reque
   const { registry, metadataRpc } = await getTypeRegistry(chainId)
   registry.setMetadata(new Metadata(registry, metadataRpc))
 
-  const addressQueries = addresses.reduce((result, address) => {
+  const addressQueries = addresses.flatMap((address) => {
     const storageHelper = new StorageHelper(
       registry,
       "nominationPools",
       "poolMembers",
       decodeAnyAddress(address)
     )
+
     // filter out queries which we failed to encode (e.g. an invalid address was input)
-    if (storageHelper.stateKey == undefined) return result
-    result.push({ address, stateKey: storageHelper.stateKey, query: storageHelper })
-    return result
-  }, [] as { address: string; stateKey: string; query: StorageHelper }[])
+    if (storageHelper.stateKey == undefined) return []
+
+    return { address, stateKey: storageHelper.stateKey, query: storageHelper }
+  })
 
   // set up method and params
   const method = "state_queryStorageAt"

@@ -361,6 +361,15 @@ export class Balance {
         : BigInt(this.#storage.reserves?.amount || "0")
     )
   }
+  get reserves() {
+    return (
+      Array.isArray(this.#storage.reserves) ? this.#storage.reserves : [this.#storage.reserves]
+    ).flatMap((reserve) => {
+      if (reserve === undefined) return []
+      if (typeof reserve === "string") return { label: "other", amount: this.#format(reserve) }
+      return { ...reserve, amount: this.#format(reserve.amount) }
+    })
+  }
   /** The frozen balance of this token. Is included in the free amount. */
   get locked() {
     return this.#format(
@@ -372,6 +381,15 @@ export class Balance {
             .reduce((a, b) => BigMath.max(a, b), BigInt("0"))
         : BigInt(this.#storage.locks?.amount || "0")
     )
+  }
+  get locks() {
+    return (
+      Array.isArray(this.#storage.locks) ? this.#storage.locks : [this.#storage.locks]
+    ).flatMap((lock) => {
+      if (lock === undefined) return []
+      if (typeof lock === "string") return { label: "other", amount: this.#format(lock) }
+      return { ...lock, amount: this.#format(lock.amount) }
+    })
   }
   /** @depreacted - use balance.locked */
   get frozen() {

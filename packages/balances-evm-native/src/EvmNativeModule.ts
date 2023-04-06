@@ -14,7 +14,7 @@ import {
   NewTokenType,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
-import { hasOwnProperty } from "@talismn/util"
+import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
 import { ethers } from "ethers"
 import isEqual from "lodash/isEqual"
 
@@ -260,5 +260,3 @@ async function getFreeBalance(
     )
   }
 }
-
-const isEthereumAddress = (address: string) => address.startsWith("0x") && address.length === 42

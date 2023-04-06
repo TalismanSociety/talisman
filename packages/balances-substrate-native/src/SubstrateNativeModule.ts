@@ -1,27 +1,32 @@
 import { Metadata, TypeRegistry, createType, decorateConstants } from "@polkadot/types"
-import type { Registry } from "@polkadot/types-codec/types"
-import { assert, u8aToHex } from "@polkadot/util"
+import { assert } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import {
+  AddressesByToken,
   Amount,
+  AmountWithLabel,
   Balance,
   Balances,
   DefaultBalanceModule,
+  GetOrCreateTypeRegistry,
   LockedAmount,
   NewBalanceModule,
   NewBalanceType,
   NewTransferParamsType,
+  RpcStateQuery,
+  RpcStateQueryHelper,
   createTypeRegistryCache,
 } from "@talismn/balances"
 import {
   ChainId,
+  ChaindataProvider,
   NewTokenType,
   SubChainId,
   TokenId,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import { mutateMetadata } from "@talismn/mutate-metadata"
-import { blake2Concat, decodeAnyAddress, hasOwnProperty } from "@talismn/util"
+import { blake2Concat, decodeAnyAddress, isEthereumAddress } from "@talismn/util"
 
 import log from "./log"
 
@@ -119,7 +124,11 @@ export type SubNativeBalance = NewBalanceType<
     multiChainId: SubChainId
 
     free: Amount
-    reserves: Amount
+    reserves: [
+      AmountWithLabel<"other">,
+      AmountWithLabel<"staking">,
+      AmountWithLabel<"nompools-staking">
+    ]
     locks: [LockedAmount<"fees">, LockedAmount<"misc">]
   }
 >
@@ -344,169 +353,34 @@ export const SubNativeModule: NewBalanceModule<
     },
 
     async subscribeBalances(addressesByToken, callback) {
-      const chains = await chaindataProvider.chains()
-      const tokens = await chaindataProvider.tokens()
-      const subscriptions = Object.entries(addressesByToken)
-        .map(async ([tokenId, addresses]) => {
-          assert(chainConnectors.substrate, "This module requires a substrate chain connector")
+      assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-          const token = tokens[tokenId]
-          assert(token, `Token ${tokenId} not found`)
+      const queries = await buildQueries(
+        chaindataProvider,
+        getOrCreateTypeRegistry,
+        addressesByToken
+      )
+      const unsubscribe = await new RpcStateQueryHelper(
+        chainConnectors.substrate,
+        queries
+      ).subscribe((error, result) =>
+        error ? callback(error) : callback(null, new Balances(result ?? []))
+      )
 
-          // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-          if (token.type !== "substrate-native") {
-            log.debug(`This module doesn't handle tokens of type ${token.type}`)
-            return () => {}
-          }
-
-          const chainId = token.chain?.id
-          assert(chainId, `Token ${tokenId} has no chain`)
-
-          const chain = chains[chainId]
-          assert(chain, `Chain ${chainId} for token ${tokenId} not found`)
-
-          const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
-            ({ moduleType }) => moduleType === "substrate-native"
-          )?.metadata
-          const typeRegistry =
-            chainMeta?.metadata !== undefined &&
-            chainMeta?.metadata !== null &&
-            chainMeta?.metadataVersion >= 14
-              ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
-              : new TypeRegistry()
-
-          const accountInfoTypeDef = (() => {
-            if (chainMeta?.accountInfoType === undefined) return AccountInfoOverrides[chainId]
-            if (chainMeta?.accountInfoType === null) return AccountInfoOverrides[chainId]
-            if (!(chainMeta?.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
-
-            try {
-              return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
-            } catch (error: any) {
-              log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
-              return
-            }
-          })()
-
-          // set up method, return message type and params
-          const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
-          const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
-          const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
-          const params = buildParams(addresses)
-
-          // build lookup table of `rpc hex output` -> `input address`
-          const addressReferences = buildAddressReferences(addresses)
-
-          // set up subscription
-          const timeout = false
-          const unsubscribe = await chainConnectors.substrate.subscribe(
-            chainId,
-            subscribeMethod,
-            responseMethod,
-            params,
-            (error, result) => {
-              if (error) return callback(error)
-              callback(
-                null,
-                formatRpcResult(
-                  tokenId,
-                  chainId,
-                  chain.account,
-                  accountInfoTypeDef,
-                  typeRegistry,
-                  addressReferences,
-                  result
-                )
-              )
-            },
-            timeout
-          )
-
-          return () => unsubscribe(unsubscribeMethod)
-        })
-        .map((subscription) =>
-          subscription.catch((error) => {
-            log.warn(`Failed to create subscription: ${error.message}`)
-            return () => {}
-          })
-        )
-
-      return () =>
-        subscriptions.forEach((subscription) => subscription.then((unsubscribe) => unsubscribe()))
+      return unsubscribe
     },
 
     async fetchBalances(addressesByToken) {
-      const chains = await chaindataProvider.chains()
-      const tokens = await chaindataProvider.tokens()
+      assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const balances = (
-        await Promise.all(
-          Object.entries(addressesByToken).map(async ([tokenId, addresses]) => {
-            assert(chainConnectors.substrate, "This module requires a substrate chain connector")
+      const queries = await buildQueries(
+        chaindataProvider,
+        getOrCreateTypeRegistry,
+        addressesByToken
+      )
+      const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
 
-            const token = tokens[tokenId]
-            assert(token, `Token ${tokenId} not found`)
-
-            // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-            if (token.type !== "substrate-native") {
-              log.debug(`This module doesn't handle tokens of type ${token.type}`)
-              return false
-            }
-
-            const chainId = token.chain?.id
-            assert(chainId, `Token ${tokenId} has no chain`)
-
-            const chain = chains[chainId]
-            assert(chain, `Chain ${chainId} for token ${tokenId} not found`)
-
-            const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
-              ({ moduleType }) => moduleType === "substrate-native"
-            )?.metadata
-            const typeRegistry =
-              chainMeta?.metadata !== undefined &&
-              chainMeta?.metadata !== null &&
-              chainMeta?.metadataVersion >= 14
-                ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
-                : new TypeRegistry()
-
-            const accountInfoTypeDef = (() => {
-              if (chainMeta?.accountInfoType === undefined) return AccountInfoOverrides[chainId]
-              if (chainMeta?.accountInfoType === null) return AccountInfoOverrides[chainId]
-              if (!(chainMeta?.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
-
-              try {
-                return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
-              } catch (error: any) {
-                log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
-                return
-              }
-            })()
-
-            // set up method and params
-            const method = "state_queryStorageAt" // method we call to fetch
-            const params = buildParams(addresses)
-
-            // build lookup table of `rpc hex output` -> `input address`
-            const addressReferences = buildAddressReferences(addresses)
-
-            // query rpc
-            const response = await chainConnectors.substrate.send(chainId, method, params)
-            const result = response[0]
-
-            return formatRpcResult(
-              tokenId,
-              chainId,
-              chain.account,
-              accountInfoTypeDef,
-              typeRegistry,
-              addressReferences,
-              result
-            )
-          })
-        )
-      ).filter((balances): balances is Balances => balances !== false)
-
-      return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
+      return new Balances(result ?? [])
     },
 
     async transferToken({
@@ -569,153 +443,159 @@ export const SubNativeModule: NewBalanceModule<
   }
 }
 
-/**
- * Turns an array of addresses into the params argument expected by `state_subscribeStorage` / `state_getStorage` / `state_queryStorageAt`.
- *
- * @param addresses - The addresses to query.
- * @returns The params to be sent to the RPC.
- */
-function buildParams(addresses: string[]): string[][] {
-  return [
-    addresses
-      .map((address) => decodeAnyAddress(address))
-      .map((addressBytes) => blake2Concat(addressBytes).replace(/^0x/, ""))
-      .map((addressHash) => `0x${moduleStorageHash}${addressHash}`),
-  ]
-}
+async function buildQueries(
+  chaindataProvider: ChaindataProvider,
+  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
+  addressesByToken: AddressesByToken<SubNativeToken | CustomSubNativeToken>
+): Promise<Array<RpcStateQuery<Balance>>> {
+  const chains = await chaindataProvider.chains()
+  const tokens = await chaindataProvider.tokens()
 
-/**
- * Turns an array of addresses into a lookup table of `[address, reference]`.
- *
- * This lookup table is used to associate each balance in the RPC response with
- * the account which has that balance.
- *
- * @param addresses - The addresses which will be queried.
- * @returns The lookup table.
- *
- * @example An example of a lookup table returned by this function.
- * ```ts
- * [
- *   [
- *     // The address encoded in ss58 format
- *     "5EHNsSHuWrNMYgx3bPhsRVLG77DX8sS8wZrnbtieJzbtSZr9",
- *     // The address encoded in hexadecimal format
- *     "6222bdf686960b8ee8aeda225d885575c2238f0403003983b392cde500aeb06c"
- *   ]
- * ]
- * ```
- */
-function buildAddressReferences(addresses: string[]): Array<[string, string]> {
-  return addresses
-    .map((address) => decodeAnyAddress(address))
-    .map((decoded) => u8aToHex(decoded, -1, false))
-    .map((reference, index) => [addresses[index], reference])
-}
+  return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
+    const token = tokens[tokenId]
+    if (!token) {
+      log.warn(`Token ${tokenId} not found`)
+      return []
+    }
 
-// TODO: Make use of polkadot.js to encode/decode these state calls, while avoiding the use of
-// its WsProvider and ApiPromise classes so that we don't pull down and parse the entire metadata
-// blob for each chain.
-/**
- * Formats an RPC result into an instance of `Balances`
- *
- * @param chain - The chain which this result came from.
- * @param addressReferences - A lookup table for linking each balance to an `Address`.
- *                            Can be built with `BalancesRpc.buildAddressReferences`.
- * @param result - The result returned by the RPC.
- * @returns A formatted list of balances.
- */
-function formatRpcResult(
-  tokenId: TokenId,
-  chainId: ChainId,
-  chainAccountFormat: string | null,
-  accountInfoTypeDef: string | undefined,
-  typeRegistry: Registry,
-  addressReferences: Array<[string, string]>,
-  result: unknown
-): Balances {
-  if (typeof result !== "object" || result === null) return new Balances([])
-  if (!hasOwnProperty(result, "changes") || typeof result.changes !== "object")
-    return new Balances([])
-  if (!Array.isArray(result.changes)) return new Balances([])
+    if (token.type !== "substrate-native") {
+      log.debug(`This module doesn't handle tokens of type ${token.type}`)
+      return []
+    }
 
-  const balances = result.changes
-    .map(([reference, change]: [unknown, unknown]): Balance | false => {
-      if (typeof reference !== "string") {
-        log.warn(`Received non-string reference in RPC result : ${reference}`)
-        return false
-      }
+    const chainId = token.chain?.id
+    if (!chainId) {
+      log.warn(`Token ${tokenId} has no chain`)
+      return []
+    }
 
-      if (typeof change !== "string" && change !== null) {
-        log.warn(`Received non-string and non-null change in RPC result : ${reference} | ${change}`)
-        return false
-      }
+    const chain = chains[chainId]
+    if (!chain) {
+      log.warn(`Chain ${chainId} for token ${tokenId} not found`)
+      return []
+    }
 
-      const [address] = addressReferences.find(([, hex]) => reference.endsWith(hex)) || []
-      if (!address) {
-        const search = reference.slice(-64)
-        const set = addressReferences.map(([, reference]) => reference).join(",\n")
-        log.error(`Failed to find address:\n${search} in\n${set}`)
-        return false
-      }
+    const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
+      ({ moduleType }) => moduleType === "substrate-native"
+    )?.metadata
+    const typeRegistry =
+      chainMeta?.metadata !== undefined &&
+      chainMeta?.metadata !== null &&
+      chainMeta?.metadataVersion >= 14
+        ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
+        : new TypeRegistry()
 
-      if (accountInfoTypeDef === undefined) {
-        // accountInfoTypeDef is undefined when chain is metadata < 14 and we also don't have an override hardcoded in
-        // the most likely best way to handle this case: log a warning and return an empty balance
-        log.debug(
-          `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`
-        )
-        return false
-      }
+    const accountInfoTypeDef = (() => {
+      if (chainMeta?.accountInfoType === undefined) return AccountInfoOverrides[chainId]
+      if (chainMeta?.accountInfoType === null) return AccountInfoOverrides[chainId]
+      if (!(chainMeta?.metadataVersion >= 14)) return AccountInfoOverrides[chainId]
 
-      let balance: any
       try {
-        balance = createType(typeRegistry, accountInfoTypeDef, change)
-      } catch (error) {
-        log.warn(
-          `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${(
-            error as any
-          )?.toString()}`
-        )
-        return false
+        return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
+      } catch (error: any) {
+        log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
+        return
       }
+    })()
 
-      let free = (balance.data?.free?.toBigInt() || BigInt("0")).toString()
-      let reserved = (balance.data?.reserved?.toBigInt() || BigInt("0")).toString()
-      let miscFrozen = (balance.data?.miscFrozen?.toBigInt() || BigInt("0")).toString()
-      let feeFrozen = (balance.data?.feeFrozen?.toBigInt() || BigInt("0")).toString()
-
-      // we use the evm-native module to fetch native token balances for ethereum addresses on ethereum networks
-      // but on moonbeam, moonriver and other chains which use ethereum addresses instead of substrate addresses,
-      // we use both this module and the evm-native module
-      if (isEthereumAddress(address) && chainAccountFormat !== "secp256k1")
-        free = reserved = miscFrozen = feeFrozen = "0"
-
-      return new Balance({
+    const emptyBalance = (chainId: ChainId, address: string, tokenId: TokenId) =>
+      new Balance({
         source: "substrate-native",
-
         status: "live",
-
         address,
         multiChainId: { subChainId: chainId },
         chainId,
         tokenId,
-
-        free,
-        reserves: reserved,
+        free: "0",
+        reserves: [
+          { label: "other", amount: "0" },
+          { label: "staking", amount: "0" },
+          { label: "nompools-staking", amount: "0" },
+        ],
         locks: [
-          {
-            label: "fees",
-            amount: feeFrozen,
-            includeInTransferable: true,
-            excludeFromFeePayable: true,
-          },
-          { label: "misc", amount: miscFrozen },
+          { label: "fees", amount: "0", includeInTransferable: true, excludeFromFeePayable: true },
+          { label: "misc", amount: "0" },
         ],
       })
+
+    return addresses.map((address) => {
+      const addressBytes = decodeAnyAddress(address)
+      const addressHash = blake2Concat(addressBytes).replace(/^0x/, "")
+      const stateKey = `0x${moduleStorageHash}${addressHash}`
+
+      const decodeResult = (change: unknown) => {
+        if (accountInfoTypeDef === undefined) {
+          // accountInfoTypeDef is undefined when chain is metadata < 14 and we also don't have an override hardcoded in
+          // the most likely best way to handle this case: log a warning and return an empty balance
+          log.debug(
+            `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`
+          )
+          return emptyBalance(chainId, address, tokenId)
+        }
+
+        let balance: any
+        try {
+          balance = createType(typeRegistry, accountInfoTypeDef, change)
+        } catch (error) {
+          log.warn(
+            `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${(
+              error as any
+            )?.toString()}`
+          )
+          return emptyBalance(chainId, address, tokenId)
+        }
+
+        let free: string = (balance.data?.free?.toBigInt() || BigInt("0")).toString()
+        let reserved: string = (balance.data?.reserved?.toBigInt() || BigInt("0")).toString()
+        let miscFrozen: string = (balance.data?.miscFrozen?.toBigInt() || BigInt("0")).toString()
+        let feeFrozen: string = (balance.data?.feeFrozen?.toBigInt() || BigInt("0")).toString()
+
+        // we use the evm-native module to fetch native token balances for ethereum addresses on ethereum networks
+        // but on moonbeam, moonriver and other chains which use ethereum addresses instead of substrate addresses,
+        // we use both this module and the evm-native module
+        if (isEthereumAddress(address) && chain.account !== "secp256k1")
+          free = reserved = miscFrozen = feeFrozen = "0"
+
+        return new Balance({
+          source: "substrate-native",
+
+          status: "live",
+
+          address,
+          multiChainId: { subChainId: chainId },
+          chainId,
+          tokenId,
+
+          free,
+          reserves: [
+            {
+              label: "other",
+              amount: reserved,
+            },
+            {
+              label: "staking",
+              // amount: "3000000000000000000",
+              amount: "0",
+            },
+            {
+              label: "nompools-staking",
+              // amount: "5000000000000000000",
+              amount: "0",
+            },
+          ],
+          locks: [
+            {
+              label: "fees",
+              amount: feeFrozen,
+              includeInTransferable: true,
+              excludeFromFeePayable: true,
+            },
+            { label: "misc", amount: miscFrozen },
+          ],
+        })
+      }
+
+      return { chainId, stateKey, decodeResult }
     })
-    .filter((balance): balance is Balance => Boolean(balance))
-
-  return new Balances(balances)
+  })
 }
-
-const isEthereumAddress = (address: string) => address.startsWith("0x") && address.length === 42

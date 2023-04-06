@@ -26,10 +26,16 @@ export interface RequestBalancesByParamsSubscribe {
   addressesByEvmNetwork: AddressesByEvmNetwork
 }
 
-export type BalanceLockType = "democracy" | "staking" | "vesting" | "dapp-staking" | "other"
+export type BalanceLockType =
+  | "democracy"
+  | "staking"
+  | "nompools-staking"
+  | "vesting"
+  | "dapp-staking"
+  | "other"
 export type LockedBalance = {
   type: BalanceLockType
-  amount: string //planck
+  amount: string // planck
 }
 
 export type RequestBalanceLocks = {
