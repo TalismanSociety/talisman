@@ -31,7 +31,7 @@ import { useFeeToken } from "./useFeeToken"
 import { useSendFundsInputNumber } from "./useSendFundsInputNumber"
 import { useSendFundsInputSize } from "./useSendFundsInputSize"
 
-type SignMethod = "normal" | "ledgerSubstrate" | "ledgerEthereum" | "unknown"
+type SignMethod = "normal" | "ledgerSubstrate" | "ledgerEthereum" | "qrSubstrate" | "unknown"
 
 const useRecipientBalance = (token?: Token, address?: Address | null) => {
   const hydrate = useBalancesHydrate()
@@ -460,6 +460,12 @@ const useSendFundsProvider = () => {
 
   const signMethod: SignMethod = useMemo(() => {
     if (!fromAccount || !token) return "unknown"
+    if (fromAccount?.origin === "QR") {
+      if (isSubToken(token)) return "qrSubstrate"
+      else if (isEvmToken(token))
+        return "unknown" // Parity signer / parity vault don't support ethereum accounts
+      else throw new Error("Unknown token type")
+    }
     if (fromAccount?.isHardware) {
       if (isSubToken(token)) return "ledgerSubstrate"
       else if (isEvmToken(token)) return "ledgerEthereum"

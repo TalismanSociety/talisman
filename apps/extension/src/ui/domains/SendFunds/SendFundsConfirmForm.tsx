@@ -14,6 +14,7 @@ import { AddressDisplay } from "./AddressDisplay"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import { useSendFunds } from "./useSendFunds"
 
+const SendFundsQrSubstrate = lazy(() => import("./SendFundsQrSubstrate"))
 const SendFundsLedgerSubstrate = lazy(() => import("./SendFundsLedgerSubstrate"))
 const SendFundsLedgerEthereum = lazy(() => import("./SendFundsLedgerEthereum"))
 
@@ -135,6 +136,7 @@ const SendButton = () => {
           Confirm
         </Button>
       )}
+      {signMethod === "qrSubstrate" && <SendFundsQrSubstrate />}
       {signMethod === "ledgerSubstrate" && <SendFundsLedgerSubstrate />}
       {signMethod === "ledgerEthereum" && <SendFundsLedgerEthereum />}
     </Suspense>

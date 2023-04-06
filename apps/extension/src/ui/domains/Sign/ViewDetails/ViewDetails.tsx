@@ -5,7 +5,7 @@ import {
   SubstrateSigningRequest,
   TransactionDetails,
 } from "@core/domains/signing/types"
-import isJsonPayload from "@core/util/isJsonPayload"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import Button from "@talisman/components/Button"
 import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"

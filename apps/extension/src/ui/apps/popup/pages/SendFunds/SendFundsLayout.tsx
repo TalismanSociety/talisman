@@ -31,18 +31,23 @@ export const SendFundsLayout: FC<SendFundsLayoutProps> = ({
     navigate(-1)
   }, [analytics, navigate])
 
+  const showBackButton = withBackLink && window.history.length > 1
+
   return (
     <div id="send-funds-main" className="relative flex h-full w-full flex-col">
-      <div className="flex h-32 min-h-[6.4rem] w-full items-center px-12">
-        <div className="w-12">
-          {withBackLink && window.history.length > 1 && (
-            <IconButton className="text-lg" onClick={handleBackClick}>
-              <ChevronLeftIcon />
-            </IconButton>
-          )}
-        </div>
-        <div className="text-body-secondary grow text-center">{title}</div>
-        <div className="w-12"></div>
+      <div className="text-body-secondary flex h-32 min-h-[6.4rem] w-full items-center px-12">
+        {showBackButton ? (
+          <button
+            className="text-body-secondary flex h-16 w-16 cursor-pointer items-center p-2 text-lg hover:text-white"
+            onClick={handleBackClick}
+          >
+            <ChevronLeftIcon />
+          </button>
+        ) : (
+          <span className="h-16 w-16">&nbsp;</span>
+        )}
+        <div className="grow text-center">{title}</div>
+        <span className="h-16 w-16">&nbsp;</span>
       </div>
       <div className="w-full grow overflow-hidden">{children}</div>
     </div>

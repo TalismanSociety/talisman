@@ -183,8 +183,8 @@ export default interface MessageTypes {
 
   // chain message types
   chains: (cb: () => void) => UnsubscribeFn
-  chainSpecsQr: (genesisHash: string) => Promise<HexString>
-  chainMetadataQr: (genesisHash: string, specVersion: number) => Promise<HexString>
+  generateChainSpecsQr: (genesisHash: string) => Promise<HexString>
+  generateChainMetadataQr: (genesisHash: string, specVersion: number) => Promise<HexString>
 
   // token message types
   tokens: (cb: () => void) => UnsubscribeFn
