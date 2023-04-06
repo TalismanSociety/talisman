@@ -1,31 +1,28 @@
 import { AccountJsonQr } from "@core/domains/accounts/types"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { HexString } from "@polkadot/util/types"
+import { planckToTokens } from "@talismn/util"
 import { api } from "@ui/api"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import { useCallback, useMemo, useState } from "react"
+import useToken from "@ui/hooks/useToken"
+import { useCallback, useState } from "react"
+import { Button } from "talisman-ui"
 
-import { useSendTokens } from "./context"
-import { SendTokensInputs } from "./types"
-import { useTransferableTokenById } from "./useTransferableTokens"
+import { useSendFunds } from "./useSendFunds"
 
-export const SendQr = () => {
-  const { formData, expectedResult, sendWithSignature, cancel } = useSendTokens()
-  const { from, to, transferableTokenId } = formData as SendTokensInputs
+const SendFundsQrSubstrate = () => {
+  const { tokenId, from, to, amount } = useSendFundsWizard()
+  const { subTransaction, sendWithSignature, isLocked, setIsLocked } = useSendFunds()
   const [error, setError] = useState<Error>()
-  const transferableToken = useTransferableTokenById(transferableTokenId)
-  const chain = useChain(transferableToken?.chainId)
 
-  const account = useAccountByAddress(from) as AccountJsonQr
+  const token = useToken(tokenId)
+  const chain = useChain(token?.chain?.id)
+  const account = useAccountByAddress(from) ?? undefined
   const knownAddress = useIsKnownAddress(to)
-
-  const payload = useMemo(() => {
-    if (expectedResult?.type !== "substrate") return null
-    return expectedResult.unsigned
-  }, [expectedResult])
 
   const [signed, setSigned] = useState(false)
   const handleSigned = useCallback(
@@ -45,11 +42,11 @@ export const SendQr = () => {
           eventName: "asset transfer",
           options: {
             toAddress: to,
-            amount: expectedResult
-              ? roundToFirstInteger(Number(expectedResult?.transfer.amount.planck))
+            amount: token
+              ? roundToFirstInteger(Number(planckToTokens(amount, token.decimals)))
               : "unknown",
-            tokenId: transferableTokenId,
-            chainId: transferableToken?.chainId || "unknown",
+            tokenId,
+            chainId: token?.chain?.id || "unknown",
             internal: !!knownAddress,
             recipientType: knownAddress ? recipientTypeMap[knownAddress.type] : "external",
             qr: true,
@@ -59,31 +56,50 @@ export const SendQr = () => {
         setError(err as Error)
       }
     },
-    [
-      knownAddress,
-      sendWithSignature,
-      to,
-      transferableToken?.chainId,
-      expectedResult,
-      transferableTokenId,
-    ]
+    [sendWithSignature, to, token, amount, tokenId, knownAddress]
   )
 
-  const parent = useMemo(() => document.getElementById("send-funds-container"), [])
+  const showQrApproval = useCallback(
+    (send: boolean) => () => {
+      setIsLocked(send)
+    },
+    [setIsLocked]
+  )
 
   if (error) return <div className="text-alert-error">{error.message}</div>
 
+  if (!isLocked || signed)
+    return (
+      <Button
+        disabled={!subTransaction?.unsigned}
+        className="mt-12 w-full"
+        primary
+        onClick={showQrApproval(true)}
+        processing={signed}
+      >
+        Approve with QR
+      </Button>
+    )
+
   // hide when done
-  if (!payload || signed) return null
+  if (!account) return null
+  if (!subTransaction?.unsigned) return null
 
   return (
     <QrSubstrate
-      payload={payload}
-      account={account}
+      account={account as AccountJsonQr}
       genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
+      payload={subTransaction.unsigned}
+      onReject={showQrApproval(false)}
       onSignature={handleSigned}
-      onReject={cancel}
-      parent={parent}
+      parent={"send-funds-main"}
+      skipInit
+      // the send funds popup has a narrower margin on the bottom
+      // than the sign tx popup does
+      narrowMargin
     />
   )
 }
+
+// default export to allow lazy loading
+export default SendFundsQrSubstrate

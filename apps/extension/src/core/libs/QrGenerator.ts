@@ -57,7 +57,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: string) => {
   assert(token, "Token not found")
 
   const specs = $networkSpecs.encode({
-    base58prefix: chain.prefix ?? 0,
+    base58prefix: chain.prefix ?? 42,
     decimals: token.decimals,
     encryption: 1, // TODO specify encryption based on what we need to sign
     genesis_hash: hexToU8a(genesisHash),
@@ -68,7 +68,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: string) => {
 
     // below ones seem useless
     logo: "", // looks like we could pass a base64 encoded image here
-    color: "#000000",
+    color: chain.themeColor ?? "#000000",
     secondary_color: "#000000",
   })
 
