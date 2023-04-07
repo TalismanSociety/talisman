@@ -176,10 +176,16 @@ export const AccountsList: FC<AccountsListProps> = ({
 type AccountPickerProps = {
   selected?: Address
   tokenId?: TokenId
+  allowZeroBalance: boolean
   onSelect?: (address: Address) => void
 }
 
-export const AccountPicker: FC<AccountPickerProps> = ({ selected, tokenId, onSelect }) => {
+export const AccountPicker: FC<AccountPickerProps> = ({
+  selected,
+  tokenId,
+  allowZeroBalance,
+  onSelect,
+}) => {
   const [search, setSearch] = useState("")
 
   const token = useToken(tokenId)
@@ -221,6 +227,7 @@ export const AccountPicker: FC<AccountPickerProps> = ({ selected, tokenId, onSel
           showBalances
           tokenId={tokenId}
           showIfEmpty
+          allowZeroBalance={allowZeroBalance}
         />
       </ScrollContainer>
     </div>

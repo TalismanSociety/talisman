@@ -13,7 +13,7 @@ export const CopyAddressLayout: FC<CopyAddressLayoutProps> = ({ title, children 
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-black">
-      <div className="flex w-full items-center p-12">
+      <div className="flex h-32 w-full shrink-0 items-center px-12">
         <div className="w-12"></div>
         <div className="text-body-secondary grow text-center">{title}</div>
         <IconButton onClick={close}>

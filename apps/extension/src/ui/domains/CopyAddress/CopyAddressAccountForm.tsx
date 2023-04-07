@@ -11,6 +11,7 @@ export const CopyAddressAccountForm = () => {
         tokenId={state.type === "token" ? state.tokenId : undefined}
         selected={state.address}
         onSelect={setAddress}
+        allowZeroBalance
       />
     </CopyAddressLayout>
   )

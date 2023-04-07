@@ -6,7 +6,7 @@ import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
 
-const GLOBE_ICON_URL = getBase64ImageUrl(globeIcon) as string
+export const GLOBE_ICON_URL = getBase64ImageUrl(globeIcon) as string
 
 type ChainLogoBaseProps = {
   id?: ChainId | EvmNetworkId

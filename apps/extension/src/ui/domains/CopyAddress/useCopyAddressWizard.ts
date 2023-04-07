@@ -1,11 +1,19 @@
+import { log } from "@core/log"
 import { Address } from "@core/types/base"
+import { isEthereumAddress } from "@polkadot/util-crypto"
+import { convertAddress } from "@talisman/util/convertAddress"
 import { provideContext } from "@talisman/util/provideContext"
-import { ChainId, TokenId } from "@talismn/chaindata-provider"
+import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
+import useChain from "@ui/hooks/useChain"
+import useToken from "@ui/hooks/useToken"
+import { ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
+import { GLOBE_ICON_URL } from "../Asset/ChainLogo"
 import { CopyAddressWizardInputs } from "./types"
 
 export type CopyAddressWizardPage = "token" | "chain" | "account" | "copy"
+type CopyAddressWizardState = CopyAddressWizardInputs & { route: CopyAddressWizardPage }
 
 const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage => {
   if (inputs.type === "chain") {
@@ -21,33 +29,84 @@ const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage =>
   return "copy"
 }
 
+const getFormattedAddress = (address?: Address, chain?: Chain) => {
+  if (address) {
+    try {
+      if (isEthereumAddress(address)) return ethers.utils.getAddress(address) // enforces format for checksum
+
+      return convertAddress(address, chain?.prefix ?? null)
+    } catch (err) {
+      log.error("Failed to format address", { err })
+    }
+  }
+
+  return null
+}
+
 export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInputs }) => {
-  const [state, setState] = useState<CopyAddressWizardInputs>(inputs)
-  const [route, setRoute] = useState(() => getNextRoute(state))
+  const [state, setState] = useState<CopyAddressWizardState>(() => ({
+    ...inputs,
+    route: getNextRoute(inputs),
+  }))
+
+  const ethereum = useToken("1-evm-native-eth")
+
+  const token = useToken(state.type === "token" ? state.tokenId : undefined)
+  const chain = useChain(state.type === "chain" ? state.chainId : token?.chain?.id)
+
+  const formattedAddress = useMemo(
+    () => getFormattedAddress(state.address, chain),
+    [state.address, chain]
+  )
+
+  const image = useMemo(() => {
+    if (!formattedAddress) return undefined
+    const logo = isEthereumAddress(formattedAddress) ? ethereum?.logo : chain?.logo
+    return logo ?? undefined
+  }, [chain?.logo, ethereum?.logo, formattedAddress])
+
+  const setStateAndUpdateRoute = useCallback((updates: Partial<CopyAddressWizardInputs>) => {
+    setState((prev) => {
+      const newState = { ...prev, ...updates } as CopyAddressWizardState
+      return { ...newState, route: getNextRoute(newState) }
+    })
+  }, [])
 
   const setTokenId = (tokenId: TokenId) => {
-    setState((prev) => ({ ...prev, tokenId }))
+    setStateAndUpdateRoute({ tokenId })
   }
 
   const setChainId = (chainId: ChainId) => {
-    setState((prev) => ({ ...prev, chainId }))
+    setStateAndUpdateRoute({ chainId })
   }
 
   const setAddress = (address: Address) => {
-    setState((prev) => ({ ...prev, address }))
+    setStateAndUpdateRoute({ address })
   }
 
-  useEffect(() => {
-    const nextPage = getNextRoute(state)
-    if (route !== nextPage) setRoute(nextPage)
-  }, [route, state])
+  // useEffect(() => {
+  //   const nextPage = getNextRoute(state)
+  //   if (route !== nextPage) setRoute(nextPage)
+  // }, [route, state])
+
+  const goToAddress = useCallback(() => {
+    setState((prev) => ({ ...prev, route: "account" }))
+  }, [])
+
+  const goToNetworkOrToken = useCallback(() => {
+    setState((prev) => ({ ...prev, route: state.type === "token" ? "token" : "chain" }))
+  }, [state.type])
 
   return {
     state,
-    route,
+    formattedAddress,
+    image,
+    goToAddress,
+    goToNetworkOrToken,
     setTokenId,
     setChainId,
     setAddress,
+    chain,
   }
 }
 

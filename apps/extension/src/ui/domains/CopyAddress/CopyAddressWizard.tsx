@@ -1,19 +1,22 @@
 import { FC } from "react"
 
 import { CopyAddressAccountForm } from "./CopyAddressAccountForm"
+import { CopyAddressCopyForm } from "./CopyAddressCopyForm"
 import { CopyAddressTokenForm } from "./CopyAddressTokenForm"
 import { CopyAddressWizardInputs } from "./types"
 import { CopyAddressWizardProvider, useCopyAddressWizard } from "./useCopyAddressWizard"
 
 const Routes = () => {
   // can't use react-router here because we don't want routing to be based on url
-  const { route, state } = useCopyAddressWizard()
+  const { state } = useCopyAddressWizard()
 
-  switch (route) {
+  switch (state.route) {
     case "token":
       return <CopyAddressTokenForm />
     case "account":
       return <CopyAddressAccountForm />
+    case "copy":
+      return <CopyAddressCopyForm />
     default:
       return <>Unknown route</>
   }
