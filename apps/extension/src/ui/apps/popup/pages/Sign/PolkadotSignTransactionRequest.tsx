@@ -6,7 +6,7 @@ import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { MetadataStatus } from "@ui/domains/Sign/MetadataStatus"
 import { PendingRequests } from "@ui/domains/Sign/PendingRequests"
-import { QrSubstrate } from "@ui/domains/Sign/QrSubstrate"
+import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import {
   usePolkadotSigningRequest,
   usePolkadotTransaction,

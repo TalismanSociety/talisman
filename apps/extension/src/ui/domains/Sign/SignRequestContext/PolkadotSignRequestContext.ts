@@ -6,7 +6,7 @@ import {
   TransactionPayload,
 } from "@core/domains/signing/types"
 import { log } from "@core/log"
-import isJsonPayload from "@core/util/isJsonPayload"
+import { isJsonPayload } from "@core/util/isJsonPayload"
 import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
 import useChains from "@ui/hooks/useChains"

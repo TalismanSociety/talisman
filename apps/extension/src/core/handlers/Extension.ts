@@ -263,16 +263,16 @@ export default class Extension extends ExtensionHandler {
       case "pri(chains.subscribe)":
         return this.stores.chains.hydrateStore()
 
-      case "pri(chains.addNetworkSpecsQr)": {
-        const { genesisHash } = request as RequestType<"pri(chains.addNetworkSpecsQr)">
+      case "pri(chains.generateQr.addNetworkSpecs)": {
+        const { genesisHash } = request as RequestType<"pri(chains.generateQr.addNetworkSpecs)">
         const data = await generateQrAddNetworkSpecs(genesisHash)
         // serialize as hex for transfer
         return u8aToHex(data)
       }
 
-      case "pri(chains.updateNetworkMetadataQr)": {
+      case "pri(chains.generateQr.updateNetworkMetadata)": {
         const { genesisHash, specVersion } =
-          request as RequestType<"pri(chains.updateNetworkMetadataQr)">
+          request as RequestType<"pri(chains.generateQr.updateNetworkMetadata)">
         const data = await generateQrUpdateNetworkMetadata(genesisHash, specVersion)
         // serialize as hex for transfer
         return u8aToHex(data)

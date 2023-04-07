@@ -94,7 +94,7 @@
     "ethers": "5.7.2",
     "fork-ts-checker-notifier-webpack-plugin": "^6.0.0",
     "fork-ts-checker-webpack-plugin": "^7.2.14",
-    "framer-motion": "6.2.8",
+    "framer-motion": "10.10.0",
     "fuse.js": "^6.6.2",
     "graphql": "^16.6.0",
     "graphql-tag": "^2.12.6",
