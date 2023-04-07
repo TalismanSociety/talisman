@@ -375,7 +375,6 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   showEmptyBalances,
   networkType: networkTypeProp,
   allowUntransferable,
-  className,
   onSelect,
 }) => {
   const [search, setSearch] = useState("")

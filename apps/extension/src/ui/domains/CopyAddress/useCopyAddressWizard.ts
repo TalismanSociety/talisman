@@ -1,9 +1,11 @@
 import { log } from "@core/log"
 import { Address } from "@core/types/base"
+import { getBase64ImageFromUrl } from "@core/util/getBase64ImageFromUrl"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { provideContext } from "@talisman/util/provideContext"
 import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
+import { getBase64ImageUrl } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
 import { ethers } from "ethers"
@@ -52,17 +54,34 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   const ethereum = useToken("1-evm-native-eth")
 
   const token = useToken(state.type === "token" ? state.tokenId : undefined)
-  const chain = useChain(state.type === "chain" ? state.chainId : token?.chain?.id)
+  const chain = useChain(state.type === "chain" && state.chainId ? state.chainId : token?.chain?.id)
 
   const formattedAddress = useMemo(
     () => getFormattedAddress(state.address, chain),
     [state.address, chain]
   )
 
-  const image = useMemo(() => {
-    if (!formattedAddress) return undefined
+  const [image, setImage] = useState<string>()
+  useEffect(() => {
+    if (!formattedAddress) {
+      return setImage(undefined)
+    }
     const logo = isEthereumAddress(formattedAddress) ? ethereum?.logo : chain?.logo
-    return logo ?? undefined
+    if (!logo) {
+      return setImage(undefined)
+    }
+
+    if (logo.startsWith("data:image")) {
+      return setImage(logo)
+    }
+
+    getBase64ImageFromUrl(logo)
+      .then((data) => {
+        setImage(data?.startsWith("data:image") ? data : undefined)
+      })
+      .catch(() => {
+        setImage(undefined)
+      })
   }, [chain?.logo, ethereum?.logo, formattedAddress])
 
   const setStateAndUpdateRoute = useCallback((updates: Partial<CopyAddressWizardInputs>) => {
@@ -76,7 +95,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     setStateAndUpdateRoute({ tokenId })
   }
 
-  const setChainId = (chainId: ChainId) => {
+  const setChainId = (chainId: ChainId | null) => {
     setStateAndUpdateRoute({ chainId })
   }
 
@@ -98,6 +117,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
   }, [state.type])
 
   return {
+    inputs,
     state,
     formattedAddress,
     image,

@@ -8,7 +8,8 @@ import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
 import { useContact } from "@ui/hooks/useContact"
 import useToken from "@ui/hooks/useToken"
-import { FC, useMemo } from "react"
+import { copyAddress } from "@ui/util/copyAddress"
+import { FC, useCallback, useMemo } from "react"
 import { Button, PillButton } from "talisman-ui"
 
 import AccountAvatar from "../Account/Avatar"
@@ -101,6 +102,11 @@ export const CopyAddressCopyForm = () => {
     return formattedAddress ? stringToU8a(formattedAddress) : undefined
   }, [formattedAddress])
 
+  const handleCopyClick = useCallback(async () => {
+    if (!formattedAddress) return
+    await copyAddress(formattedAddress)
+  }, [formattedAddress])
+
   if (!formattedAddress) return null
 
   return (
@@ -108,14 +114,14 @@ export const CopyAddressCopyForm = () => {
       <div className="flex h-full w-full flex-col items-center px-12 pb-12">
         <div className="bg-grey-900 flex w-full flex-col gap-4 rounded py-4 px-8">
           <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-            <div className="">Account</div>
+            <div>Account</div>
             <div>
               <AddressPillButton address={formattedAddress} onClick={goToAddress} />
             </div>
           </div>
           {!!chain && (
             <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-              <div className="">Network</div>
+              <div>Network</div>
               <div>
                 <NetworkPillButton chainId={chain.id} onClick={goToNetworkOrToken} />
               </div>
@@ -128,13 +134,6 @@ export const CopyAddressCopyForm = () => {
               <QrCode data={data} image={image} imageOptions={QR_IMAGE_OPTIONS} />
             </FadeIn>
           </div>
-          {/* ethereum text */}
-          {/* substrate text */}
-          {/* raw text */}
-          {/* <div>
-            Only use this address for receiving tokens on <span>Polkadot Relay Chain</span>
-          </div>
-          <div className="break-all">{formattedAddress}</div> */}
           {chain && (
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
@@ -148,7 +147,7 @@ export const CopyAddressCopyForm = () => {
           )}
         </div>
 
-        <Button fullWidth primary icon={CopyIcon}>
+        <Button fullWidth primary icon={CopyIcon} onClick={handleCopyClick}>
           Copy Address
         </Button>
       </div>

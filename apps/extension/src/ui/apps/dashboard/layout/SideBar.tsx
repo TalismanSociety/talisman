@@ -4,8 +4,8 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { breakpoints } from "@talisman/theme/definitions"
 import {
+  ArrowDownIcon,
   ClockIcon,
-  CopyIcon,
   CreditCardIcon,
   ExternalLinkIcon,
   ImageIcon,
@@ -17,7 +17,6 @@ import {
 } from "@talisman/theme/icons"
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
-import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { useReceiveTokensModal } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
 import Build from "@ui/domains/Build"
@@ -248,12 +247,11 @@ const ExtLinkIcon = styled(({ className }: { className?: string }) => (
 
 export const SideBar = () => {
   const { account } = useSelectedAccount()
-  const { open: openAddressFormatterModal } = useAddressFormatterModal()
+  //const { open: openAddressFormatterModal } = useAddressFormatterModal()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
   const showStaking = useIsFeatureEnabled("LINK_STAKING")
-  const isCopyAddressV2 = useIsFeatureEnabled("COPY_ADDRESS_V2")
 
   const handleSendClick = useCallback(() => {
     api.sendFundsOpen({
@@ -262,27 +260,16 @@ export const SideBar = () => {
     genericEvent("open send funds", { from: "sidebar" })
   }, [account?.address, genericEvent])
 
+  // TODO delete the hook and all related components
   const { open: openReceiveTokensModal } = useReceiveTokensModal()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const handleCopyClick = useCallback(() => {
-    if (isCopyAddressV2)
-      openCopyAddressModal({
-        type: "token",
-        address: account?.address,
-      })
-    else {
-      if (account) openAddressFormatterModal(account.address)
-      else openReceiveTokensModal("Select address to copy")
-    }
-    genericEvent("open copy address", { from: "sidebar" })
-  }, [
-    account,
-    genericEvent,
-    isCopyAddressV2,
-    openAddressFormatterModal,
-    openCopyAddressModal,
-    openReceiveTokensModal,
-  ])
+    openCopyAddressModal({
+      type: "token",
+      address: account?.address,
+    })
+    genericEvent("open receive", { from: "sidebar" })
+  }, [account, genericEvent, openCopyAddressModal])
 
   const handlePortfolioClick = useCallback(() => {
     genericEvent("goto portfolio", { from: "sidebar" })
@@ -335,11 +322,11 @@ export const SideBar = () => {
         <AccountSelect responsive />
         {/* Pills for large screens */}
         <Pills>
-          <PillButton icon={PaperPlaneIcon} onClick={handleSendClick}>
+          <PillButton className="!px-4" icon={PaperPlaneIcon} onClick={handleSendClick}>
             Send
           </PillButton>
-          <PillButton icon={CopyIcon} onClick={handleCopyClick}>
-            Copy
+          <PillButton className="!px-4" icon={ArrowDownIcon} onClick={handleCopyClick}>
+            Receive
           </PillButton>
         </Pills>
         {/* Buttons for small screens */}
@@ -348,7 +335,7 @@ export const SideBar = () => {
             <PaperPlaneIcon />
           </IconButton>
           <IconButton onClick={handleCopyClick}>
-            <CopyIcon />
+            <ArrowDownIcon />
           </IconButton>
         </Buttons>
       </PaddedItem>

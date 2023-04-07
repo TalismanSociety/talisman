@@ -12,10 +12,10 @@ import {
 import { Balance, Balances } from "@talismn/balances"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress/useCopyAddressModal"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -43,7 +43,7 @@ type AccountOption = {
 }
 
 const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOption) => {
-  const { open } = useAddressFormatterModal()
+  const { open } = useCopyAddressModal()
   const { select } = useSelectedAccount()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
@@ -60,7 +60,11 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
   const handleCopyClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
       e.stopPropagation()
-      if (address) open(address)
+      if (address)
+        open({
+          type: "chain",
+          address,
+        })
     },
     [address, open]
   )

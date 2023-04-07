@@ -49,6 +49,21 @@ const Container = styled.div`
   &.modal-can-close {
     cursor: pointer;
   }
+
+  /* constrain to popup container (id="main") */
+  &.modal-inPopup {
+    position: absolute;
+
+    &.modal-show {
+      width: 100%;
+      height: 100%;
+    }
+
+    > .modal-content {
+      width: 100%;
+      max-height: 100%;
+    }
+  }
 `
 export type ModalAnchor = "center" | "bottom"
 
@@ -80,6 +95,7 @@ export const Modal: FC<ModalProps> = ({
     `modal modal-${anchor}`,
     show && "modal-show",
     onClose && "modal-can-close",
+    window.location.pathname === "/popup.html" && "modal-inPopup",
     className
   )
 

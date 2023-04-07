@@ -8,7 +8,7 @@ import Asset from "@ui/domains/Asset"
 import { FC, useCallback } from "react"
 import styled from "styled-components"
 
-import { useAddressFormatterModal } from "./AddressFormatterModal"
+import { useCopyAddressModal } from "../CopyAddress/useCopyAddressModal"
 import Avatar from "./Avatar"
 
 type AccountTypeIconProps = {
@@ -65,8 +65,15 @@ const NamedAddress = ({
   withSource,
   className,
 }: NamedAddressProps) => {
-  const { open } = useAddressFormatterModal()
-  const handleCopyClick = useCallback(() => open(address), [address, open])
+  const { open } = useCopyAddressModal()
+  const handleCopyClick = useCallback(
+    () =>
+      open({
+        type: "chain",
+        address,
+      }),
+    [address, open]
+  )
 
   return (
     <>

@@ -44,7 +44,6 @@ export type FeatureVariants = Partial<{
   BANNER_NOM_POOL_STAKING: boolean
   USE_ONFINALITY_API_KEY_SUBSTRATE: boolean
   USE_ONFINALITY_API_KEY_EVM: boolean
-  COPY_ADDRESS_V2: boolean
 }>
 export type FeatureFlag = keyof FeatureVariants
 

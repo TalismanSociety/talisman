@@ -8,7 +8,7 @@ import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
-import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress/useCopyAddressModal"
 import { DashboardAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { FundYourWallet } from "@ui/domains/Portfolio/FundYourWallet"
@@ -32,7 +32,8 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     useAccountExportPrivateKeyModal()
   const { canRemove, open: openAccountRemoveModal } = useAccountRemoveModal()
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
-  const { open: openAddressFormatterModal } = useAddressFormatterModal()
+  //const { open: openAddressFormatterModal } = useAddressFormatterModal()
+  const { open: openCopyAddressModal } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
 
   const sendFunds = useCallback(() => {
@@ -51,9 +52,12 @@ const PageContent = ({ balances }: { balances: Balances }) => {
 
   const copyAddress = useCallback(() => {
     if (!account) return
-    openAddressFormatterModal(account.address)
+    openCopyAddressModal({
+      type: "chain",
+      address: account.address,
+    })
     genericEvent("open copy address", { from: "dashboard portfolio" })
-  }, [account, genericEvent, openAddressFormatterModal])
+  }, [account, genericEvent, openCopyAddressModal])
 
   const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
   const browseTxHistory = useCallback(() => {

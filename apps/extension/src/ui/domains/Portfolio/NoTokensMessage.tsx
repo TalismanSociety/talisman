@@ -4,8 +4,8 @@ import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback } from "react"
 import { PillButton } from "talisman-ui"
 
-import { useAddressFormatterModal } from "../Account/AddressFormatterModal"
 import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
+import { useCopyAddressModal } from "../CopyAddress/useCopyAddressModal"
 
 type NoTokensMessageProps = {
   symbol: string
@@ -13,11 +13,11 @@ type NoTokensMessageProps = {
 
 export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   const { account } = useSelectedAccount()
-  const { open } = useAddressFormatterModal()
+  const { open } = useCopyAddressModal()
 
   const handleCopy = useCallback(() => {
     if (!account?.address) return
-    open(account.address)
+    open({ type: "chain", address: account.address })
   }, [account, open])
 
   const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")

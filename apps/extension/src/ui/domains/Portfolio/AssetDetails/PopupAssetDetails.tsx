@@ -4,10 +4,10 @@ import { CopyIcon, CreditCardIcon, LockIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress/useCopyAddressModal"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { StaleBalancesIcon } from "@ui/domains/Portfolio/StaleBalancesIcon"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
@@ -126,10 +126,14 @@ type AssetsTableProps = {
 
 const NoTokens = ({ symbol }: { symbol: string }) => {
   const { account } = useSelectedAccount()
-  const { open } = useAddressFormatterModal()
+  const { open } = useCopyAddressModal()
 
   const handleCopy = useCallback(() => {
-    if (account?.address) open(account.address)
+    if (account?.address)
+      open({
+        type: "token",
+        address: account.address,
+      })
   }, [account?.address, open])
 
   const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")

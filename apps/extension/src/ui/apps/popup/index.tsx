@@ -163,11 +163,6 @@ const Popup = () => {
                           <Route path="*" element={<Navigate to="/portfolio" replace />} />
                         </Routes>
                       </CopyAddressModalProvider>
-                      <BackupWarningDrawer />
-                      <AccountRenameModal />
-                      <AccountRemoveModal />
-                      <AccountExportModal />
-                      <AccountExportPrivateKeyModal />
                     </AddressFormatterModalProvider>
                   </NavigationProvider>
                 </CurrentSiteProvider>

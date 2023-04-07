@@ -54,6 +54,7 @@ const ModalContainer = styled(Modal)`
   }
 `
 
+/** @deprecated use CopyAddressModal instead */
 export const AddressFormatterModal = () => {
   const { address, close } = useAddressFormatterModal()
 

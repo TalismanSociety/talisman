@@ -9,8 +9,8 @@ import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
 import { Address } from "@ui/domains/Account/Address"
-import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress/useCopyAddressModal"
 import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
@@ -19,7 +19,7 @@ import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import startCase from "lodash/startCase"
-import { PropsWithChildren, useMemo, useState } from "react"
+import { PropsWithChildren, useCallback, useMemo, useState } from "react"
 import { Button, PillButton } from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -44,8 +44,15 @@ type ContactItemProps = ExistingContactComponentProps & {
 }
 
 const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => {
-  const { open: openCopyAddressModal } = useAddressFormatterModal()
+  const { open: openCopyAddressModal } = useCopyAddressModal()
   const [hover, setHover] = useState(false)
+
+  const handleCopyClick = useCallback(() => {
+    openCopyAddressModal({
+      type: "chain",
+      address: contact.address,
+    })
+  }, [contact.address, openCopyAddressModal])
 
   return (
     <div
@@ -64,7 +71,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
         className={`text-body-secondary flex duration-300 ${hover ? "opacity-100" : "opacity-0"}`}
       >
         <SquareButton>
-          <CopyIcon onClick={() => openCopyAddressModal(contact.address)} />
+          <CopyIcon onClick={handleCopyClick} />
         </SquareButton>
         <PopNav
           trigger={
@@ -88,10 +95,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
           >
             Send to this contact
           </PopNav.Item>
-          <PopNav.Item
-            className="hover:bg-black-tertiary"
-            onClick={() => openCopyAddressModal(contact.address)}
-          >
+          <PopNav.Item className="hover:bg-black-tertiary" onClick={handleCopyClick}>
             Copy Address
           </PopNav.Item>
           <PopNav.Item

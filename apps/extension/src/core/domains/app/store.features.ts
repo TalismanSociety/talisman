@@ -38,7 +38,6 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     BANNER_NOM_POOL_STAKING: true,
     USE_ONFINALITY_API_KEY_SUBSTRATE: false,
     USE_ONFINALITY_API_KEY_EVM: false,
-    COPY_ADDRESS_V2: true,
   }
   featuresStore.set({
     features: Object.keys(DEV_FEATURE_VARIANTS) as FeatureFlag[],
