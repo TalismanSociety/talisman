@@ -9,9 +9,9 @@ import { CopyAddressWizardProvider, useCopyAddressWizard } from "./useCopyAddres
 
 const Routes = () => {
   // can't use react-router here because we don't want routing to be based on url
-  const { state } = useCopyAddressWizard()
+  const { route } = useCopyAddressWizard()
 
-  switch (state.route) {
+  switch (route) {
     case "token":
       return <CopyAddressTokenForm />
     case "chain":
@@ -20,8 +20,6 @@ const Routes = () => {
       return <CopyAddressAccountForm />
     case "copy":
       return <CopyAddressCopyForm />
-    default:
-      return <>Unknown route</>
   }
 }
 

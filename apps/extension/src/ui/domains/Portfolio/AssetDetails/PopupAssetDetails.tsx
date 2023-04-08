@@ -52,8 +52,9 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         </div>
         <div className="flex grow flex-col justify-center gap-2 pr-8">
           <div className="flex justify-between font-bold text-white">
-            <div className="flex items-center gap-4">
-              {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
+            <div className="flex items-center">
+              <span className="mr-2">{chainOrNetwork.name}</span>
+              <CopyAddressButton symbol={symbol} networkId={chainOrNetwork.id} />
               <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
             </div>
           </div>

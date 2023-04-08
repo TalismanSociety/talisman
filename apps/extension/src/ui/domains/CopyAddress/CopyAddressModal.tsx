@@ -11,8 +11,7 @@ export const CopyAddressModal = () => {
     <Modal open={isOpen} anchor="center" onClose={close}>
       <div
         className={classNames(
-          "border-grey-800 h-[60rem] w-[40rem]  overflow-hidden bg-black shadow",
-          // TODO adjust
+          "border-grey-800 h-[60rem] w-[40rem] overflow-hidden bg-black shadow",
           window.location.pathname === "/popup.html" ? "max-h-full max-w-full" : "rounded-lg border"
         )}
       >

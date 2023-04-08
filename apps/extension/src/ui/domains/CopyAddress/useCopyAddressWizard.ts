@@ -8,18 +8,20 @@ import { Chain, ChainId, TokenId } from "@talismn/chaindata-provider"
 import { getBase64ImageUrl } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
+import { copyAddress } from "@ui/util/copyAddress"
 import { ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
 import { GLOBE_ICON_URL } from "../Asset/ChainLogo"
 import { CopyAddressWizardInputs } from "./types"
+import { useCopyAddressModal } from "./useCopyAddressModal"
 
 export type CopyAddressWizardPage = "token" | "chain" | "account" | "copy"
 type CopyAddressWizardState = CopyAddressWizardInputs & { route: CopyAddressWizardPage }
 
 const getNextRoute = (inputs: CopyAddressWizardInputs): CopyAddressWizardPage => {
   if (inputs.type === "chain") {
-    if (!inputs.chainId) return "chain"
+    if (!inputs.chainId && !isEthereumAddress(inputs.address)) return "chain"
     if (!inputs.address) return "account"
   }
 
@@ -46,6 +48,8 @@ const getFormattedAddress = (address?: Address, chain?: Chain) => {
 }
 
 export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInputs }) => {
+  const { close } = useCopyAddressModal()
+
   const [state, setState] = useState<CopyAddressWizardState>(() => ({
     ...inputs,
     route: getNextRoute(inputs),
@@ -103,30 +107,32 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     setStateAndUpdateRoute({ address })
   }
 
-  // useEffect(() => {
-  //   const nextPage = getNextRoute(state)
-  //   if (route !== nextPage) setRoute(nextPage)
-  // }, [route, state])
-
-  const goToAddress = useCallback(() => {
+  const goToAddressPage = useCallback(() => {
     setState((prev) => ({ ...prev, route: "account" }))
   }, [])
 
-  const goToNetworkOrToken = useCallback(() => {
+  const goToNetworkOrTokenPage = useCallback(() => {
     setState((prev) => ({ ...prev, route: state.type === "token" ? "token" : "chain" }))
   }, [state.type])
 
+  const copy = useCallback(async () => {
+    if (!formattedAddress) return
+    await copyAddress(formattedAddress)
+    close()
+  }, [close, formattedAddress])
+
   return {
     inputs,
-    state,
+    ...state,
     formattedAddress,
     image,
-    goToAddress,
-    goToNetworkOrToken,
+    goToAddressPage,
+    goToNetworkOrTokenPage,
     setTokenId,
     setChainId,
     setAddress,
     chain,
+    copy,
   }
 }
 

@@ -83,15 +83,15 @@ const ChainFormatsList = ({
 }
 
 export const CopyAddressChainForm = () => {
-  const { state, setChainId } = useCopyAddressWizard()
+  const { address, setChainId } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
   const { useTestnets = false } = useSettings()
   const { chains } = useChains(useTestnets)
 
   const formats: ChainFormat[] = useMemo(() => {
-    if (!state.address || !chains.length) return []
+    if (!address || !chains.length) return []
     return [
-      { ...SUBSTRATE_FORMAT, address: state.address },
+      { ...SUBSTRATE_FORMAT, address: address },
       ...chains
         .filter((c) => c.account !== "ethereum")
         .map<ChainFormat>((chain) => ({
@@ -100,10 +100,10 @@ export const CopyAddressChainForm = () => {
           prefix: chain.prefix,
           name: chain.name ?? "unknown",
           // undefined address is impossible, but TS doesn't know that
-          address: convertAddress(state.address ?? "", chain.prefix),
+          address: convertAddress(address ?? "", chain.prefix),
         })),
     ]
-  }, [chains, state.address])
+  }, [chains, address])
 
   const filteredFormats = useMemo(() => {
     if (!search) return formats

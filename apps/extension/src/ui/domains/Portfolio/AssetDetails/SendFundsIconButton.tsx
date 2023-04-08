@@ -1,18 +1,11 @@
-import { IconButton } from "@talisman/components/IconButton"
 import { PaperPlaneIcon } from "@talisman/theme/icons"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { useSettings } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback } from "react"
-import styled from "styled-components"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
-
-const SmallIconButton = styled(IconButton)`
-  height: 1.2rem;
-  width: 1.2rem;
-  font-size: var(--font-size-xsmall);
-`
 
 export const SendFundsButton = ({
   symbol,
@@ -20,7 +13,7 @@ export const SendFundsButton = ({
   shouldClose,
 }: {
   symbol: string
-  networkId: string | number
+  networkId: ChainId | EvmNetworkId
   shouldClose?: boolean
 }) => {
   const { account } = useSelectedAccount()
@@ -45,8 +38,11 @@ export const SendFundsButton = ({
   if (!token) return null
 
   return (
-    <SmallIconButton onClick={handleClick}>
+    <button
+      onClick={handleClick}
+      className="text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 inline-flex h-9 w-9 items-center justify-center rounded-full text-xs"
+    >
       <PaperPlaneIcon />
-    </SmallIconButton>
+    </button>
   )
 }
