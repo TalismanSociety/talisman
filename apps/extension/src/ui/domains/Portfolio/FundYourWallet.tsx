@@ -74,7 +74,7 @@ export const FundYourWallet = () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "Receive funds button",
+      action: "open receive",
     })
     openCopyAddressModal({ mode: "receive" })
   }, [openCopyAddressModal])

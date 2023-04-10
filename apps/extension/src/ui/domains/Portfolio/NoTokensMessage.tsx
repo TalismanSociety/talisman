@@ -1,5 +1,6 @@
 import { ArrowDownIcon, CopyIcon, CreditCardIcon } from "@talisman/theme/icons"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback } from "react"
 import { PillButton } from "talisman-ui"
@@ -12,12 +13,14 @@ type NoTokensMessageProps = {
 }
 
 export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
+  const { genericEvent } = useAnalytics()
   const { account } = useSelectedAccount()
   const { open } = useCopyAddressModal()
 
   const handleCopy = useCallback(() => {
     open({ mode: "receive", address: account?.address })
-  }, [account, open])
+    genericEvent("open receive", { from: "NoTokensMessage" })
+  }, [account?.address, genericEvent, open])
 
   const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
   const { open: openBuyCrypto } = useBuyTokensModal()

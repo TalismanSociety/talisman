@@ -10,6 +10,7 @@ import Tokens from "@ui/domains/Asset/Tokens"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress/useCopyAddressModal"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { StaleBalancesIcon } from "@ui/domains/Portfolio/StaleBalancesIcon"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useMemo } from "react"
 import styled from "styled-components"
@@ -128,13 +129,15 @@ type AssetsTableProps = {
 const NoTokens = ({ symbol }: { symbol: string }) => {
   const { account } = useSelectedAccount()
   const { open } = useCopyAddressModal()
+  const { genericEvent } = useAnalytics()
 
   const handleCopy = useCallback(() => {
     open({
       mode: "receive",
       address: account?.address,
     })
-  }, [account?.address, open])
+    genericEvent("open receive", { from: "asset details" })
+  }, [account?.address, genericEvent, open])
 
   const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
   const handleBuyCryptoClick = useCallback(async () => {

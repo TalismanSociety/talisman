@@ -5,6 +5,7 @@ import { LinkIcon, ParitySignerIcon, UsbIcon } from "@talisman/theme/icons"
 import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
 import { ReactComponent as IconLoader } from "@talisman/theme/icons/loader.svg"
 import Asset from "@ui/domains/Asset"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { FC, useCallback } from "react"
 import styled from "styled-components"
 
@@ -65,15 +66,15 @@ const NamedAddress = ({
   withSource,
   className,
 }: NamedAddressProps) => {
+  const { genericEvent } = useAnalytics()
   const { open } = useCopyAddressModal()
-  const handleCopyClick = useCallback(
-    () =>
-      open({
-        mode: "copy",
-        address,
-      }),
-    [address, open]
-  )
+  const handleCopyClick = useCallback(() => {
+    open({
+      mode: "copy",
+      address,
+    })
+    genericEvent("open copy address")
+  }, [address, genericEvent, open])
 
   return (
     <>

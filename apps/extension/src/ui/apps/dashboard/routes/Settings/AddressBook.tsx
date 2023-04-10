@@ -17,6 +17,7 @@ import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditMo
 import { ExistingContactComponentProps } from "@ui/domains/Settings/AddressBook/types"
 import { ProviderTypeSwitch } from "@ui/domains/Site/ProviderTypeSwitch"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import startCase from "lodash/startCase"
 import { PropsWithChildren, useCallback, useMemo, useState } from "react"
@@ -44,6 +45,7 @@ type ContactItemProps = ExistingContactComponentProps & {
 }
 
 const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => {
+  const { genericEvent } = useAnalytics()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const [hover, setHover] = useState(false)
 
@@ -52,7 +54,8 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
       mode: "copy",
       address: contact.address,
     })
-  }, [contact.address, openCopyAddressModal])
+    genericEvent("open copy address", { from: "address book" })
+  }, [contact.address, genericEvent, openCopyAddressModal])
 
   return (
     <div

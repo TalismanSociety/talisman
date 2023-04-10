@@ -61,13 +61,15 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
   const handleCopyClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
       e.stopPropagation()
-      if (address)
+      if (address) {
+        genericEvent("open copy address", { from: "popup" })
         open({
           mode: "copy",
           address,
         })
+      }
     },
-    [address, open]
+    [address, genericEvent, open]
   )
 
   return (
@@ -134,7 +136,7 @@ const TopActions = () => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "Receive button",
+      action: "open receive",
     })
     openCopyAddressModal({
       mode: "receive",

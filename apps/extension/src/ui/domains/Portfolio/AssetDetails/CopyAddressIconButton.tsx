@@ -1,6 +1,7 @@
 import { CopyIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress/useCopyAddressModal"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useSettings } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { useCallback } from "react"
@@ -24,16 +25,17 @@ export const CopyAddressButton = ({
       (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId)
   )
 
+  const { genericEvent } = useAnalytics()
   const { open } = useCopyAddressModal()
 
   const handleClick = useCallback(() => {
-    if (!token) return
     open({
       mode: "receive",
       address: account?.address,
-      tokenId: token.id,
+      tokenId: token?.id,
     })
-  }, [account?.address, open, token])
+    genericEvent("open receive", { from: "asset details" })
+  }, [account?.address, genericEvent, open, token?.id])
 
   if (!token) return null
 

@@ -32,7 +32,6 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     useAccountExportPrivateKeyModal()
   const { canRemove, open: openAccountRemoveModal } = useAccountRemoveModal()
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
-  //const { open: openAddressFormatterModal } = useAddressFormatterModal()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
 
