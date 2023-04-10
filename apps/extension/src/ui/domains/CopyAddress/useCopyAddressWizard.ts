@@ -245,8 +245,6 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     copy,
   }
 
-  useAlec("copy-address-wizard", ctx)
-
   return ctx
 }
 

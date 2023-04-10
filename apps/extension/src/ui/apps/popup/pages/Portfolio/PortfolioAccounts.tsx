@@ -8,7 +8,6 @@ import {
   CopyIcon,
   CreditCardIcon,
   PaperPlaneIcon,
-  ZapIcon,
 } from "@talisman/theme/icons"
 import { Balance, Balances } from "@talismn/balances"
 import { api } from "@ui/api"
@@ -16,7 +15,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress/useCopyAddressModal"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -62,14 +61,18 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
     (e) => {
       e.stopPropagation()
       if (address) {
-        genericEvent("open copy address", { from: "popup" })
+        sendAnalyticsEvent({
+          ...ANALYTICS_PAGE,
+          name: "Goto",
+          action: "open copy address",
+        })
         open({
           mode: "copy",
           address,
         })
       }
     },
-    [address, genericEvent, open]
+    [address, open]
   )
 
   return (

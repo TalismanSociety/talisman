@@ -19,7 +19,7 @@ import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/the
 import { api } from "@ui/api"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import Build from "@ui/domains/Build"
-import { useCopyAddressModal } from "@ui/domains/CopyAddress/useCopyAddressModal"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"

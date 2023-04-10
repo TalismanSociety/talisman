@@ -6,7 +6,7 @@ import { useCallback } from "react"
 import { PillButton } from "talisman-ui"
 
 import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
-import { useCopyAddressModal } from "../CopyAddress/useCopyAddressModal"
+import { useCopyAddressModal } from "../CopyAddress"
 
 type NoTokensMessageProps = {
   symbol: string

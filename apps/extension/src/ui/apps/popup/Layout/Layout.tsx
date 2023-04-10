@@ -3,7 +3,7 @@ import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
-import { CopyAddressModal } from "@ui/domains/CopyAddress/CopyAddressModal"
+import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { FC, ReactNode } from "react"
 import styled from "styled-components"
 

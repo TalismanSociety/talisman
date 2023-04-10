@@ -8,7 +8,7 @@ import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveMod
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
-import { CopyAddressModalProvider } from "@ui/domains/CopyAddress/useCopyAddressModal"
+import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"

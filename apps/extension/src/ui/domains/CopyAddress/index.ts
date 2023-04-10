@@ -1,1 +1,2 @@
-export * from "./CopyAddressWizard"
+export * from "./CopyAddressModal"
+export * from "./useCopyAddressModal"

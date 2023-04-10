@@ -9,7 +9,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { FC, useCallback } from "react"
 import styled from "styled-components"
 
-import { useCopyAddressModal } from "../CopyAddress/useCopyAddressModal"
+import { useCopyAddressModal } from "../CopyAddress"
 import Avatar from "./Avatar"
 
 type AccountTypeIconProps = {

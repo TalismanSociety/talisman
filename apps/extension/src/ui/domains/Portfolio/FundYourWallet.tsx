@@ -7,7 +7,7 @@ import { useCallback } from "react"
 import styled from "styled-components"
 
 import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
-import { useCopyAddressModal } from "../CopyAddress/useCopyAddressModal"
+import { useCopyAddressModal } from "../CopyAddress"
 
 const Container = styled.div`
   width: 31.8rem;
