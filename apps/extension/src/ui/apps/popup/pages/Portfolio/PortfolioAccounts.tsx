@@ -3,6 +3,7 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
 import {
   AllAccountsIcon,
+  ArrowDownIcon,
   ChevronRightIcon,
   CopyIcon,
   CreditCardIcon,
@@ -128,25 +129,24 @@ const TopActions = () => {
     window.close()
   }, [])
 
-  const showStaking = useIsFeatureEnabled("LINK_STAKING")
-  const handleStakingClick = useCallback(() => {
+  const { open: openCopyAddressModal } = useCopyAddressModal()
+  const handleReceiveClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "Staking button",
+      action: "Receive button",
     })
-    window.open("https://app.talisman.xyz/staking", "_blank")
-    close()
-  }, [])
+    openCopyAddressModal({
+      mode: "receive",
+    })
+  }, [openCopyAddressModal])
 
   return (
     <div className="mt-8 flex justify-center gap-4">
       <>
-        {showStaking && (
-          <PillButton onClick={handleStakingClick} icon={ZapIcon}>
-            Stake
-          </PillButton>
-        )}
+        <PillButton onClick={handleReceiveClick} icon={ArrowDownIcon}>
+          Receive
+        </PillButton>
         <PillButton onClick={handleSendFundsClick} icon={PaperPlaneIcon}>
           Send
         </PillButton>

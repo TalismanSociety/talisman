@@ -1,6 +1,6 @@
 import { Balances } from "@core/domains/balances/types"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { CopyIcon, CreditCardIcon, LockIcon } from "@talisman/theme/icons"
+import { ArrowDownIcon, CopyIcon, CreditCardIcon, LockIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
@@ -130,11 +130,10 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
   const { open } = useCopyAddressModal()
 
   const handleCopy = useCallback(() => {
-    if (account?.address)
-      open({
-        mode: "receive",
-        address: account.address,
-      })
+    open({
+      mode: "receive",
+      address: account?.address,
+    })
   }, [account?.address, open])
 
   const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
@@ -150,11 +149,9 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
           You don't have any {symbol} {account ? " in this account" : ""}
         </div>
         <div className="mt-6 flex justify-center gap-4">
-          {!!account && (
-            <PillButton icon={CopyIcon} onClick={handleCopy}>
-              Copy Address
-            </PillButton>
-          )}
+          <PillButton icon={ArrowDownIcon} onClick={handleCopy}>
+            Receive
+          </PillButton>
           {showBuyCrypto && (
             <PillButton icon={CreditCardIcon} onClick={handleBuyCryptoClick}>
               Buy Crypto

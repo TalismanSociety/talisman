@@ -4,6 +4,7 @@ import { IconButton } from "@talisman/components/IconButton"
 import PopNav from "@talisman/components/PopNav"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { ChevronLeftIcon, CopyIcon, IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -20,8 +21,18 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
-import { useCallback, useEffect, useMemo } from "react"
+import { ButtonHTMLAttributes, FC, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
+
+export const RoundIconButton: FC<ButtonHTMLAttributes<HTMLButtonElement>> = (props) => (
+  <button
+    {...props}
+    className={classNames(
+      props.className,
+      "hover:bg-grey-700 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
+    )}
+  />
+)
 
 const PageContent = ({ balances }: { balances: Balances }) => {
   const balancesToDisplay = useDisplayBalances(balances)
@@ -40,10 +51,9 @@ const PageContent = ({ balances }: { balances: Balances }) => {
   }, [account?.address, genericEvent])
 
   const copyAddress = useCallback(() => {
-    if (!account) return
     openCopyAddressModal({
       mode: "copy",
-      address: account.address,
+      address: account?.address,
     })
     genericEvent("open copy address", { from: "popup portfolio" })
   }, [account, genericEvent, openCopyAddressModal])
@@ -86,26 +96,26 @@ const PageContent = ({ balances }: { balances: Balances }) => {
             </div>
           </div>
         </div>
-        <div className="flex grow items-center justify-end gap-4">
-          <IconButton onClick={sendFunds}>
+        <div className="flex grow items-center justify-end">
+          <RoundIconButton onClick={sendFunds}>
             <WithTooltip tooltip="Send">
               <PaperPlaneIcon />
             </WithTooltip>
-          </IconButton>
+          </RoundIconButton>
+          <RoundIconButton onClick={copyAddress}>
+            <WithTooltip tooltip="Copy address">
+              <CopyIcon />
+            </WithTooltip>
+          </RoundIconButton>
           {account && (
             <>
-              <IconButton onClick={copyAddress}>
-                <WithTooltip tooltip="Copy address">
-                  <CopyIcon />
-                </WithTooltip>
-              </IconButton>
               <PopNav
                 trigger={
-                  <IconButton>
+                  <RoundIconButton>
                     <WithTooltip tooltip="More options">
                       <IconMore />
                     </WithTooltip>
-                  </IconButton>
+                  </RoundIconButton>
                 }
                 className="icon more"
                 closeOnMouseOut

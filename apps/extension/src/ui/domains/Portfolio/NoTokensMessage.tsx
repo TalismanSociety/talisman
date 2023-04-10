@@ -1,4 +1,4 @@
-import { CopyIcon, CreditCardIcon } from "@talisman/theme/icons"
+import { ArrowDownIcon, CopyIcon, CreditCardIcon } from "@talisman/theme/icons"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback } from "react"
@@ -16,8 +16,7 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
   const { open } = useCopyAddressModal()
 
   const handleCopy = useCallback(() => {
-    if (!account?.address) return
-    open({ mode: "copy", address: account.address })
+    open({ mode: "receive", address: account?.address })
   }, [account, open])
 
   const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
@@ -32,11 +31,9 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
         You don't have any {symbol} {account ? "in this account" : "in Talisman"}.
       </div>
       <div className="mt-12 flex justify-center gap-4">
-        {account && (
-          <PillButton size="sm" icon={CopyIcon} onClick={handleCopy}>
-            Copy address
-          </PillButton>
-        )}
+        <PillButton size="sm" icon={ArrowDownIcon} onClick={handleCopy}>
+          Receive
+        </PillButton>
         {showBuyCrypto && (
           <PillButton size="sm" icon={CreditCardIcon} onClick={handleBuyCryptoClick}>
             Buy Crypto
