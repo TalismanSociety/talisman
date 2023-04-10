@@ -17,7 +17,7 @@ export const NoTokensMessage = ({ symbol }: NoTokensMessageProps) => {
 
   const handleCopy = useCallback(() => {
     if (!account?.address) return
-    open({ type: "chain", address: account.address })
+    open({ mode: "copy", address: account.address })
   }, [account, open])
 
   const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")

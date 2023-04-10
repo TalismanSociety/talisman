@@ -10,7 +10,7 @@ export const CopyAddressTokenForm = () => {
   return (
     <CopyAddressLayout title="Select a token to receive">
       <TokenPicker
-        account={address}
+        address={address}
         allowUntransferable
         showEmptyBalances
         onSelect={setTokenId}

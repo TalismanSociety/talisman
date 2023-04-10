@@ -6,6 +6,7 @@ import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
 import { CheckCircleIcon } from "@talisman/theme/icons"
 import { classNames, planckToTokens } from "@talismn/util"
+import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
@@ -181,7 +182,7 @@ const TokenRow: FC<TokenRowProps> = ({
 }
 
 type TokensListProps = {
-  account?: Address
+  address?: Address
   networkType?: TokenNetworkType
   selected?: TokenId
   search?: string
@@ -191,7 +192,7 @@ type TokensListProps = {
 }
 
 const TokensList: FC<TokensListProps> = ({
-  account,
+  address,
   selected,
   search,
   networkType,
@@ -199,8 +200,9 @@ const TokensList: FC<TokensListProps> = ({
   allowUntransferable,
   onSelect,
 }) => {
+  const account = useAccountByAddress(address)
   const { useTestnets = false } = useSettings()
-  const { chainsMap } = useChains(useTestnets)
+  const { chainsMap, chains } = useChains(useTestnets)
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
   const { tokens: allTokens } = useTokens(useTestnets)
   const tokenRatesMap = useTokenRatesMap()
@@ -208,17 +210,23 @@ const TokensList: FC<TokensListProps> = ({
   const balances = useBalances()
 
   const accountBalances = useMemo(
-    () => (account && !selected ? balances.find({ address: account ?? undefined }) : balances),
-    [account, selected, balances]
+    () => (address && !selected ? balances.find({ address: address ?? undefined }) : balances),
+    [address, selected, balances]
+  )
+
+  const accountChain = useMemo(
+    () => chains.find((c) => c.genesisHash === account?.genesisHash),
+    [account?.genesisHash, chains]
   )
 
   const filterAccountCompatibleTokens = useCallback(
     (token: Token) => {
       if ((!account && !networkType) || selected) return true
+      if (accountChain) return token.chain?.id === accountChain.id
       if (networkType) return networkType === "ethereum" ? !!token.evmNetwork : !!token.chain
-      return isEthereumAddress(account) ? !!token.evmNetwork : !!token.chain
+      return isEthereumAddress(address) ? !!token.evmNetwork : !!token.chain
     },
-    [account, selected, networkType]
+    [account, networkType, selected, accountChain, address]
   )
 
   const accountCompatibleTokens = useMemo(() => {
@@ -360,7 +368,7 @@ const TokensList: FC<TokensListProps> = ({
 type TokenNetworkType = "polkadot" | "ethereum"
 
 type TokenPickerProps = {
-  account?: string
+  address?: string
   selected?: TokenId
   networkType?: TokenNetworkType
   showEmptyBalances?: boolean
@@ -370,7 +378,7 @@ type TokenPickerProps = {
 }
 
 export const TokenPicker: FC<TokenPickerProps> = ({
-  account,
+  address,
   selected,
   showEmptyBalances,
   networkType: networkTypeProp,
@@ -381,9 +389,9 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   const [networkType, setNetworkType] = useState<TokenNetworkType | undefined>(networkTypeProp)
 
   useEffect(() => {
-    if (!networkTypeProp && account)
-      setNetworkType(isEthereumAddress(account) ? "ethereum" : "polkadot")
-  }, [account, networkTypeProp])
+    if (!networkTypeProp && address)
+      setNetworkType(isEthereumAddress(address) ? "ethereum" : "polkadot")
+  }, [address, networkTypeProp])
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
@@ -393,7 +401,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         <TokensList
           networkType={networkType}
-          account={account}
+          address={address}
           selected={selected}
           search={search}
           showEmptyBalances={showEmptyBalances}

@@ -1,9 +1,12 @@
 import { stringToU8a } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
+import { Drawer } from "@talisman/components/Drawer"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { CopyIcon, InfoIcon } from "@talisman/theme/icons"
+import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { AlertCircleIcon, CopyIcon, InfoIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { Address } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
@@ -79,10 +82,33 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
   )
 }
 
-type NetworkPillButtonProps = { chainId?: string | null; className?: string; onClick?: () => void }
+type NetworkPillButtonProps = {
+  chainId?: string | null
+  address: Address
+  className?: string
+  onClick?: () => void
+}
 
-const NetworkPillButton: FC<NetworkPillButtonProps> = ({ chainId, className, onClick }) => {
+const NetworkPillButton: FC<NetworkPillButtonProps> = ({
+  chainId,
+  address,
+  className,
+  onClick,
+}) => {
   const chain = useChain(chainId as string)
+
+  // substrate generic format
+  if (chainId === null)
+    return (
+      <PillButton className={classNames("h-16 !py-2 !px-4", className)} onClick={onClick}>
+        <div className="text-body flex  flex-nowrap items-center gap-4 text-base">
+          <div className="flex shrink-0 flex-col justify-center">
+            <AccountAvatar type="polkadot-identicon" className="!text-lg" address={address} />
+          </div>
+          <div>Substrate (Generic)</div>
+        </div>
+      </PillButton>
+    )
 
   if (!chain) return null
 
@@ -98,8 +124,49 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({ chainId, className, onC
   )
 }
 
+const CopyButton = () => {
+  const { chainId, copy } = useCopyAddressWizard()
+  const { isOpen, open, close } = useOpenClose()
+
+  const handleCopyClick = useCallback(() => {
+    // generic substrate format, show exchange warning
+    if (chainId === null) open()
+    else copy()
+  }, [chainId, copy, open])
+
+  const handleContinueClick = useCallback(() => {
+    copy()
+    close()
+  }, [close, copy])
+
+  return (
+    <>
+      <Button fullWidth primary icon={CopyIcon} onClick={handleCopyClick}>
+        Copy Address
+      </Button>
+      <Drawer parent="copy-address-modal" open={isOpen} anchor="bottom" onClose={close}>
+        <div className="bg-grey-800 flex w-full flex-col items-center rounded-t-xl p-12">
+          <AlertCircleIcon className="text-primary-500 text-3xl" />
+          <div className="text-md mt-12 font-bold">Sending from an exchange?</div>
+          <p className="text-body-secondary mt-8 text-center">
+            Generic substrate addresses are often incompatible with exchanges.
+            <br />
+            Talisman recommends you use a{" "}
+            <span className="text-body">network specific address</span>. Always check with your
+            exchange before sending funds.
+          </p>
+          <Button className="mt-12" primary fullWidth onClick={handleContinueClick}>
+            Continue
+          </Button>
+        </div>
+      </Drawer>
+    </>
+  )
+}
+
 export const CopyAddressCopyForm = () => {
   const {
+    mode,
     chainId,
     tokenId,
     formattedAddress,
@@ -107,7 +174,6 @@ export const CopyAddressCopyForm = () => {
     goToAddressPage,
     chain,
     goToNetworkOrTokenPage,
-    copy,
   } = useCopyAddressWizard()
 
   const isEthereum = useMemo(
@@ -122,30 +188,46 @@ export const CopyAddressCopyForm = () => {
   if (!formattedAddress) return null
 
   return (
-    <CopyAddressLayout title="Receive funds">
+    <CopyAddressLayout title={mode === "receive" ? "Receive funds" : "Copy address"}>
       <div className="flex h-full w-full flex-col items-center px-12 pb-12">
         <div className="bg-grey-900 flex w-full flex-col gap-4 rounded py-4 px-8">
-          <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-            <div>Account</div>
-            <div>
-              <AddressPillButton address={formattedAddress} onClick={goToAddressPage} />
-            </div>
-          </div>
-          {!!tokenId && (
-            <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-              <div>Token</div>
-              <div>
-                <TokenPillButton tokenId={tokenId} onClick={goToNetworkOrTokenPage} />
+          {mode === "receive" && (
+            <>
+              <div className="text-body-secondary flex h-16 w-full items-center justify-between">
+                <div>Token</div>
+                <div>
+                  <TokenPillButton tokenId={tokenId} onClick={goToNetworkOrTokenPage} />
+                </div>
               </div>
-            </div>
+              <div className="text-body-secondary flex h-16 w-full items-center justify-between">
+                <div>Account</div>
+                <div>
+                  <AddressPillButton address={formattedAddress} onClick={goToAddressPage} />
+                </div>
+              </div>
+            </>
           )}
-          {!!chainId && (
-            <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-              <div>Network</div>
-              <div>
-                <NetworkPillButton chainId={chainId} onClick={goToNetworkOrTokenPage} />
+          {mode === "copy" && (
+            <>
+              <div className="text-body-secondary flex h-16 w-full items-center justify-between">
+                <div>Account</div>
+                <div>
+                  <AddressPillButton address={formattedAddress} onClick={goToAddressPage} />
+                </div>
               </div>
-            </div>
+              {chainId !== undefined && (
+                <div className="text-body-secondary flex h-16 w-full items-center justify-between">
+                  <div>Network</div>
+                  <div>
+                    <NetworkPillButton
+                      chainId={chainId}
+                      onClick={goToNetworkOrTokenPage}
+                      address={formattedAddress}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
         <div className="flex w-full grow flex-col items-center justify-center gap-12">
@@ -169,7 +251,26 @@ export const CopyAddressCopyForm = () => {
               </div>
               <div className="flex items-center gap-4">
                 <ChainLogo className="text-lg" id={chain?.id} />
-                <div>{shortenAddress(formattedAddress, 5, 5)}</div>
+                <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
+              </div>
+            </div>
+          )}
+          {chainId === null && (
+            <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
+              <div>
+                Your <span className="text-body">Substrate (Generic)</span>{" "}
+                <WithTooltip tooltip="This address is not specific to a network. Use at your own risk.">
+                  <InfoIcon className="hover:text-body inline align-middle  text-xs" />
+                </WithTooltip>{" "}
+                address
+              </div>
+              <div className="flex items-center gap-4">
+                <AccountAvatar
+                  type="polkadot-identicon"
+                  className="!text-lg [&>div]:block"
+                  address={formattedAddress}
+                />
+                <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
               </div>
             </div>
           )}
@@ -186,15 +287,13 @@ export const CopyAddressCopyForm = () => {
               </div>
               <div className="flex items-center gap-4">
                 <ChainLogo className="text-lg" id="1" />
-                <div>{shortenAddress(formattedAddress, 5, 5)}</div>
+                <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
               </div>
             </div>
           )}
         </div>
 
-        <Button fullWidth primary icon={CopyIcon} onClick={copy}>
-          Copy Address
-        </Button>
+        <CopyButton />
       </div>
     </CopyAddressLayout>
   )

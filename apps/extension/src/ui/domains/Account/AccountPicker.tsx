@@ -201,14 +201,17 @@ export const AccountPicker: FC<AccountPickerProps> = ({
       allAccounts
         .filter((account) => !search || account.name?.toLowerCase().includes(search))
         .filter((account) => {
+          if (!tokenId) return true
           if (!token) return false
 
           if (isEthereumAddress(account.address))
             return isEvmToken(token) || chain?.account === "secp256k1"
           else return chain && chain?.account !== "secp256k1"
         })
-        .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash),
-    [allAccounts, chain, search, token]
+        .filter(
+          (account) => !chain || !account.genesisHash || account.genesisHash === chain?.genesisHash
+        ),
+    [allAccounts, chain, search, token, tokenId]
   )
 
   return (

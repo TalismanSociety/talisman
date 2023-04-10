@@ -69,7 +69,7 @@ const NamedAddress = ({
   const handleCopyClick = useCallback(
     () =>
       open({
-        type: "chain",
+        mode: "copy",
         address,
       }),
     [address, open]

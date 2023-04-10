@@ -49,7 +49,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
 
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
-      type: "chain",
+      mode: "copy",
       address: contact.address,
     })
   }, [contact.address, openCopyAddressModal])

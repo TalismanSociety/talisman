@@ -53,7 +53,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
   const copyAddress = useCallback(() => {
     if (!account) return
     openCopyAddressModal({
-      type: "chain",
+      mode: "copy",
       address: account.address,
     })
     genericEvent("open copy address", { from: "dashboard portfolio" })

@@ -265,7 +265,7 @@ export const SideBar = () => {
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
-      type: "token",
+      mode: "receive",
       address: account?.address,
     })
     genericEvent("open receive", { from: "sidebar" })

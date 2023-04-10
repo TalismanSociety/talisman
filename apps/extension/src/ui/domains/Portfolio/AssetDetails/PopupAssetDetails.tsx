@@ -132,7 +132,7 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
   const handleCopy = useCallback(() => {
     if (account?.address)
       open({
-        type: "token",
+        mode: "receive",
         address: account.address,
       })
   }, [account?.address, open])

@@ -23,7 +23,7 @@ export const SendFundsTokenPicker = () => {
   return (
     <TokenPicker
       onSelect={handleTokenSelect}
-      account={from}
+      address={from}
       selected={tokenId}
       networkType={networkType}
     />

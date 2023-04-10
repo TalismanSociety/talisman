@@ -62,7 +62,7 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
       e.stopPropagation()
       if (address)
         open({
-          type: "chain",
+          mode: "copy",
           address,
         })
     },

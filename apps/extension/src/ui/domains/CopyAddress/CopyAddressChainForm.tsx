@@ -5,6 +5,7 @@ import { ArrowRightIcon, ChevronRightIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ChainId } from "@talismn/chaindata-provider"
+import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useChains from "@ui/hooks/useChains"
 import { useSettings } from "@ui/hooks/useSettings"
 import { FC, useCallback, useMemo, useState } from "react"
@@ -88,6 +89,12 @@ export const CopyAddressChainForm = () => {
   const { useTestnets = false } = useSettings()
   const { chains } = useChains(useTestnets)
 
+  const account = useAccountByAddress(address)
+  const accountChain = useMemo(
+    () => chains.find((c) => account?.genesisHash === c.genesisHash),
+    [account?.genesisHash, chains]
+  )
+
   const formats: ChainFormat[] = useMemo(() => {
     if (!address || !chains.length) return []
     return [
@@ -99,11 +106,10 @@ export const CopyAddressChainForm = () => {
           chainId: chain.id,
           prefix: chain.prefix,
           name: chain.name ?? "unknown",
-          // undefined address is impossible, but TS doesn't know that
-          address: convertAddress(address ?? "", chain.prefix),
+          address: convertAddress(address, chain.prefix),
         })),
-    ]
-  }, [chains, address])
+    ].filter((f) => !accountChain || accountChain.id === f.chainId)
+  }, [address, chains, accountChain])
 
   const filteredFormats = useMemo(() => {
     if (!search) return formats
@@ -112,7 +118,7 @@ export const CopyAddressChainForm = () => {
   }, [formats, search])
 
   return (
-    <CopyAddressLayout title="Select a network">
+    <CopyAddressLayout title="Select network">
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           <SearchInput onChange={setSearch} placeholder="Search by network name" autoFocus />

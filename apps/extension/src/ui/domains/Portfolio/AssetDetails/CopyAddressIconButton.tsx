@@ -29,7 +29,7 @@ export const CopyAddressButton = ({
   const handleClick = useCallback(() => {
     if (!token) return
     open({
-      type: "token",
+      mode: "receive",
       address: account?.address,
       tokenId: token.id,
     })
