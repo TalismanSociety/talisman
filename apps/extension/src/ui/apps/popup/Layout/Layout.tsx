@@ -3,7 +3,6 @@ import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
-import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { CopyAddressModal } from "@ui/domains/CopyAddress/CopyAddressModal"
 import { FC, ReactNode } from "react"
 import styled from "styled-components"
@@ -25,7 +24,6 @@ const Layout: FC<LayoutProps> = ({ className, withBottomNav, children }) => {
       <ErrorBoundary>
         {children}
         {withBottomNav && <BottomNav />}
-        <AddressFormatterModal />
 
         {/* NavigationDrawer here so user can see the drawer close smoothly in case he navigates from one page to another (as long as both page use this Layout) */}
         <NavigationDrawer />

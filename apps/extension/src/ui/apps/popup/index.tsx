@@ -6,24 +6,10 @@ import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { KnownRequestTypes, ValidRequests } from "@core/libs/requests/types"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { api } from "@ui/api"
-import {
-  AccountExportModal,
-  AccountExportModalProvider,
-} from "@ui/domains/Account/AccountExportModal"
-import {
-  AccountExportPrivateKeyModal,
-  AccountExportPrivateKeyModalProvider,
-} from "@ui/domains/Account/AccountExportPrivateKeyModal"
-import {
-  AccountRemoveModal,
-  AccountRemoveModalProvider,
-} from "@ui/domains/Account/AccountRemoveModal"
-import {
-  AccountRenameModal,
-  AccountRenameModalProvider,
-} from "@ui/domains/Account/AccountRenameModal"
-import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
-import { CopyAddressModal } from "@ui/domains/CopyAddress/CopyAddressModal"
+import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
+import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
+import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
+import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
 import { CopyAddressModalProvider } from "@ui/domains/CopyAddress/useCopyAddressModal"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -32,7 +18,6 @@ import { useRequests } from "@ui/hooks/useRequests"
 import { useEffect, useMemo } from "react"
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom"
 
-import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
 import { CurrentSiteProvider } from "./context/CurrentSiteContext"
 import { NavigationProvider } from "./context/NavigationContext"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
@@ -125,45 +110,37 @@ const Popup = () => {
               <AccountExportModalProvider>
                 <CurrentSiteProvider>
                   <NavigationProvider>
-                    <AddressFormatterModalProvider>
-                      <CopyAddressModalProvider>
-                        <Routes>
-                          <Route path="portfolio/*" element={<Portfolio />}></Route>
-                          <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
-                          <Route
-                            path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
-                            element={<EthereumSignRequest />}
-                          ></Route>
-                          <Route
-                            path={`${SIGNING_TYPES.ETH_SEND}/:id`}
-                            element={<EthereumSignRequest />}
-                          ></Route>
-                          <Route
-                            path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
-                            element={<SubstrateSignRequest />}
-                          ></Route>
-                          <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
-                          <Route
-                            path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`}
-                            element={<Encrypt />}
-                          ></Route>
-                          <Route
-                            path={`${ENCRYPT_DECRYPT_PREFIX}/:id`}
-                            element={<Encrypt />}
-                          ></Route>
-                          <Route
-                            path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
-                            element={<AddEthereumNetwork />}
-                          ></Route>
-                          <Route
-                            path={`${WATCH_ASSET_PREFIX}/:id`}
-                            element={<AddCustomErc20Token />}
-                          ></Route>
-                          <Route path="send/*" element={<SendFundsPage />} />
-                          <Route path="*" element={<Navigate to="/portfolio" replace />} />
-                        </Routes>
-                      </CopyAddressModalProvider>
-                    </AddressFormatterModalProvider>
+                    <CopyAddressModalProvider>
+                      <Routes>
+                        <Route path="portfolio/*" element={<Portfolio />}></Route>
+                        <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
+                        <Route
+                          path={`${SIGNING_TYPES.ETH_SIGN}/:id`}
+                          element={<EthereumSignRequest />}
+                        ></Route>
+                        <Route
+                          path={`${SIGNING_TYPES.ETH_SEND}/:id`}
+                          element={<EthereumSignRequest />}
+                        ></Route>
+                        <Route
+                          path={`${SIGNING_TYPES.SUBSTRATE_SIGN}/:id`}
+                          element={<SubstrateSignRequest />}
+                        ></Route>
+                        <Route path={`${METADATA_PREFIX}/:id`} element={<Metadata />}></Route>
+                        <Route path={`${ENCRYPT_ENCRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
+                        <Route path={`${ENCRYPT_DECRYPT_PREFIX}/:id`} element={<Encrypt />}></Route>
+                        <Route
+                          path={`${ETH_NETWORK_ADD_PREFIX}/:id`}
+                          element={<AddEthereumNetwork />}
+                        ></Route>
+                        <Route
+                          path={`${WATCH_ASSET_PREFIX}/:id`}
+                          element={<AddCustomErc20Token />}
+                        ></Route>
+                        <Route path="send/*" element={<SendFundsPage />} />
+                        <Route path="*" element={<Navigate to="/portfolio" replace />} />
+                      </Routes>
+                    </CopyAddressModalProvider>
                   </NavigationProvider>
                 </CurrentSiteProvider>
               </AccountExportModalProvider>

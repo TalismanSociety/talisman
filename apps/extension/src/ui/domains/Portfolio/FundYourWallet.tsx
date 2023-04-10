@@ -7,7 +7,7 @@ import { useCallback } from "react"
 import styled from "styled-components"
 
 import { useBuyTokensModal } from "../Asset/Buy/BuyTokensModalContext"
-import { useReceiveTokensModal } from "../Asset/Receive/ReceiveTokensModalContext"
+import { useCopyAddressModal } from "../CopyAddress/useCopyAddressModal"
 
 const Container = styled.div`
   width: 31.8rem;
@@ -68,7 +68,7 @@ export const FundYourWallet = () => {
   useAnalyticsPageView(ANALYTICS_PAGE)
   const showBuyCryptoButton = useIsFeatureEnabled("BUY_CRYPTO")
   const { open: openBuyModal } = useBuyTokensModal()
-  const { open: openReceiveModal } = useReceiveTokensModal()
+  const { open: openCopyAddressModal } = useCopyAddressModal()
 
   const handleReceiveClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -76,8 +76,8 @@ export const FundYourWallet = () => {
       name: "Goto",
       action: "Receive funds button",
     })
-    openReceiveModal()
-  }, [openReceiveModal])
+    openCopyAddressModal({ mode: "receive" })
+  }, [openCopyAddressModal])
 
   const handleBuyClick = useCallback(() => {
     sendAnalyticsEvent({

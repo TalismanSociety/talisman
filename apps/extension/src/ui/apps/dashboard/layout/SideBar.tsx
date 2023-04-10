@@ -18,7 +18,6 @@ import {
 import { FullColorLogo, FullColorVerticalLogo, HandRedLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
-import { useReceiveTokensModal } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
 import Build from "@ui/domains/Build"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress/useCopyAddressModal"
 import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
@@ -260,8 +259,6 @@ export const SideBar = () => {
     genericEvent("open send funds", { from: "sidebar" })
   }, [account?.address, genericEvent])
 
-  // TODO delete the hook and all related components
-  const { open: openReceiveTokensModal } = useReceiveTokensModal()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
