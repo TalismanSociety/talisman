@@ -1,5 +1,3 @@
-import { TokenId } from "@talismn/chaindata-provider"
-
 import { TokenPicker } from "../Asset/TokenPicker"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"

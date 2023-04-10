@@ -1,21 +1,18 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { ArrowRightIcon, ChevronRightIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { ChainId } from "@talismn/chaindata-provider"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useChains from "@ui/hooks/useChains"
 import { useSettings } from "@ui/hooks/useSettings"
-import { FC, useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 
 import AccountAvatar from "../Account/Avatar"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { CopyAddressLayout } from "./CopyAddressLayout"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
-
-type NetworkType = "ethereum" | "polkadot"
 
 type ChainFormat = {
   key: string
