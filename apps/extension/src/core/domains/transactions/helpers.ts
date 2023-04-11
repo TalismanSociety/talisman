@@ -42,7 +42,7 @@ export const addEvmTransaction = async (
         )
         .count()) > 0
 
-    db.transactions.add({
+    await db.transactions.add({
       hash,
       networkType: "evm",
       evmNetworkId,
@@ -75,7 +75,7 @@ export const addSubstrateTransaction = async (
     if (!payload.genesisHash || !payload.nonce || !payload.address)
       throw new Error("Invalid transaction")
 
-    db.transactions.add({
+    await db.transactions.add({
       hash,
       networkType: "substrate",
       genesisHash: payload.genesisHash,
