@@ -32,7 +32,7 @@ export const SendQr = () => {
     async ({ signature }: { signature: HexString }) => {
       try {
         setSigned(true)
-        await sendWithSignature(signature)
+        await sendWithSignature(formData, signature)
 
         // this analytics call is designed to mirror the shape of the other 'asset transfer' calls
         // it needs to be on the fronted because the qr signing backend handler doesn't have access to all of the details
@@ -60,6 +60,7 @@ export const SendQr = () => {
       }
     },
     [
+      formData,
       knownAddress,
       sendWithSignature,
       to,

@@ -11,7 +11,8 @@ import { SigningHandler } from "@core/domains/signing"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
 import TokenRatesHandler from "@core/domains/tokenRates/handler"
 import TokensHandler from "@core/domains/tokens/handler"
-import { AssetTransferHandler } from "@core/domains/transactions"
+import { updateTransactionsRestart } from "@core/domains/transactions/helpers"
+import { AssetTransferHandler } from "@core/domains/transfers"
 import { ExtensionStore } from "@core/handlers/stores"
 import { unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
@@ -92,6 +93,19 @@ export default class Extension extends ExtensionHandler {
     this.initDb()
     this.initWalletFunding()
     this.checkSpiritKeyOwnership()
+    this.cleanup()
+  }
+
+  private cleanup() {
+    // remove legacy entries from localStorage
+    return Browser.storage.local.remove([
+      "chains",
+      "ethereumNetworks",
+      "tokens",
+      "balances",
+      "metadata",
+      "transactions",
+    ])
   }
 
   private initDb() {
@@ -108,14 +122,6 @@ export default class Extension extends ExtensionHandler {
       // (We don't store metadata OR chains in here anymore, so we have no idea whether or not its has already been initialised)
       // // if store has no chains yet, consider it's a fresh install or legacy version
       // if ((await db.chains.count()) < 1) {
-      //   // delete old localstorage-managed 'db'
-      //   Browser.storage.local.remove([
-      //     "chains",
-      //     "ethereumNetworks",
-      //     "tokens",
-      //     "balances",
-      //     "metadata",
-      //   ])
       //
       //   // delete old idb-managed metadata+metadataRpc db
       //   indexedDB.deleteDatabase("talisman")
@@ -127,6 +133,9 @@ export default class Extension extends ExtensionHandler {
       //   // db.tokens.bulkAdd(tokensInit as unknown as Token[])
       // }
     })
+
+    // marks all pending transaction as status unknown
+    updateTransactionsRestart()
   }
 
   private initWalletFunding() {
@@ -268,15 +277,6 @@ export default class Extension extends ExtensionHandler {
         // serialize as hex for transfer
         return u8aToHex(data)
       }
-
-      // --------------------------------------------------------------------
-      // transaction handlers -----------------------------------------------
-      // --------------------------------------------------------------------
-      case "pri(transactions.subscribe)":
-        return this.stores.transactions.subscribe(id, port)
-
-      case "pri(transactions.byid.subscribe)":
-        return this.stores.transactions.subscribeById(id, port, request as RequestIdOnly)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

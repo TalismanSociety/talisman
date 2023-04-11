@@ -1,8 +1,8 @@
 import { ReactNode } from "react"
 import { Button } from "talisman-ui"
 
-import { IconArrowRight } from "../icons"
-import { TestLayout } from "./TestLayout"
+import { IconArrowRight } from "../../icons"
+import { TestLayout } from "../shared/TestLayout"
 
 const Box = ({ title, children }: { title: ReactNode; children?: ReactNode }) => (
   <div className="flex w-full grow flex-col items-center justify-center gap-4 text-center">

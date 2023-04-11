@@ -1,11 +1,11 @@
 import { getEthTransferTransactionBase } from "@core/domains/ethereum/helpers"
-import { AssetTransferMethod } from "@core/domains/transactions/types"
+import { AssetTransferMethod } from "@core/domains/transfers/types"
 import { log } from "@core/log"
 import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { Address, Balance, BalanceFormatter } from "@talismn/balances"
 import { Token, TokenId } from "@talismn/chaindata-provider"
-import { formatDecimals } from "@talismn/util"
+import { formatDecimals, sleep } from "@talismn/util"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
@@ -486,8 +486,8 @@ const useSendFundsProvider = () => {
 
       setIsProcessing(true)
 
-      if (token.chain?.id) {
-        const { id } = await api.assetTransfer(
+      if (token.chain?.id && chain?.genesisHash) {
+        const { hash } = await api.assetTransfer(
           token.chain.id,
           token.id,
           from,
@@ -496,7 +496,8 @@ const useSendFundsProvider = () => {
           tip?.planck.toString(),
           method
         )
-        gotoProgress({ substrateTxId: id })
+        await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
+        gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
       } else if (token.evmNetwork?.id) {
         if (!transfer) throw new Error("Missing send amount")
         if (!evmTransaction?.gasSettings) throw new Error("Missing gas settings")
@@ -508,7 +509,8 @@ const useSendFundsProvider = () => {
           value.planck.toString(),
           evmTransaction.gasSettings
         )
-        gotoProgress({ evmNetworkId: token.evmNetwork.id, evmTxHash: hash })
+        await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
+        gotoProgress({ hash, networkIdOrHash: token.evmNetwork?.id })
       } else throw new Error("Unknown network")
     } catch (err) {
       log.error("Failed to submit tx", err)
@@ -516,6 +518,7 @@ const useSendFundsProvider = () => {
       setIsProcessing(false)
     }
   }, [
+    chain,
     sendMax,
     maxAmount,
     transfer,
@@ -532,19 +535,27 @@ const useSendFundsProvider = () => {
     async (signature: HexString) => {
       try {
         setIsProcessing(true)
-        if (subTransaction?.unsigned) {
-          const transfer = await api.assetTransferApproveSign(subTransaction.unsigned, signature)
-          gotoProgress({ substrateTxId: transfer.id })
+        if (subTransaction?.unsigned && token?.id && chain?.genesisHash) {
+          const { hash } = await api.assetTransferApproveSign(subTransaction.unsigned, signature, {
+            tokenId: token.id,
+            value: amount,
+            to,
+          })
+          await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
+          gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
           return
         }
-        if (evmTransaction && amount && token?.evmNetwork?.id) {
+        if (evmTransaction?.transaction && amount && token?.evmNetwork?.id && to) {
           const { hash } = await api.assetTransferEthHardware(
             token?.evmNetwork.id,
             token.id,
             amount,
+            to,
+            evmTransaction.transaction,
             signature
           )
-          gotoProgress({ evmNetworkId: token?.evmNetwork?.id, evmTxHash: hash })
+          await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
+          gotoProgress({ hash, networkIdOrHash: token.evmNetwork.id })
           return
         }
         throw new Error("Unknown transaction")
@@ -553,14 +564,7 @@ const useSendFundsProvider = () => {
         setIsProcessing(false)
       }
     },
-    [
-      amount,
-      evmTransaction,
-      gotoProgress,
-      subTransaction?.unsigned,
-      token?.evmNetwork?.id,
-      token?.id,
-    ]
+    [amount, evmTransaction, gotoProgress, subTransaction, to, token, chain]
   )
 
   return {

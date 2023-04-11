@@ -4,7 +4,7 @@ import { useLocalStorage } from "react-use"
 import { Button } from "talisman-ui"
 import { useAccount, usePrepareSendTransaction, useSendTransaction } from "wagmi"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 import { TransactionReceipt } from "./shared/TransactionReceipt"
 
 type FormData = { recipient: string; amount: string }

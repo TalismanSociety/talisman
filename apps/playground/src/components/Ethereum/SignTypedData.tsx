@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 import { useAccount, useNetwork } from "wagmi"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 
 // same test messages as MetaMasks's test-dapp
 const TEST_MESSAGES = {

@@ -19,11 +19,7 @@ import {
   ResponseNomPoolStake,
 } from "@core/domains/balances/types"
 import { ChainId } from "@core/domains/chains/types"
-import type {
-  AnyEncryptRequest,
-  DecryptRequestId,
-  EncryptRequestId,
-} from "@core/domains/encrypt/types"
+import type { DecryptRequestId, EncryptRequestId } from "@core/domains/encrypt/types"
 import { AddEthereumChainRequestId } from "@core/domains/ethereum/types"
 import {
   AddEthereumChainRequest,
@@ -31,17 +27,10 @@ import {
   EthGasSettings,
   EvmNetworkId,
   RequestUpsertCustomEvmNetwork,
-  WatchAssetRequest,
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
+import { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
 import {
-  MetadataRequest,
-  MetadataUpdateStatus,
-  RequestMetadataId,
-} from "@core/domains/metadata/types"
-import {
-  AnySigningRequest,
-  AnySigningRequestID,
   SignerPayloadJSON,
   SigningRequestID,
   TransactionDetails,
@@ -53,26 +42,21 @@ import {
   AuthorizedSite,
   AuthorizedSites,
   ProviderType,
-  SiteAuthRequest,
 } from "@core/domains/sitesAuthorised/types"
 import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
+import { WalletTransactionTransferInfo } from "@core/domains/transactions"
 import {
   AssetTransferMethod,
   ResponseAssetTransfer,
-  ResponseAssetTransferEth,
   ResponseAssetTransferFeeQuery,
-} from "@core/domains/transactions/types"
+} from "@core/domains/transfers/types"
 import { EthResponseType } from "@core/injectEth/types"
-import {
-  KnownRequest,
-  KnownRequestId,
-  KnownRequestTypes,
-  ValidRequests,
-} from "@core/libs/requests/types"
+import { ValidRequests } from "@core/libs/requests/types"
 import { UnsubscribeFn } from "@core/types"
 import { AddressesByChain } from "@core/types/base"
 import type { KeyringPair$Json } from "@polkadot/keyring/types"
 import type { HexString } from "@polkadot/util/types"
+import { Address } from "@talismn/balances"
 import { ethers } from "ethers"
 
 export default interface MessageTypes {
@@ -198,10 +182,6 @@ export default interface MessageTypes {
   addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
   removeCustomErc20Token: (id: string) => Promise<boolean>
 
-  // transaction message types
-  transactionSubscribe: (id: string, cb: (tx: any) => void) => UnsubscribeFn
-  transactionsSubscribe: (cb: (txs: any) => void) => UnsubscribeFn
-
   // asset transfer messages
   assetTransfer: (
     chainId: ChainId,
@@ -219,13 +199,15 @@ export default interface MessageTypes {
     toAddress: string,
     amount: string,
     gasSettings: EthGasSettings
-  ) => Promise<ResponseAssetTransferEth>
+  ) => Promise<ResponseAssetTransfer>
   assetTransferEthHardware: (
     evmNetworkId: EvmNetworkId,
     tokenId: TokenId,
     amount: string,
+    to: Address,
+    unsigned: ethers.providers.TransactionRequest,
     signedTransaction: HexString
-  ) => Promise<ResponseAssetTransferEth>
+  ) => Promise<ResponseAssetTransfer>
   assetTransferCheckFees: (
     chainId: ChainId,
     tokenId: TokenId,
@@ -237,10 +219,16 @@ export default interface MessageTypes {
   ) => Promise<ResponseAssetTransferFeeQuery>
   assetTransferApproveSign: (
     unsigned: SignerPayloadJSON,
-    signature: `0x${string}` | Uint8Array
+    signature: `0x${string}`,
+    transferInfo: WalletTransactionTransferInfo
   ) => Promise<ResponseAssetTransfer>
 
   // eth related messages
+  ethSignAndSend: (unsigned: ethers.providers.TransactionRequest) => Promise<HexString>
+  ethSendSigned: (
+    unsigned: ethers.providers.TransactionRequest,
+    signed: HexString
+  ) => Promise<HexString>
   ethApproveSign: (id: SigningRequestID<"eth-sign">) => Promise<boolean>
   ethApproveSignHardware: (
     id: SigningRequestID<"eth-sign">,
@@ -252,6 +240,7 @@ export default interface MessageTypes {
   ) => Promise<boolean>
   ethApproveSignAndSendHardware: (
     id: SigningRequestID<"eth-send">,
+    unsigned: ethers.providers.TransactionRequest,
     signedTransaction: HexString
   ) => Promise<boolean>
   ethCancelSign: (id: SigningRequestID<"eth-sign" | "eth-send">) => Promise<boolean>

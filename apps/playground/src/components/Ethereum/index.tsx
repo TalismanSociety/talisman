@@ -1,6 +1,6 @@
 import { WagmiConfig } from "wagmi"
 
-import { TestLayout } from "../TestLayout"
+import { TestLayout } from "../shared/TestLayout"
 import { AddNetwork } from "./AddNetwork"
 import { Connect } from "./Connect"
 import { wagmiClient } from "./connectors"

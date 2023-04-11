@@ -1,19 +1,21 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
+import { db } from "@core/db"
 import { AlertCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
-import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { PendingTransactionsDrawer } from "@ui/domains/Transactions/PendingTransactionsDrawer"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
+import { useLiveQuery } from "dexie-react-hooks"
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
+import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
 import { useNavigationContext } from "../../context/NavigationContext"
 import {
+  NavIconActivity,
+  NavIconActivityPending,
   NavIconExpand,
-  NavIconHistory,
   NavIconHome,
   NavIconMore,
   NavIconMoreAlert,
@@ -32,11 +34,12 @@ const BottomNavButton: FC<BottomNavButtonProps> = ({ current, className, childre
     {...props}
     className={classNames(
       " text-body-secondary flex h-20 w-20 justify-center rounded-sm text-center",
-      "hover:bg-grey-800 hover:text-body",
-      "allow-focus focus-visible:border-body active:text-body",
-      current && "text-body",
+      "enabled:hover:bg-grey-800 enabled:hover:text-body",
+      "enabled:focus-visible:border-body enabled:active:text-body",
+      current && "allow-focus",
       className
     )}
+    disabled={current}
   >
     {children}
   </button>
@@ -47,6 +50,37 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   feature: "Navigation",
   featureVersion: 3,
   page: "Portfolio",
+}
+
+const RecentActivityButton = () => {
+  const hasPendingTransactions = useLiveQuery(
+    async () => !!(await db.transactions.where("status").equals("pending").count()),
+    []
+  )
+  const { isOpen, open, close } = useOpenClose()
+
+  const handleClick = useCallback(() => {
+    sendAnalyticsEvent({
+      ...ANALYTICS_PAGE,
+      name: "Interact",
+      action: "Recent activity button",
+    })
+    open()
+  }, [open])
+
+  return (
+    <>
+      <Tooltip placement="top">
+        <TooltipTrigger>
+          <BottomNavButton onClick={handleClick}>
+            {hasPendingTransactions ? <NavIconActivityPending /> : <NavIconActivity />}
+          </BottomNavButton>
+        </TooltipTrigger>
+        <TooltipContent>Recent activity</TooltipContent>
+      </Tooltip>
+      <PendingTransactionsDrawer isOpen={isOpen} onClose={close} />
+    </>
+  )
 }
 
 export const BottomNav = () => {
@@ -73,17 +107,6 @@ export const BottomNav = () => {
     window.open("https://app.talisman.xyz/portfolio/nfts", "_blank")
     window.close()
   }, [])
-
-  const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
-  const handleTxHistoryClick = useCallback(() => {
-    sendAnalyticsEvent({
-      ...ANALYTICS_PAGE,
-      name: "Goto",
-      action: "Tx History button",
-    })
-    window.open(getTransactionHistoryUrl(account?.address), "_blank")
-    window.close()
-  }, [account?.address])
 
   const handleExpandClick = useCallback(() => {
     sendAnalyticsEvent({
@@ -121,34 +144,40 @@ export const BottomNav = () => {
         </div>
       )}
       <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] items-center justify-between border-t px-12 text-3xl">
-        <WithTooltip as="div" tooltip={"Portfolio"}>
-          <BottomNavButton onClick={handleHomeClick} current={location.pathname === "/portfolio"}>
-            <NavIconHome />
-          </BottomNavButton>
-        </WithTooltip>
-        <WithTooltip as="div" tooltip={"View NFTs"}>
-          <BottomNavButton onClick={handleNftClick}>
-            <NavIconNft />
-          </BottomNavButton>
-        </WithTooltip>
-        {showTxHistory && (
-          <WithTooltip as="div" tooltip={"Transaction History"}>
-            <BottomNavButton onClick={handleTxHistoryClick}>
-              <NavIconHistory />
+        <Tooltip placement="top">
+          <TooltipTrigger>
+            <BottomNavButton onClick={handleHomeClick} current={location.pathname === "/portfolio"}>
+              <NavIconHome />
             </BottomNavButton>
-          </WithTooltip>
-        )}
-        <WithTooltip as="div" tooltip={"Expand Portfolio View"}>
-          <BottomNavButton onClick={handleExpandClick}>
-            <NavIconExpand />
-          </BottomNavButton>
-        </WithTooltip>
-        <WithTooltip as="div" tooltip={"More Options"} noWrap>
-          <BottomNavButton onClick={handleMoreClick}>
-            {isNotConfirmed && <NavIconMoreAlert />}
-            {!isNotConfirmed && <NavIconMore />}
-          </BottomNavButton>
-        </WithTooltip>
+          </TooltipTrigger>
+          <TooltipContent>Portfolio</TooltipContent>
+        </Tooltip>
+        <Tooltip placement="top">
+          <TooltipTrigger>
+            <BottomNavButton onClick={handleNftClick}>
+              <NavIconNft />
+            </BottomNavButton>
+          </TooltipTrigger>
+          <TooltipContent>View NFTs</TooltipContent>
+        </Tooltip>
+        <RecentActivityButton />
+        <Tooltip placement="top">
+          <TooltipTrigger>
+            <BottomNavButton onClick={handleExpandClick}>
+              <NavIconExpand />
+            </BottomNavButton>
+          </TooltipTrigger>
+          <TooltipContent>Expand Portfolio View</TooltipContent>
+        </Tooltip>
+        <Tooltip placement="top">
+          <TooltipTrigger>
+            <BottomNavButton onClick={handleMoreClick}>
+              {isNotConfirmed && <NavIconMoreAlert />}
+              {!isNotConfirmed && <NavIconMore />}
+            </BottomNavButton>
+          </TooltipTrigger>
+          <TooltipContent>More Options</TooltipContent>
+        </Tooltip>
       </div>
     </>
   )

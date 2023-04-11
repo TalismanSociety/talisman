@@ -2818,12 +2818,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@floating-ui/core@npm:^1.2.2":
+  version: 1.2.2
+  resolution: "@floating-ui/core@npm:1.2.2"
+  checksum: 0728efcb3f57c0bbeaf940e3ca8dfbecb659afec8943dff79169b8191b8c4aa14b54a33dc66599e624dfa791920010ebd9f860cfa7f47df94ad75b32c1e44883
+  languageName: node
+  linkType: hard
+
 "@floating-ui/dom@npm:^1.1.1":
   version: 1.2.0
   resolution: "@floating-ui/dom@npm:1.2.0"
   dependencies:
     "@floating-ui/core": ^1.2.0
   checksum: 3f5cf02a784286473f451939b5641454e7256cdc7a6899a0ecc67e084a572b52e5e23a08a7e5b8ba186dca668815eba5ed6d69baec543abaeb5092d6c672f6b2
+  languageName: node
+  linkType: hard
+
+"@floating-ui/dom@npm:^1.2.1":
+  version: 1.2.3
+  resolution: "@floating-ui/dom@npm:1.2.3"
+  dependencies:
+    "@floating-ui/core": ^1.2.2
+  checksum: b2428e1fda01d5cba59960bb8c04d7a5f2400200855f206267589533a67303a62fbdf85dc7747fe83c21bb15f4eda67feaaf51ef4a41bb132fd2b785612f1bb4
   languageName: node
   linkType: hard
 
@@ -2836,6 +2852,32 @@ __metadata:
     react: ">=16.8.0"
     react-dom: ">=16.8.0"
   checksum: 5cb7879a8fe53ce4ca8361473d93e18806402d6bcde4e935d5aafa2b72032019e62f7d019d7d7145ead1ed829569ac14d6d8c50d7beedcea04cb3d02af661597
+  languageName: node
+  linkType: hard
+
+"@floating-ui/react-dom@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "@floating-ui/react-dom@npm:1.3.0"
+  dependencies:
+    "@floating-ui/dom": ^1.2.1
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: ce0ad3e3bbe43cfd15a6a0d5cccede02175c845862bfab52027995ab99c6b29630180dc7d146f76ebb34730f90a6ab9bf193c8984fe8d7f56062308e4ca98f77
+  languageName: node
+  linkType: hard
+
+"@floating-ui/react@npm:0.20.1":
+  version: 0.20.1
+  resolution: "@floating-ui/react@npm:0.20.1"
+  dependencies:
+    "@floating-ui/react-dom": ^1.3.0
+    aria-hidden: ^1.1.3
+    tabbable: ^6.0.1
+  peerDependencies:
+    react: ">=16.8.0"
+    react-dom: ">=16.8.0"
+  checksum: 64210e27b084bd2078efbe9c3947a4ae771d95e28e288710dc19926b9d8ff082136396f862b45a0ca4cdb96e1cecddbc0b556b8abedd49f5517f9480b20a9ee2
   languageName: node
   linkType: hard
 
@@ -2854,6 +2896,18 @@ __metadata:
   version: 1.1.3
   resolution: "@gar/promisify@npm:1.1.3"
   checksum: 4059f790e2d07bf3c3ff3e0fec0daa8144fe35c1f6e0111c9921bd32106adaa97a4ab096ad7dab1e28ee6a9060083c4d1a4ada42a7f5f3f7a96b8812e2b757c1
+  languageName: node
+  linkType: hard
+
+"@headlessui/react@npm:1.7.13":
+  version: 1.7.13
+  resolution: "@headlessui/react@npm:1.7.13"
+  dependencies:
+    client-only: ^0.0.1
+  peerDependencies:
+    react: ^16 || ^17 || ^18
+    react-dom: ^16 || ^17 || ^18
+  checksum: 132e5fce86978b9a6fd9d669fb556acec783debcd8f510c99226b3b3229dad50a13aeed69fc9af66465fc7029487ecfc46e6226f14218b760d5a309e08c0d059
   languageName: node
   linkType: hard
 
@@ -8380,6 +8434,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"aria-hidden@npm:^1.1.3":
+  version: 1.2.3
+  resolution: "aria-hidden@npm:1.2.3"
+  dependencies:
+    tslib: ^2.0.0
+  checksum: 7d7d211629eef315e94ed3b064c6823d13617e609d3f9afab1c2ed86399bb8e90405f9bdd358a85506802766f3ecb468af985c67c846045a34b973bcc0289db9
+  languageName: node
+  linkType: hard
+
 "aria-query@npm:^4.2.2":
   version: 4.2.2
   resolution: "aria-query@npm:4.2.2"
@@ -9756,6 +9819,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"client-only@npm:^0.0.1":
+  version: 0.0.1
+  resolution: "client-only@npm:0.0.1"
+  checksum: 0c16bf660dadb90610553c1d8946a7fdfb81d624adea073b8440b7d795d5b5b08beb3c950c6a2cf16279365a3265158a236876d92bce16423c485c322d7dfaf8
+  languageName: node
+  linkType: hard
+
 "cliui@npm:^5.0.0":
   version: 5.0.0
   resolution: "cliui@npm:5.0.0"
@@ -10501,7 +10571,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"date-fns@npm:^2.29.1":
+"date-fns@npm:^2.29.1, date-fns@npm:^2.29.3":
   version: 2.29.3
   resolution: "date-fns@npm:2.29.3"
   checksum: e01cf5b62af04e05dfff921bb9c9933310ed0e1ae9a81eb8653452e64dc841acf7f6e01e1a5ae5644d0337e9a7f936175fd2cb6819dc122fdd9c5e86c56be484
@@ -12257,7 +12327,9 @@ __metadata:
     "@dnd-kit/core": 6.0.7
     "@dnd-kit/sortable": 7.0.2
     "@ethereumjs/util": 8.0.3
+    "@floating-ui/react": 0.20.1
     "@floating-ui/react-dom": ^1.2.2
+    "@headlessui/react": 1.7.13
     "@hookform/resolvers": 2.9.11
     "@ledgerhq/hw-app-eth": 6.32.1
     "@ledgerhq/hw-transport-webusb": 6.27.12
@@ -12343,6 +12415,7 @@ __metadata:
     copy-webpack-plugin: ^10.2.4
     crypto-browserify: ^3.12.0
     css-loader: ^6.7.3
+    date-fns: ^2.29.3
     dexie: ^3.2.3
     dexie-react-hooks: ^1.1.3
     dotenv: ^16.0.3
@@ -17712,6 +17785,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "playground@workspace:apps/playground"
   dependencies:
+    "@headlessui/react": 1.7.13
     "@metamask/eth-sig-util": 5.0.2
     "@tailwindcss/forms": ^0.5.3
     "@talismn/eslint-config": "workspace:^"
@@ -20234,6 +20308,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tabbable@npm:^6.0.1":
+  version: 6.1.1
+  resolution: "tabbable@npm:6.1.1"
+  checksum: 348639497262241ce8e0ccb0664ea582a386183107299ee8f27cf7b56bc84f36e09eaf667d3cb4201e789634012a91f7129bcbd49760abe874fbace35b4cf429
+  languageName: node
+  linkType: hard
+
 "table@npm:^6.0.9":
   version: 6.8.0
   resolution: "table@npm:6.8.0"
@@ -20287,6 +20368,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "talisman-ui@workspace:packages/talisman-ui"
   dependencies:
+    "@floating-ui/react": 0.20.1
+    "@headlessui/react": 1.7.13
     "@tailwindcss/forms": ^0.5.3
     "@talismn/eslint-config": "workspace:^"
     "@talismn/tsconfig": "workspace:^"
@@ -20306,6 +20389,8 @@ __metadata:
     tailwindcss: ^3.2.4
     typescript: 4.6.4
   peerDependencies:
+    "@floating-ui/react": ">=0.20.1"
+    "@headlessui/react": ">=1.7.13"
     "@tailwindcss/forms": ">=0.5.3"
     "@talismn/util": "*"
     autoprefixer: ">=10.4.12"

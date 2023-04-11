@@ -9,7 +9,7 @@ import {
   useSwitchNetwork,
 } from "wagmi"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 import { talismanChains } from "./talismanChains"
 
 export const Connect = () => {

@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react"
 import { Button } from "talisman-ui"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 import { DecryptResult, EncryptResult, TalismanSigner } from "./types"
 import { useWallet } from "./useWallet"
 

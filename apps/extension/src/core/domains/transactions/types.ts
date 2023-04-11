@@ -1,83 +1,46 @@
-import { ChainId } from "@core/domains/chains/types"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
-import { TokenId } from "@core/domains/tokens/types"
-import { RequestIdOnly } from "@core/types/base"
+import { Address } from "@talismn/balances"
+import { EvmNetworkId, TokenId } from "@talismn/chaindata-provider"
+import { ethers } from "ethers"
 
-import { EthGasSettings, EvmNetworkId } from "../ethereum/types"
+// unknown for substrate txs from dapps
+export type TransactionStatus = "unknown" | "pending" | "success" | "error" | "replaced"
 
-// Asset Transfer Messages
-export type AssetTransferMethod = "transferKeepAlive" | "transfer" | "transferAll"
-export interface RequestAssetTransfer {
-  chainId: ChainId
-  tokenId: TokenId
-  fromAddress: string
-  toAddress: string
-  amount?: string
-  tip?: string
-  method?: AssetTransferMethod
-}
-export interface RequestAssetTransferEth {
-  evmNetworkId: EvmNetworkId
-  tokenId: TokenId
-  fromAddress: string
-  toAddress: string
-  amount: string
-  gasSettings: EthGasSettings
-}
-export interface RequestAssetTransferEthHardware {
-  evmNetworkId: EvmNetworkId
-  tokenId: TokenId
-  amount: string
-  signedTransaction: string
+export type WatchTransactionOptions = {
+  siteUrl?: string
+  notifications?: boolean
+  transferInfo?: WalletTransactionTransferInfo
 }
 
-export interface RequestAssetTransferApproveSign {
-  unsigned: SignerPayloadJSON
-  signature: `0x${string}` | Uint8Array
+export type WalletTransactionTransferInfo = {
+  tokenId?: TokenId
+  value?: string
+  to?: Address
 }
 
-export interface ResponseAssetTransfer {
-  id: string
-}
-
-export interface ResponseAssetTransferEth {
+export type WalletTransactionBase = WalletTransactionTransferInfo & {
+  account: Address
+  siteUrl?: string
+  timestamp: number
   hash: string
-}
-
-export interface ResponseAssetTransferFeeQuery {
-  partialFee: string
-  unsigned: SignerPayloadJSON
-}
-
-export type TransactionId = string
-
-export type TransactionStatus = "PENDING" | "SUCCESS" | "ERROR"
-
-export type Transaction = {
-  id: string
-  from: string
-  nonce: string
-  hash: string
-  chainId: ChainId
-  blockHash?: string
-  blockNumber?: string
-  extrinsicIndex?: number
   status: TransactionStatus
-  message?: string
-  createdAt: number
+  isReplacement?: boolean
+  label?: string
+  nonce: number
+  blockNumber?: string
 }
 
-export type TransactionList = Record<TransactionId, Transaction>
-
-export interface AssetTransferMessages {
-  // asset transfer signatures
-  "pri(assets.transfer)": [RequestAssetTransfer, ResponseAssetTransfer]
-  "pri(assets.transferEth)": [RequestAssetTransferEth, ResponseAssetTransferEth]
-  "pri(assets.transferEthHardware)": [RequestAssetTransferEthHardware, ResponseAssetTransferEth]
-  "pri(assets.transfer.checkFees)": [RequestAssetTransfer, ResponseAssetTransferFeeQuery]
-  "pri(assets.transfer.approveSign)": [RequestAssetTransferApproveSign, ResponseAssetTransfer]
-
-  // transaction message signatures
-  "pri(transactions.byid.subscribe)": [RequestIdOnly, boolean, any]
-  "pri(transactions.subscribe)": [null, boolean, any]
+export type EvmWalletTransaction = WalletTransactionBase & {
+  networkType: "evm"
+  evmNetworkId: EvmNetworkId
+  unsigned: ethers.providers.TransactionRequest
 }
+
+export type SubWalletTransaction = WalletTransactionBase & {
+  networkType: "substrate"
+  genesisHash: string
+  unsigned: SignerPayloadJSON
+}
+
+// Named Wallet* this to avoid conflicts with types from various Dexie, Polkadot and Ethers libraries
+export type WalletTransaction = EvmWalletTransaction | SubWalletTransaction

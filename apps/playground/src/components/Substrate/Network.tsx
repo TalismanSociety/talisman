@@ -1,7 +1,7 @@
 import { u32 } from "@polkadot/types-codec"
 import { useEffect, useState } from "react"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 import { useApi } from "./useApi"
 import { useNetwork } from "./useNetwork"
 
