@@ -17,7 +17,13 @@ export const SendFundsSubmitted = () => {
 
   useAnalyticsPageView(ANALYTICS_PAGE)
 
-  const hash = useMemo(() => (searchParams.get("hash") as HexString) ?? undefined, [searchParams])
+  const { hash, networkIdOrHash } = useMemo(
+    () => ({
+      hash: (searchParams.get("hash") as HexString) ?? undefined,
+      networkIdOrHash: (searchParams.get("networkIdOrHash") as string) ?? undefined,
+    }),
+    [searchParams]
+  )
 
   const handleClose = useCallback(() => {
     window.close()
@@ -25,7 +31,7 @@ export const SendFundsSubmitted = () => {
 
   return (
     <div id="main" className="relative h-full w-full px-12 py-8">
-      <SendFundsProgress hash={hash} onClose={handleClose} />
+      <SendFundsProgress hash={hash} networkIdOrHash={networkIdOrHash} onClose={handleClose} />
     </div>
   )
 }

@@ -486,7 +486,7 @@ const useSendFundsProvider = () => {
 
       setIsProcessing(true)
 
-      if (token.chain?.id) {
+      if (token.chain?.id && chain?.genesisHash) {
         const { hash } = await api.assetTransfer(
           token.chain.id,
           token.id,
@@ -497,7 +497,7 @@ const useSendFundsProvider = () => {
           method
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-        gotoProgress({ hash })
+        gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
       } else if (token.evmNetwork?.id) {
         if (!transfer) throw new Error("Missing send amount")
         if (!evmTransaction?.gasSettings) throw new Error("Missing gas settings")
@@ -510,7 +510,7 @@ const useSendFundsProvider = () => {
           evmTransaction.gasSettings
         )
         await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
-        gotoProgress({ hash })
+        gotoProgress({ hash, networkIdOrHash: token.evmNetwork?.id })
       } else throw new Error("Unknown network")
     } catch (err) {
       log.error("Failed to submit tx", err)
@@ -518,6 +518,7 @@ const useSendFundsProvider = () => {
       setIsProcessing(false)
     }
   }, [
+    chain,
     sendMax,
     maxAmount,
     transfer,
@@ -534,13 +535,14 @@ const useSendFundsProvider = () => {
     async (signature: HexString) => {
       try {
         setIsProcessing(true)
-        if (subTransaction?.unsigned && token?.id) {
+        if (subTransaction?.unsigned && token?.id && chain?.genesisHash) {
           const { hash } = await api.assetTransferApproveSign(subTransaction.unsigned, signature, {
             tokenId: token.id,
             value: amount,
             to,
           })
-          gotoProgress({ hash })
+          await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
+          gotoProgress({ hash, networkIdOrHash: chain.genesisHash })
           return
         }
         if (evmTransaction?.transaction && amount && token?.evmNetwork?.id && to) {
@@ -552,7 +554,8 @@ const useSendFundsProvider = () => {
             evmTransaction.transaction,
             signature
           )
-          gotoProgress({ hash })
+          await sleep(500) // wait for dexie to pick up change in transactions table, prevents having "unfound transaction" flickering in progress screen
+          gotoProgress({ hash, networkIdOrHash: token.evmNetwork.id })
           return
         }
         throw new Error("Unknown transaction")
@@ -561,15 +564,7 @@ const useSendFundsProvider = () => {
         setIsProcessing(false)
       }
     },
-    [
-      amount,
-      evmTransaction?.transaction,
-      gotoProgress,
-      subTransaction?.unsigned,
-      to,
-      token?.evmNetwork?.id,
-      token?.id,
-    ]
+    [amount, evmTransaction, gotoProgress, subTransaction, to, token, chain]
   )
 
   return {

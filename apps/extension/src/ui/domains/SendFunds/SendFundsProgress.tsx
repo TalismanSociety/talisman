@@ -5,6 +5,7 @@ import {
 } from "@core/domains/transactions"
 import { HexString } from "@polkadot/util/types"
 import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talisman/theme/icons"
+import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
@@ -16,6 +17,16 @@ import urlJoin from "url-join"
 
 import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
 
+const getBlockExplorerUrl = (
+  network: EvmNetwork | undefined,
+  chain: Chain | undefined,
+  hash: string
+) => {
+  if (network?.explorerUrl) return urlJoin(network.explorerUrl, "tx", hash)
+  if (chain?.subscanUrl) return urlJoin(chain.subscanUrl, "tx", hash)
+  return undefined
+}
+
 const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
   const { gotoProgress } = useSendFundsWizard()
@@ -25,9 +36,12 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
   const handleClose = useCallback(
     (newHash?: HexString) => {
       setReplaceType(undefined)
-      if (newHash) gotoProgress({ hash: newHash })
+      if (newHash) {
+        const networkIdOrHash = tx.networkType === "evm" ? tx.evmNetworkId : tx.genesisHash
+        if (networkIdOrHash) gotoProgress({ hash: newHash, networkIdOrHash })
+      }
     },
-    [gotoProgress]
+    [gotoProgress, tx]
   )
 
   if (tx.status !== "pending" || tx.networkType !== "evm") return null
@@ -73,8 +87,8 @@ const useStatusDetails = (tx: WalletTransaction) => {
     switch (tx.status) {
       case "unknown":
         return {
-          title: "Failure",
-          subtitle: "Transaction was not found.",
+          title: "Transaction not found",
+          subtitle: "Transaction was submitted, but Talisman is unable to track its progress.",
           animStatus: "failure",
         }
       case "replaced": {
@@ -186,9 +200,7 @@ const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = ({
   className,
 }) => {
   const chain = useChainByGenesisHash(tx.genesisHash)
-  const href = useMemo(() => {
-    return chain?.subscanUrl ? urlJoin(chain.subscanUrl, "tx", tx.hash) : undefined
-  }, [chain, tx])
+  const href = useMemo(() => getBlockExplorerUrl(undefined, chain, tx.hash), [chain, tx.hash])
 
   return (
     <SendFundsProgressBase
@@ -213,11 +225,8 @@ const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
   onClose,
 }) => {
   const network = useEvmNetwork(tx.evmNetworkId)
+  const href = useMemo(() => getBlockExplorerUrl(network, undefined, tx.hash), [network, tx.hash])
 
-  const href = useMemo(
-    () => (network?.explorerUrl ? urlJoin(network.explorerUrl, "tx", tx.hash) : undefined),
-    [network?.explorerUrl, tx.hash]
-  )
   return (
     <SendFundsProgressBase
       tx={tx}
@@ -242,16 +251,28 @@ const UNKNOWN_TX: WalletTransaction = {
 
 type SendFundsProgressProps = {
   hash: HexString
+  networkIdOrHash: string
   onClose?: () => void
   className?: string
 }
 
-export const SendFundsProgress: FC<SendFundsProgressProps> = ({ hash, onClose, className }) => {
+export const SendFundsProgress: FC<SendFundsProgressProps> = ({
+  hash,
+  networkIdOrHash,
+  onClose,
+  className,
+}) => {
   const tx = useTransactionByHash(hash)
+  const evmNetwork = useEvmNetwork(networkIdOrHash)
+  const chain = useChainByGenesisHash(networkIdOrHash)
 
   // tx is null if not found in db
-  if (tx === null)
-    return <SendFundsProgressBase tx={UNKNOWN_TX} className={className} onClose={onClose} />
+  if (tx === null) {
+    const href = getBlockExplorerUrl(evmNetwork, chain, hash)
+    return (
+      <SendFundsProgressBase tx={UNKNOWN_TX} href={href} className={className} onClose={onClose} />
+    )
+  }
 
   if (tx?.networkType === "substrate")
     return <SendFundsProgressSubstrate tx={tx} onClose={onClose} className={className} />

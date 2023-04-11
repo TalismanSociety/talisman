@@ -110,9 +110,10 @@ const useSendFundsWizardProvider = () => {
   )
 
   const gotoProgress = useCallback(
-    ({ hash }: { hash?: HexString }) => {
+    ({ hash, networkIdOrHash }: { hash: HexString; networkIdOrHash: string }) => {
       const qs = new URLSearchParams()
-      if (hash) qs.set("hash", hash)
+      qs.set("hash", hash)
+      qs.set("networkIdOrHash", networkIdOrHash)
       navigate(`/send/submitted?${qs.toString()}`)
     },
     [navigate]
