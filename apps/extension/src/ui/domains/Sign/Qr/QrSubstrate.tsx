@@ -7,7 +7,7 @@ import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
-import useChains from "@ui/hooks/useChains"
+import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { ReactElement, useState } from "react"
 import { Button } from "talisman-ui"
 
@@ -63,8 +63,7 @@ export const QrSubstrate = ({
   const [scanState, setScanState] = useState<ScanState>(
     skipInit ? { page: "SEND" } : { page: "INIT" }
   )
-  const { chains } = useChains(true)
-  const chain = chains.find((chain) => chain.genesisHash === genesisHash)
+  const chain = useChainByGenesisHash(genesisHash)
 
   if (scanState.page === "INIT")
     return (

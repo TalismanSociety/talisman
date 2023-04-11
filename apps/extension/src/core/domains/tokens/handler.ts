@@ -35,7 +35,7 @@ export default class TokensHandler extends ExtensionHandler {
       case "pri(tokens.erc20.custom.byid)": {
         const token = await chaindataProvider.getToken((request as RequestIdOnly).id)
         if (!token || !("isCustom" in token)) return
-        return token
+        return token as ResponseType<"pri(tokens.erc20.custom.byid)">
       }
 
       case "pri(tokens.erc20.custom.add)": {

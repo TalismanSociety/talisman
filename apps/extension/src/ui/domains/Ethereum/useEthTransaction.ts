@@ -31,15 +31,16 @@ import { useIsValidEthTransaction } from "./Sign/useIsValidEthTransaction"
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]
 
-const useNonce = (address?: string, evmNetworkId?: EvmNetworkId) => {
+const useNonce = (address?: string, evmNetworkId?: EvmNetworkId, forcedValue?: number) => {
   const { data, ...rest } = useQuery({
     queryKey: ["nonce", address, evmNetworkId],
     queryFn: () => {
       return address && evmNetworkId ? api.ethGetTransactionsCount(address, evmNetworkId) : null
     },
+    enabled: forcedValue === undefined, // don't bother fetching if value is forced
   })
 
-  return { nonce: data ?? undefined, ...rest }
+  return { nonce: forcedValue ?? data ?? undefined, ...rest }
 }
 
 const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
@@ -75,7 +76,14 @@ const useBlockFeeData = (
         provider.getBlock("latest"),
         withFeeOptions ? getFeeHistoryAnalysis(provider) : undefined,
         // estimate gas may change over time for contract calls, so we need to refresh it every time we prepare the tx to prevent an invalid transaction
-        provider.estimateGas(tx),
+        provider.estimateGas({
+          ...tx,
+          type: undefined,
+          gasPrice: undefined,
+          maxPriorityFeePerGas: undefined,
+          maxFeePerGas: undefined,
+          gasLimit: undefined,
+        }),
       ])
 
       if (
@@ -200,6 +208,7 @@ const useGasSettings = ({
   feeHistoryAnalysis,
   priority,
   tx,
+  isReplacement,
 }: {
   hasEip1559Support?: boolean
   baseFeePerGas?: BigNumber | null
@@ -209,6 +218,7 @@ const useGasSettings = ({
   feeHistoryAnalysis?: FeeHistoryAnalysis | null
   priority?: EthPriorityOptionName
   tx?: ethers.providers.TransactionRequest
+  isReplacement?: boolean
 }) => {
   // TODO init with values from tx (supplied by dapp)
   const [customSettings, setCustomSettings] = useState<EthGasSettings>()
@@ -216,7 +226,6 @@ const useGasSettings = ({
   const gasSettingsByPriority: GasSettingsByPriority | undefined = useMemo(() => {
     if (hasEip1559Support === undefined || !estimatedGas || !gasPrice || !blockGasLimit || !tx)
       return undefined
-
     const gasLimit = getGasLimit(blockGasLimit, estimatedGas, tx.gasLimit)
     const suggestedSettings = getEthGasSettingsFromTransaction(
       tx,
@@ -229,6 +238,19 @@ const useGasSettings = ({
       if (!feeHistoryAnalysis || !baseFeePerGas) return undefined
 
       const mapMaxPriority = feeHistoryAnalysis.maxPriorityPerGasOptions
+
+      if (isReplacement) {
+        // for replacement transactions, ensure that maxPriorityFeePerGas is at least 10% higher than original tx
+        const minimumMaxPriorityFeePerGas = ethers.BigNumber.from(tx.maxPriorityFeePerGas)
+          .mul(110)
+          .div(100)
+        if (mapMaxPriority.low.lt(minimumMaxPriorityFeePerGas))
+          mapMaxPriority.low = minimumMaxPriorityFeePerGas
+        if (mapMaxPriority.medium.lt(minimumMaxPriorityFeePerGas))
+          mapMaxPriority.medium = minimumMaxPriorityFeePerGas
+        if (mapMaxPriority.high.lt(minimumMaxPriorityFeePerGas))
+          mapMaxPriority.high = minimumMaxPriorityFeePerGas
+      }
 
       const low = getGasSettingsEip1559(baseFeePerGas, mapMaxPriority.low, gasLimit)
       const medium = getGasSettingsEip1559(baseFeePerGas, mapMaxPriority.medium, gasLimit)
@@ -260,6 +282,13 @@ const useGasSettings = ({
       gasLimit,
     }
 
+    if (isReplacement) {
+      // for replacement transactions, ensure that maxPriorityFeePerGas is at least 10% higher than original tx
+      const minimumGasPrice = ethers.BigNumber.from(tx.gasPrice).mul(110).div(100)
+      if (ethers.BigNumber.from(gasPrice).lt(minimumGasPrice))
+        recommendedSettings.gasPrice = minimumGasPrice
+    }
+
     const custom: EthGasSettingsLegacy =
       customSettings?.type === 0
         ? customSettings
@@ -282,6 +311,7 @@ const useGasSettings = ({
     gasPrice,
     hasEip1559Support,
     tx,
+    isReplacement,
   ])
 
   const gasSettings = useMemo(() => {
@@ -301,12 +331,17 @@ const useGasSettings = ({
 
 export const useEthTransaction = (
   tx?: ethers.providers.TransactionRequest,
-  lockTransaction = false
+  lockTransaction = false,
+  isReplacement = false
 ) => {
   const provider = useEthereumProvider(tx?.chainId?.toString())
   const { transactionInfo, error: errorTransactionInfo } = useTransactionInfo(provider, tx)
   const { hasEip1559Support, error: errorEip1559Support } = useHasEip1559Support(provider)
-  const { nonce, error: nonceError } = useNonce(tx?.from, tx?.chainId?.toString())
+  const { nonce, error: nonceError } = useNonce(
+    tx?.from,
+    tx?.chainId?.toString(),
+    isReplacement && tx?.nonce ? BigNumber.from(tx.nonce).toNumber() : undefined
+  )
 
   const {
     gasPrice,
@@ -324,7 +359,7 @@ export const useEthTransaction = (
   useEffect(() => {
     if (priority !== undefined || hasEip1559Support === undefined) return
     setPriority(hasEip1559Support ? "low" : "recommended")
-  }, [hasEip1559Support, priority])
+  }, [hasEip1559Support, isReplacement, priority])
 
   const { gasSettings, setCustomSettings, gasSettingsByPriority } = useGasSettings({
     tx,
@@ -335,6 +370,7 @@ export const useEthTransaction = (
     gasPrice,
     blockGasLimit,
     feeHistoryAnalysis,
+    isReplacement,
   })
 
   const liveUpdatingTransaction = useMemo(() => {

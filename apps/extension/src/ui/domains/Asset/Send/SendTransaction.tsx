@@ -1,18 +1,10 @@
-import { TransactionProgress } from "@ui/domains/Transaction/TransactionProgress"
-
 import { useSendTokens } from "./context"
 import { useSendTokensModal } from "./SendTokensModalContext"
+import { TransactionProgress } from "./TransactionProgress"
 
 export const SendTransaction = () => {
-  const { transactionId, transactionHash, transferableToken } = useSendTokens()
+  const { transactionHash } = useSendTokens()
   const { close } = useSendTokensModal()
 
-  return (
-    <TransactionProgress
-      evmNetworkId={transferableToken?.evmNetworkId}
-      evmTxHash={transactionHash}
-      substrateTxId={transactionId}
-      handleClose={close}
-    />
-  )
+  return <TransactionProgress hash={transactionHash} onClose={close} />
 }

@@ -26,7 +26,7 @@ import type { Port } from "@core/types/base"
 export interface Handler {
   resolve: (data?: any) => void
   reject: (error: Error) => void
-  subscriber?: (data: unknown) => void
+  subscriber?: (data: any) => void
 }
 
 export type Handlers = Record<string, Handler>

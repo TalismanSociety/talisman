@@ -1,2 +1,1 @@
-export * from "./watchEthereumTransaction"
-export * from "./watchSubstrateTransaction"
+export * from "./createNotification"

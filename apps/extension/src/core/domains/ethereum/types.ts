@@ -2,6 +2,7 @@ import type { ETH_SEND, ETH_SIGN, KnownSigningRequestIdOnly } from "@core/domain
 import type { CustomErc20Token } from "@core/domains/tokens/types"
 import { AnyEthRequest, EthProviderMessage, EthResponseTypes } from "@core/injectEth/types"
 import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
+import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BigNumberish, ethers } from "ethers"
 
@@ -29,14 +30,26 @@ export type AddEthereumChainParameter = {
   iconUrls?: string[]
 }
 
+export type EthTxSignAndSend = {
+  unsigned: ethers.providers.TransactionRequest
+}
+export type EthTxSendSigned = {
+  unsigned: ethers.providers.TransactionRequest
+  signed: `0x${string}`
+}
+
 export declare type EthApproveSignAndSend = KnownSigningRequestIdOnly<ETH_SEND> & {
   transaction: ethers.providers.TransactionRequest
 }
 
-export type EthRequestSigningApproveSignature<T extends ETH_SIGN | ETH_SEND> =
-  KnownSigningRequestIdOnly<T> & {
-    signedPayload: `0x${string}`
-  }
+export type EthRequestSigningApproveSignature = KnownSigningRequestIdOnly<ETH_SIGN> & {
+  signedPayload: `0x${string}`
+}
+
+export type EthRequestSignAndSendApproveSignature = KnownSigningRequestIdOnly<ETH_SEND> & {
+  unsigned: ethers.providers.TransactionRequest
+  signedPayload: `0x${string}`
+}
 
 export interface AnyEthRequestChainId extends AnyEthRequest {
   chainId: EvmNetworkId
@@ -86,14 +99,13 @@ export interface EthMessages {
   // eth signing message signatures
   "pri(eth.request)": [AnyEthRequestChainId, EthResponseTypes]
   "pri(eth.transactions.count)": [EthNonceRequest, number]
+  "pri(eth.signing.signAndSend)": [EthTxSignAndSend, HexString]
+  "pri(eth.signing.sendSigned)": [EthTxSendSigned, HexString]
   "pri(eth.signing.cancel)": [KnownSigningRequestIdOnly<"eth-send" | "eth-sign">, boolean]
   "pri(eth.signing.approveSign)": [KnownSigningRequestIdOnly<"eth-sign">, boolean]
   "pri(eth.signing.approveSignAndSend)": [EthApproveSignAndSend, boolean]
-  "pri(eth.signing.approveSignHardware)": [EthRequestSigningApproveSignature<"eth-sign">, boolean]
-  "pri(eth.signing.approveSignAndSendHardware)": [
-    EthRequestSigningApproveSignature<"eth-send">,
-    boolean
-  ]
+  "pri(eth.signing.approveSignHardware)": [EthRequestSigningApproveSignature, boolean]
+  "pri(eth.signing.approveSignAndSendHardware)": [EthRequestSignAndSendApproveSignature, boolean]
   // eth add networks requests management
   // TODO change naming for network add requests, and maybe delete the first one
   "pri(eth.networks.add.requests)": [null, AddEthereumChainRequest[]]

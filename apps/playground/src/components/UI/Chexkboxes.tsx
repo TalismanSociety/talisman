@@ -1,7 +1,7 @@
 import { ReactNode } from "react"
 import { Checkbox } from "talisman-ui"
 
-import { TestLayout } from "./TestLayout"
+import { TestLayout } from "../shared/TestLayout"
 
 const Box = ({ title, children }: { title: ReactNode; children?: ReactNode }) => (
   <div className="flex w-full grow flex-col justify-center gap-4 text-center">

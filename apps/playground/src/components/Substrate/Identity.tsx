@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Button } from "talisman-ui"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 import { useApi } from "./useApi"
 import { useWallet } from "./useWallet"
 

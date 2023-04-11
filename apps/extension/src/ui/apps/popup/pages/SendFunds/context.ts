@@ -1,5 +1,6 @@
 import { TokenId } from "@core/domains/tokens/types"
 import { Address } from "@core/types/base"
+import { HexString } from "@polkadot/util/types"
 import { provideContext } from "@talisman/util/provideContext"
 import { useCallback, useMemo } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -109,19 +110,10 @@ const useSendFundsWizardProvider = () => {
   )
 
   const gotoProgress = useCallback(
-    ({
-      evmNetworkId,
-      evmTxHash,
-      substrateTxId,
-    }: {
-      evmNetworkId?: string
-      evmTxHash?: string
-      substrateTxId?: string
-    }) => {
+    ({ hash, networkIdOrHash }: { hash: HexString; networkIdOrHash: string }) => {
       const qs = new URLSearchParams()
-      if (evmNetworkId) qs.set("evmNetworkId", evmNetworkId)
-      if (evmTxHash) qs.set("evmTxHash", evmTxHash)
-      if (substrateTxId) qs.set("substrateTxId", substrateTxId)
+      qs.set("hash", hash)
+      qs.set("networkIdOrHash", networkIdOrHash)
       navigate(`/send/submitted?${qs.toString()}`)
     },
     [navigate]
