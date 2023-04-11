@@ -100,6 +100,36 @@ const getFormattedAddress = (address?: Address, chain?: Chain) => {
   return null
 }
 
+const getQrLogo = async (
+  address: string | null,
+  isGeneric: boolean,
+  ethereum?: Token,
+  chain?: Chain
+) => {
+  if (!address) {
+    return undefined
+  }
+
+  if (isGeneric) {
+    const avatar = getAccountAvatarDataUri(address, "polkadot-identicon")
+    if (avatar) return avatar
+  }
+
+  const logo = isEthereumAddress(address) ? ethereum?.logo : chain?.logo
+  if (!logo) {
+    return undefined
+  }
+
+  if (logo.startsWith("data:image")) return logo
+
+  try {
+    const data = await getBase64ImageFromUrl(logo)
+    return data?.startsWith("data:image") ? data : undefined
+  } catch (err) {
+    return undefined
+  }
+}
+
 export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWizardInputs }) => {
   const { close } = useCopyAddressModal()
 
@@ -118,34 +148,14 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     [state.address, chain]
   )
 
-  const [image, setImage] = useState<string>()
+  const [isLogoLoaded, setIsLogoLoaded] = useState(false)
+  const [logo, setLogo] = useState<string>()
   useEffect(() => {
-    if (!formattedAddress) {
-      return setImage(undefined)
-    }
-
-    if (state.chainId === null) {
-      const avatar = getAccountAvatarDataUri(formattedAddress, "polkadot-identicon")
-      if (avatar) return setImage(avatar)
-    }
-
-    const logo = isEthereumAddress(formattedAddress) ? ethereum?.logo : chain?.logo
-    if (!logo) {
-      return setImage(undefined)
-    }
-
-    if (logo.startsWith("data:image")) {
-      return setImage(logo)
-    }
-
-    getBase64ImageFromUrl(logo)
-      .then((data) => {
-        setImage(data?.startsWith("data:image") ? data : undefined)
-      })
-      .catch(() => {
-        setImage(undefined)
-      })
-  }, [chain?.logo, ethereum?.logo, formattedAddress, state.chainId])
+    setIsLogoLoaded(false)
+    getQrLogo(formattedAddress, state.chainId === null, ethereum, chain)
+      .then(setLogo)
+      .finally(() => setIsLogoLoaded(true))
+  }, [chain, ethereum, formattedAddress, state.chainId])
 
   const setStateAndUpdateRoute = useCallback((updates: Partial<CopyAddressWizardInputs>) => {
     setState((prev) => {
@@ -234,7 +244,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     inputs,
     ...state,
     formattedAddress,
-    image,
+    logo,
     goToAddressPage,
     goToNetworkOrTokenPage,
     setTokenId,
@@ -242,6 +252,7 @@ export const useCopyAddressWizardProvider = ({ inputs }: { inputs: CopyAddressWi
     setAddress,
     chain,
     copy,
+    isLogoLoaded,
   }
 
   return ctx

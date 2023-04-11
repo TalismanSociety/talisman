@@ -38,6 +38,12 @@ export const NavUI = () => {
       >
         Drawer
       </Link>
+      <Link
+        to="/ui/modal"
+        className={classNames(location.pathname === "/ui/modal" && "text-primary-500")}
+      >
+        Modal
+      </Link>
     </div>
   )
 }

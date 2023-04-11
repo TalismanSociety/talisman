@@ -16,7 +16,7 @@ import useToken from "@ui/hooks/useToken"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { FC, useCallback, useMemo } from "react"
-import { Button, PillButton } from "talisman-ui"
+import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import AccountAvatar from "../Account/Avatar"
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -170,9 +170,10 @@ export const CopyAddressCopyForm = () => {
     chainId,
     tokenId,
     formattedAddress,
-    image,
-    goToAddressPage,
+    logo,
     chain,
+    isLogoLoaded,
+    goToAddressPage,
     goToNetworkOrTokenPage,
   } = useCopyAddressWizard()
 
@@ -232,26 +233,34 @@ export const CopyAddressCopyForm = () => {
         </div>
         <div className="flex w-full grow flex-col items-center justify-center gap-12">
           <div className="h-[24rem] w-[24rem] rounded-lg bg-white p-10 ">
-            <FadeIn>
-              <QrCode data={data} image={image} imageOptions={QR_IMAGE_OPTIONS} />
-            </FadeIn>
+            {isLogoLoaded && (
+              <FadeIn>
+                <QrCode data={data} image={logo} imageOptions={QR_IMAGE_OPTIONS} />
+              </FadeIn>
+            )}
           </div>
           {chain && (
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
                 Your <span className="text-body">{chain.name}</span>{" "}
-                <WithTooltip
-                  tooltip={`Only use this address for receiving assets on the ${chain.name} ${
-                    chain.relay?.id === chain.id ? "Relay Chain" : "network"
-                  }`}
-                >
-                  <InfoIcon className="hover:text-body inline align-middle  text-xs" />
-                </WithTooltip>{" "}
+                <Tooltip>
+                  <TooltipTrigger>
+                    <InfoIcon className="hover:text-body inline align-middle text-xs" />
+                  </TooltipTrigger>
+                  <TooltipContent>{`Only use this address for receiving assets on the ${
+                    chain.name
+                  } ${chain.relay?.id === chain.id ? "Relay Chain" : "network"}`}</TooltipContent>
+                </Tooltip>{" "}
                 address
               </div>
               <div className="flex items-center gap-4">
                 <ChainLogo className="text-lg" id={chain?.id} />
-                <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
+                  </TooltipTrigger>
+                  <TooltipContent>{formattedAddress}</TooltipContent>
+                </Tooltip>
               </div>
             </div>
           )}
@@ -259,9 +268,14 @@ export const CopyAddressCopyForm = () => {
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
                 Your <span className="text-body">Substrate (Generic)</span>{" "}
-                <WithTooltip tooltip="This address is not specific to a network. Use at your own risk.">
-                  <InfoIcon className="hover:text-body inline align-middle  text-xs" />
-                </WithTooltip>{" "}
+                <Tooltip>
+                  <TooltipTrigger>
+                    <InfoIcon className="hover:text-body inline align-middle text-xs" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    This address is not specific to a network. Use at your own risk.
+                  </TooltipContent>
+                </Tooltip>{" "}
                 address
               </div>
               <div className="flex items-center gap-4">
@@ -270,7 +284,12 @@ export const CopyAddressCopyForm = () => {
                   className="!text-lg [&>div]:block"
                   address={formattedAddress}
                 />
-                <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
+                  </TooltipTrigger>
+                  <TooltipContent>{formattedAddress}</TooltipContent>
+                </Tooltip>
               </div>
             </div>
           )}
@@ -278,16 +297,24 @@ export const CopyAddressCopyForm = () => {
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
                 Your Ethereum{" "}
-                <WithTooltip
-                  tooltip={`Use this address for receiving assets on Ethereum and EVM compatible networks`}
-                >
-                  <InfoIcon className="hover:text-body inline align-middle text-xs" />
-                </WithTooltip>{" "}
+                <Tooltip>
+                  <TooltipTrigger>
+                    <InfoIcon className="hover:text-body inline align-middle text-xs" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Use this address for receiving assets on Ethereum and EVM compatible networks
+                  </TooltipContent>
+                </Tooltip>{" "}
                 address
               </div>
               <div className="flex items-center gap-4">
                 <ChainLogo className="text-lg" id="1" />
-                <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="leading-none">{shortenAddress(formattedAddress, 5, 5)}</div>
+                  </TooltipTrigger>
+                  <TooltipContent>{formattedAddress}</TooltipContent>
+                </Tooltip>
               </div>
             </div>
           )}
