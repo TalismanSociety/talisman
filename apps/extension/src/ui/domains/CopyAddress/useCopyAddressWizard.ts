@@ -123,7 +123,7 @@ const getQrLogo = async (
   if (logo.startsWith("data:image")) return logo
 
   try {
-    const data = await getBase64ImageFromUrl(logo)
+    const data = await getBase64ImageFromUrl(logo, { width: 300, height: 300 })
     return data?.startsWith("data:image") ? data : undefined
   } catch (err) {
     return undefined
