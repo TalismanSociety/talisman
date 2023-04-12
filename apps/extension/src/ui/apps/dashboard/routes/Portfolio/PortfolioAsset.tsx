@@ -5,6 +5,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
@@ -19,16 +20,17 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const { token, summary } = useTokenBalancesSummary(balancesToDisplay)
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
+  const { account } = useSelectedAccount()
 
   const handleCopyAddressClick = useCallback(() => {
-    openCopyAddressModal({ mode: "copy" })
+    openCopyAddressModal({ mode: "copy", address: account?.address })
     genericEvent("open copy address", { from: "dashboard portfolio" })
-  }, [genericEvent, openCopyAddressModal])
+  }, [account?.address, genericEvent, openCopyAddressModal])
 
   const handleSendFundsClick = useCallback(() => {
-    api.sendFundsOpen()
+    api.sendFundsOpen({ from: account?.address })
     genericEvent("open send funds", { from: "dashboard portfolio" })
-  }, [genericEvent])
+  }, [account?.address, genericEvent])
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
 
