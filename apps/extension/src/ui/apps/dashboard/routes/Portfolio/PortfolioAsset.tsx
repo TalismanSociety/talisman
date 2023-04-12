@@ -11,6 +11,7 @@ import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesS
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useMemo } from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
   const navigate = useNavigate()
@@ -49,18 +50,24 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
             </div>
             <div className="text-md">{token?.symbol}</div>
             <div className="flex flex-wrap">
-              <button
-                onClick={handleCopyAddressClick}
-                className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm"
-              >
-                <CopyIcon />
-              </button>
-              <button
-                onClick={handleSendFundsClick}
-                className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm"
-              >
-                <PaperPlaneIcon />
-              </button>
+              <Tooltip>
+                <TooltipTrigger
+                  onClick={handleCopyAddressClick}
+                  className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm"
+                >
+                  <CopyIcon />
+                </TooltipTrigger>
+                <TooltipContent>Copy address</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger
+                  onClick={handleSendFundsClick}
+                  className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm"
+                >
+                  <PaperPlaneIcon />
+                </TooltipTrigger>
+                <TooltipContent>Send</TooltipContent>
+              </Tooltip>
             </div>
           </div>
         </div>
