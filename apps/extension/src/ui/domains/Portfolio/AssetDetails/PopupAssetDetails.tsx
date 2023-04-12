@@ -1,6 +1,6 @@
 import { Balances } from "@core/domains/balances/types"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { ArrowDownIcon, CopyIcon, CreditCardIcon, LockIcon } from "@talisman/theme/icons"
+import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"

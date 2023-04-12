@@ -6,11 +6,11 @@ import { CopyAddressWizardInputs } from "./types"
 
 const useCopyAddressModalProvider = () => {
   const { open: innerOpen, close, isOpen } = useOpenClose()
-  const [options, setOptions] = useState<CopyAddressWizardInputs>()
+  const [inputs, setInputs] = useState<CopyAddressWizardInputs>()
 
   const open = useCallback(
     (opts: CopyAddressWizardInputs | undefined) => {
-      setOptions(opts)
+      setInputs(opts)
       innerOpen()
     },
     [innerOpen]
@@ -20,7 +20,7 @@ const useCopyAddressModalProvider = () => {
     isOpen,
     open,
     close,
-    inputs: options,
+    inputs,
   }
 }
 

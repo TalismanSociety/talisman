@@ -1,5 +1,5 @@
 import { classNames } from "@talismn/util"
-import { Modal, useOpenCloseWithData } from "talisman-ui"
+import { Modal } from "talisman-ui"
 
 import { CopyAddressWizard } from "./CopyAddressWizard"
 import { useCopyAddressModal } from "./useCopyAddressModal"

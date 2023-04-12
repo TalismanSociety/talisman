@@ -28,10 +28,6 @@ export const ModalPage = () => {
   const [withContainer, setWithContainer] = useState(false)
   const [withLightDismiss, setWithLightDismiss] = useState(false)
   const [blur, setBlur] = useState(false)
-  const ocLeft = useOpenClose()
-  const ocRight = useOpenClose()
-  const ocBottom1 = useOpenClose()
-  const ocBottom2 = useOpenClose()
   const ocTop = useOpenClose()
 
   const containerId = withContainer ? "container" : undefined
