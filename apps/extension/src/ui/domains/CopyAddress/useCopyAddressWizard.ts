@@ -123,6 +123,7 @@ const getQrLogo = async (
   if (logo.startsWith("data:image")) return logo
 
   try {
+    // firefox can't detect svg size if not specified, enforce 300x300
     const data = await getBase64ImageFromUrl(logo, { width: 300, height: 300 })
     return data?.startsWith("data:image") ? data : undefined
   } catch (err) {
