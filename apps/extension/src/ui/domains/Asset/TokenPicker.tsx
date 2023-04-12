@@ -215,7 +215,7 @@ const TokensList: FC<TokensListProps> = ({
   )
 
   const accountChain = useMemo(
-    () => chains.find((c) => c.genesisHash === account?.genesisHash),
+    () => account?.genesisHash && chains.find((c) => c.genesisHash === account?.genesisHash),
     [account?.genesisHash, chains]
   )
 
@@ -299,6 +299,12 @@ const TokensList: FC<TokensListProps> = ({
       const bHasBalance = !!b.balances.sorted.find((bal) => bal.transferable.planck > 0n)
       if (aHasBalance && !bHasBalance) return -1
       if (!aHasBalance && bHasBalance) return 1
+
+      // polkadot and kusama should appear first
+      if (a.token.id === "polkadot-substrate-native-dot") return -1
+      if (b.token.id === "polkadot-substrate-native-dot") return 1
+      if (a.token.id === "kusama-substrate-native-ksm") return -1
+      if (b.token.id === "kusama-substrate-native-ksm") return 1
 
       // keep alphabetical sort
       return 0

@@ -1,9 +1,9 @@
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { ChevronRightIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon, CopyIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
-import { ChainId } from "@talismn/chaindata-provider"
+import { Chain, ChainId } from "@talismn/chaindata-provider"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useChains from "@ui/hooks/useChains"
 import { useSettings } from "@ui/hooks/useSettings"
@@ -46,7 +46,7 @@ const ChainFormatButton = ({ format, onClick }: { format: ChainFormat; onClick?:
       )}
       <div className="flex grow flex-col gap-2 text-left">
         <div className="text-body">{format.name}</div>
-        <div className="text-body-secondary text-sm">{shortenAddress(format.address)}</div>
+        <div className="text-body-secondary text-sm">{shortenAddress(format.address, 5, 5)}</div>
       </div>
       <ChevronRightIcon className="text-lg" />
     </button>
@@ -84,29 +84,34 @@ export const CopyAddressChainForm = () => {
   const { address, setChainId } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
   const { useTestnets = false } = useSettings()
-  const { chains } = useChains(useTestnets)
+  const { chains, chainsMap } = useChains(useTestnets)
 
   const account = useAccountByAddress(address)
   const accountChain = useMemo(
-    () => chains.find((c) => account?.genesisHash === c.genesisHash),
+    () => account?.genesisHash && chains.find((c) => account?.genesisHash === c.genesisHash),
     [account?.genesisHash, chains]
   )
 
   const formats: ChainFormat[] = useMemo(() => {
     if (!address || !chains.length) return []
+
+    const sortedChains = [
+      chainsMap["polkadot"],
+      chainsMap["kusama"],
+      ...chains.filter((c) => c.account !== "ethereum" && !["polkadot", "kusama"].includes(c.id)),
+    ].filter(Boolean) as Chain[]
+
     return [
-      { ...SUBSTRATE_FORMAT, address: address },
-      ...chains
-        .filter((c) => c.account !== "ethereum")
-        .map<ChainFormat>((chain) => ({
-          key: chain.id,
-          chainId: chain.id,
-          prefix: chain.prefix,
-          name: chain.name ?? "unknown",
-          address: convertAddress(address, chain.prefix),
-        })),
+      { ...SUBSTRATE_FORMAT, address: convertAddress(address, null) },
+      ...sortedChains.map<ChainFormat>((chain) => ({
+        key: chain.id,
+        chainId: chain.id,
+        prefix: chain.prefix,
+        name: chain.name ?? "unknown",
+        address: convertAddress(address, chain.prefix),
+      })),
     ].filter((f) => !accountChain || accountChain.id === f.chainId)
-  }, [address, chains, accountChain])
+  }, [address, chains, chainsMap, accountChain])
 
   const filteredFormats = useMemo(() => {
     if (!search) return formats
