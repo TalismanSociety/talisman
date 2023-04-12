@@ -177,6 +177,7 @@ type AccountPickerProps = {
   selected?: Address
   tokenId?: TokenId
   allowZeroBalance: boolean
+  searchPrefix?: ReactNode
   onSelect?: (address: Address) => void
 }
 
@@ -184,6 +185,7 @@ export const AccountPicker: FC<AccountPickerProps> = ({
   selected,
   tokenId,
   allowZeroBalance,
+  searchPrefix,
   onSelect,
 }) => {
   const [search, setSearch] = useState("")
@@ -217,7 +219,7 @@ export const AccountPicker: FC<AccountPickerProps> = ({
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-        <div className="font-bold">From</div>
+        {!!searchPrefix && <div className="font-bold">From</div>}
         <div className="grow">
           <SearchInput onChange={setSearch} placeholder="Search by account name" />
         </div>
