@@ -5858,7 +5858,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-evm-erc20@workspace:packages/balances-evm-erc20"
   dependencies:
-    "@polkadot/util": ^10.2.1
+    "@polkadot/util": ^11.1.1
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -5874,7 +5874,7 @@ __metadata:
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
-    "@polkadot/util": 10.x
+    "@polkadot/util": 11.x
   languageName: unknown
   linkType: soft
 
@@ -5935,8 +5935,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-assets@workspace:packages/balances-substrate-assets"
   dependencies:
-    "@polkadot/types": ^9.10.5
-    "@polkadot/util": ^10.2.1
+    "@polkadot/types": ^10.1.4
+    "@polkadot/util": ^11.1.1
     "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
@@ -5951,8 +5951,8 @@ __metadata:
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
-    "@polkadot/types": 9.x
-    "@polkadot/util": 10.x
+    "@polkadot/types": 10.x
+    "@polkadot/util": 11.x
     "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
@@ -5961,8 +5961,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium"
   dependencies:
-    "@polkadot/types": ^9.10.5
-    "@polkadot/util": ^10.2.1
+    "@polkadot/types": ^10.1.4
+    "@polkadot/util": ^11.1.1
     "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
@@ -5977,8 +5977,8 @@ __metadata:
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
-    "@polkadot/types": 9.x
-    "@polkadot/util": 10.x
+    "@polkadot/types": 10.x
+    "@polkadot/util": 11.x
     "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
@@ -5987,8 +5987,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-native@workspace:packages/balances-substrate-native"
   dependencies:
-    "@polkadot/types": ^9.10.5
-    "@polkadot/util": ^10.2.1
+    "@polkadot/types": ^10.1.4
+    "@polkadot/util": ^11.1.1
+    "@polkadot/util-crypto": ^11.1.1
     "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
@@ -6000,11 +6001,13 @@ __metadata:
     anylogger: ^1.0.11
     eslint: ^8.4.0
     jest: ^28.1.0
+    rxjs: ^7.8.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
-    "@polkadot/types": 9.x
-    "@polkadot/util": 10.x
+    "@polkadot/types": 10.x
+    "@polkadot/util": 11.x
+    "@polkadot/util-crypto": ^11.x
     "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
@@ -6013,8 +6016,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml"
   dependencies:
-    "@polkadot/types": ^9.10.5
-    "@polkadot/util": ^10.2.1
+    "@polkadot/types": ^10.1.4
+    "@polkadot/util": ^11.1.1
     "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
@@ -6028,8 +6031,8 @@ __metadata:
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
-    "@polkadot/types": 9.x
-    "@polkadot/util": 10.x
+    "@polkadot/types": 10.x
+    "@polkadot/util": 11.x
     "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
@@ -6038,8 +6041,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens"
   dependencies:
-    "@polkadot/types": ^9.10.5
-    "@polkadot/util": ^10.2.1
+    "@polkadot/types": ^10.1.4
+    "@polkadot/util": ^11.1.1
     "@substrate/txwrapper-core": "*"
     "@talismn/balances": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
@@ -6054,8 +6057,8 @@ __metadata:
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
-    "@polkadot/types": 9.x
-    "@polkadot/util": 10.x
+    "@polkadot/types": 10.x
+    "@polkadot/util": 11.x
     "@substrate/txwrapper-core": 4.x
   languageName: unknown
   linkType: soft
@@ -6064,7 +6067,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/balances@workspace:packages/balances"
   dependencies:
-    "@polkadot/types": ^9.10.5
+    "@polkadot/types": ^10.1.4
     "@talismn/chain-connector": "workspace:^"
     "@talismn/chain-connector-evm": "workspace:^"
     "@talismn/chaindata-provider": "workspace:^"
@@ -6082,7 +6085,7 @@ __metadata:
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
-    "@polkadot/types": 9.x
+    "@polkadot/types": 10.x
   languageName: unknown
   linkType: soft
 
@@ -6109,10 +6112,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/chain-connector@workspace:packages/chain-connector"
   dependencies:
-    "@polkadot/rpc-provider": ^9.1.1
-    "@polkadot/util": ^10.2.1
-    "@polkadot/x-global": ^10.2.1
-    "@polkadot/x-ws": ^10.2.1
+    "@polkadot/rpc-provider": ^10.1.4
+    "@polkadot/util": ^11.1.1
+    "@polkadot/x-global": ^11.1.1
+    "@polkadot/x-ws": ^11.1.1
     "@talismn/chaindata-provider": "workspace:^"
     "@talismn/connection-meta": "workspace:^"
     "@talismn/eslint-config": "workspace:^"
@@ -6126,10 +6129,10 @@ __metadata:
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
-    "@polkadot/rpc-provider": 9.x
-    "@polkadot/util": 10.x
-    "@polkadot/x-global": 10.x
-    "@polkadot/x-ws": 10.x
+    "@polkadot/rpc-provider": 10.x
+    "@polkadot/util": 11.x
+    "@polkadot/x-global": 11.x
+    "@polkadot/x-ws": 11.x
   languageName: unknown
   linkType: soft
 
@@ -6263,7 +6266,7 @@ __metadata:
   peerDependencies:
     "@polkadot/keyring": 11.x
     "@polkadot/util": 11.x
-    "@polkadot/util-crypto": ^11.x
+    "@polkadot/util-crypto": 11.x
   languageName: unknown
   linkType: soft
 
@@ -8965,8 +8968,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "balances-demo@workspace:apps/balances-demo"
   dependencies:
-    "@polkadot/api": ^9.1.1
-    "@polkadot/extension-dapp": ^0.44.3
+    "@polkadot/api": ^10.1.4
+    "@polkadot/extension-dapp": ^0.45.3
     "@tailwindcss/forms": ^0.5.3
     "@talismn/balances": "workspace:^"
     "@talismn/balances-default-modules": "workspace:^"

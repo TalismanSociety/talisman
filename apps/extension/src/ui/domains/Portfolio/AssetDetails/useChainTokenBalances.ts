@@ -23,6 +23,7 @@ type DetailRow = {
   fiat: number | null
   locked: boolean
   address?: Address
+  meta?: string
 }
 
 type ChainTokenBalancesParams = {
@@ -35,7 +36,7 @@ const getBalanceLockTypeTitle = (input: BalanceLockType | string, allLocks: Lock
 
   if (input === "democracy") return "Governance"
   if (input === "staking") return "Staking"
-  if (input === "nompools-staking") return "Pooled staking"
+  if (input === "nompools-staking") return "Staking"
   if (input === "vesting") return "Vesting"
   if (input === "dapp-staking") return "DApp staking"
   if (input === "other")
@@ -148,6 +149,8 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
                 locked: true,
                 // only show address when we're viewing balances for all accounts
                 address: account ? undefined : b.address,
+                // only show extra meta when we're viewing balances for a single account
+                meta: account ? (reserve.meta as any)?.description ?? undefined : undefined,
               }))
             )
             .sort(sortBigBy("tokens", true)),

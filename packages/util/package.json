@@ -43,7 +43,7 @@
   "peerDependencies": {
     "@polkadot/keyring": "11.x",
     "@polkadot/util": "11.x",
-    "@polkadot/util-crypto": "^11.x"
+    "@polkadot/util-crypto": "11.x"
   },
   "eslintConfig": {
     "root": true,

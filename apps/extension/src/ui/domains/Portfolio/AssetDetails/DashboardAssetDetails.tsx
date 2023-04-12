@@ -69,10 +69,12 @@ const AssetState = ({
   title,
   render,
   address,
+  meta,
 }: {
   title: string
   render: boolean
   address?: Address
+  meta?: string
 }) => {
   if (!render) return null
   return (
@@ -81,6 +83,11 @@ const AssetState = ({
       {address && (
         <div className="text-sm">
           <PortfolioAccount address={address} />
+        </div>
+      )}
+      {meta && !address && (
+        <div className="flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm">
+          {meta}
         </div>
       )}
     </div>
@@ -150,7 +157,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         .map((row, i, rows) => (
           <tr key={row.key} className={classNames("details", rows.length === i + 1 && "stop-row")}>
             <td className="al-main" valign="top">
-              <AssetState title={row.title} render address={row.address} />
+              <AssetState title={row.title} render address={row.address} meta={row.meta} />
             </td>
             <td align="right" valign="top"></td>
             <td align="right" valign="top">

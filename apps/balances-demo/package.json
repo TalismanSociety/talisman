@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@polkadot/api": "^9.1.1",
-    "@polkadot/extension-dapp": "^0.44.3",
+    "@polkadot/api": "^10.1.4",
+    "@polkadot/extension-dapp": "^0.45.3",
     "@talismn/balances": "workspace:^",
     "@talismn/balances-default-modules": "workspace:^",
     "@talismn/balances-react": "workspace:^",

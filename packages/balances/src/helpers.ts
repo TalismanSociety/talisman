@@ -81,8 +81,12 @@ export const createTypeRegistryCache = () => {
 
     const typeRegistry = new TypeRegistry()
     if (typeof metadataRpc === "string") {
-      const metadata = new Metadata(typeRegistry, metadataRpc)
-      metadata.registry.setMetadata(metadata)
+      try {
+        const metadata = new Metadata(typeRegistry, metadataRpc)
+        metadata.registry.setMetadata(metadata)
+      } catch (cause) {
+        log.warn(new Error(`Failed to set metadata for chain ${chainId}`, { cause }))
+      }
     }
 
     typeRegistryCache.set(chainId, typeRegistry)
@@ -260,7 +264,7 @@ export class StorageHelper {
 export type RpcStateQuery<T> = {
   chainId: string
   stateKey: string
-  decodeResult: (change: unknown) => T
+  decodeResult: (change: string | null) => T
 }
 
 /**
@@ -284,34 +288,26 @@ export class RpcStateQueryHelper<T> {
   ): Promise<UnsubscribeFn> {
     const queriesByChain = groupBy(this.#queries, "chainId")
 
-    const subscriptions = Object.entries(queriesByChain)
-      .map(([chainId, queries]) => {
-        const params = [queries.map(({ stateKey }) => stateKey)]
+    const subscriptions = Object.entries(queriesByChain).map(([chainId, queries]) => {
+      const params = [queries.map(({ stateKey }) => stateKey)]
 
-        const unsubscribe = this.#chainConnector.subscribe(
-          chainId,
-          subscribeMethod,
-          responseMethod,
-          params,
-          (error, result) => {
-            error
-              ? callback(error)
-              : callback(null, this.#distributeChangesToQueryDecoders.call(this, chainId, result))
-          },
-          timeout
-        )
-
-        return () => unsubscribe(unsubscribeMethod)
-      })
-      .map((subscription) =>
-        subscription.catch((error) => {
-          log.warn(`Failed to create subscription: ${error.message}`)
-          return () => {}
-        })
+      const unsub = this.#chainConnector.subscribe(
+        chainId,
+        subscribeMethod,
+        responseMethod,
+        params,
+        (error, result) => {
+          error
+            ? callback(error)
+            : callback(null, this.#distributeChangesToQueryDecoders.call(this, chainId, result))
+        },
+        timeout
       )
 
-    return () =>
-      subscriptions.forEach((subscription) => subscription.then((unsubscribe) => unsubscribe()))
+      return () => unsub.then((unsubscribe) => unsubscribe(unsubscribeMethod))
+    })
+
+    return () => subscriptions.forEach((unsubscribe) => unsubscribe())
   }
 
   async fetch(method = "state_queryStorageAt"): Promise<T[]> {

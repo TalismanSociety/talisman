@@ -56,6 +56,11 @@ export type BalanceStatus =
 export type IBalance = {
   /** The module that this balance was retrieved by */
   source: string
+  /**
+   * For modules which fetch balances via module sources, this is the sub-source
+   * e.g. `staking` or `crowdloans`
+   **/
+  subSource?: string
 
   /** Has this balance never been fetched, or is it from a cache, or is it up to date? */
   status: BalanceStatus
@@ -101,7 +106,11 @@ export type IBalanceAmounts = {
 export type Amount = string
 
 /** A labelled amount of a balance */
-export type AmountWithLabel<TLabel extends string> = { label: TLabel; amount: Amount }
+export type AmountWithLabel<TLabel extends string> = {
+  label: TLabel
+  amount: Amount
+  meta?: unknown
+}
 
 /** A labelled locked amount of a balance */
 export type LockedAmount<TLabel extends string> = AmountWithLabel<TLabel> & {

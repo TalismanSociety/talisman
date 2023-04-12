@@ -285,9 +285,9 @@ export class Balance {
   //
 
   get id(): string {
-    const { source, address, chainId, evmNetworkId, tokenId } = this.#storage
+    const { source, subSource, address, chainId, evmNetworkId, tokenId } = this.#storage
     const locationId = chainId !== undefined ? chainId : evmNetworkId
-    return `${source}-${address}-${locationId}-${tokenId}`
+    return [source, address, locationId, tokenId, subSource].filter(Boolean).join("-")
   }
 
   get source() {

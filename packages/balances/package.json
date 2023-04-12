@@ -37,7 +37,7 @@
     "lodash": "4.17.21"
   },
   "devDependencies": {
-    "@polkadot/types": "^9.10.5",
+    "@polkadot/types": "^10.1.4",
     "@talismn/eslint-config": "workspace:^",
     "@talismn/tsconfig": "workspace:^",
     "@types/jest": "^27.5.1",
@@ -48,7 +48,7 @@
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
-    "@polkadot/types": "9.x"
+    "@polkadot/types": "10.x"
   },
   "preconstruct": {
     "entrypoints": [
