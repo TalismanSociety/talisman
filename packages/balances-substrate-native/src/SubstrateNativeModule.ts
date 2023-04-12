@@ -402,7 +402,6 @@ export const SubNativeModule: NewBalanceModule<
           const unsubscribe = await chainConnectors.substrate.subscribe(
             chainId,
             subscribeMethod,
-            unsubscribeMethod,
             responseMethod,
             params,
             (error, result) => {
@@ -423,7 +422,7 @@ export const SubNativeModule: NewBalanceModule<
             timeout
           )
 
-          return unsubscribe
+          return () => unsubscribe(unsubscribeMethod)
         })
         .map((subscription) =>
           subscription.catch((error) => {

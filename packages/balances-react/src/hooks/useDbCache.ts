@@ -162,7 +162,7 @@ const useDbCacheProvider = (): DbCache => {
       setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances))
     },
     500,
-    [chainList, evmNetworkList, tokenList, rawBalances, tokenRates]
+    [chainList, evmNetworkList, tokenList, tokenRates, rawBalances]
   )
 
   const refInitialized = useRef(false)
@@ -180,7 +180,7 @@ const useDbCacheProvider = (): DbCache => {
       setDbData(consolidateDbCache(chainList, evmNetworkList, tokenList, tokenRates, rawBalances))
       refInitialized.current = true
     }
-  }, [chainList, evmNetworkList, rawBalances, tokenList, tokenRates])
+  }, [chainList, evmNetworkList, tokenList, tokenRates, rawBalances])
 
   return dbData
 }

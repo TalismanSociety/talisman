@@ -289,7 +289,6 @@ export const SubTokensModule: NewBalanceModule<
           const unsubscribe = await chainConnector.subscribe(
             chainId,
             subscribeMethod,
-            unsubscribeMethod,
             responseMethod,
             params,
             (error, result) => {
@@ -299,7 +298,7 @@ export const SubTokensModule: NewBalanceModule<
             timeout
           )
 
-          return unsubscribe
+          return () => unsubscribe(unsubscribeMethod)
         })
         .map((subscription) =>
           subscription.catch((error) => {

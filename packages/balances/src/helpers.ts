@@ -13,7 +13,14 @@ import {
   ExtendableTransferParams,
 } from "./BalanceModule"
 import log from "./log"
-import { AddressesByToken, Balance, Balances, SubscriptionCallback, UnsubscribeFn } from "./types"
+import {
+  AddressesByToken,
+  Balance,
+  BalanceJson,
+  Balances,
+  SubscriptionCallback,
+  UnsubscribeFn,
+} from "./types"
 
 /**
  * Wraps a BalanceModule's fetch/subscribe methods with a single `balances` method.
@@ -86,6 +93,58 @@ export const filterMirrorTokens = (balance: Balance, i: number, balances: Balanc
   const mirrorOf = (balance.token as (IToken & { mirrorOf?: string | null }) | null)?.mirrorOf
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }
+
+export const getValidSubscriptionIds = () => {
+  return new Set(localStorage.getItem("TalismanBalancesSubscriptionIds")?.split(",") ?? [])
+}
+export const createSubscriptionId = () => {
+  // delete current id (if exists)
+  deleteSubscriptionId()
+
+  // create new id
+  const subscriptionId = Date.now().toString()
+  sessionStorage.setItem("TalismanBalancesSubscriptionId", subscriptionId)
+
+  // add to list of current ids
+  const subscriptionIds = getValidSubscriptionIds()
+  subscriptionIds.add(subscriptionId)
+  localStorage.setItem(
+    "TalismanBalancesSubscriptionIds",
+    [...subscriptionIds].filter(Boolean).join(",")
+  )
+
+  return subscriptionId
+}
+export const deleteSubscriptionId = () => {
+  const subscriptionId = sessionStorage.getItem("TalismanBalancesSubscriptionId")
+  if (!subscriptionId) return
+
+  const subscriptionIds = getValidSubscriptionIds()
+  subscriptionIds.delete(subscriptionId)
+  localStorage.setItem(
+    "TalismanBalancesSubscriptionIds",
+    [...subscriptionIds].filter(Boolean).join(",")
+  )
+}
+
+/**
+ * Sets all balance statuses from `live-${string}` to either `live` or `cached`
+ */
+export const deriveStatuses = (
+  validSubscriptionIds: string[],
+  balances: BalanceJson[]
+): BalanceJson[] =>
+  balances.map((balance) => {
+    if (balance.status === "live" || balance.status === "cache" || balance.status === "stale")
+      return balance
+
+    if (validSubscriptionIds.length < 1) return { ...balance, status: "cache" }
+
+    if (!validSubscriptionIds.includes(balance.status.slice("live-".length)))
+      return { ...balance, status: "cache" }
+
+    return { ...balance, status: "live" }
+  })
 
 /**
  * Used by a variety of balance modules to help encode and decode substrate state calls.
