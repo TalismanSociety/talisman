@@ -6,7 +6,7 @@ import { api } from "@ui/api"
 import LedgerEthereum from "@ui/domains/Sign/LedgerEthereum"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { ethers } from "ethers"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 import { useSendTokens } from "./context"
 import { SendTokensData } from "./types"
@@ -54,14 +54,15 @@ const SendLedgerEthereum = () => {
   const [signed, setSigned] = useState(false)
   const handleSigned = useCallback(
     async ({ signature }: { signature: HexString }) => {
+      if (!transaction) return
       try {
         setSigned(true)
-        await sendWithSignatureEthereum(signature)
+        await sendWithSignatureEthereum(transaction, signature)
       } catch (err) {
         setError(err as Error)
       }
     },
-    [sendWithSignatureEthereum]
+    [sendWithSignatureEthereum, transaction]
   )
 
   if (error) return <div className="text-alert-error">{error.message}</div>

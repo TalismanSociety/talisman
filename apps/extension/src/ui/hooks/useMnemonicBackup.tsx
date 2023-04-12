@@ -1,3 +1,4 @@
+import { appStore } from "@core/domains/app"
 import { api } from "@ui/api"
 import { useCallback, useMemo } from "react"
 
@@ -5,7 +6,9 @@ import { useAppState } from "./useAppState"
 import { useMnemonicBackupConfirmed } from "./useMnemonicBackupConfirmed"
 
 const useMnemonicBackup = () => {
-  const { hideBackupWarningUntil, snoozeBackupReminder, hasFunds } = useAppState()
+  const [hasFunds] = useAppState("hasFunds")
+  const [hideBackupWarningUntil] = useAppState("hideBackupWarningUntil")
+  const snoozeBackupReminder = appStore.snoozeBackupReminder
   const backupConfirmed = useMnemonicBackupConfirmed()
 
   const { isConfirmed, isNotConfirmed } = useMemo(

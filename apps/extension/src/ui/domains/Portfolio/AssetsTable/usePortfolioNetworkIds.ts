@@ -7,11 +7,11 @@ export const usePortfolioNetworkIds = (balances: Balances) => {
     () =>
       [
         ...new Set(
-          balances.sorted
+          balances.each
             .filter((b) => b.total.planck > 0)
             .map((b) => b.chain?.id ?? b.evmNetwork?.id)
         ),
       ].filter(Boolean) as (ChainId | EvmNetworkId)[],
-    [balances.sorted]
+    [balances]
   )
 }

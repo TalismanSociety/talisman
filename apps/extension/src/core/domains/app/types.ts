@@ -1,5 +1,5 @@
 import { TokenId } from "@core/domains/tokens/types"
-import { AnyRequestID, ValidRequests } from "@core/libs/requests/types"
+import { ValidRequests } from "@core/libs/requests/types"
 import { Address } from "@core/types/base"
 import { Properties } from "posthog-js"
 
@@ -44,6 +44,7 @@ export type FeatureVariants = Partial<{
   BANNER_NOM_POOL_STAKING: boolean
   USE_ONFINALITY_API_KEY_SUBSTRATE: boolean
   USE_ONFINALITY_API_KEY_EVM: boolean
+  TEST_VARIANT: "VARIANT1" | "VARIANT2" // keep this one for string type checking
 }>
 export type FeatureFlag = keyof FeatureVariants
 

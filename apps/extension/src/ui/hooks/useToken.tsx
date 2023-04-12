@@ -1,11 +1,7 @@
 import type { TokenId } from "@core/domains/tokens/types"
+import { tokenQuery } from "@ui/atoms"
+import { useRecoilValue } from "recoil"
 
-import useTokens from "./useTokens"
-
-const useToken = (id: TokenId | null | undefined) => {
-  const { tokensMap } = useTokens(true)
-
-  return id ? tokensMap[id] : undefined
-}
+const useToken = (id: TokenId | null | undefined) => useRecoilValue(tokenQuery(id))
 
 export default useToken

@@ -8,7 +8,7 @@ import {
   MysticalPhysics,
 } from "talisman-ui"
 
-import { TestLayout } from "./TestLayout"
+import { TestLayout } from "../shared/TestLayout"
 
 export const Background = () => {
   const [showNew, setShowNew] = useState(true)

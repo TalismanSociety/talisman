@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Button, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 
-import { TestLayout } from "./TestLayout"
+import { TestLayout } from "../shared/TestLayout"
 
 export const TxStatusPage = () => {
   const [status, setStatus] = useState<ProcessAnimationStatus>("processing")

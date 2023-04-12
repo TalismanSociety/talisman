@@ -38,9 +38,12 @@ if (!process.env.POSTHOG_AUTH_TOKEN) {
     BANNER_NOM_POOL_STAKING: true,
     USE_ONFINALITY_API_KEY_SUBSTRATE: false,
     USE_ONFINALITY_API_KEY_EVM: false,
+    TEST_VARIANT: "VARIANT1",
   }
   featuresStore.set({
-    features: Object.keys(DEV_FEATURE_VARIANTS) as FeatureFlag[],
+    features: Object.keys(DEV_FEATURE_VARIANTS).filter(
+      (k) => !!DEV_FEATURE_VARIANTS[k as keyof FeatureVariants]
+    ) as FeatureFlag[],
     variants: DEV_FEATURE_VARIANTS,
   })
 }

@@ -15,7 +15,7 @@ import { useBalance } from "@ui/hooks/useBalance"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { useTip } from "@ui/hooks/useTip"
 import {
   ChangeEventHandler,
@@ -310,7 +310,7 @@ export const SendForm = () => {
     setIsEvm(!!transferableToken?.evmNetworkId)
   }, [transferableToken?.evmNetworkId])
 
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const { token } = transferableToken ?? {}
   const balance = useBalance(from, token?.id as string)
 

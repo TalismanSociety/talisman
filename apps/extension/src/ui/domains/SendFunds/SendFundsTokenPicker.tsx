@@ -9,7 +9,7 @@ import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
@@ -184,7 +184,7 @@ type TokensListProps = {
 }
 
 const TokensList: FC<TokensListProps> = ({ from, selected, search, networkType, onSelect }) => {
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const { chainsMap } = useChains(useTestnets)
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
   const { tokens: allTokens } = useTokens(useTestnets)

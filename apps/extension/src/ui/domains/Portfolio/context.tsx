@@ -8,8 +8,10 @@ import useBalances from "@ui/hooks/useBalances"
 import { useBalancesHydrate } from "@ui/hooks/useBalancesHydrate"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
+import { isEvmToken } from "@ui/util/isEvmToken"
+import { isSubToken } from "@ui/util/isSubToken"
 import { useEffect, useMemo, useState } from "react"
 
 export type NetworkOption = {
@@ -32,15 +34,15 @@ const getNetworkTokenSymbols = ({
 }) => {
   if (!tokens) return []
   const networkTokens = tokens.filter((token) => {
-    if (chainId) return "chain" in token && token.chain?.id === chainId
-    if (evmNetworkId) return "evmNetwork" in token && token.evmNetwork?.id === evmNetworkId
+    if (isSubToken(token)) return token.chain?.id === chainId
+    if (isEvmToken(token)) return token.evmNetwork?.id === evmNetworkId
     return true
   })
   return networkTokens.map(({ symbol }) => symbol).filter(Boolean)
 }
 
 const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balances?: Balances }) => {
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const { chains } = useChains(useTestnets)
   const { tokens } = useTokens(useTestnets)
   const { evmNetworks } = useEvmNetworks(useTestnets)
@@ -117,7 +119,7 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
 
 // allows sharing the network filter between pages
 const usePortfolioProvider = () => {
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const { account } = useSelectedAccount()
   const { chains } = useChains(useTestnets)
   const { tokens } = useTokens(useTestnets)

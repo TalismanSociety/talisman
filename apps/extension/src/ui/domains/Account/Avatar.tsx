@@ -5,8 +5,9 @@ import { TalismanOrb } from "@talisman/components/TalismanOrb"
 import ethIcon from "@talisman/theme/logos/eth-diamond-glyph-white.png"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
+import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { Suspense, lazy, useMemo } from "react"
 import styled from "styled-components"
 
@@ -56,11 +57,7 @@ const Container = styled.div`
 `
 
 const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
-  const { chains } = useChains(true)
-  const chain = useMemo(
-    () => genesisHash && chains.find((c) => c.genesisHash === genesisHash),
-    [chains, genesisHash]
-  )
+  const chain = useChainByGenesisHash(genesisHash)
 
   return chain ? (
     <ChainLogo id={chain.id} className="!absolute top-[-0.2em] right-[-0.2em] text-[0.5em]" />
@@ -84,7 +81,7 @@ type AccountAvatarProps = {
 }
 
 const AccountAvatar = ({ address, className, genesisHash, type }: AccountAvatarProps) => {
-  const { identiconType } = useSettings()
+  const [identiconType] = useSetting("identiconType")
 
   // apply look & feel from props if provided (should only be the case in AvatarTypeSelector)
   // fallbacks to settings store, or default talisman-orb value

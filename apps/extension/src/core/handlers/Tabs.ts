@@ -9,7 +9,9 @@ import { protector } from "@core/domains/app/protector"
 import { requestDecrypt, requestEncrypt } from "@core/domains/encrypt/requests"
 import {
   DecryptPayload,
+  DecryptResult,
   EncryptPayload,
+  EncryptResult,
   ResponseEncryptDecrypt,
   ResponseEncryptEncrypt,
 } from "@core/domains/encrypt/types"
@@ -458,13 +460,23 @@ export default class Tabs extends TabsHandler {
       case "pub(rpc.unsubscribe)":
         return this.rpcUnsubscribe(request as RequestRpcUnsubscribe, port)
 
-      case "pub(encrypt.encrypt)":
+      case "pub(encrypt.encrypt)": {
         await this.stores.sites.ensureUrlAuthorized(url, false, (request as EncryptPayload).address)
-        return this.messageEncrypt(url, request as EncryptPayload)
+        const response = await this.messageEncrypt(url, request as EncryptPayload)
+        return {
+          id: Number(response.id),
+          result: response.result,
+        } as EncryptResult
+      }
 
-      case "pub(encrypt.decrypt)":
+      case "pub(encrypt.decrypt)": {
         await this.stores.sites.ensureUrlAuthorized(url, false, (request as DecryptPayload).address)
-        return this.messageDecrypt(url, request as DecryptPayload)
+        const response = await this.messageDecrypt(url, request as DecryptPayload)
+        return {
+          id: Number(response.id),
+          result: response.result,
+        } as DecryptResult
+      }
 
       case "pub(ping)":
         return Promise.resolve(true)

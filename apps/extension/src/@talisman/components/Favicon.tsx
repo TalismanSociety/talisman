@@ -13,7 +13,7 @@ const Favicon = ({ url, className }: IProps) => {
 
   return (
     <span className={`favicon ${className}`}>
-      {!!iconUrl && <img src={iconUrl} alt={`favicon ${url}`} />}
+      {!!iconUrl && <img loading="lazy" src={iconUrl} alt={`favicon ${url}`} />}
     </span>
   )
 }

@@ -1,21 +1,33 @@
-import { useDbCache } from "./useDbCache"
-import { useDbCacheSubscription } from "./useDbCacheSubscription"
+import {
+  chainsWithTestnetsMapState,
+  chainsWithTestnetsState,
+  chainsWithoutTestnetsMapState,
+  chainsWithoutTestnetsState,
+} from "@ui/atoms"
+import { useMemo } from "react"
+import { useRecoilValue } from "recoil"
 
 export const useChains = (withTestnets: boolean) => {
-  // keep db data up to date
-  useDbCacheSubscription("chains")
+  // // keep db data ption("chains")
 
-  const {
-    chainsWithTestnets,
-    chainsWithoutTestnets,
-    chainsWithTestnetsMap,
-    chainsWithoutTestnetsMap,
-  } = useDbCache()
+  const chainsWithTestnets = useRecoilValue(chainsWithTestnetsState)
+  const chainsWithoutTestnets = useRecoilValue(chainsWithoutTestnetsState)
+  const chainsWithTestnetsMap = useRecoilValue(chainsWithTestnetsMapState)
+  const chainsWithoutTestnetsMap = useRecoilValue(chainsWithoutTestnetsMapState)
 
-  return {
-    chains: withTestnets ? chainsWithTestnets : chainsWithoutTestnets,
-    chainsMap: withTestnets ? chainsWithTestnetsMap : chainsWithoutTestnetsMap,
-  }
+  return useMemo(
+    () => ({
+      chains: withTestnets ? chainsWithTestnets : chainsWithoutTestnets,
+      chainsMap: withTestnets ? chainsWithTestnetsMap : chainsWithoutTestnetsMap,
+    }),
+    [
+      chainsWithTestnets,
+      chainsWithTestnetsMap,
+      chainsWithoutTestnets,
+      chainsWithoutTestnetsMap,
+      withTestnets,
+    ]
+  )
 }
 
 export default useChains

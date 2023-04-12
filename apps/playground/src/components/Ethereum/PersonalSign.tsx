@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { Button } from "talisman-ui"
 import { useAccount, useSignMessage } from "wagmi"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 
 type FormData = { message: string }
 

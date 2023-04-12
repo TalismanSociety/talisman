@@ -10,7 +10,7 @@ import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { TokenRatesMessages } from "@core/domains/tokenRates/types"
 import { TokenMessages } from "@core/domains/tokens/types"
-import { AssetTransferMessages } from "@core/domains/transactions/types"
+import { AssetTransferMessages } from "@core/domains/transfers/types"
 import type { RequestSignatures as PolkadotRequestSignatures } from "@polkadot/extension-base/background/types"
 
 import type { IdOnlyValues, NoUndefinedValues, NullKeys, RequestIdOnly } from "./base"
@@ -107,6 +107,26 @@ export declare type MessageTypesWithNoSubscriptions = Exclude<
   MessageTypes,
   keyof SubscriptionMessageTypes
 >
+
+export type MessageHandler<
+  TMessageType extends MessageTypesWithNoSubscriptions,
+  Req = RequestType<TMessageType>,
+  Res = ResponseType<TMessageType>
+> = (req: Req) => Res | Promise<Res>
+
+// TODO cooldown
+// export type SubscriptionHandler<
+//   TMessageType extends MessageTypesWithSubscriptions,
+//   Req = RequestType<TMessageType>,
+//   Res = ResponseType<TMessageType>
+// > = (req: Req) => Res | Promise<Res>
+
+// TODO cooldown
+// export type SubscriptionByIdHandler<
+//   TMessageType extends MessageTypesWithSubscriptionsById,
+//   Req = RequestTypes<TMessageType>,
+//   Res = ResponseType<TMessageType>
+// > = (req: Req) => Res | Promise<Res>
 
 interface TransportResponseMessageNoSub<TMessageType extends MessageTypesWithNoSubscriptions> {
   error?: string

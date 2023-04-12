@@ -58,7 +58,7 @@ const SendFundsLedgerEthereum = () => {
       onReject={sendToLedger(false)}
       onSignature={handleSigned}
       payload={evmTransaction.transaction}
-      parent={"send-funds-main"}
+      parent="main"
     />
   )
 }

@@ -1,4 +1,4 @@
-import { TestLayout } from "../TestLayout"
+import { TestLayout } from "../shared/TestLayout"
 import { Account } from "./Account"
 import { Balance } from "./Balance"
 import { Identity } from "./Identity"

@@ -2,9 +2,8 @@ import { DEBUG } from "@core/constants"
 import { ChainId } from "@core/domains/chains/types"
 import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { TokenId } from "@core/domains/tokens/types"
-import { BalanceSearchQuery, Balances } from "@talismn/balances"
 import useBalances from "@ui/hooks/useBalances"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { useMemo } from "react"
 
@@ -15,7 +14,7 @@ import { TransferableToken, TransferableTokenId } from "./types"
  * @returns tokens list split by network (ASTR on substrate and ASTR on evm will be 2 distinct entries)
  */
 export const useTransferableTokens = () => {
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const { tokens } = useTokens(useTestnets)
 
   const transferableTokens = useMemo(() => {

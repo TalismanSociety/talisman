@@ -174,11 +174,6 @@ export const api: MessageTypes = {
   removeCustomErc20Token: (id) =>
     messageService.sendMessage("pri(tokens.erc20.custom.remove)", { id }),
 
-  // transaction message types
-  transactionSubscribe: (id, cb) =>
-    messageService.subscribe("pri(transactions.byid.subscribe)", { id }, cb),
-  transactionsSubscribe: (cb) => messageService.subscribe("pri(transactions.subscribe)", null, cb),
-
   // asset transfer messages
   assetTransfer: (chainId, tokenId, fromAddress, toAddress, amount, tip, method) =>
     messageService.sendMessage("pri(assets.transfer)", {
@@ -199,11 +194,13 @@ export const api: MessageTypes = {
       amount,
       gasSettings,
     }),
-  assetTransferEthHardware: (evmNetworkId, tokenId, amount, signedTransaction) =>
+  assetTransferEthHardware: (evmNetworkId, tokenId, amount, to, unsigned, signedTransaction) =>
     messageService.sendMessage("pri(assets.transferEthHardware)", {
       evmNetworkId,
       tokenId,
       amount,
+      to,
+      unsigned,
       signedTransaction,
     }),
   assetTransferCheckFees: (chainId, tokenId, fromAddress, toAddress, amount, tip, method) =>
@@ -216,13 +213,18 @@ export const api: MessageTypes = {
       tip,
       method,
     }),
-  assetTransferApproveSign: (unsigned, signature) =>
+  assetTransferApproveSign: (unsigned, signature, transferInfo) =>
     messageService.sendMessage("pri(assets.transfer.approveSign)", {
       unsigned,
       signature,
+      transferInfo,
     }),
 
   // eth related messages
+  ethSignAndSend: (unsigned) =>
+    messageService.sendMessage("pri(eth.signing.signAndSend)", { unsigned }),
+  ethSendSigned: (unsigned, signed) =>
+    messageService.sendMessage("pri(eth.signing.sendSigned)", { unsigned, signed }),
   ethApproveSign: (id) =>
     messageService.sendMessage("pri(eth.signing.approveSign)", {
       id,
@@ -237,9 +239,10 @@ export const api: MessageTypes = {
       id,
       transaction,
     }),
-  ethApproveSignAndSendHardware: (id, signedPayload) =>
+  ethApproveSignAndSendHardware: (id, unsigned, signedPayload) =>
     messageService.sendMessage("pri(eth.signing.approveSignAndSendHardware)", {
       id,
+      unsigned,
       signedPayload,
     }),
   ethCancelSign: (id) =>

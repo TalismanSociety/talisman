@@ -9,27 +9,23 @@ import { usePortfolio } from "../context"
 import { useSelectedAccount } from "../SelectedAccountContext"
 
 export const usePortfolioSymbolBalances = (balances: Balances) => {
-  // group by token (symbol)
+  // group balances by token symbol
   // TODO: Move the association between a token on multiple chains into the backend / subsquid.
   // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
   // Also, we might want to separate testnet tokens from non-testnet tokens.
   const symbolBalances = useMemo(() => {
-    const groupedByToken = balances.sorted.reduce((acc, b) => {
+    const groupedByToken = balances.each.reduce((acc, b) => {
       if (!b.token) return acc
       const key = b.token.symbol
       if (acc[key]) acc[key].push(b)
       else acc[key] = [b]
       return acc
     }, {} as Record<string, Balance[]>)
-    const balancesByToken = Object.entries(groupedByToken).reduce(
-      (acc, [key, tokenBalances]) => ({
-        ...acc,
-        [key]: new Balances(tokenBalances),
-      }),
-      {} as Record<string, Balances>
+
+    return Object.entries(groupedByToken).map(
+      ([key, tokenBalances]) => [key, new Balances(tokenBalances)] as const
     )
-    return Object.entries(balancesByToken)
-  }, [balances.sorted])
+  }, [balances])
 
   const { account, accounts } = useSelectedAccount()
   const { networkFilter } = usePortfolio()

@@ -1,10 +1,5 @@
 import { TokenId } from "@talismn/chaindata-provider"
-import { useMemo } from "react"
+import { tokenRatesQuery } from "@ui/atoms/tokenRates"
+import { useRecoilValue } from "recoil"
 
-import { useTokenRatesMap } from "./useTokenRatesMap"
-
-export const useTokenRates = (tokenId?: TokenId | null) => {
-  const tokenRatesMap = useTokenRatesMap()
-
-  return useMemo(() => (tokenId ? tokenRatesMap[tokenId] : undefined), [tokenId, tokenRatesMap])
-}
+export const useTokenRates = (tokenId?: TokenId | null) => useRecoilValue(tokenRatesQuery(tokenId))

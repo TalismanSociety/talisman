@@ -18,7 +18,7 @@ import { useEvmChainInfo } from "@ui/hooks/useEvmChainInfo"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useIsBuiltInEvmNetwork } from "@ui/hooks/useIsBuiltInEvmNetwork"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import useToken from "@ui/hooks/useToken"
 import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -186,7 +186,7 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
 
   const [submitError, setSubmitError] = useState<string>()
   const { evmNetworks } = useEvmNetworks(true)
-  const { useTestnets, update } = useSettings()
+  const [useTestnets, setUseTestNets] = useSetting("useTestnets")
 
   const { defaultValues, isCustom, isEditMode, evmNetwork } = useEditMode(evmNetworkId)
 
@@ -292,13 +292,13 @@ export const NetworkForm: FC<NetworkFormProps> = ({ evmNetworkId, onSubmitted })
     async (network: RequestUpsertCustomEvmNetwork) => {
       try {
         await api.ethNetworkUpsert({ ...network, tokenLogoUrl, chainLogoUrl })
-        if (network.isTestnet && !useTestnets) update({ useTestnets: true })
+        if (network.isTestnet && !useTestnets) setUseTestNets(true)
         onSubmitted?.()
       } catch (err) {
         setSubmitError((err as Error).message)
       }
     },
-    [chainLogoUrl, tokenLogoUrl, onSubmitted, update, useTestnets]
+    [chainLogoUrl, tokenLogoUrl, onSubmitted, setUseTestNets, useTestnets]
   )
 
   const handleIsTestnetChange: ChangeEventHandler<HTMLInputElement> = useCallback(
