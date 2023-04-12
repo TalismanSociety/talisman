@@ -1,8 +1,11 @@
 import {
   BalanceModule,
+  BalanceStatusLive,
   Balances,
   db as balancesDb,
   balances as balancesFn,
+  createSubscriptionId,
+  deleteSubscriptionId,
 } from "@talismn/balances"
 import { ChaindataProvider, TokenList } from "@talismn/chaindata-provider"
 import { ChaindataProviderExtension } from "@talismn/chaindata-provider-extension"
@@ -203,10 +206,26 @@ const subscribeBalances = (
   const tokenIds = Object.values(tokens).map(({ id }) => id)
   const addressesByToken = Object.fromEntries(tokenIds.map((tokenId) => [tokenId, addresses]))
 
+  const subscriptionId = createSubscriptionId()
+
+  // TODO: Create subscriptions in a service worker, where we can detect page closes
+  // and therefore reliably delete the subscriptionId when the user closes our dapp
+  //
+  // For more information, check out https://developer.chrome.com/blog/page-lifecycle-api/#faqs
+  // and scroll down to:
+  // - `What is the back/forward cache?`, and
+  // - `If I can't run asynchronous APIs in the frozen or terminated states, how can I save data to IndexedDB?
+  //
+  // For now, we'll just last-ditch remove the subscriptionId (it works surprisingly well!) in the beforeunload event
+  window.onbeforeunload = () => {
+    deleteSubscriptionId()
+  }
+
   const updateDb = (balances: Balances) => {
     const putBalances = Object.entries(balances.toJSON()).map(([id, balance]) => ({
       id,
       ...balance,
+      status: BalanceStatusLive(subscriptionId),
     }))
     balancesDb.transaction(
       "rw",
@@ -235,7 +254,10 @@ const subscribeBalances = (
     const unsub = balancesFn(balanceModule, addressesByModuleToken, (error, balances) => {
       // log errors
       if (error) {
-        if (error?.type === "STALE_RPC_ERROR")
+        if (
+          error?.type === "STALE_RPC_ERROR" ||
+          error?.type === "WEBSOCKET_ALLOCATION_EXHAUSTED_ERROR"
+        )
           return balancesDb.balances
             .where({ source: balanceModule.type, chainId: error.chainId })
             .filter((balance) => {
@@ -260,14 +282,7 @@ const subscribeBalances = (
       unsub.then((unsubscribe) => {
         setTimeout(unsubscribe, 2_000)
       })
-      balancesDb.balances
-        .where({ source: balanceModule.type })
-        .filter((balance) => {
-          if (!Object.keys(addressesByModuleToken).includes(balance.tokenId)) return false
-          if (!addressesByModuleToken[balance.tokenId].includes(balance.address)) return false
-          return true
-        })
-        .modify({ status: "cache" })
+      deleteSubscriptionId()
     }
   })
 

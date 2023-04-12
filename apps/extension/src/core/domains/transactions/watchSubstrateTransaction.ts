@@ -133,7 +133,6 @@ const watchExtrinsicStatus = async (
   const unsubscribeFinalizeHeads = await chainConnector.subscribe(
     chainId,
     "chain_subscribeFinalizedHeads",
-    "chain_subscribeFinalizedHeads",
     "chain_finalizedHead",
     [],
     async (error, data) => {
@@ -160,7 +159,9 @@ const watchExtrinsicStatus = async (
         const { result, blockNumber, extIndex } = extResult
         cb(result, blockNumber, extIndex)
 
-        await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
+        await unsubscribe("finalizedHeads", () =>
+          unsubscribeFinalizeHeads("chain_subscribeFinalizedHeads")
+        )
         if (timeout !== null) clearTimeout(timeout)
       } catch (error) {
         Sentry.captureException(error, { extra: { chainId } })
@@ -172,7 +173,6 @@ const watchExtrinsicStatus = async (
   // => need to wait for block to be finalized before considering it a success
   const unsubscribeAllHeads = await chainConnector.subscribe(
     chainId,
-    "chain_subscribeAllHeads",
     "chain_subscribeAllHeads",
     "chain_allHead",
     [],
@@ -203,11 +203,13 @@ const watchExtrinsicStatus = async (
           cb("included", blockNumber, extIndex)
         } else cb(result, blockNumber, extIndex)
 
-        await unsubscribe("allHeads", unsubscribeAllHeads)
+        await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_subscribeAllHeads"))
 
         // if error, no need to wait for a confirmation
         if (result === "error") {
-          await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
+          await unsubscribe("finalizedHeads", () =>
+            unsubscribeFinalizeHeads("chain_subscribeFinalizedHeads")
+          )
           if (timeout !== null) clearTimeout(timeout)
         }
       } catch (error) {
@@ -218,9 +220,11 @@ const watchExtrinsicStatus = async (
 
   // the transaction may never be submitted by the dapp, so we stop watching after {TX_WATCH_TIMEOUT}
   timeout = setTimeout(async () => {
-    await unsubscribe("allHeads", unsubscribeAllHeads)
+    await unsubscribe("allHeads", () => unsubscribeAllHeads("chain_subscribeAllHeads"))
     if (subscriptions.finalizedHeads) {
-      await unsubscribe("finalizedHeads", unsubscribeFinalizeHeads)
+      await unsubscribe("finalizedHeads", () =>
+        unsubscribeFinalizeHeads("chain_subscribeFinalizedHeads")
+      )
       // sometimes the finalized is not received, better check explicitely here
       if (foundInBlockHash) {
         const { val: extResult, err } = await getExtrinsincResult(

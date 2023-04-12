@@ -1,4 +1,12 @@
-import { Address, BalanceJson, Balances, HydrateDb, db as balancesDb } from "@talismn/balances"
+import {
+  Address,
+  BalanceJson,
+  Balances,
+  HydrateDb,
+  db as balancesDb,
+  deriveStatuses,
+  getValidSubscriptionIds,
+} from "@talismn/balances"
 import { TokenId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { liveQuery } from "dexie"
@@ -62,7 +70,7 @@ export const allBalancesState = selector({
     const rawBalances = get(filteredRawBalancesState)
     const hydrate = get(balancesHydrateState)
 
-    return new Balances(rawBalances, hydrate)
+    return new Balances(deriveStatuses([...getValidSubscriptionIds()], rawBalances), hydrate)
   },
 })
 
@@ -85,6 +93,6 @@ export const balancesQuery = selectorFamily({
     ({ get }) => {
       const rawBalances = get(rawBalancesQuery({ address, tokenId }))
       const hydrate = get(balancesHydrateState)
-      return new Balances(rawBalances, hydrate)
+      return new Balances(deriveStatuses([...getValidSubscriptionIds()], rawBalances), hydrate)
     },
 })
