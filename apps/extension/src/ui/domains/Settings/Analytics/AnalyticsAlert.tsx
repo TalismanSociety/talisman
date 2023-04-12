@@ -5,8 +5,8 @@ import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { EyeIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
-import { useSettings } from "@ui/hooks/useSettings"
-import { useCallback, useEffect, useState } from "react"
+import { useSetting } from "@ui/hooks/useSettings"
+import { useCallback, useEffect } from "react"
 import styled from "styled-components"
 
 const StackedButtonGroup = styled(ButtonGroup)`
@@ -113,7 +113,7 @@ export const AlertCard = styled(({ className, onLearnMoreClick, onAccept, onReje
 
 const AnalyticsAlertPopupDrawer = () => {
   const { close, isOpen, setIsOpen } = useOpenClose()
-  const { update } = useSettings()
+  const [, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
 
   useEffect(() => {
     const sub = appStore.observable.subscribe(({ analyticsRequestShown }) => {
@@ -131,11 +131,11 @@ const AnalyticsAlertPopupDrawer = () => {
 
   const handleAcceptReject = useCallback(
     (accept: boolean) => {
-      update({ useAnalyticsTracking: accept })
+      setUseAnalyticsTracking(accept)
       appStore.set({ analyticsRequestShown: true })
       close()
     },
-    [close, update]
+    [close, setUseAnalyticsTracking]
   )
 
   return (

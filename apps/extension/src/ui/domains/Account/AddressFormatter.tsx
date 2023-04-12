@@ -14,7 +14,7 @@ import useAddressTypeChainsFilter from "@ui/hooks/useAddressTypeChainsFilter"
 import useChainsAndSearchSymbols from "@ui/hooks/useChainsAndSearchSymbols"
 import useHasPrefixChainsFilter from "@ui/hooks/useHasPrefixChainsFilter"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { useSortedChains } from "@ui/hooks/useSortedChains"
 import { copyAddress } from "@ui/util/copyAddress"
 import { PropsWithChildren, useCallback, useState } from "react"
@@ -149,7 +149,7 @@ interface IPropsAddressFormatter extends PropsWithChildren<any> {
 }
 
 const AddressFormatter = styled(({ address, className, onClose }: IPropsAddressFormatter) => {
-  const { useTestnets } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const chains = useSortedChains(!!useTestnets)
   const [copied, setCopied] = useState("")
   const isKnown = useIsKnownAddress(address)

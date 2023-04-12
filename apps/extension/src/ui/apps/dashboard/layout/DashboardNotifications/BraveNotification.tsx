@@ -12,7 +12,7 @@ import { DashboardNotification } from "./DashboardNotification"
 
 export const BraveWarningNotification = () => {
   const isBrave = useIsBrave()
-  const { hideBraveWarning } = useAppState()
+  const [hideBraveWarning] = useAppState("hideBraveWarning")
   const { isOpen, close, open } = useOpenClose()
 
   const showWarning = useMemo(() => isBrave && !hideBraveWarning, [hideBraveWarning, isBrave])

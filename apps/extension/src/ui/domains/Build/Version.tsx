@@ -8,7 +8,7 @@ export interface BuildVersioProps {
 }
 
 const BuildVersion = ({ className }: BuildVersioProps) => {
-  const { hasSpiritKey } = useAppState()
+  const [hasSpiritKey] = useAppState("hasSpiritKey")
 
   return (
     <a

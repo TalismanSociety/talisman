@@ -1,9 +1,9 @@
 import { TokenId } from "@core/domains/tokens/types"
-import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
+import { balancesQuery } from "@ui/atoms"
 import { useMemo } from "react"
+import { useRecoilValue } from "recoil"
 
 export const useBalance = (address: string, tokenId: TokenId) => {
-  const balances = useBalancesByAddress(address)
-
-  return useMemo(() => [...balances.find({ tokenId })][0] || undefined, [balances, tokenId])
+  const balances = useRecoilValue(balancesQuery({ address, tokenId }))
+  return useMemo(() => [...balances][0], [balances])
 }

@@ -10,12 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import React from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
-
-import { AddressBookProvider } from "./hooks/useAddressBook"
-import { AppStateProvider } from "./hooks/useAppState"
-import { DbCacheProvider } from "./hooks/useDbCache"
-import { FeaturesProvider } from "./hooks/useFeatures"
-import { SettingsProvider } from "./hooks/useSettings"
+import { RecoilRoot } from "recoil"
 
 const queryClient = new QueryClient()
 
@@ -32,20 +27,12 @@ export const renderTalisman = (app: any) => {
       <ThemeProvider>
         <ErrorBoundary>
           <ErrorBoundaryDatabaseMigration>
-            <QueryClientProvider client={queryClient}>
-              <FeaturesProvider>
-                <SettingsProvider>
-                  <AddressBookProvider>
-                    <AppStateProvider>
-                      <DbCacheProvider>
-                        <HashRouter>{app}</HashRouter>
-                      </DbCacheProvider>
-                    </AppStateProvider>
-                  </AddressBookProvider>
-                </SettingsProvider>
-              </FeaturesProvider>
-              <NotificationsContainer />
-            </QueryClientProvider>
+            <RecoilRoot>
+              <QueryClientProvider client={queryClient}>
+                <HashRouter>{app}</HashRouter>
+                <NotificationsContainer />
+              </QueryClientProvider>
+            </RecoilRoot>
           </ErrorBoundaryDatabaseMigration>
         </ErrorBoundary>
       </ThemeProvider>

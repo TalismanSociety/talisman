@@ -15,7 +15,7 @@ export interface SettingsStoreData {
 
 export class SettingsStore extends StorageProvider<SettingsStoreData> {}
 
-export const settingsStore = new SettingsStore("settings", {
+export const DEFAULT_SETTINGS: SettingsStoreData = {
   useErrorTracking: true,
   useTestnets: false,
   identiconType: "talisman-orb",
@@ -24,4 +24,6 @@ export const settingsStore = new SettingsStore("settings", {
   allowNotifications: true,
   autoLockTimeout: 0,
   spiritClanFeatures: true,
-})
+}
+
+export const settingsStore = new SettingsStore("settings", DEFAULT_SETTINGS)

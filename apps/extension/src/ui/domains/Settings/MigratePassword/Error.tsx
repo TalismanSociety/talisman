@@ -1,13 +1,13 @@
 import { passwordStore } from "@core/domains/app"
 import { ModalDialog } from "@talisman/components/ModalDialog"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { Button, Checkbox } from "talisman-ui"
 
 import { useMigratePassword } from "./context"
 
 export const MigratePasswordError = () => {
   const { statusMessage, onComplete } = useMigratePassword()
-  const { useErrorTracking, update } = useSettings()
+  const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
 
   return (
     <ModalDialog title="There was a problem">
@@ -37,7 +37,7 @@ export const MigratePasswordError = () => {
       <p className="text-body-secondary text-sm">
         {!useErrorTracking && (
           <span className="mb-4 block">
-            <Checkbox onChange={() => update({ useErrorTracking: !useErrorTracking })}>
+            <Checkbox onChange={() => setUseErrorTracking((prev) => !prev)}>
               Send error report and enable error tracking
             </Checkbox>
           </span>

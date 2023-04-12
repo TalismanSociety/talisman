@@ -51,10 +51,15 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
   async chains(): Promise<ChainList> {
     try {
-      return (await this.#db.chains.toArray()).reduce(
-        (list, chain) => ({ ...list, [chain.id]: chain }),
-        {}
-      )
+      const chains = await this.#db.chains.toArray()
+      return Object.fromEntries(chains.map((chain) => [chain.id, chain]))
+    } catch (cause) {
+      throw new Error("Failed to get chains", { cause })
+    }
+  }
+  async chainsArray() {
+    try {
+      return await this.#db.chains.toArray()
     } catch (cause) {
       throw new Error("Failed to get chains", { cause })
     }
@@ -85,10 +90,15 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
   async evmNetworks(): Promise<EvmNetworkList> {
     try {
-      return (await this.#db.evmNetworks.toArray()).reduce(
-        (list, evmNetwork) => ({ ...list, [evmNetwork.id]: evmNetwork }),
-        {}
-      )
+      const evmNetworks = await this.#db.evmNetworks.toArray()
+      return Object.fromEntries(evmNetworks.map((evmNetwork) => [evmNetwork.id, evmNetwork]))
+    } catch (cause) {
+      throw new Error("Failed to get evmNetworks", { cause })
+    }
+  }
+  async evmNetworksArray() {
+    try {
+      return await this.#db.evmNetworks.toArray()
     } catch (cause) {
       throw new Error("Failed to get evmNetworks", { cause })
     }
@@ -121,10 +131,15 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
   async tokens(): Promise<TokenList> {
     try {
-      return (await this.#db.tokens.toArray()).reduce(
-        (list, token) => ({ ...list, [token.id]: token }),
-        {}
-      )
+      const tokens = await this.#db.tokens.toArray()
+      return Object.fromEntries(tokens.map((token) => [token.id, token]))
+    } catch (cause) {
+      throw new Error("Failed to get tokens", { cause })
+    }
+  }
+  async tokensArray() {
+    try {
+      return await this.#db.tokens.toArray()
     } catch (cause) {
       throw new Error("Failed to get tokens", { cause })
     }
