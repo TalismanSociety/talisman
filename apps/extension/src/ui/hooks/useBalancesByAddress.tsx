@@ -1,12 +1,7 @@
 import { Address } from "@core/types/base"
-import useBalances from "@ui/hooks/useBalances"
-import { useMemo } from "react"
+import { balancesQuery } from "@ui/atoms"
+import { useRecoilValue } from "recoil"
 
-const useBalancesByAddress = (address: Address) => {
-  // TODO would be nice to subscribe only to this address's balances changes
-  const balances = useBalances()
-
-  return useMemo(() => balances.find({ address }), [address, balances])
-}
+const useBalancesByAddress = (address: Address) => useRecoilValue(balancesQuery({ address }))
 
 export default useBalancesByAddress

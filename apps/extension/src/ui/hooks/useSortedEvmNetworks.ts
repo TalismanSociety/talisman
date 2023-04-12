@@ -7,5 +7,5 @@ const sortNetworks = (a: EvmNetwork | CustomEvmNetwork, b: EvmNetwork | CustomEv
 
 export const useSortedEvmNetworks = (withTestnets: boolean) => {
   const { evmNetworks } = useEvmNetworks(withTestnets)
-  return useMemo(() => evmNetworks.sort(sortNetworks), [evmNetworks])
+  return useMemo(() => evmNetworks.concat().sort(sortNetworks), [evmNetworks])
 }

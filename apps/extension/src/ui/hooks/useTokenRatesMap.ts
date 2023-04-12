@@ -1,11 +1,4 @@
-import { useDbCache } from "./useDbCache"
-import { useDbCacheSubscription } from "./useDbCacheSubscription"
+import { tokenRatesMapState } from "@ui/atoms/tokenRates"
+import { useRecoilValue } from "recoil"
 
-export const useTokenRatesMap = () => {
-  // keep db table up to date
-  useDbCacheSubscription("tokenRates")
-
-  const { tokenRatesMap } = useDbCache()
-
-  return tokenRatesMap
-}
+export const useTokenRatesMap = () => useRecoilValue(tokenRatesMapState)

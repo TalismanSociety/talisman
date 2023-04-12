@@ -2,7 +2,7 @@ import { SettingsStoreData } from "@core/domains/app/store.settings"
 import { Dropdown, DropdownProps } from "@talisman/components/Dropdown"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Layout from "@ui/apps/dashboard/layout"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import styled from "styled-components"
 
 type AllowedValues = SettingsStoreData["autoLockTimeout"]
@@ -50,7 +50,7 @@ const StyledDropdown = styled((props: DropdownProps<Option>) => Dropdown(props))
 `
 
 export const AutoLockTimer = () => {
-  const { autoLockTimeout, update } = useSettings()
+  const [autoLockTimeout, setAutoLockTimeout] = useSetting("autoLockTimeout")
 
   return (
     <Layout centered withBack>
@@ -67,7 +67,7 @@ export const AutoLockTimer = () => {
         items={Object.values(OPTIONS)}
         onChange={(val) => {
           const newVal = val?.value || 0
-          if (newVal !== autoLockTimeout) update({ autoLockTimeout: newVal })
+          if (newVal !== autoLockTimeout) setAutoLockTimeout(newVal)
         }}
       />
     </Layout>

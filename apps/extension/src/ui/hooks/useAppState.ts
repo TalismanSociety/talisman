@@ -1,23 +1,35 @@
 import { appStore } from "@core/domains/app/store.app"
 import { AppStoreData, DEFAULT_APP_STATE } from "@core/domains/app/store.app"
-import { provideContext } from "@talisman/util/provideContext"
-import { useCallback, useEffect, useState } from "react"
+import { RecoilState, atom, selectorFamily, useRecoilState } from "recoil"
 
-// the hook is read only for now, relying on backend calls for all state updates
-// however if needed, we can use same logic as SettingsProvider to make it read/write
-const useAppStateProvider = () => {
-  const [appState, setAppState] = useState<AppStoreData>(DEFAULT_APP_STATE)
+const appState = atom<AppStoreData>({
+  key: "appState",
+  default: DEFAULT_APP_STATE,
+  effects: [
+    ({ setSelf }) => {
+      const sub = appStore.observable.subscribe(setSelf)
+      return () => {
+        sub.unsubscribe()
+      }
+    },
+  ],
+})
 
-  useEffect(() => {
-    const sub = appStore.observable.subscribe(setAppState)
-    return () => sub.unsubscribe()
-  }, [])
+const appStateQuery = selectorFamily({
+  key: "appStateQuery",
+  get:
+    <K extends keyof AppStoreData, V extends AppStoreData[K]>(key: K) =>
+    ({ get }): V => {
+      const state = get(appState)
+      return state[key] as V
+    },
+  set: (key) => (_, value) => {
+    // update the rxjs observable so the derived recoil atom is updated
+    appStore.set({ [key]: value })
+  },
+})
 
-  const snoozeBackupReminder = useCallback(() => {
-    appStore.snoozeBackupReminder()
-  }, [])
-
-  return { ...appState, snoozeBackupReminder }
+export const useAppState = <K extends keyof AppStoreData>(key: K) => {
+  const selector = appStateQuery(key) as RecoilState<AppStoreData[K]>
+  return useRecoilState(selector)
 }
-
-export const [AppStateProvider, useAppState] = provideContext(useAppStateProvider)

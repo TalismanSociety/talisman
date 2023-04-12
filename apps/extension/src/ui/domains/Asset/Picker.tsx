@@ -1,7 +1,7 @@
 import { TokenId } from "@core/domains/tokens/types"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { FC } from "react"
 
 import GenericPicker, { PickerItemProps } from "../../../@talisman/components/GenericPicker"
@@ -52,7 +52,7 @@ const AssetPicker: FC<IProps> = ({
   className,
   showChainsWithBalanceFirst,
 }) => {
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const { chainsMap } = useChains(useTestnets)
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
   const transferableTokens = useSortedTransferableTokens(showChainsWithBalanceFirst)

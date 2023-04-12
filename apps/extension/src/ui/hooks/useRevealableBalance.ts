@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
-import { useSettings } from "./useSettings"
+import { useSetting } from "./useSettings"
 
 export const useRevealableBalance = (isBalance?: boolean, noCountUp?: boolean) => {
   // keeping noCountUp param in state because we do not want it to change to true after component is mounted
   // this prevents having performance issue when revealing all balances at once
   const [effectiveNoCountUp, setEffectiveNoCountUp] = useState(!!noCountUp)
-  const { hideBalances } = useSettings()
+  const [hideBalances] = useSetting("hideBalances")
   const refReveal = useRef<HTMLDivElement>(null)
   const [isRevealed, setIsRevealed] = useState(false)
 

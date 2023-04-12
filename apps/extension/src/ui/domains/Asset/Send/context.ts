@@ -18,7 +18,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -78,7 +78,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   const [transactionHash, setTransactionHash] = useState<HexString>()
 
   const accounts = useAccounts()
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const transferableTokens = useTransferableTokens()
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
   const { chainsMap } = useChains(useTestnets)

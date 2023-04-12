@@ -6,7 +6,7 @@ import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Chain, ChainId } from "@talismn/chaindata-provider"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useChains from "@ui/hooks/useChains"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import sortBy from "lodash/sortBy"
 import { useCallback, useMemo, useState } from "react"
 
@@ -84,7 +84,7 @@ const ChainFormatsList = ({
 export const CopyAddressChainForm = () => {
   const { address, setChainId } = useCopyAddressWizard()
   const [search, setSearch] = useState("")
-  const { useTestnets = false } = useSettings()
+  const [useTestnets] = useSetting("useTestnets")
   const { chains, chainsMap } = useChains(useTestnets)
 
   const account = useAccountByAddress(address)

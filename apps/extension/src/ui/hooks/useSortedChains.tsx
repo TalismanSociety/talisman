@@ -7,5 +7,7 @@ const sortChains = (a: Chain, b: Chain) =>
 
 export const useSortedChains = (withTestnets: boolean) => {
   const { chains } = useChains(withTestnets)
-  return useMemo(() => chains.sort(sortChains), [chains])
+
+  // chains array can't be mutated use concat to create a new array
+  return useMemo(() => chains.concat().sort(sortChains), [chains])
 }

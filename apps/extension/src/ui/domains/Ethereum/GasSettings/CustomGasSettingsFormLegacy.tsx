@@ -37,7 +37,7 @@ const gasSettingsFromFormData = (formData: FormData): EthGasSettingsLegacy => ({
 
 const schema = yup
   .object({
-    gasPrice: yup.number().required().moreThan(0),
+    gasPrice: yup.number().required().min(0), // 0 is sometimes necessary (ex: claiming bridged assets on polygon zkEVM)
     gasLimit: yup.number().required().integer().min(21000),
   })
   .required()

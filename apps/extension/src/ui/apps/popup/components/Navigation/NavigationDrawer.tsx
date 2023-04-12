@@ -23,7 +23,7 @@ import { useNavigationContext } from "@ui/apps/popup/context/NavigationContext"
 import Build from "@ui/domains/Build"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
 import styled from "styled-components"
 
@@ -154,16 +154,16 @@ export const NavigationDrawer: FC = () => {
     window.close()
   }, [])
 
-  const { hideBalances, update } = useSettings()
+  const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const toggleHideBalance = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
       action: "Hide balances button",
     })
-    update({ hideBalances: !hideBalances })
+    setHideBalances((prev) => !prev)
     close()
-  }, [close, hideBalances, update])
+  }, [close, setHideBalances])
 
   const { isNotConfirmed } = useMnemonicBackup()
 

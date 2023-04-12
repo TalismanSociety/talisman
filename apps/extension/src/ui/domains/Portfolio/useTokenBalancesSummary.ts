@@ -67,7 +67,7 @@ const getBestTokenForSymbol = (balances: Balance[], tokens?: Token[], chains?: C
 }
 
 export const useTokenBalancesSummary = (balances: Balances) => {
-  const tokenBalances = useMemo(() => balances.sorted.filter(filterMirrorTokens), [balances.sorted])
+  const tokenBalances = useMemo(() => balances.each.filter(filterMirrorTokens), [balances])
   const { tokens, chains } = usePortfolio()
   // find the most appropriate token (for the icon)
   const token = useMemo(

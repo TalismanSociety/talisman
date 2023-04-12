@@ -7,7 +7,7 @@ import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { Suspense, lazy, useMemo } from "react"
 import styled from "styled-components"
 
@@ -81,7 +81,7 @@ type AccountAvatarProps = {
 }
 
 const AccountAvatar = ({ address, className, genesisHash, type }: AccountAvatarProps) => {
-  const { identiconType } = useSettings()
+  const [identiconType] = useSetting("identiconType")
 
   // apply look & feel from props if provided (should only be the case in AvatarTypeSelector)
   // fallbacks to settings store, or default talisman-orb value

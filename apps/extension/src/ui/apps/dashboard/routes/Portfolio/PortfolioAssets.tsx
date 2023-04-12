@@ -49,7 +49,7 @@ const PopoverItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
 }
 
 const PageContent = ({ balances }: { balances: Balances }) => {
-  const { hasFunds } = useAppState()
+  const [hasFunds] = useAppState("hasFunds")
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
   const { canExportAccount, open: openAccountExportModal } = useAccountExportModal()

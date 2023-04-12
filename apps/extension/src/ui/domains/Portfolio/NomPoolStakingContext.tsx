@@ -29,7 +29,7 @@ const useShowNomPoolStakingBannerProvider = () => {
     .filter(({ type }) => type === "sr25519")
     .map(({ address }) => address)
 
-  const { showDotNomPoolStakingBanner: showBannerSetting } = useAppState()
+  const [showBannerSetting] = useAppState("showDotNomPoolStakingBanner")
 
   useEffect(() => {
     NOM_POOL_SUPPORTED_CHAINS.forEach((chainId) => {

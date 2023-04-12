@@ -4,7 +4,7 @@ import HeaderBlock from "@talisman/components/HeaderBlock"
 import Setting from "@talisman/components/Setting"
 import Spacer from "@talisman/components/Spacer"
 import Layout from "@ui/apps/dashboard/layout"
-import { useSettings } from "@ui/hooks/useSettings"
+import { useSetting } from "@ui/hooks/useSettings"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -18,7 +18,8 @@ const TSLink = styled.a`
 `
 
 const SecurityPrivacySettings = () => {
-  const { useAnalyticsTracking, useErrorTracking, update } = useSettings()
+  const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
+  const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
   const navigate = useNavigate()
   return (
     <Layout centered withBack backTo="/settings">
@@ -39,10 +40,7 @@ const SecurityPrivacySettings = () => {
               </>
             }
           >
-            <Field.Toggle
-              value={useErrorTracking}
-              onChange={(val: boolean) => update({ useErrorTracking: val })}
-            />
+            <Field.Toggle value={useErrorTracking} onChange={setUseErrorTracking} />
           </Setting>
         )}
         {useAnalyticsTracking !== undefined && (
@@ -55,10 +53,7 @@ const SecurityPrivacySettings = () => {
               </>
             }
           >
-            <Field.Toggle
-              value={useAnalyticsTracking}
-              onChange={(val: boolean) => update({ useAnalyticsTracking: val })}
-            />
+            <Field.Toggle value={useAnalyticsTracking} onChange={setUseAnalyticsTracking} />
           </Setting>
         )}
       </Grid>

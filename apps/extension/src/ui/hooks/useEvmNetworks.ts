@@ -1,19 +1,29 @@
-import { useDbCache } from "./useDbCache"
-import { useDbCacheSubscription } from "./useDbCacheSubscription"
+import {
+  evmNetworksWithTestnetsMapState,
+  evmNetworksWithTestnetsState,
+  evmNetworksWithoutTestnetsMapState,
+  evmNetworksWithoutTestnetsState,
+} from "@ui/atoms/chaindata"
+import { useMemo } from "react"
+import { useRecoilValue } from "recoil"
 
 export const useEvmNetworks = (withTestnets: boolean) => {
-  // keep db up to date
-  useDbCacheSubscription("evmNetworks")
+  const evmNetworksWithTestnets = useRecoilValue(evmNetworksWithTestnetsState)
+  const evmNetworksWithoutTestnets = useRecoilValue(evmNetworksWithoutTestnetsState)
+  const evmNetworksWithTestnetsMap = useRecoilValue(evmNetworksWithTestnetsMapState)
+  const evmNetworksWithoutTestnetsMap = useRecoilValue(evmNetworksWithoutTestnetsMapState)
 
-  const {
-    evmNetworksWithTestnets,
-    evmNetworksWithoutTestnets,
-    evmNetworksWithTestnetsMap,
-    evmNetworksWithoutTestnetsMap,
-  } = useDbCache()
-
-  return {
-    evmNetworks: withTestnets ? evmNetworksWithTestnets : evmNetworksWithoutTestnets,
-    evmNetworksMap: withTestnets ? evmNetworksWithTestnetsMap : evmNetworksWithoutTestnetsMap,
-  }
+  return useMemo(
+    () => ({
+      evmNetworks: withTestnets ? evmNetworksWithTestnets : evmNetworksWithoutTestnets,
+      evmNetworksMap: withTestnets ? evmNetworksWithTestnetsMap : evmNetworksWithoutTestnetsMap,
+    }),
+    [
+      evmNetworksWithTestnets,
+      evmNetworksWithTestnetsMap,
+      evmNetworksWithoutTestnets,
+      evmNetworksWithoutTestnetsMap,
+      withTestnets,
+    ]
+  )
 }

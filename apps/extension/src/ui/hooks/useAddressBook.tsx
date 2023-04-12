@@ -1,14 +1,20 @@
 import { AddressBookContact, addressBookStore } from "@core/domains/app/store.addressBook"
-import { provideContext } from "@talisman/util/provideContext"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback } from "react"
+import { atom, useRecoilValue } from "recoil"
 
-export const useAddressBookProvider = () => {
-  const [contacts, setContacts] = useState<AddressBookContact[]>([])
+const addressBookState = atom<AddressBookContact[]>({
+  key: "addressBookState",
+  default: [],
+  effects: [
+    ({ setSelf }) => {
+      const sub = addressBookStore.observable.subscribe((data) => setSelf(Object.values(data)))
+      return sub.unsubscribe
+    },
+  ],
+})
 
-  useEffect(() => {
-    const sub = addressBookStore.observable.subscribe((data) => setContacts(Object.values(data)))
-    return () => sub.unsubscribe()
-  }, [])
+export const useAddressBook = () => {
+  const contacts = useRecoilValue(addressBookState)
 
   const add = useCallback(async ({ address, ...rest }: AddressBookContact) => {
     return await addressBookStore.set({ [address]: { address, ...rest } })
@@ -35,5 +41,3 @@ export const useAddressBookProvider = () => {
     contacts,
   }
 }
-
-export const [AddressBookProvider, useAddressBook] = provideContext(useAddressBookProvider)
