@@ -96,27 +96,27 @@ const PageContent = ({ balances }: { balances: Balances }) => {
         <div className="flex grow items-center justify-end">
           <Tooltip placement="bottom">
             <TooltipTrigger
-              onClick={sendFunds}
-              className="hover:bg-grey-700 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
-            >
-              <PaperPlaneIcon />
-            </TooltipTrigger>
-            <TooltipContent>Send</TooltipContent>
-          </Tooltip>
-          <Tooltip placement="bottom">
-            <TooltipTrigger
               onClick={copyAddress}
-              className="hover:bg-grey-700 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
+              className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
             >
               <CopyIcon />
             </TooltipTrigger>
             <TooltipContent>Copy address</TooltipContent>
           </Tooltip>
+          <Tooltip placement="bottom">
+            <TooltipTrigger
+              onClick={sendFunds}
+              className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
+            >
+              <PaperPlaneIcon />
+            </TooltipTrigger>
+            <TooltipContent>Send</TooltipContent>
+          </Tooltip>
           {account && (
             <Popover placement="bottom-end">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <PopoverTrigger className="hover:bg-grey-700 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
+                  <PopoverTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
                     <IconMore />
                   </PopoverTrigger>
                 </TooltipTrigger>

@@ -1,6 +1,8 @@
 import { Balances } from "@core/domains/balances/types"
-import { ChevronLeftIcon } from "@talisman/theme/icons"
+import { ChevronLeftIcon, CopyIcon, PaperPlaneIcon } from "@talisman/theme/icons"
+import { api } from "@ui/api"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { DashboardAssetDetails } from "@ui/domains/Portfolio/AssetDetails"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
@@ -14,6 +16,18 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const navigate = useNavigate()
   const balancesToDisplay = useDisplayBalances(balances)
   const { token, summary } = useTokenBalancesSummary(balancesToDisplay)
+  const { open: openCopyAddressModal } = useCopyAddressModal()
+  const { genericEvent } = useAnalytics()
+
+  const handleCopyAddressClick = useCallback(() => {
+    openCopyAddressModal({ mode: "copy" })
+    genericEvent("open copy address", { from: "dashboard portfolio" })
+  }, [genericEvent, openCopyAddressModal])
+
+  const handleSendFundsClick = useCallback(() => {
+    api.sendFundsOpen()
+    genericEvent("open send funds", { from: "dashboard portfolio" })
+  }, [genericEvent])
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
 
@@ -34,6 +48,20 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
               <TokenLogo tokenId={token?.id} />
             </div>
             <div className="text-md">{token?.symbol}</div>
+            <div className="flex flex-wrap">
+              <button
+                onClick={handleCopyAddressClick}
+                className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm"
+              >
+                <CopyIcon />
+              </button>
+              <button
+                onClick={handleSendFundsClick}
+                className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-12 w-12 flex-col items-center justify-center rounded-full text-sm"
+              >
+                <PaperPlaneIcon />
+              </button>
+            </div>
           </div>
         </div>
         <Statistics

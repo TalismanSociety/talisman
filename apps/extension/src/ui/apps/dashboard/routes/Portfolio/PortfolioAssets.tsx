@@ -116,7 +116,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
             <div className="flex grow items-center justify-end gap-8">
               {account && (
                 <Popover placement="bottom-end">
-                  <PopoverTrigger className="hover:bg-grey-700 text-body-secondary hover:text-body flex h-[1.5em] w-[1.5em] flex-col items-center justify-center rounded-full text-lg">
+                  <PopoverTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body flex h-[1.5em] w-[1.5em] flex-col items-center justify-center rounded-full text-lg">
                     <IconMore />
                   </PopoverTrigger>
                   <PopoverContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
