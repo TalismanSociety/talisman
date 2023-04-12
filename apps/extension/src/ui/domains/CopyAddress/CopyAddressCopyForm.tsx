@@ -20,12 +20,13 @@ import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "tal
 import AccountAvatar from "../Account/Avatar"
 import { ChainLogo } from "../Asset/ChainLogo"
 import { TokenLogo } from "../Asset/TokenLogo"
-import { QrCode } from "../Sign/Qr/QrCode"
 import { CopyAddressLayout } from "./CopyAddressLayout"
+import { TextQrCode } from "./TextQrCode"
 import { useCopyAddressWizard } from "./useCopyAddressWizard"
 
 const QR_IMAGE_OPTIONS = {
-  imageSize: 1,
+  imageSize: 0.3,
+  margin: 5,
 }
 
 type AddressPillButtonProps = { address?: string | null; className?: string; onClick?: () => void }
@@ -181,10 +182,6 @@ export const CopyAddressCopyForm = () => {
     [chain, formattedAddress]
   )
 
-  const data = useMemo(() => {
-    return formattedAddress ? stringToU8a(formattedAddress) : undefined
-  }, [formattedAddress])
-
   if (!formattedAddress) return null
 
   return (
@@ -231,10 +228,10 @@ export const CopyAddressCopyForm = () => {
           )}
         </div>
         <div className="flex w-full grow flex-col items-center justify-center gap-12">
-          <div className="h-[24rem] w-[24rem] rounded-lg bg-white p-10 ">
+          <div className="h-[24rem] w-[24rem] rounded-lg bg-[#ffffff] p-10 ">
             {isLogoLoaded && (
               <FadeIn>
-                <QrCode data={data} image={logo} imageOptions={QR_IMAGE_OPTIONS} />
+                <TextQrCode data={formattedAddress} image={logo} imageOptions={QR_IMAGE_OPTIONS} />
               </FadeIn>
             )}
           </div>
