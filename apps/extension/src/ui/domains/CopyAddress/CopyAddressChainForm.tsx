@@ -7,6 +7,7 @@ import { Chain, ChainId } from "@talismn/chaindata-provider"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useChains from "@ui/hooks/useChains"
 import { useSettings } from "@ui/hooks/useSettings"
+import sortBy from "lodash/sortBy"
 import { useCallback, useMemo, useState } from "react"
 
 import AccountAvatar from "../Account/Avatar"
@@ -98,7 +99,15 @@ export const CopyAddressChainForm = () => {
     const sortedChains = [
       chainsMap["polkadot"],
       chainsMap["kusama"],
-      ...chains.filter((c) => c.account !== "ethereum" && !["polkadot", "kusama"].includes(c.id)),
+      ...sortBy(
+        chains.filter(
+          (c) =>
+            typeof c.prefix === "number" &&
+            c.account !== "ethereum" &&
+            !["polkadot", "kusama"].includes(c.id)
+        ),
+        "name"
+      ),
     ].filter(Boolean) as Chain[]
 
     return [
