@@ -32,7 +32,7 @@ export const Modal: FC<ModalProps> = ({
   const container = (containerId && document.getElementById(containerId)) || document.body
 
   return createPortal(
-    <Transition show={isOpen}>
+    <Transition show={!!isOpen}>
       <Transition.Child
         className={classNames(
           "bg-grey-900/50 top-0 left-0 z-10 h-full w-full",

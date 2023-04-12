@@ -6,6 +6,7 @@ import { useCopyAddressModal } from "./useCopyAddressModal"
 
 export const CopyAddressModal = () => {
   const { isOpen, close, inputs } = useCopyAddressModal()
+
   return (
     <Modal
       blur
