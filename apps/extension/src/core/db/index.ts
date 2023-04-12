@@ -1,4 +1,5 @@
 import { ProtectorSources, ProtectorStorage } from "@core/domains/app/protector/ParaverseProtector"
+import { WalletTransaction } from "@core/domains/transactions/types"
 import { MetadataDef } from "@core/inject/types"
 import { DbTokenRates } from "@talismn/token-rates"
 import { Dexie, Transaction, Version } from "dexie"
@@ -18,12 +19,13 @@ export class TalismanDatabase extends Dexie {
   tokenRates!: Dexie.Table<DbTokenRates, string>
   metadata!: Dexie.Table<MetadataDef, string>
   phishing!: Dexie.Table<ProtectorStorage, ProtectorSources>
+  transactions!: Dexie.Table<WalletTransaction, string>
 
   constructor() {
     super("Talisman")
 
     // https://dexie.org/docs/Tutorial/Design#database-versioning
-    this.version(6)
+    this.version(7)
       .stores({
         // You only need to specify properties that you wish to index.
         // The object store will allow any properties on your stored objects but you can only query them by indexed properties
@@ -34,6 +36,7 @@ export class TalismanDatabase extends Dexie {
         tokenRates: "tokenId",
         metadata: "genesisHash",
         phishing: "source, commitSha",
+        transactions: "hash, status, timestamp",
 
         chains: null, // delete legacy table
         evmNetworks: null, // delete legacy table

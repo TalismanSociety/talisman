@@ -2,7 +2,7 @@ import { AccountJsonQr } from "@core/domains/accounts/types"
 import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
-import { QrSubstrate } from "@ui/domains/Sign/QrSubstrate"
+import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import useChain from "@ui/hooks/useChain"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
@@ -32,7 +32,7 @@ export const SendQr = () => {
     async ({ signature }: { signature: HexString }) => {
       try {
         setSigned(true)
-        await sendWithSignature(signature)
+        await sendWithSignature(formData, signature)
 
         // this analytics call is designed to mirror the shape of the other 'asset transfer' calls
         // it needs to be on the fronted because the qr signing backend handler doesn't have access to all of the details
@@ -60,6 +60,7 @@ export const SendQr = () => {
       }
     },
     [
+      formData,
       knownAddress,
       sendWithSignature,
       to,

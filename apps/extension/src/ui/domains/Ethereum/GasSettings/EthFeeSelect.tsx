@@ -5,12 +5,12 @@ import {
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import { TokenId } from "@core/domains/tokens/types"
-import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
+import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { ethers } from "ethers"
 import { FC, useCallback, useEffect, useState } from "react"
-import { PillButton } from "talisman-ui"
+import { Drawer, PillButton } from "talisman-ui"
 
 import { FEE_PRIORITY_OPTIONS } from "./common"
 import { CustomGasSettingsFormEip1559 } from "./CustomGasSettingsFormEip1559"
@@ -35,7 +35,8 @@ type EthFeeSelectProps = {
   networkUsage?: number
   gasSettingsByPriority?: GasSettingsByPriority
   priority?: EthPriorityOptionName
-  drawerContainer?: HTMLElement | string | null
+  drawerContainerId?: string
+  className?: string
   onChange?: (priority: EthPriorityOptionName) => void
   setCustomSettings: (gasSettings: EthGasSettings) => void
 }
@@ -45,12 +46,13 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
   txDetails,
   onChange,
   priority,
-  drawerContainer,
+  drawerContainerId,
   gasSettingsByPriority,
   disabled,
   setCustomSettings,
   tx,
   networkUsage,
+  className,
 }) => {
   const { genericEvent } = useAnalytics()
 
@@ -94,11 +96,21 @@ export const EthFeeSelect: FC<EthFeeSelectProps> = ({
 
   return (
     <>
-      <PillButton disabled={disabled} type="button" onClick={open} className="h-12 pl-4">
+      <PillButton
+        disabled={disabled}
+        type="button"
+        onClick={open}
+        className={classNames("h-12 pl-4", className)}
+      >
         <img src={FEE_PRIORITY_OPTIONS[priority].icon} alt="" className="inline-block w-10" />{" "}
         <span className="align-middle">{FEE_PRIORITY_OPTIONS[priority].label}</span>
       </PillButton>
-      <Drawer parent={drawerContainer} open={isOpen && !disabled} anchor="bottom" onClose={close}>
+      <Drawer
+        containerId={drawerContainerId}
+        isOpen={isOpen && !disabled}
+        anchor="bottom"
+        onDismiss={close}
+      >
         {showCustomSettings && gasSettingsByPriority.type === "eip1559" && (
           <CustomGasSettingsFormEip1559
             tokenId={tokenId}

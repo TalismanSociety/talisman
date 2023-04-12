@@ -4,11 +4,12 @@ import Nav, { NavItemButton } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import {
   CreditCardIcon,
+  DownloadAlertIcon,
+  DownloadIcon,
   ExternalLinkIcon,
   EyeIcon,
   EyeOffIcon,
   InfoIcon,
-  KeyIcon,
   LockIcon,
   PaperPlaneIcon,
   PlusIcon,
@@ -198,11 +199,11 @@ export const NavigationDrawer: FC = () => {
               <NavItemButton icon={<SettingsIcon />} onClick={handleSettingsClick}>
                 Settings
               </NavItemButton>
-              <NavItemButton icon={<KeyIcon />} onClick={handleBackupClick}>
-                <span className="inline-flex items-center gap-4">
-                  <span>Backup Wallet</span>
-                  {isNotConfirmed && <InfoIcon className="text-primary inline-block" />}
-                </span>
+              <NavItemButton
+                icon={isNotConfirmed ? <DownloadAlertIcon /> : <DownloadIcon />}
+                onClick={handleBackupClick}
+              >
+                Backup Wallet
               </NavItemButton>
               <NavItemButton icon={<LockIcon />} onClick={handleLock}>
                 Lock Wallet

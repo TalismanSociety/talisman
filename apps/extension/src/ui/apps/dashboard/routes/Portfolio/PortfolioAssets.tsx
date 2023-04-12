@@ -24,7 +24,7 @@ import { useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 
 const PageContent = ({ balances }: { balances: Balances }) => {
-  const [showWalletFunding] = useAppState("showWalletFunding")
+  const [hasFunds] = useAppState("hasFunds")
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
   const { canExportAccount, open: openAccountExportModal } = useAccountExportModal()
@@ -63,8 +63,8 @@ const PageContent = ({ balances }: { balances: Balances }) => {
 
   const enableWalletFunding = useIsFeatureEnabled("WALLET_FUNDING")
   const displayWalletFunding = useMemo(
-    () => !account && Boolean(showWalletFunding && enableWalletFunding),
-    [account, showWalletFunding, enableWalletFunding]
+    () => !account && Boolean(!hasFunds && enableWalletFunding),
+    [account, hasFunds, enableWalletFunding]
   )
 
   const canAddCustomToken = useMemo(() => isEthereumAddress(account?.address), [account?.address])

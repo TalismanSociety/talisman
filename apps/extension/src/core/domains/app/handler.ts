@@ -30,6 +30,7 @@ import Browser from "webextension-polyfill"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
 import { featuresStore } from "./store.features"
+import { PasswordStoreData } from "./store.password"
 
 export default class AppHandler extends ExtensionHandler {
   #modalOpenRequest = new Subject<ModalOpenRequest>()
@@ -69,10 +70,15 @@ export default class AppHandler extends ExtensionHandler {
       confirmed = true
     }
 
-    const { password: transformedPw, salt } = await this.stores.password.createPassword(pass)
+    const {
+      password: transformedPw,
+      salt,
+      secret,
+      check,
+    } = await this.stores.password.createPassword(pass)
     assert(transformedPw, "Password creation failed")
     this.stores.password.setPassword(transformedPw)
-    await this.stores.password.set({ isTrimmed: false, isHashed: true, salt })
+    await this.stores.password.set({ isTrimmed: false, isHashed: true, salt, secret, check })
 
     const { pair } = keyring.addUri(mnemonic, transformedPw, {
       name: "My Polkadot Account",
@@ -100,7 +106,7 @@ export default class AppHandler extends ExtensionHandler {
       console.error(err)
     }
 
-    const result = await this.stores.app.setOnboarded(method === "new")
+    const result = await this.stores.app.setOnboarded(method !== "new")
     talismanAnalytics.capture("onboarded", { method })
     return result
   }
@@ -112,18 +118,25 @@ export default class AppHandler extends ExtensionHandler {
 
     try {
       const transformedPassword = await this.stores.password.transformPassword(pass)
-      // get root account
-      const rootAccount = this.getRootAccount()
+      const { secret, check } = await this.stores.password.get()
+      if (!secret || !check) {
+        // attempt to log in via the legacy method, and convert
+        // get root account
+        const rootAccount = this.getRootAccount()
 
-      assert(rootAccount, "No root account")
+        assert(rootAccount, "No root account")
 
-      // fetch keyring pair from address
-      const pair = keyring.getPair(rootAccount.address)
-      // attempt unlock the pair
-      // a successful unlock means authenticated
-      pair.unlock(transformedPassword)
-      pair.lock()
-      await this.stores.password.setPlaintextPassword(pass)
+        // fetch keyring pair from address
+        const pair = keyring.getPair(rootAccount.address)
+        // attempt unlock the pair
+        // a successful unlock means authenticated
+        pair.unlock(transformedPassword)
+        pair.lock()
+        await this.stores.password.setPlaintextPassword(pass)
+        await this.stores.password.setupAuthSecret(transformedPassword)
+      } else {
+        await this.stores.password.authenticate(pass)
+      }
 
       talismanAnalytics.capture("authenticate")
       return true
@@ -166,7 +179,7 @@ export default class AppHandler extends ExtensionHandler {
 
     const transformedPw = await this.stores.password.transformPassword(currentPw)
     assert(transformedPw, "Password error")
-    assert(transformedPw === (await this.stores.password.getPassword()), "Incorrect Password")
+    assert(transformedPw === this.stores.password.getPassword(), "Incorrect Password")
     // attempt to unlock the pair
     // a successful unlock means password is ok
     try {
@@ -190,7 +203,14 @@ export default class AppHandler extends ExtensionHandler {
 
     const result = await changePassword({ currentPw: transformedPw, newPw: hashedNewPw })
     if (!result.ok) throw Error(result.val)
-    const pwStoreData: Record<string, any> = { isTrimmed: false, isHashed: true }
+
+    // update password secret
+    const secretResult = await this.stores.password.createAuthSecret(hashedNewPw)
+    const pwStoreData: Partial<PasswordStoreData> = {
+      ...secretResult,
+      isTrimmed: false,
+      isHashed: true,
+    }
     if (newSalt) {
       pwStoreData.salt = newSalt
     }

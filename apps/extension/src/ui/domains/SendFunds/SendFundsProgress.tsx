@@ -1,42 +1,130 @@
-import { EvmNetworkId } from "@core/domains/ethereum/types"
-import { TransactionStatus } from "@core/domains/transactions/types"
-import { ExternalLinkIcon } from "@talisman/theme/icons"
-import useChain from "@ui/hooks/useChain"
-import { useEvmTransactionWatch } from "@ui/hooks/useEvmTransactionWatch"
-import useTransactionById from "@ui/hooks/useTransactionById"
-import { FC, useMemo } from "react"
-import { Button, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
+import {
+  EvmWalletTransaction,
+  SubWalletTransaction,
+  WalletTransaction,
+} from "@core/domains/transactions"
+import { HexString } from "@polkadot/util/types"
+import { ExternalLinkIcon, RocketIcon, XCircleIcon } from "@talisman/theme/icons"
+import { Chain, EvmNetwork } from "@talismn/chaindata-provider"
+import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
+import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
+import useTransactionByHash from "@ui/hooks/useTransactionByHash"
+import { ethers } from "ethers"
+import { FC, useCallback, useMemo, useState } from "react"
+import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
+import urlJoin from "url-join"
 
-const useStatusDetails = (status: TransactionStatus) => {
+import { TxReplaceDrawer, TxReplaceType } from "../Transactions"
+
+const getBlockExplorerUrl = (
+  network: EvmNetwork | undefined,
+  chain: Chain | undefined,
+  hash: string
+) => {
+  if (network?.explorerUrl) return urlJoin(network.explorerUrl, "tx", hash)
+  if (chain?.subscanUrl) return urlJoin(chain.subscanUrl, "tx", hash)
+  return undefined
+}
+
+const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
+  const [replaceType, setReplaceType] = useState<TxReplaceType>()
+  const { gotoProgress } = useSendFundsWizard()
+
+  const handleShowDrawer = useCallback((type: TxReplaceType) => () => setReplaceType(type), [])
+
+  const handleClose = useCallback(
+    (newHash?: HexString) => {
+      setReplaceType(undefined)
+      if (newHash) {
+        const networkIdOrHash = tx.networkType === "evm" ? tx.evmNetworkId : tx.genesisHash
+        if (networkIdOrHash) gotoProgress({ hash: newHash, networkIdOrHash })
+      }
+    },
+    [gotoProgress, tx]
+  )
+
+  if (tx.status !== "pending" || tx.networkType !== "evm") return null
+
+  return (
+    <>
+      <div className="mt-8 flex w-full items-center justify-center gap-4">
+        <PillButton
+          size="sm"
+          onClick={handleShowDrawer("speed-up")}
+          icon={RocketIcon}
+          className="!p-4"
+        >
+          Speed Up
+        </PillButton>
+        <PillButton
+          size="sm"
+          onClick={handleShowDrawer("cancel")}
+          icon={XCircleIcon}
+          className="!p-4"
+        >
+          Cancel Transfer
+        </PillButton>
+      </div>
+      <TxReplaceDrawer tx={tx} type={replaceType} onClose={handleClose} />
+    </>
+  )
+}
+
+const useStatusDetails = (tx: WalletTransaction) => {
   const { title, subtitle, extra, animStatus } = useMemo<{
     title: string
     subtitle: string
     animStatus: ProcessAnimationStatus
     extra?: string
   }>(() => {
-    switch (status) {
-      case "ERROR":
+    const isReplacementCancel =
+      tx.networkType === "evm" &&
+      tx.isReplacement &&
+      tx.unsigned.value &&
+      ethers.BigNumber.from(tx.unsigned.value).isZero()
+
+    switch (tx.status) {
+      case "unknown":
         return {
-          title: "Failure",
-          subtitle: "Transaction failed.",
+          title: "Transaction not found",
+          subtitle: "Transaction was submitted, but Talisman is unable to track its progress.",
           animStatus: "failure",
         }
-      case "SUCCESS":
+      case "replaced": {
         return {
-          title: "Success",
-          subtitle: "Your transfer was successful!",
-          animStatus: "success",
+          title: "Transaction cancelled",
+          subtitle: "This transaction has been replaced with another one",
+          animStatus: "failure",
         }
-      case "PENDING":
-      default:
+      }
+      case "error":
         return {
-          title: "Transfer in progress",
-          subtitle: "This may take a few minutes.",
-          extra: "You can now close this window. Your transfer will continue in the background.",
+          title: "Failure",
+          subtitle: isReplacementCancel ? "Failed to cancel transfer" : "Transaction failed.",
+          animStatus: "failure",
+        }
+      case "success":
+        return {
+          title: isReplacementCancel ? "Transaction cancelled" : "Success",
+          subtitle: isReplacementCancel
+            ? "Your transfer was cancelled"
+            : "Your transfer was successful!",
+          animStatus: isReplacementCancel ? "failure" : "success",
+        }
+      case "pending":
+        return {
+          title: isReplacementCancel ? "Cancelling transaction" : "Transfer in progress",
+          subtitle: isReplacementCancel
+            ? "Attempting to cancel transfer"
+            : "This may take a few minutes.",
+          extra: isReplacementCancel
+            ? undefined
+            : "You can now close this window. Your transfer will continue in the background.",
           animStatus: "processing",
         }
     }
-  }, [status])
+  }, [tx])
 
   return {
     title,
@@ -47,52 +135,51 @@ const useStatusDetails = (status: TransactionStatus) => {
 }
 
 type SendFundsProgressBaseProps = {
+  tx: WalletTransaction
   className?: string
-  blockHash?: string
   blockNumber?: string
-  status: TransactionStatus
   onClose?: () => void
   href?: string
 }
 
 const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
-  status,
-  blockHash,
+  tx,
   blockNumber,
   href,
   onClose,
 }) => {
-  const { title, subtitle, animStatus, extra } = useStatusDetails(status)
+  const { title, subtitle, animStatus, extra } = useStatusDetails(tx)
 
   return (
     <div className="flex h-full w-full flex-col items-center">
       <div className="text-body mt-32 text-lg font-bold">{title}</div>
-      <div className="text-body-secondary mt-12 text-base font-light">{subtitle}</div>
-      <div className="flex grow flex-col justify-center">
-        <ProcessAnimation status={animStatus} className="h-[14.5rem]" />
-      </div>
-      <div className="text-body-secondary h-[10rem] px-10 text-center">
-        {blockNumber ? (
-          <>
-            Included in{" "}
-            {href ? (
+      <div className="text-body-secondary mt-12 text-center text-base font-light">{subtitle}</div>
+      <ProcessAnimation status={animStatus} className="mt-[7.5rem] h-[14.5rem]" />
+      <div className="text-body-secondary flex w-full grow flex-col justify-center px-10 text-center ">
+        <div>
+          {blockNumber ? (
+            <>
+              Included in{" "}
+              {href ? (
+                <a target="_blank" className="hover:text-body text-grey-200" href={href}>
+                  block #{blockNumber} <ExternalLinkIcon className="inline align-text-top" />
+                </a>
+              ) : (
+                <span className="text-body">block #{blockNumber}</span>
+              )}
+            </>
+          ) : href ? (
+            <>
+              View transaction on{" "}
               <a target="_blank" className="hover:text-body text-grey-200" href={href}>
-                block #{blockNumber} <ExternalLinkIcon className="inline align-text-top" />
+                block explorer <ExternalLinkIcon className="inline align-text-top" />
               </a>
-            ) : (
-              <span className="text-body">block #{blockNumber}</span>
-            )}
-          </>
-        ) : href ? (
-          <>
-            View transaction on{" "}
-            <a target="_blank" className="hover:text-body text-grey-200" href={href}>
-              block explorer <ExternalLinkIcon className="inline align-text-top" />
-            </a>
-          </>
-        ) : (
-          extra
-        )}
+            </>
+          ) : (
+            extra
+          )}
+        </div>
+        {tx.status === "pending" && <TxReplaceActions tx={tx} />}
       </div>
       <Button fullWidth onClick={onClose}>
         Close
@@ -102,91 +189,97 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
 }
 
 type SendFundsProgressSubstrateProps = {
-  substrateTxId: string
+  tx: SubWalletTransaction
   onClose?: () => void
   className?: string
 }
 
-const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = (props) => {
-  const { chainId, blockHash, blockNumber, extrinsicIndex, status } = useTransactionById(
-    props.substrateTxId
-  )
-  const { subscanUrl } = useChain(chainId) || {}
-
-  const href = useMemo(() => {
-    if (!subscanUrl || !blockHash) return undefined
-    if (!blockNumber || typeof extrinsicIndex !== "number") return `${subscanUrl}block/${blockHash}`
-    return `${subscanUrl}extrinsic/${blockNumber}-${extrinsicIndex}`
-  }, [blockHash, blockNumber, extrinsicIndex, subscanUrl])
+const SendFundsProgressSubstrate: FC<SendFundsProgressSubstrateProps> = ({
+  tx,
+  onClose,
+  className,
+}) => {
+  const chain = useChainByGenesisHash(tx.genesisHash)
+  const href = useMemo(() => getBlockExplorerUrl(undefined, chain, tx.hash), [chain, tx.hash])
 
   return (
     <SendFundsProgressBase
-      {...props}
-      status={status}
-      blockHash={blockHash}
-      blockNumber={blockNumber}
+      tx={tx}
+      className={className}
+      onClose={onClose}
+      blockNumber={tx.blockNumber}
       href={href}
     />
   )
 }
 
 type SendFundsProgressEvmProps = {
-  evmNetworkId: EvmNetworkId
-  evmTxHash: string
+  tx: EvmWalletTransaction
   onClose?: () => void
   className?: string
 }
 
-const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = (props) => {
-  const { blockHash, blockNumber, status, href } = useEvmTransactionWatch(
-    props.evmNetworkId,
-    props.evmTxHash
-  )
+const SendFundsProgressProgressEvm: FC<SendFundsProgressEvmProps> = ({
+  tx,
+  className,
+  onClose,
+}) => {
+  const network = useEvmNetwork(tx.evmNetworkId)
+  const href = useMemo(() => getBlockExplorerUrl(network, undefined, tx.hash), [network, tx.hash])
 
   return (
     <SendFundsProgressBase
-      {...props}
-      status={status}
-      blockHash={blockHash}
-      blockNumber={blockNumber}
+      tx={tx}
+      className={className}
+      onClose={onClose}
+      blockNumber={tx.blockNumber}
       href={href}
     />
   )
 }
 
+const UNKNOWN_TX: WalletTransaction = {
+  hash: "",
+  networkType: "evm",
+  status: "unknown",
+  evmNetworkId: "",
+  account: "",
+  unsigned: {},
+  nonce: 0,
+  timestamp: 0,
+}
+
 type SendFundsProgressProps = {
-  substrateTxId?: string
-  evmNetworkId?: EvmNetworkId
-  evmTxHash?: string
+  hash: HexString
+  networkIdOrHash: string
   onClose?: () => void
   className?: string
 }
 
 export const SendFundsProgress: FC<SendFundsProgressProps> = ({
-  substrateTxId,
-  evmNetworkId,
-  evmTxHash,
+  hash,
+  networkIdOrHash,
   onClose,
   className,
 }) => {
-  if (substrateTxId)
-    return (
-      <SendFundsProgressSubstrate
-        substrateTxId={substrateTxId}
-        onClose={onClose}
-        className={className}
-      />
-    )
+  const tx = useTransactionByHash(hash)
+  const evmNetwork = useEvmNetwork(networkIdOrHash)
+  const chain = useChainByGenesisHash(networkIdOrHash)
 
-  if (evmNetworkId && evmTxHash)
+  // tx is null if not found in db
+  if (tx === null) {
+    const href = getBlockExplorerUrl(evmNetwork, chain, hash)
     return (
-      <SendFundsProgressProgressEvm
-        evmNetworkId={evmNetworkId}
-        evmTxHash={evmTxHash}
-        onClose={onClose}
-        className={className}
-      />
+      <SendFundsProgressBase tx={UNKNOWN_TX} href={href} className={className} onClose={onClose} />
     )
+  }
 
+  if (tx?.networkType === "substrate")
+    return <SendFundsProgressSubstrate tx={tx} onClose={onClose} className={className} />
+
+  if (tx?.networkType === "evm")
+    return <SendFundsProgressProgressEvm tx={tx} onClose={onClose} className={className} />
+
+  // render null while loading
   return null
 }

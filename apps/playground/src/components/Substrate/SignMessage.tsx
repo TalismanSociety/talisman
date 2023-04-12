@@ -4,7 +4,7 @@ import { signatureVerify } from "@polkadot/util-crypto"
 import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 import { useWallet } from "./useWallet"
 
 const TEST_MESSAGE = `First line of the message

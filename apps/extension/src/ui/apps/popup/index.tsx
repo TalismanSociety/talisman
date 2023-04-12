@@ -30,6 +30,7 @@ import { useRequests } from "@ui/hooks/useRequests"
 import { useEffect, useMemo } from "react"
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom"
 
+import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
 import { CurrentSiteProvider } from "./context/CurrentSiteContext"
 import { NavigationProvider } from "./context/NavigationContext"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
@@ -152,6 +153,7 @@ const Popup = () => {
                         <Route path="send/*" element={<SendFundsPage />} />
                         <Route path="*" element={<Navigate to="/portfolio" replace />} />
                       </Routes>
+                      <BackupWarningDrawer />
                       <AccountRenameModal />
                       <AccountRemoveModal />
                       <AccountExportModal />

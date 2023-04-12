@@ -10,7 +10,7 @@ import {
   useSignMessage,
 } from "wagmi"
 
-import { Section } from "../Section"
+import { Section } from "../shared/Section"
 import { GreeterAbi, getGreeterAddress } from "./contracts"
 import { TransactionReceipt } from "./shared/TransactionReceipt"
 
