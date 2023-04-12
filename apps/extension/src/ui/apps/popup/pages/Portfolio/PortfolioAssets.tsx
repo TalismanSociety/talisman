@@ -31,16 +31,6 @@ const PopoverItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = (props) => (
   />
 )
 
-export const RoundIconButton: FC<ButtonHTMLAttributes<HTMLButtonElement>> = (props) => (
-  <button
-    {...props}
-    className={classNames(
-      "hover:bg-grey-700 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full",
-      props.className
-    )}
-  />
-)
-
 const PageContent = ({ balances }: { balances: Balances }) => {
   const balancesToDisplay = useDisplayBalances(balances)
   const { account } = useSelectedAccount()
@@ -105,29 +95,29 @@ const PageContent = ({ balances }: { balances: Balances }) => {
         </div>
         <div className="flex grow items-center justify-end">
           <Tooltip placement="bottom">
-            <TooltipTrigger>
-              <RoundIconButton onClick={sendFunds}>
-                <PaperPlaneIcon />
-              </RoundIconButton>
+            <TooltipTrigger
+              onClick={sendFunds}
+              className="hover:bg-grey-700 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
+            >
+              <PaperPlaneIcon />
             </TooltipTrigger>
             <TooltipContent>Send</TooltipContent>
           </Tooltip>
           <Tooltip placement="bottom">
-            <TooltipTrigger>
-              <RoundIconButton onClick={copyAddress}>
-                <CopyIcon />
-              </RoundIconButton>
+            <TooltipTrigger
+              onClick={copyAddress}
+              className="hover:bg-grey-700 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
+            >
+              <CopyIcon />
             </TooltipTrigger>
             <TooltipContent>Copy address</TooltipContent>
           </Tooltip>
           {account && (
             <Popover placement="bottom-end">
               <Tooltip>
-                <TooltipTrigger>
-                  <PopoverTrigger>
-                    <RoundIconButton>
-                      <IconMore />
-                    </RoundIconButton>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger className="hover:bg-grey-700 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
+                    <IconMore />
                   </PopoverTrigger>
                 </TooltipTrigger>
                 <TooltipContent>More options</TooltipContent>

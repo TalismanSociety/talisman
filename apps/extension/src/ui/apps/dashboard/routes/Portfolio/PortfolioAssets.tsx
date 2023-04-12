@@ -1,8 +1,8 @@
 import { Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { IconButton } from "@talisman/components/IconButton"
-import PopNav from "@talisman/components/PopNav"
 import { IconMore } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -20,8 +20,33 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
-import { useCallback, useEffect, useMemo } from "react"
+import { ButtonHTMLAttributes, FC, MouseEvent, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
+import { Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "talisman-ui"
+
+const PopoverItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({
+  onClick,
+  className,
+  ...props
+}) => {
+  const { setOpen } = usePopoverContext()
+
+  const handleClick = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      onClick?.(e)
+      setOpen(false)
+    },
+    [setOpen, onClick]
+  )
+
+  return (
+    <button
+      {...props}
+      onClick={handleClick}
+      className={classNames("hover:bg-grey-800 rounded-xs h-20 p-6 text-left", className)}
+    />
+  )
+}
 
 const PageContent = ({ balances }: { balances: Balances }) => {
   const { hasFunds } = useAppState()
@@ -90,34 +115,35 @@ const PageContent = ({ balances }: { balances: Balances }) => {
             <Statistics className="max-w-[40%]" title="Available" fiat={available} />
             <div className="flex grow items-center justify-end gap-8">
               {account && (
-                <PopNav
-                  trigger={
-                    <IconButton>
-                      <IconMore />
-                    </IconButton>
-                  }
-                  className="icon more"
-                  closeOnMouseOut
-                >
-                  <PopNav.Item onClick={sendFunds}>Send funds</PopNav.Item>
-                  <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
-                  {showTxHistory && (
-                    <PopNav.Item onClick={browseTxHistory}>Transaction History</PopNav.Item>
-                  )}
-                  {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
-                  {canExportAccount && (
-                    <PopNav.Item onClick={openAccountExportModal}>Export as JSON</PopNav.Item>
-                  )}
-                  {canExportAccountPk && (
-                    <PopNav.Item onClick={openAccountExportPkModal}>Export Private Key</PopNav.Item>
-                  )}
-                  {canRemove && (
-                    <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
-                  )}
-                  {canAddCustomToken && (
-                    <PopNav.Item onClick={handleAddCustomToken}>Add Custom Token</PopNav.Item>
-                  )}
-                </PopNav>
+                <Popover placement="bottom-end">
+                  <PopoverTrigger className="hover:bg-grey-700 text-body-secondary hover:text-body flex h-[1.5em] w-[1.5em] flex-col items-center justify-center rounded-full text-lg">
+                    <IconMore />
+                  </PopoverTrigger>
+                  <PopoverContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+                    <PopoverItem onClick={sendFunds}>Send funds</PopoverItem>
+                    <PopoverItem onClick={copyAddress}>Copy address</PopoverItem>
+                    {showTxHistory && (
+                      <PopoverItem onClick={browseTxHistory}>Transaction History</PopoverItem>
+                    )}
+                    {canRename && (
+                      <PopoverItem onClick={openAccountRenameModal}>Rename</PopoverItem>
+                    )}
+                    {canExportAccount && (
+                      <PopoverItem onClick={openAccountExportModal}>Export as JSON</PopoverItem>
+                    )}
+                    {canExportAccountPk && (
+                      <PopoverItem onClick={openAccountExportPkModal}>
+                        Export Private Key
+                      </PopoverItem>
+                    )}
+                    {canRemove && (
+                      <PopoverItem onClick={openAccountRemoveModal}>Remove Account</PopoverItem>
+                    )}
+                    {canAddCustomToken && (
+                      <PopoverItem onClick={handleAddCustomToken}>Add Custom Token</PopoverItem>
+                    )}
+                  </PopoverContent>
+                </Popover>
               )}
             </div>
           </div>

@@ -5,21 +5,13 @@ import { createPortal } from "react-dom"
 
 type ModalProps = {
   children: ReactNode
-  blur?: boolean
   isOpen?: boolean
   className?: string
   containerId?: string
   onDismiss?: () => void
 }
 
-export const Modal: FC<ModalProps> = ({
-  children,
-  blur,
-  isOpen,
-  className,
-  containerId,
-  onDismiss,
-}) => {
+export const Modal: FC<ModalProps> = ({ children, isOpen, className, containerId, onDismiss }) => {
   const handleDismiss: MouseEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       if (!onDismiss) return
@@ -32,12 +24,11 @@ export const Modal: FC<ModalProps> = ({
   const container = (containerId && document.getElementById(containerId)) || document.body
 
   return createPortal(
-    <Transition show={!!isOpen}>
+    <Transition show={!!isOpen} appear>
       <Transition.Child
         className={classNames(
-          "bg-grey-900/50 top-0 left-0 z-10 h-full w-full",
+          "bg-grey-900/50 top-0 left-0 z-10 h-full w-full backdrop-blur-sm",
           containerId ? "absolute" : "fixed",
-          blur && "backdrop-blur-sm",
           onDismiss && "cursor-pointer"
         )}
         enter="ease-out duration-300"
@@ -57,7 +48,6 @@ export const Modal: FC<ModalProps> = ({
         )}
       >
         <Transition.Child
-          appear
           className={classNames("pointer-events-auto", className)}
           enter="ease-out duration-300"
           enterFrom="opacity-0 scale-50"

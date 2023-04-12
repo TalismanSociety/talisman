@@ -7,7 +7,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { PendingTransactionsDrawer } from "@ui/domains/Transactions/PendingTransactionsDrawer"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useLiveQuery } from "dexie-react-hooks"
-import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useCallback } from "react"
+import { ButtonHTMLAttributes, DetailedHTMLProps, FC, forwardRef, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
@@ -29,20 +29,23 @@ type BottomNavButtonProps = DetailedHTMLProps<
   current?: boolean
 }
 
-const BottomNavButton: FC<BottomNavButtonProps> = ({ current, className, children, ...props }) => (
-  <button
-    {...props}
-    className={classNames(
-      " text-body-secondary flex h-20 w-20 justify-center rounded-sm text-center",
-      "enabled:hover:bg-grey-800 enabled:hover:text-body",
-      "enabled:focus-visible:border-body enabled:active:text-body",
-      current && "allow-focus",
-      className
-    )}
-    disabled={current}
-  >
-    {children}
-  </button>
+const BottomNavButton = forwardRef<HTMLButtonElement, BottomNavButtonProps>(
+  ({ current, className, children, ...props }, ref) => (
+    <button
+      ref={ref}
+      {...props}
+      className={classNames(
+        " text-body-secondary flex h-20 w-20 justify-center rounded-sm text-center",
+        "enabled:hover:bg-grey-800 enabled:hover:text-body",
+        "enabled:focus-visible:border-body enabled:active:text-body",
+        current && "allow-focus",
+        className
+      )}
+      disabled={current}
+    >
+      {children}
+    </button>
+  )
 )
 
 const ANALYTICS_PAGE: AnalyticsPage = {
@@ -71,7 +74,7 @@ const RecentActivityButton = () => {
   return (
     <>
       <Tooltip placement="top">
-        <TooltipTrigger>
+        <TooltipTrigger asChild>
           <BottomNavButton onClick={handleClick}>
             {hasPendingTransactions ? <NavIconActivityPending /> : <NavIconActivity />}
           </BottomNavButton>
@@ -145,7 +148,7 @@ export const BottomNav = () => {
       )}
       <div className="border-t-grey-800 flex h-32 min-h-[6.4rem] items-center justify-between border-t px-12 text-3xl">
         <Tooltip placement="top">
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <BottomNavButton onClick={handleHomeClick} current={location.pathname === "/portfolio"}>
               <NavIconHome />
             </BottomNavButton>
@@ -153,7 +156,7 @@ export const BottomNav = () => {
           <TooltipContent>Portfolio</TooltipContent>
         </Tooltip>
         <Tooltip placement="top">
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <BottomNavButton onClick={handleNftClick}>
               <NavIconNft />
             </BottomNavButton>
@@ -162,7 +165,7 @@ export const BottomNav = () => {
         </Tooltip>
         <RecentActivityButton />
         <Tooltip placement="top">
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <BottomNavButton onClick={handleExpandClick}>
               <NavIconExpand />
             </BottomNavButton>
@@ -170,7 +173,7 @@ export const BottomNav = () => {
           <TooltipContent>Expand Portfolio View</TooltipContent>
         </Tooltip>
         <Tooltip placement="top">
-          <TooltipTrigger>
+          <TooltipTrigger asChild>
             <BottomNavButton onClick={handleMoreClick}>
               {isNotConfirmed && <NavIconMoreAlert />}
               {!isNotConfirmed && <NavIconMore />}
