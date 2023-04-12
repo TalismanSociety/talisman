@@ -49,12 +49,12 @@ export const Modal: FC<ModalProps> = ({ children, isOpen, className, containerId
       >
         <Transition.Child
           className={classNames("pointer-events-auto", className)}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0 scale-50"
+          enter="ease-out duration-200"
+          enterFrom="opacity-0 scale-90"
           enterTo="opacity-100 scale-100"
           leave="ease-in duration-200"
           leaveFrom="opacity-100 scale-100"
-          leaveTo="opacity-0 scale-50"
+          leaveTo="opacity-0 scale-95"
         >
           {children}
         </Transition.Child>
