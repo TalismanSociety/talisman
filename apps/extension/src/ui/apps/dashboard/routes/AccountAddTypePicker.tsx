@@ -4,7 +4,9 @@ import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
 import { KeyIcon, ParitySignerIcon, PlusIcon, SeedIcon, UsbIcon } from "@talisman/theme/icons"
+import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useSetting } from "@ui/hooks/useSettings"
 import styled from "styled-components"
 
 import Layout from "../layout"
@@ -16,7 +18,10 @@ const LargePlusIcon = styled(PlusIcon)`
 
 const AccountAddTypePicker = () => {
   const isLedgerCapable = getIsLedgerCapable()
-  const paritySignerEnabled = useIsFeatureEnabled("PARITY_SIGNER")
+  const [hasSpiritKey] = useAppState("hasSpiritKey")
+  const [spiritClanFeatures] = useSetting("spiritClanFeatures")
+  const paritySignerEnabled =
+    useIsFeatureEnabled("PARITY_SIGNER") || (hasSpiritKey && spiritClanFeatures)
 
   return (
     <Layout centered>

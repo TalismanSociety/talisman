@@ -10,10 +10,12 @@ import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalCont
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
 import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
+import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
+import { useSetting } from "@ui/hooks/useSettings"
 import { FC, PropsWithChildren, Suspense, lazy, useEffect, useRef } from "react"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
@@ -66,7 +68,10 @@ const DashboardInner = () => {
     }
   }, [isLoggedIn, isOnboarded])
 
-  const paritySignerEnabled = useIsFeatureEnabled("PARITY_SIGNER")
+  const [hasSpiritKey] = useAppState("hasSpiritKey")
+  const [spiritClanFeatures] = useSetting("spiritClanFeatures")
+  const paritySignerEnabled =
+    useIsFeatureEnabled("PARITY_SIGNER") || (hasSpiritKey && spiritClanFeatures)
 
   return isLoggedIn === "UNKNOWN" ? (
     <FullScreenLoader spin title="Loading" />
