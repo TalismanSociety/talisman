@@ -278,8 +278,10 @@ const useGasSettings = ({
 
     const recommendedSettings: EthGasSettingsLegacy = {
       type: 0,
-      gasPrice,
       gasLimit,
+      // in some cases (ex: claiming brided token on Polygon zkEVM),
+      // 0 is provided by the dapp and has to be used for the tx to succeed
+      gasPrice: tx.gasPrice && BigNumber.from(tx.gasPrice).isZero() ? BigNumber.from(0) : gasPrice,
     }
 
     if (isReplacement) {
@@ -296,7 +298,6 @@ const useGasSettings = ({
         ? suggestedSettings
         : recommendedSettings
 
-    // TODO ideally would be a different type with just 2 properties, but that's enough complexity for now
     return {
       type: "legacy",
       recommended: recommendedSettings,
