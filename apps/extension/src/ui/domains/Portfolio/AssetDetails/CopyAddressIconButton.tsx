@@ -1,38 +1,50 @@
-import { isEthereumAddress } from "@polkadot/util-crypto"
-import { IconButton } from "@talisman/components/IconButton"
 import { CopyIcon } from "@talisman/theme/icons"
-import { encodeAnyAddress } from "@talismn/util"
-import { copyAddress } from "@ui/util/copyAddress"
-import { useCallback, useMemo } from "react"
-import styled from "styled-components"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useSetting } from "@ui/hooks/useSettings"
+import useTokens from "@ui/hooks/useTokens"
+import { useCallback } from "react"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
 
-const SmallIconButton = styled(IconButton)`
-  height: 1.2rem;
-  width: 1.2rem;
-  font-size: var(--font-size-xsmall);
-`
-
-export const CopyAddressButton = ({ prefix }: { prefix: number | null | undefined }) => {
+export const CopyAddressButton = ({
+  symbol,
+  networkId,
+}: {
+  symbol: string
+  networkId: ChainId | EvmNetworkId | null | undefined
+}) => {
   const { account } = useSelectedAccount()
+  const [useTestnets] = useSetting("useTestnets")
+  const { tokens } = useTokens(useTestnets)
 
-  const address = useMemo(() => {
-    if (!account) return null
-    if (isEthereumAddress(account.address)) return account.address
-    return encodeAnyAddress(account.address, prefix ?? undefined)
-  }, [account, prefix])
+  const token = tokens?.find(
+    (t) =>
+      t.symbol === symbol &&
+      (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId)
+  )
+
+  const { genericEvent } = useAnalytics()
+  const { open } = useCopyAddressModal()
 
   const handleClick = useCallback(() => {
-    if (!address) return
-    copyAddress(address)
-  }, [address])
+    open({
+      mode: "receive",
+      address: account?.address,
+      tokenId: token?.id,
+    })
+    genericEvent("open receive", { from: "asset details" })
+  }, [account?.address, genericEvent, open, token?.id])
 
-  if (!address) return null
+  if (!token) return null
 
   return (
-    <SmallIconButton onClick={handleClick}>
+    <button
+      onClick={handleClick}
+      className="text-body-secondary hover:text-body focus:text-body focus:bg-grey-700 hover:bg-grey-700 inline-flex h-9 w-9 items-center justify-center rounded-full text-xs"
+    >
       <CopyIcon />
-    </SmallIconButton>
+    </button>
   )
 }

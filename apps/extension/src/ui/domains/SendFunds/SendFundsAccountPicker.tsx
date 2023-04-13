@@ -1,5 +1,6 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
+import { SearchInput } from "@talisman/components/SearchInput"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import useBalances from "@ui/hooks/useBalances"
@@ -9,7 +10,6 @@ import { isEvmToken } from "@ui/util/isEvmToken"
 import { useCallback, useMemo, useState } from "react"
 
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
-import { SendFundsSearchInput } from "./SendFundsSearchInput"
 
 export const SendFundsAccountPicker = () => {
   const { from, set, tokenId } = useSendFundsWizard()
@@ -17,9 +17,6 @@ export const SendFundsAccountPicker = () => {
 
   const token = useToken(tokenId)
   const chain = useChain(token?.chain?.id)
-
-  // maintain subscription to balances, as a search filter could close subscriptions from account rows
-  useBalances()
 
   const allAccounts = useAccounts()
 
@@ -50,7 +47,7 @@ export const SendFundsAccountPicker = () => {
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
         <div className="font-bold">From</div>
         <div className="grow">
-          <SendFundsSearchInput onChange={setSearch} placeholder="Search by account name" />
+          <SearchInput onChange={setSearch} placeholder="Search by account name" />
         </div>
       </div>
       <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">

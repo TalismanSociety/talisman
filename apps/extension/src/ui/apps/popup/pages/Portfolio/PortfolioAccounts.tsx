@@ -3,19 +3,19 @@ import { FadeIn } from "@talisman/components/FadeIn"
 import { IconButton } from "@talisman/components/IconButton"
 import {
   AllAccountsIcon,
+  ArrowDownIcon,
   ChevronRightIcon,
   CopyIcon,
   CreditCardIcon,
   PaperPlaneIcon,
-  ZapIcon,
 } from "@talisman/theme/icons"
 import { Balance, Balances } from "@talismn/balances"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
-import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -43,7 +43,7 @@ type AccountOption = {
 }
 
 const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOption) => {
-  const { open } = useAddressFormatterModal()
+  const { open } = useCopyAddressModal()
   const { select } = useSelectedAccount()
   const navigate = useNavigate()
   const { genericEvent } = useAnalytics()
@@ -60,7 +60,17 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
   const handleCopyClick: MouseEventHandler<HTMLButtonElement> = useCallback(
     (e) => {
       e.stopPropagation()
-      if (address) open(address)
+      if (address) {
+        sendAnalyticsEvent({
+          ...ANALYTICS_PAGE,
+          name: "Goto",
+          action: "open copy address",
+        })
+        open({
+          mode: "copy",
+          address,
+        })
+      }
     },
     [address, open]
   )
@@ -124,25 +134,24 @@ const TopActions = () => {
     window.close()
   }, [])
 
-  const showStaking = useIsFeatureEnabled("LINK_STAKING")
-  const handleStakingClick = useCallback(() => {
+  const { open: openCopyAddressModal } = useCopyAddressModal()
+  const handleReceiveClick = useCallback(() => {
     sendAnalyticsEvent({
       ...ANALYTICS_PAGE,
       name: "Goto",
-      action: "Staking button",
+      action: "open receive",
     })
-    window.open("https://app.talisman.xyz/staking", "_blank")
-    close()
-  }, [])
+    openCopyAddressModal({
+      mode: "receive",
+    })
+  }, [openCopyAddressModal])
 
   return (
     <div className="mt-8 flex justify-center gap-4">
       <>
-        {showStaking && (
-          <PillButton onClick={handleStakingClick} icon={ZapIcon}>
-            Stake
-          </PillButton>
-        )}
+        <PillButton onClick={handleReceiveClick} icon={ArrowDownIcon}>
+          Receive
+        </PillButton>
         <PillButton onClick={handleSendFundsClick} icon={PaperPlaneIcon}>
           Send
         </PillButton>

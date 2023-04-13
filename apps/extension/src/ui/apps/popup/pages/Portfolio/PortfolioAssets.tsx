@@ -1,18 +1,17 @@
 import { Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { IconButton } from "@talisman/components/IconButton"
-import PopNav from "@talisman/components/PopNav"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { ChevronLeftIcon, CopyIcon, IconMore, PaperPlaneIcon } from "@talisman/theme/icons"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { useAccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { useAccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { useAccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
-import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { CurrentAccountAvatar } from "@ui/domains/Account/CurrentAccountAvatar"
 import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -20,8 +19,17 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
-import { useCallback, useEffect, useMemo } from "react"
+import { ButtonHTMLAttributes, FC, useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
+import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
+
+const PopoverItem: FC<ButtonHTMLAttributes<HTMLButtonElement>> = (props) => (
+  <button
+    {...props}
+    className={classNames("hover:bg-grey-800 rounded-xs h-20 p-6 text-left", props.className)}
+  />
+)
 
 const PageContent = ({ balances }: { balances: Balances }) => {
   const balancesToDisplay = useDisplayBalances(balances)
@@ -31,7 +39,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     useAccountExportPrivateKeyModal()
   const { canRemove, open: openAccountRemoveModal } = useAccountRemoveModal()
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
-  const { open: openAddressFormatterModal } = useAddressFormatterModal()
+  const { open: openCopyAddressModal } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
 
   const sendFunds = useCallback(() => {
@@ -40,10 +48,12 @@ const PageContent = ({ balances }: { balances: Balances }) => {
   }, [account?.address, genericEvent])
 
   const copyAddress = useCallback(() => {
-    if (!account) return
-    openAddressFormatterModal(account.address)
+    openCopyAddressModal({
+      mode: "copy",
+      address: account?.address,
+    })
     genericEvent("open copy address", { from: "popup portfolio" })
-  }, [account, genericEvent, openAddressFormatterModal])
+  }, [account, genericEvent, openCopyAddressModal])
 
   const showTxHistory = useIsFeatureEnabled("LINK_TX_HISTORY")
   const browseTxHistory = useCallback(() => {
@@ -83,49 +93,55 @@ const PageContent = ({ balances }: { balances: Balances }) => {
             </div>
           </div>
         </div>
-        <div className="flex grow items-center justify-end gap-4">
-          <IconButton onClick={sendFunds}>
-            <WithTooltip tooltip="Send">
+        <div className="flex grow items-center justify-end">
+          <Tooltip placement="bottom">
+            <TooltipTrigger
+              onClick={copyAddress}
+              className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
+            >
+              <CopyIcon />
+            </TooltipTrigger>
+            <TooltipContent>Copy address</TooltipContent>
+          </Tooltip>
+          <Tooltip placement="bottom">
+            <TooltipTrigger
+              onClick={sendFunds}
+              className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full"
+            >
               <PaperPlaneIcon />
-            </WithTooltip>
-          </IconButton>
+            </TooltipTrigger>
+            <TooltipContent>Send</TooltipContent>
+          </Tooltip>
           {account && (
-            <>
-              <IconButton onClick={copyAddress}>
-                <WithTooltip tooltip="Copy address">
-                  <CopyIcon />
-                </WithTooltip>
-              </IconButton>
-              <PopNav
-                trigger={
-                  <IconButton>
-                    <WithTooltip tooltip="More options">
-                      <IconMore />
-                    </WithTooltip>
-                  </IconButton>
-                }
-                className="icon more"
-                closeOnMouseOut
-              >
-                <PopNav.Item onClick={copyAddress}>Copy address</PopNav.Item>
+            <Popover placement="bottom-end">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger className="hover:bg-grey-800 text-body-secondary hover:text-body text-md flex h-16 w-16 flex-col items-center justify-center rounded-full">
+                    <IconMore />
+                  </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent>More options</TooltipContent>
+              </Tooltip>
+              <PopoverContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
+                <PopoverItem onClick={copyAddress}>Copy address</PopoverItem>
                 {showTxHistory && (
-                  <PopNav.Item onClick={browseTxHistory}>Transaction History</PopNav.Item>
+                  <PopoverItem onClick={browseTxHistory}>Transaction History</PopoverItem>
                 )}
-                {canRename && <PopNav.Item onClick={openAccountRenameModal}>Rename</PopNav.Item>}
+                {canRename && <PopoverItem onClick={openAccountRenameModal}>Rename</PopoverItem>}
                 {canExportAccount && (
-                  <PopNav.Item onClick={openExportAccountModal}>Export as JSON</PopNav.Item>
+                  <PopoverItem onClick={openExportAccountModal}>Export as JSON</PopoverItem>
                 )}
                 {canExportAccountPk && (
-                  <PopNav.Item onClick={openExportAccountPkModal}>Export Private Key</PopNav.Item>
+                  <PopoverItem onClick={openExportAccountPkModal}>Export Private Key</PopoverItem>
                 )}
                 {canRemove && (
-                  <PopNav.Item onClick={openAccountRemoveModal}>Remove Account</PopNav.Item>
+                  <PopoverItem onClick={openAccountRemoveModal}>Remove Account</PopoverItem>
                 )}
                 {canAddCustomToken && (
-                  <PopNav.Item onClick={handleAddCustomToken}>Add Custom Token</PopNav.Item>
+                  <PopoverItem onClick={handleAddCustomToken}>Add Custom Token</PopoverItem>
                 )}
-              </PopNav>
-            </>
+              </PopoverContent>
+            </Popover>
           )}
         </div>
       </div>

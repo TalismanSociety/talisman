@@ -4,6 +4,7 @@ import { Background } from "./Background"
 import { Buttons } from "./Buttons"
 import { Checkboxes } from "./Chexkboxes"
 import { DrawerPage } from "./Drawer"
+import { ModalPage } from "./Modal"
 import { NavUI } from "./NavUI"
 import { TxStatusPage } from "./TxStatusPage"
 
@@ -17,6 +18,7 @@ export const UIPage = () => {
         <Route path="mystical-background" element={<Background />} />
         <Route path="tx-status" element={<TxStatusPage />} />
         <Route path="drawer" element={<DrawerPage />} />
+        <Route path="modal" element={<ModalPage />} />
       </Routes>
     </div>
   )

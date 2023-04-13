@@ -6,23 +6,11 @@ import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { KnownRequestTypes, ValidRequests } from "@core/libs/requests/types"
 import { FadeIn } from "@talisman/components/FadeIn"
 import { api } from "@ui/api"
-import {
-  AccountExportModal,
-  AccountExportModalProvider,
-} from "@ui/domains/Account/AccountExportModal"
-import {
-  AccountExportPrivateKeyModal,
-  AccountExportPrivateKeyModalProvider,
-} from "@ui/domains/Account/AccountExportPrivateKeyModal"
-import {
-  AccountRemoveModal,
-  AccountRemoveModalProvider,
-} from "@ui/domains/Account/AccountRemoveModal"
-import {
-  AccountRenameModal,
-  AccountRenameModalProvider,
-} from "@ui/domains/Account/AccountRenameModal"
-import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
+import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
+import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
+import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
+import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
+import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
 import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
@@ -30,7 +18,6 @@ import { useRequests } from "@ui/hooks/useRequests"
 import { useEffect, useMemo } from "react"
 import { Navigate, Route, Routes, useNavigate } from "react-router-dom"
 
-import { BackupWarningDrawer } from "./components/BackupWarningDrawer"
 import { CurrentSiteProvider } from "./context/CurrentSiteContext"
 import { NavigationProvider } from "./context/NavigationContext"
 import { AddCustomErc20Token } from "./pages/AddCustomErc20Token"
@@ -123,7 +110,7 @@ const Popup = () => {
               <AccountExportModalProvider>
                 <CurrentSiteProvider>
                   <NavigationProvider>
-                    <AddressFormatterModalProvider>
+                    <CopyAddressModalProvider>
                       <Routes>
                         <Route path="portfolio/*" element={<Portfolio />}></Route>
                         <Route path={`${AUTH_PREFIX}/:id`} element={<Connect />}></Route>
@@ -153,12 +140,7 @@ const Popup = () => {
                         <Route path="send/*" element={<SendFundsPage />} />
                         <Route path="*" element={<Navigate to="/portfolio" replace />} />
                       </Routes>
-                      <BackupWarningDrawer />
-                      <AccountRenameModal />
-                      <AccountRemoveModal />
-                      <AccountExportModal />
-                      <AccountExportPrivateKeyModal />
-                    </AddressFormatterModalProvider>
+                    </CopyAddressModalProvider>
                   </NavigationProvider>
                 </CurrentSiteProvider>
               </AccountExportModalProvider>

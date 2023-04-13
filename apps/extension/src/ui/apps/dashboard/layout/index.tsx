@@ -5,10 +5,9 @@ import { AccountExportModal } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModal } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModal } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModal } from "@ui/domains/Account/AccountRenameModal"
-import { AddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { BuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModal"
-import { ReceiveTokensModal } from "@ui/domains/Asset/Receive/ReceiveTokensModal"
 import { SendTokensModal } from "@ui/domains/Asset/Send/SendTokensModal"
+import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { FC, Suspense, lazy } from "react"
 import styled from "styled-components"
 
@@ -42,12 +41,11 @@ const UnstyledLayout: FC<LayoutProps> = ({ withBack, backTo, children, className
       </section>
       <SendTokensModal />
       <BuyTokensModal />
-      <ReceiveTokensModal />
       <AccountRenameModal />
       <AccountExportModal />
       <AccountExportPrivateKeyModal />
       <AccountRemoveModal />
-      <AddressFormatterModal />
+      <CopyAddressModal />
       <OnboardingToast />
     </main>
   )

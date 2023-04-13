@@ -1,7 +1,7 @@
 import { SearchIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { useDebouncedState } from "@ui/hooks/useDebouncedState"
-import { ChangeEventHandler, FC, KeyboardEventHandler, useCallback, useEffect } from "react"
+import { ChangeEventHandler, FC, KeyboardEventHandler, useCallback, useEffect, useRef } from "react"
 import { FormFieldInputContainerProps, FormFieldInputText } from "talisman-ui"
 
 const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
@@ -9,7 +9,7 @@ const INPUT_CONTAINER_PROPS: FormFieldInputContainerProps = {
   className: "!px-8 h-[4.6rem] my-1 !bg-black-tertiary",
 }
 
-type SendFundsSearchInputProps = {
+type SearchInputProps = {
   className?: string
   autoFocus?: boolean
   placeholder?: string
@@ -17,13 +17,14 @@ type SendFundsSearchInputProps = {
   onValidate?: () => void
 }
 
-export const SendFundsSearchInput: FC<SendFundsSearchInputProps> = ({
+export const SearchInput: FC<SearchInputProps> = ({
   className,
   autoFocus,
   onChange,
   placeholder,
   onValidate,
 }) => {
+  const ref = useRef<HTMLInputElement>(null)
   const [search, setSearch] = useDebouncedState("", 200)
 
   const handleSearchChange: ChangeEventHandler<HTMLInputElement> = useCallback(
@@ -46,10 +47,15 @@ export const SendFundsSearchInput: FC<SendFundsSearchInputProps> = ({
     onChange?.(search)
   }, [onChange, search])
 
+  useEffect(() => {
+    // set focus after render to prevent appear animations from flickering
+    if (autoFocus) ref.current?.focus()
+  }, [autoFocus])
+
   return (
     <FormFieldInputText
+      ref={ref}
       className={classNames("text-base", className)}
-      autoFocus={autoFocus}
       containerProps={INPUT_CONTAINER_PROPS}
       before={<SearchIcon className="text-body-disabled" />}
       placeholder={placeholder}

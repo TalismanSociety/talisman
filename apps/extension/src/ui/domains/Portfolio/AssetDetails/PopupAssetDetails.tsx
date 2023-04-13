@@ -1,15 +1,16 @@
 import { Balances } from "@core/domains/balances/types"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { CopyIcon, CreditCardIcon, LockIcon } from "@talisman/theme/icons"
+import { ArrowDownIcon, CreditCardIcon, LockIcon } from "@talisman/theme/icons"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import { useAddressFormatterModal } from "@ui/domains/Account/AddressFormatterModal"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
+import { useCopyAddressModal } from "@ui/domains/CopyAddress"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { StaleBalancesIcon } from "@ui/domains/Portfolio/StaleBalancesIcon"
+import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useMemo } from "react"
 import styled from "styled-components"
@@ -52,8 +53,9 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         </div>
         <div className="flex grow flex-col justify-center gap-2 pr-8">
           <div className="flex justify-between font-bold text-white">
-            <div className="flex items-center gap-4">
-              {chainOrNetwork.name} <CopyAddressButton prefix={chain?.prefix} />
+            <div className="flex items-center">
+              <span className="mr-2">{chainOrNetwork.name}</span>
+              <CopyAddressButton symbol={symbol} networkId={chainOrNetwork.id} />
               <SendFundsButton symbol={symbol} networkId={chainOrNetwork.id} shouldClose />
             </div>
           </div>
@@ -126,11 +128,16 @@ type AssetsTableProps = {
 
 const NoTokens = ({ symbol }: { symbol: string }) => {
   const { account } = useSelectedAccount()
-  const { open } = useAddressFormatterModal()
+  const { open } = useCopyAddressModal()
+  const { genericEvent } = useAnalytics()
 
   const handleCopy = useCallback(() => {
-    if (account?.address) open(account.address)
-  }, [account?.address, open])
+    open({
+      mode: "receive",
+      address: account?.address,
+    })
+    genericEvent("open receive", { from: "asset details" })
+  }, [account?.address, genericEvent, open])
 
   const showBuyCrypto = useIsFeatureEnabled("BUY_CRYPTO")
   const handleBuyCryptoClick = useCallback(async () => {
@@ -145,11 +152,9 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
           You don't have any {symbol} {account ? " in this account" : ""}
         </div>
         <div className="mt-6 flex justify-center gap-4">
-          {!!account && (
-            <PillButton icon={CopyIcon} onClick={handleCopy}>
-              Copy Address
-            </PillButton>
-          )}
+          <PillButton icon={ArrowDownIcon} onClick={handleCopy}>
+            Receive
+          </PillButton>
           {showBuyCrypto && (
             <PillButton icon={CreditCardIcon} onClick={handleBuyCryptoClick}>
               Buy Crypto

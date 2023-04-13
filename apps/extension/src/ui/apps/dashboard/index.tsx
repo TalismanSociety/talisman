@@ -6,10 +6,9 @@ import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportMod
 import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
 import { AccountRemoveModalProvider } from "@ui/domains/Account/AccountRemoveModal"
 import { AccountRenameModalProvider } from "@ui/domains/Account/AccountRenameModal"
-import { AddressFormatterModalProvider } from "@ui/domains/Account/AddressFormatterModal"
 import { BuyTokensModalProvider } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
-import { ReceiveTokensModalProvider } from "@ui/domains/Asset/Receive/ReceiveTokensModalContext"
 import { SendTokensModalProvider } from "@ui/domains/Asset/Send/SendTokensModalContext"
+import { CopyAddressModalProvider } from "@ui/domains/CopyAddress"
 import { SelectedAccountProvider } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useIsLoggedIn } from "@ui/hooks/useIsLoggedIn"
@@ -133,15 +132,13 @@ const Dashboard = () => (
         <AccountRenameModalProvider>
           <AccountExportModalProvider>
             <AccountExportPrivateKeyModalProvider>
-              <AddressFormatterModalProvider>
+              <CopyAddressModalProvider>
                 <SendTokensModalProvider>
                   <BuyTokensModalProvider>
-                    <ReceiveTokensModalProvider>
-                      <DashboardInner />
-                    </ReceiveTokensModalProvider>
+                    <DashboardInner />
                   </BuyTokensModalProvider>
                 </SendTokensModalProvider>
-              </AddressFormatterModalProvider>
+              </CopyAddressModalProvider>
             </AccountExportPrivateKeyModalProvider>
           </AccountExportModalProvider>
         </AccountRenameModalProvider>

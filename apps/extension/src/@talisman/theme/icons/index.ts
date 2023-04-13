@@ -1,6 +1,7 @@
 export { ReactComponent as AlertCircleIcon } from "./alert-circle.svg"
 export { ReactComponent as AlertTriangleIcon } from "./alert-triangle.svg"
 export { ReactComponent as AllAccountsIcon } from "./all-accounts.svg"
+export { ReactComponent as ArrowDownIcon } from "./arrow-down.svg"
 export { ReactComponent as ArrowRightCircleIcon } from "./arrow-right-circle.svg"
 export { ReactComponent as ArrowRightIcon } from "./arrow-right.svg"
 export { ReactComponent as BraveIcon } from "./brave.svg"
