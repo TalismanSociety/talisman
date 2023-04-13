@@ -30,7 +30,7 @@ export const addEvmTransaction = async (
   const { siteUrl, label, tokenId, value, to } = merge(structuredClone(DEFAULT_OPTIONS), options)
 
   try {
-    if (!unsigned.chainId || !unsigned.nonce || !unsigned.from)
+    if (!unsigned.chainId || !unsigned.from || typeof unsigned.nonce !== "number")
       throw new Error("Invalid transaction")
 
     const evmNetworkId = String(unsigned.chainId)
