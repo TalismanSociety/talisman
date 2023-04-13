@@ -1,4 +1,5 @@
 import { db } from "@core/db"
+import { log } from "@core/log"
 import { TypeRegistry } from "@polkadot/types"
 import { HexString } from "@polkadot/util/types"
 import { SignerPayloadJSON } from "@substrate/txwrapper-core"
@@ -61,6 +62,7 @@ export const addEvmTransaction = async (
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error("addEvmTransaction", { err })
+    log.error("addEvmTransaction", { err, hash, unsigned, options })
   }
 }
 
@@ -94,6 +96,7 @@ export const addSubstrateTransaction = async (
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error("addSubstrateTransaction", { err })
+    log.error("addSubstrateTransaction", { err, hash, payload, options })
   }
 }
 

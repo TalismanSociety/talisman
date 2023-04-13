@@ -6,6 +6,8 @@ import { HexString } from "@polkadot/util/types"
 import { EvmNetworkId } from "@talismn/chaindata-provider"
 import { BigNumberish, ethers } from "ethers"
 
+import { WalletTransactionTransferInfo } from "../transactions"
+
 export type {
   EvmNetwork,
   CustomEvmNetwork,
@@ -32,10 +34,12 @@ export type AddEthereumChainParameter = {
 
 export type EthTxSignAndSend = {
   unsigned: ethers.providers.TransactionRequest
+  transferInfo?: WalletTransactionTransferInfo
 }
 export type EthTxSendSigned = {
   unsigned: ethers.providers.TransactionRequest
   signed: `0x${string}`
+  transferInfo?: WalletTransactionTransferInfo
 }
 
 export declare type EthApproveSignAndSend = KnownSigningRequestIdOnly<ETH_SEND> & {
