@@ -263,7 +263,7 @@ export const SubEquilibriumModule: NewBalanceModule<
           const assetId = asset.id
           const symbol = tokenSymbolFromU64Id(assetId)
           const id = subEquilibriumTokenId(chainId, symbol)
-          const decimals = asset.assetXcmData?.value?.decimals?.toNumber?.() ?? DEFAULT_DECIMALS
+          const decimals = DEFAULT_DECIMALS
 
           const token: SubEquilibriumToken = {
             id,
