@@ -92,6 +92,12 @@ export const EvmEstimatedFeeTooltip: FC<{
   )
 }
 
+const getTransferInfo = (tx: EvmWalletTransaction) => {
+  return tx.value && tx.tokenId && tx.to
+    ? { value: tx.value, tokenId: tx.tokenId, to: tx.to }
+    : undefined
+}
+
 const EvmDrawerContent: FC<{
   tx: EvmWalletTransaction
   type: TxReplaceType
@@ -128,7 +134,8 @@ const EvmDrawerContent: FC<{
     if (!transaction) return
     setIsProcessing(true)
     try {
-      const newHash = await api.ethSignAndSend(transaction)
+      const transferInfo = getTransferInfo(tx)
+      const newHash = await api.ethSignAndSend(transaction, transferInfo)
       api.analyticsCapture({
         eventName: `transaction ${type}`,
         options: {
@@ -150,14 +157,15 @@ const EvmDrawerContent: FC<{
       })
     }
     setIsProcessing(false)
-  }, [onClose, transaction, type])
+  }, [onClose, transaction, tx, type])
 
   const handleSendSigned = useCallback(
     async ({ signature }: { signature: `0x${string}` }) => {
       if (!transaction) return
       setIsProcessing(true)
       try {
-        const newHash = await api.ethSendSigned(transaction, signature)
+        const transferInfo = getTransferInfo(tx)
+        const newHash = await api.ethSendSigned(transaction, signature, transferInfo)
         api.analyticsCapture({
           eventName: `transaction ${type}`,
           options: {
@@ -180,7 +188,7 @@ const EvmDrawerContent: FC<{
       }
       setIsProcessing(false)
     },
-    [onClose, transaction, type]
+    [onClose, transaction, tx, type]
   )
 
   const handleSendToLedger = useCallback(() => {

@@ -131,6 +131,7 @@ export class EthHandler extends ExtensionHandler {
   private sendSigned: MessageHandler<"pri(eth.signing.sendSigned)"> = async ({
     unsigned,
     signed,
+    transferInfo,
   }) => {
     assert(unsigned.chainId, "chainId is not defined")
     const evmNetworkId = unsigned.chainId.toString()
@@ -147,6 +148,7 @@ export class EthHandler extends ExtensionHandler {
       // long running operation, we do not want this inside getPairForAddressSafely
       watchEthereumTransaction(evmNetworkId, hash, tx, {
         notifications: true,
+        transferInfo,
       })
 
       talismanAnalytics.captureDelayed("sign transaction approve", {
@@ -161,7 +163,10 @@ export class EthHandler extends ExtensionHandler {
     }
   }
 
-  private signAndSend: MessageHandler<"pri(eth.signing.signAndSend)"> = async ({ unsigned }) => {
+  private signAndSend: MessageHandler<"pri(eth.signing.signAndSend)"> = async ({
+    unsigned,
+    transferInfo,
+  }) => {
     assert(unsigned.chainId, "chainId is not defined")
     assert(unsigned.from, "from is not defined")
     const evmNetworkId = unsigned.chainId.toString()
@@ -187,6 +192,7 @@ export class EthHandler extends ExtensionHandler {
       // long running operation, we do not want this inside getPairForAddressSafely
       watchEthereumTransaction(evmNetworkId, result.val, tx, {
         notifications: true,
+        transferInfo,
       })
 
       talismanAnalytics.captureDelayed("sign transaction approve", {
