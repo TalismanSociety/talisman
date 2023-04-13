@@ -31,7 +31,6 @@ export const TextQrCode = ({
         type: "svg",
         data,
         margin: 0,
-        //qrOptions: { mode: "Byte", errorCorrectionLevel: "L" },
         dotsOptions: { type: "dots" },
         cornersSquareOptions: { type: "extra-rounded" },
         cornersDotOptions: { type: "dot" },
