@@ -14,6 +14,7 @@ import { Button } from "talisman-ui"
 import { ExtrinsicQrCode } from "./ExtrinsicQrCode"
 import { MetadataQrCode } from "./MetadataQrCode"
 import { NetworkSpecsQrCode } from "./NetworkSpecsQrCode"
+import { QrCodeSourceSelector, useQrCodeSourceSelectorState } from "./QrCodeSourceSelector"
 
 type ScanState =
   // waiting for user to inspect tx and click button
@@ -64,6 +65,8 @@ export const QrSubstrate = ({
     skipInit ? { page: "SEND" } : { page: "INIT" }
   )
   const chain = useChainByGenesisHash(genesisHash)
+  const qrCodeSourceSelectorState = useQrCodeSourceSelectorState(genesisHash)
+  const { qrCodeSource } = qrCodeSourceSelectorState
 
   if (scanState.page === "INIT")
     return (
@@ -174,13 +177,16 @@ export const QrSubstrate = ({
               >
                 <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
                   <div className="mb-16 font-bold">Add network</div>
-                  <div className="relative mb-16 flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-4">
+                  <div className="relative flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-7">
                     <div className="text-body-secondary absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
                       <LoaderIcon className="animate-spin-slow text-xl " />
                     </div>
-                    {!!genesisHash && <NetworkSpecsQrCode genesisHash={genesisHash} />}
+                    {!!genesisHash && (
+                      <NetworkSpecsQrCode genesisHash={genesisHash} qrCodeSource={qrCodeSource} />
+                    )}
                   </div>
-                  <div className="text-body-secondary mb-16 max-w-md text-center text-sm leading-10">
+                  <QrCodeSourceSelector className="mt-4" {...qrCodeSourceSelectorState} />
+                  <div className="text-body-secondary mt-10 mb-16 max-w-md text-center text-sm leading-10">
                     Scan the QR code with the Parity Signer app on your phone to add the{" "}
                     <div className="text-body inline-flex items-baseline gap-1">
                       <ChainLogo className="self-center" id={chain?.id} />
@@ -244,9 +250,11 @@ export const QrSubstrate = ({
                 <MetadataQrCode
                   genesisHash={payload.genesisHash}
                   specVersion={payload.specVersion}
+                  qrCodeSource={qrCodeSource}
                 />
               )}
             </div>
+            <QrCodeSourceSelector className="mt-4 text-base" {...qrCodeSourceSelectorState} />
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
               Scan the QR video with the Parity Signer app on your phone to update your metadata.
             </div>

@@ -1,20 +1,17 @@
 import { hexToU8a } from "@polkadot/util"
-import { Chain } from "@talismn/chaindata-provider"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import useChain from "@ui/hooks/useChain"
+import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { useImageLoaded } from "@ui/hooks/useImageLoaded"
 
 import { QrCode } from "./QrCode"
+import { QrCodeSource, qrCodeLogoForSource } from "./QrCodeSourceSelector"
 
-type Props = {
-  genesisHash: string
-  specVersion: string
-}
+type Props = { genesisHash: string; specVersion: string; qrCodeSource: QrCodeSource }
 
-export const MetadataQrCode = ({ genesisHash, specVersion }: Props) => {
-  const polkadot = useChain("polkadot")
-  const kusama = useChain("kusama")
-  const westend = useChain("westend")
+export const MetadataQrCode = ({ genesisHash, specVersion, qrCodeSource }: Props) => {
+  const chain = useChainByGenesisHash(genesisHash)
+  const latestMetadataQrUrl = chain?.latestMetadataQrUrl
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["chainMetadataQr", genesisHash, specVersion],
@@ -27,15 +24,26 @@ export const MetadataQrCode = ({ genesisHash, specVersion }: Props) => {
     refetchOnMount: false,
   })
 
-  // use parity metadata portal for these chains
-  const chain = new Map<string | null | undefined, Chain | undefined>()
-    .set(polkadot?.genesisHash, polkadot)
-    .set(kusama?.genesisHash, kusama)
-    .set(westend?.genesisHash, westend)
-    .get(genesisHash)
-  const latestMetadataQrUrl = chain?.latestMetadataQrUrl
-  if (latestMetadataQrUrl)
-    return <img className="relative h-full w-full" src={latestMetadataQrUrl} />
+  const qrCodeLogo = qrCodeLogoForSource(qrCodeSource)
+  const [ref, loaded, onLoad] = useImageLoaded()
+  if (latestMetadataQrUrl && qrCodeSource !== "talisman")
+    return (
+      <>
+        <img
+          className="absolute h-full w-full p-5"
+          src={latestMetadataQrUrl}
+          ref={ref}
+          onLoad={onLoad}
+          onLoadedData={onLoad}
+        />
+        {loaded && qrCodeLogo ? (
+          <img
+            className="absolute top-1/2 left-1/2 w-40 -translate-x-1/2 -translate-y-1/2 bg-white p-5"
+            src={qrCodeLogo}
+          />
+        ) : null}
+      </>
+    )
 
   if (isLoading || error) return null
 
