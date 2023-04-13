@@ -22,9 +22,6 @@ export const SendFundsRecipientPicker = () => {
 
   const isFromEthereum = useMemo(() => isEthereumAddress(from), [from])
 
-  // maintain subscription to balances, as a search filter could close subscriptions from account rows
-  useBalances()
-
   const allAccounts = useAccounts()
   const { contacts: allContacts } = useAddressBook()
 

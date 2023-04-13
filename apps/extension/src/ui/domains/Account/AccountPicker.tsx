@@ -193,9 +193,6 @@ export const AccountPicker: FC<AccountPickerProps> = ({
   const token = useToken(tokenId)
   const chain = useChain(token?.chain?.id)
 
-  // maintain subscription to balances, as a search filter could close subscriptions from account rows
-  useBalances()
-
   const allAccounts = useAccounts()
 
   const accounts = useMemo(
