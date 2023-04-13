@@ -103,7 +103,7 @@ export const CopyAddressChainForm = () => {
         chains.filter(
           (c) =>
             typeof c.prefix === "number" &&
-            c.account !== "ethereum" &&
+            c.account !== "secp256k1" &&
             !["polkadot", "kusama"].includes(c.id)
         ),
         "name"
