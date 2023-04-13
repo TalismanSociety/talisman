@@ -1,9 +1,8 @@
-import { decodeString } from "@polkadot/react-qr/util"
 import QrCodeStyling from "@solana/qr-code-styling"
-import { useEffect, useReducer, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import { FRAME_SIZE, talismanRedHandSvg } from "../Sign/Qr/constants"
+import { talismanRedHandSvg } from "../Sign/Qr/constants"
 
 export const TextQrCode = ({
   data,
