@@ -122,9 +122,20 @@ const TX_GAS_LIMIT_MIN = BigNumber.from("21000")
 export const getGasLimit = (
   blockGasLimit: BigNumberish,
   estimatedGas: BigNumberish,
-  suggestedGasLimit?: BigNumberish
+  tx?: ethers.providers.TransactionRequest
 ) => {
-  let gasLimit = BigNumber.from(suggestedGasLimit ?? estimatedGas ?? TX_GAS_LIMIT_DEFAULT) // arbitrary default value
+  // some dapps use legacy gas field instead of gasLimit
+  const suggestedGasLimit = tx?.gasLimit ?? (tx as any)?.gas
+
+  const bnSuggestedGasLimit = suggestedGasLimit
+    ? BigNumber.from(suggestedGasLimit)
+    : BigNumber.from(0)
+  const bnEstimatedGas = BigNumber.from(estimatedGas)
+  // RPC estimated gas may be too low (reliable ex: https://portal.zksync.io/bridge),
+  // so if dapp suggests higher gas limit as the estimate, use that
+  const highestLimit = bnEstimatedGas.gt(bnSuggestedGasLimit) ? bnEstimatedGas : bnSuggestedGasLimit
+
+  let gasLimit = BigNumber.from(highestLimit)
   if (gasLimit.gt(blockGasLimit)) {
     // probably bad formatting or error from the dapp, fallback to default value
     gasLimit = TX_GAS_LIMIT_DEFAULT
@@ -132,6 +143,7 @@ export const getGasLimit = (
     // invalid, all chains use 21000 as minimum, fallback to default value
     gasLimit = TX_GAS_LIMIT_DEFAULT
   }
+
   return gasLimit
 }
 

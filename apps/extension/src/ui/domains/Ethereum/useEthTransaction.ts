@@ -176,8 +176,8 @@ const getEthGasSettingsFromTransaction = (
 ) => {
   if (!tx || hasEip1559Support === undefined || !blockGasLimit || !estimatedGas) return undefined
 
-  const { gasLimit: suggestedGasLimit, gasPrice, maxFeePerGas, maxPriorityFeePerGas } = tx
-  const gasLimit = getGasLimit(blockGasLimit, estimatedGas, suggestedGasLimit)
+  const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } = tx
+  const gasLimit = getGasLimit(blockGasLimit, estimatedGas, tx)
 
   if (hasEip1559Support && gasLimit && maxFeePerGas && maxPriorityFeePerGas) {
     return {
@@ -226,7 +226,7 @@ const useGasSettings = ({
   const gasSettingsByPriority: GasSettingsByPriority | undefined = useMemo(() => {
     if (hasEip1559Support === undefined || !estimatedGas || !gasPrice || !blockGasLimit || !tx)
       return undefined
-    const gasLimit = getGasLimit(blockGasLimit, estimatedGas, tx.gasLimit)
+    const gasLimit = getGasLimit(blockGasLimit, estimatedGas, tx)
     const suggestedSettings = getEthGasSettingsFromTransaction(
       tx,
       hasEip1559Support,
