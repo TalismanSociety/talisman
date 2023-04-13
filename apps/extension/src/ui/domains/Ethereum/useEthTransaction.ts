@@ -279,7 +279,7 @@ const useGasSettings = ({
     const recommendedSettings: EthGasSettingsLegacy = {
       type: 0,
       gasLimit,
-      // in some cases (ex: claiming brided token on Polygon zkEVM),
+      // in some cases (ex: claiming bridged tokens on Polygon zkEVM),
       // 0 is provided by the dapp and has to be used for the tx to succeed
       gasPrice: tx.gasPrice && BigNumber.from(tx.gasPrice).isZero() ? BigNumber.from(0) : gasPrice,
     }
