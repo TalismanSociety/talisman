@@ -39,7 +39,7 @@ const getCoinGeckoAssetPlatform = async (assetPlatformId: string) => {
   ) {
     try {
       const fetchAssetPlaforms = await fetch("https://api.coingecko.com/api/v3/asset_platforms")
-      if (fetchAssetPlaforms.status === 200) {
+      if (fetchAssetPlaforms.ok) {
         assetPlatformCache.data = await fetchAssetPlaforms.json()
         assetPlatformCache.fetched = Date.now()
       }
