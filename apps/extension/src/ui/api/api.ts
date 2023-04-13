@@ -221,10 +221,10 @@ export const api: MessageTypes = {
     }),
 
   // eth related messages
-  ethSignAndSend: (unsigned) =>
-    messageService.sendMessage("pri(eth.signing.signAndSend)", { unsigned }),
-  ethSendSigned: (unsigned, signed) =>
-    messageService.sendMessage("pri(eth.signing.sendSigned)", { unsigned, signed }),
+  ethSignAndSend: (unsigned, transferInfo) =>
+    messageService.sendMessage("pri(eth.signing.signAndSend)", { unsigned, transferInfo }),
+  ethSendSigned: (unsigned, signed, transferInfo) =>
+    messageService.sendMessage("pri(eth.signing.sendSigned)", { unsigned, signed, transferInfo }),
   ethApproveSign: (id) =>
     messageService.sendMessage("pri(eth.signing.approveSign)", {
       id,
