@@ -7,6 +7,7 @@ import {
   ArrowDownIcon,
   ClockIcon,
   CreditCardIcon,
+  DownloadAlertIcon,
   ExternalLinkIcon,
   ImageIcon,
   PaperPlaneIcon,
@@ -24,6 +25,7 @@ import { AccountSelect } from "@ui/domains/Portfolio/AccountSelect"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ReactNode, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
@@ -233,6 +235,13 @@ const ResponsiveTooltip = ({
   )
 }
 
+const LargeScreenOnlyItem = ({ children }: { children?: ReactNode }) => {
+  // show children only on large screens
+  const { width } = useWindowSize()
+
+  return width > breakpoints.large ? <>{children}</> : null
+}
+
 const ExtLinkIcon = styled(({ className }: { className?: string }) => (
   <span className={className}>
     <ExternalLinkIcon />
@@ -259,6 +268,8 @@ export const SideBar = () => {
   }, [account?.address, genericEvent])
 
   const { open: openCopyAddressModal } = useCopyAddressModal()
+
+  const { isSnoozed } = useMnemonicBackup()
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
       mode: "receive",
@@ -311,6 +322,11 @@ export const SideBar = () => {
     genericEvent("open buy tokens", { from: "sidebar" })
     openBuyModal()
   }, [genericEvent, openBuyModal])
+
+  const handleBackupClick = useCallback(() => {
+    genericEvent("goto backup modal", { from: "sidebar" })
+    navigate("/settings?showBackupModal")
+  }, [genericEvent, navigate])
 
   return (
     <Container>
@@ -426,6 +442,13 @@ export const SideBar = () => {
           >
             Settings
           </NavItemLink>
+          {isSnoozed && (
+            <LargeScreenOnlyItem>
+              <NavItemButton onClick={handleBackupClick} icon={<DownloadAlertIcon />}>
+                Backup Wallet
+              </NavItemButton>
+            </LargeScreenOnlyItem>
+          )}
         </Nav>
       </ScrollContainer>
       <PaddedItem className="logo-container">
