@@ -1,5 +1,4 @@
 import { Metadata, TypeRegistry } from "@polkadot/types"
-import type { Registry } from "@polkadot/types-codec/types"
 import { BN, assert } from "@polkadot/util"
 import { defineMethod } from "@substrate/txwrapper-core"
 import {
@@ -8,9 +7,12 @@ import {
   Balance,
   Balances,
   DefaultBalanceModule,
+  GetOrCreateTypeRegistry,
   NewBalanceModule,
   NewBalanceType,
   NewTransferParamsType,
+  RpcStateQuery,
+  RpcStateQueryHelper,
   StorageHelper,
   createTypeRegistryCache,
 } from "@talismn/balances"
@@ -19,7 +21,6 @@ import {
   ChaindataProvider,
   NewTokenType,
   SubChainId,
-  TokenList,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
 import {
@@ -27,7 +28,7 @@ import {
   metadataIsV14,
   mutateMetadata,
 } from "@talismn/mutate-metadata"
-import { decodeAnyAddress, hasOwnProperty } from "@talismn/util"
+import { decodeAnyAddress } from "@talismn/util"
 
 import log from "./log"
 
@@ -241,77 +242,29 @@ export const SubAssetsModule: NewBalanceModule<
 
     // TODO: Don't create empty subscriptions
     async subscribeBalances(addressesByToken, callback) {
-      const chainConnector = chainConnectors.substrate
-      if (!chainConnector) throw new Error(`This module requires a substrate chain connector`)
-
-      const tokens = await chaindataProvider.tokens()
-      const queriesByChain = await prepareQueriesByChain(
+      const queries = await buildQueries(
         chaindataProvider,
-        addressesByToken,
-        tokens,
-        getOrCreateTypeRegistry
+        getOrCreateTypeRegistry,
+        addressesByToken
+      )
+      const unsubscribe = await new RpcStateQueryHelper(chainConnector, queries).subscribe(
+        (error, result) => (error ? callback(error) : callback(null, new Balances(result ?? [])))
       )
 
-      const subscriptions = Object.entries(queriesByChain)
-        .map(async ([chainId, queries]) => {
-          // set up method, return message type and params
-          const subscribeMethod = "state_subscribeStorage" // method we call to subscribe
-          const responseMethod = "state_storage" // type of message we expect to receive for each subscription update
-          const unsubscribeMethod = "state_unsubscribeStorage" // method we call to unsubscribe
-          const params = [queries.map((query) => query.stateKey)]
-
-          // set up subscription
-          const timeout = false
-          const unsubscribe = await chainConnector.subscribe(
-            chainId,
-            subscribeMethod,
-            responseMethod,
-            params,
-            (error, result) => {
-              if (error) return callback(error)
-              callback(null, formatRpcResult(chainId, queries, result))
-            },
-            timeout
-          )
-
-          return () => unsubscribe(unsubscribeMethod)
-        })
-        .map((subscription) =>
-          subscription.catch((error) => {
-            log.warn(`Failed to create subscription: ${error.message}`)
-            return () => {}
-          })
-        )
-
-      return () =>
-        subscriptions.forEach((subscription) => subscription.then((unsubscribe) => unsubscribe()))
+      return unsubscribe
     },
 
     async fetchBalances(addressesByToken) {
-      const chainConnector = chainConnectors.substrate
-      if (!chainConnector) throw new Error(`This module requires a substrate chain connector`)
+      assert(chainConnectors.substrate, "This module requires a substrate chain connector")
 
-      const tokens = await chaindataProvider.tokens()
-      const queriesByChain = await prepareQueriesByChain(
+      const queries = await buildQueries(
         chaindataProvider,
-        addressesByToken,
-        tokens,
-        getOrCreateTypeRegistry
+        getOrCreateTypeRegistry,
+        addressesByToken
       )
+      const result = await new RpcStateQueryHelper(chainConnectors.substrate, queries).fetch()
 
-      const balances = await Promise.all(
-        Object.entries(queriesByChain).map(async ([chainId, queries]) => {
-          // set up method and params
-          const method = "state_queryStorageAt" // method we call to fetch
-          const params = [queries.map((query) => query.stateKey)]
-
-          // query rpc
-          const result = await chainConnector.send(chainId, method, params)
-          return formatRpcResult(chainId, queries, result[0])
-        })
-      )
-
-      return balances.reduce((allBalances, balances) => allBalances.add(balances), new Balances([]))
+      return new Balances(result ?? [])
     },
 
     async transferToken({
@@ -376,157 +329,92 @@ export const SubAssetsModule: NewBalanceModule<
   }
 }
 
-function groupAddressesByTokenByChain(
-  addressesByToken: AddressesByToken<SubAssetsToken>,
-  tokens: TokenList
-): Record<string, AddressesByToken<SubAssetsToken>> {
-  return Object.entries(addressesByToken).reduce((byChain, [tokenId, addresses]) => {
+async function buildQueries(
+  chaindataProvider: ChaindataProvider,
+  getOrCreateTypeRegistry: GetOrCreateTypeRegistry,
+  addressesByToken: AddressesByToken<SubAssetsToken>
+): Promise<Array<RpcStateQuery<Balance>>> {
+  const chains = await chaindataProvider.chains()
+  const tokens = await chaindataProvider.tokens()
+
+  return Object.entries(addressesByToken).flatMap(([tokenId, addresses]) => {
     const token = tokens[tokenId]
     if (!token) {
-      log.error(`Token ${tokenId} not found`)
-      return byChain
+      log.warn(`Token ${tokenId} not found`)
+      return []
+    }
+
+    if (token.type !== "substrate-assets") {
+      log.debug(`This module doesn't handle tokens of type ${token.type}`)
+      return []
     }
 
     const chainId = token.chain?.id
     if (!chainId) {
-      log.error(`Token ${tokenId} has no chain`)
-      return byChain
+      log.warn(`Token ${tokenId} has no chain`)
+      return []
     }
 
-    if (!byChain[chainId]) byChain[chainId] = {}
-    byChain[chainId][tokenId] = addresses
+    const chain = chains[chainId]
+    if (!chain) {
+      log.warn(`Chain ${chainId} for token ${tokenId} not found`)
+      return []
+    }
 
-    return byChain
-  }, {} as Record<string, AddressesByToken<SubAssetsToken>>)
-}
+    const chainMeta: SubAssetsChainMeta | undefined = (chain.balanceMetadata || []).find(
+      ({ moduleType }) => moduleType === "substrate-assets"
+    )?.metadata
+    const registry =
+      chainMeta?.metadata !== undefined &&
+      chainMeta?.metadata !== null &&
+      chainMeta?.metadataVersion >= 14
+        ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
+        : new TypeRegistry()
 
-async function prepareQueriesByChain(
-  chaindataProvider: ChaindataProvider,
-  addressesByToken: AddressesByToken<SubAssetsToken>,
-  tokens: TokenList,
-  getOrCreateTypeRegistry: (chainId: ChainId, metadataRpc: `0x${string}`) => Registry
-): Promise<Record<string, StorageHelper[]>> {
-  const addressesByTokenGroupedByChain = groupAddressesByTokenByChain(addressesByToken, tokens)
+    return addresses.flatMap((address): RpcStateQuery<Balance> | [] => {
+      const storageHelper = new StorageHelper(
+        registry,
+        "assets",
+        "account",
+        token.assetId,
+        decodeAnyAddress(address)
+      )
+      const stateKey = storageHelper.stateKey
+      if (!stateKey) return []
+      const decodeResult = (change: string | null) => {
+        // e.g.
+        // Option<{
+        //   balance: 2,000,000,000
+        //   isFrozen: false
+        //   reason: Sufficient
+        //   extra: null
+        // }>
+        const balance: any = (storageHelper.decode(change) as any)?.value ?? {
+          balance: "0",
+          isFrozen: false,
+        }
+        const isFrozen = balance?.isFrozen?.toHuman?.()
+        const amount = (balance?.balance?.toBigInt?.() ?? 0n).toString()
 
-  return Object.fromEntries(
-    await Promise.all(
-      Object.entries(addressesByTokenGroupedByChain).map(async ([chainId, addressesByToken]) => {
-        const chain = await chaindataProvider.getChain(chainId)
-        if (!chain) throw new Error(`Failed to get chain ${chainId}`)
+        const free = token.isFrozen || isFrozen ? "0" : amount
+        const frozen = token.isFrozen ? amount : "0"
 
-        const tokensAndAddresses = Object.entries(addressesByToken)
-          .map(([tokenId, addresses]) => [tokenId, tokens[tokenId], addresses] as const)
-          .filter(([tokenId, token]) => {
-            if (!token) {
-              log.error(`Token ${tokenId} not found`)
-              return false
-            }
+        return new Balance({
+          source: "substrate-assets",
 
-            // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
-            if (token.type !== "substrate-assets") {
-              log.debug(`This module doesn't handle tokens of type ${token.type}`)
-              return false
-            }
+          status: "live",
 
-            return true
-          })
-          .map(([, token, addresses]): [SubAssetsToken, string[]] => [
-            token as SubAssetsToken, // TODO: Rewrite the previous filter to declare this in a type-safe way
-            addresses,
-          ])
+          address,
+          multiChainId: { subChainId: chainId },
+          chainId,
+          tokenId: token.id,
 
-        const chainMeta: SubAssetsChainMeta | undefined = (chain.balanceMetadata || []).find(
-          ({ moduleType }) => moduleType === "substrate-assets"
-        )?.metadata
-        const registry =
-          chainMeta?.metadata !== undefined &&
-          chainMeta?.metadata !== null &&
-          chainMeta?.metadataVersion >= 14
-            ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
-            : new TypeRegistry()
-
-        const queries = tokensAndAddresses
-          .flatMap(([token, addresses]) =>
-            addresses.map((address) =>
-              new StorageHelper(
-                registry,
-                "assets",
-                "account",
-                token.assetId,
-                decodeAnyAddress(address)
-              ).tag({ token, address })
-            )
-          )
-          .filter((query) => query.stateKey !== undefined)
-
-        return [chainId, queries]
-      })
-    )
-  )
-}
-
-/**
- * Formats an RPC result into an instance of `Balances`
- *
- * @param chain - The chain which this result came from.
- * @param references - A lookup table for linking each balance to an `Address`.
- *                            Can be built with `BalancesRpc.buildReferences`.
- * @param result - The result returned by the RPC.
- * @returns A formatted list of balances.
- */
-function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unknown): Balances {
-  if (typeof result !== "object" || result === null) return new Balances([])
-  if (!hasOwnProperty(result, "changes") || typeof result.changes !== "object")
-    return new Balances([])
-  if (!Array.isArray(result.changes)) return new Balances([])
-
-  const balances = result.changes
-    .map(([key, change]: [unknown, unknown]) => {
-      if (typeof key !== "string") return
-
-      const query = queries.find((query) => query.stateKey === key)
-      if (query === undefined) return
-
-      if (!(typeof change === "string" || change === null)) return
-
-      // e.g.
-      // Option<{
-      //   balance: 2,000,000,000
-      //   isFrozen: false
-      //   reason: Sufficient
-      //   extra: null
-      // }>
-      const balance = (query.decode(change) as any)?.value ?? {
-        balance: "0",
-        isFrozen: false,
+          free,
+          locks: frozen,
+        })
       }
 
-      const { address, token } = query.tags || {}
-      if (!address || !token || !balance) return
-
-      const free =
-        token.isFrozen || balance?.isFrozen?.toHuman?.()
-          ? BigInt("0").toString()
-          : (balance?.balance?.toBigInt?.() || BigInt("0")).toString()
-      const frozen = token.isFrozen
-        ? (balance?.balance?.toBigInt?.() || BigInt("0")).toString()
-        : BigInt("0").toString()
-
-      return new Balance({
-        source: "substrate-assets",
-
-        status: "live",
-
-        address,
-        multiChainId: { subChainId: chainId },
-        chainId,
-        tokenId: token.id,
-
-        free,
-        locks: frozen,
-      })
+      return { chainId, stateKey, decodeResult }
     })
-    .filter((balance): balance is Balance => Boolean(balance))
-
-  return new Balances(balances)
+  })
 }

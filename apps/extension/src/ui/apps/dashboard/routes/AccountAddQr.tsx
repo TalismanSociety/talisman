@@ -165,7 +165,7 @@ export const AccountAddQr = () => {
     balances.sorted.some((b) => b.status !== "live")
   const { balanceDetails, totalUsd } = useMemo(() => {
     const balanceDetails = balances.sorted
-      .filter((b) => b.total.planck > BigInt("0") && b.total.fiat("usd"))
+      .filter((b) => b.total.planck > 0n && b.total.fiat("usd"))
       .map(
         (b) =>
           `${formatDecimals(b.total.tokens)} ${b.token?.symbol} / ${new Intl.NumberFormat(

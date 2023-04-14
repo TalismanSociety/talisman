@@ -345,7 +345,7 @@ export class Balance {
         : Array.isArray(this.#storage.free)
         ? (this.#storage.free as AmountWithLabel<string>[])
             .map((reserve) => BigInt(reserve.amount))
-            .reduce((a, b) => a + b, BigInt("0"))
+            .reduce((a, b) => a + b, 0n)
         : BigInt((this.#storage.free as AmountWithLabel<string>)?.amount || "0")
     )
   }
@@ -357,7 +357,7 @@ export class Balance {
         : Array.isArray(this.#storage.reserves)
         ? this.#storage.reserves
             .map((reserve) => BigInt(reserve.amount))
-            .reduce((a, b) => a + b, BigInt("0"))
+            .reduce((a, b) => a + b, 0n)
         : BigInt(this.#storage.reserves?.amount || "0")
     )
   }
@@ -378,7 +378,7 @@ export class Balance {
         : Array.isArray(this.#storage.locks)
         ? this.#storage.locks
             .map((lock) => BigInt(lock.amount))
-            .reduce((a, b) => BigMath.max(a, b), BigInt("0"))
+            .reduce((a, b) => BigMath.max(a, b), 0n)
         : BigInt(this.#storage.locks?.amount || "0")
     )
   }
@@ -404,7 +404,7 @@ export class Balance {
     const excludeAmount = excludeFromTransferableAmount(this.#storage.locks)
 
     // subtract the lock from the free amount (but don't go below 0)
-    return this.#format(BigMath.max(this.free.planck - excludeAmount, BigInt("0")))
+    return this.#format(BigMath.max(this.free.planck - excludeAmount, 0n))
   }
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
@@ -414,10 +414,10 @@ export class Balance {
     // find the largest lock which can't be used to pay tx fees
     const excludeAmount = excludeFromFeePayableLocks(this.#storage.locks)
       .map((lock) => BigInt(lock.amount))
-      .reduce((max, lock) => BigMath.max(max, lock), BigInt("0"))
+      .reduce((max, lock) => BigMath.max(max, lock), 0n)
 
     // subtract the lock from the free amount (but don't go below 0)
-    return this.#format(BigMath.max(this.free.planck - excludeAmount, BigInt("0")))
+    return this.#format(BigMath.max(this.free.planck - excludeAmount, 0n))
   }
 }
 

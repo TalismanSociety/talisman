@@ -139,7 +139,7 @@ export function excludeFromTransferableAmount(
   return locks
     .filter((lock) => lock.includeInTransferable !== true)
     .map((lock) => BigInt(lock.amount))
-    .reduce((max, lock) => BigMath.max(max, lock), BigInt("0"))
+    .reduce((max, lock) => BigMath.max(max, lock), 0n)
 }
 export function excludeFromFeePayableLocks(
   locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>
@@ -159,13 +159,13 @@ export type ExtraAmount<TLabel extends string> = AmountWithLabel<TLabel> & {
 export function includeInTotalExtraAmount(
   extra?: ExtraAmount<string> | Array<ExtraAmount<string>>
 ): bigint {
-  if (!extra) return BigInt("0")
+  if (!extra) return 0n
   if (!Array.isArray(extra)) extra = [extra]
 
   return extra
     .filter((extra) => extra.includeInTotal)
     .map((extra) => BigInt(extra.amount))
-    .reduce((a, b) => a + b, BigInt("0"))
+    .reduce((a, b) => a + b, 0n)
 }
 
 /** Used by plugins to help define their custom `BalanceType` */

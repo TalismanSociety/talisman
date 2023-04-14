@@ -154,7 +154,7 @@ const AccountButton: FC<AccountButtonProps> = ({
 
   const { balanceDetails, totalUsd } = useMemo(() => {
     const balanceDetails = balances
-      .filter((b) => b.total.planck > BigInt("0") && b.total.fiat("usd"))
+      .filter((b) => b.total.planck > 0n && b.total.fiat("usd"))
       .map(
         (b) =>
           `${formatDecimals(b.total.tokens)} ${b.token?.symbol} / ${new Intl.NumberFormat(

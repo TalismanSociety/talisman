@@ -34,7 +34,7 @@ export function App(): JSX.Element {
       {/* Display balances per balance (so, per token per account) */}
       <div className="grid grid-cols-[repeat(6,_auto)] items-center gap-x-4 gap-y-2">
         {balances?.sorted.map((balance) =>
-          balance.total.planck === BigInt("0") ? null : (
+          balance.total.planck === 0n ? null : (
             <Fragment key={balance.id}>
               <img
                 className="h-12 w-12 max-w-none justify-self-center"

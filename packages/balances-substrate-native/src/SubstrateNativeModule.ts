@@ -513,7 +513,7 @@ async function buildQueries(
         const addressHash = blake2Concat(addressBytes).replace(/^0x/, "")
         const stateKey = `0x${moduleStorageHash}${addressHash}`
 
-        const decodeResult = (change: unknown) => {
+        const decodeResult = (change: string | null) => {
           if (accountInfoTypeDef === undefined) {
             // accountInfoTypeDef is undefined when chain is metadata < 14 and we also don't have an override hardcoded in
             // the most likely best way to handle this case: log a warning and return an empty balance
@@ -535,10 +535,10 @@ async function buildQueries(
             return new Balance(balanceJson)
           }
 
-          let free = (chainBalance?.data?.free?.toBigInt?.() ?? BigInt("0")).toString()
-          let reserved = (chainBalance?.data?.reserved?.toBigInt?.() ?? BigInt("0")).toString()
-          let miscFrozen = (chainBalance?.data?.miscFrozen?.toBigInt?.() ?? BigInt("0")).toString()
-          let feeFrozen = (chainBalance?.data?.feeFrozen?.toBigInt?.() ?? BigInt("0")).toString()
+          let free = (chainBalance?.data?.free?.toBigInt?.() ?? 0n).toString()
+          let reserved = (chainBalance?.data?.reserved?.toBigInt?.() ?? 0n).toString()
+          let miscFrozen = (chainBalance?.data?.miscFrozen?.toBigInt?.() ?? 0n).toString()
+          let feeFrozen = (chainBalance?.data?.feeFrozen?.toBigInt?.() ?? 0n).toString()
 
           // we use the evm-native module to fetch native token balances for ethereum addresses on ethereum networks
           // but on moonbeam, moonriver and other chains which use ethereum addresses instead of substrate addresses,

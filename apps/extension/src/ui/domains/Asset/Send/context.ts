@@ -110,8 +110,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
   // nonEmptyBalances is needed in order to detect chains who use the substrate-orml source for their native token
   const balances = useBalances()
   const nonEmptyBalances = useMemo(
-    () =>
-      balances ? balances.find((balance) => balance.free.planck > BigInt("0")) : new Balances([]),
+    () => (balances ? balances.find((balance) => balance.free.planck > 0n) : new Balances([])),
     [balances]
   )
 
@@ -164,7 +163,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
       // check recipient's balance, prevent immediate reaping
       const recipientBalance = toBalance?.total.planck ?? 0n
-      if (recipientBalance === BigInt("0")) {
+      if (recipientBalance === 0n) {
         assert(
           transfer.amount.planck >= transfer.existentialDeposit.planck,
           `Please send at least ${transfer.existentialDeposit.tokens} ${transfer.symbol} to ensure the receiving address remains active.`
@@ -192,7 +191,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
           if (
             maxFeeAndGasCost
               .add(tokenIsNativeToken ? transfer.amount.planck : 0)
-              .gt(nativeFromBalance?.transferable.planck ?? BigInt("0"))
+              .gt(nativeFromBalance?.transferable.planck ?? 0n)
           )
             throw new Error(`Insufficient ${nativeToken.symbol} balance to pay for gas`)
 
@@ -247,11 +246,11 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       const forfeits: TokenAmountInfo[] = []
       const testToken = (token: Token, balance: Balance | undefined, cost: BalanceFormatter) => {
         // sufficient balance?
-        if ((balance?.transferable.planck ?? BigInt("0")) < cost.planck)
+        if ((balance?.transferable.planck ?? 0n) < cost.planck)
           throw new Error(`Insufficient balance (${token.symbol})`)
 
         // existential deposit?
-        const remaining = (balance?.total.planck ?? BigInt("0")) - cost.planck
+        const remaining = (balance?.total.planck ?? 0n) - cost.planck
         if (
           remaining <
           BigInt(("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0")

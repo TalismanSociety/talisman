@@ -350,7 +350,7 @@ async function getFreeBalance(contract: ethers.Contract, address: Address): Prom
   if (!isEthereumAddress(address)) return "0"
 
   try {
-    return ((await contract.balanceOf(address)).toBigInt() || BigInt("0")).toString()
+    return ((await contract.balanceOf(address)).toBigInt() ?? 0n).toString()
   } catch (error) {
     const errorMessage = hasOwnProperty(error, "message") ? error.message : error
     log.warn(
