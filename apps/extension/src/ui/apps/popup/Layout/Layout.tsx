@@ -7,7 +7,6 @@ import { CopyAddressModal } from "@ui/domains/CopyAddress"
 import { FC, ReactNode } from "react"
 import styled from "styled-components"
 
-import { BackupWarningDrawer } from "../components/BackupWarningDrawer"
 import { BottomNav } from "../components/Navigation/BottomNav"
 import { NavigationDrawer } from "../components/Navigation/NavigationDrawer"
 
@@ -27,7 +26,6 @@ const Layout: FC<LayoutProps> = ({ className, withBottomNav, children }) => {
 
         {/* NavigationDrawer here so user can see the drawer close smoothly in case he navigates from one page to another (as long as both page use this Layout) */}
         <NavigationDrawer />
-        <BackupWarningDrawer />
         <AccountRenameModal />
         <AccountRemoveModal />
         <AccountExportModal />

@@ -8,7 +8,8 @@ import { useMnemonicBackupConfirmed } from "./useMnemonicBackupConfirmed"
 const useMnemonicBackup = () => {
   const [hasFunds] = useAppState("hasFunds")
   const [hideBackupWarningUntil] = useAppState("hideBackupWarningUntil")
-  const snoozeBackupReminder = appStore.snoozeBackupReminder
+  const snoozeBackupReminder = useCallback(() => appStore.snoozeBackupReminder(), [])
+
   const backupConfirmed = useMnemonicBackupConfirmed()
 
   const { isConfirmed, isNotConfirmed } = useMemo(
