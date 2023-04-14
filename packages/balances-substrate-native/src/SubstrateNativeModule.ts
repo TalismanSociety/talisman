@@ -693,6 +693,8 @@ export async function subscribeNompoolStaking(
       poolIds: string[],
       callback: SubscriptionCallback<PoolPoints[]>
     ) => {
+      if (poolIds.length === 0) callback(null, [])
+
       const queries = poolIds.flatMap((poolId): RpcStateQuery<PoolPoints> | [] => {
         const storageHelper = new StorageHelper(
           typeRegistry,
@@ -719,6 +721,8 @@ export async function subscribeNompoolStaking(
 
     type PoolStake = { poolId: string; activeStake?: string }
     const subscribePoolStake = (poolIds: string[], callback: SubscriptionCallback<PoolStake[]>) => {
+      if (poolIds.length === 0) callback(null, [])
+
       const queries = poolIds.flatMap((poolId): RpcStateQuery<PoolStake> | [] => {
         if (!chainMeta?.nominationPoolsPalletId) return []
         const storageHelper = new StorageHelper(
@@ -749,6 +753,8 @@ export async function subscribeNompoolStaking(
       poolIds: string[],
       callback: SubscriptionCallback<PoolMetadata[]>
     ) => {
+      if (poolIds.length === 0) callback(null, [])
+
       const queries = poolIds.flatMap((poolId): RpcStateQuery<PoolMetadata> | [] => {
         if (!chainMeta?.nominationPoolsPalletId) return []
         const storageHelper = new StorageHelper(typeRegistry, "nominationPools", "metadata", poolId)
@@ -777,21 +783,23 @@ export async function subscribeNompoolStaking(
           const { poolId, points } = poolMembers
           if (typeof poolId === "string" && typeof points === "string")
             state.set(poolMembers.address, { poolId, points })
-          else state.delete(poolMembers.address)
+          else state.set(poolMembers.address, null)
         }
         return state
-      }, new Map<string, Required<Pick<PoolMembers, "poolId" | "points">>>()),
+      }, new Map<string, Required<Pick<PoolMembers, "poolId" | "points">> | null>()),
       share()
     )
 
     const poolIdByAddress$ = poolMembersByAddress$.pipe(
-      map((pm) => new Map(Array.from(pm).map(([address, { poolId }]) => [address, poolId])))
+      map((pm) => new Map(Array.from(pm).map(([address, pm]) => [address, pm?.poolId ?? null])))
     )
     const pointsByAddress$ = poolMembersByAddress$.pipe(
-      map((pm) => new Map(Array.from(pm).map(([address, { points }]) => [address, points])))
+      map((pm) => new Map(Array.from(pm).map(([address, pm]) => [address, pm?.points ?? null])))
     )
     const poolIds$ = poolIdByAddress$.pipe(
-      map((byAddress) => [...new Set(Array.from(byAddress.values()).map((poolId) => poolId))])
+      map((byAddress) => [
+        ...new Set(Array.from(byAddress.values()).flatMap((poolId) => poolId ?? [])),
+      ])
     )
 
     const pointsByPool$ = poolIds$.pipe(
@@ -842,9 +850,9 @@ export async function subscribeNompoolStaking(
         const balances: SubNativeBalance[] = Array.from(poolIdByAddress).map(
           ([address, poolId]) => {
             const points = pointsByAddress.get(address) ?? "0"
-            const poolPoints = pointsByPool.get(poolId) ?? "0"
-            const poolStake = stakeByPool.get(poolId) ?? "0"
-            const poolMetadata = metadataByPool.get(poolId) ?? `Pool ${poolId}`
+            const poolPoints = pointsByPool.get(poolId ?? "") ?? "0"
+            const poolStake = stakeByPool.get(poolId ?? "") ?? "0"
+            const poolMetadata = poolId ? metadataByPool.get(poolId) ?? `Pool ${poolId}` : undefined
 
             const amount =
               points === "0" || poolPoints === "0" || poolStake === "0"
