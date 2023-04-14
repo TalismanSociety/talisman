@@ -8,7 +8,6 @@ import {
   SubscriptionCallback,
   UnsubscribeFn,
 } from "@talismn/balances"
-import { Chain } from "@talismn/chaindata-provider"
 import upperFirst from "lodash/upperFirst"
 import { Observable } from "rxjs"
 
@@ -128,7 +127,6 @@ export const filterBaseLocks = (
 
 export const getLockTitle = (
   lock: Pick<LockedAmount<string>, "label" | "meta">,
-  allLocks?: Array<Omit<LockedAmount<string>, "amount"> & { amount: BalanceFormatter }>,
   { balance }: { balance?: Balance } = {}
 ) => {
   if (!lock.label) return lock.label
@@ -146,10 +144,9 @@ export const getLockTitle = (
   }
   if (lock.label === "nompools-staking") return "Pooled Staking"
   if (lock.label === "dapp-staking") return "DApp Staking"
-  if (["other", "misc"].includes(lock.label))
-    return (allLocks ?? []).some(({ label }) => !["other", "misc"].includes(label))
-      ? `Locked (${lock.label})`
-      : "Locked"
+  if (lock.label === "fees") return "Locked (Fees)"
+  if (lock.label === "misc") return "Locked"
+  if (lock.label === "other") return "Locked"
 
   return upperFirst(lock.label)
 }

@@ -64,7 +64,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
             .flatMap((b) =>
               filterBaseLocks(b.locks).map((lock, index) => ({
                 key: `${b.id}-locked-${index}`,
-                title: getLockTitle(lock, b.locks, { balance: b }),
+                title: getLockTitle(lock, { balance: b }),
                 tokens: BigNumber(lock.amount.tokens),
                 fiat: lock.amount.fiat("usd"),
                 locked: true,
@@ -79,7 +79,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
             .flatMap((b) =>
               b.reserves.map((reserve, index) => ({
                 key: `${b.id}-reserved-${index}`,
-                title: getLockTitle(reserve, b.reserves, { balance: b }),
+                title: getLockTitle(reserve, { balance: b }),
                 tokens: BigNumber(reserve.amount.tokens),
                 fiat: reserve.amount.fiat("usd"),
                 locked: true,
