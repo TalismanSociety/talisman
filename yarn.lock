@@ -5833,19 +5833,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-default-modules@workspace:^, @talismn/balances-default-modules@workspace:packages/balances-default-modules":
+"@talismn/balances-default-modules@workspace:*, @talismn/balances-default-modules@workspace:packages/balances-default-modules":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-default-modules@workspace:packages/balances-default-modules"
   dependencies:
-    "@talismn/balances-evm-erc20": "workspace:^"
-    "@talismn/balances-evm-native": "workspace:^"
-    "@talismn/balances-substrate-assets": "workspace:^"
-    "@talismn/balances-substrate-equilibrium": "workspace:^"
-    "@talismn/balances-substrate-native": "workspace:^"
-    "@talismn/balances-substrate-orml": "workspace:^"
-    "@talismn/balances-substrate-tokens": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
+    "@talismn/balances-evm-erc20": "workspace:*"
+    "@talismn/balances-evm-native": "workspace:*"
+    "@talismn/balances-substrate-assets": "workspace:*"
+    "@talismn/balances-substrate-equilibrium": "workspace:*"
+    "@talismn/balances-substrate-native": "workspace:*"
+    "@talismn/balances-substrate-orml": "workspace:*"
+    "@talismn/balances-substrate-tokens": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
     "@types/jest": ^27.5.1
     eslint: ^8.4.0
     jest: ^28.1.0
@@ -5854,16 +5854,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-evm-erc20@workspace:^, @talismn/balances-evm-erc20@workspace:packages/balances-evm-erc20":
+"@talismn/balances-evm-erc20@workspace:*, @talismn/balances-evm-erc20@workspace:packages/balances-evm-erc20":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-evm-erc20@workspace:packages/balances-evm-erc20"
   dependencies:
     "@polkadot/util": ^11.1.1
-    "@talismn/balances": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@talismn/util": "workspace:^"
+    "@talismn/balances": "workspace:*"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     "@types/lodash": ^4.14.180
     anylogger: ^1.0.11
@@ -5878,15 +5878,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-evm-native@workspace:^, @talismn/balances-evm-native@workspace:packages/balances-evm-native":
+"@talismn/balances-evm-native@workspace:*, @talismn/balances-evm-native@workspace:packages/balances-evm-native":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-evm-native@workspace:packages/balances-evm-native"
   dependencies:
-    "@talismn/balances": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@talismn/util": "workspace:^"
+    "@talismn/balances": "workspace:*"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     "@types/lodash": ^4.14.180
     anylogger: ^1.0.11
@@ -5899,19 +5899,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-react@workspace:^, @talismn/balances-react@workspace:packages/balances-react":
+"@talismn/balances-react@workspace:*, @talismn/balances-react@workspace:packages/balances-react":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-react@workspace:packages/balances-react"
   dependencies:
-    "@talismn/balances": "workspace:^"
-    "@talismn/chain-connector": "workspace:^"
-    "@talismn/chain-connector-evm": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/chaindata-provider-extension": "workspace:^"
-    "@talismn/connection-meta": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/token-rates": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
+    "@talismn/balances": "workspace:*"
+    "@talismn/chain-connector": "workspace:*"
+    "@talismn/chain-connector-evm": "workspace:*"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/chaindata-provider-extension": "workspace:*"
+    "@talismn/connection-meta": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/token-rates": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
     "@types/jest": ^27.5.1
     "@types/react": ^18.0.17
     anylogger: ^1.0.11
@@ -5931,19 +5931,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-assets@workspace:^, @talismn/balances-substrate-assets@workspace:packages/balances-substrate-assets":
+"@talismn/balances-substrate-assets@workspace:*, @talismn/balances-substrate-assets@workspace:packages/balances-substrate-assets":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-assets@workspace:packages/balances-substrate-assets"
   dependencies:
     "@polkadot/types": ^10.1.4
     "@polkadot/util": ^11.1.1
     "@substrate/txwrapper-core": "*"
-    "@talismn/balances": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/mutate-metadata": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@talismn/util": "workspace:^"
+    "@talismn/balances": "workspace:*"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/mutate-metadata": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     eslint: ^8.4.0
@@ -5957,19 +5957,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-equilibrium@workspace:^, @talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium":
+"@talismn/balances-substrate-equilibrium@workspace:*, @talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-equilibrium@workspace:packages/balances-substrate-equilibrium"
   dependencies:
     "@polkadot/types": ^10.1.4
     "@polkadot/util": ^11.1.1
     "@substrate/txwrapper-core": "*"
-    "@talismn/balances": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/mutate-metadata": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@talismn/util": "workspace:^"
+    "@talismn/balances": "workspace:*"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/mutate-metadata": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     eslint: ^8.4.0
@@ -5983,7 +5983,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-native@workspace:^, @talismn/balances-substrate-native@workspace:packages/balances-substrate-native":
+"@talismn/balances-substrate-native@workspace:*, @talismn/balances-substrate-native@workspace:packages/balances-substrate-native":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-native@workspace:packages/balances-substrate-native"
   dependencies:
@@ -5991,12 +5991,12 @@ __metadata:
     "@polkadot/util": ^11.1.1
     "@polkadot/util-crypto": ^11.1.1
     "@substrate/txwrapper-core": "*"
-    "@talismn/balances": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/mutate-metadata": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@talismn/util": "workspace:^"
+    "@talismn/balances": "workspace:*"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/mutate-metadata": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     "@types/lodash": ^4.14.180
     anylogger: ^1.0.11
@@ -6014,18 +6014,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-orml@workspace:^, @talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml":
+"@talismn/balances-substrate-orml@workspace:*, @talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-orml@workspace:packages/balances-substrate-orml"
   dependencies:
     "@polkadot/types": ^10.1.4
     "@polkadot/util": ^11.1.1
     "@substrate/txwrapper-core": "*"
-    "@talismn/balances": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@talismn/util": "workspace:^"
+    "@talismn/balances": "workspace:*"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     eslint: ^8.4.0
@@ -6039,19 +6039,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances-substrate-tokens@workspace:^, @talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens":
+"@talismn/balances-substrate-tokens@workspace:*, @talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens":
   version: 0.0.0-use.local
   resolution: "@talismn/balances-substrate-tokens@workspace:packages/balances-substrate-tokens"
   dependencies:
     "@polkadot/types": ^10.1.4
     "@polkadot/util": ^11.1.1
     "@substrate/txwrapper-core": "*"
-    "@talismn/balances": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/mutate-metadata": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@talismn/util": "workspace:^"
+    "@talismn/balances": "workspace:*"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/mutate-metadata": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     eslint: ^8.4.0
@@ -6065,18 +6065,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/balances@workspace:^, @talismn/balances@workspace:packages/balances":
+"@talismn/balances@workspace:*, @talismn/balances@workspace:packages/balances":
   version: 0.0.0-use.local
   resolution: "@talismn/balances@workspace:packages/balances"
   dependencies:
     "@polkadot/types": ^10.1.4
-    "@talismn/chain-connector": "workspace:^"
-    "@talismn/chain-connector-evm": "workspace:^"
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/token-rates": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@talismn/util": "workspace:^"
+    "@talismn/chain-connector": "workspace:*"
+    "@talismn/chain-connector-evm": "workspace:*"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/token-rates": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     "@types/lodash": ^4.14.180
     anylogger: ^1.0.11
@@ -6091,13 +6091,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/chain-connector-evm@workspace:^, @talismn/chain-connector-evm@workspace:packages/chain-connector-evm":
+"@talismn/chain-connector-evm@workspace:*, @talismn/chain-connector-evm@workspace:packages/chain-connector-evm":
   version: 0.0.0-use.local
   resolution: "@talismn/chain-connector-evm@workspace:packages/chain-connector-evm"
   dependencies:
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
     "@types/jest": ^27.5.1
     "@types/lodash": ^4.14.180
     anylogger: ^1.0.11
@@ -6110,7 +6110,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/chain-connector@workspace:^, @talismn/chain-connector@workspace:packages/chain-connector":
+"@talismn/chain-connector@workspace:*, @talismn/chain-connector@workspace:packages/chain-connector":
   version: 0.0.0-use.local
   resolution: "@talismn/chain-connector@workspace:packages/chain-connector"
   dependencies:
@@ -6118,11 +6118,11 @@ __metadata:
     "@polkadot/util": ^11.1.1
     "@polkadot/x-global": ^11.1.1
     "@polkadot/x-ws": ^11.1.1
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/connection-meta": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@talismn/util": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/connection-meta": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     eslint: ^8.4.0
@@ -6145,13 +6145,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@talismn/chaindata-provider-extension@workspace:^, @talismn/chaindata-provider-extension@workspace:packages/chaindata-provider-extension":
+"@talismn/chaindata-provider-extension@workspace:*, @talismn/chaindata-provider-extension@workspace:packages/chaindata-provider-extension":
   version: 0.0.0-use.local
   resolution: "@talismn/chaindata-provider-extension@workspace:packages/chaindata-provider-extension"
   dependencies:
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     axios: ^0.27.2
@@ -6165,12 +6165,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/chaindata-provider@workspace:^, @talismn/chaindata-provider@workspace:packages/chaindata-provider":
+"@talismn/chaindata-provider@workspace:*, @talismn/chaindata-provider@workspace:packages/chaindata-provider":
   version: 0.0.0-use.local
   resolution: "@talismn/chaindata-provider@workspace:packages/chaindata-provider"
   dependencies:
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
     "@types/jest": ^27.5.1
     eslint: ^8.4.0
     jest: ^28.1.0
@@ -6179,13 +6179,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/connection-meta@workspace:^, @talismn/connection-meta@workspace:packages/connection-meta":
+"@talismn/connection-meta@workspace:*, @talismn/connection-meta@workspace:packages/connection-meta":
   version: 0.0.0-use.local
   resolution: "@talismn/connection-meta@workspace:packages/connection-meta"
   dependencies:
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
     "@types/jest": ^27.5.1
     dexie: ^3.2.2
     eslint: ^8.4.0
@@ -6195,7 +6195,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/eslint-config@workspace:^, @talismn/eslint-config@workspace:config/eslint-config":
+"@talismn/eslint-config@workspace:*, @talismn/eslint-config@workspace:config/eslint-config":
   version: 0.0.0-use.local
   resolution: "@talismn/eslint-config@workspace:config/eslint-config"
   dependencies:
@@ -6210,14 +6210,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/mutate-metadata@workspace:^, @talismn/mutate-metadata@workspace:packages/mutate-metadata":
+"@talismn/mutate-metadata@workspace:*, @talismn/mutate-metadata@workspace:packages/mutate-metadata":
   version: 0.0.0-use.local
   resolution: "@talismn/mutate-metadata@workspace:packages/mutate-metadata"
   dependencies:
     "@subsquid/scale-codec": ^1.1.0
     "@subsquid/substrate-metadata": ^2.1.2
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
     "@types/jest": ^27.5.1
     anylogger: ^1.0.11
     eslint: ^8.4.0
@@ -6227,13 +6227,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/token-rates@workspace:^, @talismn/token-rates@workspace:packages/token-rates":
+"@talismn/token-rates@workspace:*, @talismn/token-rates@workspace:packages/token-rates":
   version: 0.0.0-use.local
   resolution: "@talismn/token-rates@workspace:packages/token-rates"
   dependencies:
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
     "@types/jest": ^27.5.1
     axios: ^0.27.2
     dexie: ^3.2.3
@@ -6244,21 +6244,21 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@talismn/tsconfig@workspace:^, @talismn/tsconfig@workspace:config/tsconfig":
+"@talismn/tsconfig@workspace:*, @talismn/tsconfig@workspace:config/tsconfig":
   version: 0.0.0-use.local
   resolution: "@talismn/tsconfig@workspace:config/tsconfig"
   languageName: unknown
   linkType: soft
 
-"@talismn/util@workspace:^, @talismn/util@workspace:packages/util":
+"@talismn/util@workspace:*, @talismn/util@workspace:packages/util":
   version: 0.0.0-use.local
   resolution: "@talismn/util@workspace:packages/util"
   dependencies:
     "@polkadot/keyring": ^11.1.1
     "@polkadot/util": ^11.1.1
     "@polkadot/util-crypto": ^11.1.1
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
     "@types/jest": ^27.5.1
     bignumber.js: ^9.1.1
     eslint: ^8.4.0
@@ -8973,11 +8973,11 @@ __metadata:
     "@polkadot/api": ^10.1.4
     "@polkadot/extension-dapp": ^0.45.3
     "@tailwindcss/forms": ^0.5.3
-    "@talismn/balances": "workspace:^"
-    "@talismn/balances-default-modules": "workspace:^"
-    "@talismn/balances-react": "workspace:^"
-    "@talismn/chaindata-provider-extension": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
+    "@talismn/balances": "workspace:*"
+    "@talismn/balances-default-modules": "workspace:*"
+    "@talismn/balances-react": "workspace:*"
+    "@talismn/chaindata-provider-extension": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
     "@types/react": ^18.0.26
     "@types/react-dom": ^18.0.9
     "@vitejs/plugin-react": ^3.0.0
@@ -12372,15 +12372,15 @@ __metadata:
     "@swc/helpers": ^0.4.12
     "@swc/jest": ^0.2.23
     "@tailwindcss/forms": ^0.5.3
-    "@talismn/balances": "workspace:^"
-    "@talismn/balances-default-modules": "workspace:^"
-    "@talismn/balances-react": "workspace:^"
+    "@talismn/balances": "workspace:*"
+    "@talismn/balances-default-modules": "workspace:*"
+    "@talismn/balances-react": "workspace:*"
     "@talismn/chaindata-js": ^0.0.7
-    "@talismn/chaindata-provider": "workspace:^"
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/token-rates": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@talismn/util": "workspace:^"
+    "@talismn/chaindata-provider": "workspace:*"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/token-rates": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@tanstack/react-query": 4.14.6
     "@testing-library/dom": ^8.14.0
     "@testing-library/jest-dom": ^5.11.4
@@ -12477,7 +12477,7 @@ __metadata:
     style-loader: 3.3.1
     styled-components: 5.3.9
     tailwindcss: ^3.2.4
-    talisman-ui: "workspace:^"
+    talisman-ui: "workspace:*"
     terser-webpack-plugin: 5.3.3
     ts-jest: 27.1.3
     ts-loader: 9.4.1
@@ -17804,7 +17804,7 @@ __metadata:
     "@headlessui/react": 1.7.13
     "@metamask/eth-sig-util": 5.0.2
     "@tailwindcss/forms": ^0.5.3
-    "@talismn/eslint-config": "workspace:^"
+    "@talismn/eslint-config": "workspace:*"
     "@talismn/wagmi-connector": ^0.2.0
     "@types/react": 18.0.14
     "@types/react-dom": 18.0.5
@@ -17819,7 +17819,7 @@ __metadata:
     react-router-dom: 6.9.0
     react-use: ^17.4.0
     tailwindcss: ^3.2.4
-    talisman-ui: "workspace:^"
+    talisman-ui: "workspace:*"
     typescript: 4.9.4
     vite: ^4.0.0
     vite-plugin-svgr: ^2.2.1
@@ -20396,16 +20396,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"talisman-ui@workspace:^, talisman-ui@workspace:packages/talisman-ui":
+"talisman-ui@workspace:*, talisman-ui@workspace:packages/talisman-ui":
   version: 0.0.0-use.local
   resolution: "talisman-ui@workspace:packages/talisman-ui"
   dependencies:
     "@floating-ui/react": 0.20.1
     "@headlessui/react": 1.7.13
     "@tailwindcss/forms": ^0.5.3
-    "@talismn/eslint-config": "workspace:^"
-    "@talismn/tsconfig": "workspace:^"
-    "@talismn/util": "workspace:^"
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@talismn/util": "workspace:*"
     "@types/react": 18.0.14
     "@types/react-dom": 18.0.5
     autoprefixer: ^10.4.12
@@ -20446,7 +20446,7 @@ __metadata:
     "@changesets/cli": ^2.26
     "@commitlint/cli": ^17.0.0
     "@commitlint/config-conventional": ^17.0.0
-    "@talismn/eslint-config": "workspace:^"
+    "@talismn/eslint-config": "workspace:*"
     "@typescript-eslint/eslint-plugin": ^5.33.0
     "@typescript-eslint/parser": ^5.33.0
     concurrently: ^7.6.0
