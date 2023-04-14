@@ -70,6 +70,7 @@ export const crowdloanFundContributionsChildKey = (registry: Registry, fundIndex
   )
 
 export type BalanceLockType =
+  | "reserved"
   | "democracy"
   | "crowdloan"
   | "staking"
@@ -78,6 +79,10 @@ export type BalanceLockType =
   | "dapp-staking"
   | "other"
 
+/**
+ * For converting the value of `lock?.id?.toUtf8?.()` which is retrieved from
+ * the Balances.Locks storage key into a useful classification for our UI
+ */
 export const getLockedType = (input?: string): BalanceLockType => {
   if (typeof input !== "string") return "other"
 

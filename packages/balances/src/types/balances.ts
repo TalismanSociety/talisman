@@ -366,7 +366,7 @@ export class Balance {
       Array.isArray(this.#storage.reserves) ? this.#storage.reserves : [this.#storage.reserves]
     ).flatMap((reserve) => {
       if (reserve === undefined) return []
-      if (typeof reserve === "string") return { label: "other", amount: this.#format(reserve) }
+      if (typeof reserve === "string") return { label: "reserved", amount: this.#format(reserve) }
       return { ...reserve, amount: this.#format(reserve.amount) }
     })
   }
