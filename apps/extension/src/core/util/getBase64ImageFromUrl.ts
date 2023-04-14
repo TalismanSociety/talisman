@@ -46,6 +46,8 @@ const getBase64ImageFromUrlSvgDefaultSize = async (
           if (!reader.result) throw new Error("No result")
           const strSvg = reader.result as string
 
+          if (!strSvg.startsWith("<svg")) throw new Error("Not an svg")
+
           const withDefaultSize = strSvg.replace(/^<svg([^>])*>/, (attributes) => {
             if (!attributes.includes("height="))
               attributes = attributes.replace("<svg ", `<svg height="${size.height}" `)
