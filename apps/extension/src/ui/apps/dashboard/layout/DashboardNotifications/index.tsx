@@ -1,3 +1,4 @@
+import { breakpoints } from "@talisman/theme/definitions"
 import styled from "styled-components"
 
 import { BackupNotification } from "./BackupNotification"
@@ -15,6 +16,12 @@ const Container = styled.div`
   background: linear-gradient(transparent, 2rem, rgba(var(--color-background-raw, 0.2)));
   :empty {
     display: none;
+  }
+  @media (max-width: ${breakpoints.large}px) {
+    left: 17.2rem;
+  }
+  @media (max-width: ${breakpoints.medium}px) {
+    left: 7.4rem;
   }
 `
 
