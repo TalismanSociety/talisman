@@ -19,6 +19,7 @@ export const NetworkSpecsQrCode = ({ genesisHash, qrCodeSource }: Props) => {
       const hexData = await api.generateChainSpecsQr(genesisHash)
       return hexToU8a(hexData)
     },
+    enabled: qrCodeSource === "talisman",
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,

@@ -19,6 +19,7 @@ export const MetadataQrCode = ({ genesisHash, specVersion, qrCodeSource }: Props
       const hexData = await api.generateChainMetadataQr(genesisHash, Number(specVersion))
       return hexToU8a(hexData)
     },
+    enabled: qrCodeSource === "talisman",
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
