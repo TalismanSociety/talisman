@@ -175,7 +175,7 @@ export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   const { balancesByChain, isLoading } = useAssetDetails(balances)
   const rows = useMemo(() => Object.entries(balancesByChain), [balancesByChain])
   const hasBalance = useMemo(
-    () => rows.some(([, balances]) => balances.sorted.some((b) => b.total.planck > BigInt(0))),
+    () => rows.some(([, balances]) => balances.sorted.some((b) => b.total.planck > 0n)),
     [rows]
   )
 

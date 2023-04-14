@@ -43,6 +43,7 @@ export const ChainFragment = gql`
     parathreads(orderBy: paraId_ASC) {
       id
       paraId
+      name
     }
     paraId
     relay {

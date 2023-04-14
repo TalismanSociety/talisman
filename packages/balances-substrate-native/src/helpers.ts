@@ -1,38 +1,16 @@
 import type { Registry } from "@polkadot/types-codec/types"
 import { BN, bnToU8a, hexToU8a, stringToU8a, u8aConcat, u8aToHex } from "@polkadot/util"
 import { blake2AsU8a } from "@polkadot/util-crypto"
-import { SubscriptionCallback, UnsubscribeFn } from "@talismn/balances"
+import {
+  Balance,
+  BalanceFormatter,
+  LockedAmount,
+  SubscriptionCallback,
+  UnsubscribeFn,
+} from "@talismn/balances"
+import { Chain } from "@talismn/chaindata-provider"
+import upperFirst from "lodash/upperFirst"
 import { Observable } from "rxjs"
-
-const nompoolAccountId = (registry: Registry, palletId: string, poolId: string, index: number) => {
-  const EMPTY_H256 = new Uint8Array(32)
-  const MOD_PREFIX = stringToU8a("modl")
-  const U32_OPTS = { bitLength: 32, isLe: true }
-  return registry
-    .createType(
-      "AccountId32",
-      u8aConcat(
-        MOD_PREFIX,
-        hexToU8a(palletId),
-        new Uint8Array([index]),
-        bnToU8a(new BN(poolId), U32_OPTS),
-        EMPTY_H256
-      )
-    )
-    .toString()
-}
-export const nompoolStashAccountId = (registry: Registry, palletId: string, poolId: string) =>
-  nompoolAccountId(registry, palletId, poolId, 0)
-export const nompoolRewardAccountId = (registry: Registry, palletId: string, poolId: string) =>
-  nompoolAccountId(registry, palletId, poolId, 1)
-
-export const crowdloanFundContributionsChildKey = (registry: Registry, fundIndex: number) =>
-  u8aToHex(
-    u8aConcat(
-      ":child_storage:default:",
-      blake2AsU8a(u8aConcat("crowdloan", registry.createType("u32", fundIndex).toU8a()))
-    )
-  )
 
 /**
  * Converts a subscription function into an Observable
@@ -53,6 +31,45 @@ export const asObservable =
       return unsubscribe
     })
 
+/**
+ * Each nominationPool in the nominationPools pallet has access to some accountIds which have no
+ * associated private key. Instead, they are derived from this function.
+ */
+const nompoolAccountId = (registry: Registry, palletId: string, poolId: string, index: number) => {
+  const EMPTY_H256 = new Uint8Array(32)
+  const MOD_PREFIX = stringToU8a("modl")
+  const U32_OPTS = { bitLength: 32, isLe: true }
+  return registry
+    .createType(
+      "AccountId32",
+      u8aConcat(
+        MOD_PREFIX,
+        hexToU8a(palletId),
+        new Uint8Array([index]),
+        bnToU8a(new BN(poolId), U32_OPTS),
+        EMPTY_H256
+      )
+    )
+    .toString()
+}
+/** The stash account for the nomination pool */
+export const nompoolStashAccountId = (registry: Registry, palletId: string, poolId: string) =>
+  nompoolAccountId(registry, palletId, poolId, 0)
+/** The rewards account for the nomination pool */
+export const nompoolRewardAccountId = (registry: Registry, palletId: string, poolId: string) =>
+  nompoolAccountId(registry, palletId, poolId, 1)
+
+/**
+ * Crowdloan contributions are stored in the `childstate` key returned by this function.
+ */
+export const crowdloanFundContributionsChildKey = (registry: Registry, fundIndex: number) =>
+  u8aToHex(
+    u8aConcat(
+      ":child_storage:default:",
+      blake2AsU8a(u8aConcat("crowdloan", registry.createType("u32", fundIndex).toU8a()))
+    )
+  )
+
 export type BalanceLockType =
   | "democracy"
   | "crowdloan"
@@ -62,7 +79,9 @@ export type BalanceLockType =
   | "dapp-staking"
   | "other"
 
-export const getLockedType = (input: string): BalanceLockType => {
+export const getLockedType = (input?: string): BalanceLockType => {
+  if (typeof input !== "string") return "other"
+
   if (input.includes("vesting")) return "vesting"
   if (input.includes("calamvst")) return "vesting" // vesting on manta network
   if (input.includes("ormlvest")) return "vesting" // vesting ORML tokens
@@ -92,4 +111,45 @@ export const getLockedType = (input: string): BalanceLockType => {
   // eslint-disable-next-line no-console
   console.warn(`unknown locked type: ${input}`)
   return "other"
+}
+
+const baseLockLabels = ["fees", "misc"]
+const isBaseLock = (lock: Pick<LockedAmount<string>, "label">) =>
+  baseLockLabels.includes(lock.label)
+const isNonBaseLock = (lock: Pick<LockedAmount<string>, "label">) => !isBaseLock(lock)
+export const filterBaseLocks = (
+  locks: Array<Omit<LockedAmount<string>, "amount"> & { amount: BalanceFormatter }>
+) => {
+  const hasNonBaseLocks = locks.some(isNonBaseLock)
+  if (!hasNonBaseLocks) return locks
+
+  return locks.filter(isNonBaseLock)
+}
+
+export const getLockTitle = (
+  lock: Pick<LockedAmount<string>, "label" | "meta">,
+  allLocks?: Array<Omit<LockedAmount<string>, "amount"> & { amount: BalanceFormatter }>,
+  { balance }: { balance?: Balance } = {}
+) => {
+  if (!lock.label) return lock.label
+
+  if (lock.label === "democracy") return "Governance"
+  if (lock.label === "crowdloan") {
+    if ((lock.meta as any)?.type !== "crowdloan") return "Crowdloan"
+
+    const paraId = (lock.meta as any)?.paraId
+    const name = balance?.chain?.parathreads?.find(
+      (parathread) => parathread?.paraId === paraId
+    )?.name
+
+    return `${name ? name : `Parachain ${paraId}`} Crowdloan`
+  }
+  if (lock.label === "nompools-staking") return "Pooled Staking"
+  if (lock.label === "dapp-staking") return "DApp Staking"
+  if (["other", "misc"].includes(lock.label))
+    return (allLocks ?? []).some(({ label }) => !["other", "misc"].includes(label))
+      ? `Locked (${lock.label})`
+      : "Locked"
+
+  return upperFirst(lock.label)
 }

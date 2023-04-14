@@ -79,7 +79,14 @@ const AssetState = ({
   if (!render) return null
   return (
     <div className="flex h-[6.6rem] flex-col justify-center gap-2 p-8">
-      <div className="font-bold text-white">{title}</div>
+      <div className="flex items-baseline gap-4">
+        <div className="whitespace-nowrap font-bold text-white">{title}</div>
+        {meta && address && (
+          <div className="max-w-sm flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm">
+            {meta}
+          </div>
+        )}
+      </div>
       {address && (
         <div className="text-sm">
           <PortfolioAccount address={address} />

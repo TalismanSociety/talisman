@@ -5998,9 +5998,11 @@ __metadata:
     "@talismn/tsconfig": "workspace:^"
     "@talismn/util": "workspace:^"
     "@types/jest": ^27.5.1
+    "@types/lodash": ^4.14.180
     anylogger: ^1.0.11
     eslint: ^8.4.0
     jest: ^28.1.0
+    lodash: 4.17.21
     rxjs: ^7.8.0
     ts-jest: ^28.0.2
     typescript: ^4.6.4

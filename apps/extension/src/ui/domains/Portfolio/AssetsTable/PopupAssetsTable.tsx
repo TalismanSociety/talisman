@@ -275,18 +275,14 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
     const available = symbolBalances
       .map<[string, Balances]>(([symbol, balance]) => [
         symbol,
-        new Balances(
-          balance.sorted.filter((b) => b.total.planck === BigInt(0) || b.free.planck > BigInt(0))
-        ),
+        new Balances(balance.sorted.filter((b) => b.total.planck === 0n || b.free.planck > 0n)),
       ])
       .filter(([, b]) => b.sorted.length > 0)
 
     const locked = symbolBalances
       .map<[string, Balances]>(([symbol, balance]) => [
         symbol,
-        new Balances(
-          balance.sorted.filter((b) => b.frozen.planck > BigInt(0) || b.reserved.planck > BigInt(0))
-        ),
+        new Balances(balance.sorted.filter((b) => b.frozen.planck > 0n || b.reserved.planck > 0n)),
       ])
       .filter(([, b]) => b.sorted.length > 0)
 

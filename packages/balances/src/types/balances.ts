@@ -507,7 +507,7 @@ export class FiatSumBalancesFormatter {
   get locked() {
     return this.#sum("locked")
   }
-  /** @deprecated - use balances.locked */
+  /** @deprecated Use balances.locked */
   get frozen() {
     return this.locked
   }

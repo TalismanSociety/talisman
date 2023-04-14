@@ -85,7 +85,7 @@ export const createTypeRegistryCache = () => {
         const metadata = new Metadata(typeRegistry, metadataRpc)
         metadata.registry.setMetadata(metadata)
       } catch (cause) {
-        log.warn(new Error(`Failed to set metadata for chain ${chainId}`, { cause }))
+        log.warn(new Error(`Failed to set metadata for chain ${chainId}`, { cause }), cause)
       }
     }
 
@@ -330,7 +330,7 @@ export class RpcStateQueryHelper<T> {
     if (!hasOwnProperty(result, "changes") || typeof result.changes !== "object") return []
     if (!Array.isArray(result.changes)) return []
 
-    return result.changes.flatMap(([reference, change]: [unknown, unknown]): T | T[] => {
+    return result.changes.flatMap(([reference, change]: [unknown, unknown]): [T] | [] => {
       if (typeof reference !== "string") {
         log.warn(`Received non-string reference in RPC result: ${reference}`)
         return []
@@ -351,7 +351,7 @@ export class RpcStateQueryHelper<T> {
         return []
       }
 
-      return query.decodeResult(change)
+      return [query.decodeResult(change)]
     })
   }
 }

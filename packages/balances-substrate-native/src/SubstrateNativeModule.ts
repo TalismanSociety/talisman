@@ -6,7 +6,6 @@ import {
   Amount,
   AmountWithLabel,
   Balance,
-  BalanceFormatter,
   Balances,
   DefaultBalanceModule,
   GetOrCreateTypeRegistry,
@@ -483,7 +482,18 @@ async function buildQueries(
     })()
 
     return addresses.flatMap((address) => {
-      const emptyBalance = (): SubNativeBalance => ({
+      // We share thie balanceJson between the base and the lock query for this address
+      //
+      // TODO: Rearchitect the balance type (a tiny bit) so that it doesn't assume that one instance
+      // of `Balance` is unique to one address and tokenId.
+      //
+      // Instead, we should allow for `address-tokenId-base` and `address-tokenId-lock` and `address-tokenId-staked` variations
+      // of the one balance. Then calls to e.g. balances.find({ tokenId, address }).locked should be able to
+      // do the correct locked calculation across the various Balance objects.
+      //
+      // This will allow us to handle caching etc on a Balance variation basis without messing up the locks calculation
+      // (which takes the biggest lock for an address and tokenId, instead of adding the locks together)
+      const balanceJson: SubNativeBalance = {
         source: "substrate-native",
         status: "live",
         address,
@@ -496,7 +506,7 @@ async function buildQueries(
           { label: "fees", amount: "0", includeInTransferable: true, excludeFromFeePayable: true },
           { label: "misc", amount: "0" },
         ],
-      })
+      }
 
       const baseQuery: RpcStateQuery<Balance> = (() => {
         const addressBytes = decodeAnyAddress(address)
@@ -510,7 +520,7 @@ async function buildQueries(
             log.debug(
               `Token ${tokenId} on chain ${chainId} has no balance type for decoding. Defaulting to a balance of 0 (zero).`
             )
-            return new Balance(emptyBalance())
+            return new Balance(balanceJson)
           }
 
           let chainBalance: any
@@ -522,7 +532,7 @@ async function buildQueries(
                 error as any
               )?.toString()}`
             )
-            return new Balance(emptyBalance())
+            return new Balance(balanceJson)
           }
 
           let free = (chainBalance?.data?.free?.toBigInt?.() ?? BigInt("0")).toString()
@@ -536,9 +546,8 @@ async function buildQueries(
           if (isEthereumAddress(address) && chain.account !== "secp256k1")
             free = reserved = miscFrozen = feeFrozen = "0"
 
-          const balanceJson = emptyBalance()
           balanceJson.free = free
-          const otherReserve = balanceJson.reserves.find(({ label }) => label === "other")
+          const otherReserve = balanceJson.reserves.find(({ label }) => label === "reserved")
           if (otherReserve) otherReserve.amount = reserved
           const feesLock = balanceJson.locks.find(({ label }) => label === "fees")
           if (feesLock) feesLock.amount = feeFrozen
@@ -561,16 +570,14 @@ async function buildQueries(
         const stateKey = storageHelper.stateKey
         if (!stateKey) return
         const decodeResult = (change: string | null) => {
-          const balanceJson = emptyBalance()
-          balanceJson.subSource = "locks"
           if (change === null) return new Balance(balanceJson)
 
           const decoded: any = storageHelper.decode(change)
           balanceJson.locks = [
-            ...balanceJson.locks,
+            ...balanceJson.locks.slice(0, 2),
             ...(decoded?.map?.((lock: any) => ({
               label: getLockedType(lock?.id?.toUtf8?.()),
-              amount: lock?.amount?.toString?.(),
+              amount: lock?.amount?.toString?.() ?? "0",
             })) ?? []),
           ] as SubNativeBalance["locks"]
 
@@ -945,12 +952,12 @@ async function subscribeCrowdloans(
         ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
         : new TypeRegistry()
 
-    const subscribeParaIds = (callback: SubscriptionCallback<number[]>) => {
-      const queries = [0].flatMap((_): RpcStateQuery<number> | [] => {
+    const subscribeParaIds = (callback: SubscriptionCallback<Array<number[]>>) => {
+      const queries = [0].flatMap((_): RpcStateQuery<number[]> | [] => {
         const storageHelper = new StorageHelper(typeRegistry, "paras", "parachains")
         const stateKey = storageHelper.stateKey
         if (!stateKey) return []
-        const decodeResult = (change: string | null) => {
+        const decodeResult = (change: string | null): number[] => {
           const decoded: any = storageHelper.decode(change)
 
           const paraIds = (decoded ?? [])?.map?.((paraId: any) => paraId?.toNumber?.())
@@ -1055,7 +1062,7 @@ async function subscribeCrowdloans(
     }
 
     const paraIds$ = asObservable(subscribeParaIds)().pipe(
-      scan((_, next) => Array.from(new Set(next)), [] as number[]),
+      scan((_, next) => Array.from(new Set(next.flatMap((paraIds) => paraIds))), [] as number[]),
       share()
     )
 
@@ -1108,7 +1115,7 @@ async function subscribeCrowdloans(
                 ...Array.from(contributions).map(({ amount, paraId }) => ({
                   label: "crowdloan",
                   amount: amount,
-                  meta: { type: "crowdloan", paraId, description: `Parachain ${paraId}` },
+                  meta: { type: "crowdloan", paraId },
                 })),
               ],
               locks: [
