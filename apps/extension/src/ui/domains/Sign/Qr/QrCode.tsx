@@ -4,20 +4,17 @@ import { useEffect, useReducer, useRef, useState } from "react"
 
 import { FRAME_SIZE, talismanRedHandSvg } from "./constants"
 
-export const QrCode = ({
-  data,
-  image = talismanRedHandSvg,
-  imageOptions = {},
-}: {
+type Props = {
   data?: Uint8Array
   image?: string
   imageOptions?: {
-    hideBackgroundDots?: boolean | undefined
-    imageSize?: number | undefined
-    crossOrigin?: string | undefined
-    margin?: number | undefined
+    hideBackgroundDots?: boolean
+    imageSize?: number
+    crossOrigin?: string
+    margin?: number
   }
-}) => {
+}
+export const QrCode = ({ data, image, imageOptions }: Props) => {
   const qrCodeFrames = useRef<Array<string | null> | null>(null)
 
   const [animGeneration, resetQrAnimation] = useReducer((x) => (x + 1) % Number.MAX_SAFE_INTEGER, 0)
@@ -51,8 +48,13 @@ export const QrCode = ({
           dotsOptions: { type: "dots" },
           cornersSquareOptions: { type: "extra-rounded" },
           cornersDotOptions: { type: "dot" },
-          image,
-          imageOptions: { hideBackgroundDots: true, imageSize: 0.7, margin: 5, ...imageOptions },
+          image: image ?? talismanRedHandSvg,
+          imageOptions: {
+            hideBackgroundDots: true,
+            imageSize: 0.7,
+            margin: 5,
+            ...(imageOptions ?? {}),
+          },
         }).getRawData("svg")
         if (blob) qrCodeFrames.current[index] = URL.createObjectURL(blob)
       }

@@ -8,7 +8,9 @@ import {
 } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
+import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useSetting } from "@ui/hooks/useSettings"
 import { useCallback, useEffect, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 
@@ -51,7 +53,10 @@ export const ImportMethodPage = () => {
   )
 
   const disableLedger = useMemo(() => !getIsLedgerCapable(), [])
-  const paritySignerEnabled = useIsFeatureEnabled("PARITY_SIGNER")
+  const [hasSpiritKey] = useAppState("hasSpiritKey")
+  const [spiritClanFeatures] = useSetting("spiritClanFeatures")
+  const paritySignerEnabled =
+    useIsFeatureEnabled("PARITY_SIGNER") || (hasSpiritKey && spiritClanFeatures)
 
   if (!data.importAccountType) return null
 
