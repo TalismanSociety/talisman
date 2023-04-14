@@ -39,12 +39,16 @@ const getCoinGeckoAssetPlatform = async (assetPlatformId: string) => {
   ) {
     try {
       const fetchAssetPlaforms = await fetch("https://api.coingecko.com/api/v3/asset_platforms")
-      assetPlatformCache.data = await fetchAssetPlaforms.json()
-      assetPlatformCache.fetched = Date.now()
+      if (fetchAssetPlaforms.ok) {
+        assetPlatformCache.data = await fetchAssetPlaforms.json()
+        assetPlatformCache.fetched = Date.now()
+      }
     } catch (error) {
       log.error("Unable to fetch coingecko asset platforms ", { error })
     }
   }
+
+  if (!assetPlatformCache.data || assetPlatformCache.data.length === 0) return null
 
   return (
     assetPlatformCache.data.find(({ id, chain_identifier }) =>
