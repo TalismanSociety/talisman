@@ -9,11 +9,7 @@ import { Chain } from "@talismn/chaindata-provider"
 import * as $ from "scale-codec"
 
 const getEncryptionForChain = (chain: Chain) => {
-  //     Ed25519 = 0,
-  //     Sr25519 = 1,
-  //     Ecdsa = 2,
-  //     Ethereum = 3,
-
+  // Ed25519=0, Sr25519=1, Ecdsa=2, ethereum=3
   switch (chain.account) {
     case "secp256k1":
       return 3
