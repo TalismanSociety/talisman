@@ -5,7 +5,18 @@ import { getMetadataDef, getMetadataRpcFromDef } from "@core/util/getMetadataDef
 import keyring from "@polkadot/ui-keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
 import { SubNativeToken } from "@talismn/balances-substrate-native"
+import { Chain } from "@talismn/chaindata-provider"
 import * as $ from "scale-codec"
+
+const getEncryptionForChain = (chain: Chain) => {
+  // Ed25519=0, Sr25519=1, Ecdsa=2, ethereum=3
+  switch (chain.account) {
+    case "secp256k1":
+      return 3
+    default:
+      return 1
+  }
+}
 
 const signWithRoot = async (unsigned: Uint8Array) => {
   const rootAccount = keyring.getAccounts().find(({ meta }) => meta?.origin === AccountTypes.ROOT)
@@ -59,7 +70,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: string) => {
   const specs = $networkSpecs.encode({
     base58prefix: chain.prefix ?? 42,
     decimals: token.decimals,
-    encryption: 1, // TODO specify encryption based on what we need to sign
+    encryption: getEncryptionForChain(chain),
     genesis_hash: hexToU8a(genesisHash),
     name: chain.specName ?? chain.name ?? chain.id,
     unit: token.symbol,
