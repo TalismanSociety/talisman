@@ -3,7 +3,7 @@ import CtaButton from "@talisman/components/CtaButton"
 import Grid from "@talisman/components/Grid"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import Spacer from "@talisman/components/Spacer"
-import { KeyIcon, ParitySignerIcon, PlusIcon, SeedIcon, UsbIcon } from "@talisman/theme/icons"
+import { KeyIcon, PlusIcon, PolkadotVaultIcon, SeedIcon, UsbIcon } from "@talisman/theme/icons"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useSetting } from "@ui/hooks/useSettings"
@@ -58,9 +58,9 @@ const AccountAddTypePicker = () => {
         />
         {paritySignerEnabled && (
           <CtaButton
-            icon={<ParitySignerIcon />}
-            title="Import Parity Signer"
-            subtitle={"Sign transactions using Parity Signer"}
+            icon={<PolkadotVaultIcon />}
+            title="Import Polkadot Vault"
+            subtitle={"Or Parity Signer (Legacy)"}
             to={`/accounts/add/qr`}
           />
         )}

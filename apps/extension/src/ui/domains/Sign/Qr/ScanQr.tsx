@@ -36,14 +36,14 @@ export const ScanQr = <T extends Types>({
   const scanner =
     type === "address" ? (
       <QrScanAddress
-        className="[&>section>section]:rounded-xl [&>section>section>div:first-child]:hidden [&>section>section>video]:bg-transparent [&>section>section>video]:blur-lg"
+        className="[&>section>section]:rounded-xl [&>section>section>div:first-child]:hidden [&>section>section>video]:bg-transparent [&>section>section>video]:blur-sm"
         onScan={onScan}
         onError={onError}
         size={size ?? 260}
       />
     ) : type === "signature" ? (
       <QrScanSignature
-        className="[&>section>section]:rounded-xl [&>section>section>div:first-child]:hidden [&>section>section>video]:bg-transparent [&>section>section>video]:blur-lg"
+        className="[&>section>section]:rounded-xl [&>section>section>div:first-child]:hidden [&>section>section>video]:bg-transparent [&>section>section>video]:blur-sm"
         onScan={onScan}
         onError={onError}
         size={size ?? 260}
