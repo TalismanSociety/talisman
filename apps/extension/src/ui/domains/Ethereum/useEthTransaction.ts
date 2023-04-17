@@ -18,6 +18,7 @@ import {
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
+import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
 import { getEthTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { useQuery } from "@tanstack/react-query"
@@ -48,8 +49,22 @@ const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
     queryKey: ["hasEip1559Support", provider?.network?.chainId],
     queryFn: async () => {
       if (!provider) return null
-      const { baseFeePerGas } = await provider.send("eth_getBlockByNumber", ["latest", false])
-      return baseFeePerGas !== undefined
+
+      // if eth_feeHistory method exists, this RPC supports EIP-1559
+      try {
+        await provider.send("eth_feeHistory", [1, "latest", [10]])
+        return true
+      } catch (err) {
+        const error = err as Error & { code?: number }
+        if (
+          error.code === ETH_ERROR_EIP1474_METHOD_NOT_FOUND ||
+          // on some RPCs wrong error code is returned (ex: zkSync ERA)
+          error.message.toLowerCase() === "method not found"
+        )
+          return false
+
+        throw err
+      }
     },
     refetchInterval: false,
   })
