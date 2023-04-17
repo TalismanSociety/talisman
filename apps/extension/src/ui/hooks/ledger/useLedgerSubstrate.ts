@@ -3,14 +3,13 @@ import { getIsLedgerCapable } from "@core/util/getIsLedgerCapable"
 import { Ledger } from "@polkadot/hw-ledger"
 import { assert } from "@polkadot/util"
 import { throwAfter } from "@talismn/util"
-// Adapted from @polkadot/extension-ui
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { useSetInterval } from "../useSetInterval"
 import { LedgerStatus, getLedgerErrorProps } from "./common"
 import { useLedgerSubstrateApp } from "./useLedgerSubstrateApp"
 
-export const useLedgerSubstrate = (genesis?: string | null) => {
+export const useLedgerSubstrate = (genesis?: string | null, persist = false) => {
   const app = useLedgerSubstrateApp(genesis)
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
@@ -19,6 +18,18 @@ export const useLedgerSubstrate = (genesis?: string | null) => {
   const [ledger, setLedger] = useState<Ledger | null>(null)
 
   const refConnecting = useRef(false)
+
+  useEffect(() => {
+    return () => {
+      // ensures the transport is closed on unmount, allowing other tabs to access the ledger
+      // the persist argument can be used to prevent this behaviour, when the hook is used
+      // in two components that need to share the ledger connection
+      !persist &&
+        ledger?.getApp().then((app) => {
+          app?.transport.close()
+        })
+    }
+  }, [ledger, persist])
 
   const connectLedger = useCallback(
     async (resetError?: boolean) => {

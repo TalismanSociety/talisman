@@ -17,7 +17,7 @@ export const ConnectLedgerSubstrate = ({
 }) => {
   const chain = useChain(chainId)
   const token = useToken(chain?.nativeToken?.id)
-  const ledger = useLedgerSubstrate(chain?.genesisHash)
+  const ledger = useLedgerSubstrate(chain?.genesisHash, true)
   const app = useLedgerSubstrateApp(chain?.genesisHash)
 
   useEffect(() => {
