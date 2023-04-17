@@ -65,9 +65,9 @@ export const generateQrAddNetworkSpecs = async (genesisHash: string) => {
     unit: token.symbol,
     title: chain.name ?? chain.id,
     path_id: `//${(chain.name ?? chain.id)?.toLowerCase()}`,
-
-    // below ones seem useless
-    logo: "", // looks like we could pass a base64 encoded image here
+    // TODO logo should match one of the resources defined in https://github.com/paritytech/parity-signer/tree/master/ios/PolkadotVault/Resources/ChainIcons.xcassets
+    // We may need an additional property in chaindata to control this
+    logo: chain.specName ?? "logo",
     color: chain.themeColor ?? "#000000",
     secondary_color: "#000000",
   })
