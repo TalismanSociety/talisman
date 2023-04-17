@@ -114,6 +114,7 @@ if (DEBUG) {
       hasBraveWarningBeenShown: false,
       analyticsRequestShown: false,
       showDotNomPoolStakingBanner: true,
+      hideBackupWarningUntil: undefined,
     })
   }
   // @ts-ignore
