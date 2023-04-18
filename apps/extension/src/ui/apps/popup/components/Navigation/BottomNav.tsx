@@ -47,6 +47,7 @@ const BottomNavButton = forwardRef<HTMLButtonElement, BottomNavButtonProps>(
     </button>
   )
 )
+BottomNavButton.displayName = "BottomNavButton"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",

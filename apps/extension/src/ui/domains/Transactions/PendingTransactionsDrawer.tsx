@@ -132,6 +132,7 @@ const ActionButton = forwardRef<
     />
   )
 })
+ActionButton.displayName = "ActionButton"
 
 // this context menu prevents drawer animation to slide up correctly, render when it's finished
 const EvmTxActions: FC<{

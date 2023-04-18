@@ -92,3 +92,4 @@ export const Checkbox = React.forwardRef<HTMLInputElement, Props>(
     </CheckboxContainer>
   )
 )
+Checkbox.displayName = "Checkbox"

@@ -259,6 +259,7 @@ const DivWithMount = forwardRef<HTMLDivElement, DivWithMountProps>(
     )
   }
 )
+DivWithMount.displayName = "DivWithMount"
 
 type Props = {
   defaultValue?: string
@@ -409,6 +410,7 @@ const AccountPicker: FC<Props> = ({
                       {withAddressInput && <span className="group-header">Contacts</span>}
                       <ul>
                         {filteredContacts.map((contact, index) => (
+                          // eslint-disable-next-line react/jsx-key
                           <li
                             {...getItemProps({
                               key: contact.address,
@@ -433,6 +435,7 @@ const AccountPicker: FC<Props> = ({
                       {label && withAddressInput && <span className="group-header">{label}</span>}
                       <ul>
                         {filteredAccounts.map((account, index) => (
+                          // eslint-disable-next-line react/jsx-key
                           <li
                             {...getItemProps({
                               key: account.address,

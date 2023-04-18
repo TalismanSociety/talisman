@@ -130,6 +130,7 @@ const DivWithMount = forwardRef<HTMLDivElement, DivWithMountProps>(
     )
   }
 )
+DivWithMount.displayName = "DivWithMount"
 
 type PickerItemId = string
 
@@ -237,6 +238,7 @@ const GenericPicker = ({
               </div>
               <ul className="picker-items">
                 {searchItems(inputValue).map((item, index) => (
+                  // eslint-disable-next-line react/jsx-key
                   <li
                     className="picker-item-item"
                     {...getItemProps({
