@@ -93,7 +93,7 @@ export const Modal: FC<ModalProps> = ({
       tabIndex={-1} // reset to prevent tab key from giving focus to elements below the modal
     >
       {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
-      <div role="dialog" ref={refModal} onClick={stopPropagation} className="modal-content">
+      <div role="presentation" ref={refModal} onClick={stopPropagation} className="modal-content">
         {/* keep tooltips inside */}
         <TooltipBoundaryProvider refBoundary={refModal}>{children}</TooltipBoundaryProvider>
       </div>
