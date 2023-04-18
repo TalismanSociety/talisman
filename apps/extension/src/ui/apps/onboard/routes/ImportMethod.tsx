@@ -3,7 +3,7 @@ import {
   FileTextIcon,
   KeyIcon,
   MessageCircleIcon,
-  ParitySignerIcon,
+  PolkadotVaultIcon,
   UsbIcon,
 } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
@@ -104,9 +104,9 @@ export const ImportMethodPage = () => {
           {paritySignerEnabled && data.importAccountType === "sr25519" && (
             <OnboardCta
               onClick={handleClick("qr")}
-              icon={ParitySignerIcon}
-              title="Parity signer"
-              subtitle="Connect your Parity Signer account"
+              icon={PolkadotVaultIcon}
+              title="Polkadot Vault"
+              subtitle="Connect your Polkadot Vault account"
             />
           )}
         </div>
