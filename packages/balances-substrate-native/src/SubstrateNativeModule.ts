@@ -223,8 +223,8 @@ export const SubNativeModule: NewBalanceModule<
           return null
         }
 
-        const isSystemPallet = (pallet: any) => pallet.name === "System"
-        const isAccountItem = (item: any) => item.name === "Account"
+        const isSystemPallet = (pallet: { name: string }) => pallet.name === "System"
+        const isAccountItem = (item: { name: string }) => item.name === "Account"
 
         metadata.value.pallets = metadata.value.pallets.filter(isSystemPallet)
 
@@ -292,7 +292,7 @@ export const SubNativeModule: NewBalanceModule<
         addDependentTypes([...keepTypes])
 
         // ditch the types we aren't keeping
-        const isKeepType = (type: any) => keepTypes.has(type.id)
+        const isKeepType = (type: { id: number }) => keepTypes.has(type.id)
         metadata.value.lookup.types = metadata.value.lookup.types.filter(isKeepType)
 
         // ditch the chain's signedExtensions, we don't need them for balance lookups
@@ -357,6 +357,7 @@ export const SubNativeModule: NewBalanceModule<
           // TODO: Fix @talismn/balances-react: it shouldn't pass every token to every module
           if (token.type !== "substrate-native") {
             log.debug(`This module doesn't handle tokens of type ${token.type}`)
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             return () => {}
           }
 
@@ -383,8 +384,8 @@ export const SubNativeModule: NewBalanceModule<
 
             try {
               return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
-            } catch (error: any) {
-              log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
+            } catch (error) {
+              log.debug(`Failed to getTypeDef for chain ${chainId}: ${(error as Error).message}`)
               return
             }
           })()
@@ -428,6 +429,7 @@ export const SubNativeModule: NewBalanceModule<
         .map((subscription) =>
           subscription.catch((error) => {
             log.warn(`Failed to create subscription: ${error.message}`)
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             return () => {}
           })
         )
@@ -477,8 +479,8 @@ export const SubNativeModule: NewBalanceModule<
 
               try {
                 return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
-              } catch (error: any) {
-                log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
+              } catch (error) {
+                log.debug(`Failed to getTypeDef for chain ${chainId}: ${(error as Error).message}`)
                 return
               }
             })()
@@ -668,14 +670,13 @@ function formatRpcResult(
         return false
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let balance: any
       try {
         balance = createType(typeRegistry, accountInfoTypeDef, change)
       } catch (error) {
         log.warn(
-          `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${(
-            error as any
-          )?.toString()}`
+          `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${error?.toString()}`
         )
         return false
       }

@@ -142,8 +142,8 @@ export const SubTokensModule: NewBalanceModule<
           return null
         }
 
-        const isTokensPallet = (pallet: any) => pallet.name === "Tokens"
-        const isAccountsItem = (item: any) => item.name === "Accounts"
+        const isTokensPallet = (pallet: { name: string }) => pallet.name === "Tokens"
+        const isAccountsItem = (item: { name: string }) => item.name === "Accounts"
 
         metadata.value.pallets = metadata.value.pallets.filter(isTokensPallet)
 
@@ -205,6 +205,7 @@ export const SubTokensModule: NewBalanceModule<
         addDependentTypes([...keepTypes])
 
         // ditch the types we aren't keeping
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const isKeepType = (type: any) => keepTypes.has(type.id)
         metadata.value.lookup.types = metadata.value.lookup.types.filter(isKeepType)
 
@@ -303,6 +304,7 @@ export const SubTokensModule: NewBalanceModule<
         .map((subscription) =>
           subscription.catch((error) => {
             log.warn(`Failed to create subscription: ${error.message}`)
+            // eslint-disable-next-line @typescript-eslint/no-empty-function
             return () => {}
           })
         )
@@ -368,7 +370,7 @@ export const SubTokensModule: NewBalanceModule<
 
       const currencyId = (() => {
         try {
-          return JSON.parse(token.onChainId as any)
+          return JSON.parse(token.onChainId as string)
         } catch (error) {
           return token.onChainId
         }
@@ -528,7 +530,7 @@ async function prepareQueriesByChain(
                 decodeAnyAddress(address),
                 (() => {
                   try {
-                    return JSON.parse(token.onChainId as any)
+                    return JSON.parse(token.onChainId as string)
                   } catch (error) {
                     return token.onChainId
                   }
@@ -574,6 +576,7 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
       //   reserved: 0
       //   frozen: 0
       // }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const balance = (query.decode(change) as any) ?? {
         free: "0",
         reserved: "0",

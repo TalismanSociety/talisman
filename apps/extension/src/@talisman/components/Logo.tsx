@@ -1,7 +1,11 @@
+import { classNames } from "@talismn/util"
 import styled from "styled-components"
+
 import { ReactComponent as Logo } from "../theme/logos/logo-hand-color.svg"
 
-const LogoComponent = ({ className }: any) => <Logo className={`logo ${className}`} />
+const LogoComponent = ({ className }: { className?: string }) => (
+  <Logo className={classNames("logo", className)} />
+)
 
 export default styled(LogoComponent)`
   font-size: 1rem;

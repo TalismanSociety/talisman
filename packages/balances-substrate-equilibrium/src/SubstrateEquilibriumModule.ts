@@ -138,13 +138,13 @@ export const SubEquilibriumModule: NewBalanceModule<
           return null
         }
 
-        const isEqAssetsPallet = (pallet: any) => pallet.name === "EqAssets"
-        const isAssetsItem = (item: any) => item.name === "Assets"
+        const isEqAssetsPallet = (pallet: { name: string }) => pallet.name === "EqAssets"
+        const isAssetsItem = (item: { name: string }) => item.name === "Assets"
 
-        const isSystemPallet = (pallet: any) => pallet.name === "System"
-        const isAccountItem = (item: any) => item.name === "Account"
+        const isSystemPallet = (pallet: { name: string }) => pallet.name === "System"
+        const isAccountItem = (item: { name: string }) => item.name === "Account"
 
-        const isSystemOrEqAssetsPallet = (pallet: any) =>
+        const isSystemOrEqAssetsPallet = (pallet: { name: string }) =>
           isEqAssetsPallet(pallet) || isSystemPallet(pallet)
 
         metadata.value.pallets = metadata.value.pallets.filter(isSystemOrEqAssetsPallet)
@@ -220,7 +220,7 @@ export const SubEquilibriumModule: NewBalanceModule<
         addDependentTypes([...keepTypes])
 
         // ditch the types we aren't keeping
-        const isKeepType = (type: any) => keepTypes.has(type.id)
+        const isKeepType = (type: { id: number }) => keepTypes.has(type.id)
         metadata.value.lookup.types = metadata.value.lookup.types.filter(isKeepType)
 
         // ditch the chain's signedExtensions, we don't need them for balance lookups
@@ -256,6 +256,7 @@ export const SubEquilibriumModule: NewBalanceModule<
           .send(chainId, "state_getStorage", [assetsQuery.stateKey])
           .then((result) => assetsQuery.decode(result))
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;[...((assetsResult as any)?.value ?? [])].map((asset: any) => {
           if (!asset) return
           if (!asset?.id) return
@@ -597,10 +598,12 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
       //     }
       //   }
       // }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const balances: any = query.decode(change)
 
       const tokenBalances = Object.fromEntries(
         (balances?.data?.value?.balance || [])
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .map((balance: any) => ({
             id: balance?.[0]?.toBigInt?.().toString?.(),
             free: balance?.[1]?.isPositive
@@ -614,6 +617,7 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
 
       return (query.tags || [])
         .filter(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (tag: any) => typeof tag?.token?.id === "string" && typeof tag?.address === "string"
         )
         .map(({ token, address }: { token: SubEquilibriumToken; address: string }) => {

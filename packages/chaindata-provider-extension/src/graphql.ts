@@ -150,26 +150,31 @@ export const getTokenByIdQuery = (tokenId: string) => gql`
 // Fetchers
 //
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function fetchChains(): Promise<any> {
   return await axios
     .post(graphqlUrl, { query: print(chainsQuery) })
     .then((response) => response.data)
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function fetchEvmNetworks(): Promise<any> {
   return await axios
     .post(graphqlUrl, { query: print(evmNetworksQuery) })
     .then((response) => response.data)
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function fetchEvmNetwork(evmNetworkId: string): Promise<any> {
   return await axios
     .post(graphqlUrl, { query: print(getEvmNetworkByIdQuery(evmNetworkId)) })
     .then((response) => response.data.data.evmNetworkById)
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function fetchTokens(): Promise<any> {
   return await axios
     .post(graphqlUrl, { query: print(tokensQuery) })
     .then((response) => response.data)
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function fetchToken(tokenId: string): Promise<any> {
   return await axios
     .post(graphqlUrl, { query: print(getTokenByIdQuery(tokenId)) })

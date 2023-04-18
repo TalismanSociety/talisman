@@ -4,6 +4,7 @@ import { RPC_HEALTHCHECK_TIMEOUT } from "./constants"
 import { EvmJsonRpcBatchProvider } from "./EvmJsonRpcBatchProvider"
 import log from "./log"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const throwAfter = (ms: number, reason: any = "timeout") =>
   new Promise((_, reject) => setTimeout(() => reject(reason), ms))
 
@@ -54,6 +55,7 @@ export const getHealthyRpc = async (rpcUrls: string[], network: ethers.providers
   return null
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isUnhealthyRpcError = (err: any) => {
   // expected errors that are not related to RPC health
   // ex : throw revert on a transaction call that fails
@@ -65,7 +67,7 @@ export const isUnhealthyRpcError = (err: any) => {
 }
 
 export class StandardRpcProvider extends ethers.providers.JsonRpcProvider {
-  async send(method: string, params: Array<any>): Promise<any> {
+  async send(method: string, params: Array<unknown>): Promise<unknown> {
     try {
       return await super.send(method, params)
     } catch (err) {
@@ -77,7 +79,7 @@ export class StandardRpcProvider extends ethers.providers.JsonRpcProvider {
 }
 
 export class BatchRpcProvider extends EvmJsonRpcBatchProvider {
-  async send(method: string, params: Array<any>): Promise<any> {
+  async send(method: string, params: Array<unknown>): Promise<unknown> {
     try {
       return await super.send(method, params)
     } catch (err) {

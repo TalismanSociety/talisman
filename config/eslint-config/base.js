@@ -16,9 +16,9 @@ module.exports = {
       rules: {
         "@typescript-eslint/explicit-function-return-type": "off",
         "no-console": "warn",
+        "@typescript-eslint/no-empty-function": "off",
 
         // To remove ASAP
-        "@typescript-eslint/no-empty-function": "off",
         "@typescript-eslint/no-this-alias": "off",
         "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
         "@typescript-eslint/triple-slash-reference": "off",

@@ -102,6 +102,7 @@ export class ChainConnector {
       disconnect: () => Promise.resolve(),
       on: () => () => {},
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       send: async <T = any>(method: string, params: unknown[], isCacheable?: boolean): Promise<T> =>
         await this.send(chainId, method, params, isCacheable),
 
@@ -132,6 +133,7 @@ export class ChainConnector {
     return providerFacade
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async send<T = any>(
     chainId: ChainId,
     method: string,
@@ -500,20 +502,21 @@ export class ChainConnector {
   }
 
   private getTalismanSub() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const talismanSub = (window as any)?.talismanSub
+
     /* eslint-disable @typescript-eslint/ban-types */
-    const rpcByGenesisHashSend: Function | undefined = (window as any)?.talismanSub
-      ?.rpcByGenesisHashSend
-    const rpcByGenesisHashSubscribe: Function | undefined = (window as any)?.talismanSub
-      ?.rpcByGenesisHashSubscribe
-    const rpcByGenesisHashUnsubscribe: Function | undefined = (window as any)?.talismanSub
-      ?.rpcByGenesisHashUnsubscribe
-    /* eslint-enable @typescript-eslint/ban-types */
+    const rpcByGenesisHashSend: Function | undefined = talismanSub?.rpcByGenesisHashSend
+    const rpcByGenesisHashSubscribe: Function | undefined = talismanSub?.rpcByGenesisHashSubscribe
+    const rpcByGenesisHashUnsubscribe: Function | undefined =
+      talismanSub?.rpcByGenesisHashUnsubscribe
 
     if (typeof rpcByGenesisHashSend !== "function") return
     if (typeof rpcByGenesisHashSubscribe !== "function") return
     if (typeof rpcByGenesisHashUnsubscribe !== "function") return
 
     return {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       send: <T = any>(genesisHash: string, method: string, params: unknown[]): Promise<T> =>
         rpcByGenesisHashSend(genesisHash, method, params),
 

@@ -140,10 +140,10 @@ export const SubAssetsModule: NewBalanceModule<
           return null
         }
 
-        const isAssetsPallet = (pallet: any) => pallet.name === "Assets"
-        const isAccountItem = (item: any) => item.name === "Account"
-        const isAssetItem = (item: any) => item.name === "Asset"
-        const isMetadataItem = (item: any) => item.name === "Metadata"
+        const isAssetsPallet = (pallet: { name: string }) => pallet.name === "Assets"
+        const isAccountItem = (item: { name: string }) => item.name === "Account"
+        const isAssetItem = (item: { name: string }) => item.name === "Asset"
+        const isMetadataItem = (item: { name: string }) => item.name === "Metadata"
 
         metadata.value.pallets = metadata.value.pallets.filter(isAssetsPallet)
 
@@ -157,6 +157,7 @@ export const SubAssetsModule: NewBalanceModule<
             isAssetItem,
             isMetadataItem,
           ].reduce((combinedFilter, filter) =>
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             combinedFilter ? (item: any) => combinedFilter(item) || filter(item) : filter
           )
 
@@ -225,7 +226,7 @@ export const SubAssetsModule: NewBalanceModule<
         addDependentTypes([...keepTypes])
 
         // ditch the types we aren't keeping
-        const isKeepType = (type: any) => keepTypes.has(type.id)
+        const isKeepType = (type: { id: number }) => keepTypes.has(type.id)
         metadata.value.lookup.types = metadata.value.lookup.types.filter(isKeepType)
 
         // ditch the chain's signedExtensions, we don't need them for balance lookups
@@ -293,13 +294,17 @@ export const SubAssetsModule: NewBalanceModule<
               .then((result) => metadataQuery.decode(result)),
           ])
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const unsafeAssetsMetadata = assetsMetadata as any | undefined
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const unsafeAssetsAsset = assetsAsset as any | undefined
+
           const existentialDeposit =
-            (assetsAsset as any)?.value?.minBalance?.toBigInt?.()?.toString?.() ?? "0"
+            unsafeAssetsAsset?.value?.minBalance?.toBigInt?.()?.toString?.() ?? "0"
           const symbol =
-            tokenConfig.symbol ?? (assetsMetadata as any)?.symbol?.toHuman?.() ?? "Unknown"
-          // const name = (assetsMetadata as any)?.name?.toHuman?.() ?? symbol
-          const decimals = (assetsMetadata as any)?.decimals?.toNumber?.() ?? 0
-          const isFrozen = (assetsMetadata as any)?.isFrozen?.toHuman?.() ?? false
+            tokenConfig.symbol ?? unsafeAssetsMetadata?.symbol?.toHuman?.() ?? "Unknown"
+          const decimals = unsafeAssetsMetadata?.decimals?.toNumber?.() ?? 0
+          const isFrozen = unsafeAssetsMetadata?.isFrozen?.toHuman?.() ?? false
           const coingeckoId =
             typeof tokenConfig.coingeckoId === "string" ? tokenConfig.coingeckoId : undefined
 
@@ -588,6 +593,7 @@ function formatRpcResult(chainId: ChainId, queries: StorageHelper[], result: unk
       //   reason: Sufficient
       //   extra: null
       // }>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const balance = (query.decode(change) as any)?.value ?? {
         balance: "0",
         isFrozen: false,

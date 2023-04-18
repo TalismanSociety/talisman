@@ -304,6 +304,7 @@ export class Websocket implements ProviderInterface {
    * @param params Encoded parameters as applicable for the method
    * @param subscription Subscription details (internally used)
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public send<T = any>(
     method: string,
     params: unknown[],

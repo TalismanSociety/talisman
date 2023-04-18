@@ -159,6 +159,7 @@ export declare type ResponseType<TMessageType extends keyof RequestSignatures> =
  */
 export interface SubscriptionCallback<Result> {
   (error: null, result: Result): void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (error: any, result?: never): void
 }
 

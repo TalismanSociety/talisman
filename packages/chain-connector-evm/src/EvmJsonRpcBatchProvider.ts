@@ -53,9 +53,10 @@ export class EvmJsonRpcBatchProvider extends ethers.providers.StaticJsonRpcProvi
 
           const { result, error } = batchItem
           if (error) {
-            const err = new Error(error.message)
-            ;(err as any).code = error.code
-            ;(err as any).data = error.data
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const err: any = new Error(error.message)
+            err.code = error.code
+            err.data = error.data
             request.reject(err)
           } else {
             request.resolve(result)

@@ -242,6 +242,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       return (
         this.#db.tokens
           // only affect custom tokens
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .filter((token) => "isCustom" in token && (token as any).isCustom === true)
           // only affect the provided token
           .filter((token) => token.id === tokenId)
