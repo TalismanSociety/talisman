@@ -15,19 +15,19 @@ const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJ
   return (
     <div>
       {label} as :{" "}
-      <span
+      <button
         onClick={() => setDisplayAsJson(false)}
-        className={classNames("decode-mode", !displayAsJson && "decode-mode-active")}
+        className={classNames("decode-mode !w-auto", !displayAsJson && "decode-mode-active")}
       >
         YAML
-      </span>{" "}
+      </button>{" "}
       /{" "}
-      <span
+      <button
         onClick={() => setDisplayAsJson(true)}
-        className={classNames("decode-mode", displayAsJson && "decode-mode-active")}
+        className={classNames("decode-mode !w-auto", displayAsJson && "decode-mode-active")}
       >
         JSON
-      </span>
+      </button>
     </div>
   )
 }

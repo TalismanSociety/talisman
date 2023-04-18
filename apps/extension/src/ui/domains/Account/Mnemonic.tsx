@@ -1,7 +1,7 @@
 import { notify } from "@talisman/components/Notifications"
 import { CopyIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
-import { MouseEventHandler, useState } from "react"
+import { MouseEventHandler, useCallback, useState } from "react"
 import styled from "styled-components"
 
 const SecretText = styled.div`
@@ -41,27 +41,33 @@ type MnemonicProps = {
 }
 
 export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
-  const [hasCopied, setHasCopied] = useState(false)
   const [hasHovered, setHasHovered] = useState(false)
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await window.navigator.clipboard.writeText(mnemonic)
+      notify({
+        title: "Copied to clipboard",
+        type: "success",
+      })
+    } catch (err) {
+      notify({
+        title: "Failed to copy",
+        type: "error",
+      })
+    }
+  }, [mnemonic])
 
   return (
     <>
-      <span
-        className="inline-block py-4 text-sm"
-        onClick={() => {
-          if (hasHovered && !hasCopied) {
-            window.navigator.clipboard.writeText(mnemonic)
-            notify({
-              title: "Copied to clipboard",
-              type: "success",
-            })
-          }
-        }}
-      >
-        <span className={classNames(hasHovered ? "text-white" : "text-black", "cursor-pointer")}>
+      <div className="py-4 text-sm">
+        <button
+          onClick={handleCopy}
+          className={classNames(hasHovered ? "text-white" : "text-black", "cursor-pointer")}
+        >
           <CopyIcon className="mr-2 inline" /> <span>Copy to clipboard</span>
-        </span>
-      </span>
+        </button>
+      </div>
 
       <SecretText
         className="secret bg-black-secondary h-72 rounded p-2"

@@ -46,6 +46,7 @@ export const UnsafeImage: FC<UnsafeImageProps> = ({ ...props }) => {
   return (
     <img
       {...props}
+      alt={props.alt ?? ""}
       ref={refImg}
       className={classNames(
         props.className,
