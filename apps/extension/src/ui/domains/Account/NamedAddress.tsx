@@ -1,7 +1,7 @@
 import { Balances } from "@core/domains/balances/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { LinkIcon, ParitySignerIcon, UsbIcon } from "@talisman/theme/icons"
+import { LinkIcon, PolkadotVaultIcon, UsbIcon } from "@talisman/theme/icons"
 import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
 import { ReactComponent as IconLoader } from "@talisman/theme/icons/loader.svg"
 import Asset from "@ui/domains/Asset"
@@ -34,7 +34,7 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, linked, clas
   if (origin === "QR")
     return (
       <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
-        <ParitySignerIcon />
+        <PolkadotVaultIcon />
       </WithTooltip>
     )
   return null

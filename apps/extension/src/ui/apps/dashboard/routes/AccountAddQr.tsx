@@ -2,19 +2,25 @@ import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { ArrowRightIcon, LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
+import {
+  ArrowRightIcon,
+  ExternalLinkIcon,
+  LoaderIcon,
+  PolkadotVaultIcon,
+} from "@talisman/theme/icons"
 import { decodeAnyAddress, formatDecimals, sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { Address } from "@ui/domains/Account/Address"
 import Avatar from "@ui/domains/Account/Avatar"
+import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
+import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useSetting } from "@ui/hooks/useSettings"
-import { AnimatePresence, motion } from "framer-motion"
 import { useCallback, useMemo, useReducer } from "react"
 import { Checkbox, FormFieldInputText } from "talisman-ui"
 
@@ -68,7 +74,7 @@ const reducer = (state: State, action: Action): State => {
         name: "",
         address,
         genesisHash,
-        lockToNetwork: true,
+        lockToNetwork: false,
       }
     }
   }
@@ -114,7 +120,7 @@ export const AccountAddQr = () => {
       try {
         setAddress(
           await api.accountCreateQr(
-            name || "My Parity Signer Account",
+            name || "My Polkadot Vault Account",
             address,
             lockToNetwork ? genesisHash : null
           )
@@ -149,6 +155,9 @@ export const AccountAddQr = () => {
     return Object.fromEntries(filteredChains.map(({ id }) => [id, [address]]))
   }, [chains, state])
   const balances = useBalancesByParams({ addressesByChain })
+  const chain = useChainByGenesisHash(
+    (state.type === "CONFIGURE" && state.genesisHash) || undefined
+  )
 
   const isBalanceLoading =
     !addressesByChain ||
@@ -181,11 +190,31 @@ export const AccountAddQr = () => {
     <Layout withBack centered>
       {state.type === "SCAN" && (
         <>
-          <HeaderBlock className="mb-12" title="Import Parity Signer" />
+          <HeaderBlock className="mb-12" title="Import Polkadot Vault" />
           <div className="grid grid-cols-2 gap-12">
             <div>
               <ol className="flex flex-col gap-12">
                 {[
+                  {
+                    title: "Open Polkadot Vault on your device",
+                    body: (
+                      <>
+                        <div>Select ‘Keys’ tab from the bottom navigation bar</div>
+                        <div className="mt-4">
+                          <a
+                            className="text-body-secondary hover:text-body"
+                            href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-vault"
+                            target="_blank"
+                          >
+                            <span className="underline underline-offset-2">
+                              Instructions for Parity Signer (legacy version)
+                            </span>{" "}
+                            <ExternalLinkIcon className="inline" />
+                          </a>
+                        </div>
+                      </>
+                    ),
+                  },
                   state.cameraError
                     ? // CAMERA HAS ERROR
                       {
@@ -220,19 +249,10 @@ export const AccountAddQr = () => {
                           </button>
                         ),
                       },
-                  {
-                    title: "Open Parity Signer",
-                    body: (
-                      <>
-                        Select ‘Keys’ tab then select{" "}
-                        <span className="text-white">the top (root) account</span> to reveal the QR
-                        code
-                      </>
-                    ),
-                  },
+
                   {
                     title: "Scan QR code",
-                    body: "Bring your QR code in front of your camera. The preview image is blurred for security, but this does not affect the reading",
+                    body: "Bring the account QR code on the screen of the Polkadot Vault app in front of the camera on your computer. The preview image is blurred for security, but this does not affect the reading",
                   },
                 ].map(({ title, body, extra, errorIcon }, index) => (
                   <li className="relative ml-20" key={index}>
@@ -293,12 +313,12 @@ export const AccountAddQr = () => {
           <HeaderBlock
             className="mb-12"
             title="Name your account"
-            text="Help distinguish your account by giving it a name. This would ideally be the same as the name on your Parity Signer device to make it easy to identify when signing."
+            text="Help distinguish your account by giving it a name. This would ideally be the same as the name on your Polkadot Vault device to make it easy to identify when signing."
           />
           <form className="my-20 space-y-10" onSubmit={submit}>
             <FormFieldInputText
               type="text"
-              placeholder="My Parity Signer Account"
+              placeholder="My Polkadot Vault Account"
               containerProps={{ className: "!h-28" }}
               small
               value={state.name}
@@ -315,10 +335,10 @@ export const AccountAddQr = () => {
               <div className="flex flex-col !items-start gap-2 overflow-hidden leading-8">
                 <div className="text-body flex w-full items-center gap-3 text-base leading-none">
                   <div className="overflow-hidden text-ellipsis whitespace-nowrap text-base leading-8">
-                    {state.name || "My Parity Signer Account"}
+                    {state.name || "My Polkadot Vault Account"}
                   </div>
-                  <div className="text-primary">
-                    <ParitySignerIcon />
+                  <div>
+                    <PolkadotVaultIcon className="text-primary" />
                   </div>
                 </div>
                 <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap text-sm leading-7">
@@ -338,48 +358,22 @@ export const AccountAddQr = () => {
               </div>
             </div>
 
-            <Checkbox
-              checked={!state.lockToNetwork}
-              onChange={(event) =>
-                dispatch({ method: "setLockToNetwork", lockToNetwork: !event.target.checked })
-              }
-            >
-              <div className="text-body-secondary">Allow use on any network</div>
-            </Checkbox>
-            <AnimatePresence>
-              {!state.lockToNetwork && (
-                <motion.div
-                  className="text-body-secondary ml-[1.7em] !mt-2 overflow-hidden"
-                  initial={{ height: 0 }}
-                  animate={{ height: "auto" }}
-                  exit={{ height: 0 }}
-                >
-                  <div>
-                    It's important to{" "}
-                    <a
-                      className="text-primary"
-                      href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-vault"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      configure your signer device correctly
-                    </a>{" "}
-                    before using this option. Failure to do so will result in issues when signing
-                    transactions with your imported account.
-                  </div>
-                  <div className="mt-2">
-                    If you aren't sure what this option does, it is safer to{" "}
-                    <button
-                      className="text-primary cursor-pointer"
-                      onClick={() => dispatch({ method: "setLockToNetwork", lockToNetwork: true })}
-                    >
-                      turn it off
-                    </button>{" "}
-                    for now.
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {!!chain && (
+              <Checkbox
+                checked={state.lockToNetwork}
+                onChange={(event) =>
+                  dispatch({ method: "setLockToNetwork", lockToNetwork: event.target.checked })
+                }
+              >
+                <span className="text-body-secondary inline-flex items-center gap-2">
+                  <span>Restrict account to </span>
+                  <ChainLogo id={chain.id} className="inline" />
+                  <span className="text-body">{chain.name}</span>
+                  <span>network</span>
+                </span>
+              </Checkbox>
+            )}
+
             <div className="flex justify-end py-8">
               <SimpleButton type="submit" primary processing={state.submitting}>
                 Import <ArrowRightIcon />

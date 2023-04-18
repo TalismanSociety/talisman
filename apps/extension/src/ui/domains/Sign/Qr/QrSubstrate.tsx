@@ -2,14 +2,14 @@ import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { Drawer } from "@talisman/components/Drawer"
-import { LoaderIcon, ParitySignerIcon } from "@talisman/theme/icons"
+import { InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talisman/theme/icons"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { ReactElement, useState } from "react"
-import { Button } from "talisman-ui"
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ExtrinsicQrCode } from "./ExtrinsicQrCode"
 import { MetadataQrCode } from "./MetadataQrCode"
@@ -24,6 +24,8 @@ type ScanState =
       page: "SEND"
       // show the chainspec drawer for the user to add the current chain to their device
       showChainspecDrawer?: boolean
+      // show instructions to add an account for the chain, after adding the chainspec
+      showEnableNetwork?: boolean
       // show the drawer instructing users that they may need to update their metadata
       showUpdateMetadataDrawer?: boolean
     }
@@ -137,7 +139,7 @@ export const QrSubstrate = ({
               <div className="text-body-secondary mt-14 mb-10 max-w-md text-center leading-10">
                 Scan the QR code with the
                 <br />
-                Parity Signer app on your phone.
+                Polkadot Vault app on your phone.
               </div>
 
               {isJsonPayload(payload) ? (
@@ -160,7 +162,7 @@ export const QrSubstrate = ({
                     className="text-grey-200 mt-8 text-xs font-light hover:text-white"
                     onClick={() => setScanState({ page: "SEND", showUpdateMetadataDrawer: true })}
                   >
-                    Seeing a Parity Signer error?
+                    Still seeing an error?
                   </button>
                 </div>
               ) : (
@@ -168,72 +170,124 @@ export const QrSubstrate = ({
               )}
             </div>
 
-            {scanState.showChainspecDrawer && (
-              <Drawer
-                anchor="bottom"
-                open={true}
-                parent={parent}
-                onClose={() => setScanState({ page: "SEND" })}
-              >
-                <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
-                  <div className="mb-16 font-bold">Add network</div>
-                  <div className="relative flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-7">
-                    <div className="text-body-secondary absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
-                      <LoaderIcon className="animate-spin-slow text-xl " />
-                    </div>
-                    {!!genesisHash && (
-                      <NetworkSpecsQrCode genesisHash={genesisHash} qrCodeSource={qrCodeSource} />
-                    )}
+            <Drawer
+              anchor="bottom"
+              open={!!scanState.showChainspecDrawer}
+              parent={parent}
+              onClose={() => setScanState({ page: "SEND" })}
+            >
+              <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
+                <div className="mb-16 font-bold">Add network</div>
+                <div className="relative flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-7">
+                  <div className="text-body-secondary absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
+                    <LoaderIcon className="animate-spin-slow text-xl " />
                   </div>
-                  <QrCodeSourceSelector className="mt-4" {...qrCodeSourceSelectorState} />
-                  <div className="text-body-secondary mt-10 mb-16 max-w-md text-center text-sm leading-10">
-                    Scan the QR code with the Parity Signer app on your phone to add the{" "}
-                    <div className="text-body inline-flex items-baseline gap-1">
-                      <ChainLogo className="self-center" id={chain?.id} />
-                      {chain?.name ?? "Unknown"}
-                    </div>{" "}
-                    network.
-                  </div>
+                  {!!genesisHash && (
+                    <NetworkSpecsQrCode genesisHash={genesisHash} qrCodeSource={qrCodeSource} />
+                  )}
+                </div>
+                <QrCodeSourceSelector className="mt-4" {...qrCodeSourceSelectorState} />
+                <div className="text-body-secondary mt-10 mb-16 max-w-md text-center text-sm leading-10">
+                  Scan the QR code with the Polkadot Vault app on your phone to add the{" "}
+                  <div className="text-body inline-flex items-baseline gap-1">
+                    <ChainLogo className="self-center" id={chain?.id} />
+                    {chain?.name ?? "Unknown"}
+                  </div>{" "}
+                  network.
+                </div>
+                <div className="flex w-full flex-col gap-4">
                   <Button
                     className="w-full"
                     primary
                     small
-                    onClick={() => setScanState({ page: "SEND" })}
+                    onClick={() => setScanState({ page: "SEND", showEnableNetwork: true })}
                   >
-                    Done
+                    Continue
                   </Button>
-                </div>
-              </Drawer>
-            )}
-
-            {scanState.showUpdateMetadataDrawer && (
-              <Drawer
-                anchor="bottom"
-                open={true}
-                parent={parent}
-                onClose={() => setScanState({ page: "SEND" })}
-              >
-                <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
-                  <ParitySignerIcon className="mb-10 h-auto w-16" />
-                  <div className="mb-5 font-bold">You may need to update metadata</div>
-                  <div className="text-body-secondary mb-10 max-w-md text-center text-sm leading-10">
-                    If you’re receiving an error on your Parity Signer when trying to scan the QR
-                    code, it likely means your metadata is out of date.
-                  </div>
-                  <Button
-                    className="mb-4 w-full"
-                    primary
-                    small
-                    onClick={() => setScanState({ page: "UPDATE_METADATA" })}
-                  >
-                    Update Metadata
-                  </Button>
-                  <Button small className="w-full" onClick={() => setScanState({ page: "SEND" })}>
+                  <Button className="w-full" small onClick={() => setScanState({ page: "SEND" })}>
                     Cancel
                   </Button>
                 </div>
-              </Drawer>
-            )}
+              </div>
+            </Drawer>
+
+            <Drawer
+              anchor="bottom"
+              open={!!scanState.showEnableNetwork}
+              parent={parent}
+              onClose={() => setScanState({ page: "SEND" })}
+            >
+              <div className="bg-black-tertiary flex max-h-full w-full flex-col items-center rounded-t p-12">
+                <div className="mb-12 font-bold">Enable network</div>
+                <video width="160" controls autoPlay>
+                  <source src="/videos/add-network-vault.mp4" type="video/mp4" />
+                </video>
+                <div className="text-body-secondary mt-10 mb-16 w-full px-10 text-center text-sm leading-10">
+                  You will need to create a derived key in your Polkadot Vault to enable this
+                  network. This new key must use the same derivation path{" "}
+                  <Tooltip placement="bottom-end">
+                    <TooltipTrigger className="hover:text-body">
+                      <InfoIcon className="inline" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      In most cases, this derivation path should be blank
+                    </TooltipContent>
+                  </Tooltip>{" "}
+                  as your existing account.{" "}
+                  <a
+                    href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-vault"
+                    target="_blank"
+                    className="hover:text-body text-grey-200"
+                  >
+                    Learn more
+                  </a>
+                </div>
+                <Button
+                  className="w-full"
+                  primary
+                  small
+                  onClick={() => setScanState({ page: "SEND" })}
+                >
+                  Done
+                </Button>
+              </div>
+            </Drawer>
+
+            <Drawer
+              anchor="bottom"
+              open={!!scanState.showUpdateMetadataDrawer}
+              parent={parent}
+              onClose={() => setScanState({ page: "SEND" })}
+            >
+              <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
+                <PolkadotVaultIcon className="mb-10 h-auto w-16" />
+                <div className="mb-5 font-bold">You may need to update metadata</div>
+                <div className="text-body-secondary max-w-md text-center text-sm leading-10">
+                  If you’re receiving an error on your Polkadot Vault when trying to scan the QR
+                  code, it likely means your metadata is out of date.
+                </div>
+                <div className="py-8">
+                  <a
+                    href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-vault"
+                    target="_blank"
+                    className="text-grey-200 mt-8 text-xs font-light hover:text-white"
+                  >
+                    Still seeing an error?
+                  </a>
+                </div>
+                <Button
+                  className="mb-4 w-full"
+                  primary
+                  small
+                  onClick={() => setScanState({ page: "UPDATE_METADATA" })}
+                >
+                  Update Metadata
+                </Button>
+                <Button small className="w-full" onClick={() => setScanState({ page: "SEND" })}>
+                  Cancel
+                </Button>
+              </div>
+            </Drawer>
           </>
         )}
 
@@ -256,7 +310,7 @@ export const QrSubstrate = ({
             </div>
             <QrCodeSourceSelector className="mt-4 text-base" {...qrCodeSourceSelectorState} />
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
-              Scan the QR video with the Parity Signer app on your phone to update your metadata.
+              Scan the QR video with the Polkadot Vault app on your phone to update your metadata.
             </div>
             <div></div>
           </div>
@@ -269,7 +323,7 @@ export const QrSubstrate = ({
           <div className="flex h-full flex-col items-center justify-between">
             <ScanQr type="signature" onScan={onSignature} size={280} />
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
-              Scan the Parity Signer QR code.
+              Scan the Polkadot Vault QR code.
               <br />
               The image is blurred for security, but this does not affect the reading.
             </div>

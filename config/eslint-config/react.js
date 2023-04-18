@@ -24,6 +24,8 @@ module.exports = {
       },
     ],
 
+    "jsx-a11y/media-has-caption": "off",
+
     // do not turn off autofocus rule. autoFocus may break drawer/modal animations. disable on a per case basis at your own risk
     // "jsx-a11y/no-autofocus": "off",
 
