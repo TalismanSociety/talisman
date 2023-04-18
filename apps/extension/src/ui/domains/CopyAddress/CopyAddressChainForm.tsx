@@ -1,6 +1,6 @@
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { ChevronRightIcon, CopyIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Chain, ChainId } from "@talismn/chaindata-provider"

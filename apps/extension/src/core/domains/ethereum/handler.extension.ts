@@ -526,6 +526,7 @@ export class EthHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {

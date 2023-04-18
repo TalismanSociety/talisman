@@ -1,4 +1,3 @@
-import { IconButton } from "@talisman/components/IconButton"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"

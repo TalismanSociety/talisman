@@ -1,4 +1,3 @@
-import { urlToDomain } from "@core/util/urlToDomain"
 import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"

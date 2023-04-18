@@ -6,7 +6,7 @@ import { CopyIcon, LoaderIcon } from "@talisman/theme/icons"
 import { provideContext } from "@talisman/util/provideContext"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { Button } from "talisman-ui"
 
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"

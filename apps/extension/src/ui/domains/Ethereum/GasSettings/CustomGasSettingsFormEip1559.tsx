@@ -178,7 +178,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isValid: isFormValid, isSubmitting },
+    formState: { errors, isValid: isFormValid },
   } = useForm<FormData>({
     mode: "onChange",
     reValidateMode: "onChange",

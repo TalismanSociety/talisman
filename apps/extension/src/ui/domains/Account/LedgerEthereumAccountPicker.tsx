@@ -53,7 +53,7 @@ const useLedgerEthereumAccounts = (
           address,
         } as LedgerEthereumAccount
 
-        setDerivedAccounts((prev) => [...newAccounts])
+        setDerivedAccounts([...newAccounts])
       }
     } catch (err) {
       // eslint-disable-next-line no-console

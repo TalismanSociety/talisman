@@ -228,6 +228,7 @@ export const SubNativeModule: NewBalanceModule<
 
         metadata.value.pallets = metadata.value.pallets.filter(isSystemPallet)
 
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { systemPallet /* systemPallet is not needed anymore 🔥 */, accountItem } = (() => {
           const systemPallet = metadata.value.pallets.find(isSystemPallet)
           if (!systemPallet) return { systemPallet, accountItem: undefined }

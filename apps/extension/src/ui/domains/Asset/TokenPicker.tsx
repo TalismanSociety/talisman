@@ -56,7 +56,7 @@ type TokenRowProps = {
   allowUntransferable?: boolean
 }
 
-const TokenRowSkeleton = ({ color = "bg-grey-600" }) => (
+const TokenRowSkeleton = () => (
   <div className="flex h-[5.8rem] w-full items-center gap-4 px-12 text-left">
     <div className="bg-grey-750 h-16 w-16 animate-pulse rounded-full"></div>
     <div className="grow space-y-[5px]">

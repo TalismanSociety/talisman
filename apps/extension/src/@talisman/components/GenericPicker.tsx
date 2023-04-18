@@ -1,4 +1,3 @@
-import { DEFAULT_SEND_FUNDS_TOKEN_SUBSTRATE } from "@core/constants"
 import { TokenId } from "@core/domains/tokens/types"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talismn/util"
@@ -155,6 +154,7 @@ const PickerItem = ({ logo, title, subtitle }: PickerItemProps) => {
 
 // prevents searchbox to be filled with item.toString() when we select one
 // we want to keep this an empty string to allow for a quick search without clearing the field
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const handleItemToString = (tokenId?: TokenId | null) => ""
 
 const DEFAULT_SEARCH = (text: string | null, items: PickerItemProps[]) => {

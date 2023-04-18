@@ -1,8 +1,5 @@
 import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
-import type {
-  RequestAuthorizeTab as PolkadotRequestAuthorizeTab,
-  RequestAuthorizeSubscribe,
-} from "@polkadot/extension-base/background/types"
+import type { RequestAuthorizeTab as PolkadotRequestAuthorizeTab } from "@polkadot/extension-base/background/types"
 
 import { Web3WalletPermission, Web3WalletPermissionTarget } from "../ethereum/types"
 

@@ -45,6 +45,7 @@ export const initPosthog = () => {
       disable_session_recording: true,
       persistence: "localStorage",
       ip: false,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       sanitize_properties: (properties, eventName) => {
         // We can remove all the posthog user profiling properties except for those that are required for PostHog to work
         const requiredProperties = Object.keys(properties).reduce((result, key) => {

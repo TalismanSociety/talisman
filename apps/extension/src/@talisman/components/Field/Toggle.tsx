@@ -13,6 +13,7 @@ const defaultProps: IProps = {
 }
 
 // TODO focused button visual effect
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Toggle = ({ value, onChange, fieldProps, disabled, ...rest }: IProps) => {
   const handleToggle = useCallback(() => {
     if (disabled) return

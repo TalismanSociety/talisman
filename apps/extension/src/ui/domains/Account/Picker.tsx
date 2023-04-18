@@ -239,6 +239,7 @@ const PasteAddress = ({ onSelected, exclude, addressType }: PasteAddressProps) =
 
 // prevents searchbox to be filled with item.toString() when we select one
 // we want to keep this an empty string to allow for a quick search without clearing the field
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const handleItemToString = (item: AccountJson | null) => ""
 
 type DivWithMountProps = React.DetailedHTMLProps<
@@ -417,7 +418,7 @@ const AccountPicker: FC<Props> = ({
                               item: contact,
                               index,
                               // needed to get around downshift/Portal bug
-                              onMouseUp: (e) => selectItem(contact),
+                              onMouseUp: () => selectItem(contact),
                             })}
                           >
                             <NamedAddress
@@ -442,7 +443,7 @@ const AccountPicker: FC<Props> = ({
                               item: account,
                               index: index + filteredContacts.length,
                               // needed to get around downshift/Portal bug
-                              onMouseUp: (e) => selectItem(account),
+                              onMouseUp: () => selectItem(account),
                             })}
                           >
                             <AccountName withAvatar address={account?.address} />

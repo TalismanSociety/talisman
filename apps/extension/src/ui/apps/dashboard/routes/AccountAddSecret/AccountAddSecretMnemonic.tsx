@@ -300,9 +300,9 @@ export const AccountAddSecretMnemonic = () => {
     [setValue, trigger]
   )
 
-  const handleGenerateNew = useCallback(() => {
-    setValue("mnemonic", Wallet.createRandom().mnemonic.phrase, { shouldValidate: true })
-  }, [setValue])
+  // const handleGenerateNew = useCallback(() => {
+  //   setValue("mnemonic", Wallet.createRandom().mnemonic.phrase, { shouldValidate: true })
+  // }, [setValue])
 
   return (
     <Container withBack centered>

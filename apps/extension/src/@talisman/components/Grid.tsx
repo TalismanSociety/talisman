@@ -23,7 +23,7 @@ Grid.defaultProps = defaultProps
 
 const StyledGrid = styled(Grid)`
   display: grid;
-  grid-gap: ${({ gap, ...rest }) => gap};
+  grid-gap: ${({ gap }) => gap};
   width: 100%;
   grid-template-columns: repeat(${({ columns }) => columns}, 1fr);
 

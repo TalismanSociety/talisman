@@ -48,6 +48,7 @@ const useShowNomPoolStakingBannerProvider = () => {
                 : BigInt(0)) -
               BigInt(NOM_POOL_MIN_DEPOSIT[chainId] || 0),
           ])
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           .filter(([address, available]) => available > BigInt(0))
       )
       setEligibleAddressBalances(newEligibleAddressBalances)

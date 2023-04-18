@@ -30,6 +30,7 @@ export interface IFieldProps<T = string | number>
 }
 
 export const fieldDefaultProps = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onChange: (val?: any) => {},
 }
 

@@ -8,7 +8,7 @@ import { TransactionStatus } from "@core/domains/transactions/types"
 import { LoaderIcon, MoreHorizontalIcon, RocketIcon, XOctagonIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { BalanceFormatter } from "@talismn/balances"
-import { Chain, ChainId, EvmNetwork, EvmNetworkId, Token } from "@talismn/chaindata-provider"
+import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
@@ -123,6 +123,7 @@ const ActionButton = forwardRef<
 >(({ type = "button", className, ...props }, ref) => {
   return (
     <button
+      type={type}
       ref={ref}
       className={classNames(
         "hover:bg-grey-700 text-body-secondary hover:text-body inline-block h-[36px] w-[36px] shrink-0 rounded-sm text-center",
@@ -307,7 +308,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
 }) => {
   const evmNetwork = useEvmNetwork(tx.evmNetworkId)
 
-  const { isTransfer, value, tokenId, to } = useMemo(() => {
+  const { isTransfer, value, tokenId } = useMemo(() => {
     const isTransfer = !!tx.tokenId && !!tx.value && tx.to
     return isTransfer
       ? { isTransfer, value: tx.value, tokenId: tx.tokenId, to: tx.to }

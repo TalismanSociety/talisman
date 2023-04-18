@@ -13,7 +13,7 @@ import { useTransferableTokenById } from "./useTransferableTokens"
 
 const SendLedgerSubstrate = () => {
   const { formData, expectedResult, sendWithSignature, cancel } = useSendTokens()
-  const { from, to, amount, transferableTokenId } = formData as SendTokensInputs
+  const { from, to, transferableTokenId } = formData as SendTokensInputs
   const [error, setError] = useState<Error>()
   const transferableToken = useTransferableTokenById(transferableTokenId)
 

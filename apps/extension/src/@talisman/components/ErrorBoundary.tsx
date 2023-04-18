@@ -5,8 +5,6 @@ import { FC, ReactNode, useCallback } from "react"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
 
-import { SimpleButton } from "./SimpleButton"
-
 const ErrorContainer = styled.section`
   display: flex;
   align-items: center;

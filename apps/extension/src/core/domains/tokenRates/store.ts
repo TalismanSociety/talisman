@@ -90,7 +90,7 @@ export class TokenRatesStore {
     try {
       const tokenRates = await fetchTokenRates(tokens)
 
-      await db.transaction("rw", db.tokenRates, async (tx) => {
+      await db.transaction("rw", db.tokenRates, async () => {
         // override all tokenRates
         await db.tokenRates.bulkPut(
           Object.entries(tokenRates).map(([tokenId, tokenRates]) => ({

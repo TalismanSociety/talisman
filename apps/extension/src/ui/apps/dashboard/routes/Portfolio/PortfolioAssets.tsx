@@ -1,6 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
 import { isEthereumAddress } from "@polkadot/util-crypto"
-import { IconButton } from "@talisman/components/IconButton"
 import { IconMore } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"

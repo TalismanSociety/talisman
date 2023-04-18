@@ -1,5 +1,6 @@
 // @ts-nocheck
 import styled from "styled-components"
+
 import Field, { IFieldProps, fieldDefaultProps } from "./Field"
 
 interface IProps extends IFieldProps {
@@ -10,6 +11,7 @@ const defaultProps: IProps = {
   ...fieldDefaultProps,
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Toggle = ({ value, onChange, fieldProps, ...rest }: IProps) => (
   <Field {...rest} onClick={() => onChange(!value)}>
     <div className="checkbox" />

@@ -1,6 +1,5 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { IconButton } from "@talisman/components/IconButton"
 import {
   AllAccountsIcon,
   ArrowDownIcon,

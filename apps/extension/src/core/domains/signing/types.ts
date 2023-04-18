@@ -13,7 +13,6 @@ import type { TransactionRequest as EthTransactionRequest } from "@ethersproject
 import {
   RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
   RequestSign,
-  RequestSigningSubscribe,
   ResponseSigning,
 } from "@polkadot/extension-base/background/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"

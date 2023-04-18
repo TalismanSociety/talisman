@@ -25,6 +25,7 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
     maxBreadcrumbs: 20,
     // prevents sending the event if user has disabled error tracking
     beforeSend: async (event) => ((await firstValueFrom(useErrorTracking)) ? event : null),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     beforeBreadcrumb: (breadCrumb, hint) => {
       if (breadCrumb.data?.url) {
         breadCrumb.data.url = normalizeUrl(breadCrumb.data.url)
