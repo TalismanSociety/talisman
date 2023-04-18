@@ -202,14 +202,14 @@ export const AccountAddQr = () => {
                         <div>Select ‘Keys’ tab from the bottom navigation bar</div>
                         <div className="mt-4">
                           <a
-                            className="text-body inline-flex gap-2 "
+                            className="text-body-secondary hover:text-body"
                             href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-vault"
                             target="_blank"
                           >
                             <span className="underline underline-offset-2">
-                              Instructions for Parity Signer
-                            </span>
-                            <ExternalLinkIcon />
+                              Instructions for Parity Signer (legacy version)
+                            </span>{" "}
+                            <ExternalLinkIcon className="inline" />
                           </a>
                         </div>
                       </>
