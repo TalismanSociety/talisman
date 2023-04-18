@@ -52,7 +52,7 @@ const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
 
       // if eth_feeHistory method exists, this RPC supports EIP-1559
       try {
-        await provider.send("eth_feeHistory", [1, "latest", [10]])
+        await provider.send("eth_feeHistory", [ethers.utils.hexValue(1), "latest", [10]])
         return true
       } catch (err) {
         const error = err as Error & { code?: number }
