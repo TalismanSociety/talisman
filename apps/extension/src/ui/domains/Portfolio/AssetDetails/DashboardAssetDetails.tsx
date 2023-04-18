@@ -193,9 +193,8 @@ type AssetsTableProps = {
 }
 
 export const DashboardAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
-  const { balancesByChain, isLoading } = useAssetDetails(balances)
+  const { balancesByChain: rows, isLoading } = useAssetDetails(balances)
 
-  const rows = Object.entries(balancesByChain)
   if (rows.length === 0 && !isLoading) return <NoTokensMessage symbol={symbol} />
 
   return (

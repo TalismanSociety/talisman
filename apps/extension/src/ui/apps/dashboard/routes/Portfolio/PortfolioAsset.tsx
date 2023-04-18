@@ -11,7 +11,7 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useMemo } from "react"
-import { Navigate, useNavigate, useParams } from "react-router-dom"
+import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
@@ -108,15 +108,16 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
 
 export const PortfolioAsset = () => {
   const { symbol } = useParams()
+  const [search] = useSearchParams()
   const { allBalances } = usePortfolio()
   const { pageOpenEvent } = useAnalytics()
+  const isTestnet = search.get("testnet") === "true"
 
   const balances = useMemo(
     // TODO: Move the association between a token on multiple chains into the backend / subsquid.
     // We will eventually need to handle the scenario where two tokens with the same symbol are not the same token.
-    // Also, we might want to separate testnet tokens from non-testnet tokens.
-    () => new Balances(allBalances.sorted.filter((b) => b.token?.symbol === symbol)),
-    [allBalances.sorted, symbol]
+    () => allBalances.find((b) => b.token?.symbol === symbol && b.token?.isTestnet === isTestnet),
+    [allBalances, isTestnet, symbol]
   )
 
   useEffect(() => {

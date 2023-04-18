@@ -13,7 +13,7 @@ import { useSelectedAccount } from "../SelectedAccountContext"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 
 type DetailRow = {
-  key: BalanceLockType
+  key: string | BalanceLockType
   title: string
   tokens: BigNumber
   fiat: number | null
@@ -33,64 +33,59 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
   const { account } = useSelectedAccount()
   const { summary, tokenBalances, token } = useTokenBalancesSummary(balances)
 
-  const detailRows: DetailRow[] = useMemo(() => {
-    return summary
-      ? ([
-          // AVAILABLE
-          ...(account
-            ? [
-                {
-                  key: "available",
-                  title: "Available",
-                  tokens: summary.availableTokens,
-                  fiat: summary.availableFiat,
-                  locked: false,
-                },
-              ]
-            : tokenBalances
-                .filterNonZero("transferable")
-                .each.map((b) => ({
-                  key: `${b.id}-available`,
-                  title: "Available",
-                  tokens: BigNumber(b.transferable.tokens),
-                  fiat: b.transferable.fiat("usd"),
-                  locked: false,
-                  address: b.address,
-                }))
-                .sort(sortBigBy("tokens", true))),
-          // LOCKED
-          ...tokenBalances
-            .filterNonZero("locked")
-            .each.flatMap((b) =>
-              filterBaseLocks(b.locks).map((lock, index) => ({
-                key: `${b.id}-locked-${index}`,
-                title: getLockTitle(lock, { balance: b }),
-                tokens: BigNumber(lock.amount.tokens),
-                fiat: lock.amount.fiat("usd"),
-                locked: true,
-                // only show address when we're viewing balances for all accounts
-                address: account ? undefined : b.address,
-              }))
-            )
-            .sort(sortBigBy("tokens", true)),
-          // RESERVED
-          ...tokenBalances
-            .filterNonZero("reserved")
-            .each.flatMap((b) =>
-              b.reserves.map((reserve, index) => ({
-                key: `${b.id}-reserved-${index}`,
-                title: getLockTitle(reserve, { balance: b }),
-                tokens: BigNumber(reserve.amount.tokens),
-                fiat: reserve.amount.fiat("usd"),
-                locked: true,
-                // only show address when we're viewing balances for all accounts
-                address: account ? undefined : b.address,
-                meta: (reserve.meta as any)?.description ?? undefined,
-              }))
-            )
-            .sort(sortBigBy("tokens", true)),
-        ].filter((row) => row && row.tokens.gt(0)) as DetailRow[])
-      : []
+  const detailRows = useMemo((): DetailRow[] => {
+    if (!summary) return []
+
+    // AVAILABLE
+    const available = account
+      ? [
+          {
+            key: "available",
+            title: "Available",
+            tokens: summary.availableTokens,
+            fiat: summary.availableFiat,
+            locked: false,
+          },
+        ]
+      : tokenBalances.filterNonZero("transferable").each.map((b) => ({
+          key: `${b.id}-available`,
+          title: "Available",
+          tokens: BigNumber(b.transferable.tokens),
+          fiat: b.transferable.fiat("usd"),
+          locked: false,
+          address: b.address,
+        }))
+
+    // LOCKED
+    const locked = tokenBalances.filterNonZero("locked").each.flatMap((b) =>
+      filterBaseLocks(b.locks).map((lock, index) => ({
+        key: `${b.id}-locked-${index}`,
+        title: getLockTitle(lock, { balance: b }),
+        tokens: BigNumber(lock.amount.tokens),
+        fiat: lock.amount.fiat("usd"),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+      }))
+    )
+
+    // RESERVED
+    const reserved = tokenBalances.filterNonZero("reserved").each.flatMap((b) =>
+      b.reserves.map((reserve, index) => ({
+        key: `${b.id}-reserved-${index}`,
+        title: getLockTitle(reserve, { balance: b }),
+        tokens: BigNumber(reserve.amount.tokens),
+        fiat: reserve.amount.fiat("usd"),
+        locked: true,
+        // only show address when we're viewing balances for all accounts
+        address: account ? undefined : b.address,
+        meta: (reserve.meta as any)?.description ?? undefined,
+      }))
+    )
+
+    return [...available, ...locked, ...reserved]
+      .filter((row) => row && row.tokens.gt(0))
+      .sort(sortBigBy("tokens", true))
   }, [account, summary, tokenBalances])
 
   const { evmNetwork } = balances.sorted[0]

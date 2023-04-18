@@ -172,14 +172,14 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
 }
 
 export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
-  const { balancesByChain, isLoading } = useAssetDetails(balances)
-  const rows = useMemo(() => Object.entries(balancesByChain), [balancesByChain])
+  const { balancesByChain: rows, isLoading } = useAssetDetails(balances)
   const hasBalance = useMemo(
     () => rows.some(([, balances]) => balances.each.some((b) => b.total.planck > 0n)),
     [rows]
   )
 
-  if (!hasBalance) return isLoading ? null : <NoTokens symbol={symbol} />
+  if (!hasBalance && isLoading) return null
+  if (!hasBalance) return <NoTokens symbol={symbol} />
 
   return (
     <FadeIn>

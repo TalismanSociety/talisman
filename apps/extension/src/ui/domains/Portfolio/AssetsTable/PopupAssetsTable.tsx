@@ -126,14 +126,14 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
   const showBanner = showNomPoolBanner({
     chainId: token?.chain?.id,
-    addresses: locked ? [] : balances.sorted.map((b) => b.address),
+    addresses: Array.from(new Set(locked ? [] : balances.each.map((b) => b.address))),
   })
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
-    navigate(`/portfolio/${token?.symbol}`)
+    navigate(`/portfolio/${token?.symbol}${token?.isTestnet ? "?testnet=true" : ""}`)
     genericEvent("goto portfolio asset", { from: "popup", symbol: token?.symbol })
-  }, [genericEvent, navigate, token?.symbol])
+  }, [genericEvent, navigate, token?.isTestnet, token?.symbol])
 
   const handleClickStakingBanner = useCallback(() => {
     window.open("https://app.talisman.xyz/staking")
@@ -170,8 +170,13 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
           <div className="relative grow">
             {/* we want content from this cell to be hidden if there are too many tokens to display on right cell */}
             <div className="absolute top-0 left-0 flex w-full flex-col gap-2 overflow-hidden text-left">
-              <div className="text-body flex items-center gap-2 whitespace-nowrap text-sm font-bold">
+              <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
                 {token.symbol}
+                {!!token.isTestnet && (
+                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded py-1 px-3 font-light">
+                    Testnet
+                  </span>
+                )}
               </div>
               {!!networkIds.length && (
                 <div className="text-base">
@@ -267,29 +272,19 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
 
 export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   const { account } = useSelectedAccount()
-  // group by token (symbol)
-  const { symbolBalances, skeletons } = usePortfolioSymbolBalances(balances)
 
-  // split by status
-  const { available, locked, totalAvailable, totalLocked } = useMemo(() => {
-    const available = symbolBalances
-      .map(([symbol, balances]): [string, Balances] => [
-        symbol,
-        balances.find((b) => b.total.planck === 0n || b.free.planck > 0n),
-      ])
-      .filter(([, balances]) => balances.count > 0)
+  // group by status by token (symbol)
+  const {
+    availableSymbolBalances: available,
+    lockedSymbolBalances: locked,
+    skeletons,
+  } = usePortfolioSymbolBalances(balances)
 
-    const locked = symbolBalances
-      .map(([symbol, balances]): [string, Balances] => [
-        symbol,
-        balances.find((b) => b.frozen.planck > 0n || b.reserved.planck > 0n),
-      ])
-      .filter(([, balances]) => balances.count > 0)
-
-    const { transferable, frozen, reserved } = balances.sum.fiat("usd")
-
-    return { available, locked, totalAvailable: transferable, totalLocked: frozen + reserved }
-  }, [balances, symbolBalances])
+  // calculate totals
+  const { totalAvailable, totalLocked } = useMemo(() => {
+    const { transferable, locked, reserved } = balances.sum.fiat("usd")
+    return { totalAvailable: transferable, totalLocked: locked + reserved }
+  }, [balances])
 
   if (!available.length && !locked.length) return null
 

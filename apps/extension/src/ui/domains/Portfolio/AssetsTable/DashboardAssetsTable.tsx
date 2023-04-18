@@ -114,14 +114,14 @@ const AssetRow = ({ balances }: AssetRowProps) => {
   const { showNomPoolBanner, dismissNomPoolBanner } = useNomPoolStakingBanner()
   const showBanner = showNomPoolBanner({
     chainId: token?.chain?.id,
-    addresses: balances.sorted.map((b) => b.address),
+    addresses: Array.from(new Set(balances.each.map((b) => b.address))),
   })
 
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
-    navigate(`/portfolio/${token?.symbol}`)
+    navigate(`/portfolio/${token?.symbol}${token?.isTestnet ? "?testnet=true" : ""}`)
     genericEvent("goto portfolio asset", { from: "dashboard", symbol: token?.symbol })
-  }, [genericEvent, navigate, token?.symbol])
+  }, [genericEvent, navigate, token?.isTestnet, token?.symbol])
 
   const handleClickStakingBanner = useCallback(() => {
     window.open("https://app.talisman.xyz/staking")
@@ -161,7 +161,14 @@ const AssetRow = ({ balances }: AssetRowProps) => {
               <TokenLogo tokenId={token.id} />
             </div>
             <div className="flex grow flex-col justify-center gap-2">
-              <div className="text-body text-base font-bold">{token.symbol} </div>
+              <div className="text-body flex items-center gap-4 text-base font-bold">
+                {token.symbol}
+                {!!token.isTestnet && (
+                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded py-1 px-3 font-light">
+                    Testnet
+                  </span>
+                )}
+              </div>
               {!!networkIds.length && (
                 <div>
                   <NetworksLogoStack networkIds={networkIds} />
