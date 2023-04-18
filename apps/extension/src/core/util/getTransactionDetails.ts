@@ -4,10 +4,10 @@ import {
   TransactionMethod,
   TransactionPayload,
 } from "@core/domains/signing/types"
-import RpcFactory from "@core/libs/RpcFactory"
 import { log } from "@core/log"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import { chaindataProvider } from "@core/rpcs/chaindata"
-import { assert, hexToNumber } from "@polkadot/util"
+import { hexToNumber } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 
 import { getExtrinsicDispatchInfo } from "./getExtrinsicDispatchInfo"
@@ -54,7 +54,7 @@ export const getTransactionDetails = async (payload: SignerPayloadJSON) => {
     try {
       // sign based on current block from our RPC
       const [blockHash, runtimeVersion] = await Promise.all([
-        RpcFactory.send<string>(chain.id, "chain_getBlockHash", [], false),
+        chainConnector.send<string>(chain.id, "chain_getBlockHash", [], false),
         getRuntimeVersion(chain.id),
       ])
 
