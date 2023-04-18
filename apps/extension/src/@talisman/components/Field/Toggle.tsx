@@ -12,6 +12,7 @@ const defaultProps: IProps = {
   ...fieldDefaultProps,
 }
 
+// TODO focused button visual effect
 const Toggle = ({ value, onChange, fieldProps, disabled, ...rest }: IProps) => {
   const handleToggle = useCallback(() => {
     if (disabled) return
@@ -20,9 +21,9 @@ const Toggle = ({ value, onChange, fieldProps, disabled, ...rest }: IProps) => {
 
   return (
     <Field {...rest}>
-      <div className="toggle" data-on={value === true} onClick={handleToggle}>
+      <button className="toggle" data-on={value === true} onClick={handleToggle}>
         <span />
-      </div>
+      </button>
     </Field>
   )
 }

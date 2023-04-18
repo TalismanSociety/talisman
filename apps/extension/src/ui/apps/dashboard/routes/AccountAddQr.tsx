@@ -368,12 +368,12 @@ export const AccountAddQr = () => {
                   </div>
                   <div className="mt-2">
                     If you aren't sure what this option does, it is safer to{" "}
-                    <span
+                    <button
                       className="text-primary cursor-pointer"
                       onClick={() => dispatch({ method: "setLockToNetwork", lockToNetwork: true })}
                     >
                       turn it off
-                    </span>{" "}
+                    </button>{" "}
                     for now.
                   </div>
                 </motion.div>

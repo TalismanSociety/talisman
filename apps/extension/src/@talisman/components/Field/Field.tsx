@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { PropsWithChildren } from "react"
 import styled from "styled-components"
@@ -45,6 +46,7 @@ const Field = ({
   children,
   className,
 }: IFieldWrapperProps) => (
+  // eslint-disable-next-line jsx-a11y/click-events-have-key-events
   <div className={`field ${className}`} onClick={onClick}>
     <FieldHeader label={label} info={info} />
     <span className="children">
@@ -56,6 +58,7 @@ const Field = ({
   </div>
 )
 
+/** @deprecated Please don't :) */
 const StyledField = styled(Field)`
   position: relative;
   display: flex;

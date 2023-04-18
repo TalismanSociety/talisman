@@ -51,7 +51,7 @@ const Expanda = ({ title, subtitle, info, className, children }: IProps) => {
 
   return (
     <section className={`grid ${className}`} data-open={open}>
-      <header onClick={toggleOpen}>
+      <button onClick={toggleOpen}>
         <span className="left">
           <span className="title">{title}</span>
           <span className="subtitle">{subtitle}</span>
@@ -60,7 +60,7 @@ const Expanda = ({ title, subtitle, info, className, children }: IProps) => {
           <span className="info">{info}</span>
           <ChevronIcon className="caret" />
         </span>
-      </header>
+      </button>
       {!!open && <StyledExpandaContent>{children}</StyledExpandaContent>}
     </section>
   )
@@ -69,7 +69,7 @@ const Expanda = ({ title, subtitle, info, className, children }: IProps) => {
 Expanda.defaultProps = defaultProps
 
 const StyledExpanda = styled(Expanda)`
-  > header {
+  > button {
     display: flex;
     align-items: center;
     justify-content: space-between;
