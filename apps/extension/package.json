@@ -1,6 +1,6 @@
 {
   "name": "extension",
-  "version": "1.16.0",
+  "version": "1.16.1",
   "private": true,
   "dependencies": {
     "@alectalisman/webpack-ext-reloader": "^1.1.9-a",
