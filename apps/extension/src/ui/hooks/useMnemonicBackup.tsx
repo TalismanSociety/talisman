@@ -12,7 +12,6 @@ const useMnemonicBackup = () => {
   const [hasFunds] = useAppState("hasFunds")
   const [hideBackupWarningUntil] = useAppState("hideBackupWarningUntil")
   const snoozeBackupReminder = useCallback(() => appStore.snoozeBackupReminder(), [])
-  const [talismanSeedAccountHasFunds, setTalismanSeedAccountHasFunds] = useState(hasFunds)
   const balances = useBalances()
   const accounts = useAccounts()
 
@@ -29,19 +28,6 @@ const useMnemonicBackup = () => {
     ]
   }, [accounts])
 
-  useEffect(() => {
-    if (!hasFunds) {
-      // shortcut
-      setTalismanSeedAccountHasFunds(false)
-    } else {
-      const talismanAccountsPositiveBalances = balances.find(
-        (bal) => talismanSeedAddresses.includes(bal.address) && bal.free.planck > 0
-      ).count
-
-      setTalismanSeedAccountHasFunds(Boolean(talismanAccountsPositiveBalances))
-    }
-  }, [hasFunds, balances, talismanSeedAddresses])
-
   const { isConfirmed, isNotConfirmed } = useMemo(
     () => ({
       isConfirmed: backupConfirmed === "TRUE",
@@ -54,9 +40,17 @@ const useMnemonicBackup = () => {
     return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now() && isNotConfirmed)
   }, [hideBackupWarningUntil, isNotConfirmed])
 
-  const showBackupWarning = useMemo(() => {
-    return !isSnoozed && isNotConfirmed && talismanSeedAccountHasFunds
-  }, [isSnoozed, isNotConfirmed, talismanSeedAccountHasFunds])
+  const showBackupWarning = useMemo(
+    () =>
+      !isSnoozed &&
+      isNotConfirmed &&
+      hasFunds &&
+      !!talismanSeedAddresses.length &&
+      balances.each.some(
+        (bal) => bal.free.planck > 0n && talismanSeedAddresses.includes(bal.address)
+      ),
+    [isSnoozed, isNotConfirmed, hasFunds, balances, talismanSeedAddresses]
+  )
 
   // toggle menmonic confirmed
   const toggleConfirmed = useCallback((confirmed: boolean) => api.mnemonicConfirm(confirmed), [])
