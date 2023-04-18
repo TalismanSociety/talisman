@@ -122,12 +122,12 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
           >
             Unlock
           </Button>
-          <span
+          <button
             className="text-body-disabled mt-2 cursor-pointer text-sm transition-colors hover:text-white"
             onClick={setShowResetWallet}
           >
             Forgot Password?
-          </span>
+          </button>
         </form>
       </Footer>
     </Layout>
