@@ -273,20 +273,20 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
   // split by status
   const { available, locked, totalAvailable, totalLocked } = useMemo(() => {
     const available = symbolBalances
-      .map<[string, Balances]>(([symbol, balance]) => [
+      .map(([symbol, balances]): [string, Balances] => [
         symbol,
-        new Balances(balance.sorted.filter((b) => b.total.planck === 0n || b.free.planck > 0n)),
+        balances.find((b) => b.total.planck === 0n || b.free.planck > 0n),
       ])
-      .filter(([, b]) => b.sorted.length > 0)
+      .filter(([, balances]) => balances.count > 0)
 
     const locked = symbolBalances
-      .map<[string, Balances]>(([symbol, balance]) => [
+      .map(([symbol, balances]): [string, Balances] => [
         symbol,
-        new Balances(balance.sorted.filter((b) => b.frozen.planck > 0n || b.reserved.planck > 0n)),
+        balances.find((b) => b.frozen.planck > 0n || b.reserved.planck > 0n),
       ])
-      .filter(([, b]) => b.sorted.length > 0)
+      .filter(([, balances]) => balances.count > 0)
 
-    const { reserved, frozen, transferable } = balances.sum.fiat("usd")
+    const { transferable, frozen, reserved } = balances.sum.fiat("usd")
 
     return { available, locked, totalAvailable: transferable, totalLocked: frozen + reserved }
   }, [balances, symbolBalances])

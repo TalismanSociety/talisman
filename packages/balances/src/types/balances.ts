@@ -151,6 +151,32 @@ export class Balances {
   }
 
   /**
+   * Filters this collection to exclude token balances where the token has a `mirrorOf` field
+   * and another balance exists in this collection for the token specified by the `mirrorOf` field.
+   */
+  filterMirrorTokens = (): Balances => new Balances([...this].filter(filterMirrorTokens))
+
+  /**
+   * Filters this collection to only include balances which are not zero.
+   */
+  filterNonZero = (
+    type: "total" | "free" | "reserved" | "locked" | "frozen" | "transferable" | "feePayable"
+  ): Balances => {
+    const filter = (balance: Balance) => balance[type].planck > 0n
+    return this.find(filter)
+  }
+  /**
+   * Filters this collection to only include balances which are not zero AND have a fiat conversion rate.
+   */
+  filterNonZeroFiat = (
+    type: "total" | "free" | "reserved" | "locked" | "frozen" | "transferable" | "feePayable",
+    currency: TokenRateCurrency
+  ): Balances => {
+    const filter = (balance: Balance) => (balance[type].fiat(currency) ?? 0) > 0
+    return this.find(filter)
+  }
+
+  /**
    * Add some balances to this collection.
    * Added balances take priority over existing balances.
    * The aggregation of the two collections is returned.
@@ -391,7 +417,7 @@ export class Balance {
       return { ...lock, amount: this.#format(lock.amount) }
     })
   }
-  /** @depreacted - use balance.locked */
+  /** @deprecated Use balance.locked */
   get frozen() {
     return this.locked
   }
@@ -471,12 +497,12 @@ export class FiatSumBalancesFormatter {
     }[keyof Balance]
   ) => {
     // a function to get a fiat amount from a balance
-    const fiat = (balance: Balance) => balance[balanceField].fiat(this.#currency) || 0
+    const fiat = (balance: Balance) => balance[balanceField].fiat(this.#currency) ?? 0
 
     // a function to add two amounts
     const sum = (a: number, b: number) => a + b
 
-    return [...this.#balances].filter(filterMirrorTokens).reduce(
+    return this.#balances.filterMirrorTokens().each.reduce(
       (total, balance) =>
         sum(
           // add the total amount...

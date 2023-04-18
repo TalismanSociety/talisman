@@ -107,12 +107,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     setFormData(({ from }) => ({ from, transferableTokenId }))
   }, [formData.from, formData.transferableTokenId, transferableTokens])
 
-  // nonEmptyBalances is needed in order to detect chains who use the substrate-orml source for their native token
+  // these balances are needed in order to detect chains who use the substrate-orml source for their native token
   const balances = useBalances()
-  const nonEmptyBalances = useMemo(
-    () => (balances ? balances.find((balance) => balance.free.planck > 0n) : new Balances([])),
-    [balances]
-  )
 
   const check = useCallback(
     async (newData: SendTokensData, allowReap = false) => {
@@ -137,7 +133,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
       const networkFilter = chain ? { chainId } : { evmNetworkId }
 
-      const balances = await Promise.all([
+      const tokenBalances = await Promise.all([
         loadBalance(api.getBalance({ ...networkFilter, tokenId: token.id, address: from })),
         loadBalance(api.getBalance({ ...networkFilter, tokenId: token.id, address: to })),
 
@@ -148,7 +144,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
             api.getBalance({ ...networkFilter, tokenId: network.nativeToken?.id, address: from })
           ),
       ])
-      const [fromBalance, toBalance, _nativeFromBalance] = balances
+      const [fromBalance, toBalance, _nativeFromBalance] = tokenBalances
       const nativeFromBalance = _nativeFromBalance || fromBalance
 
       const transfer: TokenAmountInfo = {
@@ -268,7 +264,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
       const nativeTokenIsOrmlToken =
         token.chain?.id !== undefined &&
-        chainUsesOrmlForNativeToken(nonEmptyBalances, token.chain?.id, nativeToken)
+        chainUsesOrmlForNativeToken(balances.filterNonZero("free"), token.chain?.id, nativeToken)
 
       if (
         token.id === nativeToken.id ||
@@ -299,7 +295,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         unsigned,
       })
     },
-    [chainsMap, evmNetworksMap, nonEmptyBalances, tokensMap, transferableTokensMap]
+    [balances, chainsMap, evmNetworksMap, tokensMap, transferableTokensMap]
   )
 
   // this makes user return to the first screen of the wizard

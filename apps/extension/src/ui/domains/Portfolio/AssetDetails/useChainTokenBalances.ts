@@ -48,8 +48,8 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
                 },
               ]
             : tokenBalances
-                .filter((b) => b.transferable.planck > 0n)
-                .map((b) => ({
+                .filterNonZero("transferable")
+                .each.map((b) => ({
                   key: `${b.id}-available`,
                   title: "Available",
                   tokens: BigNumber(b.transferable.tokens),
@@ -60,8 +60,8 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
                 .sort(sortBigBy("tokens", true))),
           // LOCKED
           ...tokenBalances
-            .filter((b) => b.locked.planck > 0n)
-            .flatMap((b) =>
+            .filterNonZero("locked")
+            .each.flatMap((b) =>
               filterBaseLocks(b.locks).map((lock, index) => ({
                 key: `${b.id}-locked-${index}`,
                 title: getLockTitle(lock, { balance: b }),
@@ -75,8 +75,8 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
             .sort(sortBigBy("tokens", true)),
           // RESERVED
           ...tokenBalances
-            .filter((b) => b.reserved.planck > 0n)
-            .flatMap((b) =>
+            .filterNonZero("reserved")
+            .each.flatMap((b) =>
               b.reserves.map((reserve, index) => ({
                 key: `${b.id}-reserved-${index}`,
                 title: getLockTitle(reserve, { balance: b }),
