@@ -50,10 +50,14 @@ const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
     queryFn: async () => {
       if (!provider) return null
 
-      // if eth_feeHistory method exists, this RPC supports EIP-1559
       try {
-        await provider.send("eth_feeHistory", [ethers.utils.hexValue(1), "latest", [10]])
-        return true
+        const [{ baseFeePerGas }] = await Promise.all([
+          // check that block has a baseFeePerGas
+          provider.send("eth_getBlockByNumber", ["latest", false]),
+          // check that method eth_feeHistory exists
+          provider.send("eth_feeHistory", [ethers.utils.hexValue(1), "latest", [10]]),
+        ])
+        return baseFeePerGas !== undefined
       } catch (err) {
         const error = err as Error & { code?: number }
         if (
