@@ -302,6 +302,7 @@ export const AccountAddQr = () => {
               containerProps={{ className: "!h-28" }}
               small
               value={state.name}
+              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               onChange={(event) => dispatch({ method: "setName", name: event.target.value })}
             />

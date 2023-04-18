@@ -232,6 +232,7 @@ const GenericPicker = ({
                 <input
                   className="picker-search"
                   placeholder="Search"
+                  // eslint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus
                   {...getInputProps()}
                 />

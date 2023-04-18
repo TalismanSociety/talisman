@@ -108,6 +108,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             spellCheck={false}
             autoComplete="off"
             data-lpignore
+            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             containerProps={INPUT_CONTAINER_PROPS}
             className="placeholder:text-grey-500"

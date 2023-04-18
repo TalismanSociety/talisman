@@ -324,6 +324,7 @@ export const AccountAddSecretMnemonic = () => {
             placeholder="Choose a name"
             spellCheck={false}
             autoComplete="off"
+            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             data-lpignore
             after={

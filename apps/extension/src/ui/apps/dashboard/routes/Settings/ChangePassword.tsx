@@ -99,6 +99,7 @@ const ChangePassword = () => {
               placeholder="Enter Old Password"
               spellCheck={false}
               autoComplete="off"
+              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               data-lpignore
               type="password"

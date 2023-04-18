@@ -169,6 +169,7 @@ const TokenInput = () => {
         type="text"
         defaultValue={defaultValue}
         placeholder={`0 ${token?.symbol}`}
+        // eslint-disable-next-line jsx-a11y/no-autofocus
         autoFocus={!sendMax && !transfer}
         className={classNames(
           "text-body peer inline-block min-w-0 bg-transparent text-xl",
@@ -246,6 +247,7 @@ const FiatInput = () => {
         ref={refFiatInput}
         type="text"
         defaultValue={defaultValue}
+        // eslint-disable-next-line jsx-a11y/no-autofocus
         autoFocus={!sendMax && !transfer}
         placeholder={"0.00"}
         className={classNames(

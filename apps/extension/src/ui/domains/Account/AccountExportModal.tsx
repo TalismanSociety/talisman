@@ -108,6 +108,7 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <FormFieldContainer error={errors.newPw?.message}>
             <FormFieldInputText
               {...register("newPw")}
+              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               placeholder="Enter New Password"
               spellCheck={false}

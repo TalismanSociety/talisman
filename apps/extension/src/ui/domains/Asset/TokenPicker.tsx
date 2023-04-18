@@ -402,6 +402,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
+        {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
         <SearchInput onChange={setSearch} placeholder="Search by token or network name" autoFocus />
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
