@@ -15,7 +15,7 @@ import {
 } from "@floating-ui/react"
 import * as React from "react"
 
-interface PopoverOptions {
+export interface PopoverOptions {
   initialOpen?: boolean
   placement?: Placement
   modal?: boolean
@@ -109,7 +109,7 @@ export function Popover({
   return <PopoverContext.Provider value={popover}>{children}</PopoverContext.Provider>
 }
 
-interface PopoverTriggerProps {
+export interface PopoverTriggerProps {
   children: React.ReactNode
   asChild?: boolean
 }
