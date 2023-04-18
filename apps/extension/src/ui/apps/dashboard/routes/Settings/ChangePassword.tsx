@@ -103,7 +103,7 @@ const ChangePassword = () => {
               autoFocus
               data-lpignore
               type="password"
-              tabIndex={1}
+              tabIndex={0}
               disabled={isNotConfirmed}
             />
           </FormFieldContainer>
@@ -115,7 +115,7 @@ const ChangePassword = () => {
               autoComplete="new-password"
               data-lpignore
               type="password"
-              tabIndex={2}
+              tabIndex={0}
               disabled={isNotConfirmed}
             />
           </FormFieldContainer>
@@ -127,7 +127,7 @@ const ChangePassword = () => {
               autoComplete="off"
               data-lpignore
               type="password"
-              tabIndex={3}
+              tabIndex={0}
               disabled={isNotConfirmed}
             />
           </FormFieldContainer>

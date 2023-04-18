@@ -119,7 +119,7 @@ const TokenRow: FC<TokenRowProps> = ({
       type="button"
       data-id={token.id}
       onClick={onClick}
-      tabIndex={1}
+      tabIndex={0}
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
