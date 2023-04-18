@@ -288,13 +288,13 @@ const AccountPicker: FC<Props> = ({
   tabIndex,
   addressType,
   genesisHash,
-}: any) => {
+}) => {
   const accounts = useAccounts()
   const { contacts } = useAddressBook()
   const [selectedAddress, setSelectedAddress] = useState<string | undefined>(defaultValue)
 
   useEffect(() => {
-    if (onChange) onChange(selectedAddress)
+    if (onChange && selectedAddress) onChange(selectedAddress)
   }, [onChange, selectedAddress])
 
   useEffect(() => {

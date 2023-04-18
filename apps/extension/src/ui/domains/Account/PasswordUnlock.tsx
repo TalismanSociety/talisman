@@ -29,10 +29,6 @@ type PasswordUnlockContext = {
   password?: string
 }
 
-export type UsePasswordUnlockChildProps<C extends Record<string, any>> = C & {
-  password: string
-}
-
 function usePasswordUnlockContext(): PasswordUnlockContext {
   const [password, setPassword] = useState<string>()
 

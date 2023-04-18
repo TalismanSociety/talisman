@@ -11,6 +11,7 @@ const iconTypes = {
   EXPLODING: <span>exploding</span>,
   SUCCESS,
   ERROR,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as { [status: string]: any }
 
 export type StatusIconStatus = "STATIC" | "SPINNING" | "EXPLODING" | "SUCCESS" | "ERROR"

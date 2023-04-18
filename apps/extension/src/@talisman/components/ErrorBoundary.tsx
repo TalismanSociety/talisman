@@ -45,6 +45,7 @@ const ErrorContainer = styled.section`
 `
 
 const ErrorMessage: FC<{ error: Error }> = ({ error }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const isDbVersionError = (error as any)?.inner?.name === "VersionError"
 
   const clearDatabases = useCallback(() => {

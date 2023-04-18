@@ -1,9 +1,9 @@
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { classNames } from "@talismn/util"
-import { useEffect, useRef } from "react"
+import { FC, PropsWithChildren, useEffect, useRef } from "react"
 import { useLocation } from "react-router-dom"
 
-const Content = ({ children, className }: any) => {
+const Content: FC<PropsWithChildren & { className?: string }> = ({ children, className }) => {
   //scrollToTop on location change
   const scrollableRef = useRef<HTMLDivElement>(null)
   const location = useLocation()

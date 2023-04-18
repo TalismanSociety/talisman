@@ -1,5 +1,10 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
-import { AuthorizedSite, AuthorizedSiteId, ProviderType } from "@core/domains/sitesAuthorised/types"
+import {
+  AuthorizedSite,
+  AuthorizedSiteAddresses,
+  AuthorizedSiteId,
+  ProviderType,
+} from "@core/domains/sitesAuthorised/types"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
@@ -24,7 +29,7 @@ const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
   }, [sites, id, type])
 
   const handleUpdate = useCallback(
-    (newAddresses: any) => {
+    (newAddresses: AuthorizedSiteAddresses | undefined) => {
       const update: Partial<AuthorizedSite> = {}
       switch (type) {
         case "polkadot":

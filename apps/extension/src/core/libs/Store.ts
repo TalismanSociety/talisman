@@ -16,6 +16,7 @@ import {
 } from "rxjs"
 import Browser, { Storage } from "webextension-polyfill"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface Store<T extends { [index: string]: any }> {
   get(): Promise<T>
   get<K extends keyof T, V = T[K]>(key: K): Promise<V>
@@ -28,6 +29,7 @@ export interface Store<T extends { [index: string]: any }> {
   observable: Subject<T>
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
   readonly #prefix: string = ""
   readonly #initialData: Partial<T> = {}
@@ -233,6 +235,7 @@ class StorageProvider<T extends { [index: string]: any }> implements Store<T> {
 }
 
 class SubscribableStorageProvider<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends { [index: string]: any },
   SubscribeAllMessage extends MessageTypesWithSubscriptions
 > extends StorageProvider<T> {
@@ -252,6 +255,7 @@ class SubscribableStorageProvider<
 }
 
 class SubscribableByIdStorageProvider<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends { [index: string]: any },
   SubscribeAllMessage extends MessageTypesWithSubscriptions,
   SubscribeByIdMessage extends MessageTypesWithSubscriptionsById

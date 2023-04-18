@@ -88,12 +88,12 @@ export const NavItemLink = styled(({ icon, className, children, ...props }: NavI
 
 interface NavProps {
   column?: boolean
-  children?: any
+  children?: ReactNode
   className?: string
 }
 
 const Nav = styled(({ children, className }: NavProps) => (
-  <nav className={`nav ${className}`}>{children}</nav>
+  <nav className={classNames("nav", className)}>{children}</nav>
 ))`
   display: flex;
   align-items: flex-start;

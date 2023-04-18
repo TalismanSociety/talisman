@@ -28,6 +28,7 @@ export const useRegisterFieldWithDebouncedValidation = <TFieldValues extends Fie
   )
 
   const handleChange = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (e: any) => {
       onChange(e)
       debouncedValidate()

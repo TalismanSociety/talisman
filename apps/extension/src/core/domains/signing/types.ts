@@ -105,6 +105,7 @@ export type TransactionMethod = {
   section: string
   method: string
   docs: string[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   args: any
 }
 
@@ -115,6 +116,7 @@ export type TransactionPayload = {
       period: string
       phase: string
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ImmortalEra?: any
   }
   genesisHash: string

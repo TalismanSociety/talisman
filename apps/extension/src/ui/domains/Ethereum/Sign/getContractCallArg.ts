@@ -1,6 +1,6 @@
 import { ethers } from "ethers"
 
-export const getContractCallArg = <T = any>(
+export const getContractCallArg = <T>(
   contractCall: ethers.utils.TransactionDescription,
   argName: string
 ): T | undefined => {

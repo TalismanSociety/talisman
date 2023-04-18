@@ -7,7 +7,7 @@ import { ErrorBoundaryDatabaseMigration } from "@talisman/components/ErrorBounda
 import { NotificationsContainer } from "@talisman/components/Notifications/NotificationsContainer"
 import ThemeProvider from "@talisman/theme"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import React from "react"
+import React, { ReactNode } from "react"
 import { createRoot } from "react-dom/client"
 import { HashRouter } from "react-router-dom"
 import { RecoilRoot } from "recoil"
@@ -19,7 +19,7 @@ const container = document.getElementById("root")
 
 // render a context dependent app with all providers
 // could possibly re-org this slightly better
-export const renderTalisman = (app: any) => {
+export const renderTalisman = (app: ReactNode) => {
   if (!container) throw new Error("#root element not found.")
   const root = createRoot(container)
   root.render(

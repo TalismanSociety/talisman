@@ -1,25 +1,19 @@
+import { classNames } from "@talismn/util"
+import { ReactNode } from "react"
 import styled from "styled-components"
 
 interface IProps {
-  image?: any
-  title?: any
-  subtitle?: any
-  text?: any
-  info?: any
-  nav?: any[] | any
+  title?: ReactNode
+  text?: ReactNode
   large?: boolean
   small?: boolean
   className?: string
 }
 
-const HeaderBlock = ({ image, title, subtitle, text, info, nav, className }: IProps) => (
-  <header className={`header-block ${className}`}>
-    {image && <span className="image">{image}</span>}
+const HeaderBlock = ({ title, text, className }: IProps) => (
+  <header className={classNames("header-block", className)}>
     {title && <h1>{title}</h1>}
-    {subtitle && <h2 dangerouslySetInnerHTML={{ __html: subtitle }} />}
     {text && <p>{text}</p>}
-    {info && <p className="info">{info}</p>}
-    {nav && <nav>{nav}</nav>}
   </header>
 )
 
@@ -75,14 +69,6 @@ const StytledHeaderBlock = styled(HeaderBlock)`
     & + nav {
       margin-top: 2.05em;
     }
-  }
-
-  > nav {
-    margin: 0 auto;
-    margin-top: 4.05em;
-    text-align: inherit;
-    display: flex;
-    justify-content: center;
   }
 
   ${({ large }) =>

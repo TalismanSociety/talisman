@@ -10,7 +10,7 @@ export interface ILinkProps {
   disabled?: boolean
   processing?: boolean
   to?: string
-  onClick?: (cb?: any) => void
+  onClick?: (cb?: () => void) => void
   icon?: ReactNode
   className?: string
   external?: boolean
@@ -20,7 +20,7 @@ export interface ILinkProps {
   children?: ReactNode
 }
 
-const LinkChildren = ({ icon, children }: { icon?: any; children: any }) => (
+const LinkChildren = ({ icon, children }: { icon?: ReactNode; children: ReactNode }) => (
   <>
     {icon && <span className="icon">{icon}</span>}
     {React.Children.map(children, (child) =>

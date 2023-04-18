@@ -359,6 +359,7 @@ export class EthTabsHandler extends TabsHandler {
     if (!provider)
       throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return provider.send(request.method, request.params as unknown as any[])
   }
 
@@ -683,6 +684,7 @@ export class EthTabsHandler extends TabsHandler {
         return this.ethSubscribe(id, url, port)
 
       case "pub(eth.request)":
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return this.ethRequest(id, url, request as AnyEthRequest) as any
 
       default:

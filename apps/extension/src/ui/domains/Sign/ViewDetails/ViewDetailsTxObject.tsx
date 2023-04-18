@@ -34,6 +34,7 @@ const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJ
 
 type ViewDetailsTxObjectProps = {
   label: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj?: any
 }
 

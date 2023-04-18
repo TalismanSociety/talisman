@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { PropsWithChildren } from "react"

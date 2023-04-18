@@ -11,7 +11,7 @@ interface IProps {
   subtitle?: string
   info?: string | number
   className?: string
-  children?: any
+  children?: ReactNode
 }
 
 const defaultProps: IProps = {}

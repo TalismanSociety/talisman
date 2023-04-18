@@ -10,7 +10,7 @@ import { ethers } from "ethers"
 
 const ethereumRequest =
   (chainId: EvmNetworkId): ethers.providers.JsonRpcFetchFunc =>
-  async (method: string, params?: any[]) => {
+  async (method: string, params?: unknown[]) => {
     try {
       return await api.ethRequest({
         chainId,

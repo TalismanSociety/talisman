@@ -48,6 +48,7 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
       if (event.exception?.values && event.exception.values.length > 0) {
         const firstValue = event.exception.values[0]
         if (!firstValue.stacktrace?.frames) return event
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         firstValue.stacktrace.frames = firstValue.stacktrace.frames.map((frame: any) => {
           frame.filename = normalizeUrl(frame.filename)
           return frame

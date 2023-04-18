@@ -98,6 +98,7 @@ const Container = styled.div`
 
 export type RenderItemFunc<T> = (item: T, textKey?: keyof T) => JSX.Element
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const defaultRenderItem: RenderItemFunc<any> = (item, textKey?) => {
   return <>{textKey ? item[textKey] : item.toString()}</>
 }

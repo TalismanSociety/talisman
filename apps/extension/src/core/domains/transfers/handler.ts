@@ -85,7 +85,8 @@ export default class AssetTransferHandler extends ExtensionHandler {
     if (result.ok) return result.val
     // 1010 (Invalid signature) happens often on kusama, simply retrying usually works.
     // This message should hopefully motivate the user to retry
-    else if ((result.val as any)?.code === 1010) throw new Error("Failed to send transaction")
+    else if ((result.val as { code: number })?.code === 1010)
+      throw new Error("Failed to send transaction")
     else if (result.val instanceof Error) throw result.val
     else throw new Error("Failed to send transaction")
   }

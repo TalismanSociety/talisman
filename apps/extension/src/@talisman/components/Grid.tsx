@@ -1,12 +1,13 @@
 // @ts-nocheck
-import styled from "styled-components"
+import { ReactNode } from "react"
+import styled, { CSSProperties } from "styled-components"
 
 interface IProps {
   columns: number
-  gap: any
+  gap: CSSProperties["gap"]
   itemHeight?: number
   className?: string
-  children?: any
+  children?: ReactNode
 }
 
 const defaultProps: IProps = {

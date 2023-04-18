@@ -98,6 +98,7 @@ export const getHumanReadableErrorMessage = (error: unknown) => {
     code,
     reason,
     error: serverError,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } = error as { code?: string; reason?: string; error?: any }
 
   if (serverError) {

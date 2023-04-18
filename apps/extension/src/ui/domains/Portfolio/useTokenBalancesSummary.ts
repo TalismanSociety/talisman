@@ -49,7 +49,7 @@ const getBestTokenForSymbol = (balances: Balance[], tokens?: Token[], chains?: C
     // mainnet solo/para native
     matches?.find((t) => !t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
     // mainnet which has an image
-    matches?.find((t) => !t.isTestnet && (t as any).image) ??
+    matches?.find((t) => !t.isTestnet && t.logo) ??
     // testnet relay
     matches?.find(
       (t) =>
@@ -60,7 +60,7 @@ const getBestTokenForSymbol = (balances: Balance[], tokens?: Token[], chains?: C
     // testnet solo/para native
     matches?.find((t) => t.isTestnet && ["substrate-native", "evm-native"].includes(t.type)) ??
     // testnet which has an image
-    matches?.find((t) => t.isTestnet && (t as any).image) ??
+    matches?.find((t) => t.isTestnet && t.logo) ??
     // fallback
     matches?.[0]
   )

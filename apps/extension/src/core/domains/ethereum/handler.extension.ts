@@ -512,6 +512,7 @@ export class EthHandler extends ExtensionHandler {
     const provider = await getProviderForEvmNetworkId(chainId, { batch: true })
     assert(provider, `No healthy RPCs available for chain ${chainId}`)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return await provider.send(method, params as unknown as any[])
     } catch (err) {
       log.error("[ethRequest]", { err })

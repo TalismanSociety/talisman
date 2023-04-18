@@ -6,6 +6,7 @@ import { chainConnector } from "@core/rpcs/chain-connector"
 /** @deprecated Refactor any code which uses this class to directly call methods on `chainConnector` instead! */
 class RpcFactory {
   /** @deprecated Refactor any code which uses this class to directly call send on `chainConnector` instead! */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async send<T = any>(
     chainId: ChainId,
     method: string,

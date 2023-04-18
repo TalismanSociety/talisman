@@ -4,6 +4,7 @@ import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 
 type TalismanWindow = Window &
   typeof globalThis & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     talismanSub?: any
   }
 
