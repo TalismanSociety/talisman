@@ -36,11 +36,13 @@ export const MetadataQrCode = ({ genesisHash, specVersion, qrCodeSource }: Props
           ref={ref}
           onLoad={onLoad}
           onLoadedData={onLoad}
+          alt=""
         />
         {loaded && qrCodeLogo ? (
           <img
             className="absolute top-1/2 left-1/2 w-40 -translate-x-1/2 -translate-y-1/2 bg-white p-5"
             src={qrCodeLogo}
+            alt=""
           />
         ) : null}
       </>

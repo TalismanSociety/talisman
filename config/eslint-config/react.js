@@ -29,7 +29,6 @@ module.exports = {
     // do not turn off autofocus rule. autoFocus may break drawer/modal animations. disable on a per case basis at your own risk
     // "jsx-a11y/no-autofocus": "off",
 
-    "jsx-a11y/alt-text": "off",
     "jsx-a11y/tabindex-no-positive": "off",
     "jsx-a11y/no-noninteractive-element-interactions": "off",
     "jsx-a11y/no-noninteractive-element-to-interactive-role": "off",

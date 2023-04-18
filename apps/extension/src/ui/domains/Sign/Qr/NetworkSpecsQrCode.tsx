@@ -36,11 +36,13 @@ export const NetworkSpecsQrCode = ({ genesisHash, qrCodeSource }: Props) => {
           ref={ref}
           onLoad={onLoad}
           onLoadedData={onLoad}
+          alt=""
         />
         {loaded && qrCodeLogo ? (
           <img
             className="absolute top-1/2 left-1/2 w-11 -translate-x-1/2 -translate-y-1/2 bg-white p-2"
             src={qrCodeLogo}
+            alt=""
           />
         ) : null}
       </>
