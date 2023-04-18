@@ -166,7 +166,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             <td className="al-main" valign="top">
               <AssetState title={row.title} render address={row.address} meta={row.meta} />
             </td>
-            <td align="right" valign="top"></td>
+            {!row.locked && <td align="right" valign="top"></td>}
             <td align="right" valign="top">
               <AssetBalanceCellValue
                 render={row.tokens.gt(0)}
@@ -180,6 +180,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                 )}
               />
             </td>
+            {!!row.locked && <td align="right" valign="top"></td>}
           </tr>
         ))}
     </>
