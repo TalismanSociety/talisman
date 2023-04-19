@@ -7,25 +7,28 @@ import { Balance, Balances } from "@core/domains/balances/types"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useMemo } from "react"
 
-// TODO default tokens should be controlled from chaindata
-const shouldDisplayBalance = (balance: Balance, account?: AccountJsonAny) => {
-  return (
-    balance.total.planck > 0 ||
-    (account?.type !== "ethereum" &&
-      DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.includes(balance.tokenId)) ||
-    ((!account || account?.type === "ethereum") &&
-      DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.includes(balance.tokenId)) ||
-    (account?.genesisHash && account.genesisHash === balance.chain?.genesisHash)
-  )
-}
+// TODO: default tokens should be controlled from chaindata
+const shouldDisplayBalance =
+  (account?: AccountJsonAny) =>
+  (balance: Balance): boolean => {
+    const hasNonZeroBalance = balance.total.planck > 0
+    if (hasNonZeroBalance) return true
+
+    const isSubstrateAccount = account?.type !== "ethereum"
+    const isSubstrateToken = DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.includes(balance.tokenId)
+    if (isSubstrateAccount && isSubstrateToken) return true
+
+    const isEthereumAccount = !account || account?.type === "ethereum"
+    const isEthereumToken = DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.includes(balance.tokenId)
+    if (isEthereumAccount && isEthereumToken) return true
+
+    if (account?.genesisHash && account.genesisHash === balance.chain?.genesisHash) return true
+
+    return false
+  }
 
 export const useDisplayBalances = (balances: Balances) => {
   const { account } = useSelectedAccount()
 
-  const result = useMemo(() => {
-    const filtered = balances.sorted.filter((b) => shouldDisplayBalance(b, account))
-    return new Balances(filtered)
-  }, [account, balances.sorted])
-
-  return result
+  return useMemo(() => balances.find(shouldDisplayBalance(account)), [account, balances])
 }

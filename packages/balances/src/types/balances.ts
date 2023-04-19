@@ -482,6 +482,61 @@ export class BalanceFormatter {
   }
 }
 
+export class PlanckSumBalancesFormatter {
+  #balances: Balances
+
+  constructor(balances: Balances) {
+    this.#balances = balances
+  }
+
+  #sum = (
+    balanceField: {
+      [K in keyof Balance]: Balance[K] extends BalanceFormatter ? K : never
+    }[keyof Balance]
+  ) => {
+    // a function to get a planck amount from a balance
+    const planck = (balance: Balance) => balance[balanceField].planck ?? 0n
+
+    return this.#balances.filterMirrorTokens().each.reduce(
+      // add the total amount to the planck amount of each balance
+      (total, balance) => total + planck(balance),
+      // start with a total of 0
+      0n
+    )
+  }
+
+  /**
+   * The total balance of these tokens. Includes the free and the reserved amount.
+   */
+  get total() {
+    return this.#sum("total")
+  }
+  /** The non-reserved balance of these tokens. Includes the frozen amount. Is included in the total. */
+  get free() {
+    return this.#sum("free")
+  }
+  /** The reserved balance of these tokens. Is included in the total. */
+  get reserved() {
+    return this.#sum("reserved")
+  }
+  /** The frozen balance of these tokens. Is included in the free amount. */
+  get locked() {
+    return this.#sum("locked")
+  }
+  /** @deprecated Use balances.locked */
+  get frozen() {
+    return this.locked
+  }
+  /** The transferable balance of these tokens. Is generally the free amount - the miscFrozen amount. */
+  get transferable() {
+    return this.#sum("transferable")
+  }
+  /** The feePayable balance of these tokens. Is generally the free amount - the feeFrozen amount. */
+  get feePayable() {
+    return this.#sum("feePayable")
+  }
+}
+
 export class FiatSumBalancesFormatter {
   #balances: Balances
   #currency: TokenRateCurrency
@@ -499,17 +554,9 @@ export class FiatSumBalancesFormatter {
     // a function to get a fiat amount from a balance
     const fiat = (balance: Balance) => balance[balanceField].fiat(this.#currency) ?? 0
 
-    // a function to add two amounts
-    const sum = (a: number, b: number) => a + b
-
     return this.#balances.filterMirrorTokens().each.reduce(
-      (total, balance) =>
-        sum(
-          // add the total amount...
-          total,
-          // ...to the fiat amount of each balance
-          fiat(balance)
-        ),
+      // add the total amount to the fiat amount of each balance
+      (total, balance) => total + fiat(balance),
       // start with a total of 0
       0
     )
@@ -552,6 +599,10 @@ export class SumBalancesFormatter {
 
   constructor(balances: Balances) {
     this.#balances = balances
+  }
+
+  get planck() {
+    return new PlanckSumBalancesFormatter(this.#balances)
   }
 
   fiat(currency: TokenRateCurrency) {
