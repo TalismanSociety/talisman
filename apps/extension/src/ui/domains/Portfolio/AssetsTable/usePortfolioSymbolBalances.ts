@@ -51,11 +51,27 @@ const sortSymbolBalancesBy =
     if (aHasBalance && !bHasBalance) return -1
     if (!aHasBalance && bHasBalance) return 1
 
-    // sort zero-balance tokens with a coingeckoId above tokens without one
+    // sort zero-balance tokens with a coingeckoId (and therefore a non-null fiat amount)
+    // above zero-balance tokens without a coingeckoId
     const aHasFiatRate = !!aBalances.each.find((b) => fiatAmount(b) !== null)
     const bHasFiatRate = !!bBalances.each.find((b) => fiatAmount(b) !== null)
     if (aHasFiatRate && !bHasFiatRate) return -1
     if (!aHasFiatRate && bHasFiatRate) return 1
+
+    // sort zero-balance tokens with a `Preview Only` coingeckoId (and therefore no conversion
+    // rate, and so a null fiat amount) above zero-balance tokens without a coingeckoId
+    // (but ignore testnet tokens with a coingeckoId, they get sorted last and we don't fetch
+    // their conversion rates from coingecko anyway)
+    //
+    // this effectively groups the `$0.00` tokens above the `-` tokens
+    const aHasCoingeckoId = !!aBalances.each.find(
+      (b) => typeof b.token?.coingeckoId === "string" && !b.token?.isTestnet
+    )
+    const bHasCoingeckoId = !!bBalances.each.find(
+      (b) => typeof b.token?.coingeckoId === "string" && !b.token?.isTestnet
+    )
+    if (aHasCoingeckoId && !bHasCoingeckoId) return -1
+    if (!aHasCoingeckoId && bHasCoingeckoId) return 1
 
     // sort testnets below other tokens
     const aIsTestnet = !!aBalances.each.find((b) => b.token?.isTestnet)
