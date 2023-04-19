@@ -1,3 +1,4 @@
+import { TEST } from "@core/constants"
 import { AccountTypes } from "@core/domains/accounts/types"
 import type {
   KnownSigningRequestIdOnly,
@@ -61,7 +62,7 @@ export default class SigningHandler extends ExtensionHandler {
             siteUrl: queued.url,
             notifications: true,
           })
-        } else {
+        } else if (!TEST) {
           // eslint-disable-next-line no-console
           console.warn(
             "Unable to find chain for genesis hash, transaction will not be watched",
@@ -115,7 +116,7 @@ export default class SigningHandler extends ExtensionHandler {
           siteUrl: url,
           notifications: true,
         })
-      } else {
+      } else if (!TEST) {
         // eslint-disable-next-line no-console
         console.warn(
           "Unable to find chain for genesis hash, transaction will not be watched",
