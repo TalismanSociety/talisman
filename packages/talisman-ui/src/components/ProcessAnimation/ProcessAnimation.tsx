@@ -7,7 +7,7 @@ import animDataSuccess from "./lottie-tx-success.json"
 
 export type ProcessAnimationStatus = "processing" | "success" | "failure"
 
-const animationData: Record<ProcessAnimationStatus, any> = {
+const animationData: Record<ProcessAnimationStatus, unknown> = {
   processing: animDataProcessing,
   success: animDataSuccess,
   failure: animDataFailure,

@@ -1,6 +1,6 @@
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
 import { SearchInput } from "@talisman/components/SearchInput"
-import { ChevronRightIcon, CopyIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { Chain, ChainId } from "@talismn/chaindata-provider"
@@ -132,6 +132,7 @@ export const CopyAddressChainForm = () => {
     <CopyAddressLayout title="Select network">
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
+          {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
           <SearchInput onChange={setSearch} placeholder="Search by network name" autoFocus />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">

@@ -7,7 +7,7 @@ import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext
 import { PendingTransactionsDrawer } from "@ui/domains/Transactions/PendingTransactionsDrawer"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useLiveQuery } from "dexie-react-hooks"
-import { ButtonHTMLAttributes, DetailedHTMLProps, FC, forwardRef, useCallback } from "react"
+import { ButtonHTMLAttributes, DetailedHTMLProps, forwardRef, useCallback } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
@@ -47,6 +47,7 @@ const BottomNavButton = forwardRef<HTMLButtonElement, BottomNavButtonProps>(
     </button>
   )
 )
+BottomNavButton.displayName = "BottomNavButton"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",

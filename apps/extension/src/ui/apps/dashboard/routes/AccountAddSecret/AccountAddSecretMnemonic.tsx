@@ -300,9 +300,9 @@ export const AccountAddSecretMnemonic = () => {
     [setValue, trigger]
   )
 
-  const handleGenerateNew = useCallback(() => {
-    setValue("mnemonic", Wallet.createRandom().mnemonic.phrase, { shouldValidate: true })
-  }, [setValue])
+  // const handleGenerateNew = useCallback(() => {
+  //   setValue("mnemonic", Wallet.createRandom().mnemonic.phrase, { shouldValidate: true })
+  // }, [setValue])
 
   return (
     <Container withBack centered>
@@ -324,6 +324,7 @@ export const AccountAddSecretMnemonic = () => {
             placeholder="Choose a name"
             spellCheck={false}
             autoComplete="off"
+            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             data-lpignore
             after={

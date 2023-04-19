@@ -20,3 +20,4 @@ export const FormFieldTextarea = forwardRef<HTMLTextAreaElement, FormFieldTextar
     )
   }
 )
+FormFieldTextarea.displayName = "FormFieldTextarea"

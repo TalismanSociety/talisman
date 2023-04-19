@@ -56,7 +56,7 @@ type TokenRowProps = {
   allowUntransferable?: boolean
 }
 
-const TokenRowSkeleton = ({ color = "bg-grey-600" }) => (
+const TokenRowSkeleton = () => (
   <div className="flex h-[5.8rem] w-full items-center gap-4 px-12 text-left">
     <div className="bg-grey-750 h-16 w-16 animate-pulse rounded-full"></div>
     <div className="grow space-y-[5px]">
@@ -119,7 +119,7 @@ const TokenRow: FC<TokenRowProps> = ({
       type="button"
       data-id={token.id}
       onClick={onClick}
-      tabIndex={1}
+      tabIndex={0}
       className={classNames(
         "hover:bg-grey-750 focus:bg-grey-700 flex h-[5.8rem] w-full items-center gap-4 px-12 text-left",
         "disabled:cursor-not-allowed disabled:opacity-50",
@@ -402,6 +402,7 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
+        {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
         <SearchInput onChange={setSearch} placeholder="Search by token or network name" autoFocus />
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">

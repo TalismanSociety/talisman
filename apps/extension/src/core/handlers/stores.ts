@@ -83,8 +83,7 @@ export const setLocalStorage = async <T extends GettableStoreKeys>(
 ) => {
   return Promise.all(
     (Object.entries(data) as Array<[T, Partial<GettableStoreData[T]>]>).map(
-      // @ts-ignore
-      async ([storeName, storeData]) => await localStorageStores[storeName].set(storeData)
+      async ([storeName, storeData]) => await localStorageStores[storeName].set(storeData as never)
     )
   )
 }

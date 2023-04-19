@@ -79,6 +79,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
         locked: true,
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         meta: (reserve.meta as any)?.description ?? undefined,
       }))
     )

@@ -118,3 +118,4 @@ export const ScrollContainer = forwardRef<HTMLDivElement, ScrollContainerProps>(
     )
   }
 )
+ScrollContainer.displayName = "ScrollContainer"

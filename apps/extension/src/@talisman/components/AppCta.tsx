@@ -1,8 +1,9 @@
-import styled from "styled-components"
 import Button from "@talisman/components/Button"
+import { classNames } from "@talismn/util"
+import styled from "styled-components"
 
-const AppCta = ({ className }: any) => (
-  <article className={`appcta ${className}`}>
+const AppCta = ({ className }: { className?: string }) => (
+  <article className={classNames("appcta", className)}>
     <h1>Explore the Paraverse</h1>
     <p>Connect your wallet to the Talisman Web Application</p>
     <Button small primary>

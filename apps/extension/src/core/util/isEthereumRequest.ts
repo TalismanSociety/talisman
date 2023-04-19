@@ -1,7 +1,6 @@
 import {
   AnyEthSigningRequest,
   AnySigningRequest,
-  SIGNING_TYPES,
   SigningRequests,
 } from "@core/domains/signing/types"
 

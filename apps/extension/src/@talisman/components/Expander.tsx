@@ -1,7 +1,6 @@
-// @ts-nocheck
 import useBoolean from "@talisman/hooks/useBoolean"
 import { hideScrollbarsStyle } from "@talisman/theme/styles"
-import { ReactNode, useEffect, useState } from "react"
+import { FC, PropsWithChildren, ReactNode, useEffect, useState } from "react"
 import styled from "styled-components"
 
 import { ReactComponent as ChevronIcon } from "../theme/icons/chevron-down.svg"
@@ -11,12 +10,13 @@ interface IProps {
   subtitle?: string
   info?: string | number
   className?: string
-  children?: any
+  children?: ReactNode
 }
 
-const defaultProps: IProps = {}
-
-const ExpandaContent = ({ children, className }) => {
+const ExpandaContent: FC<PropsWithChildren & { className?: string }> = ({
+  children,
+  className,
+}) => {
   const [isMounted, setIsMounted] = useState(false)
   useEffect(() => setIsMounted(true), [])
 
@@ -51,7 +51,7 @@ const Expanda = ({ title, subtitle, info, className, children }: IProps) => {
 
   return (
     <section className={`grid ${className}`} data-open={open}>
-      <header onClick={toggleOpen}>
+      <button onClick={toggleOpen}>
         <span className="left">
           <span className="title">{title}</span>
           <span className="subtitle">{subtitle}</span>
@@ -60,16 +60,14 @@ const Expanda = ({ title, subtitle, info, className, children }: IProps) => {
           <span className="info">{info}</span>
           <ChevronIcon className="caret" />
         </span>
-      </header>
+      </button>
       {!!open && <StyledExpandaContent>{children}</StyledExpandaContent>}
     </section>
   )
 }
 
-Expanda.defaultProps = defaultProps
-
 const StyledExpanda = styled(Expanda)`
-  > header {
+  > button {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -108,7 +106,5 @@ const StyledExpanda = styled(Expanda)`
     }
   }
 `
-
-StyledExpanda.defaultProps = defaultProps
 
 export default StyledExpanda

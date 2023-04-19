@@ -107,8 +107,8 @@ export const appStore = new AppStore()
 
 if (DEBUG) {
   // helper for developers, allowing ot reset settings by calling resetAppSettings() in dev console
-  // @ts-ignore
-  window.resetAppSettings = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).resetAppSettings = () => {
     appStore.set({
       hideBraveWarning: false,
       hasBraveWarningBeenShown: false,
@@ -117,6 +117,6 @@ if (DEBUG) {
       hideBackupWarningUntil: undefined,
     })
   }
-  // @ts-ignore
-  window.migratePasswordV2ToV1 = migratePasswordV2ToV1
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).migratePasswordV2ToV1 = migratePasswordV2ToV1
 }

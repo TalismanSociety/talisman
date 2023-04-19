@@ -16,7 +16,7 @@ type ChainLogoBaseProps = {
   className?: string
 }
 
-export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, name, logo, iconUrls, className }) => {
+export const ChainLogoBase: FC<ChainLogoBaseProps> = ({ id, logo, className }) => {
   const [src, setSrc] = useState(() => logo ?? GLOBE_ICON_URL)
 
   // reset

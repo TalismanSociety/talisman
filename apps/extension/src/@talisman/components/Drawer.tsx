@@ -136,7 +136,7 @@ export const Drawer: FC<DrawerProps> = ({
 
   const output = (
     <Container className={classes}>
-      <div className="drawer-bg" onClick={onClose} />
+      <div role="presentation" className="drawer-bg" onClick={onClose} />
       <DrawerContent>{children}</DrawerContent>
     </Container>
   )

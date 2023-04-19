@@ -135,6 +135,7 @@ export const AddToAddressBookDrawer: FC<{
                 containerProps={INPUT_CONTAINER_PROPS}
                 type="text"
                 {...register("name")}
+                // eslint-disable-next-line jsx-a11y/no-autofocus
                 autoFocus
                 placeholder="Contact name"
                 autoComplete="off"

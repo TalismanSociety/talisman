@@ -1,7 +1,9 @@
 import React from "react"
 import styled from "styled-components"
 
+/** @deprecated use Pill from talisman-ui */
 const Pill = styled(({ children, className, onClick }) => (
+  // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
   <span className={`pill ${className}`} onClick={onClick}>
     {React.Children.map(children, (child) =>
       typeof child === "string" ? <span>{child}</span> : child

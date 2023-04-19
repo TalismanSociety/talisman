@@ -15,7 +15,7 @@ import Account from "@ui/domains/Account"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
-import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
+import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
@@ -23,10 +23,15 @@ import { Checkbox } from "talisman-ui"
 
 import Layout, { Content, Footer, Header } from "../Layout"
 
-const AccountItem = ({ address, value = 1, onChange, className }: any) => (
+const AccountItem: FC<{
+  address: string
+  value: boolean
+  onChange: (value: boolean) => void
+  className?: string
+}> = ({ address, value, onChange, className }) => (
   <Panel className={className} onClick={() => onChange(!value)} small>
     <Account.Name address={address} withAvatar />
-    <Field.Checkbox value={value} onChange={(value: boolean) => onChange(address, value)} small />
+    <Field.Checkbox value={value} onChange={onChange} small />
   </Panel>
 )
 
@@ -89,7 +94,7 @@ const NoEthAccountWarning = ({
   </NoEthAccountDrawer>
 )
 
-const UnstyledConnect = ({ className }: any) => {
+const UnstyledConnect: FC<{ className?: string }> = ({ className }) => {
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()

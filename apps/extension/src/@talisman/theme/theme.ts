@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { DefaultTheme } from "styled-components"
 
 /* theming options */

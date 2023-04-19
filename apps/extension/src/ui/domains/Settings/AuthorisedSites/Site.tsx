@@ -8,12 +8,16 @@ import { ModalDialog } from "@talisman/components/ModalDialog"
 import Rule from "@talisman/components/Rule"
 import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
-import { useCallback, useState } from "react"
+import { FC, useCallback, useState } from "react"
 import styled from "styled-components"
 
 import Account from "./Account"
 
-const Title = ({ name, domain, className }: any) => (
+const Title: FC<{ name: string; domain: string; className?: string }> = ({
+  name,
+  domain,
+  className,
+}) => (
   <span className={className}>
     <Favicon small url={domain} />
     <span>{name || domain}</span>
@@ -32,7 +36,10 @@ const StyledTitle = styled(Title)`
   }
 `
 
-const ConfirmForgetDialog = ({ onConfirm, onCancel }: any) => (
+const ConfirmForgetDialog: FC<{ onConfirm: () => void; onCancel: () => void }> = ({
+  onConfirm,
+  onCancel,
+}) => (
   <Dialog
     icon={<IconAlert />}
     title="Are you sure?"
@@ -78,7 +85,7 @@ const ConnectedSite = ({ id, provider, className }: ConnectedSiteProps) => {
           </>
         )}
       </div>
-      {availableAddresses.map((address: any) => (
+      {availableAddresses.map((address) => (
         <Account
           key={address}
           address={address}

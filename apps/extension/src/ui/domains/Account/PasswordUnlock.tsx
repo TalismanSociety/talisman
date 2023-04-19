@@ -29,10 +29,6 @@ type PasswordUnlockContext = {
   password?: string
 }
 
-export type UsePasswordUnlockChildProps<C extends Record<string, any>> = C & {
-  password: string
-}
-
 function usePasswordUnlockContext(): PasswordUnlockContext {
   const [password, setPassword] = useState<string>()
 
@@ -99,6 +95,7 @@ const BasePasswordUnlock = ({
               placeholder="Enter password"
               spellCheck={false}
               data-lpignore
+              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
             />
           </FormFieldContainer>

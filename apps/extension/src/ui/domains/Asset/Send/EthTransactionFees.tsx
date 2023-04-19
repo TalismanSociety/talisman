@@ -8,7 +8,7 @@ import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { ethers } from "ethers"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import styled from "styled-components"
 
 import { useEthTransaction } from "../../Ethereum/useEthTransaction"

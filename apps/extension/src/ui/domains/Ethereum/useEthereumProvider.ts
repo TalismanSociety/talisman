@@ -1,5 +1,4 @@
 import { EvmNetworkId } from "@core/domains/ethereum/types"
-import { JsonRpcProvider } from "@ethersproject/providers"
 import { getExtensionEthereumProvider } from "@ui/domains/Ethereum/getExtensionEthereumProvider"
 import { ethers } from "ethers"
 import { useMemo } from "react"

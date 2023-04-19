@@ -1,7 +1,6 @@
 import { genericSubscription } from "@core/handlers/subscriptions"
-import { MessageTypesWithSubscriptions } from "@core/types"
 import type { Port } from "@core/types/base"
-import { ReplaySubject, filter, map } from "rxjs"
+import { ReplaySubject, map } from "rxjs"
 import { v4 } from "uuid"
 
 import { windowManager } from "../WindowManager"
@@ -55,7 +54,9 @@ export class RequestStore {
 
     // get only values with the matching type
     const requestValues = Object.entries(this.requests)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .filter(([key, value]) => key.split(".")[0] === type)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       .map(([key, value]) => value) as KnownRespondableRequest<T>[]
 
     return requestValues
@@ -152,6 +153,7 @@ export class RequestStore {
   protected extractBaseRequest<T extends KnownRequestTypes>(
     request: KnownRespondableRequest<T> | AnyRespondableRequest
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { reject, resolve, ...data } = request
     return data as KnownRequest<T>
   }

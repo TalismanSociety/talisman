@@ -1,4 +1,4 @@
-import { createGlobalStyle, css } from "styled-components"
+import { createGlobalStyle } from "styled-components"
 
 import { hideScrollbarsStyle, scrollbarsStyle } from "./styles"
 

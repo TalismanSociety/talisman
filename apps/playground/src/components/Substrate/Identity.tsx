@@ -54,7 +54,6 @@ export const Identity = () => {
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
     formState: { isValid, isSubmitting },
   } = useForm<FormData>({
@@ -116,7 +115,7 @@ export const Identity = () => {
     try {
       setTxProcessing(true)
       const unsub = await api.tx.identity.clearIdentity().signAndSend(account.address, (result) => {
-        const { status, events } = result
+        const { status } = result
         setStatus(status)
 
         if (status.isFinalized) {

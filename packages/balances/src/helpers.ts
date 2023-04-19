@@ -166,8 +166,10 @@ export class StorageHelper {
   #method
   #parameters
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tags: any = null
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(registry: Registry, module: string, method: string, ...parameters: any[]) {
     this.#registry = registry
 
@@ -214,6 +216,7 @@ export class StorageHelper {
     return this.#parameters
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tag(tags: any) {
     this.tags = tags
     return this

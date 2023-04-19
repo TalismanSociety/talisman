@@ -8,7 +8,7 @@ import { classNames } from "@talismn/util"
 import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { ReactNode, useCallback, useMemo } from "react"
+import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -128,7 +128,6 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
     chainId: token?.chain?.id,
     addresses: Array.from(new Set(locked ? [] : balances.each.map((b) => b.address))),
   })
-
   const navigate = useNavigate()
   const handleClick = useCallback(() => {
     navigate(`/portfolio/${token?.symbol}${token?.isTestnet ? "?testnet=true" : ""}`)
@@ -140,10 +139,15 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
     genericEvent("open web app staking from banner", { from: "popup", symbol: token?.symbol })
   }, [genericEvent, token?.symbol])
 
-  const handleDismissStakingBanner = useCallback(() => {
-    dismissNomPoolBanner()
-    genericEvent("dismiss staking banner", { from: "popup", symbol: token?.symbol })
-  }, [genericEvent, dismissNomPoolBanner, token?.symbol])
+  const handleDismissStakingBanner: MouseEventHandler<SVGSVGElement> = useCallback(
+    (e) => {
+      e.preventDefault()
+      e.stopPropagation()
+      dismissNomPoolBanner()
+      genericEvent("dismiss staking banner", { from: "popup", symbol: token?.symbol })
+    },
+    [genericEvent, dismissNomPoolBanner, token?.symbol]
+  )
 
   const { tokens, fiat } = useMemo(() => {
     return {
@@ -211,8 +215,11 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
         </div>
       </AssetButton>
       {showBanner && (
-        <AssetButton className="staking-banner bg-primary-500 text-primary-500 flex items-center justify-between bg-opacity-10 p-[1rem]">
-          <div onClick={handleClickStakingBanner} className="flex gap-2">
+        <AssetButton
+          onClick={handleClickStakingBanner}
+          className="staking-banner bg-primary-500 text-primary-500 flex items-center justify-between bg-opacity-10 p-[1rem]"
+        >
+          <div className="flex gap-2">
             <div className="self-center">
               <ZapIcon className="h-[2.6rem] w-[2.6rem]" />
             </div>
@@ -227,7 +234,7 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
             </div>
           </div>
           <div className="self-start">
-            <XIcon onClick={handleDismissStakingBanner} className="h-6" />
+            <XIcon role="button" onClick={handleDismissStakingBanner} className="h-6" />
           </div>
         </AssetButton>
       )}
@@ -251,18 +258,18 @@ const BalancesGroup = ({ label, fiatAmount, className, children }: GroupProps) =
 
   return (
     <div className="flex flex-col gap-6">
-      <div
+      <button
         className={classNames("text-md flex cursor-pointer items-center gap-2", className)}
         onClick={toggle}
       >
-        <div className="text-body grow">{label}</div>
+        <div className="text-body grow text-left">{label}</div>
         <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
           <Fiat amount={fiatAmount} currency="usd" isBalance />
         </div>
         <div className="text-body-secondary flex flex-col justify-center text-lg">
           <AccordionIcon isOpen={isOpen} />
         </div>
-      </div>
+      </button>
       <Accordion isOpen={isOpen}>
         <div className="flex flex-col gap-4">{children}</div>
       </Accordion>

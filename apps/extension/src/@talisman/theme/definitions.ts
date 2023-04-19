@@ -5,7 +5,7 @@ export const statusColors = {
   "D44B23": ["failure", "error", "negative"],
   "B9D9FF": ["neutral", "default"],
   "38D448": ["connected"],
-}
+} as const
 
 // font size defs
 export const fontSizes = {

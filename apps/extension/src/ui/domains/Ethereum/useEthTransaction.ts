@@ -54,7 +54,7 @@ const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
         const [{ baseFeePerGas }] = await Promise.all([
           // check that block has a baseFeePerGas
           provider.send("eth_getBlockByNumber", ["latest", false]),
-          // check that method eth_feeHistory exists
+          // check that method eth_feeHistory exists. This will throw if it doesn't.
           provider.send("eth_feeHistory", [ethers.utils.hexValue(1), "latest", [10]]),
         ])
         return baseFeePerGas !== undefined

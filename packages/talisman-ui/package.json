@@ -11,7 +11,7 @@
     "./tailwind.config.cjs": "./src/config/tailwind.config.cjs"
   },
   "scripts": {
-    "lint": "eslint . --max-warnings 0",
+    "lint": "eslint src --max-warnings 0",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "devDependencies": {

@@ -64,3 +64,4 @@ export const FormFieldInputText = forwardRef<HTMLInputElement, FormFieldInputTex
     )
   }
 )
+FormFieldInputText.displayName = "FormFieldInputText"

@@ -67,5 +67,5 @@ export const TextQrCode = ({
     )
   if (!qrCode) return null
 
-  return <img className="relative h-full w-full" src={qrCode} />
+  return <img className="relative h-full w-full" src={qrCode} alt="" />
 }

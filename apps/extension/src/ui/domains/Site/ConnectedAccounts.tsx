@@ -15,7 +15,12 @@ import { Checkbox } from "talisman-ui"
 import { NetworkSelect } from "../Ethereum/NetworkSelect"
 import { ProviderTypeSwitch } from "./ProviderTypeSwitch"
 
-const AccountItem = ({ address, value = false, onChange, className }: any) => (
+const AccountItem: FC<{
+  address: string
+  value: boolean
+  onChange: () => void
+  className?: string
+}> = ({ address, value = false, onChange, className }) => (
   <Panel className={className} onClick={onChange} small>
     <Account.Name address={address} withAvatar />
     <Field.Checkbox value={value} small />

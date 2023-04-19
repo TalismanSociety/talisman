@@ -1,8 +1,5 @@
 import { BaseRequest, BaseRequestId, RequestIdOnly } from "@core/types/base"
-import type {
-  MetadataRequest as PolkadotMetadataRequest,
-  RequestMetadataSubscribe,
-} from "@polkadot/extension-base/background/types"
+import type { MetadataRequest as PolkadotMetadataRequest } from "@polkadot/extension-base/background/types"
 import type { MetadataDef } from "@polkadot/extension-inject/types"
 export type { MetadataDef }
 

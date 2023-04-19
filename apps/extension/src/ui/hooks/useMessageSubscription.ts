@@ -4,6 +4,7 @@ import { isFunction } from "@polkadot/util"
 import { useEffect, useState } from "react"
 import { BehaviorSubject, map } from "rxjs"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Subscription = { subject: BehaviorSubject<any>; unsubscribe?: () => void }
 type InitSubscriptionCallback<S> = (subject: BehaviorSubject<S>) => UnsubscribeFn
 type MapSubjectToResult<S, R> = (subject: S) => R

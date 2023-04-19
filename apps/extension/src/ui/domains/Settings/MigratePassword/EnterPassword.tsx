@@ -74,6 +74,7 @@ export const EnterPasswordForm = () => {
             spellCheck={false}
             autoComplete="off"
             data-lpignore
+            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
           />
         </FormFieldContainer>

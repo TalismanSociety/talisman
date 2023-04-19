@@ -107,7 +107,7 @@ type AssetRowProps = {
 }
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
-  const { chainOrNetwork, summary, symbol, detailRows, chain, status, networkType } =
+  const { chainOrNetwork, summary, symbol, detailRows, status, networkType } =
     useChainTokenBalances({ chainId, balances })
 
   // wait for data to load

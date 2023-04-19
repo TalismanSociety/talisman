@@ -1,10 +1,11 @@
+import { ReactNode } from "react"
 import styled from "styled-components"
 
 interface IProps {
   center?: boolean
   bottom?: boolean
   loose?: boolean
-  children?: any
+  children?: ReactNode
   className?: string
 }
 

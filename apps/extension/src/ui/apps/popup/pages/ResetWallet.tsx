@@ -73,7 +73,7 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
       </div>
       <Content>
         <div className="flex flex-col items-center gap-24">
-          <img src={Terrarium} className="mt-[0.5rem] h-[27.1rem]" />
+          <img src={Terrarium} className="mt-[0.5rem] h-[27.1rem]" alt="" />
           <p className="text-body-secondary text-center">
             To reset your wallet you'll need to re-import your account via recovery phrase and set a
             new password.

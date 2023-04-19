@@ -9,8 +9,6 @@ import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import keyring from "@polkadot/ui-keyring"
 import * as Sentry from "@sentry/browser"
 import { db as balancesDb } from "@talismn/balances"
-import { ChainList, EvmNetworkList, TokenList } from "@talismn/chaindata-provider"
-import { TokenRatesList } from "@talismn/token-rates"
 import posthog, { Properties } from "posthog-js"
 
 const REPORTING_PERIOD = 24 * 3600 * 1000 // 24 hours

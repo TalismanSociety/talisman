@@ -9,7 +9,6 @@ import {
   ExternalLinkIcon,
   EyeIcon,
   EyeOffIcon,
-  InfoIcon,
   LockIcon,
   PaperPlaneIcon,
   PlusIcon,

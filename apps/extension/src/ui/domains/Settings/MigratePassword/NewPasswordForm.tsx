@@ -59,7 +59,7 @@ export const NewPasswordForm = () => {
             autoComplete="new-password"
             data-lpignore
             type="password"
-            tabIndex={1}
+            tabIndex={0}
           />
         </FormFieldContainer>
         <FormFieldContainer error={errors.newPwConfirm?.message} className="mb-12">
@@ -70,7 +70,7 @@ export const NewPasswordForm = () => {
             autoComplete="off"
             data-lpignore
             type="password"
-            tabIndex={2}
+            tabIndex={0}
           />
         </FormFieldContainer>
         <Button

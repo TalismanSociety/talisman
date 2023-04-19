@@ -1,5 +1,5 @@
-import { BigNumber, ethers, providers } from "ethers"
-import { parseEther, parseUnits, serializeTransaction } from "ethers/lib/utils"
+import { BigNumber, ethers } from "ethers"
+import { parseUnits } from "ethers/lib/utils"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
 import { useLocalStorage } from "react-use"
@@ -11,10 +11,7 @@ import {
   useContractWrite,
   useNetwork,
   usePrepareContractWrite,
-  usePrepareSendTransaction,
   useSendTransaction,
-  useSigner,
-  useWaitForTransaction,
 } from "wagmi"
 
 import { Section } from "../shared/Section"
@@ -38,7 +35,7 @@ export const SendERC20 = () => {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isValid, isSubmitting },
+    formState: { isValid, isSubmitting },
   } = useForm<FormData>({
     defaultValues,
   })
@@ -46,22 +43,14 @@ export const SendERC20 = () => {
   const formData = watch()
 
   const contractAddress = useMemo(() => getUSDCAddress(chain?.id), [chain?.id])
-  const {
-    data: balanceOfSelfData,
-    isError: balanceOfSelfIsError,
-    isLoading: balanceOfSelfIsLoading,
-  } = useContractRead({
+  const { data: balanceOfSelfData, isError: balanceOfSelfIsError } = useContractRead({
     address: contractAddress,
     abi: erc20,
     functionName: "balanceOf",
     args: [address],
     enabled: !!contractAddress && !!address,
   })
-  const {
-    data: balanceOfTargetData,
-    isError: balanceOfTargetIsError,
-    isLoading: balanceOfTargetIsLoading,
-  } = useContractRead({
+  const { data: balanceOfTargetData, isError: balanceOfTargetIsError } = useContractRead({
     address: contractAddress,
     abi: erc20,
     functionName: "balanceOf",
@@ -69,11 +58,7 @@ export const SendERC20 = () => {
     enabled: !!contractAddress && !!formData.recipient,
   })
 
-  const {
-    config,
-    isSuccess: prepIsSuccess,
-    error: prepError,
-  } = usePrepareContractWrite({
+  const { config, isSuccess: prepIsSuccess } = usePrepareContractWrite({
     address: contractAddress,
     abi: erc20,
     functionName: "transfer",
@@ -81,12 +66,7 @@ export const SendERC20 = () => {
     args: [formData.recipient, parseUnits(formData.amount, 6)],
   })
 
-  const {
-    isLoading: writeIsLoading,
-    isSuccess: writeIsSuccess,
-    error: writeError,
-    write,
-  } = useContractWrite({
+  const { isLoading: writeIsLoading } = useContractWrite({
     address: contractAddress,
     abi: erc20,
     functionName: "transfer",
@@ -124,7 +104,7 @@ export const SendERC20 = () => {
     ])
 
     const provider = await connector.getProvider()
-    const sig = await provider.request({
+    await provider.request({
       method: "eth_sendTransaction",
       params: [
         {

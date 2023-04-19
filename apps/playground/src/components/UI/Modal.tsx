@@ -61,7 +61,6 @@ export const ModalPage = () => {
           isOpen={ocTop.isOpen}
           containerId={containerId}
           onDismiss={withLightDismiss ? ocTop.close : undefined}
-          blur={blur}
         >
           <ModalContent className="h-[150px]" close={ocTop.close} />
         </Modal>

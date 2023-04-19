@@ -58,12 +58,9 @@ export const PersonalSign = () => {
     message,
   })
 
-  const onSubmit = useCallback(
-    (data: FormData) => {
-      signMessage?.()
-    },
-    [signMessage]
-  )
+  const onSubmit = useCallback(() => {
+    signMessage?.()
+  }, [signMessage])
 
   const signedBy = useMemo(
     () => (signature ? ethers.utils.verifyMessage(message, signature) : null),

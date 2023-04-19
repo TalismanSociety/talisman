@@ -7,7 +7,6 @@ import {
   useContractWrite,
   useNetwork,
   usePrepareContractWrite,
-  useSignMessage,
 } from "wagmi"
 
 import { Section } from "../shared/Section"
@@ -26,11 +25,7 @@ export const ContractReadWrite = () => {
 
   const contractAddress = useMemo(() => getGreeterAddress(chain?.id), [chain?.id])
 
-  const {
-    data: readData,
-    isError: readIsError,
-    isLoading: readIsLoading,
-  } = useContractRead({
+  const { data: readData, isLoading: readIsLoading } = useContractRead({
     address: contractAddress,
     abi: GreeterAbi.abi,
     functionName: "greet",
@@ -58,19 +53,15 @@ export const ContractReadWrite = () => {
   })
   const {
     data: writeData,
-    isLoading: writeIsLoading,
     isSuccess: writeIsSuccess,
     error: writeError,
     isError: writeIsError,
     write,
   } = useContractWrite(config)
 
-  const onSubmit = useCallback(
-    (data: FormData) => {
-      write?.()
-    },
-    [write]
-  )
+  const onSubmit = useCallback(() => {
+    write?.()
+  }, [write])
 
   useEffect(() => {
     setValue("message", (readData as unknown as string) ?? "", { shouldValidate: true })

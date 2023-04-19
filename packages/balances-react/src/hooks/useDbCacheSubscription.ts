@@ -201,6 +201,7 @@ const subscribeTokenRates = (tokens: TokenList) => {
 const subscribeBalances = (
   tokens: TokenList,
   addresses: string[],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   balanceModules: Array<BalanceModule<any, any, any, any, any>>
 ) => {
   const tokenIds = Object.values(tokens).map(({ id }) => id)

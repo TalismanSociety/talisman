@@ -15,7 +15,7 @@ import {
 } from "@floating-ui/react"
 import * as React from "react"
 
-interface PopoverOptions {
+export interface PopoverOptions {
   initialOpen?: boolean
   placement?: Placement
   modal?: boolean
@@ -109,7 +109,7 @@ export function Popover({
   return <PopoverContext.Provider value={popover}>{children}</PopoverContext.Provider>
 }
 
-interface PopoverTriggerProps {
+export interface PopoverTriggerProps {
   children: React.ReactNode
   asChild?: boolean
 }
@@ -119,6 +119,7 @@ export const PopoverTrigger = React.forwardRef<
   React.HTMLProps<HTMLElement> & PopoverTriggerProps
 >(function PopoverTrigger({ children, asChild = false, ...props }, propRef) {
   const context = usePopoverContext()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const childrenRef = (children as any).ref
   const ref = useMergeRefs([context.refs.setReference, propRef, childrenRef])
 

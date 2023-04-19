@@ -41,7 +41,7 @@ import {
   AuthorizedSites,
   ProviderType,
 } from "@core/domains/sitesAuthorised/types"
-import { CustomErc20Token, CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
+import { CustomErc20TokenCreate, TokenId } from "@core/domains/tokens/types"
 import { WalletTransactionTransferInfo } from "@core/domains/transactions"
 import {
   AssetTransferMethod,
@@ -174,8 +174,6 @@ export default interface MessageTypes {
   tokenRates: (cb: () => void) => UnsubscribeFn
 
   // custom erc20 token management
-  customErc20Tokens: () => Promise<Record<CustomErc20Token["id"], CustomErc20Token>>
-  customErc20Token: (id: string) => Promise<CustomErc20Token>
   addCustomErc20Token: (token: CustomErc20TokenCreate) => Promise<boolean>
   removeCustomErc20Token: (id: string) => Promise<boolean>
 

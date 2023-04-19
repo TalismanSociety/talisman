@@ -1,6 +1,5 @@
 import { ReactComponent as IconClear } from "@talisman/theme/icons/x-circle.svg"
 import { DropzoneOptions, useDropzone } from "react-dropzone"
-// @ts-nocheck
 import styled from "styled-components"
 
 import Field, { IFieldProps, fieldDefaultProps } from "./Field"
@@ -15,6 +14,7 @@ const defaultProps: IProps = {
   accept: "*/*",
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const FileDrop = ({ value, accept, hint, onChange, fieldProps, ...rest }: IProps) => {
   const onDrop: DropzoneOptions["onDrop"] = (acceptedFiles) => {
     const [file] = acceptedFiles

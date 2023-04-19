@@ -1,6 +1,5 @@
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { IconButton } from "@talisman/components/IconButton"
 import {
   AllAccountsIcon,
   ArrowDownIcon,
@@ -57,7 +56,7 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
     })
   }, [address, genericEvent, navigate, select])
 
-  const handleCopyClick: MouseEventHandler<HTMLButtonElement> = useCallback(
+  const handleCopyClick: MouseEventHandler<HTMLOrSVGElement> = useCallback(
     (e) => {
       e.stopPropagation()
       if (address) {
@@ -76,8 +75,7 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
   )
 
   return (
-    <article
-      role="button"
+    <button
       tabIndex={0}
       className="text-body-secondary bg-black-secondary hover:bg-grey-800 flex h-[5.9rem] w-full cursor-pointer items-center gap-6 overflow-hidden rounded-sm px-6 hover:text-white"
       onClick={handleAccountClick}
@@ -95,9 +93,11 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
           <AccountTypeIcon className="text-primary" origin={origin} />
           {address ? (
             <div className="flex flex-col justify-end">
-              <IconButton className="!h-8 !w-8 !text-sm leading-none" onClick={handleCopyClick}>
-                <CopyIcon />
-              </IconButton>
+              <CopyIcon
+                role="button"
+                className="text-body-secondary hover:text-body !text-sm "
+                onClick={handleCopyClick}
+              />
             </div>
           ) : null}
         </div>
@@ -108,7 +108,7 @@ const AccountButton = ({ address, name, total, genesisHash, origin }: AccountOpt
       <div className="flex flex-col justify-center text-lg">
         <ChevronRightIcon />
       </div>
-    </article>
+    </button>
   )
 }
 

@@ -25,6 +25,7 @@ import { WithTestnetsProvider } from "./useWithTestnets"
 
 export type BalancesProviderProps = {
   // TODO: Make this array of BalanceModules more type-safe
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   balanceModules: Array<(hydrate: Hydrate) => BalanceModule<any, any, any, any, any>>
   onfinalityApiKey?: string
   withTestnets?: boolean
