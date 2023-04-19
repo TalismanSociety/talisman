@@ -151,6 +151,32 @@ export class Balances {
   }
 
   /**
+   * Filters this collection to exclude token balances where the token has a `mirrorOf` field
+   * and another balance exists in this collection for the token specified by the `mirrorOf` field.
+   */
+  filterMirrorTokens = (): Balances => new Balances([...this].filter(filterMirrorTokens))
+
+  /**
+   * Filters this collection to only include balances which are not zero.
+   */
+  filterNonZero = (
+    type: "total" | "free" | "reserved" | "locked" | "frozen" | "transferable" | "feePayable"
+  ): Balances => {
+    const filter = (balance: Balance) => balance[type].planck > 0n
+    return this.find(filter)
+  }
+  /**
+   * Filters this collection to only include balances which are not zero AND have a fiat conversion rate.
+   */
+  filterNonZeroFiat = (
+    type: "total" | "free" | "reserved" | "locked" | "frozen" | "transferable" | "feePayable",
+    currency: TokenRateCurrency
+  ): Balances => {
+    const filter = (balance: Balance) => (balance[type].fiat(currency) ?? 0) > 0
+    return this.find(filter)
+  }
+
+  /**
    * Add some balances to this collection.
    * Added balances take priority over existing balances.
    * The aggregation of the two collections is returned.
@@ -285,9 +311,9 @@ export class Balance {
   //
 
   get id(): string {
-    const { source, address, chainId, evmNetworkId, tokenId } = this.#storage
+    const { source, subSource, address, chainId, evmNetworkId, tokenId } = this.#storage
     const locationId = chainId !== undefined ? chainId : evmNetworkId
-    return `${source}-${address}-${locationId}-${tokenId}`
+    return [source, address, locationId, tokenId, subSource].filter(Boolean).join("-")
   }
 
   get source() {
@@ -345,7 +371,7 @@ export class Balance {
         : Array.isArray(this.#storage.free)
         ? (this.#storage.free as AmountWithLabel<string>[])
             .map((reserve) => BigInt(reserve.amount))
-            .reduce((a, b) => a + b, BigInt("0"))
+            .reduce((a, b) => a + b, 0n)
         : BigInt((this.#storage.free as AmountWithLabel<string>)?.amount || "0")
     )
   }
@@ -357,9 +383,18 @@ export class Balance {
         : Array.isArray(this.#storage.reserves)
         ? this.#storage.reserves
             .map((reserve) => BigInt(reserve.amount))
-            .reduce((a, b) => a + b, BigInt("0"))
+            .reduce((a, b) => a + b, 0n)
         : BigInt(this.#storage.reserves?.amount || "0")
     )
+  }
+  get reserves() {
+    return (
+      Array.isArray(this.#storage.reserves) ? this.#storage.reserves : [this.#storage.reserves]
+    ).flatMap((reserve) => {
+      if (reserve === undefined) return []
+      if (typeof reserve === "string") return { label: "reserved", amount: this.#format(reserve) }
+      return { ...reserve, amount: this.#format(reserve.amount) }
+    })
   }
   /** The frozen balance of this token. Is included in the free amount. */
   get locked() {
@@ -369,11 +404,20 @@ export class Balance {
         : Array.isArray(this.#storage.locks)
         ? this.#storage.locks
             .map((lock) => BigInt(lock.amount))
-            .reduce((a, b) => BigMath.max(a, b), BigInt("0"))
+            .reduce((a, b) => BigMath.max(a, b), 0n)
         : BigInt(this.#storage.locks?.amount || "0")
     )
   }
-  /** @depreacted - use balance.locked */
+  get locks() {
+    return (
+      Array.isArray(this.#storage.locks) ? this.#storage.locks : [this.#storage.locks]
+    ).flatMap((lock) => {
+      if (lock === undefined) return []
+      if (typeof lock === "string") return { label: "other", amount: this.#format(lock) }
+      return { ...lock, amount: this.#format(lock.amount) }
+    })
+  }
+  /** @deprecated Use balance.locked */
   get frozen() {
     return this.locked
   }
@@ -386,7 +430,7 @@ export class Balance {
     const excludeAmount = excludeFromTransferableAmount(this.#storage.locks)
 
     // subtract the lock from the free amount (but don't go below 0)
-    return this.#format(BigMath.max(this.free.planck - excludeAmount, BigInt("0")))
+    return this.#format(BigMath.max(this.free.planck - excludeAmount, 0n))
   }
   /** The feePayable balance of this token. Is generally the free amount - the feeFrozen amount. */
   get feePayable() {
@@ -396,10 +440,10 @@ export class Balance {
     // find the largest lock which can't be used to pay tx fees
     const excludeAmount = excludeFromFeePayableLocks(this.#storage.locks)
       .map((lock) => BigInt(lock.amount))
-      .reduce((max, lock) => BigMath.max(max, lock), BigInt("0"))
+      .reduce((max, lock) => BigMath.max(max, lock), 0n)
 
     // subtract the lock from the free amount (but don't go below 0)
-    return this.#format(BigMath.max(this.free.planck - excludeAmount, BigInt("0")))
+    return this.#format(BigMath.max(this.free.planck - excludeAmount, 0n))
   }
 }
 
@@ -453,12 +497,12 @@ export class FiatSumBalancesFormatter {
     }[keyof Balance]
   ) => {
     // a function to get a fiat amount from a balance
-    const fiat = (balance: Balance) => balance[balanceField].fiat(this.#currency) || 0
+    const fiat = (balance: Balance) => balance[balanceField].fiat(this.#currency) ?? 0
 
     // a function to add two amounts
     const sum = (a: number, b: number) => a + b
 
-    return [...this.#balances].filter(filterMirrorTokens).reduce(
+    return this.#balances.filterMirrorTokens().each.reduce(
       (total, balance) =>
         sum(
           // add the total amount...
@@ -489,7 +533,7 @@ export class FiatSumBalancesFormatter {
   get locked() {
     return this.#sum("locked")
   }
-  /** @deprecated - use balances.locked */
+  /** @deprecated Use balances.locked */
   get frozen() {
     return this.locked
   }

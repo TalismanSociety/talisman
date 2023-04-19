@@ -4,8 +4,8 @@ import { Checkbox } from "@talisman/components/Checkbox"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { CheckCircleIcon, LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
-import { formatDecimals } from "@talismn/util"
-import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
+import { FC, useCallback, useEffect, useState } from "react"
 import styled from "styled-components"
 
 import Fiat from "../Asset/Fiat"
@@ -152,28 +152,7 @@ const AccountButton: FC<AccountButtonProps> = ({
     return () => clearTimeout(timeout)
   }, [])
 
-  const { balanceDetails, totalUsd } = useMemo(() => {
-    const balanceDetails = balances
-      .filter((b) => b.total.planck > BigInt("0") && b.total.fiat("usd"))
-      .map(
-        (b) =>
-          `${formatDecimals(b.total.tokens)} ${b.token?.symbol} / ${new Intl.NumberFormat(
-            undefined,
-            {
-              style: "currency",
-              currency: "usd",
-              currencyDisplay: "narrowSymbol",
-            }
-          ).format(b.total.fiat("usd") ?? 0)}`
-      )
-      .join("\n")
-    const totalUsd = balances.reduce(
-      (prev, curr) => prev + (curr.total ? curr.total.fiat("usd") ?? 0 : 0),
-      0
-    )
-
-    return { balanceDetails, totalUsd }
-  }, [balances])
+  const { balanceDetails, totalUsd } = useBalanceDetails(balances)
 
   return (
     <button

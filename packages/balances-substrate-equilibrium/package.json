@@ -26,18 +26,18 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@talismn/balances": "workspace:^",
-    "@talismn/chaindata-provider": "workspace:^",
-    "@talismn/mutate-metadata": "workspace:^",
-    "@talismn/util": "workspace:^",
+    "@talismn/balances": "workspace:*",
+    "@talismn/chaindata-provider": "workspace:*",
+    "@talismn/mutate-metadata": "workspace:*",
+    "@talismn/util": "workspace:*",
     "anylogger": "^1.0.11"
   },
   "devDependencies": {
-    "@polkadot/types": "^9.10.5",
-    "@polkadot/util": "^10.2.1",
+    "@polkadot/types": "^10.1.4",
+    "@polkadot/util": "^11.1.1",
     "@substrate/txwrapper-core": "*",
-    "@talismn/eslint-config": "workspace:^",
-    "@talismn/tsconfig": "workspace:^",
+    "@talismn/eslint-config": "workspace:*",
+    "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
     "eslint": "^8.4.0",
     "jest": "^28.1.0",
@@ -45,8 +45,8 @@
     "typescript": "^4.6.4"
   },
   "peerDependencies": {
-    "@polkadot/types": "9.x",
-    "@polkadot/util": "10.x",
+    "@polkadot/types": "10.x",
+    "@polkadot/util": "11.x",
     "@substrate/txwrapper-core": "4.x"
   },
   "eslintConfig": {

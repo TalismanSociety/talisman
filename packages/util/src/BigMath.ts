@@ -4,11 +4,11 @@
  */
 export const BigMath = {
   abs(x: bigint) {
-    return x < BigInt("0") ? -x : x
+    return x < 0n ? -x : x
   },
   sign(x: bigint) {
-    if (x === BigInt("0")) return BigInt("0")
-    return x < BigInt("0") ? BigInt("-1") : BigInt("1")
+    if (x === 0n) return 0n
+    return x < 0n ? -1n : 1n
   },
   // TODO: Improve our babel/tsc config to let us use the `**` operator on bigint values.
   // Error thrown: Exponentiation cannot be performed on 'bigint' values unless the 'target' option is set to 'es2016' or later. ts(2791)

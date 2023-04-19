@@ -1,4 +1,4 @@
-import RpcFactory from "@core/libs/RpcFactory"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import type { IRuntimeVersionBase } from "@polkadot/types/types/interfaces"
 
 // properly typed on the few fields that matter to us
@@ -22,7 +22,7 @@ export const getRuntimeVersion = async (chainId: string, blockHash?: string) => 
   // fetch from chain
   const method = "state_getRuntimeVersion"
   const params = [blockHash]
-  const result = await RpcFactory.send<IRuntimeVersion>(chainId, method, params, true)
+  const result = await chainConnector.send<IRuntimeVersion>(chainId, method, params, true)
 
   // store in cache
   if (cacheKey) cache[cacheKey] = result

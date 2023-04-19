@@ -26,19 +26,6 @@ export interface RequestBalancesByParamsSubscribe {
   addressesByEvmNetwork: AddressesByEvmNetwork
 }
 
-export type BalanceLockType = "democracy" | "staking" | "vesting" | "dapp-staking" | "other"
-export type LockedBalance = {
-  type: BalanceLockType
-  amount: string //planck
-}
-
-export type RequestBalanceLocks = {
-  chainId: ChainId
-  addresses: Address[]
-}
-
-export type ResponseBalanceLocks = Record<Address, LockedBalance[]>
-
 export type NomPoolStakedBalance = {
   lastRecordedRewardCounter: string
   points: string
@@ -56,7 +43,6 @@ export type ResponseNomPoolStake = Record<Address, NomPoolStakedBalance | null>
 export interface BalancesMessages {
   // balance message signatures
   "pri(balances.get)": [RequestBalance, BalanceJson]
-  "pri(balances.locks.get)": [RequestBalanceLocks, ResponseBalanceLocks]
   "pri(balances.nompools.get)": [RequestNomPoolStake, ResponseNomPoolStake]
   "pri(balances.subscribe)": [null, boolean, boolean]
   "pri(balances.byparams.subscribe)": [RequestBalancesByParamsSubscribe, boolean, BalancesUpdate]

@@ -26,10 +26,10 @@ export default function useEmptyBalancesFilter(
 const moonbeamFilter = (balance: Balance) =>
   (balance.isSource("substrate-native") &&
     ["moonbeam", "moonriver"].includes(balance.chainId || "")) ||
-  balance.transferable.planck !== BigInt("0")
+  balance.transferable.planck !== 0n
 
 const polkadotFilter = (genesisHash?: string | null) => (balance: Balance) => {
-  let showBalance = balance.transferable.planck !== BigInt("0")
+  let showBalance = balance.transferable.planck !== 0n
 
   if (balance.isSource("substrate-native")) {
     showBalance =

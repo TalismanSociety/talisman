@@ -1,4 +1,4 @@
-import { Balance, Balances, filterMirrorTokens } from "@core/domains/balances/types"
+import { Balances } from "@core/domains/balances/types"
 import { Chain } from "@core/domains/chains/types"
 import { Token } from "@core/domains/tokens/types"
 import { TokenRatesList } from "@talismn/token-rates"
@@ -33,8 +33,8 @@ const DEFAULT_SUMMARY: BalanceSummary = {
 }
 
 // This assumes that all balances are for the same token (or clones, such as DOT + xcDOT)
-const getBestTokenForSymbol = (balances: Balance[], tokens?: Token[], chains?: Chain[]) => {
-  const tokenIds = balances.map((t) => t.tokenId)
+const getBestTokenForSymbol = (balances: Balances, tokens?: Token[], chains?: Chain[]) => {
+  const tokenIds = balances.each.map((t) => t.tokenId)
   const matches = tokens?.filter((t) => tokenIds.includes(t.id))
 
   return (
@@ -67,7 +67,7 @@ const getBestTokenForSymbol = (balances: Balance[], tokens?: Token[], chains?: C
 }
 
 export const useTokenBalancesSummary = (balances: Balances) => {
-  const tokenBalances = useMemo(() => balances.each.filter(filterMirrorTokens), [balances])
+  const tokenBalances = useMemo(() => balances.filterMirrorTokens(), [balances])
   const { tokens, chains } = usePortfolio()
   // find the most appropriate token (for the icon)
   const token = useMemo(
@@ -77,22 +77,24 @@ export const useTokenBalancesSummary = (balances: Balances) => {
 
   const tokenBalanceRates = useMemo(
     () =>
-      tokenBalances.reduce((tokenBalanceRates, balance) => {
+      tokenBalances.each.reduce<TokenRatesList>((tokenBalanceRates, balance) => {
         if (balance.rates) tokenBalanceRates[balance.tokenId] = balance.rates
         return tokenBalanceRates
-      }, {} as TokenRatesList),
+      }, {}),
     [tokenBalances]
   )
 
   const summary = useMemo(() => {
-    if (!tokenBalances.length) return DEFAULT_SUMMARY
+    if (tokenBalances.count < 1) return DEFAULT_SUMMARY
 
-    const fiatDefaultValue = tokenBalances.some((b) => b.token && tokenBalanceRates[b.token.id])
+    const fiatDefaultValue = tokenBalances.each.some(
+      (b) => b.token && tokenBalanceRates[b.token.id]
+    )
       ? 0
       : null
 
     // sum is only available for fiat, so we sum ourselves both tokens & fiat
-    const summary = tokenBalances.reduce<BalanceSummary>(
+    const summary = tokenBalances.each.reduce<BalanceSummary>(
       (
         {
           totalTokens,

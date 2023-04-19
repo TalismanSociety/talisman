@@ -14,7 +14,7 @@ import {
   NewTokenType,
   githubTokenLogoUrl,
 } from "@talismn/chaindata-provider"
-import { hasOwnProperty } from "@talismn/util"
+import { hasOwnProperty, isEthereumAddress } from "@talismn/util"
 import { ethers } from "ethers"
 import isEqual from "lodash/isEqual"
 
@@ -248,7 +248,7 @@ async function getFreeBalance(
   if (!isEthereumAddress(address)) return "0"
 
   try {
-    return ((await provider.getBalance(address)).toBigInt() || BigInt("0")).toString()
+    return ((await provider.getBalance(address)).toBigInt() ?? 0n).toString()
   } catch (error) {
     const errorMessage = hasOwnProperty(error, "message") ? error.message : error
     log.warn(
@@ -260,5 +260,3 @@ async function getFreeBalance(
     )
   }
 }
-
-const isEthereumAddress = (address: string) => address.startsWith("0x") && address.length === 42

@@ -38,18 +38,17 @@ const useShowNomPoolStakingBannerProvider = () => {
       // for each address, get the free balance after account for ED and minimum staking deposit
       const newEligibleAddressBalances: Record<Address, bigint> = Object.fromEntries(
         balancesForChain
-          .map((balance) => [
+          .map((balance): [string, bigint] => [
             balance.address,
             balance.free.planck -
               (balance.token &&
               "existentialDeposit" in balance.token &&
               typeof balance.token.existentialDeposit === "string"
                 ? BigInt(balance.token.existentialDeposit)
-                : BigInt(0)) -
+                : 0n) -
               BigInt(NOM_POOL_MIN_DEPOSIT[chainId] || 0),
           ])
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          .filter(([address, available]) => available > BigInt(0))
+          .filter(([, available]) => available > 0n)
       )
       setEligibleAddressBalances(newEligibleAddressBalances)
     })

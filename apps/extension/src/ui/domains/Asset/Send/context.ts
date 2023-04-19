@@ -107,13 +107,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
     setFormData(({ from }) => ({ from, transferableTokenId }))
   }, [formData.from, formData.transferableTokenId, transferableTokens])
 
-  // nonEmptyBalances is needed in order to detect chains who use the substrate-orml source for their native token
+  // these balances are needed in order to detect chains who use the substrate-orml source for their native token
   const balances = useBalances()
-  const nonEmptyBalances = useMemo(
-    () =>
-      balances ? balances.find((balance) => balance.free.planck > BigInt("0")) : new Balances([]),
-    [balances]
-  )
 
   const check = useCallback(
     async (newData: SendTokensData, allowReap = false) => {
@@ -138,7 +133,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
       const networkFilter = chain ? { chainId } : { evmNetworkId }
 
-      const balances = await Promise.all([
+      const tokenBalances = await Promise.all([
         loadBalance(api.getBalance({ ...networkFilter, tokenId: token.id, address: from })),
         loadBalance(api.getBalance({ ...networkFilter, tokenId: token.id, address: to })),
 
@@ -149,7 +144,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
             api.getBalance({ ...networkFilter, tokenId: network.nativeToken?.id, address: from })
           ),
       ])
-      const [fromBalance, toBalance, _nativeFromBalance] = balances
+      const [fromBalance, toBalance, _nativeFromBalance] = tokenBalances
       const nativeFromBalance = _nativeFromBalance || fromBalance
 
       const transfer: TokenAmountInfo = {
@@ -163,8 +158,8 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       }
 
       // check recipient's balance, prevent immediate reaping
-      const recipientBalance = toBalance?.total.planck ?? BigInt(0)
-      if (recipientBalance === BigInt("0")) {
+      const recipientBalance = toBalance?.total.planck ?? 0n
+      if (recipientBalance === 0n) {
         assert(
           transfer.amount.planck >= transfer.existentialDeposit.planck,
           `Please send at least ${transfer.existentialDeposit.tokens} ${transfer.symbol} to ensure the receiving address remains active.`
@@ -192,7 +187,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
           if (
             maxFeeAndGasCost
               .add(tokenIsNativeToken ? transfer.amount.planck : 0)
-              .gt(nativeFromBalance?.transferable.planck ?? BigInt("0"))
+              .gt(nativeFromBalance?.transferable.planck ?? 0n)
           )
             throw new Error(`Insufficient ${nativeToken.symbol} balance to pay for gas`)
 
@@ -247,11 +242,11 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
       const forfeits: TokenAmountInfo[] = []
       const testToken = (token: Token, balance: Balance | undefined, cost: BalanceFormatter) => {
         // sufficient balance?
-        if ((balance?.transferable.planck ?? BigInt("0")) < cost.planck)
+        if ((balance?.transferable.planck ?? 0n) < cost.planck)
           throw new Error(`Insufficient balance (${token.symbol})`)
 
         // existential deposit?
-        const remaining = (balance?.total.planck ?? BigInt("0")) - cost.planck
+        const remaining = (balance?.total.planck ?? 0n) - cost.planck
         if (
           remaining <
           BigInt(("existentialDeposit" in token ? token.existentialDeposit : "0") ?? "0")
@@ -269,7 +264,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
 
       const nativeTokenIsOrmlToken =
         token.chain?.id !== undefined &&
-        chainUsesOrmlForNativeToken(nonEmptyBalances, token.chain?.id, nativeToken)
+        chainUsesOrmlForNativeToken(balances.filterNonZero("free"), token.chain?.id, nativeToken)
 
       if (
         token.id === nativeToken.id ||
@@ -300,7 +295,7 @@ const useSendTokensProvider = ({ initialValues }: Props) => {
         unsigned,
       })
     },
-    [chainsMap, evmNetworksMap, nonEmptyBalances, tokensMap, transferableTokensMap]
+    [balances, chainsMap, evmNetworksMap, tokensMap, transferableTokensMap]
   )
 
   // this makes user return to the first screen of the wizard

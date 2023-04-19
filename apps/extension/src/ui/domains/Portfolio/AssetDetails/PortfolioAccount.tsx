@@ -21,7 +21,7 @@ export const PortfolioAccount = ({
           genesisHash={account?.genesisHash}
         />
       </div>
-      <div className="overflow-hidden text-ellipsis whitespace-nowrap">
+      <div className="max-w-lg overflow-hidden text-ellipsis whitespace-nowrap">
         {account.name ?? "Unknown"}
       </div>
       <AccountTypeIcon className="text-primary" origin={account?.origin} />

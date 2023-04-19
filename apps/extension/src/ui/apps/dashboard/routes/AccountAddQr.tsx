@@ -8,7 +8,7 @@ import {
   LoaderIcon,
   PolkadotVaultIcon,
 } from "@talisman/theme/icons"
-import { decodeAnyAddress, formatDecimals, sleep } from "@talismn/util"
+import { decodeAnyAddress, sleep } from "@talismn/util"
 import { api } from "@ui/api"
 import Layout from "@ui/apps/dashboard/layout"
 import { Address } from "@ui/domains/Account/Address"
@@ -16,6 +16,7 @@ import Avatar from "@ui/domains/Account/Avatar"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
+import { useBalanceDetails } from "@ui/hooks/useBalanceDetails"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
@@ -163,28 +164,7 @@ export const AccountAddQr = () => {
     !addressesByChain ||
     balances.sorted.length < 1 ||
     balances.sorted.some((b) => b.status !== "live")
-  const { balanceDetails, totalUsd } = useMemo(() => {
-    const balanceDetails = balances.sorted
-      .filter((b) => b.total.planck > BigInt("0") && b.total.fiat("usd"))
-      .map(
-        (b) =>
-          `${formatDecimals(b.total.tokens)} ${b.token?.symbol} / ${new Intl.NumberFormat(
-            undefined,
-            {
-              style: "currency",
-              currency: "usd",
-              currencyDisplay: "narrowSymbol",
-            }
-          ).format(b.total.fiat("usd") ?? 0)}`
-      )
-      .join("\n")
-    const totalUsd = balances.sorted.reduce(
-      (prev, curr) => prev + (curr.total ? curr.total.fiat("usd") ?? 0 : 0),
-      0
-    )
-
-    return { balanceDetails, totalUsd }
-  }, [balances])
+  const { balanceDetails, totalUsd } = useBalanceDetails(balances)
 
   return (
     <Layout withBack centered>

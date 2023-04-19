@@ -26,17 +26,17 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
-    "@talismn/balances-evm-erc20": "workspace:^",
-    "@talismn/balances-evm-native": "workspace:^",
-    "@talismn/balances-substrate-assets": "workspace:^",
-    "@talismn/balances-substrate-equilibrium": "workspace:^",
-    "@talismn/balances-substrate-native": "workspace:^",
-    "@talismn/balances-substrate-orml": "workspace:^",
-    "@talismn/balances-substrate-tokens": "workspace:^"
+    "@talismn/balances-evm-erc20": "workspace:*",
+    "@talismn/balances-evm-native": "workspace:*",
+    "@talismn/balances-substrate-assets": "workspace:*",
+    "@talismn/balances-substrate-equilibrium": "workspace:*",
+    "@talismn/balances-substrate-native": "workspace:*",
+    "@talismn/balances-substrate-orml": "workspace:*",
+    "@talismn/balances-substrate-tokens": "workspace:*"
   },
   "devDependencies": {
-    "@talismn/eslint-config": "workspace:^",
-    "@talismn/tsconfig": "workspace:^",
+    "@talismn/eslint-config": "workspace:*",
+    "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
     "eslint": "^8.4.0",
     "jest": "^28.1.0",

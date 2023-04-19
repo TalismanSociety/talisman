@@ -91,12 +91,12 @@ const TokenRow: FC<TokenRowProps> = ({
   onClick,
 }) => {
   const { tokensTotal, isLoading } = useMemo(() => {
-    const planck = balances.sorted.reduce((prev, curr) => prev + curr.transferable.planck, 0n)
+    const planck = balances.each.reduce((prev, curr) => prev + curr.transferable.planck, 0n)
     return {
       tokensTotal: planckToTokens(planck.toString(), token.decimals),
-      isLoading: balances.sorted.find((b) => b.status === "cache"),
+      isLoading: balances.each.find((b) => b.status === "cache"),
     }
-  }, [balances.sorted, token.decimals])
+  }, [balances.each, token.decimals])
 
   const isTransferable = useMemo(() => isTransferableToken(token), [token])
 

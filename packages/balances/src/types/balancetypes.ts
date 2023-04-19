@@ -56,6 +56,11 @@ export type BalanceStatus =
 export type IBalance = {
   /** The module that this balance was retrieved by */
   source: string
+  /**
+   * For modules which fetch balances via module sources, this is the sub-source
+   * e.g. `staking` or `crowdloans`
+   **/
+  subSource?: string
 
   /** Has this balance never been fetched, or is it from a cache, or is it up to date? */
   status: BalanceStatus
@@ -101,7 +106,11 @@ export type IBalanceAmounts = {
 export type Amount = string
 
 /** A labelled amount of a balance */
-export type AmountWithLabel<TLabel extends string> = { label: TLabel; amount: Amount }
+export type AmountWithLabel<TLabel extends string> = {
+  label: TLabel
+  amount: Amount
+  meta?: unknown
+}
 
 /** A labelled locked amount of a balance */
 export type LockedAmount<TLabel extends string> = AmountWithLabel<TLabel> & {
@@ -130,7 +139,7 @@ export function excludeFromTransferableAmount(
   return locks
     .filter((lock) => lock.includeInTransferable !== true)
     .map((lock) => BigInt(lock.amount))
-    .reduce((max, lock) => BigMath.max(max, lock), BigInt("0"))
+    .reduce((max, lock) => BigMath.max(max, lock), 0n)
 }
 export function excludeFromFeePayableLocks(
   locks: Amount | LockedAmount<string> | Array<LockedAmount<string>>
@@ -150,13 +159,13 @@ export type ExtraAmount<TLabel extends string> = AmountWithLabel<TLabel> & {
 export function includeInTotalExtraAmount(
   extra?: ExtraAmount<string> | Array<ExtraAmount<string>>
 ): bigint {
-  if (!extra) return BigInt("0")
+  if (!extra) return 0n
   if (!Array.isArray(extra)) extra = [extra]
 
   return extra
     .filter((extra) => extra.includeInTotal)
     .map((extra) => BigInt(extra.amount))
-    .reduce((a, b) => a + b, BigInt("0"))
+    .reduce((a, b) => a + b, 0n)
 }
 
 /** Used by plugins to help define their custom `BalanceType` */

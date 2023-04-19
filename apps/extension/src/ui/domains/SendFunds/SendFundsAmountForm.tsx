@@ -13,7 +13,7 @@ import useAccountByAddress from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useToken from "@ui/hooks/useToken"
 import { isSubToken } from "@ui/util/isSubToken"
-import { default as debounce } from "lodash/debounce"
+import debounce from "lodash/debounce"
 import {
   ChangeEventHandler,
   DetailedHTMLProps,

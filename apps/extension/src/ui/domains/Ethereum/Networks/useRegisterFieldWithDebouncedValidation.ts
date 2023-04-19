@@ -1,4 +1,4 @@
-import { default as debounce } from "lodash/debounce"
+import debounce from "lodash/debounce"
 import { useCallback } from "react"
 import {
   FieldPath,

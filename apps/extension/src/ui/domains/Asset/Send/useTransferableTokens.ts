@@ -88,18 +88,16 @@ export const useSortedTransferableTokens = (withBalanceFirst = false) => {
     const transferableTokenIdsWithBalances = new Set<string>()
     if (!withBalanceFirst) return transferableTokenIdsWithBalances
 
-    balances.each
-      .filter((balance) => balance.transferable.planck > 0n)
-      .forEach((balance) => {
-        if (balance.chainId) {
-          const id = `${balance.tokenId}-${balance.chainId}`
-          transferableTokenIdsWithBalances.add(id)
-        }
-        if (balance.evmNetworkId) {
-          const id = `${balance.tokenId}-${balance.evmNetworkId}`
-          transferableTokenIdsWithBalances.add(id)
-        }
-      })
+    balances.filterNonZero("transferable").each.forEach((balance) => {
+      if (balance.chainId) {
+        const id = `${balance.tokenId}-${balance.chainId}`
+        transferableTokenIdsWithBalances.add(id)
+      }
+      if (balance.evmNetworkId) {
+        const id = `${balance.tokenId}-${balance.evmNetworkId}`
+        transferableTokenIdsWithBalances.add(id)
+      }
+    })
 
     return transferableTokenIdsWithBalances
   }, [balances, withBalanceFirst])
