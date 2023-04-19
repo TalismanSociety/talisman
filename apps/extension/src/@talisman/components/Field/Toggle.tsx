@@ -1,9 +1,9 @@
-// @ts-nocheck
 import { useCallback } from "react"
 import styled from "styled-components"
 
 import Field, { IFieldProps, fieldDefaultProps } from "./Field"
 
+// warning : value property doesn't use IFieldProps's type, it a boolean
 interface IProps extends IFieldProps {
   onChange: (value: boolean) => void
 }
@@ -12,6 +12,8 @@ const defaultProps: IProps = {
   ...fieldDefaultProps,
 }
 
+// TODO focused button visual effect
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Toggle = ({ value, onChange, fieldProps, disabled, ...rest }: IProps) => {
   const handleToggle = useCallback(() => {
     if (disabled) return
@@ -20,9 +22,13 @@ const Toggle = ({ value, onChange, fieldProps, disabled, ...rest }: IProps) => {
 
   return (
     <Field {...rest}>
-      <div className="toggle" data-on={value === true} onClick={handleToggle}>
+      <button
+        className="toggle"
+        data-on={(value as unknown as boolean) === true}
+        onClick={handleToggle}
+      >
         <span />
-      </div>
+      </button>
     </Field>
   )
 }
@@ -32,14 +38,13 @@ const StyledToggle = styled(Toggle)`
   cursor: pointer;
   overflow: visible;
 
-  ${({ disabled }) => {
-    if (disabled) {
-      return `
+  ${({ disabled }) =>
+    disabled
+      ? `
         cursor: not-allowed;
         opacity: 0.5;
       `
-    }
-  }}
+      : ""}
 
   .field-header {
     display: inline-block;

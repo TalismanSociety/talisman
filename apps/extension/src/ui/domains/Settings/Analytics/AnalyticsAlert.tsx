@@ -35,9 +35,9 @@ export const AlertCard = styled(({ className, onLearnMoreClick, onAccept, onReje
         <>
           <p>
             We'd like to gather{" "}
-            <span className="learn-more" onClick={onLearnMoreClick}>
+            <button className="learn-more" onClick={onLearnMoreClick}>
               anonymous usage data
-            </span>{" "}
+            </button>{" "}
             to help improve the experience of using Talisman.
           </p>
           <p>

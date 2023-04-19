@@ -7,7 +7,6 @@ import { isValidAddress } from "@talisman/util/isValidAddress"
 import { useSendFundsWizard } from "@ui/apps/popup/pages/SendFunds/context"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
-import useBalances from "@ui/hooks/useBalances"
 import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
 import { useCallback, useMemo, useState } from "react"
@@ -130,6 +129,7 @@ export const SendFundsRecipientPicker = () => {
         <div className="grow">
           <SearchInput
             onValidate={handleValidate}
+            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             onChange={setSearch}
             placeholder="Enter address"

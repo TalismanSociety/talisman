@@ -151,7 +151,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
     handleSubmit,
     setValue,
     watch,
-    formState: { errors, isValid: isFormValid, isSubmitting },
+    formState: { errors, isValid: isFormValid },
   } = useForm<FormData>({
     mode: "onChange",
     reValidateMode: "onChange",

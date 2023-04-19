@@ -134,6 +134,7 @@ const getTokensList = async () => {
 
   Object.entries(mirrorTokenIds)
     .filter(([mirrorToken]) => tokens[mirrorToken])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .forEach(([mirrorToken, mirrorOf]) => ((tokens[mirrorToken] as any).mirrorOf = mirrorOf))
 
   return tokens

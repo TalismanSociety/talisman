@@ -10,7 +10,7 @@ import styled from "styled-components"
 
 import Site from "./Site"
 
-const AuthorisedSitesList = ({ className }: any) => {
+const AuthorisedSitesList = () => {
   const sites = useAuthorisedSites()
   const [providerType, setProviderType] = useState<ProviderType>("polkadot")
 

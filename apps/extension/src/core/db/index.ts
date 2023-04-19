@@ -2,16 +2,9 @@ import { ProtectorSources, ProtectorStorage } from "@core/domains/app/protector/
 import { WalletTransaction } from "@core/domains/transactions/types"
 import { MetadataDef } from "@core/inject/types"
 import { DbTokenRates } from "@talismn/token-rates"
-import { Dexie, Transaction, Version } from "dexie"
-import Browser from "webextension-polyfill"
+import { Dexie } from "dexie"
 
 export const MIGRATION_ERROR_MSG = "Talisman Dexie Migration Error"
-
-const inBackgroundScript = (cb: Parameters<Version["upgrade"]>[0]) => (tx: Transaction) => {
-  if (Browser.extension.getBackgroundPage() === window) {
-    cb(tx)
-  } else throw new Error("Talisman Dexie Migration Error")
-}
 
 export class TalismanDatabase extends Dexie {
   tokenRates!: Dexie.Table<DbTokenRates, string>

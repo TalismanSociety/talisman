@@ -25,9 +25,11 @@ const Container = styled.div`
   }
 `
 
-export default () => (
+const DashboardNotifications = () => (
   <Container>
     <BraveWarningNotification />
     <BackupNotification />
   </Container>
 )
+
+export default DashboardNotifications

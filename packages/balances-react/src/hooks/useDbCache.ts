@@ -85,6 +85,7 @@ const consolidateDbCache = (
 
   Object.entries(mirrorTokenIds)
     .filter(([mirrorToken]) => tokensMap[mirrorToken])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .forEach(([mirrorToken, mirrorOf]) => ((tokensMap[mirrorToken] as any).mirrorOf = mirrorOf))
   // END: temp hack
 

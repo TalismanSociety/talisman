@@ -130,8 +130,8 @@ export const SubTokensModule: NewBalanceModule<
         // before this change, the client needed to already know the type information ahead of time
         if (!metadataIsV14(metadata)) return null
 
-        const isTokensPallet = (pallet: any) => pallet.name === "Tokens"
-        const isAccountsItem = (item: any) => item.name === "Accounts"
+        const isTokensPallet = (pallet: { name: string }) => pallet.name === "Tokens"
+        const isAccountsItem = (item: { name: string }) => item.name === "Accounts"
 
         filterMetadataPalletsAndItems(metadata, [
           { pallet: isTokensPallet, items: [isAccountsItem] },
@@ -249,7 +249,7 @@ export const SubTokensModule: NewBalanceModule<
 
       const currencyId = (() => {
         try {
-          return JSON.parse(token.onChainId as any)
+          return JSON.parse(token.onChainId as string)
         } catch (error) {
           return token.onChainId
         }
@@ -380,6 +380,7 @@ async function buildQueries(
         decodeAnyAddress(address),
         (() => {
           try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return JSON.parse(token.onChainId as any)
           } catch (error) {
             return token.onChainId
@@ -395,6 +396,7 @@ async function buildQueries(
         //   reserved: 0
         //   frozen: 0
         // }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const balance = (storageHelper.decode(change) as any) ?? {
           free: "0",
           reserved: "0",

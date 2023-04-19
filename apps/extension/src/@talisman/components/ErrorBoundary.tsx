@@ -5,8 +5,6 @@ import { FC, ReactNode, useCallback } from "react"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
 
-import { SimpleButton } from "./SimpleButton"
-
 const ErrorContainer = styled.section`
   display: flex;
   align-items: center;
@@ -47,6 +45,7 @@ const ErrorContainer = styled.section`
 `
 
 const ErrorMessage: FC<{ error: Error }> = ({ error }) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const isDbVersionError = (error as any)?.inner?.name === "VersionError"
 
   const clearDatabases = useCallback(() => {

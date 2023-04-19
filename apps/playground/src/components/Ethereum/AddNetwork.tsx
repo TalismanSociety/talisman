@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react"
 import { Button } from "talisman-ui"
-import { useAccount, useConnect, useProvider } from "wagmi"
+import { useAccount } from "wagmi"
 
 import { Section } from "../shared/Section"
 
@@ -18,7 +18,7 @@ export const AddNetwork = () => {
   const { connector } = useAccount()
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<Error>()
-  const [result, setResult] = useState<any>()
+  const [result, setResult] = useState<string>()
 
   const handleAddNetwork = useCallback(
     (key: keyof typeof NETWORKS) => async () => {
@@ -27,7 +27,7 @@ export const AddNetwork = () => {
       setIsPending(true)
       try {
         const provider = await connector?.getProvider()
-        const res = await provider.send({
+        await provider.send({
           method: "wallet_addEthereumChain",
           params: [NETWORKS[key]],
         })

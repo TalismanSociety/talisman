@@ -107,13 +107,13 @@ export const QrCodeSourceSelector = ({
           className={classNames("text-body-secondary flex items-center gap-3 text-sm", className)}
         >
           QR Source:{" "}
-          <span
+          <button
             className="text-body hover:bg-grey-750 flex cursor-pointer items-center gap-2 rounded-sm p-3"
             onClick={togglePopover}
           >
             {startCase(qrCodeSource)}
             <ChevronDownIcon />
-          </span>
+          </button>
         </div>
       </PopoverTrigger>
       <PopoverContent

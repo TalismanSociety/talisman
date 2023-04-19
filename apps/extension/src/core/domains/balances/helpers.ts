@@ -34,6 +34,7 @@ export const getNomPoolStake = async ({
       if (!stateKey) return []
 
       const decodeResult = (change: string | null): [string, NomPoolStakedBalance | null] => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const decoded: any = storageHelper.decode(change)
 
         // explicit null is required here to ensure the frontend knows that the address has been queried

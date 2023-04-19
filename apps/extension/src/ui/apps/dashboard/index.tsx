@@ -1,4 +1,3 @@
-import { DEBUG } from "@core/constants"
 import { PHISHING_PAGE_REDIRECT } from "@polkadot/extension-base/defaults"
 import { FullScreenLoader } from "@talisman/components/FullScreenLoader"
 import { api } from "@ui/api"
@@ -38,7 +37,6 @@ import ChangePassword from "./routes/Settings/ChangePassword"
 import Options from "./routes/Settings/Options"
 import SecurityPrivacySettings from "./routes/Settings/SecurityPrivacySettings"
 import SitesConnected from "./routes/Settings/SitesConnected"
-import { TestPage } from "./routes/TestPage"
 import { AddCustomTokenPage } from "./routes/Tokens/AddCustomTokenPage"
 import { TokenPage } from "./routes/Tokens/TokenPage"
 import { TokensPage } from "./routes/Tokens/TokensPage"
@@ -115,7 +113,6 @@ const DashboardInner = () => {
           <Route path="add" element={<NetworkPage />} />
           <Route path=":id" element={<NetworkPage />} />
         </Route>
-        {DEBUG && <Route path="test" element={<TestPage />} />}
         <Route path="*" element={<Navigate to="/portfolio" replace />} />
       </Routes>
     </Suspense>

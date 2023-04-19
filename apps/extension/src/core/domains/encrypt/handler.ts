@@ -1,5 +1,4 @@
 import { getPairForAddressSafely } from "@core/handlers/helpers"
-import { createSubscription, unsubscribe } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { requestStore } from "@core/libs/requests/store"
@@ -13,13 +12,7 @@ import { assert, u8aToHex, u8aToU8a } from "@polkadot/util"
 import { Keypair } from "@polkadot/util-crypto/types"
 import * as Sentry from "@sentry/browser"
 
-import {
-  DecryptRequestIdOnly,
-  ENCRYPT_DECRYPT_PREFIX,
-  ENCRYPT_ENCRYPT_PREFIX,
-  EncryptRequestIdOnly,
-  RequestEncryptCancel,
-} from "./types"
+import { DecryptRequestIdOnly, EncryptRequestIdOnly, RequestEncryptCancel } from "./types"
 
 export default class EncryptHandler extends ExtensionHandler {
   private async encryptApprove({ id }: EncryptRequestIdOnly) {
@@ -111,6 +104,7 @@ export default class EncryptHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {

@@ -330,8 +330,10 @@ export const AccountSelect = ({ responsive, className }: AccountSelectProps) => 
         {isOpen && (
           <>
             {/* This first item is hidden by default, displayed only on small screen, when button contains only the avatar */}
-            <li className="current" onClick={closeMenu}>
-              {account ? <SingleAccountOption {...account} /> : <AllAccountsOption />}
+            <li className="current">
+              <button onClick={closeMenu} className="w-full text-left">
+                {account ? <SingleAccountOption {...account} /> : <AllAccountsOption />}
+              </button>
             </li>
             {items.map((item, index) => (
               <li key={item.address ?? "all"} {...getItemProps({ item, index })}>

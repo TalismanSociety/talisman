@@ -239,6 +239,7 @@ const PasteAddress = ({ onSelected, exclude, addressType }: PasteAddressProps) =
 
 // prevents searchbox to be filled with item.toString() when we select one
 // we want to keep this an empty string to allow for a quick search without clearing the field
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const handleItemToString = (item: AccountJson | null) => ""
 
 type DivWithMountProps = React.DetailedHTMLProps<
@@ -259,6 +260,7 @@ const DivWithMount = forwardRef<HTMLDivElement, DivWithMountProps>(
     )
   }
 )
+DivWithMount.displayName = "DivWithMount"
 
 type Props = {
   defaultValue?: string
@@ -286,13 +288,13 @@ const AccountPicker: FC<Props> = ({
   tabIndex,
   addressType,
   genesisHash,
-}: any) => {
+}) => {
   const accounts = useAccounts()
   const { contacts } = useAddressBook()
   const [selectedAddress, setSelectedAddress] = useState<string | undefined>(defaultValue)
 
   useEffect(() => {
-    if (onChange) onChange(selectedAddress)
+    if (onChange && selectedAddress) onChange(selectedAddress)
   }, [onChange, selectedAddress])
 
   useEffect(() => {
@@ -409,13 +411,14 @@ const AccountPicker: FC<Props> = ({
                       {withAddressInput && <span className="group-header">Contacts</span>}
                       <ul>
                         {filteredContacts.map((contact, index) => (
+                          // eslint-disable-next-line react/jsx-key
                           <li
                             {...getItemProps({
                               key: contact.address,
                               item: contact,
                               index,
                               // needed to get around downshift/Portal bug
-                              onMouseUp: (e) => selectItem(contact),
+                              onMouseUp: () => selectItem(contact),
                             })}
                           >
                             <NamedAddress
@@ -433,13 +436,14 @@ const AccountPicker: FC<Props> = ({
                       {label && withAddressInput && <span className="group-header">{label}</span>}
                       <ul>
                         {filteredAccounts.map((account, index) => (
+                          // eslint-disable-next-line react/jsx-key
                           <li
                             {...getItemProps({
                               key: account.address,
                               item: account,
                               index: index + filteredContacts.length,
                               // needed to get around downshift/Portal bug
-                              onMouseUp: (e) => selectItem(account),
+                              onMouseUp: () => selectItem(account),
                             })}
                           >
                             <AccountName withAvatar address={account?.address} />

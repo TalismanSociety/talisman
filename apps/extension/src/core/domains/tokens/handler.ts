@@ -13,6 +13,7 @@ export default class TokensHandler extends ExtensionHandler {
     id: string,
     type: TMessageType,
     request: RequestTypes[TMessageType],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     port: Port
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
@@ -25,18 +26,6 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       // ERC20 token handlers -----------------------------------------------------
       // --------------------------------------------------------------------
-
-      case "pri(tokens.erc20.custom)":
-        return Object.values(await chaindataProvider.tokens()).filter(
-          // note : need to check type too because isCustom is also set to true for native tokens of custom networks
-          (token) => "isCustom" in token && token.isCustom && token.type === "evm-erc20"
-        ) as any
-
-      case "pri(tokens.erc20.custom.byid)": {
-        const token = await chaindataProvider.getToken((request as RequestIdOnly).id)
-        if (!token || !("isCustom" in token)) return
-        return token as ResponseType<"pri(tokens.erc20.custom.byid)">
-      }
 
       case "pri(tokens.erc20.custom.add)": {
         const token = request as CustomErc20TokenCreate

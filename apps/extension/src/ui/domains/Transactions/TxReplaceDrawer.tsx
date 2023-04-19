@@ -151,7 +151,7 @@ const EvmDrawerContent: FC<{
         title: `Failed to ${type}`,
         type: "error",
         subtitle:
-          (err as any)?.message === "nonce too low"
+          (err as Error)?.message === "nonce too low"
             ? "Transaction already confirmed"
             : `Failed to ${type}`,
       })
@@ -181,7 +181,7 @@ const EvmDrawerContent: FC<{
           title: `Failed to ${type}`,
           type: "error",
           subtitle:
-            (err as any)?.message === "nonce too low"
+            (err as Error)?.message === "nonce too low"
               ? "Transaction already confirmed"
               : `Failed to ${type}`,
         })

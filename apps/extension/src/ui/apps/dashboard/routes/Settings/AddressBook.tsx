@@ -1,16 +1,18 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
+import { isEthereumAddress } from "@polkadot/util-crypto"
 import HeaderBlock from "@talisman/components/HeaderBlock"
-import PopNav from "@talisman/components/PopNav"
 import Spacer from "@talisman/components/Spacer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { CopyIcon, MoreHorizontalIcon, PlusIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { AccountAddressType } from "@talisman/util/getAddressType"
+import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { AnalyticsPage } from "@ui/api/analytics"
 import Layout from "@ui/apps/dashboard/layout"
 import { Address } from "@ui/domains/Account/Address"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { useCopyAddressModal } from "@ui/domains/CopyAddress"
+import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { ContactCreateModal } from "@ui/domains/Settings/AddressBook/ContactCreateModal"
 import { ContactDeleteModal } from "@ui/domains/Settings/AddressBook/ContactDeleteModal"
 import { ContactEditModal } from "@ui/domains/Settings/AddressBook/ContactEditModal"
@@ -20,8 +22,15 @@ import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import startCase from "lodash/startCase"
-import { PropsWithChildren, useCallback, useMemo, useState } from "react"
-import { Button, PillButton } from "talisman-ui"
+import { ButtonHTMLAttributes, FC, useCallback, useMemo, useState } from "react"
+import {
+  Button,
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+  PillButton,
+} from "talisman-ui"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -30,10 +39,14 @@ const ANALYTICS_PAGE: AnalyticsPage = {
   page: "Address book contact list",
 }
 
-const SquareButton = ({ children }: PropsWithChildren) => (
+const SquareButton: FC<ButtonHTMLAttributes<HTMLButtonElement>> = ({ children, ...props }) => (
   <button
     type="button"
-    className="hover:bg-grey-700 flex h-[3.2rem] w-[3.2rem] cursor-pointer items-center justify-center rounded"
+    {...props}
+    className={classNames(
+      "hover:bg-grey-700 flex h-[3.2rem] w-[3.2rem] cursor-pointer items-center justify-center rounded",
+      props.className
+    )}
   >
     {children}
   </button>
@@ -48,6 +61,7 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
   const { genericEvent } = useAnalytics()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const [hover, setHover] = useState(false)
+  const { account } = useSelectedAccount()
 
   const handleCopyClick = useCallback(() => {
     openCopyAddressModal({
@@ -56,6 +70,15 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
     })
     genericEvent("open copy address", { from: "address book" })
   }, [contact.address, genericEvent, openCopyAddressModal])
+
+  const handleSendClick = useCallback(() => {
+    // set currently selected account as from, unless address type mismatch
+    const from =
+      account && isEthereumAddress(account.address) === isEthereumAddress(contact.address)
+        ? account.address
+        : undefined
+    api.sendFundsOpen({ to: contact.address, from })
+  }, [account, contact.address])
 
   return (
     <div
@@ -76,38 +99,21 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
         <SquareButton>
           <CopyIcon onClick={handleCopyClick} />
         </SquareButton>
-        <PopNav
-          trigger={
-            <SquareButton>
-              <MoreHorizontalIcon />
-            </SquareButton>
-          }
-          className="icon more"
-          noPadding
-          closeOnMouseOut
-        >
-          <PopNav.Item
-            className="hover:bg-black-tertiary"
-            onClick={() => handleEdit(contact.address)}
-          >
-            Edit contact
-          </PopNav.Item>
-          <PopNav.Item
-            className="hover:bg-black-tertiary"
-            onClick={() => api.sendFundsOpen({ to: contact.address })}
-          >
-            Send to this contact
-          </PopNav.Item>
-          <PopNav.Item className="hover:bg-black-tertiary" onClick={handleCopyClick}>
-            Copy Address
-          </PopNav.Item>
-          <PopNav.Item
-            className="hover:bg-black-tertiary"
-            onClick={() => handleDelete(contact.address)}
-          >
-            Delete Contact
-          </PopNav.Item>
-        </PopNav>
+        <ContextMenu placement="bottom-end">
+          <ContextMenuTrigger className="hover:bg-grey-700 flex h-[3.2rem] w-[3.2rem] cursor-pointer items-center justify-center rounded">
+            <MoreHorizontalIcon />
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onClick={() => handleEdit(contact.address)}>
+              Edit contact
+            </ContextMenuItem>
+            <ContextMenuItem onClick={handleSendClick}>Send to this contact</ContextMenuItem>
+            <ContextMenuItem onClick={handleCopyClick}>Copy address</ContextMenuItem>
+            <ContextMenuItem onClick={() => handleDelete(contact.address)}>
+              Delete contact
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
       </div>
     </div>
   )

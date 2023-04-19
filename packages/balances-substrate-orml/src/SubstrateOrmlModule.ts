@@ -575,6 +575,7 @@ function formatRpcResult(
         return false
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const balance: any = createType(typeRegistry, AccountData, change)
 
       const free = (balance?.free?.toBigInt?.() ?? 0n).toString()

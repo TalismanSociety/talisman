@@ -18,6 +18,7 @@ const ENCRYPTER_PUB_KEY = "0x183982ce80e4b52f2e80aaf36d18b1eba1a32005ffbefd95296
 
 export const Sumi = () => {
   const { account, extension } = useWallet()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<Error>()
   const [encryptResult, setEncryptResult] = useState<EncryptResult>()
   const [decryptResult, setDecryptResult] = useState<DecryptResult>()

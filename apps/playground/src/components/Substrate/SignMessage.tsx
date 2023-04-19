@@ -1,5 +1,4 @@
 import { SignerResult } from "@polkadot/api/types"
-import { stringToU8a, u8aToHex } from "@polkadot/util"
 import { signatureVerify } from "@polkadot/util-crypto"
 import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"

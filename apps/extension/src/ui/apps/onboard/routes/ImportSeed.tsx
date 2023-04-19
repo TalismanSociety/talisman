@@ -97,6 +97,7 @@ export const ImportSeedPage = () => {
                     rows={5}
                     data-lpignore
                     spellCheck={false}
+                    // eslint-disable-next-line jsx-a11y/no-autofocus
                     autoFocus
                     className="placeholder:text-body-secondary/30 ring-grey-600 focus:ring-1"
                   />

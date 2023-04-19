@@ -32,14 +32,16 @@ interface LedgerSigningStatusProps {
   message: string
   requiresConfirmation?: boolean
   status?: "error" | "signing"
-  confirm?: (args: any) => void
+  confirm?: () => void
 }
+
+const NO_OP = () => {}
 
 export const LedgerSigningStatus = ({
   status,
   message,
   requiresConfirmation = true,
-  confirm = () => {},
+  confirm = NO_OP,
 }: LedgerSigningStatusProps) => {
   return (
     <Container status={status === "error" ? status : ""}>

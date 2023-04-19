@@ -121,6 +121,7 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
     const args = txDetails.method?.args
       ? JSON.parse(JSON.stringify(txDetails.method.args))
       : undefined
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     args?.calls?.forEach?.((call: any) => {
       delete call.docs
     })

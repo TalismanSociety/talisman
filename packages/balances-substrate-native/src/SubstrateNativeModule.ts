@@ -227,25 +227,25 @@ export const SubNativeModule: NewBalanceModule<
         // before this change, the client needed to already know the type information ahead of time
         if (!metadataIsV14(metadata)) return null
 
-        const isSystemPallet = (pallet: any) => pallet.name === "System"
-        const isAccountItem = (item: any) => item.name === "Account"
+        const isSystemPallet = (pallet: { name: string }) => pallet.name === "System"
+        const isAccountItem = (item: { name: string }) => item.name === "Account"
 
-        const isBalancesPallet = (pallet: any) => pallet.name === "Balances"
-        const isLocksItem = (item: any) => item.name === "Locks"
+        const isBalancesPallet = (pallet: { name: string }) => pallet.name === "Balances"
+        const isLocksItem = (item: { name: string }) => item.name === "Locks"
 
-        const isNomPoolsPallet = (pallet: any) => pallet.name === "NominationPools"
-        const isPoolMembersItem = (item: any) => item.name === "PoolMembers"
-        const isBondedPoolsItem = (item: any) => item.name === "BondedPools"
-        const isMetadataItem = (item: any) => item.name === "Metadata"
+        const isNomPoolsPallet = (pallet: { name: string }) => pallet.name === "NominationPools"
+        const isPoolMembersItem = (item: { name: string }) => item.name === "PoolMembers"
+        const isBondedPoolsItem = (item: { name: string }) => item.name === "BondedPools"
+        const isMetadataItem = (item: { name: string }) => item.name === "Metadata"
 
-        const isStakingPallet = (pallet: any) => pallet.name === "Staking"
-        const isLedgerItem = (item: any) => item.name === "Ledger"
+        const isStakingPallet = (pallet: { name: string }) => pallet.name === "Staking"
+        const isLedgerItem = (item: { name: string }) => item.name === "Ledger"
 
-        const isCrowdloanPallet = (pallet: any) => pallet.name === "Crowdloan"
-        const isFundsItem = (item: any) => item.name === "Funds"
+        const isCrowdloanPallet = (pallet: { name: string }) => pallet.name === "Crowdloan"
+        const isFundsItem = (item: { name: string }) => item.name === "Funds"
 
-        const isParasPallet = (pallet: any) => pallet.name === "Paras"
-        const isParachainsItem = (item: any) => item.name === "Parachains"
+        const isParasPallet = (pallet: { name: string }) => pallet.name === "Paras"
+        const isParachainsItem = (item: { name: string }) => item.name === "Parachains"
 
         filterMetadataPalletsAndItems(metadata, [
           { pallet: isSystemPallet, items: [isAccountItem] },
@@ -475,8 +475,8 @@ async function buildQueries(
 
       try {
         return typeRegistry.metadata.lookup.getTypeDef(chainMeta.accountInfoType).type
-      } catch (error: any) {
-        log.debug(`Failed to getTypeDef for chain ${chainId}: ${error.message}`)
+      } catch (error) {
+        log.debug(`Failed to getTypeDef for chain ${chainId}: ${(error as Error).message}`)
         return
       }
     })()
@@ -523,14 +523,13 @@ async function buildQueries(
             return new Balance(balanceJson)
           }
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           let chainBalance: any
           try {
             chainBalance = createType(typeRegistry, accountInfoTypeDef, change)
           } catch (error) {
             log.warn(
-              `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${(
-                error as any
-              )?.toString()}`
+              `Failed to create balance type for token ${tokenId} on chain ${chainId}: ${error?.toString()}`
             )
             return new Balance(balanceJson)
           }
@@ -572,9 +571,11 @@ async function buildQueries(
         const decodeResult = (change: string | null) => {
           if (change === null) return new Balance(balanceJson)
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const decoded: any = storageHelper.decode(change)
           balanceJson.locks = [
             ...balanceJson.locks.slice(0, 2),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ...(decoded?.map?.((lock: any) => ({
               label: getLockedType(lock?.id?.toUtf8?.()),
               amount: lock?.amount?.toString?.() ?? "0",
@@ -673,6 +674,7 @@ export async function subscribeNompoolStaking(
         const stateKey = storageHelper.stateKey
         if (!stateKey) return []
         const decodeResult = (change: string | null) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const decoded: any = storageHelper.decode(change)
 
           const poolId: string | undefined = decoded?.value?.poolId?.toString?.()
@@ -705,6 +707,7 @@ export async function subscribeNompoolStaking(
         const stateKey = storageHelper.stateKey
         if (!stateKey) return []
         const decodeResult = (change: string | null) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const decoded: any = storageHelper.decode(change)
 
           const points: string | undefined = decoded?.value?.points?.toString?.()
@@ -734,6 +737,7 @@ export async function subscribeNompoolStaking(
         const stateKey = storageHelper.stateKey
         if (!stateKey) return []
         const decodeResult = (change: string | null) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const decoded: any = storageHelper.decode(change)
 
           const activeStake: string | undefined = decoded?.value?.active?.toString?.()
@@ -761,6 +765,7 @@ export async function subscribeNompoolStaking(
         const stateKey = storageHelper.stateKey
         if (!stateKey) return []
         const decodeResult = (change: string | null) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const decoded: any = storageHelper.decode(change)
 
           const bytes: Uint8Array | undefined = decoded?.toU8a?.()
@@ -961,13 +966,15 @@ async function subscribeCrowdloans(
         : new TypeRegistry()
 
     const subscribeParaIds = (callback: SubscriptionCallback<Array<number[]>>) => {
-      const queries = [0].flatMap((_): RpcStateQuery<number[]> | [] => {
+      const queries = [0].flatMap((): RpcStateQuery<number[]> | [] => {
         const storageHelper = new StorageHelper(typeRegistry, "paras", "parachains")
         const stateKey = storageHelper.stateKey
         if (!stateKey) return []
         const decodeResult = (change: string | null): number[] => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const decoded: any = storageHelper.decode(change)
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const paraIds = (decoded ?? [])?.map?.((paraId: any) => paraId?.toNumber?.())
 
           return paraIds
@@ -990,6 +997,7 @@ async function subscribeCrowdloans(
         const stateKey = storageHelper.stateKey
         if (!stateKey) return []
         const decodeResult = (change: string | null) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const decoded: any = storageHelper.decode(change)
 
           const firstPeriod = decoded?.value?.firstPeriod?.toString?.() ?? ""

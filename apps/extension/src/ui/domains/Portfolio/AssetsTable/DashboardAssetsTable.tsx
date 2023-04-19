@@ -141,12 +141,12 @@ const AssetRow = ({ balances }: AssetRowProps) => {
         <tr className="staking-banner bg-primary-500 text-primary-500 h-[4.1rem] cursor-pointer bg-opacity-10 text-sm">
           <td colSpan={3} className="rounded-t px-8">
             <div className="flex w-full items-center justify-between">
-              <div onClick={handleClickStakingBanner} className="flex items-center gap-4">
+              <button onClick={handleClickStakingBanner} className="flex items-center gap-4">
                 <ZapIcon /> <span className="text-white">Earn ~15% yield on your DOT.</span> This
                 balance is eligible for Nomination Pool Staking via the Talisman Portal.{" "}
                 <ExternalLinkIcon />
-              </div>
-              <XIcon className="h-8" onClick={handleDismissStakingBanner} />
+              </button>
+              <XIcon role="button" className="h-8" onClick={handleDismissStakingBanner} />
             </div>
           </td>
         </tr>

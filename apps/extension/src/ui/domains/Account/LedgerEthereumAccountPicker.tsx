@@ -53,15 +53,16 @@ const useLedgerEthereumAccounts = (
           address,
         } as LedgerEthereumAccount
 
-        setDerivedAccounts((prev) => [...newAccounts])
+        setDerivedAccounts([...newAccounts])
       }
     } catch (err) {
+      const error = err as Error & { statusCode?: number }
       // eslint-disable-next-line no-console
-      DEBUG && console.error((err as Error).message, err)
-      if ((err as Error).message?.toLowerCase().includes("busy")) setError("Ledger is busy")
-      else if ((err as Error).message?.toLowerCase().includes("disconnected"))
+      DEBUG && console.error(error.message, err)
+      if (error.message?.toLowerCase().includes("busy")) setError("Ledger is busy")
+      else if (error.message?.toLowerCase().includes("disconnected"))
         setError("Ledger is disconnected")
-      else if ((err as any).statusCode === 27404) setError("Ledger is locked")
+      else if (error.statusCode === 27404) setError("Ledger is locked")
       else setError("Failed to connect to Ledger")
     }
     setIsBusy(false)

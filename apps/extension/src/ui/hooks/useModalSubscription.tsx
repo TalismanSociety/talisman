@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { api } from "@ui/api"
 import { useBuyTokensModal } from "@ui/domains/Asset/Buy/BuyTokensModalContext"
 import { useSendTokensModal } from "@ui/domains/Asset/Send/SendTokensModalContext"
@@ -12,7 +11,8 @@ const focusCurrentTab = async () => {
 
   // ensure window is focused
   const win = await Browser.windows.getCurrent()
-  if (!win.focused) await Browser.windows.update(win.id, { focused: true })
+  if (!win.focused && typeof win.id === "number")
+    await Browser.windows.update(win.id, { focused: true })
 }
 
 /**

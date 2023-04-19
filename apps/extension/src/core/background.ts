@@ -95,4 +95,5 @@ cryptoWaitReady()
   })
   .catch(Sentry.captureException)
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const iconManager = new IconManager()

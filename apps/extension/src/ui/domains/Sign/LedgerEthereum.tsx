@@ -28,6 +28,7 @@ type LedgerEthereumProps = {
   account: AccountJsonHardwareEthereum
   className?: string
   method: LedgerEthereumSignMethod
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any // string message, typed object for eip712, TransactionRequest for tx
   manualSend?: boolean // requests user to click a button to send the payload to the ledger
   parent?: HTMLElement | string | null
@@ -39,6 +40,7 @@ type LedgerEthereumProps = {
 const signWithLedger = async (
   ledger: LedgerEthereumApp,
   method: LedgerEthereumSignMethod,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: any,
   accountPath: string
 ): Promise<`0x${string}`> => {

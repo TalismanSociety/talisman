@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite --host localhost --port 3001",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint . --max-warnings 0 --ext ts,tsx",
+    "lint:fix": "eslint . --ext ts,tsx --fix"
   },
   "dependencies": {
     "@polkadot/api": "^10.1.4",

@@ -108,6 +108,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             spellCheck={false}
             autoComplete="off"
             data-lpignore
+            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             containerProps={INPUT_CONTAINER_PROPS}
             className="placeholder:text-grey-500"
@@ -122,12 +123,12 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
           >
             Unlock
           </Button>
-          <span
+          <button
             className="text-body-disabled mt-2 cursor-pointer text-sm transition-colors hover:text-white"
             onClick={setShowResetWallet}
           >
             Forgot Password?
-          </span>
+          </button>
         </form>
       </Footer>
     </Layout>

@@ -1,4 +1,3 @@
-import { stringToU8a } from "@polkadot/util"
 import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Drawer } from "@talisman/components/Drawer"
 import { FadeIn } from "@talisman/components/FadeIn"

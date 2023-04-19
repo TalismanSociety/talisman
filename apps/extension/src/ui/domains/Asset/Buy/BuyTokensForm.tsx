@@ -98,7 +98,7 @@ const Caption = styled.div`
   font-weight: 500;
 `
 
-const renderAccountItem: RenderItemFunc<AccountJsonAny> = (account, key) => {
+const renderAccountItem: RenderItemFunc<AccountJsonAny> = (account) => {
   return <Account.Name withAvatar address={account?.address} />
 }
 

@@ -29,9 +29,12 @@ export const BackupWarningModal = ({ isOpen, snooze, openBackupModal }: BackupWa
           <Button primary onClick={openBackupModal} className="w-[23.2rem]">
             Backup now
           </Button>
-          <span className="text-body-secondary cursor-pointer text-base" onClick={snooze}>
+          <button
+            className="text-body-secondary hover:text-grey-200 cursor-pointer text-base"
+            onClick={snooze}
+          >
             Remind me later
-          </span>
+          </button>
         </div>
       </div>
     </Modal>

@@ -99,10 +99,11 @@ const ChangePassword = () => {
               placeholder="Enter Old Password"
               spellCheck={false}
               autoComplete="off"
+              // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
               data-lpignore
               type="password"
-              tabIndex={1}
+              tabIndex={0}
               disabled={isNotConfirmed}
             />
           </FormFieldContainer>
@@ -114,7 +115,7 @@ const ChangePassword = () => {
               autoComplete="new-password"
               data-lpignore
               type="password"
-              tabIndex={2}
+              tabIndex={0}
               disabled={isNotConfirmed}
             />
           </FormFieldContainer>
@@ -126,7 +127,7 @@ const ChangePassword = () => {
               autoComplete="off"
               data-lpignore
               type="password"
-              tabIndex={3}
+              tabIndex={0}
               disabled={isNotConfirmed}
             />
           </FormFieldContainer>

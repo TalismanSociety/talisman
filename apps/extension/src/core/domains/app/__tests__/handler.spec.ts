@@ -6,7 +6,6 @@ import {
   getLocalStorage,
   setLocalStorage,
 } from "@core/handlers/stores"
-import { MessageTypes } from "@core/types"
 /* eslint-disable no-console */
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
@@ -206,7 +205,7 @@ describe("App handler when password is trimmed", () => {
       accountsJson,
       await extensionStores.password.transformPassword(password)
     )
-    const login = await messageSender("pri(app.authenticate)", {
+    await messageSender("pri(app.authenticate)", {
       pass: password,
     })
   })

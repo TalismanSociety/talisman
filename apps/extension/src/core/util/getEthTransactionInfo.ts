@@ -7,6 +7,7 @@ import { isContractAddress } from "./isContractAddress"
 export type ContractType = "ERC20" | "ERC721" | "ERC1155" | "unknown"
 
 // note : order may be important here as some contracts may inherit from others
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const knownContracts: { contractType: ContractType; abi: any }[] = [
   {
     contractType: "ERC20",

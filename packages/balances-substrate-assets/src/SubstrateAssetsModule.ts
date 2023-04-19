@@ -128,10 +128,10 @@ export const SubAssetsModule: NewBalanceModule<
         // before this change, the client needed to already know the type information ahead of time
         if (!metadataIsV14(metadata)) return null
 
-        const isAssetsPallet = (pallet: any) => pallet.name === "Assets"
-        const isAccountItem = (item: any) => item.name === "Account"
-        const isAssetItem = (item: any) => item.name === "Asset"
-        const isMetadataItem = (item: any) => item.name === "Metadata"
+        const isAssetsPallet = (pallet: { name: string }) => pallet.name === "Assets"
+        const isAccountItem = (item: { name: string }) => item.name === "Account"
+        const isAssetItem = (item: { name: string }) => item.name === "Asset"
+        const isMetadataItem = (item: { name: string }) => item.name === "Metadata"
 
         filterMetadataPalletsAndItems(metadata, [
           { pallet: isAssetsPallet, items: [isAccountItem, isAssetItem, isMetadataItem] },
@@ -202,13 +202,17 @@ export const SubAssetsModule: NewBalanceModule<
               .then((result) => metadataQuery.decode(result)),
           ])
 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const unsafeAssetsMetadata = assetsMetadata as any | undefined
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const unsafeAssetsAsset = assetsAsset as any | undefined
+
           const existentialDeposit =
-            (assetsAsset as any)?.value?.minBalance?.toBigInt?.()?.toString?.() ?? "0"
+            unsafeAssetsAsset?.value?.minBalance?.toBigInt?.()?.toString?.() ?? "0"
           const symbol =
-            tokenConfig.symbol ?? (assetsMetadata as any)?.symbol?.toHuman?.() ?? "Unknown"
-          // const name = (assetsMetadata as any)?.name?.toHuman?.() ?? symbol
-          const decimals = (assetsMetadata as any)?.decimals?.toNumber?.() ?? 0
-          const isFrozen = (assetsMetadata as any)?.isFrozen?.toHuman?.() ?? false
+            tokenConfig.symbol ?? unsafeAssetsMetadata?.symbol?.toHuman?.() ?? "Unknown"
+          const decimals = unsafeAssetsMetadata?.decimals?.toNumber?.() ?? 0
+          const isFrozen = unsafeAssetsMetadata?.isFrozen?.toHuman?.() ?? false
           const coingeckoId =
             typeof tokenConfig.coingeckoId === "string" ? tokenConfig.coingeckoId : undefined
 
@@ -389,6 +393,7 @@ async function buildQueries(
         //   reason: Sufficient
         //   extra: null
         // }>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const balance: any = (storageHelper.decode(change) as any)?.value ?? {
           balance: "0",
           isFrozen: false,

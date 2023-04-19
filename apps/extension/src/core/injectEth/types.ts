@@ -20,6 +20,7 @@ import type { InjectedAccount } from "@polkadot/extension-inject/types"
 
 type Promisify<T> = T | Promise<T>
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PromisifyArray<T extends Array<any>> = {
   /* The inbuilt ethers provider methods take arguments which can
    * be a value or the promise of a value, this utility type converts a normal

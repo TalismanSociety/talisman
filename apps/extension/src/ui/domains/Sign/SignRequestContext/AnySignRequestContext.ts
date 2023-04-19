@@ -6,6 +6,7 @@ import useStatus, { SetStatusFn, StatusOptions } from "@talisman/hooks/useStatus
 import { useCallback } from "react"
 
 interface UseAnySigningRequestProps<T extends AnySigningRequest> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   approveSignFn: (requestId: T["id"], ...args: any[]) => Promise<boolean>
   cancelSignFn: (requestId: T["id"]) => Promise<boolean>
   currentRequest?: T
@@ -19,7 +20,9 @@ type SignableRequest<T extends keyof SigningRequests> = Pick<
   status: StatusOptions
   isEthereumRequest: boolean
   message?: string
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   approve: (...args: any[]) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   reject: (...args: any[]) => void
   setReady: SetStatusFn["ready"]
 }
@@ -32,6 +35,7 @@ export const useAnySigningRequest = <T extends AnySigningRequest>({
   const { status, message, setStatus } = useStatus()
 
   const approve = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async (...args: any) => {
       setStatus.processing("Approving request")
       if (!currentRequest) return

@@ -1,8 +1,14 @@
-import styled from "styled-components"
 import Field from "@talisman/components/Field"
 import Account from "@ui/domains/Account"
+import { FC } from "react"
+import styled from "styled-components"
 
-const AuthorisedSitesListAccount = ({ address, isConnected, onChange, className }: any) => {
+const AuthorisedSitesListAccount: FC<{
+  address: string
+  isConnected: boolean
+  onChange: () => void
+  className?: string
+}> = ({ address, isConnected, onChange, className }) => {
   return (
     <div className={`${className} authorised-site-account`}>
       <span>

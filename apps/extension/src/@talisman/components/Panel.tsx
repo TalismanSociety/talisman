@@ -1,7 +1,12 @@
+import { classNames } from "@talismn/util"
+import { FC, PropsWithChildren } from "react"
 import styled from "styled-components"
 
-const Panel = ({ children, className, onClick }: any) => (
-  <div className={`panel ${className}`} onClick={onClick}>
+const Panel: FC<
+  PropsWithChildren & { onClick?: () => void; className?: string; small?: boolean; large?: boolean }
+> = ({ children, className, onClick }) => (
+  // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+  <div className={classNames(`panel`, className)} onClick={onClick}>
     {children}
   </div>
 )

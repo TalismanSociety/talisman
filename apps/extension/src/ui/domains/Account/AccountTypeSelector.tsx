@@ -38,8 +38,6 @@ type AccountTypeSelectorProps = {
   className?: string
 }
 
-const DEFAULT_ADDRESS_TYPES: AccountAddressType[] = ["sr25519", "ethereum"]
-
 export const AccountTypeSelector = ({
   defaultType,
   onChange,

@@ -6,7 +6,7 @@ import { useSearchParams } from "react-router-dom"
 const OnboardNotification = () => (
   <div className="flex items-center gap-8 p-4">
     <div>
-      <img src="/favicon.svg" width="34" height="34" />
+      <img src="/favicon.svg" width="34" height="34" alt="" />
     </div>
     <div className="grow leading-[2.4rem]">
       Pin Talisman for easy access

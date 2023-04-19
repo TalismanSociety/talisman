@@ -45,6 +45,7 @@ export class ErrorBoundaryDatabaseMigration extends Component<Props, State> {
     return { hasError: false }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     setTimeout(() => {
       window.location.reload()

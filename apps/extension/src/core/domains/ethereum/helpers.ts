@@ -125,6 +125,7 @@ export const getGasLimit = (
   tx?: ethers.providers.TransactionRequest
 ) => {
   // some dapps use legacy gas field instead of gasLimit
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const suggestedGasLimit = tx?.gasLimit ?? (tx as any)?.gas
 
   const bnSuggestedGasLimit = suggestedGasLimit

@@ -3,6 +3,7 @@ import { log } from "@core/log"
 import isEqual from "lodash/isEqual"
 import { useEffect, useRef } from "react"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type UseAlec = (label: string, value: any) => void
 
 const useAlecAtClub: UseAlec = () => {}
@@ -25,6 +26,7 @@ const useAlecAtWork: UseAlec = (label, value) => {
       acc[key] = "[useAlec] - Failed to read key"
     }
     return acc
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }, {} as Record<string, any>)
 
   if (Object.keys(changes).length) log.debug("[useAlec]", label, { value, changes })

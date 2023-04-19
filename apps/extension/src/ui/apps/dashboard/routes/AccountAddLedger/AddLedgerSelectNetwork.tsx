@@ -56,9 +56,6 @@ const Container = styled(Layout)`
   }
 `
 
-const H1 = styled.h1`
-  margin-bottom: 1.6rem;
-`
 const H2 = styled.h2`
   font-size: 1.6rem;
   margin-top: 2.4rem;

@@ -1,12 +1,12 @@
-// @ts-nocheck
-import styled from "styled-components"
+import { ReactNode } from "react"
+import styled, { CSSProperties } from "styled-components"
 
 interface IProps {
   columns: number
-  gap: any
-  itemHeight?: number
+  gap: CSSProperties["gap"]
+  itemHeight?: CSSProperties["height"]
   className?: string
-  children?: any
+  children?: ReactNode
 }
 
 const defaultProps: IProps = {
@@ -23,7 +23,7 @@ Grid.defaultProps = defaultProps
 
 const StyledGrid = styled(Grid)`
   display: grid;
-  grid-gap: ${({ gap, ...rest }) => gap};
+  grid-gap: ${({ gap }) => gap};
   width: 100%;
   grid-template-columns: repeat(${({ columns }) => columns}, 1fr);
 

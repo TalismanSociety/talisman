@@ -126,11 +126,11 @@ export const SubEquilibriumModule: NewBalanceModule<
         // before this change, the client needed to already know the type information ahead of time
         if (!metadataIsV14(metadata)) return null
 
-        const isEqAssetsPallet = (pallet: any) => pallet.name === "EqAssets"
-        const isAssetsItem = (item: any) => item.name === "Assets"
+        const isEqAssetsPallet = (pallet: { name: string }) => pallet.name === "EqAssets"
+        const isAssetsItem = (item: { name: string }) => item.name === "Assets"
 
-        const isSystemPallet = (pallet: any) => pallet.name === "System"
-        const isAccountItem = (item: any) => item.name === "Account"
+        const isSystemPallet = (pallet: { name: string }) => pallet.name === "System"
+        const isAccountItem = (item: { name: string }) => item.name === "Account"
 
         filterMetadataPalletsAndItems(metadata, [
           { pallet: isEqAssetsPallet, items: [isAssetsItem] },
@@ -170,6 +170,7 @@ export const SubEquilibriumModule: NewBalanceModule<
           .send(chainId, "state_getStorage", [assetsQuery.stateKey])
           .then((result) => assetsQuery.decode(result))
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;[...((assetsResult as any)?.value ?? [])].map((asset: any) => {
           if (!asset) return
           if (!asset?.id) return
@@ -395,10 +396,12 @@ async function buildQueries(
         //     }
         //   }
         // }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const balances: any = storageHelper.decode(change)
 
         const tokenBalances = Object.fromEntries(
           (balances?.data?.value?.balance || [])
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .map((balance: any) => ({
               id: balance?.[0]?.toBigInt?.().toString?.(),
               free: balance?.[1]?.isPositive

@@ -24,8 +24,10 @@ import type {
 import type { Port } from "@core/types/base"
 
 export interface Handler {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   resolve: (data?: any) => void
   reject: (error: Error) => void
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   subscriber?: (data: any) => void
 }
 

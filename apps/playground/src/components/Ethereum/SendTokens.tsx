@@ -22,7 +22,7 @@ export const SendTokens = () => {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isValid, isSubmitting },
+    formState: { isValid, isSubmitting },
   } = useForm<FormData>({
     defaultValues,
   })

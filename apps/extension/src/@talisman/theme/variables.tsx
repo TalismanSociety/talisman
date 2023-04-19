@@ -1,7 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import { createGlobalStyle } from "styled-components"
 
-import { statusColors, fontSizes, fontWeights, custom } from "./definitions"
+import { custom, fontSizes, fontWeights, statusColors } from "./definitions"
 
 const Variables = createGlobalStyle`  
   :root {

@@ -1,7 +1,7 @@
 import { AccountTypes } from "@core/domains/accounts/types"
 import { appStore } from "@core/domains/app"
 import { api } from "@ui/api"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 
 import useAccounts from "./useAccounts"
 import { useAppState } from "./useAppState"

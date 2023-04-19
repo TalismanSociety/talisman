@@ -26,12 +26,12 @@ export const BackupWarningDrawer = () => {
           <Button fullWidth primary onClick={openBackup}>
             Backup now
           </Button>
-          <span
+          <button
             className="text-body-secondary cursor-pointer text-base"
             onClick={snoozeBackupReminder}
           >
             Remind me later
-          </span>
+          </button>
         </div>
       </div>
     </Drawer>

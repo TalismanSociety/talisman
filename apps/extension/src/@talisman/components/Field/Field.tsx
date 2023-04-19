@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { PropsWithChildren } from "react"
 import styled from "styled-components"
@@ -29,6 +31,7 @@ export interface IFieldProps<T = string | number>
 }
 
 export const fieldDefaultProps = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onChange: (val?: any) => {},
 }
 
@@ -45,6 +48,7 @@ const Field = ({
   children,
   className,
 }: IFieldWrapperProps) => (
+  // eslint-disable-next-line jsx-a11y/click-events-have-key-events
   <div className={`field ${className}`} onClick={onClick}>
     <FieldHeader label={label} info={info} />
     <span className="children">
@@ -56,6 +60,7 @@ const Field = ({
   </div>
 )
 
+/** @deprecated Please don't :) */
 const StyledField = styled(Field)`
   position: relative;
   display: flex;

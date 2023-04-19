@@ -112,6 +112,7 @@ export const PasswordPage = () => {
                     autoComplete="new-password"
                     spellCheck={false}
                     data-lpignore
+                    // eslint-disable-next-line jsx-a11y/no-autofocus
                     autoFocus
                     className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
                     containerProps={INPUT_CONTAINER_PROPS_PASSWORD}

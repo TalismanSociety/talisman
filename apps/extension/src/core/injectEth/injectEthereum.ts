@@ -6,8 +6,11 @@ import { getInjectableEvmProvider } from "./getInjectableEvmProvider"
 
 type TalismanWindow = Window &
   typeof globalThis & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ethereum: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     talismanEth?: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     web3?: any
   }
 

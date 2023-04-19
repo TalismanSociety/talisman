@@ -41,7 +41,7 @@ type AccountPillProps = {
   prefix?: number
 }
 
-export const AccountPill: FC<AccountPillProps> = ({ account, prefix }) => {
+export const AccountPill: FC<AccountPillProps> = ({ account }) => {
   const handleClick = useCallback(() => {
     copyAddress(account.address)
   }, [account.address])

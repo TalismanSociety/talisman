@@ -1,4 +1,4 @@
-import { ArrowDownIcon, CopyIcon, CreditCardIcon } from "@talisman/theme/icons"
+import { ArrowDownIcon, CreditCardIcon } from "@talisman/theme/icons"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"

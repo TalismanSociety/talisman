@@ -13,7 +13,6 @@ import type { TransactionRequest as EthTransactionRequest } from "@ethersproject
 import {
   RequestSigningApproveSignature as PolkadotRequestSigningApproveSignature,
   RequestSign,
-  RequestSigningSubscribe,
   ResponseSigning,
 } from "@polkadot/extension-base/background/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
@@ -106,6 +105,7 @@ export type TransactionMethod = {
   section: string
   method: string
   docs: string[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   args: any
 }
 
@@ -116,6 +116,7 @@ export type TransactionPayload = {
       period: string
       phase: string
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ImmortalEra?: any
   }
   genesisHash: string

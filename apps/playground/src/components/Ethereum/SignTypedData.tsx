@@ -152,6 +152,7 @@ export const SignTypedData = () => {
         if (!connector || !chain || !address) return
 
         const method = getMethod(version)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const message: any = TEST_MESSAGES[method](chain?.id)
         const params = getParams(version, address, JSON.stringify(message))
 
