@@ -10,11 +10,10 @@ export type BalancesStatus =
  * Given a collection of `Balances`, this hook returns a `BalancesStatus` summary for the collection.
  *
  * @param balances The collection of balances to get the status from.
- * @param isLoadingLocks Because the wallet currently fetches locks outside of the balances api, this param can be used to indicate that the locks are still loading, even if the `Balances` collection is not.
  * @returns An instance of `BalancesStatus` which represents the status of the balances collection.
 
  */
-export const useBalancesStatus = (balances: Balances, isLoadingLocks?: boolean) =>
+export const useBalancesStatus = (balances: Balances) =>
   useMemo<BalancesStatus>(() => {
     // stale
     const staleChains = getStaleChains(balances)
@@ -22,11 +21,11 @@ export const useBalancesStatus = (balances: Balances, isLoadingLocks?: boolean) 
 
     // fetching
     const hasCachedBalances = balances.each.some((b) => b.status === "cache")
-    if (hasCachedBalances || isLoadingLocks) return { status: "fetching" }
+    if (hasCachedBalances) return { status: "fetching" }
 
     // live
     return { status: "live" }
-  }, [balances, isLoadingLocks])
+  }, [balances])
 
 export const getStaleChains = (balances: Balances): string[] => [
   ...new Set(

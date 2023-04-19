@@ -27,8 +27,8 @@
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "devDependencies": {
-    "@talismn/eslint-config": "workspace:^",
-    "@talismn/tsconfig": "workspace:^",
+    "@talismn/eslint-config": "workspace:*",
+    "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
     "eslint": "^8.4.0",
     "jest": "^28.1.0",

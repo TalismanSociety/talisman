@@ -29,7 +29,7 @@
     "@changesets/cli": "^2.26",
     "@commitlint/cli": "^17.0.0",
     "@commitlint/config-conventional": "^17.0.0",
-    "@talismn/eslint-config": "workspace:^",
+    "@talismn/eslint-config": "workspace:*",
     "@typescript-eslint/eslint-plugin": "^5.33.0",
     "@typescript-eslint/parser": "^5.33.0",
     "concurrently": "^7.6.0",

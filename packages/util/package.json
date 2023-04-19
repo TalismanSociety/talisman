@@ -32,8 +32,8 @@
     "@polkadot/keyring": "^11.1.1",
     "@polkadot/util": "^11.1.1",
     "@polkadot/util-crypto": "^11.1.1",
-    "@talismn/eslint-config": "workspace:^",
-    "@talismn/tsconfig": "workspace:^",
+    "@talismn/eslint-config": "workspace:*",
+    "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
     "eslint": "^8.4.0",
     "jest": "^28.1.0",
@@ -43,7 +43,7 @@
   "peerDependencies": {
     "@polkadot/keyring": "11.x",
     "@polkadot/util": "11.x",
-    "@polkadot/util-crypto": "^11.x"
+    "@polkadot/util-crypto": "11.x"
   },
   "eslintConfig": {
     "root": true,

@@ -81,6 +81,11 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                   <PortfolioAccount address={row.address} />
                 </div>
               )}
+              {!row.address && row.meta && (
+                <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
+                  {row.meta}
+                </div>
+              )}
             </div>
             <div
               className={classNames(
@@ -170,7 +175,7 @@ export const PopupAssetDetails = ({ balances, symbol }: AssetsTableProps) => {
   const { balancesByChain, isLoading } = useAssetDetails(balances)
   const rows = useMemo(() => Object.entries(balancesByChain), [balancesByChain])
   const hasBalance = useMemo(
-    () => rows.some(([, balances]) => balances.sorted.some((b) => b.total.planck > BigInt(0))),
+    () => rows.some(([, balances]) => balances.each.some((b) => b.total.planck > 0n)),
     [rows]
   )
 

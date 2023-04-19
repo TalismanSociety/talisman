@@ -577,9 +577,9 @@ function formatRpcResult(
 
       const balance: any = createType(typeRegistry, AccountData, change)
 
-      const free = (balance.free.toBigInt() || BigInt("0")).toString()
-      const reserved = (balance.reserved.toBigInt() || BigInt("0")).toString()
-      const frozen = (balance.frozen.toBigInt() || BigInt("0")).toString()
+      const free = (balance?.free?.toBigInt?.() ?? 0n).toString()
+      const reserved = (balance?.reserved?.toBigInt?.() ?? 0n).toString()
+      const frozen = (balance?.frozen?.toBigInt?.() ?? 0n).toString()
 
       return new Balance({
         source: "substrate-orml",

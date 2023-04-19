@@ -88,10 +88,7 @@ const useAllNetworks = ({ balances, type }: { type?: AccountAddressType; balance
     // NetworkOptions.
     const chainIdsWithBalances = new Set()
     const evmNetworkIdsWithBalances = new Set()
-    balances?.each.forEach((b) => {
-      // ignore empty balances
-      if (b.total.planck <= 0n) return
-
+    balances?.filterNonZero("total").each.forEach((b) => {
       b.chainId && chainIdsWithBalances.add(b.chainId)
       b.evmNetworkId && evmNetworkIdsWithBalances.add(b.evmNetworkId)
     })

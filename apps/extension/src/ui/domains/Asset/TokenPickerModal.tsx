@@ -61,7 +61,7 @@ const TokenButton = ({ token, balances, network, onClick }: TokenButtonProps) =>
       isFetching: balances.sorted.some((b) => b.status === "cache"),
       totalTokens: balances.sorted.reduce(
         (prev, balance) => prev + balance.transferable.planck,
-        BigInt(0)
+        0n
       ),
       totalFiat: balances.sum.fiat("usd").transferable,
     }),

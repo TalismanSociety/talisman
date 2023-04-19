@@ -1,5 +1,5 @@
 import { ChainId } from "@core/domains/chains/types"
-import RpcFactory from "@core/libs/RpcFactory"
+import { chainConnector } from "@core/rpcs/chain-connector"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { Block } from "@polkadot/types/interfaces"
 
@@ -19,7 +19,7 @@ export default class BlocksRpc {
     const params = [blockHash].filter(Boolean)
 
     // query rpc
-    const response = await RpcFactory.send(chainId, method, params)
+    const response = await chainConnector.send(chainId, method, params)
 
     // get block from response
     const blockFrame = response.block
@@ -52,6 +52,6 @@ export default class BlocksRpc {
   ): Promise<string | undefined> {
     if (typeof block === "undefined") return
     if (typeof block === "string") return block
-    return await RpcFactory.send(chainId, "chain_getBlockHash", [block])
+    return await chainConnector.send(chainId, "chain_getBlockHash", [block])
   }
 }
