@@ -3,7 +3,8 @@ import Toggle from "./Toggle"
 
 // Legacy components barrel
 
-// @ts-ignore
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-nocheck
 const Field = () => {}
 
 Field.Toggle = Toggle

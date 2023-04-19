@@ -1,8 +1,8 @@
-// @ts-nocheck
 import styled from "styled-components"
 
 import Field, { IFieldProps, fieldDefaultProps } from "./Field"
 
+// warning : value property doesn't use IFieldProps's type, it a boolean
 interface IProps extends IFieldProps {
   onChange: (value: boolean) => void
 }
@@ -32,7 +32,6 @@ const StyledToggle = styled(Toggle)`
   .children {
     display: inline-block;
     width: auto;
-    //opacity: 0.5;
   }
 
   .checkbox {
@@ -56,7 +55,7 @@ const StyledToggle = styled(Toggle)`
   }
 
   ${({ value }) =>
-    value === true &&
+    (value as unknown as boolean) === true &&
     `
     opacity: 1;
 

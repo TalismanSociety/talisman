@@ -1,11 +1,10 @@
-// @ts-nocheck
 import { ReactNode } from "react"
 import styled, { CSSProperties } from "styled-components"
 
 interface IProps {
   columns: number
   gap: CSSProperties["gap"]
-  itemHeight?: number
+  itemHeight?: CSSProperties["height"]
   className?: string
   children?: ReactNode
 }

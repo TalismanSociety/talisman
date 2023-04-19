@@ -1,7 +1,6 @@
-// @ts-nocheck
 import useBoolean from "@talisman/hooks/useBoolean"
 import { hideScrollbarsStyle } from "@talisman/theme/styles"
-import { ReactNode, useEffect, useState } from "react"
+import { FC, PropsWithChildren, ReactNode, useEffect, useState } from "react"
 import styled from "styled-components"
 
 import { ReactComponent as ChevronIcon } from "../theme/icons/chevron-down.svg"
@@ -14,9 +13,10 @@ interface IProps {
   children?: ReactNode
 }
 
-const defaultProps: IProps = {}
-
-const ExpandaContent = ({ children, className }) => {
+const ExpandaContent: FC<PropsWithChildren & { className?: string }> = ({
+  children,
+  className,
+}) => {
   const [isMounted, setIsMounted] = useState(false)
   useEffect(() => setIsMounted(true), [])
 
@@ -66,8 +66,6 @@ const Expanda = ({ title, subtitle, info, className, children }: IProps) => {
   )
 }
 
-Expanda.defaultProps = defaultProps
-
 const StyledExpanda = styled(Expanda)`
   > button {
     display: flex;
@@ -108,7 +106,5 @@ const StyledExpanda = styled(Expanda)`
     }
   }
 `
-
-StyledExpanda.defaultProps = defaultProps
 
 export default StyledExpanda
