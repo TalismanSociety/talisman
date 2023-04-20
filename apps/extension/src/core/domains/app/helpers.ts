@@ -2,6 +2,7 @@ import { ChangePasswordRequest } from "@core/domains/app/types"
 import { log } from "@core/log"
 import { KeyringPair } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
+import { KeyringJson } from "@polkadot/ui-keyring/types"
 import * as Sentry from "@sentry/browser"
 import { Err, Ok, Result } from "ts-results"
 import Browser from "webextension-polyfill"
@@ -9,6 +10,9 @@ import Browser from "webextension-polyfill"
 import seedPhraseStore, { encryptSeed } from "../accounts/store"
 
 export const TALISMAN_BACKUP_KEYRING_KEY = "talismanKeyringBackup"
+
+const eligiblePairFilter = (pair: KeyringPair | KeyringJson) =>
+  !pair.meta.isHardware && !pair.meta.isExternal
 
 export const restoreBackupKeyring = async (
   password: string
@@ -32,7 +36,7 @@ const migratePairs = async (
   currentPw: string,
   newPw: string
 ): Promise<Result<KeyringPair[], "Error re-encrypting keypairs">> => {
-  const pairs = keyring.getPairs().filter((pair) => !pair.meta.isHardware)
+  const pairs = keyring.getPairs().filter(eligiblePairFilter)
   // keep track of which pairs have been successfully migrated
   const successfulPairs: KeyringPair[] = []
   try {
@@ -44,6 +48,7 @@ const migratePairs = async (
     })
   } catch (error) {
     Sentry.captureException(error)
+    log.error(error)
     return Err("Error re-encrypting keypairs")
   }
   return Ok(successfulPairs)
@@ -86,10 +91,7 @@ export const changePassword = async ({
     if (keypairMigrationResult.err) {
       throw Error(keypairMigrationResult.val)
     }
-    if (
-      keypairMigrationResult.val.length !==
-      backupJson.accounts.filter((acc) => !acc.meta.isHardware).length
-    )
+    if (keypairMigrationResult.val.length !== backupJson.accounts.filter(eligiblePairFilter).length)
       throw new Error("Unable to re-encrypt all keypairs when changing password")
     // now migrate seed phrase store password
     const mnemonicMigrationResult = await migrateMnemonic(currentPw, newPw)
