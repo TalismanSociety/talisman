@@ -8,7 +8,7 @@ const addressBookState = atom<AddressBookContact[]>({
   effects: [
     ({ setSelf }) => {
       const sub = addressBookStore.observable.subscribe((data) => setSelf(Object.values(data)))
-      return sub.unsubscribe
+      return () => sub.unsubscribe()
     },
   ],
 })

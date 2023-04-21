@@ -35,7 +35,7 @@ const rawBalancesState = atom<BalanceJson[]>({
       // also, we only need the first value to hydrate the atom
       const sub = merge(obs.pipe(first()), obs.pipe(debounceTime(500))).subscribe(setSelf)
 
-      return sub.unsubscribe
+      return () => sub.unsubscribe()
     },
     // instruct backend to keep db syncrhonized while this atom is in use
     () => api.balances(NO_OP),

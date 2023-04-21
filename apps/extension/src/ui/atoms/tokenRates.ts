@@ -14,7 +14,7 @@ export const tokenRatesState = atom<DbTokenRates[]>({
     ({ setSelf }) => {
       const obs = liveQuery(() => db.tokenRates.toArray())
       const sub = obs.subscribe(setSelf)
-      return sub.unsubscribe
+      return () => sub.unsubscribe()
     },
     // instruct backend to keep db syncrhonized while this atom is in use
     () => api.tokenRates(NO_OP),

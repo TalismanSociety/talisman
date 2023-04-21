@@ -27,7 +27,7 @@ export const evmNetworksWithTestnetsState = atom<(EvmNetwork | CustomEvmNetwork)
     ({ setSelf }) => {
       const obs = liveQuery(() => chaindataProvider.evmNetworksArray())
       const sub = obs.subscribe(setSelf)
-      return sub.unsubscribe
+      return () => sub.unsubscribe()
     },
     // instruct backend to keep db updated while this atom is in use
     () => api.ethereumNetworks(NO_OP),
@@ -76,7 +76,7 @@ export const chainsWithTestnetsState = atom<(Chain | CustomChain)[]>({
     ({ setSelf }) => {
       const obs = liveQuery(() => chaindataProvider.chainsArray())
       const sub = obs.subscribe(setSelf)
-      return sub.unsubscribe
+      return () => sub.unsubscribe()
     },
     // instruct backend to keep db syncrhonized while this atom is in use
     () => api.chains(NO_OP),
@@ -149,7 +149,7 @@ const rawTokenListState = atom<TokenList>({
       const obs = liveQuery(() => getTokensList())
       const sub = obs.subscribe(setSelf)
 
-      return sub.unsubscribe
+      return () => sub.unsubscribe()
     },
     // instruct backend to keep db syncrhonized while this atom is in use
     () => api.tokens(NO_OP),
