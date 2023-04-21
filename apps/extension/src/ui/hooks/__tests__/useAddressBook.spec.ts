@@ -10,7 +10,7 @@ const VITALIK: AddressBookContact = {
   addressType: "ethereum",
 }
 
-test("allows you to add an address book contact", async () => {
+test("Can add an address book contact", async () => {
   const { result } = renderHook(() => useAddressBook(), {
     wrapper: RecoilRoot,
   })
@@ -26,7 +26,7 @@ test("allows you to add an address book contact", async () => {
   })
 })
 
-test("allows you to edit an address book contact", async () => {
+test("Can edit an address book contact", async () => {
   const { result } = renderHook(() => useAddressBook(), {
     wrapper: ({ children }) =>
       RecoilRoot({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
@@ -44,7 +44,7 @@ test("allows you to edit an address book contact", async () => {
   })
 })
 
-test("allows you to delete an address book contact", async () => {
+test("Can delete an address book contact", async () => {
   const { result } = renderHook(() => useAddressBook(), {
     wrapper: ({ children }) =>
       RecoilRoot({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
