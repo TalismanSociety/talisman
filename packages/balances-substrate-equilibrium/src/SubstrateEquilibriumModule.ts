@@ -16,6 +16,7 @@ import {
   RpcStateQueryHelper,
   StorageHelper,
   createTypeRegistryCache,
+  findChainMeta,
 } from "@talismn/balances"
 import {
   ChainId,
@@ -338,9 +339,7 @@ async function buildQueries(
       return []
     }
 
-    const chainMeta: SubEquilibriumChainMeta | undefined = (chain.balanceMetadata || []).find(
-      ({ moduleType }) => moduleType === "substrate-equilibrium"
-    )?.metadata
+    const chainMeta = findChainMeta<typeof SubEquilibriumModule>("substrate-equilibrium", chain)
     const registry =
       chainMeta?.metadata !== undefined &&
       chainMeta?.metadata !== null &&

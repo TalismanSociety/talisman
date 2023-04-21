@@ -1,18 +1,21 @@
 import { IToken, Token } from "@talismn/chaindata-provider"
 
 type SquidToken = {
-  id?: string
-  data?: IToken & unknown
+  id: string
+  data: unknown
 }
 
 // TODO: Fix `token` type after https://github.com/subsquid/squid/issues/41 is merged
 export const parseTokensResponse = (tokens: SquidToken[]): Token[] =>
   tokens
     .map((token) => token?.data)
-    .filter((data): data is IToken & unknown => typeof data === "object")
+    .filter(isITokenPartial)
     .filter(isToken)
 
-const isToken = (token: IToken & unknown): token is Token => {
+export const isITokenPartial = (token: unknown): token is Partial<IToken> =>
+  typeof token === "object" && token !== null
+
+export const isToken = (token: Partial<IToken>): token is IToken & Token => {
   const id = token.id
   if (typeof id !== "string") return false
 

@@ -49,15 +49,17 @@ export const getTypeRegistry = async (
       log.debug(`Setting known types for chain ${chain.id}`)
       registry.clearCache()
       registry.setKnownTypes({ typesBundle: legacyTypesBundle })
-      registry.register(
-        getSpecTypes(
-          registry,
-          chain.chainName,
-          chain.specName,
-          parseInt(chain.specVersion ?? "0", 10) ?? 0
+      if (chain.chainName) {
+        registry.register(
+          getSpecTypes(
+            registry,
+            chain.chainName,
+            chain.specName,
+            parseInt(chain.specVersion ?? "0", 10) ?? 0
+          )
         )
-      )
-      registry.knownTypes.typesAlias = getSpecAlias(registry, chain.chainName, chain.specName)
+        registry.knownTypes.typesAlias = getSpecAlias(registry, chain.chainName, chain.specName)
+      }
     }
   }
 

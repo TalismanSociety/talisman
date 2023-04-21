@@ -17,7 +17,7 @@ import { PromiseExtended, Transaction, TransactionMode } from "dexie"
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
 import { fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchToken, fetchTokens } from "./graphql"
 import log from "./log"
-import { parseTokensResponse } from "./parseTokensResponse"
+import { isITokenPartial, isToken, parseTokensResponse } from "./parseTokensResponse"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
 
 const minimumHydrationInterval = 300_000 // 300_000ms = 300s = 5 minutes
@@ -209,8 +209,12 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   async resetEvmNetwork(evmNetworkId: EvmNetworkId) {
     const builtInEvmNetwork = await fetchEvmNetwork(evmNetworkId)
     if (!builtInEvmNetwork) throw new Error("Cannot reset non-built-in EVM network")
+    if (!builtInEvmNetwork.nativeToken?.id)
+      throw new Error("Failed to lookup native token (no token exists for network)")
     const builtInNativeToken = await fetchToken(builtInEvmNetwork.nativeToken.id)
-    if (!builtInNativeToken) throw new Error("Failed to lookup native token")
+    if (!isITokenPartial(builtInNativeToken)) throw new Error("Failed to lookup native token")
+    if (!isToken(builtInNativeToken))
+      throw new Error("Failed to lookup native token (isToken test failed)")
 
     try {
       return await this.#db.transaction("rw", this.#db.evmNetworks, this.#db.tokens, async () => {
@@ -242,8 +246,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       return (
         this.#db.tokens
           // only affect custom tokens
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          .filter((token) => "isCustom" in token && (token as any).isCustom === true)
+          .filter((token) => "isCustom" in token && token.isCustom === true)
           // only affect the provided token
           .filter((token) => token.id === tokenId)
           // delete the token (if exists)
@@ -292,9 +295,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     if (now - this.#lastHydratedChainsAt < minimumHydrationInterval) return false
 
     try {
-      const body = await fetchChains()
-
-      const chains = addCustomChainRpcs(body?.data?.chains || [], this.#onfinalityApiKey)
+      const chains = addCustomChainRpcs(await fetchChains(), this.#onfinalityApiKey)
       if (chains.length <= 0) throw new Error("Ignoring empty chaindata chains response")
 
       await this.#db.transaction("rw", this.#db.chains, () => {
@@ -322,9 +323,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     if (now - this.#lastHydratedEvmNetworksAt < minimumHydrationInterval) return false
 
     try {
-      const body = await fetchEvmNetworks()
-
-      const evmNetworks: EvmNetwork[] = body?.data?.evmNetworks || []
+      const evmNetworks: EvmNetwork[] = await fetchEvmNetworks()
       if (evmNetworks.length <= 0) throw new Error("Ignoring empty chaindata evmNetworks response")
 
       await this.#db.transaction("rw", this.#db.evmNetworks, async () => {
@@ -357,9 +356,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     if (now - this.#lastHydratedTokensAt < minimumHydrationInterval) return false
 
     try {
-      const body = await fetchTokens()
-
-      const tokens = parseTokensResponse(body?.data?.tokens || [])
+      const tokens = parseTokensResponse(await fetchTokens())
       if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
 
       await this.#db.transaction("rw", this.#db.tokens, async () => {

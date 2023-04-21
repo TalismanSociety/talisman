@@ -18,6 +18,7 @@ import {
   StorageHelper,
   SubscriptionCallback,
   createTypeRegistryCache,
+  findChainMeta,
 } from "@talismn/balances"
 import { ChainConnector } from "@talismn/chain-connector"
 import {
@@ -458,9 +459,7 @@ async function buildQueries(
       return []
     }
 
-    const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
-      ({ moduleType }) => moduleType === "substrate-native"
-    )?.metadata
+    const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
     const typeRegistry =
       chainMeta?.metadata !== undefined &&
       chainMeta?.metadata !== null &&
@@ -608,13 +607,16 @@ export async function subscribeNompoolStaking(
   const chains = await chaindataProvider.chains()
   const tokens = await chaindataProvider.tokens()
   const nomPoolTokenIds = Object.entries(tokens)
-    .filter(
-      ([, token]) =>
-        token.type === "substrate-native" &&
-        typeof (chains[token.chain.id].balanceMetadata ?? []).find(
-          ({ moduleType }) => moduleType === "substrate-native"
-        )?.metadata?.nominationPoolsPalletId === "string"
-    )
+    .filter(([, token]) => {
+      // ignore non-native tokens
+      if (token.type !== "substrate-native") return false
+      // ignore tokens on chains with no nompools pallet
+      const chainMeta = findChainMeta<typeof SubNativeModule>(
+        "substrate-native",
+        chains[token.chain.id]
+      )
+      return typeof chainMeta?.nominationPoolsPalletId === "string"
+    })
     .map(([tokenId]) => tokenId)
 
   // staking can only be done by the native token on chains with the staking pallet
@@ -649,9 +651,7 @@ export async function subscribeNompoolStaking(
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       continue
     }
-    const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
-      ({ moduleType }) => moduleType === "substrate-native"
-    )?.metadata
+    const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
     const typeRegistry =
       chainMeta?.metadata !== undefined &&
       chainMeta?.metadata !== null &&
@@ -953,13 +953,16 @@ async function subscribeCrowdloans(
   const chains = await chaindataProvider.chains()
   const tokens = await chaindataProvider.tokens()
   const crowdloanTokenIds = Object.entries(tokens)
-    .filter(
-      ([, token]) =>
-        token.type === "substrate-native" &&
-        typeof (chains[token.chain.id].balanceMetadata ?? []).find(
-          ({ moduleType }) => moduleType === "substrate-native"
-        )?.metadata?.crowdloanPalletId === "string"
-    )
+    .filter(([, token]) => {
+      // ignore non-native tokens
+      if (token.type !== "substrate-native") return
+      // ignore tokens on chains with no crowdloans pallet
+      const chainMeta = findChainMeta<typeof SubNativeModule>(
+        "substrate-native",
+        chains[token.chain.id]
+      )
+      return typeof chainMeta?.crowdloanPalletId === "string"
+    })
     .map(([tokenId]) => tokenId)
 
   // crowdloan contributions can only be done by the native token on chains with the crowdloan pallet
@@ -994,9 +997,7 @@ async function subscribeCrowdloans(
       log.warn(`Chain ${chainId} for token ${tokenId} not found`)
       continue
     }
-    const chainMeta: SubNativeChainMeta | undefined = (chain.balanceMetadata || []).find(
-      ({ moduleType }) => moduleType === "substrate-native"
-    )?.metadata
+    const chainMeta = findChainMeta<typeof SubNativeModule>("substrate-native", chain)
     const typeRegistry =
       chainMeta?.metadata !== undefined &&
       chainMeta?.metadata !== null &&

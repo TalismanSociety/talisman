@@ -1,12 +1,9 @@
+import { throwAfter } from "@talismn/util"
 import { ethers } from "ethers"
 
 import { RPC_HEALTHCHECK_TIMEOUT } from "./constants"
 import { EvmJsonRpcBatchProvider } from "./EvmJsonRpcBatchProvider"
 import log from "./log"
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const throwAfter = (ms: number, reason: any = "timeout") =>
-  new Promise((_, reject) => setTimeout(() => reject(reason), ms))
 
 /**
  * Helper function to add our onfinality api key to a public onfinality RPC url.
@@ -37,7 +34,7 @@ export const isHealthyRpc = async (url: string, chainId: number) => {
     // check that RPC responds in time
     const rpcChainId = await Promise.race([
       provider.send("eth_chainId", []),
-      throwAfter(RPC_HEALTHCHECK_TIMEOUT),
+      throwAfter(RPC_HEALTHCHECK_TIMEOUT, "timeout"),
     ])
 
     // with expected chain id

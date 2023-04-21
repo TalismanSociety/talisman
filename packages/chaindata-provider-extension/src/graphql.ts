@@ -1,14 +1,13 @@
-import axios from "axios"
-import { print } from "graphql"
-import gql from "graphql-tag"
+import { request } from "graphql-request"
 
-export const graphqlUrl = "https://app.gc.subsquid.io/beta/chaindata/v3/graphql"
+import { graphqlUrl } from "./constants"
+import { graphql } from "./graphql-codegen"
 
 //
 // Fragments
 //
 
-export const ChainFragment = gql`
+export const ChainFragment = graphql(`
   fragment Chain on Chain {
     id
     isTestnet
@@ -54,9 +53,9 @@ export const ChainFragment = gql`
       metadata
     }
   }
-`
+`)
 
-export const EvmNetworkFragment = gql`
+export const EvmNetworkFragment = graphql(`
   fragment EvmNetwork on EvmNetwork {
     id
     isTestnet
@@ -80,9 +79,9 @@ export const EvmNetworkFragment = gql`
       id
     }
   }
-`
+`)
 
-export const TokenFragment = gql`
+export const TokenFragment = graphql(`
   fragment Token on Token {
     id
     data
@@ -96,88 +95,63 @@ export const TokenFragment = gql`
       id
     }
   }
-`
+`)
 
 //
 // Queries
 //
 
-export const chainsQuery = gql`
-  {
+export const chainsQuery = graphql(`
+  query chains {
     chains(orderBy: sortIndex_ASC) {
       ...Chain
     }
   }
-  ${ChainFragment}
-`
+`)
 
-export const evmNetworksQuery = gql`
-  {
+export const evmNetworksQuery = graphql(`
+  query evmNetworks {
     evmNetworks(orderBy: sortIndex_ASC) {
       ...EvmNetwork
     }
   }
-  ${EvmNetworkFragment}
-`
+`)
 
-export const getEvmNetworkByIdQuery = (evmNetworkId: string) => gql`
-  {
-    evmNetworkById(id:"${evmNetworkId}") {
+export const evmNetworkByIdQuery = graphql(`
+  query evmNetworkById($evmNetworkId: String!) {
+    evmNetworkById(id: $evmNetworkId) {
       ...EvmNetwork
     }
   }
-  ${EvmNetworkFragment}
-`
+`)
 
-export const tokensQuery = gql`
-  {
+export const tokensQuery = graphql(`
+  query tokens {
     tokens(orderBy: id_ASC) {
       ...Token
     }
   }
-  ${TokenFragment}
-`
+`)
 
-export const getTokenByIdQuery = (tokenId: string) => gql`
-  {
-    tokenById(id:"${tokenId}") {
+export const tokenByIdQuery = graphql(`
+  query tokenById($tokenId: String!) {
+    tokenById(id: $tokenId) {
       ...Token
     }
   }
-  ${TokenFragment}
-`
+`)
 
 //
 // Fetchers
 //
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function fetchChains(): Promise<any> {
-  return await axios
-    .post(graphqlUrl, { query: print(chainsQuery) })
-    .then((response) => response.data)
-}
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function fetchEvmNetworks(): Promise<any> {
-  return await axios
-    .post(graphqlUrl, { query: print(evmNetworksQuery) })
-    .then((response) => response.data)
-}
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function fetchEvmNetwork(evmNetworkId: string): Promise<any> {
-  return await axios
-    .post(graphqlUrl, { query: print(getEvmNetworkByIdQuery(evmNetworkId)) })
-    .then((response) => response.data.data.evmNetworkById)
-}
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function fetchTokens(): Promise<any> {
-  return await axios
-    .post(graphqlUrl, { query: print(tokensQuery) })
-    .then((response) => response.data)
-}
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function fetchToken(tokenId: string): Promise<any> {
-  return await axios
-    .post(graphqlUrl, { query: print(getTokenByIdQuery(tokenId)) })
-    .then((response) => response.data.data.tokenById.data)
-}
+export const fetchChains = async () => (await request(graphqlUrl, chainsQuery)).chains
+
+export const fetchEvmNetworks = async () =>
+  (await request(graphqlUrl, evmNetworksQuery)).evmNetworks
+export const fetchEvmNetwork = async (evmNetworkId: string) =>
+  (await request(graphqlUrl, evmNetworkByIdQuery, { evmNetworkId })).evmNetworkById
+
+export const fetchTokens = async () => (await request(graphqlUrl, tokensQuery)).tokens
+export const fetchToken = async (tokenId: string) =>
+  (await request(graphqlUrl, tokenByIdQuery, { tokenId })).tokenById?.data

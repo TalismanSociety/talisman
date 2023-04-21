@@ -11,9 +11,9 @@ export type Chain = {
   genesisHash: string | null // The genesisHash of this chain
   prefix: number | null // The substrate prefix of this chain
   name: string | null // The name of this chain
-  themeColor?: string // The theme color for this chain
+  themeColor: string | null // The theme color for this chain
   logo: string | null // A url to the logo of this chain
-  chainName: string // The on-chain name of this chain
+  chainName: string | null // The on-chain name of this chain
   implName: string | null // The implementation name of this chain
   specName: string | null // The spec name of this chain
   specVersion: string | null // The spec version of this chain
@@ -27,13 +27,12 @@ export type Chain = {
   isHealthy: boolean // The health status of this chain's RPCs
   evmNetworks: Array<{ id: EvmNetworkId }>
 
-  parathreads?: Chain[] // The parathreads of this relayChain, if some exist
+  parathreads: Array<Pick<Chain, "id" | "paraId" | "name">> | null // The parathreads of this relayChain, if some exist
 
   paraId: number | null // The paraId of this chain, if it is a parachain
-  relay?: Chain // The parent relayChain of this parachain, if this chain is a parachain
+  relay: Pick<Chain, "id"> | null // The parent relayChain of this parachain, if this chain is a parachain
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  balanceMetadata: Array<{ moduleType: string; metadata: any }>
+  balanceMetadata: Array<BalanceMetadata>
 }
 export type CustomChain = Chain & {
   isCustom: true
@@ -43,3 +42,4 @@ export type SubstrateRpc = {
   url: string // The url of this RPC
   isHealthy: boolean // The health status of this RPC
 }
+export type BalanceMetadata = { moduleType: string; metadata: unknown }
