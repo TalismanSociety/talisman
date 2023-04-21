@@ -62,6 +62,8 @@ export interface EthRequestSignatures {
   eth_accounts: [null, string]
   eth_blockNumber: [null, number]
   eth_chainId: [null, string]
+  eth_coinbase: [null, string]
+  net_version: [null, string]
   eth_getBalance: [EthRequestGetBalance, string]
   eth_getStorageAt: [EthRequestGetStorage, string]
   eth_getTransactionCount: [EthRequestGetTxCount, string]
