@@ -5,7 +5,7 @@ import { useAccountAddresses } from "../useAccountAddresses"
 
 test("Can get substrate account by address", async () => {
   const { result } = renderHook(() => useAccountAddresses())
-  expect(result.current.length).toBe(2)
+  expect(result.current.length).toBe(3)
   expect(result.current[0]).toBe(ADDRESSES.GAV)
 })
 
