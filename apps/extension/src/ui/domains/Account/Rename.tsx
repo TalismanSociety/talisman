@@ -1,7 +1,7 @@
 import { yupResolver } from "@hookform/resolvers/yup"
 import Dialog from "@talisman/components/Dialog"
 import { api } from "@ui/api"
-import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"

@@ -1,5 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
-import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 
 import NamedAddress, { NamedAddressOptions } from "./NamedAddress"
 

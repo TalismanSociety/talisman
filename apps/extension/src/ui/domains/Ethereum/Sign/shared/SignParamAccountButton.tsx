@@ -1,7 +1,7 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { Address } from "@ui/domains/Account/Address"
 import AccountAvatar from "@ui/domains/Account/Avatar"
-import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { FC } from "react"
 
 import { SignParamButton, SignParamButtonProps } from "./SignParamButton"

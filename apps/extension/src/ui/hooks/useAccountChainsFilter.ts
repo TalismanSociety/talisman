@@ -2,7 +2,7 @@ import { Chain } from "@core/domains/chains/types"
 import { Address } from "@core/types/base"
 import { useMemo } from "react"
 
-import useAccountByAddress from "./useAccountByAddress"
+import { useAccountByAddress } from "./useAccountByAddress"
 
 export const useAccountChainsFilter = (chains: Chain[], address: Address) => {
   const account = useAccountByAddress(address)

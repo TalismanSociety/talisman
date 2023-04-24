@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
-import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 
 export const PortfolioAccount = ({
   address,
