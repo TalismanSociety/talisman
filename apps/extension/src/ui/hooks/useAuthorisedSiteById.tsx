@@ -8,7 +8,7 @@ import {
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import useAccountAddresses from "./useAccountAddresses"
+import { useAccountAddresses } from "./useAccountAddresses"
 import { useAuthorisedSites } from "./useAuthorisedSites"
 
 const useAuthorisedSiteById = (id: AuthorizedSiteId, type: ProviderType) => {
