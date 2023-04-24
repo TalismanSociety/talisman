@@ -2,6 +2,7 @@ import { AddressBookContact } from "@core/domains/app/store.addressBook"
 import { act, renderHook, waitFor } from "@testing-library/react"
 import { RecoilRoot } from "recoil"
 
+import { ADDRESSES } from "../../../../tests/constants"
 import { addressBookState, useAddressBook } from "../useAddressBook"
 
 const VITALIK: AddressBookContact = {
@@ -41,6 +42,24 @@ test("Can edit an address book contact", async () => {
 
   waitFor(() => {
     expect(result.current.contacts[0].name).toBe("Gav")
+  })
+})
+
+test("Editing an address book contact which doesn't exist throws an error", async () => {
+  const { result } = renderHook(() => useAddressBook(), {
+    wrapper: ({ children }) =>
+      RecoilRoot({ children, initializeState: ({ set }) => set(addressBookState, [VITALIK]) }),
+  })
+  waitFor(() => {
+    expect(result.current.contacts.length).toBe(1)
+    expect(result.current.contacts[0]).toBe(VITALIK)
+  })
+  await act(async () => {
+    await result.current
+      .edit({ address: ADDRESSES.GAV, name: "Gav" })
+      .catch((error) =>
+        expect(error.message).toBe(`Contact with address ${ADDRESSES.GAV} doesn't exist`)
+      )
   })
 })
 
