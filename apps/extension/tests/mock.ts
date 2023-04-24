@@ -1,4 +1,4 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
+import { AccountJsonAny, AccountTypes } from "@core/domains/accounts/types"
 
 import { ADDRESSES } from "./constants"
 
@@ -43,6 +43,16 @@ jest.mock("@ui/api", () => {
               name: "Vitalik",
               suri: "another very bad mnemonic which also doesn't have twelve words",
               type: "ethereum",
+            },
+            {
+              address: ADDRESSES.ALICE,
+              name: "Substrate Ledger",
+              hardwareType: "ledger",
+              isHardware: true,
+              origin: AccountTypes.HARDWARE,
+              accountIndex: 0,
+              addressOffset: 0,
+              genesisHash: "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
             },
           ])
           return () => undefined
