@@ -1,0 +1,4 @@
+export const ADDRESSES = {
+  GAV: "5F7LiCA6T4DWUDRQyFAWsRqVwxrJEznUtcw4WNnb5fe6snCH",
+  VITALIK: "5F7LiCA6T4DWUDRQyFAWsRqVwxrJEznUtcw4WNnb5fe6snCH",
+}

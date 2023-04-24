@@ -1,5 +1,7 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 
+import { ADDRESSES } from "./constants"
+
 jest.mock("@talismn/chaindata-provider-extension/src/graphql")
 jest.setTimeout(20000)
 
@@ -26,19 +28,19 @@ jest.mock("@ui/api", () => {
         .mockImplementation((cb: (accounts: AccountJsonAny[]) => void) => {
           cb([
             {
-              address: "testAddress",
+              address: ADDRESSES.GAV,
               genesisHash: "testGenesisHash",
               isExternal: false,
               isHardware: false,
-              name: "testAccount",
+              name: "Gav",
               suri: "a very bad mnemonic which actually doesn't have twelve words",
               type: "sr25519",
             },
             {
-              address: "testEthAddress",
+              address: ADDRESSES.VITALIK,
               isExternal: false,
               isHardware: false,
-              name: "testEthAccount",
+              name: "Vitalik",
               suri: "another very bad mnemonic which also doesn't have twelve words",
               type: "ethereum",
             },
