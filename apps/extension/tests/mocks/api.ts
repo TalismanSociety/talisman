@@ -2,9 +2,36 @@ import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AccountJsonAny, AccountTypes } from "@core/domains/accounts/types"
 import { AnalyticsCaptureRequest } from "@core/domains/app/types"
-import type { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
+import { SitesAuthorizedStore } from "@core/domains/sitesAuthorised/store"
+import type {
+  AuthorizedSite,
+  AuthorizedSites,
+  ProviderType,
+} from "@core/domains/sitesAuthorised/types"
 
 import { ADDRESSES } from "../constants"
+
+const authorisedSites = {
+  [TALISMAN_WEB_APP_DOMAIN]: {
+    addresses: Object.entries(ADDRESSES)
+      .filter(([name, address]) => name !== "VITALIK")
+      .map(([name, address]) => address),
+    connectAllSubstrate: true,
+    id: TALISMAN_WEB_APP_DOMAIN,
+    origin: "Talisman",
+    url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
+  },
+
+  "app.stellaswap.com": {
+    ethAddresses: [ADDRESSES.VITALIK],
+    ethChainId: 1284,
+    id: "app.stellaswap.com",
+    origin: "",
+    url: "https://app.stellaswap.com/en/exchange/swap",
+  },
+}
+
+const sitesStore = new SitesAuthorizedStore(authorisedSites)
 
 export const api = {
   api: {
@@ -17,7 +44,6 @@ export const api = {
       cb([
         {
           address: ADDRESSES.GAV,
-          genesisHash: "testGenesisHash",
           isExternal: false,
           isHardware: false,
           name: "Gav",
@@ -41,6 +67,7 @@ export const api = {
           accountIndex: 0,
           addressOffset: 0,
           genesisHash: "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+          type: "sr25519",
         },
       ])
       return () => undefined
@@ -48,26 +75,18 @@ export const api = {
     authorizedSitesSubscribe: jest
       .fn()
       .mockImplementation((cb: (site: AuthorizedSites) => void) => {
-        cb({
-          [TALISMAN_WEB_APP_DOMAIN]: {
-            addresses: Object.entries(ADDRESSES)
-              .filter(([name, address]) => name !== "VITALIK")
-              .map(([name, address]) => address),
-            connectAllSubstrate: true,
-            id: TALISMAN_WEB_APP_DOMAIN,
-            origin: "Talisman",
-            url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
-          },
-
-          "app.stellaswap.com": {
-            ethAddresses: [ADDRESSES.VITALIK],
-            ethChainId: 1284,
-            id: "app.stellaswap.com",
-            origin: "",
-            url: "https://app.stellaswap.com/en/exchange/swap",
-          },
-        })
-        return () => undefined
+        const sub = sitesStore.observable.subscribe(cb)
+        return () => sub.unsubscribe()
       }),
+    authorizedSiteUpdate: jest
+      .fn()
+      .mockImplementation((id: keyof typeof authorisedSites, update: Partial<AuthorizedSite>) =>
+        sitesStore.updateSite(id, update)
+      ),
+    authorizedSiteForget: jest
+      .fn()
+      .mockImplementation((id: keyof typeof authorisedSites, type: ProviderType) =>
+        sitesStore.forgetSite(id, type)
+      ),
   },
 }
