@@ -1,6 +1,8 @@
+import { TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AccountJsonAny, AccountTypes } from "@core/domains/accounts/types"
 import { AnalyticsCaptureRequest } from "@core/domains/app/types"
+import type { AuthorizedSites } from "@core/domains/sitesAuthorised/types"
 
 import { ADDRESSES } from "../constants"
 
@@ -43,5 +45,29 @@ export const api = {
       ])
       return () => undefined
     }),
+    authorizedSitesSubscribe: jest
+      .fn()
+      .mockImplementation((cb: (site: AuthorizedSites) => void) => {
+        cb({
+          [TALISMAN_WEB_APP_DOMAIN]: {
+            addresses: Object.entries(ADDRESSES)
+              .filter(([name, address]) => name !== "VITALIK")
+              .map(([name, address]) => address),
+            connectAllSubstrate: true,
+            id: TALISMAN_WEB_APP_DOMAIN,
+            origin: "Talisman",
+            url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
+          },
+
+          "app.stellaswap.com": {
+            ethAddresses: [ADDRESSES.VITALIK],
+            ethChainId: 1284,
+            id: "app.stellaswap.com",
+            origin: "",
+            url: "https://app.stellaswap.com/en/exchange/swap",
+          },
+        })
+        return () => undefined
+      }),
   },
 }
