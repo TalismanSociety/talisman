@@ -1,4 +1,10 @@
-import { SignTypedDataVersion, recoverTypedSignature } from "@metamask/eth-sig-util"
+import {
+  MessageTypes,
+  SignTypedDataVersion,
+  TypedDataV1,
+  TypedMessage,
+  recoverTypedSignature,
+} from "@metamask/eth-sig-util"
 import { classNames } from "@talismn/util"
 import { ethers } from "ethers"
 import { useCallback, useMemo, useState } from "react"
@@ -7,130 +13,133 @@ import { useAccount, useNetwork } from "wagmi"
 
 import { Section } from "../../shared/Section"
 
-// same test messages as MetaMasks's test-dapp
-const TEST_MESSAGES = {
-  eth_signTypedData: () => [
-    {
-      type: "string",
-      name: "Message",
-      value: "Hi, Alice!",
+type GetTypedData = (chainId: number) => TypedDataV1 | TypedMessage<MessageTypes>
+
+const getTestDataV1: GetTypedData = () => [
+  {
+    type: "string",
+    name: "Question",
+    value: "Sup nerd?",
+  },
+  {
+    type: "uint32",
+    name: "Integer value",
+    value: "420",
+  },
+]
+
+const getTestDataV3: GetTypedData = (chainId: number) => ({
+  types: {
+    EIP712Domain: [
+      { name: "name", type: "string" },
+      { name: "version", type: "string" },
+      { name: "chainId", type: "uint256" },
+      { name: "verifyingContract", type: "address" },
+    ],
+    Person: [
+      { name: "name", type: "string" },
+      { name: "wallet", type: "address" },
+    ],
+    Mail: [
+      { name: "from", type: "Person" },
+      { name: "to", type: "Person" },
+      { name: "contents", type: "string" },
+    ],
+  },
+  primaryType: "Mail",
+  domain: {
+    name: "Ether Mail",
+    version: "1",
+    chainId,
+    verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+  },
+  message: {
+    from: {
+      name: "Cow",
+      wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
     },
-    {
-      type: "uint32",
-      name: "A number",
-      value: "1337",
+    to: {
+      name: "Bob",
+      wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
     },
-  ],
-  eth_signTypedData_v3: (chainId: number) => ({
-    types: {
-      EIP712Domain: [
-        { name: "name", type: "string" },
-        { name: "version", type: "string" },
-        { name: "chainId", type: "uint256" },
-        { name: "verifyingContract", type: "address" },
+    contents: "Hello, Bob!",
+  },
+})
+
+const getTestDataV4: GetTypedData = (chainId: number) => ({
+  domain: {
+    chainId: chainId,
+    name: "Ether Mail",
+    verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
+    version: "1",
+  },
+  message: {
+    contents: "Hello, Bob!",
+    from: {
+      name: "Cow",
+      wallets: [
+        "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
+        "0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF",
       ],
-      Person: [
-        { name: "name", type: "string" },
-        { name: "wallet", type: "address" },
-      ],
-      Mail: [
-        { name: "from", type: "Person" },
-        { name: "to", type: "Person" },
-        { name: "contents", type: "string" },
-      ],
     },
-    primaryType: "Mail",
-    domain: {
-      name: "Ether Mail",
-      version: "1",
-      chainId,
-      verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
-    },
-    message: {
-      from: {
-        name: "Cow",
-        wallet: "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
-      },
-      to: {
+    to: [
+      {
         name: "Bob",
-        wallet: "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
-      },
-      contents: "Hello, Bob!",
-    },
-  }),
-  eth_signTypedData_v4: (chainId: number) => ({
-    domain: {
-      chainId: chainId.toString(),
-      name: "Ether Mail",
-      verifyingContract: "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC",
-      version: "1",
-    },
-    message: {
-      contents: "Hello, Bob!",
-      from: {
-        name: "Cow",
         wallets: [
-          "0xCD2a3d9F938E13CD947Ec05AbC7FE734Df8DD826",
-          "0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF",
+          "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
+          "0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57",
+          "0xB0B0b0b0b0b0B000000000000000000000000000",
         ],
       },
-      to: [
-        {
-          name: "Bob",
-          wallets: [
-            "0xbBbBBBBbbBBBbbbBbbBbbbbBBbBbbbbBbBbbBBbB",
-            "0xB0BdaBea57B0BDABeA57b0bdABEA57b0BDabEa57",
-            "0xB0B0b0b0b0b0B000000000000000000000000000",
-          ],
-        },
-      ],
-    },
-    primaryType: "Mail",
-    types: {
-      EIP712Domain: [
-        { name: "name", type: "string" },
-        { name: "version", type: "string" },
-        { name: "chainId", type: "uint256" },
-        { name: "verifyingContract", type: "address" },
-      ],
-      Group: [
-        { name: "name", type: "string" },
-        { name: "members", type: "Person[]" },
-      ],
-      Mail: [
-        { name: "from", type: "Person" },
-        { name: "to", type: "Person[]" },
-        { name: "contents", type: "string" },
-      ],
-      Person: [
-        { name: "name", type: "string" },
-        { name: "wallets", type: "address[]" },
-      ],
-    },
-  }),
-}
+    ],
+  },
+  primaryType: "Mail",
+  types: {
+    EIP712Domain: [
+      { name: "name", type: "string" },
+      { name: "version", type: "string" },
+      { name: "chainId", type: "uint256" },
+      { name: "verifyingContract", type: "address" },
+    ],
+    Group: [
+      { name: "name", type: "string" },
+      { name: "members", type: "Person[]" },
+    ],
+    Mail: [
+      { name: "from", type: "Person" },
+      { name: "to", type: "Person[]" },
+      { name: "contents", type: "string" },
+    ],
+    Person: [
+      { name: "name", type: "string" },
+      { name: "wallets", type: "address[]" },
+    ],
+  },
+})
 
-const getMethod = (version: SignTypedDataVersion) => {
-  switch (version) {
-    case SignTypedDataVersion.V1:
-      return "eth_signTypedData"
-    case SignTypedDataVersion.V3:
-      return "eth_signTypedData_v3"
-    case SignTypedDataVersion.V4:
-      return "eth_signTypedData_v4"
-  }
-}
-
-const getParams = (version: SignTypedDataVersion, from: string, message: string) => {
-  switch (version) {
-    case SignTypedDataVersion.V1:
-      return [message, from]
-    case SignTypedDataVersion.V3:
-      return [from, message]
-    case SignTypedDataVersion.V4:
-      return [from, message]
-  }
-}
+const TEST_PAYLOADS = {
+  V1: {
+    method: "eth_signTypedData",
+    getData: (chainId: number) => getTestDataV1(chainId),
+    getParams: (address: string, chainId: number) => [getTestDataV1(chainId), address],
+  },
+  V3: {
+    method: "eth_signTypedData_v3",
+    getData: (chainId: number) => getTestDataV3(chainId),
+    getParams: (address: string, chainId: number) => [
+      address,
+      JSON.stringify(getTestDataV3(chainId)),
+    ],
+  },
+  V4: {
+    method: "eth_signTypedData_v4",
+    getData: (chainId: number) => getTestDataV4(chainId),
+    getParams: (address: string, chainId: number) => [
+      address,
+      JSON.stringify(getTestDataV4(chainId)),
+    ],
+  },
+} as const
 
 const SignTypedDataInner = () => {
   const { isConnected, address, connector } = useAccount()
@@ -151,20 +160,22 @@ const SignTypedDataInner = () => {
       try {
         if (!connector || !chain || !address) return
 
-        const method = getMethod(version)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const message: any = TEST_MESSAGES[method](chain?.id)
-        const params = getParams(version, address, JSON.stringify(message))
+        const { method, getData, getParams } = TEST_PAYLOADS[version]
+        const params = getParams(address, chain.id)
+        const data = getData(chain.id)
 
         const provider = await connector.getProvider()
         const sig = await provider.request({
           method,
           params,
         })
-
         setSignature(sig)
 
-        const signer = recoverTypedSignature({ data: message, signature: sig, version })
+        const signer = recoverTypedSignature({
+          data: data,
+          signature: sig,
+          version,
+        })
         setSignedBy(signer)
       } catch (err) {
         setError(err as Error)
@@ -218,8 +229,9 @@ const SignTypedDataInner = () => {
             <span
               className={classNames(
                 "font-mono",
-                ethers.utils.getAddress(signedBy ?? "SIGNED_BY") ===
-                  ethers.utils.getAddress(address ?? "ADDRESS")
+                signedBy &&
+                  ethers.utils.getAddress(signedBy ?? "SIGNED_BY") ===
+                    ethers.utils.getAddress(address ?? "ADDRESS")
                   ? "text-alert-success"
                   : "text-alert-error"
               )}
