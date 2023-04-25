@@ -20,13 +20,25 @@ const handler: ProxyHandler<any> = {
     if (typeof target[name] === "function") {
       safeConsoleDebug(`[Proxy ${target.constructor.name} - Calling Method: ${String(name)}`) //, obj)
       return new Proxy(target[name], {
-        apply: (target, thisArg, argumentsList) => {
-          safeConsoleDebug(
-            `[Proxy ${target.constructor.name} - Method: ${String(name)}`,
-            thisArg,
-            argumentsList
-          )
-          return Reflect.apply(target, thisArg, argumentsList)
+        apply: async (target, thisArg, argumentsList) => {
+          try {
+            const res = await Reflect.apply(target, thisArg, argumentsList)
+            safeConsoleDebug(
+              `[Proxy ${target.constructor.name} - Method: ${String(name)}`,
+              thisArg,
+              argumentsList,
+              { res }
+            )
+            return res
+          } catch (err) {
+            safeConsoleDebug(
+              `[Proxy ${target.constructor.name} - Method: ${String(name)}`,
+              thisArg,
+              argumentsList,
+              { err }
+            )
+            throw err
+          }
         },
       })
     } else

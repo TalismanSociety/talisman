@@ -132,6 +132,7 @@ export default class MessageService {
     data: TransportResponseMessage<TMessageType> & {
       subscription?: string
       code?: number
+      data?: unknown
       isEthProviderRpcError?: boolean
     }
   ): void {
@@ -156,11 +157,15 @@ export default class MessageService {
 
     if (data.subscription && handler.subscriber) handler.subscriber(data.subscription)
     else if (data.error) {
-      if (data.isEthProviderRpcError)
+      if (data.isEthProviderRpcError) {
         handler.reject(
-          new EthProviderRpcError(data.error, data.code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR)
+          new EthProviderRpcError(
+            data.error,
+            data.code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR,
+            data.data
+          )
         )
-      else handler.reject(new Error(data.error))
+      } else handler.reject(new Error(data.error))
     } else handler.resolve(data.response)
   }
 }
