@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { Button } from "talisman-ui"
 import { useAccount, useSignMessage } from "wagmi"
 
-import { Section } from "../shared/Section"
+import { Section } from "../../shared/Section"
 
 type FormData = { message: string }
 
@@ -34,7 +34,13 @@ const DEFAULT_VALUE: FormData = {
   wallet should show a scrollbar`,
 }
 
-export const PersonalSign = () => {
+export const PersonalSign = () => (
+  <Section title="Personal Sign">
+    <PersonalSignInner />
+  </Section>
+)
+
+const PersonalSignInner = () => {
   const { isConnected, address } = useAccount()
 
   const {
@@ -70,8 +76,11 @@ export const PersonalSign = () => {
   if (!isConnected) return null
 
   return (
-    <Section title="Personal Sign">
-      <form className="text-md text-body-secondary space-y-4" onSubmit={handleSubmit(onSubmit)}>
+    <>
+      <form
+        className="text-md text-body-secondary space-y-4 pt-4"
+        onSubmit={handleSubmit(onSubmit)}
+      >
         <div className="flex items-center">
           <label className="w-48" htmlFor="send-tokens-to">
             Message
@@ -86,7 +95,7 @@ export const PersonalSign = () => {
           />
         </div>
         <div>
-          <Button type="submit" processing={isLoading} disabled={!isValid || isSubmitting}>
+          <Button small type="submit" processing={isLoading} disabled={!isValid || isSubmitting}>
             Sign message
           </Button>
         </div>
@@ -112,6 +121,6 @@ export const PersonalSign = () => {
           </div>
         )}
       </div>
-    </Section>
+    </>
   )
 }

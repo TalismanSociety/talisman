@@ -46,7 +46,13 @@ type FormData = { display: string }
 
 const DEFAULT_VALUE: FormData = { display: "" }
 
-export const Identity = () => {
+export const Identity = () => (
+  <Section title="Transactions (on Identity pallet)">
+    <IdentityInner />
+  </Section>
+)
+
+const IdentityInner = () => {
   const { api } = useApi()
   const { account } = useWallet()
   const { isLoading, error, identityRegistration, refresh } = useIdentity()
@@ -135,7 +141,7 @@ export const Identity = () => {
   if (!api || !account) return null
 
   return (
-    <Section title="Transactions (on Identity pallet)">
+    <>
       <form className="mb-8 space-y-8" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex items-center gap-8">
           <label htmlFor="display">Display name : </label>
@@ -171,6 +177,6 @@ export const Identity = () => {
           )}
         </div>
       )}
-    </Section>
+    </>
   )
 }

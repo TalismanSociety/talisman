@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 import { useAccount, useNetwork } from "wagmi"
 
-import { Section } from "../shared/Section"
+import { Section } from "../../shared/Section"
 
 // same test messages as MetaMasks's test-dapp
 const TEST_MESSAGES = {
@@ -132,7 +132,7 @@ const getParams = (version: SignTypedDataVersion, from: string, message: string)
   }
 }
 
-export const SignTypedData = () => {
+const SignTypedDataInner = () => {
   const { isConnected, address, connector } = useAccount()
   const { chain } = useNetwork()
   const [processing, setProcessing] = useState<SignTypedDataVersion>()
@@ -177,9 +177,10 @@ export const SignTypedData = () => {
   if (!isConnected) return null
 
   return (
-    <Section title="Sign Typed Data">
-      <div className="flex gap-8">
+    <>
+      <div className="flex gap-8 pt-4">
         <Button
+          small
           onClick={handleSignClick(SignTypedDataVersion.V1)}
           processing={processing === SignTypedDataVersion.V1}
           disabled={processing !== SignTypedDataVersion.V1 && disabled}
@@ -187,6 +188,7 @@ export const SignTypedData = () => {
           Legacy
         </Button>
         <Button
+          small
           onClick={handleSignClick(SignTypedDataVersion.V3)}
           processing={processing === SignTypedDataVersion.V3}
           disabled={processing !== SignTypedDataVersion.V3 && disabled}
@@ -194,6 +196,7 @@ export const SignTypedData = () => {
           V3
         </Button>
         <Button
+          small
           onClick={handleSignClick(SignTypedDataVersion.V4)}
           processing={processing === SignTypedDataVersion.V4}
           disabled={processing !== SignTypedDataVersion.V4 && disabled}
@@ -226,6 +229,12 @@ export const SignTypedData = () => {
           </div>
         )}
       </div>
-    </Section>
+    </>
   )
 }
+
+export const SignTypedData = () => (
+  <Section title="Sign Typed Data">
+    <SignTypedDataInner />
+  </Section>
+)

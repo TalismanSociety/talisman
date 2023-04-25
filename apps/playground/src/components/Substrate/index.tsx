@@ -1,4 +1,4 @@
-import { TestLayout } from "../shared/TestLayout"
+import { Layout } from "../shared/Layout"
 import { Account } from "./Account"
 import { Balance } from "./Balance"
 import { Identity } from "./Identity"
@@ -21,14 +21,14 @@ export const Substrate = () => {
     <NetworkProvider>
       <ApiProvider>
         <WalletProvider {...config}>
-          <TestLayout title="Substrate">
+          <Layout title="Substrate">
             <Network />
             <Account />
             <Balance />
             <SignMessage />
             <Identity />
             <Sumi />
-          </TestLayout>
+          </Layout>
         </WalletProvider>
       </ApiProvider>
     </NetworkProvider>

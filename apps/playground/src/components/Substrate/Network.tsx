@@ -63,33 +63,37 @@ const BlockNumber = () => {
   )
 }
 
-export const Network = () => {
+export const Network = () => (
+  <Section title="Network">
+    <NetworkInner />
+  </Section>
+)
+
+const NetworkInner = () => {
   const { wsUrl, setWsUrl } = useNetwork()
   const { error, isConnecting } = useApi()
 
   return (
-    <Section title="Network">
-      <div className="my-8 space-y-4">
-        <div>
-          Network :{" "}
-          <select
-            defaultValue={wsUrl ?? "None"}
-            className="form-select bg-black-tertiary text-md outline-none"
-            onChange={(e) => setWsUrl(e.target.value)}
-          >
-            {Object.entries(availableNetworks).map(([name, wsUrl]) => (
-              <option key={name} value={wsUrl}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          Selected RPC : {wsUrl ?? "N/A"} {isConnecting && "(Connecting...)"}
-        </div>
-        <div className="text-alert-error">{error && (error as Error).message}</div>
-        <BlockNumber />
+    <div className="my-8 space-y-4">
+      <div>
+        Network :{" "}
+        <select
+          defaultValue={wsUrl ?? "None"}
+          className="form-select bg-black-tertiary text-md outline-none"
+          onChange={(e) => setWsUrl(e.target.value)}
+        >
+          {Object.entries(availableNetworks).map(([name, wsUrl]) => (
+            <option key={name} value={wsUrl}>
+              {name}
+            </option>
+          ))}
+        </select>
       </div>
-    </Section>
+      <div>
+        Selected RPC : {wsUrl ?? "N/A"} {isConnecting && "(Connecting...)"}
+      </div>
+      <div className="text-alert-error">{error && (error as Error).message}</div>
+      <BlockNumber />
+    </div>
   )
 }

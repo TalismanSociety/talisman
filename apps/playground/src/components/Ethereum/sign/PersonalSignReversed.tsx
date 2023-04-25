@@ -1,18 +1,19 @@
-import { useCallback, useState } from "react"
+import { classNames } from "@talismn/util"
+import { ethers } from "ethers"
+import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 import { useAccount } from "wagmi"
 
-import { Section } from "../shared/Section"
+import { Section } from "../../shared/Section"
 
-// TODO : use a known message so we could verify signature
-const ENCODED_MESSAGE = "0xed53794e4b58f06f378f94c4c880e5c631d8d959e54a452508f7012dd4cc6769"
-
-export const PersonalSignNftListing = () => {
+export const PersonalSignReversed = () => {
   const { isConnected, address, connector } = useAccount()
 
   const [signature, setSignature] = useState<string>()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error>()
+
+  const message = useMemo(() => `Sign this message to login with address ${address}`, [address])
 
   const handleSignClick = useCallback(async () => {
     setError(undefined)
@@ -22,26 +23,26 @@ export const PersonalSignNftListing = () => {
       setSignature(
         await provider.request({
           method: "personal_sign",
-          params: [ENCODED_MESSAGE, address],
+          params: [address, message],
         })
       )
     } catch (err) {
       setError(err as Error)
     }
     setIsLoading(false)
-  }, [address, connector])
+  }, [address, connector, message])
 
-  // const signedBy = useMemo(
-  //   () => (signature ? ethers.utils.verifyMessage(MESSAGE, signature) : null),
-  //   [signature]
-  // )
+  const signedBy = useMemo(
+    () => (signature ? ethers.utils.verifyMessage(message, signature) : null),
+    [signature, message]
+  )
 
   if (!isConnected) return null
 
   return (
-    <Section title="Personal Sign for NFT listing">
-      <div>
-        <Button type="button" onClick={handleSignClick} processing={isLoading}>
+    <Section title="Personal Sign with params in wrong order + message unencoded">
+      <div className="pt-4">
+        <Button small type="button" onClick={handleSignClick} processing={isLoading}>
           Sign message
         </Button>
       </div>
@@ -54,9 +55,7 @@ export const PersonalSignNftListing = () => {
         {error && <div className="text-alert-error my-8 ">Error : {error?.message}</div>}
         {signature && (
           <div>
-            Not sure how to verify signature programmatically because we don't know the unencoded
-            message, compare with metamask using same account
-            {/* Signed by :{" "}
+            Signed by :{" "}
             <span
               className={classNames(
                 "font-mono",
@@ -64,7 +63,7 @@ export const PersonalSignNftListing = () => {
               )}
             >
               {signedBy}
-            </span> */}
+            </span>
           </div>
         )}
       </div>

@@ -1,7 +1,7 @@
 import { ReactNode } from "react"
 import { Checkbox } from "talisman-ui"
 
-import { TestLayout } from "../shared/TestLayout"
+import { Layout } from "../shared/Layout"
 
 const Box = ({ title, children }: { title: ReactNode; children?: ReactNode }) => (
   <div className="flex w-full grow flex-col justify-center gap-4 text-center">
@@ -31,7 +31,7 @@ const Section = ({
 
 export const Checkboxes = () => {
   return (
-    <TestLayout title="Checkboxes">
+    <Layout title="Checkboxes">
       <Section title="Default">
         <div className="flex w-full justify-evenly gap-8">
           <Box title="normal">
@@ -104,6 +104,6 @@ export const Checkboxes = () => {
           </Box>
         </div>
       </Section>
-    </TestLayout>
+    </Layout>
   )
 }

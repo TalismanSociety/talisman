@@ -1,13 +1,13 @@
 import { useState } from "react"
 import { Button, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 
-import { TestLayout } from "../shared/TestLayout"
+import { Layout } from "../shared/Layout"
 
 export const TxStatusPage = () => {
   const [status, setStatus] = useState<ProcessAnimationStatus>("processing")
 
   return (
-    <TestLayout title="Mystical Background">
+    <Layout title="Mystical Background">
       <div className="my-16 flex gap-8">
         <Button primary={status === "processing"} onClick={() => setStatus("processing")}>
           Processing
@@ -22,6 +22,6 @@ export const TxStatusPage = () => {
       <div>
         <ProcessAnimation status={status} className="h-96 " />
       </div>
-    </TestLayout>
+    </Layout>
   )
 }

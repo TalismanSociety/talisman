@@ -28,7 +28,13 @@ const TEST_MESSAGE = `First line of the message
 20th line and this has a lot of text a lot of text a lot of text a lot of text a lot of text a lot of text.
 `
 
-export const SignMessage = () => {
+export const SignMessage = () => (
+  <Section title="Sign message">
+    <SignMessageInner />
+  </Section>
+)
+
+const SignMessageInner = () => {
   const { account, extension } = useWallet()
   const [result, setResult] = useState<SignerResult>()
   const [error, setError] = useState<Error>()
@@ -62,7 +68,7 @@ export const SignMessage = () => {
   }, [account?.address, result])
 
   return (
-    <Section title="Sign message">
+    <div>
       <Button
         processing={isProcessing}
         disabled={!account || !extension}
@@ -79,6 +85,6 @@ export const SignMessage = () => {
         )
       ) : null}
       {error && <div className="text-alert-error my-8 ">Error : {error?.message}</div>}
-    </Section>
+    </div>
   )
 }

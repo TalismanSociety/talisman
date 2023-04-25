@@ -8,17 +8,20 @@ export const Nav = () => {
     <div className="flex w-full gap-6">
       <Link
         to="/substrate"
-        className={classNames(location.pathname === "/substrate" && "text-primary-500")}
+        className={classNames(location.pathname.startsWith("/substrate") && "text-primary-500")}
       >
         Substrate
       </Link>
       <Link
         to="/ethereum"
-        className={classNames(location.pathname === "/ethereum" && "text-primary-500")}
+        className={classNames(location.pathname.startsWith("/ethereum") && "text-primary-500")}
       >
         Ethereum
       </Link>
-      <Link to="/ui" className={classNames(location.pathname === "/ui" && "text-primary-500")}>
+      <Link
+        to="/ui"
+        className={classNames(location.pathname.startsWith("/ui") && "text-primary-500")}
+      >
         UI
       </Link>
     </div>

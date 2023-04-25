@@ -14,7 +14,7 @@ const NETWORKS = {
   },
 }
 
-export const AddNetwork = () => {
+const AddNetworkInner = () => {
   const { connector } = useAccount()
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<Error>()
@@ -44,16 +44,20 @@ export const AddNetwork = () => {
   if (!connector) return null
 
   return (
-    <Section title="Add Network">
-      <div className="space-y-4">
-        <div>
-          <Button processing={isPending} onClick={handleAddNetwork("avalanche")}>
-            Avalanche
-          </Button>
-        </div>
-        {error && <pre className="text-alert-error">{error.toString()}</pre>}
-        {result && <pre className="text-alert-success">{JSON.stringify(result, undefined, 2)}</pre>}
+    <div className="space-y-4">
+      <div>
+        <Button processing={isPending} onClick={handleAddNetwork("avalanche")}>
+          Avalanche
+        </Button>
       </div>
-    </Section>
+      {error && <pre className="text-alert-error">{error.toString()}</pre>}
+      {result && <pre className="text-alert-success">{JSON.stringify(result, undefined, 2)}</pre>}
+    </div>
   )
 }
+
+export const AddNetwork = () => (
+  <Section title="Add Network">
+    <AddNetworkInner />
+  </Section>
+)

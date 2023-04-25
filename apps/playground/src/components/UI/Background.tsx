@@ -8,7 +8,7 @@ import {
   MysticalPhysics,
 } from "talisman-ui"
 
-import { TestLayout } from "../shared/TestLayout"
+import { Layout } from "../shared/Layout"
 
 export const Background = () => {
   const [showNew, setShowNew] = useState(true)
@@ -34,7 +34,7 @@ export const Background = () => {
   }, [strConfig])
 
   return (
-    <TestLayout title="Mystical Background">
+    <Layout title="Mystical Background">
       <div className="space-y-8">
         <div>
           Current background :{" "}
@@ -77,6 +77,6 @@ export const Background = () => {
           <MysticalBackgroundOld key={bgKey} className="absolute top-0 left-0 h-full w-full" />
         )}
       </div>
-    </TestLayout>
+    </Layout>
   )
 }
