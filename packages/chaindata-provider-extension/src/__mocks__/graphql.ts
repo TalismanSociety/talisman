@@ -8,4 +8,4 @@ export const fetchEvmNetwork = async (evmNetworkId: string) =>
 
 export const fetchTokens = async () => mockTokensResponse
 export const fetchToken = async (tokenId: string) =>
-  mockTokensResponse.find(({ id }) => id === tokenId)
+  mockTokensResponse.find(({ id }) => id === tokenId)?.data
