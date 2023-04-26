@@ -25,7 +25,11 @@ import {
 import { signSubstrate } from "@core/domains/signing/requests"
 import type { ResponseSigning } from "@core/domains/signing/types"
 import { requestAuthoriseSite } from "@core/domains/sitesAuthorised/requests"
-import { AuthorizedSites, RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
+import {
+  AuthorizedSite,
+  AuthorizedSites,
+  RequestAuthorizeTab,
+} from "@core/domains/sitesAuthorised/types"
 import { TabStore } from "@core/handlers/stores"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { TabsHandler } from "@core/libs/Handler"
@@ -77,7 +81,14 @@ export default class Tabs extends TabsHandler {
   }
 
   private async authorize(url: string, request: RequestAuthorizeTab): Promise<boolean> {
-    const siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
+    let siteFromUrl: AuthorizedSite | undefined
+    try {
+      siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
+    } catch (error) {
+      // means that the url is not valid
+      log.error(error)
+      return false
+    }
     // site may exist if created during a connection with EVM API
     if (siteFromUrl?.addresses) {
       // this url was seen in the past
@@ -101,7 +112,13 @@ export default class Tabs extends TabsHandler {
     url: string,
     { anyType }: RequestAccountList
   ): Promise<InjectedAccount[]> {
-    const site = await this.stores.sites.getSiteFromUrl(url)
+    let site
+    try {
+      site = await this.stores.sites.getSiteFromUrl(url)
+    } catch (error) {
+      // means url is not a valid one
+      return []
+    }
     const { addresses } = site
     if (!addresses || addresses.length === 0) return []
 

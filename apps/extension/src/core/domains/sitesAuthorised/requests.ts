@@ -1,5 +1,5 @@
 import { DEFAULT_ETH_CHAIN_ID } from "@core/constants"
-import type { RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
+import type { AuthorizedSite, RequestAuthorizeTab } from "@core/domains/sitesAuthorised/types"
 import { requestStore } from "@core/libs/requests/store"
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { urlToDomain } from "@core/util/urlToDomain"
@@ -35,7 +35,8 @@ export const requestAuthoriseSite = async (url: string, request: RequestAuthoriz
 
       const { origin, ethereum } = request
 
-      const siteAuth = (await sitesAuthorisedStore.getSiteFromUrl(url)) ?? {}
+      // we have already validated the url here, so no need to try/catch
+      const siteAuth = (await sitesAuthorisedStore.getSiteFromUrl(url)) ?? ({} as AuthorizedSite)
 
       siteAuth.id = domain
       siteAuth.origin = origin
