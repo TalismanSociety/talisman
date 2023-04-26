@@ -10,5 +10,5 @@
   "access": "restricted",
   "baseBranch": "dev",
   "updateInternalDependencies": "patch",
-  "ignore": []
+  "ignore": ["balances-demo", "extension", "playground"]
 }
