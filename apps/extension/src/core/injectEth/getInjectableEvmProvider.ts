@@ -137,16 +137,18 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     } catch (err) {
       log.debug("[talismanEth.request] error on %s", args.method, { err })
 
-      const error = err as EthProviderRpcError
+      const { code, message, data } = err as EthProviderRpcError
 
-      throw {
-        code: ETH_ERROR_EIP1474_INTERNAL_ERROR,
-        message: "Internal JSON-RPC error.",
-        data: {
-          code: error.code,
-          message: error.message,
-          data: error.data,
-        },
+      if (code > 0) {
+        // standard wallet error (user rejected, etc.)
+        throw err
+      } else {
+        // RPC node error, wrap it
+        throw new EthProviderRpcError(
+          "Internal JSON-RPC error.",
+          ETH_ERROR_EIP1474_INTERNAL_ERROR,
+          { code, message, data }
+        )
       }
     }
   }
