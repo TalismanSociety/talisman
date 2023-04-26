@@ -41,10 +41,10 @@ export const ERC20Send = () => {
   const formData = watch()
 
   const { data: decimals } = useContractRead({
-    address: address as `0x${string}`,
+    address: contractAddress as `0x${string}`,
     abi: erc20ABI,
     functionName: "decimals",
-    enabled: !!address,
+    enabled: !!contractAddress,
   })
 
   const { data: balanceOfSelfData } = useContractRead({
