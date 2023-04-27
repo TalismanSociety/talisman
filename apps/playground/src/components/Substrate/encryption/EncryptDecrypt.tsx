@@ -1,6 +1,6 @@
 import { web3FromSource } from "@polkadot/extension-dapp"
 import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types"
-import { u8aToHex } from "@polkadot/util"
+import { hexToString, u8aToHex } from "@polkadot/util"
 import { decodeAddress } from "@polkadot/util-crypto"
 import { ChangeEventHandler, FC, useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
@@ -11,14 +11,6 @@ import { DecryptResult, EncryptResult, TalismanSigner } from "./types"
 
 const DATA_TO_ENCRYPT =
   "This is a secret message that will be encrypted and then decrypted using the Talisman signer"
-
-// // substrate dev 1 (pwned)
-// const DECRYPTER_ADDRESS = "13Dg1mYyNddpzDxZZ2ksZeAQxjDAqAzH24bGmBhzs5dQcmwF"
-// const DECRYPTER_PUB_KEY = "0x6222bdf686960b8ee8aeda225d885575c2238f0403003983b392cde500aeb06c"
-
-// // substrate dev 2
-// const ENCRYPTER_ADDRESS = "1YmEYgtfPbwx5Jos1PjKDWRpuJWSpTzytwZgYan6kgiquNS"
-// const ENCRYPTER_PUB_KEY = "0x183982ce80e4b52f2e80aaf36d18b1eba1a32005ffbefd952962227f2f4db309"
 
 const getPublicKeyFromAddress = (address: string) => u8aToHex(decodeAddress(address))
 
@@ -45,8 +37,6 @@ const AccountPicker: FC<{
     [accountsWithIds, onChange]
   )
 
-  //console.log({ selected })
-
   return (
     <select
       className="form-select bg-black-tertiary text-md outline-none"
@@ -67,7 +57,6 @@ const AccountPicker: FC<{
 
 export const EncryptDecrypt = () => {
   const { accounts = [] } = useWallet()
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<Error>()
   const [encryptResult, setEncryptResult] = useState<EncryptResult>()
   const [decryptResult, setDecryptResult] = useState<DecryptResult>()
@@ -75,12 +64,6 @@ export const EncryptDecrypt = () => {
 
   const [senderAccount, setSenderAccount] = useState<InjectedAccountWithMeta>()
   const [recipientAccount, setRecipientAccount] = useState<InjectedAccountWithMeta>()
-
-  // const pubKey = useEffect(() => {
-  //   console.log({ accounts, z: accounts[0], r: accounts[1] })
-  //   setSenderAccount((prev) => (prev ? prev : accounts[0]))
-  //   setRecipientAccount((prev) => (prev ? prev : accounts[1]))
-  // }, [accounts])
 
   const handleEncrypt = useCallback(
     async (data: string | undefined) => {
@@ -133,22 +116,6 @@ export const EncryptDecrypt = () => {
     [recipientAccount, senderAccount]
   )
 
-  // console.log({
-  //   // recipientAccount,
-  //   // senderAccount,
-  //   senderAddress1: senderAccount && encodeAddress(senderAccount?.address, 0),
-
-  //   //recipientAddress1: recipientAccount && encodeAddress(recipientAccount?.address, 0),
-  //   // pubKey1:
-  //   //   recipientAccount?.address &&
-  //   //   u8aToHex(decodeAddress(encodeAddress(recipientAccount?.address))),
-  //   senderPubKey: senderAccount?.address && u8aToHex(decodeAddress(senderAccount?.address)),
-  //   // DECRYPTER_ADDRESS,
-  //   // DECRYPTER_PUB_KEY,
-  //   ENCRYPTER_ADDRESS,
-  //   ENCRYPTER_PUB_KEY,
-  // })
-
   return (
     <Section title="EncryptDecrypt (Sumi)">
       <div className="py-4">
@@ -199,6 +166,8 @@ export const EncryptDecrypt = () => {
       {decryptResult?.result && (
         <pre className="my-8 ">{JSON.stringify(decryptResult, undefined, 2)}</pre>
       )}
+      <div>Decrypted hex : {decryptResult?.result && hexToString(decryptResult?.result)}</div>
+      {error && <div className="text-alert-error my-8">{error.toString()}</div>}
     </Section>
   )
 }
