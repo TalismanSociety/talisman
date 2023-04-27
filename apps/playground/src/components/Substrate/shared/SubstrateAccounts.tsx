@@ -3,16 +3,16 @@ import { classNames } from "@talismn/util"
 import { useCallback } from "react"
 import { Button } from "talisman-ui"
 
-import { Section } from "../shared/Section"
-import { useWallet } from "./useWallet"
+import { Section } from "../../shared/Section"
+import { useWallet } from "../useWallet"
 
-export const Account = () => (
-  <Section title="Account">
+export const SubstrateAccounts = () => (
+  <Section title="Accounts">
     <AccountInner />
   </Section>
 )
 
-export const AccountInner = () => {
+const AccountInner = () => {
   const { isConnected, accounts, connect, disconnect, select, account } = useWallet()
 
   const handleSelect = useCallback(
@@ -41,12 +41,12 @@ export const AccountInner = () => {
       <div>
         Selected account address : <span className="font-mono">{account?.address ?? "N/A"}</span>
       </div>
-      <Button primary onClick={disconnect}>
+      <Button small primary onClick={disconnect}>
         Disconnect Wallet
       </Button>
     </div>
   ) : (
-    <Button primary onClick={connect}>
+    <Button small primary onClick={connect}>
       Connect Wallet
     </Button>
   )

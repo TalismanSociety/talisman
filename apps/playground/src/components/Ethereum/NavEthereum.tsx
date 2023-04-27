@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
 import { Link, useLocation } from "react-router-dom"
 
-export const NavUI = () => {
+export const NavEthereum = () => {
   const location = useLocation()
 
   return (

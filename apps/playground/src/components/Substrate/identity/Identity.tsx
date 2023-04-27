@@ -5,9 +5,9 @@ import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Button } from "talisman-ui"
 
-import { Section } from "../shared/Section"
-import { useApi } from "./useApi"
-import { useWallet } from "./useWallet"
+import { Section } from "../../shared/Section"
+import { useApi } from "../useApi"
+import { useWallet } from "../useWallet"
 
 const useIdentity = () => {
   const { api } = useApi()
@@ -47,7 +47,7 @@ type FormData = { display: string }
 const DEFAULT_VALUE: FormData = { display: "" }
 
 export const Identity = () => (
-  <Section title="Transactions (on Identity pallet)">
+  <Section title="Identity">
     <IdentityInner />
   </Section>
 )

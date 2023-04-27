@@ -18,7 +18,7 @@ function App() {
         <BrowserRouter>
           <Nav />
           <Routes>
-            <Route path="substrate" element={<Substrate />} />
+            <Route path="substrate/*" element={<Substrate />} />
             <Route path="ethereum/*" element={<Ethereum />} />
             <Route path="ui/*" element={<UIPage />} />
           </Routes>
