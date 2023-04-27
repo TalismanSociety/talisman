@@ -9,7 +9,9 @@
       "@core": ["./core"],
       "@core/*": ["./core/*"],
       "@ui": ["./ui"],
-      "@ui/*": ["./ui/*"]
+      "@ui/*": ["./ui/*"],
+      "@tests": ["./tests"],
+      "@tests/*": ["./tests/*"]
     }
   },
   "include": ["src", "**/*.ts", "**/*.tsx"],

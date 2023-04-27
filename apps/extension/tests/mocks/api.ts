@@ -88,5 +88,10 @@ export const api = {
       .mockImplementation((id: keyof typeof authorisedSites, type: ProviderType) =>
         sitesStore.forgetSite(id, type)
       ),
+    balances: jest.fn().mockImplementation((cb: () => void) => () => undefined),
+    chains: jest.fn().mockImplementation((cb: () => void) => () => undefined),
+    ethereumNetworks: jest.fn().mockImplementation((cb: () => void) => () => undefined),
+    tokens: jest.fn().mockImplementation((cb: () => void) => () => undefined),
+    tokenRates: jest.fn().mockImplementation((cb: () => void) => () => undefined),
   },
 }
