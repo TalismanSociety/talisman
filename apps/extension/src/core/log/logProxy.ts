@@ -18,21 +18,35 @@ const handler: ProxyHandler<any> = {
     const obj = copyObject(target)
 
     if (typeof target[name] === "function") {
-      safeConsoleDebug(`[Proxy ${target.constructor.name} - Calling Method: ${String(name)}`) //, obj)
       return new Proxy(target[name], {
-        apply: (target, thisArg, argumentsList) => {
-          safeConsoleDebug(
-            `[Proxy ${target.constructor.name} - Method: ${String(name)}`,
-            thisArg,
-            argumentsList
-          )
-          return Reflect.apply(target, thisArg, argumentsList)
+        apply: async (target, thisArg, argumentsList) => {
+          try {
+            const result = await Reflect.apply(target, thisArg, argumentsList)
+            safeConsoleDebug(`[Proxy ${target.constructor.name} - Method: ${String(name)}`, {
+              thisArg,
+              argumentsList,
+              result,
+            })
+            return result
+          } catch (err) {
+            safeConsoleDebug(`[Proxy ${target.constructor.name} - Method: ${String(name)}`, {
+              thisArg,
+              argumentsList,
+              err,
+            })
+            throw err
+          }
         },
       })
+    } else if (typeof target[name] === "object") {
+      safeConsoleDebug(
+        `[Proxy ${target.constructor.name} - Reading Property: ${String(name)} => `,
+        { result: obj[String(name)] }
+      )
     } else
       safeConsoleDebug(
-        `[Proxy ${target.constructor.name} - Reading Property: ${String(name)}`,
-        String(name) in obj ? obj[String(name)] : "MISSING PROPERTY"
+        `[Proxy ${target.constructor.name} - Reading Property: ${String(name)} => %s`,
+        String(name) in obj ? String(obj[String(name)]) : "MISSING PROPERTY"
       )
 
     return Reflect.get(target, name, receiver)

@@ -135,20 +135,21 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
       log.debug("[talismanEth.request] response for %s", args.method, { args, result })
       return result
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err)
-      if (err instanceof EthProviderRpcError) {
-        const { code, message, name } = err
-        log.debug("[talismanEth.request] RPC error on %s", args.method, {
-          code,
-          message,
-          name,
-        })
-        throw err
-      }
-      log.debug("[talismanEth.request] error on %s", args.method, err)
+      log.debug("[talismanEth.request] error on %s", args.method, { err })
 
-      throw new EthProviderRpcError((err as Error).message, ETH_ERROR_EIP1474_INTERNAL_ERROR)
+      const { code, message, data } = err as EthProviderRpcError
+
+      if (code > 0) {
+        // standard wallet error (user rejected, etc.)
+        throw err
+      } else {
+        // RPC node error, wrap it
+        throw new EthProviderRpcError(
+          "Internal JSON-RPC error.",
+          ETH_ERROR_EIP1474_INTERNAL_ERROR,
+          { code, message, data }
+        )
+      }
     }
   }
 

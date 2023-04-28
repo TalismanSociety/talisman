@@ -1,5 +1,4 @@
 import { DEBUG, PORT_EXTENSION } from "@core/constants"
-import { EthProviderRpcError } from "@core/injectEth/EthProviderRpcError"
 import { AnyEthRequest } from "@core/injectEth/types"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
@@ -66,21 +65,22 @@ const talismanHandler = <TMessageType extends MessageTypes>(
         throw e
       }
     })
-    .catch((error: Error): void => {
+    .catch((error): void => {
       // eslint-disable-next-line no-console
       DEBUG && console.debug(`[err] ${source}:: ${error.message}`, { error })
 
       // only send message back to port if it's still connected
       if (port) {
         try {
-          if (error instanceof EthProviderRpcError)
+          if (message === "pub(eth.request)")
             port.postMessage({
-              error: error.message,
               id,
+              error: error.message,
               code: error.code,
+              data: error.data,
               isEthProviderRpcError: true,
             })
-          else port.postMessage({ error: error.message, id })
+          else port.postMessage({ id, error: error.message })
         } catch (caughtError) {
           Sentry.captureException(caughtError, {
             extra: {
