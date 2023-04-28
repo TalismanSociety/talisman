@@ -2,7 +2,7 @@ import { classNames } from "@talismn/util"
 import { FC, ReactNode, useState } from "react"
 import { Button, Checkbox, Drawer, useOpenClose } from "talisman-ui"
 
-import { TestLayout } from "../shared/TestLayout"
+import { Layout } from "../shared/Layout"
 
 const DrawerContent: FC<{ className?: string; children?: ReactNode }> = ({
   className,
@@ -32,7 +32,7 @@ export const DrawerPage = () => {
   const containerId = withContainer ? "container" : undefined
 
   return (
-    <TestLayout title="Mystical Background">
+    <Layout title="Mystical Background">
       <div>
         <Checkbox checked={withContainer} onChange={(e) => setWithContainer(e.target.checked)}>
           In container
@@ -121,6 +121,6 @@ export const DrawerPage = () => {
           className="bg-brand-pink relative h-[600px] w-[400px] overflow-hidden border "
         ></div>
       </div>
-    </TestLayout>
+    </Layout>
   )
 }

@@ -32,11 +32,17 @@ export const ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED = 4902
 
 export class EthProviderRpcError extends Error {
   code: number
-  data?: unknown
+  message: string
+  data?: unknown //hex encoded error or underlying error object
 
   constructor(message: string, code: number, data?: unknown) {
     super(message)
+
     this.code = code
+    this.message = message
     this.data = data
+
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, EthProviderRpcError.prototype)
   }
 }

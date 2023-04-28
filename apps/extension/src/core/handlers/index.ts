@@ -1,5 +1,4 @@
 import { DEBUG, PORT_EXTENSION } from "@core/constants"
-import { EthProviderRpcError } from "@core/injectEth/EthProviderRpcError"
 import { AnyEthRequest } from "@core/injectEth/types"
 import { log } from "@core/log"
 import { assert } from "@polkadot/util"
@@ -65,7 +64,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
         throw e
       }
     })
-    .catch((error: Error): void => {
+    .catch((error) => {
       log.debug(`[err] ${source}:: ${error.message}`, { error })
 
       if (
@@ -80,14 +79,15 @@ const talismanHandler = <TMessageType extends MessageTypes>(
       // only send message back to port if it's still connected, unfortunately this check is not reliable in all browsers
       if (port) {
         try {
-          if (error instanceof EthProviderRpcError)
+          if (message === "pub(eth.request)")
             port.postMessage({
-              error: error.message,
               id,
+              error: error.message,
               code: error.code,
+              data: error.data,
               isEthProviderRpcError: true,
             })
-          else port.postMessage({ error: error.message, id })
+          else port.postMessage({ id, error: error.message })
         } catch (caughtError) {
           /**
            * no-op

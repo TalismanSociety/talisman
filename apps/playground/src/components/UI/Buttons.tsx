@@ -2,7 +2,7 @@ import { ReactNode } from "react"
 import { Button } from "talisman-ui"
 
 import { IconArrowRight } from "../../icons"
-import { TestLayout } from "../shared/TestLayout"
+import { Layout } from "../shared/Layout"
 
 const Box = ({ title, children }: { title: ReactNode; children?: ReactNode }) => (
   <div className="flex w-full grow flex-col items-center justify-center gap-4 text-center">
@@ -13,7 +13,7 @@ const Box = ({ title, children }: { title: ReactNode; children?: ReactNode }) =>
 
 export const Buttons = () => {
   return (
-    <TestLayout title="Buttons">
+    <Layout title="Buttons">
       <h3 className="text-lg">Variable-Width</h3>
       <div className="flex w-full justify-evenly gap-8">
         <Box title="Default" />
@@ -170,6 +170,6 @@ export const Buttons = () => {
           </Button>
         </Box>
       </div>
-    </TestLayout>
+    </Layout>
   )
 }

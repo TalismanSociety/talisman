@@ -1,13 +1,13 @@
-import { TestLayout } from "../shared/TestLayout"
-import { Account } from "./Account"
-import { Balance } from "./Balance"
-import { Identity } from "./Identity"
-import { Network } from "./Network"
-import { SignMessage } from "./SignMessage"
-import { Sumi } from "./Sumi"
-import { ApiProvider } from "./useApi"
-import { NetworkProvider } from "./useNetwork"
-import { WalletConfig, WalletProvider } from "./useWallet"
+import { Navigate, Route, Routes } from "react-router-dom"
+
+import { BalancesPage } from "./balances/BalancesPage"
+import { EncryptionPage } from "./encryption/EncryptionPage"
+import { IdentityPage } from "./identity/IdentityPage"
+import { NavSubstrate } from "./NavSubstrate"
+import { ApiProvider } from "./shared/useApi"
+import { NetworkProvider } from "./shared/useNetwork"
+import { WalletConfig, WalletProvider } from "./shared/useWallet"
+import { SignPage } from "./sign/SignPage"
 
 const config: WalletConfig = {
   appName: "Talisman Playground",
@@ -21,14 +21,14 @@ export const Substrate = () => {
     <NetworkProvider>
       <ApiProvider>
         <WalletProvider {...config}>
-          <TestLayout title="Substrate">
-            <Network />
-            <Account />
-            <Balance />
-            <SignMessage />
-            <Identity />
-            <Sumi />
-          </TestLayout>
+          <NavSubstrate />
+          <Routes>
+            <Route path="balances" element={<BalancesPage />} />
+            <Route path="identity" element={<IdentityPage />} />
+            <Route path="sign" element={<SignPage />} />
+            <Route path="encryption" element={<EncryptionPage />} />
+            <Route path="*" element={<Navigate to="identity" />} />
+          </Routes>
         </WalletProvider>
       </ApiProvider>
     </NetworkProvider>
