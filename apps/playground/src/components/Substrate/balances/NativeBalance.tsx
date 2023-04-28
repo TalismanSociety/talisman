@@ -3,8 +3,8 @@ import { useCallback, useEffect, useState } from "react"
 import { Button } from "talisman-ui"
 
 import { Section } from "../../shared/Section"
-import { useApi } from "../useApi"
-import { useWallet } from "../useWallet"
+import { useApi } from "../shared/useApi"
+import { useWallet } from "../shared/useWallet"
 
 const useSystemPalletBalance = () => {
   const { api } = useApi()

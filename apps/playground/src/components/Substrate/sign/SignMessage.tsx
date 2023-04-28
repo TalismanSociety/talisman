@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 
 import { Section } from "../../shared/Section"
-import { useWallet } from "../useWallet"
+import { useWallet } from "../shared/useWallet"
 
 const TEST_MESSAGE = `First line of the message
 

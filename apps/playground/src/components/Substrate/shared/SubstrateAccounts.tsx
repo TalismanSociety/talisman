@@ -4,7 +4,7 @@ import { useCallback } from "react"
 import { Button } from "talisman-ui"
 
 import { Section } from "../../shared/Section"
-import { useWallet } from "../useWallet"
+import { useWallet } from "./useWallet"
 
 export const SubstrateAccounts = () => (
   <Section title="Accounts">

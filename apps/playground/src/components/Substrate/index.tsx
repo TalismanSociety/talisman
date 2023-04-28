@@ -4,10 +4,10 @@ import { BalancesPage } from "./balances/BalancesPage"
 import { EncryptionPage } from "./encryption/EncryptionPage"
 import { IdentityPage } from "./identity/IdentityPage"
 import { NavSubstrate } from "./NavSubstrate"
+import { ApiProvider } from "./shared/useApi"
+import { NetworkProvider } from "./shared/useNetwork"
+import { WalletConfig, WalletProvider } from "./shared/useWallet"
 import { SignPage } from "./sign/SignPage"
-import { ApiProvider } from "./useApi"
-import { NetworkProvider } from "./useNetwork"
-import { WalletConfig, WalletProvider } from "./useWallet"
 
 const config: WalletConfig = {
   appName: "Talisman Playground",

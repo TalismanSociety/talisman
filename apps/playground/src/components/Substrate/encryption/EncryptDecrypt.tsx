@@ -6,7 +6,7 @@ import { ChangeEventHandler, FC, useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 
 import { Section } from "../../shared/Section"
-import { useWallet } from "../useWallet"
+import { useWallet } from "../shared/useWallet"
 import { DecryptResult, EncryptResult, TalismanSigner } from "./types"
 
 const DATA_TO_ENCRYPT =
@@ -164,9 +164,12 @@ export const EncryptDecrypt = () => {
         Decrypt Message
       </Button>
       {decryptResult?.result && (
-        <pre className="my-8 ">{JSON.stringify(decryptResult, undefined, 2)}</pre>
+        <>
+          <pre className="my-8 ">{JSON.stringify(decryptResult, undefined, 2)}</pre>
+          <div>Decrypted hex : {hexToString(decryptResult.result)}</div>
+        </>
       )}
-      <div>Decrypted hex : {decryptResult?.result && hexToString(decryptResult?.result)}</div>
+
       {error && <div className="text-alert-error my-8">{error.toString()}</div>}
     </Section>
   )

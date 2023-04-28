@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react"
 import { useLocalStorage } from "react-use"
 
-import { provideContext } from "../../common/provideContext"
+import { provideContext } from "../../../common/provideContext"
 
 export type NetworkConfig = {
   storageKey?: string
