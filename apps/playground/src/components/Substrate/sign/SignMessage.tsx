@@ -3,8 +3,8 @@ import { signatureVerify } from "@polkadot/util-crypto"
 import { useCallback, useMemo, useState } from "react"
 import { Button } from "talisman-ui"
 
-import { Section } from "../shared/Section"
-import { useWallet } from "./useWallet"
+import { Section } from "../../shared/Section"
+import { useWallet } from "../useWallet"
 
 const TEST_MESSAGE = `First line of the message
 
@@ -68,8 +68,9 @@ const SignMessageInner = () => {
   }, [account?.address, result])
 
   return (
-    <div>
+    <div className="pt-4">
       <Button
+        small
         processing={isProcessing}
         disabled={!account || !extension}
         onClick={handleSignMessageClick}

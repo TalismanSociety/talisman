@@ -5,9 +5,9 @@ import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { Button } from "talisman-ui"
 
-import { Section } from "../shared/Section"
-import { useApi } from "./useApi"
-import { useWallet } from "./useWallet"
+import { Section } from "../../shared/Section"
+import { useApi } from "../useApi"
+import { useWallet } from "../useWallet"
 
 const useIdentity = () => {
   const { api } = useApi()
@@ -47,7 +47,7 @@ type FormData = { display: string }
 const DEFAULT_VALUE: FormData = { display: "" }
 
 export const Identity = () => (
-  <Section title="Transactions (on Identity pallet)">
+  <Section title="Identity">
     <IdentityInner />
   </Section>
 )
@@ -94,14 +94,10 @@ const IdentityInner = () => {
             display: { raw: data.display },
           })
           .signAndSend(account.address, (result) => {
-            const { status, events } = result
+            const { status } = result
             setStatus(status)
 
             if (status.isFinalized) {
-              const success = events.find(({ event }) => event.method === "ExtrinsicSuccess")
-              const failed = events.find(({ event }) => event.method === "ExtrinsicFailed")
-              // eslint-disable-next-line no-console
-              console.log({ success, failed })
               unsub()
               setTxProcessing(false)
               refresh()
@@ -125,8 +121,6 @@ const IdentityInner = () => {
         setStatus(status)
 
         if (status.isFinalized) {
-          // const success = events.find(({ event }) => event.method === "ExtrinsicSuccess")
-          // const failed = events.find(({ event }) => event.method === "ExtrinsicFailed")
           unsub()
           setTxProcessing(false)
           refresh()

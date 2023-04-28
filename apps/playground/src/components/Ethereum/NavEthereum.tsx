@@ -1,7 +1,7 @@
 import { classNames } from "@talismn/util"
 import { Link, useLocation } from "react-router-dom"
 
-export const NavUI = () => {
+export const NavEthereum = () => {
   const location = useLocation()
 
   return (
@@ -23,6 +23,12 @@ export const NavUI = () => {
         className={classNames(location.pathname === "/ethereum/erc20" && "text-primary-500")}
       >
         ERC20
+      </Link>
+      <Link
+        to="/ethereum/erc721"
+        className={classNames(location.pathname === "/ethereum/erc721" && "text-primary-500")}
+      >
+        ERC721
       </Link>
       <Link
         to="/ethereum/sign"

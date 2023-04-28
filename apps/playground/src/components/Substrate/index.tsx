@@ -1,10 +1,10 @@
-import { Layout } from "../shared/Layout"
-import { Account } from "./Account"
-import { Balance } from "./Balance"
-import { Identity } from "./Identity"
-import { Network } from "./Network"
-import { SignMessage } from "./SignMessage"
-import { Sumi } from "./Sumi"
+import { Navigate, Route, Routes } from "react-router-dom"
+
+import { BalancesPage } from "./balances/BalancesPage"
+import { EncryptionPage } from "./encryption/EncryptionPage"
+import { IdentityPage } from "./identity/IdentityPage"
+import { NavSubstrate } from "./NavSubstrate"
+import { SignPage } from "./sign/SignPage"
 import { ApiProvider } from "./useApi"
 import { NetworkProvider } from "./useNetwork"
 import { WalletConfig, WalletProvider } from "./useWallet"
@@ -21,14 +21,14 @@ export const Substrate = () => {
     <NetworkProvider>
       <ApiProvider>
         <WalletProvider {...config}>
-          <Layout title="Substrate">
-            <Network />
-            <Account />
-            <Balance />
-            <SignMessage />
-            <Identity />
-            <Sumi />
-          </Layout>
+          <NavSubstrate />
+          <Routes>
+            <Route path="balances" element={<BalancesPage />} />
+            <Route path="identity" element={<IdentityPage />} />
+            <Route path="sign" element={<SignPage />} />
+            <Route path="encryption" element={<EncryptionPage />} />
+            <Route path="*" element={<Navigate to="identity" />} />
+          </Routes>
         </WalletProvider>
       </ApiProvider>
     </NetworkProvider>

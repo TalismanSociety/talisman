@@ -3,9 +3,9 @@ import { useLocalStorage } from "react-use"
 
 import TestBasics from "./TestBasics.json"
 import TestERC20 from "./TestERC20.json"
-import Test721 from "./TestERC721.json"
+import TestERC721 from "./TestERC721.json"
 
-export type PgContractType = "TestBasics" | "TestERC20" | "Test721"
+export type PgContractType = "TestBasics" | "TestERC20" | "TestERC721"
 
 type DeploymentsDb = Record<PgContractType, Record<number, `0x${string}`>>
 
@@ -15,7 +15,7 @@ const DEFAULT_DEPLOYMENTS: DeploymentsDb = {
     1287: "0xE364F52f0C8016c59e500077f9dc32c1eDBBC189",
   },
   TestERC20: {},
-  Test721: {},
+  TestERC721: {},
 }
 
 const getContract = (contract: PgContractType) => {
@@ -24,8 +24,8 @@ const getContract = (contract: PgContractType) => {
       return TestBasics
     case "TestERC20":
       return TestERC20
-    case "Test721":
-      return Test721
+    case "TestERC721":
+      return TestERC721
   }
 }
 

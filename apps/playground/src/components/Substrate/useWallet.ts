@@ -1,11 +1,7 @@
-import Signer from "@polkadot/extension-base/page/Signer"
-import { web3Accounts, web3Enable } from "@polkadot/extension-dapp"
+import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
 import type {
   InjectedAccountWithMeta,
-  InjectedExtensionInfo,
-  InjectedMetadataKnown,
-  Injected as PjsInjected,
-  MetadataDef as PjsMetadataDef,
+  InjectedExtension,
   Web3AccountsOptions,
 } from "@polkadot/extension-inject/types"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -16,44 +12,44 @@ import { useApi } from "./useApi"
 
 // TODO: Move these to a common package and import them both here and in the extension
 /** BEGIN: Copy-paste from apps/extension/src/core/encrypt/types.ts & apps/extension/src/core/inject/types.ts **/
-interface EncryptPayloadBase {
-  message: string
-  recipient: string
-}
-interface EncryptPayload extends EncryptPayloadBase {
-  address: string
-}
-interface EncryptResult {
-  id: number
-  result: string
-}
-interface DecryptPayloadBase {
-  message: string
-  sender: string
-}
-interface DecryptPayload extends DecryptPayloadBase {
-  address: string
-}
-interface DecryptResult {
-  id: number
-  result: string
-}
-interface TalismanInjectedSigner extends Signer {
-  encryptMessage(payload: EncryptPayload): Promise<EncryptResult>
-  decryptMessage(payload: DecryptPayload): Promise<DecryptResult>
-}
-interface MetadataDef extends PjsMetadataDef {
-  metadataRpc?: string
-}
-interface InjectedMetadata {
-  get: () => Promise<InjectedMetadataKnown[]>
-  provide: (definition: MetadataDef) => Promise<boolean>
-}
-interface Injected extends PjsInjected {
-  metadata?: InjectedMetadata
-  signer: TalismanInjectedSigner
-}
-type InjectedExtension = InjectedExtensionInfo & Injected
+// interface EncryptPayloadBase {
+//   message: string
+//   recipient: string
+// }
+// interface EncryptPayload extends EncryptPayloadBase {
+//   address: string
+// }
+// interface EncryptResult {
+//   id: number
+//   result: string
+// }
+// interface DecryptPayloadBase {
+//   message: string
+//   sender: string
+// }
+// interface DecryptPayload extends DecryptPayloadBase {
+//   address: string
+// }
+// interface DecryptResult {
+//   id: number
+//   result: string
+// }
+// interface TalismanInjectedSigner extends Signer {
+//   encryptMessage(payload: EncryptPayload): Promise<EncryptResult>
+//   decryptMessage(payload: DecryptPayload): Promise<DecryptResult>
+// }
+// interface MetadataDef extends PjsMetadataDef {
+//   metadataRpc?: string
+// }
+// interface InjectedMetadata {
+//   get: () => Promise<InjectedMetadataKnown[]>
+//   provide: (definition: MetadataDef) => Promise<boolean>
+// }
+// interface Injected extends PjsInjected {
+//   metadata?: InjectedMetadata
+//   signer: TalismanInjectedSigner
+// }
+// type InjectedExtension = InjectedExtensionInfo & Injected
 /** END: Copy-paste from apps/extension/src/core/encrypt/types.ts & apps/extension/src/core/inject/types.ts **/
 
 export type WalletConfig = {
@@ -64,14 +60,14 @@ export type WalletConfig = {
 
 type WalletStorageData = {
   connected: boolean
-  address: string | null
-  source: string | null
+  selectedAddress: string | null
+  selectedSource: string | null
 }
 
 const DEFAULT_STORAGE_DATA = {
   connected: false,
-  address: null,
-  source: null,
+  selectedAddress: null,
+  selectedSource: null,
 }
 
 const useWalletProvider = ({ appName, accountOptions, storageKey = "useWallet" }: WalletConfig) => {
@@ -95,21 +91,34 @@ const useWalletProvider = ({ appName, accountOptions, storageKey = "useWallet" }
 
   // all connected accounts
   useEffect(() => {
-    if (extensions) web3Accounts(accountOptions).then(setAccounts).catch(setError)
-    else setAccounts(undefined)
+    if (!extensions) {
+      setAccounts(undefined)
+      return () => {}
+    }
+
+    const unsubProm = web3AccountsSubscribe(setAccounts)
+
+    return () => {
+      unsubProm
+        .then((unsubscribe) => unsubscribe())
+        // eslint-disable-next-line no-console
+        .catch((err) => console.error("Failed to unsubscribe:", err))
+    }
   }, [accountOptions, extensions])
 
   // selected account (call this for signing)
   const extension = useMemo(() => {
-    if (data?.connected && data.source)
-      return extensions?.find((e) => e.name === data.source) ?? null
+    if (data?.connected && data.selectedSource)
+      return extensions?.find((e) => e.name === data.selectedSource) ?? null
     return null
-  }, [data?.connected, data?.source, extensions])
+  }, [data?.connected, data?.selectedSource, extensions])
 
   // selected account
   const account = useMemo(
     () =>
-      accounts?.find((acc) => acc.address === data?.address && acc.meta.source === data?.source),
+      accounts?.find(
+        (acc) => acc.address === data?.selectedAddress && acc.meta.source === data?.selectedSource
+      ),
     [accounts, data]
   )
 
@@ -129,8 +138,8 @@ const useWalletProvider = ({ appName, accountOptions, storageKey = "useWallet" }
     (acc?: InjectedAccountWithMeta) => {
       setData(() => ({
         ...(data ?? DEFAULT_STORAGE_DATA),
-        address: acc ? acc.address : null,
-        source: acc ? acc.meta.source : null,
+        selectedAddress: acc ? acc.address : null,
+        selectedSource: acc ? acc.meta.source : null,
       }))
     },
     [data, setData]

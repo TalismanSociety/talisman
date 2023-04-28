@@ -2,7 +2,7 @@ import { FC, ReactNode, useEffect } from "react"
 
 const PageTitle: FC<{ title?: string }> = ({ title }) => {
   useEffect(() => {
-    document.title = title ? `${title} | Talisman Playground` : "Talisman Playground"
+    document.title = title ? `Talisman Playground | ${title}` : "Talisman Playground"
   }, [title])
 
   return null
