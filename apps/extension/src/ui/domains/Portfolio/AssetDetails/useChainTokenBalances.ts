@@ -15,11 +15,12 @@ import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
 type DetailRow = {
   key: string | BalanceLockType
   title: string
+  description?: string
   tokens: BigNumber
   fiat: number | null
   locked: boolean
   address?: Address
-  meta?: string
+  meta?: any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 type ChainTokenBalancesParams = {
@@ -74,13 +75,14 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       b.reserves.map((reserve, index) => ({
         key: `${b.id}-reserved-${index}`,
         title: getLockTitle(reserve, { balance: b }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        description: (reserve.meta as any)?.description ?? undefined,
         tokens: BigNumber(reserve.amount.tokens),
         fiat: reserve.amount.fiat("usd"),
         locked: true,
         // only show address when we're viewing balances for all accounts
         address: account ? undefined : b.address,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        meta: (reserve.meta as any)?.description ?? undefined,
+        meta: reserve.meta,
       }))
     )
 
