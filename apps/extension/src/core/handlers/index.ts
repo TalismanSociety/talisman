@@ -1,7 +1,7 @@
 import { DEBUG, PORT_EXTENSION } from "@core/constants"
 import { AnyEthRequest } from "@core/injectEth/types"
+import { log } from "@core/log"
 import { assert } from "@polkadot/util"
-import * as Sentry from "@sentry/browser"
 import type { MessageTypes, TransportRequestMessage } from "core/types"
 import { Runtime } from "webextension-polyfill"
 
@@ -47,8 +47,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
   // resolve the promise and send back the response
   promise
     .then((response): void => {
-      // eslint-disable-next-line no-console
-      DEBUG && console.debug(`[${port.name} RES] ${source}`, { request, response })
+      log.debug(`[${port.name} RES] ${source}`, { request, response })
 
       // between the start and the end of the promise, the user may have closed
       // the tab, in which case port will be undefined
@@ -65,11 +64,19 @@ const talismanHandler = <TMessageType extends MessageTypes>(
         throw e
       }
     })
-    .catch((error): void => {
-      // eslint-disable-next-line no-console
-      DEBUG && console.debug(`[err] ${source}:: ${error.message}`, { error })
+    .catch((error) => {
+      log.debug(`[err] ${source}:: ${error.message}`, { error })
 
-      // only send message back to port if it's still connected
+      if (
+        error instanceof Error &&
+        error.message === "Attempting to use a disconnected port object"
+      ) {
+        // this means that the user has done something like close the tab
+        port.disconnect()
+        return
+      }
+
+      // only send message back to port if it's still connected, unfortunately this check is not reliable in all browsers
       if (port) {
         try {
           if (message === "pub(eth.request)")
@@ -82,12 +89,11 @@ const talismanHandler = <TMessageType extends MessageTypes>(
             })
           else port.postMessage({ id, error: error.message })
         } catch (caughtError) {
-          Sentry.captureException(caughtError, {
-            extra: {
-              originalError: error,
-              info: "Attempt to post error in talismanHandler",
-            },
-          })
+          /**
+           * no-op
+           * caughtError will be `Attempt to postMessage on disconnected port`
+           * The original errors themselves are mostly intentionally thrown as control flow for dapp connections, so logging them creates noise
+           *  */
         }
       }
     })

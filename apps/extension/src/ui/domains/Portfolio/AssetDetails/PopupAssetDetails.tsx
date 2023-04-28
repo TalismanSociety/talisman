@@ -81,9 +81,9 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                   <PortfolioAccount address={row.address} />
                 </div>
               )}
-              {!row.address && row.meta && (
+              {!row.address && row.description && (
                 <div className="overflow-hidden text-ellipsis whitespace-nowrap text-xs">
-                  {row.meta}
+                  {row.description}
                 </div>
               )}
             </div>

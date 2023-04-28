@@ -68,7 +68,13 @@ export class EthTabsHandler extends TabsHandler {
   }
 
   async getSiteDetails(url: string, authorisedAddress?: string): Promise<EthAuthorizedSite> {
-    const site = await this.stores.sites.getSiteFromUrl(url)
+    let site
+
+    try {
+      site = await this.stores.sites.getSiteFromUrl(url)
+    } catch (err) {
+      // no-op, will throw below
+    }
     if (
       !site ||
       !site.ethChainId ||
@@ -96,7 +102,12 @@ export class EthTabsHandler extends TabsHandler {
   }
 
   private async authoriseEth(url: string, request: RequestAuthorizeTab): Promise<boolean> {
-    const siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
+    let siteFromUrl
+    try {
+      siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
+    } catch (err) {
+      return false
+    }
     if (siteFromUrl?.ethAddresses) {
       if (siteFromUrl.ethAddresses.length) return true //already authorized
       else throw new EthProviderRpcError("Unauthorized", ETH_ERROR_EIP1993_UNAUTHORIZED) //already rejected : 4100	Unauthorized
@@ -112,8 +123,13 @@ export class EthTabsHandler extends TabsHandler {
   }
 
   private async accountsList(url: string): Promise<string[]> {
-    const site = await this.stores.sites.getSiteFromUrl(url)
-    if (!site) return []
+    let site
+    try {
+      site = await this.stores.sites.getSiteFromUrl(url)
+      if (!site) return []
+    } catch (err) {
+      return []
+    }
 
     // case is used for checksum when validating user input addresses : https://eips.ethereum.org/EIPS/eip-55
     // signature checks methods return lowercase addresses too and are compared to addresses returned by provider
@@ -152,29 +168,35 @@ export class EthTabsHandler extends TabsHandler {
     }
 
     const init = () =>
-      this.stores.sites.getSiteFromUrl(url).then(async (site) => {
-        try {
-          if (!site) return
-          siteId = site.id
-          if (site.ethChainId && site.ethAddresses?.length) {
-            chainId =
-              typeof site?.ethChainId !== "undefined"
-                ? ethers.utils.hexValue(site.ethChainId)
-                : undefined
-            accounts = site.ethAddresses ?? []
+      this.stores.sites
+        .getSiteFromUrl(url)
+        .then(async (site) => {
+          try {
+            if (!site) return
+            siteId = site.id
+            if (site.ethChainId && site.ethAddresses?.length) {
+              chainId =
+                typeof site?.ethChainId !== "undefined"
+                  ? ethers.utils.hexValue(site.ethChainId)
+                  : undefined
+              accounts = site.ethAddresses ?? []
 
-            // check that the network is still registered before broadcasting
-            connected = !!accounts.length
+              // check that the network is still registered before broadcasting
+              connected = !!accounts.length
 
-            if (connected) {
-              sendToClient({ type: "connect", data: { chainId } })
+              if (connected) {
+                sendToClient({ type: "connect", data: { chainId } })
+              }
             }
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error("Failed to initialize eth subscription", err)
           }
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error("Failed to initialize eth subscription", err)
-        }
-      })
+        })
+        .catch((error) => {
+          // most likely error will be url invalid, no-op for that, re-throw anything else
+          if (!["URL protocol unsupported", "Invalid URL"].includes(error.message)) throw error
+        })
 
     // eager connect, should work for sites already authorized
     // await promise or sites observable handler won't be ready
@@ -338,8 +360,13 @@ export class EthTabsHandler extends TabsHandler {
   }
 
   private getChainId = async (url: string) => {
-    // url validation carried out inside stores.sites.getSiteFromUrl
-    const site = await this.stores.sites.getSiteFromUrl(url)
+    let site
+    try {
+      // url validation carried out inside stores.sites.getSiteFromUrl
+      site = await this.stores.sites.getSiteFromUrl(url)
+    } catch (error) {
+      //no-op
+    }
     return site?.ethChainId ?? DEFAULT_ETH_CHAIN_ID
   }
 
@@ -502,7 +529,13 @@ export class EthTabsHandler extends TabsHandler {
   }
 
   private async getPermissions(url: string): Promise<Web3WalletPermission[]> {
-    const site = await this.stores.sites.getSiteFromUrl(url)
+    let site
+    try {
+      // url validation carried out inside stores.sites.getSiteFromUrl
+      site = await this.stores.sites.getSiteFromUrl(url)
+    } catch (error) {
+      //no-op
+    }
 
     return site?.ethPermissions
       ? Object.entries(site.ethPermissions).reduce<Web3WalletPermission[]>(
@@ -528,7 +561,14 @@ export class EthTabsHandler extends TabsHandler {
       throw new EthProviderRpcError("Invalid permissions", ETH_ERROR_EIP1474_INVALID_PARAMS)
 
     // identify which permissions are currently missing
-    const site = await this.stores.sites.getSiteFromUrl(url)
+    let site
+    try {
+      // url validation carried out inside stores.sites.getSiteFromUrl
+      site = await this.stores.sites.getSiteFromUrl(url)
+    } catch (error) {
+      return []
+    }
+
     const existingPerms = site?.ethPermissions ?? ({} as EthWalletPermissions)
     const missingPerms = Object.keys(requestedPerms)
       .map((perm) => perm as Web3WalletPermissionTarget)
@@ -546,15 +586,16 @@ export class EthTabsHandler extends TabsHandler {
     // if any, store missing permissions
     if (Object.keys(grantedPermissions).length) {
       // fetch site again as it might have been created/updated while authenticating (eth_accounts permission)
-      const site = await this.stores.sites.getSiteFromUrl(url)
-      if (!site) throw new EthProviderRpcError("Unauthorised", ETH_ERROR_EIP1993_UNAUTHORIZED)
+      // no need to handle URL invalid error this time as we know the URL is ok
+      const siteAgain = await this.stores.sites.getSiteFromUrl(url)
+      if (!siteAgain) throw new EthProviderRpcError("Unauthorised", ETH_ERROR_EIP1993_UNAUTHORIZED)
 
       const ethPermissions = {
-        ...(site.ethPermissions ?? {}),
+        ...(siteAgain.ethPermissions ?? {}),
         ...grantedPermissions,
       } as EthWalletPermissions
 
-      await this.stores.sites.updateSite(site.id, { ethPermissions })
+      await this.stores.sites.updateSite(siteAgain.id, { ethPermissions })
     }
 
     return this.getPermissions(url)

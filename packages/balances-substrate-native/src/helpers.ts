@@ -75,6 +75,7 @@ export type BalanceLockType =
   | "crowdloan"
   | "staking"
   | "nompools-staking"
+  | "nompools-unbonding"
   | "vesting"
   | "dapp-staking"
   | "other"
@@ -150,6 +151,7 @@ export const getLockTitle = (
     return `${name ? name : `Parachain ${paraId}`} Crowdloan`
   }
   if (lock.label === "nompools-staking") return "Pooled Staking"
+  if (lock.label === "nompools-unbonding") return "Pooled Staking"
   if (lock.label === "dapp-staking") return "DApp Staking"
   if (lock.label === "fees") return "Locked (Fees)"
   if (lock.label === "misc") return "Locked"

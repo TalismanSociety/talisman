@@ -659,7 +659,13 @@ export async function subscribeNompoolStaking(
         ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
         : new TypeRegistry()
 
-    type PoolMembers = { tokenId: string; address: string; poolId?: string; points?: string }
+    type PoolMembers = {
+      tokenId: string
+      address: string
+      poolId?: string
+      points?: string
+      unbondingEras: Array<{ era?: string; amount?: string }>
+    }
     const subscribePoolMembers = (
       addresses: string[],
       callback: SubscriptionCallback<PoolMembers[]>
@@ -679,8 +685,19 @@ export async function subscribeNompoolStaking(
 
           const poolId: string | undefined = decoded?.value?.poolId?.toString?.()
           const points: string | undefined = decoded?.value?.points?.toString?.()
+          const unbondingEras: Array<{ era: string; amount: string }> =
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            Array.from(decoded?.value?.unbondingEras ?? []).flatMap((entry: any) => {
+              const [key, value] = Array.from(entry)
 
-          return { tokenId, address, poolId, points }
+              const era = key?.toString?.()
+              const amount = value?.toString?.()
+              if (typeof era !== "string" || typeof amount !== "string") return []
+
+              return { era, amount }
+            })
+
+          return { tokenId, address, poolId, points, unbondingEras }
         }
 
         return { chainId, stateKey, decodeResult }
@@ -785,13 +802,13 @@ export async function subscribeNompoolStaking(
     const poolMembersByAddress$ = asObservable(subscribePoolMembers)(addresses).pipe(
       scan((state, next) => {
         for (const poolMembers of next) {
-          const { poolId, points } = poolMembers
+          const { poolId, points, unbondingEras } = poolMembers
           if (typeof poolId === "string" && typeof points === "string")
-            state.set(poolMembers.address, { poolId, points })
+            state.set(poolMembers.address, { poolId, points, unbondingEras })
           else state.set(poolMembers.address, null)
         }
         return state
-      }, new Map<string, Required<Pick<PoolMembers, "poolId" | "points">> | null>()),
+      }, new Map<string, Required<Pick<PoolMembers, "poolId" | "points" | "unbondingEras">> | null>()),
       share()
     )
 
@@ -800,6 +817,11 @@ export async function subscribeNompoolStaking(
     )
     const pointsByAddress$ = poolMembersByAddress$.pipe(
       map((pm) => new Map(Array.from(pm).map(([address, pm]) => [address, pm?.points ?? null])))
+    )
+    const unbondingErasByAddress$ = poolMembersByAddress$.pipe(
+      map(
+        (pm) => new Map(Array.from(pm).map(([address, pm]) => [address, pm?.unbondingEras ?? null]))
+      )
     )
     const poolIds$ = poolIdByAddress$.pipe(
       map((byAddress) => [
@@ -847,11 +869,19 @@ export async function subscribeNompoolStaking(
     const subscription = combineLatest([
       poolIdByAddress$,
       pointsByAddress$,
+      unbondingErasByAddress$,
       pointsByPool$,
       stakeByPool$,
       metadataByPool$,
     ]).subscribe({
-      next: ([poolIdByAddress, pointsByAddress, pointsByPool, stakeByPool, metadataByPool]) => {
+      next: ([
+        poolIdByAddress,
+        pointsByAddress,
+        unbondingErasByAddress,
+        pointsByPool,
+        stakeByPool,
+        metadataByPool,
+      ]) => {
         const balances: SubNativeBalance[] = Array.from(poolIdByAddress).map(
           ([address, poolId]) => {
             const points = pointsByAddress.get(address) ?? "0"
@@ -863,6 +893,10 @@ export async function subscribeNompoolStaking(
               points === "0" || poolPoints === "0" || poolStake === "0"
                 ? "0"
                 : ((BigInt(poolStake) * BigInt(points)) / BigInt(poolPoints)).toString()
+
+            const unbondingAmount = (unbondingErasByAddress.get(address) ?? [])
+              .reduce((total, { amount }) => total + BigInt(amount ?? "0"), 0n)
+              .toString()
 
             return {
               source: "substrate-native",
@@ -879,6 +913,11 @@ export async function subscribeNompoolStaking(
                   label: "nompools-staking",
                   amount,
                   meta: { type: "nompool", description: poolMetadata },
+                },
+                {
+                  label: "nompools-unbonding",
+                  amount: unbondingAmount,
+                  meta: { type: "nompool", description: poolMetadata, unbonding: true },
                 },
               ],
               locks: [
