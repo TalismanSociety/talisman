@@ -67,23 +67,24 @@ const SpacerRow = styled(({ className }) => {
 
 const AssetState = ({
   title,
+  description,
   render,
   address,
-  meta,
 }: {
   title: string
+  description?: string
   render: boolean
   address?: Address
-  meta?: string
 }) => {
   if (!render) return null
   return (
     <div className="flex h-[6.6rem] flex-col justify-center gap-2 p-8">
       <div className="flex items-baseline gap-4">
         <div className="whitespace-nowrap font-bold text-white">{title}</div>
-        {meta && address && (
+        {/* show description next to title when address is set */}
+        {description && address && (
           <div className="max-w-sm flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-            {meta}
+            {description}
           </div>
         )}
       </div>
@@ -92,9 +93,10 @@ const AssetState = ({
           <PortfolioAccount address={address} />
         </div>
       )}
-      {meta && !address && (
+      {/* show description below title when address is not set */}
+      {description && !address && (
         <div className="flex-shrink-0 overflow-hidden text-ellipsis whitespace-nowrap text-sm">
-          {meta}
+          {description}
         </div>
       )}
     </div>
@@ -164,7 +166,12 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
         .map((row, i, rows) => (
           <tr key={row.key} className={classNames("details", rows.length === i + 1 && "stop-row")}>
             <td className="al-main" valign="top">
-              <AssetState title={row.title} render address={row.address} meta={row.meta} />
+              <AssetState
+                title={row.title}
+                description={row.description}
+                render
+                address={row.address}
+              />
             </td>
             {!row.locked && <td align="right" valign="top"></td>}
             <td align="right" valign="top">
@@ -180,7 +187,28 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                 )}
               />
             </td>
-            {!!row.locked && <td align="right" valign="top"></td>}
+            {!!row.locked && (
+              <td align="right" valign="top">
+                {
+                  // Show `Unbonding` next to nompool staked balances which are unbonding
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (row.meta as any)?.type === "nompool" && !!(row.meta as any)?.unbonding && (
+                    <div
+                      className={classNames(
+                        "flex h-[6.6rem] flex-col justify-center gap-2 whitespace-nowrap p-8 text-right",
+                        status.status === "fetching" && "animate-pulse transition-opacity"
+                      )}
+                    >
+                      <div className="text-body flex items-center justify-end gap-2">
+                        <div>Unbonding</div>
+                      </div>
+                      {/* TODO: Show time until funds are unbonded */}
+                      {/* <div>4d 14hr 11min</div> */}
+                    </div>
+                  )
+                }
+              </td>
+            )}
           </tr>
         ))}
     </>

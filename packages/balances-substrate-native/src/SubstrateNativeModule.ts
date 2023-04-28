@@ -659,7 +659,13 @@ export async function subscribeNompoolStaking(
         ? getOrCreateTypeRegistry(chainId, chainMeta.metadata)
         : new TypeRegistry()
 
-    type PoolMembers = { tokenId: string; address: string; poolId?: string; points?: string }
+    type PoolMembers = {
+      tokenId: string
+      address: string
+      poolId?: string
+      points?: string
+      unbondingEras: Array<{ era?: string; amount?: string }>
+    }
     const subscribePoolMembers = (
       addresses: string[],
       callback: SubscriptionCallback<PoolMembers[]>
@@ -679,8 +685,19 @@ export async function subscribeNompoolStaking(
 
           const poolId: string | undefined = decoded?.value?.poolId?.toString?.()
           const points: string | undefined = decoded?.value?.points?.toString?.()
+          const unbondingEras: Array<{ era: string; amount: string }> =
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            Array.from(decoded?.value?.unbondingEras ?? []).flatMap((entry: any) => {
+              const [key, value] = Array.from(entry)
 
-          return { tokenId, address, poolId, points }
+              const era = key?.toString?.()
+              const amount = value?.toString?.()
+              if (typeof era !== "string" || typeof amount !== "string") return []
+
+              return { era, amount }
+            })
+
+          return { tokenId, address, poolId, points, unbondingEras }
         }
 
         return { chainId, stateKey, decodeResult }
@@ -688,6 +705,52 @@ export async function subscribeNompoolStaking(
 
       const subscription = new RpcStateQueryHelper(chainConnector, queries).subscribe(callback)
       return () => subscription.then((unsubscribe) => unsubscribe())
+    }
+
+    type PendingRewards = { address: string; rewards?: string }
+    const subscribePendingRewards = (
+      addresses: string[],
+      callback: SubscriptionCallback<PendingRewards[]>
+    ) => {
+      if (addresses.length === 0) callback(null, [])
+
+      const calls = addresses.map((address) => ({
+        address,
+        params: ["NominationPoolsApi_pending_rewards", u8aToHex(decodeAnyAddress(address))],
+      }))
+      Promise.all(
+        calls.map(async ({ address, params }) => ({
+          address,
+          result: await chainConnector.send(chainId, "state_call", params),
+        }))
+      )
+        .then((results) =>
+          results.flatMap(({ address, result }) => {
+            const balance = typeRegistry.createTypeUnsafe("Balance", [result])
+
+            const pendingRewards = {
+              address,
+              rewards: balance?.toString?.() ?? "0",
+            }
+
+            console.log(
+              "chainId",
+              chainId,
+              "address",
+              address,
+              "result",
+              result,
+              "pendingRewards",
+              pendingRewards.rewards
+            )
+
+            return pendingRewards
+          })
+        )
+        .then((pendingRewards) => callback(null, pendingRewards))
+        .catch((error) => callback(error))
+
+      return () => {}
     }
 
     type PoolPoints = { poolId: string; points?: string }
@@ -785,13 +848,13 @@ export async function subscribeNompoolStaking(
     const poolMembersByAddress$ = asObservable(subscribePoolMembers)(addresses).pipe(
       scan((state, next) => {
         for (const poolMembers of next) {
-          const { poolId, points } = poolMembers
+          const { address, poolId, points, unbondingEras } = poolMembers
           if (typeof poolId === "string" && typeof points === "string")
-            state.set(poolMembers.address, { poolId, points })
-          else state.set(poolMembers.address, null)
+            state.set(address, { poolId, points, unbondingEras })
+          else state.set(address, null)
         }
         return state
-      }, new Map<string, Required<Pick<PoolMembers, "poolId" | "points">> | null>()),
+      }, new Map<string, Required<Pick<PoolMembers, "poolId" | "points" | "unbondingEras">> | null>()),
       share()
     )
 
@@ -801,10 +864,27 @@ export async function subscribeNompoolStaking(
     const pointsByAddress$ = poolMembersByAddress$.pipe(
       map((pm) => new Map(Array.from(pm).map(([address, pm]) => [address, pm?.points ?? null])))
     )
+    const unbondingErasByAddress$ = poolMembersByAddress$.pipe(
+      map(
+        (pm) => new Map(Array.from(pm).map(([address, pm]) => [address, pm?.unbondingEras ?? null]))
+      )
+    )
     const poolIds$ = poolIdByAddress$.pipe(
       map((byAddress) => [
         ...new Set(Array.from(byAddress.values()).flatMap((poolId) => poolId ?? [])),
       ])
+    )
+
+    const pendingRewardsByAddress$ = asObservable(subscribePendingRewards)(addresses).pipe(
+      scan((state, next) => {
+        for (const pendingRewards of next) {
+          const { address, rewards } = pendingRewards
+          if (typeof rewards === "string") state.set(address, rewards)
+          else state.delete(pendingRewards.address)
+        }
+        return state
+      }, new Map<string, string>()),
+      share()
     )
 
     const pointsByPool$ = poolIds$.pipe(
@@ -847,14 +927,25 @@ export async function subscribeNompoolStaking(
     const subscription = combineLatest([
       poolIdByAddress$,
       pointsByAddress$,
+      unbondingErasByAddress$,
+      pendingRewardsByAddress$,
       pointsByPool$,
       stakeByPool$,
       metadataByPool$,
     ]).subscribe({
-      next: ([poolIdByAddress, pointsByAddress, pointsByPool, stakeByPool, metadataByPool]) => {
+      next: ([
+        poolIdByAddress,
+        pointsByAddress,
+        unbondingErasByAddress,
+        pendingRewardsByAddress,
+        pointsByPool,
+        stakeByPool,
+        metadataByPool,
+      ]) => {
         const balances: SubNativeBalance[] = Array.from(poolIdByAddress).map(
           ([address, poolId]) => {
             const points = pointsByAddress.get(address) ?? "0"
+            const pendingRewards = pendingRewardsByAddress.get(address) ?? "0"
             const poolPoints = pointsByPool.get(poolId ?? "") ?? "0"
             const poolStake = stakeByPool.get(poolId ?? "") ?? "0"
             const poolMetadata = poolId ? metadataByPool.get(poolId) ?? `Pool ${poolId}` : undefined
@@ -863,6 +954,10 @@ export async function subscribeNompoolStaking(
               points === "0" || poolPoints === "0" || poolStake === "0"
                 ? "0"
                 : ((BigInt(poolStake) * BigInt(points)) / BigInt(poolPoints)).toString()
+
+            const unbondingAmount = (unbondingErasByAddress.get(address) ?? [])
+              .reduce((total, { amount }) => total + BigInt(amount ?? "0"), 0n)
+              .toString()
 
             return {
               source: "substrate-native",
@@ -877,8 +972,13 @@ export async function subscribeNompoolStaking(
                 { label: "reserved", amount: "0" },
                 {
                   label: "nompools-staking",
-                  amount,
+                  amount: pendingRewards,
                   meta: { type: "nompool", description: poolMetadata },
+                },
+                {
+                  label: "nompools-unbonding",
+                  amount: unbondingAmount,
+                  meta: { type: "nompool", description: poolMetadata, unbonding: true },
                 },
               ],
               locks: [
@@ -1050,8 +1150,8 @@ async function subscribeCrowdloans(
           ]),
         }))
       )
-        .then((queries) => {
-          return queries.flatMap((query) => {
+        .then((queries) =>
+          queries.flatMap((query) => {
             const { result } = query
             const storageDataVec = typeRegistry.createType("Vec<Option<StorageData>>", result)
 
@@ -1070,7 +1170,7 @@ async function subscribeCrowdloans(
               }
             })
           })
-        })
+        )
         .then((contributions) => callback(null, contributions))
         .catch((error) => callback(error))
 
