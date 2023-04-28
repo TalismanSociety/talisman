@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: MIT
-// Inspired from : https://andyhartnett.medium.com/solidity-tutorial-how-to-store-nft-metadata-and-svgs-on-the-blockchain-6df44314406b 
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -24,7 +23,9 @@ contract TestERC721 is ERC721 {
             Base64.encode(
                 bytes(
                     string.concat(
-                        '<svg viewBox="0 0 350 350"><style>.a { fill: #0000; font-size: 18px; }</style><text x="10" y="10" class="a">Token #',
+                        '<svg width="350" height="350" viewBox="0 0 350 350" xmlns="http://www.w3.org/2000/svg">',
+                        '<rect width="350" height="350" fill="yellow" />'
+                        '<text x="100" y="100" fill="red" font-size="40">Token #',
                         Strings.toString(tokenId),
                         '</text></svg>'
                     )

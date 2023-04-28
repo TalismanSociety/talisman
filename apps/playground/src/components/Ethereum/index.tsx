@@ -3,6 +3,7 @@ import { WagmiConfig } from "wagmi"
 
 import { ContractPage } from "./contract/ContractPage"
 import { ERC20Page } from "./erc20/ERC20Page"
+import { ERC721Page } from "./erc721/ERC721Page"
 import { NavEthereum } from "./NavEthereum"
 import { wagmiClient } from "./shared/connectors"
 import { SignPage } from "./sign/SignPage"
@@ -16,6 +17,7 @@ export const Ethereum = () => {
         <Route path="transaction" element={<TransferPage />} />
         <Route path="contract" element={<ContractPage />} />
         <Route path="erc20" element={<ERC20Page />} />
+        <Route path="erc721" element={<ERC721Page />} />
         <Route path="sign" element={<SignPage />} />
         <Route path="*" element={<Navigate to="transaction" />} />
       </Routes>

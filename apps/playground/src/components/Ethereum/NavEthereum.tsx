@@ -25,6 +25,12 @@ export const NavEthereum = () => {
         ERC20
       </Link>
       <Link
+        to="/ethereum/erc721"
+        className={classNames(location.pathname === "/ethereum/erc721" && "text-primary-500")}
+      >
+        ERC721
+      </Link>
+      <Link
         to="/ethereum/sign"
         className={classNames(location.pathname === "/ethereum/sign" && "text-primary-500")}
       >
