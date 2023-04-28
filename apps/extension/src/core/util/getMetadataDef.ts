@@ -114,7 +114,18 @@ export const getMetadataDef = async (
     const [metadataRpc, chainProperties] = await Promise.all([
       chainConnector.send<HexString>(chain.id, "state_getMetadata", [blockHash], !!blockHash),
       chainConnector.send(chain.id, "system_properties", [], true),
-    ])
+    ]).catch((rpcError) => {
+      // not a useful error, do not log to sentry
+      if ((rpcError as Error).message === "RPC connect timeout reached") {
+        log.error(rpcError)
+        metadataUpdatesStore.set(genesisHash as HexString, false)
+        return [undefined, undefined]
+      }
+      // otherwise allow wrapping try/catch to handle
+      throw rpcError
+    })
+    // unable to get data from rpc, return nothing
+    if (!metadataRpc || !chainProperties) return
 
     assert(!specVersion || specVersion === runtimeSpecVersion, "specVersion mismatch")
 
