@@ -6,6 +6,12 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+concurrency:
+  # only run 1 job per branch/pr/etc at a time
+  # (afaik this prevents a race condition in changesets version bumps)
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: "Build and test"
@@ -68,5 +74,41 @@ jobs:
         run: yarn plugin import workspace-tools
       - name: Publish snapshot packages
         run: yarn workspaces foreach --verbose --no-private npm publish --tolerate-republish --tag pr${{ github.event.pull_request.number }}
+        env:
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  release_changesets:
+    name: "Create a PR to bump package versions on dev, and publish the new versions to npm when the PR is merged"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2 # also get the previous commit
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+      - name: Install dependencies
+        run: yarn --immutable
+      - name: Create pull request or publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        env:
+          # GITHUB_TOKEN is automatically added into the ENV by GitHub CI
+          - GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Import workspace-tools yarn plugin
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: yarn plugin import workspace-tools
+      - name: Build packages
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: yarn build:packages
+      - name: Publish packages
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: yarn workspaces foreach --verbose --no-private npm publish --tolerate-republish
         env:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
