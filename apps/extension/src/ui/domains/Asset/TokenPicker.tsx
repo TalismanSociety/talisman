@@ -24,27 +24,6 @@ import Fiat from "./Fiat"
 import { TokenLogo } from "./TokenLogo"
 import Tokens from "./Tokens"
 
-const filterIgnoredTokens = (t: Token) => {
-  // on substrate, there could be multiple tokens with same symbol on a same chain (ACA, KINT..)
-  // a good fix would be to detect on subsquid side if ANY account has tokens, if not the token shouldn't be included in github tokens file
-  // until then we hardcode an exclusion list here :
-
-  // ACA, BNC and KAR use native (orml won't work)
-  // INTR, KINT and MGX use orml (native won't work)
-
-  const IGNORED_TOKENS = [
-    "acala-substrate-orml-aca",
-    "bifrost-kusama-substrate-orml-bnc",
-    "bifrost-polkadot-substrate-orml-bnc",
-    "interlay-substrate-native-intr",
-    "karura-substrate-orml-kar",
-    "kintsugi-substrate-native-kint",
-    "mangata-substrate-native-mgx",
-  ]
-
-  return !IGNORED_TOKENS.includes(t.id)
-}
-
 type TokenRowProps = {
   token: Token
   selected: boolean
@@ -240,7 +219,7 @@ const TokensList: FC<TokensListProps> = ({
 
     return allTokens
       .filter(filterAccountCompatibleTokens)
-      .filter(filterIgnoredTokens)
+      .filter(isTransferableToken)
       .map((token) => {
         const chain = token.chain && chainsMap[token.chain.id]
         const evmNetwork = token.evmNetwork && evmNetworksMap[token.evmNetwork.id]
