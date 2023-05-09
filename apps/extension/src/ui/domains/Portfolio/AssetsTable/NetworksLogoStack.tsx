@@ -30,7 +30,7 @@ export const NetworksLogoStackItem = ({ network }: { network?: PortfolioNetwork 
   return (
     <div className="item inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={tooltip}>
-        <ChainLogo key={network.id} id={network.id} className="logo-circle" />
+        <ChainLogo key={network.id} id={network.id} />
       </WithTooltip>
     </div>
   )
@@ -54,7 +54,7 @@ export const NetworksLogoStackMore = ({ networks }: { networks: PortfolioNetwork
   return (
     <div className="item inline-block h-[1em] w-[1em] overflow-hidden">
       <WithTooltip tooltip={<MoreNetworksTooltip networks={networks} />}>
-        <div className="bg-body-secondary column flex h-[1em] w-[1em] flex-col justify-center overflow-hidden rounded-full text-center text-black">
+        <div className="bg-body-secondary column relative flex h-[1em] w-[1em] flex-col justify-center overflow-hidden rounded-full text-center text-black">
           <div className="text-[0.5em] font-bold leading-[1em]">+{networks.length}</div>
         </div>
       </WithTooltip>
