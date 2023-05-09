@@ -194,6 +194,7 @@ export class EthTabsHandler extends TabsHandler {
               connected = !!accounts.length
 
               if (connected) {
+                sendToClient({ type: "accountsChanged", data: accounts })
                 sendToClient({ type: "connect", data: { chainId } })
               }
             }
