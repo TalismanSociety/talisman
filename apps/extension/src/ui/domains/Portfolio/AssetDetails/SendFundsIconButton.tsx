@@ -3,6 +3,7 @@ import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import { api } from "@ui/api"
 import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
+import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { useCallback } from "react"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
@@ -23,6 +24,7 @@ export const SendFundsButton = ({
   const token = tokens?.find(
     (t) =>
       t.symbol === symbol &&
+      isTransferableToken(t) &&
       (("evmNetwork" in t && t.evmNetwork?.id === networkId) || t.chain?.id === networkId)
   )
 
