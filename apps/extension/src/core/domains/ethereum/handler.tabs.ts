@@ -11,6 +11,7 @@ import { CustomErc20Token } from "@core/domains/tokens/types"
 import {
   ETH_ERROR_EIP1474_INVALID_INPUT,
   ETH_ERROR_EIP1474_INVALID_PARAMS,
+  ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE,
   ETH_ERROR_EIP1993_CHAIN_DISCONNECTED,
   ETH_ERROR_EIP1993_DISCONNECTED,
   ETH_ERROR_EIP1993_UNAUTHORIZED,
@@ -42,7 +43,10 @@ import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { throwAfter } from "@talismn/util"
 import { ethers, providers } from "ethers"
 
-import { requestAuthoriseSite } from "../sitesAuthorised/requests"
+import {
+  ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE,
+  requestAuthoriseSite,
+} from "../sitesAuthorised/requests"
 import {
   getErc20TokenId,
   isValidAddEthereumRequestParam,
@@ -117,6 +121,11 @@ export class EthTabsHandler extends TabsHandler {
       await requestAuthoriseSite(url, request)
       return true
     } catch (err) {
+      // throw specific error in case of duplicate auth request
+      const error = err as Error
+      if (error.message === ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE)
+        throw new EthProviderRpcError(error.message, ETH_ERROR_EIP1474_RESOURCE_UNAVAILABLE)
+
       // 4001	User Rejected Request	The user rejected the request.
       throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1993_USER_REJECTED)
     }
