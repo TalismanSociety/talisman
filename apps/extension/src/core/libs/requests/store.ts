@@ -75,7 +75,7 @@ export class RequestStore {
 
     return new Promise((resolve, reject): void => {
       // reject pending request if user closes the tab that requested it
-      if (port)
+      if (port?.onDisconnect)
         port.onDisconnect.addListener(() => {
           if (!this.requests[id]) return
 
