@@ -1,4 +1,5 @@
 import { requestStore } from "@core/libs/requests/store"
+import type { Port } from "@core/types/base"
 
 import { AccountJson } from "../accounts/types"
 import type {
@@ -12,25 +13,33 @@ import { ENCRYPT_DECRYPT_PREFIX, ENCRYPT_ENCRYPT_PREFIX } from "./types"
 export const requestEncrypt = (
   url: string,
   payload: EncryptPayload,
-  account: AccountJson
+  account: AccountJson,
+  port: Port
 ): Promise<ResponseEncryptEncrypt> => {
-  return requestStore.createRequest({
-    url,
-    type: ENCRYPT_ENCRYPT_PREFIX,
-    request: { payload },
-    account,
-  }) as Promise<ResponseEncryptEncrypt>
+  return requestStore.createRequest(
+    {
+      url,
+      type: ENCRYPT_ENCRYPT_PREFIX,
+      request: { payload },
+      account,
+    },
+    port
+  ) as Promise<ResponseEncryptEncrypt>
 }
 
 export const requestDecrypt = (
   url: string,
   payload: DecryptPayload,
-  account: AccountJson
+  account: AccountJson,
+  port: Port
 ): Promise<ResponseEncryptDecrypt> => {
-  return requestStore.createRequest({
-    url,
-    type: ENCRYPT_DECRYPT_PREFIX,
-    request: { payload },
-    account,
-  })
+  return requestStore.createRequest(
+    {
+      url,
+      type: ENCRYPT_DECRYPT_PREFIX,
+      request: { payload },
+      account,
+    },
+    port
+  )
 }
