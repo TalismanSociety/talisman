@@ -74,14 +74,16 @@ export class RequestStore {
     const id = `${requestOptions.type}.${v4()}` as KnownRequestId<T>
 
     return new Promise((resolve, reject): void => {
-      if (port) {
-        // reject pending request if user closes the tab that requested it
+      // reject pending request if user closes the tab that requested it
+      if (port)
         port.onDisconnect.addListener(() => {
+          if (!this.requests[id]) return
+
           delete this.requests[id]
           this.observable.next(this.getAllRequests())
+
           reject(new Error("Port disconnected"))
         })
-      }
 
       const newRequest = {
         ...requestOptions,
@@ -94,9 +96,16 @@ export class RequestStore {
       } as KnownRespondableRequest<T>
 
       this.requests[id] = completeRequest
-
       this.observable.next(this.getAllRequests())
-      windowManager.popupOpen(`#/${requestOptions.type}/${id}`)
+
+      windowManager.popupOpen(`#/${requestOptions.type}/${id}`, () => {
+        if (!this.requests[id]) return
+
+        delete this.requests[id]
+        this.observable.next(this.getAllRequests())
+
+        reject(new Error("Cancelled"))
+      })
     })
   }
 
