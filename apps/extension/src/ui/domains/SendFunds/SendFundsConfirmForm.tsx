@@ -25,8 +25,8 @@ const AmountDisplay = () => {
   if (!amount || !token) return <div className="bg-grey-750 h-12 w-64 animate-pulse rounded-sm" />
 
   return (
-    <div className="inline-flex h-12 items-center gap-4">
-      <TokenLogo tokenId={token.id} className="inline-block text-lg" />
+    <div className="w-full text-right">
+      <TokenLogo tokenId={token.id} className="mr-3 mt-[-2px] inline-block text-lg" />
       <TokensAndFiat tokenId={token.id} planck={amount?.planck} noCountUp />
     </div>
   )
@@ -48,10 +48,10 @@ const NetworkDisplay = () => {
   if (!networkId) return null
 
   return (
-    <span className="inline-flex items-center gap-4">
-      <ChainLogo id={networkId} className="inline text-lg" />
-      <span>{networkName}</span>
-    </span>
+    <div className="w-full text-right">
+      <ChainLogo id={networkId} className="mr-3 mt-[-2px] inline text-lg" />
+      {networkName}
+    </div>
   )
 }
 
@@ -263,28 +263,28 @@ export const SendFundsConfirmForm = () => {
     <div className="flex h-full w-full flex-col items-center px-12 py-8">
       <div className="text-lg font-bold">You are sending</div>
       <div className="mt-24 w-full grow">
-        <div className="bg-grey-900 text-body-secondary space-y-4 rounded px-12 py-8 leading-[140%]">
-          <div className="flex h-12 items-center justify-between gap-8">
-            <div className="text-body-secondary">Amount</div>
-            <div className="text-body h-12">
+        <div className="bg-grey-900 text-body-secondary flex flex-col rounded px-12 py-8 leading-[140%]">
+          <div className="flex min-h-[32px] items-center justify-between gap-8">
+            <div className="text-body-secondary align-top">Amount</div>
+            <div className="text-body overflow-x-hidden">
               <AmountDisplay />
             </div>
           </div>
-          <div className="flex h-12 items-center justify-between gap-8">
+          <div className="flex min-h-[32px] items-center justify-between gap-8">
             <div className="text-body-secondary">From</div>
-            <div className="text-body overflow-hidden">
+            <div className="text-body overflow-x-hidden">
               <AddressDisplay address={from} chainId={chain?.id} evmNetworkId={evmNetwork?.id} />
             </div>
           </div>
-          <div className="flex h-12 items-center justify-between gap-8">
+          <div className="flex min-h-[32px] items-center justify-between gap-8">
             <div className="text-body-secondary">To</div>
-            <div className="text-body overflow-hidden">
+            <div className="text-body overflow-x-hidden">
               <AddressDisplay address={to} chainId={chain?.id} evmNetworkId={evmNetwork?.id} />
             </div>
           </div>
-          <div className="flex h-12 items-center justify-between gap-8">
-            <div className="text-body-secondary">Network</div>
-            <div className="text-body  h-12 overflow-hidden">
+          <div className="flex min-h-[32px] items-center justify-between gap-8">
+            <div className="text-body-secondary align-top">Network</div>
+            <div className="text-body overflow-x-hidden">
               <NetworkDisplay />
             </div>
           </div>
