@@ -52,6 +52,16 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     // if this object is missing, some dapps won't prompt for login
     _metamask: {},
 
+    // MM's internal state object.
+    // We need to mimic it because web3onboard uses it (ex: https://de.fi => "Enter App" button)
+    _state: {
+      accounts: [],
+      initialized: false,
+      isConnected: false,
+      isPermanentlyDisconnected: false,
+      isUnlocked: true,
+    },
+
     // Event Emitter (EIP 1993)
     on: eventEmitter.on.bind(eventEmitter),
     off: eventEmitter.off.bind(eventEmitter),
@@ -83,6 +93,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
 
     const accounts = (resAccounts as unknown as string[]) ?? []
     provider.selectedAddress = accounts?.[0] ?? null
+    provider._state.accounts = [...accounts]
 
     // this subscribes to backend's provider events (https://eips.ethereum.org/EIPS/eip-1193)
     await sendRequest("pub(eth.subscribe)", null, (result) => {
@@ -94,6 +105,10 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
         case "disconnect":
         case "chainChanged":
         case "accountsChanged": {
+          if (result.type === "connect") {
+            provider._state.isConnected = true
+          }
+
           // keep provider properties in sync
           if (result.type === "chainChanged") {
             provider.chainId = result.data as string
@@ -101,7 +116,9 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
           }
 
           if (result.type === "accountsChanged") {
-            provider.selectedAddress = (result.data as string[])[0] ?? null
+            const accounts = (result.data as string[]) ?? []
+            provider.selectedAddress = accounts[0] ?? null
+            provider._state.accounts = [...accounts]
           }
 
           // broadcast event to dapp
@@ -118,6 +135,7 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
     })
 
     state.initialized = true
+    provider._state.initialized = true
 
     log.debug("Talisman provider initialized")
   }

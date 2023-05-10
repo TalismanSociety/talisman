@@ -7,6 +7,9 @@ import { assert } from "@polkadot/util"
 
 import sitesAuthorisedStore from "./store"
 
+export const ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE =
+  "Pending authorisation request already exists for this site. Please accept or reject the request."
+
 class AuthError extends Error {}
 export const requestAuthoriseSite = async (url: string, request: RequestAuthorizeTab) => {
   const { err, val: domain } = urlToDomain(url)
@@ -18,9 +21,7 @@ export const requestAuthoriseSite = async (url: string, request: RequestAuthoriz
     .some((request) => request.idStr === domain)
 
   if (isDuplicate) {
-    throw new AuthError(
-      "Pending authorisation request already exists for this site. Please accept or reject the request."
-    )
+    throw new AuthError(ERROR_DUPLICATE_AUTH_REQUEST_MESSAGE)
   }
 
   return requestStore
