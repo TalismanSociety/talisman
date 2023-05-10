@@ -5,11 +5,18 @@ import { assert } from "@polkadot/util"
 import { throwAfter } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
+import useChainByGenesisHash from "../useChainByGenesisHash"
 import { useSetInterval } from "../useSetInterval"
-import { LedgerStatus, getLedgerErrorProps } from "./common"
+import {
+  ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE,
+  ERROR_LEDGER_NO_APP,
+  LedgerStatus,
+  getLedgerErrorProps,
+} from "./common"
 import { useLedgerSubstrateApp } from "./useLedgerSubstrateApp"
 
 export const useLedgerSubstrate = (genesis?: string | null, persist = false) => {
+  const chain = useChainByGenesisHash(genesis)
   const app = useLedgerSubstrateApp(genesis)
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
@@ -44,7 +51,8 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
 
       try {
         assert(getIsLedgerCapable(), "Sorry, Ledger is not supported on your browser.")
-        assert(app?.name, "There is no Ledger app available for this network.")
+        assert(chain && chain.account !== "secp256k1", ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE)
+        assert(app?.name, ERROR_LEDGER_NO_APP)
 
         const ledger = new Ledger("webusb", app.name)
 
@@ -64,7 +72,7 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
       refConnecting.current = false
       setIsLoading(false)
     },
-    [app]
+    [app, chain]
   )
 
   const { status, message, requiresManualRetry } = useMemo<{
