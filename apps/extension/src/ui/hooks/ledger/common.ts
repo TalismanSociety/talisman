@@ -1,5 +1,9 @@
 import { DEBUG } from "@core/constants"
 
+export const ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE =
+  "This transaction cannot be signed via an Ethereum Ledger account."
+export const ERROR_LEDGER_NO_APP = "There is no Ledger app available for this network."
+
 // this should live in chaindata in the future
 export const ledgerNetworks = [
   {
@@ -143,10 +147,11 @@ export const getLedgerErrorProps = (err: Error, appName = "Unknown App"): Ledger
         requiresManualRetry: false,
       }
 
-    case "There is no Ledger app available for this network.":
+    case ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE:
+    case ERROR_LEDGER_NO_APP:
       return {
         status: "error",
-        message: "There is no Ledger app available for this network.",
+        message: err.message,
         requiresManualRetry: false,
       }
   }

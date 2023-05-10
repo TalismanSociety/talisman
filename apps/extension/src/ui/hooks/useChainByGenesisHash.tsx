@@ -2,7 +2,7 @@ import { useMemo } from "react"
 
 import { useChains } from "./useChains"
 
-const useChainByGenesisHash = (genesisHash: string | undefined) => {
+const useChainByGenesisHash = (genesisHash: string | null | undefined) => {
   const { chains } = useChains(true)
 
   return useMemo(
