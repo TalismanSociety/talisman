@@ -22,7 +22,8 @@ const shouldDisplayBalance =
     const isEthereumToken = DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.includes(balance.tokenId)
     if (isEthereumAccount && isEthereumToken) return true
 
-    if (account?.genesisHash && account.genesisHash === balance.chain?.genesisHash) return true
+    if (account?.genesisHash && account.genesisHash === balance.chain?.genesisHash)
+      return balance.token?.type === "substrate-native" || balance.total.planck > 0n
 
     return false
   }
