@@ -27,7 +27,7 @@ export const SendFundsAccountPicker = () => {
           if (!token) return false
 
           if (isEthereumAddress(account.address))
-            return isEvmToken(token) || chain?.account === "secp256k1"
+            return isEvmToken(token) || (chain?.account === "secp256k1" && !account.isHardware)
           else return chain && chain?.account !== "secp256k1"
         })
         .filter((account) => !account.genesisHash || account.genesisHash === chain?.genesisHash),
