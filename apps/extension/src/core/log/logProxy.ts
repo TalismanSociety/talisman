@@ -69,5 +69,12 @@ const handler: ProxyHandler<any> = {
 */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const logProxy = (sourceObj: any) => {
+  const eventNames = ["connect", "disconnect", "chainChanged", "accountsChanged"]
+  eventNames.forEach((eventName) => {
+    sourceObj.on(eventName, (...args: unknown[]) => {
+      safeConsoleDebug(`[Proxy callback : ${eventName}]`, ...args)
+    })
+  })
+
   return new Proxy(sourceObj, handler)
 }
