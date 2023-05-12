@@ -19,9 +19,19 @@ export const ledgerNetworks = [
     label: "Kusama",
   },
   {
+    name: "astar",
+    genesisHash: "0x9eb76c5184c4ab8679d2d5d819fdf90b9c001403e9e17da2e14b6d8aec4029c6",
+    label: "Astar",
+  },
+  {
     name: "acala",
     genesisHash: "0xfc41b9bd8ef8fe53d58c7ea67c794c7ec9a73daf05e6d54b14ff6342c99ba64c",
     label: "Acala",
+  },
+  {
+    name: "karura",
+    genesisHash: "0xbaf5aabe40646d11f0ee8abbdc64f4a4b7674925cba08e4a05ff9ebed6e2126b",
+    label: "Karura",
   },
   {
     name: "nodle-para",
