@@ -11,6 +11,9 @@ import { useMemo } from "react"
 const shouldDisplayBalance =
   (account?: AccountJsonAny) =>
   (balance: Balance): boolean => {
+    // don't show substrate balances for ledger ethereum accounts (MOVR, GLMR etc exist on both sides)
+    if (account?.type === "ethereum" && account.isHardware && !balance.evmNetworkId) return false
+
     const hasNonZeroBalance = balance.total.planck > 0
     if (hasNonZeroBalance) return true
 

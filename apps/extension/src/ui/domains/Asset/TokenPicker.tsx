@@ -15,7 +15,7 @@ import { useTokenRatesMap } from "@ui/hooks/useTokenRatesMap"
 import useTokens from "@ui/hooks/useTokens"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import sortBy from "lodash/sortBy"
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useRef, useState } from "react"
 import { FC } from "react"
 import { useIntersection } from "react-use"
 
@@ -162,7 +162,6 @@ const TokenRow: FC<TokenRowProps> = ({
 
 type TokensListProps = {
   address?: Address
-  networkType?: TokenNetworkType
   selected?: TokenId
   search?: string
   showEmptyBalances?: boolean
@@ -174,7 +173,6 @@ const TokensList: FC<TokensListProps> = ({
   address,
   selected,
   search,
-  networkType,
   showEmptyBalances,
   allowUntransferable,
   onSelect,
@@ -200,12 +198,19 @@ const TokensList: FC<TokensListProps> = ({
 
   const filterAccountCompatibleTokens = useCallback(
     (token: Token) => {
-      if ((!account && !networkType) || selected) return true
+      if (!account || selected) return true
       if (accountChain) return token.chain?.id === accountChain.id
-      if (networkType) return networkType === "ethereum" ? !!token.evmNetwork : !!token.chain
-      return isEthereumAddress(address) ? !!token.evmNetwork : !!token.chain
+
+      // substrate accounts can send as long as we have a corresponding chain
+      if (!isEthereumAddress(address)) return !!token.chain
+
+      // ethereum ledger account can only sign on evm chain
+      if (account.isHardware) return !!token.evmNetwork
+
+      // non ledger ethereum accounts may also sign on substrate chains (MOVR, GLMR, ..)
+      return !!chainsMap[token.chain?.id ?? ""] || !!token.evmNetwork
     },
-    [account, networkType, selected, accountChain, address]
+    [account, accountChain, selected, address, chainsMap]
   )
 
   const accountCompatibleTokens = useMemo(() => {
@@ -350,12 +355,9 @@ const TokensList: FC<TokensListProps> = ({
   )
 }
 
-type TokenNetworkType = "polkadot" | "ethereum"
-
 type TokenPickerProps = {
   address?: string
   selected?: TokenId
-  networkType?: TokenNetworkType
   showEmptyBalances?: boolean
   allowUntransferable?: boolean
   className?: string
@@ -366,17 +368,10 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   address,
   selected,
   showEmptyBalances,
-  networkType: networkTypeProp,
   allowUntransferable,
   onSelect,
 }) => {
   const [search, setSearch] = useState("")
-  const [networkType, setNetworkType] = useState<TokenNetworkType | undefined>(networkTypeProp)
-
-  useEffect(() => {
-    if (!networkTypeProp && address)
-      setNetworkType(isEthereumAddress(address) ? "ethereum" : "polkadot")
-  }, [address, networkTypeProp])
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
@@ -386,7 +381,6 @@ export const TokenPicker: FC<TokenPickerProps> = ({
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         <TokensList
-          networkType={networkType}
           address={address}
           selected={selected}
           search={search}

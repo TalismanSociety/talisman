@@ -10,8 +10,8 @@ export const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
 ]
 export const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [
   "1-evm-native-eth",
-  "moonbeam-substrate-native-glmr",
-  "moonriver-substrate-native-movr",
+  "1284-evm-native-glmr",
+  "1285-evm-native-movr",
 ]
 
 // those are suffixed by chainId or networkId for dedupping chains
