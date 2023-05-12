@@ -375,6 +375,12 @@ export const useEthTransaction = (
 
   const [priority, setPriority] = useState<EthPriorityOptionName>()
 
+  // reset priority in case chain changes
+  // ex: from send funds when switching from BSC (legacy) to mainnet (eip1559)
+  useEffect(() => {
+    setPriority(undefined)
+  }, [tx?.chainId])
+
   // set default priority based on EIP1559 support
   useEffect(() => {
     if (priority !== undefined || hasEip1559Support === undefined) return
