@@ -107,6 +107,10 @@ export const SubOrmlModule: NewBalanceModule<
   return {
     ...DefaultBalanceModule("substrate-orml"),
 
+    /**
+     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/fetchDataForChains.ts#L286-L314).
+     * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the chainmeta for each chain up to date without relying on a squid.
+     */
     async fetchSubstrateChainMeta(chainId, moduleConfig) {
       const isTestnet = (await chaindataProvider.getChain(chainId))?.isTestnet || false
 
@@ -166,6 +170,10 @@ export const SubOrmlModule: NewBalanceModule<
       }
     },
 
+    /**
+     * This method is currently executed on [a squid](https://github.com/TalismanSociety/chaindata-squid/blob/0ee02818bf5caa7362e3f3664e55ef05ec8df078/src/steps/fetchDataForChains.ts#L331-L336).
+     * In a future version of the balance libraries, we may build some kind of async scheduling system which will keep the list of tokens for each chain up to date without relying on a squid.
+     */
     async fetchSubstrateChainTokens(chainId, chainMeta, moduleConfig) {
       if (moduleConfig?.disable === true) return {}
 
