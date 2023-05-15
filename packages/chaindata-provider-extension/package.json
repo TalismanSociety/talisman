@@ -23,23 +23,27 @@
   "scripts": {
     "test": "jest",
     "lint": "eslint src --max-warnings 0",
+    "graphql-codegen": "graphql-codegen -c src/codegen.ts",
+    "generate-mock-data": "ts-node scripts/generateMockData.ts",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {
     "@talismn/chaindata-provider": "workspace:*",
     "anylogger": "^1.0.11",
-    "axios": "^0.27.2",
     "dexie": "^3.2.3",
     "graphql": "^16.6.0",
-    "graphql-tag": "^2.12.6"
+    "graphql-request": "^6.0.0"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^3.3.0",
+    "@graphql-codegen/client-preset": "^3.0.0",
     "@talismn/eslint-config": "workspace:*",
     "@talismn/tsconfig": "workspace:*",
     "@types/jest": "^27.5.1",
     "eslint": "^8.4.0",
     "jest": "^28.1.0",
     "ts-jest": "^28.0.2",
+    "ts-node": "^10.9.1",
     "typescript": "^4.6.4"
   },
   "eslintConfig": {

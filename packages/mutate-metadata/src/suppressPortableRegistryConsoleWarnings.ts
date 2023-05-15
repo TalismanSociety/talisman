@@ -9,8 +9,8 @@ export function suppressPortableRegistryConsoleWarnings() {
   /* eslint-disable-next-line no-console */
   const originalWarn = console.warn
 
-  /* eslint-disable-next-line no-console, @typescript-eslint/no-explicit-any */
-  console.warn = (...data: any[]) => {
+  /* eslint-disable-next-line no-console */
+  console.warn = (...data: Parameters<typeof console.warn>) => {
     const [, dataModule, dataMessage] = data
     const ignoreMessages = typeof dataModule === "string" && ignoreModuleMessages[dataModule]
     if (Array.isArray(ignoreMessages) && ignoreMessages.includes(dataMessage)) return

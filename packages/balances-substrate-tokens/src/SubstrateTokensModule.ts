@@ -15,6 +15,7 @@ import {
   RpcStateQueryHelper,
   StorageHelper,
   createTypeRegistryCache,
+  findChainMeta,
 } from "@talismn/balances"
 import {
   ChainId,
@@ -257,6 +258,7 @@ export const SubTokensModule: NewBalanceModule<
 
       const currencyId = (() => {
         try {
+          // `as string` doesn't matter here because we catch it if it throws
           return JSON.parse(token.onChainId as string)
         } catch (error) {
           return token.onChainId
@@ -370,9 +372,7 @@ async function buildQueries(
       return []
     }
 
-    const chainMeta: SubTokensChainMeta | undefined = (chain.balanceMetadata || []).find(
-      ({ moduleType }) => moduleType === "substrate-tokens"
-    )?.metadata
+    const chainMeta = findChainMeta<typeof SubTokensModule>("substrate-tokens", chain)
     const registry =
       chainMeta?.metadata !== undefined &&
       chainMeta?.metadata !== null &&
@@ -388,8 +388,8 @@ async function buildQueries(
         decodeAnyAddress(address),
         (() => {
           try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return JSON.parse(token.onChainId as any)
+            // `as string` doesn't matter here because we catch it if it throws
+            return JSON.parse(token.onChainId as string)
           } catch (error) {
             return token.onChainId
           }

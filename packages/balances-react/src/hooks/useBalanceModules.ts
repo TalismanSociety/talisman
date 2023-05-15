@@ -1,4 +1,4 @@
-import { BalanceModule, Hydrate } from "@talismn/balances"
+import { AnyBalanceModule, Hydrate } from "@talismn/balances"
 import { useMemo } from "react"
 
 import { provideContext } from "../util/provideContext"
@@ -7,8 +7,7 @@ import { useChaindata } from "./useChaindata"
 
 export type BalanceModulesProviderOptions = {
   // TODO: Make this array of BalanceModules more type-safe
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  balanceModules: Array<(hydrate: Hydrate) => BalanceModule<any, any, any, any, any>>
+  balanceModules: Array<(hydrate: Hydrate) => AnyBalanceModule>
 }
 
 const useBalanceModulesProvider = ({ balanceModules }: BalanceModulesProviderOptions) => {

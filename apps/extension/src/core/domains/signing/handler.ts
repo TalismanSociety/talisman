@@ -108,7 +108,7 @@ export default class SigningHandler extends ExtensionHandler {
     if (isJsonPayload(payload)) {
       const { genesisHash } = payload
       const chain = await chaindataProvider.getChain({ genesisHash })
-      analyticsProperties.chain = chain?.chainName
+      analyticsProperties.chain = chain?.chainName ?? undefined
 
       if (chain) {
         const { registry } = await getTypeRegistry(genesisHash)

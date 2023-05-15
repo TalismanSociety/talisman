@@ -1,7 +1,7 @@
 import { Metadata, StorageKey, TypeRegistry, decorateStorage } from "@polkadot/types"
 import type { Registry } from "@polkadot/types-codec/types"
 import { ChainConnector } from "@talismn/chain-connector"
-import { ChainId, IToken } from "@talismn/chaindata-provider"
+import { BalanceMetadata, Chain, ChainId, IToken } from "@talismn/chaindata-provider"
 import { hasOwnProperty } from "@talismn/util"
 import groupBy from "lodash/groupBy"
 
@@ -14,6 +14,7 @@ import {
   ExtendableModuleConfig,
   ExtendableTokenType,
   ExtendableTransferParams,
+  NewBalanceModule,
 } from "./BalanceModule"
 import log from "./log"
 import {
@@ -95,6 +96,61 @@ export const createTypeRegistryCache = () => {
   }
 
   return { getOrCreateTypeRegistry }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyBalanceModule = BalanceModule<any, any, any, any, any>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyNewBalanceModule = NewBalanceModule<any, any, any, any, any>
+
+/**
+ * The following `Infer*` collection of generic types can be used when you want to
+ * extract one of the generic type arguments from an existing BalanceModule.
+ *
+ * For example, you might want to write a function which can accept any BalanceModule
+ * as an input, and then return the specific TokenType for that module:
+ * function getTokens<T extends AnyBalanceModule>(module: T): InferTokenType<T>
+ *
+ * Or for another example, you might want a function which can take any BalanceModule `type`
+ * string as input, and then return some data associated with that module with the correct type:
+ * function getChainMeta<T extends AnyBalanceModule>(type: InferModuleType<T>): InferChainMeta<T> | undefined
+ */
+type InferBalanceModuleTypes<T extends AnyNewBalanceModule> = T extends NewBalanceModule<
+  infer TModuleType,
+  infer TTokenType,
+  infer TChainMeta,
+  infer TModuleConfig,
+  infer TTransferParams
+>
+  ? {
+      TModuleType: TModuleType
+      TTokenType: TTokenType
+      TChainMeta: TChainMeta
+      TModuleConfig: TModuleConfig
+      TTransferParams: TTransferParams
+    }
+  : never
+export type InferModuleType<T extends AnyNewBalanceModule> =
+  InferBalanceModuleTypes<T>["TModuleType"]
+export type InferTokenType<T extends AnyNewBalanceModule> = InferBalanceModuleTypes<T>["TTokenType"]
+export type InferChainMeta<T extends AnyNewBalanceModule> = InferBalanceModuleTypes<T>["TChainMeta"]
+export type InferModuleConfig<T extends AnyNewBalanceModule> =
+  InferBalanceModuleTypes<T>["TModuleConfig"]
+export type InferTransferParams<T extends AnyNewBalanceModule> =
+  InferBalanceModuleTypes<T>["TTransferParams"]
+
+/**
+ * Given a `moduleType` and a `chain` from a chaindataProvider, this function will find the chainMeta
+ * associated with the given balanceModule for the given chain.
+ */
+export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
+  moduleType: InferModuleType<TBalanceModule>,
+  chain: Chain
+): InferChainMeta<TBalanceModule> | undefined => {
+  type FoundMeta = BalanceMetadata & { metadata?: InferChainMeta<TBalanceModule> }
+  return (chain.balanceMetadata ?? []).find(
+    (meta): meta is FoundMeta => meta.moduleType === moduleType
+  )?.metadata
 }
 
 export const filterMirrorTokens = (balance: Balance, i: number, balances: Balance[]) => {

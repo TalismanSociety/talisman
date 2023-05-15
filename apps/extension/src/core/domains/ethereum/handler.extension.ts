@@ -358,6 +358,7 @@ export class EthHandler extends ExtensionHandler {
       isTestnet: false,
       sortIndex: null,
       name: network.chainName,
+      themeColor: "#505050",
       logo: (network.iconUrls || [])[0] ?? null,
       nativeToken: newToken ? { id: newToken.id } : null,
       tokens: [],
@@ -393,33 +394,34 @@ export class EthHandler extends ExtensionHandler {
       const newToken: CustomEvmNativeToken = {
         id: evmNativeTokenId(network.id, network.tokenSymbol),
         type: "evm-native",
-        decimals: network.tokenDecimals,
-        symbol: network.tokenSymbol,
-        coingeckoId: network.tokenCoingeckoId ?? "",
-        evmNetwork: { id: network.id },
         isTestnet: network.isTestnet,
-        isCustom: true,
+        symbol: network.tokenSymbol,
+        decimals: network.tokenDecimals,
         logo: network.tokenLogoUrl ?? githubUnknownTokenLogoUrl,
+        coingeckoId: network.tokenCoingeckoId ?? "",
         chain: existingToken?.chain,
+        evmNetwork: { id: network.id },
+        isCustom: true,
       }
 
       const newNetwork: CustomEvmNetwork = {
         // EvmNetwork
         id: network.id,
-        name: network.name,
         isTestnet: network.isTestnet,
         sortIndex: existingNetwork?.sortIndex ?? null,
+        name: network.name,
+        themeColor: "#505050",
         logo: network.chainLogoUrl ?? null,
-        explorerUrl: network.blockExplorerUrl ?? null,
-        isHealthy: true,
         nativeToken: { id: newToken.id },
-        rpcs: network.rpcs.map(({ url }) => ({ url, isHealthy: true })),
         tokens: existingNetwork?.tokens ?? [],
+        explorerUrl: network.blockExplorerUrl ?? null,
+        rpcs: network.rpcs.map(({ url }) => ({ url, isHealthy: true })),
+        isHealthy: true,
         substrateChain: existingNetwork?.substrateChain ?? null,
         // CustomEvmNetwork
         isCustom: true,
-        iconUrls: [],
         explorerUrls: network.blockExplorerUrl ? [network.blockExplorerUrl] : [],
+        iconUrls: [],
       }
 
       await chaindataProvider.addCustomToken(newToken)

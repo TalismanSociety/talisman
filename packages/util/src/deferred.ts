@@ -8,15 +8,13 @@
 export function Deferred<T>(): {
   promise: Promise<T>
   resolve: (value: T | PromiseLike<T>) => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  reject: (reason?: any) => void
+  reject: (reason?: unknown) => void
   isPending: () => boolean
   isResolved: () => boolean
   isRejected: () => boolean
 } {
   let resolve!: (value: T | PromiseLike<T>) => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let reject!: (reason?: any) => void
+  let reject!: (reason?: unknown) => void
 
   let isPending = true
   let isResolved = false
