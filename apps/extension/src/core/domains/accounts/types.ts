@@ -44,37 +44,24 @@ export type AccountJsonAny = (
   | AccountJsonHardwareSubstrate
   | AccountJsonQr
   | AccountJson
-) & { origin?: keyof typeof AccountTypes | undefined }
+) & { origin?: AccountType | undefined }
 
 export type IdenticonType = "talisman-orb" | "polkadot-identicon"
 
-type ROOT = "ROOT"
-type DERIVED = "DERIVED"
-type SEED = "SEED"
-type JSON = "JSON"
-type QR = "QR"
-type HARDWARE = "HARDWARE"
-const ROOT: ROOT = "ROOT"
-const DERIVED: DERIVED = "DERIVED"
-const SEED: SEED = "SEED"
-const JSON: JSON = "JSON"
-const QR: QR = "QR"
-const HARDWARE: HARDWARE = "HARDWARE"
+type AccountType = keyof typeof AccountTypes
 
-type AccountType = ROOT | DERIVED | SEED | JSON | QR | HARDWARE
-
-export const AccountTypes: Record<AccountType, AccountType> = {
-  ROOT,
-  DERIVED,
-  SEED,
-  JSON,
-  QR,
-  HARDWARE,
-}
+export const AccountTypes = {
+  ROOT: "ROOT",
+  DERIVED: "DERIVED",
+  SEED: "SEED",
+  JSON: "JSON",
+  QR: "QR",
+  HARDWARE: "HARDWARE",
+} as const
 
 export interface AccountMeta extends AccountJson {
   name: string
-  origin: keyof typeof AccountTypes
+  origin: AccountType
 }
 
 export interface Account {
