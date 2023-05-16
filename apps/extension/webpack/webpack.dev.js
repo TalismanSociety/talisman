@@ -15,6 +15,9 @@ const config = (env) =>
   merge(common(env), {
     devtool: "inline-cheap-module-source-map",
     mode: "development",
+    watchOptions: {
+      ignored: [distDir, path.join(__dirname, "..", "node_modules")],
+    },
     plugins: [
       new CopyPlugin({
         patterns: [
