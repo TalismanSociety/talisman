@@ -5,6 +5,8 @@
  * https://github.com/RabbyHub/Rabby/blob/342eb111f06b3c30d1e06ac9a60ee1c4c4eaae73/build/plugins/AssetReplacePlugin.js
  *
  * replace string with other assets content at "afterProcessAssets"
+ *
+ * Added a check to prevent replacing content of all files, which triggered multiple hot reloads
  */
 
 class AssetReplacePlugin {
@@ -46,10 +48,16 @@ class AssetReplacePlugin {
 
         for (const chunk of compilation.chunks.values()) {
           const fileName = chunk.files.values().next().value
-          if (!replaceArr.includes(([, assetName]) => assetName === fileName)) {
+          const fileContent = compilation.assets[fileName]?.source()
+
+          if (
+            // replace file content only if it contains any of the keys
+            replaceArr.some(([pattern]) => fileContent.includes(pattern)) &&
+            // except if it's the file to inject (prevent infinite loop)
+            !replaceArr.includes(([, assetName]) => assetName === fileName)
+          ) {
             compilation.updateAsset(fileName, (content) => {
               const result = replaceFn(content.source())
-
               return new RawSource(result)
             })
           }
