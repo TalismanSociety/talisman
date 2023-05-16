@@ -104,7 +104,7 @@ class WindowManager {
     this.#windows = []
   }
 
-  async popupOpen(argument?: string) {
+  async popupOpen(argument?: string, onClose?: () => void) {
     const currWindow = await Browser.windows.getLastFocused()
 
     const { left, top } = {
@@ -127,6 +127,15 @@ class WindowManager {
       if (popup.left !== left && popup.state !== "fullscreen") {
         await Browser.windows.update(popup.id, { left, top })
       }
+    }
+
+    if (onClose) {
+      Browser.windows.onRemoved.addListener((id) => {
+        if (id === popup.id) {
+          this.#windows = this.#windows.filter((wid) => wid !== id)
+          onClose()
+        }
+      })
     }
   }
 }

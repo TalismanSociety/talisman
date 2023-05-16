@@ -80,7 +80,7 @@ export default class Tabs extends TabsHandler {
     }
   }
 
-  private async authorize(url: string, request: RequestAuthorizeTab): Promise<boolean> {
+  private async authorize(url: string, request: RequestAuthorizeTab, port: Port): Promise<boolean> {
     let siteFromUrl: AuthorizedSite | undefined
     try {
       siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
@@ -100,7 +100,7 @@ export default class Tabs extends TabsHandler {
       return false
     }
     try {
-      await requestAuthoriseSite(url, request)
+      await requestAuthoriseSite(url, request, port)
     } catch (err) {
       log.error(err)
       return false
@@ -162,47 +162,79 @@ export default class Tabs extends TabsHandler {
     return pair
   }
 
-  private bytesSign(url: string, request: SignerPayloadRaw): Promise<ResponseSigning> {
+  private bytesSign(url: string, request: SignerPayloadRaw, port: Port): Promise<ResponseSigning> {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return signSubstrate(url, new RequestBytesSign(request), {
-      address,
-      ...pair.meta,
-    })
+    return signSubstrate(
+      url,
+      new RequestBytesSign(request),
+      {
+        address,
+        ...pair.meta,
+      },
+      port
+    )
   }
 
-  private extrinsicSign(url: string, request: SignerPayloadJSON): Promise<ResponseSigning> {
+  private extrinsicSign(
+    url: string,
+    request: SignerPayloadJSON,
+    port: Port
+  ): Promise<ResponseSigning> {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return signSubstrate(url, new RequestExtrinsicSign(request), {
-      address,
-      ...pair.meta,
-    })
+    return signSubstrate(
+      url,
+      new RequestExtrinsicSign(request),
+      {
+        address,
+        ...pair.meta,
+      },
+      port
+    )
   }
 
-  private messageEncrypt(url: string, request: EncryptPayload): Promise<ResponseEncryptEncrypt> {
+  private messageEncrypt(
+    url: string,
+    request: EncryptPayload,
+    port: Port
+  ): Promise<ResponseEncryptEncrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
-    return requestEncrypt(url, request, {
-      address,
-      ...pair.meta,
-    })
+    return requestEncrypt(
+      url,
+      request,
+      {
+        address,
+        ...pair.meta,
+      },
+      port
+    )
   }
 
-  private messageDecrypt(url: string, request: DecryptPayload): Promise<ResponseEncryptDecrypt> {
+  private messageDecrypt(
+    url: string,
+    request: DecryptPayload,
+    port: Port
+  ): Promise<ResponseEncryptDecrypt> {
     const address = request.address
     const pair = this.getSigningPair(address)
 
-    return requestDecrypt(url, request, {
-      address,
-      ...pair.meta,
-    })
+    return requestDecrypt(
+      url,
+      request,
+      {
+        address,
+        ...pair.meta,
+      },
+      port
+    )
   }
 
-  private metadataProvide(url: string, request: MetadataDef): Promise<boolean> {
-    return requestInjectMetadata(url, request)
+  private metadataProvide(url: string, request: MetadataDef, port: Port): Promise<boolean> {
+    return requestInjectMetadata(url, request, port)
   }
 
   private async metadataList(): Promise<InjectedMetadataKnown[]> {
@@ -408,7 +440,7 @@ export default class Tabs extends TabsHandler {
     if (type !== "pub(authorize.tab)") {
       await this.stores.sites.ensureUrlAuthorized(url, false)
     } else {
-      return this.authorize(url, request as RequestAuthorizeTab)
+      return this.authorize(url, request as RequestAuthorizeTab, port)
     }
 
     switch (type) {
@@ -428,7 +460,7 @@ export default class Tabs extends TabsHandler {
           false,
           (request as SignerPayloadRaw).address
         )
-        return this.bytesSign(url, request as SignerPayloadRaw)
+        return this.bytesSign(url, request as SignerPayloadRaw, port)
 
       case "pub(extrinsic.sign)":
         await this.stores.sites.ensureUrlAuthorized(
@@ -436,13 +468,13 @@ export default class Tabs extends TabsHandler {
           false,
           (request as SignerPayloadJSON).address
         )
-        return this.extrinsicSign(url, request as SignerPayloadJSON)
+        return this.extrinsicSign(url, request as SignerPayloadJSON, port)
 
       case "pub(metadata.list)":
         return this.metadataList()
 
       case "pub(metadata.provide)":
-        return this.metadataProvide(url, request as MetadataDef)
+        return this.metadataProvide(url, request as MetadataDef, port)
 
       case "pub(rpc.listProviders)":
         return this.rpcListProviders()
@@ -479,7 +511,7 @@ export default class Tabs extends TabsHandler {
 
       case "pub(encrypt.encrypt)": {
         await this.stores.sites.ensureUrlAuthorized(url, false, (request as EncryptPayload).address)
-        const response = await this.messageEncrypt(url, request as EncryptPayload)
+        const response = await this.messageEncrypt(url, request as EncryptPayload, port)
         return {
           id: Number(response.id),
           result: response.result,
@@ -488,7 +520,7 @@ export default class Tabs extends TabsHandler {
 
       case "pub(encrypt.decrypt)": {
         await this.stores.sites.ensureUrlAuthorized(url, false, (request as DecryptPayload).address)
-        const response = await this.messageDecrypt(url, request as DecryptPayload)
+        const response = await this.messageDecrypt(url, request as DecryptPayload, port)
         return {
           id: Number(response.id),
           result: response.result,
