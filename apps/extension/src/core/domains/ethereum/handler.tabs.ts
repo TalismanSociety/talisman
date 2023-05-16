@@ -105,7 +105,11 @@ export class EthTabsHandler extends TabsHandler {
     return provider
   }
 
-  private async authoriseEth(url: string, request: RequestAuthorizeTab): Promise<boolean> {
+  private async authoriseEth(
+    url: string,
+    request: RequestAuthorizeTab,
+    port: Port
+  ): Promise<boolean> {
     let siteFromUrl
     try {
       siteFromUrl = await this.stores.sites.getSiteFromUrl(url)
@@ -118,7 +122,7 @@ export class EthTabsHandler extends TabsHandler {
     }
 
     try {
-      await requestAuthoriseSite(url, request)
+      await requestAuthoriseSite(url, request, port)
       return true
     } catch (err) {
       // throw specific error in case of duplicate auth request
@@ -285,7 +289,8 @@ export class EthTabsHandler extends TabsHandler {
 
   private addEthereumChain = async (
     url: string,
-    request: EthRequestArguments<"wallet_addEthereumChain">
+    request: EthRequestArguments<"wallet_addEthereumChain">,
+    port: Port
   ) => {
     const {
       params: [network],
@@ -330,7 +335,7 @@ export class EthTabsHandler extends TabsHandler {
       })
     )
 
-    await requestAddNetwork(url, network)
+    await requestAddNetwork(url, network, port)
 
     // switch automatically to new chain
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
@@ -400,7 +405,7 @@ export class EthTabsHandler extends TabsHandler {
     return provider.send(request.method, request.params as unknown as any[])
   }
 
-  private signMessage = async (url: string, request: EthRequestSignArguments) => {
+  private signMessage = async (url: string, request: EthRequestSignArguments, port: Port) => {
     const { params, method } = request as EthRequestSignArguments
 
     // eth_signTypedData requires a non-empty array of parameters, else throw (uniswap will then call v4)
@@ -436,15 +441,23 @@ export class EthTabsHandler extends TabsHandler {
       )
     }
 
-    return signEth(url, method, message, site.ethChainId.toString(), {
-      address: ethers.utils.getAddress(address),
-      ...pair.meta,
-    })
+    return signEth(
+      url,
+      method,
+      message,
+      site.ethChainId.toString(),
+      {
+        address: ethers.utils.getAddress(address),
+        ...pair.meta,
+      },
+      port
+    )
   }
 
   private addWatchAssetRequest = async (
     url: string,
-    request: EthRequestArguments<"wallet_watchAsset">
+    request: EthRequestArguments<"wallet_watchAsset">,
+    port: Port
   ) => {
     if (!isValidWatchAssetRequestParam(request.params))
       throw new EthProviderRpcError("Invalid parameter", ETH_ERROR_EIP1474_INVALID_PARAMS)
@@ -484,10 +497,14 @@ export class EthTabsHandler extends TabsHandler {
       image: image ?? tokenInfo.image,
     }
 
-    return requestWatchAsset(url, request.params, token)
+    return requestWatchAsset(url, request.params, token, port)
   }
 
-  private async sendTransaction(url: string, request: EthRequestArguments<"eth_sendTransaction">) {
+  private async sendTransaction(
+    url: string,
+    request: EthRequestArguments<"eth_sendTransaction">,
+    port: Port
+  ) {
     const {
       params: [txRequest],
     } = request as EthRequestArguments<"eth_sendTransaction">
@@ -534,7 +551,8 @@ export class EthTabsHandler extends TabsHandler {
       {
         address,
         ...pair.meta,
-      }
+      },
+      port
     )
   }
 
@@ -558,7 +576,8 @@ export class EthTabsHandler extends TabsHandler {
 
   private async requestPermissions(
     url: string,
-    request: EthRequestArguments<"wallet_requestPermissions">
+    request: EthRequestArguments<"wallet_requestPermissions">,
+    port: Port
   ): Promise<Web3WalletPermission[]> {
     if (request.params.length !== 1)
       throw new EthProviderRpcError(
@@ -589,7 +608,7 @@ export class EthTabsHandler extends TabsHandler {
     // @dev: cannot proceed with a loop here as order may have some importance, and we may want to group multiple permissions in a single request
     const grantedPermissions: Partial<EthWalletPermissions> = {}
     if (missingPerms.includes("eth_accounts")) {
-      await this.authoriseEth(url, { origin: "", ethereum: true })
+      await this.authoriseEth(url, { origin: "", ethereum: true }, port)
       grantedPermissions.eth_accounts = { date: new Date().getTime() }
     }
 
@@ -614,7 +633,8 @@ export class EthTabsHandler extends TabsHandler {
   private async ethRequest<TEthMessageType extends keyof EthRequestSignatures>(
     id: string,
     url: string,
-    request: EthRequestArguments<TEthMessageType>
+    request: EthRequestArguments<TEthMessageType>,
+    port: Port
   ): Promise<unknown> {
     if (
       ![
@@ -633,10 +653,14 @@ export class EthTabsHandler extends TabsHandler {
 
     switch (request.method) {
       case "eth_requestAccounts":
-        await this.requestPermissions(url, {
-          method: "wallet_requestPermissions",
-          params: [{ eth_accounts: {} }],
-        })
+        await this.requestPermissions(
+          url,
+          {
+            method: "wallet_requestPermissions",
+            params: [{ eth_accounts: {} }],
+          },
+          port
+        )
         return this.accountsList(url)
 
       case "eth_accounts":
@@ -679,7 +703,7 @@ export class EthTabsHandler extends TabsHandler {
       case "eth_signTypedData_v1":
       case "eth_signTypedData_v3":
       case "eth_signTypedData_v4": {
-        return this.signMessage(url, request as EthRequestSignArguments)
+        return this.signMessage(url, request as EthRequestSignArguments, port)
       }
 
       case "personal_ecRecover": {
@@ -690,15 +714,27 @@ export class EthTabsHandler extends TabsHandler {
       }
 
       case "eth_sendTransaction":
-        return this.sendTransaction(url, request as EthRequestArguments<"eth_sendTransaction">)
+        return this.sendTransaction(
+          url,
+          request as EthRequestArguments<"eth_sendTransaction">,
+          port
+        )
 
       case "wallet_watchAsset":
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
-        return this.addWatchAssetRequest(url, request as EthRequestArguments<"wallet_watchAsset">)
+        return this.addWatchAssetRequest(
+          url,
+          request as EthRequestArguments<"wallet_watchAsset">,
+          port
+        )
 
       case "wallet_addEthereumChain":
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
-        return this.addEthereumChain(url, request as EthRequestArguments<"wallet_addEthereumChain">)
+        return this.addEthereumChain(
+          url,
+          request as EthRequestArguments<"wallet_addEthereumChain">,
+          port
+        )
 
       case "wallet_switchEthereumChain":
         //auth-less test dapp : rsksmart.github.io/metamask-rsk-custom-network/
@@ -715,7 +751,8 @@ export class EthTabsHandler extends TabsHandler {
       case "wallet_requestPermissions":
         return this.requestPermissions(
           url,
-          request as EthRequestArguments<"wallet_requestPermissions">
+          request as EthRequestArguments<"wallet_requestPermissions">,
+          port
         )
 
       default:
@@ -736,7 +773,7 @@ export class EthTabsHandler extends TabsHandler {
 
       case "pub(eth.request)":
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return this.ethRequest(id, url, request as AnyEthRequest) as any
+        return this.ethRequest(id, url, request as AnyEthRequest, port) as any
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

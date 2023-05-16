@@ -58,10 +58,15 @@ describe("Signing requests store", () => {
     }
 
     expect(requestStore.getCounts().get("substrate-sign")).toBe(0)
-    signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
-      address,
-      ...meta,
-    })
+    signSubstrate(
+      "http://test.com",
+      new RequestExtrinsicSign(payload),
+      {
+        address,
+        ...meta,
+      },
+      {} as chrome.runtime.Port
+    )
     expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
     expect(windowManager.popupOpen).toBeCalled()
   })

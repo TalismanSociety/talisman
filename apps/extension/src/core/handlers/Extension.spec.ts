@@ -160,10 +160,15 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
-        address,
-        ...pair.meta,
-      })
+      const requestPromise = signSubstrate(
+        "http://test.com",
+        new RequestExtrinsicSign(payload),
+        {
+          address,
+          ...pair.meta,
+        },
+        {} as chrome.runtime.Port
+      )
 
       expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
 
@@ -237,10 +242,15 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
-        address,
-        ...meta,
-      })
+      const requestPromise = signSubstrate(
+        "http://test.com",
+        new RequestExtrinsicSign(payload),
+        {
+          address,
+          ...meta,
+        },
+        {} as chrome.runtime.Port
+      )
 
       expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
 
@@ -305,10 +315,15 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
-        address,
-        ...meta,
-      })
+      const requestPromise = signSubstrate(
+        "http://test.com",
+        new RequestExtrinsicSign(payload),
+        {
+          address,
+          ...meta,
+        },
+        {} as chrome.runtime.Port
+      )
 
       expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
 
@@ -393,10 +408,15 @@ describe("Extension", () => {
         .createType("ExtrinsicPayload", payload, { version: payload.version })
         .sign(pair)
 
-      const requestPromise = signSubstrate("http://test.com", new RequestExtrinsicSign(payload), {
-        address,
-        ...meta,
-      })
+      const requestPromise = signSubstrate(
+        "http://test.com",
+        new RequestExtrinsicSign(payload),
+        {
+          address,
+          ...meta,
+        },
+        {} as chrome.runtime.Port
+      )
 
       expect(requestStore.getCounts().get("substrate-sign")).toBe(1)
 

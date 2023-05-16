@@ -4,7 +4,11 @@ import EventEmitter from "events"
 import { log } from "@core/log"
 import type { SendRequest } from "@core/types"
 
-import { ETH_ERROR_EIP1474_INTERNAL_ERROR, EthProviderRpcError } from "./EthProviderRpcError"
+import {
+  ETH_ERROR_EIP1474_INTERNAL_ERROR,
+  ETH_ERROR_EIP1993_USER_REJECTED,
+  EthProviderRpcError,
+} from "./EthProviderRpcError"
 import type {
   EthRequestArguments,
   EthRequestSignatures,
@@ -161,6 +165,10 @@ export const getInjectableEvmProvider = (sendRequest: SendRequest) => {
         // standard wallet error (user rejected, etc.)
         throw err
       } else {
+        // popup closed case, untyped because thrown by window manager
+        if (message === "Cancelled")
+          throw new EthProviderRpcError("User Rejected Request", ETH_ERROR_EIP1993_USER_REJECTED)
+
         // RPC node error, wrap it
         throw new EthProviderRpcError(
           "Internal JSON-RPC error.",
