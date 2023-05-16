@@ -25,15 +25,11 @@ window.addEventListener("message", ({ data, source }: Message): void => {
   port.postMessage(data)
 })
 
-// inject our data injector
+// inject script that will run in page context, content inlined for instant execution
 const script = document.createElement("script")
-script.src = Browser.runtime.getURL("page.js")
-script.async = false
-script.onload = () => {
-  // remove the injecting tag when loaded
-  if (script.parentNode) script.parentNode.removeChild(script)
-}
+script.textContent = "#TALISMAN_PAGE_SCRIPT#"
 
-// Might want to add more checks at some point, such as doctype to be HTML, and exclude some domains (ex: dropbox.com)
+// inject before head element so that it executes before everything else
 const parent = document?.head || document?.documentElement
-parent?.appendChild(script)
+parent?.insertBefore(script, parent.children[0])
+parent?.removeChild(script)
