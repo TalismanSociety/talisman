@@ -3,7 +3,7 @@ import { roundToFirstInteger } from "@core/util/roundToFirstInteger"
 import { HexString } from "@polkadot/util/types"
 import { api } from "@ui/api"
 import LedgerSubstrate from "@ui/domains/Sign/LedgerSubstrate"
-import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { useCallback, useMemo, useState } from "react"
 

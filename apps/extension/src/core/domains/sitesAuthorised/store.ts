@@ -12,8 +12,8 @@ export class SitesAuthorizedStore extends SubscribableByIdStorageProvider<
   "pri(sites.subscribe)",
   "pri(sites.byid.subscribe)"
 > {
-  constructor() {
-    super("sitesAuthorized")
+  constructor(initialData: AuthorizedSites = {}) {
+    super("sitesAuthorized", initialData)
 
     // One time migration to retrieve previously set authorizations and
     // save them to the new SitesAuthorisationStore

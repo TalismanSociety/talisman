@@ -1,3 +1,5 @@
+import { api } from "./api"
+
 jest.mock("@talismn/chaindata-provider-extension/src/graphql")
 jest.setTimeout(20000)
 
@@ -15,5 +17,7 @@ jest.mock("bcryptjs", () => {
     hash: jest.fn((password: string, salt: string) => `${password}.${salt}`),
   }
 })
+
+jest.mock("@ui/api", () => api)
 
 export {}
