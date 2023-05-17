@@ -11,6 +11,7 @@ import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import useToken from "@ui/hooks/useToken"
+import { BigNumber } from "ethers"
 import { FC, useCallback, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -31,6 +32,53 @@ const getGasSettings = (
   }
 }
 
+const Eip1559FeeTooltip: FC<{
+  estimatedFee: BigNumber
+  maxFee: BigNumber
+  tokenId: string
+}> = ({ estimatedFee, maxFee, tokenId }) => {
+  const token = useToken(tokenId)
+
+  // get estimated and max as string, with as many decimals on both for easy reading
+  const { estimated, max } = useMemo(() => {
+    if (!token) return { estimated: undefined, max: undefined }
+
+    const balEstimatedFee = new BalanceFormatter(estimatedFee.toString(), token.decimals)
+    const balMaxFee = new BalanceFormatter(maxFee.toString(), token.decimals)
+
+    const [intEstimated, decEstimated] = balEstimatedFee.tokens.split(".")
+    const [intMax, decMax] = balMaxFee.tokens.split(".")
+    const maxDecimals = Math.max(decEstimated?.length ?? 0, decMax?.length ?? 0)
+
+    return maxDecimals === 0
+      ? {
+          estimated: `${intEstimated} ${token.symbol}`,
+          max: `${intMax} ${token.symbol}`,
+        }
+      : {
+          estimated: `${intEstimated}.${decEstimated.padEnd(maxDecimals, "0")} ${token.symbol}`,
+          max: `${intMax}.${decMax.padEnd(maxDecimals, "0")} ${token.symbol}`,
+        }
+  }, [estimatedFee, maxFee, token])
+
+  if (!estimated || !max) return null
+
+  return (
+    <>
+      <div className="flex flex-col gap-2 pt-1">
+        <div className="flex w-full items-center justify-between gap-4">
+          <div>Estimated Fee :</div>
+          <div className="font-mono">{estimated}</div>
+        </div>
+        <div className="flex w-full items-center justify-between gap-4">
+          <div>Maximum Fee :</div>
+          <div className="font-mono">{max}</div>
+        </div>
+      </div>
+    </>
+  )
+}
+
 type PriorityOptionProps = {
   priority: EthPriorityOptionName
   gasSettingsByPriority: GasSettingsByPriority
@@ -48,8 +96,6 @@ const PriorityOption = ({
   tokenId,
   onClick,
 }: PriorityOptionProps) => {
-  const token = useToken(tokenId)
-
   const { estimatedFee, maxFee } = useMemo(() => {
     const gasSettings = getGasSettings(gasSettingsByPriority, priority)
     return getTotalFeesFromGasSettings(gasSettings, txDetails.estimatedGas, txDetails.baseFeePerGas)
@@ -69,7 +115,7 @@ const PriorityOption = ({
       </div>
       <div className="grow">{FEE_PRIORITY_OPTIONS[priority].label}</div>
       {selected || priority !== "custom" ? (
-        <Tooltip>
+        <Tooltip placement="bottom-end">
           <TooltipTrigger>
             <TokensAndFiat
               tokenId={tokenId}
@@ -78,26 +124,9 @@ const PriorityOption = ({
             />
           </TooltipTrigger>
           {/* If EIP1559, display both estimated and max fees in tooltip */}
-          {gasSettingsByPriority.type === "eip1559" && token && (
+          {gasSettingsByPriority.type === "eip1559" && (
             <TooltipContent>
-              <div className="flex flex-col gap-2">
-                <div className="flex w-full justify-between gap-4">
-                  <div>Estimated Fee :</div>
-                  <div>
-                    {new BalanceFormatter(estimatedFee.toString(), token.decimals).tokens}{" "}
-                    {token.symbol}
-                  </div>
-                </div>
-                {maxFee && (
-                  <div className="flex w-full justify-between gap-4">
-                    <div>Maximum Fee :</div>
-                    <div>
-                      {new BalanceFormatter(maxFee.toString(), token.decimals).tokens}{" "}
-                      {token.symbol}
-                    </div>
-                  </div>
-                )}
-              </div>
+              <Eip1559FeeTooltip tokenId={tokenId} estimatedFee={estimatedFee} maxFee={maxFee} />
             </TooltipContent>
           )}
         </Tooltip>
