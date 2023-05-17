@@ -198,7 +198,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
 
     if (errors.gasLimit?.type === "min") errorGasLimit = "Gas Limit minimum value is 21000"
     else if (errors.gasLimit) errorGasLimit = "Gas Limit is invalid"
-    else if (gasLimit < txDetails.estimatedGas)
+    else if (BigNumber.from(txDetails.estimatedGas).gt(gasLimit))
       errorGasLimit = "Gas Limit too low, transaction likely to fail"
 
     return {
