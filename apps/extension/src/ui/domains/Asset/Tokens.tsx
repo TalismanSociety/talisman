@@ -1,10 +1,10 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { classNames } from "@talismn/util"
 import { MAX_DECIMALS_FORMAT, formatDecimals } from "@talismn/util"
 import { useRevealableBalance } from "@ui/hooks/useRevealableBalance"
 import BigNumber from "bignumber.js"
 import { FC, useMemo } from "react"
 import CountUp from "react-countup"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 type TokensProps = {
   amount?: string | number | null | BigNumber
@@ -88,13 +88,16 @@ export const Tokens: FC<TokensProps> = ({
       )}
     >
       {render && (
-        <WithTooltip as="span" tooltip={tooltip} noWrap>
-          <DisplayValue
-            amount={isHidden ? 0 : amount}
-            symbol={symbol}
-            noCountUp={effectiveNoCountUp}
-          />
-        </WithTooltip>
+        <Tooltip>
+          <TooltipTrigger as="span">
+            <DisplayValue
+              amount={isHidden ? 0 : amount}
+              symbol={symbol}
+              noCountUp={effectiveNoCountUp}
+            />
+          </TooltipTrigger>
+          {tooltip && <TooltipContent>{tooltip}</TooltipContent>}
+        </Tooltip>
       )}
     </Component>
   )
