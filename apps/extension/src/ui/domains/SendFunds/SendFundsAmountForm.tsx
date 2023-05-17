@@ -3,7 +3,7 @@ import { isEthereumAddress } from "@polkadot/util-crypto"
 import { Drawer } from "@talisman/components/Drawer"
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { IconAlert, InfoIcon, LoaderIcon, SwapIcon, UserPlusIcon } from "@talisman/theme/icons"
+import { IconAlert, InfoIcon, SwapIcon, UserPlusIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { AccountAddressType } from "@talisman/util/getAddressType"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -12,6 +12,7 @@ import { SendFundsWizardPage, useSendFundsWizard } from "@ui/apps/popup/pages/Se
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useToken from "@ui/hooks/useToken"
+import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import debounce from "lodash/debounce"
 import {
@@ -35,6 +36,7 @@ import { AddToAddressBookDrawer } from "../Asset/Send/AddToAddressBookDrawer"
 import { TokenLogo } from "../Asset/TokenLogo"
 import Tokens from "../Asset/Tokens"
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
+import { EthFeeSelect } from "../Ethereum/GasSettings/EthFeeSelect"
 import { SendFundsFeeTooltip } from "./SendFundsFeeTooltip"
 import { useSendFunds } from "./useSendFunds"
 
@@ -415,34 +417,76 @@ const NetworkRow = () => {
   )
 
   return (
-    <Container className="flex w-full items-center justify-between px-8 py-4 leading-none">
+    <div className="flex w-full items-center justify-between">
       <div>Network</div>
       <div className="flex items-center gap-2">
         <ChainLogo id={networkId} className="inline-block text-base" />
         <div>{networkName}</div>
       </div>
-    </Container>
+    </div>
   )
 }
 
-const EstimatedFeeRow = () => {
+const EvmFeeSettingsRow = () => {
+  const { token, evmNetwork, evmTransaction } = useSendFunds()
+
+  if (!token || !evmTransaction || !evmNetwork || !isEvmToken(token)) return null
+
+  const {
+    tx,
+    txDetails,
+    priority,
+    gasSettingsByPriority,
+    setCustomSettings,
+    setPriority,
+    networkUsage,
+  } = evmTransaction
+
+  return (
+    <div className="flex h-12 w-full items-center justify-between gap-4">
+      <div>Transaction Priority</div>
+      <div>
+        {evmNetwork?.nativeToken?.id && priority && tx && txDetails && (
+          <EthFeeSelect
+            tokenId={evmNetwork.nativeToken.id}
+            drawerContainerId="main"
+            gasSettingsByPriority={gasSettingsByPriority}
+            setCustomSettings={setCustomSettings}
+            onChange={setPriority}
+            priority={priority}
+            txDetails={txDetails}
+            networkUsage={networkUsage}
+            tx={tx}
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+const FeesSummary = () => {
   const { feeToken, estimatedFee, isLoading } = useSendFunds()
 
   return (
-    <Container className="flex w-full items-center justify-between gap-4 px-8 py-4">
-      <div className="whitespace-nowrap">
-        Estimated Fee <SendFundsFeeTooltip />
-      </div>
-      <div
-        className={classNames(
-          "flex grow items-center justify-end gap-2 overflow-hidden text-ellipsis whitespace-nowrap",
-          isLoading && estimatedFee && "animate-pulse"
-        )}
-      >
-        {isLoading && !estimatedFee && <LoaderIcon className="animate-spin-slow align-text-top" />}
-        {estimatedFee && feeToken && (
-          <TokensAndFiat planck={estimatedFee.planck} tokenId={feeToken.id} />
-        )}
+    <Container
+      className={classNames("space-y-4 px-8 py-4", isLoading && !estimatedFee && "animate-pulse")}
+    >
+      <NetworkRow />
+      <EvmFeeSettingsRow />
+      <div className="flex w-full items-center justify-between gap-4 ">
+        <div className="whitespace-nowrap">
+          Estimated Fee <SendFundsFeeTooltip />
+        </div>
+        <div
+          className={classNames(
+            "flex grow items-center justify-end gap-2 overflow-hidden text-ellipsis whitespace-nowrap",
+            isLoading && estimatedFee && "animate-pulse"
+          )}
+        >
+          {estimatedFee && feeToken && (
+            <TokensAndFiat planck={estimatedFee.planck} tokenId={feeToken.id} />
+          )}
+        </div>
       </div>
     </Container>
   )
@@ -625,8 +669,7 @@ export const SendFundsAmountForm = () => {
       <AmountEdit />
       <div className="w-full space-y-4 text-xs leading-[140%]">
         <TokenRow onEditClick={handleGotoClick("token")} />
-        <NetworkRow />
-        <EstimatedFeeRow />
+        <FeesSummary />
       </div>
       <ReviewButton />
     </form>
