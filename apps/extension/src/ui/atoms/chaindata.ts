@@ -117,15 +117,13 @@ export const chainsWithoutTestnetsMapState = selector<ChainList>({
   },
 })
 
-const getTokensList = async () => await chaindataProvider.tokens()
-
 const rawTokenListState = atom<TokenList>({
   key: "rawTokenListState",
   default: {},
   effects: [
     // sync from db
     ({ setSelf }) => {
-      const obs = liveQuery(() => getTokensList())
+      const obs = liveQuery(() => chaindataProvider.tokens())
       const sub = obs.subscribe(setSelf)
 
       return () => sub.unsubscribe()
