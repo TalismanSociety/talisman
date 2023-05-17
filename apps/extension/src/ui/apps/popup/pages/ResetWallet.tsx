@@ -3,7 +3,7 @@ import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { AlertTriangleIcon, ChevronLeftIcon, LockIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { ChangeEventHandler, useCallback, useEffect, useState } from "react"
+import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react"
 import { Button, FormFieldInputText } from "talisman-ui"
 
 import Layout, { Content, Footer } from "../Layout"
@@ -35,6 +35,8 @@ const ConfirmDrawer = ({
     window.close()
   }, [])
 
+  const isMatch = useMemo(() => confirmText?.toLowerCase() === "reset wallet", [confirmText])
+
   return (
     <Drawer open={isOpen} anchor="bottom">
       <div className="bg-grey-800 items-center rounded-t-xl p-12 pt-12">
@@ -51,18 +53,18 @@ const ConfirmDrawer = ({
             Your current wallet, accounts and assets will be erased from Talisman. You will need to
             re-import your original account using your recovery (seed) phrase or private key.
           </p>
-          <p className="mt-12 text-center">Type 'reset wallet' below to continue</p>
+          <p className="mt-12 text-center">Type 'Reset wallet' below to continue</p>
         </div>
-        <FormFieldInputText onChange={handleTextChange} placeholder="reset wallet" />
+        <FormFieldInputText onChange={handleTextChange} placeholder="Reset wallet" />
         <div className="mt-12 flex flex-col gap-8">
           <Button
             type="submit"
             className="enabled:!bg-brand-orange hover:enabled:!bg-brand-orange/80 h-24 enabled:text-white"
             fullWidth
             onClick={handleReset}
-            primary={confirmText === "reset wallet"}
+            primary={isMatch}
             processing={resetting}
-            disabled={confirmText !== "reset wallet"}
+            disabled={!isMatch}
           >
             Reset Wallet
           </Button>
