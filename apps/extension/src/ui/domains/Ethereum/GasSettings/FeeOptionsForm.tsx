@@ -81,7 +81,7 @@ const PriorityOption = ({
           {gasSettingsByPriority.type === "eip1559" && token && (
             <TooltipContent>
               <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-4">
+                <div className="flex w-full justify-between gap-4">
                   <div>Estimated Fee :</div>
                   <div>
                     {new BalanceFormatter(estimatedFee.toString(), token.decimals).tokens}{" "}
@@ -89,7 +89,7 @@ const PriorityOption = ({
                   </div>
                 </div>
                 {maxFee && (
-                  <div className="flex items-center gap-4">
+                  <div className="flex w-full justify-between gap-4">
                     <div>Maximum Fee :</div>
                     <div>
                       {new BalanceFormatter(maxFee.toString(), token.decimals).tokens}{" "}
