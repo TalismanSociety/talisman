@@ -113,7 +113,7 @@ export const ResetWallet = ({ closeResetWallet }: { closeResetWallet: () => void
       </Content>
       <Footer className="flex flex-col gap-8">
         <Button fullWidth primary onClick={open} className="h-24">
-          Reset wallet
+          Reset Wallet
         </Button>
         <Button fullWidth onClick={closeResetWallet} className="h-24">
           Cancel
