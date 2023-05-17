@@ -10,7 +10,7 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*/*", "http://localhost/*"],
+      "matches": ["file://*/*", "http://*/*", "https://*/*"],
       "js": ["content_script.js"],
       "run_at": "document_start",
       "all_frames": true
