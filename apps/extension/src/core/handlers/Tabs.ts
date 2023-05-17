@@ -21,6 +21,7 @@ import {
   RequestRpcByGenesisHashSend,
   RequestRpcByGenesisHashSubscribe,
   RequestRpcByGenesisHashUnsubscribe,
+  UnknownJsonRpcResponse,
 } from "@core/domains/rpc/types"
 import { signSubstrate } from "@core/domains/signing/requests"
 import type { ResponseSigning } from "@core/domains/signing/types"
@@ -55,7 +56,6 @@ import type {
   ProviderMeta,
 } from "@polkadot/extension-inject/types"
 import type { KeyringPair } from "@polkadot/keyring/types"
-import type { JsonRpcResponse } from "@polkadot/rpc-provider/types"
 import type { SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import keyring from "@polkadot/ui-keyring"
 import { accounts as accountsObservable } from "@polkadot/ui-keyring/observable/accounts"
@@ -250,7 +250,7 @@ export default class Tabs extends TabsHandler {
 
   private async rpcTalismanByGenesisHashSend(
     request: RequestRpcByGenesisHashSend
-  ): Promise<JsonRpcResponse> {
+  ): Promise<UnknownJsonRpcResponse> {
     const { genesisHash, method, params } = request
 
     const chain = await chaindataProvider.getChain({ genesisHash })
@@ -321,7 +321,7 @@ export default class Tabs extends TabsHandler {
     return true
   }
 
-  private rpcSend(request: RequestRpcSend, port: Port): Promise<JsonRpcResponse> {
+  private rpcSend(request: RequestRpcSend, port: Port): Promise<UnknownJsonRpcResponse> {
     return this.#rpcState.rpcSend(request, port)
   }
 
