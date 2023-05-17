@@ -24,7 +24,7 @@
     "test": "jest",
     "lint": "eslint src --max-warnings 0",
     "graphql-codegen": "graphql-codegen -c src/codegen.ts",
-    "generate-mock-data": "ts-node scripts/generateMockData.ts",
+    "generate-init-data": "ts-node scripts/generateInitData.ts",
     "clean": "rm -rf dist && rm -rf .turbo rm -rf node_modules"
   },
   "dependencies": {

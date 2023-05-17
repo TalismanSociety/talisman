@@ -14,13 +14,9 @@ import {
 } from "@talismn/chaindata-provider"
 import { PromiseExtended, Transaction, TransactionMode } from "dexie"
 
-import {
-  fetchChains as mockFetchChains,
-  fetchEvmNetworks as mockFetchEvmNetworks,
-  fetchTokens as mockFetchTokens,
-} from "./__mocks__/graphql"
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
 import { fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchToken, fetchTokens } from "./graphql"
+import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
 import log from "./log"
 import { isITokenPartial, isToken, parseTokensResponse } from "./parseTokensResponse"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
@@ -309,10 +305,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         if (dbHasChains) throw error
 
         // On first start-up (db is empty), if we fail to fetch chains then we should
-        // initialize the DB with the list of chains inside our _mockData.ts file.
+        // initialize the DB with the list of chains inside our init/chains.json file.
         // This data will represent a relatively recent copy of what's in the squid,
         // which will be better for our users than to have nothing at all.
-        var chains = addCustomChainRpcs(await mockFetchChains(), this.#onfinalityApiKey) // eslint-disable-line no-var
+        var chains = addCustomChainRpcs(await fetchInitChains(), this.#onfinalityApiKey) // eslint-disable-line no-var
       }
 
       await this.#db.transaction("rw", this.#db.chains, () => {
@@ -350,10 +346,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         if (dbHasEvmNetworks) throw error
 
         // On first start-up (db is empty), if we fail to fetch evmNetworks then we should
-        // initialize the DB with the list of evmNetworks inside our _mockData.ts file.
+        // initialize the DB with the list of evmNetworks inside our init/evm-networks.json file.
         // This data will represent a relatively recent copy of what's in the squid,
         // which will be better for our users than to have nothing at all.
-        var evmNetworks: EvmNetwork[] = await mockFetchEvmNetworks() // eslint-disable-line no-var
+        var evmNetworks: EvmNetwork[] = await fetchInitEvmNetworks() // eslint-disable-line no-var
       }
 
       await this.#db.transaction("rw", this.#db.evmNetworks, async () => {
@@ -395,10 +391,10 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         if (dbHasTokens) throw error
 
         // On first start-up (db is empty), if we fail to fetch tokens then we should
-        // initialize the DB with the list of tokens inside our _mockData.ts file.
+        // initialize the DB with the list of tokens inside our init/tokens.json file.
         // This data will represent a relatively recent copy of what's in the squid,
         // which will be better for our users than to have nothing at all.
-        var tokens = parseTokensResponse(await mockFetchTokens()) // eslint-disable-line no-var
+        var tokens = parseTokensResponse(await fetchInitTokens()) // eslint-disable-line no-var
       }
 
       await this.#db.transaction("rw", this.#db.tokens, async () => {
