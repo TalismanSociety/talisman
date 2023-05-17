@@ -117,28 +117,7 @@ export const chainsWithoutTestnetsMapState = selector<ChainList>({
   },
 })
 
-const getTokensList = async () => {
-  const tokens = await chaindataProvider.tokens()
-
-  // Temp hack to indicate that
-  //          - EVM GLMR is a mirror of substrate GLMR
-  //          - EVM MOVR is a mirror of substrate MOVR
-  //          - EVM DEV is a mirror of substrate DEV
-  //          - EVM ACA is a mirror of substrate ACA
-  const mirrorTokenIds = {
-    "1284-evm-native-glmr": "moonbeam-substrate-native-glmr",
-    "1285-evm-native-movr": "moonriver-substrate-native-movr",
-    "1287-evm-native-dev": "moonbase-alpha-testnet-substrate-native-dev",
-    "787-evm-native-aca": "acala-substrate-native-aca",
-  }
-
-  Object.entries(mirrorTokenIds)
-    .filter(([mirrorToken]) => tokens[mirrorToken])
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    .forEach(([mirrorToken, mirrorOf]) => ((tokens[mirrorToken] as any).mirrorOf = mirrorOf))
-
-  return tokens
-}
+const getTokensList = async () => await chaindataProvider.tokens()
 
 const rawTokenListState = atom<TokenList>({
   key: "rawTokenListState",
