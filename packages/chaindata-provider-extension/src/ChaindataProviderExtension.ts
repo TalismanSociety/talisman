@@ -306,7 +306,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         var chains = addCustomChainRpcs(await fetchChains(), this.#onfinalityApiKey) // eslint-disable-line no-var
         if (chains.length <= 0) throw new Error("Ignoring empty chaindata chains response")
       } catch (error) {
-        if ((error as any)?.message !== "Ignoring empty chaindata chains response") throw error // eslint-disable-line @typescript-eslint/no-explicit-any
         if (dbHasChains) throw error
 
         // On first start-up (db is empty), if we fail to fetch chains then we should
@@ -348,7 +347,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         if (evmNetworks.length <= 0)
           throw new Error("Ignoring empty chaindata evmNetworks response")
       } catch (error) {
-        if ((error as any)?.message !== "Ignoring empty chaindata evmNetworks response") throw error // eslint-disable-line @typescript-eslint/no-explicit-any
         if (dbHasEvmNetworks) throw error
 
         // On first start-up (db is empty), if we fail to fetch evmNetworks then we should
@@ -394,7 +392,6 @@ export class ChaindataProviderExtension implements ChaindataProvider {
         var tokens = parseTokensResponse(await fetchTokens()) // eslint-disable-line no-var
         if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
       } catch (error) {
-        if ((error as any)?.message !== "Ignoring empty chaindata tokens response") throw error // eslint-disable-line @typescript-eslint/no-explicit-any
         if (dbHasTokens) throw error
 
         // On first start-up (db is empty), if we fail to fetch tokens then we should
