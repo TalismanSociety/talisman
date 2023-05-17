@@ -82,16 +82,16 @@ const PriorityOption = ({
             <TooltipContent>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-4">
-                  <div className="text-body-secondary">Estimated Fee :</div>
-                  <div className="text-body-secondary">
+                  <div>Estimated Fee :</div>
+                  <div>
                     {new BalanceFormatter(estimatedFee.toString(), token.decimals).tokens}{" "}
                     {token.symbol}
                   </div>
                 </div>
                 {maxFee && (
                   <div className="flex items-center gap-4">
-                    <div className="text-body-secondary">Maximum Fee :</div>
-                    <div className="text-body-secondary">
+                    <div>Maximum Fee :</div>
+                    <div>
                       {new BalanceFormatter(maxFee.toString(), token.decimals).tokens}{" "}
                       {token.symbol}
                     </div>
