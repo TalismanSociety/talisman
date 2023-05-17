@@ -13714,7 +13714,7 @@ __metadata:
     react-use: 17.4.0
     recoil: ^0.7.7
     remove-files-webpack-plugin: ^1.5.0
-    rxjs: ^7.8.0
+    rxjs: ^7.8.1
     scale-codec: ^0.11.0
     semver: ^7.3.8
     sinon-chrome: ^3.0.1
