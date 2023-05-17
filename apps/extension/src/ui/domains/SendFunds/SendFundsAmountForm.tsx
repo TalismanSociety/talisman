@@ -669,7 +669,6 @@ export const SendFundsAmountForm = () => {
       <AmountEdit />
       <div className="w-full space-y-4 text-xs leading-[140%]">
         <TokenRow onEditClick={handleGotoClick("token")} />
-        {/* <NetworkRow /> */}
         <FeesSummary />
       </div>
       <ReviewButton />
