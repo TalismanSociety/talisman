@@ -1,7 +1,7 @@
 import { AccountJsonHardwareEthereum } from "@core/domains/accounts/types"
 import { HexString } from "@polkadot/util/types"
 import LedgerEthereum from "@ui/domains/Sign/LedgerEthereum"
-import useAccountByAddress from "@ui/hooks/useAccountByAddress"
+import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useCallback, useState } from "react"
 import { Button } from "talisman-ui"
 

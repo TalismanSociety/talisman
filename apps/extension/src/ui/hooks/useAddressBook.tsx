@@ -2,7 +2,7 @@ import { AddressBookContact, addressBookStore } from "@core/domains/app/store.ad
 import { useCallback } from "react"
 import { atom, useRecoilValue } from "recoil"
 
-const addressBookState = atom<AddressBookContact[]>({
+export const addressBookState = atom<AddressBookContact[]>({
   key: "addressBookState",
   default: [],
   effects: [

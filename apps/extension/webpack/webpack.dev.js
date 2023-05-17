@@ -13,7 +13,7 @@ const manifestPath = path.join(__dirname, "..", "public", "manifest.json")
 
 const config = (env) =>
   merge(common(env), {
-    devtool: "eval-cheap-module-source-map",
+    devtool: "inline-cheap-module-source-map",
     mode: "development",
     watchOptions: {
       ignored: [distDir, path.join(__dirname, "..", "node_modules")],

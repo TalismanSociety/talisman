@@ -182,7 +182,7 @@
     "build:extension:ci": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=ci",
     "build:extension:canary": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=canary",
     "build:extension:prod": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=production",
-    "test": "PORT_PREFIX=talisman EXTENSION_PREFIX=\"\" jest --maxWorkers=50%",
+    "test": "PORT_PREFIX=talisman EXTENSION_PREFIX=\"\" jest --maxWorkers=50% --collectCoverage",
     "test:watch": "PORT_PREFIX=talisman EXTENSION_PREFIX=\"\" jest --watch",
     "lint": "eslint . --max-warnings 0 --ext ts,tsx",
     "lint:fix": "eslint . --ext ts,tsx --fix",

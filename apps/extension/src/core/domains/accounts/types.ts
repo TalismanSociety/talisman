@@ -44,9 +44,11 @@ export type AccountJsonAny = (
   | AccountJsonHardwareSubstrate
   | AccountJsonQr
   | AccountJson
-) & { origin?: keyof typeof AccountTypes | undefined }
+) & { origin?: AccountType | undefined }
 
 export type IdenticonType = "talisman-orb" | "polkadot-identicon"
+
+type AccountType = keyof typeof AccountTypes
 
 export const AccountTypes = {
   ROOT: "ROOT",
@@ -55,11 +57,11 @@ export const AccountTypes = {
   JSON: "JSON",
   QR: "QR",
   HARDWARE: "HARDWARE",
-}
+} as const
 
 export interface AccountMeta extends AccountJson {
   name: string
-  origin: keyof typeof AccountTypes
+  origin: AccountType
 }
 
 export interface Account {
