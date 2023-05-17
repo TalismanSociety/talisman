@@ -1,3 +1,5 @@
+# TODO: See if we can automate wallet version bumps
+
 name: Talisman CI
 
 on:
@@ -6,9 +8,16 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+concurrency:
+  # only run 1 job per branch/pr/etc at a time
+  # (afaik this prevents a race condition in changesets version bumps)
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # This job will build and test the talisman wallet
   build:
-    name: "Build and test"
+    name: "Build and test the wallet"
     timeout-minutes: 15
     runs-on: ubuntu-latest
     # To use Remote Caching, uncomment the next lines and follow the steps below.
@@ -34,7 +43,7 @@ jobs:
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Build
-        run: COMMIT_SHA_SHORT=${{ steps.vars.outputs.sha_short }} PORT_PREFIX=talisman EXTENSION_PREFIX=talisman yarn run build:extension:ci
+        run: COMMIT_SHA_SHORT='${{ steps.vars.outputs.sha_short }}' PORT_PREFIX=talisman EXTENSION_PREFIX=talisman yarn run build:extension:ci
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -42,11 +51,12 @@ jobs:
           path: ./apps/extension/dist/talisman_extension_ci_${{ steps.vars.outputs.sha_short}}.zip
           retention-days: 5
 
+  # This job will build and publish a snapshot version of the packages which have changesets in this PR
   publish_snapshot:
-    name: "Publish snapshot packages for the current PR"
+    name: "Publish a snapshot version of any packages with changesets in this PR to npm"
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' }}
+    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout repo
@@ -70,3 +80,207 @@ jobs:
         run: yarn workspaces foreach --verbose --no-private npm publish --tolerate-republish --tag pr${{ github.event.pull_request.number }}
         env:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # This job will check for changed packages in this PR, and will comment on the PR if any changed packages do not yet have changesets
+  ensure_pr_has_changeset:
+    name: "Check that changed packages have changesets in the current PR"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'dev'
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          # fetch all branches on the repo
+          # (we need this in order to compare the changes between this PR and the default branch)
+          fetch-depth: 0
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+      - name: Install dependencies
+        run: yarn --immutable
+      - name: Compile list of changed files
+        id: changed-files
+        # this will find the files which have been changed in this PR
+        run: |
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          HEAD_REF="remotes/origin/${{ github.event.pull_request.head.ref }}"
+          BASE_REF="remotes/origin/${{ github.event.pull_request.base.ref }}"
+          echo "CHANGED_FILES<<$EOF" >> "$GITHUB_OUTPUT"
+          git diff --name-only $HEAD_REF $(git merge-base $HEAD_REF $BASE_REF) >> $GITHUB_OUTPUT
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+      - name: Compile list of changed packages
+        id: changed-packages
+        # this will turn the list of files changed by this PR into a list of packages changed by this PR
+        run: |
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          FILES_IN_PACKAGES="echo '${{ steps.changed-files.outputs.CHANGED_FILES }}' | grep ^packages"
+          if [[ $FILES_IN_PACKAGES == '' ]]; then
+            UNIQ_PACKAGE_DIRS="echo $FILES_IN_PACKAGES | cut -d/ -f1-2 | sort | uniq"
+            UNIQ_PACKAGE_JSONS="find $UNIQ_PACKAGE_DIRS -name node_modules -prune -o -name package.json -print"
+            UNIQ_PACKAGE_NAMES="echo $UNIQ_PACKAGE_JSONS | xargs jq .name | sort | uniq | grep -v null"
+          else
+            UNIQ_PACKAGE_NAMES=""
+          fi
+          echo "CHANGED_PACKAGES<<$EOF" >> "$GITHUB_OUTPUT"
+          echo $UNIQ_PACKAGE_NAMES >> $GITHUB_OUTPUT
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+      - name: Compile list of packages with changesets
+        id: changesets
+        # this will find the packages which have changesets in this PR
+        # need to use temporary file `changeset-status.json` until one of these are fixed:
+        # https://github.com/changesets/changesets/issues/1020
+        # https://github.com/changesets/changesets/issues/1021
+        run: |
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          BASE_REF="remotes/origin/${{ github.event.pull_request.base.ref }}"
+          echo "CHANGESETS<<$EOF" >> "$GITHUB_OUTPUT"
+          yarn changeset status --since $BASE_REF --output changeset-status.json && cat changeset-status.json | jq '.releases[] | select(.changesets | length > 0) | .name' | sort | uniq >> $GITHUB_OUTPUT
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+      - name: Check if any changed packages don't have changesets
+        id: without-changesets
+        run: |
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "WITHOUT_CHANGESETS<<$EOF" >> "$GITHUB_OUTPUT"
+          comm -23 <(echo '${{ steps.changed-packages.outputs.CHANGED_PACKAGES }}') <(echo '${{ steps.changesets.outputs.CHANGESETS }}') >> $GITHUB_OUTPUT
+          echo "$EOF" >> "$GITHUB_OUTPUT"
+      - name: Set IS_MISSING_CHANGESETS var
+        id: is-missing-changesets
+        run: echo "IS_MISSING_CHANGESETS=$([ $(echo -n '${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}' | wc -l) -eq 0 ] && echo no || echo yes)" >> $GITHUB_OUTPUT
+      - name: Debug action variables
+        run: |
+          echo '**Debug output for `ensure_pr_has_changeset` action**' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "--CHANGED_FILES--" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.changed-files.outputs.CHANGED_FILES }}' >> $GITHUB_STEP_SUMMARY
+          echo "--CHANGED_PACKAGES--" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.changed-packages.outputs.CHANGED_PACKAGES }}' >> $GITHUB_STEP_SUMMARY
+          echo "--CHANGESETS--" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.changesets.outputs.CHANGESETS }}' >> $GITHUB_STEP_SUMMARY
+          echo "--WITHOUT_CHANGESETS--" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}' >> $GITHUB_STEP_SUMMARY
+          echo "--IS_MISSING_CHANGESETS--" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS }}' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: Comment on the PR to indicate which packages they should add a changeset to
+        uses: thollander/actions-comment-pull-request@v2
+        if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'yes'
+        with:
+          comment_tag: "missing-changesets"
+          message: |
+            ### :boom: No changeset(s) detected
+
+            This PR is missing changesets for the following packages:
+
+            ```
+            ${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}
+            ```
+
+            Please add a changeset for these packages.  
+            You can do so by running `yarn changeset` in your local development environment.
+
+            Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
+      - name: Update PR comment to indicate that all packages have changesets
+        uses: thollander/actions-comment-pull-request@v2
+        if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'no' && steps.changed-packages.outputs.CHANGED_PACKAGES != ''
+        with:
+          comment_tag: "missing-changesets"
+          create_if_not_exists: false
+          message: |
+            ### :butterfly: Changeset(s) detected
+
+            This PR includes changeset(s) for the following changed packages:
+
+            ```
+            ${{ steps.changesets.outputs.CHANGESETS }}
+            ```
+
+            Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
+      - name: Update PR comment to indicate that no changesets are needed
+        uses: thollander/actions-comment-pull-request@v2
+        if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'no' && steps.changed-packages.outputs.CHANGED_PACKAGES == ''
+        with:
+          comment_tag: "missing-changesets"
+          create_if_not_exists: false
+          message: |
+            ### :sparkles: No changeset(s) required
+
+            This PR does not include any package changes, and so it does not require any changesets to be added.
+
+            Not sure what this means? [Click here to learn what changesets are](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md).
+      - name: Fail job if some packages don't have a changeset
+        if: steps.is-missing-changesets.outputs.IS_MISSING_CHANGESETS == 'yes'
+        run: exit 1
+
+  # When a PR is merged into dev, this job will create a PR to version bump the packages which have changesets
+  # When the PR is merged, this job will publish the new package versions to npm
+  release_changesets:
+    name: "Create a PR to bump package versions on dev, and publish the new versions to npm when the PR is merged"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.event.ref == 'dev'
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+      - name: Install dependencies
+        run: yarn --immutable
+      - name: Create pull request
+        id: changesets
+        uses: changesets/action@v1
+        env:
+          # GITHUB_TOKEN is automatically added into the ENV by GitHub CI
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Import workspace-tools yarn plugin
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: yarn plugin import workspace-tools
+      - name: Build packages
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: yarn build:packages
+      - name: Publish packages
+        if: steps.changesets.outputs.hasChangesets == 'false'
+        run: yarn workspaces foreach --verbose --no-private npm publish --tolerate-republish
+        env:
+          YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # For each commit on dev, this job will create a production build of the wallet
+  build_production_wallet:
+    name: "Create a production build of the wallet"
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.event.ref == 'dev'
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 2 # also get the previous commit
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+      - name: Install dependencies
+        run: yarn --immutable
+      - name: Extract package version
+        id: vars
+        run: |
+          npm_package_version=$(cat apps/extension/package.json | jq -r .version)
+          echo "npm_package_version=$npm_package_version" >> $GITHUB_OUTPUT
+      - name: Build
+        run: PORT_PREFIX=talisman EXTENSION_PREFIX=talisman yarn run build:extension:production
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: production-build
+          path: ./apps/extension/dist/talisman_extension_v${{ steps.vars.outputs.npm_package_version }}.zip
+          retention-days: 5
