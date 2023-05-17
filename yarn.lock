@@ -5559,81 +5559,83 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/wasm-bridge@npm:7.0.3":
-  version: 7.0.3
-  resolution: "@polkadot/wasm-bridge@npm:7.0.3"
+"@polkadot/wasm-bridge@npm:7.2.1":
+  version: 7.2.1
+  resolution: "@polkadot/wasm-bridge@npm:7.2.1"
   dependencies:
+    "@polkadot/wasm-util": 7.2.1
     tslib: ^2.5.0
   peerDependencies:
     "@polkadot/util": "*"
     "@polkadot/x-randomvalues": "*"
-  checksum: 9603e0bfca80e0fbe1192783653c095990d34e4eb0b187f8fedd97abaeee4a3147e4f5e66e910b63f024030b0e7e21aedf118c0c58407a4464837ca7f2355809
+  checksum: 6f4d255665f6c1552df9abcf8e99ee36b220c446c74e4da7ac21f3c578c3736695db41e816ef83226d98231c535df8daea6d2266c3090bdd8e7609fa87447de9
   languageName: node
   linkType: hard
 
-"@polkadot/wasm-crypto-asmjs@npm:7.0.3":
-  version: 7.0.3
-  resolution: "@polkadot/wasm-crypto-asmjs@npm:7.0.3"
+"@polkadot/wasm-crypto-asmjs@npm:7.2.1":
+  version: 7.2.1
+  resolution: "@polkadot/wasm-crypto-asmjs@npm:7.2.1"
   dependencies:
     tslib: ^2.5.0
   peerDependencies:
     "@polkadot/util": "*"
-  checksum: 6f819ba35612c475b3b14f286efa432086bdb9599ddb034c1abf448f0ad6e376ae81bac0ad4984564f6d5f82691ed5c4b74735ebc75dfdecf8f96f2e4bfcd5a3
+  checksum: 9d7f2ac6f73cc2ed390941a35426763c73e6f20374eb11ed60b880a6f716c2773cb1fe1cddb9416ab669c75b25b7d99be25c8c91886bb676d6faf9b4658f8fd7
   languageName: node
   linkType: hard
 
-"@polkadot/wasm-crypto-init@npm:7.0.3":
-  version: 7.0.3
-  resolution: "@polkadot/wasm-crypto-init@npm:7.0.3"
+"@polkadot/wasm-crypto-init@npm:7.2.1":
+  version: 7.2.1
+  resolution: "@polkadot/wasm-crypto-init@npm:7.2.1"
   dependencies:
-    "@polkadot/wasm-bridge": 7.0.3
-    "@polkadot/wasm-crypto-asmjs": 7.0.3
-    "@polkadot/wasm-crypto-wasm": 7.0.3
-    tslib: ^2.5.0
-  peerDependencies:
-    "@polkadot/util": "*"
-    "@polkadot/x-randomvalues": "*"
-  checksum: ee5957c0b2297e58d913e59a5eecde10c8272a2bfc6e072e669ee8ada0105444f8d9cae535948849406fd696941620094daea12cc2950e18a0439d7fba2e19d8
-  languageName: node
-  linkType: hard
-
-"@polkadot/wasm-crypto-wasm@npm:7.0.3":
-  version: 7.0.3
-  resolution: "@polkadot/wasm-crypto-wasm@npm:7.0.3"
-  dependencies:
-    "@polkadot/wasm-util": 7.0.3
-    tslib: ^2.5.0
-  peerDependencies:
-    "@polkadot/util": "*"
-  checksum: ef9e6e88e066762e3803b8b0f4276035b835b2eaab86c53f004f977073442b6e51d7baf4c7bc308913c091975056c1b64ef1c00085e31f9988e12155b24111fb
-  languageName: node
-  linkType: hard
-
-"@polkadot/wasm-crypto@npm:7.0.3":
-  version: 7.0.3
-  resolution: "@polkadot/wasm-crypto@npm:7.0.3"
-  dependencies:
-    "@polkadot/wasm-bridge": 7.0.3
-    "@polkadot/wasm-crypto-asmjs": 7.0.3
-    "@polkadot/wasm-crypto-init": 7.0.3
-    "@polkadot/wasm-crypto-wasm": 7.0.3
-    "@polkadot/wasm-util": 7.0.3
+    "@polkadot/wasm-bridge": 7.2.1
+    "@polkadot/wasm-crypto-asmjs": 7.2.1
+    "@polkadot/wasm-crypto-wasm": 7.2.1
+    "@polkadot/wasm-util": 7.2.1
     tslib: ^2.5.0
   peerDependencies:
     "@polkadot/util": "*"
     "@polkadot/x-randomvalues": "*"
-  checksum: e63fefca98685ea5ef488304e5aa7c30b1c483d7f633cda1efebfc95f8255faaf62fbaba439d81e57fadc11e53d3033a5b71272742cbdc0207f4ba617dba8123
+  checksum: 97105a9e846e97d9d678526e5dd1b491cd71e705c759a8ace9e0e9a54aa045b2b512bdcdd524ea6684963b6cb0fc0a44043d2198bc680c893e1feaaf4d860e76
   languageName: node
   linkType: hard
 
-"@polkadot/wasm-util@npm:7.0.3":
-  version: 7.0.3
-  resolution: "@polkadot/wasm-util@npm:7.0.3"
+"@polkadot/wasm-crypto-wasm@npm:7.2.1":
+  version: 7.2.1
+  resolution: "@polkadot/wasm-crypto-wasm@npm:7.2.1"
+  dependencies:
+    "@polkadot/wasm-util": 7.2.1
+    tslib: ^2.5.0
+  peerDependencies:
+    "@polkadot/util": "*"
+  checksum: f000fab2fc682a4d4d2029b483701a64091b9be0d75df82f3337a48d65ffdac8d76c828f46810cb5aae6b9ec77bdf3963ae8b8668106ea9e5c0c19f57637655d
+  languageName: node
+  linkType: hard
+
+"@polkadot/wasm-crypto@npm:7.2.1":
+  version: 7.2.1
+  resolution: "@polkadot/wasm-crypto@npm:7.2.1"
+  dependencies:
+    "@polkadot/wasm-bridge": 7.2.1
+    "@polkadot/wasm-crypto-asmjs": 7.2.1
+    "@polkadot/wasm-crypto-init": 7.2.1
+    "@polkadot/wasm-crypto-wasm": 7.2.1
+    "@polkadot/wasm-util": 7.2.1
+    tslib: ^2.5.0
+  peerDependencies:
+    "@polkadot/util": "*"
+    "@polkadot/x-randomvalues": "*"
+  checksum: f42f2bc34cf76d1438893f72a233080196c9a95dd3c53444f582150c7f56b75c80b8b8b9b4a3d9015438a6f7438c6e40def46b1fe7ce3a367bcd280f2bf29c98
+  languageName: node
+  linkType: hard
+
+"@polkadot/wasm-util@npm:7.2.1":
+  version: 7.2.1
+  resolution: "@polkadot/wasm-util@npm:7.2.1"
   dependencies:
     tslib: ^2.5.0
   peerDependencies:
     "@polkadot/util": "*"
-  checksum: b20414290bbc9f67523c5180345f20ea8ef6244c90768936e0a25cce642448b086374869b99e6f2f7c071c0dea318ac9fb9761b8efefdeb24b75828c5d8bec3d
+  checksum: 8df30296664807c27b01d37a3e9f124fdc22aef61e633b1a538a7c533f485a2aa756c43e67aac8d0c8383273432783b78e5528c5bc1ffcf508e7faaa5009e618
   languageName: node
   linkType: hard
 
