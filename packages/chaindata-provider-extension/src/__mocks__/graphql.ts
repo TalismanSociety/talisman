@@ -1,11 +1,11 @@
-import { mockChainsResponse, mockEvmNetworksResponse, mockTokensResponse } from "./_mockData"
+import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "../init"
 
-export const fetchChains = async () => mockChainsResponse
+export const fetchChains = async () => await fetchInitChains()
 
-export const fetchEvmNetworks = async () => mockEvmNetworksResponse
+export const fetchEvmNetworks = async () => await fetchInitEvmNetworks()
 export const fetchEvmNetwork = async (evmNetworkId: string) =>
-  mockEvmNetworksResponse.find(({ id }) => id === evmNetworkId)
+  (await fetchEvmNetworks()).find(({ id }) => id === evmNetworkId)
 
-export const fetchTokens = async () => mockTokensResponse
+export const fetchTokens = async () => await fetchInitTokens()
 export const fetchToken = async (tokenId: string) =>
-  mockTokensResponse.find(({ id }) => id === tokenId)?.data
+  (await fetchTokens()).find(({ id }) => id === tokenId)?.data

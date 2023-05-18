@@ -16,6 +16,7 @@ import { PromiseExtended, Transaction, TransactionMode } from "dexie"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
 import { fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchToken, fetchTokens } from "./graphql"
+import { fetchInitChains, fetchInitEvmNetworks, fetchInitTokens } from "./init"
 import log from "./log"
 import { isITokenPartial, isToken, parseTokensResponse } from "./parseTokensResponse"
 import { TalismanChaindataDatabase } from "./TalismanChaindataDatabase"
@@ -294,9 +295,21 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     const now = Date.now()
     if (now - this.#lastHydratedChainsAt < minimumHydrationInterval) return false
 
+    const dbHasChains = (await this.#db.chains.count()) > 0
+
     try {
-      const chains = addCustomChainRpcs(await fetchChains(), this.#onfinalityApiKey)
-      if (chains.length <= 0) throw new Error("Ignoring empty chaindata chains response")
+      try {
+        var chains = addCustomChainRpcs(await fetchChains(), this.#onfinalityApiKey) // eslint-disable-line no-var
+        if (chains.length <= 0) throw new Error("Ignoring empty chaindata chains response")
+      } catch (error) {
+        if (dbHasChains) throw error
+
+        // On first start-up (db is empty), if we fail to fetch chains then we should
+        // initialize the DB with the list of chains inside our init/chains.json file.
+        // This data will represent a relatively recent copy of what's in the squid,
+        // which will be better for our users than to have nothing at all.
+        var chains = addCustomChainRpcs(await fetchInitChains(), this.#onfinalityApiKey) // eslint-disable-line no-var
+      }
 
       await this.#db.transaction("rw", this.#db.chains, () => {
         this.#db.chains.filter((chain) => !("isCustom" in chain)).delete()
@@ -322,9 +335,22 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     const now = Date.now()
     if (now - this.#lastHydratedEvmNetworksAt < minimumHydrationInterval) return false
 
+    const dbHasEvmNetworks = (await this.#db.evmNetworks.count()) > 0
+
     try {
-      const evmNetworks: EvmNetwork[] = await fetchEvmNetworks()
-      if (evmNetworks.length <= 0) throw new Error("Ignoring empty chaindata evmNetworks response")
+      try {
+        var evmNetworks: EvmNetwork[] = await fetchEvmNetworks() // eslint-disable-line no-var
+        if (evmNetworks.length <= 0)
+          throw new Error("Ignoring empty chaindata evmNetworks response")
+      } catch (error) {
+        if (dbHasEvmNetworks) throw error
+
+        // On first start-up (db is empty), if we fail to fetch evmNetworks then we should
+        // initialize the DB with the list of evmNetworks inside our init/evm-networks.json file.
+        // This data will represent a relatively recent copy of what's in the squid,
+        // which will be better for our users than to have nothing at all.
+        var evmNetworks: EvmNetwork[] = await fetchInitEvmNetworks() // eslint-disable-line no-var
+      }
 
       await this.#db.transaction("rw", this.#db.evmNetworks, async () => {
         await this.#db.evmNetworks.filter((network) => !("isCustom" in network)).delete()
@@ -355,9 +381,21 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     const now = Date.now()
     if (now - this.#lastHydratedTokensAt < minimumHydrationInterval) return false
 
+    const dbHasTokens = (await this.#db.tokens.count()) > 0
+
     try {
-      const tokens = parseTokensResponse(await fetchTokens())
-      if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
+      try {
+        var tokens = parseTokensResponse(await fetchTokens()) // eslint-disable-line no-var
+        if (tokens.length <= 0) throw new Error("Ignoring empty chaindata tokens response")
+      } catch (error) {
+        if (dbHasTokens) throw error
+
+        // On first start-up (db is empty), if we fail to fetch tokens then we should
+        // initialize the DB with the list of tokens inside our init/tokens.json file.
+        // This data will represent a relatively recent copy of what's in the squid,
+        // which will be better for our users than to have nothing at all.
+        var tokens = parseTokensResponse(await fetchInitTokens()) // eslint-disable-line no-var
+      }
 
       await this.#db.transaction("rw", this.#db.tokens, async () => {
         await this.#db.tokens.filter((token) => !("isCustom" in token)).delete()
