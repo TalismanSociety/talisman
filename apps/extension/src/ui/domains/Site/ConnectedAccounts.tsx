@@ -1,8 +1,9 @@
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import Field from "@talisman/components/Field"
 import Spacer from "@talisman/components/Spacer"
+import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames } from "@talismn/util"
-import Account from "@ui/domains/Account"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import useAuthorisedSiteProviders from "@ui/hooks/useAuthorisedSiteProviders"
@@ -18,26 +19,39 @@ import {
 } from "react"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
+import AccountAvatar from "../Account/Avatar"
+import { AccountTypeIcon } from "../Account/NamedAddress"
 import { NetworkSelect } from "../Ethereum/NetworkSelect"
 import { ProviderTypeSwitch } from "./ProviderTypeSwitch"
 
 const AccountItem: FC<{
-  address: string
+  account: AccountJsonAny
   value: boolean
   onChange: () => void
   className?: string
-}> = ({ address, value = false, onChange }) => (
-  <button
-    type="button"
-    className={classNames(
-      "bg-black-secondary hover:bg-grey-800 flex h-28 w-full items-center justify-between rounded-sm px-8"
-    )}
-    onClick={onChange}
-  >
-    <Account.Name address={address} withAvatar />
-    <Field.Checkbox value={value} small />
-  </button>
-)
+}> = ({ account, value = false, className, onChange }) => {
+  return (
+    <button
+      type="button"
+      className={classNames(
+        "bg-black-secondary hover:bg-grey-800 flex h-28 w-full items-center gap-5 rounded-sm px-8",
+        className
+      )}
+      onClick={onChange}
+    >
+      <AccountAvatar address={account.address} genesisHash={account.genesisHash} />
+      <div className="text-body-secondary text-md flex grow items-center gap-4 overflow-x-hidden text-left">
+        <div className="overflow-x-hidden text-ellipsis whitespace-nowrap text-left">
+          {account.name ?? shortenAddress(account.address)}
+        </div>
+        <div className="shrink-0 pb-1">
+          <AccountTypeIcon origin={account.origin} className="text-primary-500" />
+        </div>
+      </div>
+      <Field.Checkbox value={value} small />
+    </button>
+  )
+}
 
 const SectionTitle: FC<PropsWithChildren> = ({ children }) => {
   return <h3 className="mb-4 text-base">{children}</h3>
@@ -124,11 +138,11 @@ export const ConnectedAccounts: FC<ConnectedAccountsProps> = ({ siteId }) => {
       </div>
 
       <section className="flex flex-col gap-4 pb-12">
-        {accounts?.map(({ address, isConnected, toggle }) => (
+        {accounts?.map(({ isConnected, toggle, ...account }) => (
           <AccountItem
-            key={address}
+            key={account.address}
             className={"account"}
-            address={address}
+            account={account}
             value={isConnected}
             onChange={toggle}
           />

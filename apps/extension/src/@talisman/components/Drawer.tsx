@@ -111,6 +111,7 @@ const DrawerContent: FC<PropsWithChildren> = ({ children }) => {
   )
 }
 
+/** @deprecated use the one from talisman-ui */
 export const Drawer: FC<DrawerProps> = ({
   children,
   anchor,
