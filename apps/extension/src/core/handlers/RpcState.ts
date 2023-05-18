@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Adapted from https://github.com/polkadot-js/extension/packages/extension-base/src/background/handlers/State.ts
 
+import { UnknownJsonRpcResponse } from "@core/domains/rpc/types"
 import { Port } from "@core/types/base"
 import type {
   RequestRpcSend,
@@ -10,11 +11,7 @@ import type {
   ResponseRpcListProviders,
 } from "@polkadot/extension-base/background/types"
 import type { ProviderMeta } from "@polkadot/extension-inject/types"
-import type {
-  JsonRpcResponse,
-  ProviderInterface,
-  ProviderInterfaceCallback,
-} from "@polkadot/rpc-provider/types"
+import type { ProviderInterface, ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { assert } from "@polkadot/util"
 import * as Sentry from "@sentry/browser"
 
@@ -51,7 +48,7 @@ export default class RpcState {
     )
   }
 
-  public rpcSend(request: RequestRpcSend, port: Port): Promise<JsonRpcResponse> {
+  public rpcSend(request: RequestRpcSend, port: Port): Promise<UnknownJsonRpcResponse> {
     const provider = this.#injectedProviders.get(port)
 
     assert(provider, "Cannot call pub(rpc.subscribe) before provider is set")

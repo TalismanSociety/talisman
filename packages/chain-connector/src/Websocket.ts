@@ -17,6 +17,10 @@ import log from "./log"
 
 type ProviderInterfaceEmitted = PjsProviderInterfaceEmitted | "stale-rpcs"
 
+// to account for new requirement for generic arg in this type https://github.com/polkadot-js/api/commit/f4c2b150d3d69d43c56699613666b96dd0a763f4#diff-f87c17bc7fae027ec6d43bac5fc089614d9fa097f466aa2be333b44cee81f0fd
+// TODO incrementally replace 'unknown' with proper types where possible
+type UnknownJsonRpcResponse<T = unknown> = JsonRpcResponse<T>
+
 interface SubscriptionHandler {
   callback: ProviderInterfaceCallback
   type: string
@@ -79,7 +83,7 @@ export class Websocket implements ProviderInterface {
   readonly #eventemitter: EventEmitter
   readonly #handlers: Record<string, WsStateAwaiting> = {}
   readonly #isReadyPromise: Promise<Websocket>
-  readonly #waitingForId: Record<string, JsonRpcResponse> = {}
+  readonly #waitingForId: Record<string, UnknownJsonRpcResponse> = {}
 
   #autoConnectBackoff: ExponentialBackoff
   #endpointIndex: number
@@ -457,14 +461,14 @@ export class Websocket implements ProviderInterface {
   #onSocketMessage = (message: MessageEvent<string>): void => {
     // log.debug(() => ["received", message.data])
 
-    const response = JSON.parse(message.data) as JsonRpcResponse
+    const response = JSON.parse(message.data) as UnknownJsonRpcResponse
 
     return isUndefined(response.method)
       ? this.#onSocketMessageResult(response)
       : this.#onSocketMessageSubscribe(response)
   }
 
-  #onSocketMessageResult = (response: JsonRpcResponse): void => {
+  #onSocketMessageResult = (response: UnknownJsonRpcResponse): void => {
     const handler = this.#handlers[response.id]
 
     if (!handler) {
@@ -501,7 +505,7 @@ export class Websocket implements ProviderInterface {
     delete this.#handlers[response.id]
   }
 
-  #onSocketMessageSubscribe = (response: JsonRpcResponse): void => {
+  #onSocketMessageSubscribe = (response: UnknownJsonRpcResponse): void => {
     const method = ALIASES[response.method as string] || response.method || "invalid"
     const subId = `${method}::${response.params.subscription}`
     const handler = this.#subscriptions[subId]
