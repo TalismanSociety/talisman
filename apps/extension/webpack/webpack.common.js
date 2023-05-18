@@ -14,12 +14,17 @@ const { srcDir, coreDir, distDir, getRelease, getGitShortHash } = require("./uti
 
 const config = (env) => ({
   entry: {
-    substrate: ["@substrate/txwrapper-core"],
+    backend: ["@substrate/txwrapper-core", "@talismn/chaindata-provider-extension"],
     frontEnd: ["lottie-react", "@substrate/txwrapper-core"],
-    popup: { import: path.join(srcDir, "index.popup.tsx"), dependOn: "frontEnd" },
+    appFrontEnd: [
+      "lottie-react",
+      "@substrate/txwrapper-core",
+      "@talismn/chaindata-provider-extension",
+    ],
+    popup: { import: path.join(srcDir, "index.popup.tsx"), dependOn: "appFrontEnd" },
     onboarding: { import: path.join(srcDir, "index.onboarding.tsx"), dependOn: "frontEnd" },
-    dashboard: { import: path.join(srcDir, "index.dashboard.tsx"), dependOn: "frontEnd" },
-    background: { import: path.join(coreDir, "background.ts"), dependOn: "substrate" },
+    dashboard: { import: path.join(srcDir, "index.dashboard.tsx"), dependOn: "appFrontEnd" },
+    background: { import: path.join(coreDir, "background.ts"), dependOn: "backend" },
     content_script: path.join(coreDir, "content_script.ts"),
     page: path.join(coreDir, "page.ts"),
   },
