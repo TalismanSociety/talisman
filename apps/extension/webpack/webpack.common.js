@@ -106,6 +106,12 @@ const config = (env) => ({
       ),
       "process.env.SENTRY_AUTH_TOKEN": JSON.stringify(process.env.SENTRY_AUTH_TOKEN || ""),
       "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN || ""),
+      "process.env.TXWRAPPER_METADATA_CACHE_MAX": JSON.stringify(
+        process.env.TXWRAPPER_METADATA_CACHE_MAX || 10
+      ),
+      "process.env.TXWRAPPER_METADATA_CACHE_MAX_AGE": JSON.stringify(
+        process.env.TXWRAPPER_METADATA_CACHE_MAX_AGE || 1000
+      ),
 
       // dev stuff, only pass through when env.build is undefined (running a development build)
       "process.env.PASSWORD": JSON.stringify(
