@@ -125,7 +125,7 @@
     "scale-codec": "^0.11.0",
     "semver": "^7.3.8",
     "style-loader": "3.3.1",
-    "styled-components": "5.3.9",
+    "styled-components": "5.3.10",
     "talisman-ui": "workspace:*",
     "terser-webpack-plugin": "5.3.3",
     "ts-loader": "9.4.1",
