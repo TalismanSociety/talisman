@@ -362,7 +362,7 @@ export class EthTabsHandler extends TabsHandler {
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(ethChainId.toString())
     if (!ethereumNetwork)
       throw new EthProviderRpcError(
-        `Unknown network ${ethChainId}. Try adding the chain using wallet_addEthereumChain first.`,
+        `Unknown network ${ethChainId}, try adding the chain using wallet_addEthereumChain first`,
         ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED
       )
 
