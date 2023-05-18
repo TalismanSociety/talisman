@@ -110,7 +110,6 @@
     "raptorq": "1.7.22",
     "react": "18.2.0",
     "react-app-polyfill": "3.0.0",
-    "react-contenteditable": "3.3.7",
     "react-countup": "^6.4.2",
     "react-dom": "18.2.0",
     "react-dropzone": "^12.1.0",

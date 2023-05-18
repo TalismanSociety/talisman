@@ -13974,7 +13974,6 @@ __metadata:
     raptorq: 1.7.22
     react: 18.2.0
     react-app-polyfill: 3.0.0
-    react-contenteditable: 3.3.7
     react-countup: ^6.4.2
     react-dom: 18.2.0
     react-dropzone: ^12.1.0
@@ -20483,7 +20482,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:^15.7.1, prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
+"prop-types@npm:^15.7.2, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -20772,18 +20771,6 @@ __metadata:
     regenerator-runtime: ^0.13.9
     whatwg-fetch: ^3.6.2
   checksum: 1bb031080af15397d6eb9c69a0c2e93799991f7197a086e4409ba719398f1256b542a3d6c9a34673d516c684eef3e8226c99b335982593851f58f65f6e43571b
-  languageName: node
-  linkType: hard
-
-"react-contenteditable@npm:3.3.7":
-  version: 3.3.7
-  resolution: "react-contenteditable@npm:3.3.7"
-  dependencies:
-    fast-deep-equal: ^3.1.3
-    prop-types: ^15.7.1
-  peerDependencies:
-    react: ">=16.3"
-  checksum: 5157ccd3221063fcb12c556b71bb7135727f6e8f515abe3ad9741a361628ccce92aa654fc92a44494fb2c56d3c349cc683605d69439af3f8748f57ad854f42cf
   languageName: node
   linkType: hard
 
