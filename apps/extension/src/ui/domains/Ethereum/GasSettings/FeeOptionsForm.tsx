@@ -1,3 +1,4 @@
+import { getTotalFeesFromGasSettings } from "@core/domains/ethereum/helpers"
 import {
   EthPriorityOptionName,
   EthPriorityOptionNameEip1559,
@@ -5,19 +6,83 @@ import {
   EthTransactionDetails,
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
-import { WithTooltip } from "@talisman/components/Tooltip"
-import { ChevronRightIcon, InfoIcon } from "@talisman/theme/icons"
+import { ChevronRightIcon } from "@talisman/theme/icons"
+import { BalanceFormatter } from "@talismn/balances"
 import { classNames } from "@talismn/util"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
-import { ethers } from "ethers"
+import useToken from "@ui/hooks/useToken"
+import { BigNumber } from "ethers"
 import { FC, useCallback, useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { NetworkUsage } from "../NetworkUsage"
 import { FEE_PRIORITY_OPTIONS } from "./common"
 
+const getGasSettings = (
+  gasSettingsByPriority: GasSettingsByPriority,
+  priority: EthPriorityOptionName
+) => {
+  switch (gasSettingsByPriority.type) {
+    case "eip1559":
+      return gasSettingsByPriority[priority as EthPriorityOptionNameEip1559]
+    case "legacy":
+      return gasSettingsByPriority[priority as EthPriorityOptionNameLegacy]
+    default:
+      throw new Error("Unknown gas settings type")
+  }
+}
+
+const Eip1559FeeTooltip: FC<{
+  estimatedFee: BigNumber
+  maxFee: BigNumber
+  tokenId: string
+}> = ({ estimatedFee, maxFee, tokenId }) => {
+  const token = useToken(tokenId)
+
+  // get estimated and max as string, with as many decimals on both for easy reading
+  const { estimated, max } = useMemo(() => {
+    if (!token) return { estimated: undefined, max: undefined }
+
+    const balEstimatedFee = new BalanceFormatter(estimatedFee.toString(), token.decimals)
+    const balMaxFee = new BalanceFormatter(maxFee.toString(), token.decimals)
+
+    const [intEstimated, decEstimated] = balEstimatedFee.tokens.split(".")
+    const [intMax, decMax] = balMaxFee.tokens.split(".")
+    const maxDecimals = Math.max(decEstimated?.length ?? 0, decMax?.length ?? 0)
+
+    return maxDecimals === 0
+      ? {
+          estimated: `${intEstimated} ${token.symbol}`,
+          max: `${intMax} ${token.symbol}`,
+        }
+      : {
+          estimated: `${intEstimated}.${decEstimated.padEnd(maxDecimals, "0")} ${token.symbol}`,
+          max: `${intMax}.${decMax.padEnd(maxDecimals, "0")} ${token.symbol}`,
+        }
+  }, [estimatedFee, maxFee, token])
+
+  if (!estimated || !max) return null
+
+  return (
+    <>
+      <div className="flex flex-col gap-2 pt-1">
+        <div className="flex w-full items-center justify-between gap-4">
+          <div>Estimated Fee :</div>
+          <div className="font-mono">{estimated}</div>
+        </div>
+        <div className="flex w-full items-center justify-between gap-4">
+          <div>Maximum Fee :</div>
+          <div className="font-mono">{max}</div>
+        </div>
+      </div>
+    </>
+  )
+}
+
 type PriorityOptionProps = {
   priority: EthPriorityOptionName
   gasSettingsByPriority: GasSettingsByPriority
+  txDetails: EthTransactionDetails
   selected?: boolean
   tokenId: string
   onClick?: () => void
@@ -26,24 +91,15 @@ type PriorityOptionProps = {
 const PriorityOption = ({
   priority,
   gasSettingsByPriority,
+  txDetails,
   selected,
   tokenId,
   onClick,
 }: PriorityOptionProps) => {
-  const maxFeePlanck = useMemo(() => {
-    switch (gasSettingsByPriority.type) {
-      case "eip1559": {
-        const gasSettings = gasSettingsByPriority[priority as EthPriorityOptionNameEip1559]
-        return ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.maxFeePerGas)
-      }
-      case "legacy": {
-        const gasSettings = gasSettingsByPriority[priority as EthPriorityOptionNameLegacy]
-        return ethers.BigNumber.from(gasSettings.gasLimit).mul(gasSettings.gasPrice)
-      }
-      default:
-        throw new Error("Unknown gas settings type")
-    }
-  }, [gasSettingsByPriority, priority])
+  const { estimatedFee, maxFee } = useMemo(() => {
+    const gasSettings = getGasSettings(gasSettingsByPriority, priority)
+    return getTotalFeesFromGasSettings(gasSettings, txDetails.estimatedGas, txDetails.baseFeePerGas)
+  }, [gasSettingsByPriority, priority, txDetails.baseFeePerGas, txDetails.estimatedGas])
 
   return (
     <button
@@ -59,9 +115,21 @@ const PriorityOption = ({
       </div>
       <div className="grow">{FEE_PRIORITY_OPTIONS[priority].label}</div>
       {selected || priority !== "custom" ? (
-        <div>
-          <TokensAndFiat tokenId={tokenId} planck={maxFeePlanck.toString()} />
-        </div>
+        <Tooltip placement="bottom-end">
+          <TooltipTrigger>
+            <TokensAndFiat
+              tokenId={tokenId}
+              planck={estimatedFee.toString()}
+              noTooltip={gasSettingsByPriority.type === "eip1559"}
+            />
+          </TooltipTrigger>
+          {/* If EIP1559, display both estimated and max fees in tooltip */}
+          {gasSettingsByPriority.type === "eip1559" && (
+            <TooltipContent>
+              <Eip1559FeeTooltip tokenId={tokenId} estimatedFee={estimatedFee} maxFee={maxFee} />
+            </TooltipContent>
+          )}
+        </Tooltip>
       ) : (
         <ChevronRightIcon className="text-lg transition-none" />
       )}
@@ -104,20 +172,13 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
       <div className="w-full">
         <div className="flex w-full justify-between">
           <div>Priority</div>
-          <div>
-            Max Transaction Fee{" "}
-            <WithTooltip
-              tooltip="This is the absolute maximum fee you could pay for this transaction. You usually
-                  pay well below this fee, depending on network usage and stability."
-            >
-              <InfoIcon className="inline-block align-text-top" />
-            </WithTooltip>
-          </div>
+          <div>Estimated Fee</div>
         </div>
         {gasSettingsByPriority.type === "eip1559" && (
           <>
             <PriorityOption
               gasSettingsByPriority={gasSettingsByPriority}
+              txDetails={txDetails}
               tokenId={tokenId}
               priority={"low"}
               onClick={handleSelect("low")}
@@ -125,6 +186,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
             />
             <PriorityOption
               gasSettingsByPriority={gasSettingsByPriority}
+              txDetails={txDetails}
               tokenId={tokenId}
               priority={"medium"}
               onClick={handleSelect("medium")}
@@ -132,6 +194,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
             />
             <PriorityOption
               gasSettingsByPriority={gasSettingsByPriority}
+              txDetails={txDetails}
               tokenId={tokenId}
               priority={"high"}
               onClick={handleSelect("high")}
@@ -142,6 +205,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
         {gasSettingsByPriority.type === "legacy" && (
           <PriorityOption
             gasSettingsByPriority={gasSettingsByPriority}
+            txDetails={txDetails}
             tokenId={tokenId}
             priority={"recommended"}
             onClick={handleSelect("recommended")}
@@ -150,6 +214,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
         )}
         <PriorityOption
           gasSettingsByPriority={gasSettingsByPriority}
+          txDetails={txDetails}
           tokenId={tokenId}
           priority={"custom"}
           onClick={handleSelect("custom")}

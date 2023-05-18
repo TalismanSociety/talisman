@@ -32,8 +32,8 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
       // the persist argument can be used to prevent this behaviour, when the hook is used
       // in two components that need to share the ledger connection
       !persist &&
-        ledger?.getApp().then((app) => {
-          app?.transport.close()
+        ledger?.withApp(async (app) => {
+          await app?.transport.close()
         })
     }
   }, [ledger, persist])

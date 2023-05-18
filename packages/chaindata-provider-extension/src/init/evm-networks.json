@@ -1,0 +1,636 @@
+[
+  {
+    "id": "787",
+    "isTestnet": false,
+    "sortIndex": 6,
+    "name": "Acala",
+    "themeColor": "#e61059",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/acala.svg",
+    "nativeToken": {
+      "id": "787-evm-native-aca"
+    },
+    "tokens": [
+      {
+        "id": "787-evm-native-aca"
+      }
+    ],
+    "explorerUrl": "https://blockscout.acala.network",
+    "rpcs": [
+      {
+        "url": "https://eth-rpc-acala.aca-api.network",
+        "isHealthy": true
+      },
+      {
+        "url": "https://rpc.evm.acala.network",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": {
+      "id": "acala"
+    }
+  },
+  {
+    "id": "42161",
+    "isTestnet": false,
+    "sortIndex": 11,
+    "name": "Arbitrum",
+    "themeColor": "#2d374b",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/42161.svg",
+    "nativeToken": {
+      "id": "42161-evm-native-eth"
+    },
+    "tokens": [
+      {
+        "id": "42161-evm-native-eth"
+      }
+    ],
+    "explorerUrl": "https://arbiscan.io/",
+    "rpcs": [
+      {
+        "url": "https://arb1.arbitrum.io/rpc",
+        "isHealthy": true
+      },
+      {
+        "url": "https://rpc.ankr.com/arbitrum",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": null
+  },
+  {
+    "id": "592",
+    "isTestnet": false,
+    "sortIndex": 15,
+    "name": "Astar",
+    "themeColor": "#03b0fb",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/astar.svg",
+    "nativeToken": {
+      "id": "592-evm-native-astr"
+    },
+    "tokens": [
+      {
+        "id": "592-evm-erc20-0x1fe622e91e54d6ad00b01917351ea6081426764a"
+      },
+      {
+        "id": "592-evm-erc20-0x3795c36e7d12a8c252a20c5a7b455f7c57b60283"
+      },
+      {
+        "id": "592-evm-erc20-0x4bf769b05e832fcdc9053fffbc78ca889acb5e1e"
+      },
+      {
+        "id": "592-evm-erc20-0x6a2d262d56735dba19dd70682b39f6be9a931d98"
+      },
+      {
+        "id": "592-evm-erc20-0x6de33698e9e9b787e09d3bd7771ef63557e148bb"
+      },
+      {
+        "id": "592-evm-erc20-0x75364d4f779d0bd0facd9a218c67f87dd9aff3b4"
+      },
+      {
+        "id": "592-evm-erc20-0x7756a83563f0f56937a6fdf668e7d9f387c0d199"
+      },
+      {
+        "id": "592-evm-erc20-0x7f27352d5f83db87a5a3e00f4b07cc2138d8ee52"
+      },
+      {
+        "id": "592-evm-erc20-0x81ecac0d6be0550a00ff064a4f9dd2400585fe9c"
+      },
+      {
+        "id": "592-evm-erc20-0xad543f18cff85c77e140e3e5e3c3392f6ba9d5ca"
+      },
+      {
+        "id": "592-evm-erc20-0xaeaaf0e2c81af264101b9129c00f4440ccf0f720"
+      },
+      {
+        "id": "592-evm-erc20-0xb361dad0cc1a03404b650a69d9a5adb5af8a531f"
+      },
+      {
+        "id": "592-evm-erc20-0xdd90e5e87a2081dcf0391920868ebc2ffb81a1af"
+      },
+      {
+        "id": "592-evm-erc20-0xfcde4a87b8b6fa58326bb462882f1778158b02f1"
+      },
+      {
+        "id": "592-evm-native-astr"
+      }
+    ],
+    "explorerUrl": "https://blockscout.com/astar",
+    "rpcs": [
+      {
+        "url": "https://evm.astar.network",
+        "isHealthy": true
+      },
+      {
+        "url": "https://astar-rpc.dwellir.com",
+        "isHealthy": true
+      },
+      {
+        "url": "https://astar.api.onfinality.io/public-ws",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": {
+      "id": "astar"
+    }
+  },
+  {
+    "id": "56",
+    "isTestnet": false,
+    "sortIndex": 22,
+    "name": "Binance Smart Chain",
+    "themeColor": "#f3ba2f",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/56.svg",
+    "nativeToken": {
+      "id": "56-evm-native-bnb"
+    },
+    "tokens": [
+      {
+        "id": "56-evm-native-bnb"
+      }
+    ],
+    "explorerUrl": "https://bscscan.com",
+    "rpcs": [
+      {
+        "url": "https://rpc.ankr.com/bsc",
+        "isHealthy": true
+      },
+      {
+        "url": "https://bsc-dataseed2.binance.org",
+        "isHealthy": true
+      },
+      {
+        "url": "https://bsc-dataseed3.binance.org",
+        "isHealthy": true
+      },
+      {
+        "url": "https://bsc-dataseed4.binance.org",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": null
+  },
+  {
+    "id": "46",
+    "isTestnet": false,
+    "sortIndex": 44,
+    "name": "Darwinia",
+    "themeColor": "#db378a",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/darwinia.svg",
+    "nativeToken": {
+      "id": "46-evm-native-ring"
+    },
+    "tokens": [
+      {
+        "id": "46-evm-native-ring"
+      }
+    ],
+    "explorerUrl": "https://darwinia.subview.xyz",
+    "rpcs": [
+      {
+        "url": "https://rpc.darwinia.network",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": {
+      "id": "darwinia"
+    }
+  },
+  {
+    "id": "2021",
+    "isTestnet": false,
+    "sortIndex": 50,
+    "name": "Edgeware",
+    "themeColor": "#ff3b80",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/edgeware.svg",
+    "nativeToken": {
+      "id": "2021-evm-native-edg"
+    },
+    "tokens": [
+      {
+        "id": "2021-evm-native-edg"
+      }
+    ],
+    "explorerUrl": "https://edgscan.live",
+    "rpcs": [
+      {
+        "url": "https://mainnet2.edgewa.re/evm",
+        "isHealthy": true
+      },
+      {
+        "url": "https://edgeware-evm.jelliedowl.net",
+        "isHealthy": true
+      },
+      {
+        "url": "https://mainnet3.edgewa.re/evm",
+        "isHealthy": true
+      },
+      {
+        "url": "https://mainnet4.edgewa.re/evm",
+        "isHealthy": true
+      },
+      {
+        "url": "https://mainnet5.edgewa.re/evm",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": {
+      "id": "edgeware"
+    }
+  },
+  {
+    "id": "1",
+    "isTestnet": false,
+    "sortIndex": 55,
+    "name": "Ethereum",
+    "themeColor": "#8a92b2",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/1.svg",
+    "nativeToken": {
+      "id": "1-evm-native-eth"
+    },
+    "tokens": [
+      {
+        "id": "1-evm-erc20-0x471ea49dd8e60e697f4cac262b5fafcc307506e4"
+      },
+      {
+        "id": "1-evm-erc20-0x67f6b5bc5670fd29bcc8af3d6633b2840aba2f30"
+      },
+      {
+        "id": "1-evm-erc20-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+      },
+      {
+        "id": "1-evm-erc20-0xc221b7e65ffc80de234bbb6667abdd46593d34f0"
+      },
+      {
+        "id": "1-evm-erc20-0xdac17f958d2ee523a2206206994597c13d831ec7"
+      },
+      {
+        "id": "1-evm-native-eth"
+      }
+    ],
+    "explorerUrl": "https://etherscan.io",
+    "rpcs": [
+      {
+        "url": "https://rpc.ankr.com/eth",
+        "isHealthy": true
+      },
+      {
+        "url": "https://eth.api.onfinality.io/public-ws",
+        "isHealthy": true
+      },
+      {
+        "url": "https://eth.llamarpc.com",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": null
+  },
+  {
+    "id": "100",
+    "isTestnet": false,
+    "sortIndex": 61,
+    "name": "Gnosis",
+    "themeColor": "#8e8e9e",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/100.svg",
+    "nativeToken": {
+      "id": "100-evm-native-xdai"
+    },
+    "tokens": [
+      {
+        "id": "100-evm-native-xdai"
+      }
+    ],
+    "explorerUrl": "https://blockscout.com/xdai/mainnet/",
+    "rpcs": [
+      {
+        "url": "https://rpc.ankr.com/gnosis",
+        "isHealthy": true
+      },
+      {
+        "url": "https://gnosis-mainnet.public.blastapi.io",
+        "isHealthy": true
+      },
+      {
+        "url": "https://rpc.gnosischain.com/",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": null
+  },
+  {
+    "id": "1284",
+    "isTestnet": false,
+    "sortIndex": 96,
+    "name": "Moonbeam",
+    "themeColor": "#53cbc9",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonbeam.svg",
+    "nativeToken": {
+      "id": "1284-evm-native-glmr"
+    },
+    "tokens": [
+      {
+        "id": "1284-evm-erc20-0x65b09ef8c5a096c5fd3a80f1f7369e56eb932412"
+      },
+      {
+        "id": "1284-evm-erc20-0x818ec0a7fe18ff94269904fced6ae3dae6d6dc0b"
+      },
+      {
+        "id": "1284-evm-erc20-0x8f552a71efe5eefc207bf75485b356a0b3f01ec9"
+      },
+      {
+        "id": "1284-evm-erc20-0x931715fee2d06333043d11f658c8ce934ac61d0c"
+      },
+      {
+        "id": "1284-evm-erc20-0xffffffff1fcacbd218edc0eba20fc2308c778080"
+      },
+      {
+        "id": "1284-evm-erc20-0xffffffffa922fef94566104a6e5a35a4fcddaa9f"
+      },
+      {
+        "id": "1284-evm-native-glmr"
+      }
+    ],
+    "explorerUrl": "https://moonbeam.moonscan.io/",
+    "rpcs": [
+      {
+        "url": "https://rpc.api.moonbeam.network",
+        "isHealthy": true
+      },
+      {
+        "url": "https://moonbeam.api.onfinality.io/public-ws",
+        "isHealthy": true
+      },
+      {
+        "url": "https://moonbeam-rpc.dwellir.com",
+        "isHealthy": false
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": {
+      "id": "moonbeam"
+    }
+  },
+  {
+    "id": "1285",
+    "isTestnet": false,
+    "sortIndex": 98,
+    "name": "Moonriver",
+    "themeColor": "#f2b705",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonriver.svg",
+    "nativeToken": {
+      "id": "1285-evm-native-movr"
+    },
+    "tokens": [
+      {
+        "id": "1285-evm-erc20-0xc2392dd3e3fed2c8ed9f7f0bdf6026fcd1348453"
+      },
+      {
+        "id": "1285-evm-erc20-0xe3f5a90f9cb311505cd691a46596599aa1a0ad7d"
+      },
+      {
+        "id": "1285-evm-erc20-0xffffffff893264794d9d57e1e0e21e0042af5a0a"
+      },
+      {
+        "id": "1285-evm-native-movr"
+      }
+    ],
+    "explorerUrl": "https://moonriver.moonscan.io/",
+    "rpcs": [
+      {
+        "url": "https://rpc.api.moonriver.moonbeam.network",
+        "isHealthy": true
+      },
+      {
+        "url": "https://moonriver.api.onfinality.io/public-ws",
+        "isHealthy": true
+      },
+      {
+        "url": "https://moonriver-rpc.dwellir.com",
+        "isHealthy": false
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": {
+      "id": "moonriver"
+    }
+  },
+  {
+    "id": "137",
+    "isTestnet": false,
+    "sortIndex": 116,
+    "name": "Polygon",
+    "themeColor": "#8f5ae8",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/137.svg",
+    "nativeToken": {
+      "id": "137-evm-native-matic"
+    },
+    "tokens": [
+      {
+        "id": "137-evm-erc20-0x2791bca1f2de4661ed88a30c99a7a9449aa84174"
+      },
+      {
+        "id": "137-evm-erc20-0xc2132d05d31c914a87c6611c10748aeb04b58e8f"
+      },
+      {
+        "id": "137-evm-erc20-0xd6df932a45c0f255f85145f286ea0b292b21c90b"
+      },
+      {
+        "id": "137-evm-native-matic"
+      }
+    ],
+    "explorerUrl": "https://polygonscan.com/",
+    "rpcs": [
+      {
+        "url": "https://polygon-rpc.com/",
+        "isHealthy": true
+      },
+      {
+        "url": "https://rpc.ankr.com/polygon",
+        "isHealthy": true
+      },
+      {
+        "url": "https://polygon-mainnet.public.blastapi.io",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": null
+  },
+  {
+    "id": "336",
+    "isTestnet": false,
+    "sortIndex": 125,
+    "name": "Shiden",
+    "themeColor": "#bba5e1",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/shiden-kusama.svg",
+    "nativeToken": {
+      "id": "336-evm-native-sdn"
+    },
+    "tokens": [
+      {
+        "id": "336-evm-native-sdn"
+      }
+    ],
+    "explorerUrl": "https://blockscout.com/shiden",
+    "rpcs": [
+      {
+        "url": "https://evm.shiden.astar.network",
+        "isHealthy": true
+      },
+      {
+        "url": "https://shiden.api.onfinality.io/public-ws",
+        "isHealthy": true
+      },
+      {
+        "url": "https://shiden-rpc.dwellir.com",
+        "isHealthy": false
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": {
+      "id": "shiden-kusama"
+    }
+  },
+  {
+    "id": "5",
+    "isTestnet": true,
+    "sortIndex": 212,
+    "name": "Goerli",
+    "themeColor": "#8a92b2",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/5.svg",
+    "nativeToken": {
+      "id": "5-evm-native-eth"
+    },
+    "tokens": [
+      {
+        "id": "5-evm-native-eth"
+      }
+    ],
+    "explorerUrl": "https://goerli.etherscan.io",
+    "rpcs": [
+      {
+        "url": "https://rpc.ankr.com/eth_goerli",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": null
+  },
+  {
+    "id": "1287",
+    "isTestnet": true,
+    "sortIndex": 243,
+    "name": "Moonbase Alpha",
+    "themeColor": "#4cb1b3",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/moonbase-alpha-testnet.svg",
+    "nativeToken": {
+      "id": "1287-evm-native-dev"
+    },
+    "tokens": [
+      {
+        "id": "1287-evm-native-dev"
+      }
+    ],
+    "explorerUrl": "https://moonbase.moonscan.io/",
+    "rpcs": [
+      {
+        "url": "https://rpc.api.moonbase.moonbeam.network",
+        "isHealthy": true
+      },
+      {
+        "url": "https://moonbeam-alpha.api.onfinality.io/public-ws",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": {
+      "id": "moonbase-alpha-testnet"
+    }
+  },
+  {
+    "id": "11155111",
+    "isTestnet": true,
+    "sortIndex": 271,
+    "name": "Sepolia",
+    "themeColor": "#8a92b2",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/11155111.svg",
+    "nativeToken": {
+      "id": "11155111-evm-native-eth"
+    },
+    "tokens": [
+      {
+        "id": "11155111-evm-native-eth"
+      }
+    ],
+    "explorerUrl": "https://sepolia.etherscan.io",
+    "rpcs": [
+      {
+        "url": "https://rpc.sepolia.org",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": null
+  },
+  {
+    "id": "81",
+    "isTestnet": true,
+    "sortIndex": 274,
+    "name": "Shibuya",
+    "themeColor": "#bba5e1",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/shibuya-testnet.svg",
+    "nativeToken": {
+      "id": "81-evm-native-sby"
+    },
+    "tokens": [
+      {
+        "id": "81-evm-native-sby"
+      }
+    ],
+    "explorerUrl": "https://blockscout.com/shibuya",
+    "rpcs": [
+      {
+        "url": "https://evm.shibuya.astar.network",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": {
+      "id": "shibuya-testnet"
+    }
+  },
+  {
+    "id": "688",
+    "isTestnet": true,
+    "sortIndex": 309,
+    "name": "Watr Testnet",
+    "themeColor": "#f5f5f3",
+    "logo": "https://raw.githubusercontent.com/TalismanSociety/chaindata/v3/assets/chains/rococo-watr-testnet.svg",
+    "nativeToken": {
+      "id": "688-evm-native-watrd"
+    },
+    "tokens": [
+      {
+        "id": "688-evm-native-watrd"
+      }
+    ],
+    "explorerUrl": "https://explorer.watr.org/",
+    "rpcs": [
+      {
+        "url": "https://rpc.dev.watr.org",
+        "isHealthy": true
+      }
+    ],
+    "isHealthy": true,
+    "substrateChain": {
+      "id": "rococo-watr-testnet"
+    }
+  }
+]

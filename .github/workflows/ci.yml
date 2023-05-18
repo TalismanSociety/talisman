@@ -4,7 +4,7 @@ name: Talisman CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["dev"]
   pull_request:
     types: [opened, synchronize]
 
@@ -117,11 +117,11 @@ jobs:
         # this will turn the list of files changed by this PR into a list of packages changed by this PR
         run: |
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          FILES_IN_PACKAGES="echo '${{ steps.changed-files.outputs.CHANGED_FILES }}' | grep ^packages"
-          if [[ $FILES_IN_PACKAGES == '' ]]; then
-            UNIQ_PACKAGE_DIRS="echo $FILES_IN_PACKAGES | cut -d/ -f1-2 | sort | uniq"
-            UNIQ_PACKAGE_JSONS="find $UNIQ_PACKAGE_DIRS -name node_modules -prune -o -name package.json -print"
-            UNIQ_PACKAGE_NAMES="echo $UNIQ_PACKAGE_JSONS | xargs jq .name | sort | uniq | grep -v null"
+          FILES_IN_PACKAGES="$(echo '${{ steps.changed-files.outputs.CHANGED_FILES }}' | { grep ^packages || true; })"
+          if [[ $FILES_IN_PACKAGES != '' ]]; then
+            UNIQ_PACKAGE_DIRS="$(echo $FILES_IN_PACKAGES | cut -d/ -f1-2 | sort | uniq)"
+            UNIQ_PACKAGE_JSONS="$(find $UNIQ_PACKAGE_DIRS -name node_modules -prune -o -name package.json -print)"
+            UNIQ_PACKAGE_NAMES="$(echo $UNIQ_PACKAGE_JSONS | xargs jq .name | sort | uniq | { grep -v null || true; })"
           else
             UNIQ_PACKAGE_NAMES=""
           fi
@@ -149,7 +149,7 @@ jobs:
           echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Set IS_MISSING_CHANGESETS var
         id: is-missing-changesets
-        run: echo "IS_MISSING_CHANGESETS=$([ $(echo -n '${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}' | wc -l) -eq 0 ] && echo no || echo yes)" >> $GITHUB_OUTPUT
+        run: echo "IS_MISSING_CHANGESETS=$([ $(echo -n "${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}" | wc -l) -eq 0 ] && echo no || echo yes)" >> $GITHUB_OUTPUT
       - name: Debug action variables
         run: |
           echo '**Debug output for `ensure_pr_has_changeset` action**' >> $GITHUB_STEP_SUMMARY

@@ -1,7 +1,7 @@
 import { Metadata, StorageKey, TypeRegistry, decorateStorage } from "@polkadot/types"
 import type { Registry } from "@polkadot/types-codec/types"
 import { ChainConnector } from "@talismn/chain-connector"
-import { BalanceMetadata, Chain, ChainId, IToken } from "@talismn/chaindata-provider"
+import { BalanceMetadata, Chain, ChainId } from "@talismn/chaindata-provider"
 import { hasOwnProperty } from "@talismn/util"
 import groupBy from "lodash/groupBy"
 
@@ -154,8 +154,7 @@ export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
 }
 
 export const filterMirrorTokens = (balance: Balance, i: number, balances: Balance[]) => {
-  // TODO: implement a mirrorOf property, which should be set from chaindata
-  const mirrorOf = (balance.token as (IToken & { mirrorOf?: string | null }) | null)?.mirrorOf
+  const mirrorOf = balance.token?.mirrorOf
   return !mirrorOf || !balances.find((b) => b.tokenId === mirrorOf)
 }
 
