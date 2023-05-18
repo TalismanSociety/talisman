@@ -1,16 +1,22 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import Field from "@talisman/components/Field"
-import Panel from "@talisman/components/Panel"
 import Spacer from "@talisman/components/Spacer"
-import { WithTooltip } from "@talisman/components/Tooltip"
+import { classNames } from "@talismn/util"
 import Account from "@ui/domains/Account"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import useAuthorisedSiteProviders from "@ui/hooks/useAuthorisedSiteProviders"
 import { useConnectedAccounts } from "@ui/hooks/useConnectedAccounts"
-import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
-import styled from "styled-components"
-import { Checkbox } from "talisman-ui"
+import {
+  ChangeEventHandler,
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
+import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { NetworkSelect } from "../Ethereum/NetworkSelect"
 import { ProviderTypeSwitch } from "./ProviderTypeSwitch"
@@ -20,70 +26,28 @@ const AccountItem: FC<{
   value: boolean
   onChange: () => void
   className?: string
-}> = ({ address, value = false, onChange, className }) => (
-  <Panel className={className} onClick={onChange} small>
+}> = ({ address, value = false, onChange }) => (
+  <button
+    type="button"
+    className={classNames(
+      "bg-black-secondary hover:bg-grey-800 flex h-28 w-full items-center justify-between rounded-sm px-8"
+    )}
+    onClick={onChange}
+  >
     <Account.Name address={address} withAvatar />
     <Field.Checkbox value={value} small />
-  </Panel>
+  </button>
 )
 
-const StyledAccountItem = styled(AccountItem)`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-`
+const SectionTitle: FC<PropsWithChildren> = ({ children }) => {
+  return <h3 className="mb-4 text-base">{children}</h3>
+}
 
-const Container = styled.div`
-  background: var(--color-background);
-
-  > div {
-    display: flex;
-    width: 100%;
-  }
-
-  h3 {
-    text-align: left;
-    margin: 0 0 1.6rem 0;
-    flex-grow: 1;
-    font-size: var(--font-size-small);
-    line-height: 2rem;
-    color: var(--color-foreground);
-  }
-
-  > section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-
-  .account-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-right: 0.8rem;
-  }
-
-  .dropdown > button {
-    width: 100%;
-  }
-`
-
-const Right = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  font-size: 1.2rem;
-  line-height: 1.6rem;
-
-  > div {
-    padding: 0.2rem;
-  }
-`
-
-type Props = {
+type ConnectedAccountsProps = {
   siteId: string
 }
 
-export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
+export const ConnectedAccounts: FC<ConnectedAccountsProps> = ({ siteId }) => {
   const { genericEvent } = useAnalytics()
   const { authorizedProviders, defaultProvider } = useAuthorisedSiteProviders(siteId)
   const [providerType, setProviderType] = useState<ProviderType>(defaultProvider)
@@ -101,7 +65,7 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
   const title = useMemo(() => {
     switch (providerType) {
       case "polkadot":
-        return "Connected accounts"
+        return "Active account(s)"
       case "ethereum":
         return "Active account"
       default:
@@ -120,20 +84,21 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
   )
 
   return (
-    <Container>
+    <div>
       {authorizedProviders.length > 1 && (
-        <Right>
+        <div className="mb-12 flex w-full justify-end text-xs leading-8">
           <ProviderTypeSwitch
             authorizedProviders={authorizedProviders}
             defaultProvider={defaultProvider}
             onChange={setProviderType}
           />
-        </Right>
+        </div>
       )}
       {providerType === "ethereum" ? (
         <>
-          <h3>Network</h3>
+          <SectionTitle>Network</SectionTitle>
           <NetworkSelect
+            className="!w-full [&>button]:!w-full"
             withTestnets
             defaultChainId={ethChainId.toString()}
             onChange={(chainId) => {
@@ -144,21 +109,23 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
           <Spacer small />
         </>
       ) : null}
-      <div>
-        <h3>{title}</h3>
+      <div className="flex w-full justify-between">
+        <SectionTitle>{title}</SectionTitle>
+        {providerType === "polkadot" && (
+          <Tooltip>
+            <TooltipTrigger className="text-body-secondary mb-4 text-sm leading-10">
+              <Checkbox onChange={handleShowEthAccountsChanged} defaultChecked={showEthAccounts}>
+                Show Eth accounts
+              </Checkbox>
+            </TooltipTrigger>
+            <TooltipContent>Some apps do not work with Ethereum accounts</TooltipContent>
+          </Tooltip>
+        )}
       </div>
-      {providerType === "polkadot" && (
-        <div className="text-body-secondary my-4 text-sm">
-          <WithTooltip tooltip="Some apps do not work with Ethereum accounts">
-            <Checkbox onChange={handleShowEthAccountsChanged} defaultChecked={showEthAccounts}>
-              Show Eth accounts
-            </Checkbox>
-          </WithTooltip>
-        </div>
-      )}
-      <section className="accounts">
+
+      <section className="flex flex-col gap-4 pb-12">
         {accounts?.map(({ address, isConnected, toggle }) => (
-          <StyledAccountItem
+          <AccountItem
             key={address}
             className={"account"}
             address={address}
@@ -167,6 +134,6 @@ export const ConnectedAccounts: FC<Props> = ({ siteId }) => {
           />
         ))}
       </section>
-    </Container>
+    </div>
   )
 }
