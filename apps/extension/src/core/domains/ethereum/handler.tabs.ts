@@ -361,11 +361,17 @@ export class EthTabsHandler extends TabsHandler {
 
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(ethChainId.toString())
     if (!ethereumNetwork)
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
+      throw new EthProviderRpcError(
+        `Unknown network ${ethChainId}. Try adding the chain using wallet_addEthereumChain first.`,
+        ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED
+      )
 
     const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
     if (!provider)
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+      throw new EthProviderRpcError(
+        `Failed to connect to network ${ethChainId}`,
+        ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
+      )
 
     const { err, val } = urlToDomain(url)
     if (err) throw new Error(val)
@@ -395,11 +401,17 @@ export class EthTabsHandler extends TabsHandler {
 
     const ethereumNetwork = await chaindataProvider.getEvmNetwork(chainId.toString())
     if (!ethereumNetwork)
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED)
+      throw new EthProviderRpcError(
+        `Unknown network ${chainId}`,
+        ETH_ERROR_UNKNOWN_CHAIN_NOT_CONFIGURED
+      )
 
     const provider = await getProviderForEthereumNetwork(ethereumNetwork, { batch: true })
     if (!provider)
-      throw new EthProviderRpcError("Network not supported", ETH_ERROR_EIP1993_CHAIN_DISCONNECTED)
+      throw new EthProviderRpcError(
+        `Failed to connect to network ${chainId}`,
+        ETH_ERROR_EIP1993_CHAIN_DISCONNECTED
+      )
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return provider.send(request.method, request.params as unknown as any[])
