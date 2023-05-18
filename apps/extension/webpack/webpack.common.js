@@ -86,8 +86,12 @@ const config = (env) => ({
     extensions: [".ts", ".tsx", ".js", ".css"],
     fallback: {
       stream: false,
+      http: require.resolve("stream-http"),
+      https: require.resolve("https-browserify"),
       assert: require.resolve("assert"),
+      url: require.resolve("url"),
       crypto: require.resolve("crypto-browserify"),
+      zlib: require.resolve("browserify-zlib"),
     },
   },
   plugins: [

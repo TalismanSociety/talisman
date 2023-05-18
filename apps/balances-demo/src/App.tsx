@@ -58,7 +58,7 @@ export function App(): JSX.Element {
                   "min-w-[6rem] overflow-hidden overflow-ellipsis whitespace-nowrap rounded-sm bg-[#1a1a1a] p-2 text-center font-bold"
                 )}
                 style={{
-                  color: balance.chain?.themeColor || balance.evmNetwork?.themeColor,
+                  color: balance.chain?.themeColor || balance.evmNetwork?.themeColor || undefined,
                 }}
               >
                 {balance.chain?.name || balance.evmNetwork?.name}
