@@ -17,7 +17,7 @@
     }
   ],
   "background": {
-    "scripts": ["substrate.js", "background.js"],
+    "scripts": ["backend.js", "background.js"],
     "persistent": true
   },
   "web_accessible_resources": ["page.js", "dashboard.js.map"],
