@@ -7376,9 +7376,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@talismn/util@workspace:packages/util"
   dependencies:
-    "@polkadot/keyring": ^11.1.1
-    "@polkadot/util": ^11.1.1
-    "@polkadot/util-crypto": ^11.1.1
+    "@polkadot/keyring": ^12.2.1
+    "@polkadot/util": ^12.2.1
+    "@polkadot/util-crypto": ^12.2.1
     "@talismn/eslint-config": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
     "@types/jest": ^27.5.1
@@ -7388,9 +7388,9 @@ __metadata:
     ts-jest: ^28.0.2
     typescript: ^4.6.4
   peerDependencies:
-    "@polkadot/keyring": 11.x
-    "@polkadot/util": 11.x
-    "@polkadot/util-crypto": 11.x
+    "@polkadot/keyring": 12.x
+    "@polkadot/util": 12.x
+    "@polkadot/util-crypto": 12.x
   languageName: unknown
   linkType: soft
 
@@ -13965,7 +13965,6 @@ __metadata:
     loglevel: ^1.8.1
     lottie-react: 2.4.0
     lz-string: ^1.5.0
-    minimist: ^1.2.8
     nanoid: 3.3.6
     postcss: ^8.4.20
     postcss-import: ^15.1.0
@@ -18676,13 +18675,6 @@ __metadata:
   version: 1.2.7
   resolution: "minimist@npm:1.2.7"
   checksum: 7346574a1038ca23c32e02252f603801f09384dd1d78b69a943a4e8c2c28730b80e96193882d3d3b22a063445f460e48316b29b8a25addca2d7e5e8f75478bec
-  languageName: node
-  linkType: hard
-
-"minimist@npm:^1.2.8":
-  version: 1.2.8
-  resolution: "minimist@npm:1.2.8"
-  checksum: 75a6d645fb122dad29c06a7597bddea977258957ed88d7a6df59b5cd3fe4a527e253e9bbf2e783e4b73657f9098b96a5fe96ab8a113655d4109108577ecf85b0
   languageName: node
   linkType: hard
 
