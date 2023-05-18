@@ -1,9 +1,5 @@
-import { AccountJsonAny } from "@core/domains/accounts/types"
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
-import Field from "@talisman/components/Field"
 import Spacer from "@talisman/components/Spacer"
-import { shortenAddress } from "@talisman/util/shortenAddress"
-import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import useAuthorisedSiteProviders from "@ui/hooks/useAuthorisedSiteProviders"
@@ -19,39 +15,9 @@ import {
 } from "react"
 import { Checkbox, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
-import AccountAvatar from "../Account/Avatar"
-import { AccountTypeIcon } from "../Account/NamedAddress"
 import { NetworkSelect } from "../Ethereum/NetworkSelect"
+import { ConnectAccountToggleButton } from "./ConnectAccountToggleButton"
 import { ProviderTypeSwitch } from "./ProviderTypeSwitch"
-
-const AccountItem: FC<{
-  account: AccountJsonAny
-  value: boolean
-  onChange: () => void
-  className?: string
-}> = ({ account, value = false, className, onChange }) => {
-  return (
-    <button
-      type="button"
-      className={classNames(
-        "bg-black-secondary hover:bg-grey-800 flex h-28 w-full items-center gap-5 rounded-sm px-8",
-        className
-      )}
-      onClick={onChange}
-    >
-      <AccountAvatar address={account.address} genesisHash={account.genesisHash} />
-      <div className="text-body-secondary text-md flex grow items-center gap-4 overflow-x-hidden text-left">
-        <div className="overflow-x-hidden text-ellipsis whitespace-nowrap text-left">
-          {account.name ?? shortenAddress(account.address)}
-        </div>
-        <div className="shrink-0 pb-1">
-          <AccountTypeIcon origin={account.origin} className="text-primary-500" />
-        </div>
-      </div>
-      <Field.Checkbox value={value} small />
-    </button>
-  )
-}
 
 const SectionTitle: FC<PropsWithChildren> = ({ children }) => {
   return <h3 className="mb-4 text-base">{children}</h3>
@@ -139,7 +105,7 @@ export const ConnectedAccounts: FC<ConnectedAccountsProps> = ({ siteId }) => {
 
       <section className="flex flex-col gap-4 pb-12">
         {accounts?.map(({ isConnected, toggle, ...account }) => (
-          <AccountItem
+          <ConnectAccountToggleButton
             key={account.address}
             className={"account"}
             account={account}
