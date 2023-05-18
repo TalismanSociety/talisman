@@ -12,13 +12,12 @@ import Browser, { Runtime } from "webextension-polyfill"
 
 import sitesAuthorisedStore from "./domains/sitesAuthorised/store"
 import talismanHandler from "./handlers"
-import { IconManager } from "./libs/IconManager"
 
 initSentry(Sentry)
 consoleOverride(DEBUG)
 
-// eslint-disable-next-line no-void
-void Browser.browserAction.setBadgeBackgroundColor({ color: "#d90000" })
+// ensure there is no leftover icon badge text set by a previous version
+Browser.browserAction.setBadgeText({ text: "" })
 
 // check the installed reason
 // if install, we want to check the storage for prev onboarded info
@@ -94,6 +93,3 @@ cryptoWaitReady()
     })
   })
   .catch(Sentry.captureException)
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const iconManager = new IconManager()
