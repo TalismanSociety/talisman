@@ -278,6 +278,11 @@ jobs:
           echo "npm_package_version=$npm_package_version" >> $GITHUB_OUTPUT
       - name: Build
         run: PORT_PREFIX=talisman EXTENSION_PREFIX=talisman yarn run build:extension:prod
+        env:
+          API_KEY_ONFINALITY: ${{ secrets.API_KEY_ONFINALITY }}
+          POSTHOG_AUTH_TOKEN: ${{ secrets.POSTHOG_AUTH_TOKEN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
