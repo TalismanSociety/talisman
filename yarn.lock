@@ -10816,7 +10816,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer-crc32@npm:^0.2.1, buffer-crc32@npm:^0.2.13, buffer-crc32@npm:~0.2.3":
+"buffer-crc32@npm:^0.2.1, buffer-crc32@npm:^0.2.13":
   version: 0.2.13
   resolution: "buffer-crc32@npm:0.2.13"
   checksum: 06252347ae6daca3453b94e4b2f1d3754a3b146a111d81c68924c22d91889a40623264e95e67955b1cb4a68cbedf317abeabb5140a9766ed248973096db5ce1c
@@ -14064,7 +14064,6 @@ __metadata:
     webpack-merge: ^5.8.0
     webpack-sources: ^3.2.3
     yup: 0.32.11
-    zip-webpack-plugin: ^4.0.1
   languageName: unknown
   linkType: soft
 
@@ -25302,15 +25301,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yazl@npm:^2.5.1":
-  version: 2.5.1
-  resolution: "yazl@npm:2.5.1"
-  dependencies:
-    buffer-crc32: ~0.2.3
-  checksum: daec5154b5485d8621bfea359e905ddca0b2f068430a4aa0a802bf5d67391157a383e0c2767acccbf5964264851da643bc740155a9458e2d8dce55b94c1cc2ed
-  languageName: node
-  linkType: hard
-
 "yn@npm:3.1.1":
   version: 3.1.1
   resolution: "yn@npm:3.1.1"
@@ -25348,18 +25338,6 @@ __metadata:
     compress-commons: ^4.1.0
     readable-stream: ^3.6.0
   checksum: 4a73da856738b0634700b52f4ab3fe0bf0a532bea6820ad962d0bda0163d2d5525df4859f89a7238e204a378384e12551985049790c1894c3ac191866e85887f
-  languageName: node
-  linkType: hard
-
-"zip-webpack-plugin@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "zip-webpack-plugin@npm:4.0.1"
-  dependencies:
-    yazl: ^2.5.1
-  peerDependencies:
-    webpack: ^4.0.0 || ^5.0.0
-    webpack-sources: "*"
-  checksum: b9921935b50412825ea8c6030ba07813a1a4fc3618f22c0fd0eb8c1fd32514b48e04695be6ac3ff6e449ddd92bae6de17255e73a2da68bcbc5a12e002aae322c
   languageName: node
   linkType: hard
 
