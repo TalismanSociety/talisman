@@ -181,6 +181,7 @@
     "start": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch",
     "dev": "rm -rf dist && webpack --config webpack/webpack.dev.js --watch",
     "build": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=qa",
+    "build:extension": "yarn build",
     "build:extension:ci": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=ci",
     "build:extension:canary": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=canary",
     "build:extension:prod": "rm -rf dist && webpack --config webpack/webpack.prod.js --env build=production",

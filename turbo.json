@@ -13,6 +13,10 @@
       "dependsOn": [],
       "outputs": ["packages/**/dist/**/*"]
     },
+    "build:extension": {
+      "dependsOn": ["//#build:packages"],
+      "outputs": ["dist/**"]
+    },
     "build:extension:ci": {
       "dependsOn": [
         "//#build:packages",
