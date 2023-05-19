@@ -1,0 +1,43 @@
+/* eslint-env es2021 */
+
+const path = require("path")
+const fs = require("fs")
+const archiver = require("archiver")
+
+function ZipPlugin(options) {
+  this.options = options || {}
+}
+
+ZipPlugin.prototype.apply = function (compiler) {
+  const options = this.options
+
+  if (options.pathPrefix && path.isAbsolute(options.pathPrefix)) {
+    throw new Error('"pathPrefix" must be a relative path')
+  }
+
+  compiler.hooks.done.tapAsync(ZipPlugin.name, (_, callback) => {
+    const output = fs.createWriteStream(path.join(options.folder, options.filename))
+    var archive = archiver("zip")
+
+    output.on("close", function () {
+      console.log(`${options.filename} generated : ${archive.pointer()} total bytes`)
+      callback()
+    })
+
+    archive.on("error", function (err) {
+      console.error("Failed to create zip file", err)
+      callback(err)
+    })
+
+    archive.pipe(output)
+
+    archive.glob("**/*", {
+      cwd: options.folder,
+      ignore: [options.exclude, options.filename],
+    })
+
+    archive.finalize()
+  })
+}
+
+module.exports = ZipPlugin

@@ -21,7 +21,7 @@ class AssetReplacePlugin {
       },
     } = compiler
     compiler.hooks.make.tapAsync("AssetReplacePlugin", (compilation, callback) => {
-      compilation.hooks.processAssets.tap("AssetReplacePlugin", () => {
+      compilation.hooks.afterProcessAssets.tap("AssetReplacePlugin", () => {
         const replaceArr = Object.entries(this.options)
           .map(([k, v]) => {
             let assetName
@@ -64,6 +64,7 @@ class AssetReplacePlugin {
           }
         }
       })
+
       callback()
     })
   }

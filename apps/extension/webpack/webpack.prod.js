@@ -2,7 +2,7 @@
 
 const { merge } = require("webpack-merge")
 const CopyPlugin = require("copy-webpack-plugin")
-const ZipPlugin = require("zip-webpack-plugin")
+const ZipPlugin = require("./ZipPlugin")
 const TerserPlugin = require("terser-webpack-plugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 
@@ -66,8 +66,9 @@ const config = (env) => {
       }),
       // Do not include source maps in the zip file
       new ZipPlugin({
+        folder: distDir,
         filename: getArchiveFileName(env),
-        exclude: new RegExp(/\.js\.map$/, "m"),
+        exclude: "*.js.map",
       }),
       new BundleAnalyzerPlugin({
         // analyzerMode defaults to server, spawning a http server which can hang the process
