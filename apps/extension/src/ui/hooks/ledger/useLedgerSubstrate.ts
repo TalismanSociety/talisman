@@ -51,7 +51,7 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
 
       try {
         assert(getIsLedgerCapable(), "Sorry, Ledger is not supported on your browser.")
-        assert(chain && chain.account !== "secp256k1", ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE)
+        assert(!chain || chain.account !== "secp256k1", ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE)
         assert(app?.name, ERROR_LEDGER_NO_APP)
 
         const ledger = new Ledger("webusb", app.name)
