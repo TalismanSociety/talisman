@@ -107,7 +107,7 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
   if (!tokenId || !token) return null
 
   return (
-    <PillButton className={classNames("h-16 !py-2 !px-4", className)} onClick={onClick}>
+    <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
       <div className="text-body flex  flex-nowrap items-center gap-4 text-base">
         <div className="shrink-0">
           <TokenLogo className="!text-lg" tokenId={tokenId} />
@@ -349,7 +349,7 @@ const AmountEdit = () => {
                 <PillButton
                   onClick={toggleIsTokenEdit}
                   size="xs"
-                  className="h-[2.2rem] w-[2.2rem] rounded-full px-0 py-0"
+                  className="h-[2.2rem] w-[2.2rem] rounded-full !px-0 !py-0"
                 >
                   <SwapIcon />
                 </PillButton>
@@ -359,7 +359,7 @@ const AmountEdit = () => {
               onClick={onSendMaxClick}
               disabled={!maxAmount}
               size="xs"
-              className={classNames("h-[2.2rem] rounded-sm py-0 px-4")}
+              className={classNames("h-[2.2rem] rounded-sm px-4 py-0")}
             >
               Max
             </PillButton>
