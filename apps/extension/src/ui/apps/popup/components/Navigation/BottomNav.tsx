@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
 import { db } from "@core/db"
 import { AlertCircleIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
@@ -108,7 +109,7 @@ export const BottomNav = () => {
       name: "Goto",
       action: "NFTs button",
     })
-    window.open("https://app.talisman.xyz/portfolio/nfts", "_blank")
+    window.open(TALISMAN_WEB_APP_NFTS_URL, "_blank")
     window.close()
   }, [])
 
