@@ -145,10 +145,10 @@ export type InferTransferParams<T extends AnyNewBalanceModule> =
  */
 export const findChainMeta = <TBalanceModule extends AnyNewBalanceModule>(
   moduleType: InferModuleType<TBalanceModule>,
-  chain: Chain
+  chain?: Chain
 ): InferChainMeta<TBalanceModule> | undefined => {
   type FoundMeta = BalanceMetadata & { metadata?: InferChainMeta<TBalanceModule> }
-  return (chain.balanceMetadata ?? []).find(
+  return (chain?.balanceMetadata ?? []).find(
     (meta): meta is FoundMeta => meta.moduleType === moduleType
   )?.metadata
 }
