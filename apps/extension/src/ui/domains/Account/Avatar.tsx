@@ -1,8 +1,8 @@
 import { IdenticonType } from "@core/domains/accounts/types"
 import { Address } from "@core/types/base"
 import { isEthereumAddress } from "@polkadot/util-crypto/ethereum"
-import { TalismanOrb } from "@talisman/components/TalismanOrb"
 import ethIcon from "@talisman/theme/logos/eth-diamond-glyph-white.png"
+import { TalismanOrb } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
@@ -59,7 +59,7 @@ const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
   const chain = useChainByGenesisHash(genesisHash)
 
   return chain ? (
-    <ChainLogo id={chain.id} className="!absolute top-[-0.2em] right-[-0.2em] text-[0.5em]" />
+    <ChainLogo id={chain.id} className="!absolute right-[-0.2em] top-[-0.2em] text-[0.5em]" />
   ) : null
 }
 
