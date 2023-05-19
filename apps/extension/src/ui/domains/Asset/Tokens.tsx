@@ -88,13 +88,15 @@ export const Tokens: FC<TokensProps> = ({
       )}
     >
       {render && (
-        <Tooltip>
-          <TooltipTrigger as="span">
-            <DisplayValue
-              amount={isHidden ? 0 : amount}
-              symbol={symbol}
-              noCountUp={effectiveNoCountUp}
-            />
+        <Tooltip placement="bottom-end">
+          <TooltipTrigger asChild>
+            <span>
+              <DisplayValue
+                amount={isHidden ? 0 : amount}
+                symbol={symbol}
+                noCountUp={effectiveNoCountUp}
+              />
+            </span>
           </TooltipTrigger>
           {tooltip && <TooltipContent>{tooltip}</TooltipContent>}
         </Tooltip>
