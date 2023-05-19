@@ -359,7 +359,7 @@ const AmountEdit = () => {
               onClick={onSendMaxClick}
               disabled={!maxAmount}
               size="xs"
-              className={classNames("h-[2.2rem] rounded-sm px-4 py-0")}
+              className={classNames("h-[2.2rem] rounded-sm !px-4 !py-0")}
             >
               Max
             </PillButton>
