@@ -1,3 +1,4 @@
+import { TALISMAN_WEB_APP_NFTS_URL } from "@core/constants"
 import { IconButton } from "@talisman/components/IconButton"
 import Nav, { NavItemButton, NavItemLink } from "@talisman/components/Nav"
 import { ScrollContainer } from "@talisman/components/ScrollContainer"
@@ -290,7 +291,7 @@ export const SideBar = () => {
 
   const handleNftsClick = useCallback(() => {
     genericEvent("open web app nfts", { from: "sidebar", target: "nfts" })
-    window.open("https://app.talisman.xyz/portfolio/nfts", "_blank")
+    window.open(TALISMAN_WEB_APP_NFTS_URL, "_blank")
     return false
   }, [genericEvent])
 
