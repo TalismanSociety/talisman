@@ -190,7 +190,7 @@ export const AddLedgerSelectNetwork = () => {
             </>
           )}
           <div className={classNames(showStep2 ? "visible" : "invisible")}>
-            {accountType === "sr25519" && (
+            {chainId && accountType === "sr25519" && (
               <>
                 <H2>Step 2</H2>
                 <ConnectLedgerSubstrate
