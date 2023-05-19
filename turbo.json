@@ -13,6 +13,15 @@
       "dependsOn": [],
       "outputs": ["packages/**/dist/**/*"]
     },
+    "build:extension": {
+      "dependsOn": [
+        "//#build:packages",
+        "$SENTRY_DSN",
+        "$SENTRY_AUTH_TOKEN",
+        "$POSTHOG_AUTH_TOKEN"
+      ],
+      "outputs": ["dist/**"]
+    },
     "build:extension:ci": {
       "dependsOn": [
         "//#build:packages",
