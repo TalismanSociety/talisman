@@ -273,13 +273,23 @@ export const SendFundsConfirmForm = () => {
           <div className="flex min-h-[32px] items-center justify-between gap-8">
             <div className="text-body-secondary">From</div>
             <div className="text-body overflow-x-hidden">
-              <AddressDisplay address={from} chainId={chain?.id} evmNetworkId={evmNetwork?.id} />
+              <AddressDisplay
+                className="h-16"
+                address={from}
+                chainId={chain?.id}
+                evmNetworkId={evmNetwork?.id}
+              />
             </div>
           </div>
           <div className="flex min-h-[32px] items-center justify-between gap-8">
             <div className="text-body-secondary">To</div>
             <div className="text-body overflow-x-hidden">
-              <AddressDisplay address={to} chainId={chain?.id} evmNetworkId={evmNetwork?.id} />
+              <AddressDisplay
+                className="h-16"
+                address={to}
+                chainId={chain?.id}
+                evmNetworkId={evmNetwork?.id}
+              />
             </div>
           </div>
           <div className="flex min-h-[32px] items-center justify-between gap-8">

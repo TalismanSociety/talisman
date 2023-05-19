@@ -1,4 +1,3 @@
-import { WithTooltip } from "@talisman/components/Tooltip"
 import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
 import { convertAddress } from "@talisman/util/convertAddress"
 import { shortenAddress } from "@talisman/util/shortenAddress"
@@ -11,6 +10,7 @@ import { useContact } from "@ui/hooks/useContact"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { copyAddress } from "@ui/util/copyAddress"
 import { FC, useCallback, useMemo } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import urlJoin from "url-join"
 
 import AccountAvatar from "../Account/Avatar"
@@ -70,22 +70,14 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
   if (!resolvedAddress || !text) return null
 
   return (
-    <WithTooltip
-      tooltip={
-        address === resolvedAddress ? (
-          address
-        ) : (
-          <div>
-            <div>Original address :</div>
-            <div style={{ marginTop: 2 }}>{address}</div>
-            <div style={{ marginTop: 4 }}>{chain?.name || "Generic"} format :</div>
-            <div style={{ marginTop: 2 }}>{resolvedAddress}</div>
-          </div>
-        )
-      }
-      noWrap
-    >
-      <div
+    <Tooltip>
+      <TooltipContent>
+        <div>Original address :</div>
+        <div style={{ marginTop: 2 }}>{address}</div>
+        <div style={{ marginTop: 4 }}>{chain?.name || "Generic"} format :</div>
+        <div style={{ marginTop: 2 }}>{resolvedAddress}</div>
+      </TooltipContent>
+      <TooltipTrigger
         className={classNames(
           "text-body inline-flex max-w-full flex-nowrap items-center gap-4 overflow-hidden text-base",
           className
@@ -112,7 +104,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
             <CopyIcon />
           </button>
         )}
-      </div>
-    </WithTooltip>
+      </TooltipTrigger>
+    </Tooltip>
   )
 }
