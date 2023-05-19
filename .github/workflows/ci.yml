@@ -222,7 +222,7 @@ jobs:
     name: "Create a PR to bump package versions on dev, and publish the new versions to npm when the PR is merged"
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.event.ref == 'dev'
+    if: github.event_name == 'push' && github.event.ref == 'refs/heads/dev'
 
     steps:
       - name: Checkout repo
@@ -257,7 +257,7 @@ jobs:
     name: "Create a production build of the wallet"
     timeout-minutes: 15
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.event.ref == 'dev'
+    if: github.event_name == 'push' && github.event.ref == 'refs/heads/dev'
 
     steps:
       - name: Checkout repo
