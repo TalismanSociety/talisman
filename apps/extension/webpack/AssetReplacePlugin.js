@@ -7,7 +7,6 @@
  * replace string with other assets content at "afterProcessAssets"
  *
  * Added a check to prevent replacing content of all files, which triggered multiple hot reloads
- * Also hooks onto processAssets instead of afterProcessAssets, to execute earlier than the zip plugin
  */
 
 class AssetReplacePlugin {
