@@ -648,7 +648,7 @@ export const SendFundsAmountForm = () => {
           <div>From</div>
           <div>
             <AddressPillButton
-              className="max-w-[260px]"
+              className="!max-w-[260px]"
               address={from}
               onClick={handleGotoClick("from")}
             />
@@ -658,7 +658,7 @@ export const SendFundsAmountForm = () => {
           <div>To</div>
           <div className="flex items-center gap-4">
             <AddressPillButton
-              className="max-w-[260px]"
+              className="!max-w-[260px]"
               address={to}
               onClick={handleGotoClick("to")}
             />
