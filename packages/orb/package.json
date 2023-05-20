@@ -40,5 +40,11 @@
   "peerDependencies": {
     "react": "*",
     "react-dom": "*"
+  },
+  "preconstruct": {
+    "globals": {
+      "react": "React",
+      "react-dom": "ReactDOM"
+    }
   }
 }
