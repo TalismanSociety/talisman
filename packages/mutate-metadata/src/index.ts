@@ -5,3 +5,5 @@ export * from "./magicImport"
 export * from "./helpers"
 
 suppressPortableRegistryConsoleWarnings()
+
+// TEST
