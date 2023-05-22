@@ -1,5 +1,22 @@
 # @talismn/chain-connector
 
+## 0.4.4
+
+### Patch Changes
+
+- fb8ee962: feat: proxy dapp websocket requests to talisman wallet backend when available
+- c898da98: feat: proxy dapp websocket requests to talisman wallet backend when available
+- f7aca48b: eslint rules
+- 01bf239b: feat: crowdloan and nom pool balances
+- 01bf239b: fix: packages publishing with incorrect interdependency versions
+- Updated dependencies [f7aca48b]
+- Updated dependencies [01bf239b]
+- Updated dependencies [48f0222e]
+- Updated dependencies [01bf239b]
+  - @talismn/chaindata-provider@0.4.4
+  - @talismn/connection-meta@0.0.3
+  - @talismn/util@0.1.9
+
 ## 0.4.3
 
 ### Patch Changes
