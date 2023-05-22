@@ -1,73 +1,20 @@
 import { KnownRequestIdOnly } from "@core/libs/requests/types"
 import { AppPill } from "@talisman/components/AppPill"
-import { Drawer } from "@talisman/components/Drawer"
-import Field from "@talisman/components/Field"
-import Grid from "@talisman/components/Grid"
 import { IconButton } from "@talisman/components/IconButton"
-import { ModalDialog } from "@talisman/components/ModalDialog"
 import { notify } from "@talisman/components/Notifications"
-import Panel from "@talisman/components/Panel"
-import { WithTooltip } from "@talisman/components/Tooltip"
 import useSet from "@talisman/hooks/useSet"
 import { InfoIcon, XIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
-import Account from "@ui/domains/Account"
+import { ConnectAccountToggleButton } from "@ui/domains/Site/ConnectAccountToggleButton"
 import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
 import { ChangeEventHandler, FC, useCallback, useEffect, useMemo, useState } from "react"
 import { useParams } from "react-router-dom"
-import styled from "styled-components"
-import { Button } from "talisman-ui"
+import { Button, Drawer, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Checkbox } from "talisman-ui"
 
 import Layout, { Content, Footer, Header } from "../Layout"
-
-const AccountItem: FC<{
-  address: string
-  value: boolean
-  onChange: (value: boolean) => void
-  className?: string
-}> = ({ address, value, onChange, className }) => (
-  <Panel className={className} onClick={() => onChange(!value)} small>
-    <Account.Name address={address} withAvatar />
-    <Field.Checkbox value={value} onChange={onChange} small />
-  </Panel>
-)
-
-const StyledAccountItem = styled(AccountItem)`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-`
-
-const P = styled.p`
-  font-size: var(--font-size-small);
-  color: var(--color-mid);
-  text-align: center;
-  margin-bottom: 2.4rem;
-
-  strong {
-    color: var(--color-foreground);
-    font-weight: var(--font-weight-normal);
-  }
-`
-
-const NoEthAccountDrawer = styled(Drawer)`
-  z-index: 1;
-  .modal-dialog {
-    background: var(--color-background-muted);
-    header {
-      padding: 1.6rem;
-    }
-  }
-`
-
-const InfoDialogIcon = styled(InfoIcon)`
-  color: var(--color-primary);
-  font-size: 4rem;
-`
 
 const NoEthAccountWarning = ({
   onIgnoreClick,
@@ -76,25 +23,28 @@ const NoEthAccountWarning = ({
   onIgnoreClick: () => void
   onAddAccountClick: () => void
 }) => (
-  <NoEthAccountDrawer open anchor="bottom">
-    <ModalDialog title={<InfoDialogIcon />} centerTitle>
-      <P>
+  <Drawer isOpen anchor="bottom">
+    <div className="bg-grey-800 flex flex-col gap-8 rounded-t-xl p-12">
+      <div className="w-full text-center">
+        <InfoIcon className="text-primary-500 inline-block text-[4rem]" />
+      </div>
+      <p className="text-body-secondary text-center">
         This application requires an <br />
-        <strong>Ethereum account</strong> to connect.
+        <strong className="text-body">Ethereum account</strong> to connect.
         <br />
-        Would you like to create/import one ?
-      </P>
-      <Grid>
+        Would you like to create or import one ?
+      </p>
+      <div className="mt-4 grid grid-cols-2 gap-8">
         <Button onClick={onIgnoreClick}>No</Button>
         <Button primary onClick={onAddAccountClick}>
           Yes
         </Button>
-      </Grid>
-    </ModalDialog>
-  </NoEthAccountDrawer>
+      </div>
+    </div>
+  </Drawer>
 )
 
-const UnstyledConnect: FC<{ className?: string }> = ({ className }) => {
+export const Connect: FC<{ className?: string }> = ({ className }) => {
   const { id } = useParams<"id">() as KnownRequestIdOnly<"auth">
   const authRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
@@ -106,20 +56,22 @@ const UnstyledConnect: FC<{ className?: string }> = ({ className }) => {
   const accounts = useMemo(
     () =>
       authRequest && allAccounts
-        ? allAccounts
-            .filter(
-              ({ type }) =>
-                showEthAccounts ||
-                (authRequest.request.ethereum ? type === "ethereum" : type !== "ethereum")
-            )
-            .map((account) => ({
-              ...account,
-              toggle: () => (ethereum ? set([account?.address]) : toggle(account?.address)),
-              approved: connected.includes(account?.address),
-            }))
+        ? allAccounts.filter(
+            ({ type }) =>
+              showEthAccounts ||
+              (authRequest.request.ethereum ? type === "ethereum" : type !== "ethereum")
+          )
         : [],
-    [allAccounts, authRequest, connected, ethereum, set, showEthAccounts, toggle]
+    [allAccounts, authRequest, showEthAccounts]
   )
+
+  const handleToggle = useCallback(
+    (address: string) => () => {
+      ethereum ? set([address]) : toggle(address)
+    },
+    [ethereum, set, toggle]
+  )
+
   const isMissingEthAccount = useMemo(
     () => ethereum && !!allAccounts.length && !accounts.length,
     [accounts.length, allAccounts.length, ethereum]
@@ -166,11 +118,13 @@ const UnstyledConnect: FC<{ className?: string }> = ({ className }) => {
   const handleShowEthAccountsChanged: ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
       if (!e.target.checked)
-        for (const account of accounts.filter((a) => a.approved && a.type === "ethereum"))
-          account.toggle()
+        for (const account of accounts.filter(
+          (a) => connected.includes(a.address) && a.type === "ethereum"
+        ))
+          toggle(account.address)
       setShowEthAccounts(e.target.checked)
     },
-    [accounts, setShowEthAccounts]
+    [accounts, connected, toggle]
   )
 
   if (!authRequest) return null
@@ -187,26 +141,30 @@ const UnstyledConnect: FC<{ className?: string }> = ({ className }) => {
       />
 
       <Content>
-        <h3 className="my-14 pt-10 text-center font-bold">
+        <h3 className="mb-12 mt-0 pt-10 text-center text-sm font-bold">
           {ethereum
             ? "Choose the account you'd like to connect"
             : "Choose the account(s) you'd like to connect"}
         </h3>
         {!ethereum && (
-          <div className="text-body-secondary my-8 text-sm">
-            <WithTooltip tooltip="Some apps do not work with Ethereum accounts">
-              <Checkbox onChange={handleShowEthAccountsChanged}>Show Ethereum accounts</Checkbox>
-            </WithTooltip>
+          <div className="text-body-secondary my-4 text-sm">
+            <Tooltip>
+              <TooltipTrigger className="text-body-secondary mb-4 text-sm leading-10">
+                <Checkbox onChange={handleShowEthAccountsChanged} defaultChecked={showEthAccounts}>
+                  Show Eth accounts
+                </Checkbox>
+              </TooltipTrigger>
+              <TooltipContent>Some apps do not work with Ethereum accounts</TooltipContent>
+            </Tooltip>
           </div>
         )}
-        <article className="accounts">
-          {accounts.map(({ address, approved, toggle }) => (
-            <StyledAccountItem
-              key={address}
-              className={"account"}
-              address={address}
-              value={approved}
-              onChange={toggle}
+        <section className="flex flex-col gap-4">
+          {accounts.map((account) => (
+            <ConnectAccountToggleButton
+              key={account.address}
+              account={account}
+              value={connected.includes(account?.address)}
+              onChange={handleToggle(account.address)}
             />
           ))}
 
@@ -216,7 +174,7 @@ const UnstyledConnect: FC<{ className?: string }> = ({ className }) => {
               onAddAccountClick={handleNoEthAccountClose(true)}
             />
           )}
-        </article>
+        </section>
       </Content>
       <Footer>
         <div className="grid w-full grid-cols-2 gap-12">
@@ -229,38 +187,3 @@ const UnstyledConnect: FC<{ className?: string }> = ({ className }) => {
     </Layout>
   )
 }
-
-export const Connect = styled(UnstyledConnect)`
-  .layout-content {
-    text-align: left;
-
-    h3 {
-      font-size: var(--font-size-small);
-      margin-top: 0;
-      line-height: 2rem;
-    }
-
-    .accounts {
-      margin-top: 0.4em;
-
-      .account-name {
-        overflow: hidden;
-        color: var(--color-mid);
-        padding-left: 0.8rem;
-      }
-
-      .account + .account {
-        margin-top: 0.5em;
-      }
-    }
-  }
-
-  .layout-footer {
-    .disclaimer {
-      font-size: var(--font-size-xsmall);
-      color: var(--color-background-muted-2x);
-      display: block;
-      text-align: center;
-    }
-  }
-`
