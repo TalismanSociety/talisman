@@ -7,7 +7,7 @@ import { useNetwork } from "./useNetwork"
 
 const availableNetworks = {
   None: undefined,
-  Kusama: "wss://1rpc.io/ksm", //"wss://kusama.api.onfinality.io/public-ws",
+  Kusama: "wss://kusama-rpc.polkadot.io", //"wss://kusama.api.onfinality.io/public-ws",
   Polkadot: "wss://polkadot.api.onfinality.io/public-ws",
   GM: "wss://ws.gm.bldnodes.org",
 }
