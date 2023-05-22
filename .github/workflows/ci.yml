@@ -252,6 +252,10 @@ jobs:
       - name: Create pull request
         id: changesets
         uses: changesets/action@v1
+        with:
+          commit: "chore: bump package versions"
+          title: "chore: bump package versions"
+          createGithubReleases: false
         env:
           # GITHUB_TOKEN is automatically added into the ENV by GitHub CI
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
