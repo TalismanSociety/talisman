@@ -180,7 +180,7 @@ export const AccountAddQr = () => {
                     title: "Open Polkadot Vault on your device",
                     body: (
                       <>
-                        <div>Select ‘Keys’ tab from the bottom navigation bar</div>
+                        <div>Select the ‘Key Sets’ tab from the bottom navigation bar</div>
                         <div className="mt-4">
                           <a
                             className="text-body-secondary hover:text-body"
@@ -188,7 +188,7 @@ export const AccountAddQr = () => {
                             target="_blank"
                           >
                             <span className="underline underline-offset-2">
-                              Instructions for Parity Signer (legacy version)
+                              Instructions for setting up Polkadot Vault on a new device
                             </span>{" "}
                             <ExternalLinkIcon className="inline" />
                           </a>
