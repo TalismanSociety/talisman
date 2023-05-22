@@ -149,7 +149,7 @@ jobs:
           echo "$EOF" >> "$GITHUB_OUTPUT"
       - name: Set IS_MISSING_CHANGESETS var
         id: is-missing-changesets
-        run: echo "IS_MISSING_CHANGESETS=$([ $(echo -n "${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}" | wc -l) -eq 0 ] && echo no || echo yes)" >> $GITHUB_OUTPUT
+        run: echo IS_MISSING_CHANGESETS=$([[ '${{ steps.without-changesets.outputs.WITHOUT_CHANGESETS }}' == '' ]] && echo no || echo yes) >> $GITHUB_OUTPUT
       - name: Debug action variables
         run: |
           echo '**Debug output for `ensure_pr_has_changeset` action**' >> $GITHUB_STEP_SUMMARY
