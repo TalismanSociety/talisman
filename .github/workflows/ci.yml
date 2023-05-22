@@ -38,17 +38,32 @@ jobs:
       - name: Install dependencies
         run: yarn --immutable
       - name: Test
-        run: PORT_PREFIX=talisman EXTENSION_PREFIX=talisman yarn run test
-      - name: Extract short SHA
+        run: yarn run test
+        env:
+          PORT_PREFIX: talisman
+          EXTENSION_PREFIX: talisman
+      - name: Extract short SHA + package version
         id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        run: |
+          sha_short=$(git rev-parse --short HEAD)
+          echo "sha_short=$sha_short" >> $GITHUB_OUTPUT
+          npm_package_version=$(cat apps/extension/package.json | jq -r .version)
+          echo "npm_package_version=$npm_package_version" >> $GITHUB_OUTPUT
       - name: Build
-        run: COMMIT_SHA_SHORT='${{ steps.vars.outputs.sha_short }}' PORT_PREFIX=talisman EXTENSION_PREFIX=talisman yarn run build:extension:ci
+        run: yarn run build:extension:ci
+        env:
+          COMMIT_SHA_SHORT: ${{ steps.vars.outputs.sha_short }}
+          PORT_PREFIX: talisman
+          EXTENSION_PREFIX: talisman
+          API_KEY_ONFINALITY: ${{ secrets.API_KEY_ONFINALITY }}
+          POSTHOG_AUTH_TOKEN: ${{ secrets.POSTHOG_AUTH_TOKEN }}
+          # SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          # SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build
-          path: ./apps/extension/dist/talisman_extension_ci_${{ steps.vars.outputs.sha_short}}.zip
+          path: ./apps/extension/dist/talisman_extension_ci_${{ steps.vars.outputs.sha_short }}.zip
           retention-days: 5
 
   # This job will build and publish a snapshot version of the packages which have changesets in this PR
@@ -251,41 +266,3 @@ jobs:
         run: yarn workspaces foreach --verbose --no-private npm publish --tolerate-republish
         env:
           YARN_NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  # For each commit on dev, this job will create a production build of the wallet
-  build_production_wallet:
-    name: "Create a production build of the wallet"
-    timeout-minutes: 15
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.event.ref == 'refs/heads/dev'
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2 # also get the previous commit
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: yarn
-      - name: Install dependencies
-        run: yarn --immutable
-      - name: Extract package version
-        id: vars
-        run: |
-          npm_package_version=$(cat apps/extension/package.json | jq -r .version)
-          echo "npm_package_version=$npm_package_version" >> $GITHUB_OUTPUT
-      - name: Build
-        run: PORT_PREFIX=talisman EXTENSION_PREFIX=talisman yarn run build:extension:prod
-        env:
-          API_KEY_ONFINALITY: ${{ secrets.API_KEY_ONFINALITY }}
-          POSTHOG_AUTH_TOKEN: ${{ secrets.POSTHOG_AUTH_TOKEN }}
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: production-build
-          path: ./apps/extension/dist/talisman_extension_v${{ steps.vars.outputs.npm_package_version }}.zip
-          retention-days: 5
