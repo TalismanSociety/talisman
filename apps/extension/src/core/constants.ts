@@ -30,3 +30,6 @@ export const NOM_POOL_SUPPORTED_CHAINS = ["polkadot"]
 export const NOM_POOL_MIN_DEPOSIT: Record<string, string> = {
   polkadot: "10000000000",
 }
+
+export const POLKADOT_VAULT_DOCS_URL =
+  "https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-or-polkadot-vault"

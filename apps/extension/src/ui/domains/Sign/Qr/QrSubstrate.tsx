@@ -1,3 +1,4 @@
+import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
 import { AccountJsonQr } from "@core/domains/accounts/types"
 import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
@@ -235,7 +236,7 @@ export const QrSubstrate = ({
                   </Tooltip>{" "}
                   as your existing account.{" "}
                   <a
-                    href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-vault"
+                    href={POLKADOT_VAULT_DOCS_URL}
                     target="_blank"
                     className="hover:text-body text-grey-200"
                   >
@@ -268,7 +269,7 @@ export const QrSubstrate = ({
                 </div>
                 <div className="py-8">
                   <a
-                    href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-vault"
+                    href={POLKADOT_VAULT_DOCS_URL}
                     target="_blank"
                     className="text-grey-200 mt-8 text-xs font-light hover:text-white"
                   >
