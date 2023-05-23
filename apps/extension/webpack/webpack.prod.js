@@ -8,6 +8,7 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPl
 
 const common = require("./webpack.common.js")
 const { distDir, getArchiveFileName, getSentryPlugin, getManifestVersionName } = require("./utils")
+const { SourceMapDevToolPlugin } = require("webpack")
 
 const config = (env) => {
   if (env.build === "production") {
@@ -18,9 +19,13 @@ const config = (env) => {
   }
 
   return merge(common(env), {
-    devtool: "source-map",
+    devtool: false,
     mode: "production",
     plugins: [
+      new SourceMapDevToolPlugin({
+        filename: "[file].map[query]",
+        exclude: ["content_script.js", "page.js"],
+      }),
       // Ensure plugins in this array will not change source in any way that will affect source maps
       getSentryPlugin(env),
       new CopyPlugin({
