@@ -74,6 +74,7 @@ const getSentryPlugin = (env) => {
     release: getRelease(env),
     include: distDir,
     ignore: ["content_script.js", "page.js"],
+    cleanArtifacts: true,
   })
 }
 
