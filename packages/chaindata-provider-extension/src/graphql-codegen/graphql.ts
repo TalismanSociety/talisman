@@ -130,6 +130,8 @@ export type Chain = {
   isHealthy: Scalars["Boolean"]
   /** is chain this a testnet? */
   isTestnet: Scalars["Boolean"]
+  /** whether this chain uses has custom rules to decide on fee token */
+  isUnknownFeeToken: Maybe<Scalars["Boolean"]>
   /** latest metadata qr url for this chain */
   latestMetadataQrUrl: Maybe<Scalars["String"]>
   /** url of the logo for this chain */
@@ -205,6 +207,8 @@ export type ChainOrderByInput =
   | "isHealthy_DESC"
   | "isTestnet_ASC"
   | "isTestnet_DESC"
+  | "isUnknownFeeToken_ASC"
+  | "isUnknownFeeToken_DESC"
   | "latestMetadataQrUrl_ASC"
   | "latestMetadataQrUrl_DESC"
   | "logo_ASC"
@@ -233,6 +237,8 @@ export type ChainOrderByInput =
   | "relay_isHealthy_DESC"
   | "relay_isTestnet_ASC"
   | "relay_isTestnet_DESC"
+  | "relay_isUnknownFeeToken_ASC"
+  | "relay_isUnknownFeeToken_DESC"
   | "relay_latestMetadataQrUrl_ASC"
   | "relay_latestMetadataQrUrl_DESC"
   | "relay_logo_ASC"
@@ -380,6 +386,9 @@ export type ChainWhereInput = {
   isTestnet_eq?: InputMaybe<Scalars["Boolean"]>
   isTestnet_isNull?: InputMaybe<Scalars["Boolean"]>
   isTestnet_not_eq?: InputMaybe<Scalars["Boolean"]>
+  isUnknownFeeToken_eq?: InputMaybe<Scalars["Boolean"]>
+  isUnknownFeeToken_isNull?: InputMaybe<Scalars["Boolean"]>
+  isUnknownFeeToken_not_eq?: InputMaybe<Scalars["Boolean"]>
   latestMetadataQrUrl_contains?: InputMaybe<Scalars["String"]>
   latestMetadataQrUrl_containsInsensitive?: InputMaybe<Scalars["String"]>
   latestMetadataQrUrl_endsWith?: InputMaybe<Scalars["String"]>
@@ -628,6 +637,8 @@ export type EvmNetworkOrderByInput =
   | "substrateChain_isHealthy_DESC"
   | "substrateChain_isTestnet_ASC"
   | "substrateChain_isTestnet_DESC"
+  | "substrateChain_isUnknownFeeToken_ASC"
+  | "substrateChain_isUnknownFeeToken_DESC"
   | "substrateChain_latestMetadataQrUrl_ASC"
   | "substrateChain_latestMetadataQrUrl_DESC"
   | "substrateChain_logo_ASC"
@@ -956,6 +967,8 @@ export type TokenOrderByInput =
   | "squidImplementationDetailChain_isHealthy_DESC"
   | "squidImplementationDetailChain_isTestnet_ASC"
   | "squidImplementationDetailChain_isTestnet_DESC"
+  | "squidImplementationDetailChain_isUnknownFeeToken_ASC"
+  | "squidImplementationDetailChain_isUnknownFeeToken_DESC"
   | "squidImplementationDetailChain_latestMetadataQrUrl_ASC"
   | "squidImplementationDetailChain_latestMetadataQrUrl_DESC"
   | "squidImplementationDetailChain_logo_ASC"
@@ -1057,6 +1070,7 @@ export type ChainFragment = {
   subscanUrl: string | null
   chainspecQrUrl: string | null
   latestMetadataQrUrl: string | null
+  isUnknownFeeToken: boolean | null
   isHealthy: boolean
   paraId: number | null
   nativeToken: { id: string } | null
@@ -1110,6 +1124,7 @@ export type ChainsQuery = {
     subscanUrl: string | null
     chainspecQrUrl: string | null
     latestMetadataQrUrl: string | null
+    isUnknownFeeToken: boolean | null
     isHealthy: boolean
     paraId: number | null
     nativeToken: { id: string } | null
@@ -1235,6 +1250,7 @@ export const ChainFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "subscanUrl" } },
           { kind: "Field", name: { kind: "Name", value: "chainspecQrUrl" } },
           { kind: "Field", name: { kind: "Name", value: "latestMetadataQrUrl" } },
+          { kind: "Field", name: { kind: "Name", value: "isUnknownFeeToken" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "rpcs" },
@@ -1492,6 +1508,7 @@ export const ChainsDocument = {
           { kind: "Field", name: { kind: "Name", value: "subscanUrl" } },
           { kind: "Field", name: { kind: "Name", value: "chainspecQrUrl" } },
           { kind: "Field", name: { kind: "Name", value: "latestMetadataQrUrl" } },
+          { kind: "Field", name: { kind: "Name", value: "isUnknownFeeToken" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "rpcs" },

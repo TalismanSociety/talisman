@@ -31,6 +31,7 @@ export const ChainFragment = graphql(`
     subscanUrl
     chainspecQrUrl
     latestMetadataQrUrl
+    isUnknownFeeToken
     rpcs {
       url
       isHealthy
