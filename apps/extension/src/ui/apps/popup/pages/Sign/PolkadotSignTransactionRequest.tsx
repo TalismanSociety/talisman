@@ -58,18 +58,18 @@ const useSubstrateFee = (signingRequest: SubstrateSigningRequest) => {
     analysing,
     error: error || feeError,
     feeToken,
+    isUnknownFeeToken: chain?.isUnknownFeeToken,
   }
 }
 
 const EstimatedFeesRow: FC<PolkadotSignTransactionRequestProps> = ({ signingRequest }) => {
-  const { feeToken, analysing, error, fee } = useSubstrateFee(signingRequest)
+  const { feeToken, analysing, error, fee, isUnknownFeeToken } = useSubstrateFee(signingRequest)
 
   return (
     <div className="text-body-secondary mb-8 flex w-full items-center justify-between text-sm">
       <div className="flex items-center gap-2">
         <span>Estimated Fee </span>
-        {/* TODO - check chaindata if chain can use */}
-        {false && (
+        {isUnknownFeeToken && (
           <Tooltip>
             <TooltipTrigger className="flex flex-col justify-center">
               <InfoIcon className="inline-block" />
