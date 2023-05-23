@@ -73,6 +73,7 @@ const getSentryPlugin = (env) => {
     project: "talisman-extension",
     release: getRelease(env),
     include: distDir,
+    ignore: ["content_script.js", "page.js"],
   })
 }
 
