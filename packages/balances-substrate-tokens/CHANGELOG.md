@@ -1,5 +1,24 @@
 # @talismn/balances-substrate-tokens
 
+## 0.4.1
+
+### Patch Changes
+
+- fb8ee962: feat: proxy dapp websocket requests to talisman wallet backend when available
+- f7aca48b: eslint rules
+- 01bf239b: feat: crowdloan and nom pool balances
+- 48f0222e: fix: removed some explicit `any`s
+- 01bf239b: fix: packages publishing with incorrect interdependency versions
+- Updated dependencies [fb8ee962]
+- Updated dependencies [f7aca48b]
+- Updated dependencies [01bf239b]
+- Updated dependencies [48f0222e]
+- Updated dependencies [01bf239b]
+  - @talismn/balances@0.4.1
+  - @talismn/chaindata-provider@0.4.4
+  - @talismn/mutate-metadata@0.0.4
+  - @talismn/util@0.1.9
+
 ## 0.4.0
 
 ### Patch Changes

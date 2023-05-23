@@ -1,5 +1,20 @@
 # @talismn/chain-connector-evm
 
+## 0.4.4
+
+### Patch Changes
+
+- f7aca48b: eslint rules
+- 01bf239b: feat: crowdloan and nom pool balances
+- 48f0222e: fix: removed some explicit `any`s
+- 01bf239b: fix: packages publishing with incorrect interdependency versions
+- Updated dependencies [f7aca48b]
+- Updated dependencies [01bf239b]
+- Updated dependencies [48f0222e]
+- Updated dependencies [01bf239b]
+  - @talismn/chaindata-provider@0.4.4
+  - @talismn/util@0.1.9
+
 ## 0.4.3
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # @talismn/token-rates
 
+## 0.1.16
+
+### Patch Changes
+
+- f7aca48b: eslint rules
+- 01bf239b: fix: packages publishing with incorrect interdependency versions
+- Updated dependencies [f7aca48b]
+- Updated dependencies [48f0222e]
+- Updated dependencies [01bf239b]
+  - @talismn/chaindata-provider@0.4.4
+
 ## 0.1.15
 
 ### Patch Changes

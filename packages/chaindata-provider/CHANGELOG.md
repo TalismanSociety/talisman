@@ -1,5 +1,13 @@
 # @talismn/chaindata-provider
 
+## 0.4.4
+
+### Patch Changes
+
+- f7aca48b: eslint rules
+- 48f0222e: fix: removed some explicit `any`s
+- 01bf239b: fix: packages publishing with incorrect interdependency versions
+
 ## 0.4.3
 
 ### Patch Changes

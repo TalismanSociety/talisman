@@ -1,3 +1,4 @@
+import { POLKADOT_VAULT_DOCS_URL } from "@core/constants"
 import HeaderBlock from "@talisman/components/HeaderBlock"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { SimpleButton } from "@talisman/components/SimpleButton"
@@ -183,7 +184,7 @@ export const AccountAddQr = () => {
                         <div className="mt-4">
                           <a
                             className="text-body-secondary hover:text-body"
-                            href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/account-management/import-from-parity-signer-vault"
+                            href={POLKADOT_VAULT_DOCS_URL}
                             target="_blank"
                           >
                             <span className="underline underline-offset-2">

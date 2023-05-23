@@ -1,5 +1,25 @@
 # @talismn/balances-default-modules
 
+## 0.4.1
+
+### Patch Changes
+
+- f7aca48b: eslint rules
+- 01bf239b: fix: packages publishing with incorrect interdependency versions
+- Updated dependencies [c2cac929]
+- Updated dependencies [fb8ee962]
+- Updated dependencies [f7aca48b]
+- Updated dependencies [01bf239b]
+- Updated dependencies [48f0222e]
+- Updated dependencies [01bf239b]
+  - @talismn/balances-substrate-equilibrium@0.4.1
+  - @talismn/balances-substrate-assets@0.4.1
+  - @talismn/balances-substrate-native@0.4.1
+  - @talismn/balances-substrate-orml@0.4.1
+  - @talismn/balances-substrate-tokens@0.4.1
+  - @talismn/balances-evm-native@0.4.1
+  - @talismn/balances-evm-erc20@0.4.1
+
 ## 0.4.0
 
 ### Patch Changes

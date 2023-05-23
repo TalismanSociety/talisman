@@ -1,5 +1,16 @@
 # @talismn/connection-meta
 
+## 0.0.3
+
+### Patch Changes
+
+- f7aca48b: eslint rules
+- 01bf239b: fix: packages publishing with incorrect interdependency versions
+- Updated dependencies [f7aca48b]
+- Updated dependencies [48f0222e]
+- Updated dependencies [01bf239b]
+  - @talismn/chaindata-provider@0.4.4
+
 ## 0.0.2
 
 ### Patch Changes
