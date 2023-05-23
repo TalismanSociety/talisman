@@ -1,5 +1,8 @@
 /* eslint-env es2021 */
-
+/**
+ * Using this custom plugin because `zip-webpack-plugin` hooks into processAssets,
+ * but we need it to hook into afterProcessAssets to allow ReplaceAssetPlugin to do it's job before files get zipped.
+ */
 const path = require("path")
 const fs = require("fs")
 const archiver = require("archiver")
