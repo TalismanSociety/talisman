@@ -2,8 +2,6 @@ import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accou
 import { SubstrateSigningRequest } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { InfoIcon } from "@talisman/theme/icons"
-import { BalanceFormatter } from "@talismn/balances"
-import { TokenId } from "@talismn/chaindata-provider"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -19,7 +17,6 @@ import {
 import { SiteInfo } from "@ui/domains/Sign/SiteInfo"
 import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
-import useToken from "@ui/hooks/useToken"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -50,74 +47,22 @@ const useSubstrateFee = (signingRequest: SubstrateSigningRequest) => {
     if (!txDetails) return { undefined }
 
     const fee = txDetails.partialFee ? BigInt(txDetails.partialFee) : undefined
-    const feeError = txDetails.partialFee ? "" : "Failed to compute fee."
+    const feeError = txDetails.partialFee ? undefined : "Failed to compute fee."
 
     return { fee, feeError }
   }, [txDetails])
 
-  const totalFee = useMemo(() => {
-    if (analysing || !isExtrinsic || feeError) return undefined
-    return (fee ?? 0n) + (tip ?? 0n)
-  }, [analysing, fee, feeError, isExtrinsic, tip])
-
   return {
-    totalFee,
     fee,
     tip,
     analysing,
-    error,
+    error: error || feeError,
     feeToken,
   }
 }
 
-const EstimatedFeeDetails: FC<{ tokenId?: TokenId; fee?: bigint; tip?: bigint }> = ({
-  tokenId,
-  fee,
-  tip,
-}) => {
-  const token = useToken(tokenId)
-
-  const { strFee, strTip } = useMemo(() => {
-    if (!token || tip === undefined || fee === undefined)
-      return { strFee: undefined, strTip: undefined }
-
-    const balFee = new BalanceFormatter(fee, token.decimals)
-    const balTip = new BalanceFormatter(tip, token.decimals)
-
-    const [intFee, decFee = ""] = balFee.tokens.split(".")
-    const [intTip, decTip = ""] = balTip.tokens.split(".")
-    const maxDecimals = Math.max(decFee.length ?? 0, decTip.length ?? 0)
-
-    return maxDecimals === 0
-      ? {
-          strFee: `${intFee} ${token.symbol}`,
-          strTip: tip > 0n ? `${intTip} ${token.symbol}` : "None",
-        }
-      : {
-          strFee: `${intFee}.${decFee.padEnd(maxDecimals, "0")} ${token.symbol}`,
-          strTip:
-            tip > 0n ? `${intTip}.${decTip.padEnd(maxDecimals, "0")} ${token.symbol}` : "None",
-        }
-  }, [fee, tip, token])
-
-  if (!strFee) return null
-
-  return (
-    <div className="space-y-1">
-      <div className="flex w-full items-center justify-between gap-5">
-        <div>Fee:</div>
-        <div className="font-mono">{strFee}</div>
-      </div>
-      <div className="flex w-full items-center justify-between gap-5">
-        <div>Tip:</div>
-        <div className="font-mono">{strTip}</div>
-      </div>
-    </div>
-  )
-}
-
 const EstimatedFeesRow: FC<PolkadotSignTransactionRequestProps> = ({ signingRequest }) => {
-  const { totalFee, feeToken, analysing, error, fee, tip } = useSubstrateFee(signingRequest)
+  const { feeToken, analysing, error, fee } = useSubstrateFee(signingRequest)
 
   return (
     <div className="text-body-secondary mb-8 flex w-full items-center justify-between text-sm">
@@ -144,14 +89,7 @@ const EstimatedFeesRow: FC<PolkadotSignTransactionRequestProps> = ({ signingRequ
             <TooltipContent>{error}</TooltipContent>
           </Tooltip>
         ) : (
-          <Tooltip placement="bottom-end">
-            <TooltipTrigger>
-              <TokensAndFiat planck={totalFee} tokenId={feeToken?.id} noTooltip />
-            </TooltipTrigger>
-            <TooltipContent>
-              <EstimatedFeeDetails tokenId={feeToken?.id} fee={fee} tip={tip} />
-            </TooltipContent>
-          </Tooltip>
+          <TokensAndFiat planck={fee} tokenId={feeToken?.id} />
         )}
       </div>
     </div>
