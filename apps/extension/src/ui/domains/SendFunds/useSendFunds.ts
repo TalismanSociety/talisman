@@ -402,9 +402,22 @@ const useSendFundsProvider = () => {
         !(transfer || (sendMax && maxAmount)) ||
         !tokenId ||
         !costBreakdown ||
-        !tokensToBeReaped
+        !tokensToBeReaped ||
+        !feeToken ||
+        !feeTokenBalance ||
+        !estimatedFee
       )
         return { isValid: false, error: undefined }
+
+      // if paying fee makes the feeToken balance go below the existential deposit, then the transaction is invalid
+      // https://github.com/paritytech/polkadot/issues/2485#issuecomment-782794995
+      if (
+        isSubToken(feeToken) &&
+        feeToken.existentialDeposit &&
+        feeTokenBalance.transferable.planck - estimatedFee.planck <
+          BigInt(feeToken.existentialDeposit)
+      )
+        return { isValid: false, error: `Insufficient ${feeToken.symbol} to pay for fees` }
 
       for (const cost of costBreakdown)
         if (cost.balance.planck < cost.cost.planck)
@@ -438,6 +451,9 @@ const useSendFundsProvider = () => {
     tokenId,
     tokensToBeReaped,
     transfer,
+    feeToken,
+    feeTokenBalance,
+    estimatedFee,
   ])
 
   const isLoading = evmTransaction?.isLoading || subTransaction?.isLoading
