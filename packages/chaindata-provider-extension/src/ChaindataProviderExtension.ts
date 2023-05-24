@@ -309,7 +309,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
   }
 
   // Need to explicitly type the return type
-  // else type script will resolve it to `IToken` instead
+  // else TypeScript will resolve it to `IToken` instead
   subscribeCustomTokens(): Observable<Token[]> {
     return from(
       liveQuery(() =>
