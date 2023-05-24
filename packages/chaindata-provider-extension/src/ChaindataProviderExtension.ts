@@ -13,7 +13,7 @@ import {
   TokenList,
 } from "@talismn/chaindata-provider"
 import { PromiseExtended, Transaction, TransactionMode, liveQuery } from "dexie"
-import { from } from "rxjs"
+import { Observable, from } from "rxjs"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
 import { fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchToken, fetchTokens } from "./graphql"
@@ -192,7 +192,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
       liveQuery(() =>
         this.#db.chains
           .filter((chain): chain is CustomChain => "isCustom" in chain && chain.isCustom)
-          // @ts-expect-error Dexie can't do inference on filter
+          // @ts-expect-error Dexie can't do type assertion on filter
           .toArray<CustomChain[]>((chains) => chains)
       )
     )
@@ -239,7 +239,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
           .filter(
             (network): network is CustomEvmNetwork => "isCustom" in network && network.isCustom
           )
-          // @ts-expect-error Dexie can't do inference on filter
+          // @ts-expect-error Dexie can't do type assertion on filter
           .toArray<CustomEvmNetwork[]>((networks) => networks)
       )
     )
@@ -308,12 +308,15 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     }
   }
 
-  subscribeCustomTokens() {
+  // Need to explicitly type the return type
+  // else type script will resolve it to `IToken` instead
+  subscribeCustomTokens(): Observable<Token[]> {
     return from(
       liveQuery(() =>
         this.#db.tokens
-          .filter((token): token is Extract<Token, { isCustom: true }> => "isCustom" in token)
-          .toArray()
+          .filter((token): token is Token => "isCustom" in token)
+          // Dexie can't do type assertion on filter
+          .toArray<Token[]>((tokens) => tokens)
       )
     )
   }

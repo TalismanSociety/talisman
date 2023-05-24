@@ -1,5 +1,5 @@
 import { log } from "@core/log"
-import type { ResponseType, SendRequest, SubscriptionCallback } from "@core/types"
+import type { ResponseType, SendRequest } from "@core/types"
 import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
 import { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
 
