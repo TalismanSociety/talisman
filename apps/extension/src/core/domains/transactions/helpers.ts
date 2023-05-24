@@ -166,3 +166,5 @@ export const getExtrinsicHash = (
   tx.addSignature(payload.address, signature, payload)
   return tx.hash.toHex()
 }
+
+export const dismissTransaction = (hash: string) => db.transactions.delete(hash)

@@ -2,6 +2,7 @@ import { balanceModules } from "@core/domains/balances/store"
 import { SignerPayloadJSON } from "@core/domains/signing/types"
 import {
   WalletTransactionTransferInfo,
+  dismissTransaction,
   watchSubstrateTransaction,
 } from "@core/domains/transactions"
 import { AssetTransferMethod, ResponseAssetTransferFeeQuery } from "@core/domains/transfers/types"
@@ -55,7 +56,8 @@ export default class AssetTransfersRpc {
     assert(signature, "transaction is not signed")
 
     const token = await chaindataProvider.getToken(tokenId)
-    await watchSubstrateTransaction(chain, registry, unsigned, signature, {
+
+    const hash = await watchSubstrateTransaction(chain, registry, unsigned, signature, {
       transferInfo: {
         tokenId: token?.id,
         value: amount,
@@ -63,7 +65,12 @@ export default class AssetTransfersRpc {
       },
     })
 
-    await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
+    try {
+      await chainConnector.send(chain.id, "author_submitExtrinsic", [tx.toHex()])
+    } catch (err) {
+      dismissTransaction(hash)
+      throw err
+    }
 
     return tx.hash.toHex()
   }
