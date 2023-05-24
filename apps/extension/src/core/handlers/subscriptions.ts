@@ -119,6 +119,7 @@ export const getObservableSubscriptions = function <T extends object>(this: T) {
 
     const self = this as Target<T>
 
+    unsubscribeObservable(id)
     const cb = createSubscription<TMessageType>(id, port)
 
     const subscription = observable.subscribe((data) =>
@@ -130,7 +131,6 @@ export const getObservableSubscriptions = function <T extends object>(this: T) {
     )
 
     if (subscriptionsKey in self) {
-      unsubscribeObservable(id)
       self[subscriptionsKey].set(id, subscription)
     } else {
       Object.assign(self, { [subscriptionsKey]: new Map([[id, subscription]]) })
@@ -138,7 +138,7 @@ export const getObservableSubscriptions = function <T extends object>(this: T) {
 
     port.onDisconnect.addListener(() => unsubscribeObservable(id))
 
-    return true
+    return id
   }.bind(this)
 
   return { subscribe: subscribeObservable, unsubscribe: unsubscribeObservable }

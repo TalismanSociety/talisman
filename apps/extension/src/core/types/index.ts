@@ -5,10 +5,10 @@ import { ChainsMessages } from "@core/domains/chains/types"
 import { EncryptMessages } from "@core/domains/encrypt/types"
 import { EthMessages } from "@core/domains/ethereum/types"
 import { MetadataMessages } from "@core/domains/metadata/types"
-import { RpcMessages } from "@core/domains/rpc/types"
 import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
 import { SubstrateMessages } from "@core/domains/substrate/types"
+import { TalismanMessages } from "@core/domains/talisman/types"
 import { TokenRatesMessages } from "@core/domains/tokenRates/types"
 import { TokenMessages } from "@core/domains/tokens/types"
 import { AssetTransferMessages } from "@core/domains/transfers/types"
@@ -76,8 +76,8 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   EthMessages &
   MetadataMessages &
   MnemonicMessages &
-  RpcMessages &
   SigningMessages &
+  TalismanMessages &
   TokenMessages &
   TokenRatesMessages &
   SubstrateMessages
@@ -168,7 +168,7 @@ export interface SubscriptionCallback<Result> {
 /**
  * A function which cancels a subscription when called.
  */
-export type UnsubscribeFn = () => void
+export type UnsubscribeFn = () => unknown
 
 export interface SendRequest {
   <TMessageType extends MessageTypesWithNullRequest>(message: TMessageType): Promise<

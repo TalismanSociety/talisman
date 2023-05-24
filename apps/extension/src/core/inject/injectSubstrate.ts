@@ -12,8 +12,8 @@ const rpcProvider = (sendRequest: SendRequest) => ({
     genesisHash: string,
     method: string,
     params: unknown[]
-  ): Promise<ResponseType<"pub(rpc.talisman.byGenesisHash.send)">> =>
-    sendRequest("pub(rpc.talisman.byGenesisHash.send)", { genesisHash, method, params }),
+  ): Promise<ResponseType<"pub(talisman.rpc.byGenesisHash.send)">> =>
+    sendRequest("pub(talisman.rpc.byGenesisHash.send)", { genesisHash, method, params }),
 
   rpcByGenesisHashSubscribe: (
     genesisHash: string,
@@ -22,9 +22,9 @@ const rpcProvider = (sendRequest: SendRequest) => ({
     params: unknown[],
     callback: ProviderInterfaceCallback,
     timeout: number | false
-  ): Promise<ResponseType<"pub(rpc.talisman.byGenesisHash.subscribe)">> =>
+  ): Promise<ResponseType<"pub(talisman.rpc.byGenesisHash.subscribe)">> =>
     sendRequest(
-      "pub(rpc.talisman.byGenesisHash.subscribe)",
+      "pub(talisman.rpc.byGenesisHash.subscribe)",
       { genesisHash, subscribeMethod, responseMethod, params, timeout },
       ({ error, data }) => callback(error, data)
     ),
@@ -32,8 +32,8 @@ const rpcProvider = (sendRequest: SendRequest) => ({
   rpcByGenesisHashUnsubscribe: (
     subscriptionId: string,
     unsubscribeMethod: string
-  ): Promise<ResponseType<"pub(rpc.talisman.byGenesisHash.unsubscribe)">> =>
-    sendRequest("pub(rpc.talisman.byGenesisHash.unsubscribe)", {
+  ): Promise<ResponseType<"pub(talisman.rpc.byGenesisHash.unsubscribe)">> =>
+    sendRequest("pub(talisman.rpc.byGenesisHash.unsubscribe)", {
       subscriptionId,
       unsubscribeMethod,
     }),
@@ -41,8 +41,8 @@ const rpcProvider = (sendRequest: SendRequest) => ({
 
 const tokensProvider = (sendRequest: SendRequest) => ({
   subscribeCustomTokens: (callback: SubscriptionCallback<Extract<Token, { isCustom: true }>>) => {
-    const idPromise = sendRequest("pub(tokens.custom.subscribe)", null, callback)
-    return () => idPromise.then((id) => sendRequest("pub(tokens.custom.unsubscribe)", id))
+    const idPromise = sendRequest("pub(talisman.customTokens.subscribe)", null, callback)
+    return () => idPromise.then((id) => sendRequest("pub(talisman.customTokens.unsubscribe)", id))
   },
 })
 
