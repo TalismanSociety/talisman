@@ -2,5 +2,5 @@
   "Loading": "Loading",
   "Waiting": "Waiting",
   "Please unlock the Talisman": "Please unlock the Talisman",
-  "Word count: %s": "Word count: %s"
+  "Word count (sprintf example usage): %s": "Word count (sprintf example usage): %s"
 }

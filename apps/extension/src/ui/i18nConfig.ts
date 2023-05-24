@@ -51,7 +51,7 @@ i18next
     // e.g.
     // const words = 12
     // const { t } = useTranslation('account-add')
-    // t("Word count: %s", words) // > 'Word count: 12'
+    // t("Word count (sprintf example usage): %s", words) // > 'Word count (sprintf example usage): 12'
     overloadTranslationOptionHandler: sprintf.overloadTranslationOptionHandler,
 
     // user lang auto-detection config
