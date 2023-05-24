@@ -245,6 +245,17 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     )
   }
 
+  async syncCustomTokens(tokens: Token[]) {
+    return this.#db.transaction("rw", this.#db.tokens, async () => {
+      const keys = await this.#db.tokens
+        .filter((token) => "isCustom" in token && Boolean(token.isCustom))
+        .primaryKeys()
+
+      await this.#db.tokens.bulkDelete(keys)
+      await this.#db.tokens.bulkPut(tokens.filter((token) => "isCustom" in token && token.isCustom))
+    })
+  }
+
   async addCustomToken(customToken: Token) {
     try {
       if (!("isCustom" in customToken)) return
