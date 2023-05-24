@@ -25,6 +25,7 @@ import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useLocation } from "react-router-dom"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useFeeToken } from "./useFeeToken"
@@ -513,7 +514,7 @@ const useSendFundsProvider = () => {
         gotoProgress({ hash, networkIdOrHash: token.evmNetwork?.id })
       } else throw new Error("Unknown network")
     } catch (err) {
-      log.error("Failed to submit tx", err)
+      log.error("Failed to submit tx", { err })
       setSendErrorMessage((err as Error).message)
       setIsProcessing(false)
     }
@@ -566,6 +567,12 @@ const useSendFundsProvider = () => {
     },
     [amount, evmTransaction, gotoProgress, subTransaction, to, token, chain]
   )
+
+  // reset send error if route or params changes
+  const location = useLocation()
+  useEffect(() => {
+    setSendErrorMessage(undefined)
+  }, [location])
 
   return {
     from,
