@@ -1,7 +1,7 @@
 import { log } from "@core/log"
 import type { ResponseType, SendRequest, SubscriptionCallback } from "@core/types"
 import type { ProviderInterfaceCallback } from "@polkadot/rpc-provider/types"
-import { Token } from "@talismn/chaindata-provider"
+import { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
 
 type TalismanWindow = typeof globalThis & {
   talismanSub?: ReturnType<typeof rpcProvider> & ReturnType<typeof tokensProvider>
@@ -40,7 +40,17 @@ const rpcProvider = (sendRequest: SendRequest) => ({
 })
 
 const tokensProvider = (sendRequest: SendRequest) => ({
-  subscribeCustomTokens: (callback: SubscriptionCallback<Extract<Token, { isCustom: true }>>) => {
+  subscribeCustomSubstrateChains: (callback: (chains: CustomChain[]) => unknown) => {
+    const idPromise = sendRequest("pub(talisman.customSubstrateChains.subscribe)", null, callback)
+    return () =>
+      idPromise.then((id) => sendRequest("pub(talisman.customSubstrateChains.unsubscribe)", id))
+  },
+  subscribeCustomEvmNetworks: (callback: (networks: CustomEvmNetwork[]) => unknown) => {
+    const idPromise = sendRequest("pub(talisman.customEvmNetworks.subscribe)", null, callback)
+    return () =>
+      idPromise.then((id) => sendRequest("pub(talisman.customEvmNetworks.unsubscribe)", id))
+  },
+  subscribeCustomTokens: (callback: (tokens: Token[]) => unknown) => {
     const idPromise = sendRequest("pub(talisman.customTokens.subscribe)", null, callback)
     return () => idPromise.then((id) => sendRequest("pub(talisman.customTokens.unsubscribe)", id))
   },

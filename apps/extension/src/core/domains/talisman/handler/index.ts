@@ -10,6 +10,7 @@ import TalismanRpcHandler from "./rpc"
 export default class TalismanHandler extends TabsHandler {
   readonly #subHandlers: readonly TabsHandler[]
   readonly #customTokensSubscriptions = new ObservableSubscriptions()
+  readonly #customSubstrateChainsSubscriptions = new ObservableSubscriptions()
 
   constructor(stores: TabStore) {
     super(stores)
@@ -24,9 +25,35 @@ export default class TalismanHandler extends TabsHandler {
     url: string
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
+      case "pub(talisman.customSubstrateChains.subscribe)":
+        return this.#customSubstrateChainsSubscriptions.subscribe(
+          "pub(talisman.customSubstrateChains.subscribe)",
+          id,
+          port,
+          chaindataProvider.subscribeCustomChains()
+        )
+
+      case "pub(talisman.customSubstrateChains.unsubscribe)":
+        return this.#customSubstrateChainsSubscriptions.unsubscribe(
+          request as RequestTypes["pub(talisman.customSubstrateChains.unsubscribe)"]
+        )
+
+      case "pub(talisman.customEvmNetworks.subscribe)":
+        return this.#customSubstrateChainsSubscriptions.subscribe(
+          "pub(talisman.customEvmNetworks.subscribe)",
+          id,
+          port,
+          chaindataProvider.subscribeCustomEvmNetworks()
+        )
+
+      case "pub(talisman.customEvmNetworks.unsubscribe)":
+        return this.#customSubstrateChainsSubscriptions.unsubscribe(
+          request as RequestTypes["pub(talisman.customEvmNetworks.unsubscribe)"]
+        )
+
       case "pub(talisman.customTokens.subscribe)":
         return this.#customTokensSubscriptions.subscribe(
-          type,
+          "pub(talisman.customTokens.subscribe)",
           id,
           port,
           chaindataProvider.subscribeCustomTokens()

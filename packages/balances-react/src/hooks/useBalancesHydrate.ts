@@ -3,6 +3,7 @@ import { useMemo } from "react"
 
 import { useChains } from "./useChains"
 import { useEvmNetworks } from "./useEvmNetworks"
+import useExtensionChaindataSyncEffect from "./useExtensionChaindataSyncEffect"
 import { useTokenRates } from "./useTokenRates"
 import { useTokens } from "./useTokens"
 import { useWithTestnets } from "./useWithTestnets"
@@ -13,6 +14,8 @@ export const useBalancesHydrate = (): HydrateDb => {
   const evmNetworks = useEvmNetworks(withTestnets)
   const tokens = useTokens(withTestnets)
   const tokenRates = useTokenRates()
+
+  useExtensionChaindataSyncEffect()
 
   return useMemo(
     () => ({ chains, evmNetworks, tokens, tokenRates }),
