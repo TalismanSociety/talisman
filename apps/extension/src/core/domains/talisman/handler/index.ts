@@ -1,5 +1,5 @@
 import { TabStore } from "@core/handlers/stores"
-import { getObservableSubscriptions } from "@core/handlers/subscriptions"
+import { createObservableSubscriptions } from "@core/handlers/subscriptions"
 import { TabsHandler } from "@core/libs/Handler"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -9,7 +9,7 @@ import TalismanRpcHandler from "./rpc"
 
 export default class TalismanHandler extends TabsHandler {
   readonly #subHandlers: readonly TabsHandler[]
-  readonly #observableSubscriptions = getObservableSubscriptions.call(this)
+  readonly #customTokensSubscriptions = createObservableSubscriptions()
 
   constructor(stores: TabStore) {
     super(stores)
@@ -25,7 +25,7 @@ export default class TalismanHandler extends TabsHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pub(talisman.customTokens.subscribe)":
-        return this.#observableSubscriptions.subscribe(
+        return this.#customTokensSubscriptions.subscribe(
           type,
           id,
           port,
@@ -33,7 +33,7 @@ export default class TalismanHandler extends TabsHandler {
         )
 
       case "pub(talisman.customTokens.unsubscribe)":
-        return this.#observableSubscriptions.unsubscribe(
+        return this.#customTokensSubscriptions.unsubscribe(
           request as RequestTypes["pub(talisman.customTokens.unsubscribe)"]
         )
 

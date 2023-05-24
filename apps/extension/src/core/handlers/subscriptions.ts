@@ -83,30 +83,20 @@ export function unsubscribe(id: string): void {
   if (subscriptions[id]) delete subscriptions[id]
 }
 
-export const getObservableSubscriptions = function <T extends object>(this: T) {
-  const subscriptionsSymbol = Symbol("subscriptions")
+export const createObservableSubscriptions = () => {
+  const subscriptions = new Map<string, Subscription>()
 
-  type Target<T> = T & (T | { [subscriptionsSymbol]: Map<string, Subscription> })
-
-  const unsubscribeObservable = function (this: any, id: string) {
-    const self = this as Target<T>
-
+  const unsubscribeObservable = function (id: string) {
     const portUnsubscribeResult = unsubscribe(id)
-
-    if (subscriptionsSymbol in self) {
-      self[subscriptionsSymbol].get(id)?.unsubscribe()
-      return self[subscriptionsSymbol].delete(id) && portUnsubscribeResult
-    }
-
-    return portUnsubscribeResult
-  }.bind(this)
+    subscriptions.get(id)?.unsubscribe()
+    return subscriptions.delete(id) && portUnsubscribeResult
+  }
 
   const subscribeObservable = function <
     TMessageType extends MessageTypesWithSubscriptions,
     TObservableValue,
     TReturn extends KnownSubscriptionDataTypes<TMessageType>
   >(
-    this: any,
     _message: TMessageType,
     id: string,
     port: Port,
@@ -116,8 +106,6 @@ export const getObservableSubscriptions = function <T extends object>(this: T) {
       : [transform: (value: TObservableValue) => TReturn]
   ) {
     const [transform] = rest
-
-    const self = this as Target<T>
 
     unsubscribeObservable(id)
     const cb = createSubscription<TMessageType>(id, port)
@@ -130,16 +118,12 @@ export const getObservableSubscriptions = function <T extends object>(this: T) {
       )
     )
 
-    if (subscriptionsSymbol in self) {
-      self[subscriptionsSymbol].set(id, subscription)
-    } else {
-      Object.assign(self, { [subscriptionsSymbol]: new Map([[id, subscription]]) })
-    }
+    subscriptions.set(id, subscription)
 
     port.onDisconnect.addListener(() => unsubscribeObservable(id))
 
     return id
   }.bind(this)
 
-  return { subscribe: subscribeObservable, unsubscribe: unsubscribeObservable }
+  return { subscriptions, subscribe: subscribeObservable, unsubscribe: unsubscribeObservable }
 }
