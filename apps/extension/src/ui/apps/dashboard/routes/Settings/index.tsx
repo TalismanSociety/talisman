@@ -32,7 +32,6 @@ const Settings = () => {
       setSearchParams({})
     } else if (searchParams.get("showBackupModal") !== null) {
       openBackupMnemonic()
-      setSearchParams({})
     }
   }, [openMigratePw, openBackupMnemonic, searchParams, setSearchParams])
 
