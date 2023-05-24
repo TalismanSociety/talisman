@@ -48,12 +48,10 @@ const MnemonicForm = ({ className }: MnemonicFormProps) => {
         <>
           <Mnemonic mnemonic={mnemonic} />
           <div className="grow"></div>
-          <Field.Toggle
-            className="toggle"
-            info="I've backed it up"
-            value={isConfirmed}
-            onChange={(val: boolean) => toggleConfirmed(val)}
-          />
+          <div className="flex w-full items-center justify-end">
+            <div className="text-body-secondary text-sm">Don't remind me again</div>
+            <Field.Toggle value={isConfirmed} onChange={(val: boolean) => toggleConfirmed(val)} />
+          </div>
         </>
       ) : (
         <div className="bg-grey-800 mt-[32.8px] h-72 w-full animate-pulse rounded"></div>
