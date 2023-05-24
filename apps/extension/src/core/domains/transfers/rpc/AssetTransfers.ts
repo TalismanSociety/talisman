@@ -56,6 +56,7 @@ export default class AssetTransfersRpc {
     assert(signature, "transaction is not signed")
 
     const token = await chaindataProvider.getToken(tokenId)
+
     const hash = await watchSubstrateTransaction(chain, registry, unsigned, signature, {
       transferInfo: {
         tokenId: token?.id,

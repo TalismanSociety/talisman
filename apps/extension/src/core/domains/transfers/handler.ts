@@ -84,10 +84,9 @@ export default class AssetTransferHandler extends ExtensionHandler {
 
     if (result.ok) return result.val
     else {
+      // We were previously replacing all errors with code 1010 with a generic "Failed to send"
+      // However 1010 means error code from RPC, message that goes along with it (err.data) can be meaningful
       const error = result.val as Error & { code?: number; data?: string }
-
-      // note : we were previously replacing all errors with code 1010 with a generic "Failed to send"
-      // however 1010 means error code from RPC, message that goes along with it (err.data) can be meaningful
 
       // display message from RPC, if any
       if (typeof error?.data === "string") throw new Error(error.data)
