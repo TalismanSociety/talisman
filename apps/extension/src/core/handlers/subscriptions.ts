@@ -83,16 +83,15 @@ export function unsubscribe(id: string): void {
   if (subscriptions[id]) delete subscriptions[id]
 }
 
-export const createObservableSubscriptions = () => {
-  const subscriptions = new Map<string, Subscription>()
+export class ObservableSubscriptions {
+  readonly #subscriptions = new Map<string, Subscription>()
 
-  const unsubscribeObservable = function (id: string) {
-    const portUnsubscribeResult = unsubscribe(id)
-    subscriptions.get(id)?.unsubscribe()
-    return subscriptions.delete(id) && portUnsubscribeResult
-  }
+  public readonly subscriptions = this.#subscriptions as ReadonlyMap<
+    string,
+    Omit<Subscription, "unsubscribe">
+  >
 
-  const subscribeObservable = function <
+  public readonly subscribe = <
     TMessageType extends MessageTypesWithSubscriptions,
     TObservableValue,
     TReturn extends KnownSubscriptionDataTypes<TMessageType>
@@ -104,30 +103,30 @@ export const createObservableSubscriptions = () => {
     ...rest: TObservableValue extends TReturn
       ? []
       : [transform: (value: TObservableValue) => TReturn]
-  ) {
+  ) => {
     const [transform] = rest
 
-    unsubscribeObservable(id)
+    this.unsubscribe(id)
+
     const cb = createSubscription<TMessageType>(id, port)
 
     const subscription = observable.subscribe((data) =>
-      cb(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        transform?.(data) ?? data
-      )
+      cb(transform?.(data) ?? (data as any as TReturn))
     )
 
-    subscriptions.set(id, subscription)
+    const teardown = () => this.unsubscribe(id)
 
-    port.onDisconnect.addListener(() => unsubscribeObservable(id))
+    subscription.add(teardown)
+    port.onDisconnect.addListener(teardown)
+
+    this.#subscriptions.set(id, subscription)
 
     return id
-  }.bind(this)
+  }
 
-  return {
-    subscriptions: subscriptions as ReadonlyMap<string, Omit<Subscription, "unsubscribe">>,
-    subscribe: subscribeObservable,
-    unsubscribe: unsubscribeObservable,
+  public readonly unsubscribe = (id: string) => {
+    unsubscribe(id)
+    this.#subscriptions.get(id)?.unsubscribe()
+    this.#subscriptions.delete(id)
   }
 }

@@ -1,5 +1,5 @@
 import { TabStore } from "@core/handlers/stores"
-import { createObservableSubscriptions } from "@core/handlers/subscriptions"
+import { ObservableSubscriptions } from "@core/handlers/subscriptions"
 import { TabsHandler } from "@core/libs/Handler"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestTypes, ResponseType } from "@core/types"
@@ -9,7 +9,7 @@ import TalismanRpcHandler from "./rpc"
 
 export default class TalismanHandler extends TabsHandler {
   readonly #subHandlers: readonly TabsHandler[]
-  readonly #customTokensSubscriptions = createObservableSubscriptions()
+  readonly #customTokensSubscriptions = new ObservableSubscriptions()
 
   constructor(stores: TabStore) {
     super(stores)
