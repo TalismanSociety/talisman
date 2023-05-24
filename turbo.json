@@ -4,6 +4,9 @@
     "dev": {
       "cache": false
     },
+    "update:translations": {
+      "outputs": ["public/locales/**"]
+    },
     "build": {
       "dependsOn": ["//#build:packages", "^build"],
       "outputs": ["dist/**"],

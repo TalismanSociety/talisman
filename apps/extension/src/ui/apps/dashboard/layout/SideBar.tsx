@@ -29,6 +29,7 @@ import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ReactNode, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { useWindowSize } from "react-use"
 import styled from "styled-components"
@@ -329,6 +330,8 @@ export const SideBar = () => {
     navigate("/settings?showBackupModal")
   }, [genericEvent, navigate])
 
+  const { t } = useTranslation("sidebar")
+
   return (
     <Container>
       <PaddedItem>
@@ -336,10 +339,10 @@ export const SideBar = () => {
         {/* Pills for large screens */}
         <Pills>
           <PillButton className="!px-4" icon={PaperPlaneIcon} onClick={handleSendClick}>
-            Send
+            {t("Send")}
           </PillButton>
           <PillButton className="!px-4" icon={ArrowDownIcon} onClick={handleCopyClick}>
-            Receive
+            {t("Receive")}
           </PillButton>
         </Pills>
         {/* Buttons for small screens */}
@@ -363,7 +366,7 @@ export const SideBar = () => {
               </ResponsiveTooltip>
             }
           >
-            Portfolio
+            {t("Portfolio")}
           </NavItemLink>
           {showBuyCryptoButton && (
             <NavItemButton
@@ -374,7 +377,7 @@ export const SideBar = () => {
                 </ResponsiveTooltip>
               }
             >
-              Buy Crypto
+              {t("Buy Crypto")}
             </NavItemButton>
           )}
           <NavItemLink
@@ -386,7 +389,7 @@ export const SideBar = () => {
               </ResponsiveTooltip>
             }
           >
-            Add Account
+            {t("Add Account")}
           </NavItemLink>
           {showStaking && (
             <NavItemButton
@@ -397,7 +400,7 @@ export const SideBar = () => {
                 </ResponsiveTooltip>
               }
             >
-              Staking <ExtLinkIcon />
+              {t("Staking")} <ExtLinkIcon />
             </NavItemButton>
           )}
           <NavItemButton
@@ -408,7 +411,7 @@ export const SideBar = () => {
               </ResponsiveTooltip>
             }
           >
-            NFTs <ExtLinkIcon />
+            {t("NFTs")} <ExtLinkIcon />
           </NavItemButton>
           {/* <NavItemButton
             onClick={handleCrowdloansClick}
@@ -418,7 +421,7 @@ export const SideBar = () => {
               </ResponsiveTooltip>
             }
           >
-            Crowdloans <ExtLinkIcon />
+            {t("Crowdloans")} <ExtLinkIcon />
           </NavItemButton> */}
           {showTxHistory && (
             <NavItemButton
@@ -429,7 +432,7 @@ export const SideBar = () => {
                 </ResponsiveTooltip>
               }
             >
-              Transaction History <ExtLinkIcon />
+              {t("Transaction History")} <ExtLinkIcon />
             </NavItemButton>
           )}
           <NavItemLink
@@ -441,12 +444,12 @@ export const SideBar = () => {
               </ResponsiveTooltip>
             }
           >
-            Settings
+            {t("Settings")}
           </NavItemLink>
           {isSnoozed && (
             <LargeScreenOnlyItem>
               <NavItemButton onClick={handleBackupClick} icon={<DownloadAlertIcon />}>
-                Backup Wallet
+                {t("Backup Wallet")}
               </NavItemButton>
             </LargeScreenOnlyItem>
           )}

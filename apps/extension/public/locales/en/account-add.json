@@ -1,0 +1,16 @@
+{
+  "Invalid secret": "Invalid secret",
+  "Account already exists": "Account already exists",
+  "Importing account": "Importing account",
+  "Please wait": "Please wait",
+  "Account imported": "Account imported",
+  "Error importing account": "Error importing account",
+  "Choose account type": "Choose account type",
+  "What type of account would you like to import?": "What type of account would you like to import?",
+  "Choose a name": "Choose a name",
+  "Enter your 12 or 24 word recovery phrase or private key": "Enter your 12 or 24 word recovery phrase or private key",
+  "Enter your 12 or 24 word recovery phrase": "Enter your 12 or 24 word recovery phrase",
+  "Word count: %s": "Word count: %s",
+  "Import multiple accounts from this recovery phrase": "Import multiple accounts from this recovery phrase",
+  "Import": "Import"
+}

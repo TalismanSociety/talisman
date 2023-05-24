@@ -16,6 +16,7 @@ import { useIsOnboarded } from "@ui/hooks/useIsOnboarded"
 import { useModalSubscription } from "@ui/hooks/useModalSubscription"
 import { useSetting } from "@ui/hooks/useSettings"
 import { FC, PropsWithChildren, Suspense, lazy, useEffect, useRef } from "react"
+import { useTranslation } from "react-i18next"
 import { Navigate, Route, Routes, useMatch } from "react-router-dom"
 
 import Layout from "./layout"
@@ -71,10 +72,12 @@ const DashboardInner = () => {
   const paritySignerEnabled =
     useIsFeatureEnabled("PARITY_SIGNER") || (hasSpiritKey && spiritClanFeatures)
 
+  const { t } = useTranslation()
+
   return isLoggedIn === "UNKNOWN" ? (
-    <FullScreenLoader spin title="Loading" />
+    <FullScreenLoader spin title={t("Loading")} />
   ) : isLoggedIn === "FALSE" ? (
-    <FullScreenLoader title="Waiting" subtitle="Please unlock the Talisman" />
+    <FullScreenLoader title={t("Waiting")} subtitle={t("Please unlock the Talisman")} />
   ) : (
     // use an empty layout as fallback to prevent flickering
     <Suspense fallback={<Layout />}>

@@ -20,6 +20,7 @@ import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ButtonHTMLAttributes, FC, MouseEvent, useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Popover, PopoverContent, PopoverTrigger, usePopoverContext } from "talisman-ui"
 
@@ -100,6 +101,8 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     navigate("/tokens/add")
   }, [navigate])
 
+  const { t } = useTranslation("portfolio")
+
   return (
     <div className="flex w-full flex-col">
       {displayWalletFunding ? (
@@ -119,27 +122,35 @@ const PageContent = ({ balances }: { balances: Balances }) => {
                     <IconMore />
                   </PopoverTrigger>
                   <PopoverContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-                    <PopoverItem onClick={sendFunds}>Send funds</PopoverItem>
-                    <PopoverItem onClick={copyAddress}>Copy address</PopoverItem>
+                    <PopoverItem onClick={sendFunds}>{t("Send funds")}</PopoverItem>
+                    <PopoverItem onClick={copyAddress}>{t("Copy address")}</PopoverItem>
                     {showTxHistory && (
-                      <PopoverItem onClick={browseTxHistory}>Transaction History</PopoverItem>
+                      <PopoverItem onClick={browseTxHistory}>
+                        {t("Transaction History")}
+                      </PopoverItem>
                     )}
                     {canRename && (
-                      <PopoverItem onClick={openAccountRenameModal}>Rename</PopoverItem>
+                      <PopoverItem onClick={openAccountRenameModal}>{t("Rename")}</PopoverItem>
                     )}
                     {canExportAccount && (
-                      <PopoverItem onClick={openAccountExportModal}>Export as JSON</PopoverItem>
+                      <PopoverItem onClick={openAccountExportModal}>
+                        {t("Export as JSON")}
+                      </PopoverItem>
                     )}
                     {canExportAccountPk && (
                       <PopoverItem onClick={openAccountExportPkModal}>
-                        Export Private Key
+                        {t("Export Private Key")}
                       </PopoverItem>
                     )}
                     {canRemove && (
-                      <PopoverItem onClick={openAccountRemoveModal}>Remove Account</PopoverItem>
+                      <PopoverItem onClick={openAccountRemoveModal}>
+                        {t("Remove Account")}
+                      </PopoverItem>
                     )}
                     {canAddCustomToken && (
-                      <PopoverItem onClick={handleAddCustomToken}>Add Custom Token</PopoverItem>
+                      <PopoverItem onClick={handleAddCustomToken}>
+                        {t("Add Custom Token")}
+                      </PopoverItem>
                     )}
                   </PopoverContent>
                 </Popover>
