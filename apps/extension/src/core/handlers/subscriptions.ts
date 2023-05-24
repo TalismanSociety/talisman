@@ -83,19 +83,19 @@ export function unsubscribe(id: string): void {
   if (subscriptions[id]) delete subscriptions[id]
 }
 
-const subscriptionsKey = Symbol("subscriptions")
-
-type Target<T> = T & (T | { [subscriptionsKey]: Map<string, Subscription> })
-
 export const getObservableSubscriptions = function <T extends object>(this: T) {
+  const subscriptionsSymbol = Symbol("subscriptions")
+
+  type Target<T> = T & (T | { [subscriptionsSymbol]: Map<string, Subscription> })
+
   const unsubscribeObservable = function (this: any, id: string) {
     const self = this as Target<T>
 
     const portUnsubscribeResult = unsubscribe(id)
 
-    if (subscriptionsKey in self) {
-      self[subscriptionsKey].get(id)?.unsubscribe()
-      return self[subscriptionsKey].delete(id) && portUnsubscribeResult
+    if (subscriptionsSymbol in self) {
+      self[subscriptionsSymbol].get(id)?.unsubscribe()
+      return self[subscriptionsSymbol].delete(id) && portUnsubscribeResult
     }
 
     return portUnsubscribeResult
@@ -130,10 +130,10 @@ export const getObservableSubscriptions = function <T extends object>(this: T) {
       )
     )
 
-    if (subscriptionsKey in self) {
-      self[subscriptionsKey].set(id, subscription)
+    if (subscriptionsSymbol in self) {
+      self[subscriptionsSymbol].set(id, subscription)
     } else {
-      Object.assign(self, { [subscriptionsKey]: new Map([[id, subscription]]) })
+      Object.assign(self, { [subscriptionsSymbol]: new Map([[id, subscription]]) })
     }
 
     port.onDisconnect.addListener(() => unsubscribeObservable(id))

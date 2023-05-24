@@ -8,8 +8,8 @@ import type { Port } from "@core/types/base"
 import TalismanRpcHandler from "./rpc"
 
 export default class TalismanHandler extends TabsHandler {
-  #subHandlers: readonly TabsHandler[]
-  #getObservableSubscriptions = getObservableSubscriptions
+  readonly #subHandlers: readonly TabsHandler[]
+  readonly #observableSubscriptions = getObservableSubscriptions.call(this)
 
   constructor(stores: TabStore) {
     super(stores)
@@ -25,7 +25,7 @@ export default class TalismanHandler extends TabsHandler {
   ): Promise<ResponseType<TMessageType>> {
     switch (type) {
       case "pub(talisman.customTokens.subscribe)":
-        return this.#getObservableSubscriptions().subscribe(
+        return this.#observableSubscriptions.subscribe(
           type,
           id,
           port,
@@ -33,7 +33,7 @@ export default class TalismanHandler extends TabsHandler {
         )
 
       case "pub(talisman.customTokens.unsubscribe)":
-        return this.#getObservableSubscriptions().unsubscribe(
+        return this.#observableSubscriptions.unsubscribe(
           request as RequestTypes["pub(talisman.customTokens.unsubscribe)"]
         )
 
