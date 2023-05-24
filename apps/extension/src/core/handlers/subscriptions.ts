@@ -125,5 +125,9 @@ export const createObservableSubscriptions = () => {
     return id
   }.bind(this)
 
-  return { subscriptions, subscribe: subscribeObservable, unsubscribe: unsubscribeObservable }
+  return {
+    subscriptions: subscriptions as ReadonlyMap<string, Omit<Subscription, "unsubscribe">>,
+    subscribe: subscribeObservable,
+    unsubscribe: unsubscribeObservable,
+  }
 }
