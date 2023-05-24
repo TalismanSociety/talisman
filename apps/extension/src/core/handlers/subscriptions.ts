@@ -6,7 +6,8 @@
 import { DEBUG } from "@core/constants"
 import type { KnownSubscriptionDataTypes, MessageTypesWithSubscriptions } from "@core/types"
 import type { Port } from "@core/types/base"
-import { Observable } from "rxjs"
+import { Observable, Subscription } from "rxjs"
+
 type Subscriptions = Record<string, Port>
 
 const subscriptions: Subscriptions = {} // return a subscription callback, that will send the data to the caller via the port
@@ -80,4 +81,65 @@ export function createSubscription<TMessageType extends MessageTypesWithSubscrip
 export function unsubscribe(id: string): void {
   // In the case that the subscription has already been closed, subscriptions[id] may not exist
   if (subscriptions[id]) delete subscriptions[id]
+}
+
+const subscriptionsKey = Symbol("subscriptions")
+
+type Target<T> = T & (T | { [subscriptionsKey]: Map<string, Subscription> })
+
+export const getObservableSubscriptions = function <T extends object>(this: T) {
+  const unsubscribeObservable = function (this: any, id: string) {
+    const self = this as Target<T>
+
+    const portUnsubscribeResult = unsubscribe(id)
+
+    if (subscriptionsKey in self) {
+      self[subscriptionsKey].get(id)?.unsubscribe()
+      return self[subscriptionsKey].delete(id) && portUnsubscribeResult
+    }
+
+    return portUnsubscribeResult
+  }.bind(this)
+
+  const subscribeObservable = function <
+    TMessageType extends MessageTypesWithSubscriptions,
+    TObservableValue,
+    TReturn extends KnownSubscriptionDataTypes<TMessageType>
+  >(
+    this: any,
+    _message: TMessageType,
+    id: string,
+    port: Port,
+    observable: Observable<TObservableValue>,
+    ...rest: TObservableValue extends TReturn
+      ? []
+      : [transform: (value: TObservableValue) => TReturn]
+  ) {
+    const [transform] = rest
+
+    const self = this as Target<T>
+
+    const cb = createSubscription<TMessageType>(id, port)
+
+    const subscription = observable.subscribe((data) =>
+      cb(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        transform?.(data) ?? data
+      )
+    )
+
+    if (subscriptionsKey in self) {
+      unsubscribeObservable(id)
+      self[subscriptionsKey].set(id, subscription)
+    } else {
+      Object.assign(self, { [subscriptionsKey]: new Map([[id, subscription]]) })
+    }
+
+    port.onDisconnect.addListener(() => unsubscribeObservable(id))
+
+    return true
+  }.bind(this)
+
+  return { subscribe: subscribeObservable, unsubscribe: unsubscribeObservable }
 }

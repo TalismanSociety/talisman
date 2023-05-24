@@ -12,7 +12,8 @@ import {
   TokenId,
   TokenList,
 } from "@talismn/chaindata-provider"
-import { PromiseExtended, Transaction, TransactionMode } from "dexie"
+import { PromiseExtended, Transaction, TransactionMode, liveQuery } from "dexie"
+import { from } from "rxjs"
 
 import { addCustomChainRpcs } from "./addCustomChainRpcs"
 import { fetchChains, fetchEvmNetwork, fetchEvmNetworks, fetchToken, fetchTokens } from "./graphql"
@@ -232,6 +233,16 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     } catch (cause) {
       throw new Error("Failed to reset evm network", { cause })
     }
+  }
+
+  subscribeCustomTokens() {
+    return from(
+      liveQuery(() =>
+        this.#db.tokens
+          .filter((token): token is Extract<Token, { isCustom: true }> => "isCustom" in token)
+          .toArray()
+      )
+    )
   }
 
   async addCustomToken(customToken: Token) {

@@ -1,19 +1,19 @@
 import { ChainId } from "@core/domains/chains/types"
 import { EvmNetworkId } from "@core/domains/ethereum/types"
 import { RequestIdOnly } from "@core/types/base"
-import { CustomEvmErc20Token } from "@talismn/balances-evm-erc20"
 import type { CustomEvmErc20Token as CustomErc20Token } from "@talismn/balances-evm-erc20"
-
-export type { CustomErc20Token }
-export type { Token, TokenId, TokenList, IToken } from "@talismn/chaindata-provider"
-export type { EvmNativeToken, CustomEvmNativeToken } from "@talismn/balances-evm-native"
+import { CustomEvmErc20Token } from "@talismn/balances-evm-erc20"
+import type { Token } from "@talismn/chaindata-provider"
+export type { EvmErc20Token as Erc20Token } from "@talismn/balances-evm-erc20"
+export type { CustomEvmNativeToken, EvmNativeToken } from "@talismn/balances-evm-native"
 export type {
-  SubNativeToken as NativeToken,
   CustomSubNativeToken as CustomNativeToken,
+  SubNativeToken as NativeToken,
 } from "@talismn/balances-substrate-native"
 export type { SubOrmlToken as OrmlToken } from "@talismn/balances-substrate-orml"
-export type { EvmErc20Token as Erc20Token } from "@talismn/balances-evm-erc20"
+export type { IToken, Token, TokenId, TokenList } from "@talismn/chaindata-provider"
 export type { TokenRateCurrency, TokenRates } from "@talismn/token-rates"
+export type { CustomErc20Token }
 
 // orml tokens types -----------------------
 
@@ -38,6 +38,8 @@ export interface TokenMessages {
   "pri(tokens.subscribe)": [null, boolean, boolean]
 
   // custom erc20 token management
+  "pub(tokens.custom.subscribe)": [null, string, readonly Token[]]
+  "pub(tokens.custom.unsubscribe)": [string, boolean]
   "pri(tokens.erc20.custom.add)": [CustomEvmErc20TokenCreate, boolean]
   "pri(tokens.erc20.custom.remove)": [RequestIdOnly, boolean]
 }

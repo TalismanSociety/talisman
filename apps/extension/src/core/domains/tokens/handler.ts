@@ -1,5 +1,6 @@
 import { getErc20TokenId } from "@core/domains/ethereum/helpers"
 import { CustomErc20Token, CustomErc20TokenCreate } from "@core/domains/tokens/types"
+import { getObservableSubscriptions } from "@core/handlers/subscriptions"
 import { talismanAnalytics } from "@core/libs/Analytics"
 import { ExtensionHandler } from "@core/libs/Handler"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -9,6 +10,8 @@ import { githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { MessageTypes, RequestTypes, ResponseType } from "core/types"
 
 export default class TokensHandler extends ExtensionHandler {
+  #getObservableSubscriptions = getObservableSubscriptions
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -26,6 +29,17 @@ export default class TokensHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       // ERC20 token handlers -----------------------------------------------------
       // --------------------------------------------------------------------
+
+      case "pub(tokens.custom.subscribe)":
+        return this.#getObservableSubscriptions().subscribe(
+          type,
+          id,
+          port,
+          chaindataProvider.subscribeCustomTokens()
+        )
+
+      case "pub(tokens.custom.unsubscribe)":
+        return this.#getObservableSubscriptions().unsubscribe(id)
 
       case "pri(tokens.erc20.custom.add)": {
         const token = request as CustomErc20TokenCreate

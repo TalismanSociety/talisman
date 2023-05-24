@@ -160,9 +160,9 @@ export declare type ResponseType<TMessageType extends keyof RequestSignatures> =
  * A callback with either an error or a result.
  */
 export interface SubscriptionCallback<Result> {
-  (error: null, result: Result): void
+  (error: null, result: Result): unknown
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (error: any, result?: never): void
+  (error: any, result?: never): unknown
 }
 
 /**
