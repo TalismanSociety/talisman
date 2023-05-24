@@ -88,7 +88,7 @@ const TxIconContainer: FC<
       {!!networkId && (
         <ChainLogo
           id={networkId}
-          className="border-grey-800 !absolute top-[-4px] right-[-4px] h-8 w-8 rounded-full border"
+          className="border-grey-800 !absolute right-[-4px] top-[-4px] h-8 w-8 rounded-full border"
         />
       )}
     </TooltipTrigger>
@@ -185,7 +185,7 @@ const EvmTxActions: FC<{
   return (
     <div
       className={classNames(
-        " absolute top-0 right-0 z-10 flex h-[36px] items-center",
+        " absolute right-0 top-0 z-10 flex h-[36px] items-center",
         isOpen ? "visible opacity-100" : "invisible opacity-0",
         enabled && "group-hover:visible group-hover:opacity-100"
       )}
@@ -361,18 +361,18 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
     >
       {tx.siteUrl ? (
         <TxIconContainer tooltip={tx.siteUrl} networkId={evmNetwork?.id}>
-          <Favicon siteUrl={tx.siteUrl} className="h-16 w-16" />
+          <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
         </TxIconContainer>
       ) : isTransfer && token ? (
         <TxIconContainer
           tooltip={`${token?.symbol} on ${evmNetwork?.name}`}
           networkId={evmNetwork?.id}
         >
-          <TokenLogo tokenId={token.id} className="h-16 w-16" />
+          <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
         </TxIconContainer>
       ) : (
         <TxIconContainer tooltip={evmNetwork?.name}>
-          <ChainLogo id={evmNetwork?.id} className="h-16 w-16" />
+          <ChainLogo id={evmNetwork?.id} className="!h-16 !w-16" />
         </TxIconContainer>
       )}
 
@@ -472,7 +472,7 @@ const SubTxActions: FC<{
   return (
     <div
       className={classNames(
-        " absolute top-0 right-0 z-10 flex h-[36px] items-center",
+        " absolute right-0 top-0 z-10 flex h-[36px] items-center",
         isOpen ? "visible opacity-100" : "invisible opacity-0",
         enabled && "group-hover:visible group-hover:opacity-100"
       )}
@@ -570,15 +570,15 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
     >
       {tx.siteUrl ? (
         <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
-          <Favicon siteUrl={tx.siteUrl} className="h-16 w-16" />
+          <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
         </TxIconContainer>
       ) : isTransfer && token ? (
         <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
-          <TokenLogo tokenId={token.id} className="h-16 w-16" />
+          <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
         </TxIconContainer>
       ) : (
         <TxIconContainer tooltip={chain?.name}>
-          <ChainLogo id={chain?.id} className="h-16 w-16" />
+          <ChainLogo id={chain?.id} className="!h-16 !w-16" />
         </TxIconContainer>
       )}
       <div className="leading-paragraph relative flex w-full grow justify-between">
