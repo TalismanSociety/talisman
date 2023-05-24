@@ -44,6 +44,46 @@ All our package and apps are 100% [TypeScript](https://www.typescriptlang.org/).
 6. Click `Load unpacked` on the top left of the page and select the `apps/extension/dist` directory.
 7. Change some code!
 
+## i18n (wallet extension development)
+
+We use i18next in the wallet to make it available in a bunch of languages.
+
+When building UI features, please follow the following spec to ensure they're translatable:
+
+1. Import the `useTranslation` hook into your React components:
+
+```tsx
+import { useTranslation } from "react-i18next"
+```
+
+2. Use the hook in your component to get access to the `t` function:
+
+```tsx
+// uses the `common` namespace (`apps/extension/public/locales/en/common.json`)
+const { t } = useTranslation()
+
+// uses the `portfolio` namespace (`apps/extension/public/locales/en/portfolio.json`)
+const { t } = useTranslation("portfolio")
+```
+
+3. Wrap any user-visible language in your component with the `t` function:
+
+```tsx
+return (
+  <div className="flex flex-col items-start">
+    <div className="text-base">{t("Account Assets")}</div>
+    <div className="text-sm">{t("Account has %s assets", assets.length)}</div>
+  </div>
+)
+```
+
+4. Once you've finished building your feature, generate the new translation keys for the locales files (and don't forget to commit them!):
+
+```bash
+yarn update:translations
+git add apps/extension/public/locales
+```
+
 ### Scripts
 
 - `dev` : builds and watches all packages/apps with hot reloading
