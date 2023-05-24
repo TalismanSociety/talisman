@@ -2,5 +2,7 @@
   "Loading": "Loading",
   "Waiting": "Waiting",
   "Please unlock the Talisman": "Please unlock the Talisman",
+  "Pin Talisman for easy access": "Pin Talisman for easy access",
+  "Click <ExtensionButtonIcon /> then <PinIcon /> to pin Talisman": "Click <ExtensionButtonIcon /> then <PinIcon /> to pin Talisman",
   "Word count (sprintf example usage): %s": "Word count (sprintf example usage): %s"
 }
