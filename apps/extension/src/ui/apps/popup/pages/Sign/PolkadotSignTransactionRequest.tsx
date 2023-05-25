@@ -1,7 +1,7 @@
 import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
 import { SubstrateSigningRequest } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
-import { InfoIcon } from "@talisman/theme/icons"
+import { InfoIcon, LoaderIcon } from "@talisman/theme/icons"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
@@ -82,7 +82,7 @@ const EstimatedFeesRow: FC<PolkadotSignTransactionRequestProps> = ({ signingRequ
       </div>
       <div>
         {analysing ? (
-          <div className="bg-grey-800 rounded-xs h-8 w-72 animate-pulse"></div>
+          <LoaderIcon className="animate-spin-slow inline-block" />
         ) : error ? (
           <Tooltip placement="bottom-end">
             <TooltipTrigger>Unknown</TooltipTrigger>
