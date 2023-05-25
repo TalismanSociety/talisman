@@ -131,6 +131,7 @@ export const filterBaseLocks = (
   return locks.filter(isNonBaseLock)
 }
 
+// TODO: Make these titles translatable
 export const getLockTitle = (
   lock: Pick<LockedAmount<string>, "label" | "meta">,
   { balance }: { balance?: Balance } = {}

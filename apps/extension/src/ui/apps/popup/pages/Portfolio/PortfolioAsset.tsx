@@ -9,6 +9,7 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
 
 const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string }) => {
@@ -19,6 +20,8 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio/assets"), [navigate])
 
   const total = useMemo(() => balancesToDisplay.sum.fiat("usd").total, [balancesToDisplay])
+
+  const { t } = useTranslation("portfolio")
 
   return (
     <>
@@ -31,8 +34,8 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         </div>
         <div className="flex grow flex-col gap-2 pl-2 text-sm">
           <div className="text-body-secondary flex justify-between">
-            <div>Asset</div>
-            <div>Total</div>
+            <div>{t("Asset")}</div>
+            <div>{t("Total")}</div>
           </div>
           <div className="text-md flex justify-between font-bold">
             <div>{symbol}</div>

@@ -351,7 +351,7 @@ export const AccountAddSecretMnemonic = () => {
           spellCheck={false}
         />
         <div className="mt-8 flex justify-between text-xs">
-          <div className="text-body-secondary">{t("Word count: %s", words)}</div>
+          <div className="text-body-secondary">{t("Word count: {{words}}", { words })}</div>
           <div className="text-alert-warn text-right">{errors.mnemonic?.message}</div>
         </div>
         {/* Waiting for designers validation for this feature, but it's ready ! */}

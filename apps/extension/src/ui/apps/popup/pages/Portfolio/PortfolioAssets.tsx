@@ -20,6 +20,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import { ButtonHTMLAttributes, FC, useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
@@ -71,6 +72,8 @@ const PageContent = ({ balances }: { balances: Balances }) => {
     api.dashboardOpen("/tokens/add")
   }, [])
 
+  const { t } = useTranslation("portfolio")
+
   return (
     <>
       <div className="flex w-full gap-8">
@@ -84,7 +87,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
           <div className="flex grow flex-col gap-2 overflow-hidden pl-2 text-sm">
             <div className="flex items-center gap-3">
               <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap">
-                {account ? account.name ?? "Unnamed Account" : "All Accounts"}
+                {account ? account.name ?? t("Unnamed Account") : t("All Accounts")}
               </div>
               <AccountTypeIcon className="text-primary" origin={account?.origin} />
             </div>
@@ -101,7 +104,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
             >
               <CopyIcon />
             </TooltipTrigger>
-            <TooltipContent>Copy address</TooltipContent>
+            <TooltipContent>{t("Copy address")}</TooltipContent>
           </Tooltip>
           <Tooltip placement="bottom">
             <TooltipTrigger
@@ -110,7 +113,7 @@ const PageContent = ({ balances }: { balances: Balances }) => {
             >
               <PaperPlaneIcon />
             </TooltipTrigger>
-            <TooltipContent>Send</TooltipContent>
+            <TooltipContent>{t("Send")}</TooltipContent>
           </Tooltip>
           {account && (
             <Popover placement="bottom-end">
@@ -120,25 +123,29 @@ const PageContent = ({ balances }: { balances: Balances }) => {
                     <IconMore />
                   </PopoverTrigger>
                 </TooltipTrigger>
-                <TooltipContent>More options</TooltipContent>
+                <TooltipContent>{t("More options")}</TooltipContent>
               </Tooltip>
               <PopoverContent className="border-grey-800 z-50 flex w-min flex-col whitespace-nowrap rounded-sm border bg-black px-2 py-3 text-left text-sm shadow-lg">
-                <PopoverItem onClick={copyAddress}>Copy address</PopoverItem>
+                <PopoverItem onClick={copyAddress}>{t("Copy address")}</PopoverItem>
                 {showTxHistory && (
-                  <PopoverItem onClick={browseTxHistory}>Transaction History</PopoverItem>
+                  <PopoverItem onClick={browseTxHistory}>{t("Transaction History")}</PopoverItem>
                 )}
-                {canRename && <PopoverItem onClick={openAccountRenameModal}>Rename</PopoverItem>}
+                {canRename && (
+                  <PopoverItem onClick={openAccountRenameModal}>{t("Rename")}</PopoverItem>
+                )}
                 {canExportAccount && (
-                  <PopoverItem onClick={openExportAccountModal}>Export as JSON</PopoverItem>
+                  <PopoverItem onClick={openExportAccountModal}>{t("Export as JSON")}</PopoverItem>
                 )}
                 {canExportAccountPk && (
-                  <PopoverItem onClick={openExportAccountPkModal}>Export Private Key</PopoverItem>
+                  <PopoverItem onClick={openExportAccountPkModal}>
+                    {t("Export Private Key")}
+                  </PopoverItem>
                 )}
                 {canRemove && (
-                  <PopoverItem onClick={openAccountRemoveModal}>Remove Account</PopoverItem>
+                  <PopoverItem onClick={openAccountRemoveModal}>{t("Remove Account")}</PopoverItem>
                 )}
                 {canAddCustomToken && (
-                  <PopoverItem onClick={handleAddCustomToken}>Add Custom Token</PopoverItem>
+                  <PopoverItem onClick={handleAddCustomToken}>{t("Add Custom Token")}</PopoverItem>
                 )}
               </PopoverContent>
             </Popover>

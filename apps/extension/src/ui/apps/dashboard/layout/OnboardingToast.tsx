@@ -33,7 +33,7 @@ export const OnboardingToast = () => {
               ExtensionButtonIcon: <ExtensionButtonIcon className="inline-block align-baseline" />,
               PinIcon: <PinIcon className="inline-block" />,
             }}
-          ></Trans>
+          />
         </div>
       </div>
     ),

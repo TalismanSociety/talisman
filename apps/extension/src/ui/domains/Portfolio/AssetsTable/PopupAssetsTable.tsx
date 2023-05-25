@@ -9,6 +9,7 @@ import Fiat from "@ui/domains/Asset/Fiat"
 import Tokens from "@ui/domains/Asset/Tokens"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { MouseEventHandler, ReactNode, useCallback, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -162,6 +163,8 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
     summary.lockedTokens,
   ])
 
+  const { t } = useTranslation("portfolio")
+
   if (!token || !summary) return null
 
   return (
@@ -173,12 +176,12 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
         <div className="relative flex grow gap-4 pr-6">
           <div className="relative grow">
             {/* we want content from this cell to be hidden if there are too many tokens to display on right cell */}
-            <div className="absolute top-0 left-0 flex w-full flex-col gap-2 overflow-hidden text-left">
+            <div className="absolute left-0 top-0 flex w-full flex-col gap-2 overflow-hidden text-left">
               <div className="text-body flex items-center gap-3 whitespace-nowrap text-sm font-bold">
                 {token.symbol}
                 {!!token.isTestnet && (
-                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded py-1 px-3 font-light">
-                    Testnet
+                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                    {t("Testnet")}
                   </span>
                 )}
               </div>
@@ -224,12 +227,19 @@ const AssetRow = ({ balances, locked }: AssetRowProps) => {
               <ZapIcon className="h-[2.6rem] w-[2.6rem]" />
             </div>
             <div className="flex flex-col justify-start gap-[0.2rem] text-start text-sm text-white">
-              <span className="font-bold">You're eligible for {token?.symbol} staking!</span>
+              <span className="font-bold">
+                {t("You're eligible for {{symbol}} staking!", { symbol: token?.symbol })}
+              </span>
               <div className="inline-flex gap-1 text-xs">
-                Earn ~15% yield on your {token?.symbol} on the
-                <span className="text-primary-500 flex gap-1">
-                  Portal <ExternalLinkIcon />
-                </span>
+                <Trans
+                  t={t}
+                  defaults={`Earn ~15% yield on your {{symbol}} on the <Highlight>Portal <ExternalLinkIcon /></Highlight>`}
+                  values={{ symbol: token?.symbol }}
+                  components={{
+                    Highlight: <span className="text-primary-500 flex gap-1" />,
+                    ExternalLinkIcon: <ExternalLinkIcon />,
+                  }}
+                />
               </div>
             </div>
           </div>
@@ -293,12 +303,14 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
     return { totalAvailable: transferable, totalLocked: locked + reserved }
   }, [balances])
 
+  const { t } = useTranslation("portfolio")
+
   if (!available.length && !locked.length) return null
 
   return (
     <FadeIn>
       <div>
-        <BalancesGroup label="Available" fiatAmount={totalAvailable}>
+        <BalancesGroup label={t("Available")} fiatAmount={totalAvailable}>
           {available.map(([symbol, b]) => (
             <AssetRow key={symbol} balances={b} />
           ))}
@@ -307,7 +319,9 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
           ))}
           {!skeletons && !available.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
-              There are no available balances{account ? " for this account" : ""}.
+              {account
+                ? t("There are no available balances for this account.")
+                : t("There are no available balances.")}
             </div>
           )}
           <div className="h-8" />
@@ -315,7 +329,7 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
         <BalancesGroup
           label={
             <div className="flex items-center gap-2">
-              <div>Locked</div>
+              <div>{t("Locked")}</div>
               <div>
                 <SectionLockIcon />
               </div>
@@ -328,7 +342,9 @@ export const PopupAssetsTable = ({ balances }: GroupedAssetsTableProps) => {
           ))}
           {!locked.length && (
             <div className="text-body-secondary bg-black-secondary rounded-sm py-10 text-center text-xs">
-              There are no locked balances{account ? " for this account" : ""}.
+              {account
+                ? t("There are no locked balances.")
+                : t("There are no locked balances for this account.")}
             </div>
           )}
         </BalancesGroup>

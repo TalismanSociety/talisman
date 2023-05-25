@@ -112,9 +112,13 @@ const PageContent = ({ balances }: { balances: Balances }) => {
       ) : (
         <>
           <div className="flex w-full gap-8">
-            <Statistics className="max-w-[40%]" title="Total Portfolio Value" fiat={portfolio} />
-            <Statistics className="max-w-[40%]" title="Locked" fiat={locked} locked />
-            <Statistics className="max-w-[40%]" title="Available" fiat={available} />
+            <Statistics
+              className="max-w-[40%]"
+              title={t("Total Portfolio Value")}
+              fiat={portfolio}
+            />
+            <Statistics className="max-w-[40%]" title={t("Locked")} fiat={locked} locked />
+            <Statistics className="max-w-[40%]" title={t("Available")} fiat={available} />
             <div className="flex grow items-center justify-end gap-8">
               {account && (
                 <Popover placement="bottom-end">

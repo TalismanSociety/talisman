@@ -1,6 +1,6 @@
 import { Transition } from "@headlessui/react"
 import { classNames } from "@talismn/util"
-import { FC, MouseEventHandler, ReactNode, useCallback } from "react"
+import { FC, MouseEventHandler, ReactNode, Suspense, useCallback } from "react"
 import { createPortal } from "react-dom"
 
 type ModalProps = {
@@ -27,7 +27,7 @@ export const Modal: FC<ModalProps> = ({ children, isOpen, className, containerId
     <Transition show={!!isOpen} appear>
       <Transition.Child
         className={classNames(
-          "bg-grey-900/50 top-0 left-0 z-10 h-full w-full backdrop-blur-sm",
+          "bg-grey-900/50 left-0 top-0 z-10 h-full w-full backdrop-blur-sm",
           containerId ? "absolute" : "fixed",
           onDismiss && "cursor-pointer"
         )}
@@ -41,7 +41,7 @@ export const Modal: FC<ModalProps> = ({ children, isOpen, className, containerId
       ></Transition.Child>
       <div
         className={classNames(
-          "top-0 left-0 z-20 h-full w-full",
+          "left-0 top-0 z-20 h-full w-full",
           "flex flex-col items-center justify-center",
           "pointer-events-none",
           containerId ? "absolute" : "fixed"
@@ -56,7 +56,7 @@ export const Modal: FC<ModalProps> = ({ children, isOpen, className, containerId
           leaveFrom="opacity-100 scale-100"
           leaveTo="opacity-0 scale-95"
         >
-          {children}
+          <Suspense fallback={null}>{children}</Suspense>
         </Transition.Child>
       </div>
     </Transition>,

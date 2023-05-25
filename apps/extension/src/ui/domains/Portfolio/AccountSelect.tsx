@@ -13,6 +13,7 @@ import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { UseSelectStateChange, useSelect } from "downshift"
 import { useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import styled, { css } from "styled-components"
 
 const Button = styled.button`
@@ -275,8 +276,9 @@ const SingleAccountOption = (props: SingleAccountOptionProps) => {
 const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
   const { sum } = useBalances()
   const { total } = useMemo(() => sum.fiat("usd"), [sum])
+  const { t } = useTranslation("portfolio")
 
-  return <AccountOption name="All accounts" totalUsd={total} withTrack={withTrack} />
+  return <AccountOption name={t("All accounts")} totalUsd={total} withTrack={withTrack} />
 }
 
 type DropdownItem = {

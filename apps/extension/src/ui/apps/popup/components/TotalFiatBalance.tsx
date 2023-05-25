@@ -5,6 +5,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const ToggleHide = styled(IconButton).attrs((props: { showIcon?: boolean }) => ({
@@ -90,11 +91,13 @@ export const TotalFiatBalance = ({ className }: { className?: string }) => {
     setHideBalances((prev) => !prev)
   }, [genericEvent, setHideBalances])
 
+  const { t } = useTranslation("portfolio")
+
   return (
     <Container className={className}>
       <TitleRow>
         <Side></Side>
-        <Title>Total Portfolio</Title>
+        <Title>{t("Total Portfolio")}</Title>
         <Side>
           <ToggleHide showIcon={hideBalances} onClick={toggleHideBalance}>
             {hideBalances ? <EyeIcon /> : <EyeOffIcon />}

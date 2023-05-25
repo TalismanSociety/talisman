@@ -4,5 +4,12 @@
   "Please unlock the Talisman": "",
   "Pin Talisman for easy access": "",
   "Click <ExtensionButtonIcon /> then <PinIcon /> to pin Talisman": "",
-  "Word count (sprintf example usage): %s": ""
+  "All accounts": "",
+  "EVM Testnet": "",
+  "EVM Blockchain": "",
+  "Testnet": "",
+  "{{name}} Parachain": "",
+  "Parachain": "",
+  "Relay Chain": "",
+  "Blockchain": ""
 }

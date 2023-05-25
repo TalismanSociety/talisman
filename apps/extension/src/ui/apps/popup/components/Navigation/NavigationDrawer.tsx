@@ -24,6 +24,7 @@ import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const Container = styled.aside`
@@ -166,12 +167,14 @@ export const NavigationDrawer: FC = () => {
 
   const { isNotConfirmed } = useMnemonicBackup()
 
+  const { t } = useTranslation("navigation")
+
   return (
     <Drawer anchor="bottom" open={isOpen} onClose={close} fullScreen>
       <Container>
         <header>
           <FullColorSmallLogo className="logo" />
-          <IconButton onClick={close} aria-label="close menu">
+          <IconButton onClick={close} aria-label={t("Close menu")}>
             <XIcon />
           </IconButton>
         </header>
@@ -179,33 +182,33 @@ export const NavigationDrawer: FC = () => {
           <ScrollContainer>
             <Nav column>
               <NavItemButton icon={<PaperPlaneIcon />} onClick={handleSendFundsClick}>
-                Send Funds
+                {t("Send Funds")}
               </NavItemButton>
               {showBuyTokens && (
                 <NavItemButton icon={<CreditCardIcon />} onClick={handleBuyTokensClick}>
-                  Buy Crypto
+                  {t("Buy Crypto")}
                 </NavItemButton>
               )}
               <NavItemButton
                 icon={hideBalances ? <EyeIcon /> : <EyeOffIcon />}
                 onClick={toggleHideBalance}
               >
-                {hideBalances ? "Show" : "Hide"} Balances{" "}
+                {hideBalances ? t("Show Balances") : t("Hide Balances")}
               </NavItemButton>
               <NavItemButton icon={<PlusIcon />} onClick={handleAddAccountClick}>
-                Add Account
+                {t("Add Account")}
               </NavItemButton>
               <NavItemButton icon={<SettingsIcon />} onClick={handleSettingsClick}>
-                Settings
+                {t("Settings")}
               </NavItemButton>
               <NavItemButton
                 icon={isNotConfirmed ? <DownloadAlertIcon /> : <DownloadIcon />}
                 onClick={handleBackupClick}
               >
-                Backup Wallet
+                {t("Backup Wallet")}
               </NavItemButton>
               <NavItemButton icon={<LockIcon />} onClick={handleLock}>
-                Lock Wallet
+                {t("Lock Wallet")}
               </NavItemButton>
             </Nav>
           </ScrollContainer>

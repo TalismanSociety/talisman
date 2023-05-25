@@ -2,7 +2,6 @@ import { DEBUG } from "@core/constants"
 import i18next from "i18next"
 import LanguageDetector from "i18next-browser-languagedetector"
 import HttpBackend, { HttpBackendOptions } from "i18next-http-backend"
-import sprintf from "i18next-sprintf-postprocessor"
 import { initReactI18next } from "react-i18next"
 
 import i18nextParserConfig from "../../i18next-parser.config.cjs"
@@ -10,7 +9,6 @@ import i18nextParserConfig from "../../i18next-parser.config.cjs"
 i18next
   .use(HttpBackend)
   .use(LanguageDetector)
-  .use(sprintf)
   .use(initReactI18next)
   .init<HttpBackendOptions>({
     // use 'common' as default and fallback namespace
@@ -48,13 +46,6 @@ i18next
     // show debug info in debug builds
     debug: DEBUG,
 
-    // allow sprintf in `t` function by default
-    // e.g.
-    // const words = 12
-    // const { t } = useTranslation('account-add')
-    // t("Word count (sprintf example usage): %s", words) // > 'Word count (sprintf example usage): 12'
-    overloadTranslationOptionHandler: sprintf.overloadTranslationOptionHandler,
-
     // user lang auto-detection config
     detection: {
       // use localstorage if the key `lang` exists, otherwise
@@ -73,12 +64,6 @@ i18next
     interpolation: {
       escapeValue: false, // not needed for react as it escapes by default
     },
-    react: {
-      bindI18n: "languageChanged",
-      bindI18nStore: "",
-      transEmptyNodeValue: "",
-      transSupportBasicHtmlNodes: true,
-      transKeepBasicHtmlNodesFor: ["br", "strong", "i"],
-      useSuspense: true,
-    },
   })
+
+export default i18next

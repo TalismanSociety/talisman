@@ -1,13 +1,14 @@
 import { Balances } from "@core/domains/balances/types"
 import { Address } from "@core/types/base"
-import { getNetworkCategory } from "@core/util/getNetworkCategory"
 import { sortBigBy } from "@talisman/util/bigHelper"
 import { useBalancesStatus } from "@talismn/balances-react"
 import { BalanceLockType, filterBaseLocks, getLockTitle } from "@talismn/balances-substrate-native"
 import { ChainId, EvmNetworkId } from "@talismn/chaindata-provider"
 import useChain from "@ui/hooks/useChain"
+import { useNetworkCategory } from "@ui/hooks/useNetworkCategory"
 import BigNumber from "bignumber.js"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useSelectedAccount } from "../SelectedAccountContext"
 import { useTokenBalancesSummary } from "../useTokenBalancesSummary"
@@ -33,6 +34,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
 
   const { account } = useSelectedAccount()
   const { summary, tokenBalances, token } = useTokenBalancesSummary(balances)
+  const { t } = useTranslation("portfolio")
 
   const detailRows = useMemo((): DetailRow[] => {
     if (!summary) return []
@@ -42,7 +44,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
       ? [
           {
             key: "available",
-            title: "Available",
+            title: t("Available"),
             tokens: summary.availableTokens,
             fiat: summary.availableFiat,
             locked: false,
@@ -50,7 +52,7 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
         ]
       : tokenBalances.filterNonZero("transferable").each.map((b) => ({
           key: `${b.id}-available`,
-          title: "Available",
+          title: t("Available"),
           tokens: BigNumber(b.transferable.tokens),
           fiat: b.transferable.fiat("usd"),
           locked: false,
@@ -89,14 +91,11 @@ export const useChainTokenBalances = ({ chainId, balances }: ChainTokenBalancesP
     return [...available, ...locked, ...reserved]
       .filter((row) => row && row.tokens.gt(0))
       .sort(sortBigBy("tokens", true))
-  }, [account, summary, tokenBalances])
+  }, [t, account, summary, tokenBalances])
 
   const { evmNetwork } = balances.sorted[0]
   const relay = useChain(chain?.relay?.id)
-  const networkType = useMemo(
-    () => getNetworkCategory({ chain, evmNetwork, relay }),
-    [chain, evmNetwork, relay]
-  )
+  const networkType = useNetworkCategory({ chain, evmNetwork, relay })
 
   const status = useBalancesStatus(balances)
 

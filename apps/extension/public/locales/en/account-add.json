@@ -10,7 +10,7 @@
   "Choose a name": "Choose a name",
   "Enter your 12 or 24 word recovery phrase or private key": "Enter your 12 or 24 word recovery phrase or private key",
   "Enter your 12 or 24 word recovery phrase": "Enter your 12 or 24 word recovery phrase",
-  "Word count: %s": "Word count: %s",
+  "Word count: {{words}}": "Word count: {{words}}",
   "Import multiple accounts from this recovery phrase": "Import multiple accounts from this recovery phrase",
   "Import": "Import"
 }
