@@ -15,6 +15,7 @@ i18next
   .init<HttpBackendOptions>({
     // use 'common' as default and fallback namespace
     // imported from i18next-parser.config.cjs so that these two files are kept in sync
+    ns: i18nextParserConfig.defaultNamespace,
     defaultNS: i18nextParserConfig.defaultNamespace,
     fallbackNS: i18nextParserConfig.defaultNamespace,
 
