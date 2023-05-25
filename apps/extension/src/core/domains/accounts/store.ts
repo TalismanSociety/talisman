@@ -7,9 +7,9 @@ import { Err, Ok, Result } from "ts-results"
 const storageKey = "nursery"
 
 type LEGACY_SEED_PREFIX = "----"
-const LEGACY_SEED_PREFIX = "----"
+export const LEGACY_SEED_PREFIX = "----"
 
-type LegacySeedObj = {
+export type LegacySeedObj = {
   seed: `${LEGACY_SEED_PREFIX}${string}`
 }
 
@@ -28,7 +28,9 @@ export const encryptSeed = async (seed: string, password: string) => {
   return cipher
 }
 
-const legacyUnpackSeed = ({ seed }: LegacySeedObj): Result<string, "Unable to decrypt seed"> => {
+export const legacyUnpackSeed = ({
+  seed,
+}: LegacySeedObj): Result<string, "Unable to decrypt seed"> => {
   if (!seed.startsWith(LEGACY_SEED_PREFIX)) return Err("Unable to decrypt seed")
   const seedString = seed.split(LEGACY_SEED_PREFIX)[1]
   return Ok(seedString)
