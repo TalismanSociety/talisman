@@ -1,4 +1,3 @@
-import { captureException } from "@sentry/browser"
 import { PortfolioProvider } from "@ui/domains/Portfolio/context"
 import { NomPoolStakingBannerProvider } from "@ui/domains/Portfolio/NomPoolStakingContext"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -22,14 +21,6 @@ export const Portfolio = () => {
       updateSearchParams(searchParams, { replace: true })
     }
   }, [searchParams, select, updateSearchParams])
-
-  useEffect(() => {
-    try {
-      throw new Error("Test error")
-    } catch (err) {
-      captureException(err)
-    }
-  }, [])
 
   return (
     // share layout to prevent sidebar flickering when navigating between the 2 pages
