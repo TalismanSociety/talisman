@@ -1,3 +1,4 @@
+import { getPrimaryAccount } from "@core/domains/accounts/helpers"
 import { AccountTypes } from "@core/domains/accounts/types"
 import { appStore } from "@core/domains/app"
 import { api } from "@ui/api"
@@ -18,7 +19,7 @@ const useMnemonicBackup = () => {
   const backupConfirmed = useMnemonicBackupConfirmed()
 
   const talismanSeedAddresses = useMemo(() => {
-    const seedAccount = accounts.find((acc) => acc.origin === AccountTypes.ROOT)
+    const seedAccount = getPrimaryAccount(true)
     if (!seedAccount) return []
     return [
       seedAccount.address,

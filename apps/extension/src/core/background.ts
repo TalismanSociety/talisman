@@ -1,13 +1,14 @@
 import "@core/util/enableLogsInDevelopment"
 
 import { initSentry } from "@core/config/sentry"
-import { DEBUG, PORT_CONTENT, PORT_EXTENSION, TALISMAN_WEB_APP_DOMAIN, TEST } from "@core/constants"
+import { DEBUG, PORT_CONTENT, PORT_EXTENSION, TALISMAN_WEB_APP_DOMAIN } from "@core/constants"
 import { consoleOverride } from "@core/util/logging"
 import { AccountsStore } from "@polkadot/extension-base/stores"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 import { cryptoWaitReady } from "@polkadot/util-crypto"
 import * as Sentry from "@sentry/browser"
+import { lt } from "semver"
 import Browser, { Runtime } from "webextension-polyfill"
 
 import sitesAuthorisedStore from "./domains/sitesAuthorised/store"
@@ -23,7 +24,7 @@ void Browser.browserAction.setBadgeBackgroundColor({ color: "#d90000" })
 // check the installed reason
 // if install, we want to check the storage for prev onboarded info
 // if not onboarded, show the onboard screen
-Browser.runtime.onInstalled.addListener(async ({ reason }) => {
+Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
   Browser.storage.local.get(["talismanOnboarded", "app"]).then((data) => {
     // open onboarding when reason === "install" and data?.talismanOnboarded !== true
     // open dashboard data?.talismanOnboarded === true
@@ -35,24 +36,25 @@ Browser.runtime.onInstalled.addListener(async ({ reason }) => {
     }
   })
 
-  if (reason === "update") {
+  if (reason === "update" && previousVersion && lt(previousVersion, "1.4.0")) {
     // once off migration to add `connectAllSubstrate` to the record for the Talisman Web App
     const site = await sitesAuthorisedStore.get(TALISMAN_WEB_APP_DOMAIN)
-    if (!site)
-      // do this with a small delay so hopefully all present accounts will be loaded from disk
-      setTimeout(
-        () =>
-          sitesAuthorisedStore.set({
-            [TALISMAN_WEB_APP_DOMAIN]: {
-              addresses: keyring.getAccounts().map(({ address }) => address),
-              connectAllSubstrate: true,
-              id: TALISMAN_WEB_APP_DOMAIN,
-              origin: "Talisman",
-              url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
-            },
-          }),
-        DEBUG || TEST ? 0 : 2000
-      )
+    if (!site) {
+      const localData = await Browser.storage.local.get()
+      const addresses = Object.entries(localData)
+        .filter(([key]) => key.startsWith("account:0x"))
+        .map(([, value]: [string, { address: string }]) => value.address)
+
+      sitesAuthorisedStore.set({
+        [TALISMAN_WEB_APP_DOMAIN]: {
+          addresses,
+          connectAllSubstrate: true,
+          id: TALISMAN_WEB_APP_DOMAIN,
+          origin: "Talisman",
+          url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
+        },
+      })
+    }
   }
 })
 

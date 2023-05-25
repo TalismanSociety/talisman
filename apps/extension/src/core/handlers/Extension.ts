@@ -77,8 +77,7 @@ export default class Extension extends ExtensionHandler {
           const sites = await stores.sites.get()
 
           Object.entries(sites)
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            .filter(([url, site]) => site.connectAllSubstrate)
+            .filter(([, site]) => site.connectAllSubstrate)
             .forEach(async ([url, autoAddSite]) => {
               const newAddresses = Object.values(addresses)
                 .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))

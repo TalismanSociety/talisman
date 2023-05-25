@@ -1,8 +1,7 @@
-import { AccountTypes } from "@core/domains/accounts/types"
+import { getPrimaryAccount } from "@core/domains/accounts/helpers"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { getMetadataDef, getMetadataRpcFromDef } from "@core/util/getMetadataDef"
-import keyring from "@polkadot/ui-keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
 import { SubNativeToken } from "@talismn/balances-substrate-native"
 import { Chain } from "@talismn/chaindata-provider"
@@ -18,9 +17,9 @@ const getEncryptionForChain = (chain: Chain) => {
   }
 }
 
-const signWithRoot = async (unsigned: Uint8Array) => {
-  const rootAccount = keyring.getAccounts().find(({ meta }) => meta?.origin === AccountTypes.ROOT)
-  assert(rootAccount, "Root account not found")
+const signWithPrimaryAccount = async (unsigned: Uint8Array) => {
+  const rootAccount = getPrimaryAccount(true)
+  assert(rootAccount, "Primary account not found")
 
   // For network specs, sign the specs (not the entire payload)
   const signResult = await getPairForAddressSafely(rootAccount.address, (keypair) => {
@@ -89,7 +88,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: string) => {
     })
   )
 
-  const { publicKey, signature } = await signWithRoot(specs)
+  const { publicKey, signature } = await signWithPrimaryAccount(specs)
 
   return u8aToU8a(
     u8aConcat(
@@ -122,7 +121,7 @@ export const generateQrUpdateNetworkMetadata = async (genesisHash: string, specV
     genesis_hash: hexToU8a(genesisHash),
   })
 
-  const { publicKey, signature } = await signWithRoot(payload)
+  const { publicKey, signature } = await signWithPrimaryAccount(payload)
 
   return u8aToU8a(
     u8aConcat(

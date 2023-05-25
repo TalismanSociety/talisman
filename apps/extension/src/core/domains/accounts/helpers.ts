@@ -1,7 +1,14 @@
-import type { AccountJsonAny, IdenticonType } from "@core/domains/accounts/types"
+import {
+  AccountJsonAny,
+  AccountType,
+  AccountTypes,
+  IdenticonType,
+  storedSeedAccountTypes,
+} from "@core/domains/accounts/types"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
 import { canDerive } from "@polkadot/extension-base/utils"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
+import keyring from "@polkadot/ui-keyring"
 import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
 
 const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
@@ -36,13 +43,15 @@ export const sortAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
 
   let ordered: AccountJsonAny[] = []
 
-  // should be one root account
-  const root = transformedAccounts.find(({ origin }) => origin === "ROOT")
+  // should be one 'Talisman' account with a stored seed
+  const root = transformedAccounts.find(
+    ({ origin }) => origin && storedSeedAccountTypes.includes(origin)
+  )
   !!root && ordered.push(root)
 
   // can be multiple derived accounts
   // should order these by created date? probably
-  const derived = transformedAccounts.filter(({ origin }) => origin === "DERIVED")
+  const derived = transformedAccounts.filter(({ origin }) => origin === AccountTypes.DERIVED)
   const derivedSorted = sortAccountsByWhenCreated(derived)
   ordered = [...ordered, ...derivedSorted]
 
@@ -90,3 +99,16 @@ export const includeAvatar = (iconType: IdenticonType) => (account: InjectedAcco
   ...account,
   avatar: getAccountAvatarDataUri(account.address, iconType),
 })
+
+export const getPrimaryAccount = (talismanOnly = false) => {
+  const allAccounts = keyring.getAccounts()
+
+  if (allAccounts.length === 0) return
+  const talismanAccount = allAccounts.find(
+    ({ meta }) => meta && meta.origin && storedSeedAccountTypes.includes(meta.origin as AccountType)
+  )
+
+  if (talismanAccount) return talismanAccount
+  if (talismanOnly) return
+  return allAccounts[0]
+}
