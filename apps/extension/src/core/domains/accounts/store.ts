@@ -1,4 +1,5 @@
 import { SubscribableStorageProvider } from "@core/libs/Store"
+import { log } from "@core/log"
 import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert, isObject } from "@polkadot/util"
 import { Err, Ok, Result } from "ts-results"
@@ -13,7 +14,7 @@ type LegacySeedObj = {
 }
 
 export type SeedPhraseData = {
-  cipher: string
+  cipher?: string
   address: string
   confirmed: boolean
 }
@@ -56,11 +57,24 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
     return true
   }
 
-  public async getSeed(password: string): Promise<Result<string, "Incorrect password">> {
+  public async getSeed(
+    password: string
+  ): Promise<
+    Result<string | undefined, "Incorrect password" | "Unable to decrypt seed" | "No seed present">
+  > {
     let seed: string
     const cipher = await this.get("cipher")
+    if (!cipher) return Ok(undefined)
+
     try {
-      const decryptedSeed = (await decrypt(password, cipher)) as string | LegacySeedObj
+      // eslint-disable-next-line no-var
+      var decryptedSeed = (await decrypt(password, cipher)) as string | LegacySeedObj
+    } catch (e) {
+      log.error(e)
+      return Err("Incorrect password")
+    }
+
+    try {
       if (isObject(decryptedSeed)) {
         const unpackResult = legacyUnpackSeed(decryptedSeed)
         if (unpackResult.err) throw new Error(unpackResult.val)
@@ -69,8 +83,10 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
         seed = decryptedSeed
       }
     } catch (e) {
-      return Err("Incorrect password")
+      log.error(e)
+      return Err("Unable to decrypt seed")
     }
+
     return Ok(seed)
   }
 }

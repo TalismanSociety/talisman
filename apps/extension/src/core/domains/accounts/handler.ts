@@ -25,7 +25,12 @@ import { createPair } from "@polkadot/keyring"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
+import {
+  ethereumEncode,
+  isEthereumAddress,
+  mnemonicGenerate,
+  mnemonicValidate,
+} from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 
@@ -54,15 +59,22 @@ export default class AccountsHandler extends ExtensionHandler {
     const seedResult = await this.stores.seedPhrase.getSeed(password)
     if (seedResult.err) throw new Error(seedResult.val)
 
-    const seed = seedResult.val
+    let seed = seedResult.val
+    let shouldStoreSeed = false
+    // currently shouldn't be possible to not have a seed, but it will be soon
+    if (!seed) {
+      seed = mnemonicGenerate()
+      shouldStoreSeed = true
+    }
 
-    // currently shouldn't be possible to not have a root account
+    // currently shouldn't be possible to not have a root account, but it will be soon
     if (!rootAccount) {
       const { pair } = keyring.addUri(seed, password, {
         name,
         origin: AccountTypes.TALISMAN,
       })
       talismanAnalytics.capture("account create", { type, method: "parent" })
+      if (shouldStoreSeed) await this.stores.seedPhrase.add(seed, pair.address, password)
       return pair.address
     } else {
       let accountIndex

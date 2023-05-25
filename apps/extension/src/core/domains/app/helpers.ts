@@ -57,10 +57,11 @@ const migratePairs = async (
 const migrateMnemonic = async (
   currentPw: string,
   newPw: string
-): Promise<Result<true, "Unable to decrypt seed" | "Error encrypting mnemonic">> => {
+): Promise<Result<true | undefined, "Unable to decrypt seed" | "Error encrypting mnemonic">> => {
   const seedResult = await seedPhraseStore.getSeed(currentPw)
   if (seedResult.err) return Err("Unable to decrypt seed")
   const seed = seedResult.val
+  if (!seed) return Ok(undefined)
   try {
     // eslint-disable-next-line no-var
     var cipher = await encryptSeed(seed, newPw)

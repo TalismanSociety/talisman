@@ -242,6 +242,7 @@ export default class Extension extends ExtensionHandler {
         assert(transformedPw, "Password error")
 
         const seedResult = await this.stores.seedPhrase.getSeed(transformedPw)
+        assert(seedResult.val, "No mnemonic present")
         assert(seedResult.ok, seedResult.val)
         return seedResult.val
       }
