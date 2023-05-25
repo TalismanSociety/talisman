@@ -57,7 +57,7 @@ const ConnectInner = () => {
         Address : <span>{address}</span>
       </div>
       <div className="h-12">
-        Account : {chain?.name ?? "UNKNOWN"} ({chain?.id ?? "N/A"})
+        Network : {chain?.name ?? "UNKNOWN"} ({chain?.id ?? "N/A"})
       </div>
 
       <div className="h-12">
