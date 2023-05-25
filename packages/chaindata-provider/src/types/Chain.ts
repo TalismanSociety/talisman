@@ -23,6 +23,7 @@ export type Chain = {
   subscanUrl: string | null // The subscan endpoint of this chain
   chainspecQrUrl: string | null // A url to a qr code with the chainspec for this chain
   latestMetadataQrUrl: string | null // A url to a qr code with the latest metadata for this chain
+  isUnknownFeeToken: boolean // Indicates if chain may use a different fee token than it's native token
   rpcs: Array<SubstrateRpc> | null // Some public RPCs for connecting to this chain's network
   isHealthy: boolean // The health status of this chain's RPCs
   evmNetworks: Array<{ id: EvmNetworkId }>

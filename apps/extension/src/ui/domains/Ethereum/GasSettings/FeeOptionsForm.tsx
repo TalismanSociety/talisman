@@ -46,9 +46,9 @@ const Eip1559FeeTooltip: FC<{
     const balEstimatedFee = new BalanceFormatter(estimatedFee.toString(), token.decimals)
     const balMaxFee = new BalanceFormatter(maxFee.toString(), token.decimals)
 
-    const [intEstimated, decEstimated] = balEstimatedFee.tokens.split(".")
-    const [intMax, decMax] = balMaxFee.tokens.split(".")
-    const maxDecimals = Math.max(decEstimated?.length ?? 0, decMax?.length ?? 0)
+    const [intEstimated, decEstimated = ""] = balEstimatedFee.tokens.split(".")
+    const [intMax, decMax = ""] = balMaxFee.tokens.split(".")
+    const maxDecimals = Math.max(decEstimated.length ?? 0, decMax.length ?? 0)
 
     return maxDecimals === 0
       ? {

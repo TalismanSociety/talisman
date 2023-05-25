@@ -2,40 +2,31 @@ import {
   SignerPayloadJSON,
   SigningRequestID,
   SubstrateSigningRequest,
-  TransactionDetails,
   TransactionPayload,
 } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { HexString } from "@polkadot/util/types"
+import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import useChains from "@ui/hooks/useChains"
 import { useChainMetadata } from "@ui/hooks/useMetadataUpdates"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
 export const usePolkadotTransactionDetails = (requestId?: SigningRequestID<"substrate-sign">) => {
-  const [analysing, setAnalysing] = useState(!!requestId)
-  const [error, setError] = useState<string>()
-  const [txDetails, setTxDetails] = useState<TransactionDetails>()
+  const {
+    data: txDetails,
+    isLoading: analysing,
+    error,
+    ...rest
+  } = useQuery({
+    queryKey: ["polkadotTransactionDetails", requestId],
+    queryFn: () => (requestId ? api.decodeSignRequest(requestId) : null),
+  })
 
-  // decode transaction payload
-  useEffect(() => {
-    setTxDetails(undefined)
-    setError(undefined)
-    setAnalysing(false)
-    if (requestId) {
-      setAnalysing(true)
-      api
-        .decodeSignRequest(requestId)
-        .then(setTxDetails)
-        .catch((err: Error) => setError(err.message))
-        .finally(() => setAnalysing(false))
-    }
-  }, [requestId])
-
-  return { analysing, txDetails, error }
+  return { analysing, txDetails, error: (error as Error)?.message, ...rest }
 }
 
 export const usePolkadotTransaction = (signingRequest: SubstrateSigningRequest) => {

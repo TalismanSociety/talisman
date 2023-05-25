@@ -235,7 +235,7 @@
       },
       {
         "url": "https://mainnet5.edgewa.re/evm",
-        "isHealthy": true
+        "isHealthy": false
       }
     ],
     "isHealthy": true,
