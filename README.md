@@ -77,7 +77,40 @@ return (
 )
 ```
 
-4. Once you've finished building your feature, generate the new translation keys for the locales files (and don't forget to commit them!):
+4. If you want to include any react components in your translation, you will need to use the `Trans` component:
+
+```tsx
+import { useTranslation, Trans } from "react-i18next"
+
+const { t } = useTranslation()
+return (
+  <Trans
+    {/* DO NOT FORGET THIS `t` PROP! */}
+    t={t}
+    defaults="Your <Highlight>{{name}} <Tooltip /></Highlight> address"
+    values={{ name: chain.name }}
+    components={{
+      Highlight: <span className="text-body" />,
+      Tooltip: (
+        <Tooltip>
+          <TooltipTrigger>
+            <InfoIcon className="hover:text-body inline align-middle text-xs" />
+          </TooltipTrigger>
+          <TooltipContent>
+            {t(
+              "Only use this address for receiving assets on the {{name}} network.",
+              {
+                name: chain.name,
+              }
+            )}
+          </TooltipContent>
+        </Tooltip>
+      ),
+    }}
+)
+```
+
+5. Once you've finished building your feature, generate the new translation keys for the locales files (and don't forget to commit them!):
 
 ```bash
 yarn update:translations
