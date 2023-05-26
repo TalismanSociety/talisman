@@ -1,5 +1,12 @@
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ChevronRightIcon, GlobeIcon, ShieldIcon, ToolIcon, UsersIcon } from "@talisman/theme/icons"
+import {
+  ChevronRightIcon,
+  FlagIcon,
+  GlobeIcon,
+  ShieldIcon,
+  ToolIcon,
+  UsersIcon,
+} from "@talisman/theme/icons"
 import { ReactComponent as IconClock } from "@talisman/theme/icons/clock.svg"
 import { ReactComponent as IconInfo } from "@talisman/theme/icons/info.svg"
 import { ReactComponent as IconKey } from "@talisman/theme/icons/key.svg"
@@ -84,6 +91,13 @@ const Settings = () => {
           title={t("Extension Options")}
           subtitle={t("Customise your extension experience")}
           to={`/settings/options`}
+        />
+        <CtaButton
+          iconLeft={FlagIcon}
+          iconRight={ChevronRightIcon}
+          title={t("Language")}
+          subtitle={t("Change the wallet display language")}
+          to={`/settings/language`}
         />
         <CtaButton
           iconLeft={ShieldIcon}

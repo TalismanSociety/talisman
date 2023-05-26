@@ -35,6 +35,7 @@ import AddressBook from "./routes/Settings/AddressBook"
 import { AnalyticsOptIn } from "./routes/Settings/AnalyticsOptIn"
 import { AutoLockTimer } from "./routes/Settings/AutoLockTimer"
 import ChangePassword from "./routes/Settings/ChangePassword"
+import { LanguageSettings } from "./routes/Settings/LanguageSettings"
 import Options from "./routes/Settings/Options"
 import SecurityPrivacySettings from "./routes/Settings/SecurityPrivacySettings"
 import SitesConnected from "./routes/Settings/SitesConnected"
@@ -99,6 +100,7 @@ const DashboardInner = () => {
           <Route path="" element={<Settings />} />
           <Route path="connected-sites" element={<SitesConnected />} />
           <Route path="address-book" element={<AddressBook />} />
+          <Route path="language" element={<LanguageSettings />} />
           <Route path="security-privacy-settings" element={<SecurityPrivacySettings />} />
           <Route path="options" element={<Options />} />
           <Route path="about" element={<About />} />

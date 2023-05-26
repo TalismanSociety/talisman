@@ -1,5 +1,14 @@
 /* eslint-env es6 */
 
+// The key is the `locale` as passed to i18next.
+// The value is the `human-readable name` as passed to the language settings UI in the wallet.
+const languages = {
+  en: "English",
+  cn: "中文",
+  ru: "Pусский",
+  fr: "Français",
+}
+
 module.exports = {
   // use `common` instead of `translation` as the default namespace
   defaultNamespace: "common",
@@ -10,7 +19,10 @@ module.exports = {
   pluralSeparator: "_pluralSeparator_",
 
   // make sure this is kept in sync with apps/extension/src/ui/i18nConfig.ts
-  locales: ["en", "cn", "ru"],
+  locales: Object.keys(languages),
+  // this `languages` key isn't needed for i18n-parser,
+  // it's just here so that we can import it from our UI and access those juicy human-readable names
+  languages,
 
   // use the translation key as the default value for 'en' translations,
   // since we write the keys as regular english in the sourcecode
@@ -29,6 +41,13 @@ module.exports = {
   // then run `yarn update:translations` and commit the result
   // defaultValue: (locale, _namespace, key) => (locale === "en" ? `T__${key}__T` : ""),
 
-  input: ["src/ui/**/*.{ts,tsx}"],
+  input: [
+    // wallet core
+    "src/core/**/*.{ts,tsx}",
+    // wallet ui
+    "src/ui/**/*.{ts,tsx}",
+    // wallet @talisman components
+    "src/@talisman/**/*.{ts,tsx}",
+  ],
   output: "public/locales/$LOCALE/$NAMESPACE.json",
 }
