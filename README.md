@@ -72,7 +72,9 @@ const { t } = useTranslation("portfolio")
 return (
   <div className="flex flex-col items-start">
     <div className="text-base">{t("Account Assets")}</div>
-    <div className="text-sm">{t("Account has %s assets", assets.length)}</div>
+    <div className="text-sm">
+      {t("Account has {{assetCount}} assets", { assetCount: assets.length })}
+    </div>
   </div>
 )
 ```
