@@ -100,15 +100,15 @@ export const includeAvatar = (iconType: IdenticonType) => (account: InjectedAcco
   avatar: getAccountAvatarDataUri(account.address, iconType),
 })
 
-export const getPrimaryAccount = (talismanOnly = false) => {
+export const getPrimaryAccount = (storedSeedOnly = false) => {
   const allAccounts = keyring.getAccounts()
 
   if (allAccounts.length === 0) return
-  const talismanAccount = allAccounts.find(
+  const storedSeedAccount = allAccounts.find(
     ({ meta }) => meta && meta.origin && storedSeedAccountTypes.includes(meta.origin as AccountType)
   )
 
-  if (talismanAccount) return talismanAccount
-  if (talismanOnly) return
+  if (storedSeedAccount) return storedSeedAccount
+  if (storedSeedOnly) return
   return allAccounts[0]
 }
