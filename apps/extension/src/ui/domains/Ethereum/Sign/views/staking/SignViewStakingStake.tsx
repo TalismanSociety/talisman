@@ -6,7 +6,7 @@ import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import useToken from "@ui/hooks/useToken"
 import { FC } from "react"
 
-export const SignViewStake: FC<{
+export const SignViewStakingStake: FC<{
   planck: bigint
   tokenId: TokenId
   autoCompound?: number
@@ -25,7 +25,7 @@ export const SignViewStake: FC<{
           <TokenLogo tokenId={tokenId} className="inline h-[1em] w-[1em]" />{" "}
           <TokensAndFiat planck={planck} tokenId={tokenId} noCountUp />
         </div>
-        {autoCompound && (
+        {!!autoCompound && (
           <>
             <div>
               with <span className="text-body">{autoCompound}%</span> of rewards

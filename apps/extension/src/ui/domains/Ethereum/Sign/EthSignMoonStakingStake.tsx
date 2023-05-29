@@ -3,9 +3,9 @@ import { FC, useMemo } from "react"
 
 import { getContractCallArg } from "./getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewStake } from "./views/SignViewStake"
+import { SignViewStakingStake } from "./views/staking/SignViewStakingStake"
 
-export const EthSignMoonStaking: FC = () => {
+export const EthSignMoonStakingStake: FC = () => {
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const { planck, autoCompound } = useMemo(() => {
@@ -21,6 +21,10 @@ export const EthSignMoonStaking: FC = () => {
   if (!network?.nativeToken?.id || !planck) return null
 
   return (
-    <SignViewStake planck={planck} tokenId={network.nativeToken.id} autoCompound={autoCompound} />
+    <SignViewStakingStake
+      planck={planck}
+      tokenId={network.nativeToken.id}
+      autoCompound={autoCompound}
+    />
   )
 }

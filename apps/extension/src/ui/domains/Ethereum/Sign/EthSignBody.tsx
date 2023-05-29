@@ -9,7 +9,11 @@ import { EthSignBodyErc721Approve } from "./EthSignBodyErc721Approve"
 import { EthSignBodyErc721ApproveAll } from "./EthSignBodyErc721ApproveAll"
 import { EthSignBodyErc721Transfer } from "./EthSignBodyErc721Transfer"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
-import { EthSignMoonStaking } from "./EthSignMoonStaking"
+import { EthSignMoonStakingSetAutoCompound } from "./EthSignMoonStakingSetAutoCompound"
+import { EthSignMoonStakingStake } from "./EthSignMoonStakingStake"
+import { EthSignMoonStakingStakeLess } from "./EthSignMoonStakingStakeLess"
+import { EthSignMoonStakingStakeMore } from "./EthSignMoonStakingStakeMore"
+import { EthSignMoonStakingUnstake } from "./EthSignMoonStakingUnstake"
 
 type EthSignBodyProps = {
   transactionInfo?: TransactionInfo
@@ -33,7 +37,15 @@ const getComponentFromKnownContractCall = (transactionInfo: TransactionInfo) => 
     case "ERC721.safeTransferFrom":
       return EthSignBodyErc721Transfer
     case "MoonStaking.delegateWithAutoCompound":
-      return EthSignMoonStaking
+      return EthSignMoonStakingStake
+    case "MoonStaking.delegatorBondMore":
+      return EthSignMoonStakingStakeMore
+    case "MoonStaking.scheduleDelegatorBondLess":
+      return EthSignMoonStakingStakeLess
+    case "MoonStaking.setAutoCompound":
+      return EthSignMoonStakingSetAutoCompound
+    case "MoonStaking.scheduleRevokeDelegation":
+      return EthSignMoonStakingUnstake
     default:
       return null
   }
