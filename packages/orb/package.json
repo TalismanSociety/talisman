@@ -7,7 +7,7 @@
     "access": "public"
   },
   "repository": {
-    "directory": "packages/balances-react",
+    "directory": "packages/orb",
     "type": "git",
     "url": "https://github.com/talismansociety/talisman.git"
   },
