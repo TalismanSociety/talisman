@@ -19,7 +19,6 @@ import {
   GasSettingsByPriority,
 } from "@core/domains/signing/types"
 import { ETH_ERROR_EIP1474_METHOD_NOT_FOUND } from "@core/injectEth/EthProviderRpcError"
-import { ETH_ERROR_EIP1474_METHOD_NOT_SUPPORTED } from "@core/injectEth/EthProviderRpcError"
 import { getEthTransactionInfo } from "@core/util/getEthTransactionInfo"
 import { FeeHistoryAnalysis, getFeeHistoryAnalysis } from "@core/util/getFeeHistoryAnalysis"
 import { useQuery } from "@tanstack/react-query"
@@ -55,22 +54,13 @@ const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
         const [{ baseFeePerGas }] = await Promise.all([
           // check that block has a baseFeePerGas
           provider.send("eth_getBlockByNumber", ["latest", false]),
-          // check that method eth_feeHistory exists. This will throw if it doesn't.
+          // check that method eth_feeHistory exists. This will throw with code -32601 if it doesn't.
           provider.send("eth_feeHistory", [ethers.utils.hexValue(1), "latest", [10]]),
         ])
         return baseFeePerGas !== undefined
       } catch (err) {
         const error = err as Error & { code?: number }
-        if (
-          error.code === ETH_ERROR_EIP1474_METHOD_NOT_FOUND ||
-          error.code === ETH_ERROR_EIP1474_METHOD_NOT_SUPPORTED ||
-          // on some RPCs a generic error code is returned :
-          // zkSync ERA
-          error.message.toLowerCase() === "method not found" ||
-          // optimism
-          error.message.startsWith("the method eth_feeHistory does not exist")
-        )
-          return false
+        if (error.code === ETH_ERROR_EIP1474_METHOD_NOT_FOUND) return false
 
         throw err
       }
