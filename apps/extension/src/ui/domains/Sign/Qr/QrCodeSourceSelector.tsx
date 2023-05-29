@@ -2,6 +2,7 @@ import { ChevronDownIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { usePrimaryAccount } from "@ui/hooks/usePrimaryAccount"
 import startCase from "lodash/startCase"
 import { useMemo, useState } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
@@ -33,11 +34,12 @@ export const qrCodeLogoForSource = (source: QrCodeSource) =>
 export const useQrCodeSourceSelectorState = (genesisHash?: string) => {
   // calculate the list of available sources
   const chain = useChainByGenesisHash(genesisHash)
+  const internalAccount = usePrimaryAccount(true)
   const chainspecQrUrl = chain?.chainspecQrUrl
   const latestMetadataQrUrl = chain?.latestMetadataQrUrl
-  const sources = useMemo<QrCodeSource[]>(
-    () => [
-      "talisman",
+  const sources = useMemo<QrCodeSource[]>(() => {
+    const talismanSource: QrCodeSource[] = internalAccount ? ["talisman"] : []
+    return talismanSource.concat(
       ...((): QrCodeSource[] => {
         if (!chainspecQrUrl || !latestMetadataQrUrl) return []
 
@@ -48,10 +50,9 @@ export const useQrCodeSourceSelectorState = (genesisHash?: string) => {
         if (isNovasama(chainspecQrUrl) && isNovasama(latestMetadataQrUrl)) return ["novasama"]
 
         return ["other"]
-      })(),
-    ],
-    [chainspecQrUrl, latestMetadataQrUrl]
-  )
+      })()
+    )
+  }, [chainspecQrUrl, latestMetadataQrUrl, internalAccount])
 
   // use the parity metadata portal source by default for these chains
   const polkadot = useChain("polkadot")
@@ -59,7 +60,11 @@ export const useQrCodeSourceSelectorState = (genesisHash?: string) => {
   const westend = useChain("westend")
   const parityDefaultChains = [polkadot?.genesisHash, kusama?.genesisHash, westend?.genesisHash]
   const defaultSourceForChain =
-    sources.includes("parity") && parityDefaultChains.includes(genesisHash) ? "parity" : "talisman"
+    sources.includes("parity") && parityDefaultChains.includes(genesisHash)
+      ? "parity"
+      : sources.includes("talisman")
+      ? "talisman"
+      : undefined
 
   // remember the last selected source for each chain
   const lastSourceForChain = lastSelected.get(genesisHash)
@@ -69,7 +74,7 @@ export const useQrCodeSourceSelectorState = (genesisHash?: string) => {
   const togglePopover = () => setShowPopover((show) => !show)
 
   // manage the selected source
-  const [source, _setSource] = useState<QrCodeSource>(
+  const [source, _setSource] = useState<QrCodeSource | undefined>(
     lastSourceForChain && sources.includes(lastSourceForChain)
       ? lastSourceForChain
       : defaultSourceForChain
@@ -83,9 +88,9 @@ export const useQrCodeSourceSelectorState = (genesisHash?: string) => {
   return { qrCodeSource: source, sources, setSource, showPopover, togglePopover }
 }
 
-type Props = {
+export type QrCodeSourceSelectorProps = {
   className?: string
-  qrCodeSource: QrCodeSource
+  qrCodeSource?: QrCodeSource
   sources: QrCodeSource[]
   setSource: (source: QrCodeSource) => void
   showPopover: boolean
@@ -99,7 +104,7 @@ export const QrCodeSourceSelector = ({
   setSource,
   showPopover,
   togglePopover,
-}: Props) => {
+}: QrCodeSourceSelectorProps) => {
   return sources.length > 1 ? (
     <Popover placement="bottom-end" open={showPopover} onOpenChange={togglePopover}>
       <PopoverTrigger asChild>

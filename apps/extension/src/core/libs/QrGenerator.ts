@@ -1,5 +1,6 @@
 import { getPrimaryAccount } from "@core/domains/accounts/helpers"
 import { getPairForAddressSafely } from "@core/handlers/helpers"
+import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { getMetadataDef, getMetadataRpcFromDef } from "@core/util/getMetadataDef"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
@@ -88,7 +89,13 @@ export const generateQrAddNetworkSpecs = async (genesisHash: string) => {
     })
   )
 
-  const { publicKey, signature } = await signWithPrimaryAccount(specs)
+  try {
+    // eslint-disable-next-line no-var
+    var { publicKey, signature } = await signWithPrimaryAccount(specs)
+  } catch (e) {
+    log.error("Failed to sign network specs", e)
+    throw new Error("Failed to sign network specs")
+  }
 
   return u8aToU8a(
     u8aConcat(
@@ -120,8 +127,13 @@ export const generateQrUpdateNetworkMetadata = async (genesisHash: string, specV
     meta: hexToU8a(metadataRpc),
     genesis_hash: hexToU8a(genesisHash),
   })
-
-  const { publicKey, signature } = await signWithPrimaryAccount(payload)
+  try {
+    // eslint-disable-next-line no-var
+    var { publicKey, signature } = await signWithPrimaryAccount(payload)
+  } catch (e) {
+    log.error("Failed to sign network metadata", e)
+    throw new Error("Failed to sign network metadata")
+  }
 
   return u8aToU8a(
     u8aConcat(

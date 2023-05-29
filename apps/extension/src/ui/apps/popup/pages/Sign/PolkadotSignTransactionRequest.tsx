@@ -112,6 +112,7 @@ export const PolkadotSignTransactionRequest: FC<PolkadotSignTransactionRequestPr
     approveHardware,
     approveQr,
   } = usePolkadotSigningRequest(signingRequest)
+
   const {
     isReady,
     isMetadataLoading,

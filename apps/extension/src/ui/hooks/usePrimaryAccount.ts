@@ -1,4 +1,4 @@
-import { AccountMeta, AccountType, storedSeedAccountTypes } from "@core/domains/accounts/types"
+import { AccountType, storedSeedAccountTypes } from "@core/domains/accounts/types"
 
 import useAccounts from "./useAccounts"
 
@@ -10,11 +10,9 @@ import useAccounts from "./useAccounts"
  */
 export const usePrimaryAccount = (storedSeedOnly?: boolean) => {
   const accounts = useAccounts()
-  const storedSeedAccount = accounts.find(
-    ({ meta }) =>
-      meta && storedSeedAccountTypes.includes((meta as AccountMeta).origin as AccountType)
+  const storedSeedAccount = accounts.find(({ origin }) =>
+    storedSeedAccountTypes.includes(origin as AccountType)
   )
-
   if (storedSeedOnly) return storedSeedAccount
   if (accounts.length > 0) return accounts[0]
   return

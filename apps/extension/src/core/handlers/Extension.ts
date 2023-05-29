@@ -1,6 +1,7 @@
 import { DEBUG, TEST } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
+import { getPrimaryAccount } from "@core/domains/accounts/helpers"
 import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { BalancesHandler } from "@core/domains/balances"
@@ -265,6 +266,9 @@ export default class Extension extends ExtensionHandler {
         return this.stores.chains.hydrateStore()
 
       case "pri(chains.generateQr.addNetworkSpecs)": {
+        const primaryAccount = getPrimaryAccount(true)
+        assert(primaryAccount, "Primary account not found")
+
         const { genesisHash } = request as RequestType<"pri(chains.generateQr.addNetworkSpecs)">
         const data = await generateQrAddNetworkSpecs(genesisHash)
         // serialize as hex for transfer
@@ -272,6 +276,9 @@ export default class Extension extends ExtensionHandler {
       }
 
       case "pri(chains.generateQr.updateNetworkMetadata)": {
+        const primaryAccount = getPrimaryAccount(true)
+        assert(primaryAccount, "Primary account not found")
+
         const { genesisHash, specVersion } =
           request as RequestType<"pri(chains.generateQr.updateNetworkMetadata)">
         const data = await generateQrUpdateNetworkMetadata(genesisHash, specVersion)
