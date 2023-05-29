@@ -71,6 +71,7 @@ const useHasEip1559Support = (provider?: ethers.providers.JsonRpcProvider) => {
           error.message.startsWith("the method eth_feeHistory does not exist")
         )
           return false
+
         throw err
       }
     },
