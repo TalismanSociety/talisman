@@ -9,6 +9,7 @@ import { EthSignBodyErc721Approve } from "./EthSignBodyErc721Approve"
 import { EthSignBodyErc721ApproveAll } from "./EthSignBodyErc721ApproveAll"
 import { EthSignBodyErc721Transfer } from "./EthSignBodyErc721Transfer"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
+import { EthSignMoonStaking } from "./EthSignMoonStaking"
 
 type EthSignBodyProps = {
   transactionInfo?: TransactionInfo
@@ -31,6 +32,8 @@ const getComponentFromKnownContractCall = (transactionInfo: TransactionInfo) => 
     case "ERC721.transferFrom":
     case "ERC721.safeTransferFrom":
       return EthSignBodyErc721Transfer
+    case "MoonStaking.delegateWithAutoCompound":
+      return EthSignMoonStaking
     default:
       return null
   }

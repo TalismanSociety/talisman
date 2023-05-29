@@ -12,6 +12,7 @@ import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
 
 import { Container } from "./common"
+import { SignAccountAvatar } from "./SignAccountAvatar"
 
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
@@ -52,7 +53,10 @@ export const PolkadotSignMessageRequest: FC<PolkadotSignMessageRequestProps> = (
 
   return (
     <Container>
-      <Header text={<PendingRequests />}></Header>
+      <Header
+        text={<PendingRequests />}
+        nav={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}
+      ></Header>
       <Content>
         {account && request && (
           <>

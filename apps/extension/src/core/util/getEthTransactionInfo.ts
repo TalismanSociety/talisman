@@ -1,10 +1,21 @@
+import * as Sentry from "@sentry/browser"
 import { getContractCallArg } from "@ui/domains/Ethereum/Sign/getContractCallArg"
 import { BigNumber, ethers } from "ethers"
 
-import { abiErc1155, abiErc20, abiErc721, abiErc721Metadata } from "./abi"
+import { abiErc1155, abiErc20, abiErc721, abiErc721Metadata, abiMoonStaking } from "./abi"
 import { isContractAddress } from "./isContractAddress"
 
-export type ContractType = "ERC20" | "ERC721" | "ERC1155" | "unknown"
+export type ContractType = "MoonStaking" | "ERC20" | "ERC721" | "ERC1155" | "unknown"
+
+const MOON_CHAIN_PRECOMPILE_ADDRESSES: Record<
+  string,
+  { contractType: ContractType; abi: unknown }
+> = {
+  "0x0000000000000000000000000000000000000800": {
+    contractType: "MoonStaking",
+    abi: abiMoonStaking,
+  },
+}
 
 // note : order may be important here as some contracts may inherit from others
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,6 +65,31 @@ export const getEthTransactionInfo = async (
     isContractCall,
     contractType: isContractCall ? "unknown" : undefined,
     value: tx.value ? BigNumber.from(tx.value) : undefined,
+  }
+
+  // moon chains precompiles
+  if (
+    tx.data &&
+    tx.to &&
+    tx.chainId &&
+    [1284, 1285, 1287].includes(tx.chainId) &&
+    !!MOON_CHAIN_PRECOMPILE_ADDRESSES[tx.to]
+  ) {
+    const { contractType, abi } = MOON_CHAIN_PRECOMPILE_ADDRESSES[tx.to]
+    try {
+      const data = ethers.utils.hexlify(tx.data)
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const contractInterface = new ethers.utils.Interface(abi as any)
+      // error will be thrown here if contract doesn't match the abi
+      const contractCall = contractInterface.parseTransaction({ data, value: tx.value })
+      result.contractType = contractType
+      result.contractCall = contractCall
+
+      return result
+    } catch (err) {
+      Sentry.captureException(err, { extra: { to: tx.to, chainId: tx.chainId } })
+    }
   }
 
   if (targetAddress && tx.data) {

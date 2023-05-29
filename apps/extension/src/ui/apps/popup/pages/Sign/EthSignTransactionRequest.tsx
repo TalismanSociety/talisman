@@ -19,6 +19,7 @@ import styled from "styled-components"
 import { Button } from "talisman-ui"
 
 import { Container } from "./common"
+import { SignAccountAvatar } from "./SignAccountAvatar"
 
 const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
@@ -223,7 +224,7 @@ export const EthSignTransactionRequest = () => {
 
   return (
     <SignContainer>
-      <Header text={<AppPill url={url} />}></Header>
+      <Header text={<AppPill url={url} />} nav={<SignAccountAvatar account={account} />}></Header>
       <Content>
         <div className="scrollable scrollable-800 h-full overflow-y-auto">
           <EthSignBody transactionInfo={transactionInfo} isReady={!isLoading} />
