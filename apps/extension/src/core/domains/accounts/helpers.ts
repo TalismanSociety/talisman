@@ -1,3 +1,4 @@
+import { Account } from "@core/domains/accounts/types"
 import {
   AccountJsonAny,
   AccountType,
@@ -10,6 +11,7 @@ import { canDerive } from "@polkadot/extension-base/utils"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
 import keyring from "@polkadot/ui-keyring"
 import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
+import Browser from "webextension-polyfill"
 
 const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
   return accounts.sort((acc1, acc2) => {
@@ -111,4 +113,12 @@ export const getPrimaryAccount = (storedSeedOnly = false) => {
   if (storedSeedAccount) return storedSeedAccount
   if (storedSeedOnly) return
   return allAccounts[0]
+}
+
+export const hasQrCodeAccounts = async () => {
+  const localData = await Browser.storage.local.get()
+  return Object.entries(localData).some(
+    ([key, account]: [string, Account]) =>
+      key.startsWith("account:0x") && account.meta?.origin === AccountTypes.QR
+  )
 }

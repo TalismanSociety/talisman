@@ -70,7 +70,7 @@ export default class Extension extends ExtensionHandler {
     // Resets password update notification at extension restart if user has asked to ignore it previously
     stores.password.set({ ignorePasswordUpdate: false })
 
-    // Watches keyring to add all new accounts to authorised sites with `connectAllSubstrate` flag
+    // Watches keyring to do things that depend on type of accounts added
     // Delayed by 2 sec so that keyring accounts will have loaded
     setTimeout(
       () =>

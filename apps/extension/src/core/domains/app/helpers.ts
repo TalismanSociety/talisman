@@ -7,7 +7,8 @@ import * as Sentry from "@sentry/browser"
 import { Err, Ok, Result } from "ts-results"
 import Browser from "webextension-polyfill"
 
-import seedPhraseStore, { encryptSeed } from "../accounts/store"
+import seedPhraseStore, { SeedPhraseStore, encryptSeed } from "../accounts/store"
+import { vaultCompanionStore } from "../accounts/store.vaultCompanion"
 
 export const TALISMAN_BACKUP_KEYRING_KEY = "talismanKeyringBackup"
 
@@ -54,25 +55,30 @@ const migratePairs = async (
   return Ok(successfulPairs)
 }
 
-const migrateMnemonic = async (
-  currentPw: string,
-  newPw: string
-): Promise<Result<true | undefined, "Unable to decrypt seed" | "Error encrypting mnemonic">> => {
-  const seedResult = await seedPhraseStore.getSeed(currentPw)
-  if (seedResult.err) return Err("Unable to decrypt seed")
-  const seed = seedResult.val
-  if (!seed) return Ok(undefined)
-  try {
-    // eslint-disable-next-line no-var
-    var cipher = await encryptSeed(seed, newPw)
-  } catch (error) {
-    Sentry.captureException(error)
-    return Err("Error encrypting mnemonic")
+const migrateAnyMnemonic =
+  (store: SeedPhraseStore) =>
+  async (
+    currentPw: string,
+    newPw: string
+  ): Promise<Result<true | undefined, "Unable to decrypt seed" | "Error encrypting mnemonic">> => {
+    const seedResult = await store.getSeed(currentPw)
+    if (seedResult.err) return Err("Unable to decrypt seed")
+    const seed = seedResult.val
+    if (!seed) return Ok(undefined)
+    try {
+      // eslint-disable-next-line no-var
+      var cipher = await encryptSeed(seed, newPw)
+    } catch (error) {
+      Sentry.captureException(error)
+      return Err("Error encrypting mnemonic")
+    }
+    // the new cipher is only set if it is successfully re-encrypted
+    await store.set({ cipher })
+    return Ok(true)
   }
-  // the new cipher is only set if it is successfully re-encrypted
-  await seedPhraseStore.set({ cipher })
-  return Ok(true)
-}
+
+const migrateTalismanMnemonic = migrateAnyMnemonic(seedPhraseStore)
+const migrateVaultCompanionMnemonic = migrateAnyMnemonic(vaultCompanionStore)
 
 export const changePassword = async ({
   currentPw,
@@ -95,9 +101,14 @@ export const changePassword = async ({
     if (keypairMigrationResult.val.length !== backupJson.accounts.filter(eligiblePairFilter).length)
       throw new Error("Unable to re-encrypt all keypairs when changing password")
     // now migrate seed phrase store password
-    const mnemonicMigrationResult = await migrateMnemonic(currentPw, newPw)
+    const mnemonicMigrationResult = await migrateTalismanMnemonic(currentPw, newPw)
     if (mnemonicMigrationResult.err) {
       throw Error(mnemonicMigrationResult.val)
+    }
+    // now migrate polkadot vault companion phrase store password
+    const vaultMigrationResult = await migrateVaultCompanionMnemonic(currentPw, newPw)
+    if (vaultMigrationResult.err) {
+      throw Error(vaultMigrationResult.val)
     }
   } catch (error) {
     await restoreBackupKeyring(currentPw)

@@ -11,6 +11,9 @@ import * as Sentry from "@sentry/browser"
 import { lt } from "semver"
 import Browser, { Runtime } from "webextension-polyfill"
 
+import { hasQrCodeAccounts } from "./domains/accounts/helpers"
+import seedPhraseStore from "./domains/accounts/store"
+import { vaultCompanionStore } from "./domains/accounts/store.vaultCompanion"
 import sitesAuthorisedStore from "./domains/sitesAuthorised/store"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
@@ -21,10 +24,10 @@ consoleOverride(DEBUG)
 // eslint-disable-next-line no-void
 void Browser.browserAction.setBadgeBackgroundColor({ color: "#d90000" })
 
-// check the installed reason
-// if install, we want to check the storage for prev onboarded info
-// if not onboarded, show the onboard screen
+// Onboarding and migrations
 Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
+  // if install, we want to check the storage for prev onboarded info
+  // if not onboarded, show the onboard screen
   Browser.storage.local.get(["talismanOnboarded", "app"]).then((data) => {
     // open onboarding when reason === "install" and data?.talismanOnboarded !== true
     // open dashboard data?.talismanOnboarded === true
@@ -54,6 +57,24 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
           url: `https://${TALISMAN_WEB_APP_DOMAIN}`,
         },
       })
+    }
+  }
+  if (reason === "update" && previousVersion && lt(previousVersion, "1.6.4")) {
+    // once off migration to add a Polkadot Vault companion seed store
+    const site = await sitesAuthorisedStore.get(TALISMAN_WEB_APP_DOMAIN)
+    if (!site) {
+      const hasVaultAccounts = await hasQrCodeAccounts()
+      if (hasVaultAccounts) {
+        // add a vault companion if any of the addresses are from a vault
+        //first check if any of the addresses are from a vault
+        // check if a vault companion store already exists
+        const vaultCompanionCipher = await vaultCompanionStore.get("cipher")
+        const seedPhraseData = await seedPhraseStore.get()
+        if (!vaultCompanionCipher && seedPhraseData.cipher) {
+          // if not, create one
+          await vaultCompanionStore.set(seedPhraseData)
+        }
+      }
     }
   }
 })
