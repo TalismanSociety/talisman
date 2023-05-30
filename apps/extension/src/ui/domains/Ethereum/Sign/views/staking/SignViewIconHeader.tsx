@@ -2,9 +2,9 @@ import { CheckCircleIcon, XCircleIcon, ZapIcon, ZapOffIcon } from "@talisman/the
 import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 
-type IconType = "stake" | "unstake" | "ok" | "nok"
+export type SignIconType = "stake" | "unstake" | "ok" | "nok"
 
-const getIcon = (type: IconType) => {
+const getIcon = (type: SignIconType) => {
   switch (type) {
     case "stake":
       return ZapIcon
@@ -17,7 +17,7 @@ const getIcon = (type: IconType) => {
   }
 }
 
-const getClassName = (type: IconType) => {
+const getClassName = (type: SignIconType) => {
   switch (type) {
     case "stake":
     case "unstake":
@@ -28,7 +28,7 @@ const getClassName = (type: IconType) => {
   }
 }
 
-export const SignViewIconHeader: FC<{ icon: IconType }> = ({ icon }) => {
+export const SignViewIconHeader: FC<{ icon: SignIconType }> = ({ icon }) => {
   const { Icon, className } = useMemo(
     () => ({
       Icon: getIcon(icon),

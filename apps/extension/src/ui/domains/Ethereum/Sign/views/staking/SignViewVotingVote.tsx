@@ -3,7 +3,7 @@ import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { FC } from "react"
 
-export const SignViewVotingYes: FC<{
+export const SignViewVotingVote: FC<{
   voteAmount: bigint
   tokenId: TokenId
   pollIndex: number

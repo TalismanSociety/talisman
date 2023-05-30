@@ -4,11 +4,30 @@ import { FC, useMemo } from "react"
 import { getContractCallArg } from "./getContractCallArg"
 import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewIconHeader } from "./views/staking/SignViewIconHeader"
-import { SignViewVotingYes } from "./views/staking/SignViewVotingYes"
+import { SignIconType, SignViewIconHeader } from "./views/staking/SignViewIconHeader"
+import { SignViewVotingVote } from "./views/staking/SignViewVotingVote"
 
-export const EthSignMoonVotingYes: FC = () => {
+const getLabels = (methodName: string): { title?: string; icon?: SignIconType } => {
+  switch (methodName) {
+    case "voteYes":
+      return {
+        title: "Vote Yes",
+        icon: "ok",
+      }
+    case "voteNo":
+      return {
+        title: "Vote Yes",
+        icon: "ok",
+      }
+    default:
+      return {}
+  }
+}
+
+export const EthSignMoonVotingVote: FC = () => {
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
+
+  const { title, icon } = getLabels(transactionInfo.contractCall.name)
 
   const { voteAmount, pollIndex, conviction } = useMemo(() => {
     const pollIndex = getContractCallArg<number>(transactionInfo.contractCall, "pollIndex")
@@ -24,6 +43,7 @@ export const EthSignMoonVotingYes: FC = () => {
 
   if (
     !network?.nativeToken?.id ||
+    !icon ||
     conviction === undefined ||
     voteAmount === undefined ||
     pollIndex === undefined
@@ -31,8 +51,8 @@ export const EthSignMoonVotingYes: FC = () => {
     return null
 
   return (
-    <EthSignContainer title={`Vote Yes`} header={<SignViewIconHeader icon="ok" />}>
-      <SignViewVotingYes
+    <EthSignContainer title={title} header={<SignViewIconHeader icon={icon} />}>
+      <SignViewVotingVote
         tokenId={network.nativeToken.id}
         conviction={conviction}
         voteAmount={voteAmount}
