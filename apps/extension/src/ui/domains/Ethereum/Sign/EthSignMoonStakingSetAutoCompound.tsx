@@ -20,7 +20,7 @@ export const EthSignMoonStakingSetAutoCompound: FC = () => {
   if (!network?.nativeToken?.id || autoCompound === undefined) return null
 
   return (
-    <EthSignContainer title="Set auto-compounding" header={<SignViewStakingHeader />}>
+    <EthSignContainer title="Set auto-compounding" header={<SignViewStakingHeader icon="stake" />}>
       <SignViewStakingSetAutoCompound
         tokenId={network.nativeToken.id}
         autoCompound={autoCompound}

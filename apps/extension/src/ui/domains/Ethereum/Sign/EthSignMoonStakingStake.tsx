@@ -25,7 +25,10 @@ export const EthSignMoonStakingStake: FC = () => {
   if (!network?.nativeToken?.id || !planck || !token) return null
 
   return (
-    <EthSignContainer title={`Stake ${token.symbol}`} header={<SignViewStakingHeader />}>
+    <EthSignContainer
+      title={`Stake ${token.symbol}`}
+      header={<SignViewStakingHeader icon="stake" />}
+    >
       <SignViewStakingStake
         planck={planck}
         tokenId={network.nativeToken.id}

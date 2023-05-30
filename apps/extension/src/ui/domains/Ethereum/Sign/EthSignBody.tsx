@@ -9,6 +9,8 @@ import { EthSignBodyErc721Approve } from "./EthSignBodyErc721Approve"
 import { EthSignBodyErc721ApproveAll } from "./EthSignBodyErc721ApproveAll"
 import { EthSignBodyErc721Transfer } from "./EthSignBodyErc721Transfer"
 import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
+import { EthSignMoonStakingCancel } from "./EthSignMoonStakingCancel"
+import { EthSignMoonStakingExecute } from "./EthSignMoonStakingExecute"
 import { EthSignMoonStakingSetAutoCompound } from "./EthSignMoonStakingSetAutoCompound"
 import { EthSignMoonStakingStake } from "./EthSignMoonStakingStake"
 import { EthSignMoonStakingStakeLess } from "./EthSignMoonStakingStakeLess"
@@ -46,6 +48,10 @@ const getComponentFromKnownContractCall = (transactionInfo: TransactionInfo) => 
       return EthSignMoonStakingSetAutoCompound
     case "MoonStaking.scheduleRevokeDelegation":
       return EthSignMoonStakingUnstake
+    case "MoonStaking.executeDelegationRequest":
+      return EthSignMoonStakingExecute
+    case "MoonStaking.cancelDelegationRequest":
+      return EthSignMoonStakingCancel
     default:
       return null
   }

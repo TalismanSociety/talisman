@@ -13,7 +13,10 @@ export const EthSignMoonStakingUnstake: FC = () => {
   if (!network?.nativeToken?.id || !token) return null
 
   return (
-    <EthSignContainer title={`Unbond ${token?.symbol}`} header={<SignViewStakingHeader unstake />}>
+    <EthSignContainer
+      title={`Unbond ${token?.symbol}`}
+      header={<SignViewStakingHeader icon="unstake" />}
+    >
       <SignViewStakingUnstake tokenId={network.nativeToken.id} />
     </EthSignContainer>
   )

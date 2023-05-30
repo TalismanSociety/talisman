@@ -18,7 +18,7 @@ export const EthSignMoonStakingStakeMore: FC = () => {
   if (!network?.nativeToken?.id || !more) return null
 
   return (
-    <EthSignContainer title="Increase stake" header={<SignViewStakingHeader />}>
+    <EthSignContainer title="Increase stake" header={<SignViewStakingHeader icon="stake" />}>
       <SignViewStakingStakeMore planck={more} tokenId={network.nativeToken.id} />
     </EthSignContainer>
   )
