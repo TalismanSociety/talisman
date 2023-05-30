@@ -1,12 +1,12 @@
 import { FC } from "react"
 
 import { EthSignContainer } from "./shared/EthSignContainer"
+import { SignViewIconHeader } from "./views/staking/SignViewIconHeader"
 import { SignViewStakingExecute } from "./views/staking/SignViewStakingExecute"
-import { SignViewStakingHeader } from "./views/staking/SignViewStakingHeader"
 
 export const EthSignMoonStakingExecute: FC = () => {
   return (
-    <EthSignContainer title={`Execute activity`} header={<SignViewStakingHeader icon="confirm" />}>
+    <EthSignContainer title={`Execute activity`} header={<SignViewIconHeader icon="ok" />}>
       <SignViewStakingExecute />
     </EthSignContainer>
   )

@@ -3,7 +3,7 @@ import { FC } from "react"
 
 import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewStakingHeader } from "./views/staking/SignViewStakingHeader"
+import { SignViewIconHeader } from "./views/staking/SignViewIconHeader"
 import { SignViewStakingUnstake } from "./views/staking/SignViewStakingUnstake"
 
 export const EthSignMoonStakingUnstake: FC = () => {
@@ -15,7 +15,7 @@ export const EthSignMoonStakingUnstake: FC = () => {
   return (
     <EthSignContainer
       title={`Unbond ${token?.symbol}`}
-      header={<SignViewStakingHeader icon="unstake" />}
+      header={<SignViewIconHeader icon="unstake" />}
     >
       <SignViewStakingUnstake tokenId={network.nativeToken.id} />
     </EthSignContainer>

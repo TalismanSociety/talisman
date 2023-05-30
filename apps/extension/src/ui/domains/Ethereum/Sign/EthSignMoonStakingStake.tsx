@@ -5,7 +5,7 @@ import { FC, useMemo } from "react"
 import { getContractCallArg } from "./getContractCallArg"
 import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewStakingHeader } from "./views/staking/SignViewStakingHeader"
+import { SignViewIconHeader } from "./views/staking/SignViewIconHeader"
 import { SignViewStakingStake } from "./views/staking/SignViewStakingStake"
 
 export const EthSignMoonStakingStake: FC = () => {
@@ -25,10 +25,7 @@ export const EthSignMoonStakingStake: FC = () => {
   if (!network?.nativeToken?.id || !planck || !token) return null
 
   return (
-    <EthSignContainer
-      title={`Stake ${token.symbol}`}
-      header={<SignViewStakingHeader icon="stake" />}
-    >
+    <EthSignContainer title={`Stake ${token.symbol}`} header={<SignViewIconHeader icon="stake" />}>
       <SignViewStakingStake
         planck={planck}
         tokenId={network.nativeToken.id}

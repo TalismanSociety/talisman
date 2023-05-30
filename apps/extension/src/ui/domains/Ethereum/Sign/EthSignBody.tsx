@@ -1,3 +1,4 @@
+import { log } from "@core/log"
 import { TransactionInfo } from "@core/util/getEthTransactionInfo"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
 import { FC } from "react"
@@ -16,6 +17,7 @@ import { EthSignMoonStakingStake } from "./EthSignMoonStakingStake"
 import { EthSignMoonStakingStakeLess } from "./EthSignMoonStakingStakeLess"
 import { EthSignMoonStakingStakeMore } from "./EthSignMoonStakingStakeMore"
 import { EthSignMoonStakingUnstake } from "./EthSignMoonStakingUnstake"
+import { EthSignMoonVotingYes } from "./EthSignMoonVotingYes"
 
 type EthSignBodyProps = {
   transactionInfo?: TransactionInfo
@@ -24,6 +26,9 @@ type EthSignBodyProps = {
 
 const getComponentFromKnownContractCall = (transactionInfo: TransactionInfo) => {
   const { contractType, contractCall } = transactionInfo
+
+  // TODO REMOVE THIS BEFORE PR REVIEW
+  log.debug(`${contractType}.${contractCall?.name}`, { contractType, contractCall })
 
   switch (`${contractType}.${contractCall?.name}`) {
     case "ERC20.transfer":
@@ -52,6 +57,8 @@ const getComponentFromKnownContractCall = (transactionInfo: TransactionInfo) => 
       return EthSignMoonStakingExecute
     case "MoonStaking.cancelDelegationRequest":
       return EthSignMoonStakingCancel
+    case "MoonConvictionVoting.voteYes":
+      return EthSignMoonVotingYes
     default:
       return null
   }

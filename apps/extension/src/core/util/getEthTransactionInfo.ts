@@ -3,9 +3,16 @@ import { getContractCallArg } from "@ui/domains/Ethereum/Sign/getContractCallArg
 import { BigNumber, ethers } from "ethers"
 
 import { abiErc1155, abiErc20, abiErc721, abiErc721Metadata, abiMoonStaking } from "./abi"
+import { abiMoonConvictionVoting } from "./abi/abiMoonConvictionVoting"
 import { isContractAddress } from "./isContractAddress"
 
-export type ContractType = "MoonStaking" | "ERC20" | "ERC721" | "ERC1155" | "unknown"
+export type ContractType =
+  | "ERC20"
+  | "ERC721"
+  | "ERC1155"
+  | "MoonStaking"
+  | "MoonConvictionVoting"
+  | "unknown"
 
 const MOON_CHAIN_PRECOMPILE_ADDRESSES: Record<
   string,
@@ -14,6 +21,10 @@ const MOON_CHAIN_PRECOMPILE_ADDRESSES: Record<
   "0x0000000000000000000000000000000000000800": {
     contractType: "MoonStaking",
     abi: abiMoonStaking,
+  },
+  "0x0000000000000000000000000000000000000812": {
+    contractType: "MoonConvictionVoting",
+    abi: abiMoonConvictionVoting,
   },
 }
 
