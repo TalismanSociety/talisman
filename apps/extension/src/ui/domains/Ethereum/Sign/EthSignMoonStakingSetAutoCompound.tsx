@@ -1,7 +1,9 @@
 import { FC, useMemo } from "react"
 
 import { getContractCallArg } from "./getContractCallArg"
+import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
+import { SignViewStakingHeader } from "./views/staking/SignViewStakingHeader"
 import { SignViewStakingSetAutoCompound } from "./views/staking/SignViewStakingSetAutoCompound"
 
 export const EthSignMoonStakingSetAutoCompound: FC = () => {
@@ -18,6 +20,11 @@ export const EthSignMoonStakingSetAutoCompound: FC = () => {
   if (!network?.nativeToken?.id || autoCompound === undefined) return null
 
   return (
-    <SignViewStakingSetAutoCompound tokenId={network.nativeToken.id} autoCompound={autoCompound} />
+    <EthSignContainer title="Set auto-compounding" header={<SignViewStakingHeader />}>
+      <SignViewStakingSetAutoCompound
+        tokenId={network.nativeToken.id}
+        autoCompound={autoCompound}
+      />
+    </EthSignContainer>
   )
 }

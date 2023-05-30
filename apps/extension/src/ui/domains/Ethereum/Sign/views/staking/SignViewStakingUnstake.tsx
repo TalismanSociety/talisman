@@ -1,6 +1,5 @@
-import { ZapOffIcon } from "@talisman/theme/icons"
 import { TokenId } from "@talismn/chaindata-provider"
-import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
+import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import useToken from "@ui/hooks/useToken"
 import { FC } from "react"
 
@@ -10,17 +9,14 @@ export const SignViewStakingUnstake: FC<{
   const token = useToken(tokenId)
 
   return (
-    <div className="text-center">
-      <div className="bg-grey-800 inline-flex h-24 w-24 items-center justify-center rounded-full">
-        <ZapOffIcon className="text-primary-500 text-[28px]" />
+    <div className="flex w-full flex-col items-center gap-4">
+      <div>
+        You are unbonding all{" "}
+        <span className="text-body inline-flex gap-2">
+          <TokenLogo tokenId={tokenId} className="inline" />
+          <span>{token?.symbol}</span>
+        </span>
       </div>
-      <div className="text-body mb-16 mt-8 text-lg font-semibold">Unbond {token?.symbol}</div>
-      <div className="mb-16 flex w-full flex-col items-center gap-4">
-        <div>
-          You are unbonding <span className="text-body">{token?.symbol}</span>
-        </div>
-      </div>
-      <ViewDetailsEth />
     </div>
   )
 }

@@ -2,7 +2,9 @@ import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
 import { getContractCallArg } from "./getContractCallArg"
+import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
+import { SignViewStakingHeader } from "./views/staking/SignViewStakingHeader"
 import { SignViewStakingStakeLess } from "./views/staking/SignViewStakingStakeLess"
 
 export const EthSignMoonStakingStakeLess: FC = () => {
@@ -15,5 +17,9 @@ export const EthSignMoonStakingStakeLess: FC = () => {
 
   if (!network?.nativeToken?.id || !less) return null
 
-  return <SignViewStakingStakeLess planck={less} tokenId={network.nativeToken.id} />
+  return (
+    <EthSignContainer title="Decrease stake" header={<SignViewStakingHeader unstake />}>
+      <SignViewStakingStakeLess planck={less} tokenId={network.nativeToken.id} />
+    </EthSignContainer>
+  )
 }
