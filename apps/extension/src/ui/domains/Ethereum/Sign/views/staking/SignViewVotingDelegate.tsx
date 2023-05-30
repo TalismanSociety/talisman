@@ -1,10 +1,12 @@
+import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { TokenId } from "@talismn/chaindata-provider"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
-import { FC, useMemo } from "react"
+import { copyAddress } from "@ui/util/copyAddress"
+import { FC, useCallback, useMemo } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const FormattedAddress = ({ address }: { address: string }) => {
@@ -17,7 +19,7 @@ const FormattedAddress = ({ address }: { address: string }) => {
 
   return (
     <Tooltip>
-      <TooltipTrigger className="flex max-w-full items-center gap-2">
+      <TooltipTrigger className="flex max-w-[200px] items-center gap-2">
         <AccountAvatar address={address} className="shrink-0 !text-[1.2em]" />
         <span className="overflow-hidden text-ellipsis whitespace-nowrap">{label}</span>
       </TooltipTrigger>
@@ -32,13 +34,35 @@ export const SignViewVotingDelegate: FC<{
   representative: string
   conviction: number
   trackId: number
-}> = ({ amount, tokenId, representative, conviction, trackId }) => {
+  explorerUrl?: string | null
+}> = ({ amount, tokenId, representative, conviction, trackId, explorerUrl }) => {
+  const url = useMemo(
+    () => (explorerUrl && representative ? `${explorerUrl}/address/${representative}` : undefined),
+    [representative, explorerUrl]
+  )
+
+  const handleClick = useCallback(() => {
+    if (url) window.open(url, "_blank")
+    else if (representative) copyAddress(representative)
+  }, [representative, url])
+
   return (
     <div className="flex w-full flex-col items-center gap-4">
-      <div className="flex w-full items-center justify-between gap-8">
+      <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
         <div className="whitespace-nowrap">Delegating to</div>
-        <div className="text-body grow overflow-hidden text-base">
+        <div className="text-body flex grow justify-end gap-2 overflow-hidden text-base">
           <FormattedAddress address={representative} />
+          <button
+            type="button"
+            className="text-body-secondary hover:text-body shrink-0"
+            onClick={handleClick}
+          >
+            {url ? (
+              <ExternalLinkIcon className="transition-none" />
+            ) : (
+              <CopyIcon className="transition-none" />
+            )}
+          </button>
         </div>
       </div>
       <div className="flex w-full items-center justify-between">

@@ -44,6 +44,7 @@ export const EthSignMoonVotingDelegate: FC = () => {
         amount={amount}
         representative={representative}
         trackId={trackId}
+        explorerUrl={network.explorerUrl}
       />
     </EthSignContainer>
   )
