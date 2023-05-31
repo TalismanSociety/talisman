@@ -61,19 +61,16 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
   }
   if (reason === "update" && previousVersion && lt(previousVersion, "1.6.4")) {
     // once off migration to add a Polkadot Vault companion seed store
-    const site = await sitesAuthorisedStore.get(TALISMAN_WEB_APP_DOMAIN)
-    if (!site) {
-      const hasVaultAccounts = await hasQrCodeAccounts()
-      if (hasVaultAccounts) {
-        // add a vault companion if any of the addresses are from a vault
-        //first check if any of the addresses are from a vault
-        // check if a vault companion store already exists
-        const vaultCompanionCipher = await vaultCompanionStore.get("cipher")
-        const seedPhraseData = await seedPhraseStore.get()
-        if (!vaultCompanionCipher && seedPhraseData.cipher) {
-          // if not, create one
-          await vaultCompanionStore.set(seedPhraseData)
-        }
+    const hasVaultAccounts = await hasQrCodeAccounts()
+    if (hasVaultAccounts) {
+      // add a vault companion if any of the addresses are from a vault
+      //first check if any of the addresses are from a vault
+      // check if a vault companion store already exists
+      const vaultCompanionCipher = await vaultCompanionStore.get("cipher")
+      const seedPhraseData = await seedPhraseStore.get()
+      if (!vaultCompanionCipher && seedPhraseData.cipher) {
+        // if not, create one
+        await vaultCompanionStore.set(seedPhraseData)
       }
     }
   }

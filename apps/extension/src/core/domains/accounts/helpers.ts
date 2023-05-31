@@ -116,7 +116,7 @@ export const getPrimaryAccount = (storedSeedOnly = false) => {
 }
 
 export const hasQrCodeAccounts = async () => {
-  const localData = await Browser.storage.local.get()
+  const localData = await Browser.storage.local.get(null)
   return Object.entries(localData).some(
     ([key, account]: [string, Account]) =>
       key.startsWith("account:0x") && account.meta?.origin === AccountTypes.QR

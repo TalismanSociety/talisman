@@ -29,10 +29,8 @@ const signWithVaultCompanion = async (unsigned: Uint8Array) => {
     const signingPair = keyring.createFromUri(seedVal, {}, "sr25519")
 
     // For network specs, sign the specs (not the entire payload)
-    const type = signingPair.type
-    const publicKey = signingPair.publicKey
-    const signature = signingPair.sign(unsigned)
-    return { type, publicKey, signature }
+    const { type, publicKey } = signingPair
+    return { type, publicKey, signature: signingPair.sign(unsigned) }
   } catch (error) {
     throw new Error("Failed to sign : " + (error as Error).message)
   }
