@@ -115,6 +115,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
   accountValidateMnemonic: (mnemonic) =>
     messageService.sendMessage("pri(accounts.validateMnemonic)", mnemonic),
+  setVaultCompanionMnemonic: (mnemonic) =>
+    messageService.sendMessage("pri(accounts.setVaultCompanionMnemonic)", mnemonic),
 
   // balance messages ---------------------------------------------------
   getBalance: ({ chainId, evmNetworkId, tokenId, address }) =>

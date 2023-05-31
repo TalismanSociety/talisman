@@ -74,7 +74,7 @@ export default class AccountsHandler extends ExtensionHandler {
         origin: AccountTypes.TALISMAN,
       })
       talismanAnalytics.capture("account create", { type, method: "parent" })
-      if (shouldStoreSeed) await this.stores.seedPhrase.add(seed, pair.address, password)
+      if (shouldStoreSeed) await this.stores.seedPhrase.add(seed, password)
       return pair.address
     } else {
       let accountIndex
@@ -353,6 +353,15 @@ export default class AccountsHandler extends ExtensionHandler {
     return mnemonicValidate(mnemonic)
   }
 
+  private async setVaultCompanionMnemonic(mnemonic: string) {
+    const isValidMnemonic = mnemonicValidate(mnemonic)
+    assert(isValidMnemonic, "Invalid mnemonic")
+    const password = this.stores.password.getPassword()
+    if (!password) throw new Error("Unauthorised")
+    await this.stores.vaultCompanion.add(mnemonic, password)
+    return true
+  }
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -384,6 +393,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsSubscribe(id, port)
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
+      case "pri(accounts.setVaultCompanionMnemonic)":
+        return this.setVaultCompanionMnemonic(request as string)
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

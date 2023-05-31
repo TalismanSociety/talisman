@@ -13,6 +13,9 @@ import keyring from "@polkadot/ui-keyring"
 import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
 import Browser from "webextension-polyfill"
 
+import seedPhraseStore from "./store"
+import { vaultCompanionStore } from "./store.vaultCompanion"
+
 const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
   return accounts.sort((acc1, acc2) => {
     const acc1Created = acc1.whenCreated
@@ -121,4 +124,11 @@ export const hasQrCodeAccounts = async () => {
     ([key, account]: [string, Account]) =>
       key.startsWith("account:0x") && account.meta?.origin === AccountTypes.QR
   )
+}
+
+export const copySeedStoreToVaultCompanion = async () => {
+  const seedData = await seedPhraseStore.get()
+  const vaultCompanionData = await vaultCompanionStore.get()
+  if (vaultCompanionData.cipher) throw new Error("Vault companion already has data")
+  await vaultCompanionStore.set(seedData)
 }

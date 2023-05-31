@@ -85,7 +85,7 @@ export default class AppHandler extends ExtensionHandler {
       name: "My Polkadot Account",
       origin: mnemonic ? AccountTypes.SEED_STORED : AccountTypes.TALISMAN,
     } as AccountMeta)
-    await this.stores.seedPhrase.add(mnemonic, pair.address, transformedPw, confirmed)
+    await this.stores.seedPhrase.add(mnemonic, transformedPw, confirmed)
 
     try {
       // also derive a first ethereum account

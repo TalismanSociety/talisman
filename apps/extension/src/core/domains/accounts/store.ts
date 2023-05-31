@@ -15,7 +15,6 @@ export type LegacySeedObj = {
 
 export type SeedPhraseData = {
   cipher?: string
-  address: string
   confirmed: boolean
 }
 
@@ -42,7 +41,6 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
 > {
   public async add(
     seed: string,
-    address: string,
     password: string,
     confirmed = false
   ): Promise<Result<boolean, "Seed already exists in SeedPhraseStore">> {
@@ -50,7 +48,7 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
     if (storedCipher) return Err("Seed already exists in SeedPhraseStore")
 
     const cipher = await encryptSeed(seed, password)
-    await this.set({ cipher, address, confirmed })
+    await this.set({ cipher, confirmed })
     return Ok(true)
   }
 

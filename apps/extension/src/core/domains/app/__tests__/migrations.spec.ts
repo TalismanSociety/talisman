@@ -56,7 +56,7 @@ describe("App migrations", () => {
     createPair("DERIVED", getEthDerivationPath(), rootAccount.address, "ethereum")
 
     // create a seedphrase encrypted with the plaintext password
-    await seedPhraseStore.add(mnemonic, rootAccount.address, password, true)
+    await seedPhraseStore.add(mnemonic, password, true)
 
     // ensure can decrypt keypair
     rootAccount.decodePkcs8(password)

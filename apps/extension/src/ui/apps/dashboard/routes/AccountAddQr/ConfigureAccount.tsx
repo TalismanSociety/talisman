@@ -17,7 +17,7 @@ import { Checkbox, FormFieldInputText } from "talisman-ui"
 import { useAccountAddQr } from "./context"
 
 export const ConfigureAccount = () => {
-  const { state, dispatch, submit } = useAccountAddQr()
+  const { state, dispatch, submitConfigure } = useAccountAddQr()
   const [useTestnets] = useSetting("useTestnets")
   const { chains } = useChains(useTestnets)
   const addressesByChain = useMemo(() => {
@@ -50,7 +50,7 @@ export const ConfigureAccount = () => {
         title="Name your account"
         text="Help distinguish your account by giving it a name. This would ideally be the same as the name on your Polkadot Vault device to make it easy to identify when signing."
       />
-      <form className="my-20 space-y-10" onSubmit={submit}>
+      <form className="my-20 space-y-10" onSubmit={submitConfigure}>
         <FormFieldInputText
           type="text"
           placeholder="My Polkadot Vault Account"

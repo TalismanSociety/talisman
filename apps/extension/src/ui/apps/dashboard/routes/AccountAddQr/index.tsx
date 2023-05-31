@@ -11,6 +11,7 @@ const WrappedAccountAddQr = () => {
     <Layout withBack centered>
       {state.type === "SCAN" && <Scan />}
       {state.type === "CONFIGURE" && <ConfigureAccount />}
+      {state.type === "CONFIGURE_COMPANION" && <>Placeholder</>}
     </Layout>
   )
 }

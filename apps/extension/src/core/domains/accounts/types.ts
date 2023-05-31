@@ -152,6 +152,7 @@ export interface AccountsMessages {
   "pri(accounts.rename)": [RequestAccountRename, boolean]
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
   "pri(accounts.validateMnemonic)": [string, boolean]
+  "pri(accounts.setVaultCompanionMnemonic)": [string, boolean]
 }
 
 // Mnemonic types

@@ -16,16 +16,12 @@ describe("seedPhraseStore", () => {
   test("calling add should result in the cipher being stored", async () => {
     const seed = "dove lumber quote board young robust kit invite plastic regular skull history"
     const password = "password"
-    const address = "5Fj8Z2J9Z9"
-    const result = await seedPhraseStore.add(seed, address, password)
+    const result = await seedPhraseStore.add(seed, password)
     const { ok, val } = result
     expect(ok).toBe(true)
     expect(val).toBe(true)
     const storedCipher = await seedPhraseStore.get("cipher")
     expect(storedCipher).toBeDefined()
-    const storedAddress = await seedPhraseStore.get("address")
-    expect(storedAddress).toBeDefined()
-    expect(storedAddress).toBe(address)
     const storedConfirmed = await seedPhraseStore.get("confirmed")
     expect(storedConfirmed).toBeDefined()
     expect(storedConfirmed).toBe(false)
@@ -43,9 +39,8 @@ describe("seedPhraseStore", () => {
     const seed = "dove lumber quote board young robust kit invite plastic regular skull history"
     const legacySeed: LegacySeedObj = { seed: `${LEGACY_SEED_PREFIX}${seed}` }
     const password = "password"
-    const address = "5Fj8Z2J9Z9"
     const cipher = await encrypt(password, legacySeed)
-    await seedPhraseStore.set({ cipher, address })
+    await seedPhraseStore.set({ cipher })
     const result = await seedPhraseStore.getSeed(password)
     const { ok, val } = result
     expect(ok).toBe(true)

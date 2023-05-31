@@ -125,6 +125,7 @@ export default interface MessageTypes {
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
+  setVaultCompanionMnemonic: (mnemonic: string) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
   getBalance: ({
