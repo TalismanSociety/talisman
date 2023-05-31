@@ -7,6 +7,6 @@ export const useCoinGeckoTokenRates = (coingeckoId?: string) => {
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
-    queryFn: () => (coingeckoId ? getCoinGeckoTokenRates(coingeckoId) : null),
+    queryFn: () => getCoinGeckoTokenRates(coingeckoId),
   })
 }

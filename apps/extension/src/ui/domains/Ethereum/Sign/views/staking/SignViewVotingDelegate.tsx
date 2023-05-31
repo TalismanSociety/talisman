@@ -1,7 +1,7 @@
 import { CopyIcon, ExternalLinkIcon } from "@talisman/theme/icons"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { TokenId } from "@talismn/chaindata-provider"
-import AccountAvatar from "@ui/domains/Account/Avatar"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { TokenLogo } from "@ui/domains/Asset/TokenLogo"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
@@ -20,7 +20,7 @@ const FormattedAddress = ({ address }: { address: string }) => {
   return (
     <Tooltip>
       <TooltipTrigger className="flex max-w-[200px] items-center gap-2">
-        <AccountAvatar address={address} className="shrink-0 !text-[1.2em]" />
+        <AccountIcon address={address} className="text-[1.2em]" />
         <span className="overflow-hidden text-ellipsis whitespace-nowrap">{label}</span>
       </TooltipTrigger>
       <TooltipContent>{address}</TooltipContent>
