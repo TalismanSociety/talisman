@@ -2,7 +2,7 @@ import { ChevronDownIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import useChain from "@ui/hooks/useChain"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
-import { usePrimaryAccount } from "@ui/hooks/usePrimaryAccount"
+import { useHasVaultCompanion } from "@ui/hooks/useVaultCompanionMnemonic"
 import startCase from "lodash/startCase"
 import { useMemo, useState } from "react"
 import { Popover, PopoverContent, PopoverTrigger } from "talisman-ui"
@@ -34,11 +34,11 @@ export const qrCodeLogoForSource = (source: QrCodeSource) =>
 export const useQrCodeSourceSelectorState = (genesisHash?: string) => {
   // calculate the list of available sources
   const chain = useChainByGenesisHash(genesisHash)
-  const internalAccount = usePrimaryAccount(true)
+  const vaultCompanion = useHasVaultCompanion()
   const chainspecQrUrl = chain?.chainspecQrUrl
   const latestMetadataQrUrl = chain?.latestMetadataQrUrl
   const sources = useMemo<QrCodeSource[]>(() => {
-    const talismanSource: QrCodeSource[] = internalAccount ? ["talisman"] : []
+    const talismanSource: QrCodeSource[] = vaultCompanion ? ["talisman"] : []
     return talismanSource.concat(
       ...((): QrCodeSource[] => {
         if (!chainspecQrUrl || !latestMetadataQrUrl) return []
@@ -52,7 +52,7 @@ export const useQrCodeSourceSelectorState = (genesisHash?: string) => {
         return ["other"]
       })()
     )
-  }, [chainspecQrUrl, latestMetadataQrUrl, internalAccount])
+  }, [chainspecQrUrl, latestMetadataQrUrl, vaultCompanion])
 
   // use the parity metadata portal source by default for these chains
   const polkadot = useChain("polkadot")
