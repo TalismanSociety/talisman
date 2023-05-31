@@ -29,13 +29,15 @@ const decodeInterior = (interior: string): Interior => {
   const prelude = interior.slice(0, 4)
   const main = interior.slice(4)
 
+  // data type is defined by the prelude
+  // see https://docs.moonbeam.network/builders/interoperability/xcm/xc20/xtokens/#xtokens-precompile
   switch (prelude) {
     case "0x00": {
-      // parachain id - bytes4
+      // Parachain	bytes4
       return { type: "parachain" as const, paraId: parseInt(main, 16) }
     }
     case "0x01": {
-      // account id - bytes32
+      // AccountId32	bytes32
       const networkPrefixHex = main.slice(main.length - 2)
       const networkPrefix = networkPrefixHex === "00" ? undefined : parseInt(networkPrefixHex, 16)
       const address = hexToU8a(main.slice(0, main.length - 2))
