@@ -4,12 +4,14 @@ import { BigNumber, ethers } from "ethers"
 
 import { abiErc1155, abiErc20, abiErc721, abiErc721Metadata, abiMoonStaking } from "./abi"
 import { abiMoonConvictionVoting } from "./abi/abiMoonConvictionVoting"
+import { abiMoonXTokens } from "./abi/abiMoonXTokens"
 import { isContractAddress } from "./isContractAddress"
 
 export type ContractType =
   | "ERC20"
   | "ERC721"
   | "ERC1155"
+  | "MoonXTokens"
   | "MoonStaking"
   | "MoonConvictionVoting"
   | "unknown"
@@ -25,6 +27,10 @@ const MOON_CHAIN_PRECOMPILE_ADDRESSES: Record<
   "0x0000000000000000000000000000000000000812": {
     contractType: "MoonConvictionVoting",
     abi: abiMoonConvictionVoting,
+  },
+  "0x0000000000000000000000000000000000000804": {
+    contractType: "MoonXTokens",
+    abi: abiMoonXTokens,
   },
 }
 

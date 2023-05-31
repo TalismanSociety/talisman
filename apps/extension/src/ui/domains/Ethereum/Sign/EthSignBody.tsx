@@ -20,6 +20,7 @@ import { EthSignMoonStakingUnstake } from "./EthSignMoonStakingUnstake"
 import { EthSignMoonVotingDelegate } from "./EthSignMoonVotingDelegate"
 import { EthSignMoonVotingUndelegate } from "./EthSignMoonVotingUndelegate"
 import { EthSignMoonVotingVote } from "./EthSignMoonVotingVote"
+import { EthSignMoonXTokensTransfer } from "./EthSignMoonXTokensTransfer"
 
 type EthSignBodyProps = {
   transactionInfo?: TransactionInfo
@@ -66,6 +67,8 @@ const getComponentFromKnownContractCall = (transactionInfo: TransactionInfo) => 
       return EthSignMoonVotingDelegate
     case "MoonConvictionVoting.undelegate":
       return EthSignMoonVotingUndelegate
+    case "MoonXTokens.transfer":
+      return EthSignMoonXTokensTransfer
     default:
       return null
   }

@@ -1,6 +1,6 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { encodeAnyAddress } from "@talismn/util"
-import AccountAvatar from "@ui/domains/Account/Avatar"
+import { AccountIcon } from "@ui/domains/Account/AccountIcon"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -12,8 +12,12 @@ export const SignAccountAvatar: FC<{ account?: AccountJsonAny; ss58Format?: numb
 
   return (
     <Tooltip placement="bottom-end">
-      <TooltipTrigger>
-        <AccountAvatar address={account.address} genesisHash={account.genesisHash} />
+      <TooltipTrigger className="inline-block">
+        <AccountIcon
+          className="text-xl"
+          address={account.address}
+          genesisHash={account.genesisHash}
+        />
       </TooltipTrigger>
       <TooltipContent>
         <div className="text-body font-semibold">{account.name}</div>

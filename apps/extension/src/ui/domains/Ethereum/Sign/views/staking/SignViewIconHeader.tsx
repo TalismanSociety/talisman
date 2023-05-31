@@ -1,8 +1,15 @@
-import { CheckCircleIcon, VoteIcon, XCircleIcon, ZapIcon, ZapOffIcon } from "@talisman/theme/icons"
+import {
+  CheckCircleIcon,
+  RefreshIcon,
+  VoteIcon,
+  XCircleIcon,
+  ZapIcon,
+  ZapOffIcon,
+} from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { FC, useMemo } from "react"
 
-export type SignIconType = "vote" | "stake" | "unstake" | "ok" | "nok"
+export type SignIconType = "vote" | "stake" | "unstake" | "ok" | "nok" | "transfer"
 
 const getIcon = (type: SignIconType) => {
   switch (type) {
@@ -16,6 +23,8 @@ const getIcon = (type: SignIconType) => {
       return XCircleIcon
     case "vote":
       return VoteIcon
+    case "transfer":
+      return RefreshIcon
   }
 }
 
