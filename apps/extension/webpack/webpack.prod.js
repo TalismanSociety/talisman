@@ -2,12 +2,13 @@
 
 const { merge } = require("webpack-merge")
 const CopyPlugin = require("copy-webpack-plugin")
-const ZipPlugin = require("zip-webpack-plugin")
+const ZipPlugin = require("./ZipPlugin")
 const TerserPlugin = require("terser-webpack-plugin")
 const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin
 
 const common = require("./webpack.common.js")
 const { distDir, getArchiveFileName, getSentryPlugin, getManifestVersionName } = require("./utils")
+const { SourceMapDevToolPlugin } = require("webpack")
 
 const config = (env) => {
   if (env.build === "production") {
@@ -18,9 +19,13 @@ const config = (env) => {
   }
 
   return merge(common(env), {
-    devtool: "source-map",
+    devtool: false,
     mode: "production",
     plugins: [
+      new SourceMapDevToolPlugin({
+        filename: "[file].map[query]",
+        exclude: ["content_script.js", "page.js"],
+      }),
       // Ensure plugins in this array will not change source in any way that will affect source maps
       getSentryPlugin(env),
       new CopyPlugin({
@@ -66,8 +71,9 @@ const config = (env) => {
       }),
       // Do not include source maps in the zip file
       new ZipPlugin({
+        folder: distDir,
         filename: getArchiveFileName(env),
-        exclude: new RegExp(/\.js\.map$/, "m"),
+        exclude: "*.js.map",
       }),
       new BundleAnalyzerPlugin({
         // analyzerMode defaults to server, spawning a http server which can hang the process
