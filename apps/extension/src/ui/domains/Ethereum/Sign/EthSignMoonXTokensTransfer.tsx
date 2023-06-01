@@ -10,10 +10,10 @@ import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
+import { SignContainer } from "../../Sign/SignContainer"
 import { getContractCallArg } from "./getContractCallArg"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewIconHeader } from "./views/staking/SignViewIconHeader"
+import { SignViewIconHeader } from "./views/SignViewIconHeader"
 import { SignViewXTokensTransfer } from "./views/staking/SignViewXTokensTransfer"
 
 type DecodedMultilocation = {
@@ -139,7 +139,11 @@ export const EthSignMoonXTokensTransfer: FC = () => {
   if (!amount || !symbol || decimals === undefined || !network || !account) return null
 
   return (
-    <EthSignContainer title={"Transfer"} header={<SignViewIconHeader icon="transfer" />}>
+    <SignContainer
+      networkType="ethereum"
+      title={"Transfer"}
+      header={<SignViewIconHeader icon="transfer" />}
+    >
       <SignViewXTokensTransfer
         value={amount}
         tokenDecimals={decimals}
@@ -151,6 +155,6 @@ export const EthSignMoonXTokensTransfer: FC = () => {
         toNetwork={targetChain?.id}
         toAddress={targetAddress}
       />
-    </EthSignContainer>
+    </SignContainer>
   )
 }

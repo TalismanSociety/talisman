@@ -9,7 +9,6 @@ import { EthSignBodyErc20Transfer } from "./EthSignBodyErc20Transfer"
 import { EthSignBodyErc721Approve } from "./EthSignBodyErc721Approve"
 import { EthSignBodyErc721ApproveAll } from "./EthSignBodyErc721ApproveAll"
 import { EthSignBodyErc721Transfer } from "./EthSignBodyErc721Transfer"
-import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
 import { EthSignMoonStakingCancel } from "./EthSignMoonStakingCancel"
 import { EthSignMoonStakingExecute } from "./EthSignMoonStakingExecute"
 import { EthSignMoonStakingSetAutoCompound } from "./EthSignMoonStakingSetAutoCompound"
@@ -21,6 +20,7 @@ import { EthSignMoonVotingDelegate } from "./EthSignMoonVotingDelegate"
 import { EthSignMoonVotingUndelegate } from "./EthSignMoonVotingUndelegate"
 import { EthSignMoonVotingVote } from "./EthSignMoonVotingVote"
 import { EthSignMoonXTokensTransfer } from "./EthSignMoonXTokensTransfer"
+import { SignViewBodyShimmer } from "./views/SignViewBodyShimmer"
 
 type EthSignBodyProps = {
   transactionInfo?: TransactionInfo
@@ -77,7 +77,7 @@ const getComponentFromKnownContractCall = (transactionInfo: TransactionInfo) => 
 const Fallback: FallbackRender = () => <EthSignBodyDefault />
 
 export const EthSignBody: FC<EthSignBodyProps> = ({ transactionInfo, isReady }) => {
-  if (!isReady || !transactionInfo) return <EthSignBodyShimmer />
+  if (!isReady || !transactionInfo) return <SignViewBodyShimmer />
 
   const Component = getComponentFromKnownContractCall(transactionInfo)
 

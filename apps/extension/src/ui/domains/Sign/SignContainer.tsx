@@ -1,23 +1,26 @@
 import { FadeIn } from "@talisman/components/FadeIn"
 import { classNames } from "@talismn/util"
+import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
 import { ViewDetailsEth } from "@ui/domains/Sign/ViewDetails/ViewDetailsEth"
 import { FC, ReactNode } from "react"
 import { createPortal } from "react-dom"
 
-type EthSignContainerProps = {
+type SignContainerProps = {
   title: ReactNode
   children: ReactNode
   className?: string
   alert?: ReactNode
   header?: ReactNode
+  networkType: "ethereum" | "substrate"
 }
 
-export const EthSignContainer: FC<EthSignContainerProps> = ({
+export const SignContainer: FC<SignContainerProps> = ({
   title,
   children,
   className,
   alert,
   header,
+  networkType,
 }) => {
   return (
     <FadeIn className={classNames("flex h-full flex-col", className)}>
@@ -25,7 +28,8 @@ export const EthSignContainer: FC<EthSignContainerProps> = ({
       <h1 className="!leading-base !mt-0 font-sans !text-lg !font-bold">{title}</h1>
       <div className="flex w-full flex-col items-center gap-4 py-8">{children}</div>
       <div className="mb-8 mt-12 grow text-center">
-        <ViewDetailsEth />
+        {networkType === "ethereum" && <ViewDetailsEth />}
+        {networkType === "substrate" && <ViewDetails />}
       </div>
       {alert && createPortal(alert, document.getElementById("sign-alerts-inject") as Element)}
     </FadeIn>

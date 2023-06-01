@@ -264,4 +264,19 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(eth.watchasset.requests.approve)", { id }),
   ethWatchAssetRequestCancel: (id) =>
     messageService.sendMessage("pri(eth.watchasset.requests.cancel)", { id }),
+
+  // substrate rpc messages
+  subSend: <T>(chainId: string, method: string, params: unknown[], isCacheable?: boolean) =>
+    messageService.sendMessage("pri(substrate.rpc.send)", {
+      chainId,
+      method,
+      params,
+      isCacheable,
+    }) as Promise<T>,
+  subChainMetadata: (genesisHash, specVersion, blockHash) =>
+    messageService.sendMessage("pri(substrate.chain.metadata)", {
+      genesisHash,
+      specVersion,
+      blockHash,
+    }),
 }

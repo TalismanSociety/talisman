@@ -5,8 +5,8 @@ import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { ethers } from "ethers"
 import { FC, useMemo } from "react"
 
+import { SignContainer } from "../../Sign/SignContainer"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { SignParamTokensDisplay } from "./shared/SignParamTokensDisplay"
 
 export const EthSignBodyDefault: FC = () => {
@@ -35,7 +35,10 @@ export const EthSignBodyDefault: FC = () => {
   if (!nativeToken) return null
 
   return (
-    <EthSignContainer title={amount && request.to ? "Transfer Request" : "Transaction Request"}>
+    <SignContainer
+      networkType="ethereum"
+      title={amount && request.to ? "Transfer Request" : "Transaction Request"}
+    >
       {amount && request.to ? (
         <>
           <div>You are transferring</div>
@@ -86,6 +89,6 @@ export const EthSignBodyDefault: FC = () => {
           method: <span className="text-white">{transactionInfo.contractCall.name}</span>
         </div>
       )}
-    </EthSignContainer>
+    </SignContainer>
   )
 }

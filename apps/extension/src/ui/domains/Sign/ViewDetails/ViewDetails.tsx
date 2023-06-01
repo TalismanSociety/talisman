@@ -1,20 +1,18 @@
 import { BalanceFormatter } from "@core/domains/balances/types"
-import {
-  SignerPayloadJSON,
-  SignerPayloadRaw,
-  SubstrateSigningRequest,
-  TransactionDetails,
-} from "@core/domains/signing/types"
+import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
+import { TypeRegistry } from "@polkadot/types"
 import Button from "@talisman/components/Button"
-import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { encodeAnyAddress } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { useExtrinsic } from "@ui/hooks/useExtrinsic"
+import { useExtrinsicFee } from "@ui/hooks/useExtrinsicFee"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { FC, useEffect, useMemo } from "react"
 import styled from "styled-components"
+import { Drawer } from "talisman-ui"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAmount } from "./ViewDetailsAmount"
@@ -61,24 +59,22 @@ const ViewDetailsContainer = styled.div`
   }
 `
 
-type BaseViewDetailsProps = {
-  txDetails?: TransactionDetails | null
-  txDetailsError?: string
-  signingRequest: SubstrateSigningRequest
-}
+// type BaseViewDetailsProps = {
+//   txDetails?: TransactionDetails | null
+//   txDetailsError?: string
+// }
 
-type ViewDetailsContentProps = BaseViewDetailsProps & {
+// type ViewDetailsContentProps = BaseViewDetailsProps & {
+//   onClose: () => void
+// }
+
+const ViewDetailsContent: FC<{
   onClose: () => void
-}
-
-const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
-  onClose,
-  signingRequest,
-  txDetails,
-  txDetailsError,
-}) => {
+}> = ({ onClose }) => {
   const { genericEvent } = useAnalytics()
-  const { request, account, chain } = usePolkadotSigningRequest(signingRequest)
+  const { request, account, chain, payload } = usePolkadotSigningRequest()
+  const { data: extrinsic, error } = useExtrinsic(payload)
+  const qExtrinsicFee = useExtrinsicFee(payload)
   const nativeToken = useToken(chain?.nativeToken?.id)
   const nativeTokenRates = useTokenRates(nativeToken?.id)
 
@@ -103,31 +99,39 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
     [account, chain?.prefix]
   )
 
-  const { fee, feeError, decodeError, methodName, args } = useMemo(() => {
-    if (!txDetails) return {}
+  const { fee, feeError } = useMemo(
+    () => ({
+      fee: qExtrinsicFee.data
+        ? new BalanceFormatter(qExtrinsicFee.data, nativeToken?.decimals, nativeTokenRates)
+        : undefined,
+      feeError: qExtrinsicFee.error ? "Failed to calculate fee." : "",
+    }),
+    [qExtrinsicFee.data, qExtrinsicFee.error, nativeToken?.decimals, nativeTokenRates]
+  )
 
-    const feeError = txDetails.partialFee ? "" : "Failed to compute fee."
-    const decodeError = txDetails.method ? "" : "Failed to decode method."
+  const { decodeError, methodName, args, decodedPayload } = useMemo(() => {
+    if (!extrinsic) return {}
 
-    const fee = txDetails.partialFee
-      ? new BalanceFormatter(txDetails.partialFee, nativeToken?.decimals, nativeTokenRates)
-      : undefined
+    const decodeError = error ? "Failed to decode method." : ""
 
-    const methodName = txDetails.method
-      ? `${txDetails.method.section} : ${txDetails.method.method}`
+    const methodName = extrinsic.method
+      ? `${extrinsic.method.section} : ${extrinsic.method.method}`
       : "unknown"
 
     // safe deep copy
-    const args = txDetails.method?.args
-      ? JSON.parse(JSON.stringify(txDetails.method.args))
-      : undefined
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const decoded = extrinsic.toHuman() as any
+    const args = decoded?.method ? JSON.parse(JSON.stringify(decoded.method.args)) : undefined
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     args?.calls?.forEach?.((call: any) => {
       delete call.docs
     })
 
-    return { fee, feeError, decodeError, methodName, args }
-  }, [nativeToken?.decimals, nativeTokenRates, txDetails])
+    const typeRegistry = new TypeRegistry()
+    const decodedPayload = typeRegistry.createType("ExtrinsicPayload", payload)
+
+    return { decodeError, methodName, args, decodedPayload }
+  }, [error, extrinsic, payload])
 
   useEffect(() => {
     genericEvent("open sign transaction view details", { type: "substrate" })
@@ -146,11 +150,15 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
             <ViewDetailsField label="Network">{chain?.name ?? "Unknown"}</ViewDetailsField>
             <ViewDetailsAmount label="Fees" error={feeError} amount={fee} token={nativeToken} />
             <ViewDetailsAmount label="Tip" amount={tip} token={nativeToken} />
-            <ViewDetailsField label="Decoding error" error={txDetailsError ?? decodeError} />
+            <ViewDetailsField
+              label="Decoding error"
+              error={(error as Error)?.message ?? decodeError}
+            />
             <ViewDetailsField label="Method">{methodName}</ViewDetailsField>
-            <ViewDetailsTxDesc label="Description" method={txDetails?.method} />
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <ViewDetailsTxDesc label="Description" method={extrinsic?.method?.toHuman() as any} />
             <ViewDetailsTxObject label="Arguments" obj={args} />
-            <ViewDetailsTxObject label="Payload" obj={txDetails?.payload} />
+            <ViewDetailsTxObject label="Payload" obj={decodedPayload?.toHuman()} />
           </>
         ) : (
           <>
@@ -174,19 +182,15 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   )
 }
 
-export const ViewDetails: FC<BaseViewDetailsProps & { analysing?: boolean }> = ({
-  signingRequest,
-  txDetails,
-  txDetailsError,
-  analysing,
-}) => {
+export const ViewDetails: FC = () => {
+  const { isLoading } = useExtrinsic()
   const { isOpen, open, close } = useOpenClose()
 
   return (
     <>
-      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={analysing} />
-      <Drawer anchor="bottom" open={isOpen && !analysing} onClose={close}>
-        <ViewDetailsContent onClose={close} {...{ signingRequest, txDetails, txDetailsError }} />
+      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={isLoading} />
+      <Drawer anchor="bottom" isOpen={isOpen && !isLoading} onDismiss={close}>
+        <ViewDetailsContent onClose={close} />
       </Drawer>
     </>
   )

@@ -7,12 +7,12 @@ import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
-import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
+import { SignContainer } from "../../Sign/SignContainer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton } from "./shared"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { SignParamTokensButton } from "./shared/SignParamTokensButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
+import { SignViewBodyShimmer } from "./views/SignViewBodyShimmer"
 
 export const EthSignBodyErc20Transfer: FC = () => {
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
@@ -61,10 +61,10 @@ export const EthSignBodyErc20Transfer: FC = () => {
     value,
   ])
 
-  if (!amount || !nativeToken || !account || !network || !to) return <EthSignBodyShimmer />
+  if (!amount || !nativeToken || !account || !network || !to) return <SignViewBodyShimmer />
 
   return (
-    <EthSignContainer title="Transfer Request">
+    <SignContainer networkType="ethereum" title="Transfer Request">
       <div>You are transferring</div>
       <div className="flex">
         <SignParamTokensButton
@@ -102,6 +102,6 @@ export const EthSignBodyErc20Transfer: FC = () => {
         <TokenLogo className="inline-block" tokenId={nativeToken.id} />
         <div>{network.name}</div>
       </div>
-    </EthSignContainer>
+    </SignContainer>
   )
 }

@@ -2,10 +2,10 @@ import useToken from "@ui/hooks/useToken"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
+import { SignContainer } from "../../Sign/SignContainer"
 import { getContractCallArg } from "./getContractCallArg"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewIconHeader } from "./views/staking/SignViewIconHeader"
+import { SignViewIconHeader } from "./views/SignViewIconHeader"
 import { SignViewStakingStake } from "./views/staking/SignViewStakingStake"
 
 export const EthSignMoonStakingStake: FC = () => {
@@ -25,12 +25,16 @@ export const EthSignMoonStakingStake: FC = () => {
   if (!network?.nativeToken?.id || !planck || !token) return null
 
   return (
-    <EthSignContainer title={`Stake ${token.symbol}`} header={<SignViewIconHeader icon="stake" />}>
+    <SignContainer
+      networkType="ethereum"
+      title={`Stake ${token.symbol}`}
+      header={<SignViewIconHeader icon="stake" />}
+    >
       <SignViewStakingStake
         planck={planck}
         tokenId={network.nativeToken.id}
         autoCompound={autoCompound}
       />
-    </EthSignContainer>
+    </SignContainer>
   )
 }

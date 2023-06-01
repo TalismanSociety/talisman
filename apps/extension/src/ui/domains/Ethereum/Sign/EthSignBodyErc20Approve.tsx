@@ -7,16 +7,16 @@ import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
 import { SignAlertMessage } from "../../Sign/SignAlertMessage"
-import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
+import { SignContainer } from "../../Sign/SignContainer"
 import { getContractCallArg } from "./getContractCallArg"
 import {
   SignParamAccountButton,
   SignParamNetworkAddressButton,
   SignParamTokensButton,
 } from "./shared"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { SignParamErc20TokenButton } from "./shared/SignParamErc20TokenButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
+import { SignViewBodyShimmer } from "./views/SignViewBodyShimmer"
 
 const ALLOWANCE_UNLIMITED = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
@@ -63,10 +63,11 @@ export const EthSignBodyErc20Approve: FC = () => {
     }
   }, [tokenRates, transactionInfo.asset.decimals, transactionInfo.contractCall])
 
-  if (!nativeToken || !spender || !account || !network) return <EthSignBodyShimmer />
+  if (!nativeToken || !spender || !account || !network) return <SignViewBodyShimmer />
 
   return (
-    <EthSignContainer
+    <SignContainer
+      networkType="ethereum"
       title={
         <>
           This app wants to
@@ -121,6 +122,6 @@ export const EthSignBodyErc20Approve: FC = () => {
         <div>from</div>
         <SignParamAccountButton address={account.address} explorerUrl={network.explorerUrl} />
       </div>
-    </EthSignContainer>
+    </SignContainer>
   )
 }

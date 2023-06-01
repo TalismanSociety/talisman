@@ -1,9 +1,9 @@
 import { FC, useMemo } from "react"
 
+import { SignContainer } from "../../Sign/SignContainer"
 import { getContractCallArg } from "./getContractCallArg"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewIconHeader } from "./views/staking/SignViewIconHeader"
+import { SignViewIconHeader } from "./views/SignViewIconHeader"
 import { SignViewVotingUndelegate } from "./views/staking/SignViewVotingUndelegate"
 
 export const EthSignMoonVotingUndelegate: FC = () => {
@@ -17,8 +17,12 @@ export const EthSignMoonVotingUndelegate: FC = () => {
   if (!network?.nativeToken?.id || trackId === undefined) return null
 
   return (
-    <EthSignContainer title="Undelegate vote" header={<SignViewIconHeader icon="vote" />}>
+    <SignContainer
+      networkType="ethereum"
+      title="Undelegate vote"
+      header={<SignViewIconHeader icon="vote" />}
+    >
       <SignViewVotingUndelegate trackId={trackId} />
-    </EthSignContainer>
+    </SignContainer>
   )
 }

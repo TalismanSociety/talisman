@@ -4,11 +4,11 @@ import { BigNumber, BigNumberish } from "ethers"
 import { FC, useMemo } from "react"
 import { UnsafeImage } from "talisman-ui"
 
-import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
+import { SignContainer } from "../../Sign/SignContainer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
+import { SignViewBodyShimmer } from "./views/SignViewBodyShimmer"
 
 export const EthSignBodyErc721Transfer: FC = () => {
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
@@ -41,10 +41,10 @@ export const EthSignBodyErc721Transfer: FC = () => {
     [account, from]
   )
 
-  if (qMetadata.isLoading || !from || !to || !account || !network) return <EthSignBodyShimmer />
+  if (qMetadata.isLoading || !from || !to || !account || !network) return <SignViewBodyShimmer />
 
   return (
-    <EthSignContainer title={<>NFT Transfer Request</>}>
+    <SignContainer networkType="ethereum" title={<>NFT Transfer Request</>}>
       <div className="flex">
         <div>Transfer</div>
         <SignParamNetworkAddressButton
@@ -72,7 +72,7 @@ export const EthSignBodyErc721Transfer: FC = () => {
         </div>
       )}
       {!!image && (
-        <div className="mt-12 mb-[-0.8rem] text-center">
+        <div className="mb-[-0.8rem] mt-12 text-center">
           <UnsafeImage
             className="bg-grey-800 inline-block h-48 w-48 rounded"
             src={image}
@@ -80,6 +80,6 @@ export const EthSignBodyErc721Transfer: FC = () => {
           />
         </div>
       )}
-    </EthSignContainer>
+    </SignContainer>
   )
 }

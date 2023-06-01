@@ -16,8 +16,8 @@ export const getExtrinsicDispatchInfo = async (
   blockHash?: HexString
 ): Promise<ExtrinsicDispatchInfo> => {
   assert(
-    Browser.extension.getBackgroundPage() === window,
-    "@core/util/getExtrinsicDispatchInfo cannot be called from front end, use @ui/util/getExtrinsicDispatchInfo"
+    Browser.extension.getBackgroundPage() !== window,
+    "@ui/util/getExtrinsicDispatchInfo cannot be called from background page, use @core/util/getExtrinsicDispatchInfo"
   )
   assert(signedExtrinsic.isSigned, "Extrinsic must be signed (or fakeSigned) in order to query fee")
 
@@ -28,7 +28,8 @@ export const getExtrinsicDispatchInfo = async (
     "TransactionPaymentApi_query_info",
     "RuntimeDispatchInfo",
     [signedExtrinsic, len],
-    blockHash
+    blockHash,
+    true
   )
 
   return {

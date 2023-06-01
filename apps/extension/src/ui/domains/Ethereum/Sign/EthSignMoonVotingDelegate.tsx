@@ -1,10 +1,10 @@
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
+import { SignContainer } from "../../Sign/SignContainer"
 import { getContractCallArg } from "./getContractCallArg"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewIconHeader } from "./views/staking/SignViewIconHeader"
+import { SignViewIconHeader } from "./views/SignViewIconHeader"
 import { SignViewVotingDelegate } from "./views/staking/SignViewVotingDelegate"
 
 export const EthSignMoonVotingDelegate: FC = () => {
@@ -37,7 +37,11 @@ export const EthSignMoonVotingDelegate: FC = () => {
     return null
 
   return (
-    <EthSignContainer title="Delegate vote" header={<SignViewIconHeader icon="vote" />}>
+    <SignContainer
+      networkType="ethereum"
+      title="Delegate vote"
+      header={<SignViewIconHeader icon="vote" />}
+    >
       <SignViewVotingDelegate
         tokenId={network.nativeToken.id}
         conviction={conviction}
@@ -46,6 +50,6 @@ export const EthSignMoonVotingDelegate: FC = () => {
         trackId={trackId}
         explorerUrl={network.explorerUrl}
       />
-    </EthSignContainer>
+    </SignContainer>
   )
 }

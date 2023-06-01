@@ -48,6 +48,7 @@ import {
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transfers/types"
+import { MetadataDef } from "@core/inject/types"
 import { EthResponseType } from "@core/injectEth/types"
 import { ValidRequests } from "@core/libs/requests/types"
 import { UnsubscribeFn } from "@core/types"
@@ -258,4 +259,19 @@ export default interface MessageTypes {
   // ethereum tokens message types
   ethWatchAssetRequestApprove: (id: WatchAssetRequestId) => Promise<boolean>
   ethWatchAssetRequestCancel: (is: WatchAssetRequestId) => Promise<boolean>
+
+  // substrate rpc calls
+  subSend: <T>(
+    chainId: ChainId,
+    method: string,
+    params: unknown[],
+    isCacheable?: boolean
+  ) => Promise<T>
+
+  // substrate chain metadata
+  subChainMetadata: (
+    genesisHash: HexString,
+    specVersion?: number,
+    blockHash?: HexString
+  ) => Promise<MetadataDef | undefined>
 }

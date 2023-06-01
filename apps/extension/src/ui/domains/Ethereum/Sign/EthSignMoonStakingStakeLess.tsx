@@ -1,10 +1,10 @@
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
+import { SignContainer } from "../../Sign/SignContainer"
 import { getContractCallArg } from "./getContractCallArg"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewIconHeader } from "./views/staking/SignViewIconHeader"
+import { SignViewIconHeader } from "./views/SignViewIconHeader"
 import { SignViewStakingStakeLess } from "./views/staking/SignViewStakingStakeLess"
 
 export const EthSignMoonStakingStakeLess: FC = () => {
@@ -18,8 +18,12 @@ export const EthSignMoonStakingStakeLess: FC = () => {
   if (!network?.nativeToken?.id || !less) return null
 
   return (
-    <EthSignContainer title="Decrease stake" header={<SignViewIconHeader icon="unstake" />}>
+    <SignContainer
+      networkType="ethereum"
+      title="Decrease stake"
+      header={<SignViewIconHeader icon="unstake" />}
+    >
       <SignViewStakingStakeLess planck={less} tokenId={network.nativeToken.id} />
-    </EthSignContainer>
+    </SignContainer>
   )
 }

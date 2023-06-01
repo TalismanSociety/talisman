@@ -1,9 +1,9 @@
 import { FC, useMemo } from "react"
 
+import { SignContainer } from "../../Sign/SignContainer"
 import { getContractCallArg } from "./getContractCallArg"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewIconHeader } from "./views/staking/SignViewIconHeader"
+import { SignViewIconHeader } from "./views/SignViewIconHeader"
 import { SignViewStakingSetAutoCompound } from "./views/staking/SignViewStakingSetAutoCompound"
 
 export const EthSignMoonStakingSetAutoCompound: FC = () => {
@@ -20,11 +20,15 @@ export const EthSignMoonStakingSetAutoCompound: FC = () => {
   if (!network?.nativeToken?.id || autoCompound === undefined) return null
 
   return (
-    <EthSignContainer title="Set auto-compounding" header={<SignViewIconHeader icon="stake" />}>
+    <SignContainer
+      networkType="ethereum"
+      title="Set auto-compounding"
+      header={<SignViewIconHeader icon="stake" />}
+    >
       <SignViewStakingSetAutoCompound
         tokenId={network.nativeToken.id}
         autoCompound={autoCompound}
       />
-    </EthSignContainer>
+    </SignContainer>
   )
 }

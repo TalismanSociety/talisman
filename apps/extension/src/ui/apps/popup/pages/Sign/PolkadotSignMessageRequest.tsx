@@ -1,13 +1,12 @@
 import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
-import { SignerPayloadRaw, SubstrateSigningRequest } from "@core/domains/signing/types"
+import { SignerPayloadRaw } from "@core/domains/signing/types"
+import { AppPill } from "@talisman/components/AppPill"
 import { Box } from "@talisman/components/Box"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { AccountPill } from "@ui/domains/Account/AccountPill"
-import { PendingRequests } from "@ui/domains/Sign/PendingRequests"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
-import { SiteInfo } from "@ui/domains/Sign/SiteInfo"
 import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
 
@@ -16,15 +15,8 @@ import { SignAccountAvatar } from "./SignAccountAvatar"
 
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
-type PolkadotSignMessageRequestProps = {
-  signingRequest: SubstrateSigningRequest
-}
-
-export const PolkadotSignMessageRequest: FC<PolkadotSignMessageRequestProps> = ({
-  signingRequest,
-}) => {
+export const PolkadotSignMessageRequest: FC = () => {
   const {
-    isLoading,
     url,
     request,
     approve,
@@ -35,7 +27,7 @@ export const PolkadotSignMessageRequest: FC<PolkadotSignMessageRequestProps> = (
     chain,
     approveHardware,
     approveQr,
-  } = usePolkadotSigningRequest(signingRequest)
+  } = usePolkadotSigningRequest()
 
   const { processing, errorMessage } = useMemo(() => {
     return {
@@ -49,18 +41,15 @@ export const PolkadotSignMessageRequest: FC<PolkadotSignMessageRequestProps> = (
     if (status === "SUCCESS") window.close()
   }, [status])
 
-  if (isLoading) return null
-
   return (
     <Container>
       <Header
-        text={<PendingRequests />}
+        text={<AppPill url={url} />}
         nav={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}
       ></Header>
       <Content>
         {account && request && (
           <>
-            <SiteInfo siteUrl={url} />
             <div className="flex grow flex-col">
               <h1>Sign Request</h1>
               <h2 className="center">
@@ -76,7 +65,7 @@ export const PolkadotSignMessageRequest: FC<PolkadotSignMessageRequestProps> = (
             </div>
             {errorMessage && <div className="error">{errorMessage}</div>}
             <div className="bottom">
-              {signingRequest && <ViewDetails signingRequest={signingRequest} />}
+              <ViewDetails />
             </div>
           </>
         )}

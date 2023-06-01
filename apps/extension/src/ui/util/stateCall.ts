@@ -1,7 +1,7 @@
-import { chainConnector } from "@core/rpcs/chain-connector"
 import { Codec } from "@polkadot/types-codec/types"
 import { assert, u8aConcatStrict } from "@polkadot/util"
 import { HexString } from "@polkadot/util/types"
+import { api } from "@ui/api"
 import Browser from "webextension-polyfill"
 
 export const stateCall = async <K extends string = string>(
@@ -9,11 +9,12 @@ export const stateCall = async <K extends string = string>(
   method: string,
   resultType: K,
   args: Codec[],
-  blockHash?: HexString
+  blockHash?: HexString,
+  isCacheable?: boolean
 ) => {
   assert(
-    Browser.extension.getBackgroundPage() === window,
-    "@core/util/stateCall cannot be called from front end, use @ui/util/stateCall"
+    Browser.extension.getBackgroundPage() !== window,
+    "@ui/util/stateCall cannot be called from background page, use @core/util/stateCall"
   )
 
   // on a state call there are always arguments
@@ -21,11 +22,12 @@ export const stateCall = async <K extends string = string>(
 
   const bytes = registry.createType("Raw", u8aConcatStrict(args.map((arg) => arg.toU8a())))
 
-  const result = await chainConnector.send(chainId, "state_call", [
-    method,
-    bytes.toHex(),
-    blockHash,
-  ])
+  const result = await api.subSend(
+    chainId,
+    "state_call",
+    [method, bytes.toHex(), blockHash],
+    isCacheable
+  )
 
   return registry.createType(resultType, result)
 }

@@ -1,10 +1,10 @@
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
+import { SignContainer } from "../../Sign/SignContainer"
 import { getContractCallArg } from "./getContractCallArg"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignIconType, SignViewIconHeader } from "./views/staking/SignViewIconHeader"
+import { SignIconType, SignViewIconHeader } from "./views/SignViewIconHeader"
 import { SignViewVotingVote } from "./views/staking/SignViewVotingVote"
 
 const getLabels = (methodName: string): { title?: string; icon?: SignIconType } => {
@@ -51,13 +51,13 @@ export const EthSignMoonVotingVote: FC = () => {
     return null
 
   return (
-    <EthSignContainer title={title} header={<SignViewIconHeader icon={icon} />}>
+    <SignContainer networkType="ethereum" title={title} header={<SignViewIconHeader icon={icon} />}>
       <SignViewVotingVote
         tokenId={network.nativeToken.id}
         conviction={conviction}
         voteAmount={voteAmount}
         pollIndex={pollIndex}
       />
-    </EthSignContainer>
+    </SignContainer>
   )
 }
