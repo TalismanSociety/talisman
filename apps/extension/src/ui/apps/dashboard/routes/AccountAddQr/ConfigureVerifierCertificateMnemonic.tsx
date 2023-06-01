@@ -78,7 +78,6 @@ export const ConfigureVerifierCertificateMnemonic = () => {
               </Button>
             </VerifierCertificateOption>
           )}
-          {/* If talisman, show mnemonic form */}
           <VerifierCertificateOption
             text="Import a new recovery phrase to use as your Polkadot Vault Verifier Certificate Mnemonic. You should use
               this option if you already have a Polkadot Vault account in another instance of
@@ -93,7 +92,6 @@ export const ConfigureVerifierCertificateMnemonic = () => {
               Import a new mnemonic
             </Button>
           </VerifierCertificateOption>
-          {/* If new, show new mnemonic form */}
           <VerifierCertificateOption
             text="If you don't want to use a Verifier Certificate Mnemonic, you can still use your Polkadot
               Vault account by leveraging the Parity and Nova Wallet metadata sources, but only on limited chains."
