@@ -99,7 +99,7 @@ export const SignViewXTokensTransfer: FC<{
     <div className="flex w-full flex-col items-center gap-16">
       <div className="flex items-center gap-4">
         <div>
-          <AssetLogoBase rounded url={tokenLogo} className="h-24 w-24 text-[48px]" />
+          <AssetLogoBase url={tokenLogo} className="h-24 w-24 text-[48px]" />
         </div>
         <div className="text-body flex-col items-start gap-4">
           <div className="text-md text-left font-bold">

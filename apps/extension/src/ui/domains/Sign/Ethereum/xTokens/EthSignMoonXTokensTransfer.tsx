@@ -141,7 +141,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
   return (
     <SignContainer
       networkType="ethereum"
-      title={"Transfer"}
+      title="Transfer"
       header={<SignViewIconHeader icon="transfer" />}
     >
       <SignViewXTokensTransfer

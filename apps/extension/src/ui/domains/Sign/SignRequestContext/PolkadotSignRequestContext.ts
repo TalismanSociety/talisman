@@ -9,7 +9,7 @@ import { useCallback, useMemo } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
-export const usePolkadotSigningRequestProvider = ({
+const usePolkadotSigningRequestProvider = ({
   signingRequest,
 }: {
   signingRequest: SubstrateSigningRequest

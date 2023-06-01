@@ -7,9 +7,12 @@ import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { FC } from "react"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
+import { SubSignConvictionVotingDelegate } from "./convictionVoting/SubSignConvictionVotingDelegate"
+import { SubSignConvictionVotingUndelegate } from "./convictionVoting/SubSignConvictionVotingUndelegate"
 import { SubSignConvictionVotingVote } from "./convictionVoting/SubSignConvictionVotingVote"
 import { SubSignBodyDefault } from "./SubSignBodyDefault"
-import { SubSignXTokensTransfer } from "./SubSignXTokensTransfer"
+import { SubSignXcmTransferAssets } from "./xcm/SubSignXcmTransferAssets"
+import { SubSignXTokensTransfer } from "./xTokens/SubSignXTokensTransfer"
 
 const getComponentFromTxDetails = (extrinsic: GenericExtrinsic | null | undefined) => {
   if (!extrinsic) return null
@@ -19,8 +22,17 @@ const getComponentFromTxDetails = (extrinsic: GenericExtrinsic | null | undefine
   switch (method) {
     case "x-tokens.transfer":
       return SubSignXTokensTransfer
+    case "convictionVoting.delegate":
+      return SubSignConvictionVotingDelegate
+    case "convictionVoting.undelegate":
+      return SubSignConvictionVotingUndelegate
     case "convictionVoting.vote":
       return SubSignConvictionVotingVote
+    case "xcmPallet.limitedReserveTransferAssets":
+    case "polkadotXcm.limitedReserveTransferAssets":
+      return SubSignXcmTransferAssets
+    case "xTokens.transfer":
+      return SubSignXTokensTransfer
     default:
       log.debug("Unknown signing request type", { method })
       Sentry.captureMessage("Unknown signing request type", { extra: { method } })
