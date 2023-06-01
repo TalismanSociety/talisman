@@ -13,7 +13,7 @@ import Browser, { Runtime } from "webextension-polyfill"
 
 import { hasQrCodeAccounts } from "./domains/accounts/helpers"
 import seedPhraseStore from "./domains/accounts/store"
-import { vaultCompanionStore } from "./domains/accounts/store.vaultCompanion"
+import { verifierCertificateMnemonicStore } from "./domains/accounts/store.verifierCertificateMnemonic"
 import sitesAuthorisedStore from "./domains/sitesAuthorised/store"
 import talismanHandler from "./handlers"
 import { IconManager } from "./libs/IconManager"
@@ -60,17 +60,17 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
     }
   }
   if (reason === "update" && previousVersion && lt(previousVersion, "1.6.4")) {
-    // once off migration to add a Polkadot Vault companion seed store
+    // once off migration to add a Polkadot Vault verifier certificate seed store
     const hasVaultAccounts = await hasQrCodeAccounts()
     if (hasVaultAccounts) {
-      // add a vault companion if any of the addresses are from a vault
+      // add a vault verifier certificate if any of the addresses are from a vault
       //first check if any of the addresses are from a vault
-      // check if a vault companion store already exists
-      const vaultCompanionCipher = await vaultCompanionStore.get("cipher")
+      // check if a vault verifier certificate store already exists
+      const verifierCertMnemonicCipher = await verifierCertificateMnemonicStore.get("cipher")
       const seedPhraseData = await seedPhraseStore.get()
-      if (!vaultCompanionCipher && seedPhraseData.cipher) {
+      if (!verifierCertMnemonicCipher && seedPhraseData.cipher) {
         // if not, create one
-        await vaultCompanionStore.set(seedPhraseData)
+        await verifierCertificateMnemonicStore.set(seedPhraseData)
       }
     }
   }

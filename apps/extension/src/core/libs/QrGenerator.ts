@@ -1,4 +1,4 @@
-import { vaultCompanionStore } from "@core/domains/accounts/store.vaultCompanion"
+import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
 import { passwordStore } from "@core/domains/app"
 import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -19,11 +19,11 @@ const getEncryptionForChain = (chain: Chain) => {
   }
 }
 
-const signWithVaultCompanion = async (unsigned: Uint8Array) => {
+const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
   try {
     const pw = passwordStore.getPassword()
     assert(pw, "Unauthorised")
-    const { ok, val: seedVal } = await vaultCompanionStore.getSeed(pw)
+    const { ok, val: seedVal } = await verifierCertificateMnemonicStore.getSeed(pw)
     assert(ok && seedVal, "Failed to get seed")
     const keyring = new Keyring()
     const signingPair = keyring.createFromUri(seedVal, {}, "sr25519")
@@ -92,7 +92,7 @@ export const generateQrAddNetworkSpecs = async (genesisHash: string) => {
 
   try {
     // eslint-disable-next-line no-var
-    var { publicKey, signature } = await signWithVaultCompanion(specs)
+    var { publicKey, signature } = await signWithVerifierCertMnemonic(specs)
   } catch (e) {
     log.error("Failed to sign network specs", e)
     throw new Error("Failed to sign network specs")
@@ -130,7 +130,7 @@ export const generateQrUpdateNetworkMetadata = async (genesisHash: string, specV
   })
   try {
     // eslint-disable-next-line no-var
-    var { publicKey, signature } = await signWithVaultCompanion(payload)
+    var { publicKey, signature } = await signWithVerifierCertMnemonic(payload)
   } catch (e) {
     log.error("Failed to sign network metadata", e)
     throw new Error("Failed to sign network metadata")

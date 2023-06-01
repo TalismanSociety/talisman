@@ -1,61 +1,42 @@
-import { copySeedStoreToVaultCompanion } from "@core/domains/accounts/helpers"
+import { copySeedStoreToVerifierCertificateStore } from "@core/domains/accounts/helpers"
 import { notify, notifyUpdate } from "@talisman/components/Notifications"
 import { provideContext } from "@talisman/util/provideContext"
 import { decodeAnyAddress } from "@talismn/util"
 import { sleep } from "@talismn/util"
 import { api } from "@ui/api"
+import { useHasVerifierCertificateMnemonic } from "@ui/hooks/useHasVerifierCertificateMnemonic"
 import { useQrCodeAccounts } from "@ui/hooks/useQrCodeAccounts"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
-import { useHasVaultCompanion } from "@ui/hooks/useVaultCompanionMnemonic"
-import { useReducer, useState } from "react"
+import { useReducer } from "react"
 import { useCallback } from "react"
 
-type VaultAccountConfigBase = {
+type AccountConfigState = {
   name: string
   address: string
   genesisHash: string | null
   lockToNetwork: boolean
-  companionType?: "talisman" | "new" | null
-  companionMnemonic?: string
 }
-
-type VaultAccountConfigNewCompanion = VaultAccountConfigBase & {
-  companionType: "new"
-  companionMnemonic: string
-}
-
-type VaultAccountConfigTalismanCompanion = VaultAccountConfigBase & {
-  companionType: "talisman"
-}
-
-type VaultAccountConfigNoCompanion = VaultAccountConfigBase & {
-  companionType: null
-}
-
-type VaultAccountConfig =
-  | VaultAccountConfigNewCompanion
-  | VaultAccountConfigBase
-  | VaultAccountConfigTalismanCompanion
-  | VaultAccountConfigNoCompanion
 
 export type CONFIGURE_STATE = {
   type: "CONFIGURE"
-  name: string
-  address: string
-  genesisHash: string | null
-  lockToNetwork: boolean
+  accountConfig: AccountConfigState
   submitting?: true
 }
 
-export type CONFIGURE_COMPANION_STATE = {
-  type: "CONFIGURE_COMPANION"
+export type CONFIGURE_VERIFIER_CERT_STATE = {
+  type: "CONFIGURE_VERIFIER_CERT"
+  verifierCertificateConfig?: {
+    verifierCertificateType?: "talisman" | "new" | null
+    verifierCertificateMnemonic?: string
+  }
   submitting?: true
+  accountConfig: AccountConfigState
 }
 
 type AddQrState =
   | { type: "SCAN"; enable: boolean; cameraError?: string; scanError?: string }
   | CONFIGURE_STATE
-  | CONFIGURE_COMPANION_STATE
+  | CONFIGURE_VERIFIER_CERT_STATE
 
 type Action =
   | { method: "enableScan" }
@@ -66,8 +47,11 @@ type Action =
   | { method: "setLockToNetwork"; lockToNetwork: boolean }
   | { method: "setSubmitting" }
   | { method: "setSubmittingFailed" }
-  | { method: "setConfigureCompanion" }
-  | { method: "setCompanionType"; companionType: "talisman" | "new" | null }
+  | { method: "setConfigureVerifierCert" }
+  | {
+      method: "setVerifierCertType"
+      verifierCertificateType: "talisman" | "new" | null | undefined
+    }
 
 export const reducer = (state: AddQrState, action: Action): AddQrState => {
   if (state.type === "SCAN") {
@@ -93,27 +77,44 @@ export const reducer = (state: AddQrState, action: Action): AddQrState => {
 
       return {
         type: "CONFIGURE",
-        name: "",
-        address,
-        genesisHash,
-        lockToNetwork: false,
+        accountConfig: { name: "", address, genesisHash, lockToNetwork: false },
       }
     }
   }
 
   if (state.type === "CONFIGURE") {
-    if (action.method === "setName") return { ...state, type: "CONFIGURE", name: action.name }
+    if (action.method === "setName")
+      return {
+        ...state,
+        accountConfig: { ...state.accountConfig, name: action.name },
+      }
     if (action.method === "setLockToNetwork")
-      return { ...state, type: "CONFIGURE", lockToNetwork: action.lockToNetwork }
+      return {
+        ...state,
+        accountConfig: { ...state.accountConfig, lockToNetwork: action.lockToNetwork },
+      }
     if (action.method === "setSubmitting") return { ...state, submitting: true }
     if (action.method === "setSubmittingFailed") return { ...state, submitting: undefined }
-    if (action.method === "setConfigureCompanion")
-      return { type: "CONFIGURE_COMPANION", submitting: undefined }
+    if (action.method === "setConfigureVerifierCert")
+      return {
+        type: "CONFIGURE_VERIFIER_CERT",
+        submitting: undefined,
+        accountConfig: state.accountConfig,
+      }
   }
 
-  if (state.type === "CONFIGURE_COMPANION") {
+  if (state.type === "CONFIGURE_VERIFIER_CERT") {
     if (action.method === "setSubmitting") return { ...state, submitting: true }
     if (action.method === "setSubmittingFailed") return { ...state, submitting: undefined }
+    if (action.method === "setVerifierCertType") {
+      return {
+        ...state,
+        verifierCertificateConfig: {
+          ...state.verifierCertificateConfig,
+          verifierCertificateType: action.verifierCertificateType,
+        },
+      }
+    }
   }
 
   return state
@@ -123,61 +124,65 @@ const initialState: AddQrState = { type: "SCAN", enable: false }
 
 const useAccountAddQrContext = () => {
   const [state, dispatch] = useReducer(reducer, initialState)
-  const [configuration, setConfiguration] = useState<VaultAccountConfig>()
-  const hasVaultCompanion = useHasVaultCompanion()
+  const hasVerifierCertMnemonic = useHasVerifierCertificateMnemonic()
   const vaultAccounts = useQrCodeAccounts()
 
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
-  const submit = useCallback(async () => {
-    if (state.type !== "CONFIGURE" && state.type !== "CONFIGURE_COMPANION") return
-    if (state.submitting) return
-    if (!configuration) return
+  const submit = useCallback(
+    async (mnemonic?: string) => {
+      if (state.type !== "CONFIGURE" && state.type !== "CONFIGURE_VERIFIER_CERT") return
+      if (state.submitting) return
 
-    dispatch({ method: "setSubmitting" })
+      dispatch({ method: "setSubmitting" })
 
-    const notificationId = notify(
-      {
-        type: "processing",
-        title: "Creating account",
-        subtitle: "Please wait",
-      },
-      { autoClose: false }
-    )
-
-    // pause to prevent double notification
-    await sleep(1000)
-
-    const { name, address, genesisHash, lockToNetwork, companionType } = configuration
-
-    if (companionType === "talisman") {
-      await copySeedStoreToVaultCompanion()
-    } else if (companionType === "new" && configuration.companionMnemonic) {
-      await api.setVaultCompanionMnemonic(configuration.companionMnemonic)
-    }
-
-    try {
-      setAddress(
-        await api.accountCreateQr(
-          name || "My Polkadot Vault Account",
-          address,
-          lockToNetwork ? genesisHash : null
-        )
+      const notificationId = notify(
+        {
+          type: "processing",
+          title: "Creating account",
+          subtitle: "Please wait",
+        },
+        { autoClose: false }
       )
-      notifyUpdate(notificationId, {
-        type: "success",
-        title: "Account created",
-        subtitle: name,
-      })
-    } catch (error) {
-      dispatch({ method: "setSubmittingFailed" })
-      notifyUpdate(notificationId, {
-        type: "error",
-        title: "Error creating account",
-        subtitle: (error as Error)?.message,
-      })
-    }
-  }, [setAddress, configuration, state])
+
+      // pause to prevent double notification
+      await sleep(1000)
+
+      const { name, address, genesisHash, lockToNetwork } = state.accountConfig
+      if (state.type === "CONFIGURE_VERIFIER_CERT" && state.verifierCertificateConfig) {
+        const { verifierCertificateType } = state.verifierCertificateConfig
+
+        if (verifierCertificateType === "talisman") {
+          await copySeedStoreToVerifierCertificateStore()
+        } else if (verifierCertificateType === "new" && mnemonic) {
+          await api.setVerifierCertMnemonic(mnemonic)
+        }
+      }
+
+      try {
+        setAddress(
+          await api.accountCreateQr(
+            name || "My Polkadot Vault Account",
+            address,
+            lockToNetwork ? genesisHash : null
+          )
+        )
+        notifyUpdate(notificationId, {
+          type: "success",
+          title: "Account created",
+          subtitle: name,
+        })
+      } catch (error) {
+        dispatch({ method: "setSubmittingFailed" })
+        notifyUpdate(notificationId, {
+          type: "error",
+          title: "Error creating account",
+          subtitle: (error as Error)?.message,
+        })
+      }
+    },
+    [setAddress, state]
+  )
 
   const submitConfigure = useCallback(
     async (event: React.FormEvent<HTMLFormElement>) => {
@@ -185,39 +190,15 @@ const useAccountAddQrContext = () => {
 
       if (state.type !== "CONFIGURE") return
       // save the configuration state to the context to be used in submit
-      setConfiguration(state)
-      // if there are already vault accounts, they can just submit straight away
-      if (vaultAccounts.length > 0) return submit()
-      // if there is already a vault companion, they can just submit straight away
-      if (hasVaultCompanion) return submit()
-      // otherwise, dispatch to setConfigureCompanion
-      dispatch({ method: "setConfigureCompanion" })
+      // if there are already vault accounts or a verifierCertificateMnemonic, they can just submit straight away
+      if (vaultAccounts.length > 0 || hasVerifierCertMnemonic) return submit()
+      // otherwise, dispatch to setConfigureVerifierCert
+      dispatch({ method: "setConfigureVerifierCert" })
     },
-    [submit, state, hasVaultCompanion, vaultAccounts]
+    [submit, state, hasVerifierCertMnemonic, vaultAccounts]
   )
 
-  const setCompanionType = useCallback(
-    ({
-      companionType,
-      companionMnemonic,
-    }: {
-      companionType: "talisman" | "new" | null
-      companionMnemonic?: string
-    }) => {
-      setConfiguration((configuration) => {
-        if (!configuration)
-          throw new Error("Configuration details must be set before setting companion type")
-        return {
-          ...configuration,
-          companionType,
-          companionMnemonic,
-        }
-      })
-    },
-    []
-  )
-
-  return { state, dispatch, submitConfigure, setCompanionType, submit }
+  return { state, dispatch, submitConfigure, submit }
 }
 
 export const [AccountAddQrProvider, useAccountAddQr] = provideContext(useAccountAddQrContext)

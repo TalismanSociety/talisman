@@ -299,7 +299,6 @@ const SendPage = ({
           <div className="text-body-secondary mb-16 max-w-md text-center text-sm leading-10">
             Your Polkadot Vault app needs data about this network to sign this transaction, but no
             secure source of network data is available. You will be unable to sign this transaction.
-            {/* The following p should have centred text */}
             <p className="mt-6">
               <a
                 href={POLKADOT_VAULT_DOCS_URL}

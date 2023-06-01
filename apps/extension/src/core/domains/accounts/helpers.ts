@@ -14,7 +14,7 @@ import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable
 import Browser from "webextension-polyfill"
 
 import seedPhraseStore from "./store"
-import { vaultCompanionStore } from "./store.vaultCompanion"
+import { verifierCertificateMnemonicStore } from "./store.verifierCertificateMnemonic"
 
 const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
   return accounts.sort((acc1, acc2) => {
@@ -126,9 +126,10 @@ export const hasQrCodeAccounts = async () => {
   )
 }
 
-export const copySeedStoreToVaultCompanion = async () => {
+export const copySeedStoreToVerifierCertificateStore = async () => {
   const seedData = await seedPhraseStore.get()
-  const vaultCompanionData = await vaultCompanionStore.get()
-  if (vaultCompanionData.cipher) throw new Error("Vault companion already has data")
-  await vaultCompanionStore.set(seedData)
+  const verifierCertMnemonicData = await verifierCertificateMnemonicStore.get()
+  if (verifierCertMnemonicData.cipher)
+    throw new Error("Verifier Certificate Store already has data")
+  await verifierCertificateMnemonicStore.set(seedData)
 }

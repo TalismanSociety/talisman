@@ -353,12 +353,12 @@ export default class AccountsHandler extends ExtensionHandler {
     return mnemonicValidate(mnemonic)
   }
 
-  private async setVaultCompanionMnemonic(mnemonic: string) {
+  private async setVerifierCertMnemonic(mnemonic: string) {
     const isValidMnemonic = mnemonicValidate(mnemonic)
     assert(isValidMnemonic, "Invalid mnemonic")
     const password = this.stores.password.getPassword()
     if (!password) throw new Error("Unauthorised")
-    await this.stores.vaultCompanion.add(mnemonic, password)
+    await this.stores.verifierCertificateMnemonic.add(mnemonic, password)
     return true
   }
 
@@ -393,8 +393,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsSubscribe(id, port)
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
-      case "pri(accounts.setVaultCompanionMnemonic)":
-        return this.setVaultCompanionMnemonic(request as string)
+      case "pri(accounts.setVerifierCertMnemonic)":
+        return this.setVerifierCertMnemonic(request as string)
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

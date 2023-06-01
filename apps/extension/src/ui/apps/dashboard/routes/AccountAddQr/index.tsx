@@ -1,6 +1,7 @@
 import Layout from "@ui/apps/dashboard/layout"
 
 import { ConfigureAccount } from "./ConfigureAccount"
+import { ConfigureVerifierCertificateMnemonic } from "./ConfigureVerifierCertificateMnemonic"
 import { AccountAddQrProvider, useAccountAddQr } from "./context"
 import { Scan } from "./Scan"
 
@@ -11,7 +12,7 @@ const WrappedAccountAddQr = () => {
     <Layout withBack centered>
       {state.type === "SCAN" && <Scan />}
       {state.type === "CONFIGURE" && <ConfigureAccount />}
-      {state.type === "CONFIGURE_COMPANION" && <>Placeholder</>}
+      {state.type === "CONFIGURE_VERIFIER_CERT" && <ConfigureVerifierCertificateMnemonic />}
     </Layout>
   )
 }

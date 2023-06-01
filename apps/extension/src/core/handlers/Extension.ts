@@ -1,7 +1,7 @@
 import { DEBUG, TEST } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
-import { vaultCompanionStore } from "@core/domains/accounts/store.vaultCompanion"
+import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
 import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { BalancesHandler } from "@core/domains/balances"
@@ -266,8 +266,8 @@ export default class Extension extends ExtensionHandler {
         return this.stores.chains.hydrateStore()
 
       case "pri(chains.generateQr.addNetworkSpecs)": {
-        const vaultCipher = await vaultCompanionStore.get("cipher")
-        assert(vaultCipher, "No Polkadot Vault Companion Mnemonic found")
+        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
+        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
 
         const { genesisHash } = request as RequestType<"pri(chains.generateQr.addNetworkSpecs)">
         const data = await generateQrAddNetworkSpecs(genesisHash)
@@ -276,8 +276,8 @@ export default class Extension extends ExtensionHandler {
       }
 
       case "pri(chains.generateQr.updateNetworkMetadata)": {
-        const vaultCipher = await vaultCompanionStore.get("cipher")
-        assert(vaultCipher, "No Polkadot Vault Companion Mnemonic found")
+        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
+        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
 
         const { genesisHash, specVersion } =
           request as RequestType<"pri(chains.generateQr.updateNetworkMetadata)">

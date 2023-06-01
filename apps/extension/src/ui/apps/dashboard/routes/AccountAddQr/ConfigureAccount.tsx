@@ -18,12 +18,13 @@ import { useAccountAddQr } from "./context"
 
 export const ConfigureAccount = () => {
   const { state, dispatch, submitConfigure } = useAccountAddQr()
+
   const [useTestnets] = useSetting("useTestnets")
   const { chains } = useChains(useTestnets)
   const addressesByChain = useMemo(() => {
     if (state.type !== "CONFIGURE") return
 
-    const { address, genesisHash, lockToNetwork } = state
+    const { address, genesisHash, lockToNetwork } = state.accountConfig
     const filteredChains = lockToNetwork
       ? chains.filter((chain) => chain.genesisHash === genesisHash)
       : chains
@@ -32,7 +33,7 @@ export const ConfigureAccount = () => {
   }, [chains, state])
   const balances = useBalancesByParams({ addressesByChain })
   const chain = useChainByGenesisHash(
-    (state.type === "CONFIGURE" && state.genesisHash) || undefined
+    (state.type === "CONFIGURE" && state.accountConfig.genesisHash) || undefined
   )
 
   const isBalanceLoading =
@@ -42,6 +43,8 @@ export const ConfigureAccount = () => {
   const { balanceDetails, totalUsd } = useBalanceDetails(balances)
 
   if (state.type !== "CONFIGURE") return null
+
+  const { accountConfig } = state
 
   return (
     <>
@@ -56,7 +59,7 @@ export const ConfigureAccount = () => {
           placeholder="My Polkadot Vault Account"
           containerProps={{ className: "!h-28" }}
           small
-          value={state.name}
+          value={accountConfig.name}
           // eslint-disable-next-line jsx-a11y/no-autofocus
           autoFocus
           onChange={(event) => dispatch({ method: "setName", name: event.target.value })}
@@ -64,20 +67,20 @@ export const ConfigureAccount = () => {
 
         <div className="ring-grey-700 flex w-full items-center gap-8 overflow-hidden rounded-sm p-8 text-left ring-1">
           <Avatar
-            address={state.address}
-            genesisHash={state.lockToNetwork ? state.genesisHash : undefined}
+            address={accountConfig.address}
+            genesisHash={accountConfig.lockToNetwork ? accountConfig.genesisHash : undefined}
           />
           <div className="flex flex-col !items-start gap-2 overflow-hidden leading-8">
             <div className="text-body flex w-full items-center gap-3 text-base leading-none">
               <div className="overflow-hidden text-ellipsis whitespace-nowrap text-base leading-8">
-                {state.name || "My Polkadot Vault Account"}
+                {accountConfig.name || "My Polkadot Vault Account"}
               </div>
               <div>
                 <PolkadotVaultIcon className="text-primary" />
               </div>
             </div>
             <div className="text-body-secondary overflow-hidden text-ellipsis whitespace-nowrap text-sm leading-7">
-              <Address address={state.address} />
+              <Address address={accountConfig.address} />
             </div>
           </div>
           <div className="grow" />
@@ -93,7 +96,7 @@ export const ConfigureAccount = () => {
 
         {!!chain && (
           <Checkbox
-            checked={state.lockToNetwork}
+            checked={accountConfig.lockToNetwork}
             onChange={(event) =>
               dispatch({ method: "setLockToNetwork", lockToNetwork: event.target.checked })
             }

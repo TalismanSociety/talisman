@@ -8,7 +8,7 @@ import { Err, Ok, Result } from "ts-results"
 import Browser from "webextension-polyfill"
 
 import seedPhraseStore, { SeedPhraseStore, encryptSeed } from "../accounts/store"
-import { vaultCompanionStore } from "../accounts/store.vaultCompanion"
+import { verifierCertificateMnemonicStore } from "../accounts/store.verifierCertificateMnemonic"
 
 export const TALISMAN_BACKUP_KEYRING_KEY = "talismanKeyringBackup"
 
@@ -78,7 +78,7 @@ const migrateAnyMnemonic =
   }
 
 const migrateTalismanMnemonic = migrateAnyMnemonic(seedPhraseStore)
-const migrateVaultCompanionMnemonic = migrateAnyMnemonic(vaultCompanionStore)
+const migrateVerifierCertificateMnemonic = migrateAnyMnemonic(verifierCertificateMnemonicStore)
 
 export const changePassword = async ({
   currentPw,
@@ -105,8 +105,8 @@ export const changePassword = async ({
     if (mnemonicMigrationResult.err) {
       throw Error(mnemonicMigrationResult.val)
     }
-    // now migrate polkadot vault companion phrase store password
-    const vaultMigrationResult = await migrateVaultCompanionMnemonic(currentPw, newPw)
+    // now migrate polkadot vault verifier cert phrase store password
+    const vaultMigrationResult = await migrateVerifierCertificateMnemonic(currentPw, newPw)
     if (vaultMigrationResult.err) {
       throw Error(vaultMigrationResult.val)
     }
