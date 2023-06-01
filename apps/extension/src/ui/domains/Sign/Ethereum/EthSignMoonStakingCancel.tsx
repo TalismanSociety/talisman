@@ -1,8 +1,8 @@
 import { FC } from "react"
 
-import { SignContainer } from "../../Sign/SignContainer"
-import { SignViewIconHeader } from "./views/SignViewIconHeader"
-import { SignViewStakingCancel } from "./views/staking/SignViewStakingCancel"
+import { SignContainer } from "../SignContainer"
+import { SignViewIconHeader } from "../Views/SignViewIconHeader"
+import { SignViewStakingCancel } from "../Views/staking/SignViewStakingCancel"
 
 export const EthSignMoonStakingCancel: FC = () => {
   return (

@@ -6,8 +6,9 @@ import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
-import { SignAlertMessage } from "../../Sign/SignAlertMessage"
-import { SignContainer } from "../../Sign/SignContainer"
+import { SignAlertMessage } from "../SignAlertMessage"
+import { SignContainer } from "../SignContainer"
+import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import {
   SignParamAccountButton,
@@ -16,7 +17,6 @@ import {
 } from "./shared"
 import { SignParamErc20TokenButton } from "./shared/SignParamErc20TokenButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewBodyShimmer } from "./views/SignViewBodyShimmer"
 
 const ALLOWANCE_UNLIMITED = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 

@@ -7,12 +7,12 @@ import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
-import { SignContainer } from "../../Sign/SignContainer"
+import { SignContainer } from "../SignContainer"
+import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton } from "./shared"
 import { SignParamTokensButton } from "./shared/SignParamTokensButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewBodyShimmer } from "./views/SignViewBodyShimmer"
 
 export const EthSignBodyErc20Transfer: FC = () => {
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()

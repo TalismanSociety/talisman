@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/browser"
-import { getContractCallArg } from "@ui/domains/Ethereum/Sign/getContractCallArg"
+import { getContractCallArg } from "@ui/domains/Sign/Ethereum/getContractCallArg"
 import { BigNumber, ethers } from "ethers"
 
 import { abiErc1155, abiErc20, abiErc721, abiErc721Metadata, abiMoonStaking } from "./abi"

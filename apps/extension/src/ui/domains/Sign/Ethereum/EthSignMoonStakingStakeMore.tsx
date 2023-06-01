@@ -1,11 +1,11 @@
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
-import { SignContainer } from "../../Sign/SignContainer"
+import { SignContainer } from "../SignContainer"
+import { SignViewIconHeader } from "../Views/SignViewIconHeader"
+import { SignViewStakingStakeMore } from "../Views/staking/SignViewStakingStakeMore"
 import { getContractCallArg } from "./getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewIconHeader } from "./views/SignViewIconHeader"
-import { SignViewStakingStakeMore } from "./views/staking/SignViewStakingStakeMore"
 
 export const EthSignMoonStakingStakeMore: FC = () => {
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()

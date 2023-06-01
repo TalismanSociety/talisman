@@ -10,11 +10,11 @@ import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
-import { SignContainer } from "../../Sign/SignContainer"
+import { SignContainer } from "../SignContainer"
+import { SignViewIconHeader } from "../Views/SignViewIconHeader"
+import { SignViewXTokensTransfer } from "../Views/staking/SignViewXTokensTransfer"
 import { getContractCallArg } from "./getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewIconHeader } from "./views/SignViewIconHeader"
-import { SignViewXTokensTransfer } from "./views/staking/SignViewXTokensTransfer"
 
 type DecodedMultilocation = {
   paraId?: number

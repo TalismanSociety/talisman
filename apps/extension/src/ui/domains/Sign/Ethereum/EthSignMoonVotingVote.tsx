@@ -1,11 +1,11 @@
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 
-import { SignContainer } from "../../Sign/SignContainer"
+import { SignContainer } from "../SignContainer"
+import { SignIconType, SignViewIconHeader } from "../Views/SignViewIconHeader"
+import { SignViewVotingVote } from "../Views/staking/SignViewVotingVote"
 import { getContractCallArg } from "./getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignIconType, SignViewIconHeader } from "./views/SignViewIconHeader"
-import { SignViewVotingVote } from "./views/staking/SignViewVotingVote"
 
 const getLabels = (methodName: string): { title?: string; icon?: SignIconType } => {
   switch (methodName) {

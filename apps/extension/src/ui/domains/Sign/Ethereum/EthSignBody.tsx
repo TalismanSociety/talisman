@@ -3,6 +3,7 @@ import { TransactionInfo } from "@core/util/getEthTransactionInfo"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
 import { FC } from "react"
 
+import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
 import { EthSignBodyDefault } from "./EthSignBodyDefault"
 import { EthSignBodyErc20Approve } from "./EthSignBodyErc20Approve"
 import { EthSignBodyErc20Transfer } from "./EthSignBodyErc20Transfer"
@@ -20,7 +21,6 @@ import { EthSignMoonVotingDelegate } from "./EthSignMoonVotingDelegate"
 import { EthSignMoonVotingUndelegate } from "./EthSignMoonVotingUndelegate"
 import { EthSignMoonVotingVote } from "./EthSignMoonVotingVote"
 import { EthSignMoonXTokensTransfer } from "./EthSignMoonXTokensTransfer"
-import { SignViewBodyShimmer } from "./views/SignViewBodyShimmer"
 
 type EthSignBodyProps = {
   transactionInfo?: TransactionInfo

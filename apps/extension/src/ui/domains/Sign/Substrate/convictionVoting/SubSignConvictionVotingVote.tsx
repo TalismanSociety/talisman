@@ -1,6 +1,6 @@
 import { Conviction } from "@polkadot/types/interfaces/democracy"
-import { SignViewIconHeader } from "@ui/domains/Ethereum/Sign/views/SignViewIconHeader"
-import { SignViewVotingVote } from "@ui/domains/Ethereum/Sign/views/staking/SignViewVotingVote"
+import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
+import { SignViewVotingVote } from "@ui/domains/Sign/Views/staking/SignViewVotingVote"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { useMemo } from "react"
 

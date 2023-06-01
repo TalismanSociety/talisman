@@ -3,7 +3,7 @@ import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
-import { EthSignBodyMessage } from "@ui/domains/Ethereum/Sign/EthSignBodyMessage"
+import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { Suspense, lazy, useEffect, useMemo } from "react"
 

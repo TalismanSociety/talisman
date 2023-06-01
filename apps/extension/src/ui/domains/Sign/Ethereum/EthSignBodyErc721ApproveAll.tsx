@@ -1,11 +1,11 @@
 import { FC, useMemo } from "react"
 
-import { SignAlertMessage } from "../../Sign/SignAlertMessage"
-import { SignContainer } from "../../Sign/SignContainer"
+import { SignAlertMessage } from "../SignAlertMessage"
+import { SignContainer } from "../SignContainer"
+import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewBodyShimmer } from "./views/SignViewBodyShimmer"
 
 export const EthSignBodyErc721ApproveAll: FC = () => {
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()

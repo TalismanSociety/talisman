@@ -1,10 +1,10 @@
 import useToken from "@ui/hooks/useToken"
 import { FC } from "react"
 
-import { SignContainer } from "../../Sign/SignContainer"
+import { SignContainer } from "../SignContainer"
+import { SignViewIconHeader } from "../Views/SignViewIconHeader"
+import { SignViewStakingUnstake } from "../Views/staking/SignViewStakingUnstake"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewIconHeader } from "./views/SignViewIconHeader"
-import { SignViewStakingUnstake } from "./views/staking/SignViewStakingUnstake"
 
 export const EthSignMoonStakingUnstake: FC = () => {
   const { network } = useEthSignKnownTransactionRequest()

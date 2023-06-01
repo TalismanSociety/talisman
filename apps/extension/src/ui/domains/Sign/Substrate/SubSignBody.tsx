@@ -2,7 +2,7 @@ import { log } from "@core/log"
 import { GenericExtrinsic } from "@polkadot/types"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
 import * as Sentry from "@sentry/react"
-import { SignViewBodyShimmer } from "@ui/domains/Ethereum/Sign/views/SignViewBodyShimmer"
+import { SignViewBodyShimmer } from "@ui/domains/Sign/Views/SignViewBodyShimmer"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { FC } from "react"
 

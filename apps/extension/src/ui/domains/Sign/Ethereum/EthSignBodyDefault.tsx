@@ -5,7 +5,7 @@ import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { ethers } from "ethers"
 import { FC, useMemo } from "react"
 
-import { SignContainer } from "../../Sign/SignContainer"
+import { SignContainer } from "../SignContainer"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { SignParamTokensDisplay } from "./shared/SignParamTokensDisplay"
 

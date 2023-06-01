@@ -5,11 +5,11 @@ import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { UnsafeImage } from "talisman-ui"
 
-import { SignContainer } from "../../Sign/SignContainer"
+import { SignContainer } from "../SignContainer"
+import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewBodyShimmer } from "./views/SignViewBodyShimmer"
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 

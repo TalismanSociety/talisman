@@ -1,10 +1,10 @@
 import { FC, useMemo } from "react"
 
-import { SignContainer } from "../../Sign/SignContainer"
+import { SignContainer } from "../SignContainer"
+import { SignViewIconHeader } from "../Views/SignViewIconHeader"
+import { SignViewStakingSetAutoCompound } from "../Views/staking/SignViewStakingSetAutoCompound"
 import { getContractCallArg } from "./getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
-import { SignViewIconHeader } from "./views/SignViewIconHeader"
-import { SignViewStakingSetAutoCompound } from "./views/staking/SignViewStakingSetAutoCompound"
 
 export const EthSignMoonStakingSetAutoCompound: FC = () => {
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()

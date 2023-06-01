@@ -17,8 +17,8 @@ import { useDebounce } from "react-use"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
+import { useIsValidEthTransaction } from "../../Sign/Ethereum/useIsValidEthTransaction"
 import { NetworkUsage } from "../NetworkUsage"
-import { useIsValidEthTransaction } from "../Sign/useIsValidEthTransaction"
 import { useEthereumProvider } from "../useEthereumProvider"
 import { Indicator, MessageRow } from "./common"
 
@@ -311,7 +311,7 @@ export const CustomGasSettingsFormEip1559: FC<CustomGasSettingsFormEip1559Props>
         </div>
         <div className="mr-9 grow text-center">Custom Gas Fee</div>
       </div>
-      <div className="mt-12 mb-16">
+      <div className="mb-16 mt-12">
         Set your own custom gas fee to control the priority and cost of your transaction.
       </div>
       <div className="grid grid-cols-2 gap-8 gap-y-14">
