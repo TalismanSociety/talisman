@@ -63,8 +63,6 @@ const ViewDetailsContent: FC<{
   const { genericEvent } = useAnalytics()
   const { request, account, chain, payload, extrinsic, errorDecodingExtrinsic, fee, errorFee } =
     usePolkadotSigningRequest()
-  // const { data: extrinsic, error } = useExtrinsic(payload)
-  // const qExtrinsicFee = useExtrinsicFee(payload)
   const nativeToken = useToken(chain?.nativeToken?.id)
   const nativeTokenRates = useTokenRates(nativeToken?.id)
 
