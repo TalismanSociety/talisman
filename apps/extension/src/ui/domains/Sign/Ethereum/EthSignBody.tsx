@@ -1,4 +1,3 @@
-import { log } from "@core/log"
 import { TransactionInfo } from "@core/util/getEthTransactionInfo"
 import { ErrorBoundary, FallbackRender } from "@sentry/react"
 import { FC } from "react"
@@ -29,9 +28,6 @@ type EthSignBodyProps = {
 
 const getComponentFromKnownContractCall = (transactionInfo: TransactionInfo) => {
   const { contractType, contractCall } = transactionInfo
-
-  // TODO REMOVE THIS BEFORE PR REVIEW
-  log.debug(`${contractType}.${contractCall?.name}`, { contractType, contractCall })
 
   switch (`${contractType}.${contractCall?.name}`) {
     case "ERC20.transfer":

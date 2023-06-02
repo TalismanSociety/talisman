@@ -4,7 +4,6 @@ import { METADATA_PREFIX } from "@core/domains/metadata/types"
 import { SIGNING_TYPES } from "@core/domains/signing/types"
 import { AUTH_PREFIX } from "@core/domains/sitesAuthorised/types"
 import { FadeIn } from "@talisman/components/FadeIn"
-import { TimeToUnmount } from "@talisman/components/TimeToUnmount"
 import { api } from "@ui/api"
 import { AccountExportModalProvider } from "@ui/domains/Account/AccountExportModal"
 import { AccountExportPrivateKeyModalProvider } from "@ui/domains/Account/AccountExportPrivateKeyModal"
@@ -52,7 +51,7 @@ const Popup = () => {
     [isLoggedIn, isOnboarded]
   )
 
-  if (isLoading) return <TimeToUnmount label="index.isLoading" />
+  if (isLoading) return null
 
   if (isLoggedIn === "FALSE") return <LoginViewManager />
 
