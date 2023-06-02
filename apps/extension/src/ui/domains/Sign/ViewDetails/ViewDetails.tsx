@@ -6,8 +6,6 @@ import Button from "@talisman/components/Button"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { encodeAnyAddress } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import { useExtrinsic } from "@ui/hooks/useExtrinsic"
-import { useExtrinsicFee } from "@ui/hooks/useExtrinsicFee"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { FC, useEffect, useMemo } from "react"
@@ -63,9 +61,10 @@ const ViewDetailsContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
   const { genericEvent } = useAnalytics()
-  const { request, account, chain, payload } = usePolkadotSigningRequest()
-  const { data: extrinsic, error } = useExtrinsic(payload)
-  const qExtrinsicFee = useExtrinsicFee(payload)
+  const { request, account, chain, payload, extrinsic, errorDecodingExtrinsic, fee, errorFee } =
+    usePolkadotSigningRequest()
+  // const { data: extrinsic, error } = useExtrinsic(payload)
+  // const qExtrinsicFee = useExtrinsicFee(payload)
   const nativeToken = useToken(chain?.nativeToken?.id)
   const nativeTokenRates = useTokenRates(nativeToken?.id)
 
@@ -90,34 +89,37 @@ const ViewDetailsContent: FC<{
     [account, chain?.prefix]
   )
 
-  const { fee, feeError } = useMemo(
+  const { estimatedFee, estimatedFeeError } = useMemo(
     () => ({
-      fee: qExtrinsicFee.data
-        ? new BalanceFormatter(qExtrinsicFee.data, nativeToken?.decimals, nativeTokenRates)
-        : undefined,
-      feeError: qExtrinsicFee.error ? "Failed to calculate fee." : "",
+      estimatedFee:
+        fee !== undefined && fee !== null
+          ? new BalanceFormatter(fee, nativeToken?.decimals, nativeTokenRates)
+          : undefined,
+      estimatedFeeError: errorFee ? "Failed to calculate fee." : "",
     }),
-    [qExtrinsicFee.data, qExtrinsicFee.error, nativeToken?.decimals, nativeTokenRates]
+    [fee, errorFee, nativeToken?.decimals, nativeTokenRates]
   )
 
-  const { decodeError, methodName, args, decodedPayload, decodedMethod } = useMemo(() => {
-    if (!extrinsic) return {}
+  const decodedPayload = useMemo(() => {
+    try {
+      const typeRegistry = new TypeRegistry()
+      return typeRegistry.createType("ExtrinsicPayload", payload)
+    } catch (err) {
+      return null
+    }
+  }, [payload])
 
-    const decodeError = error ? "Failed to decode method." : ""
+  const { methodName, args, decodedMethod } = useMemo(() => {
+    if (!extrinsic) return { methodName: "Unknown" }
 
-    const methodName = extrinsic.method
-      ? `${extrinsic.method.section} : ${extrinsic.method.method}`
-      : "unknown"
+    const methodName = `${extrinsic.method.section} : ${extrinsic.method.method}`
 
     const decodedMethod = extrinsic.method.toHuman(true) as TransactionMethod
     const decoded = extrinsic.method.toHuman() as TransactionMethod
     const args = decoded?.args
 
-    const typeRegistry = new TypeRegistry()
-    const decodedPayload = typeRegistry.createType("ExtrinsicPayload", payload)
-
-    return { decodeError, methodName, args, decodedPayload, decodedMethod }
-  }, [error, extrinsic, payload])
+    return { methodName, args, decodedMethod }
+  }, [extrinsic])
 
   useEffect(() => {
     genericEvent("open sign transaction view details", { type: "substrate" })
@@ -134,11 +136,16 @@ const ViewDetailsContent: FC<{
         {isExtrinsic ? (
           <>
             <ViewDetailsField label="Network">{chain?.name ?? "Unknown"}</ViewDetailsField>
-            <ViewDetailsAmount label="Fees" error={feeError} amount={fee} token={nativeToken} />
+            <ViewDetailsAmount
+              label="Fees"
+              error={estimatedFeeError}
+              amount={estimatedFee}
+              token={nativeToken}
+            />
             <ViewDetailsAmount label="Tip" amount={tip} token={nativeToken} />
             <ViewDetailsField
               label="Decoding error"
-              error={(error as Error)?.message ?? decodeError}
+              error={errorDecodingExtrinsic ? "Failed to decode method." : ""}
             />
             <ViewDetailsField label="Method">{methodName}</ViewDetailsField>
             <ViewDetailsTxDesc label="Description" method={decodedMethod} />
@@ -168,13 +175,13 @@ const ViewDetailsContent: FC<{
 }
 
 export const ViewDetails: FC = () => {
-  const { isLoading } = useExtrinsic()
+  const { isDecodingExtrinsic } = usePolkadotSigningRequest()
   const { isOpen, open, close } = useOpenClose()
 
   return (
     <>
-      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={isLoading} />
-      <Drawer anchor="bottom" isOpen={isOpen && !isLoading} onDismiss={close}>
+      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={isDecodingExtrinsic} />
+      <Drawer anchor="bottom" isOpen={isOpen && !isDecodingExtrinsic} onDismiss={close}>
         <ViewDetailsContent onClose={close} />
       </Drawer>
     </>

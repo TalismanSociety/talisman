@@ -85,16 +85,21 @@ const getFrontEndTypeRegistry = async (
 }
 
 const decodeExtrinsic = async (payload: SignerPayloadJSON) => {
-  const { genesisHash, signedExtensions, specVersion: hexSpecVersion } = payload
+  try {
+    const { genesisHash, signedExtensions, specVersion: hexSpecVersion } = payload
 
-  const { registry } = await getFrontEndTypeRegistry(
-    genesisHash,
-    hexToNumber(hexSpecVersion),
-    undefined, // dapp may be using an RPC that is a block ahead our provder's RPC, do not specify payload's blockHash or it could throw
-    signedExtensions
-  )
+    const { registry } = await getFrontEndTypeRegistry(
+      genesisHash,
+      hexToNumber(hexSpecVersion),
+      undefined, // dapp may be using an RPC that is a block ahead our provder's RPC, do not specify payload's blockHash or it could throw
+      signedExtensions
+    )
 
-  return registry.createType("Extrinsic", payload)
+    return registry.createType("Extrinsic", payload)
+  } catch (err) {
+    log.error("Failed to decode extrinsic", { err })
+    throw err
+  }
 }
 
 export const useExtrinsic = (payload?: SignerPayloadJSON | SignerPayloadRaw) => {
@@ -105,6 +110,7 @@ export const useExtrinsic = (payload?: SignerPayloadJSON | SignerPayloadRaw) => 
     refetchInterval: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
+    retry: 2,
     enabled: payload && isJsonPayload(payload),
   })
 }

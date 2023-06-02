@@ -1,5 +1,4 @@
 import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
-import { SubstrateSigningRequest } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { AppPill } from "@talisman/components/AppPill"
 import { InfoIcon, LoaderIcon } from "@talisman/theme/icons"
@@ -11,8 +10,6 @@ import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
-import { useExtrinsicFee } from "@ui/hooks/useExtrinsicFee"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -21,37 +18,15 @@ import { SignAccountAvatar } from "./SignAccountAvatar"
 
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
-const useSubstrateFee = (signingRequest: SubstrateSigningRequest) => {
-  const payload = signingRequest.request?.payload
-  const isExtrinsic = isJsonPayload(payload)
-  const chain = useChainByGenesisHash(isExtrinsic ? payload.genesisHash : undefined)
+const EstimatedFeesRow: FC = () => {
+  const { fee, isLoadingFee, errorFee, chain, errorDecodingExtrinsic } = usePolkadotSigningRequest()
   const feeToken = useFeeToken(chain?.nativeToken?.id)
-
-  const { data: fee, isLoading, error } = useExtrinsicFee(isExtrinsic ? payload : undefined)
-
-  const tip = useMemo(
-    () => (isExtrinsic && payload.tip ? BigInt(payload.tip) : undefined),
-    [isExtrinsic, payload]
-  )
-
-  return {
-    fee: fee ?? undefined,
-    tip,
-    analysing: isLoading,
-    error: error ? (error as Error)?.message ?? "Failed to compute fee." : undefined,
-    feeToken,
-    isUnknownFeeToken: chain?.isUnknownFeeToken,
-  }
-}
-
-const EstimatedFeesRow: FC<{ signingRequest: SubstrateSigningRequest }> = ({ signingRequest }) => {
-  const { feeToken, analysing, error, fee, isUnknownFeeToken } = useSubstrateFee(signingRequest)
 
   return (
     <div className="text-body-secondary mb-8 flex w-full items-center justify-between text-sm">
       <div className="flex items-center gap-2">
         <span>Estimated Fee </span>
-        {isUnknownFeeToken && (
+        {!!chain?.isUnknownFeeToken && (
           <Tooltip>
             <TooltipTrigger className="flex flex-col justify-center">
               <InfoIcon className="inline-block" />
@@ -63,15 +38,15 @@ const EstimatedFeesRow: FC<{ signingRequest: SubstrateSigningRequest }> = ({ sig
         )}
       </div>
       <div>
-        {analysing ? (
+        {isLoadingFee ? (
           <LoaderIcon className="animate-spin-slow inline-block" />
-        ) : error ? (
+        ) : errorFee || errorDecodingExtrinsic ? (
           <Tooltip placement="bottom-end">
             <TooltipTrigger>Unknown</TooltipTrigger>
-            <TooltipContent>{error}</TooltipContent>
+            <TooltipContent>Failed to compute fee</TooltipContent>
           </Tooltip>
         ) : (
-          <TokensAndFiat planck={fee} tokenId={feeToken?.id} />
+          <TokensAndFiat planck={fee ?? undefined} tokenId={feeToken?.id} />
         )}
       </div>
     </div>
@@ -80,7 +55,7 @@ const EstimatedFeesRow: FC<{ signingRequest: SubstrateSigningRequest }> = ({ sig
 
 export const PolkadotSignTransactionRequest: FC = () => {
   const {
-    signingRequest,
+    isDecodingExtrinsic,
     url,
     request,
     approve,
@@ -92,7 +67,6 @@ export const PolkadotSignTransactionRequest: FC = () => {
     approveHardware,
     approveQr,
     payload,
-    isLoading,
   } = usePolkadotSigningRequest()
 
   const { genesisHash, specVersion } = useMemo(() => {
@@ -124,7 +98,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
           <SubSignBody />
         </div>
       </Content>
-      {!isLoading && (
+      {!isDecodingExtrinsic && (
         <Footer className="animate-fade-in">
           <div className="flex w-full flex-col gap-4">
             <div id="sign-alerts-inject"></div>
@@ -133,7 +107,7 @@ export const PolkadotSignTransactionRequest: FC = () => {
           </div>
           {account && request && (
             <>
-              <EstimatedFeesRow signingRequest={signingRequest} />
+              <EstimatedFeesRow />
               {account.origin !== "HARDWARE" && account.origin !== "QR" && (
                 <div className="grid w-full grid-cols-2 gap-12">
                   <Button disabled={processing} onClick={reject}>
