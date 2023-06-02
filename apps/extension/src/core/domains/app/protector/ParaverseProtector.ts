@@ -6,7 +6,8 @@ import Dexie from "dexie"
 import metamaskInitialData from "eth-phishing-detect/src/config.json"
 import MetamaskDetector from "eth-phishing-detect/src/detector"
 import { decompressFromUTF16 } from "lz-string"
-import { Err, Ok, Result } from "ts-results"
+
+import { getHostName } from "../helpers"
 
 const METAMASK_REPO = "https://api.github.com/repos/MetaMask/eth-phishing-detect"
 const METAMASK_CONTENT_URL = `${METAMASK_REPO}/contents/src/config.json`
@@ -209,19 +210,9 @@ export default class ParaverseProtector {
     return JSON.parse(Buffer.from(json.content, "base64").toString())
   }
 
-  private getHostName(url: string): Result<string, "Unable to get host from url"> {
-    try {
-      const host = new URL(url).hostname
-      return Ok(host)
-    } catch (error) {
-      log.error(url, error)
-      return Err("Unable to get host from url")
-    }
-  }
-
   async isPhishingSite(url: string) {
     await this.isInitialised()
-    const { val: host, ok } = this.getHostName(url)
+    const { val: host, ok } = getHostName(url)
     if (!ok) return false
 
     // first check our lists
@@ -239,7 +230,7 @@ export default class ParaverseProtector {
   }
 
   addException(url: string) {
-    const { val: host, ok } = this.getHostName(url)
+    const { val: host, ok } = getHostName(url)
     if (!ok) return false
 
     this.lists.talisman.allow.push(host)

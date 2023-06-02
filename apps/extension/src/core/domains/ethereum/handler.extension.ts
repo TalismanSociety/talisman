@@ -24,6 +24,7 @@ import { evmNativeTokenId } from "@talismn/balances-evm-native"
 import { CustomEvmNetwork, githubUnknownTokenLogoUrl } from "@talismn/chaindata-provider"
 import { ethers } from "ethers"
 
+import { getHostName } from "../app/helpers"
 import { getHumanReadableErrorMessage } from "./errors"
 import { rebuildTransactionRequestNumbers } from "./helpers"
 import { getProviderForEvmNetworkId } from "./rpcProviders"
@@ -58,8 +59,11 @@ export class EthHandler extends ExtensionHandler {
         resolve(hash)
 
         const account = keyring.getAccount(accountAddress)
+        const { val: host, ok } = getHostName(queued.url)
+
         talismanAnalytics.captureDelayed("sign transaction approve", {
           method,
+          hostName: ok ? host : null,
           dapp: queued.url,
           chain: chainId,
           networkType: "ethereum",
@@ -110,8 +114,10 @@ export class EthHandler extends ExtensionHandler {
 
       resolve(result.val)
 
+      const { val: host, ok } = getHostName(url)
       talismanAnalytics.captureDelayed("sign transaction approve", {
         type: "evm sign and send",
+        hostName: ok ? host : null,
         dapp: url,
         chain: ethChainId,
         networkType: "ethereum",
@@ -151,8 +157,8 @@ export class EthHandler extends ExtensionHandler {
         transferInfo,
       })
 
-      talismanAnalytics.captureDelayed("sign transaction approve", {
-        type: "evm sign and send",
+      talismanAnalytics.captureDelayed("send transaction", {
+        type: "evm send signed",
         chain: evmNetworkId,
         networkType: "ethereum",
       })
@@ -195,7 +201,7 @@ export class EthHandler extends ExtensionHandler {
         transferInfo,
       })
 
-      talismanAnalytics.captureDelayed("sign transaction approve", {
+      talismanAnalytics.captureDelayed("send transaction", {
         type: "evm sign and send",
         chain: evmNetworkId,
         networkType: "ethereum",
@@ -223,15 +229,18 @@ export class EthHandler extends ExtensionHandler {
       method,
       resolve,
       account: { address: accountAddress },
+      url,
     } = queued
 
     resolve(signedPayload)
 
     const account = keyring.getAccount(accountAddress)
+    const { ok, val: host } = getHostName(url)
     talismanAnalytics.captureDelayed("sign approve", {
       method,
       isHardware: true,
-      dapp: queued.url,
+      hostName: ok ? host : null,
+      dapp: url,
       chain: queued.ethChainId,
       networkType: "ethereum",
       hardwareType: account?.meta.hardwareType,
@@ -245,7 +254,7 @@ export class EthHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const { method, request, reject, resolve } = queued
+    const { method, request, reject, resolve, url } = queued
 
     const { val, ok } = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const pw = this.stores.password.getPassword()
@@ -279,9 +288,12 @@ export class EthHandler extends ExtensionHandler {
 
       resolve(signature)
 
+      const { ok, val: host } = getHostName(url)
+
       talismanAnalytics.captureDelayed("sign approve", {
         method,
         isHardware: true,
+        hostName: ok ? host : null,
         dapp: queued.url,
         chain: queued.ethChainId,
         networkType: "ethereum",

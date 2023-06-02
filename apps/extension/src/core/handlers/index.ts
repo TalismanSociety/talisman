@@ -79,7 +79,7 @@ const talismanHandler = <TMessageType extends MessageTypes>(
       // only send message back to port if it's still connected, unfortunately this check is not reliable in all browsers
       if (port) {
         try {
-          if (message === "pub(eth.request)")
+          if (["pub(eth.request)", "pri(eth.request)"].includes(message))
             port.postMessage({
               id,
               error: error.message,

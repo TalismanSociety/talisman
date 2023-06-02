@@ -13,6 +13,7 @@ type DeploymentsDb = Record<PgContractType, Record<number, `0x${string}`>>
 const DEFAULT_DEPLOYMENTS: DeploymentsDb = {
   TestBasics: {
     1287: "0xE364F52f0C8016c59e500077f9dc32c1eDBBC189",
+    10: "0xa70254484A7C1AD788413bb9814728bD9F297337",
   },
   TestERC20: {},
   TestERC721: {},

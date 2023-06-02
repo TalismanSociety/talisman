@@ -157,6 +157,7 @@ export default class Extension extends ExtensionHandler {
       )
       const subBalances = obsHasFunds.subscribe((positiveBalances) => {
         if (positiveBalances) {
+          if (!hasFunds) talismanAnalytics.capture("wallet funded")
           this.stores.app.set({ hasFunds: true })
           subBalances.unsubscribe()
           subAppStore.unsubscribe()
