@@ -111,6 +111,5 @@ export const useExtrinsic = (payload?: SignerPayloadJSON | SignerPayloadRaw) => 
     refetchOnWindowFocus: false,
     refetchOnReconnect: true,
     retry: 2,
-    enabled: payload && isJsonPayload(payload),
   })
 }
