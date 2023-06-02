@@ -12,7 +12,6 @@ import { requestStore } from "@core/libs/requests/store"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
-import { getTransactionDetails } from "@core/util/getTransactionDetails"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { TypeRegistry } from "@polkadot/types"
@@ -157,16 +156,6 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
-  private async decode({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
-    const queued = requestStore.getRequest(id)
-    if (!queued) return null
-
-    if (!isJsonPayload(queued.request.payload)) return null
-
-    // analyse the call to extract args and docs
-    return getTransactionDetails(queued.request.payload)
-  }
-
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -186,9 +175,6 @@ export default class SigningHandler extends ExtensionHandler {
 
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestType<"pri(signing.cancel)">)
-
-      case "pri(signing.details)":
-        return this.decode(request as RequestType<"pri(signing.details)">)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

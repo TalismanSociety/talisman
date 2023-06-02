@@ -28,11 +28,7 @@ import {
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
 import { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
-import {
-  SignerPayloadJSON,
-  SigningRequestID,
-  TransactionDetails,
-} from "@core/domains/signing/types"
+import { SignerPayloadJSON, SigningRequestID } from "@core/domains/signing/types"
 import {
   AuthRequestAddresses,
   AuthRequestId,
@@ -79,7 +75,6 @@ export default interface MessageTypes {
   allowPhishingSite: (url: string) => Promise<boolean>
 
   // signing messages -------------------------------------------------------
-  decodeSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<TransactionDetails>
   cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
   approveSign: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
   approveSignHardware: (
