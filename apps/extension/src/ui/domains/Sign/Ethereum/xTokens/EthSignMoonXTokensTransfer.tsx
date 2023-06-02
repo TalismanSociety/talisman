@@ -136,7 +136,18 @@ export const EthSignMoonXTokensTransfer: FC = () => {
 
   const { data: tokenRates } = useCoinGeckoTokenRates(coingeckoId)
 
-  if (!amount || !symbol || decimals === undefined || !network || !account) return null
+  if (erc20.isLoading) return null
+
+  if (
+    amount === undefined ||
+    !symbol ||
+    decimals === undefined ||
+    !network ||
+    !account ||
+    !targetChain ||
+    !targetAddress
+  )
+    throw new Error("Missing parameter(s)")
 
   return (
     <SignContainer

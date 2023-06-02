@@ -61,8 +61,8 @@ export const SignViewXTokensTransfer: FC<{
   tokenRates?: TokenRates | null
   fromNetwork: EvmNetworkId | ChainId
   fromAddress: Address
-  toNetwork?: EvmNetworkId | ChainId
-  toAddress?: Address
+  toNetwork: EvmNetworkId | ChainId
+  toAddress: Address
 }> = ({
   value,
   tokenLogo,
@@ -74,11 +74,6 @@ export const SignViewXTokensTransfer: FC<{
   toNetwork,
   toAddress,
 }) => {
-  const amount = useMemo(
-    () => new BalanceFormatter(value, tokenDecimals, tokenRates ?? undefined),
-    [tokenDecimals, tokenRates, value]
-  )
-
   const fromChain = useChain(fromNetwork)
   const fromEvmNetwork = useEvmNetwork(fromNetwork)
   const toChain = useChain(toNetwork)
@@ -93,7 +88,10 @@ export const SignViewXTokensTransfer: FC<{
     [toChain, toEvmNetwork]
   )
 
-  if (!amount) return null
+  const amount = useMemo(
+    () => new BalanceFormatter(value, tokenDecimals, tokenRates ?? undefined),
+    [tokenDecimals, tokenRates, value]
+  )
 
   return (
     <div className="flex w-full flex-col items-center gap-16">

@@ -17,9 +17,9 @@ import { useDebounce } from "react-use"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
-import { useIsValidEthTransaction } from "../../Sign/Ethereum/useIsValidEthTransaction"
 import { NetworkUsage } from "../NetworkUsage"
 import { useEthereumProvider } from "../useEthereumProvider"
+import { useIsValidEthTransaction } from "../useIsValidEthTransaction"
 import { Indicator, MessageRow } from "./common"
 
 const INPUT_PROPS = {

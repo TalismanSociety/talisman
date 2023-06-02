@@ -1,5 +1,5 @@
 import { BalanceFormatter } from "@core/domains/balances/types"
-import { SignerPayloadJSON, SignerPayloadRaw } from "@core/domains/signing/types"
+import { SignerPayloadJSON, SignerPayloadRaw, TransactionMethod } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { TypeRegistry } from "@polkadot/types"
 import Button from "@talisman/components/Button"
@@ -59,15 +59,6 @@ const ViewDetailsContainer = styled.div`
   }
 `
 
-// type BaseViewDetailsProps = {
-//   txDetails?: TransactionDetails | null
-//   txDetailsError?: string
-// }
-
-// type ViewDetailsContentProps = BaseViewDetailsProps & {
-//   onClose: () => void
-// }
-
 const ViewDetailsContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
@@ -78,7 +69,7 @@ const ViewDetailsContent: FC<{
   const nativeToken = useToken(chain?.nativeToken?.id)
   const nativeTokenRates = useTokenRates(nativeToken?.id)
 
-  const isTransaction = isJsonPayload(request?.payload)
+  const isExtrinsic = isJsonPayload(request?.payload)
 
   const { data, type } = (request?.payload || {}) as SignerPayloadRaw
   const { tip: tipRaw } = (request?.payload || {}) as SignerPayloadJSON
@@ -109,7 +100,7 @@ const ViewDetailsContent: FC<{
     [qExtrinsicFee.data, qExtrinsicFee.error, nativeToken?.decimals, nativeTokenRates]
   )
 
-  const { decodeError, methodName, args, decodedPayload } = useMemo(() => {
+  const { decodeError, methodName, args, decodedPayload, decodedMethod } = useMemo(() => {
     if (!extrinsic) return {}
 
     const decodeError = error ? "Failed to decode method." : ""
@@ -118,19 +109,14 @@ const ViewDetailsContent: FC<{
       ? `${extrinsic.method.section} : ${extrinsic.method.method}`
       : "unknown"
 
-    // safe deep copy
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const decoded = extrinsic.toHuman() as any
-    const args = decoded?.method ? JSON.parse(JSON.stringify(decoded.method.args)) : undefined
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    args?.calls?.forEach?.((call: any) => {
-      delete call.docs
-    })
+    const decodedMethod = extrinsic.method.toHuman(true) as TransactionMethod
+    const decoded = extrinsic.method.toHuman() as TransactionMethod
+    const args = decoded?.args
 
     const typeRegistry = new TypeRegistry()
     const decodedPayload = typeRegistry.createType("ExtrinsicPayload", payload)
 
-    return { decodeError, methodName, args, decodedPayload }
+    return { decodeError, methodName, args, decodedPayload, decodedMethod }
   }, [error, extrinsic, payload])
 
   useEffect(() => {
@@ -145,7 +131,7 @@ const ViewDetailsContent: FC<{
           {accountAddress}
         </ViewDetailsField>
 
-        {isTransaction ? (
+        {isExtrinsic ? (
           <>
             <ViewDetailsField label="Network">{chain?.name ?? "Unknown"}</ViewDetailsField>
             <ViewDetailsAmount label="Fees" error={feeError} amount={fee} token={nativeToken} />
@@ -155,8 +141,7 @@ const ViewDetailsContent: FC<{
               error={(error as Error)?.message ?? decodeError}
             />
             <ViewDetailsField label="Method">{methodName}</ViewDetailsField>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <ViewDetailsTxDesc label="Description" method={extrinsic?.method?.toHuman() as any} />
+            <ViewDetailsTxDesc label="Description" method={decodedMethod} />
             <ViewDetailsTxObject label="Arguments" obj={args} />
             <ViewDetailsTxObject label="Payload" obj={decodedPayload?.toHuman()} />
           </>

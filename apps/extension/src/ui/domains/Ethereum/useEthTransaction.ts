@@ -27,7 +27,7 @@ import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { BigNumber, ethers } from "ethers"
 import { useEffect, useMemo, useState } from "react"
 
-import { useIsValidEthTransaction } from "../Sign/Ethereum/useIsValidEthTransaction"
+import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 
 // gasPrice isn't reliable on polygon & mumbai, see https://github.com/ethers-io/ethers.js/issues/2828#issuecomment-1283014250
 const UNRELIABLE_GASPRICE_NETWORK_IDS = [137, 80001]

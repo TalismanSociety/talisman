@@ -66,8 +66,6 @@ const getTargetChainId = (
 const getTargetAccount = (
   multiLocation: VersionedMultiLocation | undefined,
   account: AccountJsonAny
-  // chain: Chain | null | undefined,
-  // chains: Chain[]
 ): Address => {
   if (multiLocation?.isV1) {
     // const parents = multiLocation.asV1.parents.toNumber()
