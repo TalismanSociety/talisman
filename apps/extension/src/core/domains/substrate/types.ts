@@ -17,5 +17,5 @@ type SubstrateRequestChainMetadata = {
 
 export type SubstrateMessages = {
   "pri(substrate.rpc.send)": [SubstrateRequestSend, unknown]
-  "pri(substrate.chain.metadata)": [SubstrateRequestChainMetadata, MetadataDef | undefined]
+  "pri(substrate.metadata.get)": [SubstrateRequestChainMetadata, MetadataDef | undefined]
 }

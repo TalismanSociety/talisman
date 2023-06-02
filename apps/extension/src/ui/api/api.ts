@@ -273,7 +273,7 @@ export const api: MessageTypes = {
       isCacheable,
     }) as Promise<T>,
   subChainMetadata: (genesisHash, specVersion, blockHash) =>
-    messageService.sendMessage("pri(substrate.chain.metadata)", {
+    messageService.sendMessage("pri(substrate.metadata.get)", {
       genesisHash,
       specVersion,
       blockHash,

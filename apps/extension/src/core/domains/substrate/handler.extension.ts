@@ -14,7 +14,7 @@ export class SubHandler extends ExtensionHandler {
     return chainConnector.send(chainId, method, params, isCacheable)
   }
 
-  private metadata: MessageHandler<"pri(substrate.chain.metadata)"> = async ({
+  private metadata: MessageHandler<"pri(substrate.metadata.get)"> = async ({
     genesisHash,
     specVersion,
     blockHash,
@@ -39,8 +39,8 @@ export class SubHandler extends ExtensionHandler {
       // --------------------------------------------------------------------
       // substrate chain metadata -----------------------------
       // --------------------------------------------------------------------
-      case "pri(substrate.chain.metadata)":
-        return this.metadata(request as RequestTypes["pri(substrate.chain.metadata)"])
+      case "pri(substrate.metadata.get)":
+        return this.metadata(request as RequestTypes["pri(substrate.metadata.get)"])
     }
     throw new Error(`Unable to handle message of type ${type} (substrate)`)
   }
