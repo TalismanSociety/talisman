@@ -14,7 +14,7 @@ import { useMemo } from "react"
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
-import { SignViewXTokensTransfer } from "../../Views/xTokens/SignViewXTokensTransfer"
+import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
 
 const getTokenFromCurrency = (currency: Codec, chain: Chain, tokens: Token[]): Token => {
   // ex: HDX

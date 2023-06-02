@@ -12,7 +12,7 @@ import { FC, useMemo } from "react"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
-import { SignViewXTokensTransfer } from "../../Views/xTokens/SignViewXTokensTransfer"
+import { SignViewXTokensTransfer } from "../../Views/transfer/SignViewCrossChainTransfer"
 import { getContractCallArg } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
