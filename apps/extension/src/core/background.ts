@@ -39,7 +39,7 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
     }
   })
 
-  if (reason === "update" && previousVersion && lt(previousVersion, "1.4.0")) {
+  if (reason === "update" && previousVersion && lt(previousVersion, "1.14.0")) {
     // once off migration to add `connectAllSubstrate` to the record for the Talisman Web App
     const site = await sitesAuthorisedStore.get(TALISMAN_WEB_APP_DOMAIN)
     if (!site) {
