@@ -1,75 +1,60 @@
-import {
-  SignerPayloadJSON,
-  SigningRequestID,
-  SubstrateSigningRequest,
-  TransactionPayload,
-} from "@core/domains/signing/types"
+import { SubstrateSigningRequest } from "@core/domains/signing/types"
 import { log } from "@core/log"
 import { isJsonPayload } from "@core/util/isJsonPayload"
+import { GenericExtrinsic } from "@polkadot/types"
+import { IRuntimeVersionBase, SignerPayloadJSON, SignerPayloadRaw } from "@polkadot/types/types"
 import { HexString } from "@polkadot/util/types"
+import { provideContext } from "@talisman/util/provideContext"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
+import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import useChains from "@ui/hooks/useChains"
-import { useChainMetadata } from "@ui/hooks/useMetadataUpdates"
+import { useExtrinsic } from "@ui/hooks/useExtrinsic"
+import { getExtrinsicDispatchInfo } from "@ui/util/getExtrinsicDispatchInfo"
 import { useCallback, useMemo } from "react"
 
 import { useAnySigningRequest } from "./AnySignRequestContext"
 
-export const usePolkadotTransactionDetails = (requestId?: SigningRequestID<"substrate-sign">) => {
-  const {
-    data: txDetails,
-    isLoading: analysing,
-    error,
-    ...rest
-  } = useQuery({
-    queryKey: ["polkadotTransactionDetails", requestId],
-    queryFn: () => (requestId ? api.decodeSignRequest(requestId) : null),
+const usePartialFee = (
+  payload: SignerPayloadJSON | SignerPayloadRaw | undefined,
+  extrinsic: GenericExtrinsic | null | undefined
+) => {
+  const chain = useChainByGenesisHash(
+    payload && isJsonPayload(payload) ? payload.genesisHash : undefined
+  )
+
+  return useQuery({
+    queryKey: ["usePartialFee", payload, chain, extrinsic?.toHex()],
+    queryFn: async () => {
+      if (!payload || !chain || !extrinsic) return null
+
+      const [blockHash, runtimeVersion] = await Promise.all([
+        api.subSend<HexString>(chain.id, "chain_getBlockHash", [], false),
+        api.subSend<IRuntimeVersionBase>(chain.id, "state_getRuntimeVersion", [], true),
+      ])
+
+      // fake sign it so fees can be queried
+      const { address, nonce, genesisHash } = payload as SignerPayloadJSON
+      extrinsic.signFake(address, { nonce, blockHash, genesisHash, runtimeVersion })
+
+      const { partialFee } = await getExtrinsicDispatchInfo(chain.id, extrinsic, blockHash)
+
+      return BigInt(partialFee)
+    },
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: true,
   })
-
-  return { analysing, txDetails, error: (error as Error)?.message, ...rest }
 }
 
-export const usePolkadotTransaction = (signingRequest: SubstrateSigningRequest) => {
-  const { analysing, txDetails, error } = usePolkadotTransactionDetails(signingRequest.id)
+const usePolkadotSigningRequestProvider = ({
+  signingRequest,
+}: {
+  signingRequest: SubstrateSigningRequest
+}) => {
+  const payload = signingRequest?.request?.payload
 
-  const { genesisHash, specVersion } = useMemo(() => {
-    const payload = signingRequest?.request?.payload
-    const isTx = payload && isJsonPayload(payload)
-    if (isTx) {
-      const { genesisHash, specVersion } = payload as TransactionPayload
-      return {
-        genesisHash,
-        specVersion: parseInt(specVersion, 16),
-      }
-    }
-    return { genesisHash: undefined, specVersion: undefined }
-  }, [signingRequest])
-
-  const {
-    isReady,
-    isLoading: isMetadataLoading,
-    isKnownChain,
-    isMetadataUpToDate,
-    isMetadataUpdating,
-    hasMetadataUpdateFailed,
-    updateUrl,
-  } = useChainMetadata(genesisHash, specVersion)
-
-  return {
-    isReady,
-    isMetadataLoading,
-    analysing,
-    txDetails,
-    error,
-    requiresMetadataUpdate:
-      !analysing && !isMetadataLoading && (!isKnownChain || !isMetadataUpToDate),
-    isMetadataUpdating,
-    hasMetadataUpdateFailed,
-    updateUrl,
-  }
-}
-
-export const usePolkadotSigningRequest = (signingRequest?: SubstrateSigningRequest) => {
   const baseRequest = useAnySigningRequest({
     currentRequest: signingRequest,
     approveSignFn: api.approveSign,
@@ -82,6 +67,13 @@ export const usePolkadotSigningRequest = (signingRequest?: SubstrateSigningReque
     const { genesisHash } = (signingRequest?.request?.payload ?? {}) as SignerPayloadJSON
     return (genesisHash && (chains || []).find((c) => c.genesisHash === genesisHash)) || null
   }, [signingRequest, chains])
+
+  const {
+    data: extrinsic,
+    isLoading: isDecodingExtrinsic,
+    error: errorDecodingExtrinsic,
+  } = useExtrinsic(payload)
+  const { data: fee, isLoading: isLoadingFee, error: errorFee } = usePartialFee(payload, extrinsic)
 
   const approveHardware = useCallback(
     async ({ signature }: { signature: HexString }) => {
@@ -114,10 +106,21 @@ export const usePolkadotSigningRequest = (signingRequest?: SubstrateSigningReque
   )
 
   return {
+    payload,
+    signingRequest,
     ...baseRequest,
     chain,
     approveHardware,
     approveQr,
-    isLoading: !chains.length, // helps preventing chain name flickering
+    extrinsic,
+    isDecodingExtrinsic,
+    errorDecodingExtrinsic,
+    fee,
+    isLoadingFee,
+    errorFee,
   }
 }
+
+export const [PolkadotSigningRequestProvider, usePolkadotSigningRequest] = provideContext(
+  usePolkadotSigningRequestProvider
+)

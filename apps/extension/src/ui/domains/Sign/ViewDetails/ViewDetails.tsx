@@ -1,13 +1,8 @@
 import { BalanceFormatter } from "@core/domains/balances/types"
-import {
-  SignerPayloadJSON,
-  SignerPayloadRaw,
-  SubstrateSigningRequest,
-  TransactionDetails,
-} from "@core/domains/signing/types"
+import { SignerPayloadJSON, SignerPayloadRaw, TransactionMethod } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
+import { TypeRegistry } from "@polkadot/types"
 import Button from "@talisman/components/Button"
-import { Drawer } from "@talisman/components/Drawer"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
 import { encodeAnyAddress } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
@@ -15,6 +10,7 @@ import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { FC, useEffect, useMemo } from "react"
 import styled from "styled-components"
+import { Drawer } from "talisman-ui"
 
 import { usePolkadotSigningRequest } from "../SignRequestContext"
 import { ViewDetailsAmount } from "./ViewDetailsAmount"
@@ -61,28 +57,16 @@ const ViewDetailsContainer = styled.div`
   }
 `
 
-type BaseViewDetailsProps = {
-  txDetails?: TransactionDetails | null
-  txDetailsError?: string
-  signingRequest: SubstrateSigningRequest
-}
-
-type ViewDetailsContentProps = BaseViewDetailsProps & {
+const ViewDetailsContent: FC<{
   onClose: () => void
-}
-
-const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
-  onClose,
-  signingRequest,
-  txDetails,
-  txDetailsError,
-}) => {
+}> = ({ onClose }) => {
   const { genericEvent } = useAnalytics()
-  const { request, account, chain } = usePolkadotSigningRequest(signingRequest)
+  const { request, account, chain, payload, extrinsic, errorDecodingExtrinsic, fee, errorFee } =
+    usePolkadotSigningRequest()
   const nativeToken = useToken(chain?.nativeToken?.id)
   const nativeTokenRates = useTokenRates(nativeToken?.id)
 
-  const isTransaction = isJsonPayload(request?.payload)
+  const isExtrinsic = isJsonPayload(request?.payload)
 
   const { data, type } = (request?.payload || {}) as SignerPayloadRaw
   const { tip: tipRaw } = (request?.payload || {}) as SignerPayloadJSON
@@ -103,31 +87,37 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
     [account, chain?.prefix]
   )
 
-  const { fee, feeError, decodeError, methodName, args } = useMemo(() => {
-    if (!txDetails) return {}
+  const { estimatedFee, estimatedFeeError } = useMemo(
+    () => ({
+      estimatedFee:
+        fee !== undefined && fee !== null
+          ? new BalanceFormatter(fee, nativeToken?.decimals, nativeTokenRates)
+          : undefined,
+      estimatedFeeError: errorFee ? "Failed to calculate fee." : "",
+    }),
+    [fee, errorFee, nativeToken?.decimals, nativeTokenRates]
+  )
 
-    const feeError = txDetails.partialFee ? "" : "Failed to compute fee."
-    const decodeError = txDetails.method ? "" : "Failed to decode method."
+  const decodedPayload = useMemo(() => {
+    try {
+      const typeRegistry = new TypeRegistry()
+      return typeRegistry.createType("ExtrinsicPayload", payload)
+    } catch (err) {
+      return null
+    }
+  }, [payload])
 
-    const fee = txDetails.partialFee
-      ? new BalanceFormatter(txDetails.partialFee, nativeToken?.decimals, nativeTokenRates)
-      : undefined
+  const { methodName, args, decodedMethod } = useMemo(() => {
+    if (!extrinsic) return { methodName: "Unknown" }
 
-    const methodName = txDetails.method
-      ? `${txDetails.method.section} : ${txDetails.method.method}`
-      : "unknown"
+    const methodName = `${extrinsic.method.section} : ${extrinsic.method.method}`
 
-    // safe deep copy
-    const args = txDetails.method?.args
-      ? JSON.parse(JSON.stringify(txDetails.method.args))
-      : undefined
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    args?.calls?.forEach?.((call: any) => {
-      delete call.docs
-    })
+    const decodedMethod = extrinsic.method.toHuman(true) as TransactionMethod
+    const decoded = extrinsic.method.toHuman() as TransactionMethod
+    const args = decoded?.args
 
-    return { fee, feeError, decodeError, methodName, args }
-  }, [nativeToken?.decimals, nativeTokenRates, txDetails])
+    return { methodName, args, decodedMethod }
+  }, [extrinsic])
 
   useEffect(() => {
     genericEvent("open sign transaction view details", { type: "substrate" })
@@ -141,16 +131,24 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
           {accountAddress}
         </ViewDetailsField>
 
-        {isTransaction ? (
+        {isExtrinsic ? (
           <>
             <ViewDetailsField label="Network">{chain?.name ?? "Unknown"}</ViewDetailsField>
-            <ViewDetailsAmount label="Fees" error={feeError} amount={fee} token={nativeToken} />
+            <ViewDetailsAmount
+              label="Fees"
+              error={estimatedFeeError}
+              amount={estimatedFee}
+              token={nativeToken}
+            />
             <ViewDetailsAmount label="Tip" amount={tip} token={nativeToken} />
-            <ViewDetailsField label="Decoding error" error={txDetailsError ?? decodeError} />
+            <ViewDetailsField
+              label="Decoding error"
+              error={errorDecodingExtrinsic ? "Failed to decode method." : ""}
+            />
             <ViewDetailsField label="Method">{methodName}</ViewDetailsField>
-            <ViewDetailsTxDesc label="Description" method={txDetails?.method} />
+            <ViewDetailsTxDesc label="Description" method={decodedMethod} />
             <ViewDetailsTxObject label="Arguments" obj={args} />
-            <ViewDetailsTxObject label="Payload" obj={txDetails?.payload} />
+            <ViewDetailsTxObject label="Payload" obj={decodedPayload?.toHuman()} />
           </>
         ) : (
           <>
@@ -174,19 +172,15 @@ const ViewDetailsContent: FC<ViewDetailsContentProps> = ({
   )
 }
 
-export const ViewDetails: FC<BaseViewDetailsProps & { analysing?: boolean }> = ({
-  signingRequest,
-  txDetails,
-  txDetailsError,
-  analysing,
-}) => {
+export const ViewDetails: FC = () => {
+  const { isDecodingExtrinsic } = usePolkadotSigningRequest()
   const { isOpen, open, close } = useOpenClose()
 
   return (
     <>
-      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={analysing} />
-      <Drawer anchor="bottom" open={isOpen && !analysing} onClose={close}>
-        <ViewDetailsContent onClose={close} {...{ signingRequest, txDetails, txDetailsError }} />
+      <ViewDetailsButton onClick={open} hide={isOpen} isAnalysing={isDecodingExtrinsic} />
+      <Drawer anchor="bottom" isOpen={isOpen && !isDecodingExtrinsic} onDismiss={close}>
+        <ViewDetailsContent onClose={close} />
       </Drawer>
     </>
   )

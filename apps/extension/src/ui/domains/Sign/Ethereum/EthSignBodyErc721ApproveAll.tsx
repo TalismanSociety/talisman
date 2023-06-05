@@ -1,10 +1,10 @@
 import { FC, useMemo } from "react"
 
-import { SignAlertMessage } from "../../Sign/SignAlertMessage"
-import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
+import { SignAlertMessage } from "../SignAlertMessage"
+import { SignContainer } from "../SignContainer"
+import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc721ApproveAll: FC = () => {
@@ -17,10 +17,11 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
     }
   }, [transactionInfo.contractCall])
 
-  if (!operator || !account || !network) return <EthSignBodyShimmer />
+  if (!operator || !account || !network) return <SignViewBodyShimmer />
 
   return (
-    <EthSignContainer
+    <SignContainer
+      networkType="ethereum"
       title={<>{approve ? "NFT Approval Request" : "Revoke NFT Approval Request"}</>}
       alert={
         approve && (
@@ -56,6 +57,6 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
         <div>NFTs from</div>
         <SignParamAccountButton address={account.address} explorerUrl={network.explorerUrl} />
       </div>
-    </EthSignContainer>
+    </SignContainer>
   )
 }

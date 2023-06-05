@@ -9,8 +9,8 @@ import { useQuery } from "@tanstack/react-query"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { EthFeeSelect } from "@ui/domains/Ethereum/GasSettings/EthFeeSelect"
-import { EthSignBody } from "@ui/domains/Ethereum/Sign/EthSignBody"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
+import { EthSignBody } from "@ui/domains/Sign/Ethereum/EthSignBody"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
@@ -19,6 +19,7 @@ import styled from "styled-components"
 import { Button } from "talisman-ui"
 
 import { Container } from "./common"
+import { SignAccountAvatar } from "./SignAccountAvatar"
 
 const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
@@ -223,7 +224,7 @@ export const EthSignTransactionRequest = () => {
 
   return (
     <SignContainer>
-      <Header text={<AppPill url={url} />}></Header>
+      <Header text={<AppPill url={url} />} nav={<SignAccountAvatar account={account} />}></Header>
       <Content>
         <div className="scrollable scrollable-800 h-full overflow-y-auto">
           <EthSignBody transactionInfo={transactionInfo} isReady={!isLoading} />

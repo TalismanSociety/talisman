@@ -59,7 +59,7 @@ const ChainBadge = ({ genesisHash }: { genesisHash: string }) => {
   const chain = useChainByGenesisHash(genesisHash)
 
   return chain ? (
-    <ChainLogo id={chain.id} className="!absolute top-[-0.2em] right-[-0.2em] text-[0.5em]" />
+    <ChainLogo id={chain.id} className="!absolute right-[-0.2em] top-[-0.2em] text-[0.5em]" />
   ) : null
 }
 
@@ -79,6 +79,9 @@ type AccountAvatarProps = {
   type?: IdenticonType
 }
 
+/**
+ * @deprecated use AccountIcon
+ */
 const AccountAvatar = ({ address, className, genesisHash, type }: AccountAvatarProps) => {
   const [identiconType] = useSetting("identiconType")
 
