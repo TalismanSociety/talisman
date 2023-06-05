@@ -1,5 +1,5 @@
 import { seedPhraseStore } from "@core/domains/accounts"
-import { AccountAddressType, AccountMeta } from "@core/domains/accounts/types"
+import { AccountAddressType, AccountMeta, AccountTypes } from "@core/domains/accounts/types"
 import { passwordStore } from "@core/domains/app"
 import { getEthDerivationPath } from "@core/domains/ethereum/helpers"
 import { AccountsStore } from "@polkadot/extension-base/stores"
@@ -12,15 +12,15 @@ const mnemonic = "seed sock milk update focus rotate barely fade car face mechan
 const password = "passw0rd"
 
 const createPair = (
-  origin: AccountMeta["origin"] = "ROOT",
+  origin: AccountMeta["origin"] = AccountTypes.TALISMAN,
   derivationPath = "",
   parent?: string,
   type: AccountAddressType = "sr25519"
 ) => {
   const slashDerivationPath = `${type === "sr25519" ? "//" : ""}${derivationPath}`
   const options = {
-    parent: origin === "ROOT" ? undefined : parent,
-    derivationPath: origin === "ROOT" ? undefined : slashDerivationPath,
+    parent: origin === AccountTypes.TALISMAN ? undefined : parent,
+    derivationPath: origin === AccountTypes.TALISMAN ? undefined : slashDerivationPath,
   }
 
   const { pair } = keyring.addUri(
@@ -56,7 +56,7 @@ describe("App migrations", () => {
     createPair("DERIVED", getEthDerivationPath(), rootAccount.address, "ethereum")
 
     // create a seedphrase encrypted with the plaintext password
-    await seedPhraseStore.add(mnemonic, rootAccount.address, password, true)
+    await seedPhraseStore.add(mnemonic, password, true)
 
     // ensure can decrypt keypair
     rootAccount.decodePkcs8(password)
@@ -68,10 +68,12 @@ describe("App migrations", () => {
 
     expect(await passwordStore.get("isHashed")).toBe(true)
 
-    const hashedPw = await passwordStore.getPassword()
+    const hashedPw = passwordStore.getPassword()
     expect(hashedPw === "$2a$13$7AHTA/Vs6L.Yhj0P12wlo.nV9cP0/YiID9TtHCjLroCQdETKafqVa")
     expect(hashedPw !== password)
-    const newRootAccounts = keyring.getPairs().filter(({ meta }) => meta.origin === "ROOT")
+    const newRootAccounts = keyring
+      .getPairs()
+      .filter(({ meta }) => meta.origin === AccountTypes.TALISMAN)
     expect(newRootAccounts.length === 1)
     const newRootAccount = newRootAccounts[0]
 

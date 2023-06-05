@@ -5,6 +5,7 @@ import { isJsonPayload } from "@core/util/isJsonPayload"
 import { Drawer } from "@talisman/components/Drawer"
 import { InfoIcon, LoaderIcon, PolkadotVaultIcon } from "@talisman/theme/icons"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
+import { Chain } from "@talismn/chaindata-provider"
 import { classNames } from "@talismn/util"
 import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
@@ -15,21 +16,28 @@ import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import { ExtrinsicQrCode } from "./ExtrinsicQrCode"
 import { MetadataQrCode } from "./MetadataQrCode"
 import { NetworkSpecsQrCode } from "./NetworkSpecsQrCode"
-import { QrCodeSourceSelector, useQrCodeSourceSelectorState } from "./QrCodeSourceSelector"
+import {
+  QrCodeSource,
+  QrCodeSourceSelector,
+  QrCodeSourceSelectorProps,
+  useQrCodeSourceSelectorState,
+} from "./QrCodeSourceSelector"
+
+type SendScanState = {
+  page: "SEND"
+  // show the chainspec drawer for the user to add the current chain to their device
+  showChainspecDrawer?: boolean
+  // show instructions to add an account for the chain, after adding the chainspec
+  showEnableNetwork?: boolean
+  // show the drawer instructing users that they may need to update their metadata
+  showUpdateMetadataDrawer?: boolean
+}
 
 type ScanState =
   // waiting for user to inspect tx and click button
   | { page: "INIT" }
   // waiting for user to scan and sign qr code on their device
-  | {
-      page: "SEND"
-      // show the chainspec drawer for the user to add the current chain to their device
-      showChainspecDrawer?: boolean
-      // show instructions to add an account for the chain, after adding the chainspec
-      showEnableNetwork?: boolean
-      // show the drawer instructing users that they may need to update their metadata
-      showUpdateMetadataDrawer?: boolean
-    }
+  | SendScanState
   // waiting for user to scan the updated metadata qr code on their device
   | { page: "UPDATE_METADATA" }
   // waiting for user to scan qr code from their device to return the signature
@@ -88,7 +96,7 @@ export const QrSubstrate = ({
   return (
     <div
       className={classNames(
-        "bg-black-primary absolute top-0 left-0 flex h-full w-full flex-col items-center",
+        "bg-black-primary absolute left-0 top-0 flex h-full w-full flex-col items-center",
         className
       )}
     >
@@ -128,168 +136,18 @@ export const QrSubstrate = ({
          ** SEND page
          */}
         {scanState.page === "SEND" && (
-          <>
-            <div className="flex h-full flex-col items-center justify-end">
-              <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-10">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                  <LoaderIcon className="animate-spin-slow text-body-secondary !text-3xl" />
-                </div>
-                <ExtrinsicQrCode account={account} genesisHash={genesisHash} payload={payload} />
-              </div>
-
-              <div className="text-body-secondary mt-14 mb-10 max-w-md text-center leading-10">
-                Scan the QR code with the
-                <br />
-                Polkadot Vault app on your phone.
-              </div>
-
-              {isJsonPayload(payload) ? (
-                <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-4">
-                    <button
-                      className="text-grey-400 bg-grey-800 hover:bg-grey-750 inline-block rounded-full py-4 px-6 text-sm font-light"
-                      onClick={() => setScanState({ page: "SEND", showChainspecDrawer: true })}
-                    >
-                      Add Network
-                    </button>
-                    <button
-                      className="bg-primary/10 text-primary hover:bg-primary/20 inline-block rounded-full py-4 px-6 text-sm font-light"
-                      onClick={() => setScanState({ page: "UPDATE_METADATA" })}
-                    >
-                      Update Metadata
-                    </button>
-                  </div>
-                  <button
-                    className="text-grey-200 mt-8 text-xs font-light hover:text-white"
-                    onClick={() => setScanState({ page: "SEND", showUpdateMetadataDrawer: true })}
-                  >
-                    Still seeing an error?
-                  </button>
-                </div>
-              ) : (
-                <div></div>
-              )}
-            </div>
-
-            <Drawer
-              anchor="bottom"
-              open={!!scanState.showChainspecDrawer}
-              parent={parent}
-              onClose={() => setScanState({ page: "SEND" })}
-            >
-              <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
-                <div className="mb-16 font-bold">Add network</div>
-                <div className="relative flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-7">
-                  <div className="text-body-secondary absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
-                    <LoaderIcon className="animate-spin-slow text-xl " />
-                  </div>
-                  {!!genesisHash && (
-                    <NetworkSpecsQrCode genesisHash={genesisHash} qrCodeSource={qrCodeSource} />
-                  )}
-                </div>
-                <QrCodeSourceSelector className="mt-4" {...qrCodeSourceSelectorState} />
-                <div className="text-body-secondary mt-10 mb-16 max-w-md text-center text-sm leading-10">
-                  Scan the QR code with the Polkadot Vault app on your phone to add the{" "}
-                  <div className="text-body inline-flex items-baseline gap-1">
-                    <ChainLogo className="self-center" id={chain?.id} />
-                    {chain?.name ?? "Unknown"}
-                  </div>{" "}
-                  network.
-                </div>
-                <div className="flex w-full flex-col gap-4">
-                  <Button
-                    className="w-full"
-                    primary
-                    small
-                    onClick={() => setScanState({ page: "SEND", showEnableNetwork: true })}
-                  >
-                    Continue
-                  </Button>
-                  <Button className="w-full" small onClick={() => setScanState({ page: "SEND" })}>
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </Drawer>
-
-            <Drawer
-              anchor="bottom"
-              open={!!scanState.showEnableNetwork}
-              parent={parent}
-              onClose={() => setScanState({ page: "SEND" })}
-            >
-              <div className="bg-black-tertiary flex max-h-full w-full flex-col items-center rounded-t p-12">
-                <div className="mb-12 font-bold">Enable network</div>
-                <video width="160" controls autoPlay>
-                  <source src="/videos/add-network-vault.mp4" type="video/mp4" />
-                </video>
-                <div className="text-body-secondary mt-10 mb-16 w-full px-10 text-center text-sm leading-10">
-                  You will need to create a derived key in your Polkadot Vault to enable this
-                  network. This new key must use the same derivation path{" "}
-                  <Tooltip placement="bottom-end">
-                    <TooltipTrigger className="hover:text-body">
-                      <InfoIcon className="inline" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      In most cases, this derivation path should be blank
-                    </TooltipContent>
-                  </Tooltip>{" "}
-                  as your existing account.{" "}
-                  <a
-                    href={POLKADOT_VAULT_DOCS_URL}
-                    target="_blank"
-                    className="hover:text-body text-grey-200"
-                  >
-                    Learn more
-                  </a>
-                </div>
-                <Button
-                  className="w-full"
-                  primary
-                  small
-                  onClick={() => setScanState({ page: "SEND" })}
-                >
-                  Done
-                </Button>
-              </div>
-            </Drawer>
-
-            <Drawer
-              anchor="bottom"
-              open={!!scanState.showUpdateMetadataDrawer}
-              parent={parent}
-              onClose={() => setScanState({ page: "SEND" })}
-            >
-              <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
-                <PolkadotVaultIcon className="mb-10 h-auto w-16" />
-                <div className="mb-5 font-bold">You may need to update metadata</div>
-                <div className="text-body-secondary max-w-md text-center text-sm leading-10">
-                  If you’re receiving an error on your Polkadot Vault when trying to scan the QR
-                  code, it likely means your metadata is out of date.
-                </div>
-                <div className="py-8">
-                  <a
-                    href={POLKADOT_VAULT_DOCS_URL}
-                    target="_blank"
-                    className="text-grey-200 mt-8 text-xs font-light hover:text-white"
-                  >
-                    Still seeing an error?
-                  </a>
-                </div>
-                <Button
-                  className="mb-4 w-full"
-                  primary
-                  small
-                  onClick={() => setScanState({ page: "UPDATE_METADATA" })}
-                >
-                  Update Metadata
-                </Button>
-                <Button small className="w-full" onClick={() => setScanState({ page: "SEND" })}>
-                  Cancel
-                </Button>
-              </div>
-            </Drawer>
-          </>
+          <SendPage
+            account={account}
+            genesisHash={genesisHash}
+            payload={payload}
+            setScanState={setScanState}
+            reject={onReject}
+            scanState={scanState}
+            parent={parent}
+            qrCodeSource={qrCodeSource}
+            qrCodeSourceSelectorState={qrCodeSourceSelectorState}
+            chain={chain}
+          />
         )}
 
         {/*
@@ -298,16 +156,17 @@ export const QrSubstrate = ({
         {scanState.page === "UPDATE_METADATA" && (
           <div className="flex h-full w-full flex-col items-center justify-between">
             <div className="relative flex aspect-square w-full items-center justify-center bg-white p-12">
-              <div className="text-body-secondary absolute top-1/2 left-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
+              <div className="text-body-secondary absolute left-1/2 top-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
                 <LoaderIcon className="animate-spin-slow text-3xl" />
               </div>
-              {isJsonPayload(payload) && (
+              {qrCodeSource && isJsonPayload(payload) && (
                 <MetadataQrCode
                   genesisHash={payload.genesisHash}
                   specVersion={payload.specVersion}
                   qrCodeSource={qrCodeSource}
                 />
               )}
+              {!qrCodeSource && <>The selected source is unavailable.</>}
             </div>
             <QrCodeSourceSelector className="mt-4 text-base" {...qrCodeSourceSelectorState} />
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
@@ -364,5 +223,217 @@ export const QrSubstrate = ({
         )}
       </footer>
     </div>
+  )
+}
+
+const SendPage = ({
+  account,
+  genesisHash,
+  payload,
+  reject,
+  setScanState,
+  scanState,
+  parent,
+  qrCodeSource,
+  qrCodeSourceSelectorState,
+  chain,
+}: {
+  account: AccountJsonQr
+  genesisHash: string | undefined
+  payload: SignerPayloadJSON | SignerPayloadRaw
+  reject: () => void
+  setScanState: React.Dispatch<React.SetStateAction<ScanState>>
+  scanState: SendScanState
+  parent: string | HTMLElement | null | undefined
+  qrCodeSource: QrCodeSource | undefined
+  qrCodeSourceSelectorState: QrCodeSourceSelectorProps
+  chain: Chain | undefined
+}) => {
+  return (
+    <>
+      <div className="flex h-full flex-col items-center justify-end">
+        <div className="relative flex aspect-square w-full max-w-md items-center justify-center rounded-xl bg-white p-10">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <LoaderIcon className="animate-spin-slow text-body-secondary !text-3xl" />
+          </div>
+          <ExtrinsicQrCode account={account} genesisHash={genesisHash} payload={payload} />
+        </div>
+
+        <div className="text-body-secondary mb-10 mt-14 max-w-md text-center leading-10">
+          Scan the QR code with the
+          <br />
+          Polkadot Vault app on your phone.
+        </div>
+
+        {isJsonPayload(payload) ? (
+          <div className="flex flex-col items-center">
+            <div className="flex items-center gap-4">
+              <button
+                className="text-grey-400 bg-grey-800 hover:bg-grey-750 inline-block rounded-full px-6 py-4 text-sm font-light"
+                onClick={() => setScanState({ page: "SEND", showChainspecDrawer: true })}
+              >
+                Add Network
+              </button>
+              <button
+                className="bg-primary/10 text-primary hover:bg-primary/20 inline-block rounded-full px-6 py-4 text-sm font-light"
+                onClick={() => setScanState({ page: "UPDATE_METADATA" })}
+              >
+                Update Metadata
+              </button>
+            </div>
+            <button
+              className="text-grey-200 mt-8 text-xs font-light hover:text-white"
+              onClick={() => setScanState({ page: "SEND", showUpdateMetadataDrawer: true })}
+            >
+              Still seeing an error?
+            </button>
+          </div>
+        ) : (
+          <div></div>
+        )}
+      </div>
+
+      <Drawer anchor="bottom" open={!qrCodeSource && !!chain} parent={parent} onClose={reject}>
+        <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
+          <div className="mb-16 font-bold">Unable to sign</div>
+          <div className="text-body-secondary mb-16 max-w-md text-center text-sm leading-10">
+            Your Polkadot Vault app needs data about this network to sign this transaction, but no
+            secure source of network data is available. You will be unable to sign this transaction.
+            <p className="mt-6">
+              <a
+                href={POLKADOT_VAULT_DOCS_URL}
+                target="_blank"
+                className="hover:text-body text-grey-200"
+              >
+                Learn more.
+              </a>
+            </p>
+          </div>
+          <div className="flex w-full flex-col gap-4">
+            <Button className="w-full" small onClick={reject}>
+              Close
+            </Button>
+          </div>
+        </div>
+      </Drawer>
+
+      <Drawer
+        anchor="bottom"
+        open={!!scanState.showChainspecDrawer}
+        parent={parent}
+        onClose={() => setScanState({ page: "SEND" })}
+      >
+        <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
+          <div className="mb-16 font-bold">Add network</div>
+          <>
+            <div className="relative flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-7">
+              <>
+                <div className="text-body-secondary absolute left-1/2 top-1/2 inline-flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-8">
+                  <LoaderIcon className="animate-spin-slow text-xl " />
+                </div>
+                {!!genesisHash && qrCodeSource && (
+                  <NetworkSpecsQrCode genesisHash={genesisHash} qrCodeSource={qrCodeSource} />
+                )}
+              </>
+            </div>
+
+            <QrCodeSourceSelector className="mt-4" {...qrCodeSourceSelectorState} />
+            <div className="text-body-secondary mb-16 mt-10 max-w-md text-center text-sm leading-10">
+              Scan the QR code with the Polkadot Vault app on your phone to add the{" "}
+              <div className="text-body inline-flex items-baseline gap-1">
+                <ChainLogo className="self-center" id={chain?.id} />
+                {chain?.name ?? "Unknown"}
+              </div>{" "}
+              network.
+            </div>
+          </>
+
+          <div className="flex w-full flex-col gap-4">
+            <Button
+              className="w-full"
+              primary
+              small
+              onClick={() => setScanState({ page: "SEND", showEnableNetwork: true })}
+            >
+              Continue
+            </Button>
+            <Button className="w-full" small onClick={() => setScanState({ page: "SEND" })}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Drawer>
+
+      <Drawer
+        anchor="bottom"
+        open={!!scanState.showEnableNetwork}
+        parent={parent}
+        onClose={() => setScanState({ page: "SEND" })}
+      >
+        <div className="bg-black-tertiary flex max-h-full w-full flex-col items-center rounded-t p-12">
+          <div className="mb-12 font-bold">Enable network</div>
+          <video width="160" controls autoPlay>
+            <source src="/videos/add-network-vault.mp4" type="video/mp4" />
+          </video>
+          <div className="text-body-secondary mb-16 mt-10 w-full px-10 text-center text-sm leading-10">
+            You will need to create a derived key in your Polkadot Vault to enable this network.
+            This new key must use the same derivation path{" "}
+            <Tooltip placement="bottom-end">
+              <TooltipTrigger className="hover:text-body">
+                <InfoIcon className="inline" />
+              </TooltipTrigger>
+              <TooltipContent>In most cases, this derivation path should be blank</TooltipContent>
+            </Tooltip>{" "}
+            as your existing account.{" "}
+            <a
+              href={POLKADOT_VAULT_DOCS_URL}
+              target="_blank"
+              className="hover:text-body text-grey-200"
+            >
+              Learn more
+            </a>
+          </div>
+          <Button className="w-full" primary small onClick={() => setScanState({ page: "SEND" })}>
+            Done
+          </Button>
+        </div>
+      </Drawer>
+
+      <Drawer
+        anchor="bottom"
+        open={!!scanState.showUpdateMetadataDrawer}
+        parent={parent}
+        onClose={() => setScanState({ page: "SEND" })}
+      >
+        <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
+          <PolkadotVaultIcon className="mb-10 h-auto w-16" />
+          <div className="mb-5 font-bold">You may need to update metadata</div>
+          <div className="text-body-secondary max-w-md text-center text-sm leading-10">
+            If you’re receiving an error on your Polkadot Vault when trying to scan the QR code, it
+            likely means your metadata is out of date.
+          </div>
+          <div className="py-8">
+            <a
+              href={POLKADOT_VAULT_DOCS_URL}
+              target="_blank"
+              className="text-grey-200 mt-8 text-xs font-light hover:text-white"
+            >
+              Still seeing an error?
+            </a>
+          </div>
+          <Button
+            className="mb-4 w-full"
+            primary
+            small
+            onClick={() => setScanState({ page: "UPDATE_METADATA" })}
+          >
+            Update Metadata
+          </Button>
+          <Button small className="w-full" onClick={() => setScanState({ page: "SEND" })}>
+            Cancel
+          </Button>
+        </div>
+      </Drawer>
+    </>
   )
 }

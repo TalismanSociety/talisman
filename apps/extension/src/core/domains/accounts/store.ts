@@ -1,4 +1,5 @@
 import { SubscribableStorageProvider } from "@core/libs/Store"
+import { log } from "@core/log"
 import { decrypt, encrypt } from "@metamask/browser-passworder"
 import { assert, isObject } from "@polkadot/util"
 import { Err, Ok, Result } from "ts-results"
@@ -6,15 +7,14 @@ import { Err, Ok, Result } from "ts-results"
 const storageKey = "nursery"
 
 type LEGACY_SEED_PREFIX = "----"
-const LEGACY_SEED_PREFIX = "----"
+export const LEGACY_SEED_PREFIX = "----"
 
-type LegacySeedObj = {
+export type LegacySeedObj = {
   seed: `${LEGACY_SEED_PREFIX}${string}`
 }
 
 export type SeedPhraseData = {
-  cipher: string
-  address: string
+  cipher?: string
   confirmed: boolean
 }
 
@@ -27,7 +27,9 @@ export const encryptSeed = async (seed: string, password: string) => {
   return cipher
 }
 
-const legacyUnpackSeed = ({ seed }: LegacySeedObj): Result<string, "Unable to decrypt seed"> => {
+export const legacyUnpackSeed = ({
+  seed,
+}: LegacySeedObj): Result<string, "Unable to decrypt seed"> => {
   if (!seed.startsWith(LEGACY_SEED_PREFIX)) return Err("Unable to decrypt seed")
   const seedString = seed.split(LEGACY_SEED_PREFIX)[1]
   return Ok(seedString)
@@ -39,7 +41,6 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
 > {
   public async add(
     seed: string,
-    address: string,
     password: string,
     confirmed = false
   ): Promise<Result<boolean, "Seed already exists in SeedPhraseStore">> {
@@ -47,7 +48,7 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
     if (storedCipher) return Err("Seed already exists in SeedPhraseStore")
 
     const cipher = await encryptSeed(seed, password)
-    await this.set({ cipher, address, confirmed })
+    await this.set({ cipher, confirmed })
     return Ok(true)
   }
 
@@ -56,11 +57,24 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
     return true
   }
 
-  public async getSeed(password: string): Promise<Result<string, "Incorrect password">> {
+  public async getSeed(
+    password: string
+  ): Promise<
+    Result<string | undefined, "Incorrect password" | "Unable to decrypt seed" | "No seed present">
+  > {
     let seed: string
     const cipher = await this.get("cipher")
+    if (!cipher) return Ok(undefined)
+
     try {
-      const decryptedSeed = (await decrypt(password, cipher)) as string | LegacySeedObj
+      // eslint-disable-next-line no-var
+      var decryptedSeed = (await decrypt(password, cipher)) as string | LegacySeedObj
+    } catch (e) {
+      log.error(e)
+      return Err("Incorrect password")
+    }
+
+    try {
       if (isObject(decryptedSeed)) {
         const unpackResult = legacyUnpackSeed(decryptedSeed)
         if (unpackResult.err) throw new Error(unpackResult.val)
@@ -69,8 +83,10 @@ export class SeedPhraseStore extends SubscribableStorageProvider<
         seed = decryptedSeed
       }
     } catch (e) {
-      return Err("Incorrect password")
+      log.error(e)
+      return Err("Unable to decrypt seed")
     }
+
     return Ok(seed)
   }
 }

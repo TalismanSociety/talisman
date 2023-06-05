@@ -118,5 +118,9 @@ if (DEBUG) {
     })
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(window as any).setAppSettings = (settings: Partial<AppStoreData>) => {
+    appStore.set(settings)
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(window as any).migratePasswordV2ToV1 = migratePasswordV2ToV1
 }
