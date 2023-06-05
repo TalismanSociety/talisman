@@ -59,7 +59,7 @@ Browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
       })
     }
   }
-  if (reason === "update" && previousVersion && lt(previousVersion, "1.6.4")) {
+  if (reason === "update" && previousVersion && lt(previousVersion, "1.17.0")) {
     // once off migration to add a Polkadot Vault verifier certificate seed store
     const hasVaultAccounts = await hasQrCodeAccounts()
     if (hasVaultAccounts) {
