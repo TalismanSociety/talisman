@@ -8,6 +8,7 @@ import { MetadataMessages } from "@core/domains/metadata/types"
 import { RpcMessages } from "@core/domains/rpc/types"
 import { SigningMessages } from "@core/domains/signing/types"
 import { AuthorisedSiteMessages } from "@core/domains/sitesAuthorised/types"
+import { SubstrateMessages } from "@core/domains/substrate/types"
 import { TokenRatesMessages } from "@core/domains/tokenRates/types"
 import { TokenMessages } from "@core/domains/tokens/types"
 import { AssetTransferMessages } from "@core/domains/transfers/types"
@@ -78,7 +79,8 @@ type RequestSignaturesBase = Omit<PolkadotRequestSignatures, RemovedMessages> &
   RpcMessages &
   SigningMessages &
   TokenMessages &
-  TokenRatesMessages
+  TokenRatesMessages &
+  SubstrateMessages
 
 export interface RequestSignatures extends RequestSignaturesBase {
   // Values for RequestSignatures are arrays where the items are [RequestType, ResponseType, SubscriptionMesssageType?]

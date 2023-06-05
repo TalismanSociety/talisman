@@ -1,7 +1,7 @@
 import { FadeIn } from "@talisman/components/FadeIn"
 import { LoaderIcon } from "@talisman/theme/icons"
 
-export const EthSignBodyShimmer = () => {
+export const SignViewBodyShimmer = () => {
   return (
     <FadeIn className="flex flex-col items-center gap-2 pt-64 leading-[140%]">
       <LoaderIcon className="animate-spin-slow h-16 w-16" />

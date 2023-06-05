@@ -5,10 +5,10 @@ import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
 import { UnsafeImage } from "talisman-ui"
 
-import { EthSignBodyShimmer } from "./EthSignBodyShimmer"
+import { SignContainer } from "../SignContainer"
+import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
 import { getContractCallArg } from "./getContractCallArg"
 import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
-import { EthSignContainer } from "./shared/EthSignContainer"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
@@ -38,10 +38,11 @@ export const EthSignBodyErc721Approve: FC = () => {
     [qMetadata?.data?.image, qMetadata?.data?.name, tokenId, transactionInfo?.asset?.name]
   )
 
-  if (qMetadata.isLoading || !operator || !account || !network) return <EthSignBodyShimmer />
+  if (qMetadata.isLoading || !operator || !account || !network) return <SignViewBodyShimmer />
 
   return (
-    <EthSignContainer
+    <SignContainer
+      networkType="ethereum"
       title={<>{approve ? "NFT Approval Request" : "Revoke NFT Approval Request"}</>}
       alert={
         approve ? (
@@ -78,7 +79,7 @@ export const EthSignBodyErc721Approve: FC = () => {
         <SignParamAccountButton address={account.address} explorerUrl={network.explorerUrl} />
       </div>
       {!!image && (
-        <div className="mt-12 mb-[-0.8rem] text-center">
+        <div className="mb-[-0.8rem] mt-12 text-center">
           <UnsafeImage
             className="bg-grey-800 inline-block h-48 w-48 rounded"
             src={image}
@@ -86,6 +87,6 @@ export const EthSignBodyErc721Approve: FC = () => {
           />
         </div>
       )}
-    </EthSignContainer>
+    </SignContainer>
   )
 }

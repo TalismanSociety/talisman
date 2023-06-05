@@ -1,75 +1,32 @@
 import { AccountJsonHardwareSubstrate, AccountJsonQr } from "@core/domains/accounts/types"
-import { SubstrateSigningRequest } from "@core/domains/signing/types"
 import { isJsonPayload } from "@core/util/isJsonPayload"
+import { AppPill } from "@talisman/components/AppPill"
 import { InfoIcon, LoaderIcon } from "@talisman/theme/icons"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
-import { AccountPill } from "@ui/domains/Account/AccountPill"
 import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useFeeToken } from "@ui/domains/SendFunds/useFeeToken"
 import { MetadataStatus } from "@ui/domains/Sign/MetadataStatus"
-import { PendingRequests } from "@ui/domains/Sign/PendingRequests"
 import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
-import {
-  usePolkadotSigningRequest,
-  usePolkadotTransaction,
-  usePolkadotTransactionDetails,
-} from "@ui/domains/Sign/SignRequestContext"
-import { SiteInfo } from "@ui/domains/Sign/SiteInfo"
-import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
-import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
+import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
+import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
+import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Container } from "./common"
+import { SignAccountAvatar } from "./SignAccountAvatar"
 
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
-type PolkadotSignTransactionRequestProps = {
-  signingRequest: SubstrateSigningRequest
-}
-
-const useSubstrateFee = (signingRequest: SubstrateSigningRequest) => {
-  const payload = signingRequest.request?.payload
-  const isExtrinsic = isJsonPayload(payload)
-  const chain = useChainByGenesisHash(isExtrinsic ? payload.genesisHash : undefined)
+const EstimatedFeesRow: FC = () => {
+  const { fee, isLoadingFee, errorFee, chain, errorDecodingExtrinsic } = usePolkadotSigningRequest()
   const feeToken = useFeeToken(chain?.nativeToken?.id)
-
-  const { txDetails, analysing, error } = usePolkadotTransactionDetails(
-    isExtrinsic ? signingRequest.id : undefined
-  )
-
-  const tip = useMemo(
-    () => (isExtrinsic && payload.tip ? BigInt(payload.tip) : undefined),
-    [isExtrinsic, payload]
-  )
-
-  const { fee, feeError } = useMemo(() => {
-    if (!txDetails) return { undefined }
-
-    const fee = txDetails.partialFee ? BigInt(txDetails.partialFee) : undefined
-    const feeError = txDetails.partialFee ? undefined : "Failed to compute fee."
-
-    return { fee, feeError }
-  }, [txDetails])
-
-  return {
-    fee,
-    tip,
-    analysing,
-    error: error || feeError,
-    feeToken,
-    isUnknownFeeToken: chain?.isUnknownFeeToken,
-  }
-}
-
-const EstimatedFeesRow: FC<PolkadotSignTransactionRequestProps> = ({ signingRequest }) => {
-  const { feeToken, analysing, error, fee, isUnknownFeeToken } = useSubstrateFee(signingRequest)
 
   return (
     <div className="text-body-secondary mb-8 flex w-full items-center justify-between text-sm">
       <div className="flex items-center gap-2">
         <span>Estimated Fee </span>
-        {isUnknownFeeToken && (
+        {!!chain?.isUnknownFeeToken && (
           <Tooltip>
             <TooltipTrigger className="flex flex-col justify-center">
               <InfoIcon className="inline-block" />
@@ -81,26 +38,24 @@ const EstimatedFeesRow: FC<PolkadotSignTransactionRequestProps> = ({ signingRequ
         )}
       </div>
       <div>
-        {analysing ? (
+        {isLoadingFee ? (
           <LoaderIcon className="animate-spin-slow inline-block" />
-        ) : error ? (
+        ) : errorFee || errorDecodingExtrinsic ? (
           <Tooltip placement="bottom-end">
             <TooltipTrigger>Unknown</TooltipTrigger>
-            <TooltipContent>{error}</TooltipContent>
+            <TooltipContent>Failed to compute fee</TooltipContent>
           </Tooltip>
         ) : (
-          <TokensAndFiat planck={fee} tokenId={feeToken?.id} />
+          <TokensAndFiat planck={fee ?? undefined} tokenId={feeToken?.id} />
         )}
       </div>
     </div>
   )
 }
 
-export const PolkadotSignTransactionRequest: FC<PolkadotSignTransactionRequestProps> = ({
-  signingRequest,
-}) => {
+export const PolkadotSignTransactionRequest: FC = () => {
   const {
-    isLoading,
+    isDecodingExtrinsic,
     url,
     request,
     approve,
@@ -111,112 +66,84 @@ export const PolkadotSignTransactionRequest: FC<PolkadotSignTransactionRequestPr
     chain,
     approveHardware,
     approveQr,
-  } = usePolkadotSigningRequest(signingRequest)
+    payload,
+  } = usePolkadotSigningRequest()
 
-  const {
-    isReady,
-    isMetadataLoading,
-    analysing,
-    txDetails,
-    error: txDetailsError,
-    requiresMetadataUpdate,
-    isMetadataUpdating,
-    hasMetadataUpdateFailed,
-    updateUrl,
-  } = usePolkadotTransaction(signingRequest)
+  const { genesisHash, specVersion } = useMemo(() => {
+    return payload && isJsonPayload(payload)
+      ? { genesisHash: payload.genesisHash, specVersion: parseInt(payload.specVersion, 16) }
+      : {}
+  }, [payload])
 
-  const { processing, errorMessage, showMetadataStatus } = useMemo(() => {
+  const { processing, errorMessage } = useMemo(() => {
     return {
       processing: status === "PROCESSING",
       errorMessage: status === "ERROR" ? message : "",
-      showMetadataStatus:
-        status !== "PROCESSING" &&
-        (isMetadataUpdating || hasMetadataUpdateFailed || requiresMetadataUpdate),
     }
-  }, [status, message, isMetadataUpdating, hasMetadataUpdateFailed, requiresMetadataUpdate])
+  }, [status, message])
 
   useEffect(() => {
     // force close upon success, usefull in case this is the browser embedded popup (which doesn't close by itself)
     if (status === "SUCCESS") window.close()
   }, [status])
 
-  if (isLoading || isMetadataLoading) return null
-
-  const viewDetailsProps = { signingRequest, analysing, txDetails, txDetailsError }
-
   return (
     <Container>
-      <Header text={<PendingRequests />}></Header>
+      <Header
+        text={<AppPill url={url} />}
+        nav={<SignAccountAvatar account={account} ss58Format={chain?.prefix} />}
+      ></Header>
       <Content>
-        {account && request && (
-          <>
-            <SiteInfo siteUrl={url} />
-            <div className="flex grow flex-col">
-              <h1>Approve Request</h1>
-              <h2 className="center">
-                You are approving a request with account{" "}
-                <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
-                {chain ? ` on ${chain.name}` : null}
-              </h2>
-              <div className="mt-8">{signingRequest && <ViewDetails {...viewDetailsProps} />}</div>
-            </div>
-            {errorMessage && <div className="error">{errorMessage}</div>}
-
-            {showMetadataStatus && (
-              <MetadataStatus
-                showUpdating={isMetadataUpdating}
-                showUpdateFailed={hasMetadataUpdateFailed}
-                showUpdateRequired={requiresMetadataUpdate}
-                updateUrl={updateUrl}
-              />
-            )}
-          </>
-        )}
+        <div className="scrollable scrollable-800 h-full overflow-y-auto">
+          <SubSignBody />
+        </div>
       </Content>
-      <Footer>
-        {account && request && (
-          <>
-            <EstimatedFeesRow signingRequest={signingRequest} />
-            {account.origin !== "HARDWARE" && account.origin !== "QR" && (
-              <div className="grid w-full grid-cols-2 gap-12">
-                <Button disabled={processing} onClick={reject}>
-                  Cancel
-                </Button>
-                <Button
-                  disabled={processing || !isReady}
-                  processing={processing}
-                  primary
-                  onClick={approve}
-                >
-                  Approve
-                </Button>
-              </div>
-            )}
-            {account.origin === "HARDWARE" && (
-              <Suspense fallback={null}>
-                <LedgerSubstrate
-                  payload={request.payload}
-                  account={account as AccountJsonHardwareSubstrate}
-                  genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
-                  onSignature={approveHardware}
-                  onReject={reject}
-                />
-              </Suspense>
-            )}
-            {account.origin === "QR" && (
-              <Suspense fallback={null}>
-                <QrSubstrate
-                  payload={request.payload}
-                  account={account as AccountJsonQr}
-                  genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
-                  onSignature={approveQr}
-                  onReject={reject}
-                />
-              </Suspense>
-            )}
-          </>
-        )}
-      </Footer>
+      {!isDecodingExtrinsic && (
+        <Footer className="animate-fade-in">
+          <div className="flex w-full flex-col gap-4">
+            <div id="sign-alerts-inject"></div>
+            <MetadataStatus genesisHash={genesisHash} specVersion={specVersion} />
+            {errorMessage && <SignAlertMessage type="error">{errorMessage}</SignAlertMessage>}
+          </div>
+          {account && request && (
+            <>
+              <EstimatedFeesRow />
+              {account.origin !== "HARDWARE" && account.origin !== "QR" && (
+                <div className="grid w-full grid-cols-2 gap-12">
+                  <Button disabled={processing} onClick={reject}>
+                    Cancel
+                  </Button>
+                  <Button disabled={processing} processing={processing} primary onClick={approve}>
+                    Approve
+                  </Button>
+                </div>
+              )}
+              {account.origin === "HARDWARE" && (
+                <Suspense fallback={null}>
+                  <LedgerSubstrate
+                    payload={request.payload}
+                    account={account as AccountJsonHardwareSubstrate}
+                    genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
+                    onSignature={approveHardware}
+                    onReject={reject}
+                  />
+                </Suspense>
+              )}
+              {account.origin === "QR" && (
+                <Suspense fallback={null}>
+                  <QrSubstrate
+                    payload={request.payload}
+                    account={account as AccountJsonQr}
+                    genesisHash={chain?.genesisHash ?? account?.genesisHash ?? undefined}
+                    onSignature={approveQr}
+                    onReject={reject}
+                  />
+                </Suspense>
+              )}
+            </>
+          )}
+        </Footer>
+      )}
     </Container>
   )
 }

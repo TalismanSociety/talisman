@@ -10,6 +10,7 @@ import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
 import { SigningHandler } from "@core/domains/signing"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
+import { SubHandler } from "@core/domains/substrate/handler.extension"
 import TokenRatesHandler from "@core/domains/tokenRates/handler"
 import TokensHandler from "@core/domains/tokens/handler"
 import { updateTransactionsRestart } from "@core/domains/transactions/helpers"
@@ -54,6 +55,7 @@ export default class Extension extends ExtensionHandler {
       sites: new SitesAuthorisationHandler(stores),
       tokenRates: new TokenRatesHandler(stores),
       tokens: new TokensHandler(stores),
+      substrate: new SubHandler(stores),
     }
 
     // connect auto lock timeout setting to the password store
