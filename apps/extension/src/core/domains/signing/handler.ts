@@ -19,17 +19,23 @@ import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
 
+import { getHostName } from "../app/helpers"
+
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
     const queued = requestStore.getRequest(id)
 
     assert(queued, "Unable to find request")
 
-    const { reject, request, resolve } = queued
+    const { reject, request, resolve, url } = queued
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
-      const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
+      const { ok, val: hostName } = getHostName(url)
+      const analyticsProperties: { dapp: string; chain?: string; hostName?: string } = {
+        dapp: url,
+        hostName: ok ? hostName : undefined,
+      }
 
       // an empty registry is sufficient, we don't need metadata here
       let registry = new TypeRegistry()
@@ -102,7 +108,11 @@ export default class SigningHandler extends ExtensionHandler {
     } = queued
     const { payload } = request
 
-    const analyticsProperties: { dapp: string; chain?: string } = { dapp: url }
+    const { ok, val: hostName } = getHostName(url)
+    const analyticsProperties: { dapp: string; chain?: string; hostName?: string } = {
+      dapp: url,
+      hostName: ok ? hostName : undefined,
+    }
     const account = keyring.getAccount(accountAddress)
 
     if (isJsonPayload(payload)) {

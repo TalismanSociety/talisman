@@ -157,7 +157,7 @@ export const PortfolioAssets = () => {
   const { popupOpenEvent } = useAnalytics()
 
   useEffect(() => {
-    popupOpenEvent("ortfolio assets")
+    popupOpenEvent("portfolio assets")
   }, [popupOpenEvent])
 
   return <PageContent balances={networkBalances} />
