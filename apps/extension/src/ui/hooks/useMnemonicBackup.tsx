@@ -1,33 +1,21 @@
-import { getPrimaryAccount } from "@core/domains/accounts/helpers"
-import { AccountTypes } from "@core/domains/accounts/types"
 import { appStore } from "@core/domains/app"
 import { api } from "@ui/api"
 import { useCallback, useMemo } from "react"
 
-import useAccounts from "./useAccounts"
 import { useAppState } from "./useAppState"
 import useBalances from "./useBalances"
 import { useMnemonicBackupConfirmed } from "./useMnemonicBackupConfirmed"
+import { useTalismanSeedAccounts } from "./useTalismanSeedAccounts"
 
 const useMnemonicBackup = () => {
   const [hasFunds] = useAppState("hasFunds")
   const [hideBackupWarningUntil] = useAppState("hideBackupWarningUntil")
   const snoozeBackupReminder = useCallback(() => appStore.snoozeBackupReminder(), [])
   const balances = useBalances()
-  const accounts = useAccounts()
 
   const backupConfirmed = useMnemonicBackupConfirmed()
 
-  const talismanSeedAddresses = useMemo(() => {
-    const seedAccount = getPrimaryAccount(true)
-    if (!seedAccount) return []
-    return [
-      seedAccount.address,
-      ...accounts
-        .filter((acc) => acc.origin === AccountTypes.DERIVED && acc.parent === seedAccount.address)
-        .map((acc) => acc.address),
-    ]
-  }, [accounts])
+  const talismanSeedAddresses = useTalismanSeedAccounts().map((acc) => acc.address)
 
   const { isConfirmed, isNotConfirmed } = useMemo(
     () => ({
