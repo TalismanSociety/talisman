@@ -198,7 +198,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     )
   }
 
-  syncCustomChains(chains: CustomChain[]) {
+  setCustomChains(chains: CustomChain[]) {
     return this.#db.transaction("rw", this.#db.chains, async () => {
       const keys = await this.#db.chains
         .filter((chains) => "isCustom" in chains && Boolean(chains.isCustom))
@@ -245,7 +245,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     )
   }
 
-  syncCustomEvmNetworks(networks: CustomEvmNetwork[]) {
+  setCustomEvmNetworks(networks: CustomEvmNetwork[]) {
     return this.#db.transaction("rw", this.#db.evmNetworks, async () => {
       const keys = await this.#db.evmNetworks
         .filter((network) => "isCustom" in network && Boolean(network.isCustom))
@@ -321,7 +321,7 @@ export class ChaindataProviderExtension implements ChaindataProvider {
     )
   }
 
-  syncCustomTokens(tokens: Token[]) {
+  setCustomTokens(tokens: Token[]) {
     return this.#db.transaction("rw", this.#db.tokens, async () => {
       const keys = await this.#db.tokens
         .filter((token) => "isCustom" in token && Boolean(token.isCustom))
