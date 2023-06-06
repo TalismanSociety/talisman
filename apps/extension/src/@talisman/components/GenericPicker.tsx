@@ -3,6 +3,7 @@ import { scrollbarsStyle } from "@talisman/theme/styles"
 import { classNames } from "@talismn/util"
 import Downshift from "downshift"
 import { ReactNode, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const Container = styled.div`
@@ -214,6 +215,8 @@ const GenericPicker = ({
   // returns the list of entries to display in the combo box, filtered by user input
   const searchItems = useCallback((text: string | null) => search(text, items), [items, search])
 
+  const { t } = useTranslation()
+
   return (
     <Downshift onChange={handleChange} itemToString={handleItemToString}>
       {({
@@ -231,7 +234,7 @@ const GenericPicker = ({
               <div className="picker-search-container">
                 <input
                   className="picker-search"
-                  placeholder="Search"
+                  placeholder={t("Search")}
                   // eslint-disable-next-line jsx-a11y/no-autofocus
                   autoFocus
                   {...getInputProps()}
@@ -254,7 +257,11 @@ const GenericPicker = ({
               </ul>
             </DivWithMount>
           )}
-          <button className="btn-picker-select" aria-label={"select"} {...getToggleButtonProps()}>
+          <button
+            className="btn-picker-select"
+            aria-label={t("Select")}
+            {...getToggleButtonProps()}
+          >
             {/* key is there to force rerender in case of missing logo */}
             {selectedItem && (
               <PickerItem key={selectedItem?.id ?? "EMPTY"} {...(selectedItem ?? {})} />

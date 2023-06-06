@@ -15,6 +15,7 @@
     "dev:balances-demo": "yarn workspace balances-demo dev",
     "dev:extension": "yarn workspace extension dev",
     "dev:playground": "yarn workspace playground dev",
+    "update:translations": "turbo run update:translations",
     "build": "turbo run build",
     "build:packages": "NODE_OPTIONS=--max_old_space_size=8192 preconstruct build",
     "build:extension": "turbo run build:extension",

@@ -11,6 +11,7 @@ import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
 import { useTokenBalancesSummary } from "@ui/domains/Portfolio/useTokenBalancesSummary"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
@@ -33,6 +34,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
   }, [account?.address, genericEvent])
 
   const handleBackBtnClick = useCallback(() => navigate("/portfolio"), [navigate])
+  const { t } = useTranslation("portfolio")
 
   return (
     <div>
@@ -44,7 +46,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
             onClick={handleBackBtnClick}
           >
             <ChevronLeftIcon />
-            <span className="text-sm">Asset</span>
+            <span className="text-sm">{t("Asset")}</span>
           </button>
           <div className="flex items-center gap-4">
             <div className="w-12 shrink-0 text-lg">
@@ -59,7 +61,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
                 >
                   <CopyIcon />
                 </TooltipTrigger>
-                <TooltipContent>Copy address</TooltipContent>
+                <TooltipContent>{t("Copy address")}</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger
@@ -68,14 +70,14 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
                 >
                   <PaperPlaneIcon />
                 </TooltipTrigger>
-                <TooltipContent>Send</TooltipContent>
+                <TooltipContent>{t("Send")}</TooltipContent>
               </Tooltip>
             </div>
           </div>
         </div>
         <Statistics
           className="max-w-[40%]"
-          title="Total Asset Value"
+          title={t("Total Asset Value")}
           tokens={summary.totalTokens}
           fiat={summary.totalFiat}
           token={token}
@@ -83,7 +85,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         />
         <Statistics
           className="max-w-[40%]"
-          title="Locked"
+          title={t("Locked")}
           tokens={summary.lockedTokens}
           fiat={summary.lockedFiat}
           token={token}
@@ -92,7 +94,7 @@ const PageContent = ({ balances, symbol }: { balances: Balances; symbol: string 
         />
         <Statistics
           className="max-w-[40%]"
-          title="Available"
+          title={t("Available")}
           tokens={summary.availableTokens}
           fiat={summary.availableFiat}
           token={token}

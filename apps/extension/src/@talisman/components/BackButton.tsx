@@ -2,6 +2,7 @@ import Button from "@talisman/components/Button"
 import { ChevronLeftIcon } from "@talisman/theme/icons"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { ReactNode, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { To, useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -42,10 +43,12 @@ export const BackButton = ({ analytics, children, to, ...props }: BackButtonProp
     navigate(to ?? (-1 as To))
   }, [analytics, navigate, to])
 
+  const { t } = useTranslation()
+
   return (
     <StyledButton small onClick={handleBackClick} {...props}>
       <ChevronLeftIcon />
-      <span>{children ?? "Back"}</span>
+      <span>{children ?? t("Back")}</span>
     </StyledButton>
   )
 }

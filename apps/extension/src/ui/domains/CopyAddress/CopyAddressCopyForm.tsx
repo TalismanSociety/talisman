@@ -14,6 +14,7 @@ import useToken from "@ui/hooks/useToken"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { isSubToken } from "@ui/util/isSubToken"
 import { FC, useCallback, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import AccountAvatar from "../Account/Avatar"
@@ -66,12 +67,12 @@ const TokenPillButton: FC<TokenPillButtonProps> = ({ tokenId, className, onClick
   if (!tokenId || !token) return null
 
   return (
-    <PillButton className={classNames("h-16 !py-2 !px-4", className)} onClick={onClick}>
+    <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
       <div className="text-body flex  flex-nowrap items-center gap-4 text-base">
         <div className="relative h-12 w-12 shrink-0">
           <TokenLogo className="!text-lg" tokenId={tokenId} />
           <ChainLogo
-            className="border-grey-900 !absolute top-[-2px] right-[-2px] h-6 w-6 rounded-full border-[0.5px]"
+            className="border-grey-900 !absolute right-[-2px] top-[-2px] h-6 w-6 rounded-full border-[0.5px]"
             id={evmNetwork?.id ?? chain?.id ?? undefined}
           />
         </div>
@@ -95,16 +96,17 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   onClick,
 }) => {
   const chain = useChain(chainId as string)
+  const { t } = useTranslation("copy-address")
 
   // substrate generic format
   if (chainId === null)
     return (
-      <PillButton className={classNames("h-16 !py-2 !px-4", className)} onClick={onClick}>
+      <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
         <div className="text-body flex  flex-nowrap items-center gap-4 text-base">
           <div className="flex shrink-0 flex-col justify-center">
             <AccountAvatar type="polkadot-identicon" className="!text-lg" address={address} />
           </div>
-          <div>Substrate (Generic)</div>
+          <div>{t("Substrate (Generic)")}</div>
         </div>
       </PillButton>
     )
@@ -112,7 +114,7 @@ const NetworkPillButton: FC<NetworkPillButtonProps> = ({
   if (!chain) return null
 
   return (
-    <PillButton className={classNames("h-16 !py-2 !px-4", className)} onClick={onClick}>
+    <PillButton className={classNames("h-16 !px-4 !py-2", className)} onClick={onClick}>
       <div className="text-body flex  flex-nowrap items-center gap-4 text-base">
         <div className="shrink-0">
           <ChainLogo className="!text-lg" id={chain.id} />
@@ -138,24 +140,30 @@ const CopyButton = () => {
     close()
   }, [close, copy])
 
+  const { t } = useTranslation("copy-address")
+
   return (
     <>
       <Button fullWidth primary icon={CopyIcon} onClick={handleCopyClick}>
-        Copy Address
+        {t("Copy Address")}
       </Button>
       <Drawer parent="copy-address-modal" open={isOpen} anchor="bottom" onClose={close}>
         <div className="bg-grey-800 flex w-full flex-col items-center rounded-t-xl p-12">
           <AlertCircleIcon className="text-primary-500 text-3xl" />
-          <div className="text-md mt-12 font-bold">Sending from an exchange?</div>
+          <div className="text-md mt-12 font-bold">{t("Sending from an exchange?")}</div>
           <p className="text-body-secondary mt-8 text-center">
-            Generic substrate addresses are often incompatible with exchanges.
+            {t("Generic substrate addresses are often incompatible with exchanges.")}
             <br />
-            Talisman recommends you use a{" "}
-            <span className="text-body">network specific address</span>. Always check with your
-            exchange before sending funds.
+            <Trans
+              t={t}
+              defaults="Talisman recommends you use a <Highlight>network specific address</Highlight>. Always check with your exchange before sending funds."
+              components={{
+                Highlight: <span className="text-body" />,
+              }}
+            />
           </p>
           <Button className="mt-12" primary fullWidth onClick={handleContinueClick}>
-            Continue
+            {t("Continue")}
           </Button>
         </div>
       </Drawer>
@@ -181,22 +189,24 @@ export const CopyAddressCopyForm = () => {
     [chain, formattedAddress]
   )
 
+  const { t } = useTranslation("copy-address")
+
   if (!formattedAddress) return null
 
   return (
-    <CopyAddressLayout title={mode === "receive" ? "Receive funds" : "Copy address"}>
+    <CopyAddressLayout title={mode === "receive" ? t("Receive funds") : t("Copy address")}>
       <div className="flex h-full w-full flex-col items-center px-12 pb-12">
-        <div className="bg-grey-900 flex w-full flex-col gap-4 rounded py-4 px-8">
+        <div className="bg-grey-900 flex w-full flex-col gap-4 rounded px-8 py-4">
           {mode === "receive" && (
             <>
               <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-                <div>Token</div>
+                <div>{t("Token")}</div>
                 <div>
                   <TokenPillButton tokenId={tokenId} onClick={goToNetworkOrTokenPage} />
                 </div>
               </div>
               <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-                <div>Account</div>
+                <div>{t("Account")}</div>
                 <div>
                   <AddressPillButton address={formattedAddress} onClick={goToAddressPage} />
                 </div>
@@ -206,14 +216,14 @@ export const CopyAddressCopyForm = () => {
           {mode === "copy" && (
             <>
               <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-                <div>Account</div>
+                <div>{t("Account")}</div>
                 <div>
                   <AddressPillButton address={formattedAddress} onClick={goToAddressPage} />
                 </div>
               </div>
               {chainId !== undefined && (
                 <div className="text-body-secondary flex h-16 w-full items-center justify-between">
-                  <div>Network</div>
+                  <div>{t("Network")}</div>
                   <div>
                     <NetworkPillButton
                       chainId={chainId}
@@ -237,16 +247,29 @@ export const CopyAddressCopyForm = () => {
           {chain && (
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
-                Your <span className="text-body">{chain.name}</span>{" "}
-                <Tooltip>
-                  <TooltipTrigger>
-                    <InfoIcon className="hover:text-body inline align-middle text-xs" />
-                  </TooltipTrigger>
-                  <TooltipContent>{`Only use this address for receiving assets on the ${
-                    chain.name
-                  } ${chain.relay?.id === chain.id ? "Relay Chain" : "network"}`}</TooltipContent>
-                </Tooltip>{" "}
-                address
+                <Trans
+                  t={t}
+                  defaults="Your <Highlight>{{name}} <Tooltip /></Highlight> address"
+                  values={{ name: chain.name }}
+                  components={{
+                    Highlight: <span className="text-body" />,
+                    Tooltip: (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <InfoIcon className="hover:text-body inline align-middle text-xs" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {t(
+                            "Only use this address for receiving assets on the {{name}} network.",
+                            {
+                              name: chain.name,
+                            }
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    ),
+                  }}
+                />
               </div>
               <div className="flex items-center gap-4">
                 <ChainLogo className="text-lg" id={chain?.id} />
@@ -262,16 +285,24 @@ export const CopyAddressCopyForm = () => {
           {chainId === null && (
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
-                Your <span className="text-body">Substrate (Generic)</span>{" "}
-                <Tooltip>
-                  <TooltipTrigger>
-                    <InfoIcon className="hover:text-body inline align-middle text-xs" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    This address is not specific to a network. Use at your own risk.
-                  </TooltipContent>
-                </Tooltip>{" "}
-                address
+                <Trans
+                  t={t}
+                  defaults="Your <Highlight>{{name}} <Tooltip /></Highlight> address"
+                  values={{ name: t("Substrate (Generic)") }}
+                  components={{
+                    Highlight: <span className="text-body" />,
+                    Tooltip: (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <InfoIcon className="hover:text-body inline align-middle text-xs" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {t("This address is not specific to a network. Use at your own risk.")}
+                        </TooltipContent>
+                      </Tooltip>
+                    ),
+                  }}
+                />
               </div>
               <div className="flex items-center gap-4">
                 <AccountAvatar
@@ -291,16 +322,24 @@ export const CopyAddressCopyForm = () => {
           {isEthereum && (
             <div className="text-body-secondary leading-paragraph flex flex-col items-center gap-1 text-center">
               <div>
-                Your Ethereum{" "}
-                <Tooltip>
-                  <TooltipTrigger>
-                    <InfoIcon className="hover:text-body inline align-middle text-xs" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Use this address for receiving assets on Ethereum and EVM compatible networks
-                  </TooltipContent>
-                </Tooltip>{" "}
-                address
+                <Trans
+                  t={t}
+                  defaults="Your Ethereum <Tooltip /> address"
+                  components={{
+                    Tooltip: (
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <InfoIcon className="hover:text-body inline align-middle text-xs" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {t(
+                            "Use this address for receiving assets on Ethereum and EVM compatible networks"
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    ),
+                  }}
+                />
               </div>
               <div className="flex items-center gap-4">
                 <ChainLogo className="text-lg" id="1" />

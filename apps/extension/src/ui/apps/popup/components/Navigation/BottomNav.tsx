@@ -9,6 +9,7 @@ import { PendingTransactionsDrawer } from "@ui/domains/Transactions/PendingTrans
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useLiveQuery } from "dexie-react-hooks"
 import { ButtonHTMLAttributes, DetailedHTMLProps, forwardRef, useCallback } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useLocation, useNavigate } from "react-router-dom"
 import { Tooltip, TooltipContent, TooltipTrigger, useOpenClose } from "talisman-ui"
 
@@ -73,6 +74,8 @@ const RecentActivityButton = () => {
     open()
   }, [open])
 
+  const { t } = useTranslation("navigation")
+
   return (
     <>
       <Tooltip placement="top">
@@ -81,7 +84,7 @@ const RecentActivityButton = () => {
             {hasPendingTransactions ? <NavIconActivityPending /> : <NavIconActivity />}
           </BottomNavButton>
         </TooltipTrigger>
-        <TooltipContent>Recent activity</TooltipContent>
+        <TooltipContent>{t("Recent activity")}</TooltipContent>
       </Tooltip>
       <PendingTransactionsDrawer isOpen={isOpen} onClose={close} />
     </>
@@ -137,14 +140,19 @@ export const BottomNav = () => {
 
   const { isSnoozed, isNotConfirmed } = useMnemonicBackup()
 
+  const { t } = useTranslation("navigation")
+
   return (
     <>
       {isSnoozed && (
         <div className="bg-black-tertiary w-100 flex h-20 min-h-[4rem] items-center justify-center gap-4 px-4">
           <AlertCircleIcon className="text-primary-500 h-12 w-12" />
           <div className="text-body-secondary text-center text-xs">
-            <span className="font-bold text-white">Backup your wallet</span> to prevent losing
-            access to your funds
+            <Trans
+              t={t}
+              defaults="<Highlight>Backup your wallet</Highlight> to prevent losing access to your funds"
+              components={{ Highlight: <span className="font-bold text-white" /> }}
+            />
           </div>
         </div>
       )}
@@ -155,7 +163,7 @@ export const BottomNav = () => {
               <NavIconHome />
             </BottomNavButton>
           </TooltipTrigger>
-          <TooltipContent>Portfolio</TooltipContent>
+          <TooltipContent>{t("Portfolio")}</TooltipContent>
         </Tooltip>
         <Tooltip placement="top">
           <TooltipTrigger asChild>
@@ -163,7 +171,7 @@ export const BottomNav = () => {
               <NavIconNft />
             </BottomNavButton>
           </TooltipTrigger>
-          <TooltipContent>View NFTs</TooltipContent>
+          <TooltipContent>{t("View NFTs")}</TooltipContent>
         </Tooltip>
         <RecentActivityButton />
         <Tooltip placement="top">
@@ -172,7 +180,7 @@ export const BottomNav = () => {
               <NavIconExpand />
             </BottomNavButton>
           </TooltipTrigger>
-          <TooltipContent>Expand Portfolio View</TooltipContent>
+          <TooltipContent>{t("Expand Portfolio View")}</TooltipContent>
         </Tooltip>
         <Tooltip placement="top">
           <TooltipTrigger asChild>
@@ -181,7 +189,7 @@ export const BottomNav = () => {
               {!isNotConfirmed && <NavIconMore />}
             </BottomNavButton>
           </TooltipTrigger>
-          <TooltipContent>More Options</TooltipContent>
+          <TooltipContent>{t("More Options")}</TooltipContent>
         </Tooltip>
       </div>
     </>
