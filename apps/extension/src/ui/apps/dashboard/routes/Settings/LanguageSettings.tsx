@@ -29,7 +29,7 @@ const LanguageButton = ({
 )
 
 export const LanguageSettings = () => {
-  const { t, i18n } = useTranslation()
+  const { t, i18n } = useTranslation("settings")
 
   const currentLang = i18n.language
   const changeLang = (lang?: keyof typeof languages) => lang && i18n.changeLanguage(lang)
