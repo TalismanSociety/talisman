@@ -3,11 +3,12 @@ import { AppPill } from "@talisman/components/AppPill"
 import Grid from "@talisman/components/Grid"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { Content, Footer, Header } from "@ui/apps/popup/Layout"
-import { EthSignBodyMessage } from "@ui/domains/Ethereum/Sign/EthSignBodyMessage"
+import { EthSignBodyMessage } from "@ui/domains/Sign/Ethereum/EthSignBodyMessage"
 import { useEthSignMessageRequest } from "@ui/domains/Sign/SignRequestContext"
 import { Suspense, lazy, useEffect, useMemo } from "react"
 
 import { SignContainer } from "./common"
+import { SignAccountAvatar } from "./SignAccountAvatar"
 
 const LedgerEthereum = lazy(() => import("@ui/domains/Sign/LedgerEthereum"))
 
@@ -29,7 +30,7 @@ export const EthSignMessageRequest = () => {
 
   return (
     <SignContainer>
-      <Header text={<AppPill url={url} />}></Header>
+      <Header text={<AppPill url={url} />} nav={<SignAccountAvatar account={account} />}></Header>
       <Content>
         {account && request && network && (
           <EthSignBodyMessage account={account} request={request} />

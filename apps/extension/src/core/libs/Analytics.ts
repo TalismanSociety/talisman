@@ -1,7 +1,7 @@
 import { initPosthog } from "@core/config/posthog"
 import { DEBUG } from "@core/constants"
 import { db } from "@core/db"
-import { AccountTypes } from "@core/domains/accounts/types"
+import { AccountType } from "@core/domains/accounts/types"
 import { settingsStore } from "@core/domains/app/store.settings"
 import { Balance, Balances } from "@core/domains/balances/types"
 import { chaindataProvider } from "@core/rpcs/chaindata"
@@ -95,8 +95,8 @@ class TalismanAnalytics {
       const accountBreakdown = accounts.reduce(
         (result, account) => {
           const accountType = (
-            account.meta.origin as keyof typeof AccountTypes
-          ).toLowerCase() as Lowercase<keyof typeof AccountTypes>
+            account.meta.origin as AccountType
+          ).toLowerCase() as Lowercase<AccountType>
           result[accountType] += 1
           return result
         },
@@ -106,7 +106,7 @@ class TalismanAnalytics {
           hardware: 0,
           seed: 0,
           json: 0,
-        } as Record<Lowercase<keyof typeof AccountTypes>, number>
+        } as Record<Lowercase<AccountType>, number>
       )
       posthog.capture("accounts breakdown", { accountBreakdown })
     }

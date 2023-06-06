@@ -12,12 +12,13 @@ import { requestStore } from "@core/libs/requests/store"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import type { MessageTypes, RequestType, ResponseType } from "@core/types"
 import { Port } from "@core/types/base"
-import { getTransactionDetails } from "@core/util/getTransactionDetails"
 import { getTypeRegistry } from "@core/util/getTypeRegistry"
 import { isJsonPayload } from "@core/util/isJsonPayload"
 import { TypeRegistry } from "@polkadot/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
+
+import { getHostName } from "../app/helpers"
 
 export default class SigningHandler extends ExtensionHandler {
   private async signingApprove({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
@@ -25,11 +26,15 @@ export default class SigningHandler extends ExtensionHandler {
 
     assert(queued, "Unable to find request")
 
-    const { reject, request, resolve } = queued
+    const { reject, request, resolve, url } = queued
 
     const result = await getPairForAddressSafely(queued.account.address, async (pair) => {
       const { payload } = request
-      const analyticsProperties: { dapp: string; chain?: string } = { dapp: queued.url }
+      const { ok, val: hostName } = getHostName(url)
+      const analyticsProperties: { dapp: string; chain?: string; hostName?: string } = {
+        dapp: url,
+        hostName: ok ? hostName : undefined,
+      }
 
       // an empty registry is sufficient, we don't need metadata here
       let registry = new TypeRegistry()
@@ -102,7 +107,11 @@ export default class SigningHandler extends ExtensionHandler {
     } = queued
     const { payload } = request
 
-    const analyticsProperties: { dapp: string; chain?: string } = { dapp: url }
+    const { ok, val: hostName } = getHostName(url)
+    const analyticsProperties: { dapp: string; chain?: string; hostName?: string } = {
+      dapp: url,
+      hostName: ok ? hostName : undefined,
+    }
     const account = keyring.getAccount(accountAddress)
 
     if (isJsonPayload(payload)) {
@@ -157,16 +166,6 @@ export default class SigningHandler extends ExtensionHandler {
     return true
   }
 
-  private async decode({ id }: KnownSigningRequestIdOnly<"substrate-sign">) {
-    const queued = requestStore.getRequest(id)
-    if (!queued) return null
-
-    if (!isJsonPayload(queued.request.payload)) return null
-
-    // analyse the call to extract args and docs
-    return getTransactionDetails(queued.request.payload)
-  }
-
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -186,9 +185,6 @@ export default class SigningHandler extends ExtensionHandler {
 
       case "pri(signing.cancel)":
         return this.signingCancel(request as RequestType<"pri(signing.cancel)">)
-
-      case "pri(signing.details)":
-        return this.decode(request as RequestType<"pri(signing.details)">)
 
       default:
         throw new Error(`Unable to handle message of type ${type}`)

@@ -28,11 +28,7 @@ import {
   WatchAssetRequestId,
 } from "@core/domains/ethereum/types"
 import { MetadataUpdateStatus, RequestMetadataId } from "@core/domains/metadata/types"
-import {
-  SignerPayloadJSON,
-  SigningRequestID,
-  TransactionDetails,
-} from "@core/domains/signing/types"
+import { SignerPayloadJSON, SigningRequestID } from "@core/domains/signing/types"
 import {
   AuthRequestAddresses,
   AuthRequestId,
@@ -48,6 +44,7 @@ import {
   ResponseAssetTransfer,
   ResponseAssetTransferFeeQuery,
 } from "@core/domains/transfers/types"
+import { MetadataDef } from "@core/inject/types"
 import { EthResponseType } from "@core/injectEth/types"
 import { ValidRequests } from "@core/libs/requests/types"
 import { UnsubscribeFn } from "@core/types"
@@ -78,7 +75,6 @@ export default interface MessageTypes {
   allowPhishingSite: (url: string) => Promise<boolean>
 
   // signing messages -------------------------------------------------------
-  decodeSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<TransactionDetails>
   cancelSignRequest: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
   approveSign: (id: SigningRequestID<"substrate-sign">) => Promise<boolean>
   approveSignHardware: (
@@ -125,6 +121,7 @@ export default interface MessageTypes {
   accountExportPrivateKey: (address: string, password: string) => Promise<string>
   accountRename: (address: string, name: string) => Promise<boolean>
   accountValidateMnemonic: (mnemonic: string) => Promise<boolean>
+  setVerifierCertMnemonic: (mnemonic: string) => Promise<boolean>
 
   // balance message types ---------------------------------------------------
   getBalance: ({
@@ -258,4 +255,19 @@ export default interface MessageTypes {
   // ethereum tokens message types
   ethWatchAssetRequestApprove: (id: WatchAssetRequestId) => Promise<boolean>
   ethWatchAssetRequestCancel: (is: WatchAssetRequestId) => Promise<boolean>
+
+  // substrate rpc calls
+  subSend: <T>(
+    chainId: ChainId,
+    method: string,
+    params: unknown[],
+    isCacheable?: boolean
+  ) => Promise<T>
+
+  // substrate chain metadata
+  subChainMetadata: (
+    genesisHash: HexString,
+    specVersion?: number,
+    blockHash?: HexString
+  ) => Promise<MetadataDef | undefined>
 }

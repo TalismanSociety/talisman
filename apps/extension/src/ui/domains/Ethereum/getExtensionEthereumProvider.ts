@@ -18,9 +18,10 @@ const ethereumRequest =
         params: params as EthRequestSignatures[EthRequestTypes][0],
       })
     } catch (err) {
-      log.error("[provider.request] error on %s", method, (err as Error).message)
+      log.error("[provider.request] error on %s", method, { err })
 
-      throw new EthProviderRpcError((err as Error).message, ETH_ERROR_EIP1474_INTERNAL_ERROR)
+      const { message, code, data } = err as EthProviderRpcError
+      throw new EthProviderRpcError(message, code ?? ETH_ERROR_EIP1474_INTERNAL_ERROR, data)
     }
   }
 

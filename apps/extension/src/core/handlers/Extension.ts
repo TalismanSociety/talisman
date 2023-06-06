@@ -1,6 +1,7 @@
 import { DEBUG, TEST } from "@core/constants"
 import { db } from "@core/db"
 import { AccountsHandler } from "@core/domains/accounts"
+import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
 import { RequestAddressFromMnemonic } from "@core/domains/accounts/types"
 import AppHandler from "@core/domains/app/handler"
 import { BalancesHandler } from "@core/domains/balances"
@@ -9,6 +10,7 @@ import { EthHandler } from "@core/domains/ethereum"
 import { MetadataHandler } from "@core/domains/metadata"
 import { SigningHandler } from "@core/domains/signing"
 import { SitesAuthorisationHandler } from "@core/domains/sitesAuthorised"
+import { SubHandler } from "@core/domains/substrate/handler.extension"
 import TokenRatesHandler from "@core/domains/tokenRates/handler"
 import TokensHandler from "@core/domains/tokens/handler"
 import { updateTransactionsRestart } from "@core/domains/transactions/helpers"
@@ -53,6 +55,7 @@ export default class Extension extends ExtensionHandler {
       sites: new SitesAuthorisationHandler(stores),
       tokenRates: new TokenRatesHandler(stores),
       tokens: new TokensHandler(stores),
+      substrate: new SubHandler(stores),
     }
 
     // connect auto lock timeout setting to the password store
@@ -69,7 +72,7 @@ export default class Extension extends ExtensionHandler {
     // Resets password update notification at extension restart if user has asked to ignore it previously
     stores.password.set({ ignorePasswordUpdate: false })
 
-    // Watches keyring to add all new accounts to authorised sites with `connectAllSubstrate` flag
+    // Watches keyring to do things that depend on type of accounts added
     // Delayed by 2 sec so that keyring accounts will have loaded
     setTimeout(
       () =>
@@ -77,8 +80,7 @@ export default class Extension extends ExtensionHandler {
           const sites = await stores.sites.get()
 
           Object.entries(sites)
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            .filter(([url, site]) => site.connectAllSubstrate)
+            .filter(([, site]) => site.connectAllSubstrate)
             .forEach(async ([url, autoAddSite]) => {
               const newAddresses = Object.values(addresses)
                 .filter(({ json: { address } }) => !autoAddSite.addresses?.includes(address))
@@ -155,6 +157,7 @@ export default class Extension extends ExtensionHandler {
       )
       const subBalances = obsHasFunds.subscribe((positiveBalances) => {
         if (positiveBalances) {
+          if (!hasFunds) talismanAnalytics.capture("wallet funded")
           this.stores.app.set({ hasFunds: true })
           subBalances.unsubscribe()
           subAppStore.unsubscribe()
@@ -243,6 +246,7 @@ export default class Extension extends ExtensionHandler {
         assert(transformedPw, "Password error")
 
         const seedResult = await this.stores.seedPhrase.getSeed(transformedPw)
+        assert(seedResult.val, "No mnemonic present")
         assert(seedResult.ok, seedResult.val)
         return seedResult.val
       }
@@ -265,6 +269,9 @@ export default class Extension extends ExtensionHandler {
         return this.stores.chains.hydrateStore()
 
       case "pri(chains.generateQr.addNetworkSpecs)": {
+        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
+        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
+
         const { genesisHash } = request as RequestType<"pri(chains.generateQr.addNetworkSpecs)">
         const data = await generateQrAddNetworkSpecs(genesisHash)
         // serialize as hex for transfer
@@ -272,6 +279,9 @@ export default class Extension extends ExtensionHandler {
       }
 
       case "pri(chains.generateQr.updateNetworkMetadata)": {
+        const vaultCipher = await verifierCertificateMnemonicStore.get("cipher")
+        assert(vaultCipher, "No Polkadot Vault Verifier Certificate Mnemonic found")
+
         const { genesisHash, specVersion } =
           request as RequestType<"pri(chains.generateQr.updateNetworkMetadata)">
         const data = await generateQrUpdateNetworkMetadata(genesisHash, specVersion)

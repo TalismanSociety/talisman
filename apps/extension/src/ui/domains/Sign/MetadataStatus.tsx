@@ -1,30 +1,27 @@
+import { useMetadataUpdates } from "@ui/hooks/useMetadataUpdates"
 import { FC } from "react"
 
 import { SignAlertMessage } from "./SignAlertMessage"
 
-type MetadataStatusProps = {
-  showUpdating: boolean
-  showUpdateRequired: boolean
-  showUpdateFailed: boolean
-  updateUrl?: string
-}
-
-export const MetadataStatus: FC<MetadataStatusProps> = ({
-  showUpdating,
-  showUpdateRequired,
-  showUpdateFailed,
-  updateUrl,
+export const MetadataStatus: FC<{ genesisHash?: string; specVersion?: number }> = ({
+  genesisHash,
+  specVersion,
 }) => {
-  if (showUpdating)
+  const { updateUrl, isMetadataUpdating, hasMetadataUpdateFailed, requiresUpdate } =
+    useMetadataUpdates(genesisHash, specVersion)
+
+  if (!genesisHash) return null
+
+  if (isMetadataUpdating)
     return (
-      <SignAlertMessage processing className="mt-6" type="warning" iconSize="base">
+      <SignAlertMessage processing className="!my-6" type="warning" iconSize="base">
         Updating network metadata, please wait.
       </SignAlertMessage>
     )
 
-  if (showUpdateFailed)
+  if (hasMetadataUpdateFailed)
     return (
-      <SignAlertMessage className="mt-6" type="error">
+      <SignAlertMessage className="!my-6" type="error">
         Failed to update metadata. Please update metadata manually
         {updateUrl && (
           <>
@@ -39,9 +36,9 @@ export const MetadataStatus: FC<MetadataStatusProps> = ({
       </SignAlertMessage>
     )
 
-  if (showUpdateRequired)
+  if (requiresUpdate)
     return (
-      <SignAlertMessage className="mt-6" type="error" iconSize="base">
+      <SignAlertMessage className="!my-6" type="error" iconSize="base">
         This network requires a manual metadata update. Please update or your transaction may fail.
       </SignAlertMessage>
     )

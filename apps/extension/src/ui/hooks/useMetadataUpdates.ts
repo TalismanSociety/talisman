@@ -14,6 +14,7 @@ type ChainMetadata = {
   isMetadataUpToDate: boolean
   isMetadataUpdating: boolean
   hasMetadataUpdateFailed: boolean
+  requiresUpdate: boolean
   updateUrl?: string
 }
 
@@ -25,9 +26,10 @@ const DEFAULT_VALUE: ChainMetadata = {
   isMetadataUpToDate: false,
   isMetadataUpdating: false,
   hasMetadataUpdateFailed: false,
+  requiresUpdate: false,
 }
 
-export const useChainMetadata = (genesisHash?: string, specVersion?: number) => {
+export const useMetadataUpdates = (genesisHash?: string, specVersion?: number) => {
   const [isMetadataUpdating, setIsMetadataUpdating] = useState(false)
   const [hasMetadataUpdated, setHasMetadataUpdated] = useState(false)
 
@@ -69,19 +71,23 @@ export const useChainMetadata = (genesisHash?: string, specVersion?: number) => 
         : undefined
 
       const isLoading = !chains.length
+      const isKnownChain = !!chain
 
       // consider ready to sign either if we can't update or if an update has been attempted.
       const isReady = !isLoading && (!chain || isMetadataUpToDate || hasMetadataUpdated)
+      const hasMetadataUpdateFailed = hasMetadataUpdated && !isMetadataUpToDate
+      const requiresUpdate = !isLoading && (!isKnownChain || !isMetadataUpToDate)
 
       setResult({
         isReady,
-        isLoading: !chains.length,
-        isKnownChain: !!chain,
+        isLoading,
+        isKnownChain,
         hasMetadata,
         isMetadataUpToDate,
         isMetadataUpdating,
-        hasMetadataUpdateFailed: hasMetadataUpdated && !isMetadataUpToDate,
+        hasMetadataUpdateFailed,
         updateUrl,
+        requiresUpdate,
       })
     },
     1000,
