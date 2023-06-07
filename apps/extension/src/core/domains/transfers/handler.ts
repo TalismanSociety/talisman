@@ -83,12 +83,16 @@ export default class AssetTransferHandler extends ExtensionHandler {
     })
 
     if (result.ok) return result.val
-    // 1010 (Invalid signature) happens often on kusama, simply retrying usually works.
-    // This message should hopefully motivate the user to retry
-    else if ((result.val as { code: number })?.code === 1010)
-      throw new Error("Failed to send transaction")
-    else if (result.val instanceof Error) throw result.val
-    else throw new Error("Failed to send transaction")
+    else {
+      // We were previously replacing all errors with code 1010 with a generic "Failed to send"
+      // However 1010 means error code from RPC, message that goes along with it (err.data) can be meaningful
+      const error = result.val as Error & { code?: number; data?: string }
+
+      // display message from RPC, if any
+      if (typeof error?.data === "string") throw new Error(error.data)
+      else if (error instanceof Error) throw error
+      else throw new Error("Failed to send transaction")
+    }
   }
 
   private async assetTransferCheckFees({

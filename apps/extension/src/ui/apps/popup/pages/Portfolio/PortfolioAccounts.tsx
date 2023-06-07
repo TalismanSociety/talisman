@@ -11,6 +11,7 @@ import {
 import { Balance, Balances } from "@talismn/balances"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
+import { TotalFiatBalance } from "@ui/apps/popup/components/TotalFiatBalance"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
@@ -21,10 +22,9 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { MouseEventHandler, useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { PillButton } from "talisman-ui"
-
-import { TotalFiatBalance } from "../../components/TotalFiatBalance"
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Popup",
@@ -146,18 +146,20 @@ const TopActions = () => {
     })
   }, [openCopyAddressModal])
 
+  const { t } = useTranslation("portfolio")
+
   return (
     <div className="mt-8 flex justify-center gap-4">
       <>
         <PillButton onClick={handleReceiveClick} icon={ArrowDownIcon}>
-          Receive
+          {t("Receive")}
         </PillButton>
         <PillButton onClick={handleSendFundsClick} icon={PaperPlaneIcon}>
-          Send
+          {t("Send")}
         </PillButton>
         {canBuy && (
           <PillButton onClick={handleBuyTokensClick} icon={CreditCardIcon}>
-            Buy
+            {t("Buy")}
           </PillButton>
         )}
       </>
@@ -181,6 +183,7 @@ export const PortfolioAccounts = () => {
   const balances = useBalances()
   const accounts = useAccounts()
   const { popupOpenEvent } = useAnalytics()
+  const { t } = useTranslation("portfolio")
 
   const options: AccountOption[] = useMemo(() => {
     // we use this to avoid looping over the balances list n times, where n is the number of accounts in the wallet
@@ -193,18 +196,18 @@ export const PortfolioAccounts = () => {
 
     return [
       {
-        name: "All Accounts",
+        name: t("All Accounts"),
         total: balances.sum.fiat("usd").total,
       },
       ...accounts.map(({ address, name, genesisHash, origin }) => ({
         address,
         genesisHash,
-        name: name ?? "Unknown Account",
+        name: name ?? t("Unknown Account"),
         origin: typeof origin === "string" ? origin : undefined,
         total: new Balances(balancesByAddress.get(address) ?? []).sum.fiat("usd").total,
       })),
     ]
-  }, [accounts, balances])
+  }, [t, accounts, balances])
 
   useEffect(() => {
     popupOpenEvent("portfolio accounts")

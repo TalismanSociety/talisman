@@ -18,12 +18,14 @@ import { useFaviconUrl } from "@ui/hooks/useFaviconUrl"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
+import i18next from "@ui/i18nConfig"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
 import formatDistanceToNowStrict from "date-fns/formatDistanceToNowStrict"
 import { useLiveQuery } from "dexie-react-hooks"
 import { BigNumber } from "ethers"
 import sortBy from "lodash/sortBy"
 import { FC, PropsWithChildren, forwardRef, useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import {
   Button,
   Drawer,
@@ -88,7 +90,7 @@ const TxIconContainer: FC<
       {!!networkId && (
         <ChainLogo
           id={networkId}
-          className="border-grey-800 !absolute top-[-4px] right-[-4px] h-8 w-8 rounded-full border"
+          className="border-grey-800 !absolute right-[-4px] top-[-4px] h-8 w-8 rounded-full border"
         />
       )}
     </TooltipTrigger>
@@ -101,7 +103,7 @@ const TxIconContainer: FC<
 const displayDistanceToNow = (timestamp: number) =>
   Date.now() - timestamp > 60_000
     ? formatDistanceToNowStrict(timestamp, { addSuffix: true })
-    : "Just now"
+    : i18next.t("Just now")
 
 const DistanceToNow: FC<{ timestamp: number }> = ({ timestamp }) => {
   const [text, setText] = useState(() => displayDistanceToNow(timestamp))
@@ -182,10 +184,12 @@ const EvmTxActions: FC<{
     window.close()
   }, [hrefBlockExplorer])
 
+  const { t } = useTranslation("transactions")
+
   return (
     <div
       className={classNames(
-        " absolute top-0 right-0 z-10 flex h-[36px] items-center",
+        " absolute right-0 top-0 z-10 flex h-[36px] items-center",
         isOpen ? "visible opacity-100" : "invisible opacity-0",
         enabled && "group-hover:visible group-hover:opacity-100"
       )}
@@ -200,7 +204,7 @@ const EvmTxActions: FC<{
                 </ActionButton>
               </TooltipTrigger>
               <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-                Speed Up
+                {t("Speed Up")}
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -210,7 +214,7 @@ const EvmTxActions: FC<{
                 </ActionButton>
               </TooltipTrigger>
               <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-                Cancel
+                {t("Cancel")}
               </TooltipContent>
             </Tooltip>
           </>
@@ -228,7 +232,7 @@ const EvmTxActions: FC<{
               </PopoverTrigger>
             </TooltipTrigger>
             <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-              More options
+              {t("More options")}
             </TooltipContent>
           </Tooltip>
           <PopoverContent
@@ -243,13 +247,13 @@ const EvmTxActions: FC<{
                   onClick={handleActionClick("cancel")}
                   className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
                 >
-                  Cancel transaction
+                  {t("Cancel transaction")}
                 </button>
                 <button
                   onClick={handleActionClick("speed-up")}
                   className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
                 >
-                  Speed up transaction
+                  {t("Speed up transaction")}
                 </button>
               </>
             )}
@@ -258,14 +262,14 @@ const EvmTxActions: FC<{
                 onClick={handleBlockExplorerClick}
                 className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
               >
-                View on block explorer
+                {t("View on block explorer")}
               </button>
             )}
             <button
               onClick={handleActionClick("dismiss")}
               className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
             >
-              Dismiss
+              {t("Dismiss")}
             </button>
           </PopoverContent>
         </Popover>
@@ -276,27 +280,29 @@ const EvmTxActions: FC<{
 }
 
 const TransactionStatusLabel: FC<{ status: TransactionStatus }> = ({ status }) => {
+  const { t } = useTranslation("transactions")
+
   switch (status) {
     case "error":
-      return <span className="text-brand-orange">Failed</span>
+      return <span className="text-brand-orange">{t("Failed")}</span>
     case "pending":
       return (
         <>
-          <span>Sending </span>
+          <span>{t("Sending")} </span>
           <LoaderIcon className="animate-spin-slow" />
         </>
       )
     case "success":
-      return <span>Confirmed</span>
+      return <span>{t("Confirmed")}</span>
     case "replaced":
       return (
         <>
-          <span>Cancelled</span>
+          <span>{t("Cancelled")}</span>
           <XOctagonIcon className="text-brand-orange" />
         </>
       )
     case "unknown":
-      return <span>Unknown</span>
+      return <span>{t("Unknown")}</span>
   }
 }
 
@@ -351,6 +357,8 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
     return () => setIsMounted(false)
   }, [])
 
+  const { t } = useTranslation("transactions")
+
   return (
     <div
       className={classNames(
@@ -361,18 +369,18 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
     >
       {tx.siteUrl ? (
         <TxIconContainer tooltip={tx.siteUrl} networkId={evmNetwork?.id}>
-          <Favicon siteUrl={tx.siteUrl} className="h-16 w-16" />
+          <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
         </TxIconContainer>
       ) : isTransfer && token ? (
         <TxIconContainer
           tooltip={`${token?.symbol} on ${evmNetwork?.name}`}
           networkId={evmNetwork?.id}
         >
-          <TokenLogo tokenId={token.id} className="h-16 w-16" />
+          <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
         </TxIconContainer>
       ) : (
         <TxIconContainer tooltip={evmNetwork?.name}>
-          <ChainLogo id={evmNetwork?.id} className="h-16 w-16" />
+          <ChainLogo id={evmNetwork?.id} className="!h-16 !w-16" />
         </TxIconContainer>
       )}
 
@@ -382,7 +390,7 @@ const TransactionRowEvm: FC<TransactionRowEvmProps> = ({
             <TransactionStatusLabel status={tx.status} />
             {tx.isReplacement && (
               <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
-                Replacement
+                {t("Replacement")}
               </span>
             )}
           </div>
@@ -469,10 +477,12 @@ const SubTxActions: FC<{
     window.close()
   }, [hrefBlockExplorer])
 
+  const { t } = useTranslation("transactions")
+
   return (
     <div
       className={classNames(
-        " absolute top-0 right-0 z-10 flex h-[36px] items-center",
+        "absolute right-0 top-0 z-10 flex h-[36px] items-center",
         isOpen ? "visible opacity-100" : "invisible opacity-0",
         enabled && "group-hover:visible group-hover:opacity-100"
       )}
@@ -491,7 +501,7 @@ const SubTxActions: FC<{
               </PopoverTrigger>
             </TooltipTrigger>
             <TooltipContent className="bg-grey-700 rounded-xs z-20 p-3 text-xs shadow">
-              More options
+              {t("More options")}
             </TooltipContent>
           </Tooltip>
           <PopoverContent
@@ -505,14 +515,14 @@ const SubTxActions: FC<{
                 onClick={handleBlockExplorerClick}
                 className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
               >
-                View on block explorer
+                {t("View on block explorer")}
               </button>
             )}
             <button
               onClick={handleActionClick("dismiss")}
               className="hover:bg-grey-800 rounded-xs h-20 p-6 text-left"
             >
-              Dismiss
+              {t("Dismiss")}
             </button>
           </PopoverContent>
         </Popover>
@@ -560,6 +570,8 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
     return () => setIsMounted(false)
   }, [])
 
+  const { t } = useTranslation("transactions")
+
   return (
     <div
       className={classNames(
@@ -570,15 +582,15 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
     >
       {tx.siteUrl ? (
         <TxIconContainer tooltip={tx.siteUrl} networkId={chain?.id}>
-          <Favicon siteUrl={tx.siteUrl} className="h-16 w-16" />
+          <Favicon siteUrl={tx.siteUrl} className="!h-16 !w-16" />
         </TxIconContainer>
       ) : isTransfer && token ? (
         <TxIconContainer tooltip={`${token?.symbol} on ${chain?.name}`} networkId={chain?.id}>
-          <TokenLogo tokenId={token.id} className="h-16 w-16" />
+          <TokenLogo tokenId={token.id} className="!h-16 !w-16" />
         </TxIconContainer>
       ) : (
         <TxIconContainer tooltip={chain?.name}>
-          <ChainLogo id={chain?.id} className="h-16 w-16" />
+          <ChainLogo id={chain?.id} className="!h-16 !w-16" />
         </TxIconContainer>
       )}
       <div className="leading-paragraph relative flex w-full grow justify-between">
@@ -587,7 +599,7 @@ const TransactionRowSubstrate: FC<TransactionRowSubProps> = ({
             <TransactionStatusLabel status={tx.status} />
             {tx.isReplacement && (
               <span className="bg-alert-warn/25 text-alert-warn rounded px-3 py-1 text-[10px] font-light">
-                Replacement
+                {t("Replacement")}
               </span>
             )}
           </div>
@@ -706,25 +718,36 @@ const DrawerContent: FC<{ transactions: WalletTransaction[]; onClose?: () => voi
     window.close()
   }, [account?.address])
 
+  const { t } = useTranslation("transactions")
+
   return (
     <>
-      <h3 className="text-md mt-12 text-center font-bold">Recent Activity</h3>
+      <h3 className="text-md mt-12 text-center font-bold">{t("Recent Activity")}</h3>
       <p className="text-body-secondary leading-paragraph my-8 w-full px-24 text-center text-sm">
-        View recent and pending transactions for the past week.
+        {t("View recent and pending transactions for the past week.")}
         {showTxHistory && (
           <>
             {" "}
-            For a comprehesive history visit our{" "}
-            <button type="button" onClick={handleTxHistoryClick} className="text-body inline">
-              transaction history page
-            </button>
+            <Trans
+              t={t}
+              defaults="For a comprehesive history visit our <Link>transaction history page</Link>"
+              components={{
+                Link: (
+                  <button
+                    type="button"
+                    onClick={handleTxHistoryClick}
+                    className="text-body inline"
+                  />
+                ),
+              }}
+            />
           </>
         )}
       </p>
       <TransactionsList transactions={transactions} />
       <div className="p-12">
         <Button className="w-full shrink-0" onClick={onClose}>
-          Close
+          {t("Close")}
         </Button>
       </div>
     </>

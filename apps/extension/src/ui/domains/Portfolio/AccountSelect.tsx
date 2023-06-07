@@ -4,7 +4,6 @@ import { AllAccountsIcon, ChevronDownIcon } from "@talisman/theme/icons"
 import { scrollbarsStyle } from "@talisman/theme/styles"
 import { shortenAddress } from "@talisman/util/shortenAddress"
 import { classNames } from "@talismn/util"
-import AccountAvatar from "@ui/domains/Account/Avatar"
 import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
@@ -13,7 +12,10 @@ import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
 import { UseSelectStateChange, useSelect } from "downshift"
 import { useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import styled, { css } from "styled-components"
+
+import { AccountIcon } from "../Account/AccountIcon"
 
 const Button = styled.button`
   background: none;
@@ -51,6 +53,7 @@ const AccountOptionContainer = styled.div`
   color: var(--color-mid);
 
   .ao-avatar {
+    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -245,7 +248,7 @@ const AccountOption = ({
     <AccountOptionContainer onClick={handleClick}>
       <div className="ao-avatar">
         {address ? (
-          <AccountAvatar address={address} genesisHash={genesisHash} />
+          <AccountIcon className="text-[4rem]" address={address} genesisHash={genesisHash} />
         ) : (
           <AllAccountsIcon className="account-avatar" />
         )}
@@ -275,8 +278,9 @@ const SingleAccountOption = (props: SingleAccountOptionProps) => {
 const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
   const { sum } = useBalances()
   const { total } = useMemo(() => sum.fiat("usd"), [sum])
+  const { t } = useTranslation("portfolio")
 
-  return <AccountOption name="All accounts" totalUsd={total} withTrack={withTrack} />
+  return <AccountOption name={t("All accounts")} totalUsd={total} withTrack={withTrack} />
 }
 
 type DropdownItem = {

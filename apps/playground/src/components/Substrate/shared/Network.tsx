@@ -7,9 +7,10 @@ import { useNetwork } from "./useNetwork"
 
 const availableNetworks = {
   None: undefined,
-  Kusama: "wss://1rpc.io/ksm", //"wss://kusama.api.onfinality.io/public-ws",
-  Polkadot: "wss://polkadot.api.onfinality.io/public-ws",
+  Astar: "wss://astar.api.onfinality.io/public-ws", // "wss://rpc.astar.network",
   GM: "wss://ws.gm.bldnodes.org",
+  Kusama: "wss://kusama-rpc.polkadot.io", //"wss://kusama.api.onfinality.io/public-ws",
+  Polkadot: "wss://polkadot.api.onfinality.io/public-ws",
 }
 
 const BlockNumber = () => {

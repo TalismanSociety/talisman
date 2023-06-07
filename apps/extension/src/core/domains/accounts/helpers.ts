@@ -1,8 +1,20 @@
-import type { AccountJsonAny, IdenticonType } from "@core/domains/accounts/types"
+import { Account } from "@core/domains/accounts/types"
+import {
+  AccountJsonAny,
+  AccountType,
+  AccountTypes,
+  IdenticonType,
+  storedSeedAccountTypes,
+} from "@core/domains/accounts/types"
 import { getAccountAvatarDataUri } from "@core/util/getAccountAvatarDataUri"
 import { canDerive } from "@polkadot/extension-base/utils"
 import type { InjectedAccount } from "@polkadot/extension-inject/types"
+import keyring from "@polkadot/ui-keyring"
 import type { SingleAddress, SubjectInfo } from "@polkadot/ui-keyring/observable/types"
+import Browser from "webextension-polyfill"
+
+import seedPhraseStore from "./store"
+import { verifierCertificateMnemonicStore } from "./store.verifierCertificateMnemonic"
 
 const sortAccountsByWhenCreated = (accounts: AccountJsonAny[]) => {
   return accounts.sort((acc1, acc2) => {
@@ -36,13 +48,15 @@ export const sortAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
 
   let ordered: AccountJsonAny[] = []
 
-  // should be one root account
-  const root = transformedAccounts.find(({ origin }) => origin === "ROOT")
+  // should be one 'Talisman' account with a stored seed
+  const root = transformedAccounts.find(
+    ({ origin }) => origin && storedSeedAccountTypes.includes(origin)
+  )
   !!root && ordered.push(root)
 
   // can be multiple derived accounts
   // should order these by created date? probably
-  const derived = transformedAccounts.filter(({ origin }) => origin === "DERIVED")
+  const derived = transformedAccounts.filter(({ origin }) => origin === AccountTypes.DERIVED)
   const derivedSorted = sortAccountsByWhenCreated(derived)
   ordered = [...ordered, ...derivedSorted]
 
@@ -90,3 +104,32 @@ export const includeAvatar = (iconType: IdenticonType) => (account: InjectedAcco
   ...account,
   avatar: getAccountAvatarDataUri(account.address, iconType),
 })
+
+export const getPrimaryAccount = (storedSeedOnly = false) => {
+  const allAccounts = keyring.getAccounts()
+
+  if (allAccounts.length === 0) return
+  const storedSeedAccount = allAccounts.find(
+    ({ meta }) => meta && meta.origin && storedSeedAccountTypes.includes(meta.origin as AccountType)
+  )
+
+  if (storedSeedAccount) return storedSeedAccount
+  if (storedSeedOnly) return
+  return allAccounts[0]
+}
+
+export const hasQrCodeAccounts = async () => {
+  const localData = await Browser.storage.local.get(null)
+  return Object.entries(localData).some(
+    ([key, account]: [string, Account]) =>
+      key.startsWith("account:0x") && account.meta?.origin === AccountTypes.QR
+  )
+}
+
+export const copySeedStoreToVerifierCertificateStore = async () => {
+  const seedData = await seedPhraseStore.get()
+  const verifierCertMnemonicData = await verifierCertificateMnemonicStore.get()
+  if (verifierCertMnemonicData.cipher)
+    throw new Error("Verifier Certificate Store already has data")
+  await verifierCertificateMnemonicStore.set(seedData)
+}

@@ -1,10 +1,11 @@
+import { AccountJsonAny } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
 import { useTalismanOrb } from "@talisman/components/TalismanOrb"
 import { HandMonoTransparentLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
-import { useAccountAddresses } from "@ui/hooks/useAccountAddresses"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
+import { usePrimaryAccount } from "@ui/hooks/usePrimaryAccount"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { Button, FormFieldInputText } from "talisman-ui"
@@ -26,12 +27,33 @@ const schema = yup
 
 const INPUT_CONTAINER_PROPS = { className: "bg-white/10" }
 
-const useAccountColors = (): [string, string] | undefined => {
-  const [rootAccount] = useAccountAddresses()
-  const { bgColor1, bgColor2 } = useTalismanOrb(rootAccount)
+const useAccountColors = ({ account }: { account: AccountJsonAny }): [string, string] => {
+  const { bgColor1, bgColor2 } = useTalismanOrb(account.address)
 
-  return rootAccount ? [bgColor1, bgColor2] : undefined
+  return [bgColor1, bgColor2]
 }
+
+const LoginBackgroundWithAccount = ({ account }: { account: AccountJsonAny }) => {
+  const accountColors = useAccountColors({ account })
+
+  return (
+    <LoginBackground
+      width={400}
+      height={600}
+      colors={accountColors}
+      className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
+    />
+  )
+}
+
+const LoginBackgroundDefault = () => (
+  <LoginBackground
+    width={400}
+    height={600}
+    colors={["#F48F45", "#C8EB46"]}
+    className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
+  />
+)
 
 const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
   const { popupOpenEvent } = useAnalytics()
@@ -78,18 +100,12 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
     }
   }, [handleSubmit, setValue, submit])
 
-  const accountColors = useAccountColors()
+  const primaryAccount = usePrimaryAccount()
 
   return (
     <Layout className="pt-32">
-      {!!accountColors && (
-        <LoginBackground
-          width={400}
-          height={600}
-          colors={accountColors}
-          className="absolute left-0 top-0 m-0 block h-full w-full overflow-hidden "
-        />
-      )}
+      {!!primaryAccount && <LoginBackgroundWithAccount account={primaryAccount} />}
+      {!primaryAccount && <LoginBackgroundDefault />}
       <Content className={classNames("z-10 text-center", isSubmitting && "animate-pulse")}>
         <div className="mt-[60px]">
           <HandMonoTransparentLogo className="inline-block text-[64px]" />

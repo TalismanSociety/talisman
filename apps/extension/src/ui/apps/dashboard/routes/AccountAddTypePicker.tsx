@@ -7,6 +7,7 @@ import { KeyIcon, PlusIcon, PolkadotVaultIcon, SeedIcon, UsbIcon } from "@talism
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useSetting } from "@ui/hooks/useSettings"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 import Layout from "../layout"
@@ -22,36 +23,41 @@ const AccountAddTypePicker = () => {
   const [spiritClanFeatures] = useSetting("spiritClanFeatures")
   const paritySignerEnabled =
     useIsFeatureEnabled("PARITY_SIGNER") || (hasSpiritKey && spiritClanFeatures)
+  const { t } = useTranslation("account-add")
 
   return (
     <Layout centered>
-      <HeaderBlock title="Add Account" text="Create a new account or import an existing one" />
+      <HeaderBlock
+        title={t("Add Account")}
+        text={t("Create a new account or import an existing one")}
+      />
       <Spacer />
       <Grid columns={2}>
         <CtaButton
           icon={<LargePlusIcon />}
-          title="New Account"
-          subtitle="Create a new account"
+          title={t("New Account")}
+          subtitle={t("Create a new account")}
           to={`/accounts/add/derived`}
         />
         <CtaButton
           icon={<SeedIcon />}
-          title="Import via Recovery Phrase"
-          subtitle="Your Polkadot or Ethereum account"
+          title={t("Import via Recovery Phrase")}
+          subtitle={t("Your Polkadot or Ethereum account")}
           to={`/accounts/add/secret`}
         />
         <CtaButton
           icon={<KeyIcon />}
-          title="Import via JSON file"
-          subtitle="Import your Polkadot.js account"
+          title={t("Import via JSON file")}
+          subtitle={t("Import your Polkadot.js account")}
           to={`/accounts/add/json`}
         />
         <CtaButton
           icon={<UsbIcon />}
-          title="Import from Ledger"
+          title={t("Import from Ledger")}
           subtitle={
-            "Connect your Ledger wallet" +
-            (isLedgerCapable ? "" : " (not supported on this browser)")
+            isLedgerCapable
+              ? t("Connect your Ledger wallet")
+              : t("Connect your Ledger wallet (not supported on this browser)")
           }
           to={`/accounts/add/ledger`}
           disabled={!isLedgerCapable}
@@ -59,8 +65,8 @@ const AccountAddTypePicker = () => {
         {paritySignerEnabled && (
           <CtaButton
             icon={<PolkadotVaultIcon />}
-            title="Import Polkadot Vault"
-            subtitle={"Or Parity Signer (Legacy)"}
+            title={t("Import Polkadot Vault")}
+            subtitle={t("Or Parity Signer (Legacy)")}
             to={`/accounts/add/qr`}
           />
         )}

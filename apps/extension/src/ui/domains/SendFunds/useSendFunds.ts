@@ -25,6 +25,7 @@ import { isSubToken } from "@ui/util/isSubToken"
 import { isTransferableToken } from "@ui/util/isTransferableToken"
 import { BigNumber, ethers } from "ethers"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useLocation } from "react-router-dom"
 
 import { useEthTransaction } from "../Ethereum/useEthTransaction"
 import { useFeeToken } from "./useFeeToken"
@@ -401,9 +402,22 @@ const useSendFundsProvider = () => {
         !(transfer || (sendMax && maxAmount)) ||
         !tokenId ||
         !costBreakdown ||
-        !tokensToBeReaped
+        !tokensToBeReaped ||
+        !feeToken ||
+        !feeTokenBalance ||
+        !estimatedFee
       )
         return { isValid: false, error: undefined }
+
+      // if paying fee makes the feeToken balance go below the existential deposit, then the transaction is invalid
+      // https://github.com/paritytech/polkadot/issues/2485#issuecomment-782794995
+      if (
+        isSubToken(feeToken) &&
+        feeToken.existentialDeposit &&
+        feeTokenBalance.transferable.planck - estimatedFee.planck <
+          BigInt(feeToken.existentialDeposit)
+      )
+        return { isValid: false, error: `Insufficient ${feeToken.symbol} to pay for fees` }
 
       for (const cost of costBreakdown)
         if (cost.balance.planck < cost.cost.planck)
@@ -437,6 +451,9 @@ const useSendFundsProvider = () => {
     tokenId,
     tokensToBeReaped,
     transfer,
+    feeToken,
+    feeTokenBalance,
+    estimatedFee,
   ])
 
   const isLoading = evmTransaction?.isLoading || subTransaction?.isLoading
@@ -513,7 +530,7 @@ const useSendFundsProvider = () => {
         gotoProgress({ hash, networkIdOrHash: token.evmNetwork?.id })
       } else throw new Error("Unknown network")
     } catch (err) {
-      log.error("Failed to submit tx", err)
+      log.error("Failed to submit tx", { err })
       setSendErrorMessage((err as Error).message)
       setIsProcessing(false)
     }
@@ -566,6 +583,12 @@ const useSendFundsProvider = () => {
     },
     [amount, evmTransaction, gotoProgress, subTransaction, to, token, chain]
   )
+
+  // reset send error if route or params changes
+  const location = useLocation()
+  useEffect(() => {
+    setSendErrorMessage(undefined)
+  }, [location])
 
   return {
     from,

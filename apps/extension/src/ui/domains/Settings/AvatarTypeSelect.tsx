@@ -5,7 +5,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import { FC, useCallback, useMemo } from "react"
 import styled from "styled-components"
 
-import AccountAvatar from "../Account/Avatar"
+import { AccountIcon } from "../Account/AccountIcon"
 
 const Container = styled.div`
   display: flex;
@@ -35,7 +35,7 @@ type SelectableAvatarProps = {
 const AvatarOption: FC<SelectableAvatarProps> = ({ address, type, selected, onClick }) => {
   return (
     <button className={classNames("avatar-option", selected && "selected")} onClick={onClick}>
-      <AccountAvatar address={address} type={type} />
+      <AccountIcon address={address} type={type} />
     </button>
   )
 }

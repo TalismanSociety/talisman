@@ -2,7 +2,6 @@ import { DEBUG } from "@core/constants"
 import { settingsStore } from "@core/domains/app/store.settings"
 import * as SentryBrowser from "@sentry/browser"
 import * as SentryReact from "@sentry/react"
-import { Integrations } from "@sentry/tracing"
 import { Event } from "@sentry/types"
 import { ReplaySubject, firstValueFrom } from "rxjs"
 
@@ -19,7 +18,7 @@ export const initSentry = (sentry: typeof SentryBrowser | typeof SentryReact) =>
     enabled: !DEBUG,
     environment: process.env.BUILD,
     dsn: process.env.SENTRY_DSN,
-    integrations: [new Integrations.BrowserTracing()],
+    integrations: [new SentryBrowser.BrowserTracing()],
     release: process.env.RELEASE,
     sampleRate: 1,
     maxBreadcrumbs: 20,

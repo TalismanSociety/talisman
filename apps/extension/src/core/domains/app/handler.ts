@@ -27,6 +27,7 @@ import { sleep } from "@talismn/util"
 import { Subject } from "rxjs"
 import Browser from "webextension-polyfill"
 
+import { getPrimaryAccount } from "../accounts/helpers"
 import { changePassword } from "./helpers"
 import { protector } from "./protector"
 import { featuresStore } from "./store.features"
@@ -44,8 +45,8 @@ export default class AppHandler extends ExtensionHandler {
 
     assert(!(await this.stores.app.getIsOnboarded()), "A root account already exists")
 
-    const account = this.getRootAccount()
-    assert(!account, "A root account already exists")
+    const accounts = keyring.getAccounts().length
+    assert(!accounts, "Accounts already exist")
 
     // Before any accounts are created, we want to add talisman.xyz as an authorised site with connectAllSubstrate
     this.stores.sites.set({
@@ -82,9 +83,9 @@ export default class AppHandler extends ExtensionHandler {
 
     const { pair } = keyring.addUri(mnemonic, transformedPw, {
       name: "My Polkadot Account",
-      origin: AccountTypes.ROOT,
+      origin: mnemonic ? AccountTypes.SEED_STORED : AccountTypes.TALISMAN,
     } as AccountMeta)
-    await this.stores.seedPhrase.add(mnemonic, pair.address, transformedPw, confirmed)
+    await this.stores.seedPhrase.add(mnemonic, transformedPw, confirmed)
 
     try {
       // also derive a first ethereum account
@@ -120,18 +121,19 @@ export default class AppHandler extends ExtensionHandler {
       const transformedPassword = await this.stores.password.transformPassword(pass)
       const { secret, check } = await this.stores.password.get()
       if (!secret || !check) {
-        // attempt to log in via the legacy method, and convert
-        // get root account
-        const rootAccount = this.getRootAccount()
-
-        assert(rootAccount, "No root account")
+        // attempt to log in via the legacy method
+        const primaryAccount = getPrimaryAccount(true)
+        assert(primaryAccount, "No primary account, unable to authorise")
 
         // fetch keyring pair from address
-        const pair = keyring.getPair(rootAccount.address)
+        const pair = keyring.getPair(primaryAccount.address)
+
         // attempt unlock the pair
         // a successful unlock means authenticated
         pair.unlock(transformedPassword)
         pair.lock()
+
+        // we can now set up the auth secret
         await this.stores.password.setPlaintextPassword(pass)
         await this.stores.password.setupAuthSecret(transformedPassword)
       } else {
@@ -144,10 +146,6 @@ export default class AppHandler extends ExtensionHandler {
       this.stores.password.clearPassword()
       return false
     }
-  }
-
-  private getRootAccount() {
-    return keyring.getAccounts().find(({ meta }) => meta?.origin === AccountTypes.ROOT)
   }
 
   private authStatus(): LoggedinType {
@@ -164,9 +162,6 @@ export default class AppHandler extends ExtensionHandler {
     newPw,
     newPwConfirm,
   }: RequestTypes["pri(app.changePassword)"]) {
-    const rootAccount = this.getRootAccount()
-    assert(rootAccount, "No root account")
-
     // only allow users who have confirmed backing up their seed phrase to change PW
     const mnemonicConfirmed = await this.stores.seedPhrase.get("confirmed")
     assert(
@@ -174,19 +169,9 @@ export default class AppHandler extends ExtensionHandler {
       "Please backup your seed phrase before attempting to change your password."
     )
 
-    // fetch keyring pair from address
-    const pair = keyring.getPair(rootAccount.address)
+    // check given PW
+    await this.stores.password.checkPassword(currentPw)
 
-    const transformedPw = await this.stores.password.transformPassword(currentPw)
-    assert(transformedPw, "Password error")
-    assert(transformedPw === this.stores.password.getPassword(), "Incorrect Password")
-    // attempt to unlock the pair
-    // a successful unlock means password is ok
-    try {
-      pair.unlock(transformedPw)
-    } catch (err) {
-      throw new Error("Incorrect password")
-    }
     // test if the two inputs of the new password are the same
     assert(newPw === newPwConfirm, "New password and new password confirmation must match")
 
@@ -201,6 +186,7 @@ export default class AppHandler extends ExtensionHandler {
       newSalt = salt
     }
 
+    const transformedPw = await this.stores.password.transformPassword(currentPw)
     const result = await changePassword({ currentPw: transformedPw, newPw: hashedNewPw })
     if (!result.ok) throw Error(result.val)
 

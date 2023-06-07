@@ -114,7 +114,7 @@ export type Chain = {
   balanceMetadata: Array<BalanceModuleMetadata>
   /** balance module configs for this chain */
   balanceModuleConfigs: Array<BalanceModuleConfig>
-  /** chain-specified name of this chain */
+  /** chain-specified name for this chain */
   chainName: Maybe<Scalars["String"]>
   /** chainspec qr url for this chain */
   chainspecQrUrl: Maybe<Scalars["String"]>
@@ -122,14 +122,16 @@ export type Chain = {
   evmNetworks: Array<EvmNetwork>
   /** hash of the first block on this chain */
   genesisHash: Maybe<Scalars["String"]>
-  /** talisman-defined id for this substrate chain */
+  /** the id for this chain (talisman-defined) */
   id: Scalars["String"]
   /** implementation name for this chain */
   implName: Maybe<Scalars["String"]>
-  /** health status of this chain */
+  /** health status for this chain */
   isHealthy: Scalars["Boolean"]
   /** is chain this a testnet? */
   isTestnet: Scalars["Boolean"]
+  /** does this chain use custom rules to decide on the fee token for txs? */
+  isUnknownFeeToken: Scalars["Boolean"]
   /** latest metadata qr url for this chain */
   latestMetadataQrUrl: Maybe<Scalars["String"]>
   /** url of the logo for this chain */
@@ -138,7 +140,7 @@ export type Chain = {
   name: Maybe<Scalars["String"]>
   /** native token for this chain */
   nativeToken: Maybe<Token>
-  /** paraId of this chain (if this chain is a parachain for another chain) */
+  /** paraId for this chain (if this chain is a parachain for another chain) */
   paraId: Maybe<Scalars["Int"]>
   /** parathreads of this chain (if this chain is a relaychain) */
   parathreads: Array<Chain>
@@ -146,7 +148,7 @@ export type Chain = {
   prefix: Maybe<Scalars["Int"]>
   /** relaychain of this chain (if this chain is a parachain for another chain) */
   relay: Maybe<Chain>
-  /** talisman-defined substrate rpcs for this chain */
+  /** substrate rpcs for this chain (talisman-defined) */
   rpcs: Array<SubstrateRpc>
   /** index for sorting chains and evm networks in a user-friendly way */
   sortIndex: Maybe<Scalars["Int"]>
@@ -205,6 +207,8 @@ export type ChainOrderByInput =
   | "isHealthy_DESC"
   | "isTestnet_ASC"
   | "isTestnet_DESC"
+  | "isUnknownFeeToken_ASC"
+  | "isUnknownFeeToken_DESC"
   | "latestMetadataQrUrl_ASC"
   | "latestMetadataQrUrl_DESC"
   | "logo_ASC"
@@ -233,6 +237,8 @@ export type ChainOrderByInput =
   | "relay_isHealthy_DESC"
   | "relay_isTestnet_ASC"
   | "relay_isTestnet_DESC"
+  | "relay_isUnknownFeeToken_ASC"
+  | "relay_isUnknownFeeToken_DESC"
   | "relay_latestMetadataQrUrl_ASC"
   | "relay_latestMetadataQrUrl_DESC"
   | "relay_logo_ASC"
@@ -380,6 +386,9 @@ export type ChainWhereInput = {
   isTestnet_eq?: InputMaybe<Scalars["Boolean"]>
   isTestnet_isNull?: InputMaybe<Scalars["Boolean"]>
   isTestnet_not_eq?: InputMaybe<Scalars["Boolean"]>
+  isUnknownFeeToken_eq?: InputMaybe<Scalars["Boolean"]>
+  isUnknownFeeToken_isNull?: InputMaybe<Scalars["Boolean"]>
+  isUnknownFeeToken_not_eq?: InputMaybe<Scalars["Boolean"]>
   latestMetadataQrUrl_contains?: InputMaybe<Scalars["String"]>
   latestMetadataQrUrl_containsInsensitive?: InputMaybe<Scalars["String"]>
   latestMetadataQrUrl_endsWith?: InputMaybe<Scalars["String"]>
@@ -567,11 +576,11 @@ export type EvmNetwork = {
   isTestnet: Scalars["Boolean"]
   /** url of the logo for this network */
   logo: Maybe<Scalars["String"]>
-  /** talisman-defined name for this network */
+  /** name for this network (talisman-defined) */
   name: Maybe<Scalars["String"]>
   /** native token for this network */
   nativeToken: Maybe<Token>
-  /** talisman-defined ethereum rpcs for this network */
+  /** ethereum rpcs for this network (talisman-defined) */
   rpcs: Array<EthereumRpc>
   /** index for sorting chains and evm networks in a user-friendly way */
   sortIndex: Maybe<Scalars["Int"]>
@@ -628,6 +637,8 @@ export type EvmNetworkOrderByInput =
   | "substrateChain_isHealthy_DESC"
   | "substrateChain_isTestnet_ASC"
   | "substrateChain_isTestnet_DESC"
+  | "substrateChain_isUnknownFeeToken_ASC"
+  | "substrateChain_isUnknownFeeToken_DESC"
   | "substrateChain_latestMetadataQrUrl_ASC"
   | "substrateChain_latestMetadataQrUrl_DESC"
   | "substrateChain_logo_ASC"
@@ -906,7 +917,7 @@ export type SubstrateRpc = {
 export type Token = {
   /** TODO: Put all token data into here (because we have plugins now) */
   data: Maybe<Scalars["JSON"]>
-  /** talisman-defined id for this token */
+  /** id for this token (talisman-defined) */
   id: Scalars["String"]
   /** implementation detail for relation lookups, can be removed once https://github.com/subsquid/squid/issues/41 is merged */
   squidImplementationDetailChain: Maybe<Chain>
@@ -956,6 +967,8 @@ export type TokenOrderByInput =
   | "squidImplementationDetailChain_isHealthy_DESC"
   | "squidImplementationDetailChain_isTestnet_ASC"
   | "squidImplementationDetailChain_isTestnet_DESC"
+  | "squidImplementationDetailChain_isUnknownFeeToken_ASC"
+  | "squidImplementationDetailChain_isUnknownFeeToken_DESC"
   | "squidImplementationDetailChain_latestMetadataQrUrl_ASC"
   | "squidImplementationDetailChain_latestMetadataQrUrl_DESC"
   | "squidImplementationDetailChain_logo_ASC"
@@ -1057,6 +1070,7 @@ export type ChainFragment = {
   subscanUrl: string | null
   chainspecQrUrl: string | null
   latestMetadataQrUrl: string | null
+  isUnknownFeeToken: boolean
   isHealthy: boolean
   paraId: number | null
   nativeToken: { id: string } | null
@@ -1110,6 +1124,7 @@ export type ChainsQuery = {
     subscanUrl: string | null
     chainspecQrUrl: string | null
     latestMetadataQrUrl: string | null
+    isUnknownFeeToken: boolean
     isHealthy: boolean
     paraId: number | null
     nativeToken: { id: string } | null
@@ -1235,6 +1250,7 @@ export const ChainFragmentDoc = {
           { kind: "Field", name: { kind: "Name", value: "subscanUrl" } },
           { kind: "Field", name: { kind: "Name", value: "chainspecQrUrl" } },
           { kind: "Field", name: { kind: "Name", value: "latestMetadataQrUrl" } },
+          { kind: "Field", name: { kind: "Name", value: "isUnknownFeeToken" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "rpcs" },
@@ -1492,6 +1508,7 @@ export const ChainsDocument = {
           { kind: "Field", name: { kind: "Name", value: "subscanUrl" } },
           { kind: "Field", name: { kind: "Name", value: "chainspecQrUrl" } },
           { kind: "Field", name: { kind: "Name", value: "latestMetadataQrUrl" } },
+          { kind: "Field", name: { kind: "Name", value: "isUnknownFeeToken" } },
           {
             kind: "Field",
             name: { kind: "Name", value: "rpcs" },

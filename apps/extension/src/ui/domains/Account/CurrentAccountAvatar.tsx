@@ -5,6 +5,7 @@ import { classNames } from "@talismn/util"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 const Avatar = ({ account, className }: { className?: string; account?: AccountJsonAny }) => {
   return account?.address ? (
@@ -28,10 +29,11 @@ export const CurrentAccountAvatar = ({
   withTooltip?: boolean
 }) => {
   const { account } = useSelectedAccount()
+  const { t } = useTranslation()
   const tooltip = useMemo(() => {
     if (!withTooltip) return
-    return account ? account.name : "All accounts"
-  }, [account, withTooltip])
+    return account ? account.name : t("All accounts")
+  }, [t, account, withTooltip])
 
   return withTooltip ? (
     <WithTooltip as="div" tooltip={tooltip} className="flex flex-col justify-center">

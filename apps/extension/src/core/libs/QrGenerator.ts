@@ -1,8 +1,9 @@
-import { AccountTypes } from "@core/domains/accounts/types"
-import { getPairForAddressSafely } from "@core/handlers/helpers"
+import { verifierCertificateMnemonicStore } from "@core/domains/accounts/store.verifierCertificateMnemonic"
+import { passwordStore } from "@core/domains/app"
+import { log } from "@core/log"
 import { chaindataProvider } from "@core/rpcs/chaindata"
 import { getMetadataDef, getMetadataRpcFromDef } from "@core/util/getMetadataDef"
-import keyring from "@polkadot/ui-keyring"
+import { Keyring } from "@polkadot/keyring"
 import { assert, hexToU8a, u8aConcat, u8aToU8a } from "@polkadot/util"
 import { SubNativeToken } from "@talismn/balances-substrate-native"
 import { Chain } from "@talismn/chaindata-provider"
@@ -18,21 +19,21 @@ const getEncryptionForChain = (chain: Chain) => {
   }
 }
 
-const signWithRoot = async (unsigned: Uint8Array) => {
-  const rootAccount = keyring.getAccounts().find(({ meta }) => meta?.origin === AccountTypes.ROOT)
-  assert(rootAccount, "Root account not found")
+const signWithVerifierCertMnemonic = async (unsigned: Uint8Array) => {
+  try {
+    const pw = passwordStore.getPassword()
+    assert(pw, "Unauthorised")
+    const { ok, val: seedVal } = await verifierCertificateMnemonicStore.getSeed(pw)
+    assert(ok && seedVal, "Failed to get seed")
+    const keyring = new Keyring()
+    const signingPair = keyring.createFromUri(seedVal, {}, "sr25519")
 
-  // For network specs, sign the specs (not the entire payload)
-  const signResult = await getPairForAddressSafely(rootAccount.address, (keypair) => {
-    const type = keypair.type
-    const publicKey = keypair.publicKey
-    const signature = keypair.sign(unsigned)
-    return { type, publicKey, signature }
-  })
-
-  if (!signResult.ok) throw new Error("Failed to sign : " + signResult.unwrap())
-
-  return signResult.val
+    // For network specs, sign the specs (not the entire payload)
+    const { type, publicKey } = signingPair
+    return { type, publicKey, signature: signingPair.sign(unsigned) }
+  } catch (error) {
+    throw new Error("Failed to sign : " + (error as Error).message)
+  }
 }
 
 /**
@@ -89,7 +90,13 @@ export const generateQrAddNetworkSpecs = async (genesisHash: string) => {
     })
   )
 
-  const { publicKey, signature } = await signWithRoot(specs)
+  try {
+    // eslint-disable-next-line no-var
+    var { publicKey, signature } = await signWithVerifierCertMnemonic(specs)
+  } catch (e) {
+    log.error("Failed to sign network specs", e)
+    throw new Error("Failed to sign network specs")
+  }
 
   return u8aToU8a(
     u8aConcat(
@@ -121,8 +128,13 @@ export const generateQrUpdateNetworkMetadata = async (genesisHash: string, specV
     meta: hexToU8a(metadataRpc),
     genesis_hash: hexToU8a(genesisHash),
   })
-
-  const { publicKey, signature } = await signWithRoot(payload)
+  try {
+    // eslint-disable-next-line no-var
+    var { publicKey, signature } = await signWithVerifierCertMnemonic(payload)
+  } catch (e) {
+    log.error("Failed to sign network metadata", e)
+    throw new Error("Failed to sign network metadata")
+  }
 
   return u8aToU8a(
     u8aConcat(

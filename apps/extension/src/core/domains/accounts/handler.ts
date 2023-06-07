@@ -1,4 +1,4 @@
-import { sortAccounts } from "@core/domains/accounts/helpers"
+import { getPrimaryAccount, sortAccounts } from "@core/domains/accounts/helpers"
 import type {
   RequestAccountCreate,
   RequestAccountCreateFromJson,
@@ -25,23 +25,21 @@ import { createPair } from "@polkadot/keyring"
 import { KeyringPair$Json } from "@polkadot/keyring/types"
 import keyring from "@polkadot/ui-keyring"
 import { assert } from "@polkadot/util"
-import { ethereumEncode, isEthereumAddress, mnemonicValidate } from "@polkadot/util-crypto"
+import {
+  ethereumEncode,
+  isEthereumAddress,
+  mnemonicGenerate,
+  mnemonicValidate,
+} from "@polkadot/util-crypto"
 import { addressFromMnemonic } from "@talisman/util/addressFromMnemonic"
 import { decodeAnyAddress, encodeAnyAddress, sleep } from "@talismn/util"
 
 export default class AccountsHandler extends ExtensionHandler {
-  private getRootAccount() {
-    // TODO this is duplicated in handlers/app.ts
-    return keyring.getAccounts().find(({ meta }) => meta?.origin === AccountTypes.ROOT)
-  }
-
-  // we can only create a new account if we have an existing root account
-  // this account can be identified via the metadata k/v pair: `origin === "ROOT"`
+  // we can only create a new account if we have an existing stored seed
   // requires:
   //   - password
-  //   - root account
+  //   - stored seed (unlocked with password)
   //   - derivation path
-  //   - account seed (unlocked via password)
 
   private async accountCreate({ name, type }: RequestAccountCreate): Promise<string> {
     const password = this.stores.password.getPassword()
@@ -51,46 +49,62 @@ export default class AccountsHandler extends ExtensionHandler {
     const existing = allAccounts.find((account) => account.meta?.name === name)
     assert(!existing, "An account with this name already exists")
 
-    const rootAccount = this.getRootAccount()
-    assert(rootAccount, "No root account")
+    const rootAccount = getPrimaryAccount(true)
 
     const isEthereum = type === "ethereum"
     const getDerivationPath = (accountIndex: number) =>
       // for ethereum accounts, use same derivation path as metamask in case user wants to share seed with it
       isEthereum ? getEthDerivationPath(accountIndex) : `//${accountIndex}`
 
-    const rootSeedResult = await this.stores.seedPhrase.getSeed(password)
-    if (rootSeedResult.err) throw new Error("Global seed not available")
+    const seedResult = await this.stores.seedPhrase.getSeed(password)
+    if (seedResult.err) throw new Error(seedResult.val)
 
-    const rootSeed = rootSeedResult.val
-    let accountIndex
-    let derivedAddress: string | null = null
-    for (accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
-      derivedAddress = addressFromMnemonic(`${rootSeed}${getDerivationPath(accountIndex)}`, type)
-
-      const exists = keyring.getAccounts().some(({ address }) => address === derivedAddress)
-      if (exists) continue
-
-      break
+    let seed = seedResult.val
+    let shouldStoreSeed = false
+    // currently shouldn't be possible to not have a seed, but it will be soon
+    if (!seed) {
+      seed = mnemonicGenerate()
+      shouldStoreSeed = true
     }
 
-    assert(derivedAddress, "Reached maximum number of derived accounts")
-
-    const { pair } = keyring.addUri(
-      `${rootSeed}${getDerivationPath(accountIndex)}`,
-      password,
-      {
+    // currently shouldn't be possible to not have a root account, but it will be soon
+    if (!rootAccount) {
+      const { pair } = keyring.addUri(seed, password, {
         name,
-        origin: AccountTypes.DERIVED,
-        parent: rootAccount.address,
-        derivationPath: getDerivationPath(accountIndex),
-      },
-      type
-    )
+        origin: AccountTypes.TALISMAN,
+      })
+      talismanAnalytics.capture("account create", { type, method: "parent" })
+      if (shouldStoreSeed) await this.stores.seedPhrase.add(seed, password)
+      return pair.address
+    } else {
+      let accountIndex
+      let derivedAddress: string | null = null
+      for (accountIndex = 0; accountIndex <= 1000; accountIndex += 1) {
+        derivedAddress = addressFromMnemonic(`${seed}${getDerivationPath(accountIndex)}`, type)
 
-    talismanAnalytics.capture("account create", { type, method: "derived" })
+        const exists = keyring.getAccounts().some(({ address }) => address === derivedAddress)
+        if (exists) continue
 
-    return pair.address
+        break
+      }
+
+      assert(derivedAddress, "Reached maximum number of derived accounts")
+
+      const { pair } = keyring.addUri(
+        `${seed}${getDerivationPath(accountIndex)}`,
+        password,
+        {
+          name,
+          origin: AccountTypes.DERIVED,
+          parent: rootAccount.address,
+          derivationPath: getDerivationPath(accountIndex),
+        },
+        type
+      )
+
+      talismanAnalytics.capture("account create", { type, method: "derived" })
+      return pair.address
+    }
   }
 
   private async accountCreateSeed({
@@ -98,7 +112,7 @@ export default class AccountsHandler extends ExtensionHandler {
     seed,
     type,
   }: RequestAccountCreateFromSeed): Promise<string> {
-    const password = await this.stores.password.getPassword()
+    const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     // get seed and compare against master seed - cannot import root seed
@@ -140,19 +154,12 @@ export default class AccountsHandler extends ExtensionHandler {
   }: RequestAccountCreateFromJson): Promise<string> {
     await sleep(1000)
 
-    const password = await this.stores.password.getPassword()
+    const password = this.stores.password.getPassword()
     assert(password, "Not logged in")
 
     try {
       const parsedJson: KeyringPair$Json = JSON.parse(json)
 
-      const rootAccount = this.getRootAccount()
-      assert(rootAccount, "You have no root account. Please reinstall Talisman and create one.")
-
-      assert(
-        encodeAnyAddress(rootAccount.address, 42) !== encodeAnyAddress(parsedJson.address, 42),
-        "Cannot re-import your original account"
-      )
       const pair = keyring.createFromJson(parsedJson, {
         name: parsedJson.meta?.name || "Json Import",
         origin: AccountTypes.JSON,
@@ -161,6 +168,7 @@ export default class AccountsHandler extends ExtensionHandler {
       const notExists = !keyring
         .getAccounts()
         .some((acc) => acc.address.toLowerCase() === pair.address.toLowerCase())
+
       assert(notExists, "Account already exists")
 
       pair.decodePkcs8(importedAccountPassword)
@@ -256,13 +264,9 @@ export default class AccountsHandler extends ExtensionHandler {
   }
 
   private accountForget({ address }: RequestAccountForget): boolean {
-    const account = keyring.getAccounts().find((acc) => acc.address === address)
+    const account = keyring.getAccount(address)
     assert(account, "Unable to find account")
 
-    assert(
-      AccountTypes.ROOT !== (account.meta.origin as keyof typeof AccountTypes),
-      "Cannot forget root account"
-    )
     const { type } = keyring.getPair(account?.address)
     talismanAnalytics.capture("account forget", { type })
 
@@ -349,6 +353,15 @@ export default class AccountsHandler extends ExtensionHandler {
     return mnemonicValidate(mnemonic)
   }
 
+  private async setVerifierCertMnemonic(mnemonic: string) {
+    const isValidMnemonic = mnemonicValidate(mnemonic)
+    assert(isValidMnemonic, "Invalid mnemonic")
+    const password = this.stores.password.getPassword()
+    if (!password) throw new Error("Unauthorised")
+    await this.stores.verifierCertificateMnemonic.add(mnemonic, password)
+    return true
+  }
+
   public async handle<TMessageType extends MessageTypes>(
     id: string,
     type: TMessageType,
@@ -380,6 +393,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsSubscribe(id, port)
       case "pri(accounts.validateMnemonic)":
         return this.accountValidateMnemonic(request as string)
+      case "pri(accounts.setVerifierCertMnemonic)":
+        return this.setVerifierCertMnemonic(request as string)
       default:
         throw new Error(`Unable to handle message of type ${type}`)
     }

@@ -14,6 +14,7 @@ import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNaviga
 import { Wallet } from "ethers"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import { FormFieldContainer, FormFieldInputText, FormFieldTextarea } from "talisman-ui"
@@ -160,6 +161,8 @@ const testValidMnemonic = async (val?: string) => {
 }
 
 export const AccountAddSecretMnemonic = () => {
+  const { t } = useTranslation("account-add")
+
   const { data, updateData } = useAccountAddSecret()
   const navigate = useNavigate()
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
@@ -185,34 +188,34 @@ export const AccountAddSecretMnemonic = () => {
                 .string()
                 .test(
                   "is-valid-mnemonic-ethereum",
-                  "Invalid secret",
+                  t("Invalid secret"),
                   (val) => isValidEthPrivateKey(val) || testValidMnemonic(val)
                 )
                 .when("multi", {
                   is: false,
                   then: yup
                     .string()
-                    .test("not-duplicate-ethereum", "Account already exists", async (val) =>
+                    .test("not-duplicate-ethereum", t("Account already exists"), async (val) =>
                       testNoDuplicate(accountAddresses, "ethereum", val)
                     ),
                 }),
               otherwise: yup
                 .string()
-                .test("is-valid-mnemonic-sr25519", "Invalid secret", (val) =>
+                .test("is-valid-mnemonic-sr25519", t("Invalid secret"), (val) =>
                   testValidMnemonic(val)
                 )
                 .when("multi", {
                   is: false,
                   then: yup
                     .string()
-                    .test("not-duplicate-sr25519", "Account already exists", async (val) =>
+                    .test("not-duplicate-sr25519", t("Account already exists"), async (val) =>
                       testNoDuplicate(accountAddresses, "sr25519", val)
                     ),
                 }),
             }),
         })
         .required(),
-    [accountAddresses]
+    [t, accountAddresses]
   )
 
   const {
@@ -266,8 +269,8 @@ export const AccountAddSecretMnemonic = () => {
         const notificationId = notify(
           {
             type: "processing",
-            title: "Importing account",
-            subtitle: "Please wait",
+            title: t("Importing account"),
+            subtitle: t("Please wait"),
           },
           { autoClose: false }
         )
@@ -276,19 +279,19 @@ export const AccountAddSecretMnemonic = () => {
           setAddress(await api.accountCreateFromSeed(name, uri, type))
           notifyUpdate(notificationId, {
             type: "success",
-            title: "Account imported",
+            title: t("Account imported"),
             subtitle: name,
           })
         } catch (err) {
           notifyUpdate(notificationId, {
             type: "error",
-            title: "Error importing account",
+            title: t("Error importing account"),
             subtitle: (err as Error)?.message ?? "",
           })
         }
       }
     },
-    [navigate, setAddress, updateData]
+    [t, navigate, setAddress, updateData]
   )
 
   const handleTypeChange = useCallback(
@@ -307,8 +310,8 @@ export const AccountAddSecretMnemonic = () => {
   return (
     <Container withBack centered>
       <HeaderBlock
-        title="Choose account type"
-        text="What type of account would you like to import ?"
+        title={t("Choose account type")}
+        text={t("What type of account would you like to import?")}
       />
       <Spacer small />
       <AccountTypeSelector defaultType={data.type} onChange={handleTypeChange} />
@@ -321,7 +324,7 @@ export const AccountAddSecretMnemonic = () => {
         <FormFieldContainer error={errors.name?.message}>
           <FormFieldInputText
             {...register("name")}
-            placeholder="Choose a name"
+            placeholder={t("Choose a name")}
             spellCheck={false}
             autoComplete="off"
             // eslint-disable-next-line jsx-a11y/no-autofocus
@@ -338,31 +341,33 @@ export const AccountAddSecretMnemonic = () => {
         </FormFieldContainer>
         <FormFieldTextarea
           {...register("mnemonic")}
-          placeholder={`Enter your 12 or 24 word recovery phrase${
-            type === "ethereum" ? " or private key" : ""
-          }`}
+          placeholder={
+            type === "ethereum"
+              ? t("Enter your 12 or 24 word recovery phrase or private key")
+              : t("Enter your 12 or 24 word recovery phrase")
+          }
           rows={5}
           data-lpignore
           spellCheck={false}
         />
         <div className="mt-8 flex justify-between text-xs">
-          <div className="text-body-secondary">Word count: {words}</div>
+          <div className="text-body-secondary">{t("Word count: {{words}}", { words })}</div>
           <div className="text-alert-warn text-right">{errors.mnemonic?.message}</div>
         </div>
         {/* Waiting for designers validation for this feature, but it's ready ! */}
         {/* <div className="mnemonic-buttons">
             <button type="button" onClick={handleGenerateNew}>
-              Generate New
+              {t('Generate New')}
             </button>
           </div> */}
         <Spacer small />
         <Spacer small />
         <Checkbox {...register("multi")} className={classNames(isPrivateKey && "invisible")}>
-          Import multiple accounts from this recovery phrase
+          {t("Import multiple accounts from this recovery phrase")}
         </Checkbox>
         <Spacer />
         <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-          Import
+          {t("Import")}
         </SimpleButton>
       </form>
     </Container>

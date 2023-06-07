@@ -70,6 +70,13 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
     return await this.set(result)
   }
 
+  /**
+   * Creates a hashed version of the password, which is used to create an authentication secret, and used to encrypt all secret info
+   *
+   * This is used in cases where we may need to rollback, so it should never produce any side effects (like saving data to localstorage)
+   * @param plaintextPw The plain text user password to be used to create a hashed password and an authentication secret
+   * @returns
+   */
   async createPassword(plaintextPw: string) {
     const salt = await generateSalt()
     const pwResult = await getHashedPassword(plaintextPw, salt)
@@ -126,12 +133,15 @@ export class PasswordStore extends StorageProvider<PasswordStoreData> {
   }
 
   async checkPassword(password: string) {
-    assert(this.isLoggedIn.value, "Unauthorised")
+    assert(this.isLoggedIn.value === TRUE, "Unauthorised")
     const pw = await this.transformPassword(password)
     assert(pw === this.getPassword(), "Incorrect password")
     return pw
   }
 
+  /**
+   * Returns the encrypted password if it is set, otherwise undefined
+   */
   getPassword() {
     if (!this.#password) return undefined
     return this.#password

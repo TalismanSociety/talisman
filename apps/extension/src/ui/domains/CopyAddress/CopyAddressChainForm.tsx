@@ -9,6 +9,7 @@ import useChains from "@ui/hooks/useChains"
 import { useSetting } from "@ui/hooks/useSettings"
 import sortBy from "lodash/sortBy"
 import { useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import AccountAvatar from "../Account/Avatar"
 import { ChainLogo } from "../Asset/ChainLogo"
@@ -21,13 +22,6 @@ type ChainFormat = {
   prefix: number | null
   name: string
   address: string
-}
-
-const SUBSTRATE_FORMAT: Omit<ChainFormat, "address"> = {
-  key: "substrate",
-  chainId: null,
-  prefix: null,
-  name: "Substrate (Generic)",
 }
 
 const ChainFormatButton = ({ format, onClick }: { format: ChainFormat; onClick?: () => void }) => {
@@ -86,6 +80,7 @@ export const CopyAddressChainForm = () => {
   const [search, setSearch] = useState("")
   const [useTestnets] = useSetting("useTestnets")
   const { chains, chainsMap } = useChains(useTestnets)
+  const { t } = useTranslation("copy-address")
 
   const account = useAccountByAddress(address)
   const accountChain = useMemo(
@@ -93,6 +88,15 @@ export const CopyAddressChainForm = () => {
     [account?.genesisHash, chains]
   )
 
+  const SUBSTRATE_FORMAT: Omit<ChainFormat, "address"> = useMemo(
+    () => ({
+      key: "substrate",
+      chainId: null,
+      prefix: null,
+      name: t("Substrate (Generic)"),
+    }),
+    [t]
+  )
   const formats: ChainFormat[] = useMemo(() => {
     if (!address || !chains.length) return []
 
@@ -120,7 +124,7 @@ export const CopyAddressChainForm = () => {
         address: convertAddress(address, chain.prefix),
       })),
     ].filter((f) => !accountChain || accountChain.id === f.chainId)
-  }, [address, chains, chainsMap, accountChain])
+  }, [address, chains, chainsMap, SUBSTRATE_FORMAT, accountChain])
 
   const filteredFormats = useMemo(() => {
     if (!search) return formats
@@ -129,11 +133,11 @@ export const CopyAddressChainForm = () => {
   }, [formats, search])
 
   return (
-    <CopyAddressLayout title="Select network">
+    <CopyAddressLayout title={t("Select network")}>
       <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
         <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
           {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
-          <SearchInput onChange={setSearch} placeholder="Search by network name" autoFocus />
+          <SearchInput onChange={setSearch} placeholder={t("Search by network name")} autoFocus />
         </div>
         <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
           <ChainFormatsList formats={filteredFormats} onSelect={setChainId} />

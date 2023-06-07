@@ -5,6 +5,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { NetworkOption, usePortfolio } from "@ui/domains/Portfolio/context"
 import { UseComboboxState, UseComboboxStateChangeOptions, useCombobox } from "downshift"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled, { css } from "styled-components"
 
 const Container = styled.div<{ isOpen?: boolean; disabled?: boolean }>`
@@ -223,6 +224,8 @@ export const NetworkPicker = () => {
       selectItem(undefined)
   }, [networks, selectItem, selectedItem])
 
+  const { t } = useTranslation("portfolio")
+
   return (
     <Container
       className={classNames(isOpen && "select-open", disabled && "select-disabled")}
@@ -243,18 +246,18 @@ export const NetworkPicker = () => {
           <input
             spellCheck="false"
             lp-ignore="true"
-            placeholder="All networks"
+            placeholder={t("All networks")}
             disabled={disabled}
             {...getInputProps()}
           />
           {inputValue ? (
-            <button disabled={disabled} aria-label="clear" type="button" onClick={handleClear}>
+            <button disabled={disabled} aria-label={t("Clear")} type="button" onClick={handleClear}>
               <XIcon />
             </button>
           ) : (
             <button
               disabled={disabled}
-              aria-label="toggle menu"
+              aria-label={t("Toggle menu")}
               type="button"
               {...getToggleButtonProps()}
             >
@@ -283,7 +286,7 @@ export const NetworkPicker = () => {
             ))
           ) : (
             <li>
-              <div className="text-body-secondary p-8 text-sm">No network found</div>
+              <div className="text-body-secondary p-8 text-sm">{t("No network found")}</div>
             </li>
           ))}
       </ul>

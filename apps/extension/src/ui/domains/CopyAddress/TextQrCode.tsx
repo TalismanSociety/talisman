@@ -1,5 +1,6 @@
 import QrCodeStyling from "@solana/qr-code-styling"
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { talismanRedHandSvg } from "../Sign/Qr/constants"
@@ -20,6 +21,7 @@ export const TextQrCode = ({
 }) => {
   const [qrCode, setQrCode] = useState<string>()
   const [error, setError] = useState<Error>()
+  const { t } = useTranslation("copy-address")
 
   useEffect(() => {
     if (!data) return
@@ -59,7 +61,7 @@ export const TextQrCode = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="text-alert-error relative flex h-full w-full flex-col items-center justify-center whitespace-pre-wrap bg-white">
-            Failed to generate QR
+            {t("Failed to generate QR")}
           </div>
         </TooltipTrigger>
         <TooltipContent>{error.toString()}</TooltipContent>

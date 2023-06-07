@@ -257,7 +257,7 @@ export const watchSubstrateTransaction = async (
 
   await addSubstrateTransaction(hash, payload, { siteUrl, ...transferInfo })
 
-  return watchExtrinsicStatus(chain.id, hash, async (result, blockNumber, extIndex) => {
+  await watchExtrinsicStatus(chain.id, hash, async (result, blockNumber, extIndex) => {
     const type: NotificationType = result === "included" ? "submitted" : result
     const url = `${chain.subscanUrl}extrinsic/${blockNumber}-${extIndex}`
 
@@ -269,4 +269,6 @@ export const watchSubstrateTransaction = async (
     console.warn("Failed to watch extrinsic", { err })
     Sentry.captureException(err, { extra: { chainId: chain.id, chainName: chain.name } })
   })
+
+  return hash
 }

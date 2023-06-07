@@ -1,6 +1,5 @@
 import { Balances } from "@core/domains/balances/types"
 import { Token } from "@core/domains/tokens/types"
-import { getNetworkInfo } from "@core/util/getNetworkInfo"
 import { Box } from "@talisman/components/Box"
 import { Modal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
@@ -10,6 +9,7 @@ import { planckToTokens } from "@talismn/util"
 import useBalances from "@ui/hooks/useBalances"
 import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
+import { getNetworkInfo } from "@ui/hooks/useNetworkInfo"
 import { useSetting } from "@ui/hooks/useSettings"
 import useTokens from "@ui/hooks/useTokens"
 import {
@@ -20,6 +20,7 @@ import {
   useMemo,
   useState,
 } from "react"
+import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 import styled from "styled-components"
 
@@ -124,6 +125,8 @@ const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
   const allBalances = useBalances()
 
+  const { t: tCommon } = useTranslation()
+
   const { tokens: allTokens } = useTokens(useTestnets)
   const allowedTokens = useMemo(
     () =>
@@ -140,7 +143,7 @@ const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
           const chain = chainsMap[token.chain?.id as string]
           const evmNetwork = evmNetworksMap[String("evmNetwork" in token && token.evmNetwork?.id)]
           const relay = chain?.relay?.id ? chainsMap[chain?.relay?.id] : undefined
-          const network = getNetworkInfo({ chain, evmNetwork, relay })
+          const network = getNetworkInfo(tCommon, { chain, evmNetwork, relay })
 
           const balances = new Balances(allBalances.find({ tokenId: token.id }))
 
@@ -150,7 +153,7 @@ const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
             balances,
           }
         }),
-    [filter, allTokens, chainsMap, evmNetworksMap, allBalances]
+    [filter, allTokens, chainsMap, evmNetworksMap, tCommon, allBalances]
   )
   const [search, setSearch] = useState<string>()
   const handleSearchChanged: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
@@ -180,6 +183,8 @@ const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
     [onTokenSelect]
   )
 
+  const { t } = useTranslation("asset")
+
   return (
     <FormContainer>
       <Box
@@ -196,7 +201,11 @@ const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
         <Box flex column justify={"center"} fontsize="large" fg="background-muted-2x">
           <SearchIcon />
         </Box>
-        <input placeholder="Search by name or network" type="text" onChange={handleSearchChanged} />
+        <input
+          placeholder={t("Search by name or network")}
+          type="text"
+          onChange={handleSearchChanged}
+        />
       </Box>
       <Box
         className="tokens-scroll"
@@ -240,9 +249,11 @@ export const TokenPickerModal = ({
   filter,
   onTokenSelect,
 }: TokenPickerModalProps) => {
+  const { t } = useTranslation("asset")
+
   return (
     <Modal open={isOpen} onClose={close}>
-      <Dialog title="Select a token" onClose={close}>
+      <Dialog title={t("Select a token")} onClose={close}>
         <TokenPickerForm filter={filter} onTokenSelect={onTokenSelect} />
       </Dialog>
     </Modal>
