@@ -163,12 +163,18 @@ export const usePortfolioSymbolBalances = (balances: Balances) => {
           (hasEthereumAccount ? DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.length : 0)
         )
       if (account.genesisHash) return 1
+
+      // DEFAULT_TOKENS are only shown for accounts with no balance
+      const accountHasSomeBalance =
+        balances.find({ address: account?.address }).sum.planck.total > 0n
+      if (accountHasSomeBalance) return 0
+
       if (account.type === "ethereum") return DEFAULT_PORTFOLIO_TOKENS_ETHEREUM.length
       return DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE.length
     })()
 
     return symbolBalances.length < expectedRows ? expectedRows - symbolBalances.length : 0
-  }, [account, hasEthereumAccount, networkFilter, symbolBalances.length])
+  }, [account, hasEthereumAccount, networkFilter, balances, symbolBalances.length])
 
   return { symbolBalances, availableSymbolBalances, lockedSymbolBalances, skeletons }
 }
