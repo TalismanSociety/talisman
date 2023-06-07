@@ -7485,6 +7485,28 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@talismn/orb@workspace:*, @talismn/orb@workspace:packages/orb":
+  version: 0.0.0-use.local
+  resolution: "@talismn/orb@workspace:packages/orb"
+  dependencies:
+    "@polkadot/util-crypto": 12.2.1
+    "@talismn/eslint-config": "workspace:*"
+    "@talismn/tsconfig": "workspace:*"
+    "@types/react": 18.0.14
+    "@types/react-dom": 18.0.5
+    blueimp-md5: 2.19.0
+    color: 4.2.3
+    eslint: ^8.15.0
+    nanoid: 3.3.6
+    react: 18.2.0
+    react-dom: 18.2.0
+    typescript: 4.6.4
+  peerDependencies:
+    react: "*"
+    react-dom: "*"
+  languageName: unknown
+  linkType: soft
+
 "@talismn/token-rates@workspace:*, @talismn/token-rates@workspace:packages/token-rates":
   version: 0.0.0-use.local
   resolution: "@talismn/token-rates@workspace:packages/token-rates"
@@ -14197,6 +14219,7 @@ __metadata:
     "@talismn/chaindata-js": ^0.0.7
     "@talismn/chaindata-provider": "workspace:*"
     "@talismn/eslint-config": "workspace:*"
+    "@talismn/orb": "workspace:*"
     "@talismn/token-rates": "workspace:*"
     "@talismn/tsconfig": "workspace:*"
     "@talismn/util": "workspace:*"

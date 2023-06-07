@@ -1,8 +1,9 @@
-import { encodeAnyAddress } from "@talismn/util"
 import md5 from "blueimp-md5"
 import Color from "color"
 import { nanoid } from "nanoid"
 import { FC, useMemo } from "react"
+
+import { encodeAnyAddress } from "../lib/encodeAnyAddress"
 
 const djb2 = (str: string) => {
   let hash = 5381
@@ -29,7 +30,7 @@ export const useTalismanOrb = (seed: string) => {
     try {
       // seed may be specific to a ss58 prefix, get the base address
       // eslint-disable-next-line no-var
-      var address = isEthereum ? seed : encodeAnyAddress(seed)
+      var address = encodeAnyAddress(seed)
     } catch (err) {
       address = seed
     }
