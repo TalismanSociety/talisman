@@ -7,6 +7,7 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { copyAddress } from "@ui/util/copyAddress"
 import { FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const FormattedAddress = ({ address }: { address: string }) => {
@@ -36,6 +37,7 @@ export const SignViewVotingDelegate: FC<{
   trackId: number
   explorerUrl?: string | null
 }> = ({ amount, tokenId, representative, conviction, trackId, explorerUrl }) => {
+  const { t } = useTranslation("sign")
   const url = useMemo(
     () => (explorerUrl && representative ? `${explorerUrl}/address/${representative}` : undefined),
     [representative, explorerUrl]
@@ -49,7 +51,7 @@ export const SignViewVotingDelegate: FC<{
   return (
     <div className="flex w-full flex-col items-center gap-4">
       <div className="flex w-full items-center justify-between gap-8 overflow-hidden">
-        <div className="whitespace-nowrap">Delegating to</div>
+        <div className="whitespace-nowrap">{t("Delegating to")}</div>
         <div className="text-body flex grow justify-end gap-2 overflow-hidden text-base">
           <FormattedAddress address={representative} />
           <button
@@ -66,18 +68,18 @@ export const SignViewVotingDelegate: FC<{
         </div>
       </div>
       <div className="flex w-full items-center justify-between">
-        <div>Amount</div>
+        <div>{t("Amount")}</div>
         <div className="text-body">
           <TokenLogo tokenId={tokenId} className="inline h-[1em] w-[1em]" />{" "}
           <TokensAndFiat planck={amount} tokenId={tokenId} noCountUp />
         </div>
       </div>
       <div className="flex w-full items-center justify-between">
-        <div>Conviction</div>
+        <div>{t("Conviction")}</div>
         <div className="text-body">{conviction === 0 ? "0.1" : conviction}X</div>
       </div>
       <div className="flex w-full items-center justify-between">
-        <div>Track</div>
+        <div>{t("Track")}</div>
         <div className="text-body">#{trackId}</div>
       </div>
     </div>

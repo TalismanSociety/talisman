@@ -2,6 +2,7 @@ import { classNames } from "@talismn/util"
 import AccountAvatar from "@ui/domains/Account/Avatar"
 import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
+import { useTranslation } from "react-i18next"
 
 export const PortfolioAccount = ({
   address,
@@ -10,6 +11,7 @@ export const PortfolioAccount = ({
   address: string
   className?: string
 }) => {
+  const { t } = useTranslation("portfolio")
   const account = useAccountByAddress(address)
   if (!account) return null
   return (
@@ -22,7 +24,7 @@ export const PortfolioAccount = ({
         />
       </div>
       <div className="max-w-lg overflow-hidden text-ellipsis whitespace-nowrap">
-        {account.name ?? "Unknown"}
+        {account.name ?? t("Unknown")}
       </div>
       <AccountTypeIcon className="text-primary" origin={account?.origin} />
     </div>

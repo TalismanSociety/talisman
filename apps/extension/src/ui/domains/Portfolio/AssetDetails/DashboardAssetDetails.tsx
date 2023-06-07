@@ -6,6 +6,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { AssetBalanceCellValue } from "@ui/domains/Portfolio/AssetBalanceCellValue"
 import { NoTokensMessage } from "@ui/domains/Portfolio/NoTokensMessage"
 import { Fragment } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 import { CopyAddressButton } from "./CopyAddressIconButton"
@@ -109,6 +110,7 @@ type AssetRowProps = {
 }
 
 const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
+  const { t } = useTranslation("portfolio")
   const { chainOrNetwork, summary, symbol, detailRows, status, networkType } =
     useChainTokenBalances({ chainId, balances })
 
@@ -140,7 +142,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             tokens={summary.lockedTokens}
             fiat={summary.lockedFiat}
             symbol={symbol}
-            tooltip="Total Locked Balance"
+            tooltip={t("Total Locked Balance")}
             balancesStatus={status}
             className={classNames(
               status.status === "fetching" && "animate-pulse transition-opacity"
@@ -153,7 +155,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
             tokens={summary.availableTokens}
             fiat={summary.availableFiat}
             symbol={symbol}
-            tooltip="Total Available Balance"
+            tooltip={t("Total Available Balance")}
             balancesStatus={status}
             className={classNames(
               status.status === "fetching" && "animate-pulse transition-opacity"
@@ -200,7 +202,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
                       )}
                     >
                       <div className="text-body flex items-center justify-end gap-2">
-                        <div>Unbonding</div>
+                        <div>{t("Unbonding")}</div>
                       </div>
                       {/* TODO: Show time until funds are unbonded */}
                       {/* <div>4d 14hr 11min</div> */}

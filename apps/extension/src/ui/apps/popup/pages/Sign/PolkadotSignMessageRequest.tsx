@@ -9,6 +9,7 @@ import { QrSubstrate } from "@ui/domains/Sign/Qr/QrSubstrate"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { ViewDetails } from "@ui/domains/Sign/ViewDetails/ViewDetails"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { Container } from "./common"
 import { SignAccountAvatar } from "./SignAccountAvatar"
@@ -16,6 +17,7 @@ import { SignAccountAvatar } from "./SignAccountAvatar"
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
 export const PolkadotSignMessageRequest: FC = () => {
+  const { t } = useTranslation("sign")
   const {
     url,
     request,
@@ -51,11 +53,11 @@ export const PolkadotSignMessageRequest: FC = () => {
         {account && request && (
           <>
             <div className="flex grow flex-col">
-              <h1>Sign Request</h1>
+              <h1>{"Sign Request"}</h1>
               <h2 className="center">
-                You are signing a message with account{" "}
+                {t("You are signing a message with account")}{" "}
                 <AccountPill account={account} prefix={chain?.prefix ?? undefined} />
-                {chain ? ` on ${chain.name}` : null}
+                {chain ? ` ${t("on {{chainName}}", { chainName: chain.name })}` : null}
               </h2>
               <textarea
                 readOnly
@@ -76,7 +78,7 @@ export const PolkadotSignMessageRequest: FC = () => {
             {account.origin !== "HARDWARE" && account.origin !== "QR" && (
               <Box flex fullwidth gap={2.4}>
                 <SimpleButton disabled={processing} onClick={reject}>
-                  Cancel
+                  {t("Cancel")}
                 </SimpleButton>
                 <SimpleButton
                   disabled={processing}
@@ -84,7 +86,7 @@ export const PolkadotSignMessageRequest: FC = () => {
                   primary
                   onClick={approve}
                 >
-                  Approve
+                  {t("Approve")}
                 </SimpleButton>
               </Box>
             )}

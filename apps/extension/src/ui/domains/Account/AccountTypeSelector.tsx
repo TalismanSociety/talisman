@@ -3,6 +3,7 @@ import CtaButton from "@talisman/components/CtaButton"
 import { EthereumCircleLogo, PolkadotCircleLogo } from "@talisman/theme/logos"
 import { classNames } from "@talismn/util"
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const Container = styled.div`
@@ -43,6 +44,7 @@ export const AccountTypeSelector = ({
   onChange,
   className,
 }: AccountTypeSelectorProps) => {
+  const { t } = useTranslation()
   const [type, setType] = useState<AccountAddressType | undefined>(defaultType)
 
   const handleClick = (type: AccountAddressType) => () => {
@@ -56,17 +58,17 @@ export const AccountTypeSelector = ({
   return (
     <Container className={className} tabIndex={0}>
       <AccountTypeButton
-        title="Polkadot"
+        title={t("Polkadot")}
         className={classNames("allow-focus", type === "sr25519" && "selected")}
         icon={<PolkadotCircleLogo />}
-        subtitle="Polkadot, Kusama &amp; Parachains"
+        subtitle={t(`Polkadot, Kusama & Parachains`)}
         onClick={handleClick("sr25519")}
       />
       <AccountTypeButton
-        title="Ethereum"
+        title={t("Ethereum")}
         className={classNames("allow-focus", type === "ethereum" && "selected")}
         icon={<EthereumCircleLogo />}
-        subtitle="Moonbeam, Moonriver, Astar etc."
+        subtitle={t("Moonbeam, Moonriver, Astar etc.")}
         onClick={handleClick("ethereum")}
       />
     </Container>

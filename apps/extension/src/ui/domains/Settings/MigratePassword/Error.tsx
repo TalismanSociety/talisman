@@ -1,35 +1,39 @@
 import { passwordStore } from "@core/domains/app"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import { useSetting } from "@ui/hooks/useSettings"
+import { Trans, useTranslation } from "react-i18next"
 import { Button, Checkbox } from "talisman-ui"
 
 import { useMigratePassword } from "./context"
 
 export const MigratePasswordError = () => {
+  const { t } = useTranslation("settings")
   const { statusMessage, onComplete } = useMigratePassword()
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
 
   return (
-    <ModalDialog title="There was a problem">
+    <ModalDialog title={t("There was a problem")}>
       <p className="text-body-secondary text-sm">
         <span className="block">
-          There was an error in updating your password.{" "}
+          {t("There was an error in updating your password.")}{" "}
           {useErrorTracking && (
-            <span>This error has been logged and our team wil look into it.</span>
+            <span>{t("This error has been logged and our team wil look into it.")}</span>
           )}
           {!useErrorTracking && (
             <span>
-              Please opt in to error tracking to report the error below, or contact our support team
-              on{" "}
-              <a
-                className="text-white opacity-100"
-                href="https://discord.gg/2EmmfrTN"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Discord
-              </a>
-              .
+              <Trans t={t}>
+                Please opt in to error tracking to report the error below, or contact our support
+                team on{" "}
+                <a
+                  className="text-white opacity-100"
+                  href="https://discord.gg/2EmmfrTN"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Discord
+                </a>
+                .
+              </Trans>
             </span>
           )}
         </span>
@@ -38,7 +42,7 @@ export const MigratePasswordError = () => {
         {!useErrorTracking && (
           <span className="mb-4 block">
             <Checkbox onChange={() => setUseErrorTracking((prev) => !prev)}>
-              Send error report and enable error tracking
+              {t("Send error report and enable error tracking")}
             </Checkbox>
           </span>
         )}
@@ -47,8 +51,9 @@ export const MigratePasswordError = () => {
         </span>
       </p>
       <p className="text-body-secondary text-sm">
-        The update was not completed, but you may continue to use Talisman. You will be asked to
-        update again next time the extension is restarted.
+        {t(
+          "The update was not completed, but you may continue to use Talisman. You will be asked to update again next time the extension is restarted."
+        )}
       </p>
       <Button
         fullWidth
@@ -58,7 +63,7 @@ export const MigratePasswordError = () => {
           await passwordStore.set({ ignorePasswordUpdate: true })
         }}
       >
-        Close
+        {t("Close")}
       </Button>
     </ModalDialog>
   )

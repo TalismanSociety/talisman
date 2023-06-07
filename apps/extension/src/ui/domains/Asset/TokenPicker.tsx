@@ -17,6 +17,7 @@ import { isTransferableToken } from "@ui/util/isTransferableToken"
 import sortBy from "lodash/sortBy"
 import { useCallback, useMemo, useRef, useState } from "react"
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
 import { useIntersection } from "react-use"
 
 import { ChainLogoBase } from "./ChainLogo"
@@ -69,6 +70,7 @@ const TokenRow: FC<TokenRowProps> = ({
   allowUntransferable,
   onClick,
 }) => {
+  const { t } = useTranslation()
   const { tokensTotal, isLoading } = useMemo(() => {
     const planck = balances.each.reduce((prev, curr) => prev + curr.transferable.planck, 0n)
     return {
@@ -93,7 +95,7 @@ const TokenRow: FC<TokenRowProps> = ({
       title={
         allowUntransferable || isTransferable
           ? undefined
-          : "Sending this token is not supported yet"
+          : t("Sending this token is not supported yet")
       }
       type="button"
       data-id={token.id}
@@ -177,6 +179,7 @@ const TokensList: FC<TokensListProps> = ({
   allowUntransferable,
   onSelect,
 }) => {
+  const { t } = useTranslation()
   const account = useAccountByAddress(address)
   const [useTestnets] = useSetting("useTestnets")
   const { chainsMap, chains } = useChains(useTestnets)
@@ -235,13 +238,13 @@ const TokensList: FC<TokensListProps> = ({
           chainName:
             chain?.name ??
             (evmNetwork
-              ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? " (Ethereum)" : ""}`
+              ? `${evmNetwork?.name}${evmNetwork?.substrateChain ? ` (${t("Ethereum")})` : ""}`
               : ""),
           chainLogo: chain?.logo ?? evmNetwork?.logo,
           hasFiatRate: !!tokenRatesMap[token.id],
         }
       })
-  }, [allTokens, chainsMap, evmNetworksMap, filterAccountCompatibleTokens, tokenRatesMap])
+  }, [allTokens, chainsMap, evmNetworksMap, filterAccountCompatibleTokens, t, tokenRatesMap])
 
   const tokensWithBalances = useMemo(() => {
     // wait until balances are loaded
@@ -334,7 +337,7 @@ const TokensList: FC<TokensListProps> = ({
           ))}
           {!tokens?.length && (
             <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
-              No token matches your search
+              {t("No token matches your search")}
             </div>
           )}
         </>
@@ -371,13 +374,18 @@ export const TokenPicker: FC<TokenPickerProps> = ({
   allowUntransferable,
   onSelect,
 }) => {
+  const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-        {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
-        <SearchInput onChange={setSearch} placeholder="Search by token or network name" autoFocus />
+        <SearchInput
+          onChange={setSearch}
+          placeholder={t("Search by token or network name")}
+          // eslint-disable-next-line jsx-a11y/no-autofocus
+          autoFocus
+        />
       </div>
       <ScrollContainer className="bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">
         <TokensList

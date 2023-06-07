@@ -1,6 +1,7 @@
 import { LoaderIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { FC, useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
 type ViewDetailsButtonProps = {
@@ -16,6 +17,7 @@ export const ViewDetailsButton: FC<ViewDetailsButtonProps> = ({
   isAnalysing = false,
   hasError = false,
 }) => {
+  const { t } = useTranslation("sign")
   const [hasClickRequest, setHasClickRequest] = useState(false)
 
   const handleClick = useCallback(() => {
@@ -27,7 +29,7 @@ export const ViewDetailsButton: FC<ViewDetailsButtonProps> = ({
     return (
       <span className="text-body-disabled inline-flex h-16 items-center text-sm">
         <LoaderIcon className="text-body-secondary animate-spin-slow" />
-        <span className="ml-2">Decoding....</span>
+        <span className="ml-2">{t("Decoding...")}</span>
       </span>
     )
 
@@ -36,7 +38,7 @@ export const ViewDetailsButton: FC<ViewDetailsButtonProps> = ({
       className={classNames(hasError && "text-alert-warn", hide && "hidden")}
       onClick={handleClick}
     >
-      View Details
+      {t("View Details")}
     </PillButton>
   )
 }

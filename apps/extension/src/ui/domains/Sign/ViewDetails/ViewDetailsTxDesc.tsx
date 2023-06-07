@@ -1,5 +1,6 @@
 import { TransactionMethod } from "@core/domains/signing/types"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { ViewDetailsField } from "./ViewDetailsField"
 
@@ -8,10 +9,8 @@ type ViewDetailsTxDescProps = {
   method?: TransactionMethod
 }
 
-export const ViewDetailsTxDesc: FC<ViewDetailsTxDescProps> = ({
-  label = "Description",
-  method,
-}) => {
+export const ViewDetailsTxDesc: FC<ViewDetailsTxDescProps> = ({ label, method }) => {
+  const { t } = useTranslation("sign")
   const { main = "", steps = [] } = useMemo(() => {
     const isBatch =
       method && ["utility.batch", "utility.batchAll"].includes(`${method.section}.${method.method}`)
@@ -32,7 +31,7 @@ export const ViewDetailsTxDesc: FC<ViewDetailsTxDescProps> = ({
       <div>{main}</div>
       {steps.length > 0 && (
         <>
-          <div>Batch steps :</div>
+          <div>{t("Batch steps:")}</div>
           <ul>
             {steps.map((step, i) => (
               <li key={i}>- {step}</li>

@@ -22,6 +22,7 @@ import {
   useMemo,
   useState,
 } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 import { FormattedAddress } from "./FormattedAddress"
@@ -167,6 +168,7 @@ type PasteAddressProps = {
 }
 
 const PasteAddress = ({ onSelected, exclude, addressType }: PasteAddressProps) => {
+  const { t } = useTranslation()
   const [pastedAddress, setPastedAddress] = useState<string>()
   const [isInvalid, setIsInvalid] = useState<boolean>(false)
   const [isExcluded, setIsExcluded] = useState<boolean>(false)
@@ -192,9 +194,9 @@ const PasteAddress = ({ onSelected, exclude, addressType }: PasteAddressProps) =
   const { status, message } = useMemo(
     () => ({
       status: isInvalid || isExcluded ? "ERROR" : undefined,
-      message: isInvalid ? "Invalid address" : isExcluded ? "Cannot send to self" : undefined,
+      message: isInvalid ? t("Invalid address") : isExcluded ? t("Cannot send to self") : undefined,
     }),
-    [isExcluded, isInvalid]
+    [isExcluded, isInvalid, t]
   )
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
@@ -230,7 +232,7 @@ const PasteAddress = ({ onSelected, exclude, addressType }: PasteAddressProps) =
         onChange={handleChange}
         type="text"
         className="paste-address"
-        placeholder="Paste address"
+        placeholder={t("Paste address")}
         onKeyPress={handleKeyUp}
       />
     </Field>
@@ -284,11 +286,12 @@ const AccountPicker: FC<Props> = ({
   className,
   withAddressBook,
   withAddressInput,
-  label = "My Accounts",
+  label,
   tabIndex,
   addressType,
   genesisHash,
 }) => {
+  const { t } = useTranslation()
   const accounts = useAccounts()
   const { contacts } = useAddressBook()
   const [selectedAddress, setSelectedAddress] = useState<string | undefined>(defaultValue)
@@ -394,7 +397,7 @@ const AccountPicker: FC<Props> = ({
               {...getToggleButtonProps()}
             >
               {selectedAddress && <FormattedAddress address={selectedAddress} />}
-              {!selectedAddress && <span>{placeholder || "anything"}</span>}
+              {!selectedAddress && <span>{placeholder || t("anything")}</span>}
             </Button>
             {isOpen && (
               <DivWithMount className="accounts-dropdown" {...getMenuProps()}>
@@ -408,7 +411,7 @@ const AccountPicker: FC<Props> = ({
                 <div className="accounts-group">
                   {filteredContacts.length > 0 && (
                     <>
-                      {withAddressInput && <span className="group-header">Contacts</span>}
+                      {withAddressInput && <span className="group-header">{t("Contacts")}</span>}
                       <ul>
                         {filteredContacts.map((contact, index) => (
                           // eslint-disable-next-line react/jsx-key
@@ -433,7 +436,9 @@ const AccountPicker: FC<Props> = ({
                   )}
                   {filteredAccounts.length > 0 && (
                     <>
-                      {label && withAddressInput && <span className="group-header">{label}</span>}
+                      {label && withAddressInput && (
+                        <span className="group-header">{label || t("My Accounts")}</span>
+                      )}
                       <ul>
                         {filteredAccounts.map((account, index) => (
                           // eslint-disable-next-line react/jsx-key

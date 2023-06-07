@@ -8,6 +8,7 @@ import { api } from "@ui/api"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
@@ -36,6 +37,7 @@ const getFileContent = (file?: File) =>
   })
 
 const AccountJson = () => {
+  const { t } = useTranslation("account-add")
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const submit = useCallback(
@@ -43,8 +45,8 @@ const AccountJson = () => {
       const notificationId = notify(
         {
           type: "processing",
-          title: "Importing account",
-          subtitle: "Please wait",
+          title: t("Importing account"),
+          subtitle: t("Please wait"),
         },
         { autoClose: false }
       )
@@ -52,18 +54,18 @@ const AccountJson = () => {
         setAddress(await api.accountCreateFromJson(fileContent, password))
         notifyUpdate(notificationId, {
           type: "success",
-          title: "Account created",
+          title: t("Account created"),
           subtitle: "",
         })
       } catch (err) {
         notifyUpdate(notificationId, {
           type: "error",
-          title: "Error importing account",
+          title: t("Error importing account"),
           subtitle: (err as Error)?.message,
         })
       }
     },
-    [setAddress]
+    [setAddress, t]
   )
 
   const {
@@ -90,8 +92,8 @@ const AccountJson = () => {
   return (
     <Layout withBack centered>
       <HeaderBlock
-        title="Import JSON"
-        text="Please choose the .json file you exported from Polkadot.js or Talisman"
+        title={t("Import JSON")}
+        text={t("Please choose the .json file you exported from Polkadot.js or Talisman")}
       />
       <Spacer />
       <form data-button-pull-left onSubmit={handleSubmit(submit)}>
@@ -100,24 +102,24 @@ const AccountJson = () => {
             onChange={handleFileChange}
             inputProps={{
               accept: "application/json",
-              placeholder: "Choose a .json file",
+              placeholder: t("Choose a .json file"),
             }}
           />
         </FormFieldContainer>
         <Spacer />
         <div className="text-body-secondary">
-          Please enter the password you set when creating your polkadot.js account
+          {t("Please enter the password you set when creating your polkadot.js account")}
         </div>
         <div className="h-4" />
         <div className="text-body-disabled text-sm">
-          Your account will be re-encrypted with your Talisman password
+          {t("Your account will be re-encrypted with your Talisman password")}
         </div>
         <div className="h-8" />
         <FormFieldContainer error={errors.password?.message}>
           <FormFieldInputText
             {...register("password")}
             type="password"
-            placeholder="Enter your password"
+            placeholder={t("Enter your password")}
             spellCheck={false}
             data-lpignore
           />
@@ -130,7 +132,7 @@ const AccountJson = () => {
           disabled={!isValid}
           processing={isSubmitting}
         >
-          Import
+          {t("Import")}
         </Button>
       </form>
     </Layout>

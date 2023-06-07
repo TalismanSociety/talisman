@@ -10,6 +10,7 @@ import { useContact } from "@ui/hooks/useContact"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { copyAddress } from "@ui/util/copyAddress"
 import { FC, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 import urlJoin from "url-join"
 
@@ -49,6 +50,7 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
   evmNetworkId,
   className,
 }) => {
+  const { t } = useTranslation()
   const account = useAccountByAddress(address)
   const contact = useContact(address)
   const chain = useChain(chainId as string)
@@ -72,9 +74,11 @@ export const AddressDisplay: FC<AddressDisplayProps> = ({
   return (
     <Tooltip>
       <TooltipContent>
-        <div>Original address :</div>
+        <div>{t("Original address:")}</div>
         <div style={{ marginTop: 2 }}>{address}</div>
-        <div style={{ marginTop: 4 }}>{chain?.name || "Generic"} format :</div>
+        <div style={{ marginTop: 4 }}>
+          {t("{{chainName}} format:", { chainName: chain?.name || "Generic" })}
+        </div>
         <div style={{ marginTop: 2 }}>{resolvedAddress}</div>
       </TooltipContent>
       <TooltipTrigger

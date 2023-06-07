@@ -1,5 +1,6 @@
 import { AnalyticsPage } from "@ui/api/analytics"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 import { OnboardDialog } from "../components/OnboardDialog"
@@ -52,9 +53,11 @@ export const OnboardingPage = () => {
     }
   }, [processOnboard])
 
+  const { t } = useTranslation("onboard")
   const title = useMemo(
-    () => (data.importMethodType === "mnemonic" ? "Importing wallet..." : "Setting up Talisman..."),
-    [data]
+    () =>
+      data.importMethodType === "mnemonic" ? t("Importing wallet...") : t("Setting up Talisman..."),
+    [data.importMethodType, t]
   )
 
   return (

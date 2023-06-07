@@ -7,6 +7,7 @@ import { provideContext } from "@talisman/util/provideContext"
 import { useQuery } from "@tanstack/react-query"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { useSelectedAccount } from "../Portfolio/SelectedAccountContext"
@@ -41,6 +42,7 @@ export const [AccountExportPrivateKeyModalProvider, useAccountExportPrivateKeyMo
   provideContext(useAccountExportPrivateKeyModalProvider)
 
 const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
+  const { t } = useTranslation()
   const { account, exportAccount } = useAccountExportPrivateKeyModal()
   const { password } = usePasswordUnlock()
 
@@ -66,8 +68,8 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
       notify(
         {
           type: "success",
-          title: "Copy successful",
-          subtitle: "Private key copied to clipboard",
+          title: t("Copy successful"),
+          subtitle: t("Private key copied to clipboard"),
         },
         // set an id to prevent multiple clicks to display multiple notifications
         { toastId }
@@ -77,21 +79,23 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
       notify(
         {
           type: "error",
-          title: `Copy failed`,
+          title: t("Copy failed"),
           subtitle: (err as Error).message,
         },
         { toastId }
       )
       return false
     }
-  }, [privateKey])
+  }, [privateKey, t])
 
   if (!account) return null
 
   return (
     <div className="text-body-secondary flex h-full w-full flex-col text-left">
       <div className="w-full text-left">
-        This private key can be used to access your account's funds. Don't share it with anyone.
+        {t(
+          "This private key can be used to access your account's funds. Don't share it with anyone."
+        )}
       </div>
       <div className="flex w-full grow flex-col justify-center gap-6 ">
         <div className="!text-body flex w-full items-center gap-4">
@@ -107,7 +111,7 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
               <div className="text-lg ">
                 <LoaderIcon className="animate-spin-slow inline-block " />
               </div>
-              <div>Loading...</div>
+              <div>{t("Loading...")}</div>
             </>
           )}
           {!!privateKey && (
@@ -128,13 +132,14 @@ const ExportPrivateKeyResult = ({ onClose }: { onClose?: () => void }) => {
         </div>
       </div>
       <Button className="w-full" onClick={onClose}>
-        Close
+        {t("Close")}
       </Button>
     </div>
   )
 }
 
 export const AccountExportPrivateKeyModal = () => {
+  const { t } = useTranslation()
   const { isOpen, close } = useAccountExportPrivateKeyModal()
 
   return (
@@ -145,7 +150,7 @@ export const AccountExportPrivateKeyModal = () => {
             className="h-full"
             title={
               <div className="text-body-secondary text-base">
-                Please confirm your password to export your account.
+                {t("Please confirm your password to export your account.")}
               </div>
             }
           >

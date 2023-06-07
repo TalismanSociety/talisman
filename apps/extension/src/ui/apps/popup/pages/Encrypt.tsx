@@ -9,6 +9,7 @@ import { Message } from "@ui/domains/Sign/Message"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
 import { useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 import styled from "styled-components"
 
@@ -24,6 +25,7 @@ const SignMessage = ({
   request: string
   isDecrypt: boolean
 }) => {
+  const { t } = useTranslation("request")
   const data = useMemo(() => {
     return request
   }, [request])
@@ -32,7 +34,9 @@ const SignMessage = ({
     <>
       <h1 className="no-margin-top">{isDecrypt ? "Decrypt " : "Encrypt "}Request</h1>
       <h2>
-        You are {isDecrypt ? "decrypting" : "encrypting"} some data with
+        {isDecrypt
+          ? t("You are decrypting some data with")
+          : t("You are encrypting some data with")}
         <br />
         <AccountPill account={account} />
       </h2>
@@ -42,6 +46,7 @@ const SignMessage = ({
 }
 
 const EncryptApprove = () => {
+  const { t } = useTranslation("request")
   const { popupOpenEvent } = useAnalytics()
   const { id } = useParams() as EncryptRequestIdOnly | DecryptRequestIdOnly
   const req = useRequest(id)
@@ -80,10 +85,10 @@ const EncryptApprove = () => {
           <>
             <Grid>
               <SimpleButton disabled={processing} onClick={reject}>
-                Cancel
+                {t("Cancel")}
               </SimpleButton>
               <SimpleButton disabled={processing} processing={processing} primary onClick={approve}>
-                Approve
+                {t("Approve")}
               </SimpleButton>
             </Grid>
           </>

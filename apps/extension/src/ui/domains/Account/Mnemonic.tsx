@@ -2,6 +2,7 @@ import { notify } from "@talisman/components/Notifications"
 import { CopyIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { MouseEventHandler, useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const SecretText = styled.div`
@@ -41,22 +42,23 @@ type MnemonicProps = {
 }
 
 export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
+  const { t } = useTranslation()
   const [hasHovered, setHasHovered] = useState(false)
 
   const handleCopy = useCallback(async () => {
     try {
       await window.navigator.clipboard.writeText(mnemonic)
       notify({
-        title: "Copied to clipboard",
+        title: t("Copied to clipboard"),
         type: "success",
       })
     } catch (err) {
       notify({
-        title: "Failed to copy",
+        title: t("Failed to copy"),
         type: "error",
       })
     }
-  }, [mnemonic])
+  }, [mnemonic, t])
 
   return (
     <>
@@ -65,7 +67,7 @@ export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
           onClick={handleCopy}
           className={classNames(hasHovered ? "text-white" : "text-black", "cursor-pointer")}
         >
-          <CopyIcon className="mr-2 inline" /> <span>Copy to clipboard</span>
+          <CopyIcon className="mr-2 inline" /> <span>{t("Copy to clipboard")}</span>
         </button>
       </div>
 
@@ -79,7 +81,7 @@ export const Mnemonic = ({ onMouseEnter, mnemonic }: MnemonicProps) => {
         <div className="content flex flex-wrap">
           {mnemonic.split(" ").map((word, i) => (
             <span
-              className="bg-black-tertiary text-body-secondary mx-2 my-2 rounded-lg py-3 px-4"
+              className="bg-black-tertiary text-body-secondary mx-2 my-2 rounded-lg px-4 py-3"
               key={`mnemonic-${i}`}
             >
               {word}

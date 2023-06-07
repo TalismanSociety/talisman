@@ -6,6 +6,7 @@ import { useTokenRates } from "@ui/hooks/useTokenRates"
 import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../SignContainer"
 import { SignViewBodyShimmer } from "../Views/SignViewBodyShimmer"
@@ -15,6 +16,7 @@ import { SignParamTokensButton } from "./shared/SignParamTokensButton"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc20Transfer: FC = () => {
+  const { t } = useTranslation("sign")
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const nativeToken = useToken(network?.nativeToken?.id)
@@ -64,8 +66,8 @@ export const EthSignBodyErc20Transfer: FC = () => {
   if (!amount || !nativeToken || !account || !network || !to) return <SignViewBodyShimmer />
 
   return (
-    <SignContainer networkType="ethereum" title="Transfer Request">
-      <div>You are transferring</div>
+    <SignContainer networkType="ethereum" title={t("Transfer Request")}>
+      <div>{t("You are transferring")}</div>
       <div className="flex">
         <SignParamTokensButton
           address={transactionInfo.targetAddress}
@@ -80,7 +82,7 @@ export const EthSignBodyErc20Transfer: FC = () => {
         />
       </div>
       <div className="flex">
-        <div>from</div>
+        <div>{t("from")}</div>
         {isOnBehalf && from ? (
           <SignParamAccountButton explorerUrl={network.explorerUrl} address={from} withIcon />
         ) : (
@@ -88,17 +90,17 @@ export const EthSignBodyErc20Transfer: FC = () => {
         )}
       </div>
       <div className="flex">
-        <div>to</div>
+        <div>{t("to")}</div>
         <SignParamAccountButton explorerUrl={network.explorerUrl} address={to} withIcon />
       </div>
       {isOnBehalf && (
         <div className="flex">
-          <div>with</div>
+          <div>{t("with")}</div>
           <SignParamAccountButton address={account.address} withIcon />
         </div>
       )}
       <div className="flex gap-3">
-        <div>on</div>
+        <div>{t("on")}</div>
         <TokenLogo className="inline-block" tokenId={nativeToken.id} />
         <div>{network.name}</div>
       </div>

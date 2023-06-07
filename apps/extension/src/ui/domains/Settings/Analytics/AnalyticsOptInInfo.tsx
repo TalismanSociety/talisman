@@ -1,5 +1,6 @@
 import { CheckCircleIcon, XIcon } from "@talisman/theme/icons/"
 import { FC, ReactNode } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const H1 = styled.h1`
@@ -64,54 +65,58 @@ export const AnalyticsOptInInfo: FC<{
   className?: string
   children?: ReactNode
 }> = ({ className, children }) => {
+  const { t } = useTranslation("settings")
+
   return (
     <AnalyticsContainer className={className}>
-      <H1>Help us improve Talisman</H1>
+      <H1>{t("Help us improve Talisman")}</H1>
       <p>
-        We want to build simple tools that empower our users and allow them navigate web3
-        applications with ease. To help improve our product and features we'd like to collect
-        anonymous usage information. This is optional, and you can opt-out at any time.
+        {t(
+          "We want to build simple tools that empower our users and allow them navigate web3 applications with ease. To help improve our product and features we'd like to collect anonymous usage information. This is optional, and you can opt-out at any time."
+        )}
       </p>
       <div>
-        <H3>What we track</H3>
+        <H3>{t("What we track")}</H3>
         <TickList tick>
           <li>
             <StyledCheckCircleIcon />
-            Anonymous user data
+            {t("Anonymous user data")}
           </li>
           <li>
             <StyledCheckCircleIcon />
-            Basic UI metrics
+            {t("Basic UI metrics")}
           </li>
         </TickList>
       </div>
       <div>
-        <H3>What we don't track</H3>
+        <H3>{t("What we don't track")}</H3>
         <TickList>
           <li>
             <StyledXIcon />
-            Identifying personal data such as IP addresses
+            {t("Identifying personal data such as IP addresses")}
           </li>
           <li>
             <StyledXIcon />
-            Recovery phrases or private keys
+            {t("Recovery phrases or private keys")}
           </li>
           <li>
             <StyledXIcon />
-            Public addresses
+            {t("Public addresses")}
           </li>
         </TickList>
       </div>
       {children}
       <MoreInfoText>
-        For more information please read our{" "}
-        <a
-          href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
-          target="_blank"
-          rel="noreferrer"
-        >
-          Privacy Policy
-        </a>
+        <Trans t={t}>
+          For more information please read our{" "}
+          <a
+            href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Privacy Policy
+          </a>
+        </Trans>
       </MoreInfoText>
     </AnalyticsContainer>
   )

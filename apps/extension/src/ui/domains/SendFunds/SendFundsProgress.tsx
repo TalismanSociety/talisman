@@ -12,6 +12,7 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useTransactionByHash from "@ui/hooks/useTransactionByHash"
 import { ethers } from "ethers"
 import { FC, useCallback, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { Button, PillButton, ProcessAnimation, ProcessAnimationStatus } from "talisman-ui"
 import urlJoin from "url-join"
 
@@ -28,6 +29,7 @@ const getBlockExplorerUrl = (
 }
 
 const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
+  const { t } = useTranslation("send-funds")
   const [replaceType, setReplaceType] = useState<TxReplaceType>()
   const { gotoProgress } = useSendFundsWizard()
 
@@ -55,7 +57,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
           icon={RocketIcon}
           className="!p-4"
         >
-          Speed Up
+          {t("Speed Up")}
         </PillButton>
         <PillButton
           size="sm"
@@ -63,7 +65,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
           icon={XCircleIcon}
           className="!p-4"
         >
-          Cancel Transfer
+          {t("Cancel Transfer")}
         </PillButton>
       </div>
       <TxReplaceDrawer tx={tx} type={replaceType} onClose={handleClose} />
@@ -72,6 +74,7 @@ const TxReplaceActions: FC<{ tx: WalletTransaction }> = ({ tx }) => {
 }
 
 const useStatusDetails = (tx: WalletTransaction) => {
+  const { t } = useTranslation("send-funds")
   const { title, subtitle, extra, animStatus } = useMemo<{
     title: string
     subtitle: string
@@ -87,44 +90,44 @@ const useStatusDetails = (tx: WalletTransaction) => {
     switch (tx.status) {
       case "unknown":
         return {
-          title: "Transaction not found",
-          subtitle: "Transaction was submitted, but Talisman is unable to track its progress.",
+          title: t("Transaction not found"),
+          subtitle: t("Transaction was submitted, but Talisman is unable to track its progress."),
           animStatus: "failure",
         }
       case "replaced": {
         return {
-          title: "Transaction cancelled",
-          subtitle: "This transaction has been replaced with another one",
+          title: t("Transaction cancelled"),
+          subtitle: t("This transaction has been replaced with another one"),
           animStatus: "failure",
         }
       }
       case "error":
         return {
-          title: "Failure",
-          subtitle: isReplacementCancel ? "Failed to cancel transfer" : "Transaction failed.",
+          title: t("Failure"),
+          subtitle: isReplacementCancel ? t("Failed to cancel transfer") : t("Transaction failed."),
           animStatus: "failure",
         }
       case "success":
         return {
-          title: isReplacementCancel ? "Transaction cancelled" : "Success",
+          title: isReplacementCancel ? t("Transaction cancelled") : t("Success"),
           subtitle: isReplacementCancel
-            ? "Your transfer was cancelled"
-            : "Your transfer was successful!",
+            ? t("Your transfer was cancelled")
+            : t("Your transfer was successful!"),
           animStatus: isReplacementCancel ? "failure" : "success",
         }
       case "pending":
         return {
-          title: isReplacementCancel ? "Cancelling transaction" : "Transfer in progress",
+          title: isReplacementCancel ? t("Cancelling transaction") : t("Transfer in progress"),
           subtitle: isReplacementCancel
-            ? "Attempting to cancel transfer"
-            : "This may take a few minutes.",
+            ? t("Attempting to cancel transfer")
+            : t("This may take a few minutes."),
           extra: isReplacementCancel
             ? undefined
-            : "You can now close this window. Your transfer will continue in the background.",
+            : t("You can now close this window. Your transfer will continue in the background."),
           animStatus: "processing",
         }
     }
-  }, [tx])
+  }, [tx, t])
 
   return {
     title,
@@ -148,6 +151,7 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
   href,
   onClose,
 }) => {
+  const { t } = useTranslation("send-funds")
   const { title, subtitle, animStatus, extra } = useStatusDetails(tx)
 
   return (
@@ -159,22 +163,23 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
         <div>
           {blockNumber ? (
             <>
-              Included in{" "}
+              {t("Included in")}{" "}
               {href ? (
                 <a target="_blank" className="hover:text-body text-grey-200" href={href}>
-                  block #{blockNumber} <ExternalLinkIcon className="inline align-text-top" />
+                  {t("block #{{blockNumber}}", { blockNumber })}{" "}
+                  <ExternalLinkIcon className="inline align-text-top" />
                 </a>
               ) : (
-                <span className="text-body">block #{blockNumber}</span>
+                <span className="text-body">{t("block #{{blockNumber}}", { blockNumber })}</span>
               )}
             </>
           ) : href ? (
-            <>
+            <Trans t={t}>
               View transaction on{" "}
               <a target="_blank" className="hover:text-body text-grey-200" href={href}>
                 block explorer <ExternalLinkIcon className="inline align-text-top" />
               </a>
-            </>
+            </Trans>
           ) : (
             extra
           )}
@@ -182,7 +187,7 @@ const SendFundsProgressBase: FC<SendFundsProgressBaseProps> = ({
         {tx.status === "pending" && <TxReplaceActions tx={tx} />}
       </div>
       <Button fullWidth onClick={onClose}>
-        Close
+        {t("Close")}
       </Button>
     </div>
   )

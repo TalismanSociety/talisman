@@ -1,0 +1,3 @@
+{
+  "How would you like to import your {data.importAccountType === \"ethereum\" ? \"Ethereum\" : \"Polkadot\"} wallet?": "How would you like to import your {data.importAccountType === \"ethereum\" ? \"Ethereum\" : \"Polkadot\"} wallet?"
+}

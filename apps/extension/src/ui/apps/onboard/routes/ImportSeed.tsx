@@ -2,8 +2,9 @@ import { yupResolver } from "@hookform/resolvers/yup"
 import { api } from "@ui/api"
 import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
-import { useCallback } from "react"
+import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { FormFieldTextarea } from "talisman-ui"
 import * as yup from "yup"
@@ -26,19 +27,6 @@ const cleanupMnemonic = (input = "") =>
     .filter(Boolean) //remove empty strings
     .join(" ")
 
-const schema = yup
-  .object({
-    mnemonic: yup
-      .string()
-      .trim()
-      .required("")
-      .transform(cleanupMnemonic)
-      .test("is-valid-mnemonic", "Invalid recovery phrase", (val) =>
-        api.accountValidateMnemonic(val as string)
-      ),
-  })
-  .required()
-
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
   feature: "Onboarding",
@@ -47,7 +35,25 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const ImportSeedPage = () => {
+  const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
+
+  const schema = useMemo(
+    () =>
+      yup
+        .object({
+          mnemonic: yup
+            .string()
+            .trim()
+            .required("")
+            .transform(cleanupMnemonic)
+            .test("is-valid-mnemonic", t("Invalid recovery phrase"), (val) =>
+              api.accountValidateMnemonic(val as string)
+            ),
+        })
+        .required(),
+    [t]
+  )
 
   const { data, updateData } = useOnboard()
   const navigate = useNavigate()
@@ -85,15 +91,17 @@ export const ImportSeedPage = () => {
         <div className="w-[70.9rem]">
           <OnboardDialog title="Import wallet">
             <p>
-              Please enter your 12 or 24 word recovery phrase, with each word separated by a space.
-              Please ensure no-one can see you entering your recovery phrase.
+              <Trans t={t}>
+                Please enter your 12 or 24 word recovery phrase, with each word separated by a
+                space. Please ensure no-one can see you entering your recovery phrase.
+              </Trans>
             </p>
             <form onSubmit={handleSubmit(submit)}>
               <div className="mt-24">
                 <OnboardFormField error={errors.mnemonic}>
                   <FormFieldTextarea
                     {...register("mnemonic")}
-                    placeholder="Enter your recovery phrase"
+                    placeholder={t("Enter your recovery phrase")}
                     rows={5}
                     data-lpignore
                     spellCheck={false}
@@ -104,7 +112,7 @@ export const ImportSeedPage = () => {
                 </OnboardFormField>
                 <div className="h-12"></div>
                 <OnboardButton className="h-28" type="submit" primary disabled={!isValid}>
-                  Import wallet
+                  {t("Import wallet")}
                 </OnboardButton>
               </div>
             </form>

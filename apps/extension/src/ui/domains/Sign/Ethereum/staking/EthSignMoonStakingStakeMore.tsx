@@ -1,5 +1,6 @@
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
@@ -8,6 +9,7 @@ import { getContractCallArg } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonStakingStakeMore: FC = () => {
+  const { t } = useTranslation("sign")
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const more = useMemo(
@@ -20,7 +22,7 @@ export const EthSignMoonStakingStakeMore: FC = () => {
   return (
     <SignContainer
       networkType="ethereum"
-      title="Increase stake"
+      title={t("Increase stake")}
       header={<SignViewIconHeader icon="stake" />}
     >
       <SignViewStakingStakeMore planck={more} tokenId={network.nativeToken.id} />

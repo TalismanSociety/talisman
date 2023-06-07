@@ -7,6 +7,7 @@ import { LockIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { sendAnalyticsEvent } from "@ui/api/analytics"
 import { useCallback, useEffect } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const StackedButtonGroup = styled(ButtonGroup)`
@@ -22,32 +23,35 @@ type Props = {
 }
 
 export const AlertCard = styled(({ className, onAccept, onReject }: Props) => {
+  const { t } = useTranslation("settings")
   return (
     <Card
       className={className}
       title={
         <div className="flex flex-col p-2">
           <LockIcon className="icon p-1" />
-          <span className="mt-2">Security Upgrade</span>
+          <span className="mt-2">{t("Security Upgrade")}</span>
         </div>
       }
       description={
         <p>
-          We’re upgrading our security measures, including enhanced password encryption.{" "}
-          <a
-            href="https://medium.com/we-are-talisman/talismans-security-model-1e60391694c0"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Learn more
-          </a>{" "}
-          about our new security features.
+          <Trans t={t}>
+            We’re upgrading our security measures, including enhanced password encryption.{" "}
+            <a
+              href="https://medium.com/we-are-talisman/talismans-security-model-1e60391694c0"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Learn more
+            </a>{" "}
+            about our new security features.
+          </Trans>
         </p>
       }
       cta={
         <StackedButtonGroup>
           <Button primary onClick={onAccept}>
-            Continue
+            {t("Continue")}
           </Button>
           <Button onClick={onReject}>Not for now</Button>
         </StackedButtonGroup>

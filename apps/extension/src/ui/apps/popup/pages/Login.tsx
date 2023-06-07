@@ -8,6 +8,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { usePrimaryAccount } from "@ui/hooks/usePrimaryAccount"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { SubmitHandler, useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { Button, FormFieldInputText } from "talisman-ui"
 import { LoginBackground } from "talisman-ui"
 import * as yup from "yup"
@@ -56,6 +57,7 @@ const LoginBackgroundDefault = () => (
 )
 
 const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
+  const { t } = useTranslation()
   const { popupOpenEvent } = useAnalytics()
 
   useEffect(() => {
@@ -81,13 +83,13 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
         if (result) {
           const qs = new URLSearchParams(window.location.search)
           if (qs.get("closeOnSuccess") === "true") window.close()
-        } else throw new Error("Paraverse access denied")
+        } else throw new Error(t("Paraverse access denied"))
       } catch (err) {
-        setError("password", { message: (err as Error)?.message ?? "Unknown error" })
+        setError("password", { message: (err as Error)?.message ?? t("Unknown error") })
         setFocus("password", { shouldSelect: true })
       }
     },
-    [setError, setFocus]
+    [setError, setFocus, t]
   )
 
   // autologin, for developers only
@@ -110,7 +112,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
         <div className="mt-[60px]">
           <HandMonoTransparentLogo className="inline-block text-[64px]" />
         </div>
-        <h1 className="font-surtExpanded mt-[34px] text-lg">Unlock the Talisman</h1>
+        <h1 className="font-surtExpanded mt-[34px] text-lg">{t("Unlock the Talisman")}</h1>
         {errors.password?.message && (
           <div className="text-alert-warn mt-8">{errors.password?.message}</div>
         )}
@@ -120,7 +122,7 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
           <FormFieldInputText
             {...register("password")}
             type="password"
-            placeholder="Enter password"
+            placeholder={t("Enter password")}
             spellCheck={false}
             autoComplete="off"
             data-lpignore
@@ -137,13 +139,13 @@ const Login = ({ setShowResetWallet }: { setShowResetWallet: () => void }) => {
             processing={isSubmitting}
             className={classNames(!isValid && "bg-white/10")}
           >
-            Unlock
+            {t("Unlock")}
           </Button>
           <button
             className="text-body-disabled mt-2 cursor-pointer text-sm transition-colors hover:text-white"
             onClick={setShowResetWallet}
           >
-            Forgot Password?
+            {t("Forgot Password?")}
           </button>
         </form>
       </Footer>

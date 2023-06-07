@@ -13,6 +13,7 @@ import { StaleBalancesIcon } from "@ui/domains/Portfolio/StaleBalancesIcon"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { PillButton } from "talisman-ui"
 
@@ -47,7 +48,7 @@ const ChainTokenBalances = ({ chainId, balances }: AssetRowProps) => {
 
   return (
     <ChainTokenBlock className="text-body-secondary rounded text-sm">
-      <div className="bg-grey-800 flex w-full items-center gap-6 border-transparent py-6 px-7">
+      <div className="bg-grey-800 flex w-full items-center gap-6 border-transparent px-7 py-6">
         <div className="text-xl">
           <ChainLogo id={chainOrNetwork.id} />
         </div>
@@ -132,6 +133,7 @@ type AssetsTableProps = {
 }
 
 const NoTokens = ({ symbol }: { symbol: string }) => {
+  const { t } = useTranslation()
   const { account } = useSelectedAccount()
   const { open } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
@@ -154,15 +156,17 @@ const NoTokens = ({ symbol }: { symbol: string }) => {
     <FadeIn>
       <div className="bg-field text-body-secondary leading-base rounded-sm p-10 text-center text-sm">
         <div>
-          You don't have any {symbol} {account ? " in this account" : ""}
+          {account
+            ? t("You don't have any {{symbol}} in this account", { symbol })
+            : t("You don't have any {{symbol}}", { symbol })}
         </div>
         <div className="mt-6 flex justify-center gap-4">
           <PillButton icon={ArrowDownIcon} onClick={handleCopy}>
-            Receive
+            {t("Receive")}
           </PillButton>
           {showBuyCrypto && (
             <PillButton icon={CreditCardIcon} onClick={handleBuyCryptoClick}>
-              Buy Crypto
+              {t("Buy Crypto")}
             </PillButton>
           )}
         </div>

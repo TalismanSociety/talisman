@@ -13,10 +13,11 @@ import { TokensAndFiat } from "@ui/domains/Asset/TokensAndFiat"
 import useToken from "@ui/hooks/useToken"
 import { BigNumber } from "ethers"
 import { FC, useCallback, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { NetworkUsage } from "../NetworkUsage"
-import { FEE_PRIORITY_OPTIONS } from "./common"
+import { useFeePriorityOptionsUI } from "./common"
 
 const getGasSettings = (
   gasSettingsByPriority: GasSettingsByPriority,
@@ -37,6 +38,7 @@ const Eip1559FeeTooltip: FC<{
   maxFee: BigNumber
   tokenId: string
 }> = ({ estimatedFee, maxFee, tokenId }) => {
+  const { t } = useTranslation("sign")
   const token = useToken(tokenId)
 
   // get estimated and max as string, with as many decimals on both for easy reading
@@ -67,11 +69,11 @@ const Eip1559FeeTooltip: FC<{
     <>
       <div className="flex flex-col gap-2 pt-1">
         <div className="flex w-full items-center justify-between gap-4">
-          <div>Estimated Fee :</div>
+          <div>{t("Estimated Fee:")}</div>
           <div className="font-mono">{estimated}</div>
         </div>
         <div className="flex w-full items-center justify-between gap-4">
-          <div>Maximum Fee :</div>
+          <div>{t("Maximum Fee:")}</div>
           <div className="font-mono">{max}</div>
         </div>
       </div>
@@ -101,6 +103,8 @@ const PriorityOption = ({
     return getTotalFeesFromGasSettings(gasSettings, txDetails.estimatedGas, txDetails.baseFeePerGas)
   }, [gasSettingsByPriority, priority, txDetails.baseFeePerGas, txDetails.estimatedGas])
 
+  const options = useFeePriorityOptionsUI()
+
   return (
     <button
       onClick={onClick}
@@ -111,9 +115,9 @@ const PriorityOption = ({
       )}
     >
       <div>
-        <img src={FEE_PRIORITY_OPTIONS[priority].icon} alt="" className="w-16" />
+        <img src={options[priority].icon} alt="" className="w-16" />
       </div>
-      <div className="grow">{FEE_PRIORITY_OPTIONS[priority].label}</div>
+      <div className="grow">{options[priority].label}</div>
       {selected || priority !== "custom" ? (
         <Tooltip placement="bottom-end">
           <TooltipTrigger>
@@ -154,6 +158,7 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
   networkUsage,
   tokenId,
 }) => {
+  const { t } = useTranslation("sign")
   const handleSelect = useCallback(
     (priority: EthPriorityOptionName) => () => {
       if (onChange) onChange(priority)
@@ -163,16 +168,18 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
 
   return (
     <div className="text-body-secondary bg-black-tertiary flex flex-col gap-12 rounded-t-xl p-12 text-sm">
-      <h3 className="text-body mb-0 text-center text-base font-bold">Fee Options</h3>
+      <h3 className="text-body mb-0 text-center text-base font-bold">{t("Fee Options")}</h3>
       <div>
-        This network requires a fee to validate your transaction. The fee will vary depending on how
-        busy the network is. You can adjust the fee and priority depending on the urgency of your
-        transaction.
+        <Trans t={t}>
+          This network requires a fee to validate your transaction. The fee will vary depending on
+          how busy the network is. You can adjust the fee and priority depending on the urgency of
+          your transaction.
+        </Trans>
       </div>
       <div className="w-full">
         <div className="flex w-full justify-between">
-          <div>Priority</div>
-          <div>Estimated Fee</div>
+          <div>{t("Priority")}</div>
+          <div>{t("Estimated Fee")}</div>
         </div>
         {gasSettingsByPriority.type === "eip1559" && (
           <>
@@ -222,16 +229,16 @@ export const FeeOptionsSelectForm: FC<FeeOptionsSelectProps> = ({
         />
         {txDetails.baseFeeTrend ? (
           <div className="mt-8 flex w-full items-center justify-between">
-            <div>Base Fee Trend</div>
+            <div>{t("Base Fee Trend")}</div>
             <div>
               <NetworkUsage baseFeeTrend={txDetails.baseFeeTrend} />
             </div>
           </div>
         ) : (
           <div className="mt-8 flex w-full items-center justify-between">
-            <div>Network Usage</div>
+            <div>{t("Network Usage")}</div>
             <div>
-              {networkUsage === undefined ? "N/A" : <>{Math.round(networkUsage * 100)} %</>}
+              {networkUsage === undefined ? t("N/A") : <>{Math.round(networkUsage * 100)} %</>}
             </div>
           </div>
         )}

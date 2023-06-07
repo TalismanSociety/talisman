@@ -15,6 +15,7 @@ import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { useEthSignTransactionRequest } from "@ui/domains/Sign/SignRequestContext"
 import useToken from "@ui/hooks/useToken"
 import { Suspense, lazy, useCallback, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { Button } from "talisman-ui"
 
@@ -99,6 +100,7 @@ const SignContainer = styled(Container)`
 `
 
 const useEvmBalance = (address?: string, evmNetworkId?: string) => {
+  const { t } = useTranslation("sign")
   const provider = useEthereumProvider(evmNetworkId)
   return useQuery({
     queryKey: ["evm-balance", provider?.network?.chainId, address],
@@ -110,7 +112,7 @@ const useEvmBalance = (address?: string, evmNetworkId?: string) => {
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error(err)
-        throw new Error("Failed to fetch balance")
+        throw new Error(t("Failed to fetch balance"))
       }
     },
   })
@@ -127,6 +129,7 @@ const FeeTooltip = ({
   maxFee?: string | bigint
   tokenId?: string
 }) => {
+  const { t } = useTranslation("sign")
   // cannot use useBalance because our db may not include testnet balances
   const token = useToken(tokenId)
   const { data: balance, error } = useEvmBalance(account, token?.evmNetwork?.id)
@@ -138,7 +141,7 @@ const FeeTooltip = ({
       <>
         {!!estimatedFee && (
           <div className="flex w-full justify-between gap-8">
-            <div>Estimated Fee:</div>
+            <div>{t("Estimated Fee:")}</div>
             <div>
               <TokensAndFiat tokenId={tokenId} planck={estimatedFee} noTooltip noCountUp />
             </div>
@@ -146,7 +149,7 @@ const FeeTooltip = ({
         )}
         {!!maxFee && (
           <div className="flex w-full justify-between gap-8">
-            <div>Max Fee:</div>
+            <div>{t("Max Fee:")}</div>
             <div>
               <TokensAndFiat tokenId={tokenId} planck={maxFee} noTooltip noCountUp />
             </div>
@@ -154,7 +157,7 @@ const FeeTooltip = ({
         )}
         {(balance || error) && (
           <div className="flex w-full justify-between gap-8">
-            <div>Balance:</div>
+            <div>{t("Balance:")}</div>
             {balance ? (
               <div>
                 <TokensAndFiat tokenId={tokenId} planck={balance} noTooltip noCountUp isBalance />
@@ -170,6 +173,7 @@ const FeeTooltip = ({
 }
 
 export const EthSignTransactionRequest = () => {
+  const { t } = useTranslation("sign")
   const {
     url,
     request,
@@ -245,7 +249,7 @@ export const EthSignTransactionRequest = () => {
               <div className="gasInfo mt-8">
                 <div>
                   <div>
-                    Estimated Fee{" "}
+                    {t("Estimated Fee")}{" "}
                     <WithTooltip
                       tooltip={
                         <FeeTooltip
@@ -259,7 +263,7 @@ export const EthSignTransactionRequest = () => {
                       <InfoIcon className="inline align-text-top" />
                     </WithTooltip>
                   </div>
-                  <div>{transaction?.type === 2 && "Priority"}</div>
+                  <div>{transaction?.type === 2 && t("Priority")}</div>
                 </div>
                 <div>
                   <div>
@@ -298,13 +302,13 @@ export const EthSignTransactionRequest = () => {
                 />
               ) : (
                 <Button className="w-full" onClick={reject}>
-                  Cancel
+                  {t("Cancel")}
                 </Button>
               )
             ) : (
               <Grid>
                 <SimpleButton disabled={processing} onClick={reject}>
-                  Cancel
+                  {t("Cancel")}
                 </SimpleButton>
                 <SimpleButton
                   disabled={!transaction || processing || isLoading || !isValid}
@@ -312,7 +316,7 @@ export const EthSignTransactionRequest = () => {
                   primary
                   onClick={approve}
                 >
-                  Approve
+                  {t("Approve")}
                 </SimpleButton>
               </Grid>
             )}

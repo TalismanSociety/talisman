@@ -15,6 +15,7 @@ import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import useToken from "@ui/hooks/useToken"
 import { isCustomErc20Token } from "@ui/util/isCustomErc20Token"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate, useParams } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 
@@ -27,6 +28,7 @@ const ConfirmRemove = ({
   token: Erc20Token
   onClose: () => void
 }) => {
+  const { t } = useTranslation("settings")
   const navigate = useNavigate()
 
   // keep last one to prevent symbol to disappear when deleting it
@@ -39,32 +41,34 @@ const ConfirmRemove = ({
   const handleRemove = useCallback(async () => {
     setConfirming(true)
     try {
-      if (!isCustomErc20Token(token)) throw new Error("Cannot remove built-in tokens")
+      if (!isCustomErc20Token(token)) throw new Error(t("Cannot remove built-in tokens"))
       await api.removeCustomErc20Token(token.id)
       navigate("/tokens")
     } catch (err) {
       Sentry.captureException(err)
       notify({
         type: "error",
-        title: "Error",
-        subtitle: (err as Error).message ?? "Failed to remove",
+        title: t("Error"),
+        subtitle: (err as Error).message ?? t("Failed to remove"),
       })
       setConfirming(false)
     }
-  }, [navigate, token])
+  }, [navigate, token, t])
 
   return (
     <Modal open={Boolean(open && saved)} onClose={onClose}>
-      <ModalDialog title="Remove Token" onClose={onClose}>
+      <ModalDialog title={t("Remove Token")} onClose={onClose}>
         <div className="text-body-secondary mt-4 space-y-16">
           <div className="text-base">
-            Are you sure you want to remove <span className="text-body">{saved?.symbol}</span> from
-            your token list ?
+            <Trans t={t}>
+              Are you sure you want to remove <span className="text-body">{saved?.symbol}</span>{" "}
+              from your token list ?
+            </Trans>
           </div>
           <div className="grid grid-cols-2 gap-8">
-            <Button onClick={onClose}>Cancel</Button>
+            <Button onClick={onClose}>{t("Cancel")}</Button>
             <Button primary onClick={handleRemove} processing={confirming}>
-              Remove
+              {t("Remove")}
             </Button>
           </div>
         </div>
@@ -81,6 +85,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const TokenPage = () => {
+  const { t } = useTranslation("settings")
   const { id } = useParams<"id">()
   const { isOpen, open, close } = useOpenClose()
   const navigate = useNavigate()
@@ -105,11 +110,16 @@ export const TokenPage = () => {
   return (
     <Layout analytics={ANALYTICS_PAGE} withBack centered>
       <HeaderBlock
-        title={`${erc20Token.symbol} on ${network.name}`}
+        title={t("{{tokenSymbol}} on {{networkName}}", {
+          tokenSymbol: erc20Token.symbol,
+          networkName: network.name,
+        })}
         text={
           isCustomErc20Token(erc20Token)
-            ? "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
-            : "This ERC-20 token is supported by Talisman by default. It can't be removed."
+            ? t(
+                "Tokens can be created by anyone and named however they like, even to imitate existing tokens. Always ensure you have verified the token address before adding a custom token."
+              )
+            : t("This ERC-20 token is supported by Talisman by default. It can't be removed.")
         }
       />
       <form className="my-20 space-y-4">
@@ -122,7 +132,7 @@ export const TokenPage = () => {
             className="w-full"
           />
         </FormFieldContainer>
-        <FormFieldContainer label="Contract Address">
+        <FormFieldContainer label={t("Contract Address")}>
           <FormFieldInputText
             type="text"
             value={erc20Token.contractAddress}
@@ -135,7 +145,7 @@ export const TokenPage = () => {
           />
         </FormFieldContainer>
         <div className="grid grid-cols-2 gap-12">
-          <FormFieldContainer label="Symbol">
+          <FormFieldContainer label={t("Symbol")}>
             <FormFieldInputText
               type="text"
               value={erc20Token.symbol}
@@ -144,12 +154,12 @@ export const TokenPage = () => {
               small
               before={
                 token && (
-                  <AssetLogoBase className="mr-2 ml-[-0.8rem] text-[3rem]" url={token?.logo} />
+                  <AssetLogoBase className="ml-[-0.8rem] mr-2 text-[3rem]" url={token?.logo} />
                 )
               }
             />
           </FormFieldContainer>
-          <FormFieldContainer label="Decimals">
+          <FormFieldContainer label={t("Decimals")}>
             <FormFieldInputText
               type="number"
               value={erc20Token.decimals}
@@ -168,7 +178,7 @@ export const TokenPage = () => {
             primary
             onClick={open}
           >
-            Remove Token
+            {t("Remove Token")}
           </Button>
         </div>
       </form>

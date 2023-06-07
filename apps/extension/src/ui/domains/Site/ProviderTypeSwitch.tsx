@@ -1,5 +1,6 @@
 import { ProviderType } from "@core/domains/sitesAuthorised/types"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 type SelectionOverlayProps = {
@@ -78,6 +79,7 @@ export const ProviderTypeSwitch = ({
   authorizedProviders = DEFAULT_PROVIDERS,
   onChange,
 }: ProviderSwitchProps) => {
+  const { t } = useTranslation()
   const [selected, setSelected] = useState<ProviderType>(defaultProvider)
   const refPolkadot = useRef<HTMLButtonElement>(null)
   const refEthereum = useRef<HTMLButtonElement>(null)
@@ -132,10 +134,10 @@ export const ProviderTypeSwitch = ({
     <Container>
       <div>
         <Button ref={refPolkadot} {...buttonProps.polkadot} onClick={handleChange("polkadot")}>
-          Polkadot
+          {t("Polkadot")}
         </Button>
         <Button ref={refEthereum} {...buttonProps.ethereum} onClick={handleChange("ethereum")}>
-          Ethereum
+          {t("Ethereum")}
         </Button>
         <SelectionOverlay {...selectionOverlay} />
       </div>

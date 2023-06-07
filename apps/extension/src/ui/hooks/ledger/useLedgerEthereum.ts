@@ -5,11 +5,13 @@ import Transport from "@ledgerhq/hw-transport"
 import TransportWebUSB from "@ledgerhq/hw-transport-webusb"
 import { throwAfter } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useSetInterval } from "../useSetInterval"
 import { LedgerStatus, getLedgerErrorProps } from "./common"
 
 export const useLedgerEthereum = (persist = false) => {
+  const { t } = useTranslation()
   const [isLoading, setIsLoading] = useState(false)
   const [refreshCounter, setRefreshCounter] = useState(0)
   const [ledgerError, setLedgerError] = useState<Error>()
@@ -77,24 +79,24 @@ export const useLedgerEthereum = (persist = false) => {
     message: string
     requiresManualRetry: boolean
   }>(() => {
-    if (ledgerError) return getLedgerErrorProps(ledgerError, "Ethereum")
+    if (ledgerError) return getLedgerErrorProps(ledgerError, "Ethereum", t)
 
     if (isLoading)
       return {
         status: "connecting",
-        message: `Connecting to Ledger...`,
+        message: t(`Connecting to Ledger...`),
         requiresManualRetry: false,
       }
 
     if (isReady)
       return {
         status: "ready",
-        message: "Successfully connected to Ledger.",
+        message: t("Successfully connected to Ledger."),
         requiresManualRetry: false,
       }
 
     return { status: "unknown", message: "", requiresManualRetry: false }
-  }, [ledgerError, isLoading, isReady])
+  }, [ledgerError, isLoading, isReady, t])
 
   // if not connected, poll every 2 seconds
   // this will recreate the ledger instance which triggers automatic connection

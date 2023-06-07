@@ -12,6 +12,7 @@ import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useCallback, useEffect, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
 import { OnboardCta } from "../components/OnboardCta"
@@ -26,6 +27,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const ImportMethodPage = () => {
+  const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
   const { data, updateData, isResettingWallet } = useOnboard()
@@ -60,28 +62,29 @@ export const ImportMethodPage = () => {
 
   if (!data.importAccountType) return null
 
+  const accountType = data.importAccountType === "ethereum" ? "Ethereum" : "Polkadot"
+
   return (
     <Layout withBack={!isResettingWallet} analytics={ANALYTICS_PAGE}>
       <div className="mx-0 w-full max-w-[87rem] self-center text-center">
         <div className="my-[6rem] text-xl">
-          How would you like to import your{" "}
-          {data.importAccountType === "ethereum" ? "Ethereum" : "Polkadot"} wallet?
+          <Trans t={t}>How would you like to import your {accountType} wallet?</Trans>
         </div>
         <div className="inline-grid grid-cols-2 gap-12">
           <OnboardCta
             onClick={handleClick("mnemonic")}
             icon={MessageCircleIcon}
-            title="Recovery phrase"
-            subtitle="Import your seed phrase from any wallet"
+            title={t("Recovery phrase")}
+            subtitle={t("Import your seed phrase from any wallet")}
           />
           <OnboardCta
             onClick={handleClick("ledger")}
             icon={UsbIcon}
-            title="Ledger"
+            title={t("Ledger")}
             subtitle={
               disableLedger
-                ? "Ledger is not supported on your browser. Try again with another browser"
-                : "Connect your Ledger account"
+                ? t("Ledger is not supported on your browser. Try again with another browser")
+                : t("Connect your Ledger account")
             }
             disabled={disableLedger}
           />
@@ -89,29 +92,29 @@ export const ImportMethodPage = () => {
             <OnboardCta
               onClick={handleClick("json")}
               icon={FileTextIcon}
-              title="JSON file"
-              subtitle="Import account from JSON file"
+              title={t("JSON file")}
+              subtitle={t("Import account from JSON file")}
             />
           )}
           {data.importAccountType === "ethereum" && (
             <OnboardCta
               onClick={handleClick("private-key")}
               icon={KeyIcon}
-              title="Private key"
-              subtitle="Import an account from a private key"
+              title={t("Private key")}
+              subtitle={t("Import an account from a private key")}
             />
           )}
           {paritySignerEnabled && data.importAccountType === "sr25519" && (
             <OnboardCta
               onClick={handleClick("qr")}
               icon={PolkadotVaultIcon}
-              title="Polkadot Vault"
-              subtitle="Connect your Polkadot Vault account"
+              title={t("Polkadot Vault")}
+              subtitle={t("Connect your Polkadot Vault account")}
             />
           )}
         </div>
         <div className="text-body-secondary my-24">
-          Talisman will provide you with a Polkadot and Ethereum account by default
+          {t("Talisman will provide you with a Polkadot and Ethereum account by default")}
         </div>
       </div>
     </Layout>

@@ -7,10 +7,12 @@ import { BraveIcon } from "@talisman/theme/icons"
 import { BraveWarningModal } from "@ui/domains/Settings/BraveWarning/BraveWarningModal"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { DashboardNotification } from "./DashboardNotification"
 
 export const BraveWarningNotification = () => {
+  const { t } = useTranslation()
   const isBrave = useIsBrave()
   const [hideBraveWarning] = useAppState("hideBraveWarning")
   const { isOpen, close, open } = useOpenClose()
@@ -27,14 +29,16 @@ export const BraveWarningNotification = () => {
     <>
       <DashboardNotification
         icon={<BraveIcon className="icon" />}
-        title="Attention Brave users. "
-        description="Due to a recent Brave update, users may be experiencing issues loading balances."
-        action="Learn more"
+        title={t("Attention Brave users.")}
+        description={t(
+          "Due to a recent Brave update, users may be experiencing issues loading balances."
+        )}
+        action={t("Learn more")}
         onActionClick={open}
         onClose={handleHide}
       />
       <Modal open={isOpen} onClose={close}>
-        <ModalDialog centerTitle title="Attention Brave Users" onClose={close}>
+        <ModalDialog centerTitle title={t("Attention Brave Users")} onClose={close}>
           <BraveWarningModal />
         </ModalDialog>
       </Modal>

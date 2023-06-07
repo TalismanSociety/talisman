@@ -12,6 +12,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { BigNumber, ethers } from "ethers"
 import { FC, FormEventHandler, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { useDebounce } from "react-use"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
@@ -115,6 +116,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
   txDetails,
   onConfirm,
 }) => {
+  const { t } = useTranslation("sign")
   const { genericEvent } = useAnalytics()
 
   useEffect(() => {
@@ -182,24 +184,24 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
     let warningFee = ""
     let errorGasLimit = ""
 
-    if (errors.gasPrice) warningFee = "Gas price is invalid"
+    if (errors.gasPrice) warningFee = t("Gas price is invalid")
     else if (
       gasPrice &&
       BigNumber.from(ethers.utils.parseUnits(String(gasPrice), "gwei")).lt(txDetails.gasPrice)
     )
-      warningFee = "Gas price seems too low for current network conditions"
+      warningFee = t("Gas price seems too low for current network conditions")
     else if (
       gasPrice &&
       BigNumber.from(ethers.utils.parseUnits(String(gasPrice), "gwei")).gt(
         BigNumber.from(txDetails.gasPrice).mul(2)
       )
     )
-      warningFee = "Gas price seems higher than required"
+      warningFee = t("Gas price seems higher than required")
 
-    if (errors.gasLimit?.type === "min") errorGasLimit = "Gas Limit minimum value is 21000"
-    else if (errors.gasLimit) errorGasLimit = "Gas Limit is invalid"
+    if (errors.gasLimit?.type === "min") errorGasLimit = t("Gas Limit minimum value is 21000")
+    else if (errors.gasLimit) errorGasLimit = t("Gas Limit is invalid")
     else if (BigNumber.from(txDetails.estimatedGas).gt(gasLimit))
-      errorGasLimit = "Gas Limit too low, transaction likely to fail"
+      errorGasLimit = t("Gas Limit too low, transaction likely to fail")
 
     return {
       warningFee,
@@ -212,6 +214,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
     gasPrice,
     txDetails.estimatedGas,
     txDetails.gasPrice,
+    t,
   ])
 
   const submit = useCallback(
@@ -259,23 +262,25 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
             <ArrowRightIcon className="text-md rotate-180 text-white" onClick={onCancel} />
           </IconButton>
         </div>
-        <div className="mr-9 grow text-center">Custom Gas Fee</div>
+        <div className="mr-9 grow text-center">{t("Custom Gas Fee")}</div>
       </div>
       <div className="mb-16 mt-12">
-        Set your own custom gas fee to control the priority and cost of your transaction.
+        {t("Set your own custom gas fee to control the priority and cost of your transaction.")}
       </div>
       <div className="mb-14 grid w-full grid-cols-2 gap-8">
-        <Indicator label="Network Gas Price">
-          {networkGasPrice} GWEI{" "}
+        <Indicator label={t("Network Gas Price")}>
+          {t("{{networkGasPrice}} GWEI", { networkGasPrice })}{" "}
           <WithTooltip
             className="inline-flex h-[1.5rem] flex-col justify-center align-text-top"
-            tooltip="The Gas Price is set by the network and changes depending on network usage"
+            tooltip={t(
+              "The Gas Price is set by the network and changes depending on network usage"
+            )}
           >
             <InfoIcon />
           </WithTooltip>
         </Indicator>
         {networkUsage !== undefined && (
-          <Indicator label="Network Usage">{Math.round(networkUsage * 100)} %</Indicator>
+          <Indicator label={t("Network Usage")}>{Math.round(networkUsage * 100)} %</Indicator>
         )}
       </div>
       <FormFieldContainer
@@ -283,15 +288,15 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
         className="w-full"
         label={
           <span className="text-sm">
-            Gas Price{" "}
-            <WithTooltip tooltip="The fee you are willing to pay for each gas unit">
+            {t("Gas Price")}{" "}
+            <WithTooltip tooltip={t("The fee you are willing to pay for each gas unit")}>
               <InfoIcon className="inline align-text-top" />
             </WithTooltip>
           </span>
         }
       >
         <FormFieldInputText
-          after={<span className="text-body-disabled text-sm">GWEI</span>}
+          after={<span className="text-body-disabled text-sm">{t("GWEI")}</span>}
           containerProps={INPUT_PROPS}
           {...register("gasPrice", {
             valueAsNumber: true,
@@ -304,8 +309,10 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
         className="w-full"
         label={
           <span className="text-sm">
-            Gas Limit{" "}
-            <WithTooltip tooltip="The maximum amount of gas this transaction is allowed to consume">
+            {t("Gas Limit")}{" "}
+            <WithTooltip
+              tooltip={t("The maximum amount of gas this transaction is allowed to consume")}
+            >
               <InfoIcon className="inline align-text-top" />
             </WithTooltip>
           </span>
@@ -322,8 +329,12 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
 
       <div className="border-grey-700 text-body flex h-[5.2rem] w-full items-center justify-between rounded-sm border px-8 font-bold">
         <div>
-          Total Max Fee{" "}
-          <WithTooltip tooltip="The total maximum gas fee you are willing to pay for this transaction : Gas Price * Gas Limit">
+          {t("Total Max Fee")}{" "}
+          <WithTooltip
+            tooltip={t(
+              "The total maximum gas fee you are willing to pay for this transaction : Gas Price * Gas Limit"
+            )}
+          >
             <InfoIcon className="inline-block align-text-top" />
           </WithTooltip>
         </div>
@@ -333,7 +344,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           ) : isLoadingGasSettingsValid ? (
             <LoaderIcon className="animate-spin-slow text-body-secondary inline-block" />
           ) : (
-            <span className="text-alert-error">Invalid settings</span>
+            <span className="text-alert-error">{t("Invalid settings")}</span>
           )}
         </div>
       </div>
@@ -344,7 +355,7 @@ export const CustomGasSettingsFormLegacy: FC<CustomGasSettingsFormLegacyProps> =
           disabled={!showMaxFeeTotal}
           primary={showMaxFeeTotal}
         >
-          Save
+          {t("Save")}
         </Button>
       </div>
     </form>

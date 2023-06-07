@@ -1,0 +1,3 @@
+{
+  "Scan the QR code with the Polkadot Vault app on your phone to add the <2><0></0>{chain?.name ?? \"Unknown\"}</2> network.": "Scan the QR code with the Polkadot Vault app on your phone to add the <2><0></0>{chain?.name ?? \"Unknown\"}</2> network."
+}

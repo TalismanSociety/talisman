@@ -4,6 +4,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
@@ -21,14 +22,6 @@ type FormData = {
 }
 
 const INPUT_CONTAINER_PROPS_PASSWORD = { className: "!bg-white/5 h-28" }
-
-const TITLE_NEW = "Choose a password"
-const DESC_NEW =
-  "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
-
-const TITLE_IMPORT = "First, let's set a password"
-const DESC_IMPORT =
-  "Before we import your wallet, we need to set a password for Talisman. This is used to unlock Talisman and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
 
 const schema = yup
   .object({
@@ -49,6 +42,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const PasswordPage = () => {
+  const { t } = useTranslation("onboard")
   useAnalyticsPageView(ANALYTICS_PAGE)
 
   const { data, updateData, isResettingWallet } = useOnboard()
@@ -90,8 +84,20 @@ export const PasswordPage = () => {
     const { importMethodType } = data
     const willImportAfterOnboard =
       importMethodType && ["json", "ledger", "private-key"].includes(importMethodType)
-    return willImportAfterOnboard ? [TITLE_IMPORT, DESC_IMPORT] : [TITLE_NEW, DESC_NEW]
-  }, [data])
+    return willImportAfterOnboard
+      ? [
+          t("First, let's set a password"),
+          t(
+            "Before we import your wallet, we need to set a password for Talisman. This is used to unlock Talisman and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
+          ),
+        ]
+      : [
+          t("Choose a password"),
+          t(
+            "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols and numbers."
+          ),
+        ]
+  }, [data, t])
 
   return (
     <Layout withBack analytics={ANALYTICS_PAGE}>
@@ -101,14 +107,14 @@ export const PasswordPage = () => {
             <p>{description}</p>
             <form onSubmit={handleSubmit(submit)} autoComplete="off">
               <div className="flex flex-col">
-                <div className="mt-16 mb-8 text-sm">
-                  Password strength: <PasswordStrength password={password} />
+                <div className="mb-8 mt-16 text-sm">
+                  {t("Password strength")}: <PasswordStrength password={password} />
                 </div>
                 <OnboardFormField error={errors.password}>
                   <FormFieldInputText
                     {...register("password")}
                     type="password"
-                    placeholder="Enter password"
+                    placeholder={t("Enter password")}
                     autoComplete="new-password"
                     spellCheck={false}
                     data-lpignore
@@ -123,7 +129,7 @@ export const PasswordPage = () => {
                     {...register("passwordConfirm")}
                     type="password"
                     autoComplete="off"
-                    placeholder="Re-enter password"
+                    placeholder={t("Re-enter password")}
                     spellCheck={false}
                     data-lpignore
                     className="placeholder:text-body-secondary/30 !bg-transparent !px-0"
@@ -139,7 +145,7 @@ export const PasswordPage = () => {
                 disabled={!isValid}
                 processing={isSubmitting}
               >
-                Continue
+                {t("Continue")}
               </OnboardButton>
             </form>
           </OnboardDialog>

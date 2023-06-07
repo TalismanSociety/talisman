@@ -11,6 +11,7 @@ import { ChainLogo } from "@ui/domains/Asset/ChainLogo"
 import { ScanQr } from "@ui/domains/Sign/Qr/ScanQr"
 import useChainByGenesisHash from "@ui/hooks/useChainByGenesisHash"
 import { ReactElement, useState } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { ExtrinsicQrCode } from "./ExtrinsicQrCode"
@@ -72,6 +73,7 @@ export const QrSubstrate = ({
   // move around when switching to this component
   narrowMargin = false,
 }: Props): ReactElement<Props> => {
+  const { t } = useTranslation("sign")
   const [scanState, setScanState] = useState<ScanState>(
     skipInit ? { page: "SEND" } : { page: "INIT" }
   )
@@ -84,10 +86,10 @@ export const QrSubstrate = ({
       <div className={classNames("flex w-full flex-col items-center", className)}>
         <div className="flex w-full items-center gap-12">
           <Button className="w-full" onClick={onReject}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button className="w-full" primary onClick={() => setScanState({ page: "SEND" })}>
-            Sign with QR
+            {t("Sign with QR")}
           </Button>
         </div>
       </div>
@@ -121,7 +123,7 @@ export const QrSubstrate = ({
           >
             <ChevronLeftIcon />
           </button>
-          <span className="grow text-center">Scan QR code</span>
+          <span className="grow text-center">{t("Scan QR code")}</span>
           <span className="h-16 w-16">&nbsp;</span>
         </header>
       )}
@@ -166,11 +168,13 @@ export const QrSubstrate = ({
                   qrCodeSource={qrCodeSource}
                 />
               )}
-              {!qrCodeSource && <>The selected source is unavailable.</>}
+              {!qrCodeSource && <>{t("The selected source is unavailable.")}</>}
             </div>
             <QrCodeSourceSelector className="mt-4 text-base" {...qrCodeSourceSelectorState} />
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
-              Scan the QR video with the Polkadot Vault app on your phone to update your metadata.
+              {t(
+                "Scan the QR video with the Polkadot Vault app on your phone to update your metadata."
+              )}
             </div>
             <div></div>
           </div>
@@ -183,9 +187,9 @@ export const QrSubstrate = ({
           <div className="flex h-full flex-col items-center justify-between">
             <ScanQr type="signature" onScan={onSignature} size={280} />
             <div className="text-body-secondary mt-10 max-w-md text-center leading-10">
-              Scan the Polkadot Vault QR code.
+              {t("Scan the Polkadot Vault QR code.")}
               <br />
-              The image is blurred for security, but this does not affect the reading.
+              {t("The image is blurred for security, but this does not affect the reading.")}
             </div>
             <div></div>
           </div>
@@ -204,21 +208,21 @@ export const QrSubstrate = ({
         {scanState.page === "SEND" && (
           <>
             <Button className="w-full" onClick={onReject}>
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button className="w-full" primary onClick={() => setScanState({ page: "RECEIVE" })}>
-              Next
+              {t("Next")}
             </Button>
           </>
         )}
         {scanState.page === "UPDATE_METADATA" && (
           <Button className="w-full" primary onClick={() => setScanState({ page: "SEND" })}>
-            Done
+            {t("Done")}
           </Button>
         )}
         {scanState.page === "RECEIVE" && onSignature && (
           <Button className="w-full" onClick={onReject}>
-            Cancel
+            {t("Cancel")}
           </Button>
         )}
       </footer>
@@ -249,6 +253,7 @@ const SendPage = ({
   qrCodeSourceSelectorState: QrCodeSourceSelectorProps
   chain: Chain | undefined
 }) => {
+  const { t } = useTranslation("sign")
   return (
     <>
       <div className="flex h-full flex-col items-center justify-end">
@@ -260,9 +265,11 @@ const SendPage = ({
         </div>
 
         <div className="text-body-secondary mb-10 mt-14 max-w-md text-center leading-10">
-          Scan the QR code with the
-          <br />
-          Polkadot Vault app on your phone.
+          <Trans t={t}>
+            Scan the QR code with the
+            <br />
+            Polkadot Vault app on your phone.
+          </Trans>
         </div>
 
         {isJsonPayload(payload) ? (
@@ -272,20 +279,20 @@ const SendPage = ({
                 className="text-grey-400 bg-grey-800 hover:bg-grey-750 inline-block rounded-full px-6 py-4 text-sm font-light"
                 onClick={() => setScanState({ page: "SEND", showChainspecDrawer: true })}
               >
-                Add Network
+                {t("Add Network")}
               </button>
               <button
                 className="bg-primary/10 text-primary hover:bg-primary/20 inline-block rounded-full px-6 py-4 text-sm font-light"
                 onClick={() => setScanState({ page: "UPDATE_METADATA" })}
               >
-                Update Metadata
+                {t("Update Metadata")}
               </button>
             </div>
             <button
               className="text-grey-200 mt-8 text-xs font-light hover:text-white"
               onClick={() => setScanState({ page: "SEND", showUpdateMetadataDrawer: true })}
             >
-              Still seeing an error?
+              {t("Still seeing an error?")}
             </button>
           </div>
         ) : (
@@ -295,23 +302,25 @@ const SendPage = ({
 
       <Drawer anchor="bottom" open={!qrCodeSource && !!chain} parent={parent} onClose={reject}>
         <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
-          <div className="mb-16 font-bold">Unable to sign</div>
+          <div className="mb-16 font-bold">{t("Unable to sign")}</div>
           <div className="text-body-secondary mb-16 max-w-md text-center text-sm leading-10">
-            Your Polkadot Vault app needs data about this network to sign this transaction, but no
-            secure source of network data is available. You will be unable to sign this transaction.
+            {t(
+              "Your Polkadot Vault app needs data about this network to sign this transaction, but no secure source of network data is available. You will be unable to sign this transaction."
+            )}
             <p className="mt-6">
               <a
                 href={POLKADOT_VAULT_DOCS_URL}
                 target="_blank"
                 className="hover:text-body text-grey-200"
               >
-                Learn more.
+                {t("Learn more")}
               </a>
+              .
             </p>
           </div>
           <div className="flex w-full flex-col gap-4">
             <Button className="w-full" small onClick={reject}>
-              Close
+              {t("Close")}
             </Button>
           </div>
         </div>
@@ -324,7 +333,7 @@ const SendPage = ({
         onClose={() => setScanState({ page: "SEND" })}
       >
         <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
-          <div className="mb-16 font-bold">Add network</div>
+          <div className="mb-16 font-bold">{t("Add network")}</div>
           <>
             <div className="relative flex aspect-square w-full max-w-[16rem] items-center justify-center rounded bg-white p-7">
               <>
@@ -339,12 +348,18 @@ const SendPage = ({
 
             <QrCodeSourceSelector className="mt-4" {...qrCodeSourceSelectorState} />
             <div className="text-body-secondary mb-16 mt-10 max-w-md text-center text-sm leading-10">
-              Scan the QR code with the Polkadot Vault app on your phone to add the{" "}
-              <div className="text-body inline-flex items-baseline gap-1">
-                <ChainLogo className="self-center" id={chain?.id} />
-                {chain?.name ?? "Unknown"}
-              </div>{" "}
-              network.
+              <Trans
+                t={t}
+                defaults="Scan the QR code with the Polkadot Vault app on your phone to add the <Chain /> network."
+                components={{
+                  Chain: (
+                    <div className="text-body inline-flex items-baseline gap-1">
+                      <ChainLogo className="self-center" id={chain?.id} />
+                      {chain?.name ?? "Unknown"}
+                    </div>
+                  ),
+                }}
+              />
             </div>
           </>
 
@@ -355,10 +370,10 @@ const SendPage = ({
               small
               onClick={() => setScanState({ page: "SEND", showEnableNetwork: true })}
             >
-              Continue
+              {t("Continue")}
             </Button>
             <Button className="w-full" small onClick={() => setScanState({ page: "SEND" })}>
-              Cancel
+              {t("Cancel")}
             </Button>
           </div>
         </div>
@@ -371,30 +386,38 @@ const SendPage = ({
         onClose={() => setScanState({ page: "SEND" })}
       >
         <div className="bg-black-tertiary flex max-h-full w-full flex-col items-center rounded-t p-12">
-          <div className="mb-12 font-bold">Enable network</div>
+          <div className="mb-12 font-bold">{t("Enable network")}</div>
           <video width="160" controls autoPlay>
             <source src="/videos/add-network-vault.mp4" type="video/mp4" />
           </video>
           <div className="text-body-secondary mb-16 mt-10 w-full px-10 text-center text-sm leading-10">
-            You will need to create a derived key in your Polkadot Vault to enable this network.
-            This new key must use the same derivation path{" "}
-            <Tooltip placement="bottom-end">
-              <TooltipTrigger className="hover:text-body">
-                <InfoIcon className="inline" />
-              </TooltipTrigger>
-              <TooltipContent>In most cases, this derivation path should be blank</TooltipContent>
-            </Tooltip>{" "}
-            as your existing account.{" "}
+            <Trans
+              t={t}
+              defaults="You will need to create a derived key in your Polkadot Vault to enable this network.
+              This new key must use the same derivation path <InfoIcon /> as your existing account."
+              components={{
+                InfoIcon: (
+                  <Tooltip placement="bottom-end">
+                    <TooltipTrigger className="hover:text-body">
+                      <InfoIcon className="inline" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {t("In most cases, this derivation path should be blank")}
+                    </TooltipContent>
+                  </Tooltip>
+                ),
+              }}
+            />{" "}
             <a
               href={POLKADOT_VAULT_DOCS_URL}
               target="_blank"
               className="hover:text-body text-grey-200"
             >
-              Learn more
+              {t("Learn more")}
             </a>
           </div>
           <Button className="w-full" primary small onClick={() => setScanState({ page: "SEND" })}>
-            Done
+            {t("Done")}
           </Button>
         </div>
       </Drawer>
@@ -407,10 +430,11 @@ const SendPage = ({
       >
         <div className="bg-black-tertiary flex flex-col items-center rounded-t p-12">
           <PolkadotVaultIcon className="mb-10 h-auto w-16" />
-          <div className="mb-5 font-bold">You may need to update metadata</div>
+          <div className="mb-5 font-bold">{t("You may need to update metadata")}</div>
           <div className="text-body-secondary max-w-md text-center text-sm leading-10">
-            If you’re receiving an error on your Polkadot Vault when trying to scan the QR code, it
-            likely means your metadata is out of date.
+            {t(
+              "If you’re receiving an error on your Polkadot Vault when trying to scan the QR code, it likely means your metadata is out of date."
+            )}
           </div>
           <div className="py-8">
             <a
@@ -418,7 +442,7 @@ const SendPage = ({
               target="_blank"
               className="text-grey-200 mt-8 text-xs font-light hover:text-white"
             >
-              Still seeing an error?
+              {t("Still seeing an error?")}
             </a>
           </div>
           <Button
@@ -427,10 +451,10 @@ const SendPage = ({
             small
             onClick={() => setScanState({ page: "UPDATE_METADATA" })}
           >
-            Update Metadata
+            {t("Update Metadata")}
           </Button>
           <Button small className="w-full" onClick={() => setScanState({ page: "SEND" })}>
-            Cancel
+            {t("Cancel")}
           </Button>
         </div>
       </Drawer>

@@ -9,6 +9,7 @@ import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
@@ -20,6 +21,7 @@ type FormData = {
 }
 
 const ChangePassword = () => {
+  const { t } = useTranslation("settings")
   const navigate = useNavigate()
   const { isNotConfirmed } = useMnemonicBackup()
   const { isOpen, open, close } = useOpenClose()
@@ -27,11 +29,11 @@ const ChangePassword = () => {
   const schema = yup
     .object({
       currentPw: yup.string().required(""),
-      newPw: yup.string().required("").min(6, "Password must be at least 6 characters long"),
+      newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
       newPwConfirm: yup
         .string()
         .required("")
-        .oneOf([yup.ref("newPw")], "Passwords must match!"),
+        .oneOf([yup.ref("newPw")], t("Passwords must match!")),
     })
     .required()
 
@@ -51,7 +53,7 @@ const ChangePassword = () => {
         await api.changePassword(currentPw, newPw, newPwConfirm)
         notify({
           type: "success",
-          title: "Password changed",
+          title: t("Password changed"),
         })
         navigate("/portfolio")
       } catch (err) {
@@ -62,41 +64,43 @@ const ChangePassword = () => {
         else {
           notify({
             type: "error",
-            title: "Error changing password",
+            title: t("Error changing password"),
             subtitle: (err as Error)?.message ?? "",
           })
         }
       }
     },
-    [navigate, setError]
+    [navigate, setError, t]
   )
 
   return (
     <>
       <Layout withBack centered>
-        <HeaderBlock title="Change your password" />
+        <HeaderBlock title={t("Change your password")} />
         <p className="text-body-secondary my-10">
-          Your password is used to unlock your wallet and is stored securely on your device. We
-          recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers.
+          {t(
+            "Your password is used to unlock your wallet and is stored securely on your device. We recommend 12 characters, with uppercase and lowercase letters, symbols, and numbers."
+          )}
         </p>
         {isNotConfirmed && (
           <div className="mnemonic-warning flex flex-col gap-0.5 rounded-sm border border-white p-8">
             <div className="flex items-center justify-between">
               <InfoIcon className="text-primary mr-10 text-3xl" />
-              You'll need to confirm your recovery phrase is backed up before you change your
-              password.
+              {t(
+                "You'll need to confirm your recovery phrase is backed up before you change your password."
+              )}
             </div>
             <div className="flex justify-end">
-              <Button onClick={open}>Backup Seed Phrase</Button>
+              <Button onClick={open}>{t("Backup Seed Phrase")}</Button>
             </div>
           </div>
         )}
 
         <form className="mt-8" onSubmit={handleSubmit(submit)}>
-          <FormFieldContainer error={errors.currentPw?.message} label="Old Password">
+          <FormFieldContainer error={errors.currentPw?.message} label={t("Old Password")}>
             <FormFieldInputText
               {...register("currentPw")}
-              placeholder="Enter Old Password"
+              placeholder={t("Enter Old Password")}
               spellCheck={false}
               autoComplete="off"
               // eslint-disable-next-line jsx-a11y/no-autofocus
@@ -107,10 +111,10 @@ const ChangePassword = () => {
               disabled={isNotConfirmed}
             />
           </FormFieldContainer>
-          <FormFieldContainer error={errors.newPw?.message} label="New Password">
+          <FormFieldContainer error={errors.newPw?.message} label={t("New Password")}>
             <FormFieldInputText
               {...register("newPw")}
-              placeholder="Enter New Password"
+              placeholder={t("Enter New Password")}
               spellCheck={false}
               autoComplete="new-password"
               data-lpignore
@@ -122,7 +126,7 @@ const ChangePassword = () => {
           <FormFieldContainer error={errors.newPwConfirm?.message}>
             <FormFieldInputText
               {...register("newPwConfirm")}
-              placeholder="Confirm New Password"
+              placeholder={t("Confirm New Password")}
               spellCheck={false}
               autoComplete="off"
               data-lpignore
@@ -139,7 +143,7 @@ const ChangePassword = () => {
               disabled={!isValid || isNotConfirmed}
               processing={isSubmitting}
             >
-              Submit
+              {t("Submit")}
             </Button>
           </div>
         </form>

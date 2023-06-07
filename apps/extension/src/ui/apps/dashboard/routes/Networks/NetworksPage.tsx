@@ -11,20 +11,27 @@ import { useSetting } from "@ui/hooks/useSettings"
 import { isCustomEvmNetwork } from "@ui/util/isCustomEvmNetwork"
 import sortBy from "lodash/sortBy"
 import { useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import { ListButton, PillButton } from "talisman-ui"
 
-const TestnetPill = () => (
-  <div className="bg-alert-warn/10 text-alert-warn inline-block rounded p-4 text-xs font-light">
-    Testnet
-  </div>
-)
+const TestnetPill = () => {
+  const { t } = useTranslation("settings")
+  return (
+    <div className="bg-alert-warn/10 text-alert-warn inline-block rounded p-4 text-xs font-light">
+      {t("Testnet")}
+    </div>
+  )
+}
 
-const CustomPill = () => (
-  <div className="bg-primary/10 text-primary inline-block rounded p-4 text-xs font-light">
-    Custom
-  </div>
-)
+const CustomPill = () => {
+  const { t } = useTranslation("settings")
+  return (
+    <div className="bg-primary/10 text-primary inline-block rounded p-4 text-xs font-light">
+      {t("Custom")}
+    </div>
+  )
+}
 
 const ANALYTICS_PAGE: AnalyticsPage = {
   container: "Fullscreen",
@@ -72,6 +79,7 @@ const NetworksList = () => {
 }
 
 export const NetworksPage = () => {
+  const { t } = useTranslation("settings")
   useAnalyticsPageView(ANALYTICS_PAGE)
   const navigate = useNavigate()
 
@@ -86,11 +94,14 @@ export const NetworksPage = () => {
 
   return (
     <Layout analytics={ANALYTICS_PAGE} withBack centered backTo="/settings">
-      <HeaderBlock title="Ethereum Networks" text="Add or delete custom Ethereum networks" />
-      <div className="mt-24 mb-16 flex justify-end gap-4">
+      <HeaderBlock
+        title={t("Ethereum Networks")}
+        text={t("Add or delete custom Ethereum networks")}
+      />
+      <div className="mb-16 mt-24 flex justify-end gap-4">
         <EnableTestnetPillButton className="h-16" />
         <PillButton icon={PlusIcon} size="xs" className="h-16" onClick={handleAddNetworkClick}>
-          Add network
+          {t("Add network")}
         </PillButton>
       </div>
       <NetworksList />

@@ -9,6 +9,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 
@@ -21,6 +22,7 @@ const useLedgerEthereumAccounts = (
   pageIndex: number,
   itemsPerPage: number
 ) => {
+  const { t } = useTranslation()
   const walletAccounts = useAccounts()
   const [derivedAccounts, setDerivedAccounts] = useState<(LedgerEthereumAccount | undefined)[]>([
     ...Array(itemsPerPage),
@@ -59,14 +61,14 @@ const useLedgerEthereumAccounts = (
       const error = err as Error & { statusCode?: number }
       // eslint-disable-next-line no-console
       DEBUG && console.error(error.message, err)
-      if (error.message?.toLowerCase().includes("busy")) setError("Ledger is busy")
+      if (error.message?.toLowerCase().includes("busy")) setError(t("Ledger is busy"))
       else if (error.message?.toLowerCase().includes("disconnected"))
-        setError("Ledger is disconnected")
-      else if (error.statusCode === 27404) setError("Ledger is locked")
-      else setError("Failed to connect to Ledger")
+        setError(t("Ledger is disconnected"))
+      else if (error.statusCode === 27404) setError(t("Ledger is locked"))
+      else setError(t("Failed to connect to Ledger"))
     }
     setIsBusy(false)
-  }, [derivationPathType, isReady, itemsPerPage, ledger, name, pageIndex])
+  }, [derivationPathType, isReady, itemsPerPage, ledger, name, pageIndex, t])
 
   const { evmNetworks } = useEvmNetworks(false)
 

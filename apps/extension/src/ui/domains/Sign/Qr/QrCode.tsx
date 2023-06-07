@@ -1,6 +1,7 @@
 import { decodeString } from "@polkadot/react-qr/util"
 import QrCodeStyling from "@solana/qr-code-styling"
 import { useEffect, useReducer, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { FRAME_SIZE, talismanRedHandSvg } from "./constants"
 
@@ -15,6 +16,7 @@ type Props = {
   }
 }
 export const QrCode = ({ data, image, imageOptions }: Props) => {
+  const { t } = useTranslation("sign")
   const qrCodeFrames = useRef<Array<string | null> | null>(null)
 
   const [animGeneration, resetQrAnimation] = useReducer((x) => (x + 1) % Number.MAX_SAFE_INTEGER, 0)
@@ -23,7 +25,7 @@ export const QrCode = ({ data, image, imageOptions }: Props) => {
   useEffect(() => {
     if (!data) return
     if (data.length > Math.pow(2, 31))
-      return setError("Payload is too large to be encoded in a QR code")
+      return setError(t("Payload is too large to be encoded in a QR code"))
     else setError(null)
 
     let cancelled = false
@@ -63,7 +65,7 @@ export const QrCode = ({ data, image, imageOptions }: Props) => {
     return () => {
       cancelled = true
     }
-  }, [data, image, imageOptions])
+  }, [data, image, imageOptions, t])
 
   const [qrCode, setQrCode] = useState<string | null>(null)
   useEffect(() => {

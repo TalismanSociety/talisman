@@ -1,5 +1,6 @@
 import { notify } from "@talisman/components/Notifications"
 import { shortenAddress } from "@talisman/util/shortenAddress"
+import { t } from "i18next"
 
 export const copyAddress = async (address: string, title?: string) => {
   if (!address) return
@@ -11,7 +12,7 @@ export const copyAddress = async (address: string, title?: string) => {
     notify(
       {
         type: "success",
-        title: title ?? `Address copied`,
+        title: title ?? t(`Address copied`),
         subtitle: shortenAddress(address),
       },
       // set an id to prevent multiple clicks to display multiple notifications
@@ -22,7 +23,7 @@ export const copyAddress = async (address: string, title?: string) => {
     notify(
       {
         type: "error",
-        title: `Copy failed`,
+        title: t(`Copy failed`),
         subtitle: shortenAddress(address),
       },
       { toastId }

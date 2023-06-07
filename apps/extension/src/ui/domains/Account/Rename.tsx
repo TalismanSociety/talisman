@@ -5,6 +5,7 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import useAccounts from "@ui/hooks/useAccounts"
 import { RefCallback, useCallback, useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
@@ -30,6 +31,7 @@ interface IAccountRename {
 }
 
 const AccountRename = ({ address, onConfirm, onCancel, className }: IAccountRename) => {
+  const { t } = useTranslation()
   const account = useAccountByAddress(address)
 
   const allAccounts = useAccounts()
@@ -42,10 +44,10 @@ const AccountRename = ({ address, onConfirm, onCancel, className }: IAccountRena
     () =>
       yup
         .object({
-          name: yup.string().required("").notOneOf(otherAccountNames, "Name already in use"),
+          name: yup.string().required("").notOneOf(otherAccountNames, t("Name already in use")),
         })
         .required(),
-    [otherAccountNames]
+    [otherAccountNames, t]
   )
 
   const defaultValues = useMemo(
@@ -106,14 +108,14 @@ const AccountRename = ({ address, onConfirm, onCancel, className }: IAccountRena
   return (
     <StyledDialog
       className={className}
-      text="Choose a new name for this account"
+      text={t("Choose a new name for this account")}
       extra={
         <form onSubmit={handleSubmit(submit)}>
           <FormFieldContainer error={errors.name?.message}>
             <FormFieldInputText
               {...registerName}
               ref={handleNameRef}
-              placeholder="Choose a name"
+              placeholder={t("Choose a name")}
               spellCheck={false}
               autoComplete="off"
               // eslint-disable-next-line jsx-a11y/no-autofocus
@@ -123,8 +125,8 @@ const AccountRename = ({ address, onConfirm, onCancel, className }: IAccountRena
           </FormFieldContainer>
         </form>
       }
-      confirmText="Rename"
-      cancelText="Cancel"
+      confirmText={t("Rename")}
+      cancelText={t("Cancel")}
       onConfirm={handleSubmit(submit)}
       onCancel={onCancel}
       confirmDisabled={!isValid}

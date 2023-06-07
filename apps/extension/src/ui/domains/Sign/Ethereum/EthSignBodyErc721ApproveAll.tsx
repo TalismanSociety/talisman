@@ -1,4 +1,5 @@
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignAlertMessage } from "../SignAlertMessage"
 import { SignContainer } from "../SignContainer"
@@ -8,6 +9,7 @@ import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc721ApproveAll: FC = () => {
+  const { t } = useTranslation("sign")
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const { operator, approve } = useMemo(() => {
@@ -27,26 +29,27 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
         approve && (
           <SignAlertMessage>
             <span className="text-body-secondary">
-              This contract will have permission to transfer all NFTs from this collection on your
-              behalf until manually revoked.
+              {t(
+                "This contract will have permission to transfer all NFTs from this collection on your behalf until manually revoked."
+              )}
             </span>{" "}
             <a
               className="text-white"
               href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/ethereum-features/token-approvals"
               target="_blank"
             >
-              Learn more
+              {t("Learn more")}
             </a>
           </SignAlertMessage>
         )
       }
     >
       <div className="flex">
-        <div>{approve ? "Allow" : "Disallow"}</div>
+        <div>{approve ? t("Allow") : t("Disallow")}</div>
         <SignParamNetworkAddressButton network={network} address={operator} />
       </div>
       <div className="flex">
-        <div>to transfer all</div>
+        <div>{t("to transfer all")}</div>
         <SignParamNetworkAddressButton
           address={transactionInfo.targetAddress}
           network={network}
@@ -54,7 +57,7 @@ export const EthSignBodyErc721ApproveAll: FC = () => {
         />
       </div>
       <div className="flex">
-        <div>NFTs from</div>
+        <div>{t("NFTs from")}</div>
         <SignParamAccountButton address={account.address} explorerUrl={network.explorerUrl} />
       </div>
     </SignContainer>

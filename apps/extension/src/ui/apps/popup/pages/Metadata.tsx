@@ -6,11 +6,13 @@ import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useRequest } from "@ui/hooks/useRequest"
 import { FC, useCallback, useEffect, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useParams } from "react-router-dom"
 
 import Layout, { Content, Footer, Header } from "../Layout"
 
 export const Metadata: FC<{ className?: string }> = ({ className }) => {
+  const { t } = useTranslation("request")
   const { id } = useParams<"id">() as KnownRequestIdOnly<"metadata">
   const metadataRequest = useRequest(id)
   const { popupOpenEvent } = useAnalytics()
@@ -52,14 +54,18 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
       <Content>
         <div>
           <div className="px-4 text-center">
-            <h1 className="my-8 text-lg">Your metadata is out of date</h1>
+            <h1 className="my-8 text-lg">{t("Your metadata is out of date")}</h1>
             <p className="text-body-secondary mt-16">
-              Approving this update will sync your metadata for the{" "}
-              <span className="text-body">{request.chain}</span> chain
+              <Trans t={t}>
+                Approving this update will sync your metadata for the{" "}
+                <span className="text-body">{request.chain}</span> chain
+              </Trans>
               {displayUrl && (
                 <>
                   {" "}
-                  from <span className="text-body">{displayUrl}</span>
+                  <Trans t={t}>
+                    from <span className="text-body">{displayUrl}</span>
+                  </Trans>
                 </>
               )}
             </p>
@@ -67,9 +73,9 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
           <hr className="text-grey-700 my-20" />
           <div className="text-left">
             <div className="ml-16 inline-grid grid-cols-2 gap-x-8 gap-y-2">
-              <div className="text-body-secondary">Symbol:</div>
+              <div className="text-body-secondary">{t("Symbol:")}</div>
               <div>{request.tokenSymbol}</div>
-              <div className="text-body-secondary">Decimals:</div>
+              <div className="text-body-secondary">{t("Decimals:")}</div>
               <div>{request.tokenDecimals}</div>
             </div>
           </div>
@@ -77,9 +83,9 @@ export const Metadata: FC<{ className?: string }> = ({ className }) => {
       </Content>
       <Footer>
         <Grid>
-          <Button onClick={reject}>Cancel</Button>
+          <Button onClick={reject}>{t("Cancel")}</Button>
           <Button primary onClick={approve}>
-            Approve
+            {t("Approve")}
           </Button>
         </Grid>
       </Footer>{" "}

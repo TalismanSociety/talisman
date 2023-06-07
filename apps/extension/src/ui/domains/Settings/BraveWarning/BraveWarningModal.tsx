@@ -3,6 +3,7 @@ import Button from "@talisman/components/Button"
 import Field from "@talisman/components/Field"
 import imgBraveFlag from "@talisman/theme/images/brave_flag.gif"
 import { FC, useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import Browser from "webextension-polyfill"
 
@@ -43,6 +44,7 @@ type BraveWarningModalProps = {
 }
 
 export const BraveWarningModal: FC<BraveWarningModalProps> = ({ className, popup }) => {
+  const { t } = useTranslation("settings")
   const [hideBraveWarning, setHideBraveWarning] = useState<boolean>()
   const [hasBraveWarningBeenShown, setHasBraveWarningBeenShown] = useState<boolean>()
 
@@ -61,9 +63,9 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = ({ className, popup
   return (
     <ModalContainer className={className} small={popup}>
       <p>
-        Due to a recent Brave update (v 1.36) some balances may not display correctly. In order to
-        view your balances please disable the <b>Restrict WebSockets Pool</b> flag and relaunch
-        Brave.
+        {t(
+          "Due to a recent Brave update (v 1.36) some balances may not display correctly. In order to view your balances please disable the <b>Restrict WebSockets Pool</b> flag and relaunch Brave."
+        )}
       </p>
       <div>
         <img src={imgBraveFlag} alt="brave flag setting" />
@@ -77,18 +79,18 @@ export const BraveWarningModal: FC<BraveWarningModalProps> = ({ className, popup
           })
         }
       >
-        Open Brave flags
+        {t("Open Brave flags")}
       </Button>
       <Button
         external
         to="https://docs.talisman.xyz/talisman/help-and-support/troubleshooting/balances-on-brave-not-showing"
       >
-        Read the docs
+        {t("Read the docs")}
       </Button>
       <div>
         <Field.Toggle
           className="toggle"
-          info="Don't prompt me again"
+          info={t("Don't prompt me again")}
           value={hideBraveWarning}
           onChange={(val: boolean) => appStore.set({ hideBraveWarning: val })}
         />

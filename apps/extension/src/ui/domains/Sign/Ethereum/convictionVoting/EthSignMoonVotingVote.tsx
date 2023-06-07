@@ -1,33 +1,33 @@
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewVotingVote } from "../../Views/convictionVoting/SignViewVotingVote"
-import { SignIconType, SignViewIconHeader } from "../../Views/SignViewIconHeader"
+import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { getContractCallArg } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
-const getLabels = (methodName: string): { title?: string; icon?: SignIconType } => {
-  switch (methodName) {
-    case "voteYes":
-      return {
-        title: "Vote Yes",
-        icon: "ok",
-      }
-    case "voteNo":
-      return {
-        title: "Vote Yes",
-        icon: "ok",
-      }
-    default:
-      return {}
-  }
-}
-
 export const EthSignMoonVotingVote: FC = () => {
+  const { t } = useTranslation("sign")
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
 
-  const { title, icon } = getLabels(transactionInfo.contractCall.name)
+  const { title, icon } = useMemo(() => {
+    switch (transactionInfo.contractCall.name) {
+      case "voteYes":
+        return {
+          title: t("Vote Yes"),
+          icon: "ok" as const,
+        }
+      case "voteNo":
+        return {
+          title: t("Vote No"),
+          icon: "nok" as const,
+        }
+      default:
+        return {}
+    }
+  }, [t, transactionInfo.contractCall.name])
 
   const { voteAmount, pollIndex, conviction } = useMemo(() => {
     const pollIndex = getContractCallArg<number>(transactionInfo.contractCall, "pollIndex")

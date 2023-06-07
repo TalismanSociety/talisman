@@ -11,6 +11,7 @@ import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { usePolkadotSigningRequest } from "@ui/domains/Sign/SignRequestContext"
 import { SubSignBody } from "@ui/domains/Sign/Substrate/SubSignBody"
 import { FC, Suspense, lazy, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 import { Container } from "./common"
@@ -19,20 +20,23 @@ import { SignAccountAvatar } from "./SignAccountAvatar"
 const LedgerSubstrate = lazy(() => import("@ui/domains/Sign/LedgerSubstrate"))
 
 const EstimatedFeesRow: FC = () => {
+  const { t } = useTranslation("sign")
   const { fee, isLoadingFee, errorFee, chain, errorDecodingExtrinsic } = usePolkadotSigningRequest()
   const feeToken = useFeeToken(chain?.nativeToken?.id)
 
   return (
     <div className="text-body-secondary mb-8 flex w-full items-center justify-between text-sm">
       <div className="flex items-center gap-2">
-        <span>Estimated Fee </span>
+        <span>{t("Estimated Fee")} </span>
         {!!chain?.isUnknownFeeToken && (
           <Tooltip>
             <TooltipTrigger className="flex flex-col justify-center">
               <InfoIcon className="inline-block" />
             </TooltipTrigger>
             <TooltipContent>
-              We are unable to detect which currency will be used for fees in this transaction.
+              {t(
+                "We are unable to detect which currency will be used for fees in this transaction."
+              )}
             </TooltipContent>
           </Tooltip>
         )}
@@ -42,8 +46,8 @@ const EstimatedFeesRow: FC = () => {
           <LoaderIcon className="animate-spin-slow inline-block" />
         ) : errorFee || errorDecodingExtrinsic ? (
           <Tooltip placement="bottom-end">
-            <TooltipTrigger>Unknown</TooltipTrigger>
-            <TooltipContent>Failed to compute fee</TooltipContent>
+            <TooltipTrigger>{t("Unknown")}</TooltipTrigger>
+            <TooltipContent>{t("Failed to compute fee")}</TooltipContent>
           </Tooltip>
         ) : (
           <TokensAndFiat planck={fee ?? undefined} tokenId={feeToken?.id} />
@@ -54,6 +58,7 @@ const EstimatedFeesRow: FC = () => {
 }
 
 export const PolkadotSignTransactionRequest: FC = () => {
+  const { t } = useTranslation("sign")
   const {
     isDecodingExtrinsic,
     url,
@@ -111,10 +116,10 @@ export const PolkadotSignTransactionRequest: FC = () => {
               {account.origin !== "HARDWARE" && account.origin !== "QR" && (
                 <div className="grid w-full grid-cols-2 gap-12">
                   <Button disabled={processing} onClick={reject}>
-                    Cancel
+                    {t("Cancel")}
                   </Button>
                   <Button disabled={processing} processing={processing} primary onClick={approve}>
-                    Approve
+                    {t("Approve")}
                   </Button>
                 </div>
               )}

@@ -4,6 +4,7 @@ import { useBalancesStatus } from "@talismn/balances-react"
 import { classNames } from "@talismn/util"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useCallback } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -105,6 +106,7 @@ type AssetRowProps = {
 }
 
 const AssetRow = ({ balances }: AssetRowProps) => {
+  const { t } = useTranslation("portfolio")
   const networkIds = usePortfolioNetworkIds(balances)
   const { genericEvent } = useAnalytics()
 
@@ -142,9 +144,11 @@ const AssetRow = ({ balances }: AssetRowProps) => {
           <td colSpan={3} className="rounded-t px-8">
             <div className="flex w-full items-center justify-between">
               <button onClick={handleClickStakingBanner} className="flex items-center gap-4">
-                <ZapIcon /> <span className="text-white">Earn ~15% yield on your DOT.</span> This
-                balance is eligible for Nomination Pool Staking via the Talisman Portal.{" "}
-                <ExternalLinkIcon />
+                <Trans t={t}>
+                  <ZapIcon /> <span className="text-white">Earn ~15% yield on your DOT.</span> This
+                  balance is eligible for Nomination Pool Staking via the Talisman Portal.{" "}
+                  <ExternalLinkIcon />
+                </Trans>
               </button>
               <XIcon role="button" className="h-8" onClick={handleDismissStakingBanner} />
             </div>
@@ -164,8 +168,8 @@ const AssetRow = ({ balances }: AssetRowProps) => {
               <div className="text-body flex items-center gap-4 text-base font-bold">
                 {token.symbol}
                 {!!token.isTestnet && (
-                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded py-1 px-3 font-light">
-                    Testnet
+                  <span className="text-tiny bg-alert-warn/10 text-alert-warn rounded px-3 py-1 font-light">
+                    {t("Testnet")}
                   </span>
                 )}
               </div>
@@ -239,6 +243,7 @@ const getSkeletonOpacity = (index: number) => {
 }
 
 export const DashboardAssetsTable = ({ balances }: AssetsTableProps) => {
+  const { t } = useTranslation("portfolio")
   // group by token (symbol)
   const { symbolBalances, skeletons } = usePortfolioSymbolBalances(balances)
 
@@ -247,8 +252,8 @@ export const DashboardAssetsTable = ({ balances }: AssetsTableProps) => {
       <thead>
         <tr>
           <th>Asset</th>
-          <th align="right">Locked</th>
-          <th align="right">Available</th>
+          <th align="right">{t("Locked")}</th>
+          <th align="right">{t("Available")}</th>
         </tr>
       </thead>
       <tbody>

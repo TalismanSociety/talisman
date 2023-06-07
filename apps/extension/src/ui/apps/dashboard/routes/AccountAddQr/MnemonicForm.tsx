@@ -3,6 +3,7 @@ import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useMemo } from "react"
 import { useForm } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { Button, FormFieldTextarea } from "talisman-ui"
 import * as yup from "yup"
@@ -48,6 +49,7 @@ const schema = yup
   .required()
 
 export const MnemonicForm = ({ onSubmit, onCancel }: FormProps) => {
+  const { t } = useTranslation("account-add")
   const {
     register,
     handleSubmit,
@@ -64,26 +66,30 @@ export const MnemonicForm = ({ onSubmit, onCancel }: FormProps) => {
   return (
     <Form className={classNames("show")} data-button-pull-left onSubmit={handleSubmit(onSubmit)}>
       <div className="text-body-secondary mb-6">
-        Please enter a mnemonic you would like to use as your Verifier Certificate Mnemonic. You
-        should not enter your main Polkadot Vault account mnemonic here.
+        <Trans t={t}>
+          Please enter a mnemonic you would like to use as your Verifier Certificate Mnemonic. You
+          should not enter your main Polkadot Vault account mnemonic here.
+        </Trans>
       </div>
       <FormFieldTextarea
         {...register("mnemonic")}
-        placeholder={`Enter your 12 or 24 word mnemonic`}
+        placeholder={t(`Enter your 12 or 24 word mnemonic`)}
         rows={5}
         data-lpignore
         spellCheck={false}
       />
       <div className="my-8 flex justify-between text-xs">
-        {mnemonic && <div className="text-body-secondary">Word count: {wordCount}</div>}
+        {mnemonic && (
+          <div className="text-body-secondary">{t("Word count: {{wordCount}}", { wordCount })}</div>
+        )}
         <div className="text-alert-warn text-right">{errors.mnemonic?.message}</div>
       </div>
       <div className="flex justify-between gap-8">
         <Button type="button" fullWidth onClick={onCancel}>
-          Cancel
+          {t("Cancel")}
         </Button>
         <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>
-          Import
+          {t("Import")}
         </Button>
       </div>
     </Form>

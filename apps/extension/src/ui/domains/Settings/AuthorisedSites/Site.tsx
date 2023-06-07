@@ -9,6 +9,7 @@ import Rule from "@talisman/components/Rule"
 import { ReactComponent as IconAlert } from "@talisman/theme/icons/alert-circle.svg"
 import useAuthorisedSiteById from "@ui/hooks/useAuthorisedSiteById"
 import { FC, useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 import Account from "./Account"
@@ -39,17 +40,20 @@ const StyledTitle = styled(Title)`
 const ConfirmForgetDialog: FC<{ onConfirm: () => void; onCancel: () => void }> = ({
   onConfirm,
   onCancel,
-}) => (
-  <Dialog
-    icon={<IconAlert />}
-    title="Are you sure?"
-    text="You can always reconnect to this site by visiting it in the future."
-    confirmText="Forget Site"
-    cancelText="Cancel"
-    onConfirm={onConfirm}
-    onCancel={onCancel}
-  />
-)
+}) => {
+  const { t } = useTranslation("settings")
+  return (
+    <Dialog
+      icon={<IconAlert />}
+      title={t("Are you sure?")}
+      text={t("You can always reconnect to this site by visiting it in the future.")}
+      confirmText={t("Forget Site")}
+      cancelText={t("Cancel")}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
+  )
+}
 
 type ConnectedSiteProps = {
   id: string
@@ -58,6 +62,7 @@ type ConnectedSiteProps = {
 }
 
 const ConnectedSite = ({ id, provider, className }: ConnectedSiteProps) => {
+  const { t } = useTranslation("settings")
   const { origin, connected, availableAddresses, toggleAll, toggleOne, forget } =
     useAuthorisedSiteById(id, provider)
   const [showForget, setShowForget] = useState(false)
@@ -75,13 +80,13 @@ const ConnectedSite = ({ id, provider, className }: ConnectedSiteProps) => {
       className={className}
     >
       <div className="options">
-        <Link onClick={() => setShowForget(true)}>Forget Site</Link>
+        <Link onClick={() => setShowForget(true)}>{t("Forget Site")}</Link>
         <Rule vertical />
-        <Link onClick={() => toggleAll(false)}>Disconnect All</Link>
+        <Link onClick={() => toggleAll(false)}>{t("Disconnect All")}</Link>
         {provider !== "ethereum" && (
           <>
             <Rule vertical />
-            <Link onClick={() => toggleAll(true)}>Connect All</Link>
+            <Link onClick={() => toggleAll(true)}>{t("Connect All")}</Link>
           </>
         )}
       </div>
@@ -94,7 +99,7 @@ const ConnectedSite = ({ id, provider, className }: ConnectedSiteProps) => {
         />
       ))}
       <Modal open={showForget} onClose={hideForget}>
-        <ModalDialog title="Confirm Forget" onClose={hideForget}>
+        <ModalDialog title={t("Confirm Forget")} onClose={hideForget}>
           <ConfirmForgetDialog onConfirm={confirmForget} onCancel={hideForget} />
         </ModalDialog>
       </Modal>

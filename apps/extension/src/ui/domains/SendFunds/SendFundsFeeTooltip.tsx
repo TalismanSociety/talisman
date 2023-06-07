@@ -1,11 +1,13 @@
 import { WithTooltip } from "@talisman/components/Tooltip"
 import { InfoIcon } from "@talisman/theme/icons"
 import { ethers } from "ethers"
+import { useTranslation } from "react-i18next"
 
 import { TokensAndFiat } from "../Asset/TokensAndFiat"
 import { useSendFunds } from "./useSendFunds"
 
 export const SendFundsFeeTooltip = () => {
+  const { t } = useTranslation("send-funds")
   const { feeToken, feeTokenBalance, estimatedFee, evmTransaction } = useSendFunds()
   if (!feeToken || !feeTokenBalance || !estimatedFee) return null
 
@@ -14,13 +16,13 @@ export const SendFundsFeeTooltip = () => {
       className="ml-1"
       tooltip={
         <div className="grid grid-cols-2 gap-2">
-          <div>Estimated fee:</div>
+          <div>{t("Estimated fee:")}</div>
           <div className="text-right">
             <TokensAndFiat planck={estimatedFee.planck} tokenId={feeToken.id} noCountUp />
           </div>
           {!!evmTransaction?.txDetails?.maxFee && (
             <>
-              <div>Max. fee:</div>
+              <div>{t("Max. fee:")}</div>
               <div className="text-right">
                 <TokensAndFiat
                   planck={ethers.BigNumber.from(evmTransaction.txDetails.maxFee).toBigInt()}
@@ -30,7 +32,7 @@ export const SendFundsFeeTooltip = () => {
               </div>
             </>
           )}
-          <div>Balance:</div>
+          <div>{t("Balance:")}</div>
           <div className="text-right">
             <TokensAndFiat
               planck={feeTokenBalance.transferable.planck}

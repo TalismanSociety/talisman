@@ -6,6 +6,7 @@ import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
@@ -27,6 +28,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) => {
+  const { t } = useTranslation("settings")
   const { edit } = useAddressBook()
 
   const {
@@ -63,29 +65,27 @@ export const ContactEditModal = ({ contact, isOpen, close }: ContactModalProps) 
 
   return (
     <Modal open={isOpen} className="bg-black-secondary" onClose={close}>
-      <ModalDialog title="Edit contact">
+      <ModalDialog title={t("Edit contact")}>
         <form onSubmit={handleSubmit(submit)} className="grid gap-8">
-          <FormFieldContainer error={errors.name?.message} label="Name">
+          <FormFieldContainer error={errors.name?.message} label={t("Name")}>
             <FormFieldInputText
               type="text"
               {...register("name")}
-              placeholder="Contact name"
+              placeholder={t("Contact name")}
               autoComplete="off"
               spellCheck="false"
             />
           </FormFieldContainer>
           <div>
-            <div className="text-body-secondary block text-xs">Address</div>
-            <div className="mt-3 block bg-none text-xs text-white">
-              {contact && contact.address}
-            </div>
+            <div className="text-body-secondary block text-xs">{t("Address")}</div>
+            <div className="mt-3 block bg-none text-xs text-white">{contact?.address || ""}</div>
           </div>
           <div className="flex items-stretch gap-4 pt-4">
             <Button fullWidth onClick={close}>
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button type="submit" fullWidth primary disabled={!isValid}>
-              Save
+              {t("Save")}
             </Button>
           </div>
         </form>
