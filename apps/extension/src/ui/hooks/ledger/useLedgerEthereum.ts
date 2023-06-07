@@ -79,7 +79,7 @@ export const useLedgerEthereum = (persist = false) => {
     message: string
     requiresManualRetry: boolean
   }>(() => {
-    if (ledgerError) return getLedgerErrorProps(ledgerError, "Ethereum", t)
+    if (ledgerError) return getLedgerErrorProps(ledgerError, "Ethereum")
 
     if (isLoading)
       return {

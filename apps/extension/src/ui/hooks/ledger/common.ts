@@ -1,5 +1,9 @@
 import { DEBUG } from "@core/constants"
-import { TFunction } from "i18next"
+import { t } from "i18next"
+
+export const ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE =
+  "This transaction cannot be signed via an Ethereum Ledger account."
+export const ERROR_LEDGER_NO_APP = "There is no Ledger app available for this network."
 
 // this should live in chaindata in the future
 export const ledgerNetworks = [
@@ -62,11 +66,7 @@ export type LedgerErrorProps = {
 
 const capitalize = (str: string) => (str.length > 1 ? str[0].toUpperCase() + str.slice(1) : str)
 
-export const getLedgerErrorProps = (
-  err: Error,
-  appName: string,
-  t: TFunction
-): LedgerErrorProps => {
+export const getLedgerErrorProps = (err: Error, appName: string): LedgerErrorProps => {
   const error = err as Error & { name?: string; statusCode?: number }
 
   // Generic errors
@@ -160,11 +160,19 @@ export const getLedgerErrorProps = (
         requiresManualRetry: false,
       }
 
-    case t("This transaction cannot be signed via an Ethereum Ledger account."):
-    case t("There is no Ledger app available for this network."):
+    case ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE:
       return {
         status: "error",
-        message: err.message,
+        // can't reuse the const here because the i18n plugin wouldn't lookup the content
+        message: t("This transaction cannot be signed via an Ethereum Ledger account."),
+        requiresManualRetry: false,
+      }
+
+    case ERROR_LEDGER_NO_APP:
+      return {
+        status: "error",
+        // can't reuse the const here because we need i18n plugin to parse the text
+        message: t("There is no Ledger app available for this network."),
         requiresManualRetry: false,
       }
   }

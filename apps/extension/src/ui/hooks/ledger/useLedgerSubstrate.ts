@@ -8,7 +8,12 @@ import { useTranslation } from "react-i18next"
 
 import useChainByGenesisHash from "../useChainByGenesisHash"
 import { useSetInterval } from "../useSetInterval"
-import { LedgerStatus, getLedgerErrorProps } from "./common"
+import {
+  ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE,
+  ERROR_LEDGER_NO_APP,
+  LedgerStatus,
+  getLedgerErrorProps,
+} from "./common"
 import { useLedgerSubstrateApp } from "./useLedgerSubstrateApp"
 
 export const useLedgerSubstrate = (genesis?: string | null, persist = false) => {
@@ -48,11 +53,8 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
 
       try {
         assert(getIsLedgerCapable(), t("Sorry, Ledger is not supported on your browser."))
-        assert(
-          !chain || chain.account !== "secp256k1",
-          t("This transaction cannot be signed via an Ethereum Ledger account.")
-        )
-        assert(app?.name, t("There is no Ledger app available for this network."))
+        assert(!chain || chain.account !== "secp256k1", ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE)
+        assert(app?.name, ERROR_LEDGER_NO_APP)
 
         const ledger = new Ledger("webusb", app.name)
 
@@ -80,7 +82,7 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
     message: string
     requiresManualRetry: boolean
   }>(() => {
-    if (error) return getLedgerErrorProps(error, app?.label ?? t("Unknown app"), t)
+    if (error) return getLedgerErrorProps(error, app?.label ?? t("Unknown app"))
 
     if (isLoading)
       return {
