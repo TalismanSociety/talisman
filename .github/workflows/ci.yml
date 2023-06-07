@@ -12,7 +12,7 @@ concurrency:
   # only run 1 job per branch/pr/etc at a time
   # (afaik this prevents a race condition in changesets version bumps)
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # This job will build and test the talisman wallet
