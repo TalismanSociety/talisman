@@ -65,7 +65,7 @@
   "Failed to copy": "Failed to copy",
   "Copy to clipboard": "Copy to clipboard",
   "<0>Your recovery phrase gives you access to your wallet and funds. It can be used to restore your Talisman created accounts if you lose access to your device, or forget your password.</0><1>We strongly encourage you to back up your recovery phrase by writing it down and storing it in a secure location. <2>Learn more.</2></1>": "<0>Your recovery phrase gives you access to your wallet and funds. It can be used to restore your Talisman created accounts if you lose access to your device, or forget your password.</0><1>We strongly encourage you to back up your recovery phrase by writing it down and storing it in a secure location. <2>Learn more.</2></1>",
-  "I've backed it up": "I've backed it up",
+  "Don't remind me again": "Don't remind me again",
   "View Recovery Phrase": "View Recovery Phrase",
   "Enter your password to show your recovery phrase.": "Enter your password to show your recovery phrase.",
   "{{origin}} Import": "{{origin}} Import",
