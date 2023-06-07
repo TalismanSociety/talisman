@@ -144,11 +144,12 @@ const AssetRow = ({ balances }: AssetRowProps) => {
           <td colSpan={3} className="rounded-t px-8">
             <div className="flex w-full items-center justify-between">
               <button onClick={handleClickStakingBanner} className="flex items-center gap-4">
+                <ZapIcon />{" "}
                 <Trans t={t}>
-                  <ZapIcon /> <span className="text-white">Earn ~15% yield on your DOT.</span> This
-                  balance is eligible for Nomination Pool Staking via the Talisman Portal.{" "}
-                  <ExternalLinkIcon />
-                </Trans>
+                  <span className="text-white">Earn ~15% yield on your DOT.</span> This balance is
+                  eligible for Nomination Pool Staking via the Talisman Portal.
+                </Trans>{" "}
+                <ExternalLinkIcon />
               </button>
               <XIcon role="button" className="h-8" onClick={handleDismissStakingBanner} />
             </div>
