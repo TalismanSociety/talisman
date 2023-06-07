@@ -4,10 +4,16 @@ export const DEBUG = !["production", "test", "canary"].includes(process.env.NODE
 export const TEST = process.env.NODE_ENV === "test"
 export const DEFAULT_ETH_CHAIN_ID = 1 //Ethereum mainnet
 
+/**
+ * A list of tokens to show by default for empty substrate accounts
+ */
 export const DEFAULT_PORTFOLIO_TOKENS_SUBSTRATE = [
   "polkadot-substrate-native-dot",
   "kusama-substrate-native-ksm",
 ]
+/**
+ * A list of tokens to show by default for empty ethereum accounts
+ */
 export const DEFAULT_PORTFOLIO_TOKENS_ETHEREUM = [
   "1-evm-native-eth",
   "1284-evm-native-glmr",

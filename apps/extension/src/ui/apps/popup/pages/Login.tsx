@@ -1,7 +1,7 @@
 import { AccountJsonAny } from "@core/domains/accounts/types"
 import { yupResolver } from "@hookform/resolvers/yup"
-import { useTalismanOrb } from "@talisman/components/TalismanOrb"
 import { HandMonoTransparentLogo } from "@talisman/theme/logos"
+import { useTalismanOrb } from "@talismn/orb"
 import { classNames } from "@talismn/util"
 import { api } from "@ui/api"
 import { useAnalytics } from "@ui/hooks/useAnalytics"

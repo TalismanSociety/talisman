@@ -12,7 +12,7 @@ concurrency:
   # only run 1 job per branch/pr/etc at a time
   # (afaik this prevents a race condition in changesets version bumps)
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # This job will build and test the talisman wallet
@@ -252,6 +252,10 @@ jobs:
       - name: Create pull request
         id: changesets
         uses: changesets/action@v1
+        with:
+          commit: "chore: bump package versions"
+          title: "chore: bump package versions"
+          createGithubReleases: false
         env:
           # GITHUB_TOKEN is automatically added into the ENV by GitHub CI
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
