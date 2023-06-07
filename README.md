@@ -1,6 +1,6 @@
 # Talisman monorepo
 
-This repository is the monorepo of Talisman projects.
+This repository is the monorepo for Talisman projects.
 
 ## What's inside?
 
@@ -13,7 +13,7 @@ Yarn version >1.2
 
 This README was written and verified with:
 
-- Node v18.14.2
+- Node v18.16.0
 - Yarn v1.22.19
 
 ### Apps and Packages
@@ -33,7 +33,7 @@ All our package and apps are 100% [TypeScript](https://www.typescriptlang.org/).
 
 2. Change to the repo directory.
 
-   `cd extension`
+   `cd talisman`
 
 3. Install dependencies and start the dev server, waiting for it to generate the `dist` directory.
 
@@ -122,7 +122,7 @@ git add apps/extension/public/locales
 ### Scripts
 
 - `dev` : builds and watches all packages/apps with hot reloading
-- `dev:extension` : when working on extension only, for better color output (dependencies need to be built beforehand)
+- `dev:extension` : when working on extension only, for better color output
 - `build`: builds the wallet in `packages/apps/extension/dist` folder, without sentry keys
 - `build:extension:prod` builds the Talisman browser extension (requires sentry settings, Talisman team only)
 - `build:extension:canary` : builds the Talisman browser extension test version, with different ID and icon than prod
@@ -130,10 +130,8 @@ git add apps/extension/public/locales
 ### Build the wallet browser extension using Docker
 
 ```bash
-
 # builds with docker, outputs in dist folder at the root of the monorepo
 rm -rf dist && DOCKER_BUILDKIT=1 docker build --output type=local,dest=./dist .
-
 ```
 
 ### Update packages
@@ -142,27 +140,4 @@ rm -rf dist && DOCKER_BUILDKIT=1 docker build --output type=local,dest=./dist .
 # Make changes, and then run:
 yarn changeset
 # Select the packages which have been modified and write a commit message
-
-
-# Later on, after merging some created changesets:
-yarn changeset version
-# Commit the changed files and then go to the next step, `Publish packages`.
-
-
-```
-
-### Publish packages
-
-NOTE: This changeset and manual publish stuff is way too error-prone. We should definitely invest some time in automating the process on github ci.  
-One consideration to keep in mind is how should we handle non-production npm package updates.  
-E.g. we might make some changes to a balances module and want to test it out on subsquid, but not release a new version as it's not yet in a completed state.
-
-```bash
-yarn plugin import workspace-tools
-
-yarn npm login
-git clean -ffdx packages
-yarn
-yarn build:packages
-yarn workspaces foreach --no-private npm publish --tolerate-republish
 ```
