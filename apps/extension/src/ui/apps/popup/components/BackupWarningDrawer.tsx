@@ -7,8 +7,9 @@ import { Button } from "talisman-ui"
 
 export const BackupWarningDrawer = () => {
   const { showBackupWarning, snoozeBackupReminder } = useMnemonicBackup()
-  const openBackup = useCallback(() => {
-    api.dashboardOpen("/settings?showBackupModal")
+  const openBackup = useCallback(async () => {
+    await api.dashboardOpen("/settings?showBackupModal")
+    window.close()
   }, [])
 
   return (

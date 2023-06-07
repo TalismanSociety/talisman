@@ -1,6 +1,7 @@
 import { appStore } from "@core/domains/app"
 import { api } from "@ui/api"
 import { useCallback, useMemo } from "react"
+import { useSearchParams } from "react-router-dom"
 
 import { useAppState } from "./useAppState"
 import useBalances from "./useBalances"
@@ -29,16 +30,21 @@ const useMnemonicBackup = () => {
     return Boolean(hideBackupWarningUntil && hideBackupWarningUntil > Date.now() && isNotConfirmed)
   }, [hideBackupWarningUntil, isNotConfirmed])
 
+  // the `showBackupModal` url query param exists only when opening the backup modal
+  // while we show the backup modal, we should not show the backup warning modal
+  const [searchParams] = useSearchParams()
+
   const showBackupWarning = useMemo(
     () =>
       !isSnoozed &&
       isNotConfirmed &&
       hasFunds &&
+      searchParams.get("showBackupModal") === null &&
       !!talismanSeedAddresses.length &&
       balances.each.some(
         (bal) => bal.free.planck > 0n && talismanSeedAddresses.includes(bal.address)
       ),
-    [isSnoozed, isNotConfirmed, hasFunds, balances, talismanSeedAddresses]
+    [isSnoozed, isNotConfirmed, hasFunds, searchParams, talismanSeedAddresses, balances]
   )
 
   // toggle menmonic confirmed
