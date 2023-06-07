@@ -17,10 +17,26 @@ import Layout from "@ui/apps/dashboard/layout"
 import { MigratePasswordModal } from "@ui/domains/Settings/MigratePassword/MigratePasswordModal"
 import { MnemonicModal } from "@ui/domains/Settings/MnemonicModal"
 import useMnemonicBackup from "@ui/hooks/useMnemonicBackup"
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { useTranslation } from "react-i18next"
 import { useSearchParams } from "react-router-dom"
 import { CtaButton } from "talisman-ui"
+
+const useShowBackupModal = () => {
+  const { isOpen, open, close: closeBackupModal } = useOpenClose()
+  const [, setSearchParams] = useSearchParams()
+
+  // when closing modal, remove the query param so the warning modal displays again
+  const close = useCallback(() => {
+    closeBackupModal()
+    setSearchParams((prev) => {
+      prev.delete("showBackupModal")
+      return prev
+    })
+  }, [closeBackupModal, setSearchParams])
+
+  return { isOpen, open, close }
+}
 
 const Settings = () => {
   const { isOpen: isOpenMigratePw, open: openMigratePw, close: closeMigratePw } = useOpenClose()
@@ -28,10 +44,10 @@ const Settings = () => {
     isOpen: isOpenBackupMnemonic,
     open: openBackupMnemonic,
     close: closeBackupMnemonic,
-  } = useOpenClose()
+  } = useShowBackupModal()
   const { isNotConfirmed } = useMnemonicBackup()
 
-  // auto open backup popup if requested in query string
+  // auto open modal if requested in query string
   const [searchParams, setSearchParams] = useSearchParams()
   useEffect(() => {
     if (searchParams.get("showMigratePasswordModal") !== null) {
