@@ -1,7 +1,7 @@
 import { web3AccountsSubscribe, web3Enable } from "@polkadot/extension-dapp"
 import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types"
-import { useAllAddresses, useBalances, useTokens } from "@talismn/balances-react"
-import { Token } from "@talismn/chaindata-provider"
+import { useAllAddresses, useBalances, useChaindata, useTokens } from "@talismn/balances-react"
+import { CustomChain, CustomEvmNetwork, Token } from "@talismn/chaindata-provider"
 import { classNames, formatDecimals } from "@talismn/util"
 import { Fragment, useEffect, useMemo, useState } from "react"
 
@@ -16,6 +16,8 @@ export function App(): JSX.Element {
 
   const addressesByToken = useAddressesByToken(addresses, tokenIds)
   const balances = useBalances(addressesByToken)
+
+  useExtensionChaindataSyncEffect()
 
   return (
     <div className="m-5 flex flex-col gap-5">
@@ -141,4 +143,40 @@ function useAddressesByToken(addresses: string[] | null, tokenIds: Token["id"][]
     if (addresses === null) return {}
     return Object.fromEntries(tokenIds.map((tokenId) => [tokenId, addresses]))
   }, [addresses, tokenIds])
+}
+
+const windowInject = globalThis as typeof globalThis & {
+  talismanSub?: {
+    subscribeCustomSubstrateChains?: (cb: (chains: CustomChain[]) => unknown) => () => void
+    subscribeCustomEvmNetworks?: (cb: (networks: CustomEvmNetwork[]) => unknown) => () => void
+    subscribeCustomTokens?: (cb: (tokens: Token[]) => unknown) => () => void
+  }
+}
+
+function useExtensionChaindataSyncEffect() {
+  const chaindata = useChaindata()
+
+  useEffect(
+    () =>
+      windowInject.talismanSub?.subscribeCustomSubstrateChains?.((chains) =>
+        chaindata.syncCustomChains(chains)
+      ),
+    [chaindata]
+  )
+
+  useEffect(
+    () =>
+      windowInject.talismanSub?.subscribeCustomEvmNetworks?.((networks) =>
+        chaindata.syncCustomEvmNetworks(networks)
+      ),
+    [chaindata]
+  )
+
+  useEffect(
+    () =>
+      windowInject.talismanSub?.subscribeCustomTokens?.((tokens) =>
+        chaindata.syncCustomTokens(tokens)
+      ),
+    [chaindata]
+  )
 }
