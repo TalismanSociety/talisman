@@ -1,5 +1,23 @@
 # @talismn/balances-react
 
+## 0.5.0
+
+### Minor Changes
+
+- eebb640d: Synchronise chains, networks & tokens config with Talisman extension
+
+### Patch Changes
+
+- Updated dependencies [1a2fdc73]
+- Updated dependencies [eebb640d]
+  - @talismn/chaindata-provider-extension@0.5.0
+  - @talismn/chaindata-provider@0.5.0
+  - @talismn/balances@0.5.0
+  - @talismn/chain-connector@0.5.0
+  - @talismn/chain-connector-evm@0.5.0
+  - @talismn/connection-meta@0.0.4
+  - @talismn/token-rates@0.1.17
+
 ## 0.4.1
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @talismn/balances-substrate-native
 
+## 0.5.0
+
+### Patch Changes
+
+- 74f50e65: docs: added TODO for future i18n work
+- Updated dependencies [1a2fdc73]
+  - @talismn/chaindata-provider@0.5.0
+  - @talismn/balances@0.5.0
+
 ## 0.4.1
 
 ### Patch Changes

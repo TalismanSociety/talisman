@@ -1,5 +1,13 @@
 # @talismn/chain-connector
 
+## 0.5.0
+
+### Patch Changes
+
+- Updated dependencies [1a2fdc73]
+  - @talismn/chaindata-provider@0.5.0
+  - @talismn/connection-meta@0.0.4
+
 ## 0.4.4
 
 ### Patch Changes
