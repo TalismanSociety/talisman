@@ -111,6 +111,7 @@ export default interface MessageTypes {
   ) => Promise<string>
   accountCreateHardwareEthereum: (name: string, address: string, path: string) => Promise<string>
   accountCreateQr: (name: string, address: string, genesisHash: string | null) => Promise<string>
+  accountCreateWatched: (name: string, address: string, isPortfolio: boolean) => Promise<string>
   accountsSubscribe: (cb: (accounts: AccountJson[]) => void) => UnsubscribeFn
   accountForget: (address: string) => Promise<boolean>
   accountExport: (

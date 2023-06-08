@@ -1,12 +1,13 @@
 import { Balances } from "@core/domains/balances/types"
 import { AccountJson } from "@polkadot/extension-base/background/types"
 import { WithTooltip } from "@talisman/components/Tooltip"
-import { LinkIcon, PolkadotVaultIcon, UsbIcon } from "@talisman/theme/icons"
+import { EyeIcon, LinkIcon, PolkadotVaultIcon, UsbIcon } from "@talisman/theme/icons"
 import { ReactComponent as IconCopy } from "@talisman/theme/icons/copy.svg"
 import { ReactComponent as IconLoader } from "@talisman/theme/icons/loader.svg"
 import Asset from "@ui/domains/Asset"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 import { useCopyAddressModal } from "../CopyAddress"
@@ -19,6 +20,7 @@ type AccountTypeIconProps = {
 }
 
 export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, linked, className }) => {
+  const { t } = useTranslation()
   if (linked && ["SEED", "JSON"].includes(origin as string))
     return (
       <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
@@ -35,6 +37,12 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, linked, clas
     return (
       <WithTooltip as="div" className={`${className} source`} tooltip={`${origin} Import`}>
         <PolkadotVaultIcon />
+      </WithTooltip>
+    )
+  if (origin === "WATCHED")
+    return (
+      <WithTooltip as="div" className={`${className} source`} tooltip={t("Watched only")}>
+        <EyeIcon />
       </WithTooltip>
     )
   return null

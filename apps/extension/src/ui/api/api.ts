@@ -104,6 +104,12 @@ export const api: MessageTypes = {
       address,
       genesisHash,
     }),
+  accountCreateWatched: (name, address, isPortfolio) =>
+    messageService.sendMessage("pri(accounts.create.watched)", {
+      name,
+      address,
+      isPortfolio,
+    }),
   accountsSubscribe: (cb) => messageService.subscribe("pri(accounts.subscribe)", null, cb),
   accountForget: (address) => messageService.sendMessage("pri(accounts.forget)", { address }),
   accountExport: (address, password, exportPw) =>

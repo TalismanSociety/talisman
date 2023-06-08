@@ -1,25 +1,27 @@
-import { AccountJson } from "@polkadot/extension-base/background/types"
-import { LinkIcon, PolkadotVaultIcon, UsbIcon } from "@talisman/theme/icons"
+import { AccountJsonAny } from "@core/domains/accounts/types"
+import { EyeIcon, LinkIcon, PolkadotVaultIcon, UsbIcon } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { FC } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 type AccountTypeIconProps = {
-  origin?: AccountJson["origin"] | null
+  origin?: AccountJsonAny["origin"] | null
   showLinked?: boolean
   className?: string
 }
 
-const getAccountTypeIcon = (origin: AccountJson["origin"] | null, showLinked: boolean) => {
-  if (showLinked && ["SEED", "JSON"].includes(origin as string)) return LinkIcon
-  if (origin === "HARDWARE") return UsbIcon
-  if (origin === "QR") return PolkadotVaultIcon
+const getAccountTypeIcon = (origin: AccountJsonAny["origin"] | null, showLinked: boolean) => {
+  if (showLinked && ["SEED", "JSON"].includes(origin as string))
+    return { Icon: LinkIcon, tooltip: `Imported account` }
+  if (origin === "HARDWARE") return { Icon: UsbIcon, tooltip: `Hardware wallet account` }
+  if (origin === "QR") return { Icon: PolkadotVaultIcon, tooltip: `Polkadot Vault account` }
+  if (origin === "WATCHED") return { Icon: EyeIcon, tooltip: "Watched only account" }
 
-  return null
+  return {}
 }
 
 export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, showLinked, className }) => {
-  const Icon = getAccountTypeIcon(origin, !!showLinked)
+  const { Icon, tooltip } = getAccountTypeIcon(origin, !!showLinked)
 
   if (!Icon) return null
 
@@ -28,9 +30,7 @@ export const AccountTypeIcon: FC<AccountTypeIconProps> = ({ origin, showLinked, 
       <TooltipTrigger>
         <Icon className={classNames("inline", className)} />
       </TooltipTrigger>
-      <TooltipContent>
-        <>{origin} Import</>
-      </TooltipContent>
+      <TooltipContent>{tooltip}</TooltipContent>
     </Tooltip>
   )
 }

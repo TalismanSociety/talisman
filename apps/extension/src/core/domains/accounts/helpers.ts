@@ -64,12 +64,11 @@ export const sortAccounts = (accounts: SubjectInfo): AccountJsonAny[] => {
   // as well as QR (parity signer) and HARDWARE (ledger) accounts
   // should order these by created date? probably
   const imported = transformedAccounts.filter(({ origin }) =>
-    ["SEED", "JSON", "QR", "HARDWARE"].includes(origin as string)
+    ["SEED", "JSON", "QR", "HARDWARE", "WATCHED"].includes(origin as string)
   )
   const importedSorted = sortAccountsByWhenCreated(imported)
-  ordered = [...ordered, ...importedSorted]
 
-  return ordered
+  return [...ordered, ...importedSorted]
 }
 
 export const getInjectedAccount = ({

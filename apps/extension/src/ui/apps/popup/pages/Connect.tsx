@@ -56,11 +56,13 @@ export const Connect: FC<{ className?: string }> = ({ className }) => {
   const accounts = useMemo(
     () =>
       authRequest && allAccounts
-        ? allAccounts.filter(
-            ({ type }) =>
-              showEthAccounts ||
-              (authRequest.request.ethereum ? type === "ethereum" : type !== "ethereum")
-          )
+        ? allAccounts
+            .filter(({ origin }) => origin !== "WATCHED")
+            .filter(
+              ({ type }) =>
+                showEthAccounts ||
+                (authRequest.request.ethereum ? type === "ethereum" : type !== "ethereum")
+            )
         : [],
     [allAccounts, authRequest, showEthAccounts]
   )

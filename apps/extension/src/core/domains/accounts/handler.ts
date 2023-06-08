@@ -6,6 +6,7 @@ import type {
   RequestAccountCreateHardware,
   RequestAccountCreateHardwareEthereum,
   RequestAccountCreateQr,
+  RequestAccountCreateWatched,
   RequestAccountExport,
   RequestAccountExportPrivateKey,
   RequestAccountForget,
@@ -263,6 +264,52 @@ export default class AccountsHandler extends ExtensionHandler {
     return pair.address
   }
 
+  private accountCreateWatched({
+    name,
+    address,
+    isPortfolio,
+  }: RequestAccountCreateWatched): string {
+    const password = this.stores.password.getPassword()
+    assert(password, "Not logged in")
+
+    const safeAddress = encodeAnyAddress(address)
+
+    const exists = keyring
+      .getAccounts()
+      .some((account) => encodeAnyAddress(account.address) === safeAddress)
+    assert(!exists, "Account already exists")
+
+    // ui-keyring's addExternal method only supports substrate accounts, cannot set ethereum type
+    // => create the pair without helper
+    const pair = createPair(
+      isEthereumAddress(safeAddress)
+        ? { type: "ethereum", toSS58: ethereumEncode }
+        : { type: "sr25519", toSS58: keyring.encodeAddress },
+      {
+        publicKey: decodeAnyAddress(address),
+        secretKey: new Uint8Array(),
+      },
+      {
+        name,
+        isExternal: true,
+        isPortfolio: !!isPortfolio,
+        origin: AccountTypes.WATCHED,
+      },
+      null
+    )
+
+    // add to the underlying keyring, allowing not to specify a password
+    keyring.keyring.addPair(pair)
+    keyring.saveAccount(pair)
+
+    talismanAnalytics.capture("account create", {
+      type: isEthereumAddress(safeAddress) ? "ethereum" : "substrate",
+      method: "watched",
+    })
+
+    return pair.address
+  }
+
   private accountForget({ address }: RequestAccountForget): boolean {
     const account = keyring.getAccount(address)
     assert(account, "Unable to find account")
@@ -381,6 +428,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCreateHardwareEthereum(request as RequestAccountCreateHardwareEthereum)
       case "pri(accounts.create.qr.substrate)":
         return this.accountsCreateQr(request as RequestAccountCreateQr)
+      case "pri(accounts.create.watched)":
+        return this.accountCreateWatched(request as RequestAccountCreateWatched)
       case "pri(accounts.forget)":
         return this.accountForget(request as RequestAccountForget)
       case "pri(accounts.export)":

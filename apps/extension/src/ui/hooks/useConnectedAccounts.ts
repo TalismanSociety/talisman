@@ -15,6 +15,7 @@ export const useConnectedAccounts = (siteId: string, providerType: ProviderType)
   const accounts = useMemo(
     () =>
       allAccounts
+        .filter(({ origin }) => origin !== "WATCHED")
         .filter(({ type }) =>
           providerType === "polkadot" ? showEthAccounts || type !== "ethereum" : type === "ethereum"
         )
