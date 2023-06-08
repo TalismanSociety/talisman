@@ -1,5 +1,13 @@
 # @talismn/balances-substrate-orml
 
+## 0.4.2
+
+### Patch Changes
+
+- Updated dependencies [1a2fdc73]
+  - @talismn/chaindata-provider@0.5.0
+  - @talismn/balances@0.4.2
+
 ## 0.4.1
 
 ### Patch Changes
