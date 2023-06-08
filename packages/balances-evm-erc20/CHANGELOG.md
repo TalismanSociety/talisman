@@ -1,5 +1,12 @@
 # @talismn/balances-evm-erc20
 
+## 0.5.0
+
+### Patch Changes
+
+- @talismn/balances@0.5.0
+- @talismn/chaindata-provider@0.6.0
+
 ## 0.4.2
 
 ### Patch Changes
