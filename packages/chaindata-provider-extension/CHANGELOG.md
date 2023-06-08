@@ -1,10 +1,21 @@
 # @talismn/chaindata-provider-extension
 
+## 0.6.0
+
+### Minor Changes
+
+- eebb640d: Synchronise chains, networks & tokens config with Talisman extension
+
+### Patch Changes
+
+- @talismn/chaindata-provider@0.6.0
+
 ## 0.5.0
 
 ### Minor Changes
 
 - 1a2fdc73: feat: add isUnknownFeeToken on Chain
+- eebb640d: Synchronise chains, networks & tokens config with Talisman extension
 
 ### Patch Changes
 

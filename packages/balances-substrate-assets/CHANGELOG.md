@@ -1,12 +1,19 @@
 # @talismn/balances-substrate-assets
 
+## 0.5.0
+
+### Patch Changes
+
+- @talismn/balances@0.5.0
+- @talismn/chaindata-provider@0.6.0
+
 ## 0.4.2
 
 ### Patch Changes
 
 - Updated dependencies [1a2fdc73]
   - @talismn/chaindata-provider@0.5.0
-  - @talismn/balances@0.4.2
+  - @talismn/balances@0.5.0
 
 ## 0.4.1
 
