@@ -1,6 +1,16 @@
 import { classNames } from "@talismn/util"
-import { DetailedHTMLProps, FC, MouseEventHandler, ReactNode, SVGProps, useCallback } from "react"
+import {
+  DetailedHTMLProps,
+  FC,
+  MouseEventHandler,
+  ReactNode,
+  SVGProps,
+  useCallback,
+  useMemo,
+} from "react"
 import { useNavigate } from "react-router-dom"
+
+type CtaButtonSize = "large" | "small"
 
 type CtaButton = DetailedHTMLProps<
   React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -11,6 +21,28 @@ type CtaButton = DetailedHTMLProps<
   title: ReactNode
   subtitle: ReactNode
   to?: string
+  size?: CtaButtonSize
+}
+
+const getContainerClassName = (size: CtaButtonSize) => {
+  switch (size) {
+    case "large":
+      return {
+        iconLeftClassName: "text-lg",
+        containerClassName: "h-40",
+        contentClassName: "gap-4",
+        titleClassName: "text-base",
+        subtitleClassName: "text-sm",
+      }
+    case "small":
+      return {
+        iconLeftClassName: "text-[20px]",
+        containerClassName: "h-32",
+        contentClassName: "gap-2",
+        titleClassName: "text-sm",
+        subtitleClassName: "text-xs",
+      }
+  }
 }
 
 export const CtaButton: FC<CtaButton> = ({
@@ -20,6 +52,7 @@ export const CtaButton: FC<CtaButton> = ({
   subtitle,
   className,
   to,
+  size = "large",
   onClick,
   ...props
 }) => {
@@ -33,19 +66,28 @@ export const CtaButton: FC<CtaButton> = ({
     [navigate, onClick, to]
   )
 
+  const {
+    containerClassName,
+    iconLeftClassName,
+    contentClassName,
+    titleClassName,
+    subtitleClassName,
+  } = useMemo(() => getContainerClassName(size), [size])
+
   return (
     <button
       {...props}
       className={classNames(
-        "bg-grey-900 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body flex h-40 w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50",
+        "bg-grey-850 enabled:hover:bg-grey-800 text-body-disabled enabled:hover:text-body flex w-full cursor-pointer items-center gap-8 rounded-sm px-8 disabled:cursor-not-allowed disabled:opacity-50",
+        containerClassName,
         className
       )}
       onClick={handleClick}
     >
-      {IconLeft && <IconLeft className=" text-primary text-lg" />}
-      <div className="flex grow flex-col items-start gap-4">
-        <div className="text-body">{title}</div>
-        <div className="text-body-secondary text-sm">{subtitle}</div>
+      {IconLeft && <IconLeft className={classNames("text-primary", iconLeftClassName)} />}
+      <div className={classNames("flex grow flex-col items-start", contentClassName)}>
+        <div className={classNames("text-body", titleClassName)}>{title}</div>
+        <div className={classNames("text-body-secondary", subtitleClassName)}>{subtitle}</div>
       </div>
       {IconRight && <IconRight className="text-lg" />}
     </button>
