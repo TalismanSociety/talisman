@@ -2,9 +2,9 @@ import { IconButton } from "@talisman/components/IconButton"
 import { EyeIcon, EyeOffIcon } from "@talisman/theme/icons"
 import Asset from "@ui/domains/Asset"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useBalances from "@ui/hooks/useBalances"
+import { useMyBalances } from "@ui/hooks/useMyBalances"
 import { useSetting } from "@ui/hooks/useSettings"
-import { useCallback } from "react"
+import { FC, useCallback } from "react"
 import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
@@ -80,8 +80,9 @@ const TotalFiat = styled.div`
   }
 `
 
-export const TotalFiatBalance = ({ className }: { className?: string }) => {
-  const balances = useBalances()
+export const TotalFiatBalance: FC<{ className?: string }> = ({ className }) => {
+  const { t } = useTranslation("portfolio")
+  const balances = useMyBalances()
 
   const [hideBalances, setHideBalances] = useSetting("hideBalances")
   const { genericEvent } = useAnalytics()
@@ -90,8 +91,6 @@ export const TotalFiatBalance = ({ className }: { className?: string }) => {
     genericEvent("toggle hide balance")
     setHideBalances((prev) => !prev)
   }, [genericEvent, setHideBalances])
-
-  const { t } = useTranslation("portfolio")
 
   return (
     <Container className={className}>

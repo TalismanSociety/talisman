@@ -16,6 +16,7 @@ import { PopupAssetsTable } from "@ui/domains/Portfolio/AssetsTable"
 import { usePortfolio } from "@ui/domains/Portfolio/context"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
+import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
 import { getTransactionHistoryUrl } from "@ui/util/getTransactionHistoryUrl"
@@ -41,6 +42,8 @@ const PageContent = ({ balances }: { balances: Balances }) => {
   const { canRemove, open: openAccountRemoveModal } = useAccountRemoveModal()
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openCopyAddressModal } = useCopyAddressModal()
+  const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
+    useAccountToggleIsPortfolio(account)
   const { genericEvent } = useAnalytics()
 
   const sendFunds = useCallback(() => {
@@ -143,6 +146,9 @@ const PageContent = ({ balances }: { balances: Balances }) => {
                 )}
                 {canRemove && (
                   <PopoverItem onClick={openAccountRemoveModal}>{t("Remove Account")}</PopoverItem>
+                )}
+                {canToggleIsPortfolio && (
+                  <PopoverItem onClick={toggleIsPortfolio}>{toggleLabel}</PopoverItem>
                 )}
                 {canAddCustomToken && (
                   <PopoverItem onClick={handleAddCustomToken}>{t("Add Custom Token")}</PopoverItem>

@@ -21,6 +21,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useBalances from "@ui/hooks/useBalances"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
+import { useMyBalances } from "@ui/hooks/useMyBalances"
 import { MouseEventHandler, useCallback, useEffect, useMemo } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
@@ -181,6 +182,7 @@ const Accounts = ({ options }: { options: AccountOption[] }) => (
 
 export const PortfolioAccounts = () => {
   const balances = useBalances()
+  const myBalances = useMyBalances()
   const accounts = useAccounts()
   const { popupOpenEvent } = useAnalytics()
   const { t } = useTranslation("portfolio")
@@ -197,7 +199,7 @@ export const PortfolioAccounts = () => {
     return [
       {
         name: t("All Accounts"),
-        total: balances.sum.fiat("usd").total,
+        total: myBalances.sum.fiat("usd").total,
       },
       ...accounts.map(({ address, name, genesisHash, origin }) => ({
         address,
@@ -207,7 +209,7 @@ export const PortfolioAccounts = () => {
         total: new Balances(balancesByAddress.get(address) ?? []).sum.fiat("usd").total,
       })),
     ]
-  }, [t, accounts, balances])
+  }, [t, accounts, balances, myBalances])
 
   useEffect(() => {
     popupOpenEvent("portfolio accounts")

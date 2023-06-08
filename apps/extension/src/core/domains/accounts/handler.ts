@@ -9,6 +9,7 @@ import type {
   RequestAccountCreateWatched,
   RequestAccountExport,
   RequestAccountExportPrivateKey,
+  RequestAccountExternalSetIsPortfolio,
   RequestAccountForget,
   RequestAccountRename,
   ResponseAccountExport,
@@ -370,6 +371,20 @@ export default class AccountsHandler extends ExtensionHandler {
     return val
   }
 
+  private async accountExternalSetIsPortfolio({
+    address,
+    isPortfolio,
+  }: RequestAccountExternalSetIsPortfolio): Promise<boolean> {
+    await sleep(1000)
+
+    const pair = keyring.getPair(address)
+    assert(pair, "Unable to find pair")
+
+    keyring.saveAccountMeta(pair, { ...pair.meta, isPortfolio })
+
+    return true
+  }
+
   private async accountRename({ address, name }: RequestAccountRename): Promise<boolean> {
     await sleep(1000)
 
@@ -430,6 +445,8 @@ export default class AccountsHandler extends ExtensionHandler {
         return this.accountsCreateQr(request as RequestAccountCreateQr)
       case "pri(accounts.create.watched)":
         return this.accountCreateWatched(request as RequestAccountCreateWatched)
+      case "pri(accounts.external.setIsPortfolio)":
+        return this.accountExternalSetIsPortfolio(request as RequestAccountExternalSetIsPortfolio)
       case "pri(accounts.forget)":
         return this.accountForget(request as RequestAccountForget)
       case "pri(accounts.export)":

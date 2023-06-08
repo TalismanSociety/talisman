@@ -118,6 +118,8 @@ export const api: MessageTypes = {
     messageService.sendMessage("pri(accounts.export.pk)", { address, password }),
   accountRename: (address, name) =>
     messageService.sendMessage("pri(accounts.rename)", { address, name }),
+  accountExternalSetIsPortfolio: (address, isPortfolio) =>
+    messageService.sendMessage("pri(accounts.external.setIsPortfolio)", { address, isPortfolio }),
   accountValidateMnemonic: (mnemonic) =>
     messageService.sendMessage("pri(accounts.validateMnemonic)", mnemonic),
   setVerifierCertMnemonic: (mnemonic) =>

@@ -8,8 +8,8 @@ import { AccountTypeIcon } from "@ui/domains/Account/NamedAddress"
 import Fiat from "@ui/domains/Asset/Fiat"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
-import useBalances from "@ui/hooks/useBalances"
 import useBalancesByAddress from "@ui/hooks/useBalancesByAddress"
+import { useMyBalances } from "@ui/hooks/useMyBalances"
 import { UseSelectStateChange, useSelect } from "downshift"
 import { useCallback, useMemo } from "react"
 import { useTranslation } from "react-i18next"
@@ -276,7 +276,7 @@ const SingleAccountOption = (props: SingleAccountOptionProps) => {
 }
 
 const AllAccountsOption = ({ withTrack }: AnyAccountOptionProps) => {
-  const { sum } = useBalances()
+  const { sum } = useMyBalances()
   const { total } = useMemo(() => sum.fiat("usd"), [sum])
   const { t } = useTranslation("portfolio")
 

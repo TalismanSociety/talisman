@@ -123,6 +123,11 @@ export interface RequestAccountCreateWatched {
   isPortfolio: boolean
 }
 
+export interface RequestAccountExternalSetIsPortfolio {
+  address: string
+  isPortfolio: boolean
+}
+
 export interface RequestAccountForget {
   address: string
 }
@@ -163,6 +168,7 @@ export interface AccountsMessages {
   "pri(accounts.export)": [RequestAccountExport, ResponseAccountExport]
   "pri(accounts.export.pk)": [RequestAccountExportPrivateKey, string]
   "pri(accounts.rename)": [RequestAccountRename, boolean]
+  "pri(accounts.external.setIsPortfolio)": [RequestAccountExternalSetIsPortfolio, boolean]
   "pri(accounts.subscribe)": [RequestAccountSubscribe, boolean, AccountJson[]]
   "pri(accounts.validateMnemonic)": [string, boolean]
   "pri(accounts.setVerifierCertMnemonic)": [string, boolean]

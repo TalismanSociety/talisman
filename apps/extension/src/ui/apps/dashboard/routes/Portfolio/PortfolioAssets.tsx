@@ -15,6 +15,7 @@ import { NetworkPicker } from "@ui/domains/Portfolio/NetworkPicker"
 import { useSelectedAccount } from "@ui/domains/Portfolio/SelectedAccountContext"
 import { Statistics } from "@ui/domains/Portfolio/Statistics"
 import { useDisplayBalances } from "@ui/domains/Portfolio/useDisplayBalances"
+import { useAccountToggleIsPortfolio } from "@ui/hooks/useAccountToggleIsPortfolio"
 import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAppState } from "@ui/hooks/useAppState"
 import { useIsFeatureEnabled } from "@ui/hooks/useFeatures"
@@ -59,6 +60,8 @@ const PageContent = ({ balances }: { balances: Balances }) => {
   const { canRename, open: openAccountRenameModal } = useAccountRenameModal()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const { genericEvent } = useAnalytics()
+  const { canToggleIsPortfolio, toggleIsPortfolio, toggleLabel } =
+    useAccountToggleIsPortfolio(account)
 
   const sendFunds = useCallback(() => {
     api.sendFundsOpen({ from: account?.address })
@@ -150,6 +153,9 @@ const PageContent = ({ balances }: { balances: Balances }) => {
                       <PopoverItem onClick={openAccountRemoveModal}>
                         {t("Remove Account")}
                       </PopoverItem>
+                    )}
+                    {canToggleIsPortfolio && (
+                      <PopoverItem onClick={toggleIsPortfolio}>{toggleLabel}</PopoverItem>
                     )}
                     {canAddCustomToken && (
                       <PopoverItem onClick={handleAddCustomToken}>
