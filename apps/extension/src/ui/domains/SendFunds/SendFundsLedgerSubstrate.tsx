@@ -9,11 +9,13 @@ import { useAccountByAddress } from "@ui/hooks/useAccountByAddress"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import useToken from "@ui/hooks/useToken"
 import { useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsLedgerSubstrate = () => {
+  const { t } = useTranslation("send-funds")
   const { tokenId, from, to, amount } = useSendFundsWizard()
   const { subTransaction, sendWithSignature, isLocked, setIsLocked } = useSendFunds()
   const [error, setError] = useState<Error>()
@@ -75,7 +77,7 @@ const SendFundsLedgerSubstrate = () => {
         onClick={sendToLedger(true)}
         processing={signed}
       >
-        Approve on Ledger
+        {t("Approve on Ledger")}
       </Button>
     )
 

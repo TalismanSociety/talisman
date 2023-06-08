@@ -23,6 +23,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import startCase from "lodash/startCase"
 import { ButtonHTMLAttributes, FC, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 import {
   Button,
   ContextMenu,
@@ -58,6 +59,7 @@ type ContactItemProps = ExistingContactComponentProps & {
 }
 
 const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactItemProps) => {
+  const { t } = useTranslation("settings")
   const { genericEvent } = useAnalytics()
   const { open: openCopyAddressModal } = useCopyAddressModal()
   const [hover, setHover] = useState(false)
@@ -105,12 +107,12 @@ const AddressBookContactItem = ({ contact, handleDelete, handleEdit }: ContactIt
           </ContextMenuTrigger>
           <ContextMenuContent>
             <ContextMenuItem onClick={() => handleEdit(contact.address)}>
-              Edit contact
+              {t("Edit contact")}
             </ContextMenuItem>
-            <ContextMenuItem onClick={handleSendClick}>Send to this contact</ContextMenuItem>
-            <ContextMenuItem onClick={handleCopyClick}>Copy address</ContextMenuItem>
+            <ContextMenuItem onClick={handleSendClick}>{t("Send to this contact")}</ContextMenuItem>
+            <ContextMenuItem onClick={handleCopyClick}>{t("Copy address")}</ContextMenuItem>
             <ContextMenuItem onClick={() => handleDelete(contact.address)}>
-              Delete contact
+              {t("Delete contact")}
             </ContextMenuItem>
           </ContextMenuContent>
         </ContextMenu>
@@ -125,6 +127,7 @@ const contactTypeAddressTypeMap: Record<ProviderType, AccountAddressType> = {
 }
 
 const AddressBook = () => {
+  const { t } = useTranslation("settings")
   const { contacts } = useAddressBook()
   const contactsMap = useMemo(
     () => Object.fromEntries(contacts.map((c) => [c.address, c])),
@@ -145,12 +148,12 @@ const AddressBook = () => {
   return (
     <>
       <Layout centered withBack backTo="/settings" analytics={ANALYTICS_PAGE}>
-        <HeaderBlock title="Address Book" text="Manage your saved contacts" />
+        <HeaderBlock title={t("Address Book")} text={t("Manage your saved contacts")} />
         <div className="mt-4 flex justify-between align-middle">
           <ProviderTypeSwitch defaultProvider="polkadot" onChange={setAddressType} />
           {contactsToDisplay.length > 0 && (
             <PillButton onClick={open} icon={UserPlusIcon}>
-              Add new contact
+              {t("Add new contact")}
             </PillButton>
           )}
         </div>
@@ -166,9 +169,13 @@ const AddressBook = () => {
           ))}
           {contactsToDisplay.length === 0 && (
             <div className="bg-black-secondary text-body-secondary flex h-[16rem] w-full flex-col items-center justify-center gap-12 rounded px-16 py-8">
-              <span>You have no saved {startCase(addressType)} contacts yet.</span>
+              <span>
+                {t("You have no saved {{addressType}} contacts yet.", {
+                  addressType: startCase(addressType),
+                })}
+              </span>
               <Button primary onClick={open} iconLeft={PlusIcon}>
-                Add a contact
+                {t("Add a contact")}
               </Button>
             </div>
           )}

@@ -2,6 +2,7 @@ import { getNftMetadata } from "@core/util/getNftMetadata"
 import { useQuery } from "@tanstack/react-query"
 import { BigNumber, BigNumberish } from "ethers"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { UnsafeImage } from "talisman-ui"
 
 import { SignContainer } from "../SignContainer"
@@ -11,6 +12,7 @@ import { SignParamAccountButton, SignParamNetworkAddressButton } from "./shared"
 import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTransactionRequest"
 
 export const EthSignBodyErc721Transfer: FC = () => {
+  const { t } = useTranslation("sign")
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const qMetadata = useQuery({
@@ -44,9 +46,9 @@ export const EthSignBodyErc721Transfer: FC = () => {
   if (qMetadata.isLoading || !from || !to || !account || !network) return <SignViewBodyShimmer />
 
   return (
-    <SignContainer networkType="ethereum" title={<>NFT Transfer Request</>}>
+    <SignContainer networkType="ethereum" title={t("NFT Transfer Request")}>
       <div className="flex">
-        <div>Transfer</div>
+        <div>{t("Transfer")}</div>
         <SignParamNetworkAddressButton
           address={transactionInfo.targetAddress}
           network={network}
@@ -54,7 +56,7 @@ export const EthSignBodyErc721Transfer: FC = () => {
         />
       </div>
       <div className="flex max-w-full overflow-hidden">
-        <div className="whitespace-nowrap">from</div>
+        <div className="whitespace-nowrap">{t("from")}</div>
         {isOnBehalf ? (
           <SignParamAccountButton address={from} withIcon explorerUrl={from} />
         ) : (
@@ -62,12 +64,12 @@ export const EthSignBodyErc721Transfer: FC = () => {
         )}
       </div>
       <div className="flex">
-        <div>to</div>
+        <div>{t("to")}</div>
         <SignParamAccountButton address={to} explorerUrl={network.explorerUrl} withIcon />
       </div>
       {isOnBehalf && (
         <div className="flex max-w-full overflow-hidden">
-          <div className="whitespace-nowrap">with</div>
+          <div className="whitespace-nowrap">{t("with")}</div>
           <SignParamAccountButton address={account.address} />
         </div>
       )}

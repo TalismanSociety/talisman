@@ -4,6 +4,7 @@ import { Ledger } from "@polkadot/hw-ledger"
 import { assert } from "@polkadot/util"
 import { throwAfter } from "@talismn/util"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import useChainByGenesisHash from "../useChainByGenesisHash"
 import { useSetInterval } from "../useSetInterval"
@@ -16,6 +17,7 @@ import {
 import { useLedgerSubstrateApp } from "./useLedgerSubstrateApp"
 
 export const useLedgerSubstrate = (genesis?: string | null, persist = false) => {
+  const { t } = useTranslation()
   const chain = useChainByGenesisHash(genesis)
   const app = useLedgerSubstrateApp(genesis)
   const [isLoading, setIsLoading] = useState(false)
@@ -50,7 +52,7 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
       if (resetError) setError(undefined)
 
       try {
-        assert(getIsLedgerCapable(), "Sorry, Ledger is not supported on your browser.")
+        assert(getIsLedgerCapable(), t("Sorry, Ledger is not supported on your browser."))
         assert(!chain || chain.account !== "secp256k1", ERROR_LEDGER_EVM_CANNOT_SIGN_SUBSTRATE)
         assert(app?.name, ERROR_LEDGER_NO_APP)
 
@@ -72,7 +74,7 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
       refConnecting.current = false
       setIsLoading(false)
     },
-    [app, chain]
+    [app, chain, t]
   )
 
   const { status, message, requiresManualRetry } = useMemo<{
@@ -80,24 +82,24 @@ export const useLedgerSubstrate = (genesis?: string | null, persist = false) => 
     message: string
     requiresManualRetry: boolean
   }>(() => {
-    if (error) return getLedgerErrorProps(error, app?.label)
+    if (error) return getLedgerErrorProps(error, app?.label ?? t("Unknown app"))
 
     if (isLoading)
       return {
         status: "connecting",
-        message: `Connecting to Ledger...`,
+        message: t(`Connecting to Ledger...`),
         requiresManualRetry: false,
       }
 
     if (isReady)
       return {
         status: "ready",
-        message: "Successfully connected to Ledger.",
+        message: t("Successfully connected to Ledger."),
         requiresManualRetry: false,
       }
 
     return { status: "unknown", message: "", requiresManualRetry: false }
-  }, [isReady, isLoading, error, app])
+  }, [isReady, isLoading, error, app, t])
 
   // automatic connection (startup + polling)
   useEffect(() => {

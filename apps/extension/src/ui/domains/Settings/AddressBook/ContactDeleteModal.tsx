@@ -4,6 +4,7 @@ import { AnalyticsPage, sendAnalyticsEvent } from "@ui/api/analytics"
 import { useAddressBook } from "@ui/hooks/useAddressBook"
 import { useAnalyticsPageView } from "@ui/hooks/useAnalyticsPageView"
 import { useCallback } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { ContactModalProps } from "./types"
@@ -16,6 +17,7 @@ const ANALYTICS_PAGE: AnalyticsPage = {
 }
 
 export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps) => {
+  const { t } = useTranslation("settings")
   const { deleteContact } = useAddressBook()
   useAnalyticsPageView(ANALYTICS_PAGE)
 
@@ -31,20 +33,23 @@ export const ContactDeleteModal = ({ contact, isOpen, close }: ContactModalProps
     }
   }, [close, contact, deleteContact])
 
+  const contactName = contact?.name || ""
+
   return (
     <Modal open={isOpen} className="bg-black-secondary" onClose={close}>
-      <ModalDialog title="Delete contact">
+      <ModalDialog title={t("Delete contact")}>
         <div className="text-body-secondary my-12">
-          You are deleting contact '
-          <span className="font-bold text-white">{contact && contact.name}</span>' from your address
-          book.
+          <Trans t={t}>
+            You are deleting contact '<span className="font-bold text-white">{contactName}</span>'
+            from your address book.
+          </Trans>
         </div>
         <div className="flex items-stretch gap-4 pt-4">
           <Button fullWidth onClick={close}>
-            Cancel
+            {t("Cancel")}
           </Button>
           <Button onClick={handleDelete} fullWidth primary>
-            Confirm
+            {t("Confirm")}
           </Button>
         </div>
       </ModalDialog>

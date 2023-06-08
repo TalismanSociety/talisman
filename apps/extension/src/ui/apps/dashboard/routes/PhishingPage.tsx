@@ -2,6 +2,7 @@ import { AlertTriangleIcon } from "@talisman/theme/icons"
 import { TalismanWhiteLogo } from "@talisman/theme/logos"
 import { api } from "@ui/api"
 import { FC, useCallback, useMemo } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 type PhishingPageProps = {
@@ -9,6 +10,7 @@ type PhishingPageProps = {
 }
 
 export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
+  const { t } = useTranslation("phishing")
   const allowSite = useCallback(async () => {
     await api.allowPhishingSite(url)
     window.location.replace(url)
@@ -30,26 +32,30 @@ export const PhishingPage: FC<PhishingPageProps> = ({ url }) => {
           <div className="scrollable scrollable-700 flex flex-col overflow-auto">
             <div className="bg-black-primary text-body-secondary flex max-w-3xl flex-col items-center gap-16 self-center rounded-lg p-20 text-center">
               <AlertTriangleIcon className="text-alert-warn inline-block text-[7.7rem]" />
-              <h1 className="text-bold text-alert-warn m-0 text-xl">Warning</h1>
+              <h1 className="text-bold text-alert-warn m-0 text-xl">{t("Warning")}</h1>
               <div className="text-lg font-light text-white">
-                <span className="block break-all">{displayUrl}</span> has been reported as a{" "}
-                <span className="text-alert-warn block">malicious site</span>
+                <Trans t={t}>
+                  <span className="block break-all">{displayUrl}</span> has been reported as a{" "}
+                  <span className="text-alert-warn block">malicious site</span>
+                </Trans>
               </div>
               <div className="leading-10">
-                This domain has been reported as a known phishing site on a community maintained
-                list.
+                <Trans t={t}>
+                  This domain has been reported as a known phishing site on a community maintained
+                  list.
+                </Trans>
               </div>
               <div className="w-full">
                 <a href="https://app.talisman.xyz">
                   <Button className="mb-6 w-full" primary>
-                    Get me out of here
+                    {t("Get me out of here")}
                   </Button>
                 </a>
                 <button
                   className="text-grey-600 hover:text-body-secondary cursor-pointer text-sm leading-8"
                   onClick={allowSite}
                 >
-                  I trust this site
+                  {t("I trust this site")}
                 </button>
               </div>
             </div>

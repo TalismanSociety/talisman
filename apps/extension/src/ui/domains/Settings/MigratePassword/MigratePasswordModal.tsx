@@ -2,6 +2,7 @@ import { Modal as BaseModal } from "@talisman/components/Modal"
 import { ModalDialog } from "@talisman/components/ModalDialog"
 import StatusIcon from "@talisman/components/StatusIcon"
 import { statusOptions } from "@talisman/hooks/useStatus"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 import { BackUpMnemonicDialog } from "./BackUpMnemonicDialog"
@@ -23,11 +24,12 @@ const Modal = styled(BaseModal)`
 `
 
 const MigratePasswordModalContent = () => {
+  const { t } = useTranslation("settings")
   const { hasPassword, hasBackedUpMnemonic, passwordTrimmed, hasNewPassword, status } =
     useMigratePassword()
   if (status === statusOptions.PROCESSING)
     return (
-      <ModalDialog title="Please wait...">
+      <ModalDialog title={t("Please wait...")}>
         <StatusIcon status="SPINNING" className="my-20" />
       </ModalDialog>
     )

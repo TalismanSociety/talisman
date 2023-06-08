@@ -7,10 +7,12 @@ import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 
 export const SendFundsAccountPicker = () => {
+  const { t } = useTranslation("send-funds")
   const { from, set, tokenId } = useSendFundsWizard()
   const [search, setSearch] = useState("")
 
@@ -44,9 +46,9 @@ export const SendFundsAccountPicker = () => {
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-        <div className="font-bold">From</div>
+        <div className="font-bold">{"From"}</div>
         <div className="grow">
-          <SearchInput onChange={setSearch} placeholder="Search by account name" />
+          <SearchInput onChange={setSearch} placeholder={t("Search by account name")} />
         </div>
       </div>
       <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">

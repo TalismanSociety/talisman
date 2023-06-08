@@ -26,6 +26,7 @@ import { api } from "@ui/api"
 import { useEthereumProvider } from "@ui/domains/Ethereum/useEthereumProvider"
 import { BigNumber, ethers } from "ethers"
 import { useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useIsValidEthTransaction } from "./useIsValidEthTransaction"
 
@@ -432,6 +433,7 @@ export const useEthTransaction = (
   // use staleIsValid to prevent disabling approve button each time there is a new block (triggers gas check)
   const { isValid, error: isValidError } = useIsValidEthTransaction(provider, transaction, priority)
 
+  const { t } = useTranslation("sign")
   const { error, errorDetails } = useMemo(() => {
     const anyError = (errorEip1559Support ??
       nonceError ??
@@ -446,12 +448,12 @@ export const useEthTransaction = (
 
     if (errorToDisplay)
       return {
-        error: userFriendlyError ?? "Failed to prepare transaction",
+        error: userFriendlyError ?? t("Failed to prepare transaction"),
         errorDetails: errorToDisplay.message,
       }
 
     return { error: undefined, errorDetails: undefined }
-  }, [blockFeeDataError, isValidError, errorEip1559Support, errorTransactionInfo, nonceError])
+  }, [blockFeeDataError, isValidError, errorEip1559Support, errorTransactionInfo, nonceError, t])
 
   const isLoading = useMemo(
     () => tx && !transactionInfo && !txDetails && !error,

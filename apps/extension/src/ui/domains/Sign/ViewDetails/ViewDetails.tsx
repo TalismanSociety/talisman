@@ -9,6 +9,7 @@ import { useAnalytics } from "@ui/hooks/useAnalytics"
 import useToken from "@ui/hooks/useToken"
 import { useTokenRates } from "@ui/hooks/useTokenRates"
 import { FC, useEffect, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { Drawer } from "talisman-ui"
 
@@ -60,6 +61,7 @@ const ViewDetailsContainer = styled.div`
 const ViewDetailsContent: FC<{
   onClose: () => void
 }> = ({ onClose }) => {
+  const { t } = useTranslation("sign")
   const { genericEvent } = useAnalytics()
   const { request, account, chain, payload, extrinsic, errorDecodingExtrinsic, fee, errorFee } =
     usePolkadotSigningRequest()
@@ -93,9 +95,9 @@ const ViewDetailsContent: FC<{
         fee !== undefined && fee !== null
           ? new BalanceFormatter(fee, nativeToken?.decimals, nativeTokenRates)
           : undefined,
-      estimatedFeeError: errorFee ? "Failed to calculate fee." : "",
+      estimatedFeeError: errorFee ? t("Failed to calculate fee.") : "",
     }),
-    [fee, errorFee, nativeToken?.decimals, nativeTokenRates]
+    [fee, errorFee, nativeToken?.decimals, nativeTokenRates, t]
   )
 
   const decodedPayload = useMemo(() => {
@@ -108,7 +110,7 @@ const ViewDetailsContent: FC<{
   }, [payload])
 
   const { methodName, args, decodedMethod } = useMemo(() => {
-    if (!extrinsic) return { methodName: "Unknown" }
+    if (!extrinsic) return { methodName: t("Unknown") }
 
     const methodName = `${extrinsic.method.section} : ${extrinsic.method.method}`
 
@@ -117,7 +119,7 @@ const ViewDetailsContent: FC<{
     const args = decoded?.args
 
     return { methodName, args, decodedMethod }
-  }, [extrinsic])
+  }, [extrinsic, t])
 
   useEffect(() => {
     genericEvent("open sign transaction view details", { type: "substrate" })
@@ -126,34 +128,34 @@ const ViewDetailsContent: FC<{
   return (
     <ViewDetailsContainer className="">
       <div className="scrollable scrollable-700 grow">
-        <div className="title">Details</div>
+        <div className="title">{t("Details")}</div>
         <ViewDetailsField label="From" breakAll>
           {accountAddress}
         </ViewDetailsField>
 
         {isExtrinsic ? (
           <>
-            <ViewDetailsField label="Network">{chain?.name ?? "Unknown"}</ViewDetailsField>
+            <ViewDetailsField label="Network">{chain?.name ?? t("Unknown")}</ViewDetailsField>
             <ViewDetailsAmount
-              label="Fees"
+              label={t("Fees")}
               error={estimatedFeeError}
               amount={estimatedFee}
               token={nativeToken}
             />
-            <ViewDetailsAmount label="Tip" amount={tip} token={nativeToken} />
+            <ViewDetailsAmount label={t("Tip")} amount={tip} token={nativeToken} />
             <ViewDetailsField
-              label="Decoding error"
-              error={errorDecodingExtrinsic ? "Failed to decode method." : ""}
+              label={t("Decoding error")}
+              error={errorDecodingExtrinsic ? t("Failed to decode method.") : ""}
             />
-            <ViewDetailsField label="Method">{methodName}</ViewDetailsField>
-            <ViewDetailsTxDesc label="Description" method={decodedMethod} />
-            <ViewDetailsTxObject label="Arguments" obj={args} />
-            <ViewDetailsTxObject label="Payload" obj={decodedPayload?.toHuman()} />
+            <ViewDetailsField label={t("Method")}>{methodName}</ViewDetailsField>
+            <ViewDetailsTxDesc label={t("Description")} method={decodedMethod} />
+            <ViewDetailsTxObject label={t("Arguments")} obj={args} />
+            <ViewDetailsTxObject label={t("Payload")} obj={decodedPayload?.toHuman()} />
           </>
         ) : (
           <>
-            <ViewDetailsField label="Type">{type}</ViewDetailsField>
-            <ViewDetailsField label="Data">
+            <ViewDetailsField label={t("Type")}>{type}</ViewDetailsField>
+            <ViewDetailsField label={t("Data")}>
               {data && (
                 <div className="mt-2 pr-2">
                   <pre className="text-body-secondary scrollable scrollable-700 bg-black-secondary rounded-xs w-full overflow-x-auto p-4">
@@ -166,7 +168,7 @@ const ViewDetailsContent: FC<{
         )}
       </div>
       <Button className="shrink-0" onClick={onClose}>
-        Close
+        {t("Close")}
       </Button>
     </ViewDetailsContainer>
   )

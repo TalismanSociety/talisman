@@ -54,6 +54,7 @@ test("Editing an address book contact which doesn't exist throws an error", asyn
     expect(result.current.contacts.length).toBe(1)
     expect(result.current.contacts[0]).toBe(VITALIK)
   })
+  //
   await act(async () => {
     await result.current
       .edit({ address: ADDRESSES.GAV, name: "Gav" })

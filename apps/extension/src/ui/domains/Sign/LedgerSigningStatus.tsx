@@ -1,5 +1,6 @@
 import Button from "@talisman/components/Button"
 import { AlertCircleIcon, LoaderIcon } from "@talisman/theme/icons"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const Container = styled.div<{ status?: string }>`
@@ -43,6 +44,7 @@ export const LedgerSigningStatus = ({
   requiresConfirmation = true,
   confirm = NO_OP,
 }: LedgerSigningStatusProps) => {
+  const { t } = useTranslation("sign")
   return (
     <Container status={status === "error" ? status : ""}>
       {status === "error" && (
@@ -54,12 +56,12 @@ export const LedgerSigningStatus = ({
       {status === "signing" && (
         <>
           <LoaderIcon className="animate-spin-slow" />
-          <span>Sign with Ledger...</span>
+          <span>{t("Sign with Ledger...")}</span>
         </>
       )}
       {status === "error" && requiresConfirmation && confirm && (
         <Button primary onClick={confirm}>
-          {"OK"}
+          {t("OK")}
         </Button>
       )}
     </Container>

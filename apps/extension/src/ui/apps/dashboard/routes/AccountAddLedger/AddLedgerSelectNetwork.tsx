@@ -12,6 +12,7 @@ import { useLedgerChains } from "@ui/hooks/ledger/useLedgerChains"
 import useChain from "@ui/hooks/useChain"
 import { useCallback, useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import * as yup from "yup"
@@ -97,6 +98,7 @@ const renderOption: RenderItemFunc<Chain> = (chain) => {
 }
 
 export const AddLedgerSelectNetwork = () => {
+  const { t } = useTranslation("account-add")
   const { data: defaultValues, updateData } = useAddLedgerAccount()
 
   const navigate = useNavigate()
@@ -169,30 +171,32 @@ export const AddLedgerSelectNetwork = () => {
       <form data-button-pull-left onSubmit={handleSubmit(submit)}>
         <div className="grow">
           <StytledHeaderBlock
-            title="Import from Ledger"
-            text="What type of account would you like to import ?"
+            title={t("Import from Ledger")}
+            text={t("What type of account would you like to import ?")}
           />
           <Spacer small />
           <AccountTypeSelector defaultType={accountType} onChange={handleTypeChange} />
           {accountType === "sr25519" && (
             <>
-              <H2>Step 1</H2>
+              <H2>{t("Step 1")}</H2>
               <Dropdown
                 key={defaultChain?.id ?? "DEFAULT"}
                 propertyKey="id"
                 items={ledgerChains}
                 defaultSelectedItem={defaultChain}
-                placeholder="Select a network"
+                placeholder={t("Select a network")}
                 renderItem={renderOption}
                 onChange={handleNetworkChange}
               />
-              <Text>Please note: a Ledger account can only be used on a single network.</Text>
+              <Text>
+                {t("Please note: a Ledger account can only be used on a single network.")}
+              </Text>
             </>
           )}
           <div className={classNames(showStep2 ? "visible" : "invisible")}>
             {chainId && accountType === "sr25519" && (
               <>
-                <H2>Step 2</H2>
+                <H2>{t("Step 2")}</H2>
                 <ConnectLedgerSubstrate
                   className="min-h-[11rem]"
                   onReadyChanged={setIsLedgerReady}
@@ -214,7 +218,7 @@ export const AddLedgerSelectNetwork = () => {
               disabled={!isLedgerReady || !isValid}
               processing={isSubmitting}
             >
-              Continue
+              {t("Continue")}
             </SimpleButton>
           </div>
         )}

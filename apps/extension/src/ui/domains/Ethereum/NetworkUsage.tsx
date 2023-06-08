@@ -7,6 +7,7 @@ import {
 } from "@talisman/theme/icons"
 import { classNames } from "@talismn/util"
 import { FC, SVGProps } from "react"
+import { useTranslation } from "react-i18next"
 
 const NetworkUsageBase = ({
   text,
@@ -28,19 +29,30 @@ const NetworkUsageBase = ({
 type NetworkUsageProps = { baseFeeTrend?: EthBaseFeeTrend; className?: string }
 
 export const NetworkUsage: FC<NetworkUsageProps> = ({ baseFeeTrend, className }) => {
+  const { t } = useTranslation("sign")
   switch (baseFeeTrend) {
     case "idle":
-      return <NetworkUsageBase className={className} text="Idle" icon={NetworkUsageIdle} />
+      return <NetworkUsageBase className={className} text={t("Idle")} icon={NetworkUsageIdle} />
     case "increasing":
       return (
-        <NetworkUsageBase className={className} text="Increasing" icon={NetworkUsageIncreasing} />
+        <NetworkUsageBase
+          className={className}
+          text={t("Increasing")}
+          icon={NetworkUsageIncreasing}
+        />
       )
     case "decreasing":
       return (
-        <NetworkUsageBase className={className} text="Decreasing" icon={NetworkUsageDecreasing} />
+        <NetworkUsageBase
+          className={className}
+          text={t("Decreasing")}
+          icon={NetworkUsageDecreasing}
+        />
       )
     case "toTheMoon":
-      return <NetworkUsageBase className={className} text="Very High" icon={NetworkUsageHigh} />
+      return (
+        <NetworkUsageBase className={className} text={t("Very High")} icon={NetworkUsageHigh} />
+      )
     default:
       return null
   }

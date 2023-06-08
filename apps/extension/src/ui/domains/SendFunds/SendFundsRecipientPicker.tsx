@@ -10,10 +10,12 @@ import { useAddressBook } from "@ui/hooks/useAddressBook"
 import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
 import { useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SendFundsAccountsList } from "./SendFundsAccountsList"
 
 export const SendFundsRecipientPicker = () => {
+  const { t } = useTranslation("send-funds")
   const { from, to, set, tokenId } = useSendFundsWizard()
   const [search, setSearch] = useState("")
   const token = useToken(tokenId)
@@ -125,14 +127,14 @@ export const SendFundsRecipientPicker = () => {
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-        <div className="font-bold">To</div>
+        <div className="font-bold">{t("To")}</div>
         <div className="grow">
           <SearchInput
             onValidate={handleValidate}
             // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             onChange={setSearch}
-            placeholder="Enter address"
+            placeholder={t("Enter address")}
           />
         </div>
       </div>
@@ -153,7 +155,7 @@ export const SendFundsRecipientPicker = () => {
           header={
             <>
               <UserIcon className="mr-2 inline align-text-top" />
-              <span>Contacts</span>
+              <span>{t("Contacts")}</span>
             </>
           }
         />
@@ -165,7 +167,7 @@ export const SendFundsRecipientPicker = () => {
           header={
             <>
               <TalismanHandIcon className="mr-2 inline-block align-text-top" />
-              My Accounts
+              {t("My Accounts")}
             </>
           }
           showBalances

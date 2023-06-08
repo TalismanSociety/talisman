@@ -1,5 +1,6 @@
 import { useSetting } from "@ui/hooks/useSettings"
 import { FC, useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { PillButton } from "talisman-ui"
 
 const Checked = () => (
@@ -33,6 +34,7 @@ type EnableTestnetPillButtonProps = {
 }
 
 export const EnableTestnetPillButton: FC<EnableTestnetPillButtonProps> = ({ className }) => {
+  const { t } = useTranslation("settings")
   const [useTestnets, setUseTestnets] = useSetting("useTestnets")
 
   const handleClick = useCallback(() => {
@@ -46,7 +48,7 @@ export const EnableTestnetPillButton: FC<EnableTestnetPillButtonProps> = ({ clas
       size="xs"
       className={className}
     >
-      Enable testnets
+      {t("Enable testnets")}
     </PillButton>
   )
 }

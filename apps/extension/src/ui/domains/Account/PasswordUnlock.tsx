@@ -4,6 +4,7 @@ import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { ReactNode, useCallback, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
@@ -49,12 +50,8 @@ const [PasswordUnlockProvider, usePasswordUnlock] = provideContext(usePasswordUn
 
 export { usePasswordUnlock }
 
-const BasePasswordUnlock = ({
-  className,
-  children,
-  buttonText,
-  title = "Enter your password",
-}: PasswordUnlockProps) => {
+const BasePasswordUnlock = ({ className, children, buttonText, title }: PasswordUnlockProps) => {
+  const { t } = useTranslation()
   const {
     register,
     handleSubmit,
@@ -86,13 +83,13 @@ const BasePasswordUnlock = ({
     <div className={className}>
       <form onSubmit={handleSubmit(submit)} className="flex h-full flex-col">
         <div className="flex grow flex-col justify-center">
-          <div className="text-md mb-12">{title}</div>
+          <div className="text-md mb-12">{title || t("Enter your password")}</div>
           <FormFieldContainer error={errors.password?.message}>
             <FormFieldInputText
               before={<KeyIcon className="opacity-50" />}
               {...register("password")}
               type="password"
-              placeholder="Enter password"
+              placeholder={t("Enter password")}
               spellCheck={false}
               data-lpignore
               // eslint-disable-next-line jsx-a11y/no-autofocus
@@ -101,7 +98,7 @@ const BasePasswordUnlock = ({
           </FormFieldContainer>
         </div>
         <Button type="submit" fullWidth primary disabled={!isValid} processing={isSubmitting}>
-          {buttonText || "Submit"}
+          {buttonText || t("Submit")}
         </Button>
       </form>
     </div>

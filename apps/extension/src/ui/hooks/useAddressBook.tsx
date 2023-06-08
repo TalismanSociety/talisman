@@ -1,5 +1,6 @@
 import { AddressBookContact, addressBookStore } from "@core/domains/app/store.addressBook"
 import { useCallback } from "react"
+import { useTranslation } from "react-i18next"
 import { atom, useRecoilValue } from "recoil"
 
 export const addressBookState = atom<AddressBookContact[]>({
@@ -14,6 +15,7 @@ export const addressBookState = atom<AddressBookContact[]>({
 })
 
 export const useAddressBook = () => {
+  const { t } = useTranslation("settings")
   const contacts = useRecoilValue(addressBookState)
 
   const add = useCallback(async ({ address, ...rest }: AddressBookContact) => {
@@ -28,10 +30,11 @@ export const useAddressBook = () => {
   const edit = useCallback(
     async ({ address, name }: Pick<AddressBookContact, "address" | "name">) => {
       const existing = await addressBookStore.get(address)
-      if (!existing) throw new Error(`Contact with address ${address} doesn't exist`)
+      if (!existing)
+        throw new Error(t(`Contact with address {{address}} doesn't exist`, { address }))
       return await addressBookStore.set({ [address]: { ...existing, name } })
     },
-    []
+    [t]
   )
 
   return {

@@ -2,6 +2,7 @@ import { CodeBlock } from "@talisman/components/CodeBlock"
 import { classNames } from "@talismn/util"
 import { dump as convertToYaml } from "js-yaml"
 import { FC, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { ViewDetailsField } from "./ViewDetailsField"
 
@@ -12,9 +13,10 @@ type ObjectLabelProps = {
 }
 
 const ObjectLabel: FC<ObjectLabelProps> = ({ label, displayAsJson, setDisplayAsJson }) => {
+  const { t } = useTranslation("sign")
   return (
     <div>
-      {label} as :{" "}
+      {t("{{label}} as :", { label })}{" "}
       <button
         onClick={() => setDisplayAsJson(false)}
         className={classNames("decode-mode !w-auto", !displayAsJson && "decode-mode-active")}

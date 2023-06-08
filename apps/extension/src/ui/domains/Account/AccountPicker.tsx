@@ -12,6 +12,7 @@ import useChain from "@ui/hooks/useChain"
 import useToken from "@ui/hooks/useToken"
 import { isEvmToken } from "@ui/util/isEvmToken"
 import { FC, ReactNode, useCallback, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import AccountAvatar from "../Account/Avatar"
 import Fiat from "../Asset/Fiat"
@@ -114,6 +115,7 @@ export const AccountsList: FC<AccountsListProps> = ({
   showBalances,
   tokenId,
 }) => {
+  const { t } = useTranslation()
   const handleAccountClick = useCallback(
     (address: string) => () => {
       onSelect?.(address)
@@ -152,7 +154,7 @@ export const AccountsList: FC<AccountsListProps> = ({
 
   return (
     <div>
-      {!!header && <div className="text-body-secondary mt-8 mb-4 px-12 font-bold">{header}</div>}
+      {!!header && <div className="text-body-secondary mb-4 mt-8 px-12 font-bold">{header}</div>}
       {accountsWithBalance?.map((account) => (
         <AccountRow
           selected={account.address === selected}
@@ -166,7 +168,7 @@ export const AccountsList: FC<AccountsListProps> = ({
       ))}
       {!accounts?.length && (
         <div className="text-body-secondary flex h-[5.8rem] w-full items-center px-12 text-left">
-          No account matches your search
+          {t("No account matches your search")}
         </div>
       )}
     </div>
@@ -188,6 +190,7 @@ export const AccountPicker: FC<AccountPickerProps> = ({
   searchPrefix,
   onSelect,
 }) => {
+  const { t } = useTranslation()
   const [search, setSearch] = useState("")
 
   const token = useToken(tokenId)
@@ -216,9 +219,9 @@ export const AccountPicker: FC<AccountPickerProps> = ({
   return (
     <div className="flex h-full min-h-full w-full flex-col overflow-hidden">
       <div className="flex min-h-fit w-full items-center gap-8 px-12 pb-8">
-        {!!searchPrefix && <div className="font-bold">From</div>}
+        {!!searchPrefix && <div className="font-bold">{t("From")}</div>}
         <div className="grow">
-          <SearchInput onChange={setSearch} placeholder="Search by account name" />
+          <SearchInput onChange={setSearch} placeholder={t("Search by account name")} />
         </div>
       </div>
       <ScrollContainer className=" bg-black-secondary border-grey-700 scrollable h-full w-full grow overflow-x-hidden border-t">

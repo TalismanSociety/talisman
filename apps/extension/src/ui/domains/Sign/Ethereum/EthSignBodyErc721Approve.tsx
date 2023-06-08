@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 import { SignAlertMessage } from "@ui/domains/Sign/SignAlertMessage"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { UnsafeImage } from "talisman-ui"
 
 import { SignContainer } from "../SignContainer"
@@ -14,6 +15,7 @@ import { useEthSignKnownTransactionRequest } from "./shared/useEthSignKnownTrans
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 export const EthSignBodyErc721Approve: FC = () => {
+  const { t } = useTranslation("sign")
   const { account, network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const qMetadata = useQuery({
@@ -48,26 +50,27 @@ export const EthSignBodyErc721Approve: FC = () => {
         approve ? (
           <SignAlertMessage>
             <span className="text-body-secondary">
-              This contract will have permission to transfer this NFT on your behalf until manually
-              revoked.
+              {t(
+                "This contract will have permission to transfer this NFT on your behalf until manually revoked."
+              )}
             </span>{" "}
             <a
               className="text-white"
               href="https://docs.talisman.xyz/talisman/navigating-the-paraverse/ethereum-features/token-approvals"
               target="_blank"
             >
-              Learn more
+              {t("Learn more")}
             </a>
           </SignAlertMessage>
         ) : null
       }
     >
       <div className="flex">
-        <div>{approve ? "Allow" : "Disallow"}</div>
+        <div>{approve ? t("Allow") : t("Disallow")}</div>
         <SignParamNetworkAddressButton network={network} address={operator} />
       </div>
       <div className="flex">
-        <div>to transfer</div>
+        <div>{t("to transfer")}</div>
         <SignParamNetworkAddressButton
           address={transactionInfo.targetAddress}
           network={network}
@@ -75,7 +78,7 @@ export const EthSignBodyErc721Approve: FC = () => {
         />
       </div>
       <div className="flex max-w-full overflow-hidden">
-        <div className="whitespace-nowrap">on behalf of</div>
+        <div className="whitespace-nowrap">{t("on behalf of")}</div>
         <SignParamAccountButton address={account.address} explorerUrl={network.explorerUrl} />
       </div>
       {!!image && (

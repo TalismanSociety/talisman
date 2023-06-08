@@ -1,4 +1,5 @@
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
@@ -7,6 +8,7 @@ import { getContractCallArg } from "../getContractCallArg"
 import { useEthSignKnownTransactionRequest } from "../shared/useEthSignKnownTransactionRequest"
 
 export const EthSignMoonStakingSetAutoCompound: FC = () => {
+  const { t } = useTranslation("sign")
   const { network, transactionInfo } = useEthSignKnownTransactionRequest()
 
   const { autoCompound } = useMemo(() => {
@@ -22,7 +24,7 @@ export const EthSignMoonStakingSetAutoCompound: FC = () => {
   return (
     <SignContainer
       networkType="ethereum"
-      title="Set auto-compounding"
+      title={t("Set auto-compounding")}
       header={<SignViewIconHeader icon="stake" />}
     >
       <SignViewStakingSetAutoCompound

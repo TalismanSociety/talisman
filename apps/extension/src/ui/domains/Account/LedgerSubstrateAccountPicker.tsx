@@ -8,6 +8,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import useBalancesByParams from "@ui/hooks/useBalancesByParams"
 import useChain from "@ui/hooks/useChain"
 import { FC, useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 import { DerivedAccountBase, DerivedAccountPickerBase } from "./DerivedAccountPickerBase"
 
@@ -18,6 +19,7 @@ const useLedgerChainAccounts = (
   itemsPerPage: number
 ) => {
   const walletAccounts = useAccounts()
+  const { t } = useTranslation()
   const chain = useChain(chainId)
   const app = useLedgerSubstrateApp(chain?.genesisHash)
 
@@ -49,7 +51,10 @@ const useLedgerChainAccounts = (
           accountIndex,
           addressOffset: 0,
           address,
-          name: `Ledger ${app.label} ${accountIndex + 1}`,
+          name: t("Ledger {{appLabel}} {{accountIndex}}", {
+            appLabel: app.label,
+            accountIndex: accountIndex + 1,
+          }),
         } as LedgerSubstrateAccount
 
         setLedgerAccounts([...newAccounts])
@@ -60,7 +65,7 @@ const useLedgerChainAccounts = (
     }
 
     setIsBusy(false)
-  }, [app, chain, isReady, itemsPerPage, ledger, pageIndex])
+  }, [app, chain, isReady, itemsPerPage, ledger, pageIndex, t])
 
   const addressesByChain = useMemo(() => {
     // start fetching balances only when all accounts are known to prevent recreating subscription 5 times
@@ -138,6 +143,7 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
   chainId,
   onChange,
 }) => {
+  const { t } = useTranslation()
   const itemsPerPage = 5
   const [pageIndex, setPageIndex] = useState(0)
   const [selectedAccounts, setSelectedAccounts] = useState<LedgerAccountDefSubstrate[]>([])
@@ -178,7 +184,7 @@ export const LedgerSubstrateAccountPicker: FC<LedgerSubstrateAccountPickerProps>
         onPagerNextClick={handlePageNext}
       />
       <p className="text-alert-error">
-        {error ? "An error occured, Ledger might be locked." : null}
+        {error ? t("An error occured, Ledger might be locked.") : null}
       </p>
     </>
   )

@@ -11,6 +11,7 @@ import useAccounts from "@ui/hooks/useAccounts"
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback, useMemo } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
@@ -43,6 +44,7 @@ const Spacer = styled.div<{ small?: boolean }>`
 `
 
 const AccountNew = () => {
+  const { t } = useTranslation("account-add")
   const allAccounts = useAccounts()
   const accountNames = useMemo(() => allAccounts.map((a) => a.name), [allAccounts])
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
@@ -51,12 +53,12 @@ const AccountNew = () => {
     () =>
       yup
         .object({
-          name: yup.string().required("").notOneOf(accountNames, "Name already in use"),
+          name: yup.string().required("").notOneOf(accountNames, t("Name already in use")),
           type: yup.string().required("").oneOf(["ethereum", "sr25519"]),
         })
         .required(),
 
-    [accountNames]
+    [accountNames, t]
   )
 
   const {
@@ -76,8 +78,8 @@ const AccountNew = () => {
       const notificationId = notify(
         {
           type: "processing",
-          title: "Creating account",
-          subtitle: "Please wait",
+          title: t("Creating account"),
+          subtitle: t("Please wait"),
         },
         { autoClose: false }
       )
@@ -90,18 +92,18 @@ const AccountNew = () => {
 
         notifyUpdate(notificationId, {
           type: "success",
-          title: "Account created",
+          title: t("Account created"),
           subtitle: name,
         })
       } catch (err) {
         notifyUpdate(notificationId, {
           type: "error",
-          title: "Error creating account",
+          title: t("Error creating account"),
           subtitle: (err as Error)?.message,
         })
       }
     },
-    [setAddress]
+    [setAddress, t]
   )
 
   const handleTypeChange = useCallback(
@@ -117,8 +119,8 @@ const AccountNew = () => {
   return (
     <Container withBack centered>
       <HeaderBlock
-        title="Create a new account"
-        text="What type of account would you like to create ?"
+        title={t("Create a new account")}
+        text={t("What type of account would you like to create ?")}
       />
       <Spacer />
       <form onSubmit={handleSubmit(submit)}>
@@ -128,7 +130,7 @@ const AccountNew = () => {
           <FormFieldContainer error={errors.name?.message}>
             <FormFieldInputText
               {...register("name")}
-              placeholder="Choose a name"
+              placeholder={t("Choose a name")}
               spellCheck={false}
               autoComplete="off"
               // eslint-disable-next-line jsx-a11y/no-autofocus
@@ -145,7 +147,7 @@ const AccountNew = () => {
               disabled={!isValid}
               processing={isSubmitting}
             >
-              Create
+              {t("Create")}
             </Button>
           </div>
         </div>

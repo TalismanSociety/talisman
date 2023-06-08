@@ -183,7 +183,7 @@ const TokenPickerForm = ({ filter, onTokenSelect }: TokenPickerFormProps) => {
     [onTokenSelect]
   )
 
-  const { t } = useTranslation("asset")
+  const { t } = useTranslation()
 
   return (
     <FormContainer>

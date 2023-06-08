@@ -8,6 +8,7 @@ import { DerivedFromMnemonicAccountPicker } from "@ui/domains/Account/DerivedFro
 import { useSelectAccountAndNavigate } from "@ui/hooks/useSelectAccountAndNavigate"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { Navigate, useNavigate } from "react-router-dom"
 import styled from "styled-components"
 import * as yup from "yup"
@@ -44,13 +45,14 @@ type FormData = {
 }
 
 export const AccountAddSecretAccounts = () => {
+  const { t } = useTranslation("account-add")
   const { data, importAccounts } = useAccountAddSecret()
   const navigate = useNavigate()
   const { setAddress } = useSelectAccountAndNavigate("/portfolio")
 
   const name = useMemo(
-    () => data.name ?? (data.type === "ethereum" ? "Ethereum Account" : "Polkadot Account"),
-    [data.name, data.type]
+    () => data.name ?? (data.type === "ethereum" ? t("Ethereum Account") : t("Polkadot Account")),
+    [data.name, data.type, t]
   )
 
   const schema = useMemo(
@@ -76,11 +78,10 @@ export const AccountAddSecretAccounts = () => {
 
   const submit = useCallback(
     async ({ accounts }: FormData) => {
-      const suffix = accounts?.length > 1 ? "s" : ""
       const notificationId = notify(
         {
           type: "processing",
-          title: "Importing account" + suffix,
+          title: t("Importing account", { count: accounts.length }),
           subtitle: "Please wait",
         },
         { autoClose: false }
@@ -90,7 +91,7 @@ export const AccountAddSecretAccounts = () => {
 
         notifyUpdate(notificationId, {
           type: "success",
-          title: `Account${suffix} imported`,
+          title: t("Account imported", { count: accounts.length }),
           subtitle: null,
         })
 
@@ -98,12 +99,12 @@ export const AccountAddSecretAccounts = () => {
       } catch (err) {
         notifyUpdate(notificationId, {
           type: "error",
-          title: "Importing account" + suffix,
+          title: t("Importing account", { count: accounts.length }),
           subtitle: (err as Error).message,
         })
       }
     },
-    [importAccounts, setAddress]
+    [importAccounts, setAddress, t]
   )
 
   const handleAccountsChange = useCallback(
@@ -127,8 +128,10 @@ export const AccountAddSecretAccounts = () => {
       <form data-button-pull-left onSubmit={handleSubmit(submit)}>
         <div className="grow">
           <HeaderBlock
-            title={`Import ${data?.type === "ethereum" ? "Ethereum" : "Polkadot"} account(s)`}
-            text="Please select which account(s) you'd like to import."
+            title={t("Import {{accountType}} account(s)", {
+              accountType: data?.type === "ethereum" ? t("Ethereum") : t("Polkadot"),
+            })}
+            text={t("Please select which account(s) you'd like to import.")}
           />
           <Spacer />
           <DerivedFromMnemonicAccountPicker
@@ -141,7 +144,7 @@ export const AccountAddSecretAccounts = () => {
 
         <div className="buttons">
           <SimpleButton type="submit" primary disabled={!isValid} processing={isSubmitting}>
-            Import {accounts?.length || ""}
+            {t("Import")} {accounts?.length || ""}
           </SimpleButton>
         </div>
         <Spacer />

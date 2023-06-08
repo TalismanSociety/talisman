@@ -2,7 +2,8 @@ import { AddEthereumChainParameter } from "@core/domains/ethereum/types"
 import { Drawer } from "@talisman/components/Drawer"
 import { SimpleButton } from "@talisman/components/SimpleButton"
 import { useOpenClose } from "@talisman/hooks/useOpenClose"
-import { ReactNode, useMemo } from "react"
+import { ReactNode, useCallback, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const ViewDetailsContainer = styled.div`
@@ -77,27 +78,34 @@ type ViewDetailsEntryProps = {
   value?: ReactNode
 }
 
-const ViewDetailsEntry = ({ title, value }: ViewDetailsEntryProps) => (
-  <div className="vd-entry">
-    <h4>{title}</h4>
-    <p>{value ?? "N/A"}</p>
-  </div>
-)
+const ViewDetailsEntry = ({ title, value }: ViewDetailsEntryProps) => {
+  const { t } = useTranslation("request")
+  return (
+    <div className="vd-entry">
+      <h4>{title}</h4>
+      <p>{value ?? t("N/A")}</p>
+    </div>
+  )
+}
 
 type NetworkDetailsButtonProps = {
   network: AddEthereumChainParameter
 }
 
-const tryParseIntFromHex = (value: string) => {
-  try {
-    return parseInt(value, 16)
-  } catch (err) {
-    return "N/A"
-  }
-}
-
 export const NetworksDetailsButton = ({ network }: NetworkDetailsButtonProps) => {
+  const { t } = useTranslation("request")
   const { isOpen, open, close } = useOpenClose()
+
+  const tryParseIntFromHex = useCallback(
+    (value: string) => {
+      try {
+        return parseInt(value, 16)
+      } catch (err) {
+        return t("N/A")
+      }
+    },
+    [t]
+  )
 
   const { name, rpcs, chainId, tokenSymbol, blockExplorers } = useMemo(() => {
     return {
@@ -107,23 +115,23 @@ export const NetworksDetailsButton = ({ network }: NetworkDetailsButtonProps) =>
       tokenSymbol: network?.nativeCurrency?.symbol || "N/A",
       blockExplorers: network?.blockExplorerUrls?.join("\n"),
     }
-  }, [network])
+  }, [network, tryParseIntFromHex])
 
   return (
     <>
-      <Button onClick={open}>View Details</Button>
+      <Button onClick={open}>{t("View Details")}</Button>
       <Drawer open={isOpen} onClose={close} anchor="bottom">
         <ViewDetailsContainer>
-          <h3>Network Details</h3>
+          <h3>{t("Network Details")}</h3>
           <div className="grow">
-            <ViewDetailsEntry title="Network Name" value={name} />
-            <ViewDetailsEntry title="RPC URL" value={rpcs} />
-            <ViewDetailsEntry title="Chain ID" value={chainId} />
-            <ViewDetailsEntry title="Currency Symbol" value={tokenSymbol} />
-            <ViewDetailsEntry title="Block Explorer URL" value={blockExplorers} />
+            <ViewDetailsEntry title={t("Network Name")} value={name} />
+            <ViewDetailsEntry title={t("RPC URL")} value={rpcs} />
+            <ViewDetailsEntry title={t("Chain ID")} value={chainId} />
+            <ViewDetailsEntry title={t("Currency Symbol")} value={tokenSymbol} />
+            <ViewDetailsEntry title={t("Block Explorer URL")} value={blockExplorers} />
           </div>
           <div>
-            <SimpleButton onClick={close}>Close</SimpleButton>
+            <SimpleButton onClick={close}>{t("Close")}</SimpleButton>
           </div>
         </ViewDetailsContainer>
       </Drawer>

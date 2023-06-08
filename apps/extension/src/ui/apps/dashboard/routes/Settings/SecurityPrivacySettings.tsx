@@ -5,6 +5,7 @@ import Setting from "@talisman/components/Setting"
 import Spacer from "@talisman/components/Spacer"
 import Layout from "@ui/apps/dashboard/layout"
 import { useSetting } from "@ui/hooks/useSettings"
+import { Trans, useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 import styled from "styled-components"
 
@@ -18,26 +19,30 @@ const TSLink = styled.a`
 `
 
 const SecurityPrivacySettings = () => {
+  const { t } = useTranslation("settings")
   const [useAnalyticsTracking, setUseAnalyticsTracking] = useSetting("useAnalyticsTracking")
   const [useErrorTracking, setUseErrorTracking] = useSetting("useErrorTracking")
   const navigate = useNavigate()
   return (
     <Layout centered withBack backTo="/settings">
-      <HeaderBlock title="Security and Privacy" text="Control security and privacy preferences" />
+      <HeaderBlock
+        title={t("Security and Privacy")}
+        text={t("Control security and privacy preferences")}
+      />
       <Spacer />
       <Grid columns={1}>
         {useErrorTracking !== undefined && (
           <Setting
-            title="Error Reporting"
+            title={t("Error Reporting")}
             subtitle={
-              <>
+              <Trans t={t}>
                 Send anonymised error reports to Talisman (via{" "}
                 <TSLink href="https://www.sentry.io" target="_blank" rel="noreferrer">
                   {" "}
                   Sentry
                 </TSLink>
                 )
-              </>
+              </Trans>
             }
           >
             <Field.Toggle value={useErrorTracking} onChange={setUseErrorTracking} />
@@ -45,12 +50,12 @@ const SecurityPrivacySettings = () => {
         )}
         {useAnalyticsTracking !== undefined && (
           <Setting
-            title="Analytics"
+            title={t("Analytics")}
             subtitle={
-              <>
+              <Trans t={t}>
                 Opt in to collection of anonymised usage data.{" "}
                 <LinkText onClick={() => navigate("/settings/analytics")}>Learn More</LinkText>
-              </>
+              </Trans>
             }
           >
             <Field.Toggle value={useAnalyticsTracking} onChange={setUseAnalyticsTracking} />

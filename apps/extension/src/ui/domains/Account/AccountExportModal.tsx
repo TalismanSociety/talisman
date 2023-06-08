@@ -8,6 +8,7 @@ import { provideContext } from "@talisman/util/provideContext"
 import { api } from "@ui/api"
 import { useCallback, useEffect, useMemo } from "react"
 import { useForm } from "react-hook-form"
+import { Trans, useTranslation } from "react-i18next"
 import { Button, FormFieldContainer, FormFieldInputText } from "talisman-ui"
 import * as yup from "yup"
 
@@ -50,19 +51,25 @@ type FormData = {
   newPwConfirm: string
 }
 
-const schema = yup
-  .object({
-    newPw: yup.string().required("").min(6, "Password must be at least 6 characters long"),
-    newPwConfirm: yup
-      .string()
-      .required("")
-      .oneOf([yup.ref("newPw")], "Passwords must match!"),
-  })
-  .required()
-
 const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
+  const { t } = useTranslation()
   const { canExportAccount, exportAccount } = useAccountExportModal()
   const { password } = usePasswordUnlock()
+
+  const schema = useMemo(
+    () =>
+      yup
+        .object({
+          newPw: yup.string().required("").min(6, t("Password must be at least 6 characters long")),
+          newPwConfirm: yup
+            .string()
+            .required("")
+            .oneOf([yup.ref("newPw")], t("Passwords must match!")),
+        })
+        .required(),
+    [t]
+  )
+
   const {
     register,
     handleSubmit,
@@ -96,21 +103,23 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     <div>
       <form onSubmit={handleSubmit(submit)}>
         <p className="text-body-secondary my-8 text-sm">
-          Set a password for your JSON export. We strongly suggest using a{" "}
-          <span className="text-white">different password</span> from your Talisman wallet password.
-          This avoids exposing your Talisman password to other wallets or applications.
+          <Trans t={t}>
+            Set a password for your JSON export. We strongly suggest using a{" "}
+            <span className="text-white">different password</span> from your Talisman wallet
+            password. This avoids exposing your Talisman password to other wallets or applications.
+          </Trans>
         </p>
 
         <div className="mt-12">
           <div className="text-body-disabled mb-8 text-sm">
-            Password strength: <PasswordStrength password={newPwWatch} />
+            {t("Password strength:")} <PasswordStrength password={newPwWatch} />
           </div>
           <FormFieldContainer error={errors.newPw?.message}>
             <FormFieldInputText
               {...register("newPw")}
               // eslint-disable-next-line jsx-a11y/no-autofocus
               autoFocus
-              placeholder="Enter New Password"
+              placeholder={t("Enter New Password")}
               spellCheck={false}
               autoComplete="new-password"
               data-lpignore
@@ -121,7 +130,7 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <FormFieldContainer error={errors.newPwConfirm?.message}>
             <FormFieldInputText
               {...register("newPwConfirm")}
-              placeholder="Confirm New Password"
+              placeholder={t("Confirm New Password")}
               spellCheck={false}
               autoComplete="off"
               data-lpignore
@@ -138,7 +147,7 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           disabled={!isValid}
           processing={isSubmitting}
         >
-          Export
+          {t("Export")}
         </Button>
       </form>
     </div>
@@ -146,6 +155,7 @@ const ExportAccountForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 }
 
 export const AccountExportModal = () => {
+  const { t } = useTranslation()
   const { isOpen, close } = useAccountExportModal()
   return (
     <Modal open={isOpen} onClose={close} className="w-[50.3rem]">
@@ -153,7 +163,7 @@ export const AccountExportModal = () => {
         <PasswordUnlock
           title={
             <div className="text-body-secondary mb-8">
-              Please confirm your password to export your account.
+              {t("Please confirm your password to export your account.")}
             </div>
           }
         >

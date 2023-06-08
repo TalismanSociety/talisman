@@ -9,6 +9,7 @@ import useToken from "@ui/hooks/useToken"
 import useTokens from "@ui/hooks/useTokens"
 import { BigNumber } from "ethers"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
@@ -66,6 +67,7 @@ const decodeMultilocation = (multilocation?: {
 }
 
 export const EthSignMoonXTokensTransfer: FC = () => {
+  const { t } = useTranslation("sign")
   const { network, transactionInfo, account } = useEthSignKnownTransactionRequest()
   const substrateChain = useChain(network?.substrateChain?.id)
   const { tokens } = useTokens(true)
@@ -152,7 +154,7 @@ export const EthSignMoonXTokensTransfer: FC = () => {
   return (
     <SignContainer
       networkType="ethereum"
-      title="Transfer"
+      title={t("Transfer")}
       header={<SignViewIconHeader icon="transfer" />}
     >
       <SignViewXTokensTransfer

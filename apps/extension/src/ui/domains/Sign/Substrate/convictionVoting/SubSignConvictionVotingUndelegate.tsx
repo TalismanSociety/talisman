@@ -1,12 +1,14 @@
 import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { SignViewVotingUndelegate } from "../../Views/convictionVoting/SignViewVotingUndelegate"
 
 export const SubSignConvictionVotingUndelegate = () => {
+  const { t } = useTranslation("sign")
   const { chain, payload } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
 
@@ -25,7 +27,7 @@ export const SubSignConvictionVotingUndelegate = () => {
   return (
     <SignContainer
       networkType="substrate"
-      title="Undelegate vote"
+      title={t("Undelegate vote")}
       header={<SignViewIconHeader icon="vote" />}
     >
       <SignViewVotingUndelegate {...props} />

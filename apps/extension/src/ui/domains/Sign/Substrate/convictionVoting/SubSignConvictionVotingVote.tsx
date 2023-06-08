@@ -2,12 +2,14 @@ import { SignViewVotingVote } from "@ui/domains/Sign/Views/convictionVoting/Sign
 import { SignViewIconHeader } from "@ui/domains/Sign/Views/SignViewIconHeader"
 import { useExtrinsic } from "@ui/hooks/useExtrinsic"
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { usePolkadotSigningRequest } from "../../SignRequestContext"
 import { getConviction } from "./getConviction"
 
 export const SubSignConvictionVotingVote = () => {
+  const { t } = useTranslation("sign")
   const { chain, payload } = usePolkadotSigningRequest()
   const { data: extrinsic } = useExtrinsic(payload)
 
@@ -18,12 +20,12 @@ export const SubSignConvictionVotingVote = () => {
     )
 
     return {
-      title: vote?.asStandard?.vote.isAye ? "Vote Yes" : "Vote No",
+      title: vote?.asStandard?.vote.isAye ? t("Vote Yes") : t("Vote No"),
       pollIndex: extrinsic?.method?.args[0]?.toPrimitive() as number,
       conviction: getConviction(vote?.asStandard?.vote.conviction),
       voteAmount: vote?.asStandard?.balance.toBigInt() ?? 0n,
     }
-  }, [extrinsic])
+  }, [extrinsic, t])
 
   if (!chain?.nativeToken) return null
 

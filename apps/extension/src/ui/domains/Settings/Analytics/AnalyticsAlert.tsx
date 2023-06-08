@@ -7,6 +7,7 @@ import { EyeIcon } from "@talisman/theme/icons"
 import { api } from "@ui/api"
 import { useSetting } from "@ui/hooks/useSettings"
 import { useCallback, useEffect } from "react"
+import { Trans, useTranslation } from "react-i18next"
 import styled from "styled-components"
 
 const StackedButtonGroup = styled(ButtonGroup)`
@@ -23,42 +24,47 @@ type Props = {
 }
 
 export const AlertCard = styled(({ className, onLearnMoreClick, onAccept, onReject }: Props) => {
+  const { t } = useTranslation("settings")
   return (
     <Card
       className={className}
       title={
         <>
-          <EyeIcon className="icon inline-block" /> Help us improve Talisman
+          <EyeIcon className="icon inline-block" /> {t("Help us improve Talisman")}
         </>
       }
       description={
         <>
           <p>
-            We'd like to gather{" "}
-            <button className="learn-more" onClick={onLearnMoreClick}>
-              anonymous usage data
-            </button>{" "}
-            to help improve the experience of using Talisman.
+            <Trans t={t}>
+              We'd like to gather{" "}
+              <button className="learn-more" onClick={onLearnMoreClick}>
+                anonymous usage data
+              </button>{" "}
+              to help improve the experience of using Talisman.
+            </Trans>
           </p>
           <p>
-            If you opt-in, we will track minimal data and treat it with the respect it deserves. By
-            accepting, you acknowledge you have read and agree to our updated{" "}
-            <a
-              href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Privacy Policy
-            </a>
+            <Trans t={t}>
+              If you opt-in, we will track minimal data and treat it with the respect it deserves.
+              By accepting, you acknowledge you have read and agree to our updated{" "}
+              <a
+                href="https://docs.talisman.xyz/talisman/legal-and-security/privacy-policy"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Privacy Policy
+              </a>
+            </Trans>
           </p>
         </>
       }
       cta={
         <StackedButtonGroup>
           <Button primary onClick={onAccept}>
-            I Agree
+            {t("I Agree")}
           </Button>
-          <Button onClick={onReject}>No Thanks</Button>
+          <Button onClick={onReject}>{t("No Thanks")}</Button>
         </StackedButtonGroup>
       }
     />

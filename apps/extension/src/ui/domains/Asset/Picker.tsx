@@ -3,6 +3,7 @@ import useChains from "@ui/hooks/useChains"
 import { useEvmNetworks } from "@ui/hooks/useEvmNetworks"
 import { useSetting } from "@ui/hooks/useSettings"
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 import GenericPicker, { PickerItemProps } from "../../../@talisman/components/GenericPicker"
 import { useSortedTransferableTokens } from "./Send/useTransferableTokens"
@@ -52,6 +53,7 @@ const AssetPicker: FC<IProps> = ({
   className,
   showChainsWithBalanceFirst,
 }) => {
+  const { t } = useTranslation()
   const [useTestnets] = useSetting("useTestnets")
   const { chainsMap } = useChains(useTestnets)
   const { evmNetworksMap } = useEvmNetworks(useTestnets)
@@ -65,7 +67,7 @@ const AssetPicker: FC<IProps> = ({
     // display type only if chain has an evm network, or vice versa
     const networkType =
       evmNetwork && (chain?.evmNetworks?.length || !!evmNetwork?.substrateChain)
-        ? " (Ethereum)"
+        ? ` (${t("Ethereum")})`
         : ""
     const subtitle = networkName + networkType
     return {

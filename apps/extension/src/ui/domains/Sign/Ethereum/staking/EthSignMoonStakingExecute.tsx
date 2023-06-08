@@ -1,14 +1,16 @@
 import { FC } from "react"
+import { useTranslation } from "react-i18next"
 
 import { SignContainer } from "../../SignContainer"
 import { SignViewIconHeader } from "../../Views/SignViewIconHeader"
 import { SignViewStakingExecute } from "../../Views/staking/SignViewStakingExecute"
 
 export const EthSignMoonStakingExecute: FC = () => {
+  const { t } = useTranslation("sign")
   return (
     <SignContainer
       networkType="ethereum"
-      title={`Execute activity`}
+      title={t("Execute activity")}
       header={<SignViewIconHeader icon="ok" />}
     >
       <SignViewStakingExecute />

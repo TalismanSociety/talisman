@@ -13,6 +13,7 @@ import useChain from "@ui/hooks/useChain"
 import { useEvmNetwork } from "@ui/hooks/useEvmNetwork"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import { FC, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 import { Tooltip, TooltipContent, TooltipTrigger } from "talisman-ui"
 
 const FormattedAddress = ({ address, className }: { address: string; className?: string }) => {
@@ -74,18 +75,19 @@ export const SignViewXTokensTransfer: FC<{
   toNetwork,
   toAddress,
 }) => {
+  const { t } = useTranslation("sign")
   const fromChain = useChain(fromNetwork)
   const fromEvmNetwork = useEvmNetwork(fromNetwork)
   const toChain = useChain(toNetwork)
   const toEvmNetwork = useEvmNetwork(toAddress)
 
   const fromNetworkName = useMemo(
-    () => fromChain?.name ?? fromEvmNetwork?.name ?? "Unknown",
-    [fromChain, fromEvmNetwork]
+    () => fromChain?.name ?? fromEvmNetwork?.name ?? t("Unknown"),
+    [fromChain, fromEvmNetwork, t]
   )
   const toNetworkName = useMemo(
-    () => toChain?.name ?? toEvmNetwork?.name ?? "Unknown",
-    [toChain, toEvmNetwork]
+    () => toChain?.name ?? toEvmNetwork?.name ?? t("Unknown"),
+    [toChain, toEvmNetwork, t]
   )
 
   const amount = useMemo(

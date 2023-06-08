@@ -10,11 +10,13 @@ import useChain from "@ui/hooks/useChain"
 import { useIsKnownAddress } from "@ui/hooks/useIsKnownAddress"
 import useToken from "@ui/hooks/useToken"
 import { useCallback, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "talisman-ui"
 
 import { useSendFunds } from "./useSendFunds"
 
 const SendFundsQrSubstrate = () => {
+  const { t } = useTranslation("send-funds")
   const { tokenId, from, to, amount } = useSendFundsWizard()
   const { subTransaction, sendWithSignature, isLocked, setIsLocked } = useSendFunds()
   const [error, setError] = useState<Error>()
@@ -77,7 +79,7 @@ const SendFundsQrSubstrate = () => {
         onClick={showQrApproval(true)}
         processing={signed}
       >
-        Approve with QR
+        {t("Approve with QR")}
       </Button>
     )
 
