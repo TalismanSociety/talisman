@@ -25,7 +25,7 @@ const StyledAuthorisedSitesListAccount = styled(AuthorisedSitesListAccount)`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  transition: opacity: 0.15s ease-in-out;
+  transition: opacity 0.15s ease-in-out;
 
   .account-avatar {
     font-size: var(--font-size-large);
