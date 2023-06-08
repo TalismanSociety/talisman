@@ -23,7 +23,7 @@ import {
 import { balanceModules as defaultBalanceModules } from "@talismn/balances-default-modules"
 import { Token, TokenList } from "@talismn/chaindata-provider"
 import { encodeAnyAddress } from "@talismn/util"
-import { liveQuery } from "dexie"
+import { Dexie, liveQuery } from "dexie"
 import isEqual from "lodash/isEqual"
 import pick from "lodash/pick"
 import { ReplaySubject, Subject, combineLatest, firstValueFrom } from "rxjs"
@@ -126,7 +126,10 @@ export class BalanceStore {
           tokens
         )
       },
-      error: (error) => Sentry.captureException(error),
+      error: (error) => {
+        if (error.cause?.name === Dexie.errnames.DatabaseClosed) return
+        else Sentry.captureException(error)
+      },
     })
 
     // if we already have subscriptions - start polling

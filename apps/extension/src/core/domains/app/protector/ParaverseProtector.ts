@@ -119,10 +119,12 @@ export default class ParaverseProtector {
       db.phishing.bulkPut(Object.values(data)).catch((cause) => {
         // put it back
         this.#persistQueue = data
-        const error = new Error("Failed to persist phishing list", { cause })
-        log.error(error)
         // we can't do much about DatabaseClosedError errors
-        if (!(cause instanceof Dexie.DatabaseClosedError)) {
+        if (
+          !(cause instanceof Dexie.DatabaseClosedError) &&
+          !(cause.name !== Dexie.errnames.DatabaseClosed)
+        ) {
+          const error = new Error("Failed to persist phishing list", { cause })
           Sentry.captureException(error)
         }
       })
