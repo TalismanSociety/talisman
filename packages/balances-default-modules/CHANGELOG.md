@@ -4,6 +4,18 @@
 
 ### Patch Changes
 
+- @talismn/balances-evm-erc20@0.5.0
+- @talismn/balances-evm-native@0.5.0
+- @talismn/balances-substrate-assets@0.5.0
+- @talismn/balances-substrate-equilibrium@0.5.0
+- @talismn/balances-substrate-native@0.5.0
+- @talismn/balances-substrate-orml@0.5.0
+- @talismn/balances-substrate-tokens@0.5.0
+
+## 0.4.2
+
+### Patch Changes
+
 - Updated dependencies [74f50e65]
   - @talismn/balances-substrate-native@0.5.0
   - @talismn/balances-evm-erc20@0.5.0

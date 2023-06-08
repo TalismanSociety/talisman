@@ -1,5 +1,12 @@
 # @talismn/chain-connector
 
+## 0.6.0
+
+### Patch Changes
+
+- @talismn/chaindata-provider@0.6.0
+- @talismn/connection-meta@0.0.5
+
 ## 0.5.0
 
 ### Patch Changes
